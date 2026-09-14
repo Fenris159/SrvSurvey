@@ -14,7 +14,7 @@ public sealed class BiologyPredictionsSettingsStore
     public BiologyPredictionsPreferences Load()
     {
         var settings = documentStore.Load()["BiologyPredictions"] as JsonObject;
-        var defaults = BiologyPredictionsPreferences.Default;
+        BiologyPredictionsPreferences defaults = BiologyPredictionsPreferences.Default;
         return new BiologyPredictionsPreferences(
             GetBoolean(settings, "CurrentBodyOnly", defaults.CurrentBodyOnly),
             GetRowSize(settings, defaults.RowSize)
@@ -41,14 +41,14 @@ public sealed class BiologyPredictionsSettingsStore
 
     private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result)
             ? result
             : fallback;
     }
 
     private static int GetRowSize(JsonObject? settings, int fallback)
     {
-        return settings?["RowSize"] is JsonValue value && value.TryGetValue<int>(out var result)
+        return settings?["RowSize"] is JsonValue value && value.TryGetValue<int>(out int result)
             ? Math.Clamp(result, 1, 3)
             : fallback;
     }

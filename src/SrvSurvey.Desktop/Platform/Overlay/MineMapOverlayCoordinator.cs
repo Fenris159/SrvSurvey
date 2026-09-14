@@ -294,8 +294,8 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         }
 
         PositionZoomWindow(opened, mapWindow);
-        var preparation = zoomPlatform.PreparePassiveWindow(opened);
-        var interaction = zoomPlatform.SetInteractive(opened, interactive: true);
+        OverlayPreparationResult preparation = zoomPlatform.PreparePassiveWindow(opened);
+        OverlayInteractionResult interaction = zoomPlatform.SetInteractive(opened, interactive: true);
         if (!preparation.IsClickThrough || !interaction.IsPrepared || !interaction.IsInteractive)
         {
             zoomUnavailable = true;
@@ -313,18 +313,18 @@ public sealed class MineMapOverlayCoordinator : IDisposable
 
     private static void PositionZoomWindow(Window controls, Window mapWindow)
     {
-        var screen = mapWindow.Screens.ScreenFromWindow(mapWindow) ?? mapWindow.Screens.Primary;
+        Screen? screen = mapWindow.Screens.ScreenFromWindow(mapWindow) ?? mapWindow.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
         const int inset = 12;
-        var scale = screen.Scaling;
-        var mapWidth = Math.Max(1, (int)Math.Ceiling(mapWindow.Bounds.Width * scale));
-        var mapHeight = Math.Max(1, (int)Math.Ceiling(mapWindow.Bounds.Height * scale));
-        var width = Math.Max(1, (int)Math.Ceiling(controls.Bounds.Width * scale));
-        var height = Math.Max(1, (int)Math.Ceiling(controls.Bounds.Height * scale));
+        double scale = screen.Scaling;
+        int mapWidth = Math.Max(1, (int)Math.Ceiling(mapWindow.Bounds.Width * scale));
+        int mapHeight = Math.Max(1, (int)Math.Ceiling(mapWindow.Bounds.Height * scale));
+        int width = Math.Max(1, (int)Math.Ceiling(controls.Bounds.Width * scale));
+        int height = Math.Max(1, (int)Math.Ceiling(controls.Bounds.Height * scale));
         var position = new PixelPoint(
             mapWindow.Position.X + mapWidth - width - (int)Math.Ceiling(inset * scale),
             mapWindow.Position.Y + mapHeight - height - (int)Math.Ceiling(inset * scale)
@@ -337,7 +337,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
 
     private void CloseZoomWindow()
     {
-        var closing = zoomWindow;
+        MineMapZoomOverlayWindow? closing = zoomWindow;
         if (closing is null)
         {
             return;

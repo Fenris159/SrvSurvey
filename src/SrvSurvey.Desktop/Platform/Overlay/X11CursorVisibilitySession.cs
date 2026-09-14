@@ -31,7 +31,7 @@ internal sealed class X11CursorVisibilitySession : IDisposable
 
         if (cursor != 0)
         {
-            foreach (var window in interactionWindows)
+            foreach (nuint window in interactionWindows)
             {
                 _ = operations.UndefineCursor(window);
             }

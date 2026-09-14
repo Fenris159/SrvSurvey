@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using Avalonia;
 using SrvSurvey.Desktop.Configuration;
@@ -13,27 +14,27 @@ public sealed class MiningBarDetectorTests
     [InlineData(217)]
     public void PartiallyVisibleIceBarIsNeverDeclaredEmpty(int visibleUntil)
     {
-        var source = Load("ice-two-bars");
-        var settings = IceSettings();
-        var previous = MiningBarDetector.Analyze(source, settings);
-        var bytes = source.BgraPixels.ToArray();
-        for (var y = 0; y < source.Height; y++)
+        CapturedPixelBuffer source = Load("ice-two-bars");
+        MiningDetectionSettings settings = IceSettings();
+        MiningBarAnalysis previous = MiningBarDetector.Analyze(source, settings);
+        byte[] bytes = source.BgraPixels.ToArray();
+        for (int y = 0; y < source.Height; y++)
         {
-            for (var x = visibleUntil; x < source.Width; x++)
+            for (int x = visibleUntil; x < source.Width; x++)
             {
                 if (!MiningColorBarDetector.MatchesColor(source.GetPixel(x, y), new(0, 255, 0)))
                 {
                     continue;
                 }
 
-                var p = (y * source.Width + x) * 4;
+                int p = (y * source.Width + x) * 4;
                 bytes[p] = bytes[p + 1] = bytes[p + 2] = 230;
             }
         }
         var clock = new TestClock();
         var confirmation = new MiningBarConfirmation(clock);
         confirmation.Apply(previous);
-        for (var i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
             clock.Advance(.5);
             previous = MiningBarDetector.Analyze(
@@ -46,24 +47,24 @@ public sealed class MiningBarDetectorTests
             Assert.NotEqual(MiningBarState.Absent, confirmation.States[1]);
             Assert.All(previous.Slots.Skip(2), state => Assert.NotEqual(MiningBarState.Present, state));
         }
-        var restored = MiningBarDetector.Analyze(source, settings, previous);
+        MiningBarAnalysis restored = MiningBarDetector.Analyze(source, settings, previous);
         Assert.Equal(MiningBarState.Present, restored.Slots[1]);
     }
 
     [Fact]
     public void AlternatingIceBarsCannotSlideTheGridIntoRigThree()
     {
-        var source = Load("ice-two-bars");
-        var settings = IceSettings();
+        CapturedPixelBuffer source = Load("ice-two-bars");
+        MiningDetectionSettings settings = IceSettings();
         MiningBarAnalysis? previous = null;
-        foreach (var active in new[] { 3, 2, 1, 3 })
+        foreach (int active in new[] { 3, 2, 1, 3 })
         {
-            var bytes = source.BgraPixels.ToArray();
-            for (var y = 0; y < source.Height; y++)
+            byte[] bytes = source.BgraPixels.ToArray();
+            for (int y = 0; y < source.Height; y++)
             {
-                for (var x = 0; x < source.Width; x++)
+                for (int x = 0; x < source.Width; x++)
                 {
-                    var bit = x < 150 ? 1 : 2;
+                    int bit = x < 150 ? 1 : 2;
                     if (
                         (active & bit) != 0
                         || !MiningColorBarDetector.MatchesColor(source.GetPixel(x, y), new(0, 255, 0))
@@ -72,7 +73,7 @@ public sealed class MiningBarDetectorTests
                         continue;
                     }
 
-                    var p = (y * source.Width + x) * 4;
+                    int p = (y * source.Width + x) * 4;
                     bytes[p] = bytes[p + 1] = bytes[p + 2] = 230;
                 }
             }
@@ -114,7 +115,7 @@ public sealed class MiningBarDetectorTests
     [InlineData(8, 6)]
     public void EmptyNightVisionHudReacquiresCirclesAfterTheLastBarIsRetrieved(double oldX, double oldY)
     {
-        var settings = EmptyNightVisionSettings();
+        MiningDetectionSettings settings = EmptyNightVisionSettings();
         var previous = new MiningBarAnalysis(
             [
                 MiningBarState.Present,
@@ -131,14 +132,14 @@ public sealed class MiningBarDetectorTests
             HasAnchor = true,
             AnchorSlots = 1,
         };
-        var result = MiningBarDetector.Analyze(Load("empty-night-vision"), settings, previous);
+        MiningBarAnalysis result = MiningBarDetector.Analyze(Load("empty-night-vision"), settings, previous);
         Assert.All(result.Slots, state => Assert.Equal(MiningBarState.Absent, state));
         var clock = new TestClock();
         var confirmation = new MiningBarConfirmation(clock);
         confirmation.Apply(previous);
         confirmation.Apply(result);
         Assert.NotEqual(MiningBarState.Absent, confirmation.States[0]);
-        for (var i = 0; i < 12; i++)
+        for (int i = 0; i < 12; i++)
         {
             clock.Advance(.4);
             result = MiningBarDetector.Analyze(Load("empty-night-vision"), settings, result);
@@ -150,22 +151,22 @@ public sealed class MiningBarDetectorTests
     [Fact]
     public void OneVisibleEmptyCircleCannotDeclareTheWholeGridEmpty()
     {
-        var source = Load("empty-night-vision");
-        var bytes = source.BgraPixels.ToArray();
-        for (var y = 0; y < source.Height; y++)
+        CapturedPixelBuffer source = Load("empty-night-vision");
+        byte[] bytes = source.BgraPixels.ToArray();
+        for (int y = 0; y < source.Height; y++)
         {
-            for (var x = 0; x < source.Width; x++)
+            for (int x = 0; x < source.Width; x++)
             {
                 if (x < 150 && y < 120)
                 {
                     continue;
                 }
 
-                var p = (y * source.Width + x) * 4;
+                int p = (y * source.Width + x) * 4;
                 bytes[p] = bytes[p + 1] = bytes[p + 2] = 0;
             }
         }
-        var result = MiningBarDetector.Analyze(
+        MiningBarAnalysis result = MiningBarDetector.Analyze(
             new CapturedPixelBuffer(source.Width, source.Height, bytes),
             EmptyNightVisionSettings()
         );
@@ -176,7 +177,11 @@ public sealed class MiningBarDetectorTests
     public void EmptyGridCannotShiftItsIdentityByAnEntireRow()
     {
         var previous = new MiningBarAnalysis(new MiningBarState[6], 0, 40) { HasAnchor = true, AnchorSlots = 1 };
-        var result = MiningBarDetector.Analyze(Load("empty-night-vision"), EmptyNightVisionSettings(), previous);
+        MiningBarAnalysis result = MiningBarDetector.Analyze(
+            Load("empty-night-vision"),
+            EmptyNightVisionSettings(),
+            previous
+        );
         Assert.All(result.Slots, state => Assert.Equal(MiningBarState.Unknown, state));
     }
 
@@ -200,19 +205,19 @@ public sealed class MiningBarDetectorTests
     [Fact]
     public void OutOfRangeRigOneCannotFallBackToAnotherRow()
     {
-        var source = Load(20);
-        var settings = CalibratedSettings() with { MotionMargin = .025 };
-        var first = MiningBarDetector.Analyze(source, settings);
+        CapturedPixelBuffer source = Load(20);
+        MiningDetectionSettings settings = CalibratedSettings() with { MotionMargin = .025 };
+        MiningBarAnalysis first = MiningBarDetector.Analyze(source, settings);
         Assert.Equal(MiningBarState.Present, first.Slots[0]);
-        var moved = new byte[source.Width * source.Height * 4];
+        byte[] moved = new byte[source.Width * source.Height * 4];
         source.BgraPixels.Span[..(source.Width * (source.Height - 40) * 4)].CopyTo(moved.AsSpan(source.Width * 40 * 4));
-        var result = MiningBarDetector.Analyze(
+        MiningBarAnalysis result = MiningBarDetector.Analyze(
             new CapturedPixelBuffer(source.Width, source.Height, moved),
             settings,
             first
         );
         Assert.All(result.Slots, state => Assert.Equal(MiningBarState.Unknown, state));
-        var returned = MiningBarDetector.Analyze(source, settings, result);
+        MiningBarAnalysis returned = MiningBarDetector.Analyze(source, settings, result);
         Assert.Equal(MiningBarState.Present, returned.Slots[0]);
     }
 
@@ -253,7 +258,7 @@ public sealed class MiningBarDetectorTests
         confirmation.Apply(Frame(20, true));
         Assert.Equal(MiningBarState.Present, confirmation.States[3]);
         Assert.Equal(MiningBarState.Unknown, confirmation.States[0]);
-        for (var i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             clock.Advance(.5);
             confirmation.Apply(Frame(20, true));
@@ -267,24 +272,24 @@ public sealed class MiningBarDetectorTests
     [Fact]
     public void RigOneCannotBecomeRigFourAfterAnUnreadableMovingFrame()
     {
-        var settings = CalibratedSettings();
-        var source = Load(20);
-        var first = MiningBarDetector.Analyze(source, settings);
+        MiningDetectionSettings settings = CalibratedSettings();
+        CapturedPixelBuffer source = Load(20);
+        MiningBarAnalysis first = MiningBarDetector.Analyze(source, settings);
         Assert.Equal(MiningBarState.Present, first.Slots[0]);
-        var obscured = MiningBarDetector.Analyze(
+        MiningBarAnalysis obscured = MiningBarDetector.Analyze(
             new CapturedPixelBuffer(source.Width, source.Height, new byte[source.Width * source.Height * 4]),
             settings,
             first
         );
         Assert.All(obscured.Slots, state => Assert.Equal(MiningBarState.Unknown, state));
         // Cockpit bounce places rig 1 near the old position of rig 4.
-        var moved = new byte[source.Width * source.Height * 4];
+        byte[] moved = new byte[source.Width * source.Height * 4];
         source.BgraPixels.Span[..(source.Width * (source.Height - 40) * 4)].CopyTo(moved.AsSpan(source.Width * 40 * 4));
         var image = new CapturedPixelBuffer(source.Width, source.Height, moved);
-        var result = MiningBarDetector.Analyze(image, settings, obscured);
+        MiningBarAnalysis result = MiningBarDetector.Analyze(image, settings, obscured);
         Assert.NotEqual(MiningBarState.Present, result.Slots[3]);
         Assert.Equal(MiningBarState.Present, result.Slots[0]);
-        for (var i = 0; i < 12; i++)
+        for (int i = 0; i < 12; i++)
         {
             result = MiningBarDetector.Analyze(image, settings, result);
             Assert.NotEqual(MiningBarState.Present, result.Slots[3]);
@@ -294,9 +299,9 @@ public sealed class MiningBarDetectorTests
     [Fact]
     public void MovementAndReturningRigOneDoNotRenumberRemainingRigs()
     {
-        var settings = CalibratedSettings();
+        MiningDetectionSettings settings = CalibratedSettings();
         MiningBarAnalysis? previous = null;
-        foreach (var (frame, count) in new[] { (20, 1), (40, 2), (60, 2), (100, 3) })
+        foreach ((int frame, int count) in new[] { (20, 1), (40, 2), (60, 2), (100, 3) })
         {
             previous = MiningBarDetector.Analyze(Load(frame), settings, previous);
             Assert.True(previous.HasAnchor);
@@ -307,20 +312,20 @@ public sealed class MiningBarDetectorTests
             Assert.All(previous.Slots.Skip(count), state => Assert.NotEqual(MiningBarState.Present, state));
         }
         // Remove only the colored bar pixels belonging to rig 1; leave its gray rim in place.
-        var source = Load(100);
-        var bytes = source.BgraPixels.ToArray();
-        for (var y = 0; y < source.Height; y++)
+        CapturedPixelBuffer source = Load(100);
+        byte[] bytes = source.BgraPixels.ToArray();
+        for (int y = 0; y < source.Height; y++)
         {
-            for (var x = 0; x < 222; x++)
+            for (int x = 0; x < 222; x++)
             {
                 if (MiningColorBarDetector.MatchesColor(source.GetPixel(x, y), new(0, 255, 0)))
                 {
-                    var p = (y * source.Width + x) * 4;
+                    int p = (y * source.Width + x) * 4;
                     bytes[p] = bytes[p + 1] = bytes[p + 2] = 20;
                 }
             }
         }
-        var afterReturn = MiningBarDetector.Analyze(
+        MiningBarAnalysis afterReturn = MiningBarDetector.Analyze(
             new CapturedPixelBuffer(source.Width, source.Height, bytes),
             settings,
             previous
@@ -329,7 +334,7 @@ public sealed class MiningBarDetectorTests
         Assert.Equal(MiningBarState.Present, afterReturn.Slots[1]);
         Assert.Equal(MiningBarState.Present, afterReturn.Slots[2]);
         Assert.All(afterReturn.Slots.Skip(3), state => Assert.NotEqual(MiningBarState.Present, state));
-        var returnedView = MiningBarDetector.Analyze(source, settings, afterReturn);
+        MiningBarAnalysis returnedView = MiningBarDetector.Analyze(source, settings, afterReturn);
         Assert.All(returnedView.Slots.Take(3), state => Assert.Equal(MiningBarState.Present, state));
     }
 
@@ -337,7 +342,7 @@ public sealed class MiningBarDetectorTests
     public void GreenSelectionRejectsOtherBrightHuesAndNeutralPixels()
     {
         foreach (
-            var color in new[]
+            FssRgbPixel color in new[]
             {
                 new FssRgbPixel(255, 0, 0),
                 new(0, 0, 255),
@@ -388,7 +393,7 @@ public sealed class MiningBarDetectorTests
                 new(250d / 400, 131d / 220),
             ],
         };
-        var result = MiningBarDetector.Analyze(Load("after-movement"), settings);
+        MiningBarAnalysis result = MiningBarDetector.Analyze(Load("after-movement"), settings);
         Assert.True(
             result.Slots[0] == MiningBarState.Present && result.Slots[1] == MiningBarState.Present,
             $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}"
@@ -407,24 +412,24 @@ public sealed class MiningBarDetectorTests
     {
         var settings = new MiningDetectionSettings { RotationDegrees = rotation };
         var geometry = new MiningHudGeometry(settings);
-        var pixels = new byte[96 * 96 * 4];
-        for (var y = 0; y < 96; y++)
+        byte[] pixels = new byte[96 * 96 * 4];
+        for (int y = 0; y < 96; y++)
         {
-            for (var x = 0; x < 96; x++)
+            for (int x = 0; x < 96; x++)
             {
-                var r = geometry.RingDistance(x - 48d, y - 48d, 1);
-                var color = (byte)(r >= 21 && r <= 24 ? 160 : 20);
+                double r = geometry.RingDistance(x - 48d, y - 48d, 1);
+                byte color = (byte)(r is >= 21 and <= 24 ? 160 : 20);
                 if (inverted)
                 {
                     color = (byte)(180 - color);
                 }
 
-                var p = (y * 96 + x) * 4;
+                int p = (y * 96 + x) * 4;
                 pixels[p] = pixels[p + 1] = pixels[p + 2] = color;
                 pixels[p + 3] = 255;
             }
         }
-        var result = MiningBarDetector.Analyze(
+        MiningBarAnalysis result = MiningBarDetector.Analyze(
             new CapturedPixelBuffer(96, 96, pixels),
             settings with
             {
@@ -465,24 +470,24 @@ public sealed class MiningBarDetectorTests
     [Fact]
     public void BrightBarCanBeRecognizedWithoutANeutralCircle()
     {
-        var source = Load(20);
-        var bytes = source.BgraPixels.ToArray();
-        for (var y = 0; y < source.Height; y++)
+        CapturedPixelBuffer source = Load(20);
+        byte[] bytes = source.BgraPixels.ToArray();
+        for (int y = 0; y < source.Height; y++)
         {
-            for (var x = 0; x < source.Width; x++)
+            for (int x = 0; x < source.Width; x++)
             {
                 if (MiningBarShape.ColoredBrightness(source.GetPixel(x, y)) >= 80)
                 {
                     continue;
                 }
 
-                var p = (y * source.Width + x) * 4;
+                int p = (y * source.Width + x) * 4;
                 bytes[p] = bytes[p + 1] = bytes[p + 2] = 0;
             }
         }
         var colored = new CapturedPixelBuffer(source.Width, source.Height, bytes);
-        var settings = CalibratedSettings();
-        var rim = MiningCircleMask.Locate(colored, 178, 94, 22, new MiningHudGeometry(settings));
+        MiningDetectionSettings settings = CalibratedSettings();
+        MiningCircleMask.Rim rim = MiningCircleMask.Locate(colored, 178, 94, 22, new MiningHudGeometry(settings));
         Assert.True(rim.Confidence < 8, $"Unexpected rim {rim}");
         Assert.Equal(MiningBarState.Present, MiningBarDetector.Analyze(colored, settings).Slots[0]);
     }
@@ -494,7 +499,7 @@ public sealed class MiningBarDetectorTests
         var model = new MiningDetectionViewModel(null, clock);
         var present = new MiningBarAnalysis(Enumerable.Repeat(MiningBarState.Present, 6).ToArray(), 0, 0);
         var absent = new MiningBarAnalysis(Enumerable.Repeat(MiningBarState.Absent, 6).ToArray(), 0, 0);
-        for (var i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++)
         {
             model.Apply(present);
         }
@@ -503,7 +508,7 @@ public sealed class MiningBarDetectorTests
         model.Apply(absent);
         Assert.Contains("1 …", model.SlotsText);
         Assert.DoesNotContain("BAR", model.SlotsText);
-        for (var i = 0; i < 6; i++)
+        for (int i = 0; i < 6; i++)
         {
             clock.Advance(.5);
             model.Apply(absent);
@@ -519,7 +524,7 @@ public sealed class MiningBarDetectorTests
     [InlineData(48.5, .7)]
     public void LiveObserverFrameDoesNotMistakeTheSecondRimForABar(double diameter, double aspect)
     {
-        var source = Load("live-observer");
+        CapturedPixelBuffer source = Load("live-observer");
         var settings = new MiningDetectionSettings
         {
             CircleWidth = diameter / 400,
@@ -537,7 +542,7 @@ public sealed class MiningBarDetectorTests
                 new(250d / 400, 131d / 220),
             ],
         };
-        var result = MiningBarDetector.Analyze(source, settings);
+        MiningBarAnalysis result = MiningBarDetector.Analyze(source, settings);
         Assert.True(
             result.Slots[0] != MiningBarState.Absent,
             $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}"
@@ -553,7 +558,7 @@ public sealed class MiningBarDetectorTests
     [InlineData(.75, -6, 0)]
     public void LatestDeploymentScreenshotRecognizesTheActiveSlot(double aspect, double rotation, double gap)
     {
-        var source = Load("reported-live");
+        CapturedPixelBuffer source = Load("reported-live");
         var settings = new MiningDetectionSettings
         {
             CircleWidth = 94d / 500,
@@ -570,7 +575,7 @@ public sealed class MiningBarDetectorTests
                 new(373d / 500, 176d / 286),
             ],
         };
-        var result = MiningBarDetector.Analyze(source, settings);
+        MiningBarAnalysis result = MiningBarDetector.Analyze(source, settings);
         Assert.True(
             result.Slots[0] == MiningBarState.Present,
             $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}"
@@ -585,11 +590,11 @@ public sealed class MiningBarDetectorTests
     [InlineData(-14, true)]
     public void ReportedHudRecognizesTheVisibleBar(double rotation, bool recolor)
     {
-        var source = Load("reported");
+        CapturedPixelBuffer source = Load("reported");
         if (recolor)
         {
-            var bytes = source.BgraPixels.ToArray();
-            for (var i = 0; i < bytes.Length; i += 4)
+            byte[] bytes = source.BgraPixels.ToArray();
+            for (int i = 0; i < bytes.Length; i += 4)
             {
                 (bytes[i + 1], bytes[i + 2]) = (bytes[i + 2], bytes[i + 1]);
             }
@@ -612,7 +617,7 @@ public sealed class MiningBarDetectorTests
                 new(399d / 506, 174d / 260),
             ],
         };
-        var result = MiningBarDetector.Analyze(source, settings);
+        MiningBarAnalysis result = MiningBarDetector.Analyze(source, settings);
         Assert.True(
             result.Slots[0] == MiningBarState.Present,
             $"{string.Join(',', result.Slots)}; scores {string.Join(',', result.BarScores)}"
@@ -628,11 +633,14 @@ public sealed class MiningBarDetectorTests
     [InlineData(100, 3)]
     public void RecordedBarsAreRecognizedDespiteMovement(int frame, int active)
     {
-        var source = Load(frame);
-        var settings = CalibratedSettings();
-        var result = MiningBarDetector.Analyze(source, settings);
-        var debug = string.Join(",", result.BarScores.Select(s => s.ToString("F3")));
-        for (var slot = 0; slot < 6; slot++)
+        CapturedPixelBuffer source = Load(frame);
+        MiningDetectionSettings settings = CalibratedSettings();
+        MiningBarAnalysis result = MiningBarDetector.Analyze(source, settings);
+        string debug = string.Join(
+            ",",
+            result.BarScores.Select(score => score.ToString("F3", CultureInfo.InvariantCulture))
+        );
+        for (int slot = 0; slot < 6; slot++)
         {
             if (slot < active)
             {
@@ -670,8 +678,8 @@ public sealed class MiningBarDetectorTests
     {
         static CapturedPixelBuffer Transform(CapturedPixelBuffer source, int mode)
         {
-            var bytes = source.BgraPixels.ToArray();
-            for (var i = 0; i < bytes.Length; i += 4)
+            byte[] bytes = source.BgraPixels.ToArray();
+            for (int i = 0; i < bytes.Length; i += 4)
             {
                 if (mode == 0)
                 {
@@ -683,7 +691,7 @@ public sealed class MiningBarDetectorTests
                 }
                 else if (mode is 4 or 5)
                 {
-                    var gray =
+                    byte gray =
                         mode == 4
                             ? Math.Max(bytes[i], Math.Max(bytes[i + 1], bytes[i + 2]))
                             : (byte)((bytes[i] + bytes[i + 1] + bytes[i + 2]) / 3);
@@ -691,7 +699,7 @@ public sealed class MiningBarDetectorTests
                 }
                 else
                 {
-                    for (var c = 0; c < 3; c++)
+                    for (int c = 0; c < 3; c++)
                     {
                         bytes[i + c] = mode == 2 ? (byte)(80 + bytes[i + c] * .5) : (byte)(255 - bytes[i + c]);
                     }
@@ -699,7 +707,7 @@ public sealed class MiningBarDetectorTests
             }
             return new(source.Width, source.Height, bytes);
         }
-        var settings = CalibratedSettings();
+        MiningDetectionSettings settings = CalibratedSettings();
         settings = settings with
         {
             BarColor = recolor switch
@@ -711,7 +719,7 @@ public sealed class MiningBarDetectorTests
                 _ => 0x00FF00u,
             },
         };
-        var result = MiningBarDetector.Analyze(Transform(Load(40), recolor), settings);
+        MiningBarAnalysis result = MiningBarDetector.Analyze(Transform(Load(40), recolor), settings);
         if (recolor >= 4)
         {
             Assert.All(result.Slots, state => Assert.NotEqual(MiningBarState.Present, state));
@@ -727,16 +735,16 @@ public sealed class MiningBarDetectorTests
     [Fact]
     public void TheSameCalibrationRecognizesADoubledViewport()
     {
-        var original = Load(20);
-        var bytes = new byte[original.Width * original.Height * 16];
-        var width = original.Width * 2;
-        var height = original.Height * 2;
-        for (var y = 0; y < height; y++)
+        CapturedPixelBuffer original = Load(20);
+        byte[] bytes = new byte[original.Width * original.Height * 16];
+        int width = original.Width * 2;
+        int height = original.Height * 2;
+        for (int y = 0; y < height; y++)
         {
-            for (var x = 0; x < width; x++)
+            for (int x = 0; x < width; x++)
             {
-                var p = original.GetPixel(x / 2, y / 2);
-                var offset = (y * width + x) * 4;
+                FssRgbPixel p = original.GetPixel(x / 2, y / 2);
+                int offset = (y * width + x) * 4;
                 bytes[offset] = p.Blue;
                 bytes[offset + 1] = p.Green;
                 bytes[offset + 2] = p.Red;
@@ -744,9 +752,9 @@ public sealed class MiningBarDetectorTests
             }
         }
 
-        var settings = CalibratedSettings();
-        var expected = MiningBarDetector.Analyze(original, settings);
-        var actual = MiningBarDetector.Analyze(new CapturedPixelBuffer(width, height, bytes), settings);
+        MiningDetectionSettings settings = CalibratedSettings();
+        MiningBarAnalysis expected = MiningBarDetector.Analyze(original, settings);
+        MiningBarAnalysis actual = MiningBarDetector.Analyze(new CapturedPixelBuffer(width, height, bytes), settings);
         Assert.Equal(expected.Slots, actual.Slots);
         Assert.Equal(MiningBarState.Present, actual.Slots[0]);
     }
@@ -756,27 +764,27 @@ public sealed class MiningBarDetectorTests
     [InlineData(20)]
     public void RotatedHudUsesTheCalibratedAngleForBars(double degrees)
     {
-        var source = Load(20);
-        var angle = degrees * Math.PI / 180;
-        var c = Math.Cos(angle);
-        var s = Math.Sin(angle);
-        var bytes = new byte[source.Width * source.Height * 4];
-        for (var y = 0; y < source.Height; y++)
+        CapturedPixelBuffer source = Load(20);
+        double angle = degrees * Math.PI / 180;
+        double c = Math.Cos(angle);
+        double s = Math.Sin(angle);
+        byte[] bytes = new byte[source.Width * source.Height * 4];
+        for (int y = 0; y < source.Height; y++)
         {
-            for (var x = 0; x < source.Width; x++)
+            for (int x = 0; x < source.Width; x++)
             {
-                var sx = (x - 200) * c + (y - 100) * s + 200;
-                var sy = -(x - 200) * s + (y - 100) * c + 100;
+                double sx = (x - 200) * c + (y - 100) * s + 200;
+                double sy = -(x - 200) * s + (y - 100) * c + 100;
                 if (sx < 0 || sy < 0 || sx >= source.Width - 1 || sy >= source.Height - 1)
                 {
                     continue;
                 }
 
-                var ix = (int)sx;
-                var iy = (int)sy;
-                var fx = sx - ix;
-                var fy = sy - iy;
-                for (var channel = 0; channel < 4; channel++)
+                int ix = (int)sx;
+                int iy = (int)sy;
+                double fx = sx - ix;
+                double fy = sy - iy;
+                for (int channel = 0; channel < 4; channel++)
                 {
                     double Sample(int px, int py) => source.BgraPixels.Span[(py * source.Width + px) * 4 + channel];
                     bytes[(y * source.Width + x) * 4 + channel] = (byte)
@@ -791,7 +799,7 @@ public sealed class MiningBarDetectorTests
         }
 
         var image = new CapturedPixelBuffer(source.Width, source.Height, bytes);
-        var settings = CalibratedSettings();
+        MiningDetectionSettings settings = CalibratedSettings();
         settings = settings with
         {
             RotationDegrees = MiningDetectionSettings.ReferenceRotationDegrees + degrees,
@@ -802,7 +810,7 @@ public sealed class MiningBarDetectorTests
                 ))
                 .ToArray(),
         };
-        var result = MiningBarDetector.Analyze(image, settings);
+        MiningBarAnalysis result = MiningBarDetector.Analyze(image, settings);
         Assert.Equal(MiningBarState.Present, result.Slots[0]);
         Assert.All(result.Slots.Skip(1), state => Assert.NotEqual(MiningBarState.Present, state));
     }
@@ -813,8 +821,8 @@ public sealed class MiningBarDetectorTests
     public void GuidesUseTheRequestedAbsoluteAngleAndOvalHeight(double degrees, double height)
     {
         var geometry = new MiningHudGeometry(new() { RotationDegrees = degrees, CircleAspectRatio = height });
-        var major = geometry.RingPoint(0, 22);
-        var minor = geometry.RingPoint(Math.PI / 2, 22);
+        Vector major = geometry.RingPoint(0, 22);
+        Vector minor = geometry.RingPoint(Math.PI / 2, 22);
         Assert.Equal(22, major.Length, 6);
         Assert.Equal(22 * height, minor.Length, 6);
         Assert.Equal(degrees, Math.Atan2(major.Y, major.X) * 180 / Math.PI, 6);
@@ -843,7 +851,7 @@ public sealed class MiningBarDetectorTests
     [InlineData(140)] // Looking away from the HUD.
     public void UnreadableOrOutOfRangeHudIsUnknown(int frame)
     {
-        var settings = CalibratedSettings();
+        MiningDetectionSettings settings = CalibratedSettings();
         Assert.All(
             MiningBarDetector.Analyze(Load(frame), settings).Slots,
             state => Assert.Equal(MiningBarState.Unknown, state)
@@ -864,7 +872,7 @@ public sealed class MiningBarDetectorTests
         confirm.Apply(present);
         Assert.All(confirm.States, state => Assert.Equal(MiningBarState.Present, state));
         confirm.Apply(absent);
-        for (var i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             clock.Advance(.5);
             confirm.Apply(absent);
@@ -873,7 +881,7 @@ public sealed class MiningBarDetectorTests
         confirm.Apply(MiningBarAnalysis.Unknown());
         clock.Advance(.5);
         confirm.Apply(absent);
-        for (var i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             clock.Advance(.5);
             confirm.Apply(absent);
@@ -903,14 +911,19 @@ public sealed class MiningBarDetectorTests
     [Fact]
     public void CalibrationPersistencePreservesColorAndOtherMiningPreferences()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-calibration-{Guid.NewGuid():N}.json");
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-calibration-{Guid.NewGuid():N}.json");
         try
         {
             var store = new SurfaceMiningSettingsStore(path);
             store.SaveAutoClearRigsOnShipBoarding(false);
-            var expected = CalibratedSettings() with { Enabled = true, BarGap = .3, BarColor = 0xFF00FF };
+            MiningDetectionSettings expected = CalibratedSettings() with
+            {
+                Enabled = true,
+                BarGap = .3,
+                BarColor = 0xFF00FF,
+            };
             store.SaveDetection(expected);
-            var restored = store.LoadDetection();
+            MiningDetectionSettings restored = store.LoadDetection();
             Assert.True(restored.Enabled);
             Assert.True(restored.HasSameCalibration(expected));
             Assert.False(store.LoadAutoClearRigsOnShipBoarding());
@@ -927,12 +940,12 @@ public sealed class MiningBarDetectorTests
     {
         var settings = new MiningDetectionSettings();
         var viewport = new PixelRect(0, 0, 1920, 1080);
-        var before = settings.GetBounds(viewport);
+        PixelRect before = settings.GetBounds(viewport);
         var after = new PixelRect(before.Position, new PixelSize(before.Width + 150, before.Height + 100));
-        var resized = settings.WithBounds(after, viewport);
+        MiningDetectionSettings resized = settings.WithBounds(after, viewport);
         Assert.Equal(settings.CircleWidth * before.Width, resized.CircleWidth * after.Width, 6);
         Assert.Equal(settings.MotionMargin * before.Width, resized.MotionMargin * after.Width, 6);
-        for (var i = 0; i < 6; i++)
+        for (int i = 0; i < 6; i++)
         {
             Assert.Equal(settings.Markers[i].X * before.Width, resized.Markers[i].X * after.Width, 6);
             Assert.Equal(settings.Markers[i].Y * before.Height, resized.Markers[i].Y * after.Height, 6);
@@ -966,13 +979,13 @@ public sealed class MiningBarDetectorTests
 
     private static CapturedPixelBuffer Load(string frame)
     {
-        using var stream = File.OpenRead(
+        using FileStream stream = File.OpenRead(
             Path.Combine(AppContext.BaseDirectory, "Fixtures", "MiningHud", $"{frame}.bgra.gz")
         );
         using var zip = new GZipStream(stream, CompressionMode.Decompress);
         using var reader = new BinaryReader(zip);
-        var width = reader.ReadInt32();
-        var height = reader.ReadInt32();
+        int width = reader.ReadInt32();
+        int height = reader.ReadInt32();
         return new(width, height, reader.ReadBytes(width * height * 4));
     }
 }

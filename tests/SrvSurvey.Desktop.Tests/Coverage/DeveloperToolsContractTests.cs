@@ -7,19 +7,19 @@ public sealed class DeveloperToolsContractTests
     [Fact]
     public void DebugBuildsIncludeAvaloniaDeveloperToolsSupport()
     {
-        var repositoryRoot = FindRepositoryRoot();
+        string repositoryRoot = FindRepositoryRoot();
         var project = XDocument.Load(
             Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "SrvSurvey.Desktop.csproj")
         );
-        var diagnosticsPackage = project
+        XElement diagnosticsPackage = project
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "PackageReference"
                 && element.Attribute("Include")?.Value == "AvaloniaUI.DiagnosticsSupport"
             );
-        var itemGroup =
+        XElement itemGroup =
             diagnosticsPackage.Parent ?? throw new InvalidDataException("Developer Tools package group is missing.");
-        var app = File.ReadAllText(Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "App.axaml.cs"));
+        string app = File.ReadAllText(Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "App.axaml.cs"));
 
         Assert.Equal("2.2.3", diagnosticsPackage.Attribute("Version")?.Value);
         Assert.Equal("'$(Configuration)' == 'Debug'", itemGroup.Attribute("Condition")?.Value);

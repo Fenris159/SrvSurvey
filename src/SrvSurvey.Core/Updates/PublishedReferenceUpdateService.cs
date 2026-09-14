@@ -115,11 +115,11 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var root = Path.GetFullPath(dataDirectory);
+        string root = Path.GetFullPath(dataDirectory);
         Directory.CreateDirectory(root);
-        var previous = versionStore.Load(root);
-        var remote = await indexClient.GetAsync(cancellationToken).ConfigureAwait(false);
-        var plan = EvaluateUpdatePlan(root, previous, remote);
+        PublishedReferenceVersions previous = versionStore.Load(root);
+        PublishedDataIndex remote = await indexClient.GetAsync(cancellationToken).ConfigureAwait(false);
+        UpdatePlan plan = EvaluateUpdatePlan(root, previous, remote);
         if (!plan.HasAnyUpdate)
         {
             return new PublishedReferenceUpdateResult(previous, previous, [], plan.Warnings, null);
@@ -136,10 +136,10 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         CancellationToken cancellationToken
     )
     {
-        var operationId = Guid.NewGuid().ToString("N");
-        var stageRoot = Path.Combine(root, $".reference-update-{operationId}");
-        var rollbackRoot = Path.Combine(root, $".reference-rollback-{operationId}");
-        var backupRoot = Path.Combine(
+        string operationId = Guid.NewGuid().ToString("N");
+        string stageRoot = Path.Combine(root, $".reference-update-{operationId}");
+        string rollbackRoot = Path.Combine(root, $".reference-rollback-{operationId}");
+        string backupRoot = Path.Combine(
             root,
             "reference-backups",
             $"{timeProvider.GetUtcNow():yyyyMMddTHHmmssZ}-{operationId}"
@@ -148,12 +148,12 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         EnsureChild(root, rollbackRoot);
         EnsureChild(root, backupRoot);
         Directory.CreateDirectory(stageRoot);
-        var activationCompleted = false;
+        bool activationCompleted = false;
         var updated = new List<string>();
 
         try
         {
-            var next = await StageAndActivateAsync(
+            PublishedReferenceVersions next = await StageAndActivateAsync(
                     new StageAndActivateRequest
                     {
                         Root = root,
@@ -201,14 +201,14 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
     )
     {
         await CopyCurrentReferencesAsync(request.Root, request.StageRoot, cancellationToken).ConfigureAwait(false);
-        var stagePublished = await StageCatalogUpdatesAsync(
+        string stagePublished = await StageCatalogUpdatesAsync(
                 request.Plan,
                 request.StageRoot,
                 request.Updated,
                 cancellationToken
             )
             .ConfigureAwait(false);
-        var next = BuildNextVersions(request.Previous, request.Remote, request.Plan);
+        PublishedReferenceVersions next = BuildNextVersions(request.Previous, request.Remote, request.Plan);
         await versionStore.WriteAsync(stagePublished, next, cancellationToken).ConfigureAwait(false);
         ValidateCandidate(request.StageRoot, request.Updated);
         await CopyCurrentReferencesAsync(request.Root, request.BackupRoot, cancellationToken).ConfigureAwait(false);
@@ -245,7 +245,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
             updated.Add("regional Codex candidates");
         }
 
-        var stagePublished = Path.Combine(stageRoot, "pub");
+        string stagePublished = Path.Combine(stageRoot, "pub");
         Directory.CreateDirectory(stagePublished);
         await StagePublishedCatalogsAsync(plan, stageRoot, stagePublished, updated, cancellationToken)
             .ConfigureAwait(false);
@@ -254,8 +254,8 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
 
     private async Task StageRegionalCodexCandidatesAsync(string stageRoot, CancellationToken cancellationToken)
     {
-        var bytes = await DownloadAsync(uris.RegionalCodexCandidatesCsv, cancellationToken).ConfigureAwait(false);
-        var references = LegacyReferenceCatalogLoader.Load(stageRoot).Exobiology;
+        byte[] bytes = await DownloadAsync(uris.RegionalCodexCandidatesCsv, cancellationToken).ConfigureAwait(false);
+        ExobiologyReferenceCatalog references = LegacyReferenceCatalogLoader.Load(stageRoot).Exobiology;
         var regional = RegionalCodexCandidateCatalog.ParsePublishedCsv(bytes, references);
         await File.WriteAllTextAsync(
                 Path.Combine(stageRoot, RegionalCodexCandidateCatalog.LegacyFileName),
@@ -337,8 +337,8 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         CancellationToken cancellationToken
     )
     {
-        var bytes = await DownloadAsync(uris.BiologyCriteriaArchive, cancellationToken).ConfigureAwait(false);
-        var destination = Path.Combine(stagePublished, "bio-criteria");
+        byte[] bytes = await DownloadAsync(uris.BiologyCriteriaArchive, cancellationToken).ConfigureAwait(false);
+        string destination = Path.Combine(stagePublished, "bio-criteria");
         RecreateDirectory(stageRoot, destination);
         ExtractArchive(bytes, destination, ".json");
         await File.WriteAllBytesAsync(Path.Combine(stagePublished, "bio-criteria.zip"), bytes, cancellationToken)
@@ -355,7 +355,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
                 cancellationToken
             )
             .ConfigureAwait(false);
-        var bytes = await DownloadAsync(uris.GuardianSurveyArchive, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await DownloadAsync(uris.GuardianSurveyArchive, cancellationToken).ConfigureAwait(false);
         _ = ValidateArchive(bytes, ".json");
         await File.WriteAllBytesAsync(Path.Combine(stagePublished, "guardian.zip"), bytes, cancellationToken)
             .ConfigureAwait(false);
@@ -367,8 +367,8 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         CancellationToken cancellationToken
     )
     {
-        var bytes = await DownloadAsync(uris.HumanSettlementsArchive, cancellationToken).ConfigureAwait(false);
-        var destination = Path.Combine(stagePublished, "settlements");
+        byte[] bytes = await DownloadAsync(uris.HumanSettlementsArchive, cancellationToken).ConfigureAwait(false);
+        string destination = Path.Combine(stagePublished, "settlements");
         RecreateDirectory(stageRoot, destination);
         ExtractArchive(bytes, destination, ".json", ".png");
         await File.WriteAllBytesAsync(Path.Combine(stagePublished, "settlements.zip"), bytes, cancellationToken)
@@ -377,8 +377,8 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
 
     private async Task StageNicknamesAsync(string stagePublished, CancellationToken cancellationToken)
     {
-        var bytes = await DownloadAsync(uris.RavenNicknames, cancellationToken).ConfigureAwait(false);
-        var nicknameMap = ParseNicknameMap(bytes);
+        byte[] bytes = await DownloadAsync(uris.RavenNicknames, cancellationToken).ConfigureAwait(false);
+        SortedDictionary<string, string> nicknameMap = ParseNicknameMap(bytes);
         await File.WriteAllTextAsync(
                 Path.Combine(stagePublished, "nicknames.json"),
                 JsonSerializer.Serialize(nicknameMap, IndentedJson),
@@ -448,7 +448,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         CancellationToken cancellationToken
     )
     {
-        var paths = CreateActivationPaths(root, stageRoot, rollbackRoot);
+        ActivationPaths paths = CreateActivationPaths(root, stageRoot, rollbackRoot);
         Directory.CreateDirectory(rollbackRoot);
         var moved = new ActivationMoveState();
         try
@@ -630,7 +630,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
             .Load(root)
             .Sources.ToDictionary(source => source.Catalog, StringComparer.Ordinal);
         var warnings = new List<string>();
-        var updateCodex = NeedsUpdate(
+        bool updateCodex = NeedsUpdate(
             previous.CodexReference,
             remote.CodexReferenceVersion,
             sources["Codex reference"]
@@ -673,7 +673,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         List<string> warnings
     )
     {
-        var updateBiology = NeedsUpdate(
+        bool updateBiology = NeedsUpdate(
             previous.BiologyCriteria,
             remote.BiologyCriteriaVersion,
             sources["biology criteria"]
@@ -721,19 +721,19 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         DateTimeOffset now
     )
     {
-        var path = Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName);
+        string path = Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName);
         if (!catalog.HasData || catalog.Warnings.Count > 0 || !File.Exists(path))
         {
             return true;
         }
 
-        var lastWrite = File.GetLastWriteTimeUtc(path);
+        DateTime lastWrite = File.GetLastWriteTimeUtc(path);
         return lastWrite > now.UtcDateTime.AddMinutes(5) || now.UtcDateTime - lastWrite >= TimeSpan.FromDays(7);
     }
 
     private static void ValidateCandidate(string candidateRoot, IReadOnlyCollection<string> updated)
     {
-        var result = LegacyReferenceCatalogLoader.Load(candidateRoot);
+        LegacyReferenceCatalogLoadResult result = LegacyReferenceCatalogLoader.Load(candidateRoot);
         var expectedSources = updated
             .SelectMany(name =>
                 name switch
@@ -743,7 +743,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
                 }
             )
             .ToHashSet(StringComparer.Ordinal);
-        foreach (var catalogName in expectedSources)
+        foreach (string? catalogName in expectedSources)
         {
             if (TryValidateSpecialCatalog(candidateRoot, catalogName))
             {
@@ -804,7 +804,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
 
     private static void ValidateLocalCatalogSource(LegacyReferenceCatalogLoadResult result, string catalogName)
     {
-        var source = result.Sources.Single(candidate =>
+        ReferenceCatalogSource source = result.Sources.Single(candidate =>
             string.Equals(candidate.Catalog, catalogName, StringComparison.Ordinal)
         );
         if (!source.IsLocal)
@@ -815,7 +815,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
 
     private async Task WriteDownloadAsync(Uri uri, string path, CancellationToken cancellationToken)
     {
-        var bytes = await DownloadAsync(uri, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await DownloadAsync(uri, cancellationToken).ConfigureAwait(false);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
     }
@@ -831,21 +831,21 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
             }
 
             var result = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var row in document.RootElement.EnumerateArray())
+            foreach (JsonElement row in document.RootElement.EnumerateArray())
             {
                 if (
                     row.ValueKind != JsonValueKind.Object
-                    || !row.TryGetProperty("name", out var nameValue)
+                    || !row.TryGetProperty("name", out JsonElement nameValue)
                     || nameValue.ValueKind != JsonValueKind.String
-                    || !row.TryGetProperty("nickname", out var nicknameValue)
+                    || !row.TryGetProperty("nickname", out JsonElement nicknameValue)
                     || nicknameValue.ValueKind != JsonValueKind.String
                 )
                 {
                     throw new InvalidDataException("The Raven nickname response contains an invalid row.");
                 }
 
-                var name = nameValue.GetString()?.Trim();
-                var nickname = nicknameValue.GetString()?.Trim();
+                string? name = nameValue.GetString()?.Trim();
+                string? nickname = nicknameValue.GetString()?.Trim();
                 if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(nickname))
                 {
                     throw new InvalidDataException("The Raven nickname response contains a blank name or nickname.");
@@ -870,7 +870,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
     private async Task<byte[]> DownloadAsync(Uri uri, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
-        using var response = await client
+        using HttpResponseMessage response = await client
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -881,9 +881,9 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
             );
         }
 
-        await using var input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         await using var output = new MemoryStream();
-        var buffer = new byte[64 * 1024];
+        byte[] buffer = new byte[64 * 1024];
         int read;
         while ((read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
         {
@@ -916,14 +916,22 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
 
         var result = new List<ArchiveEntryPayload>();
         long expandedLength = 0;
-        foreach (var entry in archive.Entries)
+        foreach (ZipArchiveEntry entry in archive.Entries)
         {
             if (string.IsNullOrEmpty(entry.Name))
             {
                 continue;
             }
 
-            if (TryReadArchiveEntry(entry, allowedExtensions, out var normalized, out var payload, out var warning))
+            if (
+                TryReadArchiveEntry(
+                    entry,
+                    allowedExtensions,
+                    out string? normalized,
+                    out byte[]? payload,
+                    out string? warning
+                )
+            )
             {
                 expandedLength += payload!.Length;
                 if (expandedLength > MaximumExpandedArchiveBytes)
@@ -961,7 +969,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         payload = null;
         warning = null;
 
-        var path = entry.FullName.Replace('\\', '/');
+        string path = entry.FullName.Replace('\\', '/');
         if (Path.IsPathRooted(path) || path.Split('/').Any(segment => segment is "" or "." or ".."))
         {
             warning = $"The published reference archive has an unsafe path: {entry.FullName}";
@@ -979,7 +987,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
             return false;
         }
 
-        using var entryStream = entry.Open();
+        using Stream entryStream = entry.Open();
         using var buffer = new MemoryStream();
         entryStream.CopyTo(buffer);
         if (buffer.Length != entry.Length)
@@ -995,11 +1003,11 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
 
     private static void ExtractArchive(byte[] bytes, string destination, params string[] allowedExtensions)
     {
-        var root = Path.GetFullPath(destination);
+        string root = Path.GetFullPath(destination);
         Directory.CreateDirectory(root);
-        foreach (var entry in ValidateArchive(bytes, allowedExtensions))
+        foreach (ArchiveEntryPayload entry in ValidateArchive(bytes, allowedExtensions))
         {
-            var path = Path.GetFullPath(
+            string path = Path.GetFullPath(
                 Path.Combine(root, entry.RelativePath.Replace('/', Path.DirectorySeparatorChar))
             );
             EnsureChild(root, path);
@@ -1015,7 +1023,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
     )
     {
         Directory.CreateDirectory(destinationRoot);
-        var sourceCodex = Path.Combine(sourceRoot, CodexReferenceFileName);
+        string sourceCodex = Path.Combine(sourceRoot, CodexReferenceFileName);
         if (File.Exists(sourceCodex))
         {
             await CopyFileVerifiedAsync(
@@ -1026,7 +1034,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
                 .ConfigureAwait(false);
         }
 
-        var sourceRegionalCodex = Path.Combine(sourceRoot, RegionalCodexCandidateCatalog.LegacyFileName);
+        string sourceRegionalCodex = Path.Combine(sourceRoot, RegionalCodexCandidateCatalog.LegacyFileName);
         if (File.Exists(sourceRegionalCodex))
         {
             await CopyFileVerifiedAsync(
@@ -1037,7 +1045,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
                 .ConfigureAwait(false);
         }
 
-        var sourcePublished = Path.Combine(sourceRoot, "pub");
+        string sourcePublished = Path.Combine(sourceRoot, "pub");
         if (Directory.Exists(sourcePublished))
         {
             await CopyDirectoryVerifiedAsync(sourcePublished, Path.Combine(destinationRoot, "pub"), cancellationToken)
@@ -1051,7 +1059,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         CancellationToken cancellationToken
     )
     {
-        var sourceRoot = Path.GetFullPath(source);
+        string sourceRoot = Path.GetFullPath(source);
         if ((new DirectoryInfo(sourceRoot).Attributes & FileAttributes.ReparsePoint) != 0)
         {
             throw new InvalidDataException(
@@ -1060,7 +1068,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
         }
 
         Directory.CreateDirectory(destination);
-        foreach (var directory in Directory.EnumerateDirectories(sourceRoot, "*", SearchOption.AllDirectories))
+        foreach (string directory in Directory.EnumerateDirectories(sourceRoot, "*", SearchOption.AllDirectories))
         {
             if ((new DirectoryInfo(directory).Attributes & FileAttributes.ReparsePoint) != 0)
             {
@@ -1072,7 +1080,7 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
             Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(sourceRoot, directory)));
         }
 
-        foreach (var file in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories))
         {
             if ((new FileInfo(file).Attributes & FileAttributes.ReparsePoint) != 0)
             {
@@ -1096,8 +1104,8 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
     {
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         File.Copy(source, destination, overwrite: false);
-        var sourceHash = await ComputeHashAsync(source, cancellationToken).ConfigureAwait(false);
-        var destinationHash = await ComputeHashAsync(destination, cancellationToken).ConfigureAwait(false);
+        byte[] sourceHash = await ComputeHashAsync(source, cancellationToken).ConfigureAwait(false);
+        byte[] destinationHash = await ComputeHashAsync(destination, cancellationToken).ConfigureAwait(false);
         if (!CryptographicOperations.FixedTimeEquals(sourceHash, destinationHash))
         {
             throw new InvalidDataException($"Published reference backup verification failed: {source}");
@@ -1139,12 +1147,14 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
 
     private static void EnsureChild(string root, string path)
     {
-        var resolvedRoot = Path.GetFullPath(root);
-        var resolvedPath = Path.GetFullPath(path);
-        var prefix = Path.EndsInDirectorySeparator(resolvedRoot)
+        string resolvedRoot = Path.GetFullPath(root);
+        string resolvedPath = Path.GetFullPath(path);
+        string prefix = Path.EndsInDirectorySeparator(resolvedRoot)
             ? resolvedRoot
             : resolvedRoot + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         if (!resolvedPath.StartsWith(prefix, comparison))
         {
             throw new InvalidDataException($"Published reference path escapes its operation root: {path}");

@@ -31,9 +31,9 @@ public static class GuardianBubbleLocator
 
     private static double Distance(GalacticCoordinate first, GalacticCoordinate second)
     {
-        var x = first.X - second.X;
-        var y = first.Y - second.Y;
-        var z = first.Z - second.Z;
+        double x = first.X - second.X;
+        double y = first.Y - second.Y;
+        double z = first.Z - second.Z;
         return Math.Sqrt((x * x) + (y * y) + (z * z));
     }
 }

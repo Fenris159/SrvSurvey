@@ -36,14 +36,14 @@ public sealed class JournalSettingsStore
 
     private static string? GetString(JsonObject? settings, string propertyName)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<string>(out var result)
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result)
             ? Normalize(result)
             : null;
     }
 
     private static string? Normalize(string? path)
     {
-        var normalized = path?.Trim().Trim('"');
+        string? normalized = path?.Trim().Trim('"');
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 }

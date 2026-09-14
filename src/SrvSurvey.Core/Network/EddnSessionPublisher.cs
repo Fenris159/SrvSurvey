@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Network;
 
@@ -34,9 +35,9 @@ internal sealed class EddnSessionPublisher : IDisposable
         "SAASignalsFound",
     };
 
-    private readonly object sync = new();
-    private readonly object companionTasksSync = new();
-    private readonly object enqueueSync = new();
+    private readonly Lock sync = new();
+    private readonly Lock companionTasksSync = new();
+    private readonly Lock enqueueSync = new();
     private readonly IEddnSessionSink sink;
     private readonly UploadPayloadHeader header;
     private readonly string? journalDirectory;
@@ -94,7 +95,7 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     internal void SetEnabled(bool enabled)
     {
-        var cancelCompanionReads = false;
+        bool cancelCompanionReads = false;
         lock (sync)
         {
             if (disposed || sharingEnabled == enabled)
@@ -119,7 +120,7 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     internal void SetSuspended(bool suspended)
     {
-        var cancelCompanionReads = false;
+        bool cancelCompanionReads = false;
         lock (sync)
         {
             if (disposed || publishingSuspended == suspended)
@@ -161,7 +162,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             );
         }
 
-        foreach (var journalEvent in request.JournalEvents)
+        foreach (JournalEventEnvelope journalEvent in request.JournalEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
             JObject raw;
@@ -267,7 +268,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             return false;
         }
 
-        var captured = CaptureEventState(eventName, raw, request);
+        CapturedEventState? captured = CaptureEventState(eventName, raw, request);
         if (captured is null)
         {
             return false;
@@ -286,7 +287,7 @@ internal sealed class EddnSessionPublisher : IDisposable
 
         if (
             captured.SuppressForCrew
-            || !CanPublishNow(request.AllowPublishing, captured.SessionGeneration, out var ingestionGeneration)
+            || !CanPublishNow(request.AllowPublishing, captured.SessionGeneration, out long ingestionGeneration)
         )
         {
             return true;
@@ -312,7 +313,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             return true;
         }
 
-        var eventCommander = raw.Value<string>("Commander");
+        string? eventCommander = raw.Value<string>("Commander");
         if (
             string.IsNullOrWhiteSpace(eventCommander)
             || eventCommander.Equals(header.uploaderID, StringComparison.OrdinalIgnoreCase)
@@ -337,8 +338,8 @@ internal sealed class EddnSessionPublisher : IDisposable
                 return null;
             }
 
-            var signalBatch = eventName == "FSSSignalDiscovered" ? null : TakeSignalBatchLocked();
-            var eventLocation = EddnMessageSanitizer.getLocation(raw);
+            SignalBatch? signalBatch = eventName == "FSSSignalDiscovered" ? null : TakeSignalBatchLocked();
+            EddnLocationContext? eventLocation = EddnMessageSanitizer.getLocation(raw);
             if (eventLocation is not null)
             {
                 location = eventLocation;
@@ -373,7 +374,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             return true;
         }
 
-        var directory = string.IsNullOrWhiteSpace(request.JournalDirectory)
+        string? directory = string.IsNullOrWhiteSpace(request.JournalDirectory)
             ? journalDirectory
             : request.JournalDirectory;
         if (string.IsNullOrWhiteSpace(directory))
@@ -403,7 +404,14 @@ internal sealed class EddnSessionPublisher : IDisposable
         List<string> warnings
     )
     {
-        if (!EddnMessageSanitizer.tryBuildJournal(raw, captured.Context, out var prepared, out var reason))
+        if (
+            !EddnMessageSanitizer.tryBuildJournal(
+                raw,
+                captured.Context,
+                out EddnPreparedMessage? prepared,
+                out string? reason
+            )
+        )
         {
             warnings.Add($"EDDN skipped {eventName}: {reason}.");
             return;
@@ -432,7 +440,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         long currentSessionGeneration
     )
     {
-        if (!CanPublishNow(allowPublishing, currentSessionGeneration, out var ingestionGeneration))
+        if (!CanPublishNow(allowPublishing, currentSessionGeneration, out long ingestionGeneration))
         {
             ClearSignals();
             return;
@@ -484,14 +492,14 @@ internal sealed class EddnSessionPublisher : IDisposable
                 batch.Context.Location,
                 batch.Context.Horizons,
                 batch.Context.Odyssey,
-                out var prepared,
-                out var reason
+                out EddnPreparedMessage? prepared,
+                out string? reason
             )
         )
         {
             if (reason != "no public signals remained after filtering")
             {
-                var warning = "EDDN skipped FSSSignalDiscovered batch: " + reason;
+                string warning = "EDDN skipped FSSSignalDiscovered batch: " + reason;
                 warnings?.Add(warning);
                 if (warnings is null)
                 {
@@ -582,7 +590,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             }
 
             var cancellation = CancellationTokenSource.CreateLinkedTokenSource(disposal.Token, companionActivity.Token);
-            var task = ProcessCompanionFileWithCancellationAsync(candidate, cancellation);
+            Task task = ProcessCompanionFileWithCancellationAsync(candidate, cancellation);
             companionTasks.Add(task);
             _ = task.ContinueWith(
                 CompleteCompanionTask,
@@ -643,10 +651,14 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     private async Task ProcessCompanionFileAsync(CompanionCandidate candidate, CancellationToken cancellationToken)
     {
-        var eventName = candidate.JournalEvent.Value<string>(EventProperty) ?? "companion file";
+        string eventName = candidate.JournalEvent.Value<string>(EventProperty) ?? "companion file";
         try
         {
-            var read = await companionReader(candidate.JournalDirectory, candidate.JournalEvent, cancellationToken)
+            EddnCompanionReadResult read = await companionReader(
+                    candidate.JournalDirectory,
+                    candidate.JournalEvent,
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
             if (!CanUseCompanionRead(read, candidate.SessionGeneration, eventName, cancellationToken))
             {
@@ -657,8 +669,8 @@ internal sealed class EddnSessionPublisher : IDisposable
                 !EddnMessageSanitizer.tryBuildCompanion(
                     read.content!,
                     candidate.Context,
-                    out var prepared,
-                    out var reason
+                    out EddnPreparedMessage? prepared,
+                    out string? reason
                 )
             )
             {
@@ -705,13 +717,13 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     private void QueueCompanionMessage(EddnPreparedMessage prepared, CompanionCandidate candidate, string eventName)
     {
-        var signature = GetCompanionSignature(prepared);
+        (string Key, string Value)? signature = GetCompanionSignature(prepared);
         if (signature is not null && !ReserveSignature(signature.Value))
         {
             return;
         }
 
-        var queued = TryEnqueue(
+        bool queued = TryEnqueue(
             prepared,
             candidate.SessionGeneration,
             candidate.IngestionGeneration,
@@ -745,7 +757,7 @@ internal sealed class EddnSessionPublisher : IDisposable
             return null;
         }
 
-        var marketId = prepared.message.Value<long?>("marketId") ?? prepared.message.Value<long?>("MarketID") ?? 0;
+        long marketId = prepared.message.Value<long?>("marketId") ?? prepared.message.Value<long?>("MarketID") ?? 0;
         var comparable = new JObject(prepared.message);
         comparable.Remove("timestamp");
         return (prepared.schemaRef + ":" + marketId, comparable.ToString(Formatting.None));
@@ -870,7 +882,7 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     private void UpdateBodyContextLocked(JObject raw)
     {
-        var eventName = raw.Value<string>(EventProperty);
+        string? eventName = raw.Value<string>(EventProperty);
         if (eventName is "FSDJump" or "CarrierJump" or "StartJump")
         {
             ClearTrackedBodyLocked();
@@ -879,8 +891,8 @@ internal sealed class EddnSessionPublisher : IDisposable
 
         if (eventName is "ApproachBody" or "SupercruiseExit" or "Location")
         {
-            var bodyName = raw.Value<string>("BodyName") ?? raw.Value<string>("Body");
-            var bodyId = raw.Value<int?>("BodyID");
+            string? bodyName = raw.Value<string>("BodyName") ?? raw.Value<string>("Body");
+            int? bodyId = raw.Value<int?>("BodyID");
             if (!string.IsNullOrWhiteSpace(bodyName) && bodyId is >= 0)
             {
                 trackedBodyName = bodyName;

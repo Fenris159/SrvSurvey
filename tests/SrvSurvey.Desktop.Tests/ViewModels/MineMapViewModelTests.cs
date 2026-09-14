@@ -42,7 +42,7 @@ public sealed class MineMapViewModelTests
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
             _ => { }
         );
-        var row = Assert.Single(viewModel.FilteredSurveys);
+        MineMapSurveyRowViewModel row = Assert.Single(viewModel.FilteredSurveys);
 
         Assert.True(viewModel.SelectSurvey(row.Id));
 
@@ -230,14 +230,14 @@ public sealed class MineMapViewModelTests
     public void HotspotSelectionsPersistAndBuildCompactMiningReferenceRows()
     {
         using var directory = new TemporaryDirectory();
-        var settingsPath = Path.Combine(directory.Path, "ui-settings.json");
+        string settingsPath = Path.Combine(directory.Path, "ui-settings.json");
         using (var viewModel = new MineMapViewModel(directory.Path, new MineMapSettingsStore(settingsPath), _ => { }))
         {
-            var gold = Assert.Single(viewModel.HotspotRows, row => row.Name == "Gold");
+            SurfaceMiningCommodityRowViewModel gold = Assert.Single(viewModel.HotspotRows, row => row.Name == "Gold");
             gold.IsInOverlay = true;
 
             Assert.True(viewModel.ShouldShowMiningReference);
-            var reference = Assert.Single(viewModel.MiningReferenceRows);
+            SurfaceMiningCommodityRowViewModel reference = Assert.Single(viewModel.MiningReferenceRows);
             Assert.Equal("HMC, MR, Rocky", reference.BodyTypes);
             Assert.Equal("48,005 CR/t", reference.AverageSellPrice);
         }
@@ -251,7 +251,7 @@ public sealed class MineMapViewModelTests
     public void LegacyShortCommoditySelectionRestoresAgainstCanonicalName()
     {
         using var directory = new TemporaryDirectory();
-        var settingsPath = Path.Combine(directory.Path, "ui-settings.json");
+        string settingsPath = Path.Combine(directory.Path, "ui-settings.json");
         var settings = new MineMapSettingsStore(settingsPath);
         settings.Save(new MineMapPreferences(false, ["Low Temp Diamonds"]));
 
@@ -264,7 +264,7 @@ public sealed class MineMapViewModelTests
     public void InstructionsGuideLinkUsesTheApplicationNavigationCallback()
     {
         using var directory = new TemporaryDirectory();
-        var launches = 0;
+        int launches = 0;
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
@@ -343,7 +343,7 @@ public sealed class MineMapViewModelTests
         Assert.True(
             JournalEventEnvelope.TryParse(
                 """{"event":"SendText","Message":".mining 120 6.44 4"}""",
-                out var command,
+                out JournalEventEnvelope? command,
                 out _
             )
         );
@@ -552,7 +552,7 @@ public sealed class MineMapViewModelTests
         Assert.True(
             JournalEventEnvelope.TryParse(
                 """{"event":"SendText","Message":".mining 120 6.44 4"}""",
-                out var command,
+                out JournalEventEnvelope? command,
                 out _
             )
         );
@@ -659,7 +659,7 @@ public sealed class MineMapViewModelTests
         Assert.True(
             JournalEventEnvelope.TryParse(
                 """{"event":"SendText","Message":".mining 120 6.44 4"}""",
-                out var command,
+                out JournalEventEnvelope? command,
                 out _
             )
         );
@@ -671,7 +671,7 @@ public sealed class MineMapViewModelTests
             allowCommands: true
         );
 
-        var shared = Assert.Single(bookmarks.Items, item => item.System == "Wille");
+        GalacticBookmark shared = Assert.Single(bookmarks.Items, item => item.System == "Wille");
         Assert.True(shared.IsSurfaceMiningMap);
         Assert.Equal("Surface Mining", shared.Category);
         Assert.Equal(shared.System, shared.SurfaceMiningMap!.SystemName);
@@ -683,7 +683,7 @@ public sealed class MineMapViewModelTests
         bookmarks.SurfaceSignal = 6;
         bookmarks.SaveCommand.Execute(null);
 
-        var edited = Assert.Single(viewModel.FilteredSurveys, row => row.Id == shared.Id);
+        MineMapSurveyRowViewModel edited = Assert.Single(viewModel.FilteredSurveys, row => row.Id == shared.Id);
         Assert.Equal("6", edited.SignalNumber);
         Assert.Equal("Return with a Rhino", edited.Notes);
         Assert.NotEqual("—", edited.DistanceText);
@@ -705,7 +705,9 @@ public sealed class MineMapViewModelTests
     [Fact]
     public void MineMapExceptionsContainOnlySupportedShipsAndGroundModes()
     {
-        var entries = OverlayVehicleCatalog.ForCategory(OverlaySettingsCategory.MineMap);
+        IReadOnlyList<OverlayVehicleDefinition> entries = OverlayVehicleCatalog.ForCategory(
+            OverlaySettingsCategory.MineMap
+        );
 
         Assert.Contains(entries, entry => entry.Id == "mev_rhino");
         Assert.Contains(entries, entry => entry.Id == "on-foot");
@@ -729,7 +731,7 @@ public sealed class MineMapViewModelTests
             _ => { },
             bookmarkCatalog: catalog
         );
-        var survey = Assert.Single(viewModel.FilteredSurveys);
+        MineMapSurveyRowViewModel survey = Assert.Single(viewModel.FilteredSurveys);
         viewModel.SelectedContains = "Ruby";
         viewModel.SelectedBodyType = "Rocky body";
         var changed = new List<string?>();
@@ -755,7 +757,7 @@ public sealed class MineMapViewModelTests
         Assert.True(
             JournalEventEnvelope.TryParse(
                 """{"event":"SendText","Message":".mining 120 6.44 4"}""",
-                out var command,
+                out JournalEventEnvelope? command,
                 out _
             )
         );
@@ -783,14 +785,14 @@ public sealed class MineMapViewModelTests
         Assert.True(
             JournalEventEnvelope.TryParse(
                 """{"event":"SendText","Message":".mining 120 6.44 4"}""",
-                out var firstCommand,
+                out JournalEventEnvelope? firstCommand,
                 out _
             )
         );
         Assert.True(
             JournalEventEnvelope.TryParse(
                 """{"event":"SendText","Message":".mining 80 3.2 2"}""",
-                out var secondCommand,
+                out JournalEventEnvelope? secondCommand,
                 out _
             )
         );
@@ -813,7 +815,7 @@ public sealed class MineMapViewModelTests
             allowCommands: true
         );
 
-        var firstSurvey = Assert.Single(
+        MineMapSurveyRowViewModel firstSurvey = Assert.Single(
             viewModel.FilteredSurveys,
             row => row.SignalNumber == "4" && row.SystemName == "Wille"
         );
@@ -836,18 +838,18 @@ public sealed class MineMapViewModelTests
         Assert.True(
             JournalEventEnvelope.TryParse(
                 """{"event":"SendText","Message":".mining 120 6.44 4"}""",
-                out var createCommand,
+                out JournalEventEnvelope? createCommand,
                 out _
             )
         );
         Assert.True(
             JournalEventEnvelope.TryParse(
                 """{"event":"SendText","Message":".mine 15 unobtainium 1.2 high/low"}""",
-                out var invalidCommand,
+                out JournalEventEnvelope? invalidCommand,
                 out _
             )
         );
-        var context = Context(new SurfaceCoordinate(1, 2));
+        MineMapCommandContext context = Context(new SurfaceCoordinate(1, 2));
         var status = new EliteStatus
         {
             Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
@@ -961,7 +963,7 @@ public sealed class MineMapViewModelTests
     private static void SeedSurvey(string directory)
     {
         var center = new SurfaceCoordinate(1.320611, 179.850861);
-        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         var survey = new MineMapSurvey
         {
             Id = Guid.NewGuid(),

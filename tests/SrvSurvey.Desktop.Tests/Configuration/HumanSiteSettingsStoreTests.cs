@@ -13,7 +13,7 @@ public sealed class HumanSiteSettingsStoreTests : IDisposable
     [Fact]
     public void MissingSettingsUseLegacyDefaults()
     {
-        var settings = new HumanSiteSettingsStore(SettingsPath()).Load();
+        HumanSitePreferences settings = new HumanSiteSettingsStore(SettingsPath()).Load();
 
         Assert.Equal(HumanSitePreferences.Default, settings);
         Assert.True(settings.AutoShow);
@@ -30,7 +30,7 @@ public sealed class HumanSiteSettingsStoreTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(SettingsPath(), """{"Theme":{"Mode":"Dark"}}""");
         var store = new HumanSiteSettingsStore(SettingsPath());
-        var expected = HumanSitePreferences.Default with
+        HumanSitePreferences expected = HumanSitePreferences.Default with
         {
             AutoShow = false,
             Width = 720,
@@ -42,10 +42,10 @@ public sealed class HumanSiteSettingsStoreTests : IDisposable
         };
 
         store.Save(expected);
-        var actual = store.Load();
+        HumanSitePreferences actual = store.Load();
 
         Assert.Equal(expected, actual);
-        var root = JsonNode.Parse(File.ReadAllText(SettingsPath()))!.AsObject();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(SettingsPath()))!.AsObject();
         Assert.Equal("Dark", root["Theme"]!["Mode"]!.GetValue<string>());
     }
 
@@ -60,7 +60,7 @@ public sealed class HumanSiteSettingsStoreTests : IDisposable
             """
         );
 
-        var settings = new HumanSiteSettingsStore(SettingsPath()).Load();
+        HumanSitePreferences settings = new HumanSiteSettingsStore(SettingsPath()).Load();
 
         Assert.Equal(320, settings.Width);
         Assert.Equal(1400, settings.Height);

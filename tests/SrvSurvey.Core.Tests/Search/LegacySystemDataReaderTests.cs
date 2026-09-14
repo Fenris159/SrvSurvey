@@ -12,7 +12,7 @@ public sealed class LegacySystemDataReaderTests : IDisposable
     [Fact]
     public async Task ReadReturnsMatchingLegacySystemsAndIsolatesMalformedFiles()
     {
-        var systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
+        string systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(systemDirectory, "Praea Euq IL-P c5-2_102.json"),
@@ -44,7 +44,7 @@ public sealed class LegacySystemDataReaderTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(systemDirectory, "Praea Euq IL-P c5-malformed.json"), "{\"name\":");
         var reader = new LegacySystemDataReader(temporaryDirectory);
 
-        var result = await reader.ReadAsync("F123", BoxelAddress.Parse("Praea Euq IL-P c5-0"));
+        LegacySystemDataReadResult result = await reader.ReadAsync("F123", BoxelAddress.Parse("Praea Euq IL-P c5-0"));
 
         Assert.Equal(2, result.Systems.Count);
         Assert.Equal("Praea Euq IL-P c5-0", result.Systems[0].Boxel.Name);
@@ -68,7 +68,7 @@ public sealed class LegacySystemDataReaderTests : IDisposable
     {
         var reader = new LegacySystemDataReader(temporaryDirectory);
 
-        var result = await reader.ReadAsync("F123", BoxelAddress.Parse("Praea Euq IL-P c5-0"));
+        LegacySystemDataReadResult result = await reader.ReadAsync("F123", BoxelAddress.Parse("Praea Euq IL-P c5-0"));
 
         Assert.Empty(result.Systems);
         Assert.Empty(result.Errors);
@@ -78,7 +78,7 @@ public sealed class LegacySystemDataReaderTests : IDisposable
     [Fact]
     public async Task ReadFindsHandAuthoredSystemByDecodedAddress()
     {
-        var systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
+        string systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(systemDirectory, "Sol_10477373803.json"),
@@ -92,12 +92,12 @@ public sealed class LegacySystemDataReaderTests : IDisposable
             }
             """
         );
-        Assert.True(BoxelAddress.TryFromSystemAddress(10477373803, "Sol", out var sol));
+        Assert.True(BoxelAddress.TryFromSystemAddress(10477373803, "Sol", out BoxelAddress? sol));
         var reader = new LegacySystemDataReader(temporaryDirectory);
 
-        var result = await reader.ReadAsync("F123", sol!);
+        LegacySystemDataReadResult result = await reader.ReadAsync("F123", sol!);
 
-        var system = Assert.Single(result.Systems);
+        BoxelSystemObservation system = Assert.Single(result.Systems);
         Assert.Equal("Sol", system.Boxel.Name);
         Assert.Equal(sol?.GeneratedName, system.Boxel.GeneratedName);
         Assert.True(system.FssAllBodies);

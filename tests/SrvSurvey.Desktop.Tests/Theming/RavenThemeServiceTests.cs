@@ -45,15 +45,15 @@ public sealed class RavenThemeServiceTests : IDisposable
             ["RavenModalScrimBrush"] = "#8C000000",
         };
 
-        foreach (var entry in expected)
+        foreach (KeyValuePair<string, string> entry in expected)
         {
-            var brush = Assert.IsType<SolidColorBrush>(application.Resources[entry.Key]);
+            SolidColorBrush brush = Assert.IsType<SolidColorBrush>(application.Resources[entry.Key]);
             Assert.Equal(Color.Parse(entry.Value), brush.Color);
         }
 
-        foreach (var resourceKey in new[] { "RavenSuccessBrush", "RavenWarningBrush" })
+        foreach (string? resourceKey in new[] { "RavenSuccessBrush", "RavenWarningBrush" })
         {
-            var color = Assert.IsType<SolidColorBrush>(application.Resources[resourceKey]).Color;
+            Color color = Assert.IsType<SolidColorBrush>(application.Resources[resourceKey]).Color;
             Assert.Equal(color.R, color.G);
             Assert.Equal(color.G, color.B);
         }
@@ -65,7 +65,7 @@ public sealed class RavenThemeServiceTests : IDisposable
 
         Assert.Equal(Color.Parse("#F5F5F5"), Assert.IsType<Color>(application.Resources["SystemAccentColor"]));
         foreach (
-            var resourceKey in new[]
+            string? resourceKey in new[]
             {
                 "CheckBoxCheckGlyphForegroundChecked",
                 "CheckBoxCheckGlyphForegroundCheckedPointerOver",
@@ -73,7 +73,7 @@ public sealed class RavenThemeServiceTests : IDisposable
             }
         )
         {
-            var brush = Assert.IsType<SolidColorBrush>(application.Resources[resourceKey]);
+            SolidColorBrush brush = Assert.IsType<SolidColorBrush>(application.Resources[resourceKey]);
             Assert.Equal(Color.Parse("#0A0A0A"), brush.Color);
         }
 
@@ -89,26 +89,26 @@ public sealed class RavenThemeServiceTests : IDisposable
         var service = new RavenThemeService(application, store);
         service.ApplyCurrent();
 
-        foreach (var theme in RavenThemeCatalog.All)
+        foreach (RavenThemeDefinition theme in RavenThemeCatalog.All)
         {
             service.Select(theme.Key);
 
             Assert.Equal(theme, service.Current);
             Assert.Equal(theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light, application.RequestedThemeVariant);
-            var accent = Assert.IsType<SolidColorBrush>(application.Resources["RavenAccentBrush"]);
+            SolidColorBrush accent = Assert.IsType<SolidColorBrush>(application.Resources["RavenAccentBrush"]);
             Assert.Equal(Color.Parse(theme.AccentColor), accent.Color);
-            var selectedMutedText = Assert.IsType<SolidColorBrush>(
+            SolidColorBrush selectedMutedText = Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenSelectedMutedTextBrush"]
             );
             Assert.Equal(
                 Color.Parse(theme.Key == "monochrome-dark" ? theme.AccentForegroundColor : theme.MutedTextColor),
                 selectedMutedText.Color
             );
-            var mapGrid = Assert.IsType<SolidColorBrush>(application.Resources["RavenMapGridBrush"]);
+            SolidColorBrush mapGrid = Assert.IsType<SolidColorBrush>(application.Resources["RavenMapGridBrush"]);
             Assert.Equal(Color.Parse(theme.MapGridColor), mapGrid.Color);
-            var warning = Assert.IsType<SolidColorBrush>(application.Resources["RavenWarningBrush"]);
-            var warningShadow = Assert.IsType<BoxShadows>(application.Resources["RavenWarningInsetShadow"]);
-            var floatingShadow = Assert.IsType<BoxShadows>(application.Resources["RavenFloatingPanelShadow"]);
+            SolidColorBrush warning = Assert.IsType<SolidColorBrush>(application.Resources["RavenWarningBrush"]);
+            BoxShadows warningShadow = Assert.IsType<BoxShadows>(application.Resources["RavenWarningInsetShadow"]);
+            BoxShadows floatingShadow = Assert.IsType<BoxShadows>(application.Resources["RavenFloatingPanelShadow"]);
             if (theme.UseSurfaceOnlyDepth)
             {
                 Assert.Equal(0, warningShadow.Count);
@@ -148,7 +148,7 @@ public sealed class RavenThemeServiceTests : IDisposable
         colors["bio.galacticRegionPotential"] = Color.FromArgb(255, 91, 92, 93);
         colors["bio.unknownGlyph"] = Color.FromArgb(255, 98, 76, 54);
         colors["guardian.primary"] = Color.FromArgb(255, 21, 42, 63);
-        var typography = OverlayTypographySettings.Default with { Header = 11.5, Detail = 10.5 };
+        OverlayTypographySettings typography = OverlayTypographySettings.Default with { Header = 11.5, Detail = 10.5 };
         var service = new RavenThemeService(application, store, new LegacyOverlayTheme(colors, true, null, typography));
 
         service.ApplyCurrent();
@@ -220,7 +220,7 @@ public sealed class RavenThemeServiceTests : IDisposable
             Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayGuardianPrimaryBrush"]).Color
         );
         foreach (
-            var resource in new[]
+            string? resource in new[]
             {
                 "RavenOverlayPrimaryBrush",
                 "RavenOverlayPrimaryDimBrush",
@@ -308,7 +308,7 @@ public sealed class RavenThemeServiceTests : IDisposable
         colors["orange"] = Color.FromArgb(255, 11, 22, 33);
         var overlay = new LegacyOverlayTheme(colors, true, null);
         var service = new RavenThemeService(application, store, overlay);
-        var overlayChanges = 0;
+        int overlayChanges = 0;
         service.OverlayThemeChanged += (_, _) => overlayChanges++;
         service.ApplyCurrent();
 

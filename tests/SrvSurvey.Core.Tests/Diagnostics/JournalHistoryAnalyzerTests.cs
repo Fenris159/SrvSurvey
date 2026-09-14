@@ -52,7 +52,10 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         );
         var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
-        var result = await analyzer.AnalyzeAsync("F123", JournalHistoryAnalyzer.EliteReleaseDate);
+        JournalHistoryAnalysisResult result = await analyzer.AnalyzeAsync(
+            "F123",
+            JournalHistoryAnalyzer.EliteReleaseDate
+        );
 
         Assert.Equal(3, result.CandidateFileCount);
         Assert.Equal(2, result.ProcessedFileCount);
@@ -96,7 +99,10 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         );
         var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
-        var result = await analyzer.AnalyzeAsync("F123", JournalHistoryAnalyzer.EliteReleaseDate);
+        JournalHistoryAnalysisResult result = await analyzer.AnalyzeAsync(
+            "F123",
+            JournalHistoryAnalyzer.EliteReleaseDate
+        );
 
         Assert.Equal(1, result.SkippedRecentActiveFileCount);
         Assert.Equal(1, result.ProcessedFileCount);
@@ -131,7 +137,7 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         var progress = new List<JournalHistoryAnalysisProgress>();
         var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
-        var result = await analyzer.AnalyzeAsync(
+        JournalHistoryAnalysisResult result = await analyzer.AnalyzeAsync(
             "F123",
             new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
             new CallbackProgress<JournalHistoryAnalysisProgress>(progress.Add)
@@ -160,9 +166,12 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         );
         var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
-        var result = await analyzer.AnalyzeAsync("F123", JournalHistoryAnalyzer.EliteReleaseDate);
+        JournalHistoryAnalysisResult result = await analyzer.AnalyzeAsync(
+            "F123",
+            JournalHistoryAnalyzer.EliteReleaseDate
+        );
 
-        var match = Assert.Single(result.GreenGasGiantMatches);
+        HistoricalGreenGasGiantMatch match = Assert.Single(result.GreenGasGiantMatches);
         Assert.Equal("potential", match.Tag);
         Assert.Equal(1.5, match.StarPosition.X);
         Assert.Equal(-2, match.StarPosition.Y);
@@ -189,7 +198,10 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         );
         var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
-        var result = await analyzer.AnalyzeAsync("F123", JournalHistoryAnalyzer.EliteReleaseDate);
+        JournalHistoryAnalysisResult result = await analyzer.AnalyzeAsync(
+            "F123",
+            JournalHistoryAnalyzer.EliteReleaseDate
+        );
 
         Assert.Empty(result.GreenGasGiantMatches);
         Assert.Contains(result.Warnings, warning => warning.Contains("no journal StarPos", StringComparison.Ordinal));
@@ -201,7 +213,7 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
     [InlineData("Journal.invalid.01.log", 0)]
     public void ParsesBothJournalFileNameGenerations(string fileName, int expectedYear)
     {
-        var parsed = JournalHistoryAnalyzer.TryGetJournalTimestamp(fileName, out var timestamp);
+        bool parsed = JournalHistoryAnalyzer.TryGetJournalTimestamp(fileName, out DateTimeOffset timestamp);
 
         Assert.Equal(expectedYear != 0, parsed);
         if (parsed)
@@ -222,7 +234,7 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
     private void WriteJournal(string fileName, string content)
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, fileName);
+        string path = Path.Combine(temporaryDirectory, fileName);
         File.WriteAllText(path, content.ReplaceLineEndings("\n") + "\n");
         File.SetLastWriteTimeUtc(path, now.UtcDateTime.AddDays(-3));
     }

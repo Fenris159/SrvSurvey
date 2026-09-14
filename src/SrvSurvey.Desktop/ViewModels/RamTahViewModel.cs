@@ -181,8 +181,8 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         await operationLock.WaitAsync();
         try
         {
-            var changed = false;
-            foreach (var journalEvent in journalEvents)
+            bool changed = false;
+            foreach (JournalEventEnvelope journalEvent in journalEvents)
             {
                 changed |= state.Apply(journalEvent);
             }
@@ -231,7 +231,7 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         await operationLock.WaitAsync();
         try
         {
-            var changed = state.SetLog(mission, code, completed);
+            bool changed = state.SetLog(mission, code, completed);
             if (changed)
             {
                 UpdateDisplay();
@@ -320,7 +320,7 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         await operationLock.WaitAsync();
         try
         {
-            var changed = state.Clear(mission);
+            bool changed = state.Clear(mission);
             if (mission == RamTahMission.AncientRuins)
             {
                 IsAncientRuinsResetPending = false;
@@ -363,9 +363,9 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
 
     private void UpdateDisplay()
     {
-        foreach (var group in AncientRuinsGroups.Concat(GuardianLogsGroups))
+        foreach (RamTahLogGroupViewModel? group in AncientRuinsGroups.Concat(GuardianLogsGroups))
         {
-            foreach (var log in group.Logs)
+            foreach (RamTahLogViewModel log in group.Logs)
             {
                 log.Update(state.AncientRuinsLogs.Contains(log.Code) || state.GuardianLogs.Contains(log.Code));
             }

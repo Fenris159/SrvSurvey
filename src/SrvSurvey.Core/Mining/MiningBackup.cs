@@ -21,8 +21,8 @@ public static class MiningBackup
             _ = FiregroupStore.Parse(firegroups);
         }
 
-        var locations = BookmarkCatalog.Parse(bookmarks);
-        var copy = MiningStore.Parse(JsonSerializer.Serialize(data));
+        List<GalacticBookmark> locations = BookmarkCatalog.Parse(bookmarks);
+        MiningCommanderData copy = MiningStore.Parse(JsonSerializer.Serialize(data));
         using var buffer = new MemoryStream();
         using (var archive = new ZipArchive(buffer, ZipArchiveMode.Create, true))
         {
@@ -48,17 +48,17 @@ public static class MiningBackup
     private static void AddScreenshots(ZipArchive archive, IEnumerable<List<string>> screenshotsByRecord)
     {
         var imageNames = new Dictionary<string, string>(FileSystemPathComparer);
-        foreach (var screenshots in screenshotsByRecord)
+        foreach (List<string> screenshots in screenshotsByRecord)
         {
-            for (var index = 0; index < screenshots.Count; index++)
+            for (int index = 0; index < screenshots.Count; index++)
             {
-                var path = screenshots[index];
+                string path = screenshots[index];
                 if (!File.Exists(path))
                 {
                     continue;
                 }
 
-                var extension = Path.GetExtension(path).ToLowerInvariant();
+                string extension = Path.GetExtension(path).ToLowerInvariant();
                 if (
                     extension is not (".png" or ".jpg" or ".jpeg" or ".webp")
                     || new FileInfo(path).Length > 20 * 1024 * 1024
@@ -67,12 +67,12 @@ public static class MiningBackup
                     continue;
                 }
 
-                if (!imageNames.TryGetValue(path, out var name))
+                if (!imageNames.TryGetValue(path, out string? name))
                 {
                     name = "images/" + Guid.NewGuid().ToString("N") + extension;
-                    var entry = archive.CreateEntry(name, CompressionLevel.Fastest);
-                    using var output = entry.Open();
-                    using var input = File.OpenRead(path);
+                    ZipArchiveEntry entry = archive.CreateEntry(name, CompressionLevel.Fastest);
+                    using Stream output = entry.Open();
+                    using FileStream input = File.OpenRead(path);
                     input.CopyTo(output);
                     imageNames[path] = name;
                 }
@@ -95,41 +95,43 @@ public static class MiningBackup
             throw new IOException("Expanded mining backup exceeds 256 MB.");
         }
 
-        var firegroups = archive.GetEntry("firegroups.json") is null ? null : ReadText(archive, "firegroups.json");
+        string? firegroups = archive.GetEntry("firegroups.json") is null ? null : ReadText(archive, "firegroups.json");
         if (firegroups is not null)
         {
             _ = FiregroupStore.Parse(firegroups);
         }
 
-        var data = MiningStore.Parse(ReadText(archive, "mining.json"));
-        var bookmarks = ReadText(archive, "bookmarks.json");
-        var locations = BookmarkCatalog.Parse(bookmarks);
-        var destination = Path.Combine(attachmentDirectory, Guid.NewGuid().ToString("N"));
+        MiningCommanderData data = MiningStore.Parse(ReadText(archive, "mining.json"));
+        string bookmarks = ReadText(archive, "bookmarks.json");
+        List<GalacticBookmark> locations = BookmarkCatalog.Parse(bookmarks);
+        string destination = Path.Combine(attachmentDirectory, Guid.NewGuid().ToString("N"));
         foreach (
-            var screenshots in Sessions(data).Select(s => s.Screenshots).Concat(locations.Select(b => b.Screenshots))
+            List<string>? screenshots in Sessions(data)
+                .Select(s => s.Screenshots)
+                .Concat(locations.Select(b => b.Screenshots))
         )
         {
-            for (var index = 0; index < screenshots.Count; index++)
+            for (int index = 0; index < screenshots.Count; index++)
             {
-                var name = screenshots[index];
+                string name = screenshots[index];
                 if (!name.StartsWith("images/", StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                var entry =
+                ZipArchiveEntry entry =
                     archive.GetEntry(name)
                     ?? throw new InvalidDataException("A screenshot is missing from the mining backup.");
-                var extension = Path.GetExtension(name).ToLowerInvariant();
+                string extension = Path.GetExtension(name).ToLowerInvariant();
                 if (extension is not (".png" or ".jpg" or ".jpeg" or ".webp"))
                 {
                     throw new InvalidDataException("Unsupported screenshot format.");
                 }
                 // Archive paths never become filesystem paths: each image receives a new generated name.
                 Directory.CreateDirectory(destination);
-                var path = Path.Combine(destination, Guid.NewGuid().ToString("N") + extension);
-                using var input = entry.Open();
-                using var output = File.Create(path);
+                string path = Path.Combine(destination, Guid.NewGuid().ToString("N") + extension);
+                using Stream input = entry.Open();
+                using FileStream output = File.Create(path);
                 input.CopyTo(output);
                 screenshots[index] = path;
             }
@@ -142,14 +144,14 @@ public static class MiningBackup
 
     private static void Write(ZipArchive archive, string name, string text)
     {
-        using var stream = archive.CreateEntry(name).Open();
+        using Stream stream = archive.CreateEntry(name).Open();
         using var writer = new StreamWriter(stream);
         writer.Write(text);
     }
 
     private static string ReadText(ZipArchive archive, string name)
     {
-        using var stream = (
+        using Stream stream = (
             archive.GetEntry(name) ?? throw new InvalidDataException($"Missing {name} in mining backup.")
         ).Open();
         using var reader = new StreamReader(stream);

@@ -15,7 +15,7 @@ public sealed class StreamOverlaySettingsStore
     {
         var settings = documentStore.Load()["Streaming"] as JsonObject;
         return settings?["JoinedOverlayEnabled"] is JsonValue value
-            && value.TryGetValue<bool>(out var enabled)
+            && value.TryGetValue<bool>(out bool enabled)
             && enabled;
     }
 

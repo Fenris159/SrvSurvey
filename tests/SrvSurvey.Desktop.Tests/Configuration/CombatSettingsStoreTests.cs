@@ -37,7 +37,7 @@ public sealed class CombatSettingsStoreTests : IDisposable
         );
 
         Assert.Equal(new CombatPreferences(true, true, true), store.Load());
-        var root = JsonNode.Parse(File.ReadAllText(SettingsPath))!.AsObject();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(SettingsPath))!.AsObject();
         Assert.Equal("raven-dark", root["Theme"]!["Key"]!.GetValue<string>());
         Assert.Equal(42, root["Future"]!.GetValue<int>());
     }

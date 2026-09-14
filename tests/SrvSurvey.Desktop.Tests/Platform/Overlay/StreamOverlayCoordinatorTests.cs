@@ -22,8 +22,8 @@ public sealed class StreamOverlayCoordinatorTests
     public void FocusLossClosesWindowAndReturningToEliteRestoresTopmostWindow()
     {
         using var context = new TestContext(isForeground: true);
-        var original = Assert.Single(context.Platform.PreparedWindows);
-        var closed = false;
+        Window original = Assert.Single(context.Platform.PreparedWindows);
+        bool closed = false;
         original.Closed += (_, _) => closed = true;
         Assert.True(original.IsVisible);
         Assert.True(original.Topmost);
@@ -41,7 +41,7 @@ public sealed class StreamOverlayCoordinatorTests
         context.Synchronize();
 
         Assert.Equal(2, context.Platform.PreparedWindows.Count);
-        var restored = context.Platform.PreparedWindows[1];
+        Window restored = context.Platform.PreparedWindows[1];
         Assert.True(restored.IsVisible);
         Assert.True(restored.Topmost);
     }
@@ -50,7 +50,7 @@ public sealed class StreamOverlayCoordinatorTests
     public void SuppliedTrackerOverrideKeepsWindowUntilOverrideEndsButCannotShowMinimizedGame()
     {
         using var context = new TestContext(isForeground: false, keepVisible: true);
-        var window = Assert.Single(context.Platform.PreparedWindows);
+        Window window = Assert.Single(context.Platform.PreparedWindows);
         Assert.True(window.IsVisible);
         Assert.True(window.Topmost);
 
@@ -61,7 +61,7 @@ public sealed class StreamOverlayCoordinatorTests
         context.KeepVisible = true;
         context.Synchronize();
         Assert.Equal(2, context.Platform.PreparedWindows.Count);
-        var restored = context.Platform.PreparedWindows[1];
+        Window restored = context.Platform.PreparedWindows[1];
         Assert.True(restored.IsVisible);
 
         context.Tracker.Snapshot = context.Tracker.Snapshot with { IsVisible = false };

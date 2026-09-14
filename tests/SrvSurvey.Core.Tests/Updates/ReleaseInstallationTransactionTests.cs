@@ -16,9 +16,9 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     [Fact]
     public async Task PrepareAndApplySwapWholeInstallationAndKeepBackup()
     {
-        var fixture = await CreateFixtureAsync();
+        InstallationFixture fixture = await CreateFixtureAsync();
         var preparer = new ReleaseInstallationPreparer();
-        var preparation = await preparer.PrepareAsync(
+        ReleaseInstallationPreparation preparation = await preparer.PrepareAsync(
             Version,
             "win-x64",
             fixture.ReadyDirectory,
@@ -33,7 +33,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
         );
         Assert.True(File.Exists(Path.Combine(preparation.CandidateDirectory, "release-package.json")));
         var transaction = new ReleaseInstallationTransaction();
-        var result = await transaction.ApplyAsync(
+        ReleaseInstallationResult result = await transaction.ApplyAsync(
             preparation,
             async (entryPoint, arguments, cancellationToken) =>
             {
@@ -59,9 +59,9 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     [Fact]
     public async Task AbortRemovesPreparedCandidateWithoutChangingInstallation()
     {
-        var fixture = await CreateFixtureAsync();
+        InstallationFixture fixture = await CreateFixtureAsync();
         var preparer = new ReleaseInstallationPreparer();
-        var preparation = await preparer.PrepareAsync(
+        ReleaseInstallationPreparation preparation = await preparer.PrepareAsync(
             Version,
             "win-x64",
             fixture.ReadyDirectory,
@@ -83,8 +83,8 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     [Fact]
     public async Task FailedHealthConfirmationRestoresOldInstallationByteForByte()
     {
-        var fixture = await CreateFixtureAsync();
-        var preparation = await new ReleaseInstallationPreparer().PrepareAsync(
+        InstallationFixture fixture = await CreateFixtureAsync();
+        ReleaseInstallationPreparation preparation = await new ReleaseInstallationPreparer().PrepareAsync(
             Version,
             "win-x64",
             fixture.ReadyDirectory,
@@ -92,9 +92,9 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
             fixture.InstallationDirectory,
             []
         );
-        var before = await SnapshotAsync(fixture.InstallationDirectory);
+        IReadOnlyDictionary<string, byte[]> before = await SnapshotAsync(fixture.InstallationDirectory);
 
-        var result = await new ReleaseInstallationTransaction().ApplyAsync(
+        ReleaseInstallationResult result = await new ReleaseInstallationTransaction().ApplyAsync(
             preparation,
             (_, _, _) => Task.FromResult(false)
         );
@@ -111,8 +111,8 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     [Fact]
     public async Task InstallationDriftAbortsBeforeAnyDirectoryMove()
     {
-        var fixture = await CreateFixtureAsync();
-        var preparation = await new ReleaseInstallationPreparer().PrepareAsync(
+        InstallationFixture fixture = await CreateFixtureAsync();
+        ReleaseInstallationPreparation preparation = await new ReleaseInstallationPreparer().PrepareAsync(
             Version,
             "win-x64",
             fixture.ReadyDirectory,
@@ -120,7 +120,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
             fixture.InstallationDirectory,
             []
         );
-        var driftPath = Path.Combine(fixture.InstallationDirectory, "old-only.dll");
+        string driftPath = Path.Combine(fixture.InstallationDirectory, "old-only.dll");
         await File.WriteAllTextAsync(driftPath, "changed after preparation");
 
         await Assert.ThrowsAsync<InvalidDataException>(() =>
@@ -135,8 +135,8 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     [Fact]
     public async Task SwapFailureAfterActivationRestoresBackupAndPreservesCandidate()
     {
-        var fixture = await CreateFixtureAsync();
-        var preparation = await new ReleaseInstallationPreparer().PrepareAsync(
+        InstallationFixture fixture = await CreateFixtureAsync();
+        ReleaseInstallationPreparation preparation = await new ReleaseInstallationPreparer().PrepareAsync(
             Version,
             "win-x64",
             fixture.ReadyDirectory,
@@ -144,7 +144,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
             fixture.InstallationDirectory,
             []
         );
-        var before = await SnapshotAsync(fixture.InstallationDirectory);
+        IReadOnlyDictionary<string, byte[]> before = await SnapshotAsync(fixture.InstallationDirectory);
         var transaction = new ReleaseInstallationTransaction(
             stagingService: null,
             checkpoint: checkpoint =>
@@ -171,7 +171,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     [Fact]
     public async Task ReadyDriftIsRejectedBeforeCandidateCreation()
     {
-        var fixture = await CreateFixtureAsync();
+        InstallationFixture fixture = await CreateFixtureAsync();
         await File.WriteAllTextAsync(Path.Combine(fixture.ReadyDirectory, "nested", "new.dll"), "tampered");
 
         await Assert.ThrowsAsync<InvalidDataException>(() =>
@@ -185,7 +185,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
             )
         );
 
-        var parent = Directory.GetParent(fixture.InstallationDirectory)!.FullName;
+        string parent = Directory.GetParent(fixture.InstallationDirectory)!.FullName;
         Assert.DoesNotContain(
             Directory.GetDirectories(parent),
             path => Path.GetFileName(path).Contains("-update-", StringComparison.Ordinal)
@@ -200,13 +200,13 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
             return;
         }
 
-        var fixture = await CreateFixtureAsync();
+        InstallationFixture fixture = await CreateFixtureAsync();
         var preparer = new ReleaseInstallationPreparer(
             stagingService: null,
             (_, _, _) => throw new UnauthorizedAccessException("protected installation parent")
         );
 
-        var preparation = await preparer.PrepareAsync(
+        ReleaseInstallationPreparation preparation = await preparer.PrepareAsync(
             Version,
             "win-x64",
             fixture.ReadyDirectory,
@@ -219,7 +219,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
         Assert.Equal(Path.GetFullPath(fixture.ReadyDirectory), preparation.ReadyDirectory);
         Assert.False(Directory.Exists(preparation.CandidateDirectory));
 
-        var result = await new ReleaseInstallationTransaction().ApplyAsync(
+        ReleaseInstallationResult result = await new ReleaseInstallationTransaction().ApplyAsync(
             preparation,
             (_, _, _) => Task.FromResult(true)
         );
@@ -242,12 +242,12 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
 
     private async Task<InstallationFixture> CreateFixtureAsync()
     {
-        var installationDirectory = Path.Combine(temporaryDirectory, "install-parent", "SrvSurvey");
-        var readyDirectory = Path.Combine(temporaryDirectory, "ready");
+        string installationDirectory = Path.Combine(temporaryDirectory, "install-parent", "SrvSurvey");
+        string readyDirectory = Path.Combine(temporaryDirectory, "ready");
         Directory.CreateDirectory(installationDirectory);
         Directory.CreateDirectory(Path.Combine(readyDirectory, "nested"));
-        var oldEntryPoint = Encoding.UTF8.GetBytes("old executable");
-        var newEntryPoint = Encoding.UTF8.GetBytes("new executable");
+        byte[] oldEntryPoint = Encoding.UTF8.GetBytes("old executable");
+        byte[] newEntryPoint = Encoding.UTF8.GetBytes("new executable");
         await File.WriteAllBytesAsync(Path.Combine(installationDirectory, "SrvSurvey.Desktop.exe"), oldEntryPoint);
         await File.WriteAllTextAsync(Path.Combine(installationDirectory, "old-only.dll"), "old dependency");
         var newFiles = new Dictionary<string, byte[]>
@@ -255,14 +255,14 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
             ["SrvSurvey.Desktop.exe"] = newEntryPoint,
             ["nested/new.dll"] = Encoding.UTF8.GetBytes("new dependency"),
         };
-        foreach (var file in newFiles)
+        foreach (KeyValuePair<string, byte[]> file in newFiles)
         {
-            var path = Path.Combine(readyDirectory, file.Key.Replace('/', Path.DirectorySeparatorChar));
+            string path = Path.Combine(readyDirectory, file.Key.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             await File.WriteAllBytesAsync(path, file.Value);
         }
 
-        var manifest = JsonSerializer.SerializeToUtf8Bytes(
+        byte[] manifest = JsonSerializer.SerializeToUtf8Bytes(
             new
             {
                 schemaVersion = 1,
@@ -291,7 +291,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     private static async Task<IReadOnlyDictionary<string, byte[]>> SnapshotAsync(string directory)
     {
         var snapshot = new SortedDictionary<string, byte[]>(StringComparer.Ordinal);
-        foreach (var path in Directory.GetFiles(directory, "*", SearchOption.AllDirectories))
+        foreach (string path in Directory.GetFiles(directory, "*", SearchOption.AllDirectories))
         {
             snapshot[Path.GetRelativePath(directory, path)] = await File.ReadAllBytesAsync(path);
         }
@@ -305,7 +305,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     )
     {
         Assert.Equal(expected.Keys, actual.Keys);
-        foreach (var pair in expected)
+        foreach (KeyValuePair<string, byte[]> pair in expected)
         {
             Assert.Equal(pair.Value, actual[pair.Key]);
         }

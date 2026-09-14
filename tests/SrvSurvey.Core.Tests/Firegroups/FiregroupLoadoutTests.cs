@@ -8,7 +8,7 @@ public sealed class FiregroupLoadoutTests
     [Fact]
     public void ParseOffersEquippedSurfaceScannerAndBuiltInScannerActions()
     {
-        var ship = Parse(new LoadoutModule("Slot01_Size1", "Int_DetailedSurfaceScanner_Tiny"));
+        FiregroupShip ship = Parse(new LoadoutModule("Slot01_Size1", "Int_DetailedSurfaceScanner_Tiny"));
 
         Assert.Contains(ship.Modules, module => module.Name == "Surface Scanner" && module.Slot == "Slot01_Size1");
         Assert.Contains(ship.Modules, module => module.Name == "D-Scanner");
@@ -35,8 +35,8 @@ public sealed class FiregroupLoadoutTests
     [InlineData("Hpt_BasicMissileRack_Fixed_Large", "Exposing Missiles")]
     public void ParseUsesFDevIdsMercgearNameWhenJournalSuppliesIt(string symbol, string localizedName)
     {
-        var ship = Parse(new LoadoutModule("MediumHardpoint1", symbol, localizedName));
-        var shipWithoutLocalizedName = Parse(new LoadoutModule("MediumHardpoint1", symbol));
+        FiregroupShip ship = Parse(new LoadoutModule("MediumHardpoint1", symbol, localizedName));
+        FiregroupShip shipWithoutLocalizedName = Parse(new LoadoutModule("MediumHardpoint1", symbol));
 
         Assert.Contains(
             ship.Modules,
@@ -60,14 +60,14 @@ public sealed class FiregroupLoadoutTests
     [InlineData("Int_CargoRack_Size6_Class1", "Extended Cargo Rack")]
     public void ParseExcludesRequestedMercgearInternals(string symbol, string localizedName)
     {
-        var ship = Parse(new LoadoutModule("Slot01_Size5", symbol, localizedName));
+        FiregroupShip ship = Parse(new LoadoutModule("Slot01_Size5", symbol, localizedName));
 
         Assert.DoesNotContain(ship.Modules, module => module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase));
     }
 
     private static FiregroupShip Parse(params LoadoutModule[] modules)
     {
-        var json = JsonSerializer.Serialize(
+        string json = JsonSerializer.Serialize(
             new
             {
                 Ship = "python",

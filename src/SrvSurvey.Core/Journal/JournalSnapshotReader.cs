@@ -19,7 +19,7 @@ public static class JournalSnapshotReader
             throw new DirectoryNotFoundException($"The journal folder does not exist: {journalFolder}");
         }
 
-        var journals = directory
+        FileInfo[] journals = directory
             .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .ThenByDescending(file => file.Name, StringComparer.Ordinal)
@@ -31,15 +31,15 @@ public static class JournalSnapshotReader
             throw new FileNotFoundException($"No Journal.*.log files were found in: {journalFolder}");
         }
 
-        var latestOnly = await ReadFileAsync(journals[0], cancellationToken).ConfigureAwait(false);
+        JournalSnapshot latestOnly = await ReadFileAsync(journals[0], cancellationToken).ConfigureAwait(false);
         if (HasBootstrapIdentity(latestOnly))
         {
             return latestOnly;
         }
 
         var state = new JournalSessionState();
-        var malformedLineCount = 0;
-        foreach (var journal in journals.Reverse())
+        int malformedLineCount = 0;
+        foreach (FileInfo? journal in journals.Reverse())
         {
             await using var stream = new FileStream(
                 journal.FullName,
@@ -65,7 +65,7 @@ public static class JournalSnapshotReader
         ArgumentNullException.ThrowIfNull(reader);
 
         var state = new JournalSessionState();
-        var malformedLineCount = await ApplyAsync(reader, state, cancellationToken).ConfigureAwait(false);
+        int malformedLineCount = await ApplyAsync(reader, state, cancellationToken).ConfigureAwait(false);
 
         return state.CreateSnapshot(sourcePath, malformedLineCount);
     }
@@ -76,7 +76,7 @@ public static class JournalSnapshotReader
         CancellationToken cancellationToken
     )
     {
-        var malformedLineCount = 0;
+        int malformedLineCount = 0;
 
         while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
@@ -85,7 +85,10 @@ public static class JournalSnapshotReader
                 continue;
             }
 
-            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
+            if (
+                !JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? journalEvent, out _)
+                || journalEvent is null
+            )
             {
                 malformedLineCount++;
                 continue;

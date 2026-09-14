@@ -15,7 +15,7 @@ public sealed class SystemScanStateTests
         state.Apply(Parse($$"""{"event":"Fileheader","Odyssey":{{isLive.ToString().ToLowerInvariant()}}}"""));
         state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
         state.Apply(Parse(PlanetScan));
-        var expected = Assert.Single(state.CreateSnapshot().Bodies).EstimatedMappedValue;
+        int expected = Assert.Single(state.CreateSnapshot().Bodies).EstimatedMappedValue;
 
         state.Apply(Parse($$"""{"event":"LoadGame","Odyssey":{{(!isLive).ToString().ToLowerInvariant()}}}"""));
         state.Apply(
@@ -24,7 +24,7 @@ public sealed class SystemScanStateTests
             )
         );
 
-        var body = Assert.Single(state.CreateSnapshot().Bodies);
+        SystemScanBodySnapshot body = Assert.Single(state.CreateSnapshot().Bodies);
         Assert.Equal(expected, body.EstimatedMappedValue);
         Assert.Equal(expected, body.CurrentScanValue);
     }
@@ -102,7 +102,7 @@ public sealed class SystemScanStateTests
         );
         state.Apply(Parse("""{"event":"FSSAllBodiesFound","SystemName":"Test","SystemAddress":42,"Count":2}"""));
 
-        var snapshot = state.CreateSnapshot();
+        SystemScanSnapshot snapshot = state.CreateSnapshot();
         Assert.Equal("Test", snapshot.SystemName);
         Assert.Equal(42, snapshot.SystemAddress);
         Assert.Equal(new GalacticCoordinate(1, 2, 3), snapshot.StarPosition);
@@ -118,7 +118,7 @@ public sealed class SystemScanStateTests
         Assert.Equal(1, snapshot.CurrentBodyId);
         Assert.Equal(1, snapshot.BiologicalSignalsRemaining);
 
-        var planet = Assert.Single(snapshot.Bodies, body => body.BodyId == 1);
+        SystemScanBodySnapshot planet = Assert.Single(snapshot.Bodies, body => body.BodyId == 1);
         Assert.Equal(SystemBodyKind.LandablePlanet, planet.Kind);
         Assert.True(planet.IsTerraformable);
         Assert.True(planet.IsDssComplete);
@@ -155,7 +155,7 @@ public sealed class SystemScanStateTests
             )
         );
 
-        var reported = Assert.Single(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
+        SystemOrganismSnapshot reported = Assert.Single(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
         Assert.False(reported.IsScanned);
         Assert.False(reported.IsAnalyzed);
 
@@ -165,8 +165,8 @@ public sealed class SystemScanStateTests
             )
         );
 
-        var body = Assert.Single(state.CreateSnapshot().Bodies);
-        var organism = Assert.Single(body.Organisms);
+        SystemScanBodySnapshot body = Assert.Single(state.CreateSnapshot().Bodies);
+        SystemOrganismSnapshot organism = Assert.Single(body.Organisms);
         Assert.Equal("$Codex_Ent_Aleoids_Genus_Name;", organism.Genus);
         Assert.Equal("Aleoida", organism.GenusLocalized);
         Assert.Equal("$Codex_Ent_Aleoids_01_Name;", organism.Species);
@@ -202,7 +202,7 @@ public sealed class SystemScanStateTests
             )
         );
 
-        var body = Assert.Single(state.CreateSnapshot().Bodies);
+        SystemScanBodySnapshot body = Assert.Single(state.CreateSnapshot().Bodies);
         Assert.Equal(2, body.Organisms.Count);
         Assert.Equal(2, body.AnalyzedBiologicalSignalCount);
         Assert.Equal(
@@ -232,7 +232,7 @@ public sealed class SystemScanStateTests
             )
         );
 
-        var body = Assert.Single(state.CreateSnapshot().Bodies);
+        SystemScanBodySnapshot body = Assert.Single(state.CreateSnapshot().Bodies);
         Assert.Equal(2, body.Organisms.Count);
         Assert.All(
             body.Organisms,
@@ -266,7 +266,7 @@ public sealed class SystemScanStateTests
             )
         );
 
-        var organism = Assert.Single(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
+        SystemOrganismSnapshot organism = Assert.Single(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
         Assert.Equal("$Codex_Ent_Brancae_Name;", organism.Genus);
         Assert.Equal(2100201, organism.EntryId);
     }
@@ -324,7 +324,7 @@ public sealed class SystemScanStateTests
             )
         );
 
-        var snapshot = state.CreateSnapshot();
+        SystemScanSnapshot snapshot = state.CreateSnapshot();
         Assert.Equal("Second", snapshot.SystemName);
         Assert.Equal(2, snapshot.SystemAddress);
         Assert.Equal(new GalacticCoordinate(4, 5, 6), snapshot.StarPosition);
@@ -346,7 +346,7 @@ public sealed class SystemScanStateTests
 
         Assert.True(state.Apply(Parse($$"""{"event":"{{eventName}}"}""")));
 
-        var snapshot = state.CreateSnapshot();
+        SystemScanSnapshot snapshot = state.CreateSnapshot();
         Assert.Equal(42, snapshot.SystemAddress);
         Assert.Null(snapshot.CurrentBodyId);
         Assert.Single(snapshot.Bodies);
@@ -365,7 +365,7 @@ public sealed class SystemScanStateTests
 
         Assert.True(state.Apply(Parse("""{"event":"StartJump","JumpType":"Hyperspace"}""")));
 
-        var snapshot = state.CreateSnapshot();
+        SystemScanSnapshot snapshot = state.CreateSnapshot();
         Assert.Equal(42, snapshot.SystemAddress);
         Assert.Null(snapshot.CurrentBodyId);
         Assert.Single(snapshot.Bodies);
@@ -420,7 +420,7 @@ public sealed class SystemScanStateTests
         state.Apply(Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 1 A Ring","BodyID":3}"""));
         state.Apply(Parse("""{"event":"ScanBaryCentre","StarSystem":"Test","SystemAddress":42,"BodyID":4}"""));
 
-        var snapshot = state.CreateSnapshot();
+        SystemScanSnapshot snapshot = state.CreateSnapshot();
         Assert.Equal(2, snapshot.FssBodyCount);
         Assert.True(snapshot.IsFssComplete);
         Assert.Equal(5, snapshot.ScannedBodyCount);
@@ -467,9 +467,9 @@ public sealed class SystemScanStateTests
             )
         );
 
-        var snapshot = state.CreateSnapshot();
-        var barycentre = Assert.Single(snapshot.Bodies, body => body.BodyId == 3);
-        var planet = Assert.Single(snapshot.Bodies, body => body.BodyId == 4);
+        SystemScanSnapshot snapshot = state.CreateSnapshot();
+        SystemScanBodySnapshot barycentre = Assert.Single(snapshot.Bodies, body => body.BodyId == 3);
+        SystemScanBodySnapshot planet = Assert.Single(snapshot.Bodies, body => body.BodyId == 4);
 
         Assert.Equal([new SystemBodyParentSnapshot(SystemBodyParentKind.Null, 1)], barycentre.Parents);
         Assert.Equal(
@@ -580,12 +580,12 @@ public sealed class SystemScanStateTests
             )
         );
 
-        var changed = live.MergeKnownData(knownState.CreateSnapshot());
+        bool changed = live.MergeKnownData(knownState.CreateSnapshot());
 
         Assert.True(changed);
-        var snapshot = live.CreateSnapshot();
+        SystemScanSnapshot snapshot = live.CreateSnapshot();
         Assert.Equal(new GalacticCoordinate(1, 2, 3), snapshot.StarPosition);
-        var body = Assert.Single(snapshot.Bodies);
+        SystemScanBodySnapshot body = Assert.Single(snapshot.Bodies);
         Assert.Equal("Rocky body", body.PlanetClass);
         Assert.False(body.WasDiscovered);
         Assert.Equal(20, body.SurfaceGravity);
@@ -616,7 +616,7 @@ public sealed class SystemScanStateTests
         );
 
         Assert.True(live.MergeKnownData(known.CreateSnapshot(), includeBiologicalData: false));
-        var signalsOnly = Assert.Single(live.CreateSnapshot().Bodies);
+        SystemScanBodySnapshot signalsOnly = Assert.Single(live.CreateSnapshot().Bodies);
         Assert.Equal(2, signalsOnly.BiologicalSignalCount);
         Assert.Empty(signalsOnly.Organisms);
 
@@ -666,7 +666,7 @@ public sealed class SystemScanStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

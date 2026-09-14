@@ -91,7 +91,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
                 return 0;
             }
 
-            var remaining = (
+            double remaining = (
                 Messages.Max(message => message.ExpiresAtUtc) - timeProvider.GetUtcNow()
             ).TotalMilliseconds;
             return Math.Clamp(remaining / MessageDuration.TotalMilliseconds * 100, 0, 100);
@@ -115,7 +115,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
     public void ApplyJournalEvents(IReadOnlyList<JournalEventEnvelope> journalEvents, bool allowNotifications)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             switch (journalEvent.EventName)
             {
@@ -161,7 +161,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
         if (CurrentBoxelSearchStatus && after.TotalSystems > 0)
         {
-            var progress = after.CompletedSystems / (double)after.TotalSystems;
+            double progress = after.CompletedSystems / (double)after.TotalSystems;
             ShowMessage(
                 "Current boxel " + (progress * 100).ToString("0", CultureInfo.InvariantCulture) + "% searched."
             );
@@ -186,7 +186,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
             return;
         }
 
-        foreach (var conversion in result.Conversions)
+        foreach (ScreenshotConversion conversion in result.Conversions)
         {
             ShowMessage(
                 $"Saved '{Path.GetFileName(conversion.OutputPath)}' with"
@@ -199,7 +199,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
     public void ReportGreenGasGiantUploads(GreenGasGiantPublicationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
-        foreach (var candidate in result.Published)
+        foreach (GreenGasGiantCandidate candidate in result.Published)
         {
             ShowMessage($"Congrats, {candidate.Tag} GGG uploaded!");
         }
@@ -224,8 +224,8 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
             return;
         }
 
-        var text = message.Trim();
-        var expires = timeProvider.GetUtcNow() + MessageDuration;
+        string text = message.Trim();
+        DateTimeOffset expires = timeProvider.GetUtcNow() + MessageDuration;
         Messages = Messages
             .Where(existing => !string.Equals(existing.Text, text, StringComparison.Ordinal))
             .Append(new NotificationMessageViewModel(text, expires))
@@ -235,8 +235,8 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     public void Refresh()
     {
-        var now = timeProvider.GetUtcNow();
-        var active = Messages.Where(message => message.ExpiresAtUtc > now).ToArray();
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        NotificationMessageViewModel[] active = Messages.Where(message => message.ExpiresAtUtc > now).ToArray();
         if (active.Length != Messages.Count)
         {
             Messages = active;
@@ -248,17 +248,17 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
     private void ResetMaterials(JsonElement root)
     {
         materials.Clear();
-        foreach (var category in new[] { "Raw", "Manufactured", "Encoded" })
+        foreach (string? category in new[] { "Raw", "Manufactured", "Encoded" })
         {
-            if (!root.TryGetProperty(category, out var entries) || entries.ValueKind != JsonValueKind.Array)
+            if (!root.TryGetProperty(category, out JsonElement entries) || entries.ValueKind != JsonValueKind.Array)
             {
                 continue;
             }
 
-            foreach (var entry in entries.EnumerateArray())
+            foreach (JsonElement entry in entries.EnumerateArray())
             {
-                var name = GetString(entry, "Name");
-                var count = GetInt32(entry, "Count");
+                string? name = GetString(entry, "Name");
+                int? count = GetInt32(entry, "Count");
                 if (string.IsNullOrWhiteSpace(name) || count is null)
                 {
                     continue;
@@ -274,18 +274,18 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     private void ApplyMaterialCollected(JsonElement root, bool allowNotifications)
     {
-        var category = GetString(root, "Category");
-        var name = GetString(root, "Name");
-        var count = GetInt32(root, "Count");
+        string? category = GetString(root, "Category");
+        string? name = GetString(root, "Name");
+        int? count = GetInt32(root, "Count");
         if (string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(name) || count is not > 0)
         {
             return;
         }
 
-        var key = GetMaterialKey(category, name);
-        var existing = materials.GetValueOrDefault(key);
-        var displayName = GetString(root, "Name_Localised") ?? existing?.DisplayName ?? name;
-        var total = (int)Math.Clamp((long)(existing?.Count ?? 0) + count.Value, 0, int.MaxValue);
+        string key = GetMaterialKey(category, name);
+        MaterialState? existing = materials.GetValueOrDefault(key);
+        string displayName = GetString(root, "Name_Localised") ?? existing?.DisplayName ?? name;
+        int total = (int)Math.Clamp((long)(existing?.Count ?? 0) + count.Value, 0, int.MaxValue);
         materials[key] = new MaterialState(displayName, total);
         if (allowNotifications && MaterialCountAfterPickup)
         {
@@ -296,9 +296,9 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
     private void ApplyMaterialTrade(JsonElement root)
     {
         if (
-            !root.TryGetProperty("Paid", out var paidElement)
+            !root.TryGetProperty("Paid", out JsonElement paidElement)
             || paidElement.ValueKind != JsonValueKind.Object
-            || !root.TryGetProperty("Received", out var receivedElement)
+            || !root.TryGetProperty("Received", out JsonElement receivedElement)
             || receivedElement.ValueKind != JsonValueKind.Object
             || TryReadMaterialAdjustment(paidElement, "Quantity") is not { } paid
             || TryReadMaterialAdjustment(receivedElement, "Quantity") is not { } received
@@ -307,8 +307,8 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
             return;
         }
 
-        var paidKey = GetMaterialKey(paid.Category, paid.Name);
-        if (!materials.TryGetValue(paidKey, out var paidState))
+        string paidKey = GetMaterialKey(paid.Category, paid.Name);
+        if (!materials.TryGetValue(paidKey, out MaterialState? paidState))
         {
             return;
         }
@@ -319,12 +319,12 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     private void ApplyTechnologyBroker(JsonElement root)
     {
-        if (!root.TryGetProperty("Materials", out var entries) || entries.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Materials", out JsonElement entries) || entries.ValueKind != JsonValueKind.Array)
         {
             return;
         }
 
-        foreach (var entry in entries.EnumerateArray())
+        foreach (JsonElement entry in entries.EnumerateArray())
         {
             if (
                 entry.ValueKind != JsonValueKind.Object
@@ -334,8 +334,8 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
                 continue;
             }
 
-            var key = GetMaterialKey(material.Category, material.Name);
-            if (materials.TryGetValue(key, out var existing))
+            string key = GetMaterialKey(material.Category, material.Name);
+            if (materials.TryGetValue(key, out MaterialState? existing))
             {
                 materials[key] = existing with { Count = Math.Max(0, existing.Count - material.Count) };
             }
@@ -344,8 +344,8 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     private void ApplyMaterialIncrease(MaterialAdjustment material)
     {
-        var key = GetMaterialKey(material.Category, material.Name);
-        var existing = materials.GetValueOrDefault(key);
+        string key = GetMaterialKey(material.Category, material.Name);
+        MaterialState? existing = materials.GetValueOrDefault(key);
         materials[key] = new MaterialState(
             material.DisplayName ?? existing?.DisplayName ?? material.Name,
             (int)Math.Min(int.MaxValue, (long)(existing?.Count ?? 0) + material.Count)
@@ -354,9 +354,9 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     private static MaterialAdjustment? TryReadMaterialAdjustment(JsonElement root, string countProperty)
     {
-        var category = GetString(root, "Category");
-        var name = GetString(root, "Material") ?? GetString(root, "Name");
-        var count = GetInt32(root, countProperty);
+        string? category = GetString(root, "Category");
+        string? name = GetString(root, "Material") ?? GetString(root, "Name");
+        int? count = GetInt32(root, countProperty);
         return string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(name) || count is not > 0
             ? null
             : new MaterialAdjustment(
@@ -369,10 +369,10 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     private void ApplyCargoDepot(JsonElement root)
     {
-        var updateType = GetString(root, "UpdateType");
-        var delivered = GetInt32(root, "ItemsDelivered");
-        var total = GetInt32(root, "TotalItemsToDeliver");
-        var cargoType = GetString(root, "CargoType");
+        string? updateType = GetString(root, "UpdateType");
+        int? delivered = GetInt32(root, "ItemsDelivered");
+        int? total = GetInt32(root, "TotalItemsToDeliver");
+        string? cargoType = GetString(root, "CargoType");
         if (
             !string.Equals(updateType, "Deliver", StringComparison.Ordinal)
             || delivered is null
@@ -416,14 +416,16 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var result) ? result : null;
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.TryGetInt32(out int result)
+            ? result
+            : null;
     }
 
     private static string GetMaterialKey(string category, string name)

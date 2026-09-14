@@ -9,18 +9,18 @@ public static class OverlayWindowPlacement
         ValidateBounds(hostBounds, nameof(hostBounds));
         ValidateBounds(workingArea, nameof(workingArea));
 
-        var left = Math.Max(hostBounds.X, workingArea.X);
-        var top = Math.Max(hostBounds.Y, workingArea.Y);
-        var right = Math.Min(hostBounds.Right, workingArea.Right);
-        var bottom = Math.Min(hostBounds.Bottom, workingArea.Bottom);
+        int left = Math.Max(hostBounds.X, workingArea.X);
+        int top = Math.Max(hostBounds.Y, workingArea.Y);
+        int right = Math.Min(hostBounds.Right, workingArea.Right);
+        int bottom = Math.Min(hostBounds.Bottom, workingArea.Bottom);
         return right > left && bottom > top ? new PixelRect(left, top, right - left, bottom - top) : workingArea;
     }
 
     public static PixelPoint TopCenter(PixelRect gameClientBounds, PixelSize overlaySize, int margin = 20)
     {
         Validate(gameClientBounds, overlaySize, margin);
-        var availableWidth = Math.Max(0, gameClientBounds.Width - (margin * 2));
-        var centeredOffset = Math.Max(0, (availableWidth - overlaySize.Width) / 2);
+        int availableWidth = Math.Max(0, gameClientBounds.Width - (margin * 2));
+        int centeredOffset = Math.Max(0, (availableWidth - overlaySize.Width) / 2);
         return new PixelPoint(gameClientBounds.X + margin + centeredOffset, gameClientBounds.Y + margin);
     }
 
@@ -51,8 +51,8 @@ public static class OverlayWindowPlacement
     public static PixelPoint MiddleRight(PixelRect hostBounds, PixelSize overlaySize, int margin = 20)
     {
         Validate(hostBounds, overlaySize, margin);
-        var availableHeight = Math.Max(0, hostBounds.Height - (margin * 2));
-        var centeredOffset = Math.Max(0, (availableHeight - overlaySize.Height) / 2);
+        int availableHeight = Math.Max(0, hostBounds.Height - (margin * 2));
+        int centeredOffset = Math.Max(0, (availableHeight - overlaySize.Height) / 2);
         return new PixelPoint(
             Math.Max(hostBounds.X + margin, hostBounds.Right - overlaySize.Width - margin),
             hostBounds.Y + margin + centeredOffset
@@ -62,8 +62,8 @@ public static class OverlayWindowPlacement
     public static PixelPoint MiddleLeft(PixelRect hostBounds, PixelSize overlaySize, int margin = 20)
     {
         Validate(hostBounds, overlaySize, margin);
-        var availableHeight = Math.Max(0, hostBounds.Height - (margin * 2));
-        var centeredOffset = Math.Max(0, (availableHeight - overlaySize.Height) / 2);
+        int availableHeight = Math.Max(0, hostBounds.Height - (margin * 2));
+        int centeredOffset = Math.Max(0, (availableHeight - overlaySize.Height) / 2);
         return new PixelPoint(hostBounds.X + margin, hostBounds.Y + margin + centeredOffset);
     }
 
@@ -79,8 +79,8 @@ public static class OverlayWindowPlacement
     public static PixelPoint BottomCenter(PixelRect hostBounds, PixelSize overlaySize, int margin = 20)
     {
         Validate(hostBounds, overlaySize, margin);
-        var availableWidth = Math.Max(0, hostBounds.Width - (margin * 2));
-        var centeredOffset = Math.Max(0, (availableWidth - overlaySize.Width) / 2);
+        int availableWidth = Math.Max(0, hostBounds.Width - (margin * 2));
+        int centeredOffset = Math.Max(0, (availableWidth - overlaySize.Width) / 2);
         return new PixelPoint(
             hostBounds.X + margin + centeredOffset,
             Math.Max(hostBounds.Y + margin, hostBounds.Bottom - overlaySize.Height - margin)

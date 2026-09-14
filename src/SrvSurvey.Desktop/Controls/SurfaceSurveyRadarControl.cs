@@ -157,16 +157,16 @@ public sealed class SurfaceSurveyRadarControl : Control
     {
         base.Render(context);
         var bounds = new Rect(Bounds.Size);
-        var background = BackgroundBrush ?? Brushes.Transparent;
-        var grid = GridBrush ?? Brushes.DimGray;
-        var accent = AccentBrush ?? Brushes.Cyan;
+        IBrush background = BackgroundBrush ?? Brushes.Transparent;
+        IBrush grid = GridBrush ?? Brushes.DimGray;
+        IBrush accent = AccentBrush ?? Brushes.Cyan;
         context.DrawRectangle(background, new Pen(grid, 1), bounds, 8, 8);
         if (bounds.Width <= 0 || bounds.Height <= 0)
         {
             return;
         }
 
-        var center = bounds.Center;
+        Point center = bounds.Center;
         // Keep rings/markers inside the radar frame so out-of-range contacts
         // disappear at the border instead of painting over neighbouring UI.
         using (context.PushClip(bounds))
@@ -174,7 +174,7 @@ public sealed class SurfaceSurveyRadarControl : Control
             DrawGrid(context, bounds, center, grid);
             DrawSplatBoundaries(context, center);
             DrawSuggestedRigLocations(context, bounds, center);
-            foreach (var marker in Markers ?? [])
+            foreach (SurfaceRadarMarkerViewModel marker in Markers ?? [])
             {
                 DrawMarker(context, bounds, center, marker);
             }
@@ -236,7 +236,7 @@ public sealed class SurfaceSurveyRadarControl : Control
         var pen = new Pen(brush, 1);
         context.DrawLine(pen, new Point(center.X, bounds.Top + 8), new Point(center.X, bounds.Bottom - 8));
         context.DrawLine(pen, new Point(bounds.Left + 8, center.Y), new Point(bounds.Right - 8, center.Y));
-        foreach (var radius in new[] { 50d, 100d })
+        foreach (double radius in new[] { 50d, 100d })
         {
             context.DrawEllipse(null, pen, center, radius, radius);
         }
@@ -246,13 +246,13 @@ public sealed class SurfaceSurveyRadarControl : Control
 
     private void DrawMarker(DrawingContext context, Rect bounds, Point center, SurfaceRadarMarkerViewModel marker)
     {
-        var radians = marker.RelativeBearingDegrees * Math.PI / 180d;
-        var scale = double.IsFinite(ScaleMultiplier) ? Math.Clamp(ScaleMultiplier, 0.25, 10) : 1;
+        double radians = marker.RelativeBearingDegrees * Math.PI / 180d;
+        double scale = double.IsFinite(ScaleMultiplier) ? Math.Clamp(ScaleMultiplier, 0.25, 10) : 1;
         var point = new Point(
             center.X + Math.Sin(radians) * marker.DistanceMeters / MetersPerPixel * scale,
             center.Y - Math.Cos(radians) * marker.DistanceMeters / MetersPerPixel * scale
         );
-        var radius = marker.RadiusMeters / MetersPerPixel * scale;
+        double radius = marker.RadiusMeters / MetersPerPixel * scale;
         if (
             radius > 0
             && point.X + radius >= bounds.Left
@@ -261,7 +261,7 @@ public sealed class SurfaceSurveyRadarControl : Control
             && point.Y - radius <= bounds.Bottom
         )
         {
-            var circleBrush = GetCircleBrush(marker);
+            IBrush circleBrush = GetCircleBrush(marker);
             context.DrawEllipse(null, new Pen(circleBrush, marker.IsInsideRadius ? 2.5 : 1.25), point, radius, radius);
         }
 
@@ -270,7 +270,7 @@ public sealed class SurfaceSurveyRadarControl : Control
             return;
         }
 
-        var markerBrush = GetMarkerBrush(marker);
+        IBrush markerBrush = GetMarkerBrush(marker);
         if (marker.Kind is SurfaceRadarMarkerKind.Ship or SurfaceRadarMarkerKind.FormerShip)
         {
             DrawTriangle(context, point, markerBrush, 7);
@@ -293,11 +293,11 @@ public sealed class SurfaceSurveyRadarControl : Control
 
     private IBrush GetCircleBrush(SurfaceRadarMarkerViewModel marker)
     {
-        var muted = MutedBrush ?? Brushes.Gray;
-        var success = SuccessBrush ?? Brushes.LimeGreen;
-        var warning = WarningBrush ?? Brushes.Gold;
-        var danger = DangerBrush ?? Brushes.Red;
-        var accent = AccentBrush ?? Brushes.Cyan;
+        IBrush muted = MutedBrush ?? Brushes.Gray;
+        IBrush success = SuccessBrush ?? Brushes.LimeGreen;
+        IBrush warning = WarningBrush ?? Brushes.Gold;
+        IBrush danger = DangerBrush ?? Brushes.Red;
+        IBrush accent = AccentBrush ?? Brushes.Cyan;
         if (string.Equals(marker.Status, "Died", StringComparison.OrdinalIgnoreCase))
         {
             return danger;
@@ -359,7 +359,7 @@ public sealed class SurfaceSurveyRadarControl : Control
     private static void DrawTriangle(DrawingContext context, Point center, IBrush brush, double radius)
     {
         var geometry = new StreamGeometry();
-        using (var geometryContext = geometry.Open())
+        using (StreamGeometryContext geometryContext = geometry.Open())
         {
             geometryContext.BeginFigure(new Point(center.X, center.Y - radius), isFilled: true);
             geometryContext.LineTo(new Point(center.X + radius * 0.7, center.Y + radius * 0.75));

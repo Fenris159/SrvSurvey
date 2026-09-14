@@ -12,7 +12,7 @@ public sealed class RavenServiceSettingsStoreTests : IDisposable
     [Fact]
     public void MissingOrInvalidOverrideUsesProductionDefault()
     {
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         var store = new RavenServiceSettingsStore(path);
         Assert.Null(store.LoadServiceUri());
 

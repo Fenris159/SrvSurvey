@@ -6,13 +6,13 @@ public static class EliteGameWindowIdentity
 
     public static bool MatchesX11(string? resourceName, string? resourceClass, string? title)
     {
-        var classIdentity = Compact(resourceName) + Compact(resourceClass);
+        string classIdentity = Compact(resourceName) + Compact(resourceClass);
         if (classIdentity.Contains("elitedangerous64", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
-        var titleIdentity = Compact(title);
+        string titleIdentity = Compact(title);
         return string.Equals(titleIdentity, "elitedangerous", StringComparison.OrdinalIgnoreCase)
             || titleIdentity.Contains("elitedangerousclient", StringComparison.OrdinalIgnoreCase);
     }

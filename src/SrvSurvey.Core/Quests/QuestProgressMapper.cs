@@ -117,7 +117,7 @@ public static class QuestProgressMapper
 
     private static RavenQuestMessage MapMessage(LegacyQuestMessage message, LegacyQuestDefinition? definition)
     {
-        var declared = definition?.Messages.FirstOrDefault(candidate =>
+        LegacyQuestMessageDefinition? declared = definition?.Messages.FirstOrDefault(candidate =>
             string.Equals(candidate.Id, message.Id, StringComparison.Ordinal)
         );
         return new RavenQuestMessage

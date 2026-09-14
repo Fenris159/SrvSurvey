@@ -31,7 +31,7 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
     public void PreferencesRoundTripWithoutRemovingUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new DesktopBehaviorSettingsStore(path);
         var expected = new DesktopBehaviorPreferences(
@@ -58,7 +58,7 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
     public void UnsupportedWindowScalesUseDefault(int scalePercent)
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(
             path,
             $$"""

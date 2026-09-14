@@ -31,13 +31,13 @@ public sealed class GuardianSiteTemplateCatalogExporter
     {
         ArgumentNullException.ThrowIfNull(catalog);
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        var targetPath = Path.GetFullPath(path);
+        string targetPath = Path.GetFullPath(path);
         if (string.IsNullOrWhiteSpace(Path.GetFileName(targetPath)))
         {
             throw new ArgumentException("A Guardian template export file is required.", nameof(path));
         }
 
-        var pathLock = PathLocks.GetOrAdd(targetPath, _ => new SemaphoreSlim(1, 1));
+        SemaphoreSlim pathLock = PathLocks.GetOrAdd(targetPath, _ => new SemaphoreSlim(1, 1));
         await pathLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -55,17 +55,17 @@ public sealed class GuardianSiteTemplateCatalogExporter
         CancellationToken cancellationToken
     )
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(targetPath)
             ?? throw new InvalidOperationException("The Guardian template export has no parent directory.");
         Directory.CreateDirectory(directory);
         RejectReparsePoint(targetPath);
-        var original = await CaptureAsync(targetPath, cancellationToken).ConfigureAwait(false);
-        var payload = Serialize(catalog);
-        var expectedHash = Convert.ToHexString(SHA256.HashData(payload));
-        var temporaryPath = Path.Combine(directory, $".{Path.GetFileName(targetPath)}.{Guid.NewGuid():N}.tmp");
+        FileFingerprint? original = await CaptureAsync(targetPath, cancellationToken).ConfigureAwait(false);
+        byte[] payload = Serialize(catalog);
+        string expectedHash = Convert.ToHexString(SHA256.HashData(payload));
+        string temporaryPath = Path.Combine(directory, $".{Path.GetFileName(targetPath)}.{Guid.NewGuid():N}.tmp");
         string? backupPath = null;
-        var activated = false;
+        bool activated = false;
         try
         {
             await WriteNewFileAsync(temporaryPath, payload, cancellationToken).ConfigureAwait(false);
@@ -114,7 +114,10 @@ public sealed class GuardianSiteTemplateCatalogExporter
     {
         var root = new JsonObject();
         foreach (
-            var template in catalog.Templates.OrderBy(template => template.SiteType, StringComparer.OrdinalIgnoreCase)
+            GuardianSiteTemplate? template in catalog.Templates.OrderBy(
+                template => template.SiteType,
+                StringComparer.OrdinalIgnoreCase
+            )
         )
         {
             var row = new JsonObject
@@ -139,7 +142,9 @@ public sealed class GuardianSiteTemplateCatalogExporter
     private static JsonArray WritePoints(IEnumerable<GuardianPointOfInterest> points)
     {
         var array = new JsonArray();
-        foreach (var point in points.OrderBy(point => point.Name, StringComparer.OrdinalIgnoreCase))
+        foreach (
+            GuardianPointOfInterest? point in points.OrderBy(point => point.Name, StringComparer.OrdinalIgnoreCase)
+        )
         {
             array.Add(
                 new JsonObject
@@ -159,7 +164,12 @@ public sealed class GuardianSiteTemplateCatalogExporter
     private static JsonObject WriteGroups(IReadOnlyDictionary<string, GuardianMapPoint> groups)
     {
         var result = new JsonObject();
-        foreach (var group in groups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        foreach (
+            KeyValuePair<string, GuardianMapPoint> group in groups.OrderBy(
+                pair => pair.Key,
+                StringComparer.OrdinalIgnoreCase
+            )
+        )
         {
             result[group.Key] = new JsonObject
             {
@@ -204,8 +214,8 @@ public sealed class GuardianSiteTemplateCatalogExporter
         CancellationToken cancellationToken
     )
     {
-        var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
-        var actualHash = Convert.ToHexString(SHA256.HashData(bytes));
+        byte[] bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+        string actualHash = Convert.ToHexString(SHA256.HashData(bytes));
         if (!string.Equals(actualHash, expectedHash, StringComparison.Ordinal))
         {
             throw new IOException("The Guardian template export checksum did not match the staged data.");
@@ -218,9 +228,9 @@ public sealed class GuardianSiteTemplateCatalogExporter
             throw new InvalidDataException("The Guardian template export did not retain every catalog entry.");
         }
 
-        foreach (var template in expected.Templates)
+        foreach (GuardianSiteTemplate template in expected.Templates)
         {
-            var roundTrip =
+            GuardianSiteTemplate roundTrip =
                 loaded.Find(template.SiteType)
                 ?? throw new InvalidDataException($"The Guardian template export lost '{template.SiteType}'.");
             if (
@@ -244,7 +254,7 @@ public sealed class GuardianSiteTemplateCatalogExporter
         }
 
         RejectReparsePoint(path);
-        var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
         return new FileFingerprint(bytes.LongLength, Convert.ToHexString(SHA256.HashData(bytes)));
     }
 
@@ -282,9 +292,9 @@ public sealed class GuardianSiteTemplateCatalogExporter
 
     private static string CreateBackupPath(string targetPath)
     {
-        var timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture);
-        var candidate = $"{targetPath}.backup-{timestamp}";
-        var suffix = 1;
+        string timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture);
+        string candidate = $"{targetPath}.backup-{timestamp}";
+        int suffix = 1;
         while (File.Exists(candidate))
         {
             candidate = $"{targetPath}.backup-{timestamp}-{suffix++}";

@@ -10,14 +10,14 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task ReadsDemolishedSitesWithoutRejectingTheSystem()
     {
-        var client = Create(
+        RavenColonialClient client = Create(
             new StubHandler(_ =>
                 Json(
                     """[{"id":"old","name":"Old Port","status":"demolish"},{"id":"new","name":"New Port","status":"plan"}]"""
                 )
             )
         );
-        var sites = await client.GetSystemSitesAsync("Test System");
+        IReadOnlyList<ColonizationSystemSite> sites = await client.GetSystemSitesAsync("Test System");
         Assert.Equal(2, sites.Count);
         Assert.Equal(ColonizationSystemSiteStatus.Demolish, sites[0].Status);
         Assert.Equal(ColonizationSystemSiteStatus.Plan, sites[1].Status);
@@ -45,15 +45,15 @@ public sealed class RavenColonialClientTests
                 _ => new HttpResponseMessage(HttpStatusCode.NotFound),
             };
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
-        var result = await client.GetCommanderProjectsAsync("Test Cmdr");
+        ColonizationCommanderProjects result = await client.GetCommanderProjectsAsync("Test Cmdr");
 
         Assert.Single(result.Projects);
         Assert.Equal("build-1", result.Projects[0].BuildId);
         Assert.Equal(["build-2"], result.HiddenProjectIds);
         Assert.Equal("build-1", result.PrimaryProjectId);
-        var carrier = Assert.Single(result.FleetCarriers);
+        ColonizationFleetCarrier carrier = Assert.Single(result.FleetCarriers);
         Assert.Equal(42, carrier.MarketId);
         Assert.Equal(75, carrier.Cargo["steel"]);
         Assert.Equal(4, requested.Count);
@@ -62,7 +62,7 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task ResolvesCommanderForRavenApiKey()
     {
-        var client = Create(
+        RavenColonialClient client = Create(
             new StubHandler(request =>
             {
                 Assert.Equal(HttpMethod.Get, request.Method);
@@ -72,7 +72,7 @@ public sealed class RavenColonialClientTests
             })
         );
 
-        var commander = await client.GetCommanderByApiKeyAsync("secret-key");
+        string? commander = await client.GetCommanderByApiKeyAsync("secret-key");
 
         Assert.Equal("Test Cmdr", commander);
     }
@@ -84,7 +84,7 @@ public sealed class RavenColonialClientTests
     [InlineData(HttpStatusCode.NotFound)]
     public async Task TreatsRejectedRavenApiKeyAsInvalid(HttpStatusCode statusCode)
     {
-        var client = Create(new StubHandler(_ => new HttpResponseMessage(statusCode)));
+        RavenColonialClient client = Create(new StubHandler(_ => new HttpResponseMessage(statusCode)));
 
         Assert.Null(await client.GetCommanderByApiKeyAsync("invalid-key"));
     }
@@ -100,9 +100,9 @@ public sealed class RavenColonialClientTests
             body = await request.Content!.ReadAsStringAsync();
             return Json("[\"build-1\"]");
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
-        var result = await client.SaveHiddenProjectIdsAsync("Test Cmdr", ["build-1", "BUILD-1", ""]);
+        IReadOnlyList<string> result = await client.SaveHiddenProjectIdsAsync("Test Cmdr", ["build-1", "BUILD-1", ""]);
 
         Assert.Equal(["build-1"], result);
         Assert.Equal("[\"build-1\"]", body);
@@ -119,7 +119,7 @@ public sealed class RavenColonialClientTests
             body = await request.Content!.ReadAsStringAsync();
             return Json("{\"buildId\":\"created\",\"buildType\":\"no_truss\",\"buildName\":\"Port\"}");
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
         var depot = new ColonizationConstructionDepotSnapshot(
             DateTimeOffset.UtcNow,
             42,
@@ -129,7 +129,7 @@ public sealed class RavenColonialClientTests
             [new ColonizationResourceRequirement("steel", "Steel", 100, 25, 5_057)]
         );
 
-        var result = await client.CreateProjectAsync(
+        ColonizationProject? result = await client.CreateProjectAsync(
             new ColonizationProjectCreate
             {
                 BuildType = "no_truss",
@@ -145,11 +145,11 @@ public sealed class RavenColonialClientTests
 
         Assert.Equal("created", result?.BuildId);
         using var document = JsonDocument.Parse(body!);
-        var root = document.RootElement;
+        JsonElement root = document.RootElement;
         Assert.Equal("no_truss", root.GetProperty("buildType").GetString());
-        var depotJson = root.GetProperty("colonisationConstructionDepot");
+        JsonElement depotJson = root.GetProperty("colonisationConstructionDepot");
         Assert.Equal(42, depotJson.GetProperty("MarketID").GetInt64());
-        var resource = depotJson.GetProperty("ResourcesRequired")[0];
+        JsonElement resource = depotJson.GetProperty("ResourcesRequired")[0];
         Assert.Equal("$steel_name;", resource.GetProperty("Name").GetString());
         Assert.Equal(25, resource.GetProperty("ProvidedAmount").GetInt32());
     }
@@ -157,7 +157,7 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task CreatingProjectRestoresOriginalPrimaryWithOrderOnlyUpdate()
     {
-        var requestNumber = 0;
+        int requestNumber = 0;
         string? orderBody = null;
         var handler = new StubHandler(async request =>
         {
@@ -198,14 +198,14 @@ public sealed class RavenColonialClientTests
         });
         var publisher = new ColonizationProjectPublisher(Create(handler));
 
-        var result = await publisher.CreateAsync(CreateProjectRequest(), "secret-key");
+        ColonizationProjectPublishResult result = await publisher.CreateAsync(CreateProjectRequest(), "secret-key");
 
         Assert.Equal("created", result.Project?.BuildId);
         Assert.Equal(ColonizationPrimarySiteOrderStatus.Restored, result.PrimarySiteOrderStatus);
         Assert.Null(result.Warning);
         Assert.Equal(5, requestNumber);
         using var document = JsonDocument.Parse(orderBody!);
-        var root = document.RootElement;
+        JsonElement root = document.RootElement;
         Assert.Empty(root.GetProperty("update").EnumerateArray());
         Assert.Empty(root.GetProperty("delete").EnumerateArray());
         Assert.Equal(
@@ -217,7 +217,7 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task ExistingPrimaryWithoutApiKeyStopsBeforeProjectCreation()
     {
-        var requestCount = 0;
+        int requestCount = 0;
         var publisher = new ColonizationProjectPublisher(
             Create(
                 new StubHandler(request =>
@@ -229,7 +229,7 @@ public sealed class RavenColonialClientTests
             )
         );
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             publisher.CreateAsync(CreateProjectRequest(), apiKey: null)
         );
 
@@ -247,12 +247,12 @@ public sealed class RavenColonialClientTests
                 )
                 : Json("\"Architect\"")
         );
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
-        var sites = await client.GetSystemSitesAsync("Test System");
-        var architect = await client.GetSystemArchitectAsync("Test System");
+        IReadOnlyList<ColonizationSystemSite> sites = await client.GetSystemSitesAsync("Test System");
+        string? architect = await client.GetSystemArchitectAsync("Test System");
 
-        var site = Assert.Single(sites);
+        ColonizationSystemSite site = Assert.Single(sites);
         Assert.Equal(ColonizationSystemSiteStatus.Plan, site.Status);
         Assert.Equal("Architect", architect);
     }
@@ -261,7 +261,7 @@ public sealed class RavenColonialClientTests
     public async Task PatchesOneEscapedSystemSiteFieldWithApiKey()
     {
         string? body = null;
-        var client = Create(
+        RavenColonialClient client = Create(
             new StubHandler(async request =>
             {
                 Assert.Equal(HttpMethod.Patch, request.Method);
@@ -285,8 +285,8 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task RejectsEmptySystemSitePatchBeforeSending()
     {
-        var sent = false;
-        var client = Create(
+        bool sent = false;
+        RavenColonialClient client = Create(
             new StubHandler(_ =>
             {
                 sent = true;
@@ -323,15 +323,15 @@ public sealed class RavenColonialClientTests
                 """
             );
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
-        var loaded = await client.GetSystemAsync("123");
-        var imported = await client.ImportSystemBodiesAsync("123");
+        ColonizationSystemRecord loaded = await client.GetSystemAsync("123");
+        ColonizationSystemRecord imported = await client.ImportSystemBodiesAsync("123");
 
         Assert.Equal(123, loaded.SystemAddress);
         Assert.Equal("Architect", loaded.Architect);
         Assert.True(loaded.IsOpen);
-        var body = Assert.Single(imported.Bodies!);
+        ColonizationSystemBody body = Assert.Single(imported.Bodies!);
         Assert.Equal(1, body.Number);
         Assert.Contains("landable", body.Features);
         Assert.True(body.ExtensionData["future"].GetBoolean());
@@ -354,9 +354,9 @@ public sealed class RavenColonialClientTests
             body = await request.Content!.ReadAsStringAsync();
             return Json("""{"id64":123,"name":"Test System","sites":[],"bodies":[]}""");
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
-        var result = await client.UpdateSystemSitesAsync(
+        ColonizationSystemRecord result = await client.UpdateSystemSitesAsync(
             "Test System",
             new ColonizationSystemSiteUpdate
             {
@@ -378,7 +378,7 @@ public sealed class RavenColonialClientTests
 
         Assert.Equal(123, result.SystemAddress);
         using var document = JsonDocument.Parse(body!);
-        var root = document.RootElement;
+        JsonElement root = document.RootElement;
         Assert.Equal("site-1", root.GetProperty("update")[0].GetProperty("id").GetString());
         Assert.Equal("complete", root.GetProperty("update")[0].GetProperty("status").GetString());
         Assert.Equal("site-2", root.GetProperty("delete")[0].GetString());
@@ -398,9 +398,9 @@ public sealed class RavenColonialClientTests
             body = await request.Content!.ReadAsStringAsync();
             return Json("""{"id64":123,"name":"Test System","architect":"Test Cmdr","sites":[],"bodies":[]}""");
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
-        var result = await client.UpdateSystemSitesAsync(
+        ColonizationSystemRecord result = await client.UpdateSystemSitesAsync(
             "Test System",
             new ColonizationSystemSiteUpdate { Architect = "Test Cmdr" },
             "secret-key"
@@ -408,7 +408,7 @@ public sealed class RavenColonialClientTests
 
         Assert.Equal("Test Cmdr", result.Architect);
         using var document = JsonDocument.Parse(body!);
-        var root = document.RootElement;
+        JsonElement root = document.RootElement;
         Assert.Equal("Test Cmdr", root.GetProperty("architect").GetString());
         Assert.Empty(root.GetProperty("update").EnumerateArray());
         Assert.Empty(root.GetProperty("delete").EnumerateArray());
@@ -423,9 +423,9 @@ public sealed class RavenColonialClientTests
         {
             Content = new StringContent(new string('x', 10_000)),
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
-        var exception = await Assert.ThrowsAsync<RavenColonialServiceException>(() =>
+        RavenColonialServiceException exception = await Assert.ThrowsAsync<RavenColonialServiceException>(() =>
             client.GetProjectAsync("build-1")
         );
 
@@ -438,9 +438,11 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task RejectsOversizedSuccessfulResponse()
     {
-        var client = Create(new StubHandler(_ => Json(new string('x', 8 * 1024 * 1024 + 1))));
+        RavenColonialClient client = Create(new StubHandler(_ => Json(new string('x', 8 * 1024 * 1024 + 1))));
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => client.GetProjectAsync("build-1"));
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            client.GetProjectAsync("build-1")
+        );
 
         Assert.Contains("8,388,608", exception.Message);
     }
@@ -448,7 +450,7 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task MissingProjectReturnsNull()
     {
-        var client = Create(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound)));
+        RavenColonialClient client = Create(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound)));
 
         Assert.Null(await client.GetProjectAsync("missing"));
     }
@@ -456,7 +458,7 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task LoadsProjectByLegacyConstructionSiteEndpoint()
     {
-        var client = Create(
+        RavenColonialClient client = Create(
             new StubHandler(request =>
             {
                 Assert.Equal(HttpMethod.Get, request.Method);
@@ -465,7 +467,7 @@ public sealed class RavenColonialClientTests
             })
         );
 
-        var project = await client.GetProjectAsync(123, 456);
+        ColonizationProject? project = await client.GetProjectAsync(123, 456);
 
         Assert.Equal("build-1", project?.BuildId);
     }
@@ -487,7 +489,7 @@ public sealed class RavenColonialClientTests
                 ? Json("{\"buildId\":\"build-1\",\"buildName\":\"Port\",\"sumNeed\":75}")
                 : new HttpResponseMessage(HttpStatusCode.NoContent);
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
         var depot = new ColonizationConstructionDepotSnapshot(
             DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             456,
@@ -497,7 +499,7 @@ public sealed class RavenColonialClientTests
             [new ColonizationResourceRequirement("steel", "Steel", 100, 25, 5_000)]
         );
 
-        var updated = await client.UpdateProjectAsync(
+        ColonizationProject updated = await client.UpdateProjectAsync(
             new ColonizationProjectUpdate
             {
                 BuildId = "build-1",
@@ -523,7 +525,7 @@ public sealed class RavenColonialClientTests
             requests.Select(request => (request.Method, request.Path))
         );
         using var updateJson = JsonDocument.Parse(requests[0].Body!);
-        var updateRoot = updateJson.RootElement;
+        JsonElement updateRoot = updateJson.RootElement;
         Assert.Equal("build-1", updateRoot.GetProperty("buildId").GetString());
         Assert.Equal(75, updateRoot.GetProperty("commodities").GetProperty("steel").GetInt32());
         Assert.False(updateRoot.TryGetProperty("buildType", out _));
@@ -534,7 +536,7 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task LoadsFleetCarrierByLegacyMarketEndpoint()
     {
-        var client = Create(
+        RavenColonialClient client = Create(
             new StubHandler(request =>
             {
                 Assert.Equal(HttpMethod.Get, request.Method);
@@ -543,7 +545,7 @@ public sealed class RavenColonialClientTests
             })
         );
 
-        var carrier = await client.GetFleetCarrierAsync(3700123456);
+        ColonizationFleetCarrier? carrier = await client.GetFleetCarrierAsync(3700123456);
 
         Assert.Equal("ABC-123", carrier?.Name);
         Assert.Equal(75, carrier?.Cargo["steel"]);
@@ -565,9 +567,9 @@ public sealed class RavenColonialClientTests
                     + "\"cargo\":{\"steel\":75}}"
             );
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
-        var result = await client.PublishFleetCarrierAsync(
+        ColonizationFleetCarrier result = await client.PublishFleetCarrierAsync(
             new ColonizationFleetCarrierRegistration
             {
                 MarketId = 3700123456,
@@ -599,9 +601,9 @@ public sealed class RavenColonialClientTests
             body = await request.Content!.ReadAsStringAsync();
             return Json("{\"steel\":80}");
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
-        var result = adjust
+        IReadOnlyDictionary<string, int> result = adjust
             ? await client.AdjustFleetCarrierCargoAsync(
                 3700123456,
                 new Dictionary<string, int> { ["steel"] = -5 },
@@ -620,8 +622,8 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task RejectsNegativeReplacementCargoBeforeSending()
     {
-        var sent = false;
-        var client = Create(
+        bool sent = false;
+        RavenColonialClient client = Create(
             new StubHandler(_ =>
             {
                 sent = true;
@@ -638,7 +640,7 @@ public sealed class RavenColonialClientTests
     [Fact]
     public async Task RejectsInvalidFleetCarrierCargoResponse()
     {
-        var client = Create(new StubHandler(_ => Json("{\"steel\":-1}")));
+        RavenColonialClient client = Create(new StubHandler(_ => Json("{\"steel\":-1}")));
 
         await Assert.ThrowsAsync<InvalidDataException>(() =>
             client.AdjustFleetCarrierCargoAsync(42, new Dictionary<string, int> { ["steel"] = 1 }, "secret-key")
@@ -657,7 +659,7 @@ public sealed class RavenColonialClientTests
             body = await request.Content!.ReadAsStringAsync();
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         });
-        var client = Create(handler);
+        RavenColonialClient client = Create(handler);
 
         await client.PublishCurrentShipAsync(
             new ColonizationCurrentShip
@@ -672,7 +674,7 @@ public sealed class RavenColonialClientTests
         );
 
         using var document = JsonDocument.Parse(body!);
-        var root = document.RootElement;
+        JsonElement root = document.RootElement;
         Assert.Equal("Test Cmdr", root.GetProperty("cmdr").GetString());
         Assert.Equal("Raven One", root.GetProperty("name").GetString());
         Assert.Equal("python", root.GetProperty("type").GetString());

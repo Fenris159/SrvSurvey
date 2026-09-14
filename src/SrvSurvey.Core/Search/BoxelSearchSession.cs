@@ -36,7 +36,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     )]
     private readonly SemaphoreSlim refreshStartGate = new(1, 1);
     private readonly CancellationTokenSource lifetimeCancellation = new();
-    private readonly object externalWorkSync = new();
+    private readonly Lock externalWorkSync = new();
     private readonly Dictionary<BoxelSearchHealthSubsystem, BoxelSearchHealthIssue> healthIssues = [];
     private BoxelSearchSessionSnapshot current = BoxelSearchSessionSnapshot.Empty;
     private BoxelSearchSessionSearchSnapshot searchSnapshot = BoxelSearchSessionSearchSnapshot.Empty;
@@ -168,7 +168,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             }
 
             await ReconcileLinkedSearchLockedAsync(warnings).ConfigureAwait(false);
-            var loadedCode = BoxelSearchMessageCode.SearchNotConfigured;
+            BoxelSearchMessageCode loadedCode = BoxelSearchMessageCode.SearchNotConfigured;
             if (state.TopBoxel is not null)
             {
                 loadedCode = state.IsActive
@@ -189,7 +189,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         }
 
         RaiseChanged(change);
-        var outcome = CreateOutcome(result);
+        BoxelSearchOutcome outcome = CreateOutcome(result);
         if (state.IsActive)
         {
             return await RunRefreshAsync(outcome, preserveActivationCode: true).ConfigureAwait(false);
@@ -259,13 +259,15 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfUnavailable();
-        var activeProfile = Current.Context.Profile;
+        BoxelSearchProfileIdentity? activeProfile = Current.Context.Profile;
         if (activeProfile is null)
         {
             return new BoxelSearchLibrarySnapshot(Current.LibraryRevision, []);
         }
 
-        var entries = await libraryStore.ListAsync(activeProfile.FrontierId, cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<SavedBoxelSearchCatalogEntry> entries = await libraryStore
+            .ListAsync(activeProfile.FrontierId, cancellationToken)
+            .ConfigureAwait(false);
         return new BoxelSearchLibrarySnapshot(Current.LibraryRevision, entries);
     }
 
@@ -292,7 +294,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
         RaiseChanged(change);
         await lifetimeCancellation.CancelAsync().ConfigureAwait(false);
-        var ownedRetry = retryTask;
+        Task? ownedRetry = retryTask;
         if (ownedRetry is not null)
         {
             try
@@ -317,11 +319,11 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         CancellationToken cancellationToken
     )
     {
-        var stateVersionBefore = state.Version;
-        var currentSystemChanged = ApplyCurrentSystemContextLocked(update);
-        var routeChanged = ApplyRouteContextLocked(update);
-        var statusChanged = ApplyStatusContextLocked(update);
-        var contextChanged = currentSystemChanged || routeChanged || statusChanged;
+        int stateVersionBefore = state.Version;
+        bool currentSystemChanged = ApplyCurrentSystemContextLocked(update);
+        bool routeChanged = ApplyRouteContextLocked(update);
+        bool statusChanged = ApplyStatusContextLocked(update);
+        bool contextChanged = currentSystemChanged || routeChanged || statusChanged;
         ApplyJournalEventsLocked(update);
 
         if (contextChanged)
@@ -330,7 +332,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         }
 
         var warnings = new List<BoxelSearchWarning>();
-        var stateChanged = state.Version != stateVersionBefore;
+        bool stateChanged = state.Version != stateVersionBefore;
         if (stateChanged)
         {
             await PersistLockedAsync(warnings, cancellationToken).ConfigureAwait(false);
@@ -357,11 +359,11 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             return false;
         }
 
-        var normalizedName = string.IsNullOrWhiteSpace(update.CurrentSystemName)
+        string? normalizedName = string.IsNullOrWhiteSpace(update.CurrentSystemName)
             ? null
             : update.CurrentSystemName.Trim();
-        var normalizedAddress = update.CurrentSystemAddress is > 0 ? update.CurrentSystemAddress : null;
-        var changed =
+        long? normalizedAddress = update.CurrentSystemAddress is > 0 ? update.CurrentSystemAddress : null;
+        bool changed =
             !string.Equals(currentSystemName, normalizedName, StringComparison.OrdinalIgnoreCase)
             || currentPosition != update.CurrentPosition
             || currentSystemAddress != normalizedAddress;
@@ -378,7 +380,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             return false;
         }
 
-        var changed = !Equals(latestRoute, update.Route);
+        bool changed = !Equals(latestRoute, update.Route);
         latestRoute = update.Route;
         if (state.IsActive && update.Route is not null)
         {
@@ -397,7 +399,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             return false;
         }
 
-        var changed =
+        bool changed =
             !Equals(latestStatus, update.Status)
             || !string.Equals(musicTrack, update.MusicTrack, StringComparison.Ordinal)
             || isGalaxyMapOpen != update.IsGalaxyMapOpen;
@@ -420,7 +422,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             return;
         }
 
-        foreach (var journalEvent in update.JournalEvents)
+        foreach (JournalEventEnvelope journalEvent in update.JournalEvents)
         {
             state.Apply(journalEvent);
         }
@@ -453,14 +455,14 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             return;
         }
 
-        var copyResult = await CopyNextLockedAsync(automatic: true, cancellationToken).ConfigureAwait(false);
+        ActionResult copyResult = await CopyNextLockedAsync(automatic: true, cancellationToken).ConfigureAwait(false);
         warnings.AddRange(copyResult.Warnings ?? []);
     }
 
     private async Task<ActionResult> ExecuteLockedAsync(IBoxelSearchAction action, CancellationToken cancellationToken)
     {
-        var versionBefore = state.Version;
-        var result = action switch
+        int versionBefore = state.Version;
+        ActionResult result = action switch
         {
             StopBoxelSearch => StopLocked(),
             SetBoxelAutoCopy set => SetAutoCopyLocked(set.Enabled),
@@ -495,7 +497,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             && action is not DeleteSavedBoxelSearch
         )
         {
-            var warnings = result.Warnings?.ToList() ?? [];
+            List<BoxelSearchWarning> warnings = result.Warnings?.ToList() ?? [];
             await PersistLockedAsync(warnings, cancellationToken).ConfigureAwait(false);
             result = result with { Kind = GetAppliedKind(result.Kind, warnings), Warnings = warnings };
         }
@@ -508,7 +510,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         CancellationToken cancellationToken
     )
     {
-        var activation = await RunSerializedAsync(
+        BoxelSearchOutcome activation = await RunSerializedAsync(
                 token =>
                 {
                     if (profile is null)
@@ -518,7 +520,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
                         );
                     }
 
-                    if (!state.TryActivate(action.Request, out var error))
+                    if (!state.TryActivate(action.Request, out string? error))
                     {
                         return Task.FromResult(
                             new ActionResult(
@@ -548,7 +550,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     private async Task<BoxelSearchOutcome> NavigateAsync(NavigateToBoxel action, CancellationToken cancellationToken)
     {
         await CancelRefreshAsync().ConfigureAwait(false);
-        var navigation = await RunSerializedAsync(
+        BoxelSearchOutcome navigation = await RunSerializedAsync(
                 token =>
                 {
                     if (
@@ -561,7 +563,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
                         );
                     }
 
-                    if (!state.TrySetCurrent(action.Boxel, out var error))
+                    if (!state.TrySetCurrent(action.Boxel, out string? error))
                     {
                         return Task.FromResult(
                             new ActionResult(
@@ -624,7 +626,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         bool preserveActivationCode
     )
     {
-        var refreshed = await StartRefreshAsync(CancellationToken.None).ConfigureAwait(false);
+        BoxelSearchOutcome refreshed = await StartRefreshAsync(CancellationToken.None).ConfigureAwait(false);
         if (
             !preserveActivationCode
             || refreshed.Kind is BoxelSearchOutcomeKind.Rejected or BoxelSearchOutcomeKind.Cancelled
@@ -731,8 +733,9 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         CancellationToken cancellationToken
     )
     {
-        var empty = await LoadEmptyBoxelsAsync(request, warnings, cancellationToken).ConfigureAwait(false);
-        var local = await localSystemReader
+        IReadOnlySet<string> empty = await LoadEmptyBoxelsAsync(request, warnings, cancellationToken)
+            .ConfigureAwait(false);
+        LegacySystemDataReadResult local = await localSystemReader
             .ReadAsync(request.FrontierId, request.Current, cancellationToken)
             .ConfigureAwait(false);
         warnings.AddRange(
@@ -742,7 +745,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
                 error
             ))
         );
-        var remote = empty.Contains(request.Current.Id)
+        IReadOnlyList<BoxelSystemObservation> remote = empty.Contains(request.Current.Id)
             ? []
             : await LoadRemoteSystemsAsync(request, warnings, cancellationToken).ConfigureAwait(false);
         return new RefreshSources(empty, local, remote);
@@ -842,7 +845,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
                 );
             }
 
-            var persistent = state.CreateSnapshot();
+            BoxelSearchSnapshot persistent = state.CreateSnapshot();
             request = new AuditRequest(
                 profile.Generation,
                 state.TopBoxel.Prefix,
@@ -1034,7 +1037,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     private ActionResult MarkNextEmptyLocked()
     {
         string? error = null;
-        if (!state.IsActive || !state.TryMarkNextSystemEmpty(out var marked, out error))
+        if (!state.IsActive || !state.TryMarkNextSystemEmpty(out string? marked, out error))
         {
             return new ActionResult(
                 BoxelSearchOutcomeKind.Rejected,
@@ -1053,7 +1056,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
     private ActionResult CompleteSystemLocked(string systemName)
     {
-        return state.TrySetSystemComplete(systemName, true, out var error)
+        return state.TrySetSystemComplete(systemName, true, out string? error)
             ? new ActionResult(
                 BoxelSearchOutcomeKind.Success,
                 BoxelSearchMessageCode.SystemCompleted,
@@ -1098,7 +1101,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
     private ActionResult DeferSystemLocked(string systemName)
     {
-        return state.TrySetSystemDeferred(systemName, true, out var error)
+        return state.TrySetSystemDeferred(systemName, true, out string? error)
             ? new ActionResult(
                 BoxelSearchOutcomeKind.Success,
                 BoxelSearchMessageCode.SystemDeferred,
@@ -1113,7 +1116,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
     private ActionResult StartAtSystemLocked(string systemName)
     {
-        return state.TryStartAtSystem(systemName, out var deferred, out var error)
+        return state.TryStartAtSystem(systemName, out int deferred, out string? error)
             ? new ActionResult(
                 BoxelSearchOutcomeKind.Success,
                 BoxelSearchMessageCode.SurveyStartChanged,
@@ -1134,7 +1137,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             return new ActionResult(BoxelSearchOutcomeKind.Rejected, BoxelSearchMessageCode.NextSystemCopied);
         }
 
-        var eligibility = state.NextSystem + "|" + isGalaxyMapOpen;
+        string eligibility = state.NextSystem + "|" + isGalaxyMapOpen;
         if (automatic && string.Equals(automaticCopyEligibility, eligibility, StringComparison.Ordinal))
         {
             return new ActionResult(BoxelSearchOutcomeKind.NoChange, BoxelSearchMessageCode.NextSystemCopied);
@@ -1249,7 +1252,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
         try
         {
-            var document = await libraryStore
+            SavedBoxelSearchDocument document = await libraryStore
                 .CreateAsync(profile.FrontierId, action.Name, action.Notes, state.CreateSnapshot(), cancellationToken)
                 .ConfigureAwait(false);
             state.SetSavedSearchFileName(document.FileName);
@@ -1299,7 +1302,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
         try
         {
-            var document = await libraryStore
+            SavedBoxelSearchDocument document = await libraryStore
                 .LoadAsync(profile.FrontierId, action.FileName, cancellationToken)
                 .ConfigureAwait(false);
             state.Reset(document.Search with { Active = true, SavedSearchFileName = document.FileName });
@@ -1333,7 +1336,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         CancellationToken cancellationToken
     )
     {
-        var document = await RunLibraryMutationAsync(
+        SavedBoxelSearchDocument? document = await RunLibraryMutationAsync(
                 (frontierId, token) => libraryStore.RenameAsync(frontierId, action.FileName, action.Name, token),
                 cancellationToken
             )
@@ -1351,7 +1354,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         CancellationToken cancellationToken
     )
     {
-        var document = await RunLibraryMutationAsync(
+        SavedBoxelSearchDocument? document = await RunLibraryMutationAsync(
                 (frontierId, token) => libraryStore.SaveNotesAsync(frontierId, action.FileName, action.Notes, token),
                 cancellationToken
             )
@@ -1370,7 +1373,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         CancellationToken cancellationToken
     )
     {
-        var document = await RunLibraryMutationAsync(
+        SavedBoxelSearchDocument? document = await RunLibraryMutationAsync(
                 (frontierId, token) =>
                     libraryStore.SetFavoriteAsync(frontierId, action.FileName, action.IsFavorite, token),
                 cancellationToken
@@ -1436,7 +1439,8 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
         try
         {
-            var result = await mutation(profile.FrontierId, cancellationToken).ConfigureAwait(false);
+            SavedBoxelSearchDocument result = await mutation(profile.FrontierId, cancellationToken)
+                .ConfigureAwait(false);
             libraryRevision++;
             RemoveHealthLocked(BoxelSearchHealthSubsystem.LibraryPersistence);
             return result;
@@ -1455,7 +1459,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
     private async Task<ActionResult> PersistResultLockedAsync(ActionResult result, CancellationToken cancellationToken)
     {
-        var warnings = result.Warnings?.ToList() ?? [];
+        List<BoxelSearchWarning> warnings = result.Warnings?.ToList() ?? [];
         await PersistLockedAsync(warnings, cancellationToken).ConfigureAwait(false);
         return result with { Kind = GetAppliedKind(result.Kind, warnings), Warnings = warnings };
     }
@@ -1467,7 +1471,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             return;
         }
 
-        var snapshot = state.CreateSnapshot();
+        BoxelSearchSnapshot snapshot = state.CreateSnapshot();
         var pending = new PendingPersistence(profile, snapshot, snapshot.SavedSearchFileName);
         try
         {
@@ -1562,7 +1566,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             return;
         }
 
-        var repaired = state.CreateSnapshot();
+        BoxelSearchSnapshot repaired = state.CreateSnapshot();
         try
         {
             await profileStore
@@ -1604,10 +1608,10 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
         try
         {
-            var saved = await libraryStore
+            SavedBoxelSearchDocument saved = await libraryStore
                 .LoadAsync(profile.FrontierId, fileName, lifetimeCancellation.Token)
                 .ConfigureAwait(false);
-            var currentSnapshot = state.CreateSnapshot();
+            BoxelSearchSnapshot currentSnapshot = state.CreateSnapshot();
             if (!BoxelSearchSnapshotComparer.Equals(currentSnapshot, saved.Search))
             {
                 await libraryStore
@@ -1710,12 +1714,12 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
     private async Task RetryLoopAsync(CancellationToken cancellationToken)
     {
-        var delay = options.InitialRetryDelay;
+        TimeSpan delay = options.InitialRetryDelay;
         while (!cancellationToken.IsCancellationRequested)
         {
             await Task.Delay(delay, timeProvider, cancellationToken).ConfigureAwait(false);
             BoxelSearchSessionChangedEventArgs? change;
-            var hasPending = false;
+            bool hasPending = false;
             await mutationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -1902,7 +1906,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             );
         }
 
-        var previous = current;
+        BoxelSearchSessionSnapshot previous = current;
         if (
             ReferenceEquals(previous.Search, searchSnapshot)
             && ReferenceEquals(previous.Context, contextSnapshot)
@@ -1951,8 +1955,8 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
 
     private BoxelSearchOutcome CreateOutcome(ActionResult result)
     {
-        var snapshot = Current;
-        var kind = result.Kind;
+        BoxelSearchSessionSnapshot snapshot = Current;
+        BoxelSearchOutcomeKind kind = result.Kind;
         if (
             (kind == BoxelSearchOutcomeKind.Success || kind == BoxelSearchOutcomeKind.AppliedWithWarnings)
             && result.Warnings is { Count: > 0 }
@@ -1988,13 +1992,17 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             return;
         }
 
-        var handlers = Changed;
+        EventHandler<BoxelSearchSessionChangedEventArgs>? handlers = Changed;
         if (handlers is null)
         {
             return;
         }
 
-        foreach (var handler in handlers.GetInvocationList().Cast<EventHandler<BoxelSearchSessionChangedEventArgs>>())
+        foreach (
+            EventHandler<BoxelSearchSessionChangedEventArgs> handler in handlers
+                .GetInvocationList()
+                .Cast<EventHandler<BoxelSearchSessionChangedEventArgs>>()
+        )
         {
             try
             {
@@ -2079,7 +2087,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
         BoxelSearchHealthSubsystem subsystem
     )
     {
-        var warning = warnings.LastOrDefault(candidate => candidate.Subsystem == subsystem);
+        BoxelSearchWarning? warning = warnings.LastOrDefault(candidate => candidate.Subsystem == subsystem);
         if (warning is null)
         {
             RemoveHealthLocked(subsystem);
@@ -2092,7 +2100,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
     private bool IsCurrentSystemInsideSearchLocked()
     {
         return state.TopBoxel is not null
-            && BoxelAddress.TryParse(currentSystemName, out var currentSystem)
+            && BoxelAddress.TryParse(currentSystemName, out BoxelAddress? currentSystem)
             && currentSystem is not null
             && state.TopBoxel.Contains(currentSystem);
     }
@@ -2238,7 +2246,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
             runningAudit = auditTask;
         }
 
-        foreach (var task in new[] { runningRefresh, runningAudit })
+        foreach (Task<BoxelSearchOutcome>? task in new[] { runningRefresh, runningAudit })
         {
             if (task is null)
             {
@@ -2415,7 +2423,7 @@ public sealed class BoxelSearchSession : IBoxelSearchSession
                     .All(equal => equal)
                 && left.ProgressByPrefix.Count == right.ProgressByPrefix.Count
                 && left.ProgressByPrefix.All(entry =>
-                    right.ProgressByPrefix.TryGetValue(entry.Key, out var value) && value == entry.Value
+                    right.ProgressByPrefix.TryGetValue(entry.Key, out int value) && value == entry.Value
                 );
         }
 

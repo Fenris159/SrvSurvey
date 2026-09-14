@@ -103,7 +103,7 @@ public sealed record OverlayPlatformCapabilities(
 
     internal static OverlayHostKind DetectLinuxHost(string? sessionType, string? display, string? waylandDisplay)
     {
-        var isWaylandSession =
+        bool isWaylandSession =
             string.Equals(sessionType?.Trim(), "wayland", StringComparison.OrdinalIgnoreCase)
             || !string.IsNullOrWhiteSpace(waylandDisplay);
         if (!string.IsNullOrWhiteSpace(display))

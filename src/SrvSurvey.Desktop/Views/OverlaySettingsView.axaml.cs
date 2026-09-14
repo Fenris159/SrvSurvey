@@ -29,14 +29,16 @@ public sealed partial class OverlaySettingsView : UserControl
             return;
         }
 
-        var panels = viewModel.OverlayPanelVisibility.ForCategory(category);
+        IReadOnlyList<OverlayPanelVisibilityEntryViewModel> panels = viewModel.OverlayPanelVisibility.ForCategory(
+            category
+        );
         PanelVisibilityItems.ItemsSource = panels;
         PanelVisibilityCard.IsVisible = panels.Count > 0;
     }
 
     private void ApplyCategory(OverlaySettingsCategory category)
     {
-        var isGlobal = category == OverlaySettingsCategory.Global;
+        bool isGlobal = category == OverlaySettingsCategory.Global;
         MiningActivityCard.IsVisible = category == OverlaySettingsCategory.Mining;
         MineMapOverlayCard.IsVisible = category == OverlaySettingsCategory.MineMap;
         MiningShortcutsCard.IsVisible = category == OverlaySettingsCategory.MineMap;
@@ -56,8 +58,8 @@ public sealed partial class OverlaySettingsView : UserControl
         JumpInformationCard.IsVisible = category == OverlaySettingsCategory.Travel;
         ColonizationShoppingCard.IsVisible = category == OverlaySettingsCategory.Colonization;
 
-        var isExploration = category == OverlaySettingsCategory.Exploration;
-        var isExobiology = category == OverlaySettingsCategory.Exobiology;
+        bool isExploration = category == OverlaySettingsCategory.Exploration;
+        bool isExobiology = category == OverlaySettingsCategory.Exobiology;
         SystemSurveyCard.IsVisible = isExploration || isExobiology;
         ExplorationSurveyGrid.IsVisible = isExploration;
         BodyInformationSeparator.IsVisible = isExploration;
@@ -76,7 +78,9 @@ public sealed partial class OverlaySettingsView : UserControl
             return;
         }
 
-        var definition = OverlaySettingsCategoryCatalog.All.Single(candidate => candidate.Category == category);
+        OverlaySettingsCategoryDefinition definition = OverlaySettingsCategoryCatalog.All.Single(candidate =>
+            candidate.Category == category
+        );
         OverlaySettingsEyebrow.Text = $"{definition.Eyebrow} OVERLAYS";
         OverlaySettingsTitle.Text = $"{definition.DisplayName} overlay settings";
         OverlaySettingsDescription.Text = definition.Description;
@@ -122,7 +126,7 @@ public sealed partial class OverlaySettingsView : UserControl
             return;
         }
 
-        var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+        IStorageFile? file = await topLevel.StorageProvider.SaveFilePickerAsync(
             new FilePickerSaveOptions
             {
                 Title = "Export the settlement template catalog",

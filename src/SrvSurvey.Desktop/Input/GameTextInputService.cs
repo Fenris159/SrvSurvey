@@ -19,7 +19,7 @@ public static class GameTextInputService
 {
     public static IGameTextInputService CreateCurrent()
     {
-        var host = OverlayPlatformCapabilities.DetectCurrent().Host;
+        OverlayHostKind host = OverlayPlatformCapabilities.DetectCurrent().Host;
         if (host == OverlayHostKind.Windows || OverlayPlatformCapabilities.IsX11Compatible(host))
         {
             return new SharpHookGameTextInputService();
@@ -73,7 +73,7 @@ internal sealed class SharpHookGameTextInputService : IGameTextInputService
         ArgumentException.ThrowIfNullOrWhiteSpace(text);
         try
         {
-            var result = simulateText(text);
+            UioHookResult result = simulateText(text);
             return result == UioHookResult.Success
                 ? new GameTextInputResult(true, $"Entered {text} in the Galaxy Map.")
                 : new GameTextInputResult(false, "Galaxy Map text entry failed with SharpHook result " + result + ".");

@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 
 namespace SrvSurvey.Core.Exploration;
@@ -26,8 +27,8 @@ public sealed class GreenGasGiantCriteriaCatalog
 
     public static GreenGasGiantCriteriaCatalog LoadEmbedded()
     {
-        var assembly = typeof(GreenGasGiantCriteriaCatalog).Assembly;
-        using var stream =
+        Assembly assembly = typeof(GreenGasGiantCriteriaCatalog).Assembly;
+        using Stream stream =
             assembly.GetManifestResourceStream(ResourceName)
             ?? throw new InvalidDataException($"Embedded Green Gas Giant criteria were not found: {ResourceName}");
         return Load(stream);
@@ -37,10 +38,10 @@ public sealed class GreenGasGiantCriteriaCatalog
     {
         ArgumentNullException.ThrowIfNull(stream);
         using var document = JsonDocument.Parse(stream);
-        var root = document.RootElement;
-        var tolerance =
-            root.TryGetProperty("delta", out var delta)
-            && delta.TryGetDouble(out var parsedDelta)
+        JsonElement root = document.RootElement;
+        double tolerance =
+            root.TryGetProperty("delta", out JsonElement delta)
+            && delta.TryGetDouble(out double parsedDelta)
             && double.IsFinite(parsedDelta)
             && parsedDelta >= 0
                 ? parsedDelta
@@ -59,7 +60,7 @@ public sealed class GreenGasGiantCriteriaCatalog
             return null;
         }
 
-        if (known.TryGetValue(planetClass, out var knownTemperatures))
+        if (known.TryGetValue(planetClass, out IReadOnlyList<double>? knownTemperatures))
         {
             if (knownTemperatures.Contains(surfaceTemperature))
             {
@@ -72,7 +73,7 @@ public sealed class GreenGasGiantCriteriaCatalog
             }
         }
 
-        if (theorized.TryGetValue(planetClass, out var theorizedTemperatures))
+        if (theorized.TryGetValue(planetClass, out IReadOnlyList<double>? theorizedTemperatures))
         {
             if (theorizedTemperatures.Contains(surfaceTemperature))
             {
@@ -95,13 +96,13 @@ public sealed class GreenGasGiantCriteriaCatalog
 
     private static Dictionary<string, IReadOnlyList<double>> ReadTemperatures(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var groups) || groups.ValueKind != JsonValueKind.Object)
+        if (!root.TryGetProperty(propertyName, out JsonElement groups) || groups.ValueKind != JsonValueKind.Object)
         {
             throw new InvalidDataException($"Green Gas Giant criteria are missing {propertyName}.");
         }
 
         var result = new Dictionary<string, IReadOnlyList<double>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var group in groups.EnumerateObject())
+        foreach (JsonProperty group in groups.EnumerateObject())
         {
             if (group.Value.ValueKind != JsonValueKind.Array)
             {
@@ -109,9 +110,9 @@ public sealed class GreenGasGiantCriteriaCatalog
             }
 
             var temperatures = new List<double>();
-            foreach (var value in group.Value.EnumerateArray())
+            foreach (JsonElement value in group.Value.EnumerateArray())
             {
-                if (!value.TryGetDouble(out var temperature) || !double.IsFinite(temperature))
+                if (!value.TryGetDouble(out double temperature) || !double.IsFinite(temperature))
                 {
                     throw new InvalidDataException(
                         $"Green Gas Giant criteria for {group.Name} contain an invalid temperature."

@@ -9,10 +9,14 @@ public sealed class MiningWorkspaceStateTests
     public void BootstrapDoesNotAutoStartButLiveProspectorDoesAndReplayedEventsAreNotCountedTwice()
     {
         var state = new MiningWorkspaceState(new MiningCommanderData());
-        var entry = Parse("""{"event":"LaunchDrone","timestamp":"2026-09-06T12:01:00Z","Type":"Prospector"}""");
+        JournalEventEnvelope entry = Parse(
+            """{"event":"LaunchDrone","timestamp":"2026-09-06T12:01:00Z","Type":"Prospector"}"""
+        );
         state.Apply(entry, true, "Sol", "Ring", "Python");
         Assert.Null(state.Session.Current);
-        var live = Parse("""{"event":"LaunchDrone","timestamp":"2026-09-06T12:02:00Z","Type":"Prospector"}""");
+        JournalEventEnvelope live = Parse(
+            """{"event":"LaunchDrone","timestamp":"2026-09-06T12:02:00Z","Type":"Prospector"}"""
+        );
         state.Apply(live, false, "Sol", "Ring", "Python");
         state.Apply(live, false, "Sol", "Ring", "Python");
         Assert.Equal(1, state.Session.Current?.ProspectorLimpets);
@@ -93,7 +97,7 @@ public sealed class MiningWorkspaceStateTests
         state.Import(
             new()
             {
-                Rings = [ring with { System = "sol", Scanned = time.AddDays(-1), Hotspots = new() }],
+                Rings = [ring with { System = "sol", Scanned = time.AddDays(-1), Hotspots = [] }],
                 Missions = [mission with { Delivered = 0 }, mission with { Id = 8 }],
             }
         );
@@ -149,7 +153,7 @@ public sealed class MiningWorkspaceStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out _));
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out _));
         return result!;
     }
 }

@@ -9,8 +9,8 @@ public sealed class ExobiologyReferenceCatalogTests
     {
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
 
-        var byVariant = catalog.FindByVariant("$Codex_Ent_Aleoids_01_B_Name;");
-        var bySpecies = catalog.FindBySpecies("$Codex_Ent_Aleoids_01_Name;");
+        ExobiologyReference? byVariant = catalog.FindByVariant("$Codex_Ent_Aleoids_01_B_Name;");
+        ExobiologyReference? bySpecies = catalog.FindBySpecies("$Codex_Ent_Aleoids_01_Name;");
 
         Assert.Equal(1070, catalog.Count);
         Assert.Equal(814, catalog.BiologyEntries.Count);
@@ -32,7 +32,7 @@ public sealed class ExobiologyReferenceCatalogTests
         Assert.Equal("23101", byVariant.EntryIdPrefix);
         Assert.Equal("$Codex_Ent_Aleoids_Genus_Name;", ExobiologyReferenceCatalog.GetGenusName(byVariant.SpeciesName));
 
-        var touristEntry = catalog.FindByEntryId(1200102);
+        ExobiologyReference? touristEntry = catalog.FindByEntryId(1200102);
         Assert.NotNull(touristEntry);
         Assert.False(touristEntry.IsBiology);
         Assert.Equal("Green Water Giant", touristEntry.DisplayName);
@@ -49,7 +49,7 @@ public sealed class ExobiologyReferenceCatalogTests
     [InlineData(2100201, "Brain-Trees-Roseum-Brain-Tree")]
     public void LocalImageNamesMatchLegacyFloraContract(long entryId, string expected)
     {
-        var entry = ExobiologyReferenceCatalog.LoadEmbedded().FindByEntryId(entryId);
+        ExobiologyReference? entry = ExobiologyReferenceCatalog.LoadEmbedded().FindByEntryId(entryId);
 
         Assert.NotNull(entry);
         Assert.Equal(expected, entry.GetLegacyLocalImageName());
@@ -65,7 +65,7 @@ public sealed class ExobiologyReferenceCatalogTests
     [InlineData(2100501, "$Codex_Ent_Tube_Name;")]
     public void LegacyBiologyUsesCanonicalJournalGenus(long entryId, string expectedGenus)
     {
-        var reference = ExobiologyReferenceCatalog.LoadEmbedded().FindByEntryId(entryId);
+        ExobiologyReference? reference = ExobiologyReferenceCatalog.LoadEmbedded().FindByEntryId(entryId);
 
         Assert.NotNull(reference);
         Assert.Equal(expectedGenus, ExobiologyReferenceCatalog.GetGenusName(reference));

@@ -15,8 +15,8 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
     [Fact]
     public async Task CalculatesScopesAndSupportsLegacyEntryActions()
     {
-        var dataDirectory = Path.Combine(temporaryDirectory, "data");
-        var journalDirectory = Path.Combine(temporaryDirectory, "journals");
+        string dataDirectory = Path.Combine(temporaryDirectory, "data");
+        string journalDirectory = Path.Combine(temporaryDirectory, "journals");
         Directory.CreateDirectory(journalDirectory);
         var store = new CommanderCodexStore(dataDirectory);
         await store.TrackAsync(
@@ -56,8 +56,8 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
             true,
             DateTimeOffset.Parse("2026-02-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
-        var catalog = CreateCatalog();
-        using var viewModel = CreateViewModel(store, catalog, journalDirectory);
+        ExobiologyReferenceCatalog catalog = CreateCatalog();
+        using BiologyCodexBingoViewModel viewModel = CreateViewModel(store, catalog, journalDirectory);
         Assert.Null(viewModel.SelectedNode);
         Assert.Equal(0, viewModel.SelectedCompletionPercent);
         string? copied = null;
@@ -87,7 +87,7 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
         Assert.Equal(2, viewModel.DiscoveredCount);
         Assert.True(viewModel.SelectedCommander!.IsActive);
         Assert.Contains(viewModel.Regions, region => region.RegionId == 18 && region.IsCurrent);
-        var species = Assert.IsType<CodexBingoTreeNodeViewModel>(
+        CodexBingoTreeNodeViewModel species = Assert.IsType<CodexBingoTreeNodeViewModel>(
             viewModel.RootNodes[0].Find("species:$Codex_Ent_Aleoids_01_Name;")
         );
         viewModel.SelectedNode = species;
@@ -100,7 +100,9 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
         Assert.Equal("Aleoida Arcus", nearest.Species);
         Assert.Equal(["Blue"], nearest.Variants);
 
-        var discovered = Assert.IsType<CodexBingoTreeNodeViewModel>(viewModel.RootNodes[0].Find("entry:2310101"));
+        CodexBingoTreeNodeViewModel discovered = Assert.IsType<CodexBingoTreeNodeViewModel>(
+            viewModel.RootNodes[0].Find("entry:2310101")
+        );
         viewModel.SelectedNode = discovered;
         Assert.True(viewModel.SelectedIsJournalVerified);
         Assert.Equal("Test System 3", viewModel.DiscoveryBody);
@@ -115,7 +117,9 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
         Assert.Contains(launched, uri => uri.Host == "canonn-science.github.io");
         Assert.Contains(launched, uri => uri.AbsoluteUri.EndsWith("/body/123456789", StringComparison.Ordinal));
 
-        var missing = Assert.IsType<CodexBingoTreeNodeViewModel>(viewModel.RootNodes[0].Find("entry:2310102"));
+        CodexBingoTreeNodeViewModel missing = Assert.IsType<CodexBingoTreeNodeViewModel>(
+            viewModel.RootNodes[0].Find("entry:2310102")
+        );
         viewModel.SelectedNode = missing;
         await viewModel.RequestManualOverrideAsync();
         await viewModel.ConfirmManualOverrideAsync();
@@ -125,7 +129,7 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
         await viewModel.ConfirmManualOverrideAsync();
         Assert.False(viewModel.SelectedIsDiscovered);
 
-        var regional = Assert.Single(viewModel.Regions, region => region.RegionId == 18);
+        CodexBingoRegionOptionViewModel regional = Assert.Single(viewModel.Regions, region => region.RegionId == 18);
         await viewModel.SelectRegionAsync(regional);
         Assert.Equal(1, viewModel.DiscoveredCount);
         Assert.Equal("Regional firsts in Inner Orion Spur", viewModel.RegionSummary);
@@ -134,8 +138,8 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
     [Fact]
     public async Task ImportsCanonnAndReportsOldJournalProgress()
     {
-        var dataDirectory = Path.Combine(temporaryDirectory, "data");
-        var journalDirectory = Path.Combine(temporaryDirectory, "journals");
+        string dataDirectory = Path.Combine(temporaryDirectory, "data");
+        string journalDirectory = Path.Combine(temporaryDirectory, "journals");
         Directory.CreateDirectory(journalDirectory);
         await File.WriteAllLinesAsync(
             Path.Combine(journalDirectory, "Journal.01.log"),
@@ -146,8 +150,8 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
             ]
         );
         var store = new CommanderCodexStore(dataDirectory);
-        var catalog = CreateCatalog();
-        using var viewModel = CreateViewModel(
+        ExobiologyReferenceCatalog catalog = CreateCatalog();
+        using BiologyCodexBingoViewModel viewModel = CreateViewModel(
             store,
             catalog,
             journalDirectory,

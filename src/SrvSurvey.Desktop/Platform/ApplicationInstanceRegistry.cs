@@ -29,7 +29,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
     private readonly Action<string>? log;
     private readonly CancellationTokenSource cancellation = new();
     private readonly Task listener;
-    private readonly object disposalGate = new();
+    private readonly Lock disposalGate = new();
     private Task? disposalTask;
 
     public ApplicationInstanceRegistry(string dataDirectory, Func<Task> requestShutdown, Action<string>? log = null)
@@ -42,12 +42,12 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
         RestrictToCurrentUser(directory, isDirectory: true);
 
         using var current = Process.GetCurrentProcess();
-        var processPath =
+        string processPath =
             Environment.ProcessPath
             ?? throw new InvalidOperationException("The running SrvSurvey executable path is unavailable.");
-        var canonicalPath = ApplicationProcessPathResolver.Canonicalize(processPath);
-        var startTicks = current.StartTime.ToUniversalTime().Ticks;
-        var pipeName = $"SrvSurvey.XP.{current.Id}.{startTicks}.{Guid.NewGuid():N}";
+        string canonicalPath = ApplicationProcessPathResolver.Canonicalize(processPath);
+        long startTicks = current.StartTime.ToUniversalTime().Ticks;
+        string pipeName = $"SrvSurvey.XP.{current.Id}.{startTicks}.{Guid.NewGuid():N}";
         Current = new ApplicationInstanceRecord(
             SchemaVersion,
             Product,
@@ -78,14 +78,14 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
             return records;
         }
 
-        foreach (var path in paths)
+        foreach (string path in paths)
         {
             if (IsCurrentRecord(path))
             {
                 continue;
             }
 
-            var record = ReadRecord(path);
+            ApplicationInstanceRecord? record = ReadRecord(path);
             if (record is not null)
             {
                 records.Add(record);
@@ -133,7 +133,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
                 leaveOpen: true
             );
             await writer.WriteLineAsync(ShutdownCommand.AsMemory(), timeout.Token).ConfigureAwait(false);
-            var response = await reader.ReadLineAsync(timeout.Token).ConfigureAwait(false);
+            string? response = await reader.ReadLineAsync(timeout.Token).ConfigureAwait(false);
             return string.Equals(response, AcceptedResponse, StringComparison.Ordinal);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -201,7 +201,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
                 {
                     AutoFlush = true,
                 };
-                var command = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+                string? command = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
                 if (!string.Equals(command, ShutdownCommand, StringComparison.Ordinal))
                 {
                     continue;
@@ -249,7 +249,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete
             );
-            var record = JsonSerializer.Deserialize<ApplicationInstanceRecord>(stream);
+            ApplicationInstanceRecord? record = JsonSerializer.Deserialize<ApplicationInstanceRecord>(stream);
             if (IsValid(record))
             {
                 return record;
@@ -267,7 +267,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
 
     private void WriteRecord(ApplicationInstanceRecord record)
     {
-        var temporaryPath = recordPath + ".tmp-" + Guid.NewGuid().ToString("N");
+        string temporaryPath = recordPath + ".tmp-" + Guid.NewGuid().ToString("N");
         try
         {
             using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))

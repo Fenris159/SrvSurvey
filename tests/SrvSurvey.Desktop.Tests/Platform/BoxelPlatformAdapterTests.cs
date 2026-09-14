@@ -95,7 +95,7 @@ public sealed class BoxelPlatformAdapterTests : IDisposable
             )
         );
 
-        var entry = Assert.Single(log.Entries);
+        string entry = Assert.Single(log.Entries);
         Assert.Contains(timeout.Message, entry, StringComparison.Ordinal);
         Assert.DoesNotContain(nameof(TaskCanceledException), entry, StringComparison.Ordinal);
         Assert.DoesNotContain(Environment.NewLine, entry, StringComparison.Ordinal);

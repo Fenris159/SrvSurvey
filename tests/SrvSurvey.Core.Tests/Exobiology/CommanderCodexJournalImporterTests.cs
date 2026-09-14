@@ -12,8 +12,8 @@ public sealed class CommanderCodexJournalImporterTests : IDisposable
     [Fact]
     public async Task ImportsOnlyTargetCommanderAcrossBoundedBatches()
     {
-        var journalDirectory = Path.Combine(temporaryDirectory, "journals");
-        var dataDirectory = Path.Combine(temporaryDirectory, "data");
+        string journalDirectory = Path.Combine(temporaryDirectory, "journals");
+        string dataDirectory = Path.Combine(temporaryDirectory, "data");
         Directory.CreateDirectory(journalDirectory);
         var targetLines = new List<string>
         {
@@ -43,14 +43,14 @@ public sealed class CommanderCodexJournalImporterTests : IDisposable
         var store = new CommanderCodexStore(dataDirectory);
         var importer = new CommanderCodexJournalImporter(journalDirectory, store);
 
-        var result = await importer.ImportAsync("F123");
+        CommanderCodexJournalImportResult result = await importer.ImportAsync("F123");
 
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.JournalFileCount);
         Assert.Equal(1, result.MalformedLineCount);
         Assert.Equal(1, result.DiscoveryEventCount);
         Assert.Equal(2, result.ChangedEntryCount);
-        var global = await store.LoadAsync("F123", null);
+        CommanderCodexLoadResult global = await store.LoadAsync("F123", null);
         Assert.Equal(3, Assert.Single(global.Data!.Firsts).Value.BodyId);
         Assert.False(File.Exists(store.ResolvePath("F999")));
         Assert.Single(Directory.GetFiles(dataDirectory, "F123-codex-*.json"));

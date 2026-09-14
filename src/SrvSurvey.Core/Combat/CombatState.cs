@@ -62,7 +62,7 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var result = journalEvent.EventName switch
+        CombatApplyResult result = journalEvent.EventName switch
         {
             "ApproachSettlement" => ApplySettlement(journalEvent.Payload),
             "StartJump" or "SupercruiseEntry" or "FSDJump" or "CarrierJump" or "Died" or "Resurrect" or "Shutdown" =>
@@ -111,8 +111,8 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
 
     private CombatApplyResult ApplySettlement(JsonElement root)
     {
-        var name = GetString(root, "Name_Localised") ?? GetString(root, "Name");
-        var factionState = GetNestedString(root, "StationFaction", "FactionState");
+        string? name = GetString(root, "Name_Localised") ?? GetString(root, "Name");
+        string? factionState = GetNestedString(root, "StationFaction", "FactionState");
         if (
             string.Equals(name, SettlementName, StringComparison.Ordinal)
             && string.Equals(factionState, SettlementFactionState, StringComparison.Ordinal)
@@ -151,8 +151,8 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
 
     private CombatApplyResult ApplyMissionAccepted(JsonElement root)
     {
-        var missionName = GetString(root, "Name");
-        var missionId = GetInt64(root, "MissionID") ?? 0;
+        string? missionName = GetString(root, "Name");
+        long missionId = GetInt64(root, "MissionID") ?? 0;
         if (
             !MassacreMissionNames.Contains(missionName ?? string.Empty)
             || missionId <= 0
@@ -181,7 +181,7 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
 
     private CombatApplyResult ApplyMissionRemoved(JsonElement root)
     {
-        var missionId = GetInt64(root, "MissionID") ?? 0;
+        long missionId = GetInt64(root, "MissionID") ?? 0;
         return missionId > 0 && massacreMissions.RemoveAll(mission => mission.MissionId == missionId) > 0
             ? CombatApplyResult.Persisted
             : CombatApplyResult.None;
@@ -190,23 +190,23 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
     private CombatApplyResult ApplyMissionReconciliation(JsonElement root)
     {
         var knownMissionIds = ReadMissionIds(root, "Active").Concat(ReadMissionIds(root, "Complete")).ToHashSet();
-        var removed = massacreMissions.RemoveAll(mission => !knownMissionIds.Contains(mission.MissionId));
+        int removed = massacreMissions.RemoveAll(mission => !knownMissionIds.Contains(mission.MissionId));
         return removed > 0 ? CombatApplyResult.Persisted : CombatApplyResult.None;
     }
 
     private CombatApplyResult ApplyBounty(JsonElement root, DateTimeOffset timestamp)
     {
-        var victimFaction = GetString(root, "VictimFaction");
+        string? victimFaction = GetString(root, "VictimFaction");
         if (string.IsNullOrWhiteSpace(victimFaction))
         {
             return CombatApplyResult.None;
         }
 
         var creditedMissionGivers = new HashSet<string>(StringComparer.Ordinal);
-        var changed = false;
-        for (var index = 0; index < massacreMissions.Count; index++)
+        bool changed = false;
+        for (int index = 0; index < massacreMissions.Count; index++)
         {
-            var mission = massacreMissions[index];
+            MassacreMissionSnapshot mission = massacreMissions[index];
             if (
                 !string.Equals(mission.TargetFaction, victimFaction, StringComparison.Ordinal)
                 || mission.Remaining <= 0
@@ -226,14 +226,14 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
 
     private static IEnumerable<long> ReadMissionIds(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var missions) || missions.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty(propertyName, out JsonElement missions) || missions.ValueKind != JsonValueKind.Array)
         {
             yield break;
         }
 
-        foreach (var mission in missions.EnumerateArray())
+        foreach (JsonElement mission in missions.EnumerateArray())
         {
-            var missionId = GetInt64(mission, "MissionID") ?? 0;
+            long missionId = GetInt64(mission, "MissionID") ?? 0;
             if (missionId > 0)
             {
                 yield return missionId;
@@ -252,26 +252,26 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
 
     private static string? GetNestedString(JsonElement root, string objectName, string propertyName)
     {
-        return root.TryGetProperty(objectName, out var nested) && nested.ValueKind == JsonValueKind.Object
+        return root.TryGetProperty(objectName, out JsonElement nested) && nested.ValueKind == JsonValueKind.Object
             ? GetString(nested, propertyName)
             : null;
     }
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long number))
         {
             return number;
         }
@@ -281,16 +281,16 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        var value = GetInt64(root, propertyName);
+        long? value = GetInt64(root, propertyName);
         return value is >= int.MinValue and <= int.MaxValue ? (int)value.Value : null;
     }
 
     private static DateTimeOffset? GetDateTimeOffset(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.String
-            && value.TryGetDateTimeOffset(out var timestamp)
+            && value.TryGetDateTimeOffset(out DateTimeOffset timestamp)
             ? timestamp
             : null;
     }

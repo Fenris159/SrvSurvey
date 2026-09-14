@@ -21,7 +21,7 @@ internal static class GuardianSurveyMarkerDrawing
     {
         ArgumentNullException.ThrowIfNull(context);
         context.DrawEllipse(HaloBrush, null, center, haloRadius, haloRadius);
-        foreach (var dotCenter in CreateDotCenters(center, ringRadius, dotRadius))
+        foreach (Point dotCenter in CreateDotCenters(center, ringRadius, dotRadius))
         {
             context.DrawEllipse(RingBrush, null, dotCenter, dotRadius, dotRadius);
         }
@@ -39,13 +39,13 @@ internal static class GuardianSurveyMarkerDrawing
             throw new ArgumentOutOfRangeException(nameof(dotRadius));
         }
 
-        var circumference = 2 * Math.PI * ringRadius;
-        var dotCount = Math.Max(8, (int)Math.Round(circumference / (dotRadius * 4)));
+        double circumference = 2 * Math.PI * ringRadius;
+        int dotCount = Math.Max(8, (int)Math.Round(circumference / (dotRadius * 4)));
         return Enumerable
             .Range(0, dotCount)
             .Select(index =>
             {
-                var angle = index * 2 * Math.PI / dotCount;
+                double angle = index * 2 * Math.PI / dotCount;
                 return new Point(center.X + Math.Cos(angle) * ringRadius, center.Y + Math.Sin(angle) * ringRadius);
             })
             .ToArray();

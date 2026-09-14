@@ -98,7 +98,7 @@ public sealed class BoxelSearchStateTests
             new BoxelSystemObservation(top.WithSystemNumber(1), null, null, null, true),
         ]);
         Assert.True(state.TrySetSystemComplete(top.WithSystemNumber(0).Name, true, out _));
-        var child = top.Children[0];
+        BoxelAddress child = top.Children[0];
         Assert.True(state.TrySetCurrent(child, out _));
         state.SetExpectedSystemCount(5);
 
@@ -170,7 +170,7 @@ public sealed class BoxelSearchStateTests
     {
         var state = new BoxelSearchState();
 
-        var activated = state.TryActivate(
+        bool activated = state.TryActivate(
             new BoxelSearchActivationRequest
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
@@ -184,7 +184,7 @@ public sealed class BoxelSearchStateTests
                 CompletionMode = BoxelCompletionMode.EnterSystem,
                 AutoCopy = true,
             },
-            out var error
+            out string? error
         );
 
         Assert.True(activated, error);
@@ -213,10 +213,10 @@ public sealed class BoxelSearchStateTests
     [Fact]
     public void CollectionProjectionsKeepStableIdentityUntilStateChanges()
     {
-        var state = CreateActiveState(BoxelCompletionMode.EnterSystem);
-        var systems = state.Systems;
-        var boxels = state.Boxels;
-        var emptyBoxels = state.EmptyBoxelPrefixes;
+        BoxelSearchState state = CreateActiveState(BoxelCompletionMode.EnterSystem);
+        IReadOnlyList<BoxelSystemState> systems = state.Systems;
+        IReadOnlyList<BoxelAddress> boxels = state.Boxels;
+        IReadOnlySet<string> emptyBoxels = state.EmptyBoxelPrefixes;
 
         Assert.Same(systems, state.Systems);
         Assert.Same(boxels, state.Boxels);
@@ -231,7 +231,7 @@ public sealed class BoxelSearchStateTests
     [Fact]
     public void ActivatingDifferentTopBoxelResetsExpectedSystemCount()
     {
-        var state = CreateActiveState(BoxelCompletionMode.EnterSystem);
+        BoxelSearchState state = CreateActiveState(BoxelCompletionMode.EnterSystem);
         state.SetExpectedSystemCount(45);
 
         state.TryActivate(
@@ -258,14 +258,14 @@ public sealed class BoxelSearchStateTests
     [Fact]
     public void EnterSystemModeCompletesFsdJumpAndSelectsFirstIncompleteSystem()
     {
-        var state = CreateActiveState(BoxelCompletionMode.EnterSystem);
+        BoxelSearchState state = CreateActiveState(BoxelCompletionMode.EnterSystem);
         state.MergeSpanshSystems([
             Observation("Praea Euq IL-P c5-0"),
             Observation("Praea Euq IL-P c5-1"),
             Observation("Praea Euq IL-P c5-2"),
         ]);
 
-        var handled = state.Apply(
+        bool handled = state.Apply(
             Parse(
                 """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-2","SystemAddress":123,"StarPos":[1,2,3]}"""
             )
@@ -325,7 +325,7 @@ public sealed class BoxelSearchStateTests
         state.SetExpectedSystemCount(5);
 
         Assert.Equal("Praea Euq IL-P c5-4", state.NextSystem);
-        Assert.True(state.TryMarkNextSystemEmpty(out var marked, out _));
+        Assert.True(state.TryMarkNextSystemEmpty(out string? marked, out _));
         Assert.Equal("Praea Euq IL-P c5-4", marked);
         Assert.Equal("Praea Euq IL-P c5-3", state.NextSystem);
 
@@ -400,14 +400,14 @@ public sealed class BoxelSearchStateTests
         );
 
         Assert.True(
-            state.TryStartAtSystem(top.WithSystemNumber(startSuffix).Name, out var deferredCount, out var error)
+            state.TryStartAtSystem(top.WithSystemNumber(startSuffix).Name, out int deferredCount, out string? error)
         );
 
         Assert.Null(error);
         Assert.Equal(expectedDeferredSuffixes.Length, deferredCount);
         Assert.Equal(top.WithSystemNumber(startSuffix).Name, state.NextSystem);
         Assert.Empty(state.DeferredSystems);
-        var range = Assert.Single(state.DeferredRanges);
+        BoxelDeferredRangeSnapshot range = Assert.Single(state.DeferredRanges);
         Assert.Equal(top.Prefix, range.Prefix);
         Assert.Equal(startSuffix, range.StartSystemNumber);
         Assert.Equal(descending, range.SortDescending);
@@ -436,11 +436,11 @@ public sealed class BoxelSearchStateTests
             }
         );
 
-        Assert.True(state.TryStartAtSystem(top.WithSystemNumber(90_000).Name, out var deferredCount, out _));
+        Assert.True(state.TryStartAtSystem(top.WithSystemNumber(90_000).Name, out int deferredCount, out _));
 
         Assert.Equal(90_000, deferredCount);
         Assert.Empty(state.DeferredSystems);
-        var range = Assert.Single(state.CreateSnapshot().DeferredRanges);
+        BoxelDeferredRangeSnapshot range = Assert.Single(state.CreateSnapshot().DeferredRanges);
         Assert.Empty(range.Exceptions);
         Assert.True(state.IsSystemDeferred(top.Prefix, 42_000));
 
@@ -464,7 +464,7 @@ public sealed class BoxelSearchStateTests
         Assert.False(range.Contains(1));
         Assert.True(range.Contains(2));
 
-        var updated = range with { Exceptions = [2] };
+        BoxelDeferredRangeSnapshot updated = range with { Exceptions = [2] };
 
         Assert.True(updated.Contains(1));
         Assert.False(updated.Contains(2));
@@ -489,24 +489,24 @@ public sealed class BoxelSearchStateTests
             }
         );
 
-        Assert.False(state.TrySetSystemDeferred(top.WithSystemNumber(8).Name, true, out var outsideError));
+        Assert.False(state.TrySetSystemDeferred(top.WithSystemNumber(8).Name, true, out string? outsideError));
         Assert.Contains("current boxel", outsideError, StringComparison.Ordinal);
-        Assert.False(state.TrySetSystemDeferred(top.WithSystemNumber(0).Name, true, out var handledError));
+        Assert.False(state.TrySetSystemDeferred(top.WithSystemNumber(0).Name, true, out string? handledError));
         Assert.Contains("already complete", handledError, StringComparison.Ordinal);
         Assert.False(state.TryStartAtSystem(top.WithSystemNumber(0).Name, out _, out handledError));
         Assert.Contains("already complete", handledError, StringComparison.Ordinal);
 
-        Assert.True(state.TryStartAtSystem(top.WithSystemNumber(4).Name, out var deferredCount, out _));
+        Assert.True(state.TryStartAtSystem(top.WithSystemNumber(4).Name, out int deferredCount, out _));
 
         Assert.Equal(2, deferredCount);
         Assert.Equal([0, 1], Assert.Single(state.DeferredRanges).Exceptions);
         Assert.False(state.IsSystemDeferred(top.Prefix, -1));
         Assert.False(state.IsSystemDeferred(top.Prefix, 0));
         Assert.True(state.IsSystemDeferred(top.Prefix, 2));
-        Assert.False(state.TrySetSystemDeferred(top.WithSystemNumber(2).Name, true, out var alreadyDeferredError));
+        Assert.False(state.TrySetSystemDeferred(top.WithSystemNumber(2).Name, true, out string? alreadyDeferredError));
         Assert.Contains("already deferred", alreadyDeferredError, StringComparison.Ordinal);
         Assert.True(state.TrySetSystemDeferred(top.WithSystemNumber(2).Name, false, out _));
-        Assert.False(state.TrySetSystemDeferred(top.WithSystemNumber(2).Name, false, out var notDeferredError));
+        Assert.False(state.TrySetSystemDeferred(top.WithSystemNumber(2).Name, false, out string? notDeferredError));
         Assert.Contains("not deferred", notDeferredError, StringComparison.Ordinal);
         Assert.True(state.TrySetSystemDeferred(top.WithSystemNumber(2).Name, true, out _));
 
@@ -523,7 +523,7 @@ public sealed class BoxelSearchStateTests
         Assert.False(state.TryStartAtSystem(top.WithSystemNumber(0).Name, out _, out _));
         Assert.True(state.MergeSpanshSystems([Observation(top.WithSystemNumber(0).Name)]));
         Assert.True(state.TrySetSystemComplete(top.WithSystemNumber(0).Name, false, out _));
-        Assert.True(state.TryStartAtSystem(top.WithSystemNumber(0).Name, out var zeroDeferred, out _));
+        Assert.True(state.TryStartAtSystem(top.WithSystemNumber(0).Name, out int zeroDeferred, out _));
         Assert.Equal(0, zeroDeferred);
         Assert.Empty(state.DeferredRanges);
         Assert.True(state.TryStartAtSystem(top.WithSystemNumber(2).Name, out _, out _));
@@ -563,7 +563,7 @@ public sealed class BoxelSearchStateTests
             }
         );
 
-        var range = Assert.Single(state.DeferredRanges);
+        BoxelDeferredRangeSnapshot range = Assert.Single(state.DeferredRanges);
         Assert.Equal([0], range.Exceptions);
         Assert.DoesNotContain(top.WithSystemNumber(1).GeneratedName, state.DeferredSystems);
         Assert.Contains(top.WithSystemNumber(4).GeneratedName, state.DeferredSystems);
@@ -574,7 +574,7 @@ public sealed class BoxelSearchStateTests
     [Fact]
     public void FssModeWaitsForAllBodiesEvent()
     {
-        var state = CreateActiveState(BoxelCompletionMode.FssAllBodies);
+        BoxelSearchState state = CreateActiveState(BoxelCompletionMode.FssAllBodies);
 
         state.Apply(
             Parse(
@@ -713,7 +713,7 @@ public sealed class BoxelSearchStateTests
             out _
         );
 
-        Assert.False(state.TrySetSystemComplete("Praea Euq IL-P c5-0", true, out var error));
+        Assert.False(state.TrySetSystemComplete("Praea Euq IL-P c5-0", true, out string? error));
         Assert.Contains("discovered or visited", error);
 
         state.SetCurrentEmpty(true);
@@ -744,11 +744,11 @@ public sealed class BoxelSearchStateTests
         );
         state.SetExpectedSystemCount(3);
 
-        Assert.True(state.TryMarkNextSystemEmpty(out var marked, out var error));
+        Assert.True(state.TryMarkNextSystemEmpty(out string? marked, out string? error));
 
         Assert.Null(error);
         Assert.Equal("Praea Euq IL-P c5-0", marked);
-        var markedSystem = Assert.IsType<string>(marked);
+        string markedSystem = Assert.IsType<string>(marked);
         Assert.Equal("Praea Euq IL-P c5-1", state.NextSystem);
         Assert.Contains("Praea Euq IL-P c5-0", state.EmptySystems);
         Assert.Equal(1, state.CompletedSystemCount);
@@ -818,7 +818,7 @@ public sealed class BoxelSearchStateTests
             },
             out _
         );
-        var firstChild = state.TopBoxel!.Children[0];
+        BoxelAddress firstChild = state.TopBoxel!.Children[0];
 
         state.ApplyEmptyBoxels([state.TopBoxel.Id, firstChild.Id]);
 
@@ -832,7 +832,7 @@ public sealed class BoxelSearchStateTests
     [Fact]
     public void HandAuthoredJournalSystemCompletesDecodedBoxel()
     {
-        Assert.True(BoxelAddress.TryFromSystemAddress(10477373803, "Sol", out var sol));
+        Assert.True(BoxelAddress.TryFromSystemAddress(10477373803, "Sol", out BoxelAddress? sol));
         var state = new BoxelSearchState();
         Assert.True(
             state.TryActivate(
@@ -849,19 +849,19 @@ public sealed class BoxelSearchStateTests
                     CompletionMode = BoxelCompletionMode.EnterSystem,
                     AutoCopy = true,
                 },
-                out var error
+                out string? error
             ),
             error
         );
 
-        var handled = state.Apply(
+        bool handled = state.Apply(
             Parse(
                 """{"timestamp":"2026-07-24T12:00:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":10477373803,"StarPos":[0,0,0]}"""
             )
         );
 
         Assert.True(handled);
-        var system = Assert.Single(state.Systems);
+        BoxelSystemState system = Assert.Single(state.Systems);
         Assert.Equal("Sol", system.Boxel.Name);
         Assert.Equal(sol.GeneratedName, system.Boxel.GeneratedName);
         Assert.True(system.IsComplete);
@@ -887,11 +887,11 @@ public sealed class BoxelSearchStateTests
             },
             out _
         );
-        var current = state.Current;
-        var completed = state.TopBoxel!.Children[0];
-        var empty = state.TopBoxel.Children[1];
+        BoxelAddress? current = state.Current;
+        BoxelAddress completed = state.TopBoxel!.Children[0];
+        BoxelAddress empty = state.TopBoxel.Children[1];
 
-        var changed = state.ApplyCompletionAudit([
+        bool changed = state.ApplyCompletionAudit([
             new BoxelCompletionAuditEntry(completed, 4, true, false),
             new BoxelCompletionAuditEntry(empty, -1, false, true),
             new BoxelCompletionAuditEntry(BoxelAddress.Parse("Wregoe BU-Y b2-0"), 10, true, false),
@@ -938,7 +938,10 @@ public sealed class BoxelSearchStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 }

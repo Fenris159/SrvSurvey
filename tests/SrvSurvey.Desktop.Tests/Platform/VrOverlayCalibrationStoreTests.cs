@@ -27,13 +27,13 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
     [Fact]
     public void LoadsLegacyDefaultsAndVehicleOverridesWithoutChangingFiles()
     {
-        var paths = CreateFiles();
-        var plottersPath = Path.Combine(paths.Data, "plotters.json");
-        var overridePath = Path.Combine(paths.Data, "vr", "testbuggy.json");
-        var originalPlotters = File.ReadAllText(plottersPath);
-        var originalOverride = File.ReadAllText(overridePath);
+        (string Data, string Factory) paths = CreateFiles();
+        string plottersPath = Path.Combine(paths.Data, "plotters.json");
+        string overridePath = Path.Combine(paths.Data, "vr", "testbuggy.json");
+        string originalPlotters = File.ReadAllText(plottersPath);
+        string originalOverride = File.ReadAllText(overridePath);
 
-        var catalog = new VrOverlayCalibrationStore(paths.Data, paths.Factory).Load();
+        VrOverlayCalibrationCatalog catalog = new VrOverlayCalibrationStore(paths.Data, paths.Factory).Load();
 
         Assert.Equal(12, catalog.Resolve("PlotJumpInfo", null)!.Scale);
         Assert.Equal(18, catalog.Resolve("PlotJumpInfo", "testbuggy")!.Scale);
@@ -44,18 +44,18 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
     [Fact]
     public void DefaultSaveIsVerifiedBackedUpAndPreservesDesktopAndFutureEntries()
     {
-        var paths = CreateFiles();
-        var plottersPath = Path.Combine(paths.Data, "plotters.json");
-        var original = File.ReadAllText(plottersPath);
+        (string Data, string Factory) paths = CreateFiles();
+        string plottersPath = Path.Combine(paths.Data, "plotters.json");
+        string original = File.ReadAllText(plottersPath);
         var store = new VrOverlayCalibrationStore(paths.Data, paths.Factory);
         var calibration = new VrOverlayCalibration(21.5f, new Vector3(1, 2, 3), new Vector3(4, 5, 6));
 
-        var result = store.Save("PlotJumpInfo", calibration);
+        VrOverlayCalibrationSaveResult result = store.Save("PlotJumpInfo", calibration);
 
         Assert.Equal(plottersPath, result.Path);
         Assert.NotNull(result.BackupPath);
         Assert.Equal(original, File.ReadAllText(result.BackupPath));
-        var saved = File.ReadAllText(plottersPath);
+        string saved = File.ReadAllText(plottersPath);
         Assert.Contains("center:0, top:8", saved);
         Assert.Contains("\"FutureOverlay\"", saved);
         Assert.Equal(calibration, store.Load().Defaults["PlotJumpInfo"]);
@@ -64,11 +64,11 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
     [Fact]
     public void ModeSaveIsAtomicAndPreservesOtherOverrideEntries()
     {
-        var paths = CreateFiles();
+        (string Data, string Factory) paths = CreateFiles();
         var store = new VrOverlayCalibrationStore(paths.Data, paths.Factory);
         var calibration = new VrOverlayCalibration(25, new Vector3(-1, -2, -3), new Vector3(7, 8, 9));
 
-        var result = store.Save("PlotJumpInfo", calibration, "testbuggy");
+        VrOverlayCalibrationSaveResult result = store.Save("PlotJumpInfo", calibration, "testbuggy");
 
         Assert.NotNull(result.BackupPath);
         Assert.Contains("\"FutureOverlay\"", File.ReadAllText(result.Path));
@@ -81,7 +81,7 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
     [InlineData("nested/mode")]
     public void UnsafeModeCannotEscapeTheProfileDirectory(string mode)
     {
-        var paths = CreateFiles();
+        (string Data, string Factory) paths = CreateFiles();
         var store = new VrOverlayCalibrationStore(paths.Data, paths.Factory);
 
         Assert.Throws<InvalidDataException>(() =>
@@ -99,12 +99,12 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
 
     private (string Data, string Factory) CreateFiles()
     {
-        var data = Path.Combine(temporaryDirectory, "data");
-        var factoryDirectory = Path.Combine(temporaryDirectory, "factory");
+        string data = Path.Combine(temporaryDirectory, "data");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory");
         Directory.CreateDirectory(data);
         Directory.CreateDirectory(factoryDirectory);
         Directory.CreateDirectory(Path.Combine(data, "vr"));
-        var factory = Path.Combine(factoryDirectory, "plotters.json");
+        string factory = Path.Combine(factoryDirectory, "plotters.json");
         File.WriteAllText(factory, "{\"PlotJumpInfo\":\"center:0, top:8 " + "{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
         File.WriteAllText(
             Path.Combine(data, "plotters.json"),

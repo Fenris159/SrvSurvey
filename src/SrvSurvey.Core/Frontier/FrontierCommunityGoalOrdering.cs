@@ -7,12 +7,12 @@ public static class FrontierCommunityGoalOrdering
     public static IReadOnlyList<FrontierCommunityGoalSnapshot> Order(IEnumerable<FrontierCommunityGoalSnapshot> goals)
     {
         ArgumentNullException.ThrowIfNull(goals);
-        var materialized = goals.ToArray();
-        var active = materialized
+        FrontierCommunityGoalSnapshot[] materialized = goals.ToArray();
+        IOrderedEnumerable<FrontierCommunityGoalSnapshot> active = materialized
             .Where(goal => !goal.IsComplete)
             .OrderBy(goal => goal.ExpiresAt ?? DateTimeOffset.MaxValue)
             .ThenBy(goal => goal.Title, StringComparer.CurrentCultureIgnoreCase);
-        var completed = materialized
+        IOrderedEnumerable<FrontierCommunityGoalSnapshot> completed = materialized
             .Where(goal => goal.IsComplete)
             .OrderByDescending(CompletionTimestamp)
             .ThenByDescending(goal => goal.ExpiresAt ?? DateTimeOffset.MinValue)
@@ -22,9 +22,9 @@ public static class FrontierCommunityGoalOrdering
 
     private static DateTimeOffset CompletionTimestamp(FrontierCommunityGoalSnapshot goal)
     {
-        foreach (var path in new[] { "inara.lastUpdate", "journal.communityGoalTimestamp" })
+        foreach (string? path in new[] { "inara.lastUpdate", "journal.communityGoalTimestamp" })
         {
-            var value = goal
+            string? value = goal
                 .DataPoints?.FirstOrDefault(point =>
                     string.Equals(point.Path, path, StringComparison.OrdinalIgnoreCase)
                 )
@@ -34,7 +34,7 @@ public static class FrontierCommunityGoalOrdering
                     value,
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.AssumeUniversal,
-                    out var timestamp
+                    out DateTimeOffset timestamp
                 )
             )
             {

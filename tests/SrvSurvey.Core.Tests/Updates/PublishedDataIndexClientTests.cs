@@ -27,7 +27,7 @@ public sealed class PublishedDataIndexClientTests
         var handler = new StubHandler(HttpStatusCode.OK, ValidPayload);
         var client = new PublishedDataIndexClient(new HttpClient(handler), new Uri("https://example.test/data.json"));
 
-        var result = await client.GetAsync();
+        PublishedDataIndex result = await client.GetAsync();
 
         Assert.Equal(new Version(2, 0, 95, 23), result.GitHubVersion);
         Assert.Equal(new Version(2, 0, 95, 0), result.MicrosoftStoreVersion);
@@ -77,7 +77,7 @@ public sealed class PublishedDataIndexClientTests
             new HttpClient(new StubHandler(HttpStatusCode.TooManyRequests, "rate limited"))
         );
 
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync());
+        HttpRequestException exception = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync());
 
         Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
     }
@@ -89,7 +89,7 @@ public sealed class PublishedDataIndexClientTests
             new HttpClient(new StubHandler(HttpStatusCode.OK, new string(' ', (64 * 1024) + 1)))
         );
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => client.GetAsync());
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() => client.GetAsync());
 
         Assert.Contains("published-data index", exception.Message);
         Assert.Contains("safety limit", exception.Message);

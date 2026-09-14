@@ -38,32 +38,34 @@ public sealed class ReleasePackageDownloadService : IReleasePackageDownloadServi
     )
     {
         Validate(version, package, dataDirectory);
-        var packageDirectory = ResolvePackageDirectory(dataDirectory, version, package.RuntimeIdentifier);
+        string packageDirectory = ResolvePackageDirectory(dataDirectory, version, package.RuntimeIdentifier);
         Directory.CreateDirectory(packageDirectory);
-        var archivePath = Path.Combine(packageDirectory, package.ArchiveName);
+        string archivePath = Path.Combine(packageDirectory, package.ArchiveName);
         if (await MatchesAsync(archivePath, package.Size, package.Sha256, cancellationToken).ConfigureAwait(false))
         {
             progress?.Report(new ReleasePackageDownloadProgress(package.Size, package.Size));
             return new ReleasePackageDownloadResult(archivePath, false, package.Size, package.Sha256);
         }
 
-        var partialPath = Path.Combine(packageDirectory, $".{package.ArchiveName}.{Guid.NewGuid():N}.partial");
+        string partialPath = Path.Combine(packageDirectory, $".{package.ArchiveName}.{Guid.NewGuid():N}.partial");
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, package.DownloadUri);
             request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
             request.Headers.UserAgent.ParseAdd("SrvSurvey-XP/1.0");
-            using var response = await client
+            using HttpResponseMessage response = await client
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var contentLength = response.Content.Headers.ContentLength;
+            long? contentLength = response.Content.Headers.ContentLength;
             if (contentLength.HasValue && contentLength.Value != package.Size)
             {
                 throw new InvalidDataException("The package response size does not match the release index.");
             }
 
-            await using var input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using Stream input = await response
+                .Content.ReadAsStreamAsync(cancellationToken)
+                .ConfigureAwait(false);
             await using var output = new FileStream(
                 partialPath,
                 FileMode.CreateNew,
@@ -73,11 +75,11 @@ public sealed class ReleasePackageDownloadService : IReleasePackageDownloadServi
                 FileOptions.Asynchronous | FileOptions.SequentialScan
             );
             using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-            var buffer = new byte[128 * 1024];
+            byte[] buffer = new byte[128 * 1024];
             long total = 0;
             while (true)
             {
-                var read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                int read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
                 if (read == 0)
                 {
                     break;
@@ -99,7 +101,7 @@ public sealed class ReleasePackageDownloadService : IReleasePackageDownloadServi
                 throw new InvalidDataException("The package response ended before the indexed size was reached.");
             }
 
-            var actualHash = Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+            string actualHash = Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
             if (!HashesMatch(actualHash, package.Sha256))
             {
                 throw new InvalidDataException("The package SHA-256 does not match the release index.");
@@ -141,7 +143,7 @@ public sealed class ReleasePackageDownloadService : IReleasePackageDownloadServi
             128 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
+        byte[] hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         return HashesMatch(Convert.ToHexString(hash), expectedHash);
     }
 
@@ -163,12 +165,14 @@ public sealed class ReleasePackageDownloadService : IReleasePackageDownloadServi
         string runtimeIdentifier
     )
     {
-        var dataRoot = Path.GetFullPath(dataDirectory);
-        var packageDirectory = Path.GetFullPath(
+        string dataRoot = Path.GetFullPath(dataDirectory);
+        string packageDirectory = Path.GetFullPath(
             Path.Combine(dataRoot, "updates", "packages", version.ToString(), runtimeIdentifier)
         );
-        var rootPrefix = Path.TrimEndingDirectorySeparator(dataRoot) + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string rootPrefix = Path.TrimEndingDirectorySeparator(dataRoot) + Path.DirectorySeparatorChar;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         if (!packageDirectory.StartsWith(rootPrefix, comparison))
         {
             throw new InvalidDataException("The update package path escaped the application data directory.");
@@ -186,7 +190,7 @@ public sealed class ReleasePackageDownloadService : IReleasePackageDownloadServi
             throw new ArgumentOutOfRangeException(nameof(version));
         }
 
-        var expectedArchiveType = package.RuntimeIdentifier switch
+        string expectedArchiveType = package.RuntimeIdentifier switch
         {
             "win-x64" => "zip",
             "linux-x64" => "tar.gz",
@@ -194,8 +198,8 @@ public sealed class ReleasePackageDownloadService : IReleasePackageDownloadServi
                 $"The runtime '{package.RuntimeIdentifier}' has no update package."
             ),
         };
-        var suffix = expectedArchiveType == "zip" ? ".zip" : ".tar.gz";
-        var expectedName = $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}{suffix}";
+        string suffix = expectedArchiveType == "zip" ? ".zip" : ".tar.gz";
+        string expectedName = $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}{suffix}";
         if (
             !string.Equals(package.ArchiveType, expectedArchiveType, StringComparison.Ordinal)
             || !string.Equals(package.ArchiveName, expectedName, StringComparison.Ordinal)

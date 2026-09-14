@@ -43,7 +43,7 @@ public sealed partial class KnownSystemAddressCatalog
     public static KnownSystemAddressCatalog Load(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var path = Path.Combine(Path.GetFullPath(dataDirectory), "pub", LegacyFileName);
+        string path = Path.Combine(Path.GetFullPath(dataDirectory), "pub", LegacyFileName);
         if (!File.Exists(path))
         {
             return Empty;
@@ -100,7 +100,7 @@ public sealed partial class KnownSystemAddressCatalog
         string? line;
         while ((line = reader.ReadLine()) is not null)
         {
-            var completed = ProcessCatalogLine(line, result, state, sourcePath);
+            KnownSystemAddressCatalog? completed = ProcessCatalogLine(line, result, state, sourcePath);
             if (completed is not null)
             {
                 return completed;
@@ -129,7 +129,7 @@ public sealed partial class KnownSystemAddressCatalog
             throw new InvalidDataException("The known-system address catalog contains an oversized line.");
         }
 
-        var trimmed = line.Trim();
+        string trimmed = line.Trim();
         if (!state.FoundStart)
         {
             state.FoundStart = string.Equals(trimmed, "known_systems = {", StringComparison.Ordinal);
@@ -171,20 +171,20 @@ public sealed partial class KnownSystemAddressCatalog
 
     private static void ParseCatalogEntry(string line, Dictionary<string, long> result)
     {
-        var match = EntryPattern().Match(line);
+        Match match = EntryPattern().Match(line);
         if (!match.Success)
         {
             return;
         }
 
-        var name = match.Groups["name"].Value.Trim();
+        string name = match.Groups["name"].Value.Trim();
         if (
             name.Length == 0
             || !long.TryParse(
                 match.Groups["address"].Value,
                 NumberStyles.None,
                 CultureInfo.InvariantCulture,
-                out var address
+                out long address
             )
             || address <= 0
         )

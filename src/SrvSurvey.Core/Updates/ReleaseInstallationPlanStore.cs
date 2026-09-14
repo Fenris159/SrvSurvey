@@ -66,17 +66,17 @@ public sealed class ReleaseInstallationPlanStore
             throw new InvalidDataException("The update handoff process metadata is invalid.");
         }
 
-        var paths = ResolvePaths(dataDirectory, preparation.RequestId);
+        PlanPaths paths = ResolvePaths(dataDirectory, preparation.RequestId);
         if (Directory.Exists(paths.PlanDirectory) || File.Exists(paths.PlanDirectory))
         {
             throw new IOException("The update handoff directory already exists.");
         }
 
         Directory.CreateDirectory(paths.PlanDirectory);
-        var healthToken = Convert
+        string healthToken = Convert
             .ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32))
             .ToLowerInvariant();
-        var createdAt = timeProvider.GetUtcNow();
+        DateTimeOffset createdAt = timeProvider.GetUtcNow();
         var document = new
         {
             schemaVersion = SchemaVersion,
@@ -133,60 +133,60 @@ public sealed class ReleaseInstallationPlanStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(planPath);
-        var fullPlanPath = Path.GetFullPath(planPath);
+        string fullPlanPath = Path.GetFullPath(planPath);
         var info = new FileInfo(fullPlanPath);
         if (!info.Exists || info.Length is <= 0 or > MaximumPlanBytes)
         {
             throw new InvalidDataException("The update handoff plan is missing or outside the supported size.");
         }
 
-        var bytes = await File.ReadAllBytesAsync(fullPlanPath, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await File.ReadAllBytesAsync(fullPlanPath, cancellationToken).ConfigureAwait(false);
         try
         {
             using var document = JsonDocument.Parse(bytes);
-            var root = document.RootElement;
+            JsonElement root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object || ReadInt32(root, "schemaVersion") != SchemaVersion)
             {
                 throw new InvalidDataException("The update handoff plan schema is incompatible.");
             }
 
-            var requestId = ReadGuid(root, "requestId");
-            var paths = ResolvePaths(dataDirectory, requestId);
+            Guid requestId = ReadGuid(root, "requestId");
+            PlanPaths paths = ResolvePaths(dataDirectory, requestId);
             if (!PathsEqual(fullPlanPath, paths.PlanPath))
             {
                 throw new InvalidDataException("The update handoff plan escaped its app-data request directory.");
             }
 
-            var createdAt = ReadDateTimeOffset(root, "createdAtUtc");
-            var age = timeProvider.GetUtcNow() - createdAt;
+            DateTimeOffset createdAt = ReadDateTimeOffset(root, "createdAtUtc");
+            TimeSpan age = timeProvider.GetUtcNow() - createdAt;
             if (age < TimeSpan.FromMinutes(-5) || age > MaximumPlanAge)
             {
                 throw new InvalidDataException("The update handoff plan is expired or has a future timestamp.");
             }
 
-            var parentProcessId = ReadInt32(root, "parentProcessId");
-            var parentStartTicks = ReadInt64(root, "parentProcessStartTimeUtcTicks");
-            var healthToken = ReadHex(root, "healthToken");
+            int parentProcessId = ReadInt32(root, "parentProcessId");
+            long parentStartTicks = ReadInt64(root, "parentProcessStartTimeUtcTicks");
+            string healthToken = ReadHex(root, "healthToken");
             if (parentProcessId <= 0 || parentStartTicks <= 0)
             {
                 throw new InvalidDataException("The update handoff parent process is invalid.");
             }
 
             if (
-                !root.TryGetProperty("preparation", out var preparationElement)
+                !root.TryGetProperty("preparation", out JsonElement preparationElement)
                 || preparationElement.ValueKind != JsonValueKind.Object
             )
             {
                 throw new InvalidDataException("The update handoff plan has no installation preparation.");
             }
 
-            var versionText = ReadString(preparationElement, "version");
-            if (!ReleaseVersion.TryParse(versionText, out var version) || version.Build < 0)
+            string versionText = ReadString(preparationElement, "version");
+            if (!ReleaseVersion.TryParse(versionText, out ReleaseVersion version) || version.Build < 0)
             {
                 throw new InvalidDataException("The update handoff version is invalid.");
             }
 
-            var arguments = ReadArguments(preparationElement);
+            List<string> arguments = ReadArguments(preparationElement);
             var preparation = new ReleaseInstallationPreparation(
                 requestId,
                 version,
@@ -310,9 +310,9 @@ public sealed class ReleaseInstallationPlanStore
 
         try
         {
-            var bytes = await File.ReadAllBytesAsync(markerPath, cancellationToken).ConfigureAwait(false);
+            byte[] bytes = await File.ReadAllBytesAsync(markerPath, cancellationToken).ConfigureAwait(false);
             using var document = JsonDocument.Parse(bytes);
-            var root = document.RootElement;
+            JsonElement root = document.RootElement;
             return root.ValueKind == JsonValueKind.Object
                 && ReadInt32(root, "schemaVersion") == SchemaVersion
                 && ReadGuid(root, "requestId") == plan.Preparation.RequestId
@@ -392,28 +392,28 @@ public sealed class ReleaseInstallationPlanStore
             throw new InvalidDataException("The update outcome is missing or outside the supported size.");
         }
 
-        var bytes = await File.ReadAllBytesAsync(plan.OutcomePath, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await File.ReadAllBytesAsync(plan.OutcomePath, cancellationToken).ConfigureAwait(false);
         try
         {
             using var document = JsonDocument.Parse(bytes);
-            var root = document.RootElement;
+            JsonElement root = document.RootElement;
             if (
                 root.ValueKind != JsonValueKind.Object
                 || ReadInt32(root, "schemaVersion") != SchemaVersion
                 || !Enum.TryParse<ReleaseInstallationOutcomeStatus>(
                     ReadString(root, "status"),
                     ignoreCase: false,
-                    out var status
+                    out ReleaseInstallationOutcomeStatus status
                 )
             )
             {
                 throw new InvalidDataException("The update outcome schema or status is invalid.");
             }
 
-            var requestId = ReadGuid(root, "RequestId");
-            var versionText = ReadString(root, "version");
+            Guid requestId = ReadGuid(root, "RequestId");
+            string versionText = ReadString(root, "version");
             if (
-                !ReleaseVersion.TryParse(versionText, out var version)
+                !ReleaseVersion.TryParse(versionText, out ReleaseVersion version)
                 || requestId != plan.Preparation.RequestId
                 || version != plan.Preparation.Version
             )
@@ -421,8 +421,8 @@ public sealed class ReleaseInstallationPlanStore
                 throw new InvalidDataException("The update outcome does not match its handoff plan.");
             }
 
-            var backupDirectory = ReadOptionalString(root, "BackupDirectory");
-            var failedDirectory = ReadOptionalString(root, "FailedDirectory");
+            string? backupDirectory = ReadOptionalString(root, "BackupDirectory");
+            string? failedDirectory = ReadOptionalString(root, "FailedDirectory");
             if (
                 (backupDirectory is not null && !PathsEqual(backupDirectory, plan.Preparation.BackupDirectory))
                 || (failedDirectory is not null && !PathsEqual(failedDirectory, plan.Preparation.FailedDirectory))
@@ -454,10 +454,10 @@ public sealed class ReleaseInstallationPlanStore
         CancellationToken cancellationToken
     )
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(path) ?? throw new InvalidDataException("The update metadata path has no directory.");
         Directory.CreateDirectory(directory);
-        var temporaryPath = Path.Combine(directory, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+        string temporaryPath = Path.Combine(directory, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
         try
         {
             await using (
@@ -496,12 +496,14 @@ public sealed class ReleaseInstallationPlanStore
             throw new InvalidDataException("The update request identifier is empty.");
         }
 
-        var dataRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(dataDirectory));
-        var planDirectory = Path.GetFullPath(
+        string dataRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(dataDirectory));
+        string planDirectory = Path.GetFullPath(
             Path.Combine(dataRoot, "updates", "install-plans", requestId.ToString("N"))
         );
-        var prefix = dataRoot + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string prefix = dataRoot + Path.DirectorySeparatorChar;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         if (!planDirectory.StartsWith(prefix, comparison))
         {
             throw new InvalidDataException("The update plan directory escaped application data.");
@@ -519,7 +521,7 @@ public sealed class ReleaseInstallationPlanStore
     private static List<string> ReadArguments(JsonElement preparation)
     {
         if (
-            !preparation.TryGetProperty("startupArguments", out var arguments)
+            !preparation.TryGetProperty("startupArguments", out JsonElement arguments)
             || arguments.ValueKind != JsonValueKind.Array
         )
         {
@@ -527,7 +529,7 @@ public sealed class ReleaseInstallationPlanStore
         }
 
         var values = new List<string>();
-        foreach (var element in arguments.EnumerateArray())
+        foreach (JsonElement element in arguments.EnumerateArray())
         {
             if (
                 values.Count >= MaximumArgumentCount
@@ -556,7 +558,7 @@ public sealed class ReleaseInstallationPlanStore
 
     private static string ReadHex(JsonElement element, string propertyName)
     {
-        var value = ReadString(element, propertyName);
+        string value = ReadString(element, propertyName);
         if (value.Length != 64 || value.Any(character => !Uri.IsHexDigit(character)))
         {
             throw new InvalidDataException($"The update handoff '{propertyName}' value is not a SHA-256 token.");
@@ -568,7 +570,7 @@ public sealed class ReleaseInstallationPlanStore
     private static string ReadString(JsonElement element, string propertyName)
     {
         if (
-            !element.TryGetProperty(propertyName, out var property)
+            !element.TryGetProperty(propertyName, out JsonElement property)
             || property.ValueKind != JsonValueKind.String
             || property.GetString() is not { } value
             || string.IsNullOrWhiteSpace(value)
@@ -582,7 +584,7 @@ public sealed class ReleaseInstallationPlanStore
 
     private static string? ReadOptionalString(JsonElement element, string propertyName)
     {
-        if (!element.TryGetProperty(propertyName, out var property) || property.ValueKind == JsonValueKind.Null)
+        if (!element.TryGetProperty(propertyName, out JsonElement property) || property.ValueKind == JsonValueKind.Null)
         {
             return null;
         }
@@ -597,7 +599,7 @@ public sealed class ReleaseInstallationPlanStore
 
     private static int ReadInt32(JsonElement element, string propertyName)
     {
-        if (!element.TryGetProperty(propertyName, out var property) || !property.TryGetInt32(out var value))
+        if (!element.TryGetProperty(propertyName, out JsonElement property) || !property.TryGetInt32(out int value))
         {
             throw new InvalidDataException($"The update handoff '{propertyName}' value is invalid.");
         }
@@ -607,7 +609,7 @@ public sealed class ReleaseInstallationPlanStore
 
     private static long ReadInt64(JsonElement element, string propertyName)
     {
-        if (!element.TryGetProperty(propertyName, out var property) || !property.TryGetInt64(out var value))
+        if (!element.TryGetProperty(propertyName, out JsonElement property) || !property.TryGetInt64(out long value))
         {
             throw new InvalidDataException($"The update handoff '{propertyName}' value is invalid.");
         }
@@ -618,7 +620,7 @@ public sealed class ReleaseInstallationPlanStore
     private static bool ReadBoolean(JsonElement element, string propertyName)
     {
         if (
-            !element.TryGetProperty(propertyName, out var property)
+            !element.TryGetProperty(propertyName, out JsonElement property)
             || property.ValueKind is not (JsonValueKind.True or JsonValueKind.False)
         )
         {
@@ -631,9 +633,9 @@ public sealed class ReleaseInstallationPlanStore
     private static Guid ReadGuid(JsonElement element, string propertyName)
     {
         if (
-            !element.TryGetProperty(propertyName, out var property)
+            !element.TryGetProperty(propertyName, out JsonElement property)
             || property.ValueKind != JsonValueKind.String
-            || !Guid.TryParse(property.GetString(), out var value)
+            || !Guid.TryParse(property.GetString(), out Guid value)
             || value == Guid.Empty
         )
         {
@@ -645,7 +647,10 @@ public sealed class ReleaseInstallationPlanStore
 
     private static DateTimeOffset ReadDateTimeOffset(JsonElement element, string propertyName)
     {
-        if (!element.TryGetProperty(propertyName, out var property) || !property.TryGetDateTimeOffset(out var value))
+        if (
+            !element.TryGetProperty(propertyName, out JsonElement property)
+            || !property.TryGetDateTimeOffset(out DateTimeOffset value)
+        )
         {
             throw new InvalidDataException($"The update handoff '{propertyName}' value is invalid.");
         }

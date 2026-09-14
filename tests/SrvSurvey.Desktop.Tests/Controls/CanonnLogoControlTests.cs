@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Tests.Controls;
@@ -13,7 +14,7 @@ public sealed class CanonnLogoControlTests
     [Fact]
     public void EmbeddedArtworkIsByteForByteLegacyCanonnLogo()
     {
-        var bytes = CanonnLogoControl.GetOriginalPngBytes();
+        byte[] bytes = CanonnLogoControl.GetOriginalPngBytes();
 
         Assert.Equal(1193, bytes.Length);
         Assert.Equal(
@@ -25,7 +26,7 @@ public sealed class CanonnLogoControlTests
     [Fact]
     public void EmbeddedArtworkRetainsNativeSixteenPixelPngDimensions()
     {
-        var bytes = CanonnLogoControl.GetOriginalPngBytes();
+        byte[] bytes = CanonnLogoControl.GetOriginalPngBytes();
 
         Assert.Equal(16u, ReadBigEndianUInt32(bytes, 16));
         Assert.Equal(16u, ReadBigEndianUInt32(bytes, 20));
@@ -34,7 +35,7 @@ public sealed class CanonnLogoControlTests
     [AvaloniaFact]
     public void ControlRendersTheOriginalArtworkAtMultipleSizes()
     {
-        foreach (var size in new[] { 16, 32, 48 })
+        foreach (int size in new[] { 16, 32, 48 })
         {
             var control = new CanonnLogoControl();
             var targetSize = new Size(size, size + 8);
@@ -48,7 +49,7 @@ public sealed class CanonnLogoControlTests
             try
             {
                 window.Show();
-                var frame = window.CaptureRenderedFrame();
+                WriteableBitmap? frame = window.CaptureRenderedFrame();
 
                 Assert.NotNull(frame);
                 Assert.Equal(new PixelSize(size, size + 8), frame.PixelSize);

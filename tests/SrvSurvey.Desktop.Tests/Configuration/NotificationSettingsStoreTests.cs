@@ -14,7 +14,7 @@ public sealed class NotificationSettingsStoreTests : IDisposable
     public void SaveRoundTripsAndPreservesUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":42,\"Notifications\":{\"FutureOption\":true}}");
         var store = new NotificationSettingsStore(path);
         var preferences = new NotificationPreferences(false, false, true, false, true, false);
@@ -22,7 +22,7 @@ public sealed class NotificationSettingsStoreTests : IDisposable
         store.Save(preferences);
 
         Assert.Equal(preferences, store.Load());
-        var root = Assert.IsType<JsonObject>(JsonNode.Parse(File.ReadAllText(path)));
+        JsonObject root = Assert.IsType<JsonObject>(JsonNode.Parse(File.ReadAllText(path)));
         Assert.Equal(42, root["Future"]?.GetValue<int>());
         Assert.True(root["Notifications"]?["FutureOption"]?.GetValue<bool>());
     }

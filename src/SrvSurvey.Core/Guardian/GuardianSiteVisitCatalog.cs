@@ -30,21 +30,21 @@ public sealed class GuardianSiteVisitCatalog
         ArgumentNullException.ThrowIfNull(completionCalculator);
 
         var mergedReferences = references.Sites.ToList();
-        var commanderOnlySurveys = commanderData
+        GuardianCommanderSiteSurvey[] commanderOnlySurveys = commanderData
             .Surveys.Where(survey =>
                 !mergedReferences.Any(reference =>
                     reference.Kind != GuardianSiteKind.Beacon && IsSameSurvey(reference, survey)
                 )
             )
             .ToArray();
-        var localSiteIds = AssignLocalSiteIds(commanderOnlySurveys);
-        foreach (var survey in commanderOnlySurveys)
+        Dictionary<GuardianCommanderSiteSurvey, int> localSiteIds = AssignLocalSiteIds(commanderOnlySurveys);
+        foreach (GuardianCommanderSiteSurvey? survey in commanderOnlySurveys)
         {
             mergedReferences.Add(CreateCommanderReference(survey, references, localSiteIds[survey]));
         }
 
         foreach (
-            var beacon in commanderData.Beacons.Where(beacon =>
+            GuardianCommanderBeaconVisit? beacon in commanderData.Beacons.Where(beacon =>
                 !mergedReferences.Any(reference =>
                     reference.Kind == GuardianSiteKind.Beacon
                     && IsSameBody(reference, beacon.SystemAddress, beacon.BodyId, beacon.BodyName)
@@ -69,7 +69,7 @@ public sealed class GuardianSiteVisitCatalog
     {
         if (reference.Kind == GuardianSiteKind.Beacon)
         {
-            var beacon = commanderData.Beacons.FirstOrDefault(visit =>
+            GuardianCommanderBeaconVisit? beacon = commanderData.Beacons.FirstOrDefault(visit =>
                 IsSameBody(reference, visit.SystemAddress, visit.BodyId, visit.BodyName)
             );
             return new GuardianSiteVisit(
@@ -86,7 +86,9 @@ public sealed class GuardianSiteVisitCatalog
             );
         }
 
-        var survey = commanderData.Surveys.FirstOrDefault(candidate => IsSameSurvey(reference, candidate));
+        GuardianCommanderSiteSurvey? survey = commanderData.Surveys.FirstOrDefault(candidate =>
+            IsSameSurvey(reference, candidate)
+        );
         if (survey is null)
         {
             return new GuardianSiteVisit(
@@ -104,7 +106,7 @@ public sealed class GuardianSiteVisitCatalog
         }
 
         reference = ApplyCatalogMetadata(reference, survey);
-        var published = publishedSites.Find(reference);
+        GuardianPublishedSite? published = publishedSites.Find(reference);
         var surveyData = new GuardianSurveyData
         {
             SiteType = string.Equals(survey.SiteType, "Unknown", StringComparison.OrdinalIgnoreCase)
@@ -118,8 +120,8 @@ public sealed class GuardianSiteVisitCatalog
             ComponentMaterials = survey.Survey.ComponentMaterials,
             RawPointsOfInterest = survey.Survey.RawPointsOfInterest,
         };
-        var completion = completionCalculator.Calculate(surveyData, published);
-        var progress = reference.IsSurveyComplete ? reference.SurveyProgress : completion.Progress;
+        GuardianSurveyCompletion completion = completionCalculator.Calculate(surveyData, published);
+        int progress = reference.IsSurveyComplete ? reference.SurveyProgress : completion.Progress;
         return new GuardianSiteVisit(
             reference,
             survey.FirstVisited,
@@ -156,8 +158,8 @@ public sealed class GuardianSiteVisitCatalog
         int localSiteId
     )
     {
-        var kind = GetSiteKind(survey);
-        var position = GetKnownSystemPosition(references, survey.SystemAddress);
+        GuardianSiteKind kind = GetSiteKind(survey);
+        GalacticCoordinate position = GetKnownSystemPosition(references, survey.SystemAddress);
         return new GuardianSiteReference(
             localSiteId,
             kind,
@@ -186,7 +188,7 @@ public sealed class GuardianSiteVisitCatalog
         GuardianSiteCatalog references
     )
     {
-        var location = beacon
+        GuardianSurfaceLocation? location = beacon
             .ScannedLocations.OrderByDescending(pair => pair.Key)
             .Select(pair => (GuardianSurfaceLocation?)pair.Value)
             .FirstOrDefault();
@@ -218,20 +220,20 @@ public sealed class GuardianSiteVisitCatalog
     )
     {
         var result = new Dictionary<GuardianCommanderSiteSurvey, int>();
-        foreach (var kindGroup in surveys.GroupBy(GetSiteKind))
+        foreach (IGrouping<GuardianSiteKind, GuardianCommanderSiteSurvey> kindGroup in surveys.GroupBy(GetSiteKind))
         {
             var used = kindGroup
                 .Where(survey => survey.LocalSiteId > 0)
                 .Select(survey => survey.LocalSiteId)
                 .ToHashSet();
-            foreach (var survey in kindGroup.Where(survey => survey.LocalSiteId > 0))
+            foreach (GuardianCommanderSiteSurvey? survey in kindGroup.Where(survey => survey.LocalSiteId > 0))
             {
                 result[survey] = survey.LocalSiteId;
             }
 
-            var next = 1;
+            int next = 1;
             foreach (
-                var survey in kindGroup
+                GuardianCommanderSiteSurvey? survey in kindGroup
                     .Where(survey => survey.LocalSiteId <= 0)
                     .OrderBy(survey => survey.FirstVisited)
                     .ThenBy(survey => survey.SystemAddress)

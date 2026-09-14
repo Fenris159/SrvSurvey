@@ -22,7 +22,8 @@ public sealed partial class FiregroupsView : UserControl
             return;
         }
 
-        var row = (sender as Control)?.DataContext as FiregroupSavedRow ?? model.Firegroups.SelectedSavedProfile;
+        FiregroupSavedRow? row =
+            (sender as Control)?.DataContext as FiregroupSavedRow ?? model.Firegroups.SelectedSavedProfile;
         if (row is null)
         {
             model.Firegroups.RemoveCommand.Execute(null);

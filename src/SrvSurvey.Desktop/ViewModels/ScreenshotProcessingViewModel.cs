@@ -119,7 +119,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         CancellationToken cancellationToken = default
     )
     {
-        var result = await processingService.ProcessAsync(
+        ScreenshotProcessingResult result = await processingService.ProcessAsync(
             journalEvents,
             preferences,
             commanderName,
@@ -132,7 +132,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
             return result;
         }
 
-        var converted = result.Conversions.Count switch
+        string converted = result.Conversions.Count switch
         {
             0 => "No screenshots were converted.",
             1 => $"Saved screenshot: {result.Conversions[0].OutputPath}",

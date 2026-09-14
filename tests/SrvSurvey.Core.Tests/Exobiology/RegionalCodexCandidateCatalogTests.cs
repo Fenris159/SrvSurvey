@@ -13,7 +13,7 @@ public sealed class RegionalCodexCandidateCatalogTests : IDisposable
     public void ImportedLegacyCatalogLoadsWithoutChangingItsBytes()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, RegionalCodexCandidateCatalog.LegacyFileName);
+        string path = Path.Combine(temporaryDirectory, RegionalCodexCandidateCatalog.LegacyFileName);
         const string json = "{\"Inner Orion Spur\":[\"2310101_Aleoida_Arcus - Green\"]}";
         File.WriteAllText(path, json);
 
@@ -31,7 +31,7 @@ public sealed class RegionalCodexCandidateCatalogTests : IDisposable
     public void MalformedImportedCatalogIsPreservedAndFailsClosed()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, RegionalCodexCandidateCatalog.LegacyFileName);
+        string path = Path.Combine(temporaryDirectory, RegionalCodexCandidateCatalog.LegacyFileName);
         const string json = "{\"Inner Orion Spur\":[\"2310101_valid\",42]}";
         File.WriteAllText(path, json);
 
@@ -67,9 +67,9 @@ public sealed class RegionalCodexCandidateCatalogTests : IDisposable
     public void PublishedCsvParsesQuotedFieldsAndResolvesBlankEntryIds()
     {
         var references = ExobiologyReferenceCatalog.LoadEmbedded();
-        var resolved = references.FindByDisplayName("Aleoida Coronamus - Lime");
+        ExobiologyReference? resolved = references.FindByDisplayName("Aleoida Coronamus - Lime");
         Assert.NotNull(resolved);
-        var csv = string.Join(
+        string csv = string.Join(
             "\r\n",
             "\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"",
             "\"1\",\"Galactic Centre\",\"Aleoida Arcus - Yellow\",\"0\",\"0\",\"2310101\",\"$Codex_Ent_Aleoids_01_B_Name;\",\"B\"",

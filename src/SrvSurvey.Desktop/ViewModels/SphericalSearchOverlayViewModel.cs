@@ -176,7 +176,7 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
 
     private string CreateManualCopyStatus()
     {
-        var shortcut =
+        string shortcut =
             inputSettings?.CurrentSettings.Bindings.GetValueOrDefault(GlobalInputAction.CopyNextBoxel)
             ?? GlobalInputActionCatalog.Get(GlobalInputAction.CopyNextBoxel).DefaultChord;
         return string.IsNullOrWhiteSpace(shortcut) ? "MANUAL COPY - NOT SET" : $"MANUAL COPY - {shortcut}";

@@ -10,14 +10,14 @@ public sealed class CombatStateTests
     {
         var state = new CombatState();
 
-        var approach = state.Apply(
+        CombatApplyResult approach = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-25T01:00:00Z","event":"ApproachSettlement","Name":"Test Base","StationFaction":{"Name":"Test Faction","FactionState":"CivilWar"}}
                 """
             )
         );
-        var kill = state.Apply(
+        CombatApplyResult kill = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-25T01:01:00Z","event":"FactionKillBond","Reward":17361,"AwardingFaction":"Test Faction","VictimFaction":"Enemy"}
@@ -40,7 +40,7 @@ public sealed class CombatStateTests
     {
         var state = new CombatState();
 
-        var result = state.Apply(
+        CombatApplyResult result = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-25T01:01:00Z","event":"FactionKillBond","Reward":17361}
@@ -74,7 +74,7 @@ public sealed class CombatStateTests
             )
         );
 
-        var result = state.Apply(Parse($$"""{"event":"{{eventName}}"{{properties}}}"""));
+        CombatApplyResult result = state.Apply(Parse($$"""{"event":"{{eventName}}"{{properties}}}"""));
 
         Assert.True(result.StateChanged);
         Assert.False(result.PersistenceChanged);
@@ -88,7 +88,7 @@ public sealed class CombatStateTests
     {
         var state = new CombatState();
 
-        var accepted = state.Apply(
+        CombatApplyResult accepted = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Mission Giver","Name":"Mission_MassacreWing","TargetFaction":"Enemy Faction","KillCount":7,"Expiry":"2026-07-26T01:00:00Z","MissionID":123}
@@ -109,7 +109,7 @@ public sealed class CombatStateTests
             Assert.Single(state.MassacreMissions)
         );
 
-        var removed = state.Apply(
+        CombatApplyResult removed = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-25T02:00:00Z","event":"MissionCompleted","Name":"Mission_MassacreWing","MissionID":123}
@@ -134,7 +134,7 @@ public sealed class CombatStateTests
             ])
         );
 
-        var result = state.Apply(
+        CombatApplyResult result = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-25T02:00:00Z","event":"Bounty","VictimFaction":"Enemy","TotalReward":1000}
@@ -165,7 +165,7 @@ public sealed class CombatStateTests
             ])
         );
 
-        var result = state.Apply(
+        CombatApplyResult result = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-25T02:00:00Z","event":"Bounty","VictimFaction":"Enemy"}
@@ -185,7 +185,7 @@ public sealed class CombatStateTests
             new CombatSnapshot([Mission(1, "A", "Enemy", 2), Mission(2, "B", "Enemy", 2), Mission(3, "C", "Enemy", 2)])
         );
 
-        var result = state.Apply(
+        CombatApplyResult result = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-25T02:00:00Z","event":"Missions","Active":[{"MissionID":1}],"Complete":[{"MissionID":3}],"Failed":[]}
@@ -201,12 +201,12 @@ public sealed class CombatStateTests
     public void NonMassacreMissionAndDuplicateAreIgnored()
     {
         var state = new CombatState();
-        var unrelated = Parse(
+        JournalEventEnvelope unrelated = Parse(
             """
             {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Giver","Name":"Mission_Delivery","TargetFaction":"Enemy","KillCount":2,"MissionID":123}
             """
         );
-        var massacre = Parse(
+        JournalEventEnvelope massacre = Parse(
             """
             {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre","TargetFaction":"Enemy","KillCount":2,"MissionID":456}
             """
@@ -231,7 +231,7 @@ public sealed class CombatStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? value, out string? error), error);
         return value!;
     }
 }

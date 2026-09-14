@@ -14,7 +14,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     [Fact]
     public void MissingDocumentKeepsPublicationDisabled()
     {
-        var preferences = CreateStore().Load();
+        NetworkPrivacyPreferences preferences = CreateStore().Load();
 
         Assert.Equal(NetworkPrivacyPreferences.Default, preferences);
         Assert.False(preferences.EddnUploadEnabled);
@@ -24,7 +24,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     [Fact]
     public void EddnConsentPersistsAndNotifiesOnlyWhenItChanges()
     {
-        var store = CreateStore();
+        NetworkPrivacySettingsStore store = CreateStore();
         var viewModel = new NetworkPrivacyViewModel(store);
         var changes = new List<bool>();
         viewModel.EddnUploadEnabledChanged += changes.Add;
@@ -64,7 +64,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     public void FailedSaveDoesNotActivateEddnConsent()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var blockedParent = Path.Combine(temporaryDirectory, "not-a-folder");
+        string blockedParent = Path.Combine(temporaryDirectory, "not-a-folder");
         File.WriteAllText(blockedParent, "occupied");
         var viewModel = new NetworkPrivacyViewModel(
             new NetworkPrivacySettingsStore(Path.Combine(blockedParent, "ui-settings.json"))
@@ -72,7 +72,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         var changes = new List<bool>();
         viewModel.EddnUploadEnabledChanged += changes.Add;
 
-        var saved = viewModel.TrySetEddnUploadEnabled(true);
+        bool saved = viewModel.TrySetEddnUploadEnabled(true);
 
         Assert.False(saved);
         Assert.False(viewModel.EddnUploadEnabled);
@@ -83,7 +83,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     [Fact]
     public void FailedRuntimeTransitionRestoresPersistedEddnConsent()
     {
-        var store = CreateStore();
+        NetworkPrivacySettingsStore store = CreateStore();
         var viewModel = new NetworkPrivacyViewModel(store);
         var transitions = new List<bool>();
         viewModel.EddnUploadEnabledChanged += enabled =>
@@ -95,7 +95,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
             }
         };
 
-        var saved = viewModel.TrySetEddnUploadEnabled(true);
+        bool saved = viewModel.TrySetEddnUploadEnabled(true);
 
         Assert.False(saved);
         Assert.False(viewModel.EddnUploadEnabled);
@@ -108,7 +108,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     public void InvalidEddnConsentFallsBackToDisabled()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(
             path,
             """
@@ -116,7 +116,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
             """
         );
 
-        var preferences = new NetworkPrivacySettingsStore(path).Load();
+        NetworkPrivacyPreferences preferences = new NetworkPrivacySettingsStore(path).Load();
 
         Assert.False(preferences.EddnUploadEnabled);
     }
@@ -125,7 +125,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     public void PreferencesRoundTripWithoutRemovingOtherSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Theme\":\"blue-dark\"}");
         var store = new NetworkPrivacySettingsStore(path);
         var expected = new NetworkPrivacyPreferences(true, true, true);
@@ -144,15 +144,15 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     public void LegacySchemaPreferencesAreIgnoredAndRemovedOnSave(string environment)
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, $"{{\"NetworkPrivacy\":{{\"EddnEnvironment\":\"{environment}\"}}}}");
         var store = new NetworkPrivacySettingsStore(path);
 
-        var preferences = store.Load();
+        NetworkPrivacyPreferences preferences = store.Load();
         store.Save(preferences);
 
         Assert.False(preferences.EddnUploadEnabled);
-        var saved = File.ReadAllText(path);
+        string saved = File.ReadAllText(path);
         Assert.DoesNotContain("EddnUseTestSchemas", saved);
         Assert.DoesNotContain("EddnEnvironment", saved);
     }
@@ -161,7 +161,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     public void ExplicitLegacySchemaModeIsRemovedWhenPreferencesAreSaved()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(
             path,
             """
@@ -170,7 +170,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         );
 
         var store = new NetworkPrivacySettingsStore(path);
-        var preferences = store.Load();
+        NetworkPrivacyPreferences preferences = store.Load();
         store.Save(preferences);
 
         Assert.DoesNotContain("EddnUseTestSchemas", File.ReadAllText(path));

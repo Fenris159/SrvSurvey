@@ -11,7 +11,7 @@ public sealed partial class BookmarksView : UserControl
 
     private void OpenScreenshot_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is BookmarksViewModel vm && (sender as Control)?.Tag is string path)
+        if (DataContext is BookmarksViewModel vm && sender is Control { Tag: string path })
         {
             vm.Status = MiningAttachmentActions.Open(path);
         }
@@ -19,7 +19,7 @@ public sealed partial class BookmarksView : UserControl
 
     private void RemoveScreenshot_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is BookmarksViewModel vm && (sender as Control)?.Tag is string path)
+        if (DataContext is BookmarksViewModel vm && sender is Control { Tag: string path })
         {
             vm.RemoveScreenshot(path);
         }
@@ -41,7 +41,7 @@ public sealed partial class BookmarksView : UserControl
         }
         try
         {
-            var files = await storage.OpenFilePickerAsync(
+            IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
                 new FilePickerOpenOptions
                 {
                     Title = "Attach location screenshots",
@@ -66,7 +66,7 @@ public sealed partial class BookmarksView : UserControl
 
         try
         {
-            var files = await storage.OpenFilePickerAsync(
+            IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
                 new FilePickerOpenOptions
                 {
                     Title = "Import bookmarks",
@@ -79,8 +79,8 @@ public sealed partial class BookmarksView : UserControl
                 return;
             }
 
-            var file = files[0];
-            await using var stream = await file.OpenReadAsync();
+            IStorageFile file = files[0];
+            await using Stream stream = await file.OpenReadAsync();
             using var reader = new StreamReader(stream);
             vm.Import(await reader.ReadToEndAsync());
         }
@@ -99,8 +99,8 @@ public sealed partial class BookmarksView : UserControl
 
         try
         {
-            var json = vm.Export();
-            var file = await storage.SaveFilePickerAsync(
+            string json = vm.Export();
+            IStorageFile? file = await storage.SaveFilePickerAsync(
                 new FilePickerSaveOptions
                 {
                     Title = "Export bookmarks",
@@ -113,7 +113,7 @@ public sealed partial class BookmarksView : UserControl
                 return;
             }
 
-            await using var stream = await file.OpenWriteAsync();
+            await using Stream stream = await file.OpenWriteAsync();
             stream.SetLength(0);
             await using var writer = new StreamWriter(stream);
             await writer.WriteAsync(json);

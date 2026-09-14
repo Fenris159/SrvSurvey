@@ -1,3 +1,4 @@
+using Avalonia;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -28,7 +29,7 @@ internal static class MiningColorBarDetector
         private double offsetX,
             offsetY;
         private (double X, double Y)? locatedGrid;
-        private Dictionary<int, int> assignments = new();
+        private Dictionary<int, int> assignments = [];
 
         internal Frame(IFssPixelSource source, MiningDetectionSettings settings, MiningBarAnalysis? previous)
         {
@@ -66,7 +67,7 @@ internal static class MiningColorBarDetector
 
             if (candidates.Count == 0)
             {
-                var grid =
+                (double X, double Y)? grid =
                     locatedGrid
                     ?? MiningCircleMask.LocateGrid(image, centers, radius, geometry, (offsetX, offsetY), allowance);
                 if (grid is null)
@@ -108,10 +109,10 @@ internal static class MiningColorBarDetector
 
         private void FindCandidates()
         {
-            foreach (var group in FindGroups(mask))
+            foreach (Group group in FindGroups(mask))
             {
-                var width = group.MaxX - group.MinX + 1;
-                var height = group.MaxY - group.MinY + 1;
+                int width = group.MaxX - group.MinX + 1;
+                int height = group.MaxY - group.MinY + 1;
                 if (
                     group.Points.Count >= 6
                     && width >= radius * .25
@@ -133,11 +134,15 @@ internal static class MiningColorBarDetector
                     continue;
                 }
 
-                var measuredRadius = Math.Clamp(width / 2.15, radius * .8, radius * 1.2);
-                var offset = geometry.Transform(MiningBarShape.Centroid.X, MiningBarShape.Centroid.Y, measuredRadius);
-                var x = group.Points.Average(p => p.X) - offset.X;
-                var y = group.Points.Average(p => p.Y) - offset.Y - radius * settings.BarGap;
-                var score = ScoreGroup(mask, x, y, measuredRadius, geometry, settings.BarGap);
+                double measuredRadius = Math.Clamp(width / 2.15, radius * .8, radius * 1.2);
+                Vector offset = geometry.Transform(
+                    MiningBarShape.Centroid.X,
+                    MiningBarShape.Centroid.Y,
+                    measuredRadius
+                );
+                double x = group.Points.Average(p => p.X) - offset.X;
+                double y = group.Points.Average(p => p.Y) - offset.Y - radius * settings.BarGap;
+                double score = ScoreGroup(mask, x, y, measuredRadius, geometry, settings.BarGap);
                 if (score >= .7)
                 {
                     candidates.Add((x, y, score));
@@ -147,11 +152,11 @@ internal static class MiningColorBarDetector
 
         private void FindAssignments()
         {
-            var bestCount = 0;
-            var bestDistance = double.MaxValue;
-            foreach (var candidate in candidates)
+            int bestCount = 0;
+            double bestDistance = double.MaxValue;
+            foreach ((double X, double Y, double Score) candidate in candidates)
             {
-                for (var anchor = 0; anchor < 6; anchor++)
+                for (int anchor = 0; anchor < 6; anchor++)
                 {
                     // Rig 1 is deployed first. Established identities survive partial visibility.
                     if (previous?.HasAnchor != true && candidates.Count == 1 && anchor != 0)
@@ -159,10 +164,10 @@ internal static class MiningColorBarDetector
                         continue;
                     }
 
-                    var dx = candidate.X - centers[anchor].X;
-                    var dy = candidate.Y - centers[anchor].Y;
-                    var distance = Math.Pow(dx - offsetX, 2) + Math.Pow(dy - offsetY, 2);
-                    var matches = MatchSlots(dx, dy);
+                    double dx = candidate.X - centers[anchor].X;
+                    double dy = candidate.Y - centers[anchor].Y;
+                    double distance = Math.Pow(dx - offsetX, 2) + Math.Pow(dy - offsetY, 2);
+                    Dictionary<int, int> matches = MatchSlots(dx, dy);
                     if (matches.Count != candidates.Count || !VerifyMovement(matches, dx, dy, distance))
                     {
                         continue;
@@ -186,10 +191,10 @@ internal static class MiningColorBarDetector
         private Dictionary<int, int> MatchSlots(double dx, double dy)
         {
             var matches = new Dictionary<int, int>();
-            for (var i = 0; i < candidates.Count; i++)
+            for (int i = 0; i < candidates.Count; i++)
             {
-                var point = candidates[i];
-                var nearest = centers
+                (double X, double Y, double Score) point = candidates[i];
+                (int Slot, double Distance) nearest = centers
                     .Select(
                         (p, slot) =>
                             (Slot: slot, Distance: Math.Pow(point.X - p.X - dx, 2) + Math.Pow(point.Y - p.Y - dy, 2))
@@ -212,20 +217,20 @@ internal static class MiningColorBarDetector
 
         private bool VerifyMovement(Dictionary<int, int> matches, double dx, double dy, double distance)
         {
-            var previousSlots = previous?.AnchorSlots ?? 0;
-            var matchedSlots = matches.Keys.Aggregate(0, (value, slot) => value | (1 << slot));
-            var lostSlots = previousSlots & ~matchedSlots;
-            var replacedSlots = lostSlots != 0 && (matchedSlots & ~previousSlots) != 0;
-            var retained = (previousSlots & matchedSlots) != 0;
-            var groupConfirmsMovement = matches.Count >= 2 && lostSlots == 0;
+            int previousSlots = previous?.AnchorSlots ?? 0;
+            int matchedSlots = matches.Keys.Aggregate(0, (value, slot) => value | (1 << slot));
+            int lostSlots = previousSlots & ~matchedSlots;
+            bool replacedSlots = lostSlots != 0 && (matchedSlots & ~previousSlots) != 0;
+            bool retained = (previousSlots & matchedSlots) != 0;
+            bool groupConfirmsMovement = matches.Count >= 2 && lostSlots == 0;
             // A large move or disjoint identity needs independent layout evidence.
-            var needsEvidence = distance > radius * radius && !groupConfirmsMovement || !retained || replacedSlots;
+            bool needsEvidence = distance > radius * radius && !groupConfirmsMovement || !retained || replacedSlots;
             if (previous?.HasAnchor != true || !needsEvidence || locatedGrid is not null && distance <= radius * radius)
             {
                 return true;
             }
 
-            var verified = MiningCircleMask.LocateGrid(
+            (double X, double Y)? verified = MiningCircleMask.LocateGrid(
                 image,
                 centers,
                 radius,
@@ -244,8 +249,8 @@ internal static class MiningColorBarDetector
                 return;
             }
 
-            var nextX = assignments.Select(p => candidates[p.Value].X - centers[p.Key].X).Average();
-            var nextY = assignments.Select(p => candidates[p.Value].Y - centers[p.Key].Y).Average();
+            double nextX = assignments.Select(p => candidates[p.Value].X - centers[p.Key].X).Average();
+            double nextY = assignments.Select(p => candidates[p.Value].Y - centers[p.Key].Y).Average();
             if (
                 locatedGrid is { } position
                 && Math.Pow(nextX - position.X, 2) + Math.Pow(nextY - position.Y, 2) <= radius * radius * .36
@@ -267,15 +272,15 @@ internal static class MiningColorBarDetector
 
         private void ClassifySlots()
         {
-            for (var i = 0; i < 6; i++)
+            for (int i = 0; i < 6; i++)
             {
-                if (assignments.TryGetValue(i, out var candidate))
+                if (assignments.TryGetValue(i, out int candidate))
                 {
                     states[i] = MiningBarState.Present;
                     scores[i] = candidates[candidate].Score;
                     continue;
                 }
-                var center = centers[i];
+                (double X, double Y) center = centers[i];
                 // Rejection by the full-shape matcher is not proof that a bar is gone.
                 if (
                     HasBarFragment(
@@ -292,7 +297,13 @@ internal static class MiningColorBarDetector
                     continue;
                 }
 
-                var rim = MiningCircleMask.Locate(image, center.X + offsetX, center.Y + offsetY, radius, geometry);
+                MiningCircleMask.Rim rim = MiningCircleMask.Locate(
+                    image,
+                    center.X + offsetX,
+                    center.Y + offsetY,
+                    radius,
+                    geometry
+                );
                 states[i] = rim.Confidence >= 8 ? MiningBarState.Absent : MiningBarState.Unknown;
             }
         }
@@ -307,17 +318,17 @@ internal static class MiningColorBarDetector
             bool previouslyTracked
         )
         {
-            var curve = MiningBarShape
+            (double X, double Y)[] curve = MiningBarShape
                 .GuidePoints.Select(point => geometry.Transform(point.X, point.Y, radius))
                 .Select(point => (X: x + point.X, Y: y + point.Y + radius * gap))
                 .ToArray();
-            foreach (var points in fragments.Select(group => group.Points))
+            foreach (List<(int X, int Y)>? points in fragments.Select(group => group.Points))
             {
-                var matching = points.Count(pixel =>
+                int matching = points.Count(pixel =>
                     curve.Any(point => Math.Pow(pixel.X - point.X, 2) + Math.Pow(pixel.Y - point.Y, 2) <= 16)
                 );
-                var required = previouslyTracked ? 6 : 12;
-                var fraction = previouslyTracked ? .5 : .6;
+                int required = previouslyTracked ? 6 : 12;
+                double fraction = previouslyTracked ? .5 : .6;
                 if (matching >= required && matching >= points.Count * fraction)
                 {
                     return true;
@@ -335,10 +346,10 @@ internal static class MiningColorBarDetector
             double gap
         )
         {
-            var best = 0d;
-            foreach (var (dx, dy, scale, tilt) in ShapeVariations())
+            double best = 0d;
+            foreach ((int dx, int dy, double scale, double tilt) in ShapeVariations())
             {
-                var score = MiningBarShape.Score(
+                double score = MiningBarShape.Score(
                     source,
                     x + dx,
                     y + dy + radius * gap,
@@ -373,10 +384,10 @@ internal static class MiningColorBarDetector
 
         private static IEnumerable<Group> FindGroups(ColorMask mask)
         {
-            var visited = new bool[mask.Width * mask.Height];
-            for (var y = 0; y < mask.Height; y++)
+            bool[] visited = new bool[mask.Width * mask.Height];
+            for (int y = 0; y < mask.Height; y++)
             {
-                for (var x = 0; x < mask.Width; x++)
+                for (int x = 0; x < mask.Width; x++)
                 {
                     if (!visited[y * mask.Width + x] && mask.Matches(x, y))
                     {
@@ -390,17 +401,17 @@ internal static class MiningColorBarDetector
         {
             var points = new List<(int X, int Y)> { (x, y) };
             visited[y * mask.Width + x] = true;
-            var minX = x;
-            var maxX = x;
-            var minY = y;
-            var maxY = y;
-            for (var index = 0; index < points.Count; index++)
+            int minX = x;
+            int maxX = x;
+            int minY = y;
+            int maxY = y;
+            for (int index = 0; index < points.Count; index++)
             {
-                var point = points[index];
+                (int X, int Y) point = points[index];
                 // Bridge small segment gaps, retaining the larger gaps between rigs.
-                for (var ny = Math.Max(0, point.Y - 3); ny <= Math.Min(mask.Height - 1, point.Y + 3); ny++)
+                for (int ny = Math.Max(0, point.Y - 3); ny <= Math.Min(mask.Height - 1, point.Y + 3); ny++)
                 {
-                    for (var nx = Math.Max(0, point.X - 3); nx <= Math.Min(mask.Width - 1, point.X + 3); nx++)
+                    for (int nx = Math.Max(0, point.X - 3); nx <= Math.Min(mask.Width - 1, point.X + 3); nx++)
                     {
                         if (visited[ny * mask.Width + nx] || !mask.Matches(nx, ny))
                         {
@@ -432,9 +443,9 @@ internal static class MiningColorBarDetector
             Height = source.Height;
             matches = new bool[Width * Height];
             var target = new FssRgbPixel((byte)(color >> 16), (byte)(color >> 8), (byte)color);
-            for (var y = 0; y < Height; y++)
+            for (int y = 0; y < Height; y++)
             {
-                for (var x = 0; x < Width; x++)
+                for (int x = 0; x < Width; x++)
                 {
                     matches[y * Width + x] = MatchesColor(source.GetPixel(x, y), target);
                 }
@@ -448,18 +459,18 @@ internal static class MiningColorBarDetector
 
     internal static bool MatchesColor(FssRgbPixel pixel, FssRgbPixel target)
     {
-        var maximum = Math.Max(pixel.Red, Math.Max(pixel.Green, pixel.Blue));
-        var minimum = Math.Min(pixel.Red, Math.Min(pixel.Green, pixel.Blue));
-        var chroma = maximum - minimum;
-        var targetMin = Math.Min(target.Red, Math.Min(target.Green, target.Blue));
-        var targetMaximum = Math.Max(target.Red, Math.Max(target.Green, target.Blue));
-        var targetChroma = targetMaximum - targetMin;
+        byte maximum = Math.Max(pixel.Red, Math.Max(pixel.Green, pixel.Blue));
+        byte minimum = Math.Min(pixel.Red, Math.Min(pixel.Green, pixel.Blue));
+        int chroma = maximum - minimum;
+        byte targetMin = Math.Min(target.Red, Math.Min(target.Green, target.Blue));
+        byte targetMaximum = Math.Max(target.Red, Math.Max(target.Green, target.Blue));
+        int targetChroma = targetMaximum - targetMin;
         if (targetMaximum < 96 || targetChroma < 24)
         {
             return false;
         }
 
-        var minimumSaturation = Math.Max(.25, targetChroma / (double)targetMaximum * .5);
+        double minimumSaturation = Math.Max(.25, targetChroma / (double)targetMaximum * .5);
         if (maximum < 96 || chroma < maximum * minimumSaturation)
         {
             return false;

@@ -118,7 +118,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         get => rangeFrom;
         set
         {
-            var changed = SetField(ref rangeFrom, value);
+            bool changed = SetField(ref rangeFrom, value);
             if (changed)
             {
                 OnPropertyChanged(nameof(RangeFromDate));
@@ -139,8 +139,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         get => rangeTo;
         set
         {
-            var constrained = ConstrainRangeTo(value);
-            var changed = SetField(ref rangeTo, constrained);
+            DateTimeOffset? constrained = ConstrainRangeTo(value);
+            bool changed = SetField(ref rangeTo, constrained);
             if (changed)
             {
                 OnPropertyChanged(nameof(RangeToDate));
@@ -190,8 +190,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     {
         get
         {
-            var yesterday = timeProvider.GetUtcNow().UtcDateTime.Date.AddDays(-1);
-            var journalStart = firstJournalTimestamp?.UtcDateTime.Date;
+            DateTime yesterday = timeProvider.GetUtcNow().UtcDateTime.Date.AddDays(-1);
+            DateTime? journalStart = firstJournalTimestamp?.UtcDateTime.Date;
             return journalStart is { } firstDate && firstDate < yesterday ? firstDate : yesterday;
         }
     }
@@ -200,8 +200,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     {
         get
         {
-            var today = timeProvider.GetUtcNow().UtcDateTime.Date;
-            var journalEnd = lastJournalTimestamp?.UtcDateTime.Date;
+            DateTime today = timeProvider.GetUtcNow().UtcDateTime.Date;
+            DateTime? journalEnd = lastJournalTimestamp?.UtcDateTime.Date;
             return journalEnd is { } lastDate && lastDate > today ? lastDate : today;
         }
     }
@@ -215,8 +215,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 return RangeMaximumDate;
             }
 
-            var maximumDate = (from + MaximumExportRange).UtcDateTime.Date;
-            var availableMaximum = RangeMaximumDate;
+            DateTime maximumDate = (from + MaximumExportRange).UtcDateTime.Date;
+            DateTime? availableMaximum = RangeMaximumDate;
             return availableMaximum is { } availableDate && availableDate < maximumDate ? availableDate : maximumDate;
         }
     }
@@ -265,12 +265,12 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     {
         get
         {
-            if (!TryResolveRange(out var from, out var to, out var error))
+            if (!TryResolveRange(out DateTimeOffset? from, out DateTimeOffset? to, out string? error))
             {
                 return error;
             }
 
-            var selectedCount = allEvents.Count(item =>
+            int selectedCount = allEvents.Count(item =>
                 item.Timestamp is { } timestamp
                 && (from is null || timestamp >= from)
                 && (to is null || timestamp <= to)
@@ -280,10 +280,10 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 return "No timestamped events are inside the export range.";
             }
 
-            var privacy = RedactExport
+            string privacy = RedactExport
                 ? "Commander identities, sent and received chat, location names, IDs, coordinates, and screenshot paths will be redacted."
                 : "Commander identity and selected event content will remain raw.";
-            var selection = ResolveSelectionDescription(selectedCount);
+            string selection = ResolveSelectionDescription(selectedCount);
             return selection
                 + "; required header, commander, load, and location bootstrap "
                 + "events before the range will be added automatically. "
@@ -308,7 +308,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         CancelPendingFilter();
         try
         {
-            var snapshot = await Task.Run(
+            JournalHistorySnapshot snapshot = await Task.Run(
                 () => reader.LoadAsync(journalDirectory, CancellationToken.None),
                 CancellationToken.None
             );
@@ -321,7 +321,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             OnPropertyChanged(nameof(RangeMaximumDate));
             rangeFrom = null;
             rangeTo = null;
-            var defaultTo = timeProvider.GetUtcNow();
+            DateTimeOffset defaultTo = timeProvider.GetUtcNow();
             RangeFrom = defaultTo - DefaultExportRange;
             RangeTo = defaultTo;
             Summary = ResolveSummary(snapshot);
@@ -361,7 +361,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         StatusMessage = string.Empty;
         try
         {
-            if (!TryResolveRange(out var from, out var to, out var error))
+            if (!TryResolveRange(out DateTimeOffset? from, out DateTimeOffset? to, out string? error))
             {
                 StatusMessage = error;
                 return false;
@@ -374,7 +374,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                 sourceVersion,
                 presentationSnapshotProvider()
             );
-            var result = await Task.Run(
+            JournalReplayExportResult result = await Task.Run(
                 () =>
                     exporter.ExportAsync(
                         journalDirectory,
@@ -406,7 +406,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
 
     private void ApplyFilter()
     {
-        var filter = SearchText.Trim();
+        string filter = SearchText.Trim();
         CancelPendingFilter();
         if (filter.Length == 0 || allEvents.Count < BackgroundFilterThreshold)
         {
@@ -439,7 +439,10 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         try
         {
             await Task.Delay(150, cancellation.Token);
-            var filtered = await Task.Run(() => FilterEvents(filter), cancellation.Token);
+            IReadOnlyList<JournalHistoryEvent> filtered = await Task.Run(
+                () => FilterEvents(filter),
+                cancellation.Token
+            );
             await InvokeOnCapturedContextAsync(() =>
             {
                 if (
@@ -503,7 +506,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
 
     private void CancelPendingFilter()
     {
-        var cancellation = filterCancellation;
+        CancellationTokenSource? cancellation = filterCancellation;
         filterCancellation = null;
         if (cancellation is not null)
         {
@@ -526,7 +529,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             return $"The selected range will be scanned during export across all {totalEventCount:N0} indexed events";
         }
 
-        var suffix = selectedCount == 1 ? string.Empty : "s";
+        string suffix = selectedCount == 1 ? string.Empty : "s";
         return $"{selectedCount:N0} selected event{suffix}";
     }
 
@@ -537,7 +540,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             return $"No journal events were found in {snapshot.JournalDirectory}.";
         }
 
-        var windowedSummary = snapshot.IsWindowed
+        string windowedSummary = snapshot.IsWindowed
             ? $" Showing the most recent {snapshot.Events.Count:N0}; export scans the full indexed history."
             : string.Empty;
         return $"{snapshot.TotalEventCount:N0} events across "
@@ -569,7 +572,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             return from;
         }
 
-        var maximum = from + MaximumExportRange;
+        DateTimeOffset maximum = from + MaximumExportRange;
         return candidate > maximum ? maximum : candidate;
     }
 

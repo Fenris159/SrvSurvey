@@ -12,7 +12,7 @@ public sealed class EddnSessionPublisherTests
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var cancelled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var sink = new RecordingSink();
-        using var session = CreateSession(
+        using EddnSessionPublisher session = CreateSession(
             sink,
             async (_, _, cancellationToken) =>
             {
@@ -52,7 +52,7 @@ public sealed class EddnSessionPublisherTests
     {
         var logs = new List<string>();
         var sink = new RecordingSink();
-        using var session = CreateSession(
+        using EddnSessionPublisher session = CreateSession(
             sink,
             (_, _, _) => Task.FromResult(new EddnCompanionReadResult(null, "file unavailable")),
             logs.Add
@@ -60,15 +60,15 @@ public sealed class EddnSessionPublisherTests
         session.SetEnabled(true);
         session.SetSuspended(false);
 
-        var invalid = session.Apply(
+        EddnPublicationResult invalid = session.Apply(
             Request(new JournalEventEnvelope("Broken", null, "{not-json", default)),
             CancellationToken.None
         );
-        var missingDirectory = session.Apply(
+        EddnPublicationResult missingDirectory = session.Apply(
             Request(Event("""{"timestamp":"2026-08-22T12:00:00Z","event":"Market","MarketID":42}""")),
             CancellationToken.None
         );
-        var mismatch = session.Apply(
+        EddnPublicationResult mismatch = session.Apply(
             Request(Event("""{"timestamp":"2026-08-22T12:00:01Z","event":"LoadGame","Commander":"Other Cmdr"}""")),
             CancellationToken.None
         );
@@ -80,7 +80,7 @@ public sealed class EddnSessionPublisherTests
         Assert.Empty(sink.Messages);
         await session.WaitForCompanionReadsAsync();
 
-        using var readFailure = CreateSession(
+        using EddnSessionPublisher readFailure = CreateSession(
             sink,
             (_, _, _) => Task.FromResult(new EddnCompanionReadResult(null, "file unavailable")),
             logs.Add,
@@ -99,7 +99,7 @@ public sealed class EddnSessionPublisherTests
     public void DisposeFlushesSignalsWithTheirCapturedSessionHeader()
     {
         var sink = new RecordingSink();
-        var session = CreateSession(sink);
+        EddnSessionPublisher session = CreateSession(sink);
         session.SetEnabled(true);
         session.SetSuspended(true);
         session.SetSuspended(true);
@@ -119,7 +119,10 @@ public sealed class EddnSessionPublisherTests
         session.Dispose();
         session.Dispose();
 
-        var queued = Assert.Single(sink.Messages, message => message.Prepared.eventName == "FSSSignalDiscovered");
+        RecordedMessage queued = Assert.Single(
+            sink.Messages,
+            message => message.Prepared.eventName == "FSSSignalDiscovered"
+        );
         Assert.Equal("FSSSignalDiscovered", queued.Prepared.eventName);
         Assert.Equal("Test Cmdr", queued.Header.uploaderID);
         Assert.Equal("Origin", queued.Prepared.message.Value<string>("StarSystem"));
@@ -157,7 +160,7 @@ public sealed class EddnSessionPublisherTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return result!;
     }
 

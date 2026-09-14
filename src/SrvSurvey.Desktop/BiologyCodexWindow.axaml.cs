@@ -57,9 +57,9 @@ public sealed partial class BiologyCodexWindow : Window
 
     private async Task LoadSelectedImageAsync(bool forceRefresh)
     {
-        var loadCancellation = await BeginImageLoadAsync();
-        var cancellationToken = loadCancellation.Token;
-        var organism = viewModel.SelectedOrganism;
+        CancellationTokenSource loadCancellation = await BeginImageLoadAsync();
+        CancellationToken cancellationToken = loadCancellation.Token;
+        BiologyCodexOrganismViewModel? organism = viewModel.SelectedOrganism;
         if (organism is null || string.IsNullOrWhiteSpace(organism.ImageUrl))
         {
             ReplaceImage(null);
@@ -71,7 +71,7 @@ public sealed partial class BiologyCodexWindow : Window
 
         ReplaceImage(null);
         ImageStatusText.Text = forceRefresh ? "Refreshing reference image…" : "Loading reference image…";
-        var result = await TryLoadImageResultAsync(organism, forceRefresh, loadCancellation);
+        CodexImageCacheResult? result = await TryLoadImageResultAsync(organism, forceRefresh, loadCancellation);
         if (
             result is null
             || cancellationToken.IsCancellationRequested
@@ -86,7 +86,7 @@ public sealed partial class BiologyCodexWindow : Window
 
     private async Task<CancellationTokenSource> BeginImageLoadAsync()
     {
-        var previousCancellation = imageLoadCancellation;
+        CancellationTokenSource? previousCancellation = imageLoadCancellation;
         if (previousCancellation is not null)
         {
             await previousCancellation.CancelAsync();
@@ -104,8 +104,8 @@ public sealed partial class BiologyCodexWindow : Window
         CancellationTokenSource loadCancellation
     )
     {
-        var cancellationToken = loadCancellation.Token;
-        var imageLoadTask = imageCache.GetAsync(
+        CancellationToken cancellationToken = loadCancellation.Token;
+        Task<CodexImageCacheResult> imageLoadTask = imageCache.GetAsync(
             organism.EntryId,
             organism.ImageUrl!,
             organism.LocalImageName,
@@ -211,7 +211,7 @@ public sealed partial class BiologyCodexWindow : Window
 
     private static BiologyCodexViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-BiologyCodex-Design");
+        string temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-BiologyCodex-Design");
         return new BiologyCodexViewModel(
             new SystemSurveyViewModel(
                 new SystemSurveySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"))

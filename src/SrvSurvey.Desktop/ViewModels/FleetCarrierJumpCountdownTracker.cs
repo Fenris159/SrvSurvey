@@ -21,7 +21,7 @@ public sealed class FleetCarrierJumpCountdownTracker
     public bool Apply(JournalEventEnvelope journalEvent, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var changed = journalEvent.EventName switch
+        bool changed = journalEvent.EventName switch
         {
             "CarrierJumpRequest" => ApplyJumpRequest(journalEvent),
             "CarrierJumpCancelled" => ApplyCancellation(journalEvent, now),
@@ -36,7 +36,7 @@ public sealed class FleetCarrierJumpCountdownTracker
     public bool Refresh(DateTimeOffset now)
     {
         Normalize(now);
-        var next = CreateState(now);
+        FleetCarrierJumpCountdownState next = CreateState(now);
         if (next == Current)
         {
             return false;
@@ -63,7 +63,7 @@ public sealed class FleetCarrierJumpCountdownTracker
 
     private bool ApplyJumpRequest(JournalEventEnvelope journalEvent)
     {
-        var departure = GetDateTimeOffset(journalEvent.Payload, "DepartureTime");
+        DateTimeOffset? departure = GetDateTimeOffset(journalEvent.Payload, "DepartureTime");
         if (departure is null)
         {
             return false;
@@ -94,7 +94,7 @@ public sealed class FleetCarrierJumpCountdownTracker
 
     private bool ApplyCompletedJump(JournalEventEnvelope journalEvent, DateTimeOffset now)
     {
-        var completedAt = journalEvent.Timestamp ?? now;
+        DateTimeOffset completedAt = journalEvent.Timestamp ?? now;
         kind = FleetCarrierJumpCountdownKind.PostJumpCooldown;
         targetTime = RoundToNearestMinute(completedAt) + PostJumpCooldown;
         destination = GetString(journalEvent.Payload, "StarSystem") ?? destination;
@@ -108,7 +108,7 @@ public sealed class FleetCarrierJumpCountdownTracker
             return false;
         }
 
-        var observedAt = journalEvent.Timestamp ?? now;
+        DateTimeOffset observedAt = journalEvent.Timestamp ?? now;
         if (observedAt < targetTime)
         {
             return false;
@@ -147,7 +147,7 @@ public sealed class FleetCarrierJumpCountdownTracker
             return FleetCarrierJumpCountdownState.Inactive;
         }
 
-        var secondsRemaining = Math.Max(0, (int)Math.Ceiling((targetTime - now).TotalSeconds));
+        int secondsRemaining = Math.Max(0, (int)Math.Ceiling((targetTime - now).TotalSeconds));
         if (kind == FleetCarrierJumpCountdownKind.PostJumpCooldown)
         {
             return new FleetCarrierJumpCountdownState(
@@ -211,7 +211,7 @@ public sealed class FleetCarrierJumpCountdownTracker
 
     private bool MatchesCarrier(JsonElement payload)
     {
-        var candidate = GetIdentifier(payload, "CarrierID");
+        string? candidate = GetIdentifier(payload, "CarrierID");
         return string.IsNullOrWhiteSpace(carrierId)
             || string.IsNullOrWhiteSpace(candidate)
             || string.Equals(carrierId, candidate, StringComparison.Ordinal);
@@ -225,20 +225,20 @@ public sealed class FleetCarrierJumpCountdownTracker
 
     private static string FormatCountdown(int seconds)
     {
-        var minutes = seconds / 60;
+        int minutes = seconds / 60;
         return $"{minutes:N0}:{seconds % 60:00}";
     }
 
     private static string? GetString(JsonElement payload, string name)
     {
-        return payload.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String
+        return payload.TryGetProperty(name, out JsonElement property) && property.ValueKind == JsonValueKind.String
             ? property.GetString()
             : null;
     }
 
     private static string? GetIdentifier(JsonElement payload, string name)
     {
-        if (!payload.TryGetProperty(name, out var property))
+        if (!payload.TryGetProperty(name, out JsonElement property))
         {
             return null;
         }
@@ -253,12 +253,12 @@ public sealed class FleetCarrierJumpCountdownTracker
 
     private static DateTimeOffset? GetDateTimeOffset(JsonElement payload, string name)
     {
-        var value = GetString(payload, name);
+        string? value = GetString(payload, name);
         return DateTimeOffset.TryParse(
             value,
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-            out var parsed
+            out DateTimeOffset parsed
         )
             ? parsed
             : null;

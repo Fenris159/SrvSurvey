@@ -14,7 +14,7 @@ public sealed class JournalHistoryReaderTests
         );
         await File.WriteAllTextAsync(Path.Combine(temp.Path, "Journal.2026-08-21T190000.01.log"), string.Empty);
 
-        var history = await new JournalHistoryReader().LoadAsync(temp.Path, CancellationToken.None);
+        JournalHistorySnapshot history = await new JournalHistoryReader().LoadAsync(temp.Path, CancellationToken.None);
 
         Assert.Single(history.Events);
         Assert.Equal(2, history.FileCount);
@@ -30,7 +30,7 @@ public sealed class JournalHistoryReaderTests
                 + "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":"
         );
 
-        var history = await new JournalHistoryReader().LoadAsync(temp.Path, CancellationToken.None);
+        JournalHistorySnapshot history = await new JournalHistoryReader().LoadAsync(temp.Path, CancellationToken.None);
 
         Assert.Single(history.Events);
         Assert.Equal("Commander", history.Events[0].EventName);
@@ -49,7 +49,7 @@ public sealed class JournalHistoryReaderTests
             ]
         );
 
-        var history = await new JournalHistoryReader(maximumLoadedEvents: 2).LoadAsync(
+        JournalHistorySnapshot history = await new JournalHistoryReader(maximumLoadedEvents: 2).LoadAsync(
             temp.Path,
             CancellationToken.None
         );

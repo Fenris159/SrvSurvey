@@ -12,7 +12,7 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
     [Fact]
     public async Task PassAIngestsSystemFilesAndIgnoresReward()
     {
-        var systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
+        string systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(systemDirectory, "Praea Euq IL-P c5-0_2001.json"),
@@ -55,10 +55,10 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
 
         var state = new BoxelSurveyStatsState();
         var service = new BoxelSurveyRebuildService(temporaryDirectory, temporaryDirectory);
-        var result = await service.RebuildAsync("F123", state);
+        BoxelSurveyRebuildResult result = await service.RebuildAsync("F123", state);
 
         Assert.Equal(1, result.SystemFilesIngested);
-        Assert.True(state.TryGet("Praea Euq IL-P c5-", out var snapshot));
+        Assert.True(state.TryGet("Praea Euq IL-P c5-", out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.WaterWorld).Count);
         Assert.Equal(27.4, snapshot.MinHeliumPercent);
         Assert.NotEqual(999999, snapshot.CurrentValue);
@@ -69,12 +69,12 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
     [Fact]
     public async Task PassBReplaysMatchingJournalsAndSkipsOpenAndOtherCommanders()
     {
-        var journalDirectory = Path.Combine(temporaryDirectory, "journals");
+        string journalDirectory = Path.Combine(temporaryDirectory, "journals");
         Directory.CreateDirectory(journalDirectory);
-        var matching = Path.Combine(journalDirectory, "Journal.2026-07-10T120000.01.log");
-        var horizons = Path.Combine(journalDirectory, "Journal.2026-07-09T120000.01.log");
-        var other = Path.Combine(journalDirectory, "Journal.2026-07-08T120000.01.log");
-        var current = Path.Combine(journalDirectory, "Journal.2026-07-11T120000.01.log");
+        string matching = Path.Combine(journalDirectory, "Journal.2026-07-10T120000.01.log");
+        string horizons = Path.Combine(journalDirectory, "Journal.2026-07-09T120000.01.log");
+        string other = Path.Combine(journalDirectory, "Journal.2026-07-08T120000.01.log");
+        string current = Path.Combine(journalDirectory, "Journal.2026-07-11T120000.01.log");
         await File.WriteAllTextAsync(
             matching,
             """
@@ -117,15 +117,15 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
 
         var state = new BoxelSurveyStatsState();
         var service = new BoxelSurveyRebuildService(temporaryDirectory, journalDirectory);
-        var result = await service.RebuildAsync("F123", state, current);
+        BoxelSurveyRebuildResult result = await service.RebuildAsync("F123", state, current);
 
         Assert.Equal(2, result.JournalFilesProcessed);
         Assert.Equal(2, result.JournalFilesSkipped);
-        Assert.True(state.TryGet("Praea Euq IL-P c5-", out var cubeA));
+        Assert.True(state.TryGet("Praea Euq IL-P c5-", out BoxelSurveyBoxelSnapshot? cubeA));
         Assert.Equal(1, cubeA.CountsOf(BoxelPlanetClass.AmmoniaWorld).Count);
         Assert.DoesNotContain(cubeA.Systems, system => system.N2 == 9);
         Assert.DoesNotContain(cubeA.Systems, system => system.N2 == 4);
-        Assert.True(state.TryGet("Wregoe BU-Y b2-", out var cubeB));
+        Assert.True(state.TryGet("Wregoe BU-Y b2-", out BoxelSurveyBoxelSnapshot? cubeB));
         Assert.Equal(1, cubeB.CountsOf(BoxelPlanetClass.Icy).Count);
     }
 

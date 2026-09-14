@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Tests.Controls;
@@ -34,7 +35,7 @@ public sealed class DirectionalChevronControlTests
         try
         {
             window.Show();
-            var frame = window.CaptureRenderedFrame();
+            WriteableBitmap? frame = window.CaptureRenderedFrame();
 
             Assert.NotNull(frame);
             Assert.Equal(new PixelSize(32, 32), frame.PixelSize);

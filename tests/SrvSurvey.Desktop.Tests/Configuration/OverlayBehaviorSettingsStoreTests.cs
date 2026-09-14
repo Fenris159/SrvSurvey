@@ -19,7 +19,7 @@ public sealed class OverlayBehaviorSettingsStoreTests : IDisposable
     public void PreferencesRoundTripWithoutRemovingUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new OverlayBehaviorSettingsStore(path);
         var expected = new OverlayBehaviorPreferences(true, true, true, true);

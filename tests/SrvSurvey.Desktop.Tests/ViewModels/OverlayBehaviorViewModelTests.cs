@@ -14,7 +14,7 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
     [Fact]
     public void SuitSuppressionRequiresOnFootAndTheMatchingPreference()
     {
-        var viewModel = CreateViewModel();
+        OverlayBehaviorViewModel viewModel = CreateViewModel();
         viewModel.HideInDominatorSuit = true;
 
         viewModel.UpdateContext(OdysseySuitType.Dominator, onFoot: false);
@@ -33,12 +33,14 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
     [Fact]
     public void PassiveOverlayPreferencesPersist()
     {
-        var viewModel = CreateViewModel();
+        OverlayBehaviorViewModel viewModel = CreateViewModel();
 
         viewModel.KeepWhenGameLosesFocus = true;
         viewModel.HideMultiGameCommanderOverlay = true;
 
-        var persisted = new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")).Load();
+        OverlayBehaviorPreferences persisted = new OverlayBehaviorSettingsStore(
+            Path.Combine(temporaryDirectory, "ui-settings.json")
+        ).Load();
         Assert.True(persisted.KeepWhenGameLosesFocus);
         Assert.True(persisted.HideMultiGameCommanderOverlay);
     }
@@ -46,7 +48,7 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
     [Fact]
     public void SessionSuppressionRequiresStatusCommanderAndActiveGameSession()
     {
-        var viewModel = CreateViewModel();
+        OverlayBehaviorViewModel viewModel = CreateViewModel();
 
         Assert.True(viewModel.ShouldSuppressForSession);
 

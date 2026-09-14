@@ -16,7 +16,7 @@ public sealed class BiologyVariantColorConverterTests
     {
         var converter = new BiologyVariantColorConverter();
 
-        var brush = Assert.IsType<ISolidColorBrush>(
+        ISolidColorBrush brush = Assert.IsType<ISolidColorBrush>(
             converter.Convert(variant, typeof(IBrush), null, CultureInfo.InvariantCulture),
             exactMatch: false
         );
@@ -29,7 +29,7 @@ public sealed class BiologyVariantColorConverterTests
     {
         var converter = new BiologyVariantColorConverter();
 
-        var result = converter.Convert("Not a biological color", typeof(IBrush), null, CultureInfo.InvariantCulture);
+        object result = converter.Convert("Not a biological color", typeof(IBrush), null, CultureInfo.InvariantCulture);
 
         Assert.Same(AvaloniaProperty.UnsetValue, result);
     }

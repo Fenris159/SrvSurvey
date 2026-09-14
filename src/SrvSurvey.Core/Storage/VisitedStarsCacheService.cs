@@ -42,7 +42,7 @@ public sealed class VisitedStarsCacheService(
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
-        var target = ValidateTargetPath(targetPath);
+        string target = ValidateTargetPath(targetPath);
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -52,18 +52,18 @@ public sealed class VisitedStarsCacheService(
                 throw new FileNotFoundException("The current Elite visited-stars cache does not exist.", target);
             }
 
-            var download = await DownloadAsync(systemName.Trim(), cancellationToken).ConfigureAwait(false);
+            DownloadedCache download = await DownloadAsync(systemName.Trim(), cancellationToken).ConfigureAwait(false);
             EnsureGameStopped();
-            var backup = GetBackupPath(target);
-            var originalHash = await ProfileInventory
+            string backup = GetBackupPath(target);
+            string originalHash = await ProfileInventory
                 .ComputeSha256Async(target, cancellationToken)
                 .ConfigureAwait(false);
             await EnsurePersistentBackupAsync(target, backup, originalHash, cancellationToken).ConfigureAwait(false);
 
-            var rollback = $"{target}.{Guid.NewGuid():N}.rollback";
-            var activationStage = $"{target}.{Guid.NewGuid():N}.tmp";
-            var activated = false;
-            var retainRollback = false;
+            string rollback = $"{target}.{Guid.NewGuid():N}.rollback";
+            string activationStage = $"{target}.{Guid.NewGuid():N}.tmp";
+            bool activated = false;
+            bool retainRollback = false;
             try
             {
                 await CopyAndVerifyAsync(target, rollback, originalHash, overwrite: false, cancellationToken)
@@ -128,27 +128,27 @@ public sealed class VisitedStarsCacheService(
         CancellationToken cancellationToken = default
     )
     {
-        var target = ValidateTargetPath(targetPath);
+        string target = ValidateTargetPath(targetPath);
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             EnsureGameStopped();
-            var backup = GetBackupPath(target);
+            string backup = GetBackupPath(target);
             if (!File.Exists(backup))
             {
                 throw new FileNotFoundException("No original visited-stars cache backup exists.", backup);
             }
 
-            var backupHash = await ReadOrRecordBackupHashAsync(backup, cancellationToken).ConfigureAwait(false);
-            var rollback = $"{target}.{Guid.NewGuid():N}.rollback";
-            var activationStage = $"{target}.{Guid.NewGuid():N}.tmp";
-            var activated = false;
-            var retainRollback = false;
+            string backupHash = await ReadOrRecordBackupHashAsync(backup, cancellationToken).ConfigureAwait(false);
+            string rollback = $"{target}.{Guid.NewGuid():N}.rollback";
+            string activationStage = $"{target}.{Guid.NewGuid():N}.tmp";
+            bool activated = false;
+            bool retainRollback = false;
             try
             {
                 if (File.Exists(target))
                 {
-                    var currentHash = await ProfileInventory
+                    string currentHash = await ProfileInventory
                         .ComputeSha256Async(target, cancellationToken)
                         .ConfigureAwait(false);
                     await CopyAndVerifyAsync(target, rollback, currentHash, overwrite: false, cancellationToken)
@@ -206,7 +206,7 @@ public sealed class VisitedStarsCacheService(
 
     public static string GetBackupPath(string targetPath)
     {
-        var target = Path.GetFullPath(targetPath);
+        string target = Path.GetFullPath(targetPath);
         return Path.Combine(
             Path.GetDirectoryName(target)
                 ?? throw new InvalidDataException("The visited-stars cache path has no parent directory."),
@@ -222,7 +222,7 @@ public sealed class VisitedStarsCacheService(
             "application/x-www-form-urlencoded"
         );
         using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint) { Content = body };
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -239,11 +239,13 @@ public sealed class VisitedStarsCacheService(
         }
 
         Directory.CreateDirectory(downloadDirectory);
-        var finalPath = Path.Combine(downloadDirectory, CreateDownloadFileName(systemName));
-        var temporaryPath = $"{finalPath}.{Guid.NewGuid():N}.tmp";
+        string finalPath = Path.Combine(downloadDirectory, CreateDownloadFileName(systemName));
+        string temporaryPath = $"{finalPath}.{Guid.NewGuid():N}.tmp";
         try
         {
-            await using var input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using Stream input = await response
+                .Content.ReadAsStreamAsync(cancellationToken)
+                .ConfigureAwait(false);
             await using (
                 var output = new FileStream(
                     temporaryPath,
@@ -255,7 +257,7 @@ public sealed class VisitedStarsCacheService(
                 )
             )
             {
-                var buffer = new byte[64 * 1024];
+                byte[] buffer = new byte[64 * 1024];
                 long length = 0;
                 int read;
                 while ((read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
@@ -277,7 +279,7 @@ public sealed class VisitedStarsCacheService(
                 throw new InvalidDataException("EDGalaxy returned an empty visited-stars cache.");
             }
 
-            var hash = await ProfileInventory
+            string hash = await ProfileInventory
                 .ComputeSha256Async(temporaryPath, cancellationToken)
                 .ConfigureAwait(false);
             File.Move(temporaryPath, finalPath, true);
@@ -323,7 +325,7 @@ public sealed class VisitedStarsCacheService(
             return;
         }
 
-        var stage = $"{backup}.{Guid.NewGuid():N}.tmp";
+        string stage = $"{backup}.{Guid.NewGuid():N}.tmp";
         try
         {
             await CopyAndVerifyAsync(target, stage, originalHash, overwrite: false, cancellationToken)
@@ -339,10 +341,10 @@ public sealed class VisitedStarsCacheService(
 
     private static async Task<string> ReadOrRecordBackupHashAsync(string backup, CancellationToken cancellationToken)
     {
-        var sidecar = GetHashSidecarPath(backup);
+        string sidecar = GetHashSidecarPath(backup);
         if (File.Exists(sidecar))
         {
-            var expected = (await File.ReadAllTextAsync(sidecar, cancellationToken)).Trim();
+            string expected = (await File.ReadAllTextAsync(sidecar, cancellationToken)).Trim();
             if (expected.Length != 64 || !expected.All(Uri.IsHexDigit))
             {
                 throw new InvalidDataException("The visited-stars backup checksum record is malformed.");
@@ -352,15 +354,15 @@ public sealed class VisitedStarsCacheService(
             return expected.ToLowerInvariant();
         }
 
-        var hash = await ProfileInventory.ComputeSha256Async(backup, cancellationToken).ConfigureAwait(false);
+        string hash = await ProfileInventory.ComputeSha256Async(backup, cancellationToken).ConfigureAwait(false);
         await WriteBackupHashAsync(backup, hash, cancellationToken).ConfigureAwait(false);
         return hash;
     }
 
     private static async Task WriteBackupHashAsync(string backup, string hash, CancellationToken cancellationToken)
     {
-        var sidecar = GetHashSidecarPath(backup);
-        var stage = $"{sidecar}.{Guid.NewGuid():N}.tmp";
+        string sidecar = GetHashSidecarPath(backup);
+        string stage = $"{sidecar}.{Guid.NewGuid():N}.tmp";
         try
         {
             await File.WriteAllTextAsync(stage, hash + Environment.NewLine, cancellationToken).ConfigureAwait(false);
@@ -410,7 +412,7 @@ public sealed class VisitedStarsCacheService(
 
     private static async Task VerifyHashAsync(string path, string expectedHash, CancellationToken cancellationToken)
     {
-        var actualHash = await ProfileInventory.ComputeSha256Async(path, cancellationToken).ConfigureAwait(false);
+        string actualHash = await ProfileInventory.ComputeSha256Async(path, cancellationToken).ConfigureAwait(false);
         if (!string.Equals(actualHash, expectedHash, StringComparison.Ordinal))
         {
             throw new IOException($"The visited-stars cache failed checksum verification: {path}");
@@ -420,7 +422,7 @@ public sealed class VisitedStarsCacheService(
     private static string ValidateTargetPath(string targetPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetPath);
-        var target = Path.GetFullPath(targetPath);
+        string target = Path.GetFullPath(targetPath);
         if (!string.Equals(Path.GetFileName(target), CacheFileName, StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException($"Choose the Elite {CacheFileName} file.", nameof(targetPath));
@@ -439,8 +441,8 @@ public sealed class VisitedStarsCacheService(
 
     private static string CreateDownloadFileName(string systemName)
     {
-        var invalid = Path.GetInvalidFileNameChars().ToHashSet();
-        var safe = new string(
+        HashSet<char> invalid = Path.GetInvalidFileNameChars().ToHashSet();
+        string safe = new string(
             systemName.Select(character => invalid.Contains(character) ? '_' : character).ToArray()
         ).Trim();
         if (safe.Length == 0)
@@ -453,7 +455,7 @@ public sealed class VisitedStarsCacheService(
             safe = safe[..80];
         }
 
-        var suffix = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(systemName)))[..12];
+        string suffix = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(systemName)))[..12];
         return $"{safe}-{suffix}.dat";
     }
 

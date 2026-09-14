@@ -16,14 +16,14 @@ public sealed record ControllerDeviceDiscoveryResult(IReadOnlyList<ControllerDev
 
 public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
 {
-    private static readonly object SdlLifecycleLock = new();
+    private static readonly Lock SdlLifecycleLock = new();
     private const SDL.InitFlags InputSubsystems = SDL.InitFlags.Joystick | SDL.InitFlags.Gamepad;
 
     public ControllerDeviceDiscoveryResult Discover()
     {
         lock (SdlLifecycleLock)
         {
-            var initialized = false;
+            bool initialized = false;
             try
             {
                 initialized = SDL.InitSubSystem(InputSubsystems);
@@ -32,8 +32,8 @@ public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
                     return Failure(SDL.GetError());
                 }
 
-                var instanceIds = SDL.GetJoysticks(out _) ?? [];
-                var devices = instanceIds
+                uint[] instanceIds = SDL.GetJoysticks(out _) ?? [];
+                ControllerDeviceInfo[] devices = instanceIds
                     .Select(CreateDevice)
                     .OrderBy(device => device.Name, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(device => device.Id, StringComparer.Ordinal)
@@ -67,13 +67,13 @@ public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
 
     internal static ControllerDeviceInfo CreateDevice(uint instanceId)
     {
-        var name = SDL.GetJoystickNameForID(instanceId) ?? $"Controller {instanceId}";
-        var path = SDL.GetJoystickPathForID(instanceId);
-        var vendor = SDL.GetJoystickVendorForID(instanceId);
-        var product = SDL.GetJoystickProductForID(instanceId);
-        var version = SDL.GetJoystickProductVersionForID(instanceId);
-        var type = SDL.GetJoystickTypeForID(instanceId);
-        var description = vendor == 0 && product == 0 ? type.ToString() : $"{type} - USB {vendor:X4}:{product:X4}";
+        string name = SDL.GetJoystickNameForID(instanceId) ?? $"Controller {instanceId}";
+        string? path = SDL.GetJoystickPathForID(instanceId);
+        ushort vendor = SDL.GetJoystickVendorForID(instanceId);
+        ushort product = SDL.GetJoystickProductForID(instanceId);
+        ushort version = SDL.GetJoystickProductVersionForID(instanceId);
+        SDL.JoystickType type = SDL.GetJoystickTypeForID(instanceId);
+        string description = vendor == 0 && product == 0 ? type.ToString() : $"{type} - USB {vendor:X4}:{product:X4}";
         return new ControllerDeviceInfo(
             CreateStableId(path, vendor, product, version, name),
             name,
@@ -96,7 +96,7 @@ public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
                     return device;
                 }
 
-                var ordinal = ordinals.GetValueOrDefault(device.Name) + 1;
+                int ordinal = ordinals.GetValueOrDefault(device.Name) + 1;
                 ordinals[device.Name] = ordinal;
                 return device with { Name = $"{device.Name} ({ordinal})" };
             })

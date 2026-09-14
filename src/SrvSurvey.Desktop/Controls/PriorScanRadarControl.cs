@@ -102,18 +102,18 @@ public sealed class PriorScanRadarControl : Control
     {
         base.Render(context);
         var bounds = new Rect(Bounds.Size);
-        var grid = GridBrush ?? Brushes.DimGray;
-        var background = BackgroundBrush ?? Brushes.Transparent;
-        var accent = AccentBrush ?? Brushes.Cyan;
-        var muted = MutedBrush ?? Brushes.Gray;
-        var close = CloseBrush ?? Brushes.LimeGreen;
+        IBrush grid = GridBrush ?? Brushes.DimGray;
+        IBrush background = BackgroundBrush ?? Brushes.Transparent;
+        IBrush accent = AccentBrush ?? Brushes.Cyan;
+        IBrush muted = MutedBrush ?? Brushes.Gray;
+        IBrush close = CloseBrush ?? Brushes.LimeGreen;
         context.DrawRectangle(background, new Pen(grid, 1), bounds, 8, 8);
         if (bounds.Width <= 0 || bounds.Height <= 0)
         {
             return;
         }
 
-        var center = bounds.Center;
+        Point center = bounds.Center;
         using (context.PushClip(bounds))
         {
             context.DrawLine(
@@ -129,7 +129,7 @@ public sealed class PriorScanRadarControl : Control
             context.DrawEllipse(null, new Pen(grid, 1), center, 50, 50);
             context.DrawEllipse(null, new Pen(grid, 1), center, 100, 100);
 
-            foreach (var target in Targets ?? [])
+            foreach (PriorScanRadarTargetViewModel target in Targets ?? [])
             {
                 DrawTarget(context, target, center, bounds, accent, muted, close);
             }
@@ -148,14 +148,14 @@ public sealed class PriorScanRadarControl : Control
         IBrush close
     )
     {
-        var point = ResolveTargetPoint(target, center);
-        var signalRadius = ResolveSignalRadius(target);
+        Point point = ResolveTargetPoint(target, center);
+        double signalRadius = ResolveSignalRadius(target);
         if (!IsTargetVisible(point, signalRadius, bounds))
         {
             return;
         }
 
-        var brush = ResolveTargetBrush(target, accent, muted, close);
+        IBrush brush = ResolveTargetBrush(target, accent, muted, close);
         context.DrawEllipse(null, new Pen(brush, target.IsClose ? 2.5 : 1.5), point, signalRadius, signalRadius);
         context.DrawEllipse(brush, null, point, 3, 3);
         if (target.IsClose)
@@ -166,7 +166,7 @@ public sealed class PriorScanRadarControl : Control
 
     private static Point ResolveTargetPoint(PriorScanRadarTargetViewModel target, Point center)
     {
-        var radians = target.RelativeBearingDegrees * Math.PI / 180d;
+        double radians = target.RelativeBearingDegrees * Math.PI / 180d;
         return new Point(
             center.X + Math.Sin(radians) * target.DistanceMeters / MetersPerPixel,
             center.Y - Math.Cos(radians) * target.DistanceMeters / MetersPerPixel
@@ -175,7 +175,7 @@ public sealed class PriorScanRadarControl : Control
 
     private double ResolveSignalRadius(PriorScanRadarTargetViewModel target)
     {
-        var signalRadiusMeters = UseSmallCircles ? 100 : target.SampleRadiusMeters;
+        int signalRadiusMeters = UseSmallCircles ? 100 : target.SampleRadiusMeters;
         return Math.Clamp(signalRadiusMeters / MetersPerPixel, 5, 100);
     }
 
@@ -205,7 +205,7 @@ public sealed class PriorScanRadarControl : Control
     private static void DrawCommander(DrawingContext context, Point center, IBrush brush)
     {
         var geometry = new StreamGeometry();
-        using (var geometryContext = geometry.Open())
+        using (StreamGeometryContext geometryContext = geometry.Open())
         {
             geometryContext.BeginFigure(new Point(center.X, center.Y - 9), isFilled: true);
             geometryContext.LineTo(new Point(center.X + 6, center.Y + 7));

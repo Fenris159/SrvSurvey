@@ -51,7 +51,7 @@ public sealed class FleetCarrierJumpCountdownCoordinator : IDisposable
 
     private void SynchronizeTimer()
     {
-        var shouldRun = !disposed && route.HasCarrierJumpCountdown;
+        bool shouldRun = !disposed && route.HasCarrierJumpCountdown;
         if (shouldRun == isRunning)
         {
             return;

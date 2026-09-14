@@ -17,15 +17,18 @@ public sealed class GuardianLegendStyleResolutionTests
     public void LegendTemplateUsesTheRequestedCollapsedAndExpandedGeometry()
     {
         var view = new GuardianView();
-        using var viewModel = MainWindowViewModelTestBuilder.Create(configuredJournalDirectory: null, _ => { });
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            configuredJournalDirectory: null,
+            _ => { }
+        );
         view.DataContext = viewModel;
-        var expander =
+        Expander expander =
             view.FindControl<Expander>("GuardianSurveyMapLegendExpander")
             ?? throw new InvalidOperationException("Legend expander is missing.");
-        var legend =
+        Border legend =
             view.FindControl<Border>("GuardianSurveyMapLegend")
             ?? throw new InvalidOperationException("Legend container is missing.");
-        var parent = Assert.IsType<Panel>(legend.Parent, exactMatch: false);
+        Panel parent = Assert.IsType<Panel>(legend.Parent, exactMatch: false);
         Assert.True(parent.Children.Remove(legend));
         legend.IsVisible = true;
         view.Content = legend;
@@ -41,9 +44,9 @@ public sealed class GuardianLegendStyleResolutionTests
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
 
-            var templateBorders = expander.GetVisualDescendants().OfType<Border>().ToArray();
-            var headerBackground = Assert.Single(templateBorders, border => border.Name == "ToggleButtonBackground");
-            var content = Assert.Single(templateBorders, border => border.Name == "ExpanderContent");
+            Border[] templateBorders = expander.GetVisualDescendants().OfType<Border>().ToArray();
+            Border headerBackground = Assert.Single(templateBorders, border => border.Name == "ToggleButtonBackground");
+            Border content = Assert.Single(templateBorders, border => border.Name == "ExpanderContent");
 
             Assert.Equal(new CornerRadius(12), headerBackground.CornerRadius);
             Assert.Equal(new Thickness(1), headerBackground.BorderThickness);

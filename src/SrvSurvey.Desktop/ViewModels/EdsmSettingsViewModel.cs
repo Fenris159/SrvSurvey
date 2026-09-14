@@ -179,10 +179,10 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
             return;
         }
 
-        var saveGeneration = profileGeneration;
-        var saveFrontierId = profileFrontierId;
-        var saveActiveCommanderName = activeCommanderName;
-        var saveIsOdyssey = profileIsOdyssey;
+        int saveGeneration = profileGeneration;
+        string saveFrontierId = profileFrontierId;
+        string? saveActiveCommanderName = activeCommanderName;
+        bool saveIsOdyssey = profileIsOdyssey;
         try
         {
             await saveCredentialsAsync(
@@ -224,7 +224,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
 
     private bool CanSaveCredentials()
     {
-        var key = Normalize(ApiKey);
+        string? key = Normalize(ApiKey);
         return profileFrontierId is not null
             && activeCommanderName is not null
             && key is not null

@@ -15,7 +15,7 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
     [Fact]
     public async Task LoadsLegacyCanonnStationGeometryAndMisspelledPads()
     {
-        var path = CreateSystemPath();
+        string path = CreateSystemPath();
         await File.WriteAllTextAsync(
             path,
             """
@@ -41,7 +41,7 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
         );
         var store = new HumanSiteKnowledgeStore(temporaryDirectory);
 
-        var result = await store.LoadAsync(Context(), 12345);
+        HumanSiteKnowledgeLoadResult result = await store.LoadAsync(Context(), 12345);
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.True(result.FileExists);
@@ -57,7 +57,7 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
     {
         var store = new HumanSiteKnowledgeStore(temporaryDirectory);
 
-        var result = await store.LoadAsync(Context(), 12345);
+        HumanSiteKnowledgeLoadResult result = await store.LoadAsync(Context(), 12345);
 
         Assert.False(result.FileExists);
         Assert.False(result.SiteExists);
@@ -68,7 +68,7 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
     [Fact]
     public async Task SaveCreatesLegacyCompatibleStationAndPreservesUnknownData()
     {
-        var path = CreateSystemPath();
+        string path = CreateSystemPath();
         await File.WriteAllTextAsync(
             path,
             """
@@ -94,12 +94,12 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
             HumanSiteGeometrySource.ManualFoot
         );
 
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["futureSystem"]!.GetValue<bool>());
-        var stations = root["stations"]!.AsArray();
+        JsonArray stations = root["stations"]!.AsArray();
         Assert.Equal(2, stations.Count);
         Assert.Equal(7, stations[0]!["futureStation"]!.GetValue<int>());
-        var saved = stations[1]!.AsObject();
+        JsonObject saved = stations[1]!.AsObject();
         Assert.Equal(12345, saved["marketId"]!.GetValue<long>());
         Assert.Equal("$economy_Agri;", saved["stationEconomy"]!.GetValue<string>());
         Assert.Equal(270, saved["heading"]!.GetValue<double>());
@@ -114,7 +114,7 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
         await store.SaveAsync(Context(), Site() with { SubType = 4, Heading = 270 }, HumanSiteGeometrySource.AutoDock);
 
         await store.SaveAsync(Context(), Site() with { SubType = 4, Heading = 270 });
-        var result = await store.LoadAsync(Context(), 12345);
+        HumanSiteKnowledgeLoadResult result = await store.LoadAsync(Context(), 12345);
 
         Assert.Equal(4, result.Knowledge!.SubType);
         Assert.Equal(270, result.Knowledge.Heading);
@@ -131,7 +131,7 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
 
     private string CreateSystemPath()
     {
-        var directory = Path.Combine(temporaryDirectory, "systems", "F123");
+        string directory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(directory);
         return Path.Combine(directory, "Test System_42.json");
     }

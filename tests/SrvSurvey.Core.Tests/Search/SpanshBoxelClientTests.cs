@@ -10,7 +10,7 @@ public sealed class SpanshBoxelClientTests
     [Fact]
     public async Task SearchPagesAndMapsTheSystemsSearchContract()
     {
-        var firstPageSystems = string.Join(
+        string firstPageSystems = string.Join(
             ',',
             Enumerable
                 .Range(0, 50)
@@ -58,7 +58,9 @@ public sealed class SpanshBoxelClientTests
         );
         var client = new SpanshBoxelClient(new HttpClient(handler), new Uri("https://example.test/api/"));
 
-        var systems = await client.SearchAsync(BoxelAddress.Parse("Praea Euq IL-P c5-0"));
+        IReadOnlyList<BoxelSystemObservation> systems = await client.SearchAsync(
+            BoxelAddress.Parse("Praea Euq IL-P c5-0")
+        );
 
         Assert.Equal(51, systems.Count);
         Assert.Equal("Praea Euq IL-P c5-0", systems[0].Boxel.Name);
@@ -150,7 +152,9 @@ public sealed class SpanshBoxelClientTests
             }
         );
 
-        var systems = await client.SearchAsync(BoxelAddress.Parse("Praea Euq IL-P c5-0"));
+        IReadOnlyList<BoxelSystemObservation> systems = await client.SearchAsync(
+            BoxelAddress.Parse("Praea Euq IL-P c5-0")
+        );
 
         Assert.Single(systems);
         Assert.Equal(2, handler.Requests.Count);
@@ -182,11 +186,12 @@ public sealed class SpanshBoxelClientTests
             CancellationToken cancellationToken
         )
         {
-            var content = request.Content is null
+            string content = request.Content is null
                 ? string.Empty
                 : await request.Content.ReadAsStringAsync(cancellationToken);
             Requests.Add(new CapturedRequest(request.RequestUri!, content));
-            var response = responses.Count > 1 ? responses.Dequeue() : responses.Peek();
+            (HttpStatusCode StatusCode, string Content) response =
+                responses.Count > 1 ? responses.Dequeue() : responses.Peek();
             return new HttpResponseMessage(response.StatusCode)
             {
                 Content = new StringContent(response.Content, Encoding.UTF8, "application/json"),

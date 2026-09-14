@@ -57,7 +57,7 @@ public sealed class JournalSessionStateTests
                 $$"""{"event":"LoadGame","Commander":"Drew","FID":"F123","Odyssey":{{(hasOdyssey ? "true" : "false")}},"Horizons":true}"""
             )
         );
-        var snapshot = state.CreateSnapshot("Journal.fixture.log");
+        JournalSnapshot snapshot = state.CreateSnapshot("Journal.fixture.log");
         Assert.Equal(!isLive, snapshot.IsLegacy);
         Assert.Equal(hasOdyssey, snapshot.IsOdyssey);
         Assert.True(snapshot.IsHorizons);
@@ -76,7 +76,7 @@ public sealed class JournalSessionStateTests
         state.Apply(Parse("""{"event":"LoadGame","Odyssey":true,"Horizons":true}"""));
 
         state.Apply(Parse("""{"event":"Fileheader","Odyssey":false}"""));
-        var snapshot = state.CreateSnapshot("Journal.next.log");
+        JournalSnapshot snapshot = state.CreateSnapshot("Journal.next.log");
         Assert.True(snapshot.IsLegacy);
         Assert.Null(snapshot.IsOdyssey);
         Assert.Null(snapshot.IsHorizons);
@@ -109,7 +109,7 @@ public sealed class JournalSessionStateTests
         Assert.False(state.Apply(Parse("""{"timestamp":"2026-07-24T10:00:02Z","event":"FutureEvent","Value":42}""")));
         Assert.True(state.Apply(Parse("""{"timestamp":"2026-07-24T10:00:03Z","event":"Shutdown"}""")));
 
-        var snapshot = state.CreateSnapshot("Journal.fixture.log");
+        JournalSnapshot snapshot = state.CreateSnapshot("Journal.fixture.log");
         Assert.Equal("Drew", snapshot.CommanderName);
         Assert.Equal("F123", snapshot.FrontierId);
         Assert.Equal("Sol", snapshot.SystemName);
@@ -515,7 +515,7 @@ public sealed class JournalSessionStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

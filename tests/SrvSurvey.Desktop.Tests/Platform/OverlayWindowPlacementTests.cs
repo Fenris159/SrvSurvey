@@ -8,7 +8,7 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void UsesIntersectionOfHostAndOperatingSystemWorkingArea()
     {
-        var usableBounds = OverlayWindowPlacement.GetUsableBounds(
+        PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(
             new PixelRect(0, 0, 1920, 1080),
             new PixelRect(0, 0, 1920, 1040)
         );
@@ -19,7 +19,7 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void UsesWorkingAreaWhenHostDoesNotOverlapIt()
     {
-        var usableBounds = OverlayWindowPlacement.GetUsableBounds(
+        PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(
             new PixelRect(3000, 0, 1280, 720),
             new PixelRect(0, 0, 1920, 1040)
         );
@@ -30,11 +30,11 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void BottomCenterStaysAboveTaskbarWithinGameClient()
     {
-        var usableBounds = OverlayWindowPlacement.GetUsableBounds(
+        PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(
             new PixelRect(0, 0, 1920, 1080),
             new PixelRect(0, 0, 1920, 1040)
         );
-        var position = OverlayWindowPlacement.BottomCenter(usableBounds, new PixelSize(620, 116), margin: 12);
+        PixelPoint position = OverlayWindowPlacement.BottomCenter(usableBounds, new PixelSize(620, 116), margin: 12);
 
         Assert.Equal(new PixelPoint(650, 912), position);
     }
@@ -42,7 +42,10 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void PlacesOverlayInsideTopCenterOfGameClient()
     {
-        var position = OverlayWindowPlacement.TopCenter(new PixelRect(-1920, 200, 1920, 1080), new PixelSize(620, 390));
+        PixelPoint position = OverlayWindowPlacement.TopCenter(
+            new PixelRect(-1920, 200, 1920, 1080),
+            new PixelSize(620, 390)
+        );
 
         Assert.Equal(new PixelPoint(-1270, 220), position);
     }
@@ -50,7 +53,10 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void PlacesOverlayInsideTopLeftOfGameClient()
     {
-        var position = OverlayWindowPlacement.TopLeft(new PixelRect(-1920, 200, 1920, 1080), new PixelSize(390, 270));
+        PixelPoint position = OverlayWindowPlacement.TopLeft(
+            new PixelRect(-1920, 200, 1920, 1080),
+            new PixelSize(390, 270)
+        );
 
         Assert.Equal(new PixelPoint(-1900, 220), position);
     }
@@ -58,7 +64,10 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void PlacesOverlayInsideBottomRightOfGameClient()
     {
-        var position = OverlayWindowPlacement.BottomRight(new PixelRect(100, 200, 1920, 1080), new PixelSize(620, 760));
+        PixelPoint position = OverlayWindowPlacement.BottomRight(
+            new PixelRect(100, 200, 1920, 1080),
+            new PixelSize(620, 760)
+        );
 
         Assert.Equal(new PixelPoint(1380, 500), position);
     }
@@ -66,7 +75,10 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void PlacesOverlayInsideBottomLeftOfGameClient()
     {
-        var position = OverlayWindowPlacement.BottomLeft(new PixelRect(100, 200, 1920, 1080), new PixelSize(560, 210));
+        PixelPoint position = OverlayWindowPlacement.BottomLeft(
+            new PixelRect(100, 200, 1920, 1080),
+            new PixelSize(560, 210)
+        );
 
         Assert.Equal(new PixelPoint(120, 1050), position);
     }
@@ -74,7 +86,7 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void PlacesOverlayInsideMiddleRightOfGameClient()
     {
-        var position = OverlayWindowPlacement.MiddleRight(
+        PixelPoint position = OverlayWindowPlacement.MiddleRight(
             new PixelRect(100, 200, 1920, 1080),
             new PixelSize(380, 320),
             margin: 8
@@ -86,7 +98,7 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void PlacesOverlayInsideMiddleLeftOfGameClient()
     {
-        var position = OverlayWindowPlacement.MiddleLeft(
+        PixelPoint position = OverlayWindowPlacement.MiddleLeft(
             new PixelRect(-1920, 200, 1920, 1080),
             new PixelSize(340, 500),
             margin: 8
@@ -98,7 +110,7 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void PlacesOverlayInsideBottomCenterOfGameClient()
     {
-        var position = OverlayWindowPlacement.BottomCenter(
+        PixelPoint position = OverlayWindowPlacement.BottomCenter(
             new PixelRect(-1920, 200, 1920, 1080),
             new PixelSize(360, 250)
         );
@@ -109,7 +121,10 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void PlacesOverlayInsideTopRightOfGameClient()
     {
-        var position = OverlayWindowPlacement.TopRight(new PixelRect(100, 200, 1920, 1080), new PixelSize(460, 720));
+        PixelPoint position = OverlayWindowPlacement.TopRight(
+            new PixelRect(100, 200, 1920, 1080),
+            new PixelSize(460, 720)
+        );
 
         Assert.Equal(new PixelPoint(1540, 220), position);
     }
@@ -117,7 +132,10 @@ public sealed class OverlayWindowPlacementTests
     [Fact]
     public void KeepsOversizedOverlayAnchoredInsideTopLeftMargin()
     {
-        var position = OverlayWindowPlacement.BottomRight(new PixelRect(-1920, 0, 1280, 720), new PixelSize(1400, 900));
+        PixelPoint position = OverlayWindowPlacement.BottomRight(
+            new PixelRect(-1920, 0, 1280, 720),
+            new PixelSize(1400, 900)
+        );
 
         Assert.Equal(new PixelPoint(-1900, 20), position);
     }

@@ -19,7 +19,7 @@ public sealed class BiologyRewardSettingsStoreTests : IDisposable
     public void ThresholdsRoundTripWithoutRemovingUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new BiologyRewardSettingsStore(path);
         var expected = new BiologyRewardThresholds(2.5, 6.5, 11.5);
@@ -34,7 +34,7 @@ public sealed class BiologyRewardSettingsStoreTests : IDisposable
     public void InvalidOrUnorderedValuesAreNormalizedSafely()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(
             path,
             "{\"BiologyRewards\":{"

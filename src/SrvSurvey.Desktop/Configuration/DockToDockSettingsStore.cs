@@ -15,7 +15,7 @@ public sealed class DockToDockSettingsStore
     {
         var settings = documentStore.Load()["Travel"] as JsonObject;
         return settings?["LogDockToDockTimes"] is JsonValue value
-            && value.TryGetValue<bool>(out var enabled)
+            && value.TryGetValue<bool>(out bool enabled)
             && enabled;
     }
 

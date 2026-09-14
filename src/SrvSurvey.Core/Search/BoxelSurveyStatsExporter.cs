@@ -19,10 +19,10 @@ public static class BoxelSurveyStatsExporter
     {
         ArgumentNullException.ThrowIfNull(document);
         var systems = new JsonArray();
-        foreach (var system in document.Systems)
+        foreach (BoxelSurveySystemContribution system in document.Systems)
         {
             var bodies = new JsonArray();
-            foreach (var body in system.Bodies)
+            foreach (BoxelSurveyBodyContribution body in system.Bodies)
             {
                 bodies.Add(
                     new JsonObject
@@ -97,14 +97,14 @@ public static class BoxelSurveyStatsExporter
         Append(csv, "FssBodies", snapshot.FssDiscoveryBodyCountSum);
         csv.AppendLine();
         csv.AppendLine("Class,Code,Count,Average,Terraformable,Landable,Atmospheric");
-        foreach (var classified in Enum.GetValues<BoxelPlanetClass>())
+        foreach (BoxelPlanetClass classified in Enum.GetValues<BoxelPlanetClass>())
         {
             if (classified == BoxelPlanetClass.Unknown)
             {
                 continue;
             }
 
-            var counts = snapshot.CountsOf(classified);
+            BoxelSurveyClassCounts counts = snapshot.CountsOf(classified);
             csv.Append(Escape(classified.ToString())).Append(',');
             csv.Append(Escape(BoxelPlanetClassifier.ToPlanetClassString(classified))).Append(',');
             csv.Append(counts.Count.ToString(CultureInfo.InvariantCulture)).Append(',');
@@ -124,7 +124,7 @@ public static class BoxelSurveyStatsExporter
         csv.Append(
             "Prefix,MassCode,Visited,ImpliedPopulation,FssComplete,NavBeacon,MinHeliumPercent,MaxHeliumPercent,CurrentValue,MappedPotentialValue"
         );
-        foreach (var classified in Enum.GetValues<BoxelPlanetClass>())
+        foreach (BoxelPlanetClass classified in Enum.GetValues<BoxelPlanetClass>())
         {
             if (classified != BoxelPlanetClass.Unknown)
             {
@@ -133,7 +133,7 @@ public static class BoxelSurveyStatsExporter
         }
 
         csv.AppendLine();
-        foreach (var snapshot in snapshots)
+        foreach (BoxelSurveyBoxelSnapshot snapshot in snapshots)
         {
             csv.Append(Escape(snapshot.Prefix)).Append(',');
             csv.Append(snapshot.MassCode).Append(',');
@@ -145,7 +145,7 @@ public static class BoxelSurveyStatsExporter
             csv.Append(FormatNumber(snapshot.MaxHeliumPercent)).Append(',');
             csv.Append(snapshot.CurrentValue.ToString(CultureInfo.InvariantCulture)).Append(',');
             csv.Append(snapshot.MappedPotentialValue.ToString(CultureInfo.InvariantCulture));
-            foreach (var classified in Enum.GetValues<BoxelPlanetClass>())
+            foreach (BoxelPlanetClass classified in Enum.GetValues<BoxelPlanetClass>())
             {
                 if (classified == BoxelPlanetClass.Unknown)
                 {
@@ -176,7 +176,7 @@ public static class BoxelSurveyStatsExporter
 
     private static string Escape(string? value)
     {
-        var text = value ?? string.Empty;
+        string text = value ?? string.Empty;
         if (
             text.Contains(',', StringComparison.Ordinal)
             || text.Contains('"', StringComparison.Ordinal)

@@ -141,7 +141,7 @@ public sealed class RavenThemeService
 
     public void Select(string key)
     {
-        var selected = RavenThemeCatalog.Get(key);
+        RavenThemeDefinition selected = RavenThemeCatalog.Get(key);
         if (selected == Current)
         {
             return;
@@ -200,17 +200,17 @@ public sealed class RavenThemeService
     {
         ArgumentNullException.ThrowIfNull(theme);
         overlayTheme = theme;
-        foreach (var entry in theme.Colors)
+        foreach (KeyValuePair<string, Color> entry in theme.Colors)
         {
             application.Resources[$"LegacyTheme.{entry.Key}"] = new SolidColorBrush(entry.Value);
         }
 
-        foreach (var mapping in OverlayResourceKeys)
+        foreach (KeyValuePair<string, string> mapping in OverlayResourceKeys)
         {
             SetBrush(mapping.Key, theme.GetColor(mapping.Value));
         }
 
-        var typography = theme.EffectiveTypography;
+        OverlayTypographySettings typography = theme.EffectiveTypography;
         application.Resources["RavenOverlayHeaderFontSize"] = typography.Header;
         application.Resources["RavenOverlayTitleFontSize"] = typography.Title;
         application.Resources["RavenOverlayValueFontSize"] = typography.Value;
@@ -218,7 +218,7 @@ public sealed class RavenThemeService
         application.Resources["RavenOverlayDetailFontSize"] = typography.Detail;
         application.Resources["RavenOverlayCaptionFontSize"] = typography.Caption;
 
-        foreach (var themeKey in BiologyEdgeKeys)
+        foreach (string themeKey in BiologyEdgeKeys)
         {
             SetBrush(GetBiologyEdgeResourceKey(themeKey), theme.GetColor($"bio.{themeKey}"));
         }
@@ -253,7 +253,7 @@ public sealed class RavenThemeService
 
     private void ApplyFluentCheckBoxResources(RavenThemeDefinition theme)
     {
-        foreach (var resourceKey in FluentCheckedGlyphResourceKeys)
+        foreach (string resourceKey in FluentCheckedGlyphResourceKeys)
         {
             SetBrush(resourceKey, theme.AccentForegroundColor);
         }
@@ -308,7 +308,7 @@ public sealed class RavenThemeService
 
     private static string GetBiologyEdgeResourceKey(string themeKey)
     {
-        var resourceSuffix = char.ToUpperInvariant(themeKey[0]) + themeKey[1..];
+        string resourceSuffix = char.ToUpperInvariant(themeKey[0]) + themeKey[1..];
         resourceSuffix = resourceSuffix.Replace("GoldDark", "GoldDim", StringComparison.Ordinal);
         return $"RavenOverlayBio{resourceSuffix}Brush";
     }

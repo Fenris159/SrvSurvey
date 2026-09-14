@@ -20,15 +20,15 @@ public sealed class GuardianSiteProximityEvaluator
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Status);
         ArgumentNullException.ThrowIfNull(request.Template);
-        var status = request.Status;
-        var siteLocation = request.SiteLocation;
-        var siteHeading = request.SiteHeading;
-        var template = request.Template;
-        var survey = request.Survey;
-        var activeObelisks = request.ActiveObelisks;
-        var obeliskGroups = request.ObeliskGroups;
-        var includeComponentMaterials = request.IncludeComponentMaterials;
-        var radius = (double)status.PlanetRadius;
+        EliteStatus status = request.Status;
+        GuardianSurfaceLocation siteLocation = request.SiteLocation;
+        int siteHeading = request.SiteHeading;
+        GuardianSiteTemplate template = request.Template;
+        GuardianSurveyData? survey = request.Survey;
+        IReadOnlyList<GuardianObelisk>? activeObelisks = request.ActiveObelisks;
+        IReadOnlySet<char>? obeliskGroups = request.ObeliskGroups;
+        bool includeComponentMaterials = request.IncludeComponentMaterials;
+        double radius = (double)status.PlanetRadius;
         if (
             !status.HasLatitudeLongitude
             || !double.IsFinite(radius)
@@ -41,29 +41,29 @@ public sealed class GuardianSiteProximityEvaluator
             return null;
         }
 
-        var surfaceMarkerOffset = GuardianMapMarkerOffsetCalculator.ToSurfaceCoordinates(
+        GuardianMapPoint surfaceMarkerOffset = GuardianMapMarkerOffsetCalculator.ToSurfaceCoordinates(
             request.MarkerOffset,
             siteHeading
         );
 
         var commander = new SurfaceCoordinate(status.Latitude, status.Longitude);
         var site = new SurfaceCoordinate(siteLocation.Latitude, siteLocation.Longitude);
-        var siteDistance = SurfaceNavigation.GetDistance(commander, site, radius);
-        var siteBearing = SurfaceNavigation.GetBearing(commander, site);
-        var siteBearingRadians = DegreesToRadians(siteBearing);
-        var commanderX = Math.Sin(siteBearingRadians) * siteDistance;
-        var commanderY = -Math.Cos(siteBearingRadians) * siteDistance;
-        var mapBearing = SurfaceNavigation.GetBearing(site, commander);
-        var mapAngleRadians = DegreesToRadians(mapBearing - siteHeading);
-        var mapX = Math.Sin(mapAngleRadians) * siteDistance;
-        var mapY = -Math.Cos(mapAngleRadians) * siteDistance;
+        double siteDistance = SurfaceNavigation.GetDistance(commander, site, radius);
+        double siteBearing = SurfaceNavigation.GetBearing(commander, site);
+        double siteBearingRadians = DegreesToRadians(siteBearing);
+        double commanderX = Math.Sin(siteBearingRadians) * siteDistance;
+        double commanderY = -Math.Cos(siteBearingRadians) * siteDistance;
+        double mapBearing = SurfaceNavigation.GetBearing(site, commander);
+        double mapAngleRadians = DegreesToRadians(mapBearing - siteHeading);
+        double mapX = Math.Sin(mapAngleRadians) * siteDistance;
+        double mapY = -Math.Cos(mapAngleRadians) * siteDistance;
         var activeByName = (activeObelisks ?? [])
             .GroupBy(obelisk => obelisk.Name, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         GuardianNearbyPoint? nearest = null;
         foreach (
-            var point in template
+            GuardianPointOfInterest? point in template
                 .PointsOfInterest.Concat(includeComponentMaterials ? template.DestructiblePanels : [])
                 .Concat(survey?.RawPointsOfInterest ?? [])
         )
@@ -73,19 +73,19 @@ public sealed class GuardianSiteProximityEvaluator
                 continue;
             }
 
-            var pointAngle = 180 - siteHeading - point.Angle;
-            var pointRadians = DegreesToRadians(pointAngle);
-            var pointX = (Math.Sin(pointRadians) * point.Distance) + surfaceMarkerOffset.X;
-            var pointY = (Math.Cos(pointRadians) * point.Distance) + surfaceMarkerOffset.Y;
-            var deltaX = pointX - commanderX;
-            var deltaY = pointY - commanderY;
-            var distance = Math.Sqrt((deltaX * deltaX) + (deltaY * deltaY));
+            double pointAngle = 180 - siteHeading - point.Angle;
+            double pointRadians = DegreesToRadians(pointAngle);
+            double pointX = (Math.Sin(pointRadians) * point.Distance) + surfaceMarkerOffset.X;
+            double pointY = (Math.Cos(pointRadians) * point.Distance) + surfaceMarkerOffset.Y;
+            double deltaX = pointX - commanderX;
+            double deltaY = pointY - commanderY;
+            double distance = Math.Sqrt((deltaX * deltaX) + (deltaY * deltaY));
             if (nearest is not null && distance >= nearest.Distance)
             {
                 continue;
             }
 
-            activeByName.TryGetValue(point.Name, out var activeObelisk);
+            activeByName.TryGetValue(point.Name, out GuardianObelisk? activeObelisk);
             nearest = new GuardianNearbyPoint(point, distance, pointX, pointY, activeObelisk);
         }
 
@@ -94,7 +94,7 @@ public sealed class GuardianSiteProximityEvaluator
             nearest = null;
         }
 
-        var currentObelisk = nearest
+        GuardianObelisk? currentObelisk = nearest
             is { Point.Type: GuardianPoiType.Obelisk, ActiveObelisk: not null, Distance: < CurrentObeliskDistance }
             ? nearest.ActiveObelisk
             : null;
@@ -116,7 +116,7 @@ public sealed class GuardianSiteProximityEvaluator
         IReadOnlySet<char>? obeliskGroups
     )
     {
-        var isObelisk = point.Type is GuardianPoiType.Obelisk or GuardianPoiType.BrokenObelisk;
+        bool isObelisk = point.Type is GuardianPoiType.Obelisk or GuardianPoiType.BrokenObelisk;
         if (
             isObelisk
             && obeliskGroups is { Count: > 0 }
@@ -137,7 +137,7 @@ public sealed class GuardianSiteProximityEvaluator
             return point.Type == GuardianPoiType.Relic;
         }
 
-        var isMobileOnSurface = status.InSrv || status.OnFoot;
+        bool isMobileOnSurface = status.InSrv || status.OnFoot;
         if (point.Type is GuardianPoiType.Obelisk or GuardianPoiType.Relic && !isMobileOnSurface)
         {
             return false;

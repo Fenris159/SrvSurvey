@@ -93,7 +93,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         get => preferences.RuntimeProcessName;
         set
         {
-            var normalized = string.IsNullOrWhiteSpace(value) ? "vrserver" : value.Trim();
+            string normalized = string.IsNullOrWhiteSpace(value) ? "vrserver" : value.Trim();
             if (string.Equals(preferences.RuntimeProcessName, normalized, StringComparison.Ordinal))
             {
                 return;
@@ -122,7 +122,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         get => selectedMode;
         set
         {
-            var normalized = string.IsNullOrWhiteSpace(value) ? DefaultMode : value.Trim();
+            string normalized = string.IsNullOrWhiteSpace(value) ? DefaultMode : value.Trim();
             if (SetField(ref selectedMode, normalized))
             {
                 LoadSelectedCalibration();
@@ -245,7 +245,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
     public void SetAvailableOverlays(IEnumerable<string> plotterNames)
     {
         ArgumentNullException.ThrowIfNull(plotterNames);
-        var names = plotterNames
+        string[] names = plotterNames
             .Where(name => catalog.Defaults.ContainsKey(name))
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
@@ -261,7 +261,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
     public void SetCurrentRuntimeMode(string? mode)
     {
-        var normalized = string.IsNullOrWhiteSpace(mode) ? null : mode.Trim();
+        string? normalized = string.IsNullOrWhiteSpace(mode) ? null : mode.Trim();
         if (string.Equals(currentRuntimeMode, normalized, StringComparison.OrdinalIgnoreCase))
         {
             return;
@@ -289,7 +289,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
         try
         {
-            var result = calibrationStore.Save(
+            VrOverlayCalibrationSaveResult result = calibrationStore.Save(
                 SelectedOverlayName,
                 CreateCalibration(),
                 SelectedMode == DefaultMode ? null : SelectedMode
@@ -321,8 +321,9 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             return;
         }
 
-        var resetSource = SelectedMode == DefaultMode ? catalog.FactoryDefaults : catalog.Defaults;
-        if (!resetSource.TryGetValue(SelectedOverlayName, out var factoryDefault))
+        IReadOnlyDictionary<string, VrOverlayCalibration> resetSource =
+            SelectedMode == DefaultMode ? catalog.FactoryDefaults : catalog.Defaults;
+        if (!resetSource.TryGetValue(SelectedOverlayName, out VrOverlayCalibration? factoryDefault))
         {
             StatusMessage = "No factory calibration exists for this overlay.";
             return;
@@ -346,7 +347,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             return;
         }
 
-        var calibration =
+        VrOverlayCalibration? calibration =
             SelectedMode == DefaultMode
                 ? catalog.Defaults.GetValueOrDefault(SelectedOverlayName)
                 : catalog.Resolve(SelectedOverlayName, SelectedMode);
@@ -358,7 +359,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
     private void RefreshAvailableModes()
     {
-        var modes = catalog
+        string[] modes = catalog
             .Overrides.Keys.Append(currentRuntimeMode)
             .Where(mode => !string.IsNullOrWhiteSpace(mode))
             .Select(mode => mode!)

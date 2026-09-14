@@ -18,15 +18,15 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     [Fact]
     public async Task ThreeSamplesBecomeLegacyCompletedSurfaceHistory()
     {
-        var (tracker, store) = CreateTracker();
-        var session = Session();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore? store) = CreateTracker();
+        SurfaceSurveySessionContext session = Session();
 
         await ApplyAtAsync(tracker, session, 1, 2, Organic("Log"));
         await ApplyAtAsync(tracker, session, 2, 3, Organic("Sample"));
-        var result = await ApplyAtAsync(tracker, session, 3, 4, Organic("Analyse"));
+        SurfaceSurveyJournalUpdateResult result = await ApplyAtAsync(tracker, session, 3, 4, Organic("Analyse"));
 
         Assert.Equal(3, result.MutationCount);
-        var loaded = await store.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult loaded = await store.LoadBodyAsync(BodyContext());
         Assert.Equal(3, loaded.Snapshot!.BioScans.Count);
         Assert.All(loaded.Snapshot.BioScans, scan => Assert.Equal("Complete", scan.Status));
         Assert.Equal(
@@ -45,8 +45,8 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
             "Bacterium",
             1_000_000
         );
-        var (tracker, store) = CreateTracker(other);
-        var session = Session();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore? store) = CreateTracker(other);
+        SurfaceSurveySessionContext session = Session();
         var options = new SurfaceSurveyTrackingOptions(false, false);
 
         await ApplyAtAsync(tracker, session, 1, 2, Organic("Log"), options);
@@ -60,28 +60,28 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
             options
         );
 
-        var loaded = await store.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult loaded = await store.LoadBodyAsync(BodyContext());
         Assert.Equal(2, loaded.Snapshot!.Bookmarks[AleoidaGenus].Count);
     }
 
     [Fact]
     public async Task SamplingRemovesOnlyNearbyMatchingTrackerByDefault()
     {
-        var (tracker, store) = CreateTracker();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore? store) = CreateTracker();
         await store.AddBookmarkAsync(BodyContext(), AleoidaGenus, new SurfaceCoordinate(0, 0));
         await store.AddBookmarkAsync(BodyContext(), AleoidaGenus, new SurfaceCoordinate(0, 20));
 
         await ApplyAtAsync(tracker, Session(), 0, 1, Organic("Log"));
 
-        var loaded = await store.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult loaded = await store.LoadBodyAsync(BodyContext());
         Assert.Equal(new SurfaceCoordinate(0, 20), Assert.Single(loaded.Snapshot!.Bookmarks[AleoidaGenus]));
     }
 
     [Fact]
     public async Task TouchdownAndSrvLifecycleRetainNavigationMarkers()
     {
-        var (tracker, store) = CreateTracker();
-        var session = Session();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore? store) = CreateTracker();
+        SurfaceSurveySessionContext session = Session();
 
         await tracker.ApplyAsync(
             session,
@@ -128,8 +128,8 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     [Fact]
     public async Task NomadDisembarkDoesNotCreateAnSrvMarker()
     {
-        var (tracker, _) = CreateTracker();
-        var nomadSession = Session() with { NomadVehicleId = 44 };
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore _) = CreateTracker();
+        SurfaceSurveySessionContext nomadSession = Session() with { NomadVehicleId = 44 };
 
         await tracker.ApplyAsync(
             nomadSession,
@@ -138,7 +138,7 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
         );
         Assert.Equal(new SurfaceCoordinate(1, 2), tracker.SrvLocation);
 
-        var result = await tracker.ApplyAsync(
+        SurfaceSurveyJournalUpdateResult result = await tracker.ApplyAsync(
             nomadSession,
             [Event("{\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}")],
             new EliteStatus()
@@ -159,8 +159,8 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     [InlineData("Resurrect")]
     public async Task SessionDepartureClearsOnlyVehicleLocations(string eventName)
     {
-        var (tracker, store) = CreateTracker();
-        var session = Session();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore? store) = CreateTracker();
+        SurfaceSurveySessionContext session = Session();
         await tracker.ApplyAsync(
             session,
             [
@@ -174,7 +174,11 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
         );
         await tracker.ApplyAsync(session, [Event("{\"event\":\"Liftoff\"}")], Status(1, 2));
 
-        var result = await tracker.ApplyAsync(session, [Event($$"""{"event":"{{eventName}}"}""")], Status(1, 2));
+        SurfaceSurveyJournalUpdateResult result = await tracker.ApplyAsync(
+            session,
+            [Event($$"""{"event":"{{eventName}}"}""")],
+            Status(1, 2)
+        );
 
         Assert.Equal(1, result.MutationCount);
         Assert.Null(tracker.ShipLocation);
@@ -186,10 +190,10 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     [Fact]
     public async Task MainMenuClearsVehicleLocations()
     {
-        var (tracker, _) = CreateTracker();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore _) = CreateTracker();
         await tracker.ApplyAsync(Session(), [Event("{\"event\":\"Liftoff\"}")], Status(1, 2));
 
-        var result = await tracker.ApplyAsync(
+        SurfaceSurveyJournalUpdateResult result = await tracker.ApplyAsync(
             Session(),
             [Event("{\"event\":\"Music\",\"MusicTrack\":\"MainMenu\"}")],
             Status(1, 2)
@@ -202,19 +206,23 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     [Fact]
     public async Task CompositionScanAddsGenusTrackerAtReportedCoordinates()
     {
-        var (tracker, store) = CreateTracker();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore? store) = CreateTracker();
 
-        var result = await tracker.ApplyAsync(Session(), [Event(CodexEntry(latitude: 5, longitude: 6))], Status(1, 2));
+        SurfaceSurveyJournalUpdateResult result = await tracker.ApplyAsync(
+            Session(),
+            [Event(CodexEntry(latitude: 5, longitude: 6))],
+            Status(1, 2)
+        );
 
         Assert.Equal(1, result.MutationCount);
-        var loaded = await store.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult loaded = await store.LoadBodyAsync(BodyContext());
         Assert.Equal(new SurfaceCoordinate(5, 6), Assert.Single(loaded.Snapshot!.Bookmarks[AleoidaGenus]));
     }
 
     [Fact]
     public async Task CompositionTrackingHonorsAnalyzedAndFixedSignalFilters()
     {
-        var (tracker, store) = CreateTracker();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore? store) = CreateTracker();
         var options = new SurfaceSurveyTrackingOptions(
             false,
             false,
@@ -226,7 +234,7 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
             }
         );
 
-        var result = await tracker.ApplyAsync(
+        SurfaceSurveyJournalUpdateResult result = await tracker.ApplyAsync(
             Session(),
             [
                 Event(CodexEntry(latitude: 5, longitude: 6)),
@@ -243,7 +251,7 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     [Fact]
     public async Task CompositionTrackingOnlySkipsSpeciesAnalyzedOnSameBody()
     {
-        var (tracker, store) = CreateTracker();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore? store) = CreateTracker();
         var options = new SurfaceSurveyTrackingOptions(
             false,
             false,
@@ -255,7 +263,7 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
             }
         );
 
-        var result = await tracker.ApplyAsync(
+        SurfaceSurveyJournalUpdateResult result = await tracker.ApplyAsync(
             Session(),
             [Event(CodexEntry(latitude: 5, longitude: 6))],
             Status(1, 2),
@@ -269,9 +277,13 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     [Fact]
     public async Task MissingSurfaceContextIsNonFatalAndReported()
     {
-        var (tracker, _) = CreateTracker();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore _) = CreateTracker();
 
-        var result = await tracker.ApplyAsync(Session(), [Event(Organic("Log"))], new EliteStatus());
+        SurfaceSurveyJournalUpdateResult result = await tracker.ApplyAsync(
+            Session(),
+            [Event(Organic("Log"))],
+            new EliteStatus()
+        );
 
         Assert.Equal(0, result.MutationCount);
         Assert.Single(result.Warnings);
@@ -280,12 +292,12 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     [Fact]
     public async Task LiveTextCommandsManageNamedAndShortGenusTrackers()
     {
-        var (tracker, store) = CreateTracker();
-        var session = Session();
+        (SurfaceSurveyJournalTracker? tracker, SystemSurfaceStore? store) = CreateTracker();
+        SurfaceSurveySessionContext session = Session();
 
         await ApplyAtAsync(tracker, session, 0, 0, "{\"event\":\"SendText\",\"Message\":\"+ale\"}");
         await ApplyAtAsync(tracker, session, 0, 10, "{\"event\":\"SendText\",\"Message\":\"+ale\"}");
-        var loaded = await store.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult loaded = await store.LoadBodyAsync(BodyContext());
         Assert.Equal(2, loaded.Snapshot!.Bookmarks[AleoidaGenus].Count);
 
         await ApplyAtAsync(tracker, session, 0, 1, "{\"event\":\"SendText\",\"Message\":\"=ale\"}");
@@ -361,7 +373,7 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
 
     private static string CodexEntry(double latitude, double longitude, string? nearestDestination = null)
     {
-        var destination = nearestDestination is null
+        string destination = nearestDestination is null
             ? string.Empty
             : $",\"NearestDestination\":\"{nearestDestination}\"";
         return $$"""
@@ -381,7 +393,10 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 

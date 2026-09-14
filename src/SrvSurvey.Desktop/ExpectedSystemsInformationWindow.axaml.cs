@@ -28,9 +28,9 @@ public sealed partial class ExpectedSystemsInformationWindow : Window
 
     private void BuildExampleSentence()
     {
-        var template = LocalizationCatalog.Translate(ExampleTemplate);
+        string template = LocalizationCatalog.Translate(ExampleTemplate);
         var inlines = new InlineCollection();
-        var position = 0;
+        int position = 0;
         foreach (Match match in ExamplePlaceholderPattern.Matches(template))
         {
             if (match.Index > position)
@@ -38,7 +38,7 @@ public sealed partial class ExpectedSystemsInformationWindow : Window
                 inlines.Add(template[position..match.Index]);
             }
 
-            var systemIndex = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+            int systemIndex = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
             inlines.Add(CreateSystemNameInline(ExampleSystemNames[systemIndex]));
             position = match.Index + match.Length;
         }
@@ -53,15 +53,15 @@ public sealed partial class ExpectedSystemsInformationWindow : Window
 
     private StackPanel CreateSystemNameInline(string systemName)
     {
-        var openingQuote = CreateUnlocalizedTextBlock("\"");
-        var name = CreateUnlocalizedTextBlock(systemName);
+        TextBlock openingQuote = CreateUnlocalizedTextBlock("\"");
+        TextBlock name = CreateUnlocalizedTextBlock(systemName);
         name.FontWeight = FontWeight.SemiBold;
-        if (this.TryFindResource(RavenAccentBrush, out var accentResource) && accentResource is IBrush accentBrush)
+        if (this.TryFindResource(RavenAccentBrush, out object? accentResource) && accentResource is IBrush accentBrush)
         {
             name.Foreground = accentBrush;
         }
 
-        var closingQuote = CreateUnlocalizedTextBlock("\"");
+        TextBlock closingQuote = CreateUnlocalizedTextBlock("\"");
         return new StackPanel
         {
             Orientation = Avalonia.Layout.Orientation.Horizontal,

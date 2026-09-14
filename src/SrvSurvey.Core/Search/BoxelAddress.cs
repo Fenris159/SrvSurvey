@@ -35,7 +35,7 @@ public sealed partial record BoxelAddress(
                 throw new InvalidOperationException("Mass-code h boxels do not have a supported parent.");
             }
 
-            var relative = GetRelativeCoordinates();
+            BoxelCoordinate relative = GetRelativeCoordinates();
             return FromCoordinates(Sector, relative.X / 2, relative.Y / 2, relative.Z / 2, (char)(MassCode + 1));
         }
     }
@@ -49,11 +49,11 @@ public sealed partial record BoxelAddress(
                 return [];
             }
 
-            var relative = GetRelativeCoordinates();
-            var x = relative.X * 2;
-            var y = relative.Y * 2;
-            var z = relative.Z * 2;
-            var childMassCode = (char)(MassCode - 1);
+            BoxelCoordinate relative = GetRelativeCoordinates();
+            int x = relative.X * 2;
+            int y = relative.Y * 2;
+            int z = relative.Z * 2;
+            char childMassCode = (char)(MassCode - 1);
             return
             [
                 FromCoordinates(Sector, x, y, z, childMassCode),
@@ -76,25 +76,25 @@ public sealed partial record BoxelAddress(
             return false;
         }
 
-        var storedParts = value.Split('|', 2, StringSplitOptions.TrimEntries);
-        var storedAddress = 0L;
-        var hasStoredAddress =
+        string[] storedParts = value.Split('|', 2, StringSplitOptions.TrimEntries);
+        long storedAddress = 0L;
+        bool hasStoredAddress =
             storedParts.Length == 2
             && long.TryParse(storedParts[1], NumberStyles.None, CultureInfo.InvariantCulture, out storedAddress)
             && storedAddress > 0;
-        var match = BoxelNamePattern().Match(storedParts[0]);
+        Match match = BoxelNamePattern().Match(storedParts[0]);
         if (!match.Success)
         {
             return hasStoredAddress && TryFromSystemAddress(storedAddress, storedParts[0], out boxel);
         }
 
-        var massCode = char.ToLowerInvariant(match.Groups[3].Value[0]);
+        char massCode = char.ToLowerInvariant(match.Groups[3].Value[0]);
         if (!IsValidMassCode(massCode))
         {
             return false;
         }
 
-        if (!int.TryParse(match.Groups[4].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var firstNumber))
+        if (!int.TryParse(match.Groups[4].Value, NumberStyles.None, CultureInfo.InvariantCulture, out int firstNumber))
         {
             return false;
         }
@@ -128,7 +128,7 @@ public sealed partial record BoxelAddress(
 
     public static BoxelAddress Parse(string value)
     {
-        return TryParse(value, out var boxel)
+        return TryParse(value, out BoxelAddress? boxel)
             ? boxel!
             : throw new FormatException($"'{value}' is not a generated boxel name.");
     }
@@ -141,9 +141,9 @@ public sealed partial record BoxelAddress(
             return false;
         }
 
-        var normalizedPublicName = publicName?.Split('|', 2, StringSplitOptions.TrimEntries)[0];
+        string? normalizedPublicName = publicName?.Split('|', 2, StringSplitOptions.TrimEntries)[0];
         if (
-            TryParse(normalizedPublicName, out var parsed)
+            TryParse(normalizedPublicName, out BoxelAddress? parsed)
             && parsed is not null
             && BoxelSectorNameResolver.IsValidSectorName(parsed.Sector)
         )
@@ -152,27 +152,27 @@ public sealed partial record BoxelAddress(
             return true;
         }
 
-        var remaining = (ulong)systemAddress;
-        var massCodeValue = TakeBits(ref remaining, 3);
-        var massCode = (char)(MinimumMassCode + massCodeValue);
+        ulong remaining = (ulong)systemAddress;
+        int massCodeValue = TakeBits(ref remaining, 3);
+        char massCode = (char)(MinimumMassCode + massCodeValue);
         if (!IsValidMassCode(massCode))
         {
             return false;
         }
 
-        var relativeBitCount = MaximumMassCode - massCode;
-        var relativeZ = TakeBits(ref remaining, relativeBitCount);
-        var sectorZ = TakeBits(ref remaining, 7);
-        var relativeY = TakeBits(ref remaining, relativeBitCount);
-        var sectorY = TakeBits(ref remaining, 6);
-        var relativeX = TakeBits(ref remaining, relativeBitCount);
-        var sectorX = TakeBits(ref remaining, 7);
+        int relativeBitCount = MaximumMassCode - massCode;
+        int relativeZ = TakeBits(ref remaining, relativeBitCount);
+        int sectorZ = TakeBits(ref remaining, 7);
+        int relativeY = TakeBits(ref remaining, relativeBitCount);
+        int sectorY = TakeBits(ref remaining, 6);
+        int relativeX = TakeBits(ref remaining, relativeBitCount);
+        int sectorX = TakeBits(ref remaining, 7);
         if (remaining > int.MaxValue)
         {
             return false;
         }
 
-        var sector = BoxelSectorNameResolver.GetSectorName(sectorX, sectorY, sectorZ);
+        string? sector = BoxelSectorNameResolver.GetSectorName(sectorX, sectorY, sectorZ);
         if (string.IsNullOrWhiteSpace(sector))
         {
             return false;
@@ -213,7 +213,7 @@ public sealed partial record BoxelAddress(
     public bool TryEncodeSystemAddress(out long systemAddress)
     {
         systemAddress = 0;
-        if (!TryBuildPackedAddress(out var address))
+        if (!TryBuildPackedAddress(out long address))
         {
             return false;
         }
@@ -235,24 +235,24 @@ public sealed partial record BoxelAddress(
             return false;
         }
 
-        var sectorCoordinates = BoxelSectorNameResolver.GetSectorCoordinates(Sector, MassCode);
+        SectorCoordinate? sectorCoordinates = BoxelSectorNameResolver.GetSectorCoordinates(Sector, MassCode);
         if (!IsValidSectorCoordinate(sectorCoordinates))
         {
             return false;
         }
 
-        var sector = sectorCoordinates!.Value;
-        var relative = GetRelativeCoordinates();
-        var massCodeValue = MassCode - MinimumMassCode;
-        var relativeBitCount = MaximumMassCode - MassCode;
-        var relativeLimit = 1 << relativeBitCount;
+        SectorCoordinate sector = sectorCoordinates!.Value;
+        BoxelCoordinate relative = GetRelativeCoordinates();
+        int massCodeValue = MassCode - MinimumMassCode;
+        int relativeBitCount = MaximumMassCode - MassCode;
+        int relativeLimit = 1 << relativeBitCount;
         if (!IsValidRelativeCoordinate(relative, relativeLimit))
         {
             return false;
         }
 
-        var systemNumberBits = 11 + (massCodeValue * 3);
-        var systemNumberLimit = 1UL << systemNumberBits;
+        int systemNumberBits = 11 + (massCodeValue * 3);
+        ulong systemNumberLimit = 1UL << systemNumberBits;
         if ((ulong)N2 >= systemNumberLimit)
         {
             return false;
@@ -284,7 +284,7 @@ public sealed partial record BoxelAddress(
 
     private bool IsConsistentEncodedAddress(long address)
     {
-        return TryFromSystemAddress(address, null, out var decoded)
+        return TryFromSystemAddress(address, null, out BoxelAddress? decoded)
             && decoded is not null
             && string.Equals(GeneratedName, decoded.GeneratedName, StringComparison.Ordinal);
     }
@@ -308,8 +308,8 @@ public sealed partial record BoxelAddress(
     {
         ArgumentOutOfRangeException.ThrowIfNegative(massCodeDifference);
 
-        var total = 0;
-        for (var level = massCodeDifference; level >= 0; level--)
+        int total = 0;
+        for (int level = massCodeDifference; level >= 0; level--)
         {
             total = checked(total + (int)Math.Pow(8, level));
         }
@@ -321,8 +321,8 @@ public sealed partial record BoxelAddress(
     {
         ArgumentOutOfRangeException.ThrowIfNegative(systemNumber);
 
-        var candidate = this with { N2 = systemNumber, SystemAddress = 0, PublicName = null };
-        return candidate.TryEncodeSystemAddress(out var systemAddress)
+        BoxelAddress candidate = this with { N2 = systemNumber, SystemAddress = 0, PublicName = null };
+        return candidate.TryEncodeSystemAddress(out long systemAddress)
             ? candidate with
             {
                 SystemAddress = systemAddress,
@@ -347,7 +347,7 @@ public sealed partial record BoxelAddress(
             return false;
         }
 
-        var candidate = child;
+        BoxelAddress candidate = child;
         while (candidate.MassCode < MassCode)
         {
             candidate = candidate.Parent;
@@ -372,10 +372,10 @@ public sealed partial record BoxelAddress(
 
     private BoxelCoordinate GetRelativeCoordinates()
     {
-        var first = Letters[0] - 'A';
-        var second = Letters[1] - 'A';
-        var third = Letters[3] - 'A';
-        var value = first + (second * 26) + (third * 676) + (N1 * 17576);
+        int first = Letters[0] - 'A';
+        int second = Letters[1] - 'A';
+        int third = Letters[3] - 'A';
+        int value = first + (second * 26) + (third * 676) + (N1 * 17576);
         return new BoxelCoordinate(value % 128, value % 16384 / 128, value / 16384);
     }
 
@@ -388,12 +388,12 @@ public sealed partial record BoxelAddress(
         BoxelAddressIdentity identity = default
     )
     {
-        var value = x + (y * 128) + (z * 16384);
-        var first = value % 26;
+        int value = x + (y * 128) + (z * 16384);
+        int first = value % 26;
         value = (value - first) / 26;
-        var second = value % 26;
+        int second = value % 26;
         value = (value - second) / 26;
-        var third = value % 26;
+        int third = value % 26;
         value = (value - third) / 26;
         return new BoxelAddress(
             sector,
@@ -451,8 +451,8 @@ public sealed partial record BoxelAddress(
             return 0;
         }
 
-        var mask = (1UL << count) - 1;
-        var result = (int)(value & mask);
+        ulong mask = (1UL << count) - 1;
+        int result = (int)(value & mask);
         value >>= count;
         return result;
     }

@@ -78,8 +78,8 @@ public sealed class CargoInventoryState
     {
         lock (syncRoot)
         {
-            var after = CreateCountMapUnlocked();
-            var diffs = CargoInventoryDiff.Compute(lastInventory, after);
+            Dictionary<string, int> after = CreateCountMapUnlocked();
+            Dictionary<string, int> diffs = CargoInventoryDiff.Compute(lastInventory, after);
             // Consume once: subsequent GetDiff calls baseline from this after-state.
             CargoInventoryDiff.CopyFromCounts(lastInventory, after);
             preserveLastInventory = false;
@@ -114,15 +114,15 @@ public sealed class CargoInventoryState
                 CopyCurrentToLastInventoryUnlocked();
             }
 
-            var replacement = CreateInventory(snapshot.Inventory);
-            var changed =
+            Dictionary<string, CargoItemState> replacement = CreateInventory(snapshot.Inventory);
+            bool changed =
                 !hasState
                 || timestamp != snapshot.Timestamp
                 || !string.Equals(eventName, snapshot.EventName, StringComparison.Ordinal)
                 || !string.Equals(vessel, snapshot.Vessel, StringComparison.Ordinal)
                 || !InventoryEquals(inventory, replacement);
             inventory.Clear();
-            foreach (var item in replacement)
+            foreach (KeyValuePair<string, CargoItemState> item in replacement)
             {
                 inventory[item.Key] = item.Value;
             }
@@ -140,8 +140,8 @@ public sealed class CargoInventoryState
         ArgumentNullException.ThrowIfNull(journalEvent);
         lock (syncRoot)
         {
-            var root = journalEvent.Payload;
-            var changed = journalEvent.EventName switch
+            JsonElement root = journalEvent.Payload;
+            bool changed = journalEvent.EventName switch
             {
                 "CollectCargo" => ApplyDelta(GetString(root, "Type"), GetString(root, TypeLocalisedProperty), 1),
                 "EjectCargo" => ApplyDelta(
@@ -185,18 +185,18 @@ public sealed class CargoInventoryState
                 return null;
             }
 
-            var items = inventory
+            CargoItem[] items = inventory
                 .Values.OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(item => new CargoItem(item.Name, item.LocalizedName, item.Count, item.Stolen))
                 .ToArray();
-            var total = (int)Math.Min(int.MaxValue, items.Sum(item => (long)item.Count));
+            int total = (int)Math.Min(int.MaxValue, items.Sum(item => (long)item.Count));
             return new CargoSnapshot(timestamp, eventName, vessel, total, items);
         }
     }
 
     private bool ApplyCargoEvent(JsonElement root)
     {
-        if (!root.TryGetProperty("Inventory", out var items) || items.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Inventory", out JsonElement items) || items.ValueKind != JsonValueKind.Array)
         {
             return false;
         }
@@ -206,8 +206,8 @@ public sealed class CargoInventoryState
             CopyCurrentToLastInventoryUnlocked();
         }
 
-        var replacement = CreateInventory(items);
-        var updatedVessel = GetString(root, "Vessel") ?? vessel;
+        Dictionary<string, CargoItemState> replacement = CreateInventory(items);
+        string updatedVessel = GetString(root, "Vessel") ?? vessel;
         if (
             hasState
             && string.Equals(vessel, updatedVessel, StringComparison.Ordinal)
@@ -218,7 +218,7 @@ public sealed class CargoInventoryState
         }
 
         inventory.Clear();
-        foreach (var item in replacement)
+        foreach (KeyValuePair<string, CargoItemState> item in replacement)
         {
             inventory[item.Key] = item.Value;
         }
@@ -229,22 +229,22 @@ public sealed class CargoInventoryState
 
     private bool ApplyTransfers(JsonElement root, bool isInSrv)
     {
-        if (!root.TryGetProperty("Transfers", out var transfers) || transfers.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Transfers", out JsonElement transfers) || transfers.ValueKind != JsonValueKind.Array)
         {
             return false;
         }
 
-        var changed = false;
-        foreach (var transfer in transfers.EnumerateArray())
+        bool changed = false;
+        foreach (JsonElement transfer in transfers.EnumerateArray())
         {
-            var count = GetInt32(transfer, CountProperty) ?? 0;
-            var direction = GetString(transfer, "Direction");
+            int count = GetInt32(transfer, CountProperty) ?? 0;
+            string? direction = GetString(transfer, "Direction");
             if (count <= 0)
             {
                 continue;
             }
 
-            var delta = isInSrv
+            int delta = isInSrv
                 ? direction switch
                 {
                     "tosrv" => count,
@@ -266,15 +266,15 @@ public sealed class CargoInventoryState
     private bool ApplyContributions(JsonElement root)
     {
         if (
-            !root.TryGetProperty("Contributions", out var contributions)
+            !root.TryGetProperty("Contributions", out JsonElement contributions)
             || contributions.ValueKind != JsonValueKind.Array
         )
         {
             return false;
         }
 
-        var changed = false;
-        foreach (var contribution in contributions.EnumerateArray())
+        bool changed = false;
+        foreach (JsonElement contribution in contributions.EnumerateArray())
         {
             changed |= ApplyDelta(
                 NormalizeCommodityName(GetString(contribution, "Name")),
@@ -293,10 +293,10 @@ public sealed class CargoInventoryState
             return false;
         }
 
-        var normalized = name.Trim();
-        var previous = inventory.GetValueOrDefault(normalized);
-        var previousCount = previous?.Count ?? 0;
-        var nextCount = (int)Math.Clamp((long)previousCount + delta, 0, int.MaxValue);
+        string normalized = name.Trim();
+        CargoItemState? previous = inventory.GetValueOrDefault(normalized);
+        int previousCount = previous?.Count ?? 0;
+        int nextCount = (int)Math.Clamp((long)previousCount + delta, 0, int.MaxValue);
         if (nextCount == previousCount)
         {
             return false;
@@ -320,7 +320,7 @@ public sealed class CargoInventoryState
     private void CopyCurrentToLastInventoryUnlocked()
     {
         lastInventory.Clear();
-        foreach (var item in inventory)
+        foreach (KeyValuePair<string, CargoItemState> item in inventory)
         {
             lastInventory[item.Key] = item.Value.Count;
         }
@@ -328,8 +328,8 @@ public sealed class CargoInventoryState
 
     private Dictionary<string, int> CreateCountMapUnlocked()
     {
-        var map = CargoInventoryDiff.CreateCountMap();
-        foreach (var item in inventory)
+        Dictionary<string, int> map = CargoInventoryDiff.CreateCountMap();
+        foreach (KeyValuePair<string, CargoItemState> item in inventory)
         {
             map[item.Key] = item.Value.Count;
         }
@@ -340,7 +340,7 @@ public sealed class CargoInventoryState
     private static Dictionary<string, CargoItemState> CreateInventory(IEnumerable<CargoItem> items)
     {
         var replacement = new Dictionary<string, CargoItemState>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in items)
+        foreach (CargoItem item in items)
         {
             AddSnapshotItem(replacement, item.Name, item.LocalizedName, item.Count, item.Stolen);
         }
@@ -351,7 +351,7 @@ public sealed class CargoInventoryState
     private static Dictionary<string, CargoItemState> CreateInventory(JsonElement items)
     {
         var replacement = new Dictionary<string, CargoItemState>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in items.EnumerateArray())
+        foreach (JsonElement item in items.EnumerateArray())
         {
             AddSnapshotItem(
                 replacement,
@@ -378,10 +378,10 @@ public sealed class CargoInventoryState
             return;
         }
 
-        var normalized = name.Trim();
-        target.TryGetValue(normalized, out var previous);
-        var nextCount = (int)Math.Min(int.MaxValue, (long)(previous?.Count ?? 0) + count);
-        var nextStolen = (int)
+        string normalized = name.Trim();
+        target.TryGetValue(normalized, out CargoItemState? previous);
+        int nextCount = (int)Math.Min(int.MaxValue, (long)(previous?.Count ?? 0) + count);
+        int nextStolen = (int)
             Math.Min(nextCount, Math.Min(int.MaxValue, (long)(previous?.Stolen ?? 0) + Math.Max(0, stolen)));
         target[normalized] = new CargoItemState(
             previous?.Name ?? normalized,
@@ -397,7 +397,7 @@ public sealed class CargoInventoryState
     )
     {
         return left.Count == right.Count
-            && left.All(item => right.TryGetValue(item.Key, out var value) && item.Value == value);
+            && left.All(item => right.TryGetValue(item.Key, out CargoItemState? value) && item.Value == value);
     }
 
     private static string NormalizeCommodityName(string? name)
@@ -407,7 +407,7 @@ public sealed class CargoInventoryState
             return string.Empty;
         }
 
-        var normalized = name.Trim();
+        string normalized = name.Trim();
         if (normalized.StartsWith('$'))
         {
             normalized = normalized[1..];
@@ -423,7 +423,7 @@ public sealed class CargoInventoryState
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -431,9 +431,9 @@ public sealed class CargoInventoryState
     private static int? GetInt32(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
+            && value.TryGetInt32(out int number)
             ? number
             : null;
     }

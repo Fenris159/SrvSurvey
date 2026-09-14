@@ -16,9 +16,9 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
     public void PreferencesAndShortcutTogglePersist()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var source = Path.Combine(temporaryDirectory, "source");
+        string source = Path.Combine(temporaryDirectory, "source");
         Directory.CreateDirectory(source);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         var store = new ScreenshotProcessingSettingsStore(path);
         var viewModel = new ScreenshotProcessingViewModel(store, new StubProcessor(ScreenshotProcessingResult.Empty));
 
@@ -31,7 +31,7 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         viewModel.AerialAltitudeGamma = 6_000;
         Assert.True(viewModel.ToggleBanner());
 
-        var saved = store.Load();
+        ScreenshotProcessingPreferences saved = store.Load();
         Assert.True(saved.Enabled);
         Assert.Equal(source, saved.SourceFolder);
         Assert.Equal(Path.Combine(temporaryDirectory, "target"), saved.TargetFolder);
@@ -53,7 +53,7 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         );
         var processor = new StubProcessor(result);
         var viewModel = new ScreenshotProcessingViewModel(store, processor);
-        var journalEvent = Parse(
+        JournalEventEnvelope journalEvent = Parse(
             """
             {"timestamp":"2026-07-25T12:00:00Z","event":"Screenshot","Filename":"\\ED_Pictures\\source.bmp"}
             """
@@ -69,7 +69,10 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 

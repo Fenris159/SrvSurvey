@@ -22,9 +22,9 @@ public sealed class BoxelViewMarkupTests
             .Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToDictionary(element => element.Attribute("Selector")?.Value ?? string.Empty, StringComparer.Ordinal);
-        var selectedTextStyle = styles["ListBox.system-pages ListBoxItem:selected TextBlock"];
+        XElement selectedTextStyle = styles["ListBox.system-pages ListBoxItem:selected TextBlock"];
 
-        var foreground = Assert.Single(
+        XElement foreground = Assert.Single(
             selectedTextStyle.Elements(),
             element => element.Name.LocalName == "Setter" && element.Attribute("Property")?.Value == "Foreground"
         );
@@ -34,14 +34,14 @@ public sealed class BoxelViewMarkupTests
     [Fact]
     public void DedicatedPageOwnsTheWholeBoxelWorkspace()
     {
-        var boxel = LoadView("BoxelView.axaml");
-        var search = LoadView("SearchView.axaml");
-        var boxelBindings = boxel
+        XDocument boxel = LoadView("BoxelView.axaml");
+        XDocument search = LoadView("SearchView.axaml");
+        string[] boxelBindings = boxel
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
-        var searchBindings = search
+        string[] searchBindings = search
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
@@ -64,21 +64,21 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("VoxStellar_Click", boxelBindings);
         Assert.Contains("VoxStellarInfo_Click", boxelBindings);
         Assert.Contains("avares://SrvSurvey.Desktop/Assets/VoxStellar/voxstellar.png", boxelBindings);
-        var voxStellarImage = boxel
+        XElement voxStellarImage = boxel
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Image"
                 && element.Attribute("Source")?.Value.Contains("VoxStellar", StringComparison.Ordinal) == true
             );
         Assert.Equal("30", voxStellarImage.Attribute("Height")?.Value);
-        var boxelStatsButton = boxel
+        XElement boxelStatsButton = boxel
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button"
                 && element.Attribute("Click")?.Value == "BoxelStats_Click"
                 && element.Descendants().Any(descendant => descendant.Attribute("Text")?.Value == "Boxel Stats")
             );
-        var boxelStatsIcon = Assert.Single(
+        XElement boxelStatsIcon = Assert.Single(
             boxelStatsButton.Descendants(),
             element => element.Name.LocalName == "PathIcon"
         );
@@ -102,7 +102,7 @@ public sealed class BoxelViewMarkupTests
         );
         Assert.Contains("{Binding BoxelSearch.HasLastSystemAvailableError}", boxelBindings);
         Assert.Contains("{Binding BoxelSearch.LastSystemAvailableValidationMessage}", boxelBindings);
-        var lastSystemAvailableTextBox = boxel
+        XElement lastSystemAvailableTextBox = boxel
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "TextBox"
@@ -117,7 +117,7 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("ApplyLastSystemAvailable_LostFocus", boxelBindings);
         Assert.Contains("{Binding BoxelSearch.SortDescending, Mode=TwoWay}", boxelBindings);
         Assert.Contains("Sort (descending) for working results backwards.", boxelBindings);
-        var stopSearchButton = boxel
+        XElement stopSearchButton = boxel
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button" && element.Attribute("Content")?.Value == "Stop search"
@@ -141,7 +141,7 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding BoxelSearch.SystemPageNumbers}", boxelBindings);
         Assert.Contains("{Binding BoxelSearch.SelectedSystemPageIndex, Mode=TwoWay}", boxelBindings);
         Assert.Contains("{Binding BoxelSearch.SystemPagePickerWidth}", boxelBindings);
-        var systemPageFlyout = boxel
+        XElement systemPageFlyout = boxel
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Flyout"
@@ -149,7 +149,7 @@ public sealed class BoxelViewMarkupTests
             );
         Assert.Equal("TopEdgeAlignedRight", systemPageFlyout.Attribute("Placement")?.Value);
         Assert.Equal("system-page-picker", systemPageFlyout.Attribute("FlyoutPresenterClasses")?.Value);
-        var systemPagePickerButton = boxel
+        XElement systemPagePickerButton = boxel
             .Descendants()
             .Single(element =>
                 element
@@ -157,7 +157,7 @@ public sealed class BoxelViewMarkupTests
                     .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "SystemPagePickerButton")
             );
         Assert.Equal("{Binding BoxelSearch.SystemPagePickerWidth}", systemPagePickerButton.Attribute("Width")?.Value);
-        var systemPageList = systemPageFlyout.Descendants().Single(element => element.Name.LocalName == "ListBox");
+        XElement systemPageList = systemPageFlyout.Descendants().Single(element => element.Name.LocalName == "ListBox");
         Assert.Equal("362", systemPageList.Attribute("MaxHeight")?.Value);
         Assert.Equal("{Binding BoxelSearch.SystemPagePickerWidth}", systemPageList.Attribute("Width")?.Value);
         Assert.Equal("SystemPageList_SelectionChanged", systemPageList.Attribute("SelectionChanged")?.Value);
@@ -187,7 +187,7 @@ public sealed class BoxelViewMarkupTests
         );
         Assert.Contains("{Binding ProgressLabel}", boxelBindings);
         Assert.Contains("{Binding StatusLabel}", boxelBindings);
-        var centeredHierarchyControls = boxel
+        XElement centeredHierarchyControls = boxel
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Grid"
@@ -231,7 +231,7 @@ public sealed class BoxelViewMarkupTests
         var menu = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Controls", "BoxelSystemActionMenu.axaml")
         );
-        var values = menu.Descendants()
+        string[] values = menu.Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
@@ -269,7 +269,7 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{DynamicResource RavenAccentHoverBrush}", values);
         Assert.Contains("{DynamicResource RavenWarningBrush}", values);
         Assert.DoesNotContain("System actions", values);
-        var launcher = menu.Descendants()
+        XElement launcher = menu.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button"
                 && element
@@ -278,7 +278,7 @@ public sealed class BoxelViewMarkupTests
             );
         Assert.Equal("Menu_PointerEntered", launcher.Attribute("PointerEntered")?.Value);
         Assert.Equal("Menu_PointerExited", launcher.Attribute("PointerExited")?.Value);
-        var launcherStyle = menu.Descendants()
+        XElement launcherStyle = menu.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style" && element.Attribute("Selector")?.Value == "Button.radial-launcher"
             );
@@ -288,7 +288,7 @@ public sealed class BoxelViewMarkupTests
                 element.Attribute("Property")?.Value == "BorderThickness" && element.Attribute("Value")?.Value == "0"
         );
         Assert.Contains(launcherStyle.Elements(), element => element.Attribute("Property")?.Value == "Template");
-        var optionStyle = menu.Descendants()
+        XElement optionStyle = menu.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style" && element.Attribute("Selector")?.Value == "Button.radial-option"
             );
@@ -298,7 +298,7 @@ public sealed class BoxelViewMarkupTests
                 element.Attribute("Property")?.Value == "Background"
                 && element.Attribute("Value")?.Value == "{DynamicResource RavenAccentMutedBrush}"
         );
-        var optionHoverStyle = menu.Descendants()
+        XElement optionHoverStyle = menu.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && element.Attribute("Selector")?.Value == "Button.radial-option:pointerover"
@@ -320,7 +320,7 @@ public sealed class BoxelViewMarkupTests
             element =>
                 element.Attribute("Property")?.Value == "BorderThickness" && element.Attribute("Value")?.Value == "2"
         );
-        var disabledOptionStyle = menu.Descendants()
+        XElement disabledOptionStyle = menu.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && element.Attribute("Selector")?.Value == "Button.radial-option:disabled"
@@ -345,7 +345,7 @@ public sealed class BoxelViewMarkupTests
             disabledOptionStyle.Elements(),
             element => element.Attribute("Property")?.Value == "Cursor" && element.Attribute("Value")?.Value == "Arrow"
         );
-        var disabledShadeStyle = menu.Descendants()
+        XElement disabledShadeStyle = menu.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && element.Attribute("Selector")?.Value
@@ -359,7 +359,7 @@ public sealed class BoxelViewMarkupTests
             menu.Descendants(),
             element => element.Name.LocalName == "Ellipse" && element.Attribute("Stroke") is not null
         );
-        var menuHitSurface = menu.Descendants()
+        XElement menuHitSurface = menu.Descendants()
             .Single(element =>
                 element
                     .Attributes()
@@ -371,19 +371,19 @@ public sealed class BoxelViewMarkupTests
     [Fact]
     public void ExpectedSystemsInformationUsesOneLocalizedExampleTemplate()
     {
-        var repositoryRoot = FindRepositoryRoot();
+        string repositoryRoot = FindRepositoryRoot();
         var window = XDocument.Load(
             Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "ExpectedSystemsInformationWindow.axaml")
         );
-        var codeBehind = File.ReadAllText(
+        string codeBehind = File.ReadAllText(
             Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "ExpectedSystemsInformationWindow.axaml.cs")
         );
-        var values = window
+        string[] values = window
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
-        var example = window
+        XElement example = window
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "TextBlock"
@@ -425,7 +425,7 @@ public sealed class BoxelViewMarkupTests
         var window = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "VoxStellarInformationWindow.axaml")
         );
-        var values = window
+        string[] values = window
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
@@ -452,7 +452,7 @@ public sealed class BoxelViewMarkupTests
         var library = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "BoxelSearchLibraryWindow.axaml")
         );
-        var values = library
+        string[] values = library
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
@@ -489,7 +489,7 @@ public sealed class BoxelViewMarkupTests
         var window = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "BoxelStatsWindow.axaml")
         );
-        var header = window
+        XElement header = window
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "StackPanel"
@@ -509,13 +509,13 @@ public sealed class BoxelViewMarkupTests
         var window = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "BoxelStatsWindow.axaml")
         );
-        var button = window
+        XElement button = window
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button"
                 && element.Attribute("CommandParameter")?.Value == "{Binding MassCode}"
             );
-        var label = Assert.Single(button.Elements(), element => element.Name.LocalName == "TextBlock");
+        XElement label = Assert.Single(button.Elements(), element => element.Name.LocalName == "TextBlock");
 
         Assert.Null(button.Attribute("Height"));
         Assert.Equal("42", button.Attribute("MinHeight")?.Value);
@@ -527,17 +527,17 @@ public sealed class BoxelViewMarkupTests
     [Fact]
     public void BoxelStatisticsOffersDedicatedAverageExplanation()
     {
-        var repositoryRoot = FindRepositoryRoot();
+        string repositoryRoot = FindRepositoryRoot();
         var window = XDocument.Load(Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "BoxelStatsWindow.axaml"));
         var dialog = XDocument.Load(
             Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "BoxelAverageHelpDialog.axaml")
         );
-        var windowValues = window
+        string[] windowValues = window
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
-        var dialogValues = dialog
+        string[] dialogValues = dialog
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
@@ -560,12 +560,12 @@ public sealed class BoxelViewMarkupTests
     [Fact]
     public void BoxelStatisticsExplainsExactFilteringSettingsAndNativeExport()
     {
-        var repositoryRoot = FindRepositoryRoot();
+        string repositoryRoot = FindRepositoryRoot();
         var window = XDocument.Load(Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "BoxelStatsWindow.axaml"));
-        var codeBehind = File.ReadAllText(
+        string codeBehind = File.ReadAllText(
             Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "BoxelStatsWindow.axaml.cs")
         );
-        var values = window
+        string[] values = window
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
@@ -593,10 +593,12 @@ public sealed class BoxelViewMarkupTests
         Assert.Contains("{Binding StatisticsScopeDescription}", values);
         Assert.Contains("{Binding IsSelectedBoxelScope, Mode=TwoWay}", values);
         Assert.Contains("{Binding IsEntireSavedSearchScope, Mode=TwoWay}", values);
-        var scopeTitle = window.Descendants().Single(element => element.Attribute("Text")?.Value == "STATISTICS SCOPE");
-        var scopePanel = scopeTitle.Ancestors().First(element => element.Name.LocalName == "Border");
+        XElement scopeTitle = window
+            .Descendants()
+            .Single(element => element.Attribute("Text")?.Value == "STATISTICS SCOPE");
+        XElement scopePanel = scopeTitle.Ancestors().First(element => element.Name.LocalName == "Border");
         Assert.Null(scopePanel.Attribute("IsVisible"));
-        var entireSearchScope = scopePanel
+        XElement entireSearchScope = scopePanel
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "RadioButton"
@@ -623,15 +625,15 @@ public sealed class BoxelViewMarkupTests
     [Fact]
     public void BoxelOverlaySettingsContainOnlyAccurateBoxelControls()
     {
-        var settings = LoadView("OverlaySettingsView.axaml");
-        var card = settings
+        XDocument settings = LoadView("OverlaySettingsView.axaml");
+        XElement card = settings
             .Descendants()
             .Single(element =>
                 element
                     .Attributes()
                     .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "BoxelOverlayCard")
             );
-        var values = card.Descendants()
+        string[] values = card.Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();

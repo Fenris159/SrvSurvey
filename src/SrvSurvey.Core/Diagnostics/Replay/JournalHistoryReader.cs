@@ -43,21 +43,21 @@ public sealed class JournalHistoryReader
     public async Task<JournalHistorySnapshot> LoadAsync(string journalDirectory, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
-        var fullDirectory = Path.GetFullPath(journalDirectory);
+        string fullDirectory = Path.GetFullPath(journalDirectory);
         if (!Directory.Exists(fullDirectory))
         {
             return new JournalHistorySnapshot(fullDirectory, [], 0, 0, null, null);
         }
 
-        var paths = Directory
+        string[] paths = Directory
             .EnumerateFiles(fullDirectory, "Journal.*.log", SearchOption.TopDirectoryOnly)
             .OrderBy(path => Path.GetFileName(path), StringComparer.Ordinal)
             .ToArray();
         var recent = new Queue<JournalHistoryEvent>(maximumLoadedEvents);
-        var totalEventCount = 0;
+        int totalEventCount = 0;
         DateTimeOffset? firstTimestamp = null;
         DateTimeOffset? lastTimestamp = null;
-        await foreach (var historyEvent in StreamPathsAsync(paths, cancellationToken))
+        await foreach (JournalHistoryEvent historyEvent in StreamPathsAsync(paths, cancellationToken))
         {
             totalEventCount++;
             firstTimestamp ??= historyEvent.Timestamp;
@@ -90,17 +90,17 @@ public sealed class JournalHistoryReader
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
-        var fullDirectory = Path.GetFullPath(journalDirectory);
+        string fullDirectory = Path.GetFullPath(journalDirectory);
         if (!Directory.Exists(fullDirectory))
         {
             yield break;
         }
 
-        var paths = Directory
+        string[] paths = Directory
             .EnumerateFiles(fullDirectory, "Journal.*.log", SearchOption.TopDirectoryOnly)
             .OrderBy(path => Path.GetFileName(path), StringComparer.Ordinal)
             .ToArray();
-        await foreach (var historyEvent in StreamPathsAsync(paths, cancellationToken))
+        await foreach (JournalHistoryEvent historyEvent in StreamPathsAsync(paths, cancellationToken))
         {
             yield return historyEvent;
         }
@@ -111,8 +111,8 @@ public sealed class JournalHistoryReader
         [EnumeratorCancellation] CancellationToken cancellationToken
     )
     {
-        var eventIndex = 0;
-        foreach (var path in paths)
+        int eventIndex = 0;
+        foreach (string path in paths)
         {
             await using var stream = new FileStream(
                 path,
@@ -130,13 +130,13 @@ public sealed class JournalHistoryReader
                 leaveOpen: false
             );
             var boundedReader = new ReplaySessionManager.BoundedJournalLineReader(reader);
-            var line = await boundedReader.ReadLineAsync(
+            string? line = await boundedReader.ReadLineAsync(
                 ReplaySessionManager.MaximumJournalLineCharacters,
                 cancellationToken
             );
             while (line is not null)
             {
-                var nextLine = await boundedReader.ReadLineAsync(
+                string? nextLine = await boundedReader.ReadLineAsync(
                     ReplaySessionManager.MaximumJournalLineCharacters,
                     cancellationToken
                 );
@@ -153,7 +153,12 @@ public sealed class JournalHistoryReader
                     );
                 }
 
-                var historyEvent = ParseHistoryEvent(line, path, eventIndex, allowIncomplete: nextLine is null);
+                JournalHistoryEvent? historyEvent = ParseHistoryEvent(
+                    line,
+                    path,
+                    eventIndex,
+                    allowIncomplete: nextLine is null
+                );
                 if (historyEvent is null)
                 {
                     break;
@@ -199,10 +204,10 @@ public sealed class JournalHistoryReader
 
         using (document)
         {
-            var root = document.RootElement;
+            JsonElement root = document.RootElement;
             if (
                 root.ValueKind != JsonValueKind.Object
-                || !ReplaySessionManager.TryGetString(root, "event", out var eventName)
+                || !ReplaySessionManager.TryGetString(root, "event", out string? eventName)
             )
             {
                 throw new InvalidDataException($"Journal line {eventIndex + 1:N0} does not contain an event name.");
@@ -223,12 +228,12 @@ public sealed class JournalHistoryReader
     private static DateTimeOffset? GetTimestamp(JsonElement root)
     {
         return
-            ReplaySessionManager.TryGetString(root, "timestamp", out var timestampText)
+            ReplaySessionManager.TryGetString(root, "timestamp", out string? timestampText)
             && DateTimeOffset.TryParse(
                 timestampText,
                 System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.AssumeUniversal,
-                out var timestamp
+                out DateTimeOffset timestamp
             )
             ? timestamp
             : null;
@@ -236,15 +241,15 @@ public sealed class JournalHistoryReader
 
     private static string? GetCommanderName(JsonElement root, string eventName)
     {
-        var propertyName = string.Equals(eventName, "Commander", StringComparison.Ordinal) ? "Name" : "Commander";
-        return ReplaySessionManager.TryGetString(root, propertyName, out var commander) ? commander : null;
+        string propertyName = string.Equals(eventName, "Commander", StringComparison.Ordinal) ? "Name" : "Commander";
+        return ReplaySessionManager.TryGetString(root, propertyName, out string? commander) ? commander : null;
     }
 
     private static string? GetSystemName(JsonElement root)
     {
-        foreach (var propertyName in SystemNamePropertyNames)
+        foreach (string propertyName in SystemNamePropertyNames)
         {
-            if (ReplaySessionManager.TryGetString(root, propertyName, out var systemName))
+            if (ReplaySessionManager.TryGetString(root, propertyName, out string? systemName))
             {
                 return systemName;
             }

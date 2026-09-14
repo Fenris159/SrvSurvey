@@ -76,21 +76,21 @@ public sealed class DesktopBehaviorSettingsStore
 
     private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result)
             ? result
             : fallback;
     }
 
     private static int GetInt32(JsonObject? settings, string propertyName, int fallback)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<int>(out var result) ? result : fallback;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<int>(out int result) ? result : fallback;
     }
 
     private static string? GetString(JsonObject? settings, string propertyName)
     {
         if (
             settings?[propertyName] is not JsonValue value
-            || !value.TryGetValue<string>(out var result)
+            || !value.TryGetValue<string>(out string? result)
             || string.IsNullOrWhiteSpace(result)
         )
         {
@@ -105,9 +105,9 @@ public sealed class DesktopBehaviorSettingsStore
         if (
             settings?["ApplicationWindowPosition"] is not JsonObject position
             || position["X"] is not JsonValue xValue
-            || !xValue.TryGetValue<int>(out var x)
+            || !xValue.TryGetValue<int>(out int x)
             || position["Y"] is not JsonValue yValue
-            || !yValue.TryGetValue<int>(out var y)
+            || !yValue.TryGetValue<int>(out int y)
         )
         {
             return null;

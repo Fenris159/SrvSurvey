@@ -12,7 +12,7 @@ public sealed class VoxStellarSettingsStoreTests : IDisposable
     [Fact]
     public void MissingDocumentKeepsJournalSharingOptedOut()
     {
-        var preferences = CreateStore().Load();
+        VoxStellarPreferences preferences = CreateStore().Load();
 
         Assert.Equal(VoxStellarPreferences.Default, preferences);
         Assert.False(preferences.JournalUploadEnabled);
@@ -22,7 +22,7 @@ public sealed class VoxStellarSettingsStoreTests : IDisposable
     public void PreferenceRoundTripsWithoutRemovingOtherSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Theme\":\"blue-dark\"}");
         var store = new VoxStellarSettingsStore(path);
 

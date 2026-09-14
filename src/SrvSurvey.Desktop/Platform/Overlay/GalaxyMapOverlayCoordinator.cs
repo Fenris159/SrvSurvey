@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -132,7 +133,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
-            var preparation = platform.PreparePassiveWindow(overlay);
+            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
             if (!preparation.IsClickThrough)
             {
                 isSuppressed = true;
@@ -153,14 +154,14 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
     private void PositionWindow(Window window, PixelRect gameBounds)
     {
         OverlayThemeResources.ApplyOpacity(window, overlayLayout, PlotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
+        Screen? screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
-        var position =
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
+        PixelPoint position =
             overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopLeft(gameBounds, size, 8);
         if (window.Position != position)
@@ -171,7 +172,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
 
     private void CloseWindow()
     {
-        var overlay = window;
+        GalaxyMapOverlayWindow? overlay = window;
         window = null;
         overlay?.Close();
     }

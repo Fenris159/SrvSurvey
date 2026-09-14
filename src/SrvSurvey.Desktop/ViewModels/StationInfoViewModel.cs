@@ -109,7 +109,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         get
         {
-            var destination = status?.Destination;
+            StatusDestination? destination = status?.Destination;
             if (
                 summary is null
                 || destination is null
@@ -355,7 +355,11 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         StatusMessage = $"Loading stations in {requestedSystemName}...";
         try
         {
-            var result = await summaryClient.GetAsync(requestedSystemName, requestedSystemAddress, cancellation.Token);
+            SystemSummaryLoadResult result = await summaryClient.GetAsync(
+                requestedSystemName,
+                requestedSystemAddress,
+                cancellation.Token
+            );
             if (cancellation.IsCancellationRequested || !ReferenceEquals(loadCancellation, cancellation))
             {
                 return;
@@ -431,7 +435,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private void RefreshStationCollections()
     {
-        var station = SelectedStation;
+        SystemStationSummary? station = SelectedStation;
         if (ReferenceEquals(projectedStation, station))
         {
             return;

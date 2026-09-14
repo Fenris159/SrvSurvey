@@ -19,10 +19,10 @@ public static class ShipLockerFileReader
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumAttempts, 1);
-        var delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
+        TimeSpan delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
         Exception? lastException = null;
 
-        for (var attempt = 1; attempt <= maximumAttempts; attempt++)
+        for (int attempt = 1; attempt <= maximumAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -37,11 +37,11 @@ public static class ShipLockerFileReader
                 );
                 using var content = new MemoryStream();
                 await stream.CopyToAsync(content, cancellationToken).ConfigureAwait(false);
-                var bytes = content.ToArray();
-                var data =
+                byte[] bytes = content.ToArray();
+                ShipLockerData data =
                     JsonSerializer.Deserialize<ShipLockerData>(bytes, SerializerOptions)
                     ?? throw new JsonException("ShipLocker.json contained no JSON value.");
-                var items = Section("Items", data.Items)
+                ShipLockerItem[] items = Section("Items", data.Items)
                     .Concat(Section("Components", data.Components))
                     .Concat(Section("Consumables", data.Consumables))
                     .Concat(Section("Data", data.Data))
@@ -58,7 +58,7 @@ public static class ShipLockerFileReader
                     .ThenBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
                 var snapshot = new ShipLockerSnapshot(data.Timestamp, data.EventName ?? string.Empty, items);
-                var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
+                string hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
                 return new ShipLockerReadResult(snapshot, hash, null, attempt);
             }
             catch (Exception exception)

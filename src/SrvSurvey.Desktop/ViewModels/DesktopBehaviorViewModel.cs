@@ -124,7 +124,7 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
                 .DistinctBy(option => option.Id, MonitorIdComparer)
         );
 
-        var preferredMonitorId = preferences.PreferredMonitorId;
+        string? preferredMonitorId = preferences.PreferredMonitorId;
         if (
             preferredMonitorId is not null
             && !options.Any(option => string.Equals(option.Id, preferredMonitorId, MonitorIdComparison))
@@ -181,7 +181,7 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
 
     private bool TryFocusGame(string reason)
     {
-        var focused = gameWindowSwitcher.TryActivateCurrent();
+        bool focused = gameWindowSwitcher.TryActivateCurrent();
         StatusMessage = focused
             ? string.Empty
             : "Elite Dangerous could not be focused after " + reason + "; no matching game window was available.";
@@ -195,7 +195,7 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var applicationWindowPreferencesChanged =
+        bool applicationWindowPreferencesChanged =
             !string.Equals(preferences.PreferredMonitorId, next.PreferredMonitorId, MonitorIdComparison)
             || preferences.ApplicationWindowScalePercent != next.ApplicationWindowScalePercent;
         preferences = next;

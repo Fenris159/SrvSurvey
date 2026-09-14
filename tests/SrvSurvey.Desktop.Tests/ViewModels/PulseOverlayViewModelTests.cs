@@ -15,8 +15,8 @@ public sealed class PulseOverlayViewModelTests : IDisposable
     public void LiveFileActivityPulsesForTenSecondsButBootstrapDoesNot()
     {
         var time = new MutableTimeProvider(new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero));
-        var viewModel = CreateViewModel(time);
-        var journalEvent = Parse("{\"event\":\"FSDJump\"}");
+        PulseOverlayViewModel viewModel = CreateViewModel(time);
+        JournalEventEnvelope journalEvent = Parse("{\"event\":\"FSDJump\"}");
 
         viewModel.ApplyUpdate([journalEvent], null, true);
         Assert.Equal(0, viewModel.PulseHeight);
@@ -37,7 +37,7 @@ public sealed class PulseOverlayViewModelTests : IDisposable
     public void MapsHideTheOverlayWithoutDiscardingThePulse()
     {
         var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
-        var viewModel = CreateViewModel(time);
+        PulseOverlayViewModel viewModel = CreateViewModel(time);
 
         viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap }, false);
 
@@ -63,7 +63,7 @@ public sealed class PulseOverlayViewModelTests : IDisposable
     public void ScoIndicatorTracksActiveCooldownAndReadyStates()
     {
         var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
-        var viewModel = CreateViewModel(time);
+        PulseOverlayViewModel viewModel = CreateViewModel(time);
         var active = new EliteStatus { Flags2 = StatusFlags2.SupercruiseOverdrive };
 
         viewModel.ApplyUpdate([], active, false);
@@ -90,7 +90,7 @@ public sealed class PulseOverlayViewModelTests : IDisposable
     public void ReadyEditorPreviewPreservesTheIntentionalOneSecondTransition()
     {
         var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
-        var viewModel = CreateViewModel(time);
+        PulseOverlayViewModel viewModel = CreateViewModel(time);
 
         viewModel.InstallEditorPreview(PulseEditorPreviewState.ScoReady);
 
@@ -110,7 +110,7 @@ public sealed class PulseOverlayViewModelTests : IDisposable
     public void DisabledPreferencePersistsAndSuppressesOverlay()
     {
         var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
-        var viewModel = CreateViewModel(time);
+        PulseOverlayViewModel viewModel = CreateViewModel(time);
 
         viewModel.Enabled = false;
 
@@ -123,7 +123,7 @@ public sealed class PulseOverlayViewModelTests : IDisposable
     [Fact]
     public void HideJournalWriteTimerInvertsEnabledAndPersists()
     {
-        var viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
+        PulseOverlayViewModel viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
         Assert.True(viewModel.Enabled);
         Assert.False(viewModel.HideJournalWriteTimer);
 
@@ -161,7 +161,10 @@ public sealed class PulseOverlayViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 

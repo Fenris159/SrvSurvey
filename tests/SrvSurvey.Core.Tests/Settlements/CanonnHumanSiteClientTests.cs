@@ -10,7 +10,7 @@ public sealed class CanonnHumanSiteClientTests
     [Fact]
     public void ParseReadsLegacyEnvelopeAndKeepsFirstMarketSubmission()
     {
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(
             new object[]
             {
                 new
@@ -41,9 +41,9 @@ public sealed class CanonnHumanSiteClientTests
             }
         );
 
-        var result = CanonnHumanSiteClient.Parse(bytes, 42);
+        CanonnHumanSiteLookupResult result = CanonnHumanSiteClient.Parse(bytes, 42);
 
-        var station = Assert.Single(result.Stations);
+        HumanSiteKnowledge station = Assert.Single(result.Stations);
         Assert.Equal("Haberlandt Survey", station.Name);
         Assert.Equal(12345, station.MarketId);
         Assert.Equal(4, station.SubType);
@@ -67,7 +67,7 @@ public sealed class CanonnHumanSiteClientTests
         var handler = new StubHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
         var client = new CanonnHumanSiteClient(new HttpClient(handler), new Uri("https://example.test/query/"));
 
-        var result = await client.GetStationsAsync(42);
+        CanonnHumanSiteLookupResult result = await client.GetStationsAsync(42);
 
         Assert.Empty(result.Stations);
         Assert.Empty(result.Warnings);
@@ -106,13 +106,13 @@ public sealed class CanonnHumanSiteClientTests
             new HumanSiteLandingPads(2, 0, 1)
         );
 
-        var result = await client.PublishStationAsync(submission);
+        string result = await client.PublishStationAsync(submission);
 
         Assert.Equal("accepted", result);
         Assert.Equal(HttpMethod.Post, handler.Method);
         Assert.Equal(new Uri("https://example.test/publish"), handler.RequestUri);
         using var payload = JsonDocument.Parse(handler.Content!);
-        var root = payload.RootElement;
+        JsonElement root = payload.RootElement;
         Assert.Equal("2.0.95.0", root.GetProperty("clientVer").GetString());
         Assert.Equal(12345, root.GetProperty("marketId").GetInt64());
         Assert.Equal(275, root.GetProperty("heading").GetDouble());

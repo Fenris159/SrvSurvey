@@ -7,14 +7,14 @@ public sealed class ReleaseUpdateServiceTests
     [Fact]
     public async Task CheckAsyncReportsNewerPackageForTheCurrentRuntime()
     {
-        var release = CreateRelease(new Version(2, 0, 95, 23));
+        CrossPlatformRelease release = CreateRelease(new Version(2, 0, 95, 23));
         var service = new ReleaseUpdateService(
             new StubReleaseClient(release),
             "win-x64",
             new Uri("https://example.test/releases")
         );
 
-        var result = await service.CheckAsync(new Version(2, 0, 95, 0), ReleaseChannel.Development);
+        ReleaseUpdateResult result = await service.CheckAsync(new Version(2, 0, 95, 0), ReleaseChannel.Development);
 
         Assert.True(result.IsUpdateAvailable);
         Assert.Equal(ReleaseVersion.Parse("2.0.95.23"), result.LatestVersion);
@@ -33,7 +33,7 @@ public sealed class ReleaseUpdateServiceTests
             "win-x64"
         );
 
-        var result = await service.CheckAsync(new Version(2, 0, 95, 22), ReleaseChannel.Development);
+        ReleaseUpdateResult result = await service.CheckAsync(new Version(2, 0, 95, 22), ReleaseChannel.Development);
 
         Assert.False(result.IsUpdateAvailable);
         Assert.Null(result.Package);
@@ -49,7 +49,7 @@ public sealed class ReleaseUpdateServiceTests
         );
         var current = new Version(2, 0, 95, 0);
 
-        var result = await service.CheckAsync(current, ReleaseChannel.Development);
+        ReleaseUpdateResult result = await service.CheckAsync(current, ReleaseChannel.Development);
 
         Assert.False(result.IsUpdateAvailable);
         Assert.Null(result.LatestVersion);

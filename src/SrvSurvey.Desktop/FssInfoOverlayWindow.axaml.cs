@@ -19,7 +19,7 @@ public sealed partial class FssInfoOverlayWindow : Window
 
     private static SystemSurveyOverlayViewModel CreateDesignViewModel()
     {
-        var settingsPath = Path.Combine(
+        string settingsPath = Path.Combine(
             Path.GetTempPath(),
             "SrvSurvey-SystemSurvey-Overlay-Design",
             "ui-settings.json"

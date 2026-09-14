@@ -90,9 +90,9 @@ public sealed class SurfaceSurveyJournalTracker
             status = nextStatus;
         }
 
-        var mutationCount = 0;
+        int mutationCount = 0;
         var warnings = new List<string>();
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -164,7 +164,7 @@ public sealed class SurfaceSurveyJournalTracker
         CancellationToken cancellationToken
     )
     {
-        var message = GetString(root, "Message")?.Trim().ToLowerInvariant();
+        string? message = GetString(root, "Message")?.Trim().ToLowerInvariant();
         if (
             string.IsNullOrWhiteSpace(message)
             || !(message.StartsWith('+') || message.StartsWith('-') || message.StartsWith('='))
@@ -173,7 +173,7 @@ public sealed class SurfaceSurveyJournalTracker
             return 0;
         }
 
-        if (status is null || !TryCreateBodyContext(session, out var context))
+        if (status is null || !TryCreateBodyContext(session, out SystemSurfaceContext? context))
         {
             return 0;
         }
@@ -184,27 +184,27 @@ public sealed class SurfaceSurveyJournalTracker
             return 1;
         }
 
-        var prefixLength = message.StartsWith("--", StringComparison.Ordinal) ? 2 : 1;
-        var requestedName = message[prefixLength..].Trim();
+        int prefixLength = message.StartsWith("--", StringComparison.Ordinal) ? 2 : 1;
+        string requestedName = message[prefixLength..].Trim();
         if (requestedName.Length == 0)
         {
             return 0;
         }
 
-        var loaded = await store.LoadBodyAsync(context, cancellationToken).ConfigureAwait(false);
-        var name = ResolveBookmarkName(requestedName, loaded.Snapshot?.Bookmarks);
+        SystemSurfaceLoadResult loaded = await store.LoadBodyAsync(context, cancellationToken).ConfigureAwait(false);
+        string name = ResolveBookmarkName(requestedName, loaded.Snapshot?.Bookmarks);
         if (message.StartsWith("--", StringComparison.Ordinal))
         {
             await store.RemoveBookmarkGroupAsync(context, name, cancellationToken).ConfigureAwait(false);
             return 1;
         }
 
-        if (!TryGetStatusCoordinate(status, out var location))
+        if (!TryGetStatusCoordinate(status, out SurfaceCoordinate location))
         {
             return 0;
         }
 
-        var result = message[0] switch
+        SurfaceBookmarkMutationResult? result = message[0] switch
         {
             '+' => await store
                 .AddBookmarkAsync(context, name, location, cancellationToken: cancellationToken)
@@ -225,7 +225,7 @@ public sealed class SurfaceSurveyJournalTracker
         IReadOnlyDictionary<string, IReadOnlyList<SurfaceCoordinate>>? bookmarks
     )
     {
-        var existing = bookmarks?.Keys.FirstOrDefault(name =>
+        string? existing = bookmarks?.Keys.FirstOrDefault(name =>
             string.Equals(name, requestedName, StringComparison.OrdinalIgnoreCase)
         );
         if (existing is not null)
@@ -233,7 +233,7 @@ public sealed class SurfaceSurveyJournalTracker
             return existing;
         }
 
-        if (!GenusShortNames.TryGetValue(requestedName, out var displayName))
+        if (!GenusShortNames.TryGetValue(requestedName, out string? displayName))
         {
             return requestedName;
         }
@@ -399,14 +399,15 @@ public sealed class SurfaceSurveyJournalTracker
 
         if (
             options.SkipAnalyzedCompositionScans
-            && options.AnalyzedSpeciesByBodyId?.TryGetValue(context.BodyId, out var analyzedSpecies) == true
+            && options.AnalyzedSpeciesByBodyId?.TryGetValue(context.BodyId, out IReadOnlySet<string>? analyzedSpecies)
+                == true
             && analyzedSpecies.Contains(reference.SpeciesName)
         )
         {
             return 0;
         }
 
-        var result = await store
+        SurfaceBookmarkMutationResult result = await store
             .AddBookmarkAsync(
                 context,
                 ExobiologyReferenceCatalog.GetGenusName(reference),
@@ -425,12 +426,13 @@ public sealed class SurfaceSurveyJournalTracker
         CancellationToken cancellationToken
     )
     {
-        var scanType = GetString(root, "ScanType");
-        var genus = GetString(root, "Genus");
-        var species = GetString(root, "Species");
-        var reference = catalog.FindByVariant(GetString(root, "Variant")) ?? catalog.FindBySpecies(species);
-        var context = CreateBodyContext(session, root);
-        var location = GetCurrentCoordinate();
+        string? scanType = GetString(root, "ScanType");
+        string? genus = GetString(root, "Genus");
+        string? species = GetString(root, "Species");
+        ExobiologyReference? reference =
+            catalog.FindByVariant(GetString(root, "Variant")) ?? catalog.FindBySpecies(species);
+        SystemSurfaceContext? context = CreateBodyContext(session, root);
+        SurfaceCoordinate? location = GetCurrentCoordinate();
         if (
             string.IsNullOrWhiteSpace(scanType)
             || string.IsNullOrWhiteSpace(genus)
@@ -447,8 +449,8 @@ public sealed class SurfaceSurveyJournalTracker
             return 0;
         }
 
-        var mutations = 0;
-        var activeHash = $"{context.SystemAddress}|{context.BodyId}|{species}";
+        int mutations = 0;
+        string activeHash = $"{context.SystemAddress}|{context.BodyId}|{species}";
         if (lastOrganicScan is not null && !string.Equals(lastOrganicScan, activeHash, StringComparison.Ordinal))
         {
             mutations += await SaveAbandonedSamplesAsBookmarksAsync(context, cancellationToken).ConfigureAwait(false);
@@ -469,7 +471,7 @@ public sealed class SurfaceSurveyJournalTracker
 
         if (options.AutoRemoveTrackerOnSampling)
         {
-            var removal = await store
+            SurfaceBookmarkMutationResult removal = await store
                 .RemoveBookmarkAsync(
                     context,
                     genus,
@@ -499,7 +501,7 @@ public sealed class SurfaceSurveyJournalTracker
         }
         else if (scanType == "Analyse")
         {
-            var completed = new[] { sample, scanOne, scanTwo }
+            SurfaceBioScan[] completed = new[] { sample, scanOne, scanTwo }
                 .Where(candidate => candidate is not null)
                 .Cast<BioSampleSnapshot>()
                 .Select(candidate => ToSurfaceScan(candidate, context.BodyName))
@@ -525,8 +527,8 @@ public sealed class SurfaceSurveyJournalTracker
         CancellationToken cancellationToken
     )
     {
-        var mutations = 0;
-        foreach (var sample in new[] { scanOne, scanTwo })
+        int mutations = 0;
+        foreach (BioSampleSnapshot? sample in new[] { scanOne, scanTwo })
         {
             if (
                 sample is null
@@ -537,7 +539,7 @@ public sealed class SurfaceSurveyJournalTracker
                 continue;
             }
 
-            var result = await store
+            SurfaceBookmarkMutationResult result = await store
                 .AddBookmarkAsync(
                     context,
                     sample.Genus,
@@ -569,10 +571,10 @@ public sealed class SurfaceSurveyJournalTracker
 
     private SystemSurfaceContext? CreateBodyContext(SurfaceSurveySessionContext session, JsonElement root)
     {
-        var bodyId = GetInt32(root, "BodyID") ?? GetInt32(root, "Body");
-        var bodyName = GetString(root, "Body") ?? status?.BodyName;
-        var systemAddress = GetInt64(root, "SystemAddress") ?? session.SystemAddress;
-        var systemName = GetString(root, "StarSystem") ?? session.SystemName;
+        int? bodyId = GetInt32(root, "BodyID") ?? GetInt32(root, "Body");
+        string? bodyName = GetString(root, "Body") ?? status?.BodyName;
+        long systemAddress = GetInt64(root, "SystemAddress") ?? session.SystemAddress;
+        string systemName = GetString(root, "StarSystem") ?? session.SystemName;
         if (
             bodyId is null
             || string.IsNullOrWhiteSpace(bodyName)
@@ -583,7 +585,7 @@ public sealed class SurfaceSurveyJournalTracker
             return null;
         }
 
-        var radius = status?.PlanetRadius is > 0 ? (double)status.PlanetRadius : 0;
+        double radius = status?.PlanetRadius is > 0 ? (double)status.PlanetRadius : 0;
         return new SystemSurfaceContext(
             session.FrontierId,
             session.CommanderName,
@@ -615,8 +617,8 @@ public sealed class SurfaceSurveyJournalTracker
 
     private static SurfaceCoordinate? GetCoordinate(JsonElement root)
     {
-        var latitude = GetDouble(root, "Latitude");
-        var longitude = GetDouble(root, "Longitude");
+        double? latitude = GetDouble(root, "Latitude");
+        double? longitude = GetDouble(root, "Longitude");
         if (latitude is null || longitude is null)
         {
             return null;
@@ -634,7 +636,7 @@ public sealed class SurfaceSurveyJournalTracker
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -642,7 +644,7 @@ public sealed class SurfaceSurveyJournalTracker
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
             : null;
@@ -650,12 +652,12 @@ public sealed class SurfaceSurveyJournalTracker
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int number))
         {
             return number;
         }
@@ -669,12 +671,12 @@ public sealed class SurfaceSurveyJournalTracker
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long number))
         {
             return number;
         }
@@ -689,9 +691,9 @@ public sealed class SurfaceSurveyJournalTracker
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
+            && value.TryGetDouble(out double number)
             ? number
             : null;
     }

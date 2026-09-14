@@ -72,10 +72,10 @@ internal static class BoxelSectorNameResolver
         );
 
         // Cache the run offsets of all prefixes and C1 infixes
-        _prefix_offsets = new();
-        _c1_infix_offsets = new();
+        _prefix_offsets = [];
+        _c1_infix_offsets = [];
         int cnt = 0;
-        foreach (var p in cx_prefixes)
+        foreach (string p in cx_prefixes)
         {
             int plen = _get_prefix_run_length(p);
             _prefix_offsets[p] = new int[] { cnt, plen };
@@ -83,7 +83,7 @@ internal static class BoxelSectorNameResolver
         }
 
         cnt = 0;
-        foreach (var i in c1_infixes_s1)
+        foreach (string i in c1_infixes_s1)
         {
             int ilen = _c1_get_infix_run_length(i);
             _c1_infix_offsets[i] = new int[] { cnt, ilen };
@@ -91,7 +91,7 @@ internal static class BoxelSectorNameResolver
         }
 
         cnt = 0;
-        foreach (var i in c1_infixes_s2)
+        foreach (string i in c1_infixes_s2)
         {
             int ilen = _c1_get_infix_run_length(i);
             _c1_infix_offsets[i] = new int[] { cnt, ilen };
@@ -106,15 +106,15 @@ internal static class BoxelSectorNameResolver
     {
         // Hand-authored sectors are not currently resolved by this port.
 
-        var offset = get_offset_from_name(sectorName);
+        long offset = get_offset_from_name(sectorName);
         if (offset == -1)
         {
             return null;
         }
 
-        var x = (offset % galaxy_size[0]);
-        var y = (offset / galaxy_size[0]) % galaxy_size[1];
-        var z = (offset / (galaxy_size[0] * galaxy_size[1]));
+        long x = (offset % galaxy_size[0]);
+        long y = (offset / galaxy_size[0]) % galaxy_size[1];
+        long z = (offset / (galaxy_size[0] * galaxy_size[1]));
 
         return new SectorCoordinate((int)x, (int)y, (int)z);
     }
@@ -124,13 +124,13 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     private static long get_offset_from_name(string sectorName)
     {
-        var frags = BoxelSectorNameResolver.get_sector_fragments(sectorName)!;
+        List<string> frags = BoxelSectorNameResolver.get_sector_fragments(sectorName)!;
         if (frags == null)
         {
             return -1;
         }
 
-        var sc = _get_sector_class(frags);
+        int sc = _get_sector_class(frags);
         if (sc == 2)
         {
             return BoxelSectorNameResolver._c2_get_offset_from_name(frags);
@@ -871,11 +871,11 @@ internal static class BoxelSectorNameResolver
     private static List<string>? get_sector_fragments(string sectorName)
     {
         var fragments = new List<string>();
-        var name = PascalAllWords(sectorName).Replace(" ", "");
+        string name = PascalAllWords(sectorName).Replace(" ", "");
 
         while (!string.IsNullOrWhiteSpace(name))
         {
-            var match = cx_fragments.FirstOrDefault(p => name.StartsWith(p));
+            string? match = cx_fragments.FirstOrDefault(p => name.StartsWith(p, StringComparison.Ordinal));
             if (match == null)
             {
                 return null;
@@ -994,13 +994,13 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     private static int _get_prefix_run_length(string prefix)
     {
-        var len = cx_prefix_length_overrides.TryGetValue(prefix, out var value) ? value : cx_prefix_length_default;
+        int len = cx_prefix_length_overrides.TryGetValue(prefix, out int value) ? value : cx_prefix_length_default;
         return len;
     }
 
     private static string _get_entry_from_offset(int offset, IEnumerable<string> keys, Dictionary<string, int[]> data)
     {
-        var txt = keys.FirstOrDefault(c => offset >= data[c][0] && offset < (data[c][0] + data[c][1]));
+        string? txt = keys.FirstOrDefault(c => offset >= data[c][0] && offset < (data[c][0] + data[c][1]));
         return txt!;
     }
 
@@ -1010,7 +1010,7 @@ internal static class BoxelSectorNameResolver
     private static int _get_offset_from_pos(SectorCoordinate pos, int[] galSize)
     {
         // Get the sector offset of a position
-        var offset = pos.z * galSize[1] * galSize[0];
+        int offset = pos.z * galSize[1] * galSize[0];
         offset += pos.y * galSize[0];
         offset += pos.x;
         return offset;
@@ -1061,9 +1061,9 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     private static int _c1_get_infix_run_length(string frag)
     {
-        var def_len = c1_infixes_s1.Contains(frag) ? c1_infix_s1_length_default : c1_infix_s2_length_default;
+        int def_len = c1_infixes_s1.Contains(frag) ? c1_infix_s1_length_default : c1_infix_s2_length_default;
 
-        var len = c1_infix_length_overrides.GetValueOrDefault(frag, def_len);
+        int len = c1_infix_length_overrides.GetValueOrDefault(frag, def_len);
         return len;
     }
 
@@ -1097,7 +1097,7 @@ internal static class BoxelSectorNameResolver
     {
         try
         {
-            var sufs = _get_suffixes(frags.GetRange(0, frags.Count - 1), true);
+            List<string> sufs = _get_suffixes(frags.GetRange(0, frags.Count - 1), true);
 
             // STEP 1: Acquire the offset for suffix runs, and adjust it
             int suf_offset = sufs.IndexOf(frags[^1]);
@@ -1175,13 +1175,13 @@ internal static class BoxelSectorNameResolver
         (prefixCnt, curOffset) = Divmod(offset, cx_prefix_total_run_length);
 
         // Work out which prefix we're currently within
-        var prefix = _get_entry_from_offset(curOffset, _prefix_offsets.Keys, _prefix_offsets);
+        string prefix = _get_entry_from_offset(curOffset, _prefix_offsets.Keys, _prefix_offsets);
 
         // Put us in that prefix's space
         curOffset -= _prefix_offsets[prefix][0];
 
         // Work out which set of infix1s we should be using, and its total length
-        var infix1s = _c1_get_infixes(new List<string> { prefix });
+        string[] infix1s = _c1_get_infixes([prefix]);
         int infix1TotalLen = _c1_get_infix_total_run_length(infix1s[0]);
 
         // Work out where we are in infix1 space, keep the remaining offset
@@ -1189,14 +1189,14 @@ internal static class BoxelSectorNameResolver
         (infix1Cnt, curOffset) = Divmod(prefixCnt * _get_prefix_run_length(prefix) + curOffset, infix1TotalLen);
 
         // Find which infix1 we're currently in
-        var infix1 = _get_entry_from_offset(curOffset, infix1s, _c1_infix_offsets);
+        string infix1 = _get_entry_from_offset(curOffset, infix1s, _c1_infix_offsets);
 
         // Put us in that infix1's space
         curOffset -= _c1_infix_offsets[infix1][0];
 
         // Work out which set of suffixes we're using
         int infix1RunLen = _c1_get_infix_run_length(infix1);
-        var sufs = _get_suffixes(new List<string> { prefix, infix1 }, true);
+        List<string> sufs = _get_suffixes([prefix, infix1], true);
 
         // Get the index of the next entry in that list, in infix1 space
         int nextIdx = (infix1RunLen * infix1Cnt) + curOffset;
@@ -1208,7 +1208,7 @@ internal static class BoxelSectorNameResolver
         if (nextIdx >= sufs.Count)
         {
             // Work out which set of infix2s we should be using
-            var infix2s = _c1_get_infixes(frags);
+            string[] infix2s = _c1_get_infixes(frags);
             int infix2TotalLen = _c1_get_infix_total_run_length(infix2s[0]);
 
             // Work out where we are in infix2 space, still keep the remaining offset
@@ -1216,14 +1216,14 @@ internal static class BoxelSectorNameResolver
             (infix2Cnt, curOffset) = Divmod(infix1Cnt * _c1_get_infix_run_length(infix1) + curOffset, infix2TotalLen);
 
             // Find which infix2 we're currently in
-            var infix2 = _get_entry_from_offset(curOffset, infix2s, _c1_infix_offsets);
+            string infix2 = _get_entry_from_offset(curOffset, infix2s, _c1_infix_offsets);
 
             // Put us in this infix2's space
             curOffset -= _c1_infix_offsets[infix2][0];
 
             // Recalculate the next system index based on the infix2 data
             int infix2RunLen = _c1_get_infix_run_length(infix2);
-            sufs = _get_suffixes(new List<string> { prefix, infix1, infix2 }, true);
+            sufs = _get_suffixes([prefix, infix1, infix2], true);
             nextIdx = (infix2RunLen * infix2Cnt) + curOffset;
 
             // Add our infix2 to the output
@@ -1237,32 +1237,32 @@ internal static class BoxelSectorNameResolver
 
     private static string? _c2_get_name(SectorCoordinate pos)
     {
-        var offset = _get_offset_from_pos(pos, galaxy_size);
+        int offset = _get_offset_from_pos(pos, galaxy_size);
         return _c2_get_name_from_offset(offset);
     }
 
     private static string? _c2_get_name_from_offset(int offset)
     {
-        var tt = Deinterleave(offset, 32);
-        var cur_idx0 = tt.Item1;
-        var cur_idx1 = tt.Item2;
+        (int, int) tt = Deinterleave(offset, 32);
+        int cur_idx0 = tt.Item1;
+        int cur_idx1 = tt.Item2;
 
         // Get prefixes/suffixes from the individual offsets
-        var p0 = _get_entry_from_offset(cur_idx0, _prefix_offsets.Keys, _prefix_offsets);
-        var p1 = _get_entry_from_offset(cur_idx1, _prefix_offsets.Keys, _prefix_offsets);
-        var s0 = _get_suffixes(p0)[cur_idx0 - _prefix_offsets[p0][0]];
-        var s1 = _get_suffixes(p1)[cur_idx1 - _prefix_offsets[p1][0]];
+        string p0 = _get_entry_from_offset(cur_idx0, _prefix_offsets.Keys, _prefix_offsets);
+        string p1 = _get_entry_from_offset(cur_idx1, _prefix_offsets.Keys, _prefix_offsets);
+        string s0 = _get_suffixes(p0)[cur_idx0 - _prefix_offsets[p0][0]];
+        string s1 = _get_suffixes(p1)[cur_idx1 - _prefix_offsets[p1][0]];
 
         // Done!
-        var name = format_sector_name(new List<string> { p0, s0, p1, s1 });
+        string? name = format_sector_name([p0, s0, p1, s1]);
         return name;
     }
 
     public static int _c2_get_offset_from_name(List<string> frags)
     {
-        var i1 = _prefix_offsets[frags[0]][0] + _get_suffixes(frags[0]).IndexOf(frags[1]);
-        var i2 = _prefix_offsets[frags[2]][0] + _get_suffixes(frags[2]).IndexOf(frags[3]);
-        var offset = Interleave(i1, i2, 32);
+        int i1 = _prefix_offsets[frags[0]][0] + _get_suffixes(frags[0]).IndexOf(frags[1]);
+        int i2 = _prefix_offsets[frags[2]][0] + _get_suffixes(frags[2]).IndexOf(frags[3]);
+        int offset = Interleave(i1, i2, 32);
         return offset;
     }
 
@@ -1312,9 +1312,9 @@ internal static class BoxelSectorNameResolver
             throw new ArgumentOutOfRangeException(nameof(bits));
         }
 
-        var shifted = value << bits;
-        var mask = bits == 0 ? 0 : (1L << bits) - 1;
-        var tail = (long)newData & mask;
+        long shifted = value << bits;
+        long mask = bits == 0 ? 0 : (1L << bits) - 1;
+        long tail = (long)newData & mask;
         return shifted | tail;
     }
 

@@ -14,8 +14,8 @@ public sealed class RavenServiceSettingsStore
     public Uri? LoadServiceUri()
     {
         var settings = documentStore.Load()["RavenService"] as JsonObject;
-        var value =
-            settings?["ServiceUri"] is JsonValue serviceUri && serviceUri.TryGetValue<string>(out var text)
+        string? value =
+            settings?["ServiceUri"] is JsonValue serviceUri && serviceUri.TryGetValue<string>(out string? text)
                 ? text
                 : null;
         return NormalizeServiceUri(value);
@@ -25,7 +25,7 @@ public sealed class RavenServiceSettingsStore
     {
         if (
             string.IsNullOrWhiteSpace(value)
-            || !Uri.TryCreate(value.Trim(), UriKind.Absolute, out var uri)
+            || !Uri.TryCreate(value.Trim(), UriKind.Absolute, out Uri? uri)
             || uri.Host.Length == 0
             || uri.Scheme is not ("http" or "https")
         )

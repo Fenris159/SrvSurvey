@@ -194,7 +194,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     private static string SessionStateLabel(MiningSession session) => session.PausedAt is null ? "Active" : "Paused";
 
-    private string CapacityLabel => capacity > 0 ? capacity.ToString("N0") : "unknown";
+    private string CapacityLabel => capacity > 0 ? capacity.ToString("N0", CultureInfo.CurrentCulture) : "unknown";
     public string CargoSummary =>
         cargo is null
             ? "Cargo unavailable"
@@ -202,11 +202,11 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public IReadOnlyList<CargoItem> Cargo => cargoSorter.Apply(cargo?.Inventory ?? []);
     public IReadOnlyList<MiningMaterialSummary> Materials =>
         materialsSorter.Apply(Current?.Summarize(Settings.Thresholds) ?? []);
-    private IReadOnlyList<MiningCollection>? cachedEngineeringMaterials;
-    public IReadOnlyList<MiningCollection> EngineeringMaterials =>
+    private IReadOnlyList<MiningCollectionEntry>? cachedEngineeringMaterials;
+    public IReadOnlyList<MiningCollectionEntry> EngineeringMaterials =>
         engineeringSorter.Apply(cachedEngineeringMaterials ??= ReadEngineeringMaterials());
 
-    private MiningCollection[] ReadEngineeringMaterials() =>
+    private MiningCollectionEntry[] ReadEngineeringMaterials() =>
         Current?.Collections.Where(c => c.Engineering).ToArray() ?? [];
 
     private IReadOnlyList<MiningProspect>? cachedProspects;
@@ -341,13 +341,13 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     private MiningNotice[] ReadVisibleNotices()
     {
-        var active = Notices
+        MiningNotice[] active = Notices
             .Where(n =>
                 clock.GetUtcNow() - n.Time < TimeSpan.FromSeconds(Math.Clamp(Settings.NotificationSeconds, 3, 120))
             )
             .ToArray();
         var selected = new List<MiningNotice>(5);
-        foreach (var notice in active)
+        foreach (MiningNotice? notice in active)
         {
             if (selected.Count == 5)
             {
@@ -359,7 +359,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
                 selected.Add(notice);
             }
         }
-        foreach (var notice in active)
+        foreach (MiningNotice? notice in active)
         {
             if (selected.Count == 5)
             {
@@ -406,12 +406,12 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
 
         eliteStatus = currentStatus;
-        var cargoChanged = !Equals(cargo, currentCargo);
+        bool cargoChanged = !Equals(cargo, currentCargo);
         cargo = currentCargo;
-        var dirty = false;
-        var previousNotice = state.Notices.FirstOrDefault();
+        bool dirty = false;
+        MiningNotice? previousNotice = state.Notices.FirstOrDefault();
         // Preserve journal order: the outer projection represents the end of this batch.
-        foreach (var entry in update.JournalEvents)
+        foreach (JournalEventEnvelope entry in update.JournalEvents)
         {
             ApplyContext(entry);
             dirty |= state.Apply(entry, update.IsBootstrapRead, system, body, ship, position);
@@ -442,7 +442,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     private void ApplyContext(JournalEventEnvelope entry)
     {
-        var json = entry.Payload;
+        JsonElement json = entry.Payload;
         if (entry.EventName is "Location" or "FSDJump" or "CarrierJump")
         {
             system = Text(json, "StarSystem");
@@ -457,7 +457,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         if (entry.EventName == "Loadout")
         {
             ship = Text(json, "Ship");
-            if (json.TryGetProperty("CargoCapacity", out var c) && c.TryGetInt32(out var count))
+            if (json.TryGetProperty("CargoCapacity", out JsonElement c) && c.TryGetInt32(out int count))
             {
                 capacity = count;
             }
@@ -485,7 +485,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private void UpdatePosition(JsonElement json)
     {
         if (
-            json.TryGetProperty("StarPos", out var starPos)
+            json.TryGetProperty("StarPos", out JsonElement starPos)
             && starPos.ValueKind == JsonValueKind.Array
             && starPos.GetArrayLength() == 3
         )
@@ -498,7 +498,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     {
         if (Settings.SpeakAnnouncements && !update.IsBootstrapRead && Runtime.DesktopExternalEffectPolicy.IsAllowed)
         {
-            foreach (var notice in state.Notices.TakeWhile(n => !ReferenceEquals(n, previousNotice)).Reverse())
+            foreach (
+                MiningNotice? notice in state.Notices.TakeWhile(n => !ReferenceEquals(n, previousNotice)).Reverse()
+            )
             {
                 speech.Speak(notice.Text, Settings.Voice, Settings.SpeechVolume, Settings.SpeechRate);
             }
@@ -533,7 +535,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         if (Current is { PausedAt: null } && capacity > 0 && cargo?.Count >= capacity && Settings.NotifyCargoFull)
         {
             fullSince ??= clock.GetUtcNow();
-            var latestActivity = Current.Collections.LastOrDefault()?.Time ?? Current.Started;
+            DateTimeOffset latestActivity = Current.Collections.LastOrDefault()?.Time ?? Current.Started;
             if (
                 !fullNotified
                 && clock.GetUtcNow() - fullSince >= TimeSpan.FromMinutes(1)
@@ -608,7 +610,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public void LoadAnnouncementPreset()
     {
-        if (!Settings.AnnouncementPresets.TryGetValue(PresetName, out var preset))
+        if (!Settings.AnnouncementPresets.TryGetValue(PresetName, out MiningAnnouncementPreset? preset))
         {
             return;
         }
@@ -635,7 +637,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             Status = "Enter a mineral name.";
             return;
         }
-        var name = TargetMaterial.Trim().ToLowerInvariant();
+        string name = TargetMaterial.Trim().ToLowerInvariant();
         if (remove)
         {
             Settings.Thresholds.Remove(name);
@@ -643,7 +645,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         else
         {
             if (
-                !double.TryParse(ThresholdText, NumberStyles.Number, CultureInfo.CurrentCulture, out var threshold)
+                !double.TryParse(ThresholdText, NumberStyles.Number, CultureInfo.CurrentCulture, out double threshold)
                 || !double.IsFinite(threshold)
                 || threshold is < 0 or > 100
             )
@@ -663,7 +665,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             return;
         }
 
-        var material = TargetMaterial.Trim().ToLowerInvariant();
+        string material = TargetMaterial.Trim().ToLowerInvariant();
         session.QualityAdjustments[material] = Math.Clamp(
             session.QualityAdjustments.GetValueOrDefault(material) + delta,
             -session.Prospects.Count,
@@ -704,15 +706,15 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var query = Destination.Trim();
-            var from = Origin.Trim();
-            var current =
+            string query = Destination.Trim();
+            string from = Origin.Trim();
+            GalacticCoordinate? current =
                 from.Length == 0 || from.Equals(system, StringComparison.OrdinalIgnoreCase)
                     ? position
                     : (await resolver.SearchAsync(from, timeout.Token))
                         .FirstOrDefault(s => s.Name.Equals(from, StringComparison.OrdinalIgnoreCase))
                         ?.Position;
-            var result = (await resolver.SearchAsync(query, timeout.Token)).FirstOrDefault(s =>
+            StarSystemReference? result = (await resolver.SearchAsync(query, timeout.Token)).FirstOrDefault(s =>
                 s.Name.Equals(query, StringComparison.OrdinalIgnoreCase)
             );
             if (result is null)
@@ -743,10 +745,10 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             Status = "Connect a commander before importing reports.";
             return;
         }
-        var incoming = MiningReportImport.ReadCsv(csv);
-        var added = 0;
+        IReadOnlyList<MiningSession> incoming = MiningReportImport.ReadCsv(csv);
+        int added = 0;
         foreach (
-            var session in incoming.Where(session =>
+            MiningSession? session in incoming.Where(session =>
                 !History.Any(s =>
                     s.Id == session.Id
                     || s.Started == session.Started && s.System == session.System && s.Ring == session.Ring
@@ -808,11 +810,13 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             Status = "Connect a commander before importing journals.";
             return;
         }
-        var importingCommander = commander;
+        string importingCommander = commander;
         Status = "Reading selected journals…";
         try
         {
-            var imported = await Task.Run(() => MiningJournalImporter.ReadAsync(paths, importingCommander));
+            MiningCommanderData imported = await Task.Run(() =>
+                MiningJournalImporter.ReadAsync(paths, importingCommander)
+            );
             if (commander != importingCommander)
             {
                 Status = "Commander changed; import was not applied.";
@@ -832,15 +836,15 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public Task<byte[]> BackupPackageAsync()
     {
-        var snapshot = MiningStore.Parse(Backup());
-        var bookmarkJson = bookmarks.Export();
-        var firegroupJson = commander is not null ? firegroups?.Backup(commander) : null;
+        MiningCommanderData snapshot = MiningStore.Parse(Backup());
+        string bookmarkJson = bookmarks.Export();
+        string? firegroupJson = commander is not null ? firegroups?.Backup(commander) : null;
         return Task.Run(() => MiningBackup.Create(snapshot, bookmarkJson, firegroupJson));
     }
 
     public async Task RestorePackageAsync(byte[] bytes)
     {
-        var targetCommander = commander;
+        string? targetCommander = commander;
         if (targetCommander is null || !storageAvailable)
         {
             Status = "Connect a commander before restoring.";
@@ -862,8 +866,15 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             return;
         }
 
-        var originalMining = Backup();
-        if (!TryRestoreFiregroups(targetCommander, contents, out var originalFiregroups, out var firegroupsRestored))
+        string originalMining = Backup();
+        if (
+            !TryRestoreFiregroups(
+                targetCommander,
+                contents,
+                out string? originalFiregroups,
+                out bool firegroupsRestored
+            )
+        )
         {
             return;
         }
@@ -913,8 +924,8 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     private void ReportMiningRestoreFailure(string targetCommander, string? originalFiregroups, bool firegroupsRestored)
     {
-        var failure = Status;
-        var rolledBack = RestorePreviousFiregroups(targetCommander, originalFiregroups, firegroupsRestored);
+        string failure = Status;
+        bool rolledBack = RestorePreviousFiregroups(targetCommander, originalFiregroups, firegroupsRestored);
         Status =
             failure
             + (
@@ -931,9 +942,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         bool firegroupsRestored
     )
     {
-        var failure = bookmarks.Status;
-        var miningRolledBack = Restore(originalMining);
-        var firegroupsRolledBack = RestorePreviousFiregroups(targetCommander, originalFiregroups, firegroupsRestored);
+        string failure = bookmarks.Status;
+        bool miningRolledBack = Restore(originalMining);
+        bool firegroupsRolledBack = RestorePreviousFiregroups(targetCommander, originalFiregroups, firegroupsRestored);
         Status =
             failure
             + (
@@ -1019,7 +1030,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             return;
         }
 
-        var lastActivity =
+        DateTimeOffset lastActivity =
             session.LastObserved
             ?? session
                 .Collections.Select(c => c.Time)
@@ -1134,7 +1145,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         if (!dataChanged)
         {
             foreach (
-                var name in new[]
+                string? name in new[]
                 {
                     nameof(CommunityStatus),
                     nameof(SessionSummary),
@@ -1156,7 +1167,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         cachedMissions = null;
         cachedRings = null;
         foreach (
-            var name in new[]
+            string? name in new[]
             {
                 nameof(ReportScreenshots),
                 nameof(Current),
@@ -1186,14 +1197,14 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             Changed(name);
         }
 
-        foreach (var command in new[] { StartCommand, PauseCommand, StopCommand })
+        foreach (ICommand? command in new[] { StartCommand, PauseCommand, StopCommand })
         {
             ((WorkspaceCommand)command).Refresh();
         }
     }
 
     private static string Text(JsonElement json, string name) =>
-        json.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+        json.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString() ?? ""
             : "";
 }

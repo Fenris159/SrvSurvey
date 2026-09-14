@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -122,7 +123,7 @@ public sealed class PulseOverlayCoordinator : IDisposable
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay);
-            var preparation = platform.PreparePassiveWindow(overlay);
+            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
             if (!preparation.IsClickThrough)
             {
                 isSuppressed = true;
@@ -143,14 +144,14 @@ public sealed class PulseOverlayCoordinator : IDisposable
     private void PositionWindow(Window overlay)
     {
         OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
-        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
+        Screen? screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
-        var position =
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
+        PixelPoint position =
             overlayLayout.GetPosition(PlotterName, gameWindow.ClientBounds, size)
             ?? OverlayWindowPlacement.BottomLeft(gameWindow.ClientBounds, size, margin: 8);
         if (overlay.Position != position)
@@ -161,7 +162,7 @@ public sealed class PulseOverlayCoordinator : IDisposable
 
     private void CloseWindow()
     {
-        var overlay = window;
+        PulseOverlayWindow? overlay = window;
         window = null;
         overlay?.Close();
     }

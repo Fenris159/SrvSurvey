@@ -6,7 +6,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 internal sealed class X11GameWindowTracker : IGameWindowTracker
 {
     private const int PropertyReadLength = 16_384;
-    private readonly object gate = new();
+    private readonly Lock gate = new();
     private nint display;
     private readonly nuint rootWindow;
     private readonly nuint activeWindowAtom;
@@ -34,7 +34,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             return null;
         }
 
-        var display = nint.Zero;
+        nint display = nint.Zero;
         try
         {
             X11OverlayPlatformService.EnsureErrorHandlerInstalled();
@@ -75,7 +75,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 return GameWindowSnapshot.Unavailable;
             }
 
-            var activeWindow = ReadSingleWindow(activeWindowAtom);
+            nuint activeWindow = ReadSingleWindow(activeWindowAtom);
             if (activeWindow != 0 && activeWindow != gameWindow && activeWindow != inspectedActiveWindow)
             {
                 inspectedActiveWindow = activeWindow;
@@ -98,7 +98,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 gameWindow = FindGameWindow(activeWindow);
             }
 
-            if (gameWindow == 0 || !TryGetBounds(gameWindow, out var clientBounds, out var isVisible))
+            if (gameWindow == 0 || !TryGetBounds(gameWindow, out PixelRect clientBounds, out bool isVisible))
             {
                 gameWindow = 0;
                 return GameWindowSnapshot.Unavailable;
@@ -118,7 +118,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     {
         lock (gate)
         {
-            var currentDisplay = display;
+            nint currentDisplay = display;
             display = nint.Zero;
             if (currentDisplay != nint.Zero)
             {
@@ -141,7 +141,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
 
     private nuint FindGameWindow(nuint activeWindow)
     {
-        var windows = ReadWindowList(clientListStackingAtom);
+        nuint[] windows = ReadWindowList(clientListStackingAtom);
         if (windows.Length == 0)
         {
             windows = ReadWindowList(clientListAtom);
@@ -153,7 +153,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         }
 
         nuint firstWindow = 0;
-        foreach (var window in windows)
+        foreach (nuint window in windows)
         {
             if (!IsEliteWindow(window))
             {
@@ -178,7 +178,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     {
         string? resourceName = null;
         string? resourceClass = null;
-        if (X11Native.XGetClassHint(display, window, out var classHint) != 0)
+        if (X11Native.XGetClassHint(display, window, out X11Native.XClassHint classHint) != 0)
         {
             try
             {
@@ -193,7 +193,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         }
 
         string? title = null;
-        if (X11Native.XFetchName(display, window, out var nativeTitle) != 0)
+        if (X11Native.XFetchName(display, window, out nint nativeTitle) != 0)
         {
             try
             {
@@ -213,10 +213,10 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         bounds = default;
         isVisible = false;
         if (
-            X11Native.XGetWindowAttributes(display, window, out var attributes) == 0
+            X11Native.XGetWindowAttributes(display, window, out X11Native.XWindowAttributes attributes) == 0
             || attributes.Width <= 0
             || attributes.Height <= 0
-            || X11Native.XTranslateCoordinates(display, window, rootWindow, 0, 0, out var rootX, out var rootY, out _)
+            || X11Native.XTranslateCoordinates(display, window, rootWindow, 0, 0, out int rootX, out int rootY, out _)
                 == 0
         )
         {
@@ -230,13 +230,13 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
 
     private int? ReadProcessId(nuint window)
     {
-        var values = ReadProperty(processIdAtom, window);
+        nuint[] values = ReadProperty(processIdAtom, window);
         return values.Length == 0 || values[0] > int.MaxValue ? null : (int)values[0];
     }
 
     private nuint ReadSingleWindow(nuint atom)
     {
-        var values = ReadProperty(atom, rootWindow);
+        nuint[] values = ReadProperty(atom, rootWindow);
         return values.Length == 0 ? 0 : values[0];
     }
 
@@ -258,10 +258,10 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 delete: 0,
                 requestedType: 0,
                 out _,
-                out var actualFormat,
-                out var itemCount,
+                out int actualFormat,
+                out nuint itemCount,
                 out _,
-                out var propertyData
+                out nint propertyData
             ) != 0
             || propertyData == nint.Zero
         )
@@ -276,8 +276,8 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 return [];
             }
 
-            var values = new nuint[(int)itemCount];
-            for (var index = 0; index < values.Length; index++)
+            nuint[] values = new nuint[(int)itemCount];
+            for (int index = 0; index < values.Length; index++)
             {
                 values[index] = unchecked((nuint)Marshal.ReadIntPtr(propertyData, index * nint.Size));
             }
@@ -293,7 +293,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     private nuint[] ReadRootChildren()
     {
         if (
-            X11Native.XQueryTree(display, rootWindow, out _, out _, out var children, out var childCount) == 0
+            X11Native.XQueryTree(display, rootWindow, out _, out _, out nint children, out uint childCount) == 0
             || children == nint.Zero
         )
         {
@@ -302,8 +302,8 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
 
         try
         {
-            var values = new nuint[childCount];
-            for (var index = 0; index < values.Length; index++)
+            nuint[] values = new nuint[childCount];
+            for (int index = 0; index < values.Length; index++)
             {
                 values[index] = unchecked((nuint)Marshal.ReadIntPtr(children, index * nint.Size));
             }

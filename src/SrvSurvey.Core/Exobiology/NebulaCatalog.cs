@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using SrvSurvey.Core.Search;
 
@@ -24,13 +25,13 @@ public sealed class NebulaCatalog
             return double.MaxValue;
         }
 
-        var minimumSquaredDistance = double.MaxValue;
-        foreach (var coordinate in coordinates)
+        double minimumSquaredDistance = double.MaxValue;
+        foreach (GalacticCoordinate coordinate in coordinates)
         {
-            var x = position.X - coordinate.X;
-            var y = position.Y - coordinate.Y;
-            var z = position.Z - coordinate.Z;
-            var squaredDistance = (x * x) + (y * y) + (z * z);
+            double x = position.X - coordinate.X;
+            double y = position.Y - coordinate.Y;
+            double z = position.Z - coordinate.Z;
+            double squaredDistance = (x * x) + (y * y) + (z * z);
             if (squaredDistance < minimumSquaredDistance)
             {
                 minimumSquaredDistance = squaredDistance;
@@ -42,8 +43,8 @@ public sealed class NebulaCatalog
 
     public static NebulaCatalog LoadEmbedded()
     {
-        var assembly = typeof(NebulaCatalog).Assembly;
-        using var stream =
+        Assembly assembly = typeof(NebulaCatalog).Assembly;
+        using Stream stream =
             assembly.GetManifestResourceStream(EmbeddedResourceName)
             ?? throw new InvalidOperationException($"The embedded nebula catalog {EmbeddedResourceName} is missing.");
         return Load(stream);
@@ -60,7 +61,7 @@ public sealed class NebulaCatalog
                 throw new InvalidDataException("The nebula catalog is not a JSON array.");
             }
 
-            var coordinates = document.RootElement.EnumerateArray().Select(ParseCoordinate).ToArray();
+            GalacticCoordinate[] coordinates = document.RootElement.EnumerateArray().Select(ParseCoordinate).ToArray();
             return new NebulaCatalog(coordinates);
         }
         catch (JsonException ex)
@@ -76,11 +77,11 @@ public sealed class NebulaCatalog
             throw new InvalidDataException("The nebula catalog contains an invalid coordinate.");
         }
 
-        var values = element.EnumerateArray().ToArray();
+        JsonElement[] values = element.EnumerateArray().ToArray();
         if (
             values.Any(value =>
                 value.ValueKind != JsonValueKind.Number
-                || !value.TryGetDouble(out var number)
+                || !value.TryGetDouble(out double number)
                 || !double.IsFinite(number)
             )
         )

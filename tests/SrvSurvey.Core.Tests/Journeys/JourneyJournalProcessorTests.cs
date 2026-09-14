@@ -19,7 +19,7 @@ public sealed class JourneyJournalProcessorTests
     public void TracksLegacyJourneyEventsAndCorrectMappingReward(bool hasOdyssey)
     {
         var processor = new JourneyJournalProcessor(CreateJourney(), Catalog, true);
-        var events = new[]
+        JournalEventEnvelope[] events = new[]
         {
             Parse("""{"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}"""),
             Parse(
@@ -67,7 +67,7 @@ public sealed class JourneyJournalProcessorTests
             ),
         };
 
-        var replay = processor.ApplyCatchUp(events);
+        JourneyReplaySummary replay = processor.ApplyCatchUp(events);
 
         Assert.Equal(events.Length - 1, replay.ProcessedEventCount);
         Assert.Equal(
@@ -75,7 +75,7 @@ public sealed class JourneyJournalProcessorTests
             replay.Journey.Watermark
         );
         Assert.Equal(2, replay.Journey.VisitedSystems.Count);
-        var sol = replay.Journey.VisitedSystems[0];
+        JourneySystemVisit sol = replay.Journey.VisitedSystems[0];
         Assert.Equal(
             DateTimeOffset.Parse("2026-07-01T00:00:17Z", global::System.Globalization.CultureInfo.InvariantCulture),
             sol.Departed
@@ -96,7 +96,7 @@ public sealed class JourneyJournalProcessorTests
         Assert.Single(sol.CodexNew!);
         Assert.Equal(1, sol.SubCategories!["Biology"]);
 
-        var starReward = ExplorationValueCalculator.Calculate(
+        int starReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "G",
@@ -109,7 +109,7 @@ public sealed class JourneyJournalProcessorTests
                 WithEfficiencyBonus = false,
             }
         );
-        var mappedPlanetReward = ExplorationValueCalculator.Calculate(
+        int mappedPlanetReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "Earthlike body",
@@ -131,7 +131,7 @@ public sealed class JourneyJournalProcessorTests
     [InlineData(false)]
     public void CatchUpPrimesOldScanForLaterMappingWithoutRecounting(bool hasOdyssey)
     {
-        var scanReward = ExplorationValueCalculator.Calculate(
+        int scanReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "Water world",
@@ -144,7 +144,7 @@ public sealed class JourneyJournalProcessorTests
                 WithEfficiencyBonus = false,
             }
         );
-        var visit = CreateVisit() with
+        JourneySystemVisit visit = CreateVisit() with
         {
             BodiesScanned = new HashSet<int> { 4 },
             Counts = JourneyCounts.Empty with { BodyScans = 1, ExplorationRewards = scanReward },
@@ -158,7 +158,7 @@ public sealed class JourneyJournalProcessorTests
         };
         var processor = new JourneyJournalProcessor(journey, Catalog, true);
 
-        var result = processor.ApplyCatchUp([
+        JourneyReplaySummary result = processor.ApplyCatchUp([
             Parse("""{"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}"""),
             Parse(
                 $$"""{"timestamp":"2026-07-01T00:00:01Z","event":"LoadGame","Odyssey":{{(hasOdyssey ? "true" : "false")}}}"""
@@ -171,8 +171,8 @@ public sealed class JourneyJournalProcessorTests
             ),
         ]);
 
-        var counts = result.Journey.CurrentSystem!.Counts;
-        var mappedReward = ExplorationValueCalculator.Calculate(
+        JourneyCounts counts = result.Journey.CurrentSystem!.Counts;
+        int mappedReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "Water world",
@@ -205,8 +205,8 @@ public sealed class JourneyJournalProcessorTests
         };
         var processor = new JourneyJournalProcessor(journey, Catalog, true);
 
-        var older = processor.Apply(Parse("""{"timestamp":"2026-07-01T00:00:59Z","event":"Screenshot"}"""));
-        var equal = processor.Apply(Parse("""{"timestamp":"2026-07-01T00:01:00Z","event":"Screenshot"}"""));
+        bool older = processor.Apply(Parse("""{"timestamp":"2026-07-01T00:00:59Z","event":"Screenshot"}"""));
+        bool equal = processor.Apply(Parse("""{"timestamp":"2026-07-01T00:01:00Z","event":"Screenshot"}"""));
 
         Assert.False(older);
         Assert.True(equal);
@@ -270,7 +270,10 @@ public sealed class JourneyJournalProcessorTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 }

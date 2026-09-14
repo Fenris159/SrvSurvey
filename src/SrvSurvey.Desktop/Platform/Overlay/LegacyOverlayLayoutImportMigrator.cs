@@ -9,31 +9,34 @@ internal static class LegacyOverlayLayoutImportMigrator
     public static LegacyOverlayLayoutImportMigrationResult MigrateIfNeeded(AppDataPaths paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
-        var manifestPath = Path.Combine(paths.DataDirectory, LegacyProfileImporter.ManifestFileName);
-        var plottersPath = Path.Combine(paths.DataDirectory, "plotters.json");
-        var completionMarkerPath = Path.Combine(paths.DataDirectory, CompletionMarkerFileName);
+        string manifestPath = Path.Combine(paths.DataDirectory, LegacyProfileImporter.ManifestFileName);
+        string plottersPath = Path.Combine(paths.DataDirectory, "plotters.json");
+        string completionMarkerPath = Path.Combine(paths.DataDirectory, CompletionMarkerFileName);
         if (File.Exists(completionMarkerPath) || !File.Exists(manifestPath) || !File.Exists(plottersPath))
         {
             return LegacyOverlayLayoutImportMigrationResult.NotRequired;
         }
 
         var store = new LegacyOverlayLayoutStore(paths.DataDirectory);
-        var layout = store.Load();
+        LegacyOverlayLayout layout = store.Load();
         if (layout.Error is not null)
         {
             return new LegacyOverlayLayoutImportMigrationResult(false, 0, null, layout.Error);
         }
 
-        var normalized = GetNormalizedPlacements(layout);
+        Dictionary<string, LegacyOverlayPlacement> normalized = GetNormalizedPlacements(layout);
         return SaveMigration(store, normalized, completionMarkerPath);
     }
 
     private static Dictionary<string, LegacyOverlayPlacement> GetNormalizedPlacements(LegacyOverlayLayout layout)
     {
         var normalized = new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal);
-        foreach (var definition in OverlayLayoutCatalog.Supported)
+        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
         {
-            if (!layout.Placements.TryGetValue(definition.Name, out var placement) || !RequiresNormalization(placement))
+            if (
+                !layout.Placements.TryGetValue(definition.Name, out LegacyOverlayPlacement? placement)
+                || !RequiresNormalization(placement)
+            )
             {
                 continue;
             }
@@ -78,7 +81,7 @@ internal static class LegacyOverlayLayoutImportMigrator
                 return LegacyOverlayLayoutImportMigrationResult.NotRequired;
             }
 
-            var result = store.Save(normalized);
+            LegacyOverlayLayoutSaveResult result = store.Save(normalized);
             WriteCompletionMarker(completionMarkerPath);
             return new LegacyOverlayLayoutImportMigrationResult(
                 true,
@@ -102,7 +105,7 @@ internal static class LegacyOverlayLayoutImportMigrator
 
     private static void WriteCompletionMarker(string completionMarkerPath)
     {
-        var temporaryPath = $"{completionMarkerPath}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{completionMarkerPath}.{Guid.NewGuid():N}.tmp";
         try
         {
             File.WriteAllText(temporaryPath, "1");

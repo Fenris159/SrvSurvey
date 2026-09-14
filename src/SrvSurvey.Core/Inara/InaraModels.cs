@@ -19,9 +19,9 @@ internal sealed record InaraSession(string Commander, string FrontierId, string?
     public static InaraSession? Create(InaraPublicationOptions options, string? journalPath)
     {
         ArgumentNullException.ThrowIfNull(options);
-        var commander = options.CommanderName?.Trim();
-        var frontierId = options.FrontierId?.Trim();
-        var version = options.GameVersion?.Trim();
+        string? commander = options.CommanderName?.Trim();
+        string? frontierId = options.FrontierId?.Trim();
+        string? version = options.GameVersion?.Trim();
         if (
             string.IsNullOrWhiteSpace(commander)
             || string.IsNullOrWhiteSpace(frontierId)
@@ -42,7 +42,7 @@ internal sealed record InaraSession(string Commander, string FrontierId, string?
 
     public bool Matches(InaraSession other)
     {
-        var pathComparison = OperatingSystem.IsWindows()
+        StringComparison pathComparison = OperatingSystem.IsWindows()
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
         return string.Equals(Commander, other.Commander, StringComparison.OrdinalIgnoreCase)
@@ -54,7 +54,7 @@ internal sealed record InaraSession(string Commander, string FrontierId, string?
 
     public InaraCredentials? GetCredentials(string? apiKey)
     {
-        var normalized = apiKey?.Trim();
+        string? normalized = apiKey?.Trim();
         return string.IsNullOrWhiteSpace(normalized) ? null : new InaraCredentials(Commander, FrontierId, normalized);
     }
 }
@@ -115,8 +115,8 @@ internal static class InaraPayloadBuilder
 internal sealed class InaraEventQueue
 {
     public const int DefaultMaximumCount = 4096;
-    private readonly object sync = new();
-    private readonly List<InaraQueuedEvent> pending = new();
+    private readonly Lock sync = new();
+    private readonly List<InaraQueuedEvent> pending = [];
 
     public int Count
     {
@@ -133,7 +133,7 @@ internal sealed class InaraEventQueue
     {
         lock (sync)
         {
-            foreach (var entry in events)
+            foreach (InaraEvent entry in events)
             {
                 if (!string.IsNullOrWhiteSpace(entry.ReplaceKey))
                 {
@@ -158,8 +158,8 @@ internal sealed class InaraEventQueue
                 return [];
             }
 
-            var count = Math.Min(pending.Count, maximumCount);
-            var batch = pending.GetRange(0, count);
+            int count = Math.Min(pending.Count, maximumCount);
+            List<InaraQueuedEvent> batch = pending.GetRange(0, count);
             pending.RemoveRange(0, count);
             return batch;
         }
@@ -203,7 +203,7 @@ internal sealed class InaraEventQueue
     private int trimToMaximum(int maximumCount)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumCount, 1);
-        var dropped = Math.Max(0, pending.Count - maximumCount);
+        int dropped = Math.Max(0, pending.Count - maximumCount);
         if (dropped > 0)
         {
             pending.RemoveRange(0, dropped);

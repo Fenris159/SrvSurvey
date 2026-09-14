@@ -13,10 +13,10 @@ public sealed class ReplayPresentationSnapshotStoreTests
     public void CaptureAndApplyRoundTripEveryAnchorAndPortableSetting()
     {
         using var temp = new TemporaryDirectory();
-        var paths = CreatePaths(Path.Combine(temp.Path, "source"));
+        AppDataPaths paths = CreatePaths(Path.Combine(temp.Path, "source"));
         Directory.CreateDirectory(paths.ConfigDirectory);
         Directory.CreateDirectory(paths.DataDirectory);
-        var names = OverlayLayoutCatalog.Supported.Take(4).Select(definition => definition.Name).ToArray();
+        string[] names = OverlayLayoutCatalog.Supported.Take(4).Select(definition => definition.Name).ToArray();
         var sourcePlacements = new Dictionary<string, LegacyOverlayPlacement>
         {
             [names[0]] = new(LegacyHorizontalAnchor.Left, 1, LegacyVerticalAnchor.Top, 2, 0.6, 1),
@@ -30,11 +30,17 @@ public sealed class ReplayPresentationSnapshotStoreTests
         visibility[names[0]] = false;
         new OverlayPanelVisibilitySettingsStore(paths.UiSettingsPath).Save(visibility);
 
-        var snapshot = ReplayPresentationSnapshotStore.Capture(paths, new PixelRect(10, 20, 2560, 1440));
-        var defaultViewport = ReplayPresentationSnapshotStore.Capture(paths, new PixelRect(0, 0, 0, 0));
-        var session = CreateSession(Path.Combine(temp.Path, "session"), snapshot);
+        ReplayPresentationSnapshot snapshot = ReplayPresentationSnapshotStore.Capture(
+            paths,
+            new PixelRect(10, 20, 2560, 1440)
+        );
+        ReplayPresentationSnapshot defaultViewport = ReplayPresentationSnapshotStore.Capture(
+            paths,
+            new PixelRect(0, 0, 0, 0)
+        );
+        DiagnosticReplaySession session = CreateSession(Path.Combine(temp.Path, "session"), snapshot);
         ReplayPresentationSnapshotStore.Apply(session);
-        var applied = new LegacyOverlayLayoutStore(session.DataDirectory).Load();
+        LegacyOverlayLayout applied = new LegacyOverlayLayoutStore(session.DataDirectory).Load();
 
         Assert.Equal(2560, snapshot.ViewportWidth);
         Assert.Equal(1440, snapshot.ViewportHeight);
@@ -74,7 +80,7 @@ public sealed class ReplayPresentationSnapshotStoreTests
     public void CaptureAndApplyRejectInvalidPortablePresentation()
     {
         using var temp = new TemporaryDirectory();
-        var paths = CreatePaths(Path.Combine(temp.Path, "invalid-source"));
+        AppDataPaths paths = CreatePaths(Path.Combine(temp.Path, "invalid-source"));
         Directory.CreateDirectory(paths.DataDirectory);
         File.WriteAllText(
             Path.Combine(paths.DataDirectory, "plotters.json"),
@@ -83,13 +89,13 @@ public sealed class ReplayPresentationSnapshotStoreTests
 
         Assert.Throws<InvalidDataException>(() => ReplayPresentationSnapshotStore.Capture(paths, viewport: null));
 
-        var unsupportedScale = CreateSession(
+        DiagnosticReplaySession unsupportedScale = CreateSession(
             Path.Combine(temp.Path, "scale-session"),
             Snapshot(99, new Dictionary<string, ReplayOverlayPlacement>())
         );
         Assert.Throws<InvalidDataException>(() => ReplayPresentationSnapshotStore.Apply(unsupportedScale));
 
-        var unknownOverlay = CreateSession(
+        DiagnosticReplaySession unknownOverlay = CreateSession(
             Path.Combine(temp.Path, "overlay-session"),
             Snapshot(
                 0,
@@ -101,7 +107,7 @@ public sealed class ReplayPresentationSnapshotStoreTests
         );
         Assert.Throws<InvalidDataException>(() => ReplayPresentationSnapshotStore.Apply(unknownOverlay));
 
-        var invalidPlacementScale = CreateSession(
+        DiagnosticReplaySession invalidPlacementScale = CreateSession(
             Path.Combine(temp.Path, "placement-scale-session"),
             Snapshot(
                 0,

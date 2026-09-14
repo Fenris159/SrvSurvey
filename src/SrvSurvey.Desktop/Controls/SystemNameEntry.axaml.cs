@@ -103,7 +103,7 @@ public sealed partial class SystemNameEntry : UserControl
         get => suggestions;
         private set
         {
-            var previouslyHadSuggestions = HasSuggestions;
+            bool previouslyHadSuggestions = HasSuggestions;
             SetAndRaise(SuggestionsProperty, ref suggestions, value);
             RaisePropertyChanged(HasSuggestionsProperty, previouslyHadSuggestions, HasSuggestions);
         }
@@ -128,7 +128,7 @@ public sealed partial class SystemNameEntry : UserControl
         get => status;
         private set
         {
-            var previouslyHadStatus = HasStatus;
+            bool previouslyHadStatus = HasStatus;
             SetAndRaise(StatusProperty, ref status, value);
             RaisePropertyChanged(HasStatusProperty, previouslyHadStatus, HasStatus);
         }
@@ -149,7 +149,7 @@ public sealed partial class SystemNameEntry : UserControl
 
     private void OnTextChanged(string? value)
     {
-        var query = value?.Trim() ?? string.Empty;
+        string query = value?.Trim() ?? string.Empty;
         if (!string.Equals(query, selectedSystemName, StringComparison.OrdinalIgnoreCase))
         {
             selectedSystemName = null;
@@ -181,7 +181,7 @@ public sealed partial class SystemNameEntry : UserControl
         {
             Status = "Searching for system suggestions…";
             await Task.Delay(suggestionDelay, cancellation.Token);
-            var results = await suggestionClient.SearchAsync(query, cancellation.Token);
+            IReadOnlyList<SystemNameSuggestion> results = await suggestionClient.SearchAsync(query, cancellation.Token);
             if (
                 !ReferenceEquals(suggestionCancellation, cancellation)
                 || !string.Equals(Text?.Trim(), query, StringComparison.Ordinal)
@@ -225,7 +225,7 @@ public sealed partial class SystemNameEntry : UserControl
             return "No matching systems found.";
         }
 
-        var pluralSuffix = results.Count == 1 ? string.Empty : "s";
+        string pluralSuffix = results.Count == 1 ? string.Empty : "s";
         return $"{results.Count:N0} suggestion{pluralSuffix} from {results[0].Source}.";
     }
 
@@ -292,7 +292,7 @@ public sealed partial class SystemNameEntry : UserControl
 
     private void CancelSuggestions()
     {
-        var cancellation = suggestionCancellation;
+        CancellationTokenSource? cancellation = suggestionCancellation;
         suggestionCancellation = null;
         cancellation?.Cancel();
     }

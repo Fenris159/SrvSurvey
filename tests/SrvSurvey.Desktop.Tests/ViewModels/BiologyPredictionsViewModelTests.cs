@@ -15,7 +15,7 @@ public sealed class BiologyPredictionsViewModelTests : IDisposable
     [Fact]
     public async Task WorkspaceBuildsExactRowsFocusesCurrentBodyAndOpensLinks()
     {
-        var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(settingsPath));
         using var viewModel = new BiologyPredictionsViewModel(
             survey,
@@ -47,8 +47,8 @@ public sealed class BiologyPredictionsViewModelTests : IDisposable
         Assert.StartsWith("Estimated reward:", viewModel.EstimatedReward);
         Assert.NotEqual("Prediction unavailable", viewModel.FirstFootfallEstimate);
 
-        var currentBody = Assert.Single(viewModel.Bodies, body => body.BodyId == 1);
-        var prediction = Assert.Single(currentBody.Organisms);
+        BiologyPredictionBodyViewModel currentBody = Assert.Single(viewModel.Bodies, body => body.BodyId == 1);
+        BiologyPredictionOrganismViewModel prediction = Assert.Single(currentBody.Organisms);
         Assert.Equal("Aleoida Coronamus - Lime", prediction.DisplayName);
         Assert.Equal("150 m sample separation", prediction.SampleDistanceText);
         Assert.True(prediction.IsPrediction);
@@ -107,13 +107,13 @@ public sealed class BiologyPredictionsViewModelTests : IDisposable
     [Fact]
     public void WindowCommandTracksSystemAndSingleInstanceOpener()
     {
-        var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(settingsPath));
         using var viewModel = new BiologyPredictionsViewModel(
             survey,
             new BiologyPredictionsSettingsStore(settingsPath)
         );
-        var opened = false;
+        bool opened = false;
         viewModel.SetWindowOpener(() =>
         {
             opened = true;
@@ -147,7 +147,7 @@ public sealed class BiologyPredictionsViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

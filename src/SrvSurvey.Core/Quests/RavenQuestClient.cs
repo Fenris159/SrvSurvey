@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Network;
@@ -100,8 +101,8 @@ public sealed class RavenQuestClient : IRavenQuestClient
         CancellationToken cancellationToken = default
     )
     {
-        using var request = CreateRequest(HttpMethod.Get, "api/quest/published", apiKey);
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpRequestMessage request = CreateRequest(HttpMethod.Get, "api/quest/published", apiKey);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (IsUnavailableQuestResponse(response.StatusCode))
         {
             return [];
@@ -118,8 +119,12 @@ public sealed class RavenQuestClient : IRavenQuestClient
     )
     {
         ArgumentNullException.ThrowIfNull(reference);
-        using var request = CreateRequest(HttpMethod.Get, DefinitionPath(reference, trailingSlash: true), apiKey);
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpRequestMessage request = CreateRequest(
+            HttpMethod.Get,
+            DefinitionPath(reference, trailingSlash: true),
+            apiKey
+        );
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -136,9 +141,9 @@ public sealed class RavenQuestClient : IRavenQuestClient
     )
     {
         ArgumentNullException.ThrowIfNull(quest);
-        using var request = CreateRequiredKeyRequest(HttpMethod.Post, "api/quest/publish", apiKey);
+        using HttpRequestMessage request = CreateRequiredKeyRequest(HttpMethod.Post, "api/quest/publish", apiKey);
         request.Content = JsonContent.Create(quest, options: JsonOptions);
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, "publish a quest", cancellationToken).ConfigureAwait(false);
         return response.ReasonPhrase ?? "OK";
     }
@@ -151,19 +156,19 @@ public sealed class RavenQuestClient : IRavenQuestClient
     {
         ArgumentNullException.ThrowIfNull(quest);
         ValidateIdentity(quest.Publisher, quest.Id);
-        using var request = CreateRequiredKeyRequest(
+        using HttpRequestMessage request = CreateRequiredKeyRequest(
             HttpMethod.Post,
             $"api/quest/cmdr/save/{Escape(quest.Publisher)}/{Escape(quest.Id)}",
             apiKey
         );
-        var payload =
+        JsonObject payload =
             JsonSerializer.SerializeToNode(quest, JsonOptions) as System.Text.Json.Nodes.JsonObject
             ?? throw new InvalidDataException("Commander quest progress could not be serialized.");
         // The legacy load response includes its hydrated definition, while the
         // save contract accepts progress only.
         payload.Remove("quest");
         request.Content = JsonContent.Create(payload, options: JsonOptions);
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, "save commander quest progress", cancellationToken).ConfigureAwait(false);
     }
 
@@ -173,8 +178,12 @@ public sealed class RavenQuestClient : IRavenQuestClient
         CancellationToken cancellationToken = default
     )
     {
-        using var request = CreateRequiredKeyRequest(HttpMethod.Post, $"api/quest/cmdr/load/{state}", apiKey);
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpRequestMessage request = CreateRequiredKeyRequest(
+            HttpMethod.Post,
+            $"api/quest/cmdr/load/{state}",
+            apiKey
+        );
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (IsUnavailableQuestResponse(response.StatusCode))
         {
             return [];
@@ -189,8 +198,8 @@ public sealed class RavenQuestClient : IRavenQuestClient
         CancellationToken cancellationToken = default
     )
     {
-        using var request = CreateRequiredKeyRequest(HttpMethod.Get, "api/quest/cmdr", apiKey);
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpRequestMessage request = CreateRequiredKeyRequest(HttpMethod.Get, "api/quest/cmdr", apiKey);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (IsUnavailableQuestResponse(response.StatusCode))
         {
             return [];
@@ -212,12 +221,12 @@ public sealed class RavenQuestClient : IRavenQuestClient
     )
     {
         ValidateIdentity(publisher, id);
-        using var request = CreateRequiredKeyRequest(
+        using HttpRequestMessage request = CreateRequiredKeyRequest(
             HttpMethod.Put,
             $"api/quest/cmdr/{Escape(publisher)}/{Escape(id)}",
             apiKey
         );
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await ReadRequiredAsync<RavenQuestDefinition>(response, "activate a quest", cancellationToken)
             .ConfigureAwait(false);
     }
@@ -230,12 +239,12 @@ public sealed class RavenQuestClient : IRavenQuestClient
     )
     {
         ValidateIdentity(publisher, id);
-        using var request = CreateRequiredKeyRequest(
+        using HttpRequestMessage request = CreateRequiredKeyRequest(
             HttpMethod.Delete,
             $"api/quest/cmdr/{Escape(publisher)}/{Escape(id)}",
             apiKey
         );
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return false;
@@ -254,12 +263,12 @@ public sealed class RavenQuestClient : IRavenQuestClient
     )
     {
         ValidateIdentity(publisher, id);
-        using var request = CreateRequiredKeyRequest(
+        using HttpRequestMessage request = CreateRequiredKeyRequest(
             HttpMethod.Post,
             $"api/quest/cmdr/{Escape(publisher)}/{Escape(id)}/state/{state}",
             apiKey
         );
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return false;
@@ -278,12 +287,12 @@ public sealed class RavenQuestClient : IRavenQuestClient
     {
         ArgumentNullException.ThrowIfNull(reference);
         ArgumentException.ThrowIfNullOrWhiteSpace(chapterId);
-        using var request = CreateRequest(
+        using HttpRequestMessage request = CreateRequest(
             HttpMethod.Get,
             $"{DefinitionPath(reference, trailingSlash: false)}/chapter/{Escape(chapterId)}",
             apiKey
         );
-        using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (IsUnavailableQuestResponse(response.StatusCode))
         {
             return null;
@@ -362,7 +371,7 @@ public sealed class RavenQuestClient : IRavenQuestClient
             return;
         }
 
-        var detail = await BoundedHttpContent
+        string detail = await BoundedHttpContent
             .ReadStringPrefixAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
             .ConfigureAwait(false);
         throw new RavenColonialServiceException(response.StatusCode, operation, detail);
@@ -381,7 +390,7 @@ public sealed class RavenQuestClient : IRavenQuestClient
             throw new ArgumentOutOfRangeException(nameof(reference), "The quest version must be finite.");
         }
 
-        var path =
+        string path =
             "api/quest/"
             + $"{Escape(reference.Publisher)}/{Escape(reference.Id)}/"
             + reference.Version.ToString(CultureInfo.InvariantCulture);

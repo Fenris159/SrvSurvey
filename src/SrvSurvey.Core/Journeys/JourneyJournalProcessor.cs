@@ -54,11 +54,11 @@ public sealed class JourneyJournalProcessor
     public JourneyReplaySummary ApplyCatchUp(IEnumerable<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        var startingWatermark = Journey.Watermark;
-        var processed = 0;
-        var ignored = 0;
+        DateTimeOffset startingWatermark = Journey.Watermark;
+        int processed = 0;
+        int ignored = 0;
 
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             if (journalEvent.Timestamp is not { } timestamp)
             {
@@ -100,7 +100,7 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyEvent(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         switch (journalEvent.EventName)
         {
             case "Fileheader":
@@ -166,13 +166,13 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyArrival(JsonElement root, DateTimeOffset timestamp)
     {
-        if (!JourneyJournalHistoryReader.TryGetSystemReference(root, out var systemReference))
+        if (!JourneyJournalHistoryReader.TryGetSystemReference(root, out JourneySystemReference? systemReference))
         {
             return;
         }
 
         var visits = Journey.VisitedSystems.ToList();
-        var currentIndex = FindCurrentIndex(visits);
+        int currentIndex = FindCurrentIndex(visits);
         if (currentIndex >= 0 && visits[currentIndex].StarSystem.SystemAddress == systemReference.SystemAddress)
         {
             return;
@@ -223,8 +223,8 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyScan(JsonElement root)
     {
-        var current = Journey.CurrentSystem;
-        var body = PrimeBody(root, current);
+        JourneySystemVisit? current = Journey.CurrentSystem;
+        BodyState? body = PrimeBody(root, current);
         if (
             current is null
             || body is null
@@ -234,13 +234,13 @@ public sealed class JourneyJournalProcessor
             return;
         }
 
-        var scanned = current.BodiesScanned is null ? [] : new HashSet<int>(current.BodiesScanned);
+        HashSet<int> scanned = current.BodiesScanned is null ? [] : [.. current.BodiesScanned];
         if (!scanned.Add(body.Key.BodyId))
         {
             return;
         }
 
-        var reward = CalculateReward(body, isMapped: false, withEfficiencyBonus: false);
+        int reward = CalculateReward(body, isMapped: false, withEfficiencyBonus: false);
         body.ScanReward = reward;
         UpdateCurrent(visit =>
             visit with
@@ -258,19 +258,19 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyDetailedSurfaceScan(JsonElement root)
     {
-        var current = Journey.CurrentSystem;
+        JourneySystemVisit? current = Journey.CurrentSystem;
         if (current is null || GetInt32(root, "BodyID") is not { } bodyId)
         {
             return;
         }
 
-        var rewardDelta = 0;
+        int rewardDelta = 0;
         var key = new BodyKey(current.StarSystem.SystemAddress, bodyId);
-        if (bodies.TryGetValue(key, out var body))
+        if (bodies.TryGetValue(key, out BodyState? body))
         {
-            var probesUsed = GetInt32(root, "ProbesUsed") ?? int.MaxValue;
-            var efficiencyTarget = GetInt32(root, "EfficiencyTarget") ?? -1;
-            var mappedReward = CalculateReward(
+            int probesUsed = GetInt32(root, "ProbesUsed") ?? int.MaxValue;
+            int efficiencyTarget = GetInt32(root, "EfficiencyTarget") ?? -1;
+            int mappedReward = CalculateReward(
                 body,
                 isMapped: true,
                 withEfficiencyBonus: probesUsed <= efficiencyTarget
@@ -292,15 +292,15 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyTouchdown(JsonElement root)
     {
-        var current = Journey.CurrentSystem;
-        var bodyName = GetString(root, "Body");
+        JourneySystemVisit? current = Journey.CurrentSystem;
+        string? bodyName = GetString(root, "Body");
         if (current is null || string.IsNullOrWhiteSpace(bodyName))
         {
             return;
         }
 
-        var starSystemName = GetString(root, "StarSystem") ?? current.StarSystem.Name;
-        var shortName = bodyName
+        string starSystemName = GetString(root, "StarSystem") ?? current.StarSystem.Name;
+        string shortName = bodyName
             .Replace(starSystemName, string.Empty, StringComparison.Ordinal)
             .Replace(" ", string.Empty, StringComparison.Ordinal);
         if (string.IsNullOrWhiteSpace(shortName))
@@ -308,7 +308,7 @@ public sealed class JourneyJournalProcessor
             shortName = bodyName;
         }
 
-        var landedOn = current.LandedOn is null
+        Dictionary<string, int> landedOn = current.LandedOn is null
             ? new Dictionary<string, int>(StringComparer.Ordinal)
             : new Dictionary<string, int>(current.LandedOn, StringComparer.Ordinal);
         landedOn[shortName] = checked(landedOn.GetValueOrDefault(shortName) + 1);
@@ -323,29 +323,29 @@ public sealed class JourneyJournalProcessor
 
     private void ApplySurfaceSignals(JsonElement root)
     {
-        var current = Journey.CurrentSystem;
+        JourneySystemVisit? current = Journey.CurrentSystem;
         if (
             current is null
-            || !root.TryGetProperty("Signals", out var signals)
+            || !root.TryGetProperty("Signals", out JsonElement signals)
             || signals.ValueKind != JsonValueKind.Array
         )
         {
             return;
         }
 
-        var counts = current.SurfaceSignals is null
+        Dictionary<string, int> counts = current.SurfaceSignals is null
             ? new Dictionary<string, int>(StringComparer.Ordinal)
             : new Dictionary<string, int>(current.SurfaceSignals, StringComparer.Ordinal);
-        foreach (var signal in signals.EnumerateArray())
+        foreach (JsonElement signal in signals.EnumerateArray())
         {
-            var type = GetString(signal, "Type");
-            var count = GetInt32(signal, "Count");
+            string? type = GetString(signal, "Type");
+            int? count = GetInt32(signal, "Count");
             if (string.IsNullOrWhiteSpace(type) || count is null)
             {
                 continue;
             }
 
-            var key = type.Replace("$SAA_SignalType_", string.Empty, StringComparison.Ordinal)
+            string key = type.Replace("$SAA_SignalType_", string.Empty, StringComparison.Ordinal)
                 .Replace(";", string.Empty, StringComparison.Ordinal);
             counts[key] = checked(counts.GetValueOrDefault(key) + count.Value);
         }
@@ -355,14 +355,14 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyFssSignal(JsonElement root)
     {
-        var current = Journey.CurrentSystem;
-        var signalType = GetString(root, "SignalType");
+        JourneySystemVisit? current = Journey.CurrentSystem;
+        string? signalType = GetString(root, "SignalType");
         if (current is null || string.IsNullOrWhiteSpace(signalType))
         {
             return;
         }
 
-        var signals = current.FssSignals is null
+        Dictionary<string, int> signals = current.FssSignals is null
             ? new Dictionary<string, int>(StringComparer.Ordinal)
             : new Dictionary<string, int>(current.FssSignals, StringComparer.Ordinal);
         signals[signalType] = checked(signals.GetValueOrDefault(signalType) + 1);
@@ -371,26 +371,28 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyCodexEntry(JsonElement root)
     {
-        var current = Journey.CurrentSystem;
+        JourneySystemVisit? current = Journey.CurrentSystem;
         if (current is null || GetInt64(root, "EntryID") is not { } entryId)
         {
             return;
         }
 
-        var scanned = current.CodexScanned is null ? [] : new HashSet<long>(current.CodexScanned);
-        var firstScanInSystem = scanned.Add(entryId);
-        var isNew = GetBoolean(root, "IsNewEntry") ?? false;
-        var newEntries = current.CodexNew is null ? [] : new HashSet<string>(current.CodexNew, StringComparer.Ordinal);
-        var name = GetString(root, "Name_Localised") ?? GetString(root, "Name");
+        HashSet<long> scanned = current.CodexScanned is null ? [] : [.. current.CodexScanned];
+        bool firstScanInSystem = scanned.Add(entryId);
+        bool isNew = GetBoolean(root, "IsNewEntry") ?? false;
+        HashSet<string> newEntries = current.CodexNew is null
+            ? []
+            : new HashSet<string>(current.CodexNew, StringComparer.Ordinal);
+        string? name = GetString(root, "Name_Localised") ?? GetString(root, "Name");
         if (isNew && !string.IsNullOrWhiteSpace(name))
         {
             newEntries.Add(name);
         }
 
-        var subCategories = current.SubCategories is null
+        Dictionary<string, int> subCategories = current.SubCategories is null
             ? new Dictionary<string, int>(StringComparer.Ordinal)
             : new Dictionary<string, int>(current.SubCategories, StringComparer.Ordinal);
-        var subCategory = GetString(root, "SubCategory_Localised");
+        string? subCategory = GetString(root, "SubCategory_Localised");
         if (firstScanInSystem && !string.IsNullOrWhiteSpace(subCategory))
         {
             subCategories[subCategory] = checked(subCategories.GetValueOrDefault(subCategory) + 1);
@@ -417,7 +419,7 @@ public sealed class JourneyJournalProcessor
             return;
         }
 
-        var reward = exobiologyCatalog.FindBySpecies(GetString(root, "Species"))?.Reward ?? 0;
+        long reward = exobiologyCatalog.FindBySpecies(GetString(root, "Species"))?.Reward ?? 0;
         UpdateCurrent(visit =>
             visit with
             {
@@ -432,19 +434,19 @@ public sealed class JourneyJournalProcessor
 
     private BodyState? PrimeBody(JsonElement root, JourneySystemVisit? current)
     {
-        var bodyId = GetInt32(root, "BodyID");
-        var systemAddress = GetInt64(root, "SystemAddress") ?? current?.StarSystem.SystemAddress;
-        var bodyClass = GetString(root, "PlanetClass") ?? GetString(root, "StarType");
+        int? bodyId = GetInt32(root, "BodyID");
+        long? systemAddress = GetInt64(root, "SystemAddress") ?? current?.StarSystem.SystemAddress;
+        string? bodyClass = GetString(root, "PlanetClass") ?? GetString(root, "StarType");
         if (bodyId is null || systemAddress is null || string.IsNullOrWhiteSpace(bodyClass))
         {
             return null;
         }
 
         var key = new BodyKey(systemAddress.Value, bodyId.Value);
-        var body = bodies.GetValueOrDefault(key) ?? new BodyState(key);
+        BodyState body = bodies.GetValueOrDefault(key) ?? new BodyState(key);
         body.BodyClass = bodyClass;
         body.IsTerraformable = GetString(root, "TerraformState") == "Terraformable";
-        var planetMass = GetDouble(root, "MassEM");
+        double? planetMass = GetDouble(root, "MassEM");
         body.Mass = planetMass is > 0 ? planetMass.Value : GetDouble(root, "StellarMass") ?? 0;
         body.IsFirstDiscoverer = !(GetBoolean(root, "WasDiscovered") ?? false);
         body.IsFirstMapped = !(GetBoolean(root, "WasMapped") ?? false);
@@ -473,7 +475,7 @@ public sealed class JourneyJournalProcessor
     private void UpdateCurrent(Func<JourneySystemVisit, JourneySystemVisit> update)
     {
         var visits = Journey.VisitedSystems.ToList();
-        var index = FindCurrentIndex(visits);
+        int index = FindCurrentIndex(visits);
         if (index < 0)
         {
             return;
@@ -485,7 +487,7 @@ public sealed class JourneyJournalProcessor
 
     private static int FindCurrentIndex(List<JourneySystemVisit> visits)
     {
-        for (var index = visits.Count - 1; index >= 0; index--)
+        for (int index = visits.Count - 1; index >= 0; index--)
         {
             if (visits[index].Departed is null)
             {
@@ -498,7 +500,7 @@ public sealed class JourneyJournalProcessor
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -506,7 +508,7 @@ public sealed class JourneyJournalProcessor
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
             : null;
@@ -515,9 +517,9 @@ public sealed class JourneyJournalProcessor
     private static int? GetInt32(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
+            && value.TryGetInt32(out int number)
             ? number
             : null;
     }
@@ -525,9 +527,9 @@ public sealed class JourneyJournalProcessor
     private static long? GetInt64(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var number)
+            && value.TryGetInt64(out long number)
             ? number
             : null;
     }
@@ -535,9 +537,9 @@ public sealed class JourneyJournalProcessor
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
+            && value.TryGetDouble(out double number)
             ? number
             : null;
     }

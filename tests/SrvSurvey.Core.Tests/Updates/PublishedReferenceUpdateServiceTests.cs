@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Search;
@@ -28,9 +29,9 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncActivatesAllValidatedCatalogsAndPreservesBackup()
     {
         WriteExistingReferences();
-        var service = CreateService(CreatePayloads());
+        PublishedReferenceUpdateService service = CreateService(CreatePayloads());
 
-        var result = await service.RefreshAsync(root);
+        PublishedReferenceUpdateResult result = await service.RefreshAsync(root);
 
         Assert.Equal(9, result.UpdatedCatalogs.Count);
         Assert.True(result.RestartRequired);
@@ -49,10 +50,10 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
                 Path.Combine(result.BackupDirectory, "pub", KnownSystemAddressCatalog.LegacyFileName)
             )
         );
-        var active = LegacyReferenceCatalogLoader.Load(root);
+        LegacyReferenceCatalogLoadResult active = LegacyReferenceCatalogLoader.Load(root);
         Assert.Equal(7, active.LocalCatalogCount);
         Assert.Empty(active.Warnings);
-        var versions = new PublishedReferenceVersionStore().Load(root);
+        PublishedReferenceVersions versions = new PublishedReferenceVersionStore().Load(root);
         Assert.Equal(10, versions.CodexReference);
         Assert.Equal(7, versions.BiologyCriteria);
         Assert.Equal(4, versions.BiologyEngine);
@@ -65,11 +66,11 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         var regional = RegionalCodexCandidateCatalog.Load(root);
         Assert.Equal(2, regional.Count);
         Assert.True(regional.IsCandidate(1, 2310101));
-        var resolved = active.Exobiology.FindByDisplayName("Aleoida Coronamus - Lime");
+        ExobiologyReference? resolved = active.Exobiology.FindByDisplayName("Aleoida Coronamus - Lime");
         Assert.NotNull(resolved);
         Assert.True(regional.IsCandidate(18, resolved.EntryId));
         var knownSystems = KnownSystemAddressCatalog.Load(root);
-        Assert.True(knownSystems.TryResolve("Sol", out var sol));
+        Assert.True(knownSystems.TryResolve("Sol", out long sol));
         Assert.Equal(10477373803, sol);
         Assert.Empty(FindOperationDirectories(".reference-update-"));
         Assert.Empty(FindOperationDirectories(".reference-rollback-"));
@@ -81,9 +82,9 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         WriteExistingReferences();
         byte[] originalCodex = await File.ReadAllBytesAsync(Path.Combine(root, "codexRef.json"));
         byte[] originalSentinel = await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt"));
-        var payloads = CreatePayloads();
+        Dictionary<Uri, byte[]> payloads = CreatePayloads();
         payloads[uris.BiologyCriteriaArchive] = new byte[] { 1, 2, 3, 4 };
-        var service = CreateService(payloads);
+        PublishedReferenceUpdateService service = CreateService(payloads);
 
         await Assert.ThrowsAsync<InvalidDataException>(() => service.RefreshAsync(root));
 
@@ -98,14 +99,14 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncRejectsMalformedRegionalCsvBeforeTouchingLiveFiles()
     {
         WriteExistingReferences();
-        var regionalPath = Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName);
+        string regionalPath = Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName);
         byte[] originalRegional = await File.ReadAllBytesAsync(regionalPath);
-        var payloads = CreatePayloads();
+        Dictionary<Uri, byte[]> payloads = CreatePayloads();
         payloads[uris.RegionalCodexCandidatesCsv] = Encoding.UTF8.GetBytes(
             "\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"\r\n"
                 + "\"99\",\"Unknown\",\"bad\",\"0\",\"0\",\"1\",\"name\",\"A\""
         );
-        var service = CreateService(payloads);
+        PublishedReferenceUpdateService service = CreateService(payloads);
 
         await Assert.ThrowsAsync<InvalidDataException>(() => service.RefreshAsync(root));
 
@@ -119,13 +120,13 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncRejectsMalformedKnownSystemsBeforeTouchingLiveFiles()
     {
         WriteExistingReferences();
-        var knownSystemsPath = Path.Combine(root, "pub", KnownSystemAddressCatalog.LegacyFileName);
+        string knownSystemsPath = Path.Combine(root, "pub", KnownSystemAddressCatalog.LegacyFileName);
         byte[] originalKnownSystems = await File.ReadAllBytesAsync(knownSystemsPath);
-        var payloads = CreatePayloads();
+        Dictionary<Uri, byte[]> payloads = CreatePayloads();
         payloads[uris.KnownSystemAddresses] = Encoding.UTF8.GetBytes(
             "known_systems = {\n  \"sol\": 10477373803,\n}\nknown_missing = ["
         );
-        var service = CreateService(payloads);
+        PublishedReferenceUpdateService service = CreateService(payloads);
 
         await Assert.ThrowsAsync<InvalidDataException>(() => service.RefreshAsync(root));
 
@@ -144,7 +145,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName)
         );
         byte[] originalSentinel = await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt"));
-        var service = CreateService(
+        PublishedReferenceUpdateService service = CreateService(
             CreatePayloads(),
             checkpoint =>
             {
@@ -173,11 +174,13 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncRejectsZipSlipPaths()
     {
         WriteExistingReferences();
-        var payloads = CreatePayloads();
+        Dictionary<Uri, byte[]> payloads = CreatePayloads();
         payloads[uris.BiologyCriteriaArchive] = CreateArchive(("../escape.json", Encoding.UTF8.GetBytes("{}")));
-        var service = CreateService(payloads);
+        PublishedReferenceUpdateService service = CreateService(payloads);
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => service.RefreshAsync(root));
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            service.RefreshAsync(root)
+        );
 
         Assert.Contains("unsafe path", exception.Message);
         Assert.False(File.Exists(Path.Combine(root, "escape.json")));
@@ -187,15 +190,15 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncIgnoresRootReadmeInPublishedArchive()
     {
         WriteExistingReferences();
-        var payloads = CreatePayloads();
+        Dictionary<Uri, byte[]> payloads = CreatePayloads();
         payloads[uris.BiologyCriteriaArchive] = AppendArchiveEntry(
             payloads[uris.BiologyCriteriaArchive],
             "readme.md",
             Encoding.UTF8.GetBytes("Reference data documentation.")
         );
-        var service = CreateService(payloads);
+        PublishedReferenceUpdateService service = CreateService(payloads);
 
-        var result = await service.RefreshAsync(root);
+        PublishedReferenceUpdateResult result = await service.RefreshAsync(root);
 
         Assert.Contains("biology criteria", result.UpdatedCatalogs);
         Assert.False(File.Exists(Path.Combine(root, "pub", "bio-criteria", "readme.md")));
@@ -205,15 +208,17 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncStillRejectsOtherUnexpectedArchiveFiles()
     {
         WriteExistingReferences();
-        var payloads = CreatePayloads();
+        Dictionary<Uri, byte[]> payloads = CreatePayloads();
         payloads[uris.BiologyCriteriaArchive] = AppendArchiveEntry(
             payloads[uris.BiologyCriteriaArchive],
             "notes.md",
             Encoding.UTF8.GetBytes("Unexpected metadata.")
         );
-        var service = CreateService(payloads);
+        PublishedReferenceUpdateService service = CreateService(payloads);
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => service.RefreshAsync(root));
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            service.RefreshAsync(root)
+        );
 
         Assert.Contains("unexpected file: notes.md", exception.Message);
         Assert.False(File.Exists(Path.Combine(root, "pub", "notes.md")));
@@ -223,11 +228,13 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncRejectsEmptyNicknameResponse()
     {
         WriteExistingReferences();
-        var payloads = CreatePayloads();
+        Dictionary<Uri, byte[]> payloads = CreatePayloads();
         payloads[uris.RavenNicknames] = Encoding.UTF8.GetBytes("[]");
-        var service = CreateService(payloads);
+        PublishedReferenceUpdateService service = CreateService(payloads);
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => service.RefreshAsync(root));
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            service.RefreshAsync(root)
+        );
 
         Assert.Contains("no nicknames", exception.Message);
         Assert.False(File.Exists(Path.Combine(root, "pub", "nicknames.json")));
@@ -240,7 +247,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         WriteExistingReferences();
         await CreateService(CreatePayloads()).RefreshAsync(root);
 
-        var result = await CreateService(new Dictionary<Uri, byte[]>()).RefreshAsync(root);
+        PublishedReferenceUpdateResult result = await CreateService(new Dictionary<Uri, byte[]>()).RefreshAsync(root);
 
         Assert.Empty(result.UpdatedCatalogs);
         Assert.False(result.RestartRequired);
@@ -252,11 +259,11 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     {
         WriteExistingReferences();
         await CreateService(CreatePayloads()).RefreshAsync(root);
-        var regionalPath = Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName);
+        string regionalPath = Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName);
         File.SetLastWriteTimeUtc(regionalPath, new DateTime(2026, 7, 17, 12, 0, 0, DateTimeKind.Utc));
         var payloads = new Dictionary<Uri, byte[]> { [uris.RegionalCodexCandidatesCsv] = CreateRegionalCodexCsv() };
 
-        var result = await CreateService(payloads).RefreshAsync(root);
+        PublishedReferenceUpdateResult result = await CreateService(payloads).RefreshAsync(root);
 
         Assert.Equal(["regional Codex candidates"], result.UpdatedCatalogs);
         Assert.True(result.RestartRequired);
@@ -271,7 +278,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         File.Delete(Path.Combine(root, "pub", KnownSystemAddressCatalog.LegacyFileName));
         var payloads = new Dictionary<Uri, byte[]> { [uris.KnownSystemAddresses] = CreateKnownSystemsCatalog() };
 
-        var result = await CreateService(payloads).RefreshAsync(root);
+        PublishedReferenceUpdateResult result = await CreateService(payloads).RefreshAsync(root);
 
         Assert.Equal(["known system addresses"], result.UpdatedCatalogs);
         Assert.True(result.RestartRequired);
@@ -340,9 +347,9 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
     private static byte[] CreateBiologyArchive()
     {
-        var assembly = typeof(ExobiologyReferenceCatalog).Assembly;
+        Assembly assembly = typeof(ExobiologyReferenceCatalog).Assembly;
         const string prefix = "SrvSurvey.Core.Resources.bio-criteria.";
-        var entries = assembly
+        (string, byte[])[] entries = assembly
             .GetManifestResourceNames()
             .Where(name => name.StartsWith(prefix, StringComparison.Ordinal))
             .Where(name => name.EndsWith(".json", StringComparison.Ordinal))
@@ -353,7 +360,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
     private static byte[] CreateRegionalCodexCsv()
     {
-        var csv = string.Join(
+        string csv = string.Join(
             "\r\n",
             "\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"",
             "\"1\",\"Galactic Centre\",\"Aleoida Arcus - Yellow\",\"0\",\"0\",\"2310101\",\"$Codex_Ent_Aleoids_01_B_Name;\",\"B\"",
@@ -373,10 +380,10 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         using var stream = new MemoryStream();
         using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
         {
-            foreach (var (name, bytes) in entries)
+            foreach ((string? name, byte[]? bytes) in entries)
             {
-                var entry = archive.CreateEntry(name, CompressionLevel.Fastest);
-                using var target = entry.Open();
+                ZipArchiveEntry entry = archive.CreateEntry(name, CompressionLevel.Fastest);
+                using Stream target = entry.Open();
                 target.Write(bytes);
             }
         }
@@ -391,8 +398,8 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         stream.Position = 0;
         using (var archive = new ZipArchive(stream, ZipArchiveMode.Update, leaveOpen: true))
         {
-            var entry = archive.CreateEntry(name, CompressionLevel.Fastest);
-            using var target = entry.Open();
+            ZipArchiveEntry entry = archive.CreateEntry(name, CompressionLevel.Fastest);
+            using Stream target = entry.Open();
             target.Write(bytes);
         }
 
@@ -401,8 +408,8 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
     private static byte[] ReadResource(string resourceName)
     {
-        var assembly = typeof(ExobiologyReferenceCatalog).Assembly;
-        using var stream =
+        Assembly assembly = typeof(ExobiologyReferenceCatalog).Assembly;
+        using Stream stream =
             assembly.GetManifestResourceStream(resourceName)
             ?? throw new InvalidOperationException($"Test resource {resourceName} was not found.");
         using var output = new MemoryStream();
@@ -438,7 +445,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             CancellationToken cancellationToken
         )
         {
-            if (request.RequestUri is null || !payloads.TryGetValue(request.RequestUri, out var bytes))
+            if (request.RequestUri is null || !payloads.TryGetValue(request.RequestUri, out byte[]? bytes))
             {
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
             }

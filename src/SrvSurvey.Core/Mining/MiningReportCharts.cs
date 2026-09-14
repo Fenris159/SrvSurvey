@@ -22,7 +22,7 @@ internal static class MiningReportCharts
             .OrderBy(p => p.Minutes)
             .GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var collections = session
+        MiningCollectionEntry[] collections = session
             .Collections.Where(c => !c.Engineering && c.Time >= session.Started)
             .OrderBy(c => c.Time)
             .ToArray();
@@ -48,10 +48,15 @@ internal static class MiningReportCharts
         html.Append(
             "<h3>Cumulative refining over time</h3><p>Recorded refined tonnage; transfers, purchases and engineering materials are excluded.</p>"
         );
-        foreach (var mineral in collections.GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase))
+        foreach (
+            IGrouping<string, MiningCollectionEntry> mineral in collections.GroupBy(
+                c => c.Name,
+                StringComparer.OrdinalIgnoreCase
+            )
+        )
         {
-            var total = 0d;
-            var points = mineral
+            double total = 0d;
+            Point[] points = mineral
                 .Select(c =>
                 {
                     total += c.Count;
@@ -65,7 +70,7 @@ internal static class MiningReportCharts
 
     public static void AppendMaterialComparison(StringBuilder html, IReadOnlyList<MiningSession> sessions)
     {
-        var minerals = sessions
+        string[] minerals = sessions
             .SelectMany(s => s.Collections)
             .Where(c => !c.Engineering)
             .Select(c => c.Name)
@@ -80,28 +85,34 @@ internal static class MiningReportCharts
         html.Append(
             "<h2>Materials across sessions</h2><p>Refined tons and tons per active hour for each mineral. Imported summaries without collection observations are marked unavailable.</p><div style='overflow-x:auto'><table><thead><tr><th>Session</th>"
         );
-        foreach (var mineral in minerals)
+        foreach (string? mineral in minerals)
         {
-            html.Append($"<th>{H(mineral)}</th>");
+            html.Append("<th>" + H(mineral) + "</th>");
         }
 
         html.Append("</tr></thead><tbody>");
-        foreach (var session in sessions)
+        foreach (MiningSession session in sessions)
         {
-            html.Append($"<tr><th>{H(session.System)} · {H(session.Started.ToString("g"))}</th>");
-            foreach (var mineral in minerals)
+            html.Append(
+                "<tr><th>"
+                    + H(session.System)
+                    + " · "
+                    + H(session.Started.ToString("g", CultureInfo.CurrentCulture))
+                    + "</th>"
+            );
+            foreach (string? mineral in minerals)
             {
                 if (session.Imported is not null)
                 {
                     html.Append("<td>Not recorded</td>");
                     continue;
                 }
-                var tons = session
+                int tons = session
                     .Collections.Where(c =>
                         !c.Engineering && c.Name.Equals(mineral, StringComparison.OrdinalIgnoreCase)
                     )
                     .Sum(c => c.Count);
-                var rate = session.ActiveDuration.TotalHours > 0 ? tons / session.ActiveDuration.TotalHours : 0;
+                double rate = session.ActiveDuration.TotalHours > 0 ? tons / session.ActiveDuration.TotalHours : 0;
                 html.Append(CultureInfo.InvariantCulture, $"<td>{tons:0.##} t · {rate:0.##} t/h</td>");
             }
             html.Append("</tr>");
@@ -111,12 +122,16 @@ internal static class MiningReportCharts
 
     private static void Chart(StringBuilder html, string label, IReadOnlyList<Point> points, string unit, bool stepped)
     {
-        var maxX = Math.Max(1, points.Max(p => p.Minutes));
-        var maxY = Math.Max(1, points.Max(p => p.Value));
+        double maxX = Math.Max(1, points.Max(p => p.Minutes));
+        double maxY = Math.Max(1, points.Max(p => p.Value));
         double X(Point p) => 60 + p.Minutes / maxX * 680;
         double Y(Point p) => 200 - p.Value / maxY * 170;
         html.Append(
-            $"<figure style='margin:20px 0'><figcaption>{H(label)}</figcaption><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 780 240' role='img' aria-label='{H(label)}' style='width:100%;max-height:300px'>"
+            "<figure style='margin:20px 0'><figcaption>"
+                + H(label)
+                + "</figcaption><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 780 240' role='img' aria-label='"
+                + H(label)
+                + "' style='width:100%;max-height:300px'>"
         );
         html.Append(
             "<path d='M60 25 V200 H740' stroke='currentColor' fill='none'/><g fill='currentColor' font-size='12'>"
@@ -126,9 +141,9 @@ internal static class MiningReportCharts
             $"<text x='10' y='35'>{maxY:0.##} {unit}</text><text x='35' y='205'>0</text><text x='60' y='225'>0 min</text><text x='690' y='225'>{maxX:0.##} min</text></g>"
         );
         var path = new StringBuilder();
-        for (var i = 0; i < points.Count; i++)
+        for (int i = 0; i < points.Count; i++)
         {
-            var p = points[i];
+            Point p = points[i];
             if (i > 0 && stepped)
             {
                 path.Append(CultureInfo.InvariantCulture, $" L{X(p):0.##},{Y(points[i - 1]):0.##}");
@@ -136,8 +151,8 @@ internal static class MiningReportCharts
 
             path.Append(CultureInfo.InvariantCulture, $"{(i == 0 ? "M" : " L")}{X(p):0.##},{Y(p):0.##}");
         }
-        html.Append($"<path d='{path}' stroke='var(--accent)' stroke-width='2' fill='none'/>");
-        foreach (var p in points)
+        html.Append("<path d='" + path + "' stroke='var(--accent)' stroke-width='2' fill='none'/>");
+        foreach (Point p in points)
         {
             html.Append(
                 CultureInfo.InvariantCulture,

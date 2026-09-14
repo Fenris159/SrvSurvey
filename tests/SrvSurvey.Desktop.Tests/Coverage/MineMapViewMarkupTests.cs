@@ -11,13 +11,13 @@ public sealed class MineMapViewMarkupTests
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "MineMapView.axaml")
         );
         XNamespace avalonia = "https://github.com/avaloniaui";
-        var headers = document
+        string[] headers = document
             .Descendants(avalonia + "TabItem")
             .Select(item => item.Attribute("Header")?.Value ?? string.Empty)
             .ToArray();
 
         Assert.Equal(["Surface Maps", "Survey map", "Hotspot List", "Surface Hunt", "Instructions"], headers);
-        var map = Assert.Single(document.Descendants(), element => element.Name.LocalName == "MineMapControl");
+        XElement map = Assert.Single(document.Descendants(), element => element.Name.LocalName == "MineMapControl");
         Assert.Equal("True", map.Attribute("AllowViewportInteraction")?.Value);
         Assert.Contains("ViewportZoom", map.Attribute("ViewportZoom")?.Value);
         Assert.Equal("{Binding VisibleMarkerIds}", map.Attribute("VisibleMarkerIds")?.Value);
@@ -34,7 +34,7 @@ public sealed class MineMapViewMarkupTests
             activationBindings,
             binding => Assert.Equal("{Binding ActivateSelectedSurveyCommand}", binding.Attribute("Command")?.Value)
         );
-        var slider = Assert.Single(document.Descendants(avalonia + "Slider"));
+        XElement slider = Assert.Single(document.Descendants(avalonia + "Slider"));
         Assert.Equal("1", slider.Attribute("Minimum")?.Value);
         Assert.Equal("15", slider.Attribute("Maximum")?.Value);
         Assert.Contains(
@@ -88,7 +88,7 @@ public sealed class MineMapViewMarkupTests
             list =>
                 list.Attribute("SelectedItem")?.Value?.Contains("SelectedSurveyRow", StringComparison.Ordinal) == true
         );
-        var surfaceMapsScroller = Assert.Single(
+        XElement surfaceMapsScroller = Assert.Single(
             document.Descendants(avalonia + "ScrollViewer"),
             scroller =>
                 scroller.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
@@ -185,9 +185,9 @@ public sealed class MineMapViewMarkupTests
             document.Descendants(avalonia + "TextBlock"),
             text => text.Attribute("Text")?.Value == "Examples"
         );
-        var rootContent = document.Root?.Elements().Last();
+        XElement? rootContent = document.Root?.Elements().Last();
         Assert.Equal("ScrollViewer", rootContent?.Name.LocalName);
-        var mapBackground = map.Attribute("MapBackground")?.Value;
+        string? mapBackground = map.Attribute("MapBackground")?.Value;
         Assert.Equal("{DynamicResource RavenRaisedSurfaceBrush}", mapBackground);
         Assert.Equal("{DynamicResource RavenMapGridBrush}", map.Attribute("GridBrush")?.Value);
         Assert.Equal("{DynamicResource RavenTextBrush}", map.Attribute("TextBrush")?.Value);
@@ -195,7 +195,10 @@ public sealed class MineMapViewMarkupTests
         var overlay = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "MineMapOverlayPresentation.axaml")
         );
-        var overlayMap = Assert.Single(overlay.Descendants(), element => element.Name.LocalName == "MineMapControl");
+        XElement overlayMap = Assert.Single(
+            overlay.Descendants(),
+            element => element.Name.LocalName == "MineMapControl"
+        );
         Assert.Equal("{Binding ShowMarkerLabelsInOverviewMap}", overlayMap.Attribute("ShowMarkerLabels")?.Value);
         var overlaySettings = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
@@ -209,7 +212,7 @@ public sealed class MineMapViewMarkupTests
         Assert.Equal("{DynamicResource RavenMapGridBrush}", overlayMap.Attribute("GridBrush")?.Value);
         Assert.Equal("{DynamicResource RavenTextBrush}", overlayMap.Attribute("TextBrush")?.Value);
         Assert.Contains("ElementName=MineSurveyMap", slider.Attribute("Value")?.Value);
-        var mapViewbox = Assert.Single(map.Ancestors(avalonia + "Viewbox"));
+        XElement mapViewbox = Assert.Single(map.Ancestors(avalonia + "Viewbox"));
         Assert.Equal("640", mapViewbox.Attribute("MaxHeight")?.Value);
         Assert.Equal("Uniform", mapViewbox.Attribute("Stretch")?.Value);
         Assert.DoesNotContain(
@@ -247,7 +250,7 @@ public sealed class MineMapViewMarkupTests
                     }
                 )
         );
-        var surfaceHuntHeader = Assert.Single(
+        XElement surfaceHuntHeader = Assert.Single(
             document.Descendants(avalonia + "Grid"),
             grid =>
                 grid.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
@@ -271,7 +274,7 @@ public sealed class MineMapViewMarkupTests
                 .Where(text => !text.Contains("WorkspaceSortIndicatorConverter", StringComparison.Ordinal))
                 .ToArray()
         );
-        var cardTitles = document
+        string[] cardTitles = document
             .Descendants(avalonia + "TextBlock")
             .Where(text => text.Attribute("Classes")?.Value?.Contains("card-title", StringComparison.Ordinal) == true)
             .Select(text => text.Attribute("Text")?.Value ?? string.Empty)
@@ -308,7 +311,7 @@ public sealed class MineMapViewMarkupTests
                 && comboBox.Attribute("SelectedItem")?.Value == "{Binding SelectedDensityFilter, Mode=TwoWay}"
         );
         foreach (
-            var binding in new[]
+            string? binding in new[]
             {
                 "{Binding SelectedMapSystem}",
                 "{Binding SelectedMapBody}",
@@ -383,7 +386,7 @@ public sealed class MineMapViewMarkupTests
                 .Elements(avalonia + "Button")
                 .Count()
         );
-        var rows = Assert.Single(
+        XElement rows = Assert.Single(
             document.Descendants(avalonia + "ListBox"),
             list =>
                 list.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
@@ -415,7 +418,7 @@ public sealed class MineMapViewMarkupTests
             document.Descendants(avalonia + "ColumnDefinition"),
             column => column.Attribute("SharedSizeGroup") is not null
         );
-        var header = document
+        XElement header = document
             .Descendants(avalonia + "Grid")
             .Single(grid =>
                 grid.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
@@ -480,11 +483,11 @@ public sealed class MineMapViewMarkupTests
                 .Select(button => button.Attribute("Content")?.Value ?? string.Empty)
                 .ToArray()
         );
-        var guardianButtons = XDocument
+        XElement[] guardianButtons = XDocument
             .Load(Path.Combine(root, "src", "SrvSurvey.Desktop", "GuardianZoomOverlayPresentation.axaml"))
             .Descendants(avalonia + "Button")
             .ToArray();
-        var mineButtons = controls.Descendants(avalonia + "Button").ToArray();
+        XElement[] mineButtons = controls.Descendants(avalonia + "Button").ToArray();
         Assert.Equal(
             guardianButtons.Select(button => button.Attribute("Background")?.Value),
             mineButtons.Select(button => button.Attribute("Background")?.Value)
@@ -541,7 +544,7 @@ public sealed class MineMapViewMarkupTests
     [Fact]
     public void MiningReferenceUsesCompactContentColumnsAndCenteredToggles()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var reference = XDocument.Load(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "MiningReferenceOverlayPresentation.axaml")
         );
@@ -557,7 +560,7 @@ public sealed class MineMapViewMarkupTests
                 Assert.StartsWith("MiningRef", column.Attribute("SharedSizeGroup")?.Value);
             }
         );
-        var toggle = Assert.Single(
+        XElement toggle = Assert.Single(
             workspace.Descendants(avalonia + "CheckBox"),
             checkBox => checkBox.Attribute("IsChecked")?.Value == "{Binding IsInOverlay, Mode=TwoWay}"
         );
@@ -575,7 +578,7 @@ public sealed class MineMapViewMarkupTests
         );
         XNamespace avalonia = "https://github.com/avaloniaui";
         XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
-        var headers = document
+        XElement[] headers = document
             .Descendants(avalonia + "Grid")
             .Where(grid => grid.Attribute(x + "Name")?.Value.EndsWith("Header", StringComparison.Ordinal) == true)
             .ToArray();
@@ -591,8 +594,8 @@ public sealed class MineMapViewMarkupTests
                         scroller.Attribute("HorizontalScrollBarVisibility")?.Value == "Auto"
                         && scroller.Attribute("VerticalScrollBarVisibility")?.Value == "Disabled"
                 );
-                var columns = header.Descendants(avalonia + "ColumnDefinition").ToArray();
-                var buttons = header.Elements(avalonia + "Button").ToArray();
+                XElement[] columns = header.Descendants(avalonia + "ColumnDefinition").ToArray();
+                XElement[] buttons = header.Elements(avalonia + "Button").ToArray();
                 Assert.NotEmpty(buttons);
                 Assert.Equal(columns.Length, buttons.Length);
                 Assert.All(

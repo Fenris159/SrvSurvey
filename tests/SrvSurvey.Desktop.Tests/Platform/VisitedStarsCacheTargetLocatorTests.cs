@@ -8,9 +8,9 @@ public sealed class VisitedStarsCacheTargetLocatorTests
     [Fact]
     public void ResolvesFrontierNumericProfileDirectory()
     {
-        var local = Path.Combine("C:\\", "Users", "Drew", "AppData", "Local");
+        string local = Path.Combine("C:\\", "Users", "Drew", "AppData", "Local");
 
-        var path = VisitedStarsCacheTargetLocator.ResolveWindows(local, "F123456");
+        string? path = VisitedStarsCacheTargetLocator.ResolveWindows(local, "F123456");
 
         Assert.Equal(
             Path.Combine(

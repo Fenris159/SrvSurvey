@@ -12,7 +12,7 @@ public sealed class HumanSiteMapControlTests
         var commander = new HumanSiteMapPoint(125, -40);
         var center = new Point(250, 300);
 
-        var projected = HumanSiteMapControl.TransformMapPoint(commander, commander, 217, center, 6);
+        Point projected = HumanSiteMapControl.TransformMapPoint(commander, commander, 217, center, 6);
 
         Assert.Equal(center, projected);
     }
@@ -23,14 +23,14 @@ public sealed class HumanSiteMapControlTests
         var center = new Point(100, 100);
         var commander = new HumanSiteMapPoint(0, 0);
 
-        var eastWhileFacingNorth = HumanSiteMapControl.TransformMapPoint(
+        Point eastWhileFacingNorth = HumanSiteMapControl.TransformMapPoint(
             new HumanSiteMapPoint(10, 0),
             commander,
             0,
             center,
             2
         );
-        var eastWhileFacingEast = HumanSiteMapControl.TransformMapPoint(
+        Point eastWhileFacingEast = HumanSiteMapControl.TransformMapPoint(
             new HumanSiteMapPoint(10, 0),
             commander,
             90,

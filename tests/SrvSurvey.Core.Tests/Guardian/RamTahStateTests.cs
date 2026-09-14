@@ -8,8 +8,8 @@ public sealed class RamTahStateTests
     [Fact]
     public void PublishedLogInventoriesMatchLegacyMissions()
     {
-        var ruins = RamTahState.GetAncientRuinsLogCodes();
-        var logs = RamTahState.GetGuardianLogCodes();
+        IReadOnlyList<string> ruins = RamTahState.GetAncientRuinsLogCodes();
+        IReadOnlyList<string> logs = RamTahState.GetGuardianLogCodes();
 
         Assert.Equal(RamTahState.AncientRuinsLogCount, ruins.Count);
         Assert.Equal(RamTahState.GuardianLogsCount, logs.Count);
@@ -34,7 +34,7 @@ public sealed class RamTahStateTests
             )
         );
 
-        var snapshot = state.CreateSnapshot();
+        RamTahSnapshot snapshot = state.CreateSnapshot();
 
         Assert.Equal(RamTahMissionStatus.Active, snapshot.AncientRuinsMissionStatus);
         Assert.Equal(RamTahMissionStatus.Complete, snapshot.GuardianLogsMissionStatus);
@@ -82,7 +82,7 @@ public sealed class RamTahStateTests
             );
         }
 
-        var changed = state.Apply(
+        bool changed = state.Apply(
             Parse($"{{\"timestamp\":\"2026-07-24T12:00:01Z\",\"event\":\"{eventName}\",\"Name\":\"{missionName}\"}}")
         );
 
@@ -100,7 +100,7 @@ public sealed class RamTahStateTests
     {
         var state = new RamTahState();
 
-        var changed = state.Apply(
+        bool changed = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-24T12:00:00Z","event":"Missions","Active":[
@@ -123,7 +123,7 @@ public sealed class RamTahStateTests
     {
         var state = new RamTahState();
 
-        var changed = state.Apply(
+        bool changed = state.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-24T12:00:00Z","event":"MissionAccepted","Name":"Mission_Collect_name"}
@@ -140,7 +140,10 @@ public sealed class RamTahStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 }

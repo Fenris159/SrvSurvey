@@ -8,8 +8,8 @@ public sealed class OverlayThemeColorEditorViewModelTests
     [Fact]
     public void PickerColorUpdatesLegacyHexAndClearsValidation()
     {
-        var changeCount = 0;
-        var editor = CreateEditor(() => changeCount++);
+        int changeCount = 0;
+        OverlayThemeColorEditorViewModel editor = CreateEditor(() => changeCount++);
         editor.HexValue = "not-a-colour";
 
         editor.Color = Color.FromArgb(128, 1, 2, 3);
@@ -24,7 +24,7 @@ public sealed class OverlayThemeColorEditorViewModelTests
     [Fact]
     public void HexEntryUpdatesPickerColorUsingTrailingAlpha()
     {
-        var editor = CreateEditor(() => { });
+        OverlayThemeColorEditorViewModel editor = CreateEditor(() => { });
 
         editor.HexValue = "#A1B2C340";
 

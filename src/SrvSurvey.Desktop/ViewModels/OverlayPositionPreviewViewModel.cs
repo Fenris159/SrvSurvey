@@ -39,15 +39,15 @@ public sealed record OverlayPositionPreviewViewModel(
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(simulation);
-        var content = OverlayPreviewSimulationProjector.Project(definition, simulation);
-        var isCompact = definition.PreviewSize.Height < 50;
-        var rows = isCompact ? [] : content.Rows;
-        var isRouteBio = definition.Name == RouteBioPlotterName;
-        var routeBioTargets = isRouteBio
+        OverlayPreviewSimulationContent content = OverlayPreviewSimulationProjector.Project(definition, simulation);
+        bool isCompact = definition.PreviewSize.Height < 50;
+        IReadOnlyList<OverlayPositionPreviewRowViewModel> rows = isCompact ? [] : content.Rows;
+        bool isRouteBio = definition.Name == RouteBioPlotterName;
+        RouteBioTargetItemViewModel[] routeBioTargets = isRouteBio
             ? rows.Select(row => row.RouteBody).OfType<RouteBioTargetItemViewModel>().ToArray()
             : [];
-        var preferredWidth = definition.PreviewSize.Width;
-        var estimatedHeight = CalculateEstimatedHeight(definition, rows, isCompact, isRouteBio);
+        int preferredWidth = definition.PreviewSize.Width;
+        double estimatedHeight = CalculateEstimatedHeight(definition, rows, isCompact, isRouteBio);
 
         return new OverlayPositionPreviewViewModel(
             definition,
@@ -67,7 +67,7 @@ public sealed record OverlayPositionPreviewViewModel(
 
     public PixelSize GetEstimatedPixelSize(double scaling)
     {
-        var safeScaling = double.IsFinite(scaling) && scaling > 0 ? scaling : 1;
+        double safeScaling = double.IsFinite(scaling) && scaling > 0 ? scaling : 1;
         return new PixelSize(
             Math.Max(1, (int)Math.Ceiling(PreferredWidth * safeScaling)),
             Math.Max(1, (int)Math.Ceiling(EstimatedHeight * safeScaling))
@@ -86,7 +86,7 @@ public sealed record OverlayPositionPreviewViewModel(
             return definition.PreviewSize.Height;
         }
 
-        var rowsHeight = isRouteBio
+        double rowsHeight = isRouteBio
             ? rows.Take(RouteBioTargetList.MaxVisibleItemCount).Sum(row => row.EstimatedHeight)
             : rows.Sum(row => row.EstimatedHeight);
         return (isRouteBio ? 108 : 92) + rowsHeight;

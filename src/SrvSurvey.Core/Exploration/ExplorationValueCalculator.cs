@@ -38,7 +38,7 @@ public static class ExplorationValueCalculator
             return CalculateStarValue(request.BodyClass, request.Mass);
         }
 
-        var value = CalculatePlanetBaseValue(request);
+        double value = CalculatePlanetBaseValue(request);
         value = ApplyMappedBonuses(value, request);
         value = Math.Max(500, value);
         value *= request.IsFirstDiscoverer ? 2.6 : 1;
@@ -48,13 +48,13 @@ public static class ExplorationValueCalculator
 
     private static int CalculateStarValue(string bodyClass, double mass)
     {
-        var starBaseValue = GetStarBaseValue(bodyClass);
+        double starBaseValue = GetStarBaseValue(bodyClass);
         return (int)Math.Round(starBaseValue + (mass * starBaseValue / 66.25));
     }
 
     private static double CalculatePlanetBaseValue(ExplorationValueRequest request)
     {
-        var bodyBaseValue = GetPlanetBaseValue(request.BodyClass!, request.IsTerraformable);
+        int bodyBaseValue = GetPlanetBaseValue(request.BodyClass!, request.IsTerraformable);
         return (bodyBaseValue + bodyBaseValue * PlanetValueExponent * Math.Pow(request.Mass, 0.2))
             * GetMappingMultiplier(request);
     }

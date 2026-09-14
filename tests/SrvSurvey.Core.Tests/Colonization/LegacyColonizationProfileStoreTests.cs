@@ -13,7 +13,7 @@ public sealed class LegacyColonizationProfileStoreTests : IDisposable
     public async Task LegacyProjectSelectionsAndFleetCarrierCargoAreLoadedReadOnly()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "F123-colony.json");
+        string path = Path.Combine(temporaryDirectory, "F123-colony.json");
         const string json = """
             {
               "fid": "F123",
@@ -48,11 +48,13 @@ public sealed class LegacyColonizationProfileStoreTests : IDisposable
             """;
         await File.WriteAllTextAsync(path, json);
 
-        var result = await new LegacyColonizationProfileStore(temporaryDirectory).LoadAsync("F123");
+        LegacyColonizationProfileLoadResult result = await new LegacyColonizationProfileStore(
+            temporaryDirectory
+        ).LoadAsync("F123");
 
         Assert.True(result.Exists);
         Assert.Null(result.Error);
-        var snapshot = Assert.IsType<LegacyColonizationProfileSnapshot>(result.Snapshot);
+        LegacyColonizationProfileSnapshot snapshot = Assert.IsType<LegacyColonizationProfileSnapshot>(result.Snapshot);
         Assert.Equal("Test Cmdr", snapshot.CommanderName);
         Assert.Equal("build-1", snapshot.PrimaryProjectId);
         Assert.Equal(["build-2"], snapshot.HiddenProjectIds);
@@ -68,11 +70,13 @@ public sealed class LegacyColonizationProfileStoreTests : IDisposable
     public async Task MalformedProfileIsReportedWithoutChangingTheFile()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "F123-colony.json");
+        string path = Path.Combine(temporaryDirectory, "F123-colony.json");
         const string malformed = "{\"projects\":[";
         await File.WriteAllTextAsync(path, malformed);
 
-        var result = await new LegacyColonizationProfileStore(temporaryDirectory).LoadAsync("F123");
+        LegacyColonizationProfileLoadResult result = await new LegacyColonizationProfileStore(
+            temporaryDirectory
+        ).LoadAsync("F123");
 
         Assert.True(result.Exists);
         Assert.Null(result.Snapshot);

@@ -19,12 +19,12 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
     [AvaloniaFact]
     public async Task GroundTargetSuppressionClosesAndReopensItsWindow()
     {
-        var groundTarget = await CreateGroundTargetAsync();
+        GroundTargetViewModel groundTarget = await CreateGroundTargetAsync();
         var platform = new RecordingOverlayPlatform();
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
-        using var session = CreateSession(platform, tracker);
+        using OverlayPresentationSession session = CreateSession(platform, tracker);
         using var coordinator = new GroundTargetOverlayCoordinator(groundTarget, session);
-        var visibilityChanges = 0;
+        int visibilityChanges = 0;
         coordinator.VisibilityChanged += (_, _) => visibilityChanges++;
 
         Assert.True(coordinator.IsVisible);
@@ -50,12 +50,12 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
     [AvaloniaFact]
     public void StationInfoSuppressionClosesReopensAndReportsVisibility()
     {
-        using var stationInfo = CreateStationInfo();
+        using StationInfoViewModel stationInfo = CreateStationInfo();
         var platform = new RecordingOverlayPlatform();
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
-        using var session = CreateSession(platform, tracker);
+        using OverlayPresentationSession session = CreateSession(platform, tracker);
         using var coordinator = new StationInfoOverlayCoordinator(stationInfo, session);
-        var visibilityChanges = 0;
+        int visibilityChanges = 0;
         coordinator.VisibilityChanged += (_, _) => visibilityChanges++;
 
         Assert.True(coordinator.IsVisible);

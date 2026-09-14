@@ -66,7 +66,7 @@ public sealed class ColonizationConstructionStateTests
             )
         );
 
-        var snapshot = state.CreateSnapshot();
+        ColonizationConstructionSnapshot snapshot = state.CreateSnapshot();
         Assert.NotNull(snapshot.CurrentDock);
         Assert.True(snapshot.CurrentDock.IsConstructionSite);
         Assert.Equal(
@@ -225,7 +225,7 @@ public sealed class ColonizationConstructionStateTests
     public void ReplayedEquivalentEventsDoNotAdvanceVersion()
     {
         var state = new ColonizationConstructionState();
-        var docked = Event(
+        JournalEventEnvelope docked = Event(
             "Docked",
             """
             "MarketID":10,"SystemAddress":20,"StarSystem":"Test",
@@ -233,7 +233,7 @@ public sealed class ColonizationConstructionStateTests
             "StationServices":["dock","colonisationcontribution"]
             """
         );
-        var depot = Event(
+        JournalEventEnvelope depot = Event(
             "ColonisationConstructionDepot",
             """
             "MarketID":10,"ConstructionProgress":0.5,
@@ -286,11 +286,11 @@ public sealed class ColonizationConstructionStateTests
 
     private static JournalEventEnvelope Event(string eventName, string properties)
     {
-        var comma = string.IsNullOrWhiteSpace(properties) ? string.Empty : ",";
-        var json = $$"""
+        string comma = string.IsNullOrWhiteSpace(properties) ? string.Empty : ",";
+        string json = $$"""
             {"timestamp":"2026-07-24T12:00:00Z","event":"{{eventName}}"{{comma}}{{properties}}}
             """;
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return result!;
     }
 }

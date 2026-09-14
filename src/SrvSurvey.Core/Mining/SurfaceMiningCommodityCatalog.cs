@@ -277,8 +277,8 @@ public static class SurfaceMiningCommodityCatalog
 
     public static bool TryResolve(string value, [MaybeNullWhen(false)] out SurfaceMiningCommodity commodity)
     {
-        var normalized = value.Trim();
-        if (Aliases.TryGetValue(normalized, out var canonical))
+        string normalized = value.Trim();
+        if (Aliases.TryGetValue(normalized, out string? canonical))
         {
             normalized = canonical;
         }
@@ -291,7 +291,7 @@ public static class SurfaceMiningCommodityCatalog
 
     private static SurfaceMiningCommodity CreateCommodity(SurfaceMiningHuntReference reference)
     {
-        var bodyTypes = reference.StartWith + " " + reference.AlsoPossibleOn;
+        string bodyTypes = reference.StartWith + " " + reference.AlsoPossibleOn;
         return new SurfaceMiningCommodity(
             Categories[reference.Material],
             reference.Material,
@@ -308,7 +308,7 @@ public static class SurfaceMiningCommodityCatalog
 
     private static bool ContainsBodyType(string value, string bodyType)
     {
-        var searchable = bodyType.Equals(RockyBodyType, StringComparison.OrdinalIgnoreCase)
+        string searchable = bodyType.Equals(RockyBodyType, StringComparison.OrdinalIgnoreCase)
             ? value.Replace(RockyIceBodyType, string.Empty, StringComparison.OrdinalIgnoreCase)
             : value;
         return searchable

@@ -79,7 +79,7 @@ public sealed class JournalSessionState
         ArgumentNullException.ThrowIfNull(journalEvent);
         ValidEventCount++;
         LastEventTimestamp = journalEvent.Timestamp ?? LastEventTimestamp;
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
 
         switch (journalEvent.EventName)
         {
@@ -101,8 +101,8 @@ public sealed class JournalSessionState
                 break;
 
             case "Commander":
-                var nextCommanderName = GetString(root, "Name");
-                var nextFrontierId = GetString(root, "FID");
+                string? nextCommanderName = GetString(root, "Name");
+                string? nextFrontierId = GetString(root, "FID");
                 if (HasCommanderChanged(nextCommanderName, nextFrontierId))
                 {
                     ResetVehicleSessionState();
@@ -143,7 +143,7 @@ public sealed class JournalSessionState
 
             case "LaunchSRV":
                 ParkedSrvType = null;
-                var launchedSrvType = GetString(root, "SRVType");
+                string? launchedSrvType = GetString(root, "SRVType");
                 ActiveSrvType = launchedSrvType ?? ActiveSrvType;
                 RememberSrvType(root, launchedSrvType);
                 pendingPlayerControlledFighterId = null;
@@ -184,7 +184,7 @@ public sealed class JournalSessionState
             case "Disembark" when GetBoolean(root, "SRV") == true:
                 ParkedSrvType =
                     GetInt64(root, "ID") is { } disembarkedId
-                    && srvTypesById.TryGetValue(disembarkedId, out var disembarkedType)
+                    && srvTypesById.TryGetValue(disembarkedId, out string? disembarkedType)
                         ? disembarkedType
                         : ActiveSrvType;
                 ActiveSrvType = null;
@@ -258,7 +258,7 @@ public sealed class JournalSessionState
                 break;
 
             case "Music":
-                var musicTrack = GetString(root, nameof(MusicTrack));
+                string? musicTrack = GetString(root, nameof(MusicTrack));
                 MusicTrack = musicTrack;
                 IsAtMainMenu = string.Equals(musicTrack, "MainMenu", StringComparison.Ordinal);
                 IsAtCarrierManagement = string.Equals(musicTrack, "FleetCarrier_Managment", StringComparison.Ordinal);
@@ -288,8 +288,8 @@ public sealed class JournalSessionState
     private void ApplySrvEmbark(JsonElement root)
     {
         ParkedSrvType = null;
-        var embarkedVehicleId = GetInt64(root, "ID");
-        if (embarkedVehicleId is { } embarkedId && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType))
+        long? embarkedVehicleId = GetInt64(root, "ID");
+        if (embarkedVehicleId is { } embarkedId && srvTypesById.TryGetValue(embarkedId, out string? embarkedSrvType))
         {
             ActiveSrvType = embarkedSrvType;
             isNomadStatusConfirmationPending = EliteSrvTypes.IsNomad(embarkedSrvType);
@@ -298,8 +298,8 @@ public sealed class JournalSessionState
 
     private void ApplyLoadGame(JsonElement root)
     {
-        var loadedCommanderName = GetString(root, "Commander");
-        var loadedFrontierId = GetString(root, "FID");
+        string? loadedCommanderName = GetString(root, "Commander");
+        string? loadedFrontierId = GetString(root, "FID");
         if (HasCommanderChanged(loadedCommanderName, loadedFrontierId))
         {
             ResetVehicleSessionState();
@@ -312,7 +312,7 @@ public sealed class JournalSessionState
             ResetActiveVehicleState();
         }
 
-        var loadedShipType = GetString(root, "Ship");
+        string? loadedShipType = GetString(root, "Ship");
         CommanderName = loadedCommanderName ?? CommanderName;
         FrontierId = loadedFrontierId ?? FrontierId;
         GameMode = GetString(root, nameof(GameMode)) ?? GameMode;
@@ -321,7 +321,7 @@ public sealed class JournalSessionState
         IsOdyssey = GetBoolean(root, "Odyssey");
         IsHorizons = GetBoolean(root, "Horizons");
         ShipType = loadedShipType ?? ShipType;
-        var loadedShipId = GetInt64(root, ShipIdProperty);
+        long? loadedShipId = GetInt64(root, ShipIdProperty);
         ShipId = loadedShipId ?? ShipId;
         ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
         ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
@@ -361,7 +361,7 @@ public sealed class JournalSessionState
         pendingPlayerControlledFighterId = GetInt64(root, "ID");
         if (
             pendingPlayerControlledFighterId is { } vehicleId
-            && srvTypesById.TryGetValue(vehicleId, out var srvType)
+            && srvTypesById.TryGetValue(vehicleId, out string? srvType)
             && EliteSrvTypes.IsNomad(srvType)
         )
         {
@@ -375,8 +375,8 @@ public sealed class JournalSessionState
     public bool ReconcileVehicleStatus(EliteStatus status)
     {
         ArgumentNullException.ThrowIfNull(status);
-        var previousSrvType = ActiveSrvType;
-        var previousFighterState = IsFighterLaunched;
+        string? previousSrvType = ActiveSrvType;
+        bool previousFighterState = IsFighterLaunched;
 
         if (status.InSrv && pendingPlayerControlledFighterId is { } vehicleId)
         {
@@ -422,7 +422,7 @@ public sealed class JournalSessionState
 
     private void RememberSrvType(JsonElement root, string? srvType)
     {
-        var vehicleId = GetInt64(root, "ID");
+        long? vehicleId = GetInt64(root, "ID");
         if (vehicleId is not null && !string.IsNullOrWhiteSpace(srvType))
         {
             srvTypesById[vehicleId.Value] = srvType;
@@ -451,11 +451,11 @@ public sealed class JournalSessionState
 
     private bool HasCommanderChanged(string? nextCommanderName, string? nextFrontierId)
     {
-        var frontierIdChanged =
+        bool frontierIdChanged =
             !string.IsNullOrWhiteSpace(nextFrontierId)
             && !string.IsNullOrWhiteSpace(FrontierId)
             && !string.Equals(nextFrontierId, FrontierId, StringComparison.OrdinalIgnoreCase);
-        var commanderNameChanged =
+        bool commanderNameChanged =
             !string.IsNullOrWhiteSpace(nextCommanderName)
             && !string.IsNullOrWhiteSpace(CommanderName)
             && !string.Equals(nextCommanderName, CommanderName, StringComparison.OrdinalIgnoreCase);
@@ -506,7 +506,7 @@ public sealed class JournalSessionState
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -514,7 +514,7 @@ public sealed class JournalSessionState
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False)
             ? value.GetBoolean()
             : null;
@@ -527,12 +527,12 @@ public sealed class JournalSessionState
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long number))
         {
             return number;
         }
@@ -543,7 +543,7 @@ public sealed class JournalSessionState
     private static GalacticCoordinate? GetGalacticCoordinate(JsonElement root, string propertyName)
     {
         if (
-            !root.TryGetProperty(propertyName, out var value)
+            !root.TryGetProperty(propertyName, out JsonElement value)
             || value.ValueKind != JsonValueKind.Array
             || value.GetArrayLength() < 3
         )
@@ -551,11 +551,11 @@ public sealed class JournalSessionState
             return null;
         }
 
-        var coordinates = value.EnumerateArray().Take(3).ToArray();
+        JsonElement[] coordinates = value.EnumerateArray().Take(3).ToArray();
         if (
             coordinates.Any(coordinate =>
                 coordinate.ValueKind != JsonValueKind.Number
-                || !coordinate.TryGetDouble(out var number)
+                || !coordinate.TryGetDouble(out double number)
                 || !double.IsFinite(number)
             )
         )

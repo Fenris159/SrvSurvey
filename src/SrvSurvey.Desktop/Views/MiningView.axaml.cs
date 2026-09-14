@@ -32,7 +32,7 @@ public sealed partial class MiningView : UserControl
         await WithFiles(
             async (vm, storage) =>
             {
-                var files = await storage.OpenFilePickerAsync(
+                IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
                     new FilePickerOpenOptions
                     {
                         Title = "Import EliteMining or SrvSurvey session CSV",
@@ -44,8 +44,8 @@ public sealed partial class MiningView : UserControl
                     return;
                 }
 
-                var file = files[0];
-                await using var stream = await file.OpenReadAsync();
+                IStorageFile file = files[0];
+                await using Stream stream = await file.OpenReadAsync();
                 using var reader = new StreamReader(stream);
                 vm.ImportReports(await reader.ReadToEndAsync());
             }
@@ -74,7 +74,7 @@ public sealed partial class MiningView : UserControl
 
     private void OpenScreenshot_Click(object? sender, RoutedEventArgs e)
     {
-        if (Model is { } vm && (sender as Control)?.Tag is string path)
+        if (Model is { } vm && sender is Control { Tag: string path })
         {
             vm.Status = MiningAttachmentActions.Open(path);
         }
@@ -82,7 +82,7 @@ public sealed partial class MiningView : UserControl
 
     private void RemoveScreenshot_Click(object? sender, RoutedEventArgs e)
     {
-        if ((sender as Control)?.Tag is string path)
+        if (sender is Control { Tag: string path })
         {
             Model?.RemoveScreenshot(path);
         }
@@ -92,7 +92,7 @@ public sealed partial class MiningView : UserControl
         await WithFiles(
             async (vm, storage) =>
             {
-                var mode = (sender as Control)?.Tag as string;
+                string? mode = (sender as Control)?.Tag as string;
                 IReadOnlyList<MiningSession> sessions = vm.SelectedSession is { } session ? [session] : [];
                 if (mode is "all" or "allcsv")
                 {
@@ -104,13 +104,13 @@ public sealed partial class MiningView : UserControl
                     vm.Status = "Select a completed session first.";
                     return;
                 }
-                var extension = mode switch
+                string extension = mode switch
                 {
                     "csv" or "allcsv" => "csv",
                     "txt" => "txt",
                     _ => "html",
                 };
-                var file = await storage.SaveFilePickerAsync(
+                IStorageFile? file = await storage.SaveFilePickerAsync(
                     new FilePickerSaveOptions
                     {
                         Title = "Export mining report",
@@ -123,7 +123,7 @@ public sealed partial class MiningView : UserControl
                     return;
                 }
 
-                var report = await Task.Run(() =>
+                string report = await Task.Run(() =>
                     extension switch
                     {
                         "csv" => MiningReport.Csv(sessions),
@@ -145,7 +145,7 @@ public sealed partial class MiningView : UserControl
                     vm.Status = "Select a completed session first.";
                     return;
                 }
-                var files = await storage.OpenFilePickerAsync(
+                IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
                     new FilePickerOpenOptions
                     {
                         Title = "Attach session screenshots",
@@ -153,7 +153,7 @@ public sealed partial class MiningView : UserControl
                         FileTypeFilter = [FilePickerFileTypes.ImageAll],
                     }
                 );
-                foreach (var file in files)
+                foreach (IStorageFile file in files)
                 {
                     if (
                         file.TryGetLocalPath() is { } path
@@ -173,14 +173,14 @@ public sealed partial class MiningView : UserControl
         await WithFiles(
             async (vm, storage) =>
             {
-                var files = await storage.OpenFilePickerAsync(
+                IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
                     new FilePickerOpenOptions
                     {
                         Title = "Import earlier journals for this commander",
                         AllowMultiple = true,
                     }
                 );
-                var paths = files.Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+                string[] paths = files.Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
                 if (paths.Length > 0)
                 {
                     await vm.ImportJournalsAsync(paths);
@@ -192,7 +192,7 @@ public sealed partial class MiningView : UserControl
         await WithFiles(
             async (vm, storage) =>
             {
-                var file = await storage.SaveFilePickerAsync(
+                IStorageFile? file = await storage.SaveFilePickerAsync(
                     new FilePickerSaveOptions
                     {
                         Title = "Mining backup",
@@ -205,8 +205,8 @@ public sealed partial class MiningView : UserControl
                     return;
                 }
 
-                var bytes = await vm.BackupPackageAsync();
-                await using var output = await file.OpenWriteAsync();
+                byte[] bytes = await vm.BackupPackageAsync();
+                await using Stream output = await file.OpenWriteAsync();
                 output.SetLength(0);
                 await output.WriteAsync(bytes);
                 vm.Status = "Mining backup exported.";
@@ -217,7 +217,7 @@ public sealed partial class MiningView : UserControl
         await WithFiles(
             async (vm, storage) =>
             {
-                var files = await storage.OpenFilePickerAsync(
+                IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
                     new FilePickerOpenOptions
                     {
                         Title = "Restore mining backup (ZIP or JSON; previous data retained)",
@@ -229,10 +229,10 @@ public sealed partial class MiningView : UserControl
                     return;
                 }
 
-                var file = files[0];
-                await using var stream = await file.OpenReadAsync();
+                IStorageFile file = files[0];
+                await using Stream stream = await file.OpenReadAsync();
                 using var buffer = new MemoryStream();
-                var chunk = new byte[81920];
+                byte[] chunk = new byte[81920];
                 int read;
                 while ((read = await stream.ReadAsync(chunk)) > 0)
                 {
@@ -243,7 +243,7 @@ public sealed partial class MiningView : UserControl
 
                     await buffer.WriteAsync(chunk.AsMemory(0, read));
                 }
-                var bytes = buffer.ToArray();
+                byte[] bytes = buffer.ToArray();
                 if (bytes.Length > 2 && bytes[0] == 'P' && bytes[1] == 'K')
                 {
                     await vm.RestorePackageAsync(bytes);
@@ -282,7 +282,7 @@ public sealed partial class MiningView : UserControl
 
     private static async Task WriteAsync(IStorageFile file, string text)
     {
-        await using var stream = await file.OpenWriteAsync();
+        await using Stream stream = await file.OpenWriteAsync();
         stream.SetLength(0);
         await using var writer = new StreamWriter(stream);
         await writer.WriteAsync(text);

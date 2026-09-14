@@ -38,7 +38,7 @@ internal sealed class GuardianOverlayPreviewState : IGuardianOverlayPresentation
     {
         this.statusState = statusState;
         ActiveMapProjection = SampleMapProjection;
-        var nearest = SampleTemplate.PointsOfInterest.First(point =>
+        GuardianPointOfInterest nearest = SampleTemplate.PointsOfInterest.First(point =>
             string.Equals(point.Name, SampleObeliskName, StringComparison.Ordinal)
         );
         Proximity = new GuardianSiteProximitySnapshot(

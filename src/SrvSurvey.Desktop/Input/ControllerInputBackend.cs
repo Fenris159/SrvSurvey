@@ -62,7 +62,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         ArgumentNullException.ThrowIfNull(onInputChanged);
         ArgumentNullException.ThrowIfNull(onStatusChanged);
 
-        var initialized = false;
+        bool initialized = false;
         try
         {
             await SdlLifecycleGate.WaitAsync(cancellationToken);
@@ -91,7 +91,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
             while (!cancellationToken.IsCancellationRequested)
             {
                 SDL.UpdateJoysticks();
-                var device = FindDevice(deviceId);
+                ControllerDeviceInfo? device = FindDevice(deviceId);
                 if (device is null)
                 {
                     onStatusChanged(
@@ -101,7 +101,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
                     continue;
                 }
 
-                using var controller = Open(device);
+                using OpenController controller = Open(device);
                 if (!controller.IsOpen)
                 {
                     onStatusChanged(
@@ -168,10 +168,10 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
 
     private static ControllerDeviceInfo? FindDevice(string deviceId)
     {
-        var instanceIds = SDL.GetJoysticks(out _) ?? [];
-        foreach (var instanceId in instanceIds)
+        uint[] instanceIds = SDL.GetJoysticks(out _) ?? [];
+        foreach (uint instanceId in instanceIds)
         {
-            var device = SdlControllerDeviceProvider.CreateDevice(instanceId);
+            ControllerDeviceInfo device = SdlControllerDeviceProvider.CreateDevice(instanceId);
             if (string.Equals(device.Id, deviceId, StringComparison.Ordinal))
             {
                 return device;
@@ -185,7 +185,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
     {
         if (SDL.IsGamepad(device.InstanceId))
         {
-            var gamepad = SDL.OpenGamepad(device.InstanceId);
+            nint gamepad = SDL.OpenGamepad(device.InstanceId);
             return new OpenController(
                 device,
                 gamepad == IntPtr.Zero ? IntPtr.Zero : SDL.GetGamepadJoystick(gamepad),
@@ -208,7 +208,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         while (!cancellationToken.IsCancellationRequested && SDL.JoystickConnected(controller.Joystick))
         {
             SDL.UpdateGamepads();
-            var connected = DrainGamepadEvents(controller.Device.InstanceId, state, events);
+            bool connected = DrainGamepadEvents(controller.Device.InstanceId, state, events);
             if (!connected)
             {
                 break;
@@ -238,7 +238,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
                     throw new InvalidOperationException($"Could not read SDL gamepad events: {GetError()}");
                 }
 
-                for (var index = 0; index < count; index++)
+                for (int index = 0; index < count; index++)
                 {
                     if (!ProcessGamepadEvent(instanceId, state, in events[index]))
                     {
@@ -292,7 +292,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         state.BeginBatch();
         try
         {
-            foreach (var button in StandardButtons)
+            foreach (SDL.GamepadButton button in StandardButtons)
             {
                 state.UpdateButton(button, SDL.GetGamepadButton(gamepad, button));
             }
@@ -320,13 +320,13 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         while (!cancellationToken.IsCancellationRequested && SDL.JoystickConnected(controller.Joystick))
         {
             SDL.UpdateJoysticks();
-            var current = ReadJoystick(controller);
-            foreach (var token in previous.Except(current))
+            HashSet<string> current = ReadJoystick(controller);
+            foreach (string? token in previous.Except(current))
             {
                 onInputChanged(new ControllerInputChange(token, IsPressed: false));
             }
 
-            foreach (var token in current.Except(previous))
+            foreach (string? token in current.Except(previous))
             {
                 onInputChanged(new ControllerInputChange(token, IsPressed: true));
             }
@@ -339,8 +339,8 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
     private static HashSet<string> ReadJoystick(OpenController controller)
     {
         HashSet<string> pressed = [];
-        var buttonCount = Math.Min(SDL.GetNumJoystickButtons(controller.Joystick), 128);
-        for (var index = 0; index < buttonCount; index++)
+        int buttonCount = Math.Min(SDL.GetNumJoystickButtons(controller.Joystick), 128);
+        for (int index = 0; index < buttonCount; index++)
         {
             if (SDL.GetJoystickButton(controller.Joystick, index))
             {
@@ -358,7 +358,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
             && SDL.GetNumJoystickAxes(controller.Joystick) > 2
         )
         {
-            var triggerAxis = SDL.GetJoystickAxis(controller.Joystick, 2);
+            short triggerAxis = SDL.GetJoystickAxis(controller.Joystick, 2);
             if (triggerAxis <= -TriggerThreshold)
             {
                 pressed.Add("LT");
@@ -374,7 +374,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
 
     private static void AddHat(HashSet<string> pressed, SDL.JoystickHat direction)
     {
-        var token = direction switch
+        string? token = direction switch
         {
             SDL.JoystickHat.Up => "PovU",
             SDL.JoystickHat.RightUp => "PovUR",
@@ -394,7 +394,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
 
     private static string GetError()
     {
-        var error = SDL.GetError();
+        string error = SDL.GetError();
         return string.IsNullOrWhiteSpace(error) ? "No native error was reported." : error;
     }
 
@@ -478,7 +478,7 @@ internal sealed class SdlGamepadInputState(Action<ControllerInputChange> onInput
                 return;
         }
 
-        var token = button switch
+        string? token = button switch
         {
             SDL.GamepadButton.South => "B1",
             SDL.GamepadButton.East => "B2",
@@ -508,7 +508,7 @@ internal sealed class SdlGamepadInputState(Action<ControllerInputChange> onInput
 
     public void UpdateAxis(SDL.GamepadAxis axis, short value)
     {
-        var token = axis switch
+        string? token = axis switch
         {
             SDL.GamepadAxis.LeftTrigger => "LT",
             SDL.GamepadAxis.RightTrigger => "RT",
@@ -541,7 +541,7 @@ internal sealed class SdlGamepadInputState(Action<ControllerInputChange> onInput
 
     private void UpdateHat()
     {
-        var next = (dPadUp, dPadRight, dPadDown, dPadLeft) switch
+        string? next = (dPadUp, dPadRight, dPadDown, dPadLeft) switch
         {
             (true, false, false, false) => "PovU",
             (true, true, false, false) => "PovUR",

@@ -9,7 +9,7 @@ public sealed class ColonizationSystemEditorViewModelTests
     public async Task LoadIsReadOnlyAndSecuredSystemRejectsEditing()
     {
         var client = new StubClient { Current = System(architect: "Other Cmdr", isOpen: false) };
-        var editor = Create(client);
+        ColonizationSystemEditorViewModel editor = Create(client);
         editor.UpdateContext(Context());
 
         await editor.LoadAsync();
@@ -27,7 +27,7 @@ public sealed class ColonizationSystemEditorViewModelTests
     public async Task MissingBodiesRequireExplicitConfirmationBeforeImport()
     {
         var client = new StubClient { Current = System() with { Bodies = null } };
-        var editor = Create(client);
+        ColonizationSystemEditorViewModel editor = Create(client);
         editor.UpdateContext(Context());
         await editor.LoadAsync();
 
@@ -50,7 +50,7 @@ public sealed class ColonizationSystemEditorViewModelTests
     public async Task ReviewIsReadOnlyAndConfirmationPublishesExactPlan()
     {
         var client = new StubClient { Current = System() };
-        var editor = Create(client);
+        ColonizationSystemEditorViewModel editor = Create(client);
         editor.UpdateContext(Context());
         await editor.LoadAsync();
         editor.Sites[0].BodyNumber = 2;
@@ -65,7 +65,7 @@ public sealed class ColonizationSystemEditorViewModelTests
 
         Assert.Equal(1, client.UpdateCount);
         Assert.Equal("secret", client.LastApiKey);
-        var update = Assert.Single(client.LastUpdate!.UpdatedSites);
+        ColonizationSystemSite update = Assert.Single(client.LastUpdate!.UpdatedSites);
         Assert.Equal("site-1", update.Id);
         Assert.Equal(2, update.BodyNumber);
         Assert.Empty(client.LastUpdate.DeletedSiteIds);
@@ -75,9 +75,9 @@ public sealed class ColonizationSystemEditorViewModelTests
     [Fact]
     public async Task ConcurrentSameFieldChangeBlocksPublish()
     {
-        var original = System();
+        ColonizationSystemRecord original = System();
         var client = new StubClient { Current = original };
-        var editor = Create(client);
+        ColonizationSystemEditorViewModel editor = Create(client);
         editor.UpdateContext(Context());
         await editor.LoadAsync();
         editor.Sites[0].BodyNumber = 2;
@@ -96,7 +96,7 @@ public sealed class ColonizationSystemEditorViewModelTests
     public async Task MissingApiKeyCannotPublishReviewedChanges()
     {
         var client = new StubClient { Current = System() };
-        var editor = Create(client);
+        ColonizationSystemEditorViewModel editor = Create(client);
         editor.UpdateContext(Context() with { RavenApiKey = null });
         await editor.LoadAsync();
         editor.Sites[0].BodyNumber = 2;
@@ -112,9 +112,9 @@ public sealed class ColonizationSystemEditorViewModelTests
     [Fact]
     public async Task RemoteOnlySiteAndExtensionDataSurviveLocalPublish()
     {
-        var original = System();
+        ColonizationSystemRecord original = System();
         var client = new StubClient { Current = original };
-        var editor = Create(client);
+        ColonizationSystemEditorViewModel editor = Create(client);
         editor.UpdateContext(Context());
         await editor.LoadAsync();
         editor.Sites[0].BuildType = "vesta";
@@ -136,7 +136,7 @@ public sealed class ColonizationSystemEditorViewModelTests
         await editor.ReviewAsync();
         await editor.ConfirmPublishAsync();
 
-        var published = Assert.Single(client.LastUpdate!.UpdatedSites);
+        ColonizationSystemSite published = Assert.Single(client.LastUpdate!.UpdatedSites);
         Assert.Equal(7, published.ExtensionData["future"].GetInt32());
         Assert.DoesNotContain("remote", client.LastUpdate.DeletedSiteIds);
     }
@@ -145,7 +145,7 @@ public sealed class ColonizationSystemEditorViewModelTests
     public async Task StableLocalDeletionPublishesOnlyPersistedSiteId()
     {
         var client = new StubClient { Current = System() };
-        var editor = Create(client);
+        ColonizationSystemEditorViewModel editor = Create(client);
         editor.UpdateContext(Context());
         await editor.LoadAsync();
         editor.SelectedSite = editor.Sites[0];
@@ -166,7 +166,7 @@ public sealed class ColonizationSystemEditorViewModelTests
     public async Task BodyImportCannotDiscardUnsavedLocalEdits()
     {
         var client = new StubClient { Current = System() with { Bodies = null } };
-        var editor = Create(client);
+        ColonizationSystemEditorViewModel editor = Create(client);
         editor.UpdateContext(Context());
         await editor.LoadAsync();
         editor.Sites[0].BuildType = "vesta";
@@ -275,7 +275,7 @@ public sealed class ColonizationSystemEditorViewModelTests
             var sites = Current
                 .Sites.Where(site => !deleted.Contains(site.Id))
                 .ToDictionary(site => site.Id, StringComparer.Ordinal);
-            foreach (var site in update.UpdatedSites)
+            foreach (ColonizationSystemSite site in update.UpdatedSites)
             {
                 sites[site.Id] = site;
             }

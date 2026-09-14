@@ -77,7 +77,7 @@ public sealed class SphereLimitState
             return null;
         }
 
-        var distance = center.DistanceTo(targetPosition);
+        double distance = center.DistanceTo(targetPosition);
         return new SphereLimitEvaluation(targetSystemName, targetPosition, distance, distance < Radius);
     }
 

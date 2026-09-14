@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -90,7 +91,7 @@ internal sealed class HostedOverlayWindow : IDisposable
     private readonly Action<OverlayHostDiagnostic>? reportDiagnostic;
     private readonly OverlayWindowRegistry windowRegistry;
     private readonly Action<HostedOverlayWindow> removeFromSession;
-    private readonly object reconciliationGate = new();
+    private readonly Lock reconciliationGate = new();
     private Window? window;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private volatile bool wantsWindow;
@@ -365,7 +366,7 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     private void OpenWindow()
     {
-        var overlay =
+        Window overlay =
             definition.CreateWindow(platform.Capabilities)
             ?? throw new InvalidOperationException($"The {definition.PlotterName} window factory returned null.");
         OverlayThemeResources.Apply(overlay, overlayLayout, definition.PlotterName, windowRegistry);
@@ -383,7 +384,7 @@ internal sealed class HostedOverlayWindow : IDisposable
         }
 
         PositionWindow(opened, gameWindow.ClientBounds);
-        var preparation = platform.PreparePassiveWindow(opened);
+        OverlayPreparationResult preparation = platform.PreparePassiveWindow(opened);
         definition.ObservePreparation?.Invoke(preparation);
         if (!preparation.IsClickThrough)
         {
@@ -412,19 +413,19 @@ internal sealed class HostedOverlayWindow : IDisposable
     private void PositionWindow(Window target, PixelRect gameBounds)
     {
         OverlayThemeResources.ApplyOpacity(target, overlayLayout, definition.PlotterName);
-        var screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
+        Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(
             target,
             overlayLayout,
             definition.PlotterName,
             screen.Scaling
         );
-        var position =
+        PixelPoint position =
             overlayLayout.GetPosition(definition.PlotterName, gameBounds, size)
             ?? definition.FallbackPlacement(gameBounds, size);
         if (target.Position != position)
@@ -435,7 +436,7 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     private void CloseWindow()
     {
-        var closing = window;
+        Window? closing = window;
         if (closing is null)
         {
             return;

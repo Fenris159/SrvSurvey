@@ -8,16 +8,18 @@ public sealed class JournalMonitorSessionTests
         var session = new JournalMonitorSession();
         var cancellationObserved = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var allowCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var running = session.Start(
+        Task running = session.Start(
             async cancellationToken =>
             {
-                using var registration = cancellationToken.Register(cancellationObserved.SetResult);
+                using CancellationTokenRegistration registration = cancellationToken.Register(
+                    cancellationObserved.SetResult
+                );
                 await allowCompletion.Task;
             },
             exception => Assert.Fail(exception.ToString())
         );
 
-        var stopping = session.StopAsync();
+        Task stopping = session.StopAsync();
 
         await cancellationObserved.Task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.False(stopping.IsCompleted);
@@ -31,7 +33,7 @@ public sealed class JournalMonitorSessionTests
     public async Task ConcurrentStopsShareTheSameCompletionTask()
     {
         var session = new JournalMonitorSession();
-        var running = session.Start(
+        Task running = session.Start(
             async cancellationToken =>
             {
                 await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
@@ -39,8 +41,8 @@ public sealed class JournalMonitorSessionTests
             exception => Assert.Fail(exception.ToString())
         );
 
-        var first = session.StopAsync();
-        var second = session.StopAsync();
+        Task first = session.StopAsync();
+        Task second = session.StopAsync();
 
         Assert.Same(first, second);
         await first;
@@ -53,7 +55,7 @@ public sealed class JournalMonitorSessionTests
         var session = new JournalMonitorSession();
         var reported = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
         var expected = new InvalidOperationException("Monitor failed.");
-        var running = session.Start(_ => Task.FromException(expected), reported.SetResult);
+        Task running = session.Start(_ => Task.FromException(expected), reported.SetResult);
 
         await running;
         Assert.Same(expected, await reported.Task);

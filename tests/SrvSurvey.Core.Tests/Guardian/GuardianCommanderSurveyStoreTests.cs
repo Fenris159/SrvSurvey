@@ -15,8 +15,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     public async Task SaveRoundTripsCompactLegacyContractAndUnknownFields()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var survey = CreateSurvey();
-        var path = store.GetSurveyPath("F123", true, survey.BodyName, survey.Index, isRuins: true);
+        GuardianCommanderSiteSurvey survey = CreateSurvey();
+        string path = store.GetSurveyPath("F123", true, survey.BodyName, survey.Index, isRuins: true);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(
             path,
@@ -35,10 +35,10 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
             """
         );
 
-        var savedPath = await store.SaveAsync("F123", true, survey);
+        string savedPath = await store.SaveAsync("F123", true, survey);
 
         Assert.Equal(path, savedPath);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["futureSurveyOption"]!["enabled"]!.GetValue<bool>());
         Assert.Equal(8, root["location"]!["futureCoordinate"]!.GetValue<int>());
         Assert.Null(root["poiStatus"]);
@@ -54,8 +54,11 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
             root["components"]!.AsArray().Select(item => item!.GetValue<string>()).ToArray()
         );
 
-        var loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", true);
-        var roundTrip = Assert.Single(loaded.Surveys);
+        GuardianCommanderDataReadResult loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(
+            "F123",
+            true
+        );
+        GuardianCommanderSiteSurvey roundTrip = Assert.Single(loaded.Surveys);
         Assert.Empty(loaded.Errors);
         Assert.Equal(survey.Name, roundTrip.Name);
         Assert.Equal(7, roundTrip.LocalSiteId);
@@ -77,8 +80,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     public async Task SavePreservesExistingComponentEntriesWhenDuplicateNamesAppear()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var source = CreateSurvey();
-        var path = store.GetSurveyPath("F123", true, source.BodyName, source.Index, isRuins: true);
+        GuardianCommanderSiteSurvey source = CreateSurvey();
+        string path = store.GetSurveyPath("F123", true, source.BodyName, source.Index, isRuins: true);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(
             path,
@@ -92,7 +95,7 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
             }
             """
         );
-        var survey = source with
+        GuardianCommanderSiteSurvey survey = source with
         {
             Survey = new GuardianSurveyData
             {
@@ -112,8 +115,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
 
         await store.SaveAsync("F123", true, survey);
 
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
-        var components = root["components"]!.AsArray().Select(item => item!.GetValue<string>()).ToArray();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        string[] components = root["components"]!.AsArray().Select(item => item!.GetValue<string>()).ToArray();
         Assert.Equal(3, components.Length);
         Assert.All(components.Take(2), component => Assert.StartsWith("c1,", component, StringComparison.Ordinal));
         Assert.Equal("future-format", components[2]);
@@ -123,8 +126,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     public async Task SaveUsesLegacyFolderAndStructureFilename()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var source = CreateSurvey();
-        var survey = source with
+        GuardianCommanderSiteSurvey source = CreateSurvey();
+        GuardianCommanderSiteSurvey survey = source with
         {
             Name = "$Ancient_Tiny_001:#index=1;",
             SiteType = "Lacrosse",
@@ -141,14 +144,17 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
             },
         };
 
-        var path = await store.SaveAsync("F123", false, survey);
+        string path = await store.SaveAsync("F123", false, survey);
 
         Assert.EndsWith(
             Path.Combine("guardian", "F123", "legacy", $"{survey.BodyName}-structure-1.json"),
             path,
             StringComparison.Ordinal
         );
-        var loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", false);
+        GuardianCommanderDataReadResult loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(
+            "F123",
+            false
+        );
         Assert.True(Assert.Single(loaded.Surveys).Legacy);
     }
 
@@ -156,8 +162,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     public async Task SavePreservesStaleComponentsIfMissingFromMemory()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var source = CreateSurvey();
-        var path = store.GetSurveyPath("F123", true, source.BodyName, source.Index, isRuins: true);
+        GuardianCommanderSiteSurvey source = CreateSurvey();
+        string path = store.GetSurveyPath("F123", true, source.BodyName, source.Index, isRuins: true);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(
             path,
@@ -171,7 +177,7 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
             }
             """
         );
-        var survey = source with
+        GuardianCommanderSiteSurvey survey = source with
         {
             Survey = new GuardianSurveyData
             {
@@ -188,14 +194,17 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
 
         await store.SaveAsync("F123", true, survey);
 
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(
             ["c1,cell,conduit,tech", "future-format", "future,quantum"],
             root["components"]!.AsArray().Select(item => item!.GetValue<string>()).ToArray()
         );
-        var loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", true);
-        var loadedSurvey = Assert.Single(loaded.Surveys);
-        var saved = Assert.Single(loadedSurvey.Survey.ComponentMaterials);
+        GuardianCommanderDataReadResult loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(
+            "F123",
+            true
+        );
+        GuardianCommanderSiteSurvey loadedSurvey = Assert.Single(loaded.Surveys);
+        KeyValuePair<string, GuardianComponentLoadout> saved = Assert.Single(loadedSurvey.Survey.ComponentMaterials);
         Assert.Equal("c1", saved.Key);
         Assert.Equal(GuardianComponentMaterial.Cell, saved.Value.GetItem(0));
         Assert.Equal(GuardianComponentMaterial.Conduit, saved.Value.GetItem(1));
@@ -206,8 +215,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     public async Task SaveRefusesMalformedExistingSurveyAndUnsafeNames()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var survey = CreateSurvey();
-        var path = store.GetSurveyPath("F123", true, survey.BodyName, survey.Index, isRuins: true);
+        GuardianCommanderSiteSurvey survey = CreateSurvey();
+        string path = store.GetSurveyPath("F123", true, survey.BodyName, survey.Index, isRuins: true);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         const string malformed = "{\"name\":";
         await File.WriteAllTextAsync(path, malformed);

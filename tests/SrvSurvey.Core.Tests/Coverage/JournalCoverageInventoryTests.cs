@@ -151,7 +151,7 @@ public sealed class JournalCoverageInventoryTests
     [Fact]
     public void AuditedInventoryContainsEverySupportedJournalEventExactlyOnce()
     {
-        var auditedEvents = Groups.SelectMany(group => group.Events).Order(StringComparer.Ordinal).ToArray();
+        string[] auditedEvents = Groups.SelectMany(group => group.Events).Order(StringComparer.Ordinal).ToArray();
 
         Assert.Equal(74, auditedEvents.Length);
         Assert.Equal(auditedEvents.Length, auditedEvents.Distinct().Count());
@@ -160,15 +160,15 @@ public sealed class JournalCoverageInventoryTests
     [Fact]
     public void EverySupportedEventHasProductionConsumerAndRegressionEvidence()
     {
-        var repositoryRoot = FindRepositoryRoot();
-        var productionFiles = EnumerateSourceFiles(repositoryRoot, "src/SrvSurvey.Core", "src/SrvSurvey.Desktop");
-        var regressionFiles = EnumerateSourceFiles(repositoryRoot, "tests")
+        string repositoryRoot = FindRepositoryRoot();
+        string[] productionFiles = EnumerateSourceFiles(repositoryRoot, "src/SrvSurvey.Core", "src/SrvSurvey.Desktop");
+        string[] regressionFiles = EnumerateSourceFiles(repositoryRoot, "tests")
             .Where(path => !path.EndsWith("JournalCoverageInventoryTests.cs", StringComparison.Ordinal))
             .ToArray();
 
-        foreach (var eventName in Groups.SelectMany(group => group.Events))
+        foreach (string? eventName in Groups.SelectMany(group => group.Events))
         {
-            var literal = $"\"{eventName}\"";
+            string literal = $"\"{eventName}\"";
             Assert.True(
                 productionFiles.Any(path => File.ReadAllText(path).Contains(literal, StringComparison.Ordinal)),
                 $"Supported event {eventName} has no production consumer."
@@ -183,22 +183,22 @@ public sealed class JournalCoverageInventoryTests
     [Fact]
     public void EveryStateGroupHasGoldenProjectionEvidenceForEveryEvent()
     {
-        var repositoryRoot = FindRepositoryRoot();
-        foreach (var group in Groups)
+        string repositoryRoot = FindRepositoryRoot();
+        foreach (JournalParityGroup group in Groups)
         {
-            var evidence = string.Join(
+            string evidence = string.Join(
                 Environment.NewLine,
                 group.EvidenceFiles.Select(relativePath =>
                 {
-                    var path = Path.Combine(repositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+                    string path = Path.Combine(repositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
                     Assert.True(File.Exists(path), $"Golden evidence file is missing for {group.Name}: {relativePath}");
-                    var content = File.ReadAllText(path);
+                    string content = File.ReadAllText(path);
                     Assert.Contains("Assert.", content, StringComparison.Ordinal);
                     return content;
                 })
             );
 
-            foreach (var eventName in group.Events)
+            foreach (string eventName in group.Events)
             {
                 Assert.Contains(eventName, evidence, StringComparison.Ordinal);
             }

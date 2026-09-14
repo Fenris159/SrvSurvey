@@ -15,15 +15,14 @@ public static class OverlayThemeResources
     internal const string OverlayTypographyClass = "srv-overlay";
     private const string RavenWarningBrushResource = "RavenWarningBrush";
 
-    private static readonly object ThemeWindowsLock = new();
+    private static readonly Lock ThemeWindowsLock = new();
     private static readonly List<WeakReference<Window>> ThemeWindows = [];
-    private static readonly ConditionalWeakTable<Window, ScaleRegistration> ScaleRegistrations = new();
+    private static readonly ConditionalWeakTable<Window, ScaleRegistration> ScaleRegistrations = [];
     private static readonly ConditionalWeakTable<
         Window,
         LegacyPresentationRegistration
-    > LegacyPresentationRegistrations = new();
-    private static readonly ConditionalWeakTable<Window, LayoutSettingsRegistration> LayoutSettingsRegistrations =
-        new();
+    > LegacyPresentationRegistrations = [];
+    private static readonly ConditionalWeakTable<Window, LayoutSettingsRegistration> LayoutSettingsRegistrations = [];
     private static readonly Dictionary<string, string> ResourceMappings = CreateResourceMappings(
         "Window",
         "Surface",
@@ -151,14 +150,14 @@ public static class OverlayThemeResources
         lock (ThemeWindowsLock)
         {
             windows = ThemeWindows
-                .Select(reference => reference.TryGetTarget(out var window) ? window : null)
+                .Select(reference => reference.TryGetTarget(out Window? window) ? window : null)
                 .Where(window => window is not null)
                 .Cast<Window>()
                 .ToArray();
             ThemeWindows.RemoveAll(reference => !reference.TryGetTarget(out _));
         }
 
-        foreach (var window in windows)
+        foreach (Window window in windows)
         {
             ApplyThemeResources(window);
         }
@@ -174,12 +173,18 @@ public static class OverlayThemeResources
         }
 
         window.RequestedThemeVariant = ThemeVariant.Dark;
-        var application = Application.Current;
+        Application? application = Application.Current;
         if (application is not null)
         {
-            foreach (var mapping in ResourceMappings)
+            foreach (KeyValuePair<string, string> mapping in ResourceMappings)
             {
-                if (application.Resources.TryGetResource(mapping.Value, application.ActualThemeVariant, out var value))
+                if (
+                    application.Resources.TryGetResource(
+                        mapping.Value,
+                        application.ActualThemeVariant,
+                        out object? value
+                    )
+                )
                 {
                     window.Resources[mapping.Key] = value;
                 }
@@ -197,7 +202,7 @@ public static class OverlayThemeResources
             return;
         }
 
-        var surface = window.Content switch
+        Border? surface = window.Content switch
         {
             Border border => border,
             LayoutTransformControl { Child: Border border } => border,
@@ -208,8 +213,8 @@ public static class OverlayThemeResources
             return;
         }
 
-        _ = window.TryFindResource("RavenWindowBrush", out var windowBrush);
-        _ = window.TryFindResource(RavenWarningBrushResource, out var warningBrush);
+        _ = window.TryFindResource("RavenWindowBrush", out object? windowBrush);
+        _ = window.TryFindResource(RavenWarningBrushResource, out object? warningBrush);
         ApplySurfaceChrome(surface, isEditorPreview: false, windowBrush as IBrush, warningBrush as IBrush);
     }
 
@@ -237,9 +242,9 @@ public static class OverlayThemeResources
     {
         lock (ThemeWindowsLock)
         {
-            for (var index = ThemeWindows.Count - 1; index >= 0; index--)
+            for (int index = ThemeWindows.Count - 1; index >= 0; index--)
             {
-                if (!ThemeWindows[index].TryGetTarget(out var target))
+                if (!ThemeWindows[index].TryGetTarget(out Window? target))
                 {
                     ThemeWindows.RemoveAt(index);
                     continue;
@@ -257,7 +262,7 @@ public static class OverlayThemeResources
 
     private static void RegisterLayoutSettings(Window window, LegacyOverlayLayout layout, string plotterName)
     {
-        if (LayoutSettingsRegistrations.TryGetValue(window, out var existing))
+        if (LayoutSettingsRegistrations.TryGetValue(window, out LayoutSettingsRegistration? existing))
         {
             existing.Validate(layout, plotterName);
             return;
@@ -268,7 +273,9 @@ public static class OverlayThemeResources
 
     internal static void ApplyLegacyPresentation(Window window, string plotterName)
     {
-        var definition = OverlayLayoutCatalog.Supported.FirstOrDefault(candidate => candidate.Name == plotterName);
+        OverlayLayoutDefinition? definition = OverlayLayoutCatalog.Supported.FirstOrDefault(candidate =>
+            candidate.Name == plotterName
+        );
         if (definition is null)
         {
             return;
@@ -287,7 +294,7 @@ public static class OverlayThemeResources
             return;
         }
 
-        var registration = LegacyPresentationRegistrations.GetValue(
+        LegacyPresentationRegistration registration = LegacyPresentationRegistrations.GetValue(
             window,
             candidate => new LegacyPresentationRegistration(candidate, definition)
         );
@@ -303,7 +310,7 @@ public static class OverlayThemeResources
             return;
         }
 
-        var surface = window.Content switch
+        Border? surface = window.Content switch
         {
             Border border => border,
             LayoutTransformControl { Child: Border border } => border,
@@ -380,7 +387,7 @@ public static class OverlayThemeResources
     {
         ArgumentNullException.ThrowIfNull(surface);
         ArgumentNullException.ThrowIfNull(replacement);
-        var original = surface.Child;
+        Control? original = surface.Child;
         surface.Child = null;
         if (original is not null)
         {
@@ -392,8 +399,8 @@ public static class OverlayThemeResources
 
     private static bool IsAvaloniaCardChrome(Border border)
     {
-        var padding = border.Padding;
-        var corner = border.CornerRadius;
+        Thickness padding = border.Padding;
+        CornerRadius corner = border.CornerRadius;
         return Math.Max(Math.Max(padding.Left, padding.Top), Math.Max(padding.Right, padding.Bottom)) >= 6d
             && Math.Max(Math.Max(corner.TopLeft, corner.TopRight), Math.Max(corner.BottomLeft, corner.BottomRight))
                 >= 5d;
@@ -403,7 +410,7 @@ public static class OverlayThemeResources
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        var width = GetLegacyFormFactorWidth(plotterName);
+        double? width = GetLegacyFormFactorWidth(plotterName);
         if (width is null)
         {
             return;
@@ -437,7 +444,7 @@ public static class OverlayThemeResources
     internal static double? GetLegacyFormFactorWidth(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        var definition = OverlayLayoutCatalog.Supported.FirstOrDefault(candidate =>
+        OverlayLayoutDefinition? definition = OverlayLayoutCatalog.Supported.FirstOrDefault(candidate =>
             string.Equals(candidate.Name, plotterName, StringComparison.Ordinal)
         );
         return definition?.PreviewSize.Width;
@@ -449,7 +456,7 @@ public static class OverlayThemeResources
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         ApplyScale(window, layout, plotterName);
-        var opacity = layout.GetOpacity(plotterName) ?? 1d;
+        double opacity = layout.GetOpacity(plotterName) ?? 1d;
         if (Math.Abs(window.Opacity - opacity) > 0.0001d)
         {
             window.Opacity = opacity;
@@ -460,7 +467,7 @@ public static class OverlayThemeResources
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
-        var scaleIndex = OverlayWindowRegistry.Shared.TryGetPlotterName(window, out var plotterName)
+        int scaleIndex = OverlayWindowRegistry.Shared.TryGetPlotterName(window, out string? plotterName)
             ? layout.GetScaleIndex(plotterName)
             : layout.ScaleIndex;
         ApplyScale(window, scaleIndex, window.RenderScaling);
@@ -477,13 +484,13 @@ public static class OverlayThemeResources
     public static void ApplyScale(Window window, int scaleIndex, double renderScaling)
     {
         ArgumentNullException.ThrowIfNull(window);
-        var registration = GetOrCreateScaleRegistration(window);
+        ScaleRegistration? registration = GetOrCreateScaleRegistration(window);
         if (registration is null)
         {
             return;
         }
 
-        var factor = OverlayScaleCatalog.GetRelativeScale(scaleIndex, renderScaling);
+        double factor = OverlayScaleCatalog.GetRelativeScale(scaleIndex, renderScaling);
         if (Math.Abs(registration.AppliedFactor - factor) <= 0.0001d)
         {
             return;
@@ -524,7 +531,7 @@ public static class OverlayThemeResources
             throw new ArgumentOutOfRangeException(nameof(height));
         }
 
-        var registration =
+        ScaleRegistration registration =
             GetOrCreateScaleRegistration(window)
             ?? throw new InvalidOperationException("The overlay window content cannot be scaled.");
         if (
@@ -544,7 +551,7 @@ public static class OverlayThemeResources
 
     private static ScaleRegistration? GetOrCreateScaleRegistration(Window window)
     {
-        if (ScaleRegistrations.TryGetValue(window, out var existing))
+        if (ScaleRegistrations.TryGetValue(window, out ScaleRegistration? existing))
         {
             return existing;
         }
@@ -631,7 +638,7 @@ public static class OverlayThemeResources
 
             var stack = new StackPanel { Spacing = 3d };
             stack.Classes.Add("legacy-runtime-surface");
-            _ = window.TryFindResource(RavenWarningBrushResource, out var warning);
+            _ = window.TryFindResource(RavenWarningBrushResource, out object? warning);
             stack.Children.Add(
                 new TextBlock
                 {
@@ -663,7 +670,7 @@ public static class OverlayThemeResources
                     NormalizeInitialTree(child);
                     break;
                 case Panel panel:
-                    foreach (var childControl in panel.Children)
+                    foreach (Control childControl in panel.Children)
                     {
                         NormalizeInitialTree(childControl);
                     }
@@ -677,7 +684,7 @@ public static class OverlayThemeResources
 
         private void NormalizeRealizedControls()
         {
-            foreach (var control in window.GetVisualDescendants().OfType<Control>())
+            foreach (Control control in window.GetVisualDescendants().OfType<Control>())
             {
                 Normalize(control);
             }

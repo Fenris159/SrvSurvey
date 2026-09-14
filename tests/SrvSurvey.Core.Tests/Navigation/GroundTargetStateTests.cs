@@ -13,7 +13,7 @@ public sealed class GroundTargetStateTests
     [InlineData("12.5 S / 45.25 E", -12.5, 45.25)]
     public void ParsesLegacyAndCardinalCoordinatePairs(string text, double expectedLatitude, double expectedLongitude)
     {
-        Assert.True(GroundTargetState.TryParse(text, out var coordinate));
+        Assert.True(GroundTargetState.TryParse(text, out ParsedCoordinate coordinate));
 
         Assert.Equal(expectedLatitude, coordinate.Latitude);
         Assert.Equal(expectedLongitude, coordinate.Longitude);
@@ -58,7 +58,7 @@ public sealed class GroundTargetStateTests
             }
         );
 
-        Assert.True(state.TryUseCurrentLocation(out var error), error);
+        Assert.True(state.TryUseCurrentLocation(out string? error), error);
         Assert.True(state.IsActive);
         Assert.Equal(new SurfaceCoordinate(-12.25, 88.5), state.Target);
 
@@ -89,9 +89,9 @@ public sealed class GroundTargetStateTests
     {
         var state = new GroundTargetState(new GroundTargetSnapshot(true, new SurfaceCoordinate(1, 2)));
 
-        Assert.False(state.TrySetTarget("north", "west", out var parseError));
+        Assert.False(state.TrySetTarget("north", "west", out string? parseError));
         Assert.NotNull(parseError);
-        Assert.False(state.TrySetTarget("95", "2", out var rangeError));
+        Assert.False(state.TrySetTarget("95", "2", out string? rangeError));
         Assert.Contains("Latitude", rangeError);
         Assert.Equal(new SurfaceCoordinate(1, 2), state.Target);
     }
@@ -102,7 +102,7 @@ public sealed class GroundTargetStateTests
         var state = new GroundTargetState(new GroundTargetSnapshot(true, new SurfaceCoordinate(1, 2)));
 
         Assert.Null(state.Solution);
-        Assert.False(state.TryUseCurrentLocation(out var error));
+        Assert.False(state.TryUseCurrentLocation(out string? error));
         Assert.Contains("no surface coordinates", error);
     }
 }

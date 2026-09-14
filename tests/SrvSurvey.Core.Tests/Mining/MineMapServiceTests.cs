@@ -12,11 +12,11 @@ public sealed class MineMapServiceTests
     public void InterruptedLegacyMigrationImportsEveryMissingSurvey()
     {
         using var directory = new TemporaryDirectory();
-        var legacyDirectory = Path.Combine(directory.Path, "mine-maps");
+        string legacyDirectory = Path.Combine(directory.Path, "mine-maps");
         Directory.CreateDirectory(legacyDirectory);
         var catalog = new BookmarkCatalog(directory.Path);
-        var first = LegacySurvey(Guid.NewGuid(), signal: 4);
-        var second = LegacySurvey(Guid.NewGuid(), signal: 5);
+        MineMapSurvey first = LegacySurvey(Guid.NewGuid(), signal: 4);
+        MineMapSurvey second = LegacySurvey(Guid.NewGuid(), signal: 5);
         catalog.Save(
             new GalacticBookmark
             {
@@ -42,10 +42,10 @@ public sealed class MineMapServiceTests
     public void LegacyMigrationSkipsInvalidSurveyAndFinishesRemainingImports()
     {
         using var directory = new TemporaryDirectory();
-        var legacyDirectory = Path.Combine(directory.Path, "mine-maps");
+        string legacyDirectory = Path.Combine(directory.Path, "mine-maps");
         Directory.CreateDirectory(legacyDirectory);
-        var invalid = LegacySurvey(Guid.NewGuid(), signal: 4) with { SystemAddress = 0 };
-        var valid = LegacySurvey(Guid.NewGuid(), signal: 5);
+        MineMapSurvey invalid = LegacySurvey(Guid.NewGuid(), signal: 4) with { SystemAddress = 0 };
+        MineMapSurvey valid = LegacySurvey(Guid.NewGuid(), signal: 5);
         File.WriteAllText(Path.Combine(legacyDirectory, "invalid.json"), JsonSerializer.Serialize(invalid));
         File.WriteAllText(Path.Combine(legacyDirectory, "valid.json"), JsonSerializer.Serialize(valid));
 
@@ -60,13 +60,13 @@ public sealed class MineMapServiceTests
     public async Task MiningCommandCreatesPersistentSurveyAtKnownRadiusAndBearing()
     {
         using var directory = new TemporaryDirectory();
-        var context = Context(new SurfaceCoordinate(0, 0));
+        MineMapCommandContext context = Context(new SurfaceCoordinate(0, 0));
         var service = new MineMapService(directory.Path);
 
-        var result = await service.ExecuteAsync(".mining 90 6.44 4", context);
+        MineMapCommandResult result = await service.ExecuteAsync(".mining 90 6.44 4", context);
 
         Assert.True(result.Succeeded);
-        var survey = Assert.Single(service.Surveys);
+        MineMapSurvey survey = Assert.Single(service.Surveys);
         Assert.Equal("Mining Location Signal 4", survey.Name);
         Assert.Equal(6_440, survey.LocationRadiusMeters);
         Assert.InRange(survey.Center.Latitude, -0.000001, 0.000001);
@@ -79,11 +79,11 @@ public sealed class MineMapServiceTests
         Assert.Contains("bearing 90°", result.Message, StringComparison.OrdinalIgnoreCase);
 
         var reloaded = new MineMapService(directory.Path);
-        var persisted = Assert.Single(reloaded.Surveys);
+        MineMapSurvey persisted = Assert.Single(reloaded.Surveys);
         Assert.Equal(survey.Id, persisted.Id);
         Assert.Equal(context.SystemPosition, persisted.SystemPosition);
         Assert.Equal("Rocky Ice body", persisted.BodyType);
-        var bookmark = Assert.Single(new BookmarkCatalog(directory.Path).Items);
+        GalacticBookmark bookmark = Assert.Single(new BookmarkCatalog(directory.Path).Items);
         Assert.Equal("Surface Mining", bookmark.Category);
         Assert.Equal(survey.Id, bookmark.Id);
         Assert.NotNull(bookmark.SurfaceMiningMap);
@@ -538,13 +538,13 @@ public sealed class MineMapServiceTests
     public async Task MineCommandsAddRelativeAndHereMarkersAndDeleteNearestHere()
     {
         using var directory = new TemporaryDirectory();
-        var border = Context(new SurfaceCoordinate(1, 2));
+        MineMapCommandContext border = Context(new SurfaceCoordinate(1, 2));
         var service = new MineMapService(directory.Path);
         Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", border)).Succeeded);
         SurfaceCoordinate center = service.ActiveSurvey!.Center;
         SurfaceCoordinate observationPoint = MineMapService.GetDestination(center, 90, 500, border.PlanetRadiusMeters);
 
-        var relative = await service.ExecuteAsync(
+        MineMapCommandResult relative = await service.ExecuteAsync(
             ".mine 15 ruby 1.24 medium/low",
             border with
             {
@@ -564,7 +564,7 @@ public sealed class MineMapServiceTests
         Assert.InRange(SurfaceNavigation.GetBearing(observationPoint, first.Location), 14.99, 15.01);
         Assert.Contains("from your position", relative.Message, StringComparison.OrdinalIgnoreCase);
 
-        var here = first.Location;
+        SurfaceCoordinate here = first.Location;
         Assert.True(
             (
                 await service.ExecuteAsync(
@@ -584,7 +584,13 @@ public sealed class MineMapServiceTests
         Assert.Equal(MineMapRating.Low, second.MineralAmount);
         Assert.Equal(MineMapRating.High, second.Density);
 
-        var deleted = await service.ExecuteAsync(".mine delete here", border with { PlayerLocation = here });
+        MineMapCommandResult deleted = await service.ExecuteAsync(
+            ".mine delete here",
+            border with
+            {
+                PlayerLocation = here,
+            }
+        );
         Assert.True(deleted.Succeeded);
         Assert.Single(service.ActiveSurvey.Markers);
         Assert.Contains("removed", deleted.Message, StringComparison.OrdinalIgnoreCase);
@@ -786,12 +792,12 @@ public sealed class MineMapServiceTests
         Assert.True(
             JournalEventEnvelope.TryParse(
                 """{"event":"SendText","Message":".mining 120 6.44 4"}""",
-                out var command,
+                out JournalEventEnvelope? command,
                 out _
             )
         );
 
-        var ignored = await service.ApplyJournalEventsAsync(
+        IReadOnlyList<MineMapCommandResult> ignored = await service.ApplyJournalEventsAsync(
             [command!],
             Context(new SurfaceCoordinate(10, 20)),
             allowMutations: false
@@ -799,7 +805,7 @@ public sealed class MineMapServiceTests
         Assert.Empty(ignored);
         Assert.Empty(service.Surveys);
 
-        var applied = await service.ApplyJournalEventsAsync(
+        IReadOnlyList<MineMapCommandResult> applied = await service.ApplyJournalEventsAsync(
             [command!],
             Context(new SurfaceCoordinate(10, 20)),
             allowMutations: true
@@ -823,7 +829,7 @@ public sealed class MineMapServiceTests
         using var directory = new TemporaryDirectory();
         var service = new MineMapService(directory.Path);
 
-        var result = await service.ExecuteAsync(command, Context(new SurfaceCoordinate(10, 20)));
+        MineMapCommandResult result = await service.ExecuteAsync(command, Context(new SurfaceCoordinate(10, 20)));
 
         Assert.False(result.Succeeded);
         Assert.False(string.IsNullOrWhiteSpace(result.Message));
@@ -853,7 +859,7 @@ public sealed class MineMapServiceTests
     public async Task MineCommandCanonicalizesCaseAndRejectsNamesOutsideHotspotList()
     {
         using var directory = new TemporaryDirectory();
-        var context = Context(new SurfaceCoordinate(10, 20));
+        MineMapCommandContext context = Context(new SurfaceCoordinate(10, 20));
         var service = new MineMapService(directory.Path);
         Assert.True((await service.ExecuteAsync(".MINING 120 6.44 4", context)).Succeeded);
 
@@ -892,13 +898,16 @@ public sealed class MineMapServiceTests
                 .Count()
         );
 
-        var helium = Assert.Single(SurfaceMiningCommodityCatalog.All, commodity => commodity.Name == "Helium");
+        SurfaceMiningCommodity helium = Assert.Single(
+            SurfaceMiningCommodityCatalog.All,
+            commodity => commodity.Name == "Helium"
+        );
         Assert.True(helium.HighMetalContent);
         Assert.True(helium.RockyIce);
         Assert.False(helium.Icy);
         Assert.Equal(591_360, helium.MaximumSellPrice);
 
-        var lowTempDiamonds = Assert.Single(
+        SurfaceMiningCommodity lowTempDiamonds = Assert.Single(
             SurfaceMiningCommodityCatalog.All,
             commodity => commodity.Name == "Low Temperature Diamonds"
         );
@@ -906,12 +915,15 @@ public sealed class MineMapServiceTests
         Assert.True(lowTempDiamonds.RockyIce);
         Assert.True(lowTempDiamonds.Icy);
 
-        var iridium = Assert.Single(SurfaceMiningCommodityCatalog.All, commodity => commodity.Name == "Iridium");
+        SurfaceMiningCommodity iridium = Assert.Single(
+            SurfaceMiningCommodityCatalog.All,
+            commodity => commodity.Name == "Iridium"
+        );
         Assert.True(iridium.HighMetalContent);
         Assert.True(iridium.MetalRich);
         Assert.False(iridium.Rocky);
 
-        var rhodplumsite = Assert.Single(
+        SurfaceMiningCommodity rhodplumsite = Assert.Single(
             SurfaceMiningCommodityCatalog.All,
             commodity => commodity.Name == "Rhodplumsite"
         );
@@ -919,12 +931,19 @@ public sealed class MineMapServiceTests
         Assert.True(rhodplumsite.MetalRich);
         Assert.False(rhodplumsite.Rocky);
 
-        var diamond = Assert.Single(SurfaceMiningCommodityCatalog.All, commodity => commodity.Name == "Diamond");
+        SurfaceMiningCommodity diamond = Assert.Single(
+            SurfaceMiningCommodityCatalog.All,
+            commodity => commodity.Name == "Diamond"
+        );
         Assert.True(diamond.RockyIce);
 
-        Assert.True(SurfaceMiningCommodityCatalog.TryResolve("low temp diamonds", out var aliasedDiamonds));
+        Assert.True(
+            SurfaceMiningCommodityCatalog.TryResolve("low temp diamonds", out SurfaceMiningCommodity? aliasedDiamonds)
+        );
         Assert.Equal("Low Temperature Diamonds", aliasedDiamonds.Name);
-        Assert.True(SurfaceMiningCommodityCatalog.TryResolve("methanol crystals", out var aliasedMethanol));
+        Assert.True(
+            SurfaceMiningCommodityCatalog.TryResolve("methanol crystals", out SurfaceMiningCommodity? aliasedMethanol)
+        );
         Assert.Equal("Methanol Monohydrate Crystals", aliasedMethanol.Name);
     }
 
@@ -945,7 +964,7 @@ public sealed class MineMapServiceTests
 
     private static MineMapSurvey LegacySurvey(Guid id, int signal)
     {
-        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         return new MineMapSurvey
         {
             Id = id,

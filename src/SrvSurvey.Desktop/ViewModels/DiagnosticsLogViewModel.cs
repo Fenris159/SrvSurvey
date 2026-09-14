@@ -168,7 +168,7 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
 
         try
         {
-            var launched = await directoryLauncher(new DirectoryInfo(applicationLog.LogDirectory));
+            bool launched = await directoryLauncher(new DirectoryInfo(applicationLog.LogDirectory));
             StatusMessage = launched ? "Opened the application log folder." : "The log folder could not be opened.";
         }
         catch (Exception exception)
@@ -198,19 +198,19 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
 
     private string GetLogText()
     {
-        var text = applicationLog?.Text;
+        string? text = applicationLog?.Text;
         return string.IsNullOrEmpty(text) ? "No log entries have been recorded for this session." : text;
     }
 
     private string GetSessionDescription()
     {
-        var count = applicationLog?.Entries.Count ?? 0;
+        int count = applicationLog?.Entries.Count ?? 0;
         if (applicationLog is null)
         {
             return "Application logging is unavailable.";
         }
 
-        var unit = count == 1 ? "entry" : "entries";
+        string unit = count == 1 ? "entry" : "entries";
         return $"{count:N0} session {unit}";
     }
 

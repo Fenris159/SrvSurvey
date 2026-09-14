@@ -27,7 +27,7 @@ public sealed class SystemScanPersistenceStore
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemAddress);
-        var result = await fileStore
+        LegacySystemDataFileLoadResult result = await fileStore
             .LoadAsync(
                 new LegacySystemDataFileContext(frontierId, commanderName, systemName, systemAddress, starPosition),
                 cancellationToken
@@ -50,7 +50,7 @@ public sealed class SystemScanPersistenceStore
 
         try
         {
-            var snapshot = LegacySystemSnapshotParser.Parse(result.Root);
+            SystemScanSnapshot snapshot = LegacySystemSnapshotParser.Parse(result.Root);
             if (snapshot.SystemAddress != systemAddress)
             {
                 throw new InvalidDataException(
@@ -120,12 +120,12 @@ public sealed class SystemScanPersistenceStore
             systemAddress,
             snapshot.StarPosition
         );
-        var mutation = await fileStore
+        LegacySystemDataFileMutationResult<SystemScanPersistenceResult> mutation = await fileStore
             .UpdateWithResultAsync(
                 fileContext,
                 root =>
                 {
-                    var result = Merge(root, context, snapshot);
+                    SystemScanPersistenceResult result = Merge(root, context, snapshot);
                     if (firstFootfallCorrection is { } correction)
                     {
                         ApplyFirstFootfallCorrection(root, correction.BodyId, correction.Value);
@@ -146,7 +146,7 @@ public sealed class SystemScanPersistenceStore
             throw new InvalidDataException("The legacy system body collection is malformed and was not overwritten.");
         }
 
-        var body =
+        JsonObject body =
             bodies.OfType<JsonObject>().FirstOrDefault(candidate => ReadInt32(candidate["id"]) == bodyId)
             ?? throw new InvalidDataException("The corrected body could not be represented in the legacy system data.");
         body["firstFootFall"] = value;
@@ -158,26 +158,26 @@ public sealed class SystemScanPersistenceStore
         SystemScanSnapshot snapshot
     )
     {
-        var firstVisited = ReadTimestamp(root["firstVisited"]);
-        var lastVisited = ReadTimestamp(root["lastVisited"]);
-        var isKnownRepeat = firstVisited is not null && lastVisited is not null && firstVisited != lastVisited;
-        var isNewRepeat = firstVisited is not null && context.VisitedAt > (lastVisited ?? firstVisited);
-        var merged = LegacySystemSnapshotMerger.Merge(
+        DateTimeOffset? firstVisited = ReadTimestamp(root["firstVisited"]);
+        DateTimeOffset? lastVisited = ReadTimestamp(root["lastVisited"]);
+        bool isKnownRepeat = firstVisited is not null && lastVisited is not null && firstVisited != lastVisited;
+        bool isNewRepeat = firstVisited is not null && context.VisitedAt > (lastVisited ?? firstVisited);
+        JsonObject merged = LegacySystemSnapshotMerger.Merge(
             root,
             snapshot,
             context.CommanderName,
             context.VisitedAt,
             context.VisitedAt
         );
-        var biologicalSignalsRemaining = ReadBiologicalSignalsRemaining(merged);
+        int? biologicalSignalsRemaining = ReadBiologicalSignalsRemaining(merged);
 
         root.Clear();
-        foreach (var pair in merged)
+        foreach (KeyValuePair<string, JsonNode?> pair in merged)
         {
             root[pair.Key] = pair.Value?.DeepClone();
         }
 
-        var isRepeatVisit = isKnownRepeat || isNewRepeat;
+        bool isRepeatVisit = isKnownRepeat || isNewRepeat;
         return new SystemScanPersistenceResult(
             string.Empty,
             isRepeatVisit,
@@ -198,10 +198,10 @@ public sealed class SystemScanPersistenceStore
             return null;
         }
 
-        var remaining = 0;
-        foreach (var bodyNode in bodies)
+        int remaining = 0;
+        foreach (JsonNode? bodyNode in bodies)
         {
-            var bodyRemaining = ReadBodyBiologicalSignalsRemaining(bodyNode);
+            int? bodyRemaining = ReadBodyBiologicalSignalsRemaining(bodyNode);
             if (bodyRemaining is null)
             {
                 return null;
@@ -220,13 +220,13 @@ public sealed class SystemScanPersistenceStore
             return null;
         }
 
-        var signalCount = ReadInt32(body["bioSignalCount"]);
+        int? signalCount = ReadInt32(body["bioSignalCount"]);
         if (signalCount is null)
         {
             return body["bioSignalCount"] is not null ? null : 0;
         }
 
-        var analyzedCount = CountAnalyzedOrganisms(body);
+        int? analyzedCount = CountAnalyzedOrganisms(body);
         if (analyzedCount is null)
         {
             return null;
@@ -247,8 +247,8 @@ public sealed class SystemScanPersistenceStore
             return null;
         }
 
-        var analyzedCount = 0;
-        foreach (var organismNode in organisms)
+        int analyzedCount = 0;
+        foreach (JsonNode? organismNode in organisms)
         {
             if (!TryCountAnalyzedOrganism(organismNode, ref analyzedCount))
             {
@@ -281,13 +281,13 @@ public sealed class SystemScanPersistenceStore
             return null;
         }
 
-        if (value.TryGetValue<int>(out var result))
+        if (value.TryGetValue<int>(out int result))
         {
             return result;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out result)
             ? result
             : null;
@@ -295,15 +295,20 @@ public sealed class SystemScanPersistenceStore
 
     private static bool? ReadBoolean(JsonNode? node)
     {
-        return node is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return node is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static DateTimeOffset? ReadTimestamp(JsonNode? node)
     {
         return
             node is JsonValue value
-            && value.TryGetValue<string>(out var text)
-            && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var result)
+            && value.TryGetValue<string>(out string? text)
+            && DateTimeOffset.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind,
+                out global::System.DateTimeOffset result
+            )
             ? result
             : null;
     }

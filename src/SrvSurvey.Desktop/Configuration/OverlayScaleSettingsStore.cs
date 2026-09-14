@@ -50,13 +50,13 @@ public sealed class OverlayScaleSettingsStore
             return null;
         }
 
-        if (value.TryGetValue<int>(out var integer))
+        if (value.TryGetValue<int>(out int integer))
         {
             return integer;
         }
 
         if (
-            value.TryGetValue<double>(out var number)
+            value.TryGetValue<double>(out double number)
             && double.IsFinite(number)
             && double.IsInteger(number)
             && number is >= int.MinValue and <= int.MaxValue
@@ -132,14 +132,14 @@ public static class OverlayScaleCatalog
 
     public static double GetRelativeScale(int index, double renderScaling)
     {
-        var normalized = NormalizeIndex(index);
-        var absolute = AbsoluteScales[normalized];
+        int normalized = NormalizeIndex(index);
+        double? absolute = AbsoluteScales[normalized];
         if (absolute is null)
         {
             return 1d;
         }
 
-        var safeRenderScaling = double.IsFinite(renderScaling) && renderScaling > 0 ? renderScaling : 1d;
+        double safeRenderScaling = double.IsFinite(renderScaling) && renderScaling > 0 ? renderScaling : 1d;
         return absolute.Value / safeRenderScaling;
     }
 }

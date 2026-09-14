@@ -7,16 +7,16 @@ public sealed class HumanSiteTemplateAuthoringSessionTests
     [Fact]
     public void PolygonAndCircleCommitAsPortableBuildingPaths()
     {
-        var source = Template();
+        HumanSiteTemplate source = Template();
         var session = new HumanSiteTemplateAuthoringSession(source);
 
         session.BeginPolygon(new HumanSiteMapPoint(0, 0));
         session.AddPolygonPoint(new HumanSiteMapPoint(10, 0));
-        var livePreview = session.CreatePreviewTemplate();
+        HumanSiteTemplate livePreview = session.CreatePreviewTemplate();
         Assert.Equal(2, livePreview.Buildings[^1].Paths[0].Points.Count);
         session.EndPolygon(new HumanSiteMapPoint(10, 10), closePath: true);
         session.AddCircle(new HumanSiteMapPoint(20, 20), radius: 5);
-        var building = session.CommitBuilding("HAB");
+        HumanSiteBuilding building = session.CommitBuilding("HAB");
 
         Assert.Equal(2, building.Paths.Count);
         Assert.Equal([0, 1, 129], building.Paths[0].PointTypes);
@@ -25,7 +25,7 @@ public sealed class HumanSiteTemplateAuthoringSessionTests
         Assert.Equal("HAB", session.Template.Buildings[^1].Name);
         Assert.Empty(session.PendingBuildingPaths);
         Assert.Empty(source.Buildings);
-        var projection = new HumanSiteMapProjector().Project(session.Template);
+        HumanSiteMapProjection projection = new HumanSiteMapProjector().Project(session.Template);
         Assert.Equal(2, projection.Buildings[^1].Paths.Count);
         Assert.Contains(
             projection.Buildings[^1].Paths[1].Segments,
@@ -43,7 +43,7 @@ public sealed class HumanSiteTemplateAuthoringSessionTests
         session.AddDataTerminal(offset, securityLevel: 1, floor: 2);
         session.AddSecureDoor(offset, rotation: -90, securityLevel: 3, floor: 1);
 
-        var named = Assert.Single(session.Template.NamedPoints);
+        HumanSiteNamedPointOfInterest named = Assert.Single(session.Template.NamedPoints);
         Assert.Equal("Battery", named.Name);
         Assert.Equal(2, named.SecurityLevel);
         Assert.Equal(3, named.Floor);

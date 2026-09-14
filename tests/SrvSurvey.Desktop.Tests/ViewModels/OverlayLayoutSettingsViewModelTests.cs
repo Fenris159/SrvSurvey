@@ -20,9 +20,9 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
         );
         File.WriteAllText(Path.Combine(temporaryDirectory, "settings.json"), "{\"plotterOpacity\":65}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var viewModel = new OverlayLayoutSettingsViewModel(store, activeLayout);
-        var editor = viewModel.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo");
+        OverlayPlacementEditorViewModel editor = viewModel.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo");
         viewModel.SelectedOverlay = editor;
 
         editor.HorizontalAnchor = LegacyHorizontalAnchor.Screen;
@@ -82,9 +82,9 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), "{\"PlotJumpInfo\":\"center:0,top:8\"}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var viewModel = new OverlayLayoutSettingsViewModel(store, activeLayout);
-        var editor = viewModel.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo");
+        OverlayPlacementEditorViewModel editor = viewModel.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo");
         var draggedPlacement = new LegacyOverlayPlacement(
             LegacyHorizontalAnchor.Screen,
             -240,
@@ -99,7 +99,7 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
         editor.CustomOpacityPercent = 35;
         viewModel.SaveCommand.Execute(null);
 
-        var saved = store.Load().Placements[editor.Name];
+        LegacyOverlayPlacement saved = store.Load().Placements[editor.Name];
         Assert.Equal(draggedPlacement with { Opacity = 0.35 }, saved);
         Assert.Equal(saved, activeLayout.Placements[editor.Name]);
     }
@@ -111,7 +111,9 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         var viewModel = new OverlayLayoutSettingsViewModel(store, store.Load());
 
-        var notification = viewModel.Overlays.Single(overlay => overlay.Name == "PlotFloatie");
+        OverlayPlacementEditorViewModel notification = viewModel.Overlays.Single(overlay =>
+            overlay.Name == "PlotFloatie"
+        );
 
         Assert.Equal(
             new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Bottom, 24, null),
@@ -154,7 +156,7 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
     public void MalformedLegacyLayoutCannotBeOverwrittenFromEditor()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
         const string original = "{\"PlotJumpInfo\":\"sideways:0,top:8\"}";
         File.WriteAllText(path, original);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);

@@ -11,9 +11,9 @@ public static class LegacyProfileLocator
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
 
-        foreach (var candidate in candidates.SelectMany(ExpandVersionCandidates))
+        foreach (LegacyProfileCandidate? candidate in candidates.SelectMany(ExpandVersionCandidates))
         {
-            var path = Path.GetFullPath(candidate.Path);
+            string path = Path.GetFullPath(candidate.Path);
             if (!seenPaths.Add(path) || !Directory.Exists(path))
             {
                 continue;
@@ -44,13 +44,13 @@ public static class LegacyProfileLocator
     {
         yield return candidate;
 
-        var path = Path.GetFullPath(candidate.Path);
+        string path = Path.GetFullPath(candidate.Path);
         if (!Version.TryParse(Path.GetFileName(path), out _))
         {
             yield break;
         }
 
-        var parent = Path.GetDirectoryName(path);
+        string? parent = Path.GetDirectoryName(path);
         if (parent is null || !Directory.Exists(parent))
         {
             yield break;
@@ -64,7 +64,7 @@ public static class LegacyProfileLocator
                 .Select(directory => new
                 {
                     Path = directory,
-                    Version = Version.TryParse(Path.GetFileName(directory), out var version) ? version : null,
+                    Version = Version.TryParse(Path.GetFileName(directory), out Version? version) ? version : null,
                 })
                 .Where(entry => entry.Version is not null)
                 .OrderByDescending(entry => entry.Version)
@@ -76,7 +76,7 @@ public static class LegacyProfileLocator
             yield break;
         }
 
-        foreach (var sibling in siblings)
+        foreach (string sibling in siblings)
         {
             yield return candidate with
             {

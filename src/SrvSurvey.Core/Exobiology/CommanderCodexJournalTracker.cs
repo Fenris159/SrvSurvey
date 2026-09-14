@@ -23,13 +23,13 @@ public sealed class CommanderCodexJournalTracker(
         ArgumentNullException.ThrowIfNull(journalEvents);
         var pending = new Dictionary<LedgerKey, List<CommanderCodexDiscovery>>();
         var warnings = new List<string>();
-        var discoveryEventCount = 0;
-        foreach (var journalEvent in journalEvents)
+        int discoveryEventCount = 0;
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             discoveryEventCount += CollectCodexDiscoveries(journalEvent, pending, warnings);
         }
 
-        var (changedEntryCount, changedFileCount) = await PersistPendingAsync(pending, warnings, cancellationToken)
+        (int changedEntryCount, int changedFileCount) = await PersistPendingAsync(pending, warnings, cancellationToken)
             .ConfigureAwait(false);
 
         return new CommanderCodexJournalTrackResult(discoveryEventCount, changedEntryCount, changedFileCount, warnings);
@@ -53,7 +53,7 @@ public sealed class CommanderCodexJournalTracker(
             return 1;
         }
 
-        if (!TryCreateDiscovery(journalEvent, warnings, out var discovery))
+        if (!TryCreateDiscovery(journalEvent, warnings, out CommanderCodexDiscovery? discovery))
         {
             return 1;
         }
@@ -80,10 +80,10 @@ public sealed class CommanderCodexJournalTracker(
     )
     {
         discovery = null!;
-        var root = journalEvent.Payload;
-        var entryId = GetInt64(root, "EntryID");
-        var systemAddress = GetInt64(root, "SystemAddress") ?? session.SystemAddress;
-        var timestamp = journalEvent.Timestamp;
+        JsonElement root = journalEvent.Payload;
+        long? entryId = GetInt64(root, "EntryID");
+        long? systemAddress = GetInt64(root, "SystemAddress") ?? session.SystemAddress;
+        DateTimeOffset? timestamp = journalEvent.Timestamp;
         if (entryId is not > 0 || systemAddress is null || timestamp is null)
         {
             warnings.Add("Skipped a Codex entry with missing ID, timestamp, or system address.");
@@ -106,7 +106,7 @@ public sealed class CommanderCodexJournalTracker(
     )
     {
         AddPending(pending, new LedgerKey(session.FrontierId!, session.CommanderName, 0, null), discovery);
-        var region = session.StarPosition is { } position ? GalacticRegionMap.Find(position) : null;
+        GalacticRegion? region = session.StarPosition is { } position ? GalacticRegionMap.Find(position) : null;
         region ??= FindJournalRegion(GetString(root, "Region"));
         if (region is null)
         {
@@ -134,7 +134,7 @@ public sealed class CommanderCodexJournalTracker(
                 journalName[JournalRegionPrefix.Length..^1],
                 NumberStyles.Integer,
                 CultureInfo.InvariantCulture,
-                out var regionId
+                out int regionId
             )
         )
         {
@@ -152,11 +152,11 @@ public sealed class CommanderCodexJournalTracker(
         CancellationToken cancellationToken
     )
     {
-        var changedEntryCount = 0;
-        var changedFileCount = 0;
-        foreach (var group in pending)
+        int changedEntryCount = 0;
+        int changedFileCount = 0;
+        foreach (KeyValuePair<LedgerKey, List<CommanderCodexDiscovery>> group in pending)
         {
-            var result = await store
+            CommanderCodexBatchTrackResult result = await store
                 .TrackBatchAsync(
                     group.Key.FrontierId,
                     group.Key.CommanderName,
@@ -188,7 +188,7 @@ public sealed class CommanderCodexJournalTracker(
         CommanderCodexDiscovery discovery
     )
     {
-        if (!pending.TryGetValue(key, out var discoveries))
+        if (!pending.TryGetValue(key, out List<CommanderCodexDiscovery>? discoveries))
         {
             discoveries = [];
             pending[key] = discoveries;
@@ -199,19 +199,19 @@ public sealed class CommanderCodexJournalTracker(
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long number))
         {
             return number;
         }
@@ -225,12 +225,12 @@ public sealed class CommanderCodexJournalTracker(
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int number))
         {
             return number;
         }

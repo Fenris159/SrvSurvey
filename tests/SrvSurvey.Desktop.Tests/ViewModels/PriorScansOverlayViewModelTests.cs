@@ -19,20 +19,20 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     [Fact]
     public async Task LoadsCurrentSystemOnceAndRecalculatesSurfaceNavigation()
     {
-        var survey = CreateSurvey();
+        SystemSurveyViewModel survey = CreateSurvey();
         var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01), Signal("2", 0, 0.02)]));
-        using var viewModel = CreateViewModel(survey, client);
+        using PriorScansOverlayViewModel viewModel = CreateViewModel(survey, client);
 
         await viewModel.RefreshAsync();
 
         Assert.True(viewModel.ShouldShow);
         Assert.Equal("Test 1", viewModel.BodyName);
         Assert.Equal("HEADING 090°", viewModel.HeadingText);
-        var species = Assert.Single(viewModel.Species);
+        PriorScanSpeciesViewModel species = Assert.Single(viewModel.Species);
         Assert.Equal("Aleoida Arcus - Green", species.DisplayName);
         Assert.True(species.HasTooSteepApproach);
         Assert.StartsWith("-", species.ApproachText);
-        var target = Assert.Single(species.Targets);
+        PriorScanTargetViewModel target = Assert.Single(species.Targets);
         Assert.Equal(0, target.RelativeBearingDegrees, 6);
         Assert.Equal("175 m", target.DistanceText);
         Assert.Single(viewModel.RadarTargets);
@@ -49,9 +49,9 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     [Fact]
     public async Task StatusOnlyUpdatesRecalculateHeadingWithoutReloadingCanonn()
     {
-        var survey = CreateSurvey();
+        SystemSurveyViewModel survey = CreateSurvey();
         var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01)]));
-        using var viewModel = CreateViewModel(survey, client);
+        using PriorScansOverlayViewModel viewModel = CreateViewModel(survey, client);
         await viewModel.RefreshAsync();
         Assert.Equal(1, client.CallCount);
         Assert.Equal(0, Assert.Single(Assert.Single(viewModel.Species).Targets).RelativeBearingDegrees, 6);
@@ -68,9 +68,9 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     [Fact]
     public async Task LandingGearPreferenceSuppressesFlightButNotSupercruise()
     {
-        var survey = CreateSurvey();
+        SystemSurveyViewModel survey = CreateSurvey();
         var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01)]));
-        using var viewModel = CreateViewModel(survey, client);
+        using PriorScansOverlayViewModel viewModel = CreateViewModel(survey, client);
         await viewModel.RefreshAsync();
         Assert.True(viewModel.ShouldShow);
 
@@ -96,9 +96,9 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     [Fact]
     public async Task PreferencesFilterRowsAndControlRadarPresentation()
     {
-        var survey = CreateSurvey();
+        SystemSurveyViewModel survey = CreateSurvey();
         var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01)]));
-        using var viewModel = CreateViewModel(survey, client);
+        using PriorScansOverlayViewModel viewModel = CreateViewModel(survey, client);
 
         await viewModel.RefreshAsync();
         Assert.True(viewModel.ShowRadar);
@@ -120,9 +120,9 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     [Fact]
     public async Task NetworkFailureIsContainedAndReported()
     {
-        var survey = CreateSurvey();
+        SystemSurveyViewModel survey = CreateSurvey();
         var client = new StubClient(new HttpRequestException("offline"));
-        using var viewModel = CreateViewModel(survey, client);
+        using PriorScansOverlayViewModel viewModel = CreateViewModel(survey, client);
 
         await viewModel.RefreshAsync();
         await viewModel.RefreshAsync();
@@ -136,7 +136,7 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     [Fact]
     public async Task HideOwnSignalsIncludesHistoricalNonDeathSamples()
     {
-        var survey = CreateSurvey();
+        SystemSurveyViewModel survey = CreateSurvey();
         survey.HideOwnCanonnSignals = true;
         var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01)]));
         var currentSurface = new SystemSurfaceBodySnapshot(
@@ -157,7 +157,7 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
                 ),
             ]
         );
-        using var viewModel = CreateViewModel(survey, client, () => currentSurface);
+        using PriorScansOverlayViewModel viewModel = CreateViewModel(survey, client, () => currentSurface);
 
         await viewModel.RefreshAsync();
 
@@ -253,7 +253,7 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

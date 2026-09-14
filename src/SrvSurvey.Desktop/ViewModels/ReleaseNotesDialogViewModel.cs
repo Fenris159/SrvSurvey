@@ -16,15 +16,15 @@ public sealed record ReleaseNotesDialogViewModel(
         ArgumentException.ThrowIfNullOrWhiteSpace(fallbackTitle);
         ArgumentException.ThrowIfNullOrWhiteSpace(markdown);
 
-        var lines = markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n');
-        var title = fallbackTitle;
-        var titleIndex = Array.FindIndex(lines, line => line.TrimStart().StartsWith("# ", StringComparison.Ordinal));
+        string[] lines = markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n');
+        string title = fallbackTitle;
+        int titleIndex = Array.FindIndex(lines, line => line.TrimStart().StartsWith("# ", StringComparison.Ordinal));
         if (titleIndex >= 0)
         {
             title = RemoveInlineMarkdown(lines[titleIndex].Trim()[2..]);
         }
 
-        var changesIndex = Array.FindIndex(lines, IsChangesHeading);
+        int changesIndex = Array.FindIndex(lines, IsChangesHeading);
         if (changesIndex < 0)
         {
             return new ReleaseNotesDialogViewModel(
@@ -35,15 +35,15 @@ public sealed record ReleaseNotesDialogViewModel(
             );
         }
 
-        var introductionStart = titleIndex switch
+        int introductionStart = titleIndex switch
         {
             < 0 => 0,
             _ when titleIndex < changesIndex => titleIndex + 1,
             _ => changesIndex,
         };
-        var introduction = JoinParagraphs(lines[introductionStart..changesIndex]);
-        var heading = RemoveInlineMarkdown(lines[changesIndex].Trim()[3..]);
-        var changes = ParseChanges(lines[(changesIndex + 1)..]);
+        string introduction = JoinParagraphs(lines[introductionStart..changesIndex]);
+        string heading = RemoveInlineMarkdown(lines[changesIndex].Trim()[3..]);
+        List<ReleaseNoteChangeViewModel> changes = ParseChanges(lines[(changesIndex + 1)..]);
         return new ReleaseNotesDialogViewModel(title, introduction, heading, changes);
     }
 
@@ -51,9 +51,9 @@ public sealed record ReleaseNotesDialogViewModel(
     {
         var changes = new List<ReleaseNoteChangeViewModel>();
         var current = new List<string>();
-        foreach (var line in lines)
+        foreach (string line in lines)
         {
-            var trimmed = line.Trim();
+            string trimmed = line.Trim();
             if (
                 trimmed.StartsWith("- ", StringComparison.Ordinal) || trimmed.StartsWith("* ", StringComparison.Ordinal)
             )
@@ -73,13 +73,13 @@ public sealed record ReleaseNotesDialogViewModel(
 
     private static bool IsChangesHeading(string line)
     {
-        var trimmed = line.TrimStart();
+        string trimmed = line.TrimStart();
         if (!trimmed.StartsWith("## ", StringComparison.Ordinal))
         {
             return false;
         }
 
-        var heading = trimmed[3..].Trim().Replace('\u2019', '\'');
+        string heading = trimmed[3..].Trim().Replace('\u2019', '\'');
         return heading.StartsWith("What's changed", StringComparison.OrdinalIgnoreCase);
     }
 
@@ -98,9 +98,9 @@ public sealed record ReleaseNotesDialogViewModel(
     {
         var paragraphs = new List<string>();
         var current = new List<string>();
-        foreach (var line in lines)
+        foreach (string line in lines)
         {
-            var trimmed = line.Trim();
+            string trimmed = line.Trim();
             if (trimmed.Length == 0)
             {
                 if (current.Count > 0)

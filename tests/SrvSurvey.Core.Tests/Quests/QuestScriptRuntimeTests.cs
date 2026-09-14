@@ -8,9 +8,9 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task ChapterLifecycleMutatesAndPersistsCompleteQuestState()
     {
-        var saves = 0;
+        int saves = 0;
         RavenQuestState? transitioned = null;
-        var progress = CreateProgress(
+        RavenCommanderQuest progress = CreateProgress(
             """
             counter = 0
 
@@ -66,7 +66,7 @@ public sealed class QuestScriptRuntimeTests
         Assert.True(IsActive(Assert.Single(progress.Chapters)));
         Assert.Equal("visible,0,3", progress.Objectives["scan"]);
         Assert.True(progress.Variables["started"].GetBoolean());
-        var message = Assert.Single(progress.Messages);
+        RavenQuestMessage message = Assert.Single(progress.Messages);
         Assert.Null(message.From);
         Assert.Null(message.Subject);
         Assert.Null(message.Body);
@@ -107,7 +107,7 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task NextChapterStopsCurrentAndStartsReplacement()
     {
-        var progress = CreateProgress(
+        RavenCommanderQuest progress = CreateProgress(
             """
             function on_Test(entry)
                 quest:nextChapter("second")
@@ -138,8 +138,8 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task DeveloperCanStartDebugAndStopChapterWithSavedVariables()
     {
-        var saves = 0;
-        var progress = CreateProgress(
+        int saves = 0;
+        RavenCommanderQuest progress = CreateProgress(
             "function noop() end",
             new Dictionary<string, string> { ["second"] = "counter = 2" }
         );
@@ -154,10 +154,10 @@ public sealed class QuestScriptRuntimeTests
         await runtime.InitializeAsync();
 
         await runtime.SetChapterActiveAsync("second", active: true);
-        var result = await runtime.RunDebugAsync("second", "counter = counter + 3; return counter");
+        JsonElement result = await runtime.RunDebugAsync("second", "counter = counter + 3; return counter");
         await runtime.SetChapterActiveAsync("second", active: false);
 
-        var chapter = progress.Chapters.Single(item => item.Id == "second");
+        RavenQuestChapterState chapter = progress.Chapters.Single(item => item.Id == "second");
         Assert.NotNull(chapter.StartTime);
         Assert.NotNull(chapter.EndTime);
         Assert.Equal(5, chapter.Variables["counter"].GetDouble());
@@ -168,8 +168,8 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task DevelopmentStateEditsValidateAndPersistTypedViews()
     {
-        var saves = 0;
-        var progress = CreateProgress("counter = 1");
+        int saves = 0;
+        RavenCommanderQuest progress = CreateProgress("counter = 1");
         await using var runtime = new QuestScriptRuntime(
             progress,
             saveProgress: (_, _) =>
@@ -179,8 +179,8 @@ public sealed class QuestScriptRuntimeTests
             }
         );
         await runtime.InitializeAsync(startFirstChapter: true);
-        var initial = await runtime.GetDevelopmentStateAsync();
-        var chapter = Assert.Single(initial.Chapters);
+        QuestDevelopmentStateSnapshot initial = await runtime.GetDevelopmentStateAsync();
+        QuestDevelopmentChapterSnapshot chapter = Assert.Single(initial.Chapters);
         Assert.Equal(1, chapter.Variables["counter"].GetDouble());
 
         await runtime.UpdateDevelopmentChapterVariablesAsync(
@@ -199,7 +199,7 @@ public sealed class QuestScriptRuntimeTests
                 Body = "Test",
             },
         ]);
-        var unknown = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException unknown = await Assert.ThrowsAsync<InvalidDataException>(() =>
             runtime.UpdateDevelopmentChapterVariablesAsync(
                 "start",
                 new Dictionary<string, JsonElement> { ["invented"] = JsonSerializer.SerializeToElement(true) }
@@ -219,14 +219,16 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task DevelopmentPreparationValidatesInactiveChapterScripts()
     {
-        var progress = CreateProgress(
+        RavenCommanderQuest progress = CreateProgress(
             "function noop() end",
             new Dictionary<string, string> { ["broken"] = "this is not valid lua" }
         );
         await using var runtime = new QuestScriptRuntime(progress);
         await runtime.InitializeAsync(startFirstChapter: true);
 
-        var exception = await Assert.ThrowsAsync<QuestScriptException>(() => runtime.PrepareDevelopmentChaptersAsync());
+        QuestScriptException exception = await Assert.ThrowsAsync<QuestScriptException>(() =>
+            runtime.PrepareDevelopmentChaptersAsync()
+        );
 
         Assert.Equal("broken", exception.ChapterId);
         Assert.Equal("load", exception.FunctionName);
@@ -235,7 +237,7 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task ImportedChapterVariablesResumeBeforeJournalDispatch()
     {
-        var progress = CreateProgress(
+        RavenCommanderQuest progress = CreateProgress(
             """
             counter = 0
             function on_Test(entry)
@@ -271,7 +273,7 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task RemoteChapterSourceLoadsThroughPortableProvider()
     {
-        var progress = CreateProgress(string.Empty);
+        RavenCommanderQuest progress = CreateProgress(string.Empty);
         progress.Quest!.Chapters.Clear();
         progress = progress with
         {
@@ -281,7 +283,7 @@ public sealed class QuestScriptRuntimeTests
             ),
         };
         progress.Chapters.Add(new RavenQuestChapterState { Id = "start", StartTime = progress.StartTime });
-        var requests = 0;
+        int requests = 0;
         await using var runtime = new QuestScriptRuntime(
             progress,
             chapterSourceProvider: (reference, chapter, _) =>
@@ -311,7 +313,7 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task CommanderLibraryUsesPortableContextAndRetainedJournalData()
     {
-        var progress = CreateProgress(
+        RavenCommanderQuest progress = CreateProgress(
             """
             function onStart()
                 quest:set("cmdrName", cmdr.name)
@@ -353,7 +355,7 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task ScriptErrorsExposeQuestChapterAndFunction()
     {
-        var progress = CreateProgress(
+        RavenCommanderQuest progress = CreateProgress(
             """
             function onStart()
                 objective:show("missing")
@@ -362,7 +364,7 @@ public sealed class QuestScriptRuntimeTests
         );
         await using var runtime = new QuestScriptRuntime(progress);
 
-        var exception = await Assert.ThrowsAsync<QuestScriptException>(() =>
+        QuestScriptException exception = await Assert.ThrowsAsync<QuestScriptException>(() =>
             runtime.InitializeAsync(startFirstChapter: true)
         );
 
@@ -374,7 +376,7 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task PriorJournalEventsAndHumanoidEmotesMatchLegacyHelpers()
     {
-        var progress = CreateProgress(
+        RavenCommanderQuest progress = CreateProgress(
             """
             function onStart()
                 quest:set("priorStation", cmdr.lastDocked.StationName)
@@ -395,7 +397,7 @@ public sealed class QuestScriptRuntimeTests
                 new { @event = "FSDJump", StarSystem = "Shinrarta Dezhra" }
             ),
         };
-        var context = QuestCommanderContext.Empty with { PriorJournalEvents = prior };
+        QuestCommanderContext context = QuestCommanderContext.Empty with { PriorJournalEvents = prior };
         await using var runtime = new QuestScriptRuntime(progress, context);
         await runtime.InitializeAsync(startFirstChapter: true);
         using var journal = JsonDocument.Parse(
@@ -419,7 +421,7 @@ public sealed class QuestScriptRuntimeTests
     [Fact]
     public async Task InfiniteScriptHonorsCancellation()
     {
-        var progress = CreateProgress("while true do end");
+        RavenCommanderQuest progress = CreateProgress("while true do end");
         await using var runtime = new QuestScriptRuntime(progress);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(250));
 
@@ -436,7 +438,7 @@ public sealed class QuestScriptRuntimeTests
         var chapters = new Dictionary<string, string>(StringComparer.Ordinal) { ["start"] = firstChapter };
         if (additionalChapters is not null)
         {
-            foreach (var pair in additionalChapters)
+            foreach (KeyValuePair<string, string> pair in additionalChapters)
             {
                 chapters[pair.Key] = pair.Value;
             }

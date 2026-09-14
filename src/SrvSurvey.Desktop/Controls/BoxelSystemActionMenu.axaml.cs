@@ -179,7 +179,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
 
     internal static bool DismissActiveMenuForScroll()
     {
-        if (activeMenu is null || !activeMenu.TryGetTarget(out var active))
+        if (activeMenu is null || !activeMenu.TryGetTarget(out BoxelSystemActionMenu? active))
         {
             activeMenu = null;
             return false;
@@ -205,7 +205,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
 
     private static void ClaimActiveMenu(BoxelSystemActionMenu menu)
     {
-        if (activeMenu?.TryGetTarget(out var active) == true && !ReferenceEquals(active, menu))
+        if (activeMenu?.TryGetTarget(out BoxelSystemActionMenu? active) == true && !ReferenceEquals(active, menu))
         {
             active.CloseMenu();
         }
@@ -214,7 +214,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
 
     private static void ReleaseActiveMenu(BoxelSystemActionMenu menu)
     {
-        if (activeMenu?.TryGetTarget(out var active) == true && ReferenceEquals(active, menu))
+        if (activeMenu?.TryGetTarget(out BoxelSystemActionMenu? active) == true && ReferenceEquals(active, menu))
         {
             activeMenu = null;
         }

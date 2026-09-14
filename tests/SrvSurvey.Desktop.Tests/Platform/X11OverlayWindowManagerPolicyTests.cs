@@ -8,7 +8,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [Fact]
     public void AdvertisedKdeOnScreenDisplayAtomEnablesKdePolicy()
     {
-        var mode = X11OverlayWindowManagerPolicy.Select(kdeOnScreenDisplayAtom: 42, [4, 17, 42, 93]);
+        X11OverlayStackingMode mode = X11OverlayWindowManagerPolicy.Select(kdeOnScreenDisplayAtom: 42, [4, 17, 42, 93]);
 
         Assert.Equal(X11OverlayStackingMode.KdeOnScreenDisplay, mode);
     }
@@ -18,7 +18,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [InlineData(42, new uint[] { 4, 17, 93 })]
     public void MissingKdeCapabilityKeepsStandardTopmostPolicy(uint kdeOnScreenDisplayAtom, uint[] supportedAtoms)
     {
-        var mode = X11OverlayWindowManagerPolicy.Select(
+        X11OverlayStackingMode mode = X11OverlayWindowManagerPolicy.Select(
             kdeOnScreenDisplayAtom,
             supportedAtoms.Select(atom => (nuint)atom).ToArray()
         );
@@ -29,7 +29,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [Fact]
     public void KdePolicyWritesOsdTypeWithNormalFallback()
     {
-        var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
+        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             X11OverlayStackingMode.KdeOnScreenDisplay,
             kdeOnScreenDisplayAtom: 42,
             normalWindowAtom: 17
@@ -41,7 +41,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [Fact]
     public void StandardPolicyDoesNotReplaceAvaloniaWindowType()
     {
-        var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
+        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             X11OverlayStackingMode.StandardTopmost,
             kdeOnScreenDisplayAtom: 42,
             normalWindowAtom: 17
@@ -58,7 +58,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
         uint normalWindowAtom
     )
     {
-        var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
+        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             X11OverlayStackingMode.KdeOnScreenDisplay,
             kdeOnScreenDisplayAtom,
             normalWindowAtom
@@ -70,7 +70,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [Fact]
     public void ManagedDragUsesScreenPixelDelta()
     {
-        var position = ManagedOverlayWindowDragSession.CalculatePosition(
+        PixelPoint position = ManagedOverlayWindowDragSession.CalculatePosition(
             initialWindowPosition: new PixelPoint(100, 200),
             initialPointerPosition: new PixelPoint(125, 240),
             currentPointerPosition: new PixelPoint(165, 225)
@@ -82,7 +82,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [Fact]
     public void ManagedDragAllowsWindowToCrossTheTopScreenEdge()
     {
-        var position = ManagedOverlayWindowDragSession.CalculatePosition(
+        PixelPoint position = ManagedOverlayWindowDragSession.CalculatePosition(
             initialWindowPosition: new PixelPoint(100, 5),
             initialPointerPosition: new PixelPoint(125, 40),
             currentPointerPosition: new PixelPoint(165, -20)

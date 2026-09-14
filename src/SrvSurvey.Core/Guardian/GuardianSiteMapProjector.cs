@@ -25,7 +25,7 @@ public sealed class GuardianSiteMapProjector
     )
     {
         ArgumentNullException.ThrowIfNull(template);
-        var points = template
+        GuardianProjectedPoint[] points = template
             .PointsOfInterest.Concat(includeComponentMaterials ? template.DestructiblePanels : [])
             .Concat(survey?.RawPointsOfInterest ?? [])
             .Where(point => IsVisible(point, obeliskGroups))
@@ -40,11 +40,11 @@ public sealed class GuardianSiteMapProjector
                 )
             )
             .ToArray();
-        var groups = template
+        GuardianProjectedGroup[] groups = template
             .ObeliskGroupNameLocations.Where(group => obeliskGroups?.Contains(group.Key[0]) == true)
             .Select(group => ProjectGroup(group.Key, group.Value, markerOffset))
             .ToArray();
-        var maximumDistance = points
+        double maximumDistance = points
             .Select(point => Math.Sqrt((point.X * point.X) + (point.Y * point.Y)))
             .Concat(groups.Select(group => Math.Sqrt((group.X * group.X) + (group.Y * group.Y))))
             .DefaultIfEmpty(1)
@@ -78,14 +78,14 @@ public sealed class GuardianSiteMapProjector
         GuardianMapPoint markerOffset
     )
     {
-        var active = activeObelisks?.FirstOrDefault(obelisk =>
+        GuardianObelisk? active = activeObelisks?.FirstOrDefault(obelisk =>
             string.Equals(obelisk.Name, point.Name, StringComparison.OrdinalIgnoreCase)
         );
         GuardianComponentLoadout? componentLoadout = null;
         survey?.ComponentMaterials.TryGetValue(point.Name, out componentLoadout);
-        var status = ResolveStatus(point, survey, componentLoadout);
-        var (projectedRelicHeading, hasIndividualRelicHeading) = ResolveRelicHeading(point, survey, isRuins);
-        var location = ProjectPolar(point.Angle, point.Distance);
+        GuardianPoiStatus status = ResolveStatus(point, survey, componentLoadout);
+        (int projectedRelicHeading, bool hasIndividualRelicHeading) = ResolveRelicHeading(point, survey, isRuins);
+        GuardianMapPoint location = ProjectPolar(point.Angle, point.Distance);
         return new GuardianProjectedPoint(
             point.Name,
             point.Type,
@@ -113,7 +113,7 @@ public sealed class GuardianSiteMapProjector
         GuardianComponentLoadout? componentLoadout
     )
     {
-        if (survey?.PoiStatuses.TryGetValue(point.Name, out var explicitStatus) == true)
+        if (survey?.PoiStatuses.TryGetValue(point.Name, out GuardianPoiStatus explicitStatus) == true)
         {
             return explicitStatus;
         }
@@ -150,16 +150,16 @@ public sealed class GuardianSiteMapProjector
             return (-1, false);
         }
 
-        if (survey?.RelicHeadings.TryGetValue(point.Name, out var relicHeading) == true)
+        if (survey?.RelicHeadings.TryGetValue(point.Name, out int relicHeading) == true)
         {
-            var normalizedRelicHeading = NormalizeHeading(relicHeading);
+            int normalizedRelicHeading = NormalizeHeading(relicHeading);
             if (normalizedRelicHeading >= 0)
             {
                 return (normalizedRelicHeading, true);
             }
         }
 
-        var towerHeading = NormalizeHeading(survey?.RelicTowerHeading ?? -1);
+        int towerHeading = NormalizeHeading(survey?.RelicTowerHeading ?? -1);
         return isRuins && towerHeading >= 0 ? (towerHeading, false) : (-1, false);
     }
 
@@ -169,7 +169,7 @@ public sealed class GuardianSiteMapProjector
         GuardianMapPoint markerOffset
     )
     {
-        var location = ProjectPolar(point.X, point.Y);
+        GuardianMapPoint location = ProjectPolar(point.X, point.Y);
         return new GuardianProjectedGroup(
             name,
             location.X + markerOffset.X,
@@ -181,7 +181,7 @@ public sealed class GuardianSiteMapProjector
 
     private static GuardianMapPoint ProjectPolar(double angle, double distance)
     {
-        var radians = angle * Math.PI / 180;
+        double radians = angle * Math.PI / 180;
         return new GuardianMapPoint(-Math.Sin(radians) * distance, Math.Cos(radians) * distance);
     }
 

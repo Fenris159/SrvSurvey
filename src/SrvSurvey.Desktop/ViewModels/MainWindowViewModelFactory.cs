@@ -24,7 +24,7 @@ internal static class MainWindowViewModelFactory
     {
         ArgumentNullException.ThrowIfNull(startup);
 
-        var construction = startup.CreateConstructionContext();
+        MainWindowViewModelConstructionContext construction = startup.CreateConstructionContext();
         startup.TransferOwnershipToConstruction();
         return new MainWindowViewModel(startup.ConfiguredJournalDirectory, construction);
     }
@@ -129,7 +129,7 @@ internal sealed class MainWindowViewModelStartupResource<T>(T resource, Action<E
 
     public T Transfer()
     {
-        var result =
+        T result =
             ownedResource ?? throw new InvalidOperationException("The startup resource was already transferred.");
         ownedResource = null;
         return result;
@@ -311,8 +311,10 @@ internal sealed class MainWindowViewModelConstructionRollback(ApplicationLogServ
 
     public void Rollback()
     {
-        var failures = Task.Run(RollbackCoreAsync, CancellationToken.None).GetAwaiter().GetResult();
-        foreach (var failure in failures)
+        IReadOnlyList<Exception> failures = Task.Run(RollbackCoreAsync, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+        foreach (Exception? failure in failures)
         {
             try
             {
@@ -328,7 +330,7 @@ internal sealed class MainWindowViewModelConstructionRollback(ApplicationLogServ
     private async Task<IReadOnlyList<Exception>> RollbackCoreAsync()
     {
         List<Exception> failures = [];
-        while (cleanup.TryPop(out var action))
+        while (cleanup.TryPop(out Func<ValueTask>? action))
         {
             try
             {
@@ -367,7 +369,7 @@ internal sealed class MainWindowViewModelConstructionOwnership<T>(T? initialReso
 
     public void Dispose()
     {
-        var disposingResource = ownedResource;
+        T? disposingResource = ownedResource;
         ownedResource = null;
         disposingResource?.Dispose();
     }

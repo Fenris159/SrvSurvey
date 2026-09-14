@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Quests;
@@ -84,16 +85,16 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     public HumanSiteViewModel(HumanSiteViewModelOptions? options = null)
     {
         options ??= new HumanSiteViewModelOptions();
-        var resolvedSettingsStore = options.SettingsStore;
-        var resolvedKnowledgeStore = options.KnowledgeStore;
-        var resolvedMaterialStore = options.MaterialStore;
-        var templateCatalog = options.TemplateCatalog;
-        var resolvedCanonnClient = options.CanonnClient;
-        var resolvedUseExternalData = options.UseExternalData;
-        var resolvedCanonnPublisher = options.CanonnPublisher;
-        var resolvedPublishCanonnGeometry = options.PublishCanonnGeometry;
-        var resolvedReportCanonnPublication = options.ReportCanonnPublication;
-        var resolvedClientVersion = options.ClientVersion;
+        HumanSiteSettingsStore? resolvedSettingsStore = options.SettingsStore;
+        HumanSiteKnowledgeStore? resolvedKnowledgeStore = options.KnowledgeStore;
+        HumanSiteMaterialStore? resolvedMaterialStore = options.MaterialStore;
+        HumanSiteTemplateCatalog? templateCatalog = options.TemplateCatalog;
+        ICanonnHumanSiteClient? resolvedCanonnClient = options.CanonnClient;
+        Func<bool>? resolvedUseExternalData = options.UseExternalData;
+        ICanonnHumanSitePublisher? resolvedCanonnPublisher = options.CanonnPublisher;
+        Func<bool>? resolvedPublishCanonnGeometry = options.PublishCanonnGeometry;
+        Action<CanonnHumanSitePublicationResult>? resolvedReportCanonnPublication = options.ReportCanonnPublication;
+        Version? resolvedClientVersion = options.ClientVersion;
 
         this.settingsStore = resolvedSettingsStore;
         this.knowledgeStore = resolvedKnowledgeStore;
@@ -105,7 +106,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         this.reportCanonnPublication = resolvedReportCanonnPublication;
         this.clientVersion =
             resolvedClientVersion ?? typeof(HumanSiteViewModel).Assembly.GetName().Version ?? new Version(0, 0);
-        var templates = templateCatalog ?? HumanSiteTemplateCatalog.LoadEmbedded();
+        HumanSiteTemplateCatalog templates = templateCatalog ?? HumanSiteTemplateCatalog.LoadEmbedded();
         TemplateAuthor = new HumanSiteTemplateAuthoringViewModel(
             templates,
             () => OnPropertyChanged(nameof(MapProjection))
@@ -113,7 +114,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         state = new HumanSiteLiveState(templates);
         mapProjector = new HumanSiteMapProjector();
         navigation = new HumanSiteNavigation(templates);
-        var preferences = resolvedSettingsStore?.Load() ?? HumanSitePreferences.Default;
+        HumanSitePreferences preferences = resolvedSettingsStore?.Load() ?? HumanSitePreferences.Default;
         autoShow = preferences.AutoShow;
         preferredWidth = preferences.Width;
         preferredHeight = preferences.Height;
@@ -534,8 +535,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        var events = journalEvents as IReadOnlyList<JournalEventEnvelope> ?? journalEvents.ToArray();
-        var nextVehicle = currentVehicle ?? vehicle;
+        IReadOnlyList<JournalEventEnvelope> events =
+            journalEvents as IReadOnlyList<JournalEventEnvelope> ?? journalEvents.ToArray();
+        string? nextVehicle = currentVehicle ?? vehicle;
         if (events.Count == 0 && currentStatus is null && string.Equals(vehicle, nextVehicle, StringComparison.Ordinal))
         {
             return;
@@ -547,9 +549,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         }
 
         vehicle = nextVehicle;
-        var versionBefore = state.Version;
+        int versionBefore = state.Version;
         var accumulator = new JournalUpdateAccumulator();
-        foreach (var journalEvent in events)
+        foreach (JournalEventEnvelope journalEvent in events)
         {
             await ProcessJournalEventAsync(journalEvent, allowExternalData, accumulator);
         }
@@ -561,7 +563,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             loadedMaterialSiteKey = null;
         }
 
-        var finalSource = TryInferGeometry();
+        HumanSiteGeometrySource finalSource = TryInferGeometry();
         if (finalSource != HumanSiteGeometrySource.Unknown)
         {
             accumulator.Source = finalSource;
@@ -594,7 +596,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         vehicleTracker.Apply(journalEvent, status);
         if (journalEvent.EventName == "ApproachSettlement" && state.CurrentSite is not null)
         {
-            var loadedSource = await LoadKnowledgeAsync();
+            HumanSiteGeometrySource loadedSource = await LoadKnowledgeAsync();
             if (
                 accumulator.Source == HumanSiteGeometrySource.Unknown
                 && loadedSource != HumanSiteGeometrySource.Unknown
@@ -603,7 +605,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 accumulator.Source = loadedSource;
             }
 
-            var canonnSource = await LoadCanonnKnowledgeAsync(allowExternalData);
+            HumanSiteGeometrySource canonnSource = await LoadCanonnKnowledgeAsync(allowExternalData);
             if (
                 accumulator.Source == HumanSiteGeometrySource.Unknown
                 && canonnSource != HumanSiteGeometrySource.Unknown
@@ -613,18 +615,23 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             }
         }
 
-        var inferredSource = TryInferGeometry(IsSettlementAlignmentCommand(journalEvent));
+        HumanSiteGeometrySource inferredSource = TryInferGeometry(IsSettlementAlignmentCommand(journalEvent));
         if (inferredSource != HumanSiteGeometrySource.Unknown)
         {
             accumulator.Source = inferredSource;
             accumulator.PublicationSource = inferredSource;
         }
 
-        var activity = activityTracker.Apply(journalEvent, state.CurrentSite, status, TrackMaterialCollection);
+        HumanSiteActivityApplyResult activity = activityTracker.Apply(
+            journalEvent,
+            state.CurrentSite,
+            status,
+            TrackMaterialCollection
+        );
         accumulator.AddedMaterials.AddRange(activity.AddedMaterials);
         if (journalEvent.EventName == "ApproachSettlement" && state.CurrentSite is { } approachedSite)
         {
-            var materialSiteKey = $"{approachedSite.SystemAddress}/{approachedSite.MarketId}";
+            string materialSiteKey = $"{approachedSite.SystemAddress}/{approachedSite.MarketId}";
             if (!string.Equals(materialSiteKey, loadedMaterialSiteKey, StringComparison.Ordinal))
             {
                 ThreatLevel = -1;
@@ -721,13 +728,13 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     public void AdjustZoom(bool zoomIn)
     {
-        var next = Math.Round(Zoom + (zoomIn ? 0.2 : -0.2), 1);
+        double next = Math.Round(Zoom + (zoomIn ? 0.2 : -0.2), 1);
         if (next is < 0.2 or > 15)
         {
             return;
         }
 
-        var automatic = GetAutomaticZoom();
+        double? automatic = GetAutomaticZoom();
         AutoZoom = automatic is not null && Math.Abs(next - automatic.Value) < 0.001;
         Zoom = next;
     }
@@ -745,8 +752,8 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     private HumanSiteGeometrySource TryInferGeometry(bool allowManualFootAlignment = false)
     {
-        var manualFootAlignment = status?.OnFootExterior == true && allowManualFootAlignment;
-        var automaticDockAlignment = status?.Docked == true && !status.OnFoot;
+        bool manualFootAlignment = status?.OnFootExterior == true && allowManualFootAlignment;
+        bool automaticDockAlignment = status?.Docked == true && !status.OnFoot;
         if (
             state.CurrentSite is not { } site
             || status is not { HasLatitudeLongitude: true } currentStatus
@@ -757,14 +764,14 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             return HumanSiteGeometrySource.Unknown;
         }
 
-        var activeVehicle = currentStatus.InTaxi
+        string? activeVehicle = currentStatus.InTaxi
             ? "taxi"
             : (currentStatus.OnFoot) switch
             {
                 true => "foot",
                 false => vehicle,
             };
-        var source = HumanSiteGeometrySource.AutoDock;
+        HumanSiteGeometrySource source = HumanSiteGeometrySource.AutoDock;
         if (currentStatus.InTaxi)
         {
             source = HumanSiteGeometrySource.TaxiDock;
@@ -773,7 +780,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         {
             source = HumanSiteGeometrySource.ManualFoot;
         }
-        var geometry = navigation.InferGeometry(
+        HumanSiteGeometrySolution? geometry = navigation.InferGeometry(
             site,
             new SurfaceCoordinate(currentStatus.Latitude, currentStatus.Longitude),
             currentStatus.NormalizedHeading,
@@ -837,24 +844,33 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             return;
         }
 
-        var bodyRadius = (double)currentStatus.PlanetRadius;
+        double bodyRadius = (double)currentStatus.PlanetRadius;
         var origin = new SurfaceCoordinate(site.Location.Latitude, site.Location.Longitude);
         var current = new SurfaceCoordinate(currentStatus.Latitude, currentStatus.Longitude);
         var markers = new List<HumanSiteQuestMarker>();
         var routes = new List<HumanSiteQuestRoute>();
-        foreach (var quest in quests)
+        foreach (QuestRuntimeSnapshot quest in quests)
         {
-            foreach (var location in quest.BodyLocations)
+            foreach (KeyValuePair<string, string> location in quest.BodyLocations)
             {
-                if (TryAddQuestLocationMarker(location, origin, current, bodyRadius, heading, out var marker))
+                if (
+                    TryAddQuestLocationMarker(
+                        location,
+                        origin,
+                        current,
+                        bodyRadius,
+                        heading,
+                        out HumanSiteQuestMarker? marker
+                    )
+                )
                 {
                     markers.Add(marker);
                 }
             }
 
-            foreach (var route in quest.Routes)
+            foreach (RavenQuestRoute route in quest.Routes)
             {
-                if (TryBuildQuestRoute(route, origin, bodyRadius, heading, out var builtRoute))
+                if (TryBuildQuestRoute(route, origin, bodyRadius, heading, out HumanSiteQuestRoute? builtRoute))
                 {
                     routes.Add(builtRoute);
                 }
@@ -875,12 +891,20 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     )
     {
         marker = default!;
-        if (!TryParseQuestLocation(location.Value, out var coordinate, out var radius))
+        if (!TryParseQuestLocation(location.Value, out SurfaceCoordinate coordinate, out double radius))
         {
             return false;
         }
 
-        var built = BuildQuestMarkerForLocation(location.Key, coordinate, radius, origin, current, bodyRadius, heading);
+        HumanSiteQuestMarker? built = BuildQuestMarkerForLocation(
+            location.Key,
+            coordinate,
+            radius,
+            origin,
+            current,
+            bodyRadius,
+            heading
+        );
         if (built is null)
         {
             return false;
@@ -902,8 +926,8 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     {
         try
         {
-            var offset = HumanSiteNavigation.GetSiteOffset(origin, coordinate, bodyRadius, heading);
-            var distance = SurfaceNavigation.GetDistance(current, coordinate, bodyRadius);
+            HumanSiteMapPoint offset = HumanSiteNavigation.GetSiteOffset(origin, coordinate, bodyRadius, heading);
+            double distance = SurfaceNavigation.GetDistance(current, coordinate, bodyRadius);
             return new HumanSiteQuestMarker(key, offset, radius, distance < radius);
         }
         catch (ArgumentOutOfRangeException)
@@ -929,9 +953,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         }
 
         var points = new List<HumanSiteMapPoint>();
-        foreach (var waypoint in route.Waypoints)
+        foreach (double[] waypoint in route.Waypoints)
         {
-            if (!TryParseQuestWaypoint(waypoint, out var coordinate))
+            if (!TryParseQuestWaypoint(waypoint, out SurfaceCoordinate coordinate))
             {
                 continue;
             }
@@ -959,7 +983,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     {
         coordinate = default;
         radius = 0;
-        var values = encoded.Split(',', StringSplitOptions.TrimEntries);
+        string[] values = encoded.Split(',', StringSplitOptions.TrimEntries);
         return values.Length == 3
             && TryCreateSurfaceCoordinate(values[0], values[1], out coordinate)
             && double.TryParse(values[2], NumberStyles.Float, CultureInfo.InvariantCulture, out radius)
@@ -990,8 +1014,8 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     {
         coordinate = default;
         if (
-            !double.TryParse(latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedLatitude)
-            || !double.TryParse(longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedLongitude)
+            !double.TryParse(latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedLatitude)
+            || !double.TryParse(longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedLongitude)
         )
         {
             return false;
@@ -1015,10 +1039,10 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         double heading
     )
     {
-        var bodyRadius = (double)currentStatus.PlanetRadius;
+        double bodyRadius = (double)currentStatus.PlanetRadius;
         if (vehicleTracker.ShipLocation is { } observedShip)
         {
-            var shipLocation = vehicleTracker.ShipHeading is { } shipHeading
+            SurfaceCoordinate shipLocation = vehicleTracker.ShipHeading is { } shipHeading
                 ? HumanSiteNavigation.AdjustForVehicle(observedShip, shipHeading, bodyRadius, vehicle)
                 : observedShip;
             ShipOffset = HumanSiteNavigation.GetSiteOffset(origin, shipLocation, bodyRadius, heading);
@@ -1038,7 +1062,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             return HumanSiteGeometrySource.Unknown;
         }
 
-        var key = $"{site.SystemAddress}/{site.MarketId}";
+        string key = $"{site.SystemAddress}/{site.MarketId}";
         if (string.Equals(key, loadedSiteKey, StringComparison.Ordinal))
         {
             return HumanSiteGeometrySource.Unknown;
@@ -1047,7 +1071,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         loadedSiteKey = key;
         try
         {
-            var result = await knowledgeStore.LoadAsync(context, site.MarketId);
+            HumanSiteKnowledgeLoadResult result = await knowledgeStore.LoadAsync(context, site.MarketId);
             if (result.Knowledge is not null)
             {
                 state.ApplyKnowledge(result.Knowledge);
@@ -1075,7 +1099,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             return HumanSiteGeometrySource.Unknown;
         }
 
-        var key = $"{site.SystemAddress}/{site.MarketId}";
+        string key = $"{site.SystemAddress}/{site.MarketId}";
         if (string.Equals(key, loadedCanonnSiteKey, StringComparison.Ordinal))
         {
             return HumanSiteGeometrySource.Unknown;
@@ -1083,9 +1107,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         try
         {
-            var result = await canonnClient.GetStationsAsync(site.SystemAddress);
+            CanonnHumanSiteLookupResult result = await canonnClient.GetStationsAsync(site.SystemAddress);
             loadedCanonnSiteKey = key;
-            var station = result.Stations.FirstOrDefault(candidate => candidate.MarketId == site.MarketId);
+            HumanSiteKnowledge? station = result.Stations.FirstOrDefault(candidate =>
+                candidate.MarketId == site.MarketId
+            );
             if (station is not null && state.ApplyKnowledge(station, HumanSiteKnowledgeMergeMode.FillMissing))
             {
                 StatusMessage = "Loaded compatible Canonn settlement type and alignment.";
@@ -1145,7 +1171,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             return;
         }
 
-        var activeVehicle = currentStatus.InTaxi
+        string? activeVehicle = currentStatus.InTaxi
             ? "taxi"
             : (currentStatus.OnFoot) switch
             {
@@ -1195,7 +1221,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                         or ArgumentException
             )
         {
-            var warning = "Settlement geometry could not be uploaded to Canonn: " + exception.Message;
+            string warning = "Settlement geometry could not be uploaded to Canonn: " + exception.Message;
             StatusMessage = warning;
             reportCanonnPublication?.Invoke(new(null, warning));
         }
@@ -1208,7 +1234,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             return;
         }
 
-        var key = $"{site.SystemAddress}/{site.MarketId}";
+        string key = $"{site.SystemAddress}/{site.MarketId}";
         if (string.Equals(key, loadedMaterialSiteKey, StringComparison.Ordinal))
         {
             return;
@@ -1217,7 +1243,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         loadedMaterialSiteKey = key;
         try
         {
-            var result = await materialStore.LoadActiveAsync(context);
+            HumanSiteMaterialLoadResult result = await materialStore.LoadActiveAsync(context);
             if (result.Survey is { } survey)
             {
                 activityTracker.ReplaceCollectedMaterials(survey.Materials);
@@ -1294,7 +1320,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         try
         {
-            var result = await materialStore.SetThreatLevelAsync(context, value);
+            HumanSiteMaterialMutationResult result = await materialStore.SetThreatLevelAsync(context, value);
             ThreatLevel = result.Survey.ThreatLevel;
             StatusMessage = $"Settlement threat level set to {ThreatLevel}.";
         }
@@ -1313,7 +1339,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private static bool IsStopMaterialSurveyCommand(JournalEventEnvelope journalEvent)
     {
         return journalEvent.EventName == "SendText"
-            && journalEvent.Payload.TryGetProperty("Message", out var message)
+            && journalEvent.Payload.TryGetProperty("Message", out JsonElement message)
             && message.ValueKind == System.Text.Json.JsonValueKind.String
             && string.Equals(message.GetString()?.Trim(), ".stop", StringComparison.OrdinalIgnoreCase);
     }
@@ -1321,7 +1347,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private static bool IsSettlementAlignmentCommand(JournalEventEnvelope journalEvent)
     {
         return journalEvent.EventName == "SendText"
-            && journalEvent.Payload.TryGetProperty("Message", out var message)
+            && journalEvent.Payload.TryGetProperty("Message", out JsonElement message)
             && message.ValueKind == System.Text.Json.JsonValueKind.String
             && string.Equals(message.GetString()?.Trim(), ".settlement", StringComparison.OrdinalIgnoreCase);
     }
@@ -1330,14 +1356,14 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     {
         if (
             journalEvent.EventName != "SendText"
-            || !journalEvent.Payload.TryGetProperty("Message", out var message)
+            || !journalEvent.Payload.TryGetProperty("Message", out JsonElement message)
             || message.ValueKind != System.Text.Json.JsonValueKind.String
         )
         {
             return null;
         }
 
-        var text = message.GetString()?.Trim();
+        string? text = message.GetString()?.Trim();
         const string command = ".threat";
         if (
             string.IsNullOrWhiteSpace(text)
@@ -1353,7 +1379,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             text[(command.Length + 1)..].Trim(),
             System.Globalization.NumberStyles.Integer,
             System.Globalization.CultureInfo.InvariantCulture,
-            out var value
+            out int value
         )
             ? value
             : null;
@@ -1366,7 +1392,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             return null;
         }
 
-        var radius = status?.PlanetRadius is > 0 ? (double)status.PlanetRadius : 0;
+        double radius = status?.PlanetRadius is > 0 ? (double)status.PlanetRadius : 0;
 
         return new HumanSiteKnowledgeContext(
             frontierId,
@@ -1439,7 +1465,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     private static bool IsStatusEligible(EliteStatus currentStatus)
     {
-        var mode = OverlayGameModeResolver.Resolve(currentStatus);
+        OverlayGameMode mode = OverlayGameModeResolver.Resolve(currentStatus);
         // Legacy deliberately kept a recognized settlement alive across panel
         // and scanner transitions. Galaxy Map remains the port-wide exception:
         // unrelated overlays are hidden there by design.
@@ -1564,7 +1590,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     private void RefreshProcessedTerminalOffsets()
     {
-        var updated = ActiveSite?.Template is { } template
+        HumanSiteMapPoint[] updated = ActiveSite?.Template is { } template
             ? activityTracker
                 .ProcessedTerminalIndexes.Where(index => index >= 0 && index < template.DataTerminals.Count)
                 .Select(index => template.DataTerminals[index].Offset)

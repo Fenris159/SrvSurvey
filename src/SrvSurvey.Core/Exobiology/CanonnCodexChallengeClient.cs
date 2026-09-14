@@ -53,17 +53,17 @@ public sealed class CanonnCodexChallengeClient : ICanonnCodexChallengeClient
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
-        var requestUri = new UriBuilder(endpoint) { Query = "cmdr=" + Uri.EscapeDataString(commanderName.Trim()) }.Uri;
+        Uri requestUri = new UriBuilder(endpoint) { Query = "cmdr=" + Uri.EscapeDataString(commanderName.Trim()) }.Uri;
         using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCancellation.CancelAfter(requestTimeout);
-        var operationToken = timeoutCancellation.Token;
+        CancellationToken operationToken = timeoutCancellation.Token;
         try
         {
-            using var response = await client
+            using HttpResponseMessage response = await client
                 .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, operationToken)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            using var document = await BoundedHttpContent
+            using JsonDocument document = await BoundedHttpContent
                 .ReadJsonDocumentAsync(
                     response.Content,
                     MaximumResponseBytes,
@@ -77,19 +77,20 @@ public sealed class CanonnCodexChallengeClient : ICanonnCodexChallengeClient
             }
 
             var groups = new List<CanonnCodexChallengeGroup>();
-            foreach (var value in document.RootElement.EnumerateObject().Select(property => property.Value))
+            foreach (JsonElement value in document.RootElement.EnumerateObject().Select(property => property.Value))
             {
                 if (
                     value.ValueKind != JsonValueKind.Object
-                    || !value.TryGetProperty("types_found", out var found)
+                    || !value.TryGetProperty("types_found", out JsonElement found)
                     || found.ValueKind != JsonValueKind.Array
                 )
                 {
                     continue;
                 }
 
-                var hudCategory =
-                    value.TryGetProperty("hud_category", out var category) && category.ValueKind == JsonValueKind.String
+                string? hudCategory =
+                    value.TryGetProperty("hud_category", out JsonElement category)
+                    && category.ValueKind == JsonValueKind.String
                         ? category.GetString()
                         : null;
                 if (string.IsNullOrWhiteSpace(hudCategory))
@@ -97,7 +98,7 @@ public sealed class CanonnCodexChallengeClient : ICanonnCodexChallengeClient
                     continue;
                 }
 
-                var foundTypes = found
+                string[] foundTypes = found
                     .EnumerateArray()
                     .Where(item => item.ValueKind == JsonValueKind.String)
                     .Select(item => item.GetString())
@@ -144,19 +145,21 @@ public sealed class CanonnCodexChallengeImporter(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
-        var challenge = await client.GetAsync(commanderName, cancellationToken).ConfigureAwait(false);
+        CanonnCodexChallengeLoadResult challenge = await client
+            .GetAsync(commanderName, cancellationToken)
+            .ConfigureAwait(false);
         if (!challenge.IsSuccess)
         {
             return CanonnCodexImportResult.Failed(challenge.Error ?? "Canonn Challenge data is unavailable.");
         }
 
         var matches = new HashSet<long>();
-        var unmatched = 0;
-        foreach (var group in challenge.Groups)
+        int unmatched = 0;
+        foreach (CanonnCodexChallengeGroup group in challenge.Groups)
         {
-            foreach (var foundType in group.FoundTypes)
+            foreach (string foundType in group.FoundTypes)
             {
-                var entry = catalog.Entries.FirstOrDefault(reference =>
+                ExobiologyReference? entry = catalog.Entries.FirstOrDefault(reference =>
                     string.Equals(reference.DisplayName, foundType, StringComparison.OrdinalIgnoreCase)
                     && string.Equals(reference.HudCategory, group.HudCategory, StringComparison.OrdinalIgnoreCase)
                 );
@@ -171,8 +174,8 @@ public sealed class CanonnCodexChallengeImporter(
             }
         }
 
-        var timestamp = DateTimeOffset.Now;
-        var tracked = await store
+        DateTimeOffset timestamp = DateTimeOffset.Now;
+        CommanderCodexBatchTrackResult tracked = await store
             .TrackBatchAsync(
                 frontierId,
                 commanderName,

@@ -51,7 +51,7 @@ public sealed class SystemNicknameCatalogTests : IDisposable
     public void MalformedAndInvalidEntriesAreNonDestructiveWarnings()
     {
         Directory.CreateDirectory(Path.Combine(temporaryDirectory, "pub"));
-        var localPath = Path.Combine(temporaryDirectory, "system-nick-names.json");
+        string localPath = Path.Combine(temporaryDirectory, "system-nick-names.json");
         const string malformed = "{\"map\":";
         File.WriteAllText(localPath, malformed);
         File.WriteAllText(

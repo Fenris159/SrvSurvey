@@ -47,4 +47,10 @@ public sealed partial class RouteBioTargetRow : UserControl
     }
 }
 
-public sealed record RouteBioCompletionRequestedEventArgs(RouteBioTargetItemViewModel Target, bool IsCompleted);
+public sealed class RouteBioCompletionRequestedEventArgs(RouteBioTargetItemViewModel target, bool isCompleted)
+    : EventArgs
+{
+    public RouteBioTargetItemViewModel Target { get; } = target;
+
+    public bool IsCompleted { get; } = isCompleted;
+}

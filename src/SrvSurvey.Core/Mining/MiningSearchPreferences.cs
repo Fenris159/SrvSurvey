@@ -11,12 +11,12 @@ public sealed record MiningSearchPreferences
     public double Radius { get; init; } = 100;
     public int MinimumHotspots { get; init; } = 1;
     public string Source { get; init; } = "Both";
-    public bool OnlyOverlaps { get; init; } = false;
-    public bool OnlyRes { get; init; } = false;
-    public bool Buying { get; init; } = false;
-    public bool GalaxyWide { get; init; } = false;
-    public bool ExcludeCarriers { get; init; } = false;
-    public bool LargePads { get; init; } = false;
+    public bool OnlyOverlaps { get; init; }
+    public bool OnlyRes { get; init; }
+    public bool Buying { get; init; }
+    public bool GalaxyWide { get; init; }
+    public bool ExcludeCarriers { get; init; }
+    public bool LargePads { get; init; }
     public int MaximumAgeDays { get; init; } = 2;
     public string StationType { get; init; } = "";
     public string Security { get; init; } = "";
@@ -26,6 +26,6 @@ public sealed record MiningSearchPreferences
     public string State { get; init; } = "";
     public string Power { get; init; } = "";
     public string PowerState { get; init; } = "";
-    public long MinimumPopulation { get; init; } = 0;
+    public long MinimumPopulation { get; init; }
     public string TraderType { get; init; } = "Raw";
 }

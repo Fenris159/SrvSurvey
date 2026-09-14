@@ -18,7 +18,7 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
                 ["gold"] = 5,
             },
         };
-        var market = Market(
+        MarketSnapshot market = Market(
             42,
             [
                 Item("$Steel_Name;", stock: 80, producer: true),
@@ -28,7 +28,8 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
             ]
         );
 
-        var replacement = ColonizationFleetCarrierCargoSynchronizer.CreateMarketReplacement(market, carrier);
+        IReadOnlyDictionary<string, int> replacement =
+            ColonizationFleetCarrierCargoSynchronizer.CreateMarketReplacement(market, carrier);
 
         Assert.Equal(3, replacement.Count);
         Assert.Equal(80, replacement["steel"]);
@@ -46,7 +47,7 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
             Cargo = new Dictionary<string, int> { ["steel"] = 75 },
         };
 
-        var unchanged = ColonizationFleetCarrierCargoSynchronizer.CreateMarketReplacement(
+        IReadOnlyDictionary<string, int> unchanged = ColonizationFleetCarrierCargoSynchronizer.CreateMarketReplacement(
             Market(42, [Item("$Steel_Name;", 75, producer: true)]),
             carrier
         );
@@ -60,30 +61,31 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
     [Fact]
     public void CreatesLegacyMarketAndMainShipTransferAdjustments()
     {
-        var dock = Dock();
+        ColonizationDockingSnapshot dock = Dock();
 
-        var bought = ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+        IReadOnlyDictionary<string, int> bought = ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
             Event("MarketBuy", "\"MarketID\":42,\"Type\":\"$Steel_Name;\",\"Count\":5"),
             dock,
             isInMainShip: true
         );
-        var sold = ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+        IReadOnlyDictionary<string, int> sold = ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
             Event("MarketSell", "\"MarketID\":42,\"Type\":\"Water\",\"Count\":2"),
             dock,
             isInMainShip: true
         );
-        var transferred = ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
-            Event(
-                "CargoTransfer",
-                """
-                "Transfers":[
-                  {"Type":"$Steel_Name;","Count":4,"Direction":"tocarrier"},
-                  {"Type":"Water","Count":3,"Direction":"toship"}]
-                """
-            ),
-            dock,
-            isInMainShip: true
-        );
+        IReadOnlyDictionary<string, int> transferred =
+            ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[
+                      {"Type":"$Steel_Name;","Count":4,"Direction":"tocarrier"},
+                      {"Type":"Water","Count":3,"Direction":"toship"}]
+                    """
+                ),
+                dock,
+                isInMainShip: true
+            );
 
         Assert.Equal(-5, bought["steel"]);
         Assert.Equal(2, sold["water"]);
@@ -94,13 +96,13 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
     [Fact]
     public void RefusesSrvAndMalformedTransfersAndSkipsAllSquadronTransfers()
     {
-        var transfer = Event(
+        JournalEventEnvelope transfer = Event(
             "CargoTransfer",
             """
             "Transfers":[{"Type":"Steel","Count":4,"Direction":"tocarrier"}]
             """
         );
-        var mixedTransfer = Event(
+        JournalEventEnvelope mixedTransfer = Event(
             "CargoTransfer",
             """
             "Transfers":[
@@ -129,12 +131,13 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
             )
         );
         // When ship-cargo diff is unavailable (shared cargo suppressed), journal fallback.
-        var squadronFallback = ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
-            mixedTransfer,
-            Dock("squadronBank"),
-            isInMainShip: true,
-            preferShipCargoDiffForSquadron: false
-        );
+        IReadOnlyDictionary<string, int> squadronFallback =
+            ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+                mixedTransfer,
+                Dock("squadronBank"),
+                isInMainShip: true,
+                preferShipCargoDiffForSquadron: false
+            );
         Assert.Equal(4, squadronFallback["steel"]);
         Assert.Equal(-3, squadronFallback["water"]);
         Assert.Throws<InvalidDataException>(() =>
@@ -153,7 +156,8 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
         Assert.False(ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(Dock()));
 
         var shipDiff = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) { ["steel"] = -10, ["water"] = 3 };
-        var fcDiff = ColonizationFleetCarrierCargoSynchronizer.CreateSquadronCargoDiffAdjustment(shipDiff);
+        IReadOnlyDictionary<string, int> fcDiff =
+            ColonizationFleetCarrierCargoSynchronizer.CreateSquadronCargoDiffAdjustment(shipDiff);
 
         Assert.Equal(10, fcDiff["steel"]);
         Assert.Equal(-3, fcDiff["water"]);
@@ -194,10 +198,10 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
 
     private static JournalEventEnvelope Event(string eventName, string properties)
     {
-        var json = $$"""
+        string json = $$"""
             {"timestamp":"2026-07-24T12:00:00Z","event":"{{eventName}}",{{properties}}}
             """;
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return result!;
     }
 }

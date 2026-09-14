@@ -14,7 +14,7 @@ public sealed class OverlayGameWindowTracker : IGameWindowTracker
 
     public GameWindowSnapshot GetSnapshot()
     {
-        var snapshot = inner.GetSnapshot();
+        GameWindowSnapshot snapshot = inner.GetSnapshot();
         return keepWhenGameLosesFocus() && snapshot.IsAvailable && snapshot.IsVisible
             ? snapshot with
             {

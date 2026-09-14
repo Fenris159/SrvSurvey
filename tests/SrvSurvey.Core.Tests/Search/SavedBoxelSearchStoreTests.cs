@@ -38,11 +38,11 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
             ProgressByPrefix = new Dictionary<string, int> { [top.Prefix] = 3 },
         };
 
-        var created = await store.CreateAsync("F123", "My boxel search", "Initial notes", initial);
-        var renamed = await store.RenameAsync("F123", created.FileName, "Return later");
-        var noted = await store.SaveNotesAsync("F123", created.FileName, "Updated notes");
-        var favorite = await store.SetFavoriteAsync("F123", created.FileName, true);
-        var updated = await store.SaveProgressAsync(
+        SavedBoxelSearchDocument created = await store.CreateAsync("F123", "My boxel search", "Initial notes", initial);
+        SavedBoxelSearchDocument renamed = await store.RenameAsync("F123", created.FileName, "Return later");
+        SavedBoxelSearchDocument noted = await store.SaveNotesAsync("F123", created.FileName, "Updated notes");
+        SavedBoxelSearchDocument favorite = await store.SetFavoriteAsync("F123", created.FileName, true);
+        SavedBoxelSearchDocument updated = await store.SaveProgressAsync(
             "F123",
             created.FileName,
             initial with
@@ -51,15 +51,15 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
             }
         );
 
-        var entries = await store.ListAsync("F123");
-        var loaded = await store.LoadAsync("F123", created.FileName);
+        IReadOnlyList<SavedBoxelSearchCatalogEntry> entries = await store.ListAsync("F123");
+        SavedBoxelSearchDocument loaded = await store.LoadAsync("F123", created.FileName);
 
         Assert.Equal("Return later", renamed.Name);
         Assert.Equal("Updated notes", noted.Notes);
         Assert.True(favorite.IsFavorite);
         Assert.Equal(2, updated.Search.CompletedSystems.Count);
         Assert.Equal(["Praea Euq IL-P c5-2"], updated.Search.EmptySystems);
-        var entry = Assert.Single(entries);
+        SavedBoxelSearchCatalogEntry entry = Assert.Single(entries);
         Assert.Equal("Return later", entry.Name);
         Assert.Equal("Updated notes", entry.Notes);
         Assert.True(entry.IsFavorite);
@@ -71,14 +71,14 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
         Assert.Equal(created.CreatedAt, loaded.CreatedAt);
         Assert.Equal(["Praea Euq IL-P c5-2"], loaded.Search.EmptySystems);
         Assert.Equal(["Praea Euq IL-P c5-1"], loaded.Search.DeferredSystems);
-        var deferredRange = Assert.Single(loaded.Search.DeferredRanges);
+        BoxelDeferredRangeSnapshot deferredRange = Assert.Single(loaded.Search.DeferredRanges);
         Assert.Equal(top.Prefix, deferredRange.Prefix);
         Assert.Equal(1, deferredRange.StartSystemNumber);
         Assert.Equal([0], deferredRange.Exceptions);
         Assert.Equal(created.FileName, loaded.Search.SavedSearchFileName);
         Assert.True(loaded.Search.SortDescending);
 
-        var trashPath = await store.DeleteAsync("F123", created.FileName);
+        string trashPath = await store.DeleteAsync("F123", created.FileName);
 
         Assert.False(File.Exists(created.FilePath));
         Assert.True(File.Exists(trashPath));
@@ -90,7 +90,7 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
     {
         var store = new SavedBoxelSearchStore(temporaryDirectory);
         var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
-        var created = await store.CreateAsync(
+        SavedBoxelSearchDocument created = await store.CreateAsync(
             "F123",
             "Valid",
             null,
@@ -104,7 +104,7 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
         );
         await File.WriteAllTextAsync(Path.Combine(Path.GetDirectoryName(created.FilePath)!, "broken.json"), "not json");
 
-        var entry = Assert.Single(await store.ListAsync("F123"));
+        SavedBoxelSearchCatalogEntry entry = Assert.Single(await store.ListAsync("F123"));
 
         Assert.Equal("Valid", entry.Name);
     }
@@ -114,7 +114,7 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
     {
         var store = new SavedBoxelSearchStore(temporaryDirectory);
         var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
-        var created = await store.CreateAsync(
+        SavedBoxelSearchDocument created = await store.CreateAsync(
             "F123",
             "Corrupted current",
             null,
@@ -125,11 +125,11 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
                 CurrentCount = 1,
             }
         );
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(created.FilePath))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(created.FilePath))!.AsObject();
         root["search"]!["currentBoxel"] = "Sol";
         await File.WriteAllTextAsync(created.FilePath, root.ToJsonString());
 
-        var loaded = await store.LoadAsync("F123", created.FileName);
+        SavedBoxelSearchDocument loaded = await store.LoadAsync("F123", created.FileName);
 
         Assert.Equal(top.Prefix, loaded.Search.Current?.Prefix);
     }

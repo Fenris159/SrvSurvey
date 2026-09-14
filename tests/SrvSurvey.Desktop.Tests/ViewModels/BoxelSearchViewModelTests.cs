@@ -19,7 +19,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task EmptyProfileLeavesAutoCopyUnselected()
     {
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver([]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
 
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
 
@@ -30,7 +33,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     public async Task EmptyProfileDefaultsSearchStartToCurrentLocalDate()
     {
         var before = new DateTimeOffset(DateTime.Today);
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver([]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
 
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
 
@@ -47,7 +53,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         );
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
-        var first = CreateTrackedViewModel(
+        BoxelSearchViewModel first = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -60,8 +66,8 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         first.StartedOn = originalStart;
         await first.ActivateAsync();
         Assert.Equal(SaveBoxelProgressResult.Saved, await first.SaveProgressAsync("Original configuration", null));
-        var saved = Assert.Single(await savedStore.ListAsync("F123"));
-        var resumed = CreateTrackedViewModel(
+        SavedBoxelSearchCatalogEntry saved = Assert.Single(await savedStore.ListAsync("F123"));
+        BoxelSearchViewModel resumed = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -78,7 +84,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task AutoCopyNotifiesManualCopyGuidance()
     {
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver([]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
@@ -105,7 +114,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             TimeSpan.FromHours(1)
         );
         await coordinator.SwitchCommanderAsync("F123");
-        var viewModel = CreateViewModel(
+        BoxelSearchViewModel viewModel = CreateViewModel(
             new CommanderProfileStore(temporaryDirectory),
             new StubResolver([]),
             surveyStats: coordinator
@@ -128,7 +137,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public void StatisticsStartupFailureAppearsInTheBoxelStatus()
     {
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver([]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
 
         viewModel.ReportStatisticsFailure("Access denied.");
 
@@ -139,7 +151,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     public async Task ActivateMergesSourcesAndPersistsLegacySearchState()
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
+        string systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(systemDirectory, "Praea Euq IL-P c5-0_100.json"),
@@ -157,7 +169,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             Observation("Praea Euq IL-P c5-1", 101),
             Observation("Praea Euq IL-P c5-2", 102),
         ]);
-        var viewModel = CreateViewModel(profileStore, resolver);
+        BoxelSearchViewModel viewModel = CreateViewModel(profileStore, resolver);
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
@@ -176,14 +188,14 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.Equal("2", viewModel.LastSystemAvailable);
         Assert.True(viewModel.Systems[1].ShowNextIncompleteHighlight);
         Assert.Equal("NEXT INCOMPLETE SYSTEM", viewModel.Systems[1].RowIndicator);
-        var saved = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
         Assert.True(saved.Data?.BoxelSearch.Active);
         Assert.Equal('c', saved.Data?.BoxelSearch.LowMassCode);
         Assert.True(saved.Data?.BoxelSearch.SkipAlreadyVisited);
 
         await viewModel.UpdateCurrentSystemAsync("Praea Euq IL-P c5-0", new GalacticCoordinate(1, 2, 3), 100);
         Assert.Equal("id64 100", viewModel.CurrentSystemAddressText);
-        var rows = viewModel.Systems;
+        IReadOnlyList<BoxelSystemRowViewModel> rows = viewModel.Systems;
         var notifications = new List<string?>();
         viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
@@ -193,7 +205,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.Empty(notifications);
 
         await viewModel.UpdateCurrentSystemAsync("Praea Euq IL-P c5-1", new GalacticCoordinate(1, 2, 3), 101);
-        var currentNext = Assert.Single(viewModel.Systems, row => row.IsCurrent);
+        BoxelSystemRowViewModel currentNext = Assert.Single(viewModel.Systems, row => row.IsCurrent);
         Assert.True(currentNext.ShowCurrentNextHighlight);
         Assert.False(currentNext.ShowNextIncompleteHighlight);
         Assert.Equal("CURRENT SYSTEM · NEXT INCOMPLETE SYSTEM", currentNext.RowIndicator);
@@ -203,7 +215,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     public async Task LastSystemAvailableIncludesSystemZeroInTheTotalCount()
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = CreateViewModel(
+        BoxelSearchViewModel viewModel = CreateViewModel(
             profileStore,
             new StubResolver([
                 Observation("Praea Euq IL-P c5-0", 100),
@@ -238,7 +250,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.EndsWith("c5-179", viewModel.Systems[^1].Name, StringComparison.Ordinal);
         viewModel.SelectedSystemPageIndex = 0;
 
-        for (var page = 1; page < viewModel.SystemPageCount; page++)
+        for (int page = 1; page < viewModel.SystemPageCount; page++)
         {
             Assert.True(viewModel.NextSystemPageCommand.CanExecute(null));
             viewModel.NextSystemPageCommand.Execute(null);
@@ -253,7 +265,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.True(viewModel.PreviousSystemPageCommand.CanExecute(null));
         Assert.EndsWith("of 349 systems complete", viewModel.SystemProgress, StringComparison.Ordinal);
         Assert.Equal("Last system available updated to 348.", viewModel.StatusMessage);
-        var saved = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
         Assert.Equal(349, saved.Data?.BoxelSearch.CurrentCount);
     }
 
@@ -261,7 +273,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     public async Task RefreshMovesToThePageContainingANewNextTarget()
     {
         var resolver = new StubResolver([]);
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), resolver);
+        BoxelSearchViewModel viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), resolver);
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
@@ -285,7 +297,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 
         Assert.Equal("Praea Euq IL-P c5-36", viewModel.NextSystem);
         Assert.Equal(4, viewModel.SystemPageNumber);
-        var highlighted = Assert.Single(viewModel.Systems, row => row.IsNextIncomplete);
+        BoxelSystemRowViewModel highlighted = Assert.Single(viewModel.Systems, row => row.IsNextIncomplete);
         Assert.EndsWith("c5-36", highlighted.Name, StringComparison.Ordinal);
 
         viewModel.SelectedSystemPageIndex = 0;
@@ -297,11 +309,14 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task StopResetsManualPagingBeforeRestartFollowsTheNextTarget()
     {
-        var observations = Enumerable
+        BoxelSystemObservation[] observations = Enumerable
             .Range(0, 36)
             .Select(suffix => Observation($"Praea Euq IL-P c5-{suffix}", 100 + suffix, hasKnownBodies: suffix < 35))
             .ToArray();
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver(observations));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver(observations)
+        );
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
@@ -328,14 +343,14 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 
         Assert.Equal("Praea Euq IL-P c5-35", viewModel.NextSystem);
         Assert.Equal(4, viewModel.SystemPageNumber);
-        var highlighted = Assert.Single(viewModel.Systems, row => row.IsNextIncomplete);
+        BoxelSystemRowViewModel highlighted = Assert.Single(viewModel.Systems, row => row.IsNextIncomplete);
         Assert.EndsWith("c5-35", highlighted.Name, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task LastSystemAvailableEditRequiresNumbersAndRestoresUntilApplied()
     {
-        var viewModel = CreateViewModel(
+        BoxelSearchViewModel viewModel = CreateViewModel(
             new CommanderProfileStore(temporaryDirectory),
             new StubResolver([Observation("Praea Euq IL-P c5-0", 100), Observation("Praea Euq IL-P c5-8", 108)])
         );
@@ -382,7 +397,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task PagePickerWidthAccommodatesTheLastPageNumber()
     {
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver([]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
@@ -401,7 +419,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = CreateTrackedViewModel(
+        BoxelSearchViewModel viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -444,7 +462,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 
         Assert.Equal("Praea Euq IL-P c5-11", viewModel.NextSystem);
         Assert.Equal(["Praea Euq IL-P c5-11"], copied);
-        var saved = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
         Assert.True(saved.Data?.BoxelSearch.SortDescending);
     }
 
@@ -453,7 +471,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = CreateTrackedViewModel(
+        BoxelSearchViewModel viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -473,10 +491,12 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.ApplyLastSystemAvailableAsync();
         copied.Clear();
 
-        var startRow = viewModel.Systems.Single(row => row.Name.EndsWith("c5-5", StringComparison.Ordinal));
+        BoxelSystemRowViewModel startRow = viewModel.Systems.Single(row =>
+            row.Name.EndsWith("c5-5", StringComparison.Ordinal)
+        );
         await startRow.StartHereAsync();
 
-        var loaded = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult loaded = await profileStore.LoadAsync("F123", true);
         Assert.Equal(5, loaded.Data?.BoxelSearch.DeferredRanges.SingleOrDefault()?.StartSystemNumber);
 
         Assert.Equal("Praea Euq IL-P c5-5", viewModel.NextSystem);
@@ -496,7 +516,9 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.False(viewModel.NextJumpPageCommand.CanExecute(null));
         Assert.Contains("Showing deferred systems 1\u20135 of 5", viewModel.SystemListNote);
 
-        var reopened = viewModel.Systems.Single(row => row.Name.EndsWith("c5-2", StringComparison.Ordinal));
+        BoxelSystemRowViewModel reopened = viewModel.Systems.Single(row =>
+            row.Name.EndsWith("c5-2", StringComparison.Ordinal)
+        );
         Assert.True(reopened.ReopenCommand.CanExecute(null));
         await reopened.ReopenAsync();
 
@@ -511,7 +533,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     public async Task SystemActionsCompleteDeferAndReopenPersistInOrder()
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = CreateViewModel(profileStore, new StubResolver([Observation("Praea Euq IL-P c5-0", 100)]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            profileStore,
+            new StubResolver([Observation("Praea Euq IL-P c5-0", 100)])
+        );
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
@@ -519,19 +544,25 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         viewModel.LastSystemAvailable = "2";
         await viewModel.ApplyLastSystemAvailableAsync();
 
-        var known = viewModel.Systems.Single(row => row.Name.EndsWith("c5-0", StringComparison.Ordinal));
+        BoxelSystemRowViewModel known = viewModel.Systems.Single(row =>
+            row.Name.EndsWith("c5-0", StringComparison.Ordinal)
+        );
         Assert.True(known.CompleteCommand.CanExecute(null));
         await known.CompleteAsync();
-        var completedSave = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult completedSave = await profileStore.LoadAsync("F123", true);
         Assert.Contains("Praea Euq IL-P c5-0", completedSave.Data!.BoxelSearch.CompletedSystems);
 
-        var unknown = viewModel.Systems.Single(row => row.Name.EndsWith("c5-1", StringComparison.Ordinal));
+        BoxelSystemRowViewModel unknown = viewModel.Systems.Single(row =>
+            row.Name.EndsWith("c5-1", StringComparison.Ordinal)
+        );
         Assert.True(unknown.DeferCommand.CanExecute(null));
         await unknown.DeferAsync();
-        var deferredSave = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult deferredSave = await profileStore.LoadAsync("F123", true);
         Assert.Contains("Praea Euq IL-P c5-1", deferredSave.Data!.BoxelSearch.DeferredSystems);
 
-        var deferred = viewModel.Systems.Single(row => row.Name.EndsWith("c5-1", StringComparison.Ordinal));
+        BoxelSystemRowViewModel deferred = viewModel.Systems.Single(row =>
+            row.Name.EndsWith("c5-1", StringComparison.Ordinal)
+        );
         Assert.True(deferred.ReopenCommand.CanExecute(null));
         await deferred.ReopenAsync();
 
@@ -542,7 +573,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task AbandonedLastSystemEditRestoresAndNewSearchUsesResolvedEstimate()
     {
-        var viewModel = CreateViewModel(
+        BoxelSearchViewModel viewModel = CreateViewModel(
             new CommanderProfileStore(temporaryDirectory),
             new StubResolver([Observation("Praea Euq RS-U d2-0", 200), Observation("Praea Euq RS-U d2-17", 217)])
         );
@@ -586,14 +617,14 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task ActivateResolvesImportedHandAuthoredSystemName()
     {
-        var published = Path.Combine(temporaryDirectory, "pub");
+        string published = Path.Combine(temporaryDirectory, "pub");
         Directory.CreateDirectory(published);
         await File.WriteAllTextAsync(
             Path.Combine(published, KnownSystemAddressCatalog.LegacyFileName),
             "known_systems = {\n  \"sol\": 10477373803,\n}\n" + "known_missing = [\n]\n"
         );
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = CreateTrackedViewModel(
+        BoxelSearchViewModel viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -608,7 +639,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 
         Assert.True(viewModel.IsActive);
         Assert.DoesNotContain("valid generated", viewModel.StatusMessage);
-        var saved = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
         Assert.Equal("Sol", saved.Data?.BoxelSearch.TopBoxel?.Name);
         Assert.Equal(10477373803, saved.Data?.BoxelSearch.TopBoxel?.SystemAddress);
     }
@@ -621,7 +652,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             new SystemNameSuggestion("Sol", 10477373803, "EDSM"),
             new SystemNameSuggestion("Solati", 1458376315610, "EDSM"),
         ]);
-        var viewModel = CreateTrackedViewModel(
+        BoxelSearchViewModel viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -648,7 +679,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.ActivateAsync();
 
         Assert.True(viewModel.IsActive);
-        var saved = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
         Assert.Equal("Sol", saved.Data?.BoxelSearch.TopBoxel?.Name);
         Assert.Equal(10477373803, saved.Data?.BoxelSearch.TopBoxel?.SystemAddress);
     }
@@ -658,7 +689,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     {
         var copied = new List<string>();
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = CreateTrackedViewModel(
+        BoxelSearchViewModel viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -697,7 +728,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     {
         var copied = new List<string>();
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var viewModel = CreateTrackedViewModel(
+        BoxelSearchViewModel viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -729,7 +760,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task GalaxyMapOverlayValidatesFinalRouteDestination()
     {
-        var viewModel = CreateViewModel(
+        BoxelSearchViewModel viewModel = CreateViewModel(
             new CommanderProfileStore(temporaryDirectory),
             new StubResolver([Observation("Praea Euq IL-P c5-0", 100), Observation("Praea Euq IL-P c5-1", 101)])
         );
@@ -775,7 +806,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task RefreshDoesNotOverwriteUnappliedLastSystemAvailableEdit()
     {
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver([]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
@@ -796,7 +830,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var copied = new List<string>();
-        var viewModel = CreateTrackedViewModel(
+        BoxelSearchViewModel viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -825,7 +859,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.True(viewModel.Systems[0].ReopenCommand.CanExecute(null));
         Assert.Single(copied);
         Assert.Equal("Praea Euq RS-U d2-1", copied[0]);
-        var saved = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
         Assert.Equal(top.Prefix, saved.Data?.BoxelSearch.Current?.Prefix);
         Assert.Equal(["Praea Euq RS-U d2-0"], saved.Data?.BoxelSearch.EmptySystems);
     }
@@ -833,7 +867,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task MarkingNextEmptyAdvancesToThePageContainingTheNextTarget()
     {
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver([]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq RS-U d2-0";
         viewModel.LowMassCode = "c";
@@ -841,7 +878,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         viewModel.LastSystemAvailable = "10";
         await viewModel.ApplyLastSystemAvailableAsync();
 
-        for (var suffix = 0; suffix < 10; suffix++)
+        for (int suffix = 0; suffix < 10; suffix++)
         {
             Assert.EndsWith($"d2-{suffix}", viewModel.NextSystem, StringComparison.Ordinal);
             await viewModel.MarkNextEmptyAsync();
@@ -858,14 +895,17 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task HierarchyNavigationShowsBreadcrumbsNamedNeighborsAndChildren()
     {
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver([]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq RS-U d2-0";
         viewModel.LowMassCode = "b";
         await viewModel.ActivateAsync();
 
-        var root = Assert.Single(viewModel.BreadcrumbBoxels);
-        var rootChildren = viewModel.ChildBoxels.ToArray();
+        BoxelNavigationOptionViewModel root = Assert.Single(viewModel.BreadcrumbBoxels);
+        BoxelNavigationOptionViewModel[] rootChildren = viewModel.ChildBoxels.ToArray();
         Assert.Same(root, viewModel.CurrentHierarchyBoxel);
         Assert.Null(viewModel.ParentBoxel);
         Assert.Null(viewModel.PreviousSiblingBoxel);
@@ -909,13 +949,16 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task HierarchyRowsKeepTheirIdentityDuringProgressUpdates()
     {
-        var viewModel = CreateViewModel(new CommanderProfileStore(temporaryDirectory), new StubResolver([]));
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([])
+        );
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq RS-U d2-0";
         viewModel.LowMassCode = "c";
         await viewModel.ActivateAsync();
-        var breadcrumb = viewModel.BreadcrumbBoxels;
-        var children = viewModel.ChildBoxels;
+        IReadOnlyList<BoxelNavigationOptionViewModel> breadcrumb = viewModel.BreadcrumbBoxels;
+        IReadOnlyList<BoxelNavigationOptionViewModel> children = viewModel.ChildBoxels;
         var notifications = new List<string?>();
         viewModel.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
 
@@ -939,7 +982,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
-        var observations = new[] { top }
+        BoxelSystemObservation[] observations = new[] { top }
             .Concat(top.Children)
             .Select(
                 (boxel, index) =>
@@ -958,7 +1001,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
                     )
             )
             .ToArray();
-        var viewModel = CreateViewModel(profileStore, new StubResolver(observations));
+        BoxelSearchViewModel viewModel = CreateViewModel(profileStore, new StubResolver(observations));
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = top.Name;
         viewModel.LowMassCode = "c";
@@ -976,7 +1019,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.Equal(9, viewModel.AuditTotal);
         Assert.Equal("9 of 9 boxels complete", viewModel.BoxelProgress);
         Assert.Contains("Audited all 9 boxels", viewModel.AuditProgress);
-        var saved = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
         Assert.Equal(9, saved.Data?.BoxelSearch.CompletedPrefixes.Count);
     }
 
@@ -984,8 +1027,8 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     public async Task LargeAuditRequiresExplicitConfirmation()
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
-        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0").Parent.Parent.Parent;
-        var viewModel = CreateViewModel(profileStore, new StubResolver([]));
+        BoxelAddress top = BoxelAddress.Parse("Praea Euq IL-P c5-0").Parent.Parent.Parent;
+        BoxelSearchViewModel viewModel = CreateViewModel(profileStore, new StubResolver([]));
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = top.Name;
         viewModel.LowMassCode = "a";
@@ -1004,7 +1047,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
-        var viewModel = CreateTrackedViewModel(
+        BoxelSearchViewModel viewModel = CreateTrackedViewModel(
             profileStore,
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -1041,7 +1084,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.True(viewModel.CanSaveProgress);
         Assert.False(viewModel.IsSavedToLibrary);
         Assert.Equal("Save to Library", viewModel.LibrarySaveButtonText);
-        var active = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult active = await profileStore.LoadAsync("F123", true);
         Assert.Null(active.Data?.BoxelSearch.SavedSearchFileName);
     }
 
@@ -1053,7 +1096,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             Observation("Praea Euq IL-P c5-0", 100),
             Observation("Praea Euq IL-P c5-1", 101),
         ]);
-        var first = CreateViewModel(profileStore, resolver);
+        BoxelSearchViewModel first = CreateViewModel(profileStore, resolver);
         await first.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         first.TopBoxelText = "Praea Euq IL-P c5-0";
         first.LowMassCode = "c";
@@ -1063,9 +1106,9 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
                 """{"timestamp":"2026-07-24T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-1","SystemAddress":101,"StarPos":[1,2,3]}"""
             ),
         ]);
-        var saved = await profileStore.LoadAsync("F123", true);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
         var suggestions = new CountingSuggestionClient();
-        var restarted = CreateViewModel(profileStore, resolver, suggestions);
+        BoxelSearchViewModel restarted = CreateViewModel(profileStore, resolver, suggestions);
 
         await restarted.LoadProfileAsync(
             "F123",
@@ -1199,7 +1242,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             ),
         };
 
-        foreach (var testCase in cases)
+        foreach ((BoxelSearchOutcome Outcome, string Expected) testCase in cases)
         {
             session.NextOutcome = testCase.Outcome;
 
@@ -1216,7 +1259,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task CompetingAutoCopyOutcomeExplainsWhyItWasDisabled()
     {
-        var search = BoxelSearchSessionSearchSnapshot.Empty with
+        BoxelSearchSessionSearchSnapshot search = BoxelSearchSessionSearchSnapshot.Empty with
         {
             Persistence = BoxelSearchSnapshot.Empty with
             {
@@ -1244,7 +1287,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var session in sessions.AsEnumerable().Reverse())
+        foreach (BoxelSearchSession? session in sessions.AsEnumerable().Reverse())
         {
             await session.DisposeAsync();
         }
@@ -1279,12 +1322,12 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         BoxelSurveyStatsCoordinator? surveyStats = null
     )
     {
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        BoxelSearchViewModel viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             localSystemReader,
             emptyBoxelStore,
             systemResolver,
-            out var session,
+            out BoxelSearchSession? session,
             clipboardWriter,
             knownSystems,
             savedSearchStore,
@@ -1426,7 +1469,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
-        var deadline = DateTimeOffset.UtcNow.AddSeconds(5);
+        DateTimeOffset deadline = DateTimeOffset.UtcNow.AddSeconds(5);
         while (!condition() && DateTimeOffset.UtcNow < deadline)
         {
             await Task.Delay(10);

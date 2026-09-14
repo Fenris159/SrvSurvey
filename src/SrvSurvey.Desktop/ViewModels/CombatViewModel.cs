@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
@@ -34,7 +35,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.profileStore = profileStore ?? throw new ArgumentNullException(nameof(profileStore));
         this.state = state ?? new CombatState();
-        var preferences = settingsStore.Load();
+        CombatPreferences preferences = settingsStore.Load();
         autoShowFootCombat = preferences.AutoShowFootCombat;
         autoShowMassacreMissions = preferences.AutoShowMassacreMissions;
         suppressForActiveBuildProjects = preferences.SuppressForActiveBuildProjects;
@@ -211,10 +212,10 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             UpdateFootSession();
         }
 
-        var persistenceChanged = false;
-        var stateChanged = false;
-        var modeChanged = false;
-        foreach (var journalEvent in journalEvents)
+        bool persistenceChanged = false;
+        bool stateChanged = false;
+        bool modeChanged = false;
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             if (journalEvent.EventName is "Fileheader" or "LoadGame")
             {
@@ -223,10 +224,10 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             }
             else if (
                 journalEvent.EventName == "Music"
-                && journalEvent.Payload.TryGetProperty("MusicTrack", out var track)
+                && journalEvent.Payload.TryGetProperty("MusicTrack", out JsonElement track)
             )
             {
-                var nextMusicTrack = track.GetString();
+                string? nextMusicTrack = track.GetString();
                 modeChanged |= !string.Equals(musicTrack, nextMusicTrack, StringComparison.Ordinal);
                 musicTrack = nextMusicTrack;
             }
@@ -236,7 +237,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
                 continue;
             }
 
-            var result = state.Apply(
+            CombatApplyResult result = state.Apply(
                 journalEvent,
                 countProgress: processHistoricalProgress,
                 countFootCombat: ShouldShowFootCombat
@@ -271,7 +272,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
     private void UpdateFootSession()
     {
-        var shouldBeActive = ShouldShowFootCombat;
+        bool shouldBeActive = ShouldShowFootCombat;
         if (shouldBeActive && !footSessionActive)
         {
             state.ResetFootCombatSession();
@@ -344,7 +345,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
     private bool IsFootCombatStatusEligible(EliteStatus? status)
     {
-        var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+        OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
         return status is not null && status.Altitude < 100 && mode is OverlayGameMode.OnFoot or OverlayGameMode.InSrv;
     }
 
@@ -355,7 +356,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             return false;
         }
 
-        var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+        OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
         return mode
             is OverlayGameMode.ExternalPanel
                 or OverlayGameMode.StationServices

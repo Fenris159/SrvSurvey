@@ -14,17 +14,17 @@ public sealed class VisitedStarsCacheServiceTests : IDisposable
     [Fact]
     public async Task SwapCreatesVerifiedBackupAndRestorePreservesIt()
     {
-        var gameDirectory = Path.Combine(temporaryDirectory, "game", "123");
-        var downloadDirectory = Path.Combine(temporaryDirectory, "downloads");
+        string gameDirectory = Path.Combine(temporaryDirectory, "game", "123");
+        string downloadDirectory = Path.Combine(temporaryDirectory, "downloads");
         Directory.CreateDirectory(gameDirectory);
-        var target = Path.Combine(gameDirectory, VisitedStarsCacheService.CacheFileName);
+        string target = Path.Combine(gameDirectory, VisitedStarsCacheService.CacheFileName);
         byte[] original = [1, 2, 3, 4];
         byte[] replacement = [9, 8, 7, 6, 5];
         await File.WriteAllBytesAsync(target, original);
-        var service = CreateService(downloadDirectory, replacement);
+        VisitedStarsCacheService service = CreateService(downloadDirectory, replacement);
 
-        var swapped = await service.SwapAsync("Sol", target);
-        var restored = await service.RestoreAsync(target);
+        VisitedStarsCacheSwapResult swapped = await service.SwapAsync("Sol", target);
+        VisitedStarsCacheRestoreResult restored = await service.RestoreAsync(target);
 
         Assert.Equal(replacement, await File.ReadAllBytesAsync(swapped.DownloadPath));
         Assert.Equal(original, await File.ReadAllBytesAsync(swapped.BackupPath));
@@ -38,9 +38,9 @@ public sealed class VisitedStarsCacheServiceTests : IDisposable
     [Fact]
     public async Task SwapRejectsUnexpectedResponseWithoutChangingCache()
     {
-        var gameDirectory = Path.Combine(temporaryDirectory, "game", "123");
+        string gameDirectory = Path.Combine(temporaryDirectory, "game", "123");
         Directory.CreateDirectory(gameDirectory);
-        var target = Path.Combine(gameDirectory, VisitedStarsCacheService.CacheFileName);
+        string target = Path.Combine(gameDirectory, VisitedStarsCacheService.CacheFileName);
         byte[] original = [1, 2, 3, 4];
         await File.WriteAllBytesAsync(target, original);
         using var client = new HttpClient(
@@ -60,12 +60,18 @@ public sealed class VisitedStarsCacheServiceTests : IDisposable
     [Fact]
     public async Task SwapRefusesToRunWhileGameIsActive()
     {
-        var target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
+        string target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllBytesAsync(target, [1]);
-        var service = CreateService(Path.Combine(temporaryDirectory, "downloads"), [2], isGameRunning: () => true);
+        VisitedStarsCacheService service = CreateService(
+            Path.Combine(temporaryDirectory, "downloads"),
+            [2],
+            isGameRunning: () => true
+        );
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.SwapAsync("Sol", target));
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.SwapAsync("Sol", target)
+        );
 
         Assert.Contains("Close Elite Dangerous", exception.Message);
         Assert.Equal([1], await File.ReadAllBytesAsync(target));
@@ -74,11 +80,11 @@ public sealed class VisitedStarsCacheServiceTests : IDisposable
     [Fact]
     public async Task RestoreRejectsBackupWhoseRecordedHashNoLongerMatches()
     {
-        var target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
+        string target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllBytesAsync(target, [1, 2, 3]);
-        var service = CreateService(Path.Combine(temporaryDirectory, "downloads"), [4, 5, 6]);
-        var swapped = await service.SwapAsync("Sol", target);
+        VisitedStarsCacheService service = CreateService(Path.Combine(temporaryDirectory, "downloads"), [4, 5, 6]);
+        VisitedStarsCacheSwapResult swapped = await service.SwapAsync("Sol", target);
         await File.WriteAllBytesAsync(swapped.BackupPath, [0]);
 
         await Assert.ThrowsAsync<IOException>(() => service.RestoreAsync(target));

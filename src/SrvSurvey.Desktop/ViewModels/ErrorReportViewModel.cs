@@ -81,7 +81,7 @@ public sealed class ErrorReportViewModel : INotifyPropertyChanged
             ["exception-message"] = exception.Message,
             ["exception-stack"] = exception.StackTrace ?? ErrorDetails,
         };
-        var query =
+        string query =
             "template=crash-report.yml&"
             + string.Join("&", form.Select(part => $"{part.Key}={WebUtility.UrlEncode(part.Value)}"));
         return new UriBuilder(NewIssueAddress) { Scheme = Uri.UriSchemeHttps, Query = query }.Uri;
@@ -147,7 +147,7 @@ public sealed class ErrorReportViewModel : INotifyPropertyChanged
 
         try
         {
-            var launched = await fileLauncher(new FileInfo(JournalPath));
+            bool launched = await fileLauncher(new FileInfo(JournalPath));
             StatusMessage = launched
                 ? "Opened the current journal file."
                 : "The current journal file could not be opened.";
@@ -184,7 +184,7 @@ public sealed class ErrorReportViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(uriLauncher);
         try
         {
-            var launched = await uriLauncher(uri);
+            bool launched = await uriLauncher(uri);
             StatusMessage = launched ? successMessage : failureMessage;
             return launched;
         }

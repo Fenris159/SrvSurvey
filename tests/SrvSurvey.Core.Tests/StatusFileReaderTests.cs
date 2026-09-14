@@ -13,10 +13,10 @@ public sealed class StatusFileReaderTests : IDisposable
     public async Task ReadAsyncPortsFlagsLocationAndUnknownFields()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, StatusFileReader.FileName);
-        var flags = (uint)(StatusFlags.InSrv | StatusFlags.HasLatLong | StatusFlags.SrvHighBeam);
-        var flags2 = (uint)(StatusFlags2.OnFoot | StatusFlags2.OnFootExterior);
-        var json =
+        string path = Path.Combine(temporaryDirectory, StatusFileReader.FileName);
+        uint flags = (uint)(StatusFlags.InSrv | StatusFlags.HasLatLong | StatusFlags.SrvHighBeam);
+        uint flags2 = (uint)(StatusFlags2.OnFoot | StatusFlags2.OnFootExterior);
+        string json =
             $"{{\"timestamp\":\"2026-07-24T12:00:00Z\","
             + $"\"event\":\"Status\",\"Flags\":{flags},\"Flags2\":{flags2},"
             + "\"Pips\":[4,2,0],\"FireGroup\":1,\"GuiFocus\":0,"
@@ -24,7 +24,7 @@ public sealed class StatusFileReaderTests : IDisposable
             + "\"FutureStatusValue\":{\"Enabled\":true}}";
         await File.WriteAllTextAsync(path, json);
 
-        var result = await StatusFileReader.ReadAsync(path);
+        StatusReadResult result = await StatusFileReader.ReadAsync(path);
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.NotNull(result.Status);
@@ -42,10 +42,10 @@ public sealed class StatusFileReaderTests : IDisposable
     public async Task ReadAsyncRetriesMalformedPartialWrite()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, StatusFileReader.FileName);
+        string path = Path.Combine(temporaryDirectory, StatusFileReader.FileName);
         await File.WriteAllTextAsync(path, "{\"event\":\"Status\"");
 
-        var result = await StatusFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
+        StatusReadResult result = await StatusFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(2, result.Attempts);

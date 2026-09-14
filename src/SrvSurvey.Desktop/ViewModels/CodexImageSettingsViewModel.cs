@@ -110,7 +110,7 @@ public sealed class CodexImageSettingsViewModel : INotifyPropertyChanged
 
     private string CreateReadyStatus(CodexImagePreferences value)
     {
-        var cache = TryGetAbsolutePath(value.CacheDirectory);
+        string? cache = TryGetAbsolutePath(value.CacheDirectory);
         if (cache is null)
         {
             return "The configured Codex cache path is not absolute; downloads will use " + defaultCacheDirectory + ".";

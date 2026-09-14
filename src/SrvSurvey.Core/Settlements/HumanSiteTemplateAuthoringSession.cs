@@ -35,7 +35,7 @@ public sealed class HumanSiteTemplateAuthoringSession
         var previewPaths = pendingBuildingPaths.Select(Clone).ToList();
         if (polygonPoints is { Count: > 0 })
         {
-            var pointTypes = Enumerable.Repeat(LinePoint, polygonPoints.Count).ToArray();
+            byte[] pointTypes = Enumerable.Repeat(LinePoint, polygonPoints.Count).ToArray();
             pointTypes[0] = StartPoint;
             previewPaths.Add(new HumanSiteBuildingPath(polygonPoints.ToArray(), pointTypes, FillMode: 0));
         }
@@ -45,7 +45,7 @@ public sealed class HumanSiteTemplateAuthoringSession
             return template;
         }
 
-        var name = string.IsNullOrWhiteSpace(pendingBuildingName) ? "Draft building" : pendingBuildingName.Trim();
+        string name = string.IsNullOrWhiteSpace(pendingBuildingName) ? "Draft building" : pendingBuildingName.Trim();
         return template with
         {
             Buildings = template.Buildings.Append(new HumanSiteBuilding(name, previewPaths)).ToArray(),
@@ -85,8 +85,8 @@ public sealed class HumanSiteTemplateAuthoringSession
             throw new InvalidOperationException("A settlement polygon requires at least two distinct points.");
         }
 
-        var points = polygonPoints.ToArray();
-        var pointTypes = Enumerable.Repeat(LinePoint, points.Length).ToArray();
+        HumanSiteMapPoint[] points = polygonPoints.ToArray();
+        byte[] pointTypes = Enumerable.Repeat(LinePoint, points.Length).ToArray();
         pointTypes[0] = StartPoint;
         if (closePath)
         {
@@ -120,7 +120,7 @@ public sealed class HumanSiteTemplateAuthoringSession
             throw new InvalidOperationException("Finish or cancel the current polygon before adding a circle.");
         }
 
-        var control = radius * CircleControlRatio;
+        double control = radius * CircleControlRatio;
         var points = new HumanSiteMapPoint[]
         {
             new(center.X + radius, center.Y),
@@ -137,7 +137,7 @@ public sealed class HumanSiteTemplateAuthoringSession
             new(center.X + radius, center.Y - control),
             new(center.X + radius, center.Y),
         };
-        var pointTypes = new byte[]
+        byte[] pointTypes = new byte[]
         {
             StartPoint,
             BezierPoint,

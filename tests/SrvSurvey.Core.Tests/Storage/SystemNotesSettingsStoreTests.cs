@@ -15,7 +15,7 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
     {
         var store = new SystemNotesSettingsStore(temporaryDirectory);
 
-        var result = store.Load();
+        SystemNotesSettingsLoadResult result = store.Load();
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.False(result.Exists);
@@ -27,7 +27,7 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
     public async Task LoadAndSaveUseLegacyFieldsAndPreserveUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "settings.json");
+        string path = Path.Combine(temporaryDirectory, "settings.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -40,7 +40,7 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
         );
         var store = new SystemNotesSettingsStore(temporaryDirectory);
 
-        var result = store.Load();
+        SystemNotesSettingsLoadResult result = store.Load();
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.False(result.Snapshot!.AlwaysOnTop);
@@ -48,7 +48,7 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
 
         await store.SaveAlwaysOnTopAsync(true);
 
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["systemNotesTopMost"]!.GetValue<bool>());
         Assert.Equal("C:\\Elite Screenshots", root["screenshotTargetFolder"]!.GetValue<string>());
         Assert.True(root["futureSetting"]!["enabled"]!.GetValue<bool>());
@@ -58,7 +58,7 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
     public async Task SaveRefusesToOverwriteMalformedSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "settings.json");
+        string path = Path.Combine(temporaryDirectory, "settings.json");
         const string malformed = "{\"systemNotesTopMost\":";
         await File.WriteAllTextAsync(path, malformed);
         var store = new SystemNotesSettingsStore(temporaryDirectory);
@@ -72,20 +72,20 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
     public async Task LoadsAndSavesLegacyJourneyViewerPreferencesLosslessly()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "settings.json");
+        string path = Path.Combine(temporaryDirectory, "settings.json");
         await File.WriteAllTextAsync(
             path,
             "{\"viewJourneyTopMost\":true,\"viewJourneyGalacticTime\":true,\"futureSetting\":42}"
         );
         var store = new SystemNotesSettingsStore(temporaryDirectory);
 
-        var loaded = store.Load();
+        SystemNotesSettingsLoadResult loaded = store.Load();
 
         Assert.True(loaded.Snapshot?.JourneyAlwaysOnTop);
         Assert.True(loaded.Snapshot?.JourneyUseGalacticTime);
 
         await store.SaveJourneyPreferencesAsync(false, true);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.False(root["viewJourneyTopMost"]!.GetValue<bool>());
         Assert.True(root["viewJourneyGalacticTime"]!.GetValue<bool>());
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
@@ -101,7 +101,7 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
         );
         var store = new SystemNotesSettingsStore(temporaryDirectory);
 
-        var result = store.GetImagesDirectory("Test: System/One");
+        string? result = store.GetImagesDirectory("Test: System/One");
 
         Assert.Equal(Path.Combine("C:\\Elite Screenshots", "Test- System-One"), result);
     }

@@ -32,7 +32,7 @@ public sealed class ColonizationConstructionState
     public bool Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var changed = journalEvent.EventName switch
+        bool changed = journalEvent.EventName switch
         {
             "Docked" => ApplyDocked(journalEvent.Payload, journalEvent.Timestamp),
             "Undocked" => ClearDocking(),
@@ -74,7 +74,7 @@ public sealed class ColonizationConstructionState
             return string.Empty;
         }
 
-        var normalized = journalName.Trim();
+        string normalized = journalName.Trim();
         if (normalized.StartsWith('$'))
         {
             normalized = normalized[1..];
@@ -90,19 +90,19 @@ public sealed class ColonizationConstructionState
 
     private bool ApplyDocked(JsonElement root, DateTimeOffset? timestamp)
     {
-        var marketId = GetInt64(root, "MarketID");
-        var systemAddress = GetInt64(root, "SystemAddress");
-        var stationName = GetString(root, "StationName_Localised") ?? GetString(root, "StationName");
+        long? marketId = GetInt64(root, "MarketID");
+        long? systemAddress = GetInt64(root, "SystemAddress");
+        string? stationName = GetString(root, "StationName_Localised") ?? GetString(root, "StationName");
         if (marketId is null || systemAddress is null || string.IsNullOrWhiteSpace(stationName))
         {
             return false;
         }
 
-        var factionName =
-            root.TryGetProperty("StationFaction", out var faction) && faction.ValueKind == JsonValueKind.Object
+        string? factionName =
+            root.TryGetProperty("StationFaction", out JsonElement faction) && faction.ValueKind == JsonValueKind.Object
                 ? GetString(faction, "Name")
                 : null;
-        var services = GetStrings(root, "StationServices");
+        string[] services = GetStrings(root, "StationServices");
         var updated = new ColonizationDockingSnapshot(
             marketId.Value,
             systemAddress.Value,
@@ -113,7 +113,7 @@ public sealed class ColonizationConstructionState
             timestamp,
             GetString(root, "StationType")
         );
-        var changed = !DockEquals(updated, currentDock) || currentDepot is not null;
+        bool changed = !DockEquals(updated, currentDock) || currentDepot is not null;
         currentDock = updated;
         currentDepot = null;
         return changed;
@@ -133,13 +133,13 @@ public sealed class ColonizationConstructionState
 
     private bool ApplyDepot(JsonElement root, DateTimeOffset? timestamp)
     {
-        var marketId = GetInt64(root, "MarketID");
+        long? marketId = GetInt64(root, "MarketID");
         if (marketId is null)
         {
             return false;
         }
 
-        var resources = ReadResources(root);
+        List<ColonizationResourceRequirement> resources = ReadResources(root);
         var updated = new ColonizationConstructionDepotSnapshot(
             timestamp,
             marketId.Value,
@@ -159,13 +159,13 @@ public sealed class ColonizationConstructionState
 
     private bool ApplyContribution(JsonElement root, DateTimeOffset? timestamp)
     {
-        var marketId = GetInt64(root, "MarketID");
+        long? marketId = GetInt64(root, "MarketID");
         if (marketId is null || currentDock is not { IsConstructionSite: true } dock || dock.MarketId != marketId)
         {
             return false;
         }
 
-        var contributions = ReadContributions(root);
+        Dictionary<string, int> contributions = ReadContributions(root);
         if (contributions.Count == 0)
         {
             return false;
@@ -183,8 +183,8 @@ public sealed class ColonizationConstructionState
 
     private bool ApplyClaim(JsonElement root, DateTimeOffset? timestamp)
     {
-        var systemAddress = GetInt64(root, "SystemAddress");
-        var systemName = GetString(root, "StarSystem");
+        long? systemAddress = GetInt64(root, "SystemAddress");
+        string? systemName = GetString(root, "StarSystem");
         if (systemAddress is null || string.IsNullOrWhiteSpace(systemName))
         {
             return false;
@@ -213,7 +213,7 @@ public sealed class ColonizationConstructionState
 
     private bool ApplyShipLoadout(JsonElement root)
     {
-        var capacity = GetInt32(root, "CargoCapacity");
+        int? capacity = GetInt32(root, "CargoCapacity");
         if (capacity is null || capacity < 0 || capacity == shipCargoCapacity)
         {
             return false;
@@ -225,25 +225,28 @@ public sealed class ColonizationConstructionState
 
     private bool ApplyMusic(JsonElement root)
     {
-        var updated = GetString(root, nameof(MusicTrack));
-        var changed = !string.Equals(updated, musicTrack, StringComparison.Ordinal);
+        string? updated = GetString(root, nameof(MusicTrack));
+        bool changed = !string.Equals(updated, musicTrack, StringComparison.Ordinal);
         musicTrack = updated;
         return string.Equals(updated, "MainMenu", StringComparison.Ordinal) ? ClearDocking() || changed : changed;
     }
 
     private static List<ColonizationResourceRequirement> ReadResources(JsonElement root)
     {
-        if (!root.TryGetProperty("ResourcesRequired", out var resources) || resources.ValueKind != JsonValueKind.Array)
+        if (
+            !root.TryGetProperty("ResourcesRequired", out JsonElement resources)
+            || resources.ValueKind != JsonValueKind.Array
+        )
         {
             return [];
         }
 
         var result = new List<ColonizationResourceRequirement>();
-        foreach (var resource in resources.EnumerateArray())
+        foreach (JsonElement resource in resources.EnumerateArray())
         {
-            var name = NormalizeCommodityName(GetString(resource, "Name"));
-            var required = GetInt32(resource, "RequiredAmount");
-            var provided = GetInt32(resource, "ProvidedAmount");
+            string name = NormalizeCommodityName(GetString(resource, "Name"));
+            int? required = GetInt32(resource, "RequiredAmount");
+            int? provided = GetInt32(resource, "ProvidedAmount");
             if (name.Length == 0 || required is null || provided is null)
             {
                 continue;
@@ -300,25 +303,25 @@ public sealed class ColonizationConstructionState
             && left.MarketId == right.MarketId
             && left.Commodities.Count == right.Commodities.Count
             && left.Commodities.All(pair =>
-                right.Commodities.TryGetValue(pair.Key, out var value) && value == pair.Value
+                right.Commodities.TryGetValue(pair.Key, out int value) && value == pair.Value
             );
     }
 
     private static Dictionary<string, int> ReadContributions(JsonElement root)
     {
         if (
-            !root.TryGetProperty("Contributions", out var contributions)
+            !root.TryGetProperty("Contributions", out JsonElement contributions)
             || contributions.ValueKind != JsonValueKind.Array
         )
         {
-            return new Dictionary<string, int>();
+            return [];
         }
 
         var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var contribution in contributions.EnumerateArray())
+        foreach (JsonElement contribution in contributions.EnumerateArray())
         {
-            var name = NormalizeCommodityName(GetString(contribution, "Name"));
-            var amount = GetInt32(contribution, "Amount");
+            string name = NormalizeCommodityName(GetString(contribution, "Name"));
+            int? amount = GetInt32(contribution, "Amount");
             if (name.Length == 0 || amount is null || amount <= 0)
             {
                 continue;
@@ -332,7 +335,7 @@ public sealed class ColonizationConstructionState
 
     private static string[] GetStrings(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty(propertyName, out JsonElement value) || value.ValueKind != JsonValueKind.Array)
         {
             return [];
         }
@@ -348,7 +351,7 @@ public sealed class ColonizationConstructionState
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -356,7 +359,7 @@ public sealed class ColonizationConstructionState
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
             : null;
@@ -365,9 +368,9 @@ public sealed class ColonizationConstructionState
     private static int? GetInt32(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
+            && value.TryGetInt32(out int number)
             ? number
             : null;
     }
@@ -375,9 +378,9 @@ public sealed class ColonizationConstructionState
     private static long? GetInt64(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var number)
+            && value.TryGetInt64(out long number)
             ? number
             : null;
     }
@@ -385,9 +388,9 @@ public sealed class ColonizationConstructionState
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
+            && value.TryGetDouble(out double number)
             && double.IsFinite(number)
             ? number
             : null;

@@ -144,7 +144,7 @@ public sealed record BoxelSurveyBoxelSnapshot(
     public double? ValuePerSystem => Visited <= 0 ? null : CurrentValue / (double)Visited;
 
     public BoxelSurveyClassCounts CountsOf(BoxelPlanetClass classified) =>
-        Classes.TryGetValue(classified, out var counts) ? counts : BoxelSurveyClassCounts.Zero;
+        Classes.TryGetValue(classified, out BoxelSurveyClassCounts? counts) ? counts : BoxelSurveyClassCounts.Zero;
 
     public BoxelSurveyIndexEntry ToIndexEntry() =>
         new(
@@ -188,13 +188,13 @@ internal static class BoxelSurveyValueCalculator
             IsFirstMapped = !request.WasMapped,
             IsOdyssey = request.IsOdyssey,
         };
-        var scan = ExplorationValueCalculator.Calculate(
+        int scan = ExplorationValueCalculator.Calculate(
             CloneValueRequest(shared, isMapped: false, withEfficiencyBonus: false)
         );
-        var mapped = ExplorationValueCalculator.Calculate(
+        int mapped = ExplorationValueCalculator.Calculate(
             CloneValueRequest(shared, isMapped: true, withEfficiencyBonus: true)
         );
-        var current = request.DssComplete
+        int current = request.DssComplete
             ? ExplorationValueCalculator.Calculate(
                 CloneValueRequest(shared, isMapped: true, withEfficiencyBonus: request.DssEfficiencyBonus)
             )

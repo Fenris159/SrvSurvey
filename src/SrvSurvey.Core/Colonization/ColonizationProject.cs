@@ -116,10 +116,10 @@ public static class ColonizationProjectCalculator
     )
     {
         ArgumentNullException.ThrowIfNull(projects);
-        var hidden = hiddenBuildIds?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
-        var selected = projects.Where(project => !hidden.Contains(project.BuildId)).ToArray();
-        var remaining = selected.Sum(project => Math.Max(0L, project.RemainingRequired));
-        var trips = shipCargoCapacity > 0 ? (long?)Math.Ceiling(remaining / (double)shipCargoCapacity) : null;
+        HashSet<string> hidden = hiddenBuildIds?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
+        ColonizationProject[] selected = projects.Where(project => !hidden.Contains(project.BuildId)).ToArray();
+        long remaining = selected.Sum(project => Math.Max(0L, project.RemainingRequired));
+        long? trips = shipCargoCapacity > 0 ? (long?)Math.Ceiling(remaining / (double)shipCargoCapacity) : null;
         return new ColonizationProjectTotals(selected.Length, remaining, trips);
     }
 }

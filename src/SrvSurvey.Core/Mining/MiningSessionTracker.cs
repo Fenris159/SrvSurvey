@@ -16,7 +16,7 @@ public sealed record MiningProspect(
     public string MineralSummary => string.Join(" · ", Materials.Select(m => $"{m.Name} {m.Percentage:0.0}%"));
 }
 
-public sealed record MiningCollection(DateTimeOffset Time, string Name, int Count, bool Engineering)
+public sealed record MiningCollectionEntry(DateTimeOffset Time, string Name, int Count, bool Engineering)
 {
     public int? Grade =>
         Engineering
@@ -44,13 +44,13 @@ public sealed record MiningSession
     public string Ring { get; set; } = "";
     public string Ship { get; init; } = "";
     public string Notes { get; set; } = "";
-    public Dictionary<string, double> Thresholds { get; set; } = new();
-    public Dictionary<string, int> QualityAdjustments { get; init; } = new();
-    public Dictionary<string, double> RefineryEstimates { get; init; } = new();
+    public Dictionary<string, double> Thresholds { get; set; } = [];
+    public Dictionary<string, int> QualityAdjustments { get; init; } = [];
+    public Dictionary<string, double> RefineryEstimates { get; init; } = [];
     public List<string> Screenshots { get; init; } = [];
     public List<MiningProspect> Prospects { get; init; } = [];
     public MiningProspect? ActiveProspect { get; set; }
-    public List<MiningCollection> Collections { get; init; } = [];
+    public List<MiningCollectionEntry> Collections { get; init; } = [];
     public int ProspectorLimpets { get; set; }
     public int CollectorLimpets { get; set; }
     public int AsteroidAdjustment { get; set; }
@@ -96,7 +96,7 @@ public sealed record MiningSession
 
     private static IEnumerable<MaterialFind> MaterialFinds(MiningProspect prospect)
     {
-        foreach (var material in prospect.Materials)
+        foreach (MiningMaterial material in prospect.Materials)
         {
             yield return new(
                 material.Name,
@@ -170,7 +170,7 @@ public sealed class MiningSessionTracker
 
     public MiningSession Stop(DateTimeOffset now)
     {
-        var session = Current ?? throw new InvalidOperationException("No mining session is active.");
+        MiningSession session = Current ?? throw new InvalidOperationException("No mining session is active.");
         Resume(now);
         session.Ended = now;
         Current = null;
@@ -184,14 +184,14 @@ public sealed class MiningSessionTracker
             return false;
         }
 
-        var data = entry.Payload;
+        JsonElement data = entry.Payload;
         return entry.EventName switch
         {
             "LaunchDrone" => ApplyDrone(session, data),
             "ProspectedAsteroid" => ApplyProspect(session, time, data),
             "MiningRefined" => ApplyCollection(
                 session,
-                new MiningCollection(time, MiningJson.Text(data, "Type"), 1, false)
+                new MiningCollectionEntry(time, MiningJson.Text(data, "Type"), 1, false)
             ),
             "MaterialCollected" => ApplyMaterial(session, time, data),
             "SupercruiseEntry" or "FSDJump" => ReleaseProspect(session),
@@ -204,7 +204,7 @@ public sealed class MiningSessionTracker
 
     private static bool ApplyDrone(MiningSession session, JsonElement data)
     {
-        var type = MiningJson.Text(data, "Type");
+        string type = MiningJson.Text(data, "Type");
         if (type.Equals("Prospector", StringComparison.OrdinalIgnoreCase))
         {
             session.ProspectorLimpets++;
@@ -223,7 +223,7 @@ public sealed class MiningSessionTracker
 
     private static bool ApplyProspect(MiningSession session, DateTimeOffset time, JsonElement data)
     {
-        var materials = MiningJson
+        MiningMaterial[] materials = MiningJson
             .Array(data, "Materials")
             .Select(material => new MiningMaterial(
                 MiningJson.Text(material, "Name"),
@@ -231,9 +231,9 @@ public sealed class MiningSessionTracker
             ))
             .Where(material => material.Name.Length > 0 && material.Percentage is >= 0 and <= 100)
             .ToArray();
-        var remaining =
-            data.TryGetProperty("Remaining", out var remainingValue)
-            && remainingValue.TryGetDouble(out var parsedRemaining)
+        double remaining =
+            data.TryGetProperty("Remaining", out JsonElement remainingValue)
+            && remainingValue.TryGetDouble(out double parsedRemaining)
             && double.IsFinite(parsedRemaining)
                 ? Math.Clamp(parsedRemaining, 0, 100)
                 : 100;
@@ -250,7 +250,7 @@ public sealed class MiningSessionTracker
         // original prospect identity so progress does not inflate session totals.
         if (remaining < 100 && session.Prospects.Count > 0)
         {
-            var original = session.Prospects[^1];
+            MiningProspect original = session.Prospects[^1];
             prospect = prospect with { Time = original.Time };
             session.Prospects[^1] = prospect;
         }
@@ -283,11 +283,11 @@ public sealed class MiningSessionTracker
 
         return ApplyCollection(
             session,
-            new MiningCollection(time, MiningJson.Text(data, "Name"), (int)MiningJson.Number(data, "Count"), true)
+            new MiningCollectionEntry(time, MiningJson.Text(data, "Name"), (int)MiningJson.Number(data, "Count"), true)
         );
     }
 
-    private static bool ApplyCollection(MiningSession session, MiningCollection collection)
+    private static bool ApplyCollection(MiningSession session, MiningCollectionEntry collection)
     {
         session.Collections.Add(collection);
         return true;
@@ -298,23 +298,23 @@ internal static class MiningJson
 {
     public static string Text(JsonElement data, string name) =>
         data.ValueKind == JsonValueKind.Object
-        && data.TryGetProperty(name, out var value)
+        && data.TryGetProperty(name, out JsonElement value)
         && value.ValueKind == JsonValueKind.String
             ? value.GetString() ?? ""
             : "";
 
     public static double Number(JsonElement data, string name) =>
         data.ValueKind == JsonValueKind.Object
-        && data.TryGetProperty(name, out var value)
+        && data.TryGetProperty(name, out JsonElement value)
         && value.ValueKind == JsonValueKind.Number
-        && value.TryGetDouble(out var number)
+        && value.TryGetDouble(out double number)
         && double.IsFinite(number)
             ? number
             : 0;
 
     public static IEnumerable<JsonElement> Array(JsonElement data, string name) =>
         data.ValueKind == JsonValueKind.Object
-        && data.TryGetProperty(name, out var value)
+        && data.TryGetProperty(name, out JsonElement value)
         && value.ValueKind == JsonValueKind.Array
             ? value.EnumerateArray().ToArray()
             : [];

@@ -78,7 +78,7 @@ public sealed partial class RouteBioTargetList : UserControl
 
     private void UpdateViewport()
     {
-        var count = ItemsSource?.Count ?? 0;
+        int count = ItemsSource?.Count ?? 0;
         if (count <= MaxVisibleItemCount)
         {
             BodyScroller.MaxHeight = double.PositiveInfinity;
@@ -86,8 +86,8 @@ public sealed partial class RouteBioTargetList : UserControl
             return;
         }
 
-        var visibleHeight = 0d;
-        for (var index = 0; index < MaxVisibleItemCount; index++)
+        double visibleHeight = 0d;
+        for (int index = 0; index < MaxVisibleItemCount; index++)
         {
             if (BodyItems.ContainerFromIndex(index) is not Control container || container.Bounds.Height <= 0)
             {
@@ -114,27 +114,27 @@ public sealed partial class RouteBioTargetList : UserControl
 
     private void UpdateScrollIndicator()
     {
-        var hasOverflowItems = (ItemsSource?.Count ?? 0) > MaxVisibleItemCount;
+        bool hasOverflowItems = (ItemsSource?.Count ?? 0) > MaxVisibleItemCount;
         ScrollIndicator.IsVisible = hasOverflowItems;
         if (!hasOverflowItems)
         {
             return;
         }
 
-        var extent = BodyScroller.Extent.Height;
-        var viewport = BodyScroller.Viewport.Height;
-        var overflow = extent - viewport;
-        var indicatorHeight = ScrollIndicator.Bounds.Height;
-        var isScrollable = extent > 0 && viewport > 0 && overflow > 0.5 && indicatorHeight > 0;
+        double extent = BodyScroller.Extent.Height;
+        double viewport = BodyScroller.Viewport.Height;
+        double overflow = extent - viewport;
+        double indicatorHeight = ScrollIndicator.Bounds.Height;
+        bool isScrollable = extent > 0 && viewport > 0 && overflow > 0.5 && indicatorHeight > 0;
         ScrollThumb.IsVisible = isScrollable;
         if (!isScrollable)
         {
             return;
         }
 
-        var thumbHeight = Math.Clamp(indicatorHeight * viewport / extent, MinimumThumbHeight, indicatorHeight);
-        var availableTravel = Math.Max(0, indicatorHeight - thumbHeight);
-        var progress = Math.Clamp(BodyScroller.Offset.Y / overflow, 0, 1);
+        double thumbHeight = Math.Clamp(indicatorHeight * viewport / extent, MinimumThumbHeight, indicatorHeight);
+        double availableTravel = Math.Max(0, indicatorHeight - thumbHeight);
+        double progress = Math.Clamp(BodyScroller.Offset.Y / overflow, 0, 1);
         ScrollThumb.Height = thumbHeight;
         scrollThumbTransform.Y = availableTravel * progress;
     }

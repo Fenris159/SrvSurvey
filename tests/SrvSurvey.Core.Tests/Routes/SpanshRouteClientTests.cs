@@ -12,7 +12,7 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task GenericJobDetectsAndStructuresExobiologyBodies()
     {
-        var client = CreateClient(
+        SpanshRouteClient client = CreateClient(
             """
             {
               "state": "completed",
@@ -45,9 +45,11 @@ public sealed class SpanshRouteClientTests
             """
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.Generic)
+        );
 
-        var hop = Assert.Single(hops);
+        FollowRouteHop hop = Assert.Single(hops);
         Assert.Equal("Test System", hop.Name);
         Assert.Equal(42, hop.SystemAddress);
         Assert.Equal(new GalacticCoordinate(1.5, -2, 3), hop.Position);
@@ -64,7 +66,7 @@ public sealed class SpanshRouteClientTests
     [InlineData(SpanshRouteKind.Exobiology)]
     public async Task ValuableWorldRoutesReadResultArrays(SpanshRouteKind kind)
     {
-        var client = CreateClient(
+        SpanshRouteClient client = CreateClient(
             """
             {
               "status": "ok",
@@ -82,9 +84,9 @@ public sealed class SpanshRouteClientTests
             """
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, kind));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, kind));
 
-        var hop = Assert.Single(hops);
+        FollowRouteHop hop = Assert.Single(hops);
         Assert.Equal("Exomastery Stop", hop.Name);
         Assert.Equal(42, hop.SystemAddress);
     }
@@ -92,7 +94,7 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task ValuableWorldRouteAggregatesStructuredBodiesBySystem()
     {
-        var client = CreateClient(
+        SpanshRouteClient client = CreateClient(
             """
             {
               "status": "ok",
@@ -133,19 +135,21 @@ public sealed class SpanshRouteClientTests
             """
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Riches));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.Riches)
+        );
 
-        var hop = Assert.Single(hops);
+        FollowRouteHop hop = Assert.Single(hops);
         Assert.Null(hop.Notes);
         Assert.Equal(["A 2", "A 3"], hop.BioTargets.Select(body => body.BodyName));
-        var first = hop.BioTargets[0];
+        FollowRouteBioTarget first = hop.BioTargets[0];
         Assert.Equal("Earth-like world", first.Subtype);
         Assert.Equal(1234.56, first.DistanceToArrivalLs);
         Assert.Equal(125000, first.EstimatedScanValue);
         Assert.Equal(625000, first.EstimatedMappingValue);
         Assert.True(first.IsTerraformable);
         Assert.False(first.IsBiological);
-        var second = hop.BioTargets[1];
+        FollowRouteBioTarget second = hop.BioTargets[1];
         Assert.Equal(4321.5, second.DistanceToArrivalLs);
         Assert.Equal(75000, second.EstimatedScanValue);
         Assert.Equal(250000, second.EstimatedMappingValue);
@@ -154,7 +158,7 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task ExobiologyRouteAggregatesBodiesBySystemIntoStructuredBio()
     {
-        var client = CreateClient(
+        SpanshRouteClient client = CreateClient(
             """
             {
               "status": "ok",
@@ -201,9 +205,11 @@ public sealed class SpanshRouteClientTests
             """
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Exobiology));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.Exobiology)
+        );
 
-        var hop = Assert.Single(hops);
+        FollowRouteHop hop = Assert.Single(hops);
         Assert.Null(hop.Notes);
         Assert.Equal(["A 2", "B 1"], hop.BioTargets.Select(body => body.BodyName));
         Assert.Equal(["Stratum Tectonicas", "Bacterium Acies"], hop.BioTargets[0].Species);
@@ -218,7 +224,7 @@ public sealed class SpanshRouteClientTests
     [InlineData(SpanshRouteKind.Neutron)]
     public async Task TouristAndNeutronRoutesReadSystemJumps(SpanshRouteKind kind)
     {
-        var client = CreateClient(
+        SpanshRouteClient client = CreateClient(
             """
             {
               "state": "completed",
@@ -246,14 +252,14 @@ public sealed class SpanshRouteClientTests
             """
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, kind));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, kind));
 
         Assert.Equal(2, hops.Count);
         Assert.Equal("Sol", hops[0].Name);
         Assert.Equal("Colonia", hops[1].Name);
         Assert.Equal(new GalacticCoordinate(-1, 2, 3), hops[1].Position);
         Assert.True(hops[1].Neutron);
-        var body = Assert.Single(hops[1].BioTargets);
+        FollowRouteBioTarget body = Assert.Single(hops[1].BioTargets);
         Assert.Equal("4", body.BodyName);
         Assert.Equal("Water world", body.Subtype);
         Assert.Equal(912.25, body.DistanceToArrivalLs);
@@ -262,7 +268,7 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task GalaxyRoutePreservesRefuelAndNeutronGuidance()
     {
-        var client = CreateClient(
+        SpanshRouteClient client = CreateClient(
             """
             {
               "state": "completed",
@@ -289,9 +295,11 @@ public sealed class SpanshRouteClientTests
             """
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Galaxy));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.Galaxy)
+        );
 
-        var hop = Assert.Single(hops);
+        FollowRouteHop hop = Assert.Single(hops);
         Assert.True(hop.Refuel);
         Assert.True(hop.Neutron);
         Assert.Equal("1", Assert.Single(hop.BioTargets).BodyName);
@@ -300,7 +308,7 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task FleetCarrierRoutePreservesRestockGuidance()
     {
-        var client = CreateClient(
+        SpanshRouteClient client = CreateClient(
             """
             {
               "status": "ok",
@@ -333,13 +341,15 @@ public sealed class SpanshRouteClientTests
             """
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.FleetCarrier));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.FleetCarrier)
+        );
 
-        var hop = Assert.Single(hops);
+        FollowRouteHop hop = Assert.Single(hops);
         Assert.Equal("Carrier Stop", hop.Name);
         Assert.Contains("restock", hop.Notes, StringComparison.OrdinalIgnoreCase);
         Assert.Empty(hop.BioTargets);
-        var carrier = Assert.IsType<FollowRouteCarrierHop>(hop.Carrier);
+        FollowRouteCarrierHop carrier = Assert.IsType<FollowRouteCarrierHop>(hop.Carrier);
         Assert.Equal(499.76, carrier.DistanceLy);
         Assert.Equal(21502.09, carrier.RemainingLy);
         Assert.Equal(1000, carrier.FuelRemainingTonnes);
@@ -354,7 +364,7 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task ColonisationRouteReadsJumpObjects()
     {
-        var client = CreateClient(
+        SpanshRouteClient client = CreateClient(
             """
             {
               "status": "ok",
@@ -379,9 +389,11 @@ public sealed class SpanshRouteClientTests
             """
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Colonisation));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.Colonisation)
+        );
 
-        var hop = Assert.Single(hops);
+        FollowRouteHop hop = Assert.Single(hops);
         Assert.Equal("Candidate System", hop.Name);
         Assert.Equal(91, hop.SystemAddress);
         Assert.Empty(hop.BioTargets);
@@ -390,7 +402,7 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task TradeRouteReadsNestedSourceAndDestinations()
     {
-        var client = CreateClient(
+        SpanshRouteClient client = CreateClient(
             """
             {
               "status": "ok",
@@ -436,7 +448,9 @@ public sealed class SpanshRouteClientTests
             """
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Trade));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.Trade)
+        );
 
         Assert.Equal(["Sol", "Barnard's Star", "Achenar"], hops.Select(hop => hop.Name));
         Assert.Equal(1, hops[0].SystemAddress);
@@ -453,9 +467,11 @@ public sealed class SpanshRouteClientTests
     )]
     public async Task BareJobIdsAutoDetectTheReturnedRouteShape(string response, string expectedFirstSystem)
     {
-        var client = CreateClient(response);
+        SpanshRouteClient client = CreateClient(response);
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.Generic)
+        );
 
         Assert.NotEmpty(hops);
         Assert.Equal(expectedFirstSystem, hops[0].Name);
@@ -480,7 +496,9 @@ public sealed class SpanshRouteClientTests
             TimeSpan.FromSeconds(1)
         );
 
-        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic));
+        IReadOnlyList<FollowRouteHop> hops = await client.GetRouteAsync(
+            new SpanshRouteReference(RouteId, SpanshRouteKind.Generic)
+        );
 
         Assert.Single(hops);
         Assert.Equal(2, handler.Requests.Count);
@@ -501,7 +519,7 @@ public sealed class SpanshRouteClientTests
             TimeSpan.Zero
         );
 
-        var exception = await Assert.ThrowsAsync<TimeoutException>(() =>
+        TimeoutException exception = await Assert.ThrowsAsync<TimeoutException>(() =>
             client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic))
         );
 
@@ -512,12 +530,14 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task CompletedFailureAndMalformedPayloadAreRejected()
     {
-        var failed = CreateClient("{\"state\":\"completed\",\"status\":\"error\"}");
-        var malformed = CreateClient("{\"state\":\"completed\",\"status\":\"ok\",\"result\":{}}");
+        SpanshRouteClient failed = CreateClient("{\"state\":\"completed\",\"status\":\"error\"}");
+        SpanshRouteClient malformed = CreateClient("{\"state\":\"completed\",\"status\":\"ok\",\"result\":{}}");
         var reference = new SpanshRouteReference(RouteId, SpanshRouteKind.Generic);
 
-        var failedException = await Assert.ThrowsAsync<InvalidDataException>(() => failed.GetRouteAsync(reference));
-        var malformedException = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException failedException = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            failed.GetRouteAsync(reference)
+        );
+        InvalidDataException malformedException = await Assert.ThrowsAsync<InvalidDataException>(() =>
             malformed.GetRouteAsync(reference)
         );
 
@@ -558,7 +578,7 @@ public sealed class SpanshRouteClientTests
         )
         {
             Requests.Add(request.RequestUri!);
-            var responseIndex = Math.Min(Interlocked.Increment(ref requestIndex) - 1, responses.Length - 1);
+            int responseIndex = Math.Min(Interlocked.Increment(ref requestIndex) - 1, responses.Length - 1);
             return Task.FromResult(
                 new HttpResponseMessage(StatusCode)
                 {

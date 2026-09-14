@@ -2,7 +2,7 @@ namespace SrvSurvey.Desktop;
 
 internal sealed class JournalMonitorSession
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private CancellationTokenSource? cancellation;
     private Task? runningTask;
     private Task? stopTask;
@@ -63,8 +63,8 @@ internal sealed class JournalMonitorSession
                 return stopTask;
             }
 
-            var source = cancellation;
-            var task = runningTask;
+            CancellationTokenSource? source = cancellation;
+            Task? task = runningTask;
             cancellation = null;
             runningTask = null;
             stopTask = source is null ? Task.CompletedTask : CancelWaitAndDisposeAsync(source, task!);

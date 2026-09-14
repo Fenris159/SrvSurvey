@@ -24,8 +24,8 @@ public sealed class CommanderPreferenceSettingsStore
     public void Save(CommanderPreferencePreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
-        var commanderName = NormalizeName(preferences.PreferredCommanderName);
-        var frontierId = NormalizeFrontierId(preferences.PreferredFrontierId);
+        string? commanderName = NormalizeName(preferences.PreferredCommanderName);
+        string? frontierId = NormalizeFrontierId(preferences.PreferredFrontierId);
         if (preferences.PreferredFrontierId is not null && frontierId is null)
         {
             throw new ArgumentException("The preferred Frontier ID is invalid.", nameof(preferences));
@@ -48,18 +48,20 @@ public sealed class CommanderPreferenceSettingsStore
 
     private static string? GetString(JsonObject? settings, string propertyName)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result)
+            ? result
+            : null;
     }
 
     private static string? NormalizeName(string? value)
     {
-        var normalized = value?.Trim();
+        string? normalized = value?.Trim();
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 
     private static string? NormalizeFrontierId(string? value)
     {
-        var normalized = value?.Trim();
+        string? normalized = value?.Trim();
         return
             normalized is not null
             && normalized.Length > 1
@@ -91,7 +93,7 @@ public sealed class CommanderPreferenceResolver(
             );
         }
 
-        var preference = settingsStore.Load();
+        CommanderPreferencePreferences preference = settingsStore.Load();
         if (!string.IsNullOrWhiteSpace(preference.PreferredFrontierId))
         {
             return new CommanderPreferenceResolution(
@@ -122,7 +124,7 @@ public sealed class CommanderPreferenceResolver(
             );
         }
 
-        var matches = catalog
+        CommanderProfileIdentity[] matches = catalog
             .Profiles.Where(profile =>
                 string.Equals(
                     profile.CommanderName,
@@ -133,7 +135,7 @@ public sealed class CommanderPreferenceResolver(
             .ToArray();
         if (matches.Length != 1)
         {
-            var reason =
+            string reason =
                 matches.Length == 0
                     ? "no imported profile has that exact name"
                     : "more than one imported profile has that name";
@@ -144,7 +146,7 @@ public sealed class CommanderPreferenceResolver(
             );
         }
 
-        var match = matches[0];
+        CommanderProfileIdentity match = matches[0];
         try
         {
             settingsStore.Save(new CommanderPreferencePreferences(match.CommanderName, match.FrontierId));
@@ -164,7 +166,7 @@ public sealed class CommanderPreferenceResolver(
             );
         }
 
-        var warningSuffix =
+        string warningSuffix =
             catalog.Warnings.Count == 0
                 ? string.Empty
                 : $" {catalog.Warnings.Count:N0} unrelated malformed profile file(s) were ignored.";

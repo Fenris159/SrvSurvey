@@ -14,7 +14,7 @@ internal static class QuestLuaConverter
             JsonValueKind.Null or JsonValueKind.Undefined => LuaValue.Nil,
             JsonValueKind.True => new LuaValue(true),
             JsonValueKind.False => new LuaValue(false),
-            JsonValueKind.Number when value.TryGetInt64(out var integer) => new LuaValue(integer),
+            JsonValueKind.Number when value.TryGetInt64(out long integer) => new LuaValue(integer),
             JsonValueKind.Number => new LuaValue(value.GetDouble()),
             JsonValueKind.String => ToLuaString(value.GetString() ?? string.Empty),
             JsonValueKind.Array => ToLuaArray(value),
@@ -25,7 +25,7 @@ internal static class QuestLuaConverter
 
     public static JsonElement ToJson(LuaValue value)
     {
-        var node = ToJsonNode(value);
+        JsonNode? node = ToJsonNode(value);
         using var document = JsonDocument.Parse(node?.ToJsonString() ?? "null");
         return document.RootElement.Clone();
     }
@@ -37,7 +37,7 @@ internal static class QuestLuaConverter
                 value,
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.RoundtripKind,
-                out var timestamp
+                out DateTimeOffset timestamp
             )
         )
         {
@@ -50,8 +50,8 @@ internal static class QuestLuaConverter
     private static LuaTable ToLuaArray(JsonElement value)
     {
         var table = new LuaTable(value.GetArrayLength(), 0);
-        var index = 1;
-        foreach (var item in value.EnumerateArray())
+        int index = 1;
+        foreach (JsonElement item in value.EnumerateArray())
         {
             table[index++] = ToLua(item);
         }
@@ -62,7 +62,7 @@ internal static class QuestLuaConverter
     private static LuaTable ToLuaObject(JsonElement value)
     {
         var table = new LuaTable(0, value.GetPropertyCount());
-        foreach (var property in value.EnumerateObject())
+        foreach (JsonProperty property in value.EnumerateObject())
         {
             table[property.Name] = ToLua(property.Value);
         }
@@ -72,7 +72,7 @@ internal static class QuestLuaConverter
 
     private static LuaTable ToLuaTimestamp(DateTimeOffset value)
     {
-        var local = value.ToLocalTime();
+        DateTimeOffset local = value.ToLocalTime();
         return new LuaTable(0, 9)
         {
             ["year"] = value.Year,
@@ -110,7 +110,7 @@ internal static class QuestLuaConverter
         if (table.HashMapCount > 0)
         {
             var result = new JsonObject();
-            foreach (var pair in table)
+            foreach (KeyValuePair<LuaValue, LuaValue> pair in table)
             {
                 if (pair.Key.Type != LuaValueType.String)
                 {
@@ -124,7 +124,7 @@ internal static class QuestLuaConverter
         }
 
         var array = new JsonArray();
-        for (var index = 1; index <= table.ArrayLength; index++)
+        for (int index = 1; index <= table.ArrayLength; index++)
         {
             array.Add(ToJsonNode(table[index]));
         }

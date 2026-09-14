@@ -46,7 +46,7 @@ public sealed class DockToDockLogService
         ArgumentNullException.ThrowIfNull(journalEvents);
         cargo = currentCargo ?? cargo;
         var completed = new List<DockToDockLogEntry>();
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             ApplyIdentity(journalEvent);
             ApplyLocation(journalEvent);
@@ -72,8 +72,8 @@ public sealed class DockToDockLogService
             return new DockToDockApplyResult(0, completed, null);
         }
 
-        var written = 0;
-        foreach (var entry in completed)
+        int written = 0;
+        foreach (DockToDockLogEntry entry in completed)
         {
             try
             {
@@ -92,7 +92,7 @@ public sealed class DockToDockLogService
 
     private DockToDockLogEntry? ApplyTripEvent(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         switch (journalEvent.EventName)
         {
             case "Undocked":
@@ -117,7 +117,7 @@ public sealed class DockToDockLogService
                 break;
 
             case "Docked" when activeTrip is not null:
-                var completed = CompleteTrip(activeTrip, journalEvent);
+                DockToDockLogEntry completed = CompleteTrip(activeTrip, journalEvent);
                 activeTrip = null;
                 return completed;
         }
@@ -127,9 +127,9 @@ public sealed class DockToDockLogService
 
     private DockToDockTrip StartTrip(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
-        var marketId = GetInt64(root, "MarketID") ?? -1;
-        var docked = lastDocked?.MarketId == marketId ? lastDocked : null;
+        JsonElement root = journalEvent.Payload;
+        long marketId = GetInt64(root, "MarketID") ?? -1;
+        DockedLocation? docked = lastDocked?.MarketId == marketId ? lastDocked : null;
         var cargoCounts = (cargo?.Inventory ?? [])
             .Where(item => item.Count > 0)
             .ToDictionary(item => item.Name, item => item.Count, StringComparer.OrdinalIgnoreCase);
@@ -152,8 +152,8 @@ public sealed class DockToDockLogService
 
     private DockToDockLogEntry CompleteTrip(DockToDockTrip trip, JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
-        var endedAt = GetEventTime(journalEvent);
+        JsonElement root = journalEvent.Payload;
+        DateTimeOffset endedAt = GetEventTime(journalEvent);
         return new DockToDockLogEntry
         {
             StartedAt = trip.StartedAt,
@@ -189,7 +189,7 @@ public sealed class DockToDockLogService
 
     private void ApplyIdentity(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         switch (journalEvent.EventName)
         {
             case "LoadGame":
@@ -208,7 +208,7 @@ public sealed class DockToDockLogService
 
     private void ApplyLocation(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         switch (journalEvent.EventName)
         {
             case "Location":
@@ -248,7 +248,7 @@ public sealed class DockToDockLogService
 
     private DockedLocation CreateDockedLocation(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         return new DockedLocation
         {
             SystemName = GetString(root, "StarSystem") ?? systemName,
@@ -269,7 +269,7 @@ public sealed class DockToDockLogService
 
     private static string? GetString(JsonElement root, string name)
     {
-        return root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -277,9 +277,9 @@ public sealed class DockToDockLogService
     private static long? GetInt64(JsonElement root, string name)
     {
         return
-            root.TryGetProperty(name, out var value)
+            root.TryGetProperty(name, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var result)
+            && value.TryGetInt64(out long result)
             ? result
             : null;
     }
@@ -287,9 +287,9 @@ public sealed class DockToDockLogService
     private static int? GetInt32(JsonElement root, string name)
     {
         return
-            root.TryGetProperty(name, out var value)
+            root.TryGetProperty(name, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var result)
+            && value.TryGetInt32(out int result)
             ? result
             : null;
     }
@@ -297,9 +297,9 @@ public sealed class DockToDockLogService
     private static double? GetDouble(JsonElement root, string name)
     {
         return
-            root.TryGetProperty(name, out var value)
+            root.TryGetProperty(name, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var result)
+            && value.TryGetDouble(out double result)
             && double.IsFinite(result)
             ? result
             : null;
@@ -430,7 +430,7 @@ public sealed class DockToDockCsvWriter
 
     public static string GetDefaultPath()
     {
-        var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         if (string.IsNullOrWhiteSpace(documents))
         {
             documents = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -442,17 +442,17 @@ public sealed class DockToDockCsvWriter
     public void Append(DockToDockLogEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
-        var directory =
+        string directory =
             Path.GetDirectoryName(OutputPath)
             ?? throw new InvalidOperationException("The dock-to-dock CSV path has no directory.");
         Directory.CreateDirectory(directory);
         ValidateExistingFile();
-        var includeHeader = !File.Exists(OutputPath) || new FileInfo(OutputPath).Length == 0;
-        var text =
+        bool includeHeader = !File.Exists(OutputPath) || new FileInfo(OutputPath).Length == 0;
+        string text =
             (includeHeader ? string.Join(',', Columns) + "\r\n" : string.Empty)
             + string.Join(',', CreateValues(entry).Select(Escape))
             + "\r\n";
-        var bytes = new UTF8Encoding(false).GetBytes(text);
+        byte[] bytes = new UTF8Encoding(false).GetBytes(text);
         using var stream = new FileStream(OutputPath, FileMode.Append, FileAccess.Write, FileShare.Read);
         stream.Write(bytes);
         stream.Flush(true);
@@ -478,7 +478,7 @@ public sealed class DockToDockCsvWriter
             bufferSize: 1024,
             leaveOpen: true
         );
-        var header = reader.ReadLine();
+        string? header = reader.ReadLine();
         if (!string.Equals(header, string.Join(',', Columns), StringComparison.Ordinal))
         {
             throw new InvalidDataException(
@@ -534,7 +534,7 @@ public sealed class DockToDockCsvWriter
 
     private static string FormatDuration(TimeSpan duration)
     {
-        var safe = duration < TimeSpan.Zero ? TimeSpan.Zero : duration;
+        TimeSpan safe = duration < TimeSpan.Zero ? TimeSpan.Zero : duration;
         return safe.ToString("hh\\:mm\\:ss", CultureInfo.InvariantCulture);
     }
 

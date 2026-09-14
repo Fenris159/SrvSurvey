@@ -14,7 +14,7 @@ public sealed class VoxStellarSharingViewModelTests : IDisposable
     [Fact]
     public void JournalSharingIsOptInAndPersistsImmediately()
     {
-        var viewModel = CreateViewModel(isAvailable: true);
+        VoxStellarSharingViewModel viewModel = CreateViewModel(isAvailable: true);
         var changes = new List<bool>();
         viewModel.UploadEnabledChanged += changes.Add;
 
@@ -28,7 +28,7 @@ public sealed class VoxStellarSharingViewModelTests : IDisposable
     [Fact]
     public void MissingIntegrationKeyIsVisibleBeforeOptIn()
     {
-        var viewModel = CreateViewModel(isAvailable: false);
+        VoxStellarSharingViewModel viewModel = CreateViewModel(isAvailable: false);
 
         Assert.False(viewModel.IsUploadAvailable);
         Assert.False(viewModel.CanChangeUploadPreference);
@@ -42,7 +42,7 @@ public sealed class VoxStellarSharingViewModelTests : IDisposable
     [Fact]
     public void QueuedEventsAndWarningsAreReportedWithoutPayloadData()
     {
-        var viewModel = CreateViewModel(isAvailable: true);
+        VoxStellarSharingViewModel viewModel = CreateViewModel(isAvailable: true);
 
         viewModel.ReportPublicationResult(new VoxStellarPublicationResult(["Scan", "FSDJump"], []));
         Assert.Equal("Queued 2 exploration events for VoxStellar.", viewModel.StatusMessage);

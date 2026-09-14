@@ -33,6 +33,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs",
         "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs",
         "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs",
+        "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs",
         "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs",
         "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs",
         "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs",
@@ -46,6 +47,7 @@ public sealed class NetworkSurfaceCoverageTests
             && !path.EndsWith("EddnPublisher.cs", StringComparison.Ordinal)
             && !path.EndsWith("VoxStellarPublisher.cs", StringComparison.Ordinal)
             && !path.EndsWith("DiagnosticReplayContext.cs", StringComparison.Ordinal)
+            && !path.EndsWith("DesktopRuntime.Composition.cs", StringComparison.Ordinal)
             && !path.EndsWith("MainWindowViewModelFactory.cs", StringComparison.Ordinal)
         )
         .ToArray();
@@ -204,12 +206,12 @@ public sealed class NetworkSurfaceCoverageTests
     [Fact]
     public void EveryNetworkSurfaceHasProductionAndAssertionEvidence()
     {
-        var root = FindRepositoryRoot();
-        foreach (var surface in Surfaces)
+        string root = FindRepositoryRoot();
+        foreach (NetworkSurface surface in Surfaces)
         {
             Assert.NotEmpty(surface.ProductionFiles);
             Assert.NotEmpty(surface.TestFiles);
-            foreach (var path in surface.ProductionFiles)
+            foreach (string path in surface.ProductionFiles)
             {
                 Assert.True(
                     File.Exists(Path.Combine(root, Native(path))),
@@ -217,9 +219,9 @@ public sealed class NetworkSurfaceCoverageTests
                 );
             }
 
-            foreach (var path in surface.TestFiles)
+            foreach (string path in surface.TestFiles)
             {
-                var absolutePath = Path.Combine(root, Native(path));
+                string absolutePath = Path.Combine(root, Native(path));
                 Assert.True(File.Exists(absolutePath), $"Missing {surface.Name} test evidence: {path}");
                 Assert.Contains("Assert.", File.ReadAllText(absolutePath));
             }
@@ -229,8 +231,8 @@ public sealed class NetworkSurfaceCoverageTests
     [Fact]
     public void ModernHttpInventoryIsExplicitAndEveryResponseIsStreamBounded()
     {
-        var root = FindRepositoryRoot();
-        var actual = Directory
+        string root = FindRepositoryRoot();
+        string[] actual = Directory
             .EnumerateFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(path => File.ReadAllText(path).Contains("HttpClient", StringComparison.Ordinal))
             .Select(path => Relative(root, path))
@@ -238,15 +240,15 @@ public sealed class NetworkSurfaceCoverageTests
             .ToArray();
 
         Assert.Equal(HttpClientOwners.Order(StringComparer.Ordinal), actual);
-        foreach (var path in ResponseOwners)
+        foreach (string path in ResponseOwners)
         {
-            var source = File.ReadAllText(Path.Combine(root, Native(path)));
+            string source = File.ReadAllText(Path.Combine(root, Native(path)));
             Assert.Contains("ResponseHeadersRead", source);
             Assert.Contains("Maximum", source);
             Assert.Contains("Bytes", source);
         }
 
-        var compositionRoot = File.ReadAllText(
+        string compositionRoot = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"))
         );
         Assert.DoesNotContain("ReadAsStreamAsync", compositionRoot);
@@ -257,9 +259,9 @@ public sealed class NetworkSurfaceCoverageTests
     [Fact]
     public void StartupChecksForApplicationAndReferenceDataUpdates()
     {
-        var root = FindRepositoryRoot();
-        var window = File.ReadAllText(Path.Combine(root, Native("src/SrvSurvey.Desktop/MainWindow.axaml.cs")));
-        var referenceService = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string window = File.ReadAllText(Path.Combine(root, Native("src/SrvSurvey.Desktop/MainWindow.axaml.cs")));
+        string referenceService = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Core/Updates/PublishedReferenceUpdateService.cs"))
         );
 

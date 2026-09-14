@@ -315,10 +315,10 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         }
 
         IsChecking = true;
-        var channel = UseDevelopmentReleases ? ReleaseChannel.Development : ReleaseChannel.Stable;
+        ReleaseChannel channel = UseDevelopmentReleases ? ReleaseChannel.Development : ReleaseChannel.Stable;
         try
         {
-            var result = await service.CheckAsync(currentVersion, channel);
+            ReleaseUpdateResult result = await service.CheckAsync(currentVersion, channel);
             if (channel != (UseDevelopmentReleases ? ReleaseChannel.Development : ReleaseChannel.Stable))
             {
                 recheckRequested = true;
@@ -370,14 +370,14 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         }
 
         IsInstalling = true;
-        var targetVersion = releaseVersion.Value;
+        ReleaseVersion targetVersion = releaseVersion.Value;
         InstallProgressPercent = 0;
         InstallProgressText = "Checking for other running SrvSurvey instances...";
         StatusMessage = "Checking whether another SrvSurvey instance must close before the update.";
         var progress = new GuardedProgress<ReleaseInstallationWorkflowProgress>(ApplyInstallationProgress);
         try
         {
-            var result = await installationWorkflow.ExecuteAsync(
+            ReleaseInstallationWorkflowResult result = await installationWorkflow.ExecuteAsync(
                 new ReleaseInstallationRequest(targetVersion, releasePackage),
                 progress
             );
@@ -553,7 +553,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     {
         if (result.RejectionReason == ReleaseInstallationRejectionReason.InstancesDeclined)
         {
-            var afterPreparation = result.CleanupStatus == ReleaseInstallationCleanupStatus.Succeeded;
+            bool afterPreparation = result.CleanupStatus == ReleaseInstallationCleanupStatus.Succeeded;
             InstallProgressText = afterPreparation
                 ? "Update canceled before installation handoff."
                 : "Update canceled before download.";
@@ -593,7 +593,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 
     private static string GetInstallationError(ReleaseInstallationWorkflowResult result)
     {
-        var error = result.Error?.Message ?? "The operation did not complete.";
+        string error = result.Error?.Message ?? "The operation did not complete.";
         return result.CleanupError is null ? error : error + " Cleanup also failed: " + result.CleanupError.Message;
     }
 
@@ -722,7 +722,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 
     private sealed class GuardedProgress<T> : IProgress<T>
     {
-        private readonly object gate = new();
+        private readonly Lock gate = new();
         private readonly Action<T> report;
         private readonly SynchronizationContext? synchronizationContext;
         private bool closed;

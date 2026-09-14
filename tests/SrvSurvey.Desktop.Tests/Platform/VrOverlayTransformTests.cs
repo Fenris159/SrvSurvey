@@ -11,7 +11,7 @@ public sealed class VrOverlayTransformTests
     {
         var calibration = new VrOverlayCalibration(20, new Vector3(10, 20, 30), Vector3.Zero);
 
-        var matrix = VrOverlayTransform.Create(calibration, 0, Matrix4x4.Identity);
+        Matrix4x4 matrix = VrOverlayTransform.Create(calibration, 0, Matrix4x4.Identity);
 
         Assert.Equal(2, matrix.M11, 5);
         Assert.Equal(2, matrix.M22, 5);

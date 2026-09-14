@@ -25,7 +25,7 @@ public sealed class EdsmSystemNameSuggestionClientTests
             new Uri("https://example.test/api-v1/systems")
         );
 
-        var results = await client.SearchAsync(" Leamae UK-D d13- ");
+        IReadOnlyList<SystemNameSuggestion> results = await client.SearchAsync(" Leamae UK-D d13- ");
 
         Assert.Equal(2, results.Count);
         Assert.Equal(new SystemNameSuggestion("Leamae UK-D d13-0", 7994265971, "EDSM"), results[0]);
@@ -60,7 +60,7 @@ public sealed class EdsmSystemNameSuggestionClientTests
             new Uri("https://example.test/api-v1/systems")
         );
 
-        var result = Assert.Single(await client.SearchAsync("10477373803"));
+        SystemNameSuggestion result = Assert.Single(await client.SearchAsync("10477373803"));
 
         Assert.Equal(new SystemNameSuggestion("Sol", 10477373803, "EDSM"), result);
         Assert.Equal(

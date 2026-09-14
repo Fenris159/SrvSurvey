@@ -26,16 +26,15 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
 
         try
         {
-            var root = JsonNode.Parse(File.ReadAllText(Path)) as JsonObject;
-            if (root is null)
+            if (JsonNode.Parse(File.ReadAllText(Path)) is not JsonObject root)
             {
                 return new GroundTargetSettingsLoadResult(Path, true, null, $"{Path} does not contain a JSON object.");
             }
 
-            var active = GetBoolean(root, "targetLatLongActive") ?? false;
+            bool active = GetBoolean(root, "targetLatLongActive") ?? false;
             var coordinate = root["targetLatLong"] as JsonObject;
-            var latitude = coordinate is null ? 0 : GetDouble(coordinate, "lat") ?? 0;
-            var longitude = coordinate is null ? 0 : GetDouble(coordinate, "long") ?? 0;
+            double latitude = coordinate is null ? 0 : GetDouble(coordinate, "lat") ?? 0;
+            double longitude = coordinate is null ? 0 : GetDouble(coordinate, "long") ?? 0;
             try
             {
                 return new GroundTargetSettingsLoadResult(
@@ -103,11 +102,11 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
             coordinate["long"] = snapshot.Target.Longitude;
             root["targetLatLongActive"] = snapshot.IsActive;
 
-            var directory =
+            string directory =
                 System.IO.Path.GetDirectoryName(Path)
                 ?? throw new InvalidOperationException($"The settings path has no parent directory: {Path}");
             Directory.CreateDirectory(directory);
-            var temporaryPath = $"{Path}.{Guid.NewGuid():N}.tmp";
+            string temporaryPath = $"{Path}.{Guid.NewGuid():N}.tmp";
             try
             {
                 await using (
@@ -145,7 +144,7 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
 
     private static bool? GetBoolean(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static double? GetDouble(JsonObject root, string propertyName)
@@ -155,12 +154,12 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
             return null;
         }
 
-        if (value.TryGetValue<double>(out var result))
+        if (value.TryGetValue<double>(out double result))
         {
             return result;
         }
 
-        return value.TryGetValue<long>(out var integer) ? integer : null;
+        return value.TryGetValue<long>(out long integer) ? integer : null;
     }
 }
 

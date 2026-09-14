@@ -42,8 +42,8 @@ public sealed partial class BiologyPredictionsWindow : Window
 
     private static BiologyPredictionsViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-BiologyPredictions-Design");
-        var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-BiologyPredictions-Design");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         return new BiologyPredictionsViewModel(
             new SystemSurveyViewModel(new SystemSurveySettingsStore(settingsPath)),
             new BiologyPredictionsSettingsStore(settingsPath)

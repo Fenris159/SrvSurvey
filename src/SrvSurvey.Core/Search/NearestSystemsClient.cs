@@ -57,7 +57,7 @@ public sealed class NearestSystemsClient : INearestSystemsClient
         ArgumentException.ThrowIfNullOrWhiteSpace(biologicalSignal);
         ArgumentOutOfRangeException.ThrowIfLessThan(limit, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(limit, 25);
-        var uri = CreateCanonnUri(
+        Uri uri = CreateCanonnUri(
             "nearest/codex",
             new Dictionary<string, string>
             {
@@ -68,11 +68,11 @@ public sealed class NearestSystemsClient : INearestSystemsClient
                 ["limit"] = limit.ToString(CultureInfo.InvariantCulture),
             }
         );
-        using var response = await client
+        using HttpResponseMessage response = await client
             .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload =
+        CanonnNearest payload =
             await BoundedHttpContent
                 .ReadFromJsonAsync<CanonnNearest>(
                     response.Content,
@@ -82,7 +82,7 @@ public sealed class NearestSystemsClient : INearestSystemsClient
                 )
                 .ConfigureAwait(false)
             ?? throw new HttpRequestException("Canonn returned an empty nearest-system response.");
-        var nearest = (payload.Nearest ?? [])
+        CanonnNearestEntry[] nearest = (payload.Nearest ?? [])
             .Where(entry =>
                 !string.IsNullOrWhiteSpace(entry.System)
                 && double.IsFinite(entry.Distance)
@@ -92,7 +92,7 @@ public sealed class NearestSystemsClient : INearestSystemsClient
             )
             .Take(limit)
             .ToArray();
-        var rows = await Task.WhenAll(
+        NearestSystemSearchRow[] rows = await Task.WhenAll(
                 nearest.Select(entry => CreateCanonnRowAsync(entry, commanderName, cancellationToken))
             )
             .ConfigureAwait(false);
@@ -110,7 +110,7 @@ public sealed class NearestSystemsClient : INearestSystemsClient
         ArgumentException.ThrowIfNullOrWhiteSpace(genus);
         ArgumentException.ThrowIfNullOrWhiteSpace(species);
         ArgumentNullException.ThrowIfNull(variantColors);
-        var variants = variantColors
+        string[] variants = variantColors
             .Where(color => !string.IsNullOrWhiteSpace(color))
             .Select(color => PascalFirst(color.Trim()))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -133,11 +133,11 @@ public sealed class NearestSystemsClient : INearestSystemsClient
         {
             Content = JsonContent.Create(request),
         };
-        using var response = await client
+        using HttpResponseMessage response = await client
             .SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload =
+        SpanshBodies payload =
             await BoundedHttpContent
                 .ReadFromJsonAsync<SpanshBodies>(
                     response.Content,
@@ -147,7 +147,7 @@ public sealed class NearestSystemsClient : INearestSystemsClient
                 )
                 .ConfigureAwait(false)
             ?? throw new HttpRequestException("Spansh returned an empty bodies-search response.");
-        var rows = (payload.Results ?? [])
+        NearestSystemSearchRow[] rows = (payload.Results ?? [])
             .Where(body =>
                 !string.IsNullOrWhiteSpace(body.SystemName)
                 && double.IsFinite(body.Distance)
@@ -177,9 +177,9 @@ public sealed class NearestSystemsClient : INearestSystemsClient
     {
         ArgumentNullException.ThrowIfNull(codexEntries);
         var distinctSignals = codexEntries.Select(entry => entry.EntryId).ToHashSet();
-        var backup = $"System bio signals: {distinctSignals.Count:N0}";
+        string backup = $"System bio signals: {distinctSignals.Count:N0}";
         var summary = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var entry in codexEntries)
+        foreach (CanonnCodexEntry entry in codexEntries)
         {
             if (!string.Equals(entry.HudCategory, "Biology", StringComparison.Ordinal))
             {
@@ -191,8 +191,8 @@ public sealed class NearestSystemsClient : INearestSystemsClient
                 return backup;
             }
 
-            var body = entry.Body.Replace(" ", string.Empty);
-            if (!summary.TryGetValue(body, out var signals))
+            string body = entry.Body.Replace(" ", string.Empty);
+            if (!summary.TryGetValue(body, out HashSet<string>? signals))
             {
                 signals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 summary[body] = signals;
@@ -221,7 +221,7 @@ public sealed class NearestSystemsClient : INearestSystemsClient
         string notes;
         try
         {
-            var uri = CreateCanonnUri(
+            Uri uri = CreateCanonnUri(
                 "getSystemPoi",
                 new Dictionary<string, string>
                 {
@@ -230,11 +230,11 @@ public sealed class NearestSystemsClient : INearestSystemsClient
                     ["cmdr"] = commanderName?.Trim() ?? string.Empty,
                 }
             );
-            using var response = await client
+            using HttpResponseMessage response = await client
                 .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var poi = await BoundedHttpContent
+            CanonnSystemPoi? poi = await BoundedHttpContent
                 .ReadFromJsonAsync<CanonnSystemPoi>(
                     response.Content,
                     MaximumResponseBytes,
@@ -273,15 +273,16 @@ public sealed class NearestSystemsClient : INearestSystemsClient
 
     private static string CreateSpanshNotes(SpanshBody body, string species)
     {
-        var colors = (body.Landmarks ?? [])
+        IEnumerable<string?> colors = (body.Landmarks ?? [])
             .Where(landmark => string.Equals(landmark.Subtype, species, StringComparison.Ordinal))
             .Select(landmark => landmark.Variant)
             .Where(variant => !string.IsNullOrWhiteSpace(variant))
             .Distinct(StringComparer.OrdinalIgnoreCase);
-        var prefix = string.Join(", ", colors);
-        var bodyName = body.Name?.Replace(body.SystemName + " ", string.Empty, StringComparison.Ordinal) ?? "Unknown";
-        var notes = $"{prefix} - body: {bodyName}, dist to arrival: " + FormatLightSeconds(body.DistanceToArrival);
-        var signalCount = (body.Signals ?? [])
+        string prefix = string.Join(", ", colors);
+        string bodyName =
+            body.Name?.Replace(body.SystemName + " ", string.Empty, StringComparison.Ordinal) ?? "Unknown";
+        string notes = $"{prefix} - body: {bodyName}, dist to arrival: " + FormatLightSeconds(body.DistanceToArrival);
+        int? signalCount = (body.Signals ?? [])
             .FirstOrDefault(signal => string.Equals(signal.Name, "Biological", StringComparison.Ordinal))
             ?.Count;
         return signalCount > 0 ? notes + $", {signalCount:N0} bio signals" : notes;

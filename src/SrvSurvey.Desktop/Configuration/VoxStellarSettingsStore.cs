@@ -38,7 +38,7 @@ public sealed class VoxStellarSettingsStore
 
     private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
     }
 }
 

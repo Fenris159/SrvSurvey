@@ -50,7 +50,7 @@ internal static class FollowRouteExportWriter
     )
     {
         ArgumentNullException.ThrowIfNull(route);
-        var kind = ResolveSpanshKind(route);
+        SpanshRouteKind kind = ResolveSpanshKind(route);
         var root = new JsonObject { ["status"] = "ok", ["result"] = CreateSpanshResult(route, kind) };
         await WriteJsonAsync(path, root, cancellationToken).ConfigureAwait(false);
     }
@@ -69,17 +69,17 @@ internal static class FollowRouteExportWriter
         await using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         await writer.WriteLineAsync(string.Join(',', CsvHeaders)).ConfigureAwait(false);
 
-        for (var hopIndex = 0; hopIndex < route.Hops.Count; hopIndex++)
+        for (int hopIndex = 0; hopIndex < route.Hops.Count; hopIndex++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var hop = route.Hops[hopIndex];
+            FollowRouteHop hop = route.Hops[hopIndex];
             if (hop.BioTargets.Count == 0)
             {
                 await writer.WriteLineAsync(CreateCsvRow(hopIndex, route.Hops.Count, hop, null)).ConfigureAwait(false);
                 continue;
             }
 
-            foreach (var target in hop.BioTargets)
+            foreach (FollowRouteBioTarget target in hop.BioTargets)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await writer
@@ -132,8 +132,10 @@ internal static class FollowRouteExportWriter
 
     private static JsonObject CreateSpanshHop(FollowRouteHop hop, SpanshRouteKind kind)
     {
-        var root = new JsonObject();
-        root[kind is SpanshRouteKind.Tourist or SpanshRouteKind.Neutron ? "system" : "name"] = hop.Name;
+        var root = new JsonObject
+        {
+            [kind is SpanshRouteKind.Tourist or SpanshRouteKind.Neutron ? "system" : "name"] = hop.Name,
+        };
         WriteOptional(root, "id64", hop.SystemAddress);
         WritePosition(root, hop);
         WriteOptional(root, "notes", hop.Notes);
@@ -230,7 +232,7 @@ internal static class FollowRouteExportWriter
     private static JsonArray CreateTradeLegs(IReadOnlyList<FollowRouteHop> hops)
     {
         var result = new JsonArray();
-        for (var index = 0; index + 1 < hops.Count; index++)
+        for (int index = 0; index + 1 < hops.Count; index++)
         {
             result.Add(
                 new JsonObject
@@ -272,8 +274,8 @@ internal static class FollowRouteExportWriter
 
     private static string GetFullBodyName(string systemName, string bodyName)
     {
-        var trimmedSystem = systemName.Trim();
-        var trimmedBody = bodyName.Trim();
+        string trimmedSystem = systemName.Trim();
+        string trimmedBody = bodyName.Trim();
         return trimmedBody.StartsWith(trimmedSystem + " ", StringComparison.OrdinalIgnoreCase)
             ? trimmedBody
             : $"{trimmedSystem} {trimmedBody}";
@@ -281,7 +283,7 @@ internal static class FollowRouteExportWriter
 
     private static string CreateCsvRow(int hopIndex, int hopCount, FollowRouteHop hop, FollowRouteBioTarget? target)
     {
-        var values = new string?[]
+        string?[] values = new string?[]
         {
             (hopIndex + 1).ToString(CultureInfo.InvariantCulture),
             hop.Name,
@@ -330,7 +332,7 @@ internal static class FollowRouteExportWriter
 
     private static string EscapeCsv(string? value)
     {
-        var text = value ?? string.Empty;
+        string text = value ?? string.Empty;
         return text.IndexOfAny([',', '"', '\r', '\n']) < 0 ? text : $"\"{text.Replace("\"", "\"\"")}\"";
     }
 

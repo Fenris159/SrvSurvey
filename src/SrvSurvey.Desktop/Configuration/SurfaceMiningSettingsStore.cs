@@ -28,7 +28,7 @@ public sealed class SurfaceMiningSettingsStore(string path)
             var mining = root[SettingsKey] as JsonObject;
             if (mining is null)
             {
-                mining = new JsonObject();
+                mining = [];
                 root[SettingsKey] = mining;
             }
             mining["Detection"] = JsonSerializer.SerializeToNode(value.Normalize());
@@ -38,7 +38,7 @@ public sealed class SurfaceMiningSettingsStore(string path)
     {
         var settings = documentStore.Load()[SettingsKey] as JsonObject;
         return settings?["AutoClearRigsOnShipBoarding"] is not JsonValue value
-            || !value.TryGetValue<bool>(out var enabled)
+            || !value.TryGetValue<bool>(out bool enabled)
             || enabled;
     }
 

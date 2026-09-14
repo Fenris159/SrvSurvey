@@ -22,8 +22,8 @@ public sealed class GuardianSurveyShareService
         var reasons = new List<string>();
         AddPortableSurveyReasons(survey, reasons);
 
-        var kind = GetKind(survey);
-        var published = publishedSites.Find(kind, survey.BodyName, survey.Index);
+        GuardianSiteKind kind = GetKind(survey);
+        GuardianPublishedSite? published = publishedSites.Find(kind, survey.BodyName, survey.Index);
         if (published is null)
         {
             if (HasSurveyData(survey))
@@ -84,7 +84,7 @@ public sealed class GuardianSurveyShareService
 
         if (
             survey.Survey.PoiStatuses.Any(pair =>
-                !published.PoiStatuses.TryGetValue(pair.Key, out var status) || status != pair.Value
+                !published.PoiStatuses.TryGetValue(pair.Key, out GuardianPoiStatus status) || status != pair.Value
             )
         )
         {
@@ -96,7 +96,7 @@ public sealed class GuardianSurveyShareService
             reasons.Add("Relic heading");
         }
 
-        var groups = string.Concat(survey.ObeliskGroups.Order());
+        string groups = string.Concat(survey.ObeliskGroups.Order());
         if (!string.Equals(published.ObeliskGroups, groups, StringComparison.Ordinal))
         {
             reasons.Add("Obelisk groups");
@@ -112,9 +112,9 @@ public sealed class GuardianSurveyShareService
     {
         ValidateFrontierId(frontierId);
         ArgumentNullException.ThrowIfNull(commanderData);
-        var sourceRoot = Path.Combine(dataDirectory, "guardian", frontierId, isOdyssey ? string.Empty : "legacy");
+        string sourceRoot = Path.Combine(dataDirectory, "guardian", frontierId, isOdyssey ? string.Empty : "legacy");
         sourceRoot = Path.GetFullPath(sourceRoot);
-        var sites = commanderData
+        GuardianSurveyShareSite[] sites = commanderData
             .Surveys.Select(survey => new GuardianSurveyShareSite(
                 GetDisplayName(survey),
                 ValidateSourcePath(sourceRoot, survey.Path),
@@ -124,10 +124,10 @@ public sealed class GuardianSurveyShareService
             .OrderBy(site => site.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(site => site.SourcePath, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var shareDirectory = Path.Combine(dataDirectory, "share");
+        string shareDirectory = Path.Combine(dataDirectory, "share");
         Directory.CreateDirectory(shareDirectory);
-        var hash = await ComputeHashAsync(sites, cancellationToken).ConfigureAwait(false);
-        var archivePath = Path.Combine(shareDirectory, $"surveys-{frontierId}-{hash}.zip");
+        string hash = await ComputeHashAsync(sites, cancellationToken).ConfigureAwait(false);
+        string archivePath = Path.Combine(shareDirectory, $"surveys-{frontierId}-{hash}.zip");
         if (!File.Exists(archivePath))
         {
             await WriteArchiveAsync(archivePath, sites, cancellationToken).ConfigureAwait(false);
@@ -142,7 +142,7 @@ public sealed class GuardianSurveyShareService
     )
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        foreach (var sourcePath in sites.Select(site => site.SourcePath))
+        foreach (string? sourcePath in sites.Select(site => site.SourcePath))
         {
             cancellationToken.ThrowIfCancellationRequested();
             hash.AppendData(Encoding.UTF8.GetBytes(Path.GetFileName(sourcePath)));
@@ -154,7 +154,7 @@ public sealed class GuardianSurveyShareService
                 16 * 1024,
                 FileOptions.Asynchronous | FileOptions.SequentialScan
             );
-            var buffer = new byte[16 * 1024];
+            byte[] buffer = new byte[16 * 1024];
             int read;
             while ((read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
             {
@@ -171,7 +171,7 @@ public sealed class GuardianSurveyShareService
         CancellationToken cancellationToken
     )
     {
-        var temporaryPath = archivePath + $".{Guid.NewGuid():N}.tmp";
+        string temporaryPath = archivePath + $".{Guid.NewGuid():N}.tmp";
         try
         {
             await using (
@@ -187,16 +187,16 @@ public sealed class GuardianSurveyShareService
             using (var archive = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: false))
             {
                 var entryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var sourcePath in sites.Select(site => site.SourcePath))
+                foreach (string? sourcePath in sites.Select(site => site.SourcePath))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var entryName = Path.GetFileName(sourcePath);
+                    string entryName = Path.GetFileName(sourcePath);
                     if (!entryNames.Add(entryName))
                     {
                         throw new InvalidDataException($"Multiple Guardian surveys use the filename {entryName}.");
                     }
 
-                    var entry = archive.CreateEntry(entryName, CompressionLevel.SmallestSize);
+                    ZipArchiveEntry entry = archive.CreateEntry(entryName, CompressionLevel.SmallestSize);
                     await using var input = new FileStream(
                         sourcePath,
                         FileMode.Open,
@@ -205,7 +205,7 @@ public sealed class GuardianSurveyShareService
                         16 * 1024,
                         FileOptions.Asynchronous | FileOptions.SequentialScan
                     );
-                    await using var entryStream = await entry.OpenAsync(cancellationToken);
+                    await using Stream entryStream = await entry.OpenAsync(cancellationToken);
                     await input.CopyToAsync(entryStream, cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -231,8 +231,8 @@ public sealed class GuardianSurveyShareService
     private static string ValidateSourcePath(string sourceRoot, string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        var fullPath = Path.GetFullPath(path);
-        var relative = Path.GetRelativePath(sourceRoot, fullPath);
+        string fullPath = Path.GetFullPath(path);
+        string relative = Path.GetRelativePath(sourceRoot, fullPath);
         if (
             relative == ".."
             || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)

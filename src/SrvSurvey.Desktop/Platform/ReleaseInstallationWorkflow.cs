@@ -333,7 +333,8 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
             return Rejected(ReleaseInstallationRejectionReason.InstancesDeclined, state.Stage);
         }
 
-        var prepared = await PrepareCandidateAsync(request, progress, state, cancellationToken).ConfigureAwait(false);
+        PreparedReleaseInstallation prepared = await PrepareCandidateAsync(request, progress, state, cancellationToken)
+            .ConfigureAwait(false);
         state.Stage = ReleaseInstallationWorkflowStage.ScanningInstances;
         if (
             !await CloseOtherInstancesAsync(ReleaseInstallationCheckpoint.BeforeHandoff, progress, cancellationToken)
@@ -361,7 +362,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
     {
         state.Stage = ReleaseInstallationWorkflowStage.Downloading;
         progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage));
-        var download = await downloadService
+        ReleasePackageDownloadResult download = await downloadService
             .DownloadAsync(
                 request.Version,
                 request.Package,
@@ -375,7 +376,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage));
         state.Stage = ReleaseInstallationWorkflowStage.Staging;
         progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage));
-        var staged = await stagingService
+        ReleasePackageStagingResult staged = await stagingService
             .StageAsync(request.Version, request.Package, download.ArchivePath, dataDirectory, cancellationToken)
             .ConfigureAwait(false);
 
@@ -409,7 +410,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 RequiresElevation = prepared.Preparation.RequiresElevation,
             }
         );
-        var handoffResult = await handoff
+        ApplicationUpdateHandoffResult handoffResult = await handoff
             .StartHelperAttemptAsync(dataDirectory, prepared.Preparation, prepared.EntryPointPath, cancellationToken)
             .ConfigureAwait(false);
         if (handoffResult.Status == ApplicationUpdateHandoffStatus.NotStarted)
@@ -428,7 +429,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         );
         state.Stage = ReleaseInstallationWorkflowStage.AwaitingApplicationExit;
         progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage) { Error = handoffResult.Error });
-        var shutdownError = await TryRequestShutdownAsync().ConfigureAwait(false);
+        Exception? shutdownError = await TryRequestShutdownAsync().ConfigureAwait(false);
         if (!isCurrentProcessRunning())
         {
             return new ReleaseInstallationWorkflowResult(
@@ -465,7 +466,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
     {
         try
         {
-            var outcome = await outcomeMonitor
+            ReleaseInstallationOutcome? outcome = await outcomeMonitor
                 .WaitForOutcomeAsync(
                     state.Plan ?? throw new UnreachableException(MissingTransferredPlanMessage),
                     CancellationToken.None
@@ -491,7 +492,8 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         Exception? handoffError
     )
     {
-        var plan = state.Plan ?? throw new UnreachableException(MissingTransferredPlanMessage);
+        ReleaseInstallationHandoffPlan plan =
+            state.Plan ?? throw new UnreachableException(MissingTransferredPlanMessage);
         if (outcome is null)
         {
             retryBlocked = true;
@@ -565,7 +567,9 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 Checkpoint = checkpoint,
             }
         );
-        var scan = await instanceManager.ScanOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
+        ApplicationInstanceScan scan = await instanceManager
+            .ScanOtherInstancesAsync(cancellationToken)
+            .ConfigureAwait(false);
         if (scan.TotalCount == 0)
         {
             return true;
@@ -739,7 +743,7 @@ internal sealed class ReleaseInstallationOutcomeMonitor(
     )
     {
         ArgumentNullException.ThrowIfNull(plan);
-        var startedAt = clock.GetUtcNow();
+        DateTimeOffset startedAt = clock.GetUtcNow();
         while (clock.GetUtcNow() - startedAt < maximumWait)
         {
             cancellationToken.ThrowIfCancellationRequested();

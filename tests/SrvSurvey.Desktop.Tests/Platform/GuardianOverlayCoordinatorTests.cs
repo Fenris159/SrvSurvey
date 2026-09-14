@@ -13,14 +13,14 @@ public sealed class GuardianOverlayCoordinatorTests
     [AvaloniaFact]
     public async Task SuccessfulZoomPreparationRegistersAnInteractiveChild()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         var existingWindows = OverlayWindowRegistry
             .Shared.Snapshot()
             .Select(registration => registration.Window)
             .ToHashSet();
         try
         {
-            using var guardian = await CreateLiveGuardianAsync(root);
+            using GuardianViewModel guardian = await CreateLiveGuardianAsync(root);
             var platform = new FakeOverlayPlatform(zoomClickThrough: true, zoomInteractive: true);
             using var coordinator = new GuardianOverlayCoordinator(
                 guardian,
@@ -28,7 +28,7 @@ public sealed class GuardianOverlayCoordinatorTests
                 new FakeGameWindowTracker(AvailableGameWindow)
             );
 
-            var guardianRegistrations = OverlayWindowRegistry
+            RegisteredOverlayWindow[] guardianRegistrations = OverlayWindowRegistry
                 .Shared.Snapshot()
                 .Where(registration =>
                     !existingWindows.Contains(registration.Window) && registration.PlotterName == "PlotGuardians"
@@ -61,10 +61,10 @@ public sealed class GuardianOverlayCoordinatorTests
     [InlineData(true, false)]
     public async Task ZoomPreparationFailureIsLatchedWithoutSuppressingSite(bool zoomClickThrough, bool zoomInteractive)
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            using var guardian = await CreateLiveGuardianAsync(root);
+            using GuardianViewModel guardian = await CreateLiveGuardianAsync(root);
             var platform = new FakeOverlayPlatform(zoomClickThrough, zoomInteractive);
             using var coordinator = new GuardianOverlayCoordinator(
                 guardian,
@@ -128,14 +128,14 @@ public sealed class GuardianOverlayCoordinatorTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 
     private static string CreateTemporaryDirectory()
     {
-        var path = Path.Combine(
+        string path = Path.Combine(
             Path.GetTempPath(),
             "SrvSurvey.GuardianOverlayCoordinatorTests",
             Guid.NewGuid().ToString("N")
@@ -186,7 +186,7 @@ public sealed class GuardianOverlayCoordinatorTests
                 InteractiveWindows.Add(window);
             }
 
-            var succeeded = window is not GuardianZoomOverlayWindow || zoomInteractive;
+            bool succeeded = window is not GuardianZoomOverlayWindow || zoomInteractive;
             return new OverlayInteractionResult(
                 IsPrepared: succeeded,
                 IsInteractive: interactive && succeeded,

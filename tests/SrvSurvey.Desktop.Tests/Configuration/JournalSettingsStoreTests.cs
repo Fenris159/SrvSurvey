@@ -19,7 +19,7 @@ public sealed class JournalSettingsStoreTests : IDisposable
     public void DirectoryRoundTripsWithoutRemovingUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new JournalSettingsStore(path);
 

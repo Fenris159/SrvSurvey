@@ -7,8 +7,8 @@ public sealed class DiagnosticsViewMarkupTests
     [Fact]
     public void JournalHistoryIsSeparateFromTheQuestInspector()
     {
-        var document = LoadDiagnosticsView();
-        var tabs = document
+        XDocument document = LoadDiagnosticsView();
+        string?[] tabs = document
             .Descendants()
             .Where(element => element.Name.LocalName == "TabItem")
             .Select(element => element.Attribute("Header")?.Value)
@@ -41,7 +41,7 @@ public sealed class DiagnosticsViewMarkupTests
             document.Descendants(),
             element => element.Attribute("Text")?.Value == "{Binding DiagnosticReplayStatus}"
         );
-        var historyList = FindNamedElement(document, "JournalHistoryEventList");
+        XElement historyList = FindNamedElement(document, "JournalHistoryEventList");
         Assert.DoesNotContain(historyList.Descendants(), element => element.Name.LocalName == "ItemsPanelTemplate");
         Assert.Contains(
             document.Descendants(),
@@ -87,8 +87,8 @@ public sealed class DiagnosticsViewMarkupTests
     [Fact]
     public void ReplayRangeUsesAlignedDateAndTimeRows()
     {
-        var document = LoadDiagnosticsView();
-        var rangeFields = FindNamedElement(document, "ReplayRangeFields");
+        XDocument document = LoadDiagnosticsView();
+        XElement rangeFields = FindNamedElement(document, "ReplayRangeFields");
 
         Assert.Equal("110,360", rangeFields.Attribute("ColumnDefinitions")?.Value);
         Assert.Equal("Auto,Auto,Auto,Auto", rangeFields.Attribute("RowDefinitions")?.Value);
@@ -113,8 +113,8 @@ public sealed class DiagnosticsViewMarkupTests
     [Fact]
     public void JournalHistoryDetailsDoNotDereferenceAMissingSelection()
     {
-        var document = LoadDiagnosticsView();
-        var textBindings = document
+        XDocument document = LoadDiagnosticsView();
+        string[] textBindings = document
             .Descendants()
             .Select(element => element.Attribute("Text")?.Value)
             .OfType<string>()
@@ -134,10 +134,10 @@ public sealed class DiagnosticsViewMarkupTests
     [Fact]
     public void LiveLogUsesAnIndependentNonCaretScrollSurface()
     {
-        var document = LoadDiagnosticsView();
-        var pageScroller = FindNamedElement(document, "DiagnosticsPageScroller");
-        var logScroller = FindNamedElement(document, "ApplicationLogScroller");
-        var logBinding = "{Binding DiagnosticsLog.LogText, Mode=OneWay}";
+        XDocument document = LoadDiagnosticsView();
+        XElement pageScroller = FindNamedElement(document, "DiagnosticsPageScroller");
+        XElement logScroller = FindNamedElement(document, "ApplicationLogScroller");
+        string logBinding = "{Binding DiagnosticsLog.LogText, Mode=OneWay}";
 
         Assert.Equal("ScrollViewer", pageScroller.Name.LocalName);
         Assert.Equal("ScrollViewer", logScroller.Name.LocalName);
@@ -154,8 +154,8 @@ public sealed class DiagnosticsViewMarkupTests
     [Fact]
     public void JournalInspectorUsesStableVerticalRowsAndOwnsWheelScrolling()
     {
-        var document = LoadDiagnosticsView();
-        var eventList = FindNamedElement(document, "JournalInspectorEventList");
+        XDocument document = LoadDiagnosticsView();
+        XElement eventList = FindNamedElement(document, "JournalInspectorEventList");
 
         Assert.Equal("False", FindAttribute(eventList, "ScrollViewer.IsScrollChainingEnabled"));
         Assert.Contains(
@@ -165,7 +165,7 @@ public sealed class DiagnosticsViewMarkupTests
                 && element.Descendants().Any(child => child.Name.LocalName == "StackPanel")
         );
 
-        var inspector = eventList
+        XElement inspector = eventList
             .Ancestors()
             .First(element =>
                 element.Name.LocalName == "StackPanel"
@@ -176,7 +176,7 @@ public sealed class DiagnosticsViewMarkupTests
                         && descendant.Attribute("Text")?.Value == "Journal inspector"
                     )
             );
-        var nestedScrollers = inspector
+        IEnumerable<XElement> nestedScrollers = inspector
             .Descendants()
             .Where(element => element.Name.LocalName is "ScrollViewer" or "TextBox");
         Assert.All(

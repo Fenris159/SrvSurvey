@@ -13,12 +13,14 @@ public static class InaraCommunityGoalEnricher
     )
     {
         ArgumentNullException.ThrowIfNull(inara);
-        var source = (frontierGoals ?? []).Where(goal => !IsPriorInaraOnlyGoal(goal)).ToArray();
+        FrontierCommunityGoalSnapshot[] source = (frontierGoals ?? [])
+            .Where(goal => !IsPriorInaraOnlyGoal(goal))
+            .ToArray();
         var matched = new HashSet<int>();
         var result = new List<FrontierCommunityGoalSnapshot>(source.Length + inara.Goals.Count);
-        foreach (var frontier in source)
+        foreach (FrontierCommunityGoalSnapshot? frontier in source)
         {
-            var matchIndex = FindMatch(frontier, source, inara.Goals, matched);
+            int? matchIndex = FindMatch(frontier, source, inara.Goals, matched);
             if (matchIndex is null)
             {
                 result.Add(frontier);
@@ -29,7 +31,7 @@ public static class InaraCommunityGoalEnricher
             result.Add(Merge(frontier, inara.Goals[matchIndex.Value], inara.FetchedAt));
         }
 
-        for (var index = 0; index < inara.Goals.Count; index++)
+        for (int index = 0; index < inara.Goals.Count; index++)
         {
             if (!matched.Contains(index))
             {
@@ -47,7 +49,7 @@ public static class InaraCommunityGoalEnricher
         HashSet<int> alreadyMatched
     )
     {
-        var title = Normalize(frontier.Title);
+        string title = Normalize(frontier.Title);
         var candidates = inaraGoals
             .Select(
                 (goal, index) =>
@@ -75,13 +77,13 @@ public static class InaraCommunityGoalEnricher
             return candidates[0].Index;
         }
 
-        var frontierTitleCount = frontierGoals.Count(goal => Normalize(goal.Title) == title);
+        int frontierTitleCount = frontierGoals.Count(goal => Normalize(goal.Title) == title);
         return candidates.Length == 1 && frontierTitleCount == 1 ? candidates[0].Index : null;
     }
 
     private static int MatchScore(FrontierCommunityGoalSnapshot frontier, InaraCommunityGoalSnapshot inara)
     {
-        var score = 0;
+        int score = 0;
         if (
             !Compatible(frontier.System, inara.System, ref score, 4)
             || !Compatible(frontier.Market, inara.Station, ref score, 4)
@@ -125,7 +127,7 @@ public static class InaraCommunityGoalEnricher
         DateTimeOffset fetchedAt
     )
     {
-        var data = AddInaraData(frontier.DataPoints, inara, fetchedAt);
+        FrontierDataPointSnapshot[] data = AddInaraData(frontier.DataPoints, inara, fetchedAt);
         return frontier with
         {
             Description = FirstNonEmpty(frontier.Description, inara.Description),
@@ -178,7 +180,7 @@ public static class InaraCommunityGoalEnricher
     )
     {
         var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var point in existing ?? [])
+        foreach (FrontierDataPointSnapshot point in existing ?? [])
         {
             values[point.Path] = point.Value;
         }

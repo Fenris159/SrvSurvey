@@ -18,7 +18,7 @@ internal sealed class AtomicReplayJournalWriter(Action? emissionStarting = null)
     public async Task AppendLineAsync(string path, string line, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var payload = Encoding.UTF8.GetBytes(line + "\n");
+        byte[] payload = Encoding.UTF8.GetBytes(line + "\n");
         emissionStarting?.Invoke();
         await using var stream = new FileStream(
             path,
@@ -91,7 +91,7 @@ public sealed class JournalReplayPlayer : IDisposable
                     return;
                 }
 
-                var speed = speedProvider();
+                double speed = speedProvider();
                 ValidateSpeed(speed, nameof(speedProvider));
                 wait = ResolveDelay(position, speed);
             }
@@ -157,7 +157,7 @@ public sealed class JournalReplayPlayer : IDisposable
             return false;
         }
 
-        var replayEvent = session.Events[position];
+        JournalReplayEvent replayEvent = session.Events[position];
         cancellationToken.ThrowIfCancellationRequested();
         if (replayEvent.Kind == ReplayInputKind.Journal)
         {
@@ -178,11 +178,11 @@ public sealed class JournalReplayPlayer : IDisposable
 
     private async Task WriteCompanionAsync(JournalReplayEvent replayEvent, CancellationToken cancellationToken)
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(session.PlaybackJournalPath)
             ?? throw new InvalidDataException("The diagnostic playback journal has no containing directory.");
-        var path = Path.Combine(directory, CompanionTimelineFileNames.Resolve(replayEvent.Kind));
-        var temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
+        string path = Path.Combine(directory, CompanionTimelineFileNames.Resolve(replayEvent.Kind));
+        string temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
         try
         {
             await File.WriteAllTextAsync(
@@ -201,13 +201,13 @@ public sealed class JournalReplayPlayer : IDisposable
 
     private void ClearCompanionFiles()
     {
-        var directory = Path.GetDirectoryName(session.PlaybackJournalPath);
+        string? directory = Path.GetDirectoryName(session.PlaybackJournalPath);
         if (directory is null)
         {
             return;
         }
 
-        foreach (var kind in Enum.GetValues<ReplayInputKind>())
+        foreach (ReplayInputKind kind in Enum.GetValues<ReplayInputKind>())
         {
             if (kind != ReplayInputKind.Journal)
             {
@@ -255,11 +255,11 @@ internal sealed class SystemReplayDelay(Func<TimeSpan, CancellationToken, Task>?
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(delay, TimeSpan.Zero);
 
-        var remaining = delay;
+        TimeSpan remaining = delay;
         while (remaining > TimeSpan.Zero)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var segment = remaining > MaximumSegment ? MaximumSegment : remaining;
+            TimeSpan segment = remaining > MaximumSegment ? MaximumSegment : remaining;
             await wait(segment, cancellationToken);
             remaining -= segment;
         }

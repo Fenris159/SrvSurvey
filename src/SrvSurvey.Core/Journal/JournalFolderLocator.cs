@@ -15,12 +15,18 @@ public static class JournalFolderLocator
 {
     public const string EnvironmentVariableName = "SRVSURVEY_JOURNAL_DIR";
 
+    private const string LocalDirectoryName = ".local";
+    private const string ShareDirectoryName = "share";
+    private const string SteamDirectoryName = "Steam";
+    private const string FlatpakSteamApplicationId = "com.valvesoftware.Steam";
+    private const string BottlesDirectoryName = "bottles";
+
     private static readonly string[] JournalSegments = ["Saved Games", "Frontier Developments", "Elite Dangerous"];
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
 
     public static JournalFolderResolution ResolveCurrent(string? configuredPath = null)
     {
-        var platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        DesktopPlatform platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? DesktopPlatform.Windows
             : (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) switch
             {
@@ -28,7 +34,7 @@ public static class JournalFolderLocator
                 false => DesktopPlatform.Other,
             };
 
-        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         return Resolve(
             configuredPath,
             Environment.GetEnvironmentVariable(EnvironmentVariableName),
@@ -50,22 +56,23 @@ public static class JournalFolderLocator
     {
         ArgumentNullException.ThrowIfNull(directoryExists);
 
-        var comparer = platform == DesktopPlatform.Windows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        StringComparer comparer =
+            platform == DesktopPlatform.Windows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var candidates = new List<string>();
         var seen = new HashSet<string>(comparer);
 
-        var configuredCandidate = AddCandidate(configuredPath);
-        var environmentCandidate = AddCandidate(environmentPath);
+        string? configuredCandidate = AddCandidate(configuredPath);
+        string? environmentCandidate = AddCandidate(environmentPath);
 
         if (!string.IsNullOrWhiteSpace(userProfile))
         {
-            foreach (var candidate in platformCandidates ?? GetPlatformDefaults(userProfile.Trim(), platform))
+            foreach (string candidate in platformCandidates ?? GetPlatformDefaults(userProfile.Trim(), platform))
             {
                 _ = AddCandidate(candidate);
             }
         }
 
-        var available = SelectAvailableCandidates();
+        string[] available = SelectAvailableCandidates();
         return new JournalFolderResolution(available.FirstOrDefault(), candidates.AsReadOnly())
         {
             AvailablePaths = available,
@@ -73,7 +80,7 @@ public static class JournalFolderLocator
 
         string? AddCandidate(string? path)
         {
-            var candidate = path?.Trim().Trim('"');
+            string? candidate = path?.Trim().Trim('"');
             if (!string.IsNullOrWhiteSpace(candidate) && seen.Add(candidate))
             {
                 candidates.Add(candidate);
@@ -127,16 +134,28 @@ public static class JournalFolderLocator
         return
         [
             Join(DesktopPlatform.Linux, userProfile, [".steam", "steam", .. protonJournalSegments]),
-            Join(DesktopPlatform.Linux, userProfile, [".local", "share", "Steam", .. protonJournalSegments]),
             Join(
                 DesktopPlatform.Linux,
                 userProfile,
-                [".var", "app", "com.valvesoftware.Steam", ".local", "share", "Steam", .. protonJournalSegments]
+                [LocalDirectoryName, ShareDirectoryName, SteamDirectoryName, .. protonJournalSegments]
             ),
             Join(
                 DesktopPlatform.Linux,
                 userProfile,
-                [".var", "app", "com.valvesoftware.Steam", "data", "Steam", .. protonJournalSegments]
+                [
+                    ".var",
+                    "app",
+                    FlatpakSteamApplicationId,
+                    LocalDirectoryName,
+                    ShareDirectoryName,
+                    SteamDirectoryName,
+                    .. protonJournalSegments,
+                ]
+            ),
+            Join(
+                DesktopPlatform.Linux,
+                userProfile,
+                [".var", "app", FlatpakSteamApplicationId, "data", SteamDirectoryName, .. protonJournalSegments]
             ),
         ];
     }
@@ -144,11 +163,12 @@ public static class JournalFolderLocator
     public static IReadOnlyList<string> GetPlatformCandidates(string userProfile, DesktopPlatform platform)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userProfile);
-        var comparer = platform == DesktopPlatform.Windows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        StringComparer comparer =
+            platform == DesktopPlatform.Windows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var candidates = new List<string>();
         var seen = new HashSet<string>(comparer);
 
-        foreach (var candidate in GetPlatformDefaults(userProfile, platform))
+        foreach (string candidate in GetPlatformDefaults(userProfile, platform))
         {
             AddCandidate(candidate);
         }
@@ -158,19 +178,19 @@ public static class JournalFolderLocator
             return candidates;
         }
 
-        var home = Path.GetFullPath(userProfile);
+        string home = Path.GetFullPath(userProfile);
         DiscoverGamePrefixJournalDirectories(Path.Combine(home, "Games"), AddCandidate);
-        foreach (var root in GetLinuxPrefixRoots(home))
+        foreach ((string Path, int MaximumDepth) root in GetLinuxPrefixRoots(home))
         {
             DiscoverJournalDirectories(root.Path, root.MaximumDepth, AddCandidate);
         }
 
-        foreach (var prefix in ReadHeroicPrefixes(home).Concat(ReadLutrisPrefixes(home)))
+        foreach (string? prefix in ReadHeroicPrefixes(home).Concat(ReadLutrisPrefixes(home)))
         {
             DiscoverJournalDirectories(prefix, maximumDepth: 2, AddCandidate);
         }
 
-        foreach (var steamLibrary in GetSteamLibraryRoots(home))
+        foreach (string steamLibrary in GetSteamLibraryRoots(home))
         {
             DiscoverJournalDirectories(
                 Path.Combine(steamLibrary, "steamapps", "compatdata"),
@@ -188,7 +208,7 @@ public static class JournalFolderLocator
                 return;
             }
 
-            var normalized = Directory.Exists(path) ? Path.GetFullPath(path) : path;
+            string normalized = Directory.Exists(path) ? Path.GetFullPath(path) : path;
             if (seen.Add(normalized))
             {
                 candidates.Add(normalized);
@@ -199,8 +219,22 @@ public static class JournalFolderLocator
     private static IEnumerable<(string Path, int MaximumDepth)> GetLinuxPrefixRoots(string home)
     {
         yield return (Path.Combine(home, ".wine"), 2);
-        yield return (Path.Combine(home, ".local", "share", "bottles", "bottles"), 3);
-        yield return (Path.Combine(home, ".var", "app", "com.usebottles.bottles", "data", "bottles", "bottles"), 3);
+        yield return (
+            Path.Combine(home, LocalDirectoryName, ShareDirectoryName, BottlesDirectoryName, BottlesDirectoryName),
+            3
+        );
+        yield return (
+            Path.Combine(
+                home,
+                ".var",
+                "app",
+                "com.usebottles.bottles",
+                "data",
+                BottlesDirectoryName,
+                BottlesDirectoryName
+            ),
+            3
+        );
     }
 
     private static void DiscoverGamePrefixJournalDirectories(string gamesRoot, Action<string> addCandidate)
@@ -212,11 +246,11 @@ public static class JournalFolderLocator
 
         try
         {
-            foreach (var prefix in Directory.EnumerateDirectories(gamesRoot))
+            foreach (string prefix in Directory.EnumerateDirectories(gamesRoot))
             {
                 try
                 {
-                    var attributes = File.GetAttributes(prefix);
+                    FileAttributes attributes = File.GetAttributes(prefix);
                     if ((attributes & FileAttributes.ReparsePoint) == 0)
                     {
                         DiscoverJournalDirectories(prefix, maximumDepth: 5, addCandidate);
@@ -247,7 +281,7 @@ public static class JournalFolderLocator
         pending.Push((Path.GetFullPath(root), 0));
         while (pending.Count > 0 && visited.Count < maximumDirectories)
         {
-            var current = pending.Pop();
+            (string Path, int Depth) current = pending.Pop();
             if (!visited.Add(current.Path))
             {
                 continue;
@@ -264,27 +298,32 @@ public static class JournalFolderLocator
                 continue;
             }
 
-            try
+            AddChildDirectories(pending, current.Path, current.Depth + 1);
+        }
+    }
+
+    private static void AddChildDirectories(Stack<(string Path, int Depth)> pending, string path, int depth)
+    {
+        try
+        {
+            foreach (string directory in Directory.EnumerateDirectories(path))
             {
-                foreach (var directory in Directory.EnumerateDirectories(current.Path))
+                FileAttributes attributes = File.GetAttributes(directory);
+                if ((attributes & FileAttributes.ReparsePoint) == 0)
                 {
-                    var attributes = File.GetAttributes(directory);
-                    if ((attributes & FileAttributes.ReparsePoint) == 0)
-                    {
-                        pending.Push((directory, current.Depth + 1));
-                    }
+                    pending.Push((directory, depth));
                 }
             }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-            {
-                // One inaccessible launcher prefix must not block other candidates.
-            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // One inaccessible launcher prefix must not block other candidates.
         }
     }
 
     private static void AddWineUserJournalDirectories(string driveC, Action<string> addCandidate)
     {
-        var users = Path.Combine(driveC, "users");
+        string users = Path.Combine(driveC, "users");
         if (!Directory.Exists(users))
         {
             return;
@@ -292,9 +331,14 @@ public static class JournalFolderLocator
 
         try
         {
-            foreach (var user in Directory.EnumerateDirectories(users))
+            foreach (string user in Directory.EnumerateDirectories(users))
             {
-                var journalDirectory = Path.Combine(user, JournalSegments[0], JournalSegments[1], JournalSegments[2]);
+                string journalDirectory = Path.Combine(
+                    user,
+                    JournalSegments[0],
+                    JournalSegments[1],
+                    JournalSegments[2]
+                );
                 if (Directory.Exists(journalDirectory))
                 {
                     addCandidate(journalDirectory);
@@ -309,15 +353,15 @@ public static class JournalFolderLocator
 
     private static IEnumerable<string> ReadHeroicPrefixes(string home)
     {
-        var configRoots = new[]
+        string[] configRoots = new[]
         {
             Path.Combine(home, ".config", "heroic", "GamesConfig"),
             Path.Combine(home, ".var", "app", "com.heroicgameslauncher.hgl", "config", "heroic", "GamesConfig"),
         };
 
-        foreach (var configRoot in configRoots)
+        foreach (string? configRoot in configRoots)
         {
-            foreach (var path in EnumerateFilesSafely(configRoot, "*.json"))
+            foreach (string path in EnumerateFilesSafely(configRoot, "*.json"))
             {
                 string[] prefixes;
                 try
@@ -332,9 +376,9 @@ public static class JournalFolderLocator
                     continue;
                 }
 
-                foreach (var prefix in prefixes)
+                foreach (string prefix in prefixes)
                 {
-                    var expanded = ExpandHome(prefix, home);
+                    string expanded = ExpandHome(prefix, home);
                     if (!string.IsNullOrWhiteSpace(expanded))
                     {
                         yield return expanded;
@@ -348,74 +392,70 @@ public static class JournalFolderLocator
     {
         if (element.ValueKind == JsonValueKind.Object)
         {
-            foreach (var property in element.EnumerateObject())
+            foreach (string value in FindJsonObjectStrings(element, propertyName))
             {
-                if (
-                    property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase)
-                    && property.Value.ValueKind == JsonValueKind.String
-                    && property.Value.GetString() is { } value
-                )
-                {
-                    yield return value;
-                }
+                yield return value;
+            }
 
-                foreach (var nested in FindJsonStrings(property.Value, propertyName))
-                {
-                    yield return nested;
-                }
+            yield break;
+        }
+
+        if (element.ValueKind != JsonValueKind.Array)
+        {
+            yield break;
+        }
+
+        foreach (JsonElement item in element.EnumerateArray())
+        {
+            foreach (string nested in FindJsonStrings(item, propertyName))
+            {
+                yield return nested;
             }
         }
-        else if (element.ValueKind == JsonValueKind.Array)
+    }
+
+    private static IEnumerable<string> FindJsonObjectStrings(JsonElement element, string propertyName)
+    {
+        foreach (JsonProperty property in element.EnumerateObject())
         {
-            foreach (var item in element.EnumerateArray())
+            if (
+                property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase)
+                && property.Value.ValueKind == JsonValueKind.String
+                && property.Value.GetString() is { } value
+            )
             {
-                foreach (var nested in FindJsonStrings(item, propertyName))
-                {
-                    yield return nested;
-                }
+                yield return value;
+            }
+
+            foreach (string nested in FindJsonStrings(property.Value, propertyName))
+            {
+                yield return nested;
             }
         }
     }
 
     private static IEnumerable<string> ReadLutrisPrefixes(string home)
     {
-        var configRoots = new[]
+        string[] configRoots = new[]
         {
             Path.Combine(home, ".config", "lutris", "games"),
             Path.Combine(home, ".var", "app", "net.lutris.Lutris", "config", "lutris", "games"),
         };
-        foreach (var configRoot in configRoots)
+        foreach (string? configRoot in configRoots)
         {
             foreach (
-                var path in EnumerateFilesSafely(configRoot, "*.yml").Concat(EnumerateFilesSafely(configRoot, "*.yaml"))
+                string? path in EnumerateFilesSafely(configRoot, "*.yml")
+                    .Concat(EnumerateFilesSafely(configRoot, "*.yaml"))
             )
             {
-                IEnumerable<string> lines;
-                try
-                {
-                    lines = File.ReadLines(path).ToArray();
-                }
-                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                if (!TryReadAllLines(path, out IReadOnlyList<string> lines))
                 {
                     continue;
                 }
 
-                foreach (var line in lines)
+                foreach (string line in lines)
                 {
-                    var match = Regex.Match(
-                        line,
-                        "^\\s*prefix:\\s*(?<path>.+?)\\s*$",
-                        RegexOptions.CultureInvariant,
-                        RegexTimeout
-                    );
-                    if (!match.Success)
-                    {
-                        continue;
-                    }
-
-                    var prefix = match.Groups["path"].Value.Trim().Trim('\'', '"');
-                    var expanded = ExpandHome(prefix, home);
-                    if (!string.IsNullOrWhiteSpace(expanded))
+                    if (TryGetLutrisPrefix(line, home, out string expanded))
                     {
                         yield return expanded;
                     }
@@ -424,24 +464,65 @@ public static class JournalFolderLocator
         }
     }
 
+    private static bool TryReadAllLines(string path, out IReadOnlyList<string> lines)
+    {
+        try
+        {
+            lines = File.ReadLines(path).ToArray();
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            lines = [];
+            return false;
+        }
+    }
+
+    private static bool TryGetLutrisPrefix(string line, string home, out string expanded)
+    {
+        Match match = Regex.Match(
+            line,
+            "^\\s*prefix:\\s*(?<path>.+?)\\s*$",
+            RegexOptions.CultureInvariant,
+            RegexTimeout
+        );
+        if (!match.Success)
+        {
+            expanded = string.Empty;
+            return false;
+        }
+
+        string prefix = match.Groups["path"].Value.Trim().Trim('\'', '"');
+        expanded = ExpandHome(prefix, home);
+        return !string.IsNullOrWhiteSpace(expanded);
+    }
+
     private static IEnumerable<string> GetSteamLibraryRoots(string home)
     {
-        var steamRoots = new[]
+        string[] steamRoots = new[]
         {
             Path.Combine(home, ".steam", "steam"),
-            Path.Combine(home, ".local", "share", "Steam"),
-            Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", ".local", "share", "Steam"),
-            Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", "data", "Steam"),
+            Path.Combine(home, LocalDirectoryName, ShareDirectoryName, SteamDirectoryName),
+            Path.Combine(
+                home,
+                ".var",
+                "app",
+                FlatpakSteamApplicationId,
+                LocalDirectoryName,
+                ShareDirectoryName,
+                SteamDirectoryName
+            ),
+            Path.Combine(home, ".var", "app", FlatpakSteamApplicationId, "data", SteamDirectoryName),
         };
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var steamRoot in steamRoots)
+        foreach (string? steamRoot in steamRoots)
         {
             if (seen.Add(steamRoot))
             {
                 yield return steamRoot;
             }
 
-            var libraryFile = Path.Combine(steamRoot, "steamapps", "libraryfolders.vdf");
+            string libraryFile = Path.Combine(steamRoot, "steamapps", "libraryfolders.vdf");
             string text;
             try
             {
@@ -461,8 +542,8 @@ public static class JournalFolderLocator
                 )
             )
             {
-                var path = match.Groups["path"].Value.Replace("\\\\", "\\", StringComparison.Ordinal);
-                var expanded = ExpandHome(path, home);
+                string path = match.Groups["path"].Value.Replace("\\\\", "\\", StringComparison.Ordinal);
+                string expanded = ExpandHome(path, home);
                 if (!string.IsNullOrWhiteSpace(expanded) && seen.Add(expanded))
                 {
                     yield return expanded;
@@ -490,7 +571,7 @@ public static class JournalFolderLocator
 
     private static string ExpandHome(string path, string home)
     {
-        var value = path.Trim();
+        string value = path.Trim();
         if (value.Equals("~", StringComparison.Ordinal))
         {
             return home;
@@ -508,8 +589,8 @@ public static class JournalFolderLocator
 
     private static string Join(DesktopPlatform platform, string root, IReadOnlyList<string> segments)
     {
-        var separator = platform == DesktopPlatform.Windows ? '\\' : '/';
-        var trimmedRoot = root.TrimEnd('\\', '/');
+        char separator = platform == DesktopPlatform.Windows ? '\\' : '/';
+        string trimmedRoot = root.TrimEnd('\\', '/');
         return $"{trimmedRoot}{separator}{string.Join(separator, segments)}";
     }
 }

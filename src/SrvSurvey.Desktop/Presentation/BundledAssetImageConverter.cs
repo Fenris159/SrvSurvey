@@ -29,7 +29,7 @@ public sealed class BundledAssetImageConverter : IValueConverter
     {
         if (
             value is not string path
-            || !Uri.TryCreate(path, UriKind.Absolute, out var uri)
+            || !Uri.TryCreate(path, UriKind.Absolute, out Uri? uri)
             || !string.Equals(uri.Scheme, "avares", StringComparison.Ordinal)
         )
         {
@@ -42,7 +42,7 @@ public sealed class BundledAssetImageConverter : IValueConverter
                 path,
                 _ =>
                 {
-                    using var stream = openAsset(uri);
+                    using Stream stream = openAsset(uri);
                     return decodeAsset(stream);
                 }
             );

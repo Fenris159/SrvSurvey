@@ -46,9 +46,9 @@ public sealed record MiningDetectionSettings
         static double Safe(double value, double fallback, double min, double max) =>
             double.IsFinite(value) ? Math.Clamp(value, min, max) : fallback;
         var defaults = new MiningDetectionSettings();
-        var width = Safe(Width, defaults.Width, .05, .6);
-        var height = Safe(Height, defaults.Height, .05, .6);
-        var circleWidth = Safe(CircleWidth, defaults.CircleWidth, .005, .6);
+        double width = Safe(Width, defaults.Width, .05, .6);
+        double height = Safe(Height, defaults.Height, .05, .6);
+        double circleWidth = Safe(CircleWidth, defaults.CircleWidth, .005, .6);
         return this with
         {
             Width = width,
@@ -79,7 +79,7 @@ public sealed record MiningDetectionSettings
 
     public PixelRect GetBounds(PixelRect viewport)
     {
-        var value = Normalize();
+        MiningDetectionSettings value = Normalize();
         return new PixelRect(
             viewport.X + (int)Math.Round(value.X * viewport.Width),
             viewport.Y + (int)Math.Round(value.Y * viewport.Height),
@@ -95,12 +95,12 @@ public sealed record MiningDetectionSettings
 
     public MiningDetectionSettings WithBounds(PixelRect bounds, PixelRect viewport)
     {
-        var current = Normalize();
-        var old = current.GetBounds(viewport);
-        var radius = current.CircleWidth * old.Width / 2;
-        var minimumWidth = current.Markers.Max(p => p.X) * old.Width + radius * 1.5;
-        var minimumHeight = current.Markers.Max(p => p.Y) * old.Height + radius * 1.5 + 24;
-        var resized = (
+        MiningDetectionSettings current = Normalize();
+        PixelRect old = current.GetBounds(viewport);
+        double radius = current.CircleWidth * old.Width / 2;
+        double minimumWidth = current.Markers.Max(p => p.X) * old.Width + radius * 1.5;
+        double minimumHeight = current.Markers.Max(p => p.Y) * old.Height + radius * 1.5 + 24;
+        MiningDetectionSettings resized = (
             current with
             {
                 X = (bounds.X - viewport.X) / (double)viewport.Width,
@@ -109,7 +109,7 @@ public sealed record MiningDetectionSettings
                 Height = Math.Max(minimumHeight, bounds.Height) / viewport.Height,
             }
         ).Normalize();
-        var next = resized.GetBounds(viewport);
+        PixelRect next = resized.GetBounds(viewport);
         return (
             resized with
             {

@@ -34,6 +34,6 @@ internal static class LegacySurfaceBookmarkNames
     public static string Canonicalize(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        return CanonicalNames.TryGetValue(name, out var canonical) ? canonical : name;
+        return CanonicalNames.TryGetValue(name, out string? canonical) ? canonical : name;
     }
 }

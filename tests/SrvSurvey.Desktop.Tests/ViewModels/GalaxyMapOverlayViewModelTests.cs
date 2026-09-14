@@ -16,7 +16,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     [Fact]
     public void EmptyStateProvidesStableNonNullBindingTargets()
     {
-        using var viewModel = CreateViewModel(new FakeSummaryClient());
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(new FakeSummaryClient());
 
         Assert.False(viewModel.HasPrimarySystem);
         Assert.False(viewModel.HasSecondarySystem);
@@ -28,7 +28,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     public async Task GalaxyMapRouteShowsDestinationNextHopAndFactionInfluence()
     {
         var client = new FakeSummaryClient();
-        using var viewModel = CreateViewModel(client);
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
 
         viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
         await viewModel.PendingLoad;
@@ -55,7 +55,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     public async Task SummaryLoadingWaitsUntilGalaxyMapIsOpen()
     {
         var client = new FakeSummaryClient();
-        using var viewModel = CreateViewModel(client);
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
 
         viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.NoFocus });
 
@@ -78,7 +78,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     public async Task GalaxyMapMusicRetainsLegacyModeWhenGuiFocusLags()
     {
         var client = new FakeSummaryClient();
-        using var viewModel = CreateViewModel(client);
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
 
         viewModel.ApplyUpdate(
             "Sol",
@@ -99,7 +99,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     public async Task ExplicitSelectionOverridesRouteButRouteNextHopDoesNot()
     {
         var client = new FakeSummaryClient();
-        using var viewModel = CreateViewModel(client);
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
         var galaxyMapStatus = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
 
         viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], galaxyMapStatus);
@@ -132,7 +132,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     public async Task RouteClearMatchesLegacyNoRouteState()
     {
         var client = new FakeSummaryClient();
-        using var viewModel = CreateViewModel(client);
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
         viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
         await viewModel.PendingLoad;
 
@@ -147,7 +147,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     public async Task BootstrapIgnoresHistoricalTargetAndUsesLiveDestination()
     {
         var client = new FakeSummaryClient();
-        using var viewModel = CreateViewModel(client);
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
 
         viewModel.ApplyUpdate(
             "Sol",
@@ -175,7 +175,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     [Fact]
     public void PreferencesPersistImmediately()
     {
-        using var viewModel = CreateViewModel(new FakeSummaryClient());
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(new FakeSummaryClient());
 
         viewModel.AutoShow = false;
         viewModel.ShowFactions = false;
@@ -221,12 +221,12 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
 
     private static JournalEventEnvelope Event(string eventName, string? properties = null)
     {
-        var suffix = properties is null ? string.Empty : "," + properties;
+        string suffix = properties is null ? string.Empty : "," + properties;
         Assert.True(
             JournalEventEnvelope.TryParse(
                 $"{{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"{eventName}\"{suffix}}}",
-                out var journalEvent,
-                out var error
+                out JournalEventEnvelope? journalEvent,
+                out string? error
             ),
             error
         );

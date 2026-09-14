@@ -16,7 +16,7 @@ public sealed class ExplorationStateTests
         state.Apply(Parse("""{"event":"StartJump","JumpType":"Supercruise"}"""));
         state.Apply(Parse("""{"event":"StartJump","JumpType":"Hyperspace"}"""));
         state.Apply(Parse("""{"event":"FSDJump","JumpDist":12.345}"""));
-        var scan = Parse(
+        JournalEventEnvelope scan = Parse(
             """{"event":"Scan","StarSystem":"Test","SystemAddress":1,"BodyID":4,"BodyName":"Test 4","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1.0,"WasDiscovered":false,"WasMapped":false}"""
         );
         state.Apply(scan);
@@ -24,19 +24,21 @@ public sealed class ExplorationStateTests
         state.Apply(
             Parse("""{"event":"SAAScanComplete","SystemAddress":1,"BodyID":4,"ProbesUsed":6,"EfficiencyTarget":6}""")
         );
-        var touchdown = Parse("""{"event":"Touchdown","SystemAddress":1,"BodyID":4,"OnPlanet":true}""");
+        JournalEventEnvelope touchdown = Parse(
+            """{"event":"Touchdown","SystemAddress":1,"BodyID":4,"OnPlanet":true}"""
+        );
         state.Apply(touchdown);
         state.Apply(touchdown);
         state.Apply(Parse("""{"event":"Touchdown","SystemAddress":1,"BodyID":5,"OnPlanet":false}"""));
 
-        var snapshot = state.CreateSnapshot();
+        ExplorationSnapshot snapshot = state.CreateSnapshot();
         Assert.Equal(1, snapshot.JumpCount);
         Assert.Equal(12.345, snapshot.DistanceTravelled, 3);
         Assert.Equal(1, snapshot.ScanCount);
         Assert.Equal(1, snapshot.DetailedSurfaceScanCount);
         Assert.Equal(1, snapshot.LandedBodyCount);
         Assert.Equal(449200 + 2700541, snapshot.EstimatedRewards);
-        var trackedReward = Assert.Single(snapshot.EstimatedRewardsBySystem!);
+        KeyValuePair<string, long> trackedReward = Assert.Single(snapshot.EstimatedRewardsBySystem!);
         Assert.Equal("Test", trackedReward.Key);
         Assert.Equal(snapshot.EstimatedRewards, trackedReward.Value);
     }
@@ -64,10 +66,10 @@ public sealed class ExplorationStateTests
             )
         );
 
-        var afterSale = state.CreateSnapshot();
+        ExplorationSnapshot afterSale = state.CreateSnapshot();
         Assert.Equal(449200, afterSale.EstimatedRewards);
         Assert.Equal(2, afterSale.ScanCount);
-        var remaining = Assert.Single(afterSale.EstimatedRewardsBySystem!);
+        KeyValuePair<string, long> remaining = Assert.Single(afterSale.EstimatedRewardsBySystem!);
         Assert.Equal("Beta", remaining.Key);
         Assert.Equal(449200, remaining.Value);
 
@@ -99,7 +101,7 @@ public sealed class ExplorationStateTests
             )
         );
 
-        var snapshot = state.CreateSnapshot();
+        ExplorationSnapshot snapshot = state.CreateSnapshot();
         Assert.Equal(300, snapshot.EstimatedRewards);
         Assert.Null(snapshot.EstimatedRewardsBySystem);
     }
@@ -129,7 +131,7 @@ public sealed class ExplorationStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

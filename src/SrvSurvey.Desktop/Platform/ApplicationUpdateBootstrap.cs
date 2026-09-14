@@ -55,7 +55,7 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(stagedEntryPoint);
-        var helperPath = Path.GetFullPath(stagedEntryPoint);
+        string helperPath = Path.GetFullPath(stagedEntryPoint);
         if (!File.Exists(helperPath))
         {
             return new ApplicationUpdateHandoffResult(
@@ -67,7 +67,7 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
 
         ReleaseInstallationHandoffPlan? plan = null;
         Process? helper = null;
-        var helperStarted = false;
+        bool helperStarted = false;
         try
         {
             using var currentProcess = Process.GetCurrentProcess();
@@ -80,7 +80,11 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            var startInfo = CreateHelperStartInfo(helperPath, plan.PlanPath, preparation.RequiresElevation);
+            ProcessStartInfo startInfo = CreateHelperStartInfo(
+                helperPath,
+                plan.PlanPath,
+                preparation.RequiresElevation
+            );
             helper = startProcess(startInfo);
             if (helper is null)
             {
@@ -123,7 +127,7 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(stagedEntryPoint);
         ArgumentException.ThrowIfNullOrWhiteSpace(planPath);
-        var fullEntryPoint = Path.GetFullPath(stagedEntryPoint);
+        string fullEntryPoint = Path.GetFullPath(stagedEntryPoint);
         return new ProcessStartInfo
         {
             FileName = fullEntryPoint,
@@ -194,8 +198,8 @@ internal static class ApplicationUpdateBootstrap
     public static ApplicationUpdateStartup ParseStartupArguments(IReadOnlyList<string> arguments)
     {
         ArgumentNullException.ThrowIfNull(arguments);
-        var parsed = ParseInternalPaths(arguments);
-        var internalModeCount =
+        ParsedStartupArguments parsed = ParseInternalPaths(arguments);
+        int internalModeCount =
             (parsed.ApplyPath is null ? 0 : 1)
             + (parsed.ConfirmPath is null ? 0 : 1)
             + (parsed.ResultPath is null ? 0 : 1);
@@ -241,10 +245,10 @@ internal static class ApplicationUpdateBootstrap
         string? confirmPath = null;
         string? resultPath = null;
         var applicationArguments = new List<string>();
-        var index = 0;
+        int index = 0;
         while (index < arguments.Count)
         {
-            var argument = arguments[index++];
+            string argument = arguments[index++];
             if (argument is not (ApplyArgument or ConfirmArgument or ResultArgument))
             {
                 applicationArguments.Add(argument);
@@ -256,7 +260,7 @@ internal static class ApplicationUpdateBootstrap
                 throw new InvalidDataException($"The internal update argument '{argument}' has no plan path.");
             }
 
-            var planPath = arguments[index++];
+            string planPath = arguments[index++];
             AssignInternalPath(argument, planPath, ref applyPath, ref confirmPath, ref resultPath);
         }
 
@@ -324,15 +328,19 @@ internal static class ApplicationUpdateBootstrap
     )
     {
         ArgumentNullException.ThrowIfNull(paths);
-        var planPath = pendingOutcomePlanPath;
+        string? planPath = pendingOutcomePlanPath;
         if (planPath is null)
         {
             return null;
         }
 
         var store = new ReleaseInstallationPlanStore();
-        var plan = await store.LoadAsync(paths.DataDirectory, planPath, cancellationToken).ConfigureAwait(false);
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        ReleaseInstallationHandoffPlan plan = await store
+            .LoadAsync(paths.DataDirectory, planPath, cancellationToken)
+            .ConfigureAwait(false);
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         if (
             !string.Equals(
                 Path.TrimEndingDirectorySeparator(Path.GetFullPath(plan.Preparation.InstallationDirectory)),
@@ -344,7 +352,9 @@ internal static class ApplicationUpdateBootstrap
             throw new InvalidDataException("The update outcome was not opened by its installation directory.");
         }
 
-        var outcome = await store.ReadOutcomeAsync(plan, cancellationToken).ConfigureAwait(false);
+        ReleaseInstallationOutcome outcome = await store
+            .ReadOutcomeAsync(plan, cancellationToken)
+            .ConfigureAwait(false);
         pendingOutcomePlanPath = null;
         return outcome;
     }
@@ -355,14 +365,16 @@ internal static class ApplicationUpdateBootstrap
     )
     {
         ArgumentNullException.ThrowIfNull(paths);
-        var planPath = pendingConfirmationPlanPath;
+        string? planPath = pendingConfirmationPlanPath;
         if (planPath is null)
         {
             return null;
         }
 
         var store = new ReleaseInstallationPlanStore();
-        var plan = await store.LoadAsync(paths.DataDirectory, planPath, cancellationToken).ConfigureAwait(false);
+        ReleaseInstallationHandoffPlan plan = await store
+            .LoadAsync(paths.DataDirectory, planPath, cancellationToken)
+            .ConfigureAwait(false);
         ValidateConfirmationProcess(plan, AppContext.BaseDirectory, Environment.ProcessPath);
         await store.WriteHealthMarkerAsync(plan, cancellationToken).ConfigureAwait(false);
         pendingConfirmationPlanPath = null;
@@ -438,14 +450,14 @@ internal static class ApplicationUpdateBootstrap
     {
         await WaitForParentExitAsync(plan, validatedParent, cancellationToken, parentExitTimeout).ConfigureAwait(false);
         var transaction = new ReleaseInstallationTransaction();
-        var result = await transaction
+        ReleaseInstallationResult result = await transaction
             .ApplyAsync(
                 plan.Preparation,
                 (entryPoint, arguments, token) => LaunchAndConfirmAsync(store, plan, entryPoint, arguments, token),
                 cancellationToken
             )
             .ConfigureAwait(false);
-        var status =
+        ReleaseInstallationOutcomeStatus status =
             result.Status == ReleaseInstallationStatus.Installed
                 ? ReleaseInstallationOutcomeStatus.Installed
                 : ReleaseInstallationOutcomeStatus.RolledBack;
@@ -488,10 +500,10 @@ internal static class ApplicationUpdateBootstrap
             return;
         }
 
-        var error = exception.Message;
+        string error = exception.Message;
         if (exception is UpdateParentStillRunningException)
         {
-            var cleanupError = await AbortTimedOutCandidateAsync(plan.Preparation).ConfigureAwait(false);
+            Exception? cleanupError = await AbortTimedOutCandidateAsync(plan.Preparation).ConfigureAwait(false);
             if (cleanupError is not null)
             {
                 error += " Candidate cleanup also failed: " + cleanupError.Message;
@@ -553,7 +565,7 @@ internal static class ApplicationUpdateBootstrap
 
     private static void TryRestartOriginalInstallation(ReleaseInstallationHandoffPlan plan, Exception exception)
     {
-        var originalEntryPoint = Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint);
+        string originalEntryPoint = Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint);
         if (
             exception is UpdateParentStillRunningException or OperationCanceledException
             || IsParentStillRunning(plan)
@@ -582,14 +594,14 @@ internal static class ApplicationUpdateBootstrap
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(entryPoint);
         ArgumentNullException.ThrowIfNull(arguments);
-        var fullEntryPoint = Path.GetFullPath(entryPoint);
+        string fullEntryPoint = Path.GetFullPath(entryPoint);
         var startInfo = new ProcessStartInfo
         {
             FileName = fullEntryPoint,
             WorkingDirectory = Path.GetDirectoryName(fullEntryPoint)!,
             UseShellExecute = false,
         };
-        foreach (var argument in arguments)
+        foreach (string argument in arguments)
         {
             startInfo.ArgumentList.Add(argument);
         }
@@ -610,12 +622,14 @@ internal static class ApplicationUpdateBootstrap
     )
     {
         ArgumentNullException.ThrowIfNull(plan);
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        var expectedDirectory = Path.TrimEndingDirectorySeparator(
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        string expectedDirectory = Path.TrimEndingDirectorySeparator(
             Path.GetFullPath(plan.Preparation.InstallationDirectory)
         );
-        var currentDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(baseDirectory));
-        var expectedProcess = Path.Combine(expectedDirectory, plan.Preparation.EntryPoint);
+        string currentDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(baseDirectory));
+        string expectedProcess = Path.Combine(expectedDirectory, plan.Preparation.EntryPoint);
         if (
             !string.Equals(expectedDirectory, currentDirectory, comparison)
             || processPath is null
@@ -639,14 +653,14 @@ internal static class ApplicationUpdateBootstrap
         }
 
         Process? parent = validatedParent;
-        var disposeParent = false;
+        bool disposeParent = false;
         try
         {
             if (parent is null)
             {
                 parent = Process.GetProcessById(plan.ParentProcessId);
                 disposeParent = true;
-                var actualStartTicks = parent.StartTime.ToUniversalTime().Ticks;
+                long actualStartTicks = parent.StartTime.ToUniversalTime().Ticks;
                 if (Math.Abs(actualStartTicks - plan.ParentProcessStartTimeUtcTicks) > TimeSpan.FromSeconds(1).Ticks)
                 {
                     return;
@@ -697,8 +711,8 @@ internal static class ApplicationUpdateBootstrap
         try
         {
             parent = Process.GetProcessById(plan.ParentProcessId);
-            var actualStartTicks = parent.StartTime.ToUniversalTime().Ticks;
-            var actualPath = parent.MainModule?.FileName;
+            long actualStartTicks = parent.StartTime.ToUniversalTime().Ticks;
+            string? actualPath = parent.MainModule?.FileName;
             ValidateElevatedParentProcess(plan, actualStartTicks, actualPath);
 
             return parent;
@@ -726,7 +740,7 @@ internal static class ApplicationUpdateBootstrap
     {
         ArgumentNullException.ThrowIfNull(plan);
         const string expectedEntryPoint = "SrvSurvey.Desktop.exe";
-        var expectedPath = Path.GetFullPath(
+        string expectedPath = Path.GetFullPath(
             Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint)
         );
         if (
@@ -751,8 +765,8 @@ internal static class ApplicationUpdateBootstrap
         CancellationToken cancellationToken
     )
     {
-        var startInfo = CreateReplacementStartInfo(entryPoint, arguments, plan.PlanPath);
-        using var replacement =
+        ProcessStartInfo startInfo = CreateReplacementStartInfo(entryPoint, arguments, plan.PlanPath);
+        using Process replacement =
             Process.Start(startInfo)
             ?? throw new InvalidOperationException("The replacement SrvSurvey process did not start.");
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -808,10 +822,10 @@ internal static class ApplicationUpdateBootstrap
         string resultPlanPath
     )
     {
-        var startInfo = CreateReplacementStartInfo(entryPoint, arguments, confirmationPlanPath: null);
+        ProcessStartInfo startInfo = CreateReplacementStartInfo(entryPoint, arguments, confirmationPlanPath: null);
         startInfo.ArgumentList.Add(ResultArgument);
         startInfo.ArgumentList.Add(Path.GetFullPath(resultPlanPath));
-        using var process =
+        using Process process =
             Process.Start(startInfo)
             ?? throw new InvalidOperationException("SrvSurvey could not restart after update rollback.");
     }

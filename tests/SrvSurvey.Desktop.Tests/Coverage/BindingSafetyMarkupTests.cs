@@ -5,7 +5,7 @@ public sealed class BindingSafetyMarkupTests
     [Fact]
     public void OverlayPreviewBindsProgressBarsToANonNullableValue()
     {
-        var markup = ReadDesktopMarkup("OverlayPositionPreviewWindow.axaml");
+        string markup = ReadDesktopMarkup("OverlayPositionPreviewWindow.axaml");
 
         Assert.Contains("Value=\"{Binding ProgressValue}\"", markup, StringComparison.Ordinal);
         Assert.DoesNotContain("Value=\"{Binding Progress}\"", markup, StringComparison.Ordinal);
@@ -14,7 +14,7 @@ public sealed class BindingSafetyMarkupTests
     [Fact]
     public void JourneyDetailsDoNotDereferenceANullSelection()
     {
-        var markup = ReadDesktopMarkup("JourneyWindow.axaml");
+        string markup = ReadDesktopMarkup("JourneyWindow.axaml");
 
         Assert.Contains("{Binding SelectedSystemName}", markup);
         Assert.Contains("{Binding SelectedSystemAddressText}", markup);

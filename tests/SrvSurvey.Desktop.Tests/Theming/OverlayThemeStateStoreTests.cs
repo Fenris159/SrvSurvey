@@ -15,20 +15,20 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
     public void NamedStatesRoundTripUpdateAndDeleteWithoutChangingThemeJson()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var statePath = Path.Combine(temporaryDirectory, "overlay-theme-states.json");
-        var themePath = Path.Combine(temporaryDirectory, "theme.json");
+        string statePath = Path.Combine(temporaryDirectory, "overlay-theme-states.json");
+        string themePath = Path.Combine(temporaryDirectory, "theme.json");
         const string originalTheme = "{\"orange\":[1,2,3]}";
         File.WriteAllText(themePath, originalTheme);
         var store = new OverlayThemeStateStore(statePath);
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
-        var typography = OverlayTypographySettings.Default with { Body = 12.5, Caption = 8.5 };
+        OverlayTypographySettings typography = OverlayTypographySettings.Default with { Body = 12.5, Caption = 8.5 };
 
-        var first = store.SaveState("Exploration", colors, typography);
+        OverlayThemeStateSaveResult first = store.SaveState("Exploration", colors, typography);
         colors["orange"] = Color.FromArgb(255, 10, 20, 30);
-        var updated = store.SaveState(" exploration ", colors, typography);
-        var loaded = store.Load();
+        OverlayThemeStateSaveResult updated = store.SaveState(" exploration ", colors, typography);
+        OverlayThemeStateLoadResult loaded = store.Load();
 
-        var state = Assert.Single(loaded.States);
+        OverlayThemeState state = Assert.Single(loaded.States);
         Assert.Equal("exploration", state.Name);
         Assert.Equal(Color.FromArgb(255, 10, 20, 30), state.Colors["orange"]);
         Assert.Equal(typography, state.EffectiveTypography);
@@ -47,12 +47,12 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
     public void InvalidStateFileIsPreservedAndNotOverwritten()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var statePath = Path.Combine(temporaryDirectory, "overlay-theme-states.json");
+        string statePath = Path.Combine(temporaryDirectory, "overlay-theme-states.json");
         const string invalid = "{\"version\":99,\"states\":[]}";
         File.WriteAllText(statePath, invalid);
         var store = new OverlayThemeStateStore(statePath);
 
-        var error = Assert.Throws<InvalidDataException>(() =>
+        InvalidDataException error = Assert.Throws<InvalidDataException>(() =>
             store.SaveState("Do not write", LegacyOverlayThemeStore.CreateDefault().Colors)
         );
 
@@ -64,9 +64,9 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
     public void StatesSavedBeforePipEdgesGainMatchingPresetRolesOnLoad()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var statePath = Path.Combine(temporaryDirectory, "overlay-theme-states.json");
+        string statePath = Path.Combine(temporaryDirectory, "overlay-theme-states.json");
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
-        var addedRoles = new[]
+        string[] addedRoles = new[]
         {
             "bio.goldFill",
             "bio.goldDarkFill",
@@ -93,7 +93,7 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
             "bio.galacticRegionSegmentEdge",
             "bio.galacticRegionPotentialSegmentEdge",
         };
-        foreach (var role in addedRoles)
+        foreach (string? role in addedRoles)
         {
             Assert.True(colors.Remove(role));
         }
@@ -109,11 +109,11 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
             )
         );
 
-        var loaded = new OverlayThemeStateStore(statePath).Load();
+        OverlayThemeStateLoadResult loaded = new OverlayThemeStateStore(statePath).Load();
 
         Assert.Null(loaded.Error);
-        var state = Assert.Single(loaded.States);
-        var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        OverlayThemeState state = Assert.Single(loaded.States);
+        IReadOnlyDictionary<string, Color> defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
         Assert.All(addedRoles, role => Assert.Equal(defaults[role], state.Colors[role]));
         Assert.Equal(OverlayTypographySettings.Default, state.EffectiveTypography);
     }

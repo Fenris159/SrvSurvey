@@ -140,10 +140,10 @@ internal sealed class WindowsFrontierCredentialStore(string path) : IFrontierCre
             return null;
         }
 
-        var encrypted = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+        byte[] encrypted = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
         try
         {
-            var plaintext = ProtectedData.Unprotect(encrypted, Entropy, DataProtectionScope.CurrentUser);
+            byte[] plaintext = ProtectedData.Unprotect(encrypted, Entropy, DataProtectionScope.CurrentUser);
             return JsonSerializer.Deserialize<FrontierCredentialDocument>(plaintext, JsonOptions);
         }
         catch (CryptographicException exception)
@@ -158,13 +158,13 @@ internal sealed class WindowsFrontierCredentialStore(string path) : IFrontierCre
     public async Task SaveAsync(FrontierCredentialDocument document, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(document);
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException("Frontier authorization storage has no parent directory.");
         Directory.CreateDirectory(directory);
-        var plaintext = JsonSerializer.SerializeToUtf8Bytes(document, JsonOptions);
-        var encrypted = ProtectedData.Protect(plaintext, Entropy, DataProtectionScope.CurrentUser);
-        var temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        byte[] plaintext = JsonSerializer.SerializeToUtf8Bytes(document, JsonOptions);
+        byte[] encrypted = ProtectedData.Protect(plaintext, Entropy, DataProtectionScope.CurrentUser);
+        string temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             await File.WriteAllBytesAsync(temporaryPath, encrypted, cancellationToken).ConfigureAwait(false);
@@ -209,7 +209,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
 
     public async Task<FrontierCredentialDocument?> LoadAsync(CancellationToken cancellationToken = default)
     {
-        var result = await RunAsync(
+        ProcessResult result = await RunAsync(
                 ["lookup", "application", "SrvSurvey", "service", "frontier-capi"],
                 standardInput: null,
                 cancellationToken
@@ -246,8 +246,8 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
     public async Task SaveAsync(FrontierCredentialDocument document, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(document);
-        var json = JsonSerializer.Serialize(document, JsonOptions);
-        var result = await RunAsync(
+        string json = JsonSerializer.Serialize(document, JsonOptions);
+        ProcessResult result = await RunAsync(
                 [
                     "store",
                     "--label=SrvSurvey Frontier authorization",
@@ -272,7 +272,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
 
     public async Task ClearAsync(CancellationToken cancellationToken = default)
     {
-        var result = await RunAsync(
+        ProcessResult result = await RunAsync(
                 ["clear", "application", "SrvSurvey", "service", "frontier-capi"],
                 standardInput: null,
                 cancellationToken
@@ -302,14 +302,14 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
             UseShellExecute = false,
             CreateNoWindow = true,
         };
-        foreach (var argument in arguments)
+        foreach (string argument in arguments)
         {
             startInfo.ArgumentList.Add(argument);
         }
 
         try
         {
-            using var process = Process.Start(startInfo) ?? throw new InvalidOperationException(UnavailableMessage);
+            using Process process = Process.Start(startInfo) ?? throw new InvalidOperationException(UnavailableMessage);
             if (standardInput is not null)
             {
                 await process
@@ -318,8 +318,8 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
                 process.StandardInput.Close();
             }
 
-            var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-            var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+            Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
             await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
             return new ProcessResult(
                 process.ExitCode,
@@ -366,7 +366,7 @@ internal static class CredentialStoreLease
 {
     public static async Task<IAsyncDisposable> AcquireAsync(string path, CancellationToken cancellationToken)
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException("Frontier credential lock has no parent directory.");
         Directory.CreateDirectory(directory);

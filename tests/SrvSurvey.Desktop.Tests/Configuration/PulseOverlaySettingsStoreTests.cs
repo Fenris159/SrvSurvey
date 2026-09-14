@@ -19,7 +19,7 @@ public sealed class PulseOverlaySettingsStoreTests : IDisposable
     public void SavedPreferencePreservesUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new PulseOverlaySettingsStore(path);
 

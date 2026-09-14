@@ -11,8 +11,8 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
     public void LivePointsAndShieldTogglesBuildPreviewWithoutMutatingCatalog()
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var template = catalog.Templates[0];
-        var previewChanges = 0;
+        HumanSiteTemplate template = catalog.Templates[0];
+        int previewChanges = 0;
         var viewModel = new HumanSiteTemplateAuthoringViewModel(catalog, () => previewChanges++);
         viewModel.UpdateContext(
             Site(template),
@@ -49,7 +49,7 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
     public void AddsPoiMetadataAtCurrentLiveOffset()
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var template = catalog.Templates[0];
+        HumanSiteTemplate template = catalog.Templates[0];
         var viewModel = new HumanSiteTemplateAuthoringViewModel(catalog, () => { });
         viewModel.UpdateContext(
             Site(template),
@@ -68,7 +68,7 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
 
         Assert.Equal(template.NamedPoints.Count + 1, viewModel.NamedPointCount);
         Assert.Equal(template.DataTerminals.Count + 1, viewModel.DataTerminalCount);
-        var door = viewModel.PreviewTemplate!.SecureDoors[^1];
+        HumanSitePointOfInterest door = viewModel.PreviewTemplate!.SecureDoors[^1];
         Assert.Equal(new HumanSiteMapPoint(1.5, -2.5), door.Offset);
         Assert.Equal(270, door.Rotation);
         Assert.Equal(3, door.SecurityLevel);
@@ -79,7 +79,7 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
     public async Task ExplicitExportWritesVerifiedDraftCatalog()
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var template = catalog.Templates[0];
+        HumanSiteTemplate template = catalog.Templates[0];
         var viewModel = new HumanSiteTemplateAuthoringViewModel(catalog, () => { });
         viewModel.UpdateContext(
             Site(template),
@@ -90,11 +90,11 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
         viewModel.StartCommand.Execute(null);
         viewModel.NamedPointName = "Exported Point";
         viewModel.AddNamedPointCommand.Execute(null);
-        var path = Path.Combine(directory, "humanSiteTemplates.json");
+        string path = Path.Combine(directory, "humanSiteTemplates.json");
 
         await viewModel.ExportAsync(path);
 
-        await using var stream = File.OpenRead(path);
+        await using FileStream stream = File.OpenRead(path);
         var reloaded = HumanSiteTemplateCatalog.Load(stream);
         Assert.Equal("Exported Point", reloaded.Find(template.Economy, template.SubType)!.NamedPoints[^1].Name);
         Assert.Equal(path, viewModel.LastExportPath);

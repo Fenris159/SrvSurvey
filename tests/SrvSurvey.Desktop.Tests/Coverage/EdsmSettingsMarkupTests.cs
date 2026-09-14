@@ -7,20 +7,20 @@ public sealed class EdsmSettingsMarkupTests
     [Fact]
     public void EdsmCardFollowsInaraAndUsesCommanderScopedCredentialOptIn()
     {
-        var document = LoadSettingsView();
+        XDocument document = LoadSettingsView();
         var nameAttribute = XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml");
-        var inara = Assert.Single(
+        XElement inara = Assert.Single(
             document.Descendants(),
             element => (string?)element.Attribute(nameAttribute) == "InaraCard"
         );
-        var edsm = Assert.Single(
+        XElement edsm = Assert.Single(
             document.Descendants(),
             element => (string?)element.Attribute(nameAttribute) == "EdsmCard"
         );
 
         Assert.Equal(edsm, inara.ElementsAfterSelf().First(element => element.Name.LocalName == "Border"));
 
-        var values = edsm.DescendantsAndSelf()
+        string[] values = edsm.DescendantsAndSelf()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();

@@ -67,7 +67,9 @@ public sealed class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var profile = await profileStore.LoadAsync(frontierId, isOdyssey, cancellationToken).ConfigureAwait(false);
+            CommanderProfileLoadResult profile = await profileStore
+                .LoadAsync(frontierId, isOdyssey, cancellationToken)
+                .ConfigureAwait(false);
             if (profile.Data is null)
             {
                 activeProcessor = null;
@@ -78,14 +80,16 @@ public sealed class JourneyService
                 );
             }
 
-            var fileName = profile.Data?.ActiveJourneyFileName;
+            string? fileName = profile.Data?.ActiveJourneyFileName;
             if (string.IsNullOrWhiteSpace(fileName))
             {
                 activeProcessor = null;
                 return JourneyServiceResult.Empty;
             }
 
-            var load = await journeyStore.LoadAsync(frontierId, fileName, cancellationToken).ConfigureAwait(false);
+            JourneyLoadResult load = await journeyStore
+                .LoadAsync(frontierId, fileName, cancellationToken)
+                .ConfigureAwait(false);
             if (load.Journey is null)
             {
                 activeProcessor = null;
@@ -133,7 +137,7 @@ public sealed class JourneyService
                 throw new InvalidOperationException("Conclude the active journey before beginning another one.");
             }
 
-            var profile = await profileStore
+            CommanderProfileLoadResult profile = await profileStore
                 .LoadAsync(request.FrontierId, request.IsOdyssey, cancellationToken)
                 .ConfigureAwait(false);
             if (profile.Data is null)
@@ -146,7 +150,7 @@ public sealed class JourneyService
                 throw new InvalidOperationException("Conclude the active journey before beginning another one.");
             }
 
-            var journey = await journeyStore
+            JourneyDocument journey = await journeyStore
                 .CreateAsync(
                     new JourneyCreationRequest(
                         request.FrontierId,
@@ -159,7 +163,7 @@ public sealed class JourneyService
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            var result = await CatchUpAndActivateAsync(journey, request.IsOdyssey, cancellationToken)
+            JourneyServiceResult result = await CatchUpAndActivateAsync(journey, request.IsOdyssey, cancellationToken)
                 .ConfigureAwait(false);
             await profileStore
                 .SaveActiveJourneyAsync(
@@ -192,7 +196,7 @@ public sealed class JourneyService
                 return JourneyServiceResult.Empty;
             }
 
-            var processed = journalEvents.Count(journalEvent => activeProcessor.Apply(journalEvent));
+            int processed = journalEvents.Count(journalEvent => activeProcessor.Apply(journalEvent));
 
             if (processed > 0)
             {
@@ -218,7 +222,7 @@ public sealed class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var normalized = journey with
+            JourneyDocument normalized = journey with
             {
                 Name = journey.Name.Trim(),
                 Description = journey.Description ?? string.Empty,
@@ -250,17 +254,17 @@ public sealed class JourneyService
                 return false;
             }
 
-            var current = activeProcessor.Journey.CurrentSystem;
+            JourneySystemVisit? current = activeProcessor.Journey.CurrentSystem;
             if (current is null || current.StarSystem.SystemAddress != systemAddress)
             {
                 return false;
             }
 
-            var visits = activeProcessor.Journey.VisitedSystems.ToArray();
-            var index = Array.LastIndexOf(visits, current);
-            var visit = visits[index];
+            JourneySystemVisit[] visits = activeProcessor.Journey.VisitedSystems.ToArray();
+            int index = Array.LastIndexOf(visits, current);
+            JourneySystemVisit visit = visits[index];
             visits[index] = visit with { Counts = visit.Counts with { Notes = checked(visit.Counts.Notes + 1) } };
-            var updated = activeProcessor.Journey with { VisitedSystems = visits };
+            JourneyDocument updated = activeProcessor.Journey with { VisitedSystems = visits };
             activeProcessor.UpdateJourney(updated);
             await journeyStore.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
             return true;
@@ -281,15 +285,15 @@ public sealed class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var reset = journey with { Watermark = journey.StartTime, VisitedSystems = [] };
-            var read = await historyReader
+            JourneyDocument reset = journey with { Watermark = journey.StartTime, VisitedSystems = [] };
+            JourneyJournalReadResult read = await historyReader
                 .ReadFromAsync(reset.StartingJournal, reset.FrontierId, isOdyssey, cancellationToken)
                 .ConfigureAwait(false);
             var processor = new JourneyJournalProcessor(reset, exobiologyCatalog, isOdyssey);
-            var events = journey.EndTime is { } endTime
+            IEnumerable<JournalEventEnvelope> events = journey.EndTime is { } endTime
                 ? read.Events.Where(journalEvent => journalEvent.Timestamp is null || journalEvent.Timestamp <= endTime)
                 : read.Events;
-            var replay = processor.ApplyCatchUp(events);
+            JourneyReplaySummary replay = processor.ApplyCatchUp(events);
             await journeyStore.SaveAsync(replay.Journey, cancellationToken).ConfigureAwait(false);
 
             if (
@@ -323,7 +327,7 @@ public sealed class JourneyService
                 return null;
             }
 
-            var concluded = activeProcessor.Journey with { EndTime = endTime };
+            JourneyDocument concluded = activeProcessor.Journey with { EndTime = endTime };
             await journeyStore.SaveAsync(concluded, cancellationToken).ConfigureAwait(false);
             await profileStore
                 .SaveActiveJourneyAsync(concluded.FrontierId, commanderName, activeIsOdyssey, null, cancellationToken)
@@ -343,11 +347,11 @@ public sealed class JourneyService
         CancellationToken cancellationToken
     )
     {
-        var read = await historyReader
+        JourneyJournalReadResult read = await historyReader
             .ReadFromAsync(journey.StartingJournal, journey.FrontierId, isOdyssey, cancellationToken)
             .ConfigureAwait(false);
         var processor = new JourneyJournalProcessor(journey, exobiologyCatalog, isOdyssey);
-        var replay = processor.ApplyCatchUp(read.Events);
+        JourneyReplaySummary replay = processor.ApplyCatchUp(read.Events);
         if (replay.ProcessedEventCount > 0)
         {
             await journeyStore.SaveAsync(replay.Journey, cancellationToken).ConfigureAwait(false);

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection;
 using System.Text.Json;
 
 namespace SrvSurvey.Core.Guardian;
@@ -38,8 +39,8 @@ public sealed class GuardianSiteTemplateCatalog
 
     public static GuardianSiteTemplateCatalog LoadEmbedded()
     {
-        var assembly = typeof(GuardianSiteTemplateCatalog).Assembly;
-        using var stream =
+        Assembly assembly = typeof(GuardianSiteTemplateCatalog).Assembly;
+        using Stream stream =
             assembly.GetManifestResourceStream(EmbeddedResourceName)
             ?? throw new InvalidOperationException(
                 $"The embedded Guardian templates {EmbeddedResourceName} are missing."
@@ -57,15 +58,15 @@ public sealed class GuardianSiteTemplateCatalog
         }
 
         var templates = new List<GuardianSiteTemplate>();
-        foreach (var property in document.RootElement.EnumerateObject())
+        foreach (JsonProperty property in document.RootElement.EnumerateObject())
         {
-            var value = property.Value;
+            JsonElement value = property.Value;
             if (value.ValueKind != JsonValueKind.Object)
             {
                 throw new InvalidDataException($"Guardian template {property.Name} is not an object.");
             }
 
-            var points = ReadPoints(value, "poi");
+            GuardianPointOfInterest[] points = ReadPoints(value, "poi");
             templates.Add(
                 new GuardianSiteTemplate(
                     property.Name,
@@ -86,7 +87,7 @@ public sealed class GuardianSiteTemplateCatalog
     private static GuardianPointOfInterest[] ReadPoints(JsonElement root, string propertyName)
     {
         if (
-            !root.TryGetProperty(propertyName, out var value)
+            !root.TryGetProperty(propertyName, out JsonElement value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         )
         {
@@ -108,13 +109,13 @@ public sealed class GuardianSiteTemplateCatalog
             throw new InvalidDataException("A Guardian point of interest is not an object.");
         }
 
-        var name = GetString(value, "name");
+        string? name = GetString(value, "name");
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new InvalidDataException("A Guardian point of interest is missing its name.");
         }
 
-        var type = ReadPoiType(value);
+        GuardianPoiType type = ReadPoiType(value);
         return new GuardianPointOfInterest(
             name,
             type,
@@ -126,14 +127,14 @@ public sealed class GuardianSiteTemplateCatalog
 
     private static GuardianPoiType ReadPoiType(JsonElement root)
     {
-        if (!root.TryGetProperty("type", out var value))
+        if (!root.TryGetProperty("type", out JsonElement value))
         {
             return GuardianPoiType.Unknown;
         }
 
         if (
             value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
+            && value.TryGetInt32(out int number)
             && Enum.IsDefined(typeof(GuardianPoiType), number)
         )
         {
@@ -142,7 +143,7 @@ public sealed class GuardianSiteTemplateCatalog
 
         if (value.ValueKind == JsonValueKind.String)
         {
-            var name = value.GetString();
+            string? name = value.GetString();
             if (string.Equals(name, "brokeObelisk", StringComparison.OrdinalIgnoreCase))
             {
                 return GuardianPoiType.BrokenObelisk;
@@ -153,7 +154,7 @@ public sealed class GuardianSiteTemplateCatalog
                 return GuardianPoiType.DestructiblePanel;
             }
 
-            if (Enum.TryParse<GuardianPoiType>(name, ignoreCase: true, out var type))
+            if (Enum.TryParse<GuardianPoiType>(name, ignoreCase: true, out GuardianPoiType type))
             {
                 return type;
             }
@@ -165,11 +166,11 @@ public sealed class GuardianSiteTemplateCatalog
     private static Dictionary<string, GuardianMapPoint> ReadNamedPoints(JsonElement root, string propertyName)
     {
         if (
-            !root.TryGetProperty(propertyName, out var value)
+            !root.TryGetProperty(propertyName, out JsonElement value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         )
         {
-            return new Dictionary<string, GuardianMapPoint>();
+            return [];
         }
 
         if (value.ValueKind != JsonValueKind.Object)
@@ -189,20 +190,20 @@ public sealed class GuardianSiteTemplateCatalog
 
     private static GuardianMapPoint? ReadPoint(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) ? ParsePoint(value) : null;
+        return root.TryGetProperty(propertyName, out JsonElement value) ? ParsePoint(value) : null;
     }
 
     private static GuardianMapPoint? ParsePoint(JsonElement value)
     {
         if (value.ValueKind == JsonValueKind.String)
         {
-            var parts = value
+            string[]? parts = value
                 .GetString()
                 ?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             if (
                 parts?.Length == 2
-                && double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
-                && double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
+                && double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double x)
+                && double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y)
             )
             {
                 return new GuardianMapPoint(x, y);
@@ -211,8 +212,8 @@ public sealed class GuardianSiteTemplateCatalog
 
         if (value.ValueKind == JsonValueKind.Object)
         {
-            var x = GetDouble(value, "X") ?? GetDouble(value, "x");
-            var y = GetDouble(value, "Y") ?? GetDouble(value, "y");
+            double? x = GetDouble(value, "X") ?? GetDouble(value, "x");
+            double? y = GetDouble(value, "Y") ?? GetDouble(value, "y");
             if (x is not null && y is not null)
             {
                 return new GuardianMapPoint(x.Value, y.Value);
@@ -224,7 +225,7 @@ public sealed class GuardianSiteTemplateCatalog
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -232,9 +233,9 @@ public sealed class GuardianSiteTemplateCatalog
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
+            && value.TryGetDouble(out double number)
             ? number
             : null;
     }

@@ -11,7 +11,7 @@ public sealed class HumanSiteVehicleTrackerTests
     public void TouchdownAndLiftoffRetainFormerShipLocation()
     {
         var tracker = new HumanSiteVehicleTracker();
-        var status = Status(latitude: 12.5, longitude: -45.25, heading: 271);
+        EliteStatus status = Status(latitude: 12.5, longitude: -45.25, heading: 271);
 
         Assert.True(tracker.Apply(Event("Touchdown", """{"Latitude":12.4,"Longitude":-45.2}"""), status));
         Assert.Equal(new SurfaceCoordinate(12.4, -45.2), tracker.ShipLocation);
@@ -39,7 +39,7 @@ public sealed class HumanSiteVehicleTrackerTests
     public void SrvDisembarkAndEmbarkTrackSurfaceLocation()
     {
         var tracker = new HumanSiteVehicleTracker();
-        var status = Status(latitude: -10, longitude: 120, heading: 0);
+        EliteStatus status = Status(latitude: -10, longitude: 120, heading: 0);
 
         Assert.True(tracker.Apply(Event("Disembark", """{"SRV":true}"""), status));
         Assert.Equal(new SurfaceCoordinate(-10, 120), tracker.SrvLocation);
@@ -63,7 +63,7 @@ public sealed class HumanSiteVehicleTrackerTests
     public void LeavingSurfaceContextClearsVehicleLocations(string eventName)
     {
         var tracker = new HumanSiteVehicleTracker();
-        var status = Status(latitude: 1, longitude: 2, heading: 90);
+        EliteStatus status = Status(latitude: 1, longitude: 2, heading: 90);
         tracker.Apply(Event("Touchdown"), status);
         tracker.Apply(Event("Disembark", """{"SRV":true}"""), status);
 
@@ -79,7 +79,7 @@ public sealed class HumanSiteVehicleTrackerTests
     public void MainMenuMusicClearsVehicleLocations()
     {
         var tracker = new HumanSiteVehicleTracker();
-        var status = Status(latitude: 1, longitude: 2, heading: 90);
+        EliteStatus status = Status(latitude: 1, longitude: 2, heading: 90);
         tracker.Apply(Event("Touchdown"), status);
 
         Assert.True(tracker.Apply(Event("Music", """{"MusicTrack":"MainMenu"}"""), status));

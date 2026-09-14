@@ -23,7 +23,7 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
     public async Task ProgressiveReplayDrivesNormalOverlayVisibilityAndExpiry()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var sourcePath = Path.Combine(temporaryDirectory, "Journal.source.log");
+        string sourcePath = Path.Combine(temporaryDirectory, "Journal.source.log");
         await File.WriteAllLinesAsync(
             sourcePath,
             [
@@ -32,12 +32,15 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
                 "{\"timestamp\":\"2026-08-21T18:00:02Z\",\"event\":\"MaterialCollected\",\"Category\":\"Encoded\",\"Name\":\"ancienttechnologicaldata\",\"Name_Localised\":\"Pattern Epsilon Obelisk Data\",\"Count\":3}",
             ]
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temporaryDirectory, "managed"),
             CancellationToken.None
         );
-        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
+        DiagnosticReplayContext context = await DiagnosticReplayContext.LoadAsync(
+            session.ManifestPath,
+            CancellationToken.None
+        );
         var player = new JournalReplayPlayer(session);
         var monitor = new JournalDirectoryMonitor(context.JournalDirectory, context.Commander.FrontierId);
         var time = new MutableTimeProvider(
@@ -58,7 +61,7 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
 
         Assert.True(await player.StepAsync(CancellationToken.None));
         Assert.True(await player.StepAsync(CancellationToken.None));
-        var bootstrap = await monitor.PollAsync(CancellationToken.None);
+        JournalMonitorUpdate bootstrap = await monitor.PollAsync(CancellationToken.None);
         notification.ApplyJournalEvents(bootstrap.JournalEvents, allowNotifications: !bootstrap.IsBootstrapRead);
 
         Assert.True(bootstrap.IsBootstrapRead);
@@ -66,12 +69,12 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
         Assert.Empty(notification.Messages);
 
         Assert.True(await player.StepAsync(CancellationToken.None));
-        var live = await monitor.PollAsync(CancellationToken.None);
+        JournalMonitorUpdate live = await monitor.PollAsync(CancellationToken.None);
         notification.ApplyJournalEvents(live.JournalEvents, allowNotifications: !live.IsBootstrapRead);
 
         Assert.False(live.IsBootstrapRead);
         Assert.True(coordinator.IsVisible);
-        var replayWindow = Assert.Single(platform.PreparedWindows);
+        Window replayWindow = Assert.Single(platform.PreparedWindows);
         Assert.NotNull(replayWindow.CaptureRenderedFrame());
         Assert.True(Assert.Single(registry.Snapshot()).IsVisible);
 

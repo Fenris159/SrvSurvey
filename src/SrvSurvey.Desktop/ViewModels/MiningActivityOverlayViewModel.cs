@@ -62,13 +62,13 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
 
     private static string OverlayName(SrvSurvey.Core.Firegroups.FiregroupModule module)
     {
-        var name = module.Name.Trim();
+        string name = module.Name.Trim();
         if (module.Symbol.Length == 0 || !name.EndsWith(')'))
         {
             return name;
         }
 
-        var technicalDetails = name.LastIndexOf(" (", StringComparison.Ordinal);
+        int technicalDetails = name.LastIndexOf(" (", StringComparison.Ordinal);
         return technicalDetails > 0 ? name[..technicalDetails] : name;
     }
 
@@ -129,7 +129,7 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
 
         RefreshNotices();
         foreach (
-            var name in new[]
+            string? name in new[]
             {
                 nameof(GroupLabel),
                 nameof(PrimaryLabel),

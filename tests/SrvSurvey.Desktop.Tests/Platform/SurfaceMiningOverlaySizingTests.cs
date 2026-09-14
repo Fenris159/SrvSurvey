@@ -98,20 +98,22 @@ public sealed class SurfaceMiningOverlaySizingTests
     public async Task EmptyLiveMiningKeepsEditorWidthAndTrackerSizeAtTwoHundredPercent(string bodyName)
     {
         var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotSurfaceMining"));
-        var example = Assert.IsType<SurfaceMiningOverlayViewModel>(preview.RuntimePresentation!.DataContext);
+        SurfaceMiningOverlayViewModel example = Assert.IsType<SurfaceMiningOverlayViewModel>(
+            preview.RuntimePresentation!.DataContext
+        );
         using var mining = new SurfaceMiningViewModel(
             new SystemSurfaceStore(Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-sizing-{Guid.NewGuid():N}"))
         );
         var state = new SystemScanState();
         foreach (
-            var json in new[]
+            string? json in new[]
             {
                 """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
                 $$"""{"event":"Scan","StarSystem":"Test","SystemAddress":42,"BodyName":"{{bodyName}}","BodyID":1,"Radius":1000000,"PlanetClass":"Rocky body"}""",
             }
         )
         {
-            Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out _));
+            Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out _));
             state.Apply(entry!);
         }
         await mining.ApplyUpdateAsync(
@@ -143,16 +145,16 @@ public sealed class SurfaceMiningOverlaySizingTests
             OverlayThemeResources.ApplyScale(live, 13, 1);
             preview.Show();
             live.Show();
-            using var previewFrame = preview.CaptureRenderedFrame();
-            using var liveFrame = live.CaptureRenderedFrame();
+            using WriteableBitmap? previewFrame = preview.CaptureRenderedFrame();
+            using WriteableBitmap? liveFrame = live.CaptureRenderedFrame();
             Assert.NotNull(previewFrame);
             Assert.NotNull(liveFrame);
-            var output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+            string? output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(output))
             {
                 Directory.CreateDirectory(output);
-                using var previewFile = File.Create(Path.Combine(output, "mining-editor-200.png"));
-                using var liveFile = File.Create(
+                using FileStream previewFile = File.Create(Path.Combine(output, "mining-editor-200.png"));
+                using FileStream liveFile = File.Create(
                     Path.Combine(
                         output,
                         bodyName == "Wille 2 d" ? "mining-live-short-200.png" : "mining-live-long-200.png"
@@ -165,19 +167,23 @@ public sealed class SurfaceMiningOverlaySizingTests
             Assert.True(example.SurfaceMining.HasResources);
             Assert.False(mining.HasResources);
             Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));
-            var livePresentation = Assert.Single(
+            SurfaceMiningOverlayPresentation livePresentation = Assert.Single(
                 live.GetVisualDescendants().OfType<SurfaceMiningOverlayPresentation>()
             );
             Assert.Equal(preview.RuntimePresentation.Bounds.Width, livePresentation.Bounds.Width);
-            var previewRadar = Assert.Single(preview.GetVisualDescendants().OfType<SurfaceSurveyRadarControl>());
-            var liveRadar = Assert.Single(live.GetVisualDescendants().OfType<SurfaceSurveyRadarControl>());
+            SurfaceSurveyRadarControl previewRadar = Assert.Single(
+                preview.GetVisualDescendants().OfType<SurfaceSurveyRadarControl>()
+            );
+            SurfaceSurveyRadarControl liveRadar = Assert.Single(
+                live.GetVisualDescendants().OfType<SurfaceSurveyRadarControl>()
+            );
             Assert.Equal(previewRadar.Bounds.Size, liveRadar.Bounds.Size);
-            var previewRigs = preview
+            Border[] previewRigs = preview
                 .GetVisualDescendants()
                 .OfType<Border>()
                 .Where(border => border.Classes.Contains("rig"))
                 .ToArray();
-            var liveRigs = live.GetVisualDescendants()
+            Border[] liveRigs = live.GetVisualDescendants()
                 .OfType<Border>()
                 .Where(border => border.Classes.Contains("rig"))
                 .ToArray();
@@ -201,8 +207,12 @@ public sealed class SurfaceMiningOverlaySizingTests
     public void LiveMiningPresentationMatchesEditorAtTheSameScale(int scaleIndex, double renderScaling)
     {
         var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotSurfaceMining"));
-        var presentation = Assert.IsType<SurfaceMiningOverlayPresentation>(preview.RuntimePresentation);
-        var viewModel = Assert.IsType<SurfaceMiningOverlayViewModel>(presentation.DataContext);
+        SurfaceMiningOverlayPresentation presentation = Assert.IsType<SurfaceMiningOverlayPresentation>(
+            preview.RuntimePresentation
+        );
+        SurfaceMiningOverlayViewModel viewModel = Assert.IsType<SurfaceMiningOverlayViewModel>(
+            presentation.DataContext
+        );
         var live = new SurfaceMiningOverlayWindow(viewModel);
         try
         {
@@ -220,10 +230,12 @@ public sealed class SurfaceMiningOverlaySizingTests
             live.Show();
             AssertMatchingPresentations(preview, live);
 
-            var mining = viewModel.SurfaceMining;
-            var rigs = mining.RadarMarkers.Where(marker => marker.Kind == SurfaceRadarMarkerKind.MiningRig).ToArray();
-            var resources = mining.Resources.Select(resource => resource.Marker).ToArray();
-            foreach (var count in new[] { 0, 21, 3 })
+            SurfaceMiningViewModel mining = viewModel.SurfaceMining;
+            SurfaceRadarMarkerViewModel[] rigs = mining
+                .RadarMarkers.Where(marker => marker.Kind == SurfaceRadarMarkerKind.MiningRig)
+                .ToArray();
+            SurfaceRadarMarkerViewModel[] resources = mining.Resources.Select(resource => resource.Marker).ToArray();
+            foreach (int count in new[] { 0, 21, 3 })
             {
                 mining.InstallEditorPreview(
                     rigs,
@@ -249,17 +261,21 @@ public sealed class SurfaceMiningOverlaySizingTests
         SurfaceMiningOverlayWindow live
     )
     {
-        using var previewFrame = preview.CaptureRenderedFrame();
-        using var liveFrame = live.CaptureRenderedFrame();
+        using WriteableBitmap? previewFrame = preview.CaptureRenderedFrame();
+        using WriteableBitmap? liveFrame = live.CaptureRenderedFrame();
         Assert.NotNull(previewFrame);
         Assert.NotNull(liveFrame);
-        var previewPresentation = Assert.IsType<SurfaceMiningOverlayPresentation>(preview.RuntimePresentation);
-        var livePresentation = Assert.Single(live.GetVisualDescendants().OfType<SurfaceMiningOverlayPresentation>());
+        SurfaceMiningOverlayPresentation previewPresentation = Assert.IsType<SurfaceMiningOverlayPresentation>(
+            preview.RuntimePresentation
+        );
+        SurfaceMiningOverlayPresentation livePresentation = Assert.Single(
+            live.GetVisualDescendants().OfType<SurfaceMiningOverlayPresentation>()
+        );
         // Compare the shared content, excluding the editor-only folder tab and border.
-        var previewBounds = new Rect(previewPresentation.Bounds.Size).TransformToAABB(
+        Rect previewBounds = new Rect(previewPresentation.Bounds.Size).TransformToAABB(
             previewPresentation.TransformToVisual(preview)!.Value
         );
-        var liveBounds = new Rect(livePresentation.Bounds.Size).TransformToAABB(
+        Rect liveBounds = new Rect(livePresentation.Bounds.Size).TransformToAABB(
             livePresentation.TransformToVisual(live)!.Value
         );
         Assert.InRange(Math.Abs(previewBounds.Width - liveBounds.Width), 0, 1);

@@ -14,7 +14,7 @@ public sealed class NetworkPrivacySettingsStore
     public NetworkPrivacyPreferences Load()
     {
         var settings = documentStore.Load()["NetworkPrivacy"] as JsonObject;
-        var defaults = NetworkPrivacyPreferences.Default;
+        NetworkPrivacyPreferences defaults = NetworkPrivacyPreferences.Default;
         return new NetworkPrivacyPreferences(
             GetBoolean(settings, "EddnUploadEnabled", defaults.EddnUploadEnabled),
             GetBoolean(settings, "UploadGreenGasGiantCandidates", defaults.UploadGreenGasGiantCandidates),
@@ -45,7 +45,7 @@ public sealed class NetworkPrivacySettingsStore
 
     private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
     }
 }
 

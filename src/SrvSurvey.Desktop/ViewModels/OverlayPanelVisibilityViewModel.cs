@@ -22,11 +22,11 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(inputSettings);
         this.registry = registry ?? OverlayWindowRegistry.Shared;
 
-        var stored = store.Load();
+        IReadOnlyDictionary<string, bool> stored = store.Load();
         Panels = OverlayLayoutCatalog
             .Supported.Select(definition =>
             {
-                var shortcut = inputSettings.Bindings.Single(binding =>
+                InputBindingViewModel shortcut = inputSettings.Bindings.Single(binding =>
                     string.Equals(binding.Definition.OverlayPlotterName, definition.Name, StringComparison.Ordinal)
                 );
                 var panel = new OverlayPanelVisibilityEntryViewModel(
@@ -70,7 +70,7 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
 
     public bool Toggle(string plotterName)
     {
-        var panel = Panels.FirstOrDefault(candidate =>
+        OverlayPanelVisibilityEntryViewModel? panel = Panels.FirstOrDefault(candidate =>
             string.Equals(candidate.PlotterName, plotterName, StringComparison.Ordinal)
         );
         if (panel is null)

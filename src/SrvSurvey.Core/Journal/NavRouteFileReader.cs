@@ -20,10 +20,10 @@ public static class NavRouteFileReader
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumAttempts, 1);
-        var delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
+        TimeSpan delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
         Exception? lastException = null;
 
-        for (var attempt = 1; attempt <= maximumAttempts; attempt++)
+        for (int attempt = 1; attempt <= maximumAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -38,11 +38,11 @@ public static class NavRouteFileReader
                 );
                 using var content = new MemoryStream();
                 await stream.CopyToAsync(content, cancellationToken).ConfigureAwait(false);
-                var bytes = content.ToArray();
-                var data =
+                byte[] bytes = content.ToArray();
+                NavRouteData data =
                     JsonSerializer.Deserialize<NavRouteData>(bytes, SerializerOptions)
                     ?? throw new JsonException("NavRoute.json contained no JSON value.");
-                var entries = (data.Route ?? [])
+                NavRouteEntry[] entries = (data.Route ?? [])
                     .Where(entry => !string.IsNullOrWhiteSpace(entry.StarSystem))
                     .Select(entry => new NavRouteEntry(
                         entry.StarSystem!,
@@ -52,7 +52,7 @@ public static class NavRouteFileReader
                     ))
                     .ToArray();
                 var snapshot = new NavRouteSnapshot(data.Timestamp, data.EventName ?? string.Empty, entries);
-                var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
+                string hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
                 return new NavRouteReadResult(snapshot, hash, null, attempt);
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
@@ -109,9 +109,9 @@ public sealed record NavRouteEntry(
 {
     public BoxelSystemObservation? ToBoxelObservation()
     {
-        var resolved =
+        bool resolved =
             SystemAddress > 0
-                ? BoxelAddress.TryFromSystemAddress(SystemAddress, StarSystem, out var boxel)
+                ? BoxelAddress.TryFromSystemAddress(SystemAddress, StarSystem, out BoxelAddress? boxel)
                 : BoxelAddress.TryParse(StarSystem, out boxel);
         return resolved && boxel is not null ? new BoxelSystemObservation(boxel, Position, null, null, false) : null;
     }

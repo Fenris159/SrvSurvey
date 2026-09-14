@@ -1,3 +1,4 @@
+using System.Globalization;
 using SrvSurvey.Core.Diagnostics;
 
 namespace SrvSurvey.Core.Tests.Diagnostics;
@@ -13,10 +14,10 @@ public sealed class ApplicationLogServiceTests : IDisposable
     public void AppendUpdatesMemoryFileAndObservers()
     {
         var service = new ApplicationLogService(temporaryDirectory, timeProvider);
-        var changeCount = 0;
+        int changeCount = 0;
         service.Changed += (_, _) => changeCount++;
 
-        var line = service.Append("Journal loaded");
+        string line = service.Append("Journal loaded");
 
         Assert.Equal("13:14:15: Journal loaded", line);
         Assert.Equal([line], service.Entries);
@@ -46,9 +47,9 @@ public sealed class ApplicationLogServiceTests : IDisposable
 
         service.Clear();
 
-        var entry = Assert.Single(service.Entries);
+        string entry = Assert.Single(service.Entries);
         Assert.Equal("13:14:15: Logs reset", entry);
-        var persisted = File.ReadAllLines(service.CurrentLogPath);
+        string[] persisted = File.ReadAllLines(service.CurrentLogPath);
         Assert.Equal(2, persisted.Length);
         Assert.Equal("13:14:15: Before reset", persisted[0]);
         Assert.Equal(entry, persisted[1]);
@@ -57,17 +58,17 @@ public sealed class ApplicationLogServiceTests : IDisposable
     [Fact]
     public void NewSessionRetainsNewestTenLogFiles()
     {
-        var logDirectory = Path.Combine(temporaryDirectory, "logs");
+        string logDirectory = Path.Combine(temporaryDirectory, "logs");
         Directory.CreateDirectory(logDirectory);
-        for (var index = 0; index < 11; index++)
+        for (int index = 0; index < 11; index++)
         {
-            var path = Path.Combine(logDirectory, $"old-{index:00}.txt");
-            File.WriteAllText(path, index.ToString());
+            string path = Path.Combine(logDirectory, $"old-{index:00}.txt");
+            File.WriteAllText(path, index.ToString(CultureInfo.InvariantCulture));
             File.SetLastWriteTimeUtc(path, DateTime.UnixEpoch.AddMinutes(index));
         }
 
         var service = new ApplicationLogService(temporaryDirectory, timeProvider);
-        var retained = Directory.GetFiles(logDirectory, "*.txt");
+        string[] retained = Directory.GetFiles(logDirectory, "*.txt");
 
         Assert.Equal(10, retained.Length);
         Assert.DoesNotContain(Path.Combine(logDirectory, "old-00.txt"), retained);
@@ -79,11 +80,11 @@ public sealed class ApplicationLogServiceTests : IDisposable
     public void FileFailureDoesNotLoseInMemoryEntries()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var dataPath = Path.Combine(temporaryDirectory, "not-a-directory");
+        string dataPath = Path.Combine(temporaryDirectory, "not-a-directory");
         File.WriteAllText(dataPath, "occupied");
         var service = new ApplicationLogService(dataPath, timeProvider);
 
-        var line = service.Append("Still visible");
+        string line = service.Append("Still visible");
 
         Assert.Equal([line], service.Entries);
         Assert.False(string.IsNullOrWhiteSpace(service.LastWriteError));

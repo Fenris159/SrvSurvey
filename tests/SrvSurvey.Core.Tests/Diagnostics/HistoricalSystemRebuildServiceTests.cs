@@ -13,8 +13,8 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
     [Fact]
     public async Task RebuildPreservesUnknownFieldsAndCreatesVerifiedBackup()
     {
-        var paths = CreatePaths();
-        var target = Path.Combine(paths.Data, "systems", "F123", "Test_42.json");
+        (string Data, string Journals, string Backups) paths = CreatePaths();
+        string target = Path.Combine(paths.Data, "systems", "F123", "Test_42.json");
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         await File.WriteAllTextAsync(
             target,
@@ -29,7 +29,7 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
             }
             """
         );
-        var original = await File.ReadAllBytesAsync(target);
+        byte[] original = await File.ReadAllBytesAsync(target);
         await WriteJournalAsync(paths.Journals, "Journal.2026-07-20T120000.01.log", "Test", 42);
         var service = new HistoricalSystemRebuildService(
             paths.Data,
@@ -39,25 +39,29 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
                 DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
 
-        var result = await service.RebuildAsync("F123", "Drew", JournalHistoryAnalyzer.EliteReleaseDate);
+        HistoricalSystemRebuildResult result = await service.RebuildAsync(
+            "F123",
+            "Drew",
+            JournalHistoryAnalyzer.EliteReleaseDate
+        );
 
         Assert.Equal(1, result.ProcessedJournalFileCount);
         Assert.Equal(1, result.ReconstructedSystemCount);
         Assert.Equal(1, result.UpdatedSystemFileCount);
         Assert.Equal(0, result.CreatedSystemFileCount);
-        var backup = Assert.IsType<string>(result.BackupDirectory);
+        string backup = Assert.IsType<string>(result.BackupDirectory);
         Assert.Equal(original, await File.ReadAllBytesAsync(Path.Combine(backup, "originals", "Test_42.json")));
         Assert.True(File.Exists(Path.Combine(backup, "manifest.json")));
-        var rebuilt = JsonNode.Parse(await File.ReadAllTextAsync(target))!.AsObject();
+        JsonObject rebuilt = JsonNode.Parse(await File.ReadAllTextAsync(target))!.AsObject();
         Assert.Equal(7, rebuilt["futureRoot"]!.GetValue<int>());
         Assert.Equal("Drew", rebuilt["commander"]!.GetValue<string>());
         Assert.True(rebuilt["honked"]!.GetValue<bool>());
-        var body = Assert.IsType<JsonObject>(Assert.Single(rebuilt["bodies"]!.AsArray()));
+        JsonObject body = Assert.IsType<JsonObject>(Assert.Single(rebuilt["bodies"]!.AsArray()));
         Assert.True(body["futureBody"]!.GetValue<bool>());
         Assert.Equal("LandableBody", body["type"]!.GetValue<string>());
         Assert.True(body["dssComplete"]!.GetValue<bool>());
         Assert.Equal(1, body["bioSignalCount"]!.GetValue<int>());
-        var organism = Assert.IsType<JsonObject>(Assert.Single(body["organisms"]!.AsArray()));
+        JsonObject organism = Assert.IsType<JsonObject>(Assert.Single(body["organisms"]!.AsArray()));
         Assert.Equal("Aleoida Arcus", organism["speciesLocalized"]!.GetValue<string>());
         Assert.True(organism["analyzed"]!.GetValue<bool>());
     }
@@ -65,15 +69,15 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
     [Fact]
     public async Task ActivationFailureRollsBackExistingAndNewFiles()
     {
-        var paths = CreatePaths();
-        var systemDirectory = Path.Combine(paths.Data, "systems", "F123");
+        (string Data, string Journals, string Backups) paths = CreatePaths();
+        string systemDirectory = Path.Combine(paths.Data, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
-        var existingPath = Path.Combine(systemDirectory, "First_1.json");
+        string existingPath = Path.Combine(systemDirectory, "First_1.json");
         await File.WriteAllTextAsync(existingPath, """{"name":"First","address":1,"future":true,"bodies":[]}""");
-        var original = await File.ReadAllBytesAsync(existingPath);
+        byte[] original = await File.ReadAllBytesAsync(existingPath);
         await WriteJournalAsync(paths.Journals, "Journal.2026-07-20T120000.01.log", "First", 1, includeShutdown: false);
         await WriteJournalAsync(paths.Journals, "Journal.2026-07-21T120000.01.log", "Second", 2);
-        var activationCount = 0;
+        int activationCount = 0;
         var service = new HistoricalSystemRebuildService(
             paths.Data,
             paths.Journals,
@@ -83,7 +87,7 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
             _ => ++activationCount == 2 ? new IOException("Injected activation failure.") : null
         );
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.RebuildAsync("F123", "Drew", JournalHistoryAnalyzer.EliteReleaseDate)
         );
 
@@ -96,11 +100,11 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
     [Fact]
     public async Task MalformedExistingSystemIsNotOverwritten()
     {
-        var paths = CreatePaths();
-        var target = Path.Combine(paths.Data, "systems", "F123", "Test_42.json");
+        (string Data, string Journals, string Backups) paths = CreatePaths();
+        string target = Path.Combine(paths.Data, "systems", "F123", "Test_42.json");
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         await File.WriteAllTextAsync(target, "{\"name\":");
-        var original = await File.ReadAllBytesAsync(target);
+        byte[] original = await File.ReadAllBytesAsync(target);
         await WriteJournalAsync(paths.Journals, "Journal.2026-07-20T120000.01.log", "Test", 42);
         var service = new HistoricalSystemRebuildService(
             paths.Data,
@@ -110,7 +114,11 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
                 DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
 
-        var result = await service.RebuildAsync("F123", "Drew", JournalHistoryAnalyzer.EliteReleaseDate);
+        HistoricalSystemRebuildResult result = await service.RebuildAsync(
+            "F123",
+            "Drew",
+            JournalHistoryAnalyzer.EliteReleaseDate
+        );
 
         Assert.Equal(0, result.UpdatedSystemFileCount);
         Assert.Null(result.BackupDirectory);
@@ -129,9 +137,9 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
 
     private (string Data, string Journals, string Backups) CreatePaths()
     {
-        var data = Path.Combine(temporaryDirectory, "data");
-        var journals = Path.Combine(temporaryDirectory, "journals");
-        var backups = Path.Combine(temporaryDirectory, "backups");
+        string data = Path.Combine(temporaryDirectory, "data");
+        string journals = Path.Combine(temporaryDirectory, "journals");
+        string backups = Path.Combine(temporaryDirectory, "backups");
         Directory.CreateDirectory(journals);
         return (data, journals, backups);
     }
@@ -144,7 +152,7 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
         bool includeShutdown = true
     )
     {
-        var shutdown = includeShutdown
+        string shutdown = includeShutdown
             ? "{\"timestamp\":\"2026-07-20T12:09:00Z\",\"event\":\"Shutdown\"}"
             : string.Empty;
         return File.WriteAllTextAsync(

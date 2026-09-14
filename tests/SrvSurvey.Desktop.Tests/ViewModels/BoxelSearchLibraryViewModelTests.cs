@@ -30,7 +30,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         };
         await store.CreateAsync("F123", "First", null, snapshot);
         await store.CreateAsync("F123", "Second", null, snapshot);
-        var boxel = CreateBoxel(
+        BoxelSearchViewModel boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -55,8 +55,8 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         (SavedBoxelSearchStore? store, BoxelSearchViewModel _, BoxelSearchLibraryViewModel? library) =
             await CreateLibraryAsync(("Zulu", null, 1, 4), ("Alpha", "Original notes", 3, 4));
         var propertyChanges = new List<string?>();
-        var renameDialogVisibleWhenCompleted = true;
-        var notesDialogVisibleWhenCompleted = true;
+        bool renameDialogVisibleWhenCompleted = true;
+        bool notesDialogVisibleWhenCompleted = true;
         library.PropertyChanged += (_, eventArgs) =>
         {
             propertyChanges.Add(eventArgs.PropertyName);
@@ -92,7 +92,9 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         Assert.False(library.RequestDeleteCommand.CanExecute(null));
 
         library.Searches[0].IsSelected = true;
-        var selected = Assert.IsType<BoxelSearchLibraryItemViewModel>(library.SelectedSearch);
+        BoxelSearchLibraryItemViewModel selected = Assert.IsType<BoxelSearchLibraryItemViewModel>(
+            library.SelectedSearch
+        );
         Assert.True(library.HasSelection);
         Assert.Contains(selected.Name, library.DeleteConfirmationText);
         Assert.True(library.OpenSelectedCommand.CanExecute(null));
@@ -170,7 +172,9 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         await opened.Task.WaitAsync(TimeSpan.FromSeconds(2));
         Assert.Equal("Opened Renamed search.", library.StatusMessage);
 
-        var toDelete = library.Searches.Single(search => !ReferenceEquals(search, selected));
+        BoxelSearchLibraryItemViewModel toDelete = library.Searches.Single(search =>
+            !ReferenceEquals(search, selected)
+        );
         toDelete.IsSelected = true;
         library.RequestDeleteCommand.Execute(null);
         Assert.True(library.IsDeleteConfirmationVisible);
@@ -189,7 +193,8 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
     [Fact]
     public async Task EmptyLibraryAndLibraryItemDisplayValuesAreExplicit()
     {
-        var (_, _, library) = await CreateLibraryAsync();
+        (SavedBoxelSearchStore _, BoxelSearchViewModel _, BoxelSearchLibraryViewModel? library) =
+            await CreateLibraryAsync();
 
         Assert.False(library.HasSearches);
         Assert.Equal("0 saved searches", library.SelectionSummary);
@@ -208,7 +213,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
             "empty.json",
             "C:\\empty.json"
         );
-        var selectedCount = 0;
+        int selectedCount = 0;
         var item = new BoxelSearchLibraryItemViewModel(
             entry,
             _ => selectedCount++,
@@ -250,9 +255,10 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
     [Fact]
     public async Task ExternalLibraryChangesPreserveSelectionAndOpenDrafts()
     {
-        var (_, boxel, library) = await CreateLibraryAsync(("Alpha", null, 0, 1), ("Zulu", null, 0, 1));
-        var selected = library.Searches.Single(search => search.Name == "Alpha");
-        var changed = library.Searches.Single(search => search.Name == "Zulu");
+        (SavedBoxelSearchStore _, BoxelSearchViewModel? boxel, BoxelSearchLibraryViewModel? library) =
+            await CreateLibraryAsync(("Alpha", null, 0, 1), ("Zulu", null, 0, 1));
+        BoxelSearchLibraryItemViewModel selected = library.Searches.Single(search => search.Name == "Alpha");
+        BoxelSearchLibraryItemViewModel changed = library.Searches.Single(search => search.Name == "Zulu");
         selected.IsSelected = true;
         selected.RenameCommand.Execute(null);
         library.RenameDraft = "Draft name";
@@ -290,15 +296,16 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
     [Fact]
     public async Task MissingSavedFilesReportEachLibraryOperationWithoutCrashing()
     {
-        var (_, _, library) = await CreateLibraryAsync(
-            ("Open", null, 0, 1),
-            ("Favorite", null, 0, 1),
-            ("Rename", null, 0, 1),
-            ("Notes", null, 0, 1),
-            ("Delete", null, 0, 1)
-        );
+        (SavedBoxelSearchStore _, BoxelSearchViewModel _, BoxelSearchLibraryViewModel? library) =
+            await CreateLibraryAsync(
+                ("Open", null, 0, 1),
+                ("Favorite", null, 0, 1),
+                ("Rename", null, 0, 1),
+                ("Notes", null, 0, 1),
+                ("Delete", null, 0, 1)
+            );
 
-        var open = library.Searches.Single(search => search.Name == "Open");
+        BoxelSearchLibraryItemViewModel open = library.Searches.Single(search => search.Name == "Open");
         open.IsSelected = true;
         File.Delete(open.FilePath);
         await ExecuteAndWaitAsync(
@@ -306,14 +313,14 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
             () => library.StatusMessage.Contains("could not be opened", StringComparison.Ordinal)
         );
 
-        var favorite = library.Searches.Single(search => search.Name == "Favorite");
+        BoxelSearchLibraryItemViewModel favorite = library.Searches.Single(search => search.Name == "Favorite");
         File.Delete(favorite.FilePath);
         await ExecuteAndWaitAsync(
             favorite.ToggleFavoriteCommand,
             () => library.StatusMessage.Contains("favorite could not be updated", StringComparison.Ordinal)
         );
 
-        var rename = library.Searches.Single(search => search.Name == "Rename");
+        BoxelSearchLibraryItemViewModel rename = library.Searches.Single(search => search.Name == "Rename");
         rename.RenameCommand.Execute(null);
         library.RenameDraft = "Replacement";
         File.Delete(rename.FilePath);
@@ -324,7 +331,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         Assert.True(library.IsRenameVisible);
         library.CancelDialogCommand.Execute(null);
 
-        var notes = library.Searches.Single(search => search.Name == "Notes");
+        BoxelSearchLibraryItemViewModel notes = library.Searches.Single(search => search.Name == "Notes");
         notes.EditNotesCommand.Execute(null);
         library.NotesDraft = "Replacement notes";
         File.Delete(notes.FilePath);
@@ -335,7 +342,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         Assert.True(library.IsNotesVisible);
         library.CancelDialogCommand.Execute(null);
 
-        var delete = library.Searches.Single(search => search.Name == "Delete");
+        BoxelSearchLibraryItemViewModel delete = library.Searches.Single(search => search.Name == "Delete");
         delete.IsSelected = true;
         library.RequestDeleteCommand.Execute(null);
         File.Delete(delete.FilePath);
@@ -377,7 +384,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         ]);
         await coordinator.FlushAsync();
 
-        var boxel = CreateBoxel(
+        BoxelSearchViewModel boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -391,7 +398,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         library.StatisticsRequested += (_, request) => requested = request;
         await library.RefreshAsync();
 
-        var item = Assert.Single(library.Searches);
+        BoxelSearchLibraryItemViewModel item = Assert.Single(library.Searches);
         Assert.Equal(top.Prefix, item.TopBoxelPrefix);
         Assert.Equal('c', item.LowMassCode);
         Assert.True(item.CanOpenStatistics);
@@ -410,7 +417,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
     {
         var store = new SavedBoxelSearchStore(temporaryDirectory);
         var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
-        foreach (var search in searches)
+        foreach ((string Name, string? Notes, int Completed, int Total) search in searches)
         {
             var snapshot = new BoxelSearchSnapshot
             {
@@ -427,7 +434,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
             await store.CreateAsync("F123", search.Name, search.Notes, snapshot);
         }
 
-        var boxel = CreateBoxel(
+        BoxelSearchViewModel boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -444,7 +451,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
     {
         Assert.True(command.CanExecute(null));
         command.Execute(null);
-        var timeout = DateTimeOffset.UtcNow.AddSeconds(2);
+        DateTimeOffset timeout = DateTimeOffset.UtcNow.AddSeconds(2);
         while (!completed() && DateTimeOffset.UtcNow < timeout)
         {
             await Task.Delay(10);
@@ -457,7 +464,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var session in sessions.AsEnumerable().Reverse())
+        foreach (BoxelSearchSession? session in sessions.AsEnumerable().Reverse())
         {
             await session.DisposeAsync();
         }
@@ -477,12 +484,12 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         BoxelSurveyStatsCoordinator? surveyStats = null
     )
     {
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        BoxelSearchViewModel viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             localSystemReader,
             emptyBoxelStore,
             systemResolver,
-            out var session,
+            out BoxelSearchSession? session,
             savedSearchStore: savedSearchStore,
             surveyStats: surveyStats
         );

@@ -12,8 +12,8 @@ public sealed class ApplicationLogBoxelSearchDiagnosticSink(ApplicationLogServic
     public void Report(BoxelSearchDiagnostic diagnostic)
     {
         ArgumentNullException.ThrowIfNull(diagnostic);
-        var context = string.IsNullOrWhiteSpace(diagnostic.Context) ? string.Empty : $" ({diagnostic.Context})";
-        var detail = diagnostic.Exception is null ? string.Empty : ": " + FormatException(diagnostic.Exception);
+        string context = string.IsNullOrWhiteSpace(diagnostic.Context) ? string.Empty : $" ({diagnostic.Context})";
+        string detail = diagnostic.Exception is null ? string.Empty : ": " + FormatException(diagnostic.Exception);
         applicationLog.Append($"Boxel search {diagnostic.Subsystem}/{diagnostic.Code}{context}{detail}");
     }
 

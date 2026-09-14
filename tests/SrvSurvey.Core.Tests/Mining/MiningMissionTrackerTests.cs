@@ -29,7 +29,7 @@ public sealed class MiningMissionTrackerTests
 
     private static void Apply(MiningMissionTracker tracker, string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out _));
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out _));
         tracker.Apply(entry!);
     }
 }

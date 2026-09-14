@@ -15,10 +15,15 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
     public async Task CreateAndLoadRoundTripsBoundedHandoffPlan()
     {
         var store = new ReleaseInstallationPlanStore(new FixedTimeProvider(Now));
-        var preparation = CreatePreparation();
+        ReleaseInstallationPreparation preparation = CreatePreparation();
 
-        var created = await store.CreateAsync(temporaryDirectory, preparation, 1_234, Now.AddMinutes(-1));
-        var loaded = await store.LoadAsync(temporaryDirectory, created.PlanPath);
+        ReleaseInstallationHandoffPlan created = await store.CreateAsync(
+            temporaryDirectory,
+            preparation,
+            1_234,
+            Now.AddMinutes(-1)
+        );
+        ReleaseInstallationHandoffPlan loaded = await store.LoadAsync(temporaryDirectory, created.PlanPath);
 
         Assert.Equal(created.PlanPath, loaded.PlanPath);
         Assert.Equal(created.HelperReadyMarkerPath, loaded.HelperReadyMarkerPath);
@@ -50,8 +55,13 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
     public async Task LoadRejectsValidPlanCopiedOutsideRequestDirectory()
     {
         var store = new ReleaseInstallationPlanStore(new FixedTimeProvider(Now));
-        var created = await store.CreateAsync(temporaryDirectory, CreatePreparation(), 1_234, Now.AddMinutes(-1));
-        var copiedPath = Path.Combine(temporaryDirectory, "copied-plan.json");
+        ReleaseInstallationHandoffPlan created = await store.CreateAsync(
+            temporaryDirectory,
+            CreatePreparation(),
+            1_234,
+            Now.AddMinutes(-1)
+        );
+        string copiedPath = Path.Combine(temporaryDirectory, "copied-plan.json");
         File.Copy(created.PlanPath, copiedPath);
 
         await Assert.ThrowsAsync<InvalidDataException>(() => store.LoadAsync(temporaryDirectory, copiedPath));
@@ -60,13 +70,10 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
     [Fact]
     public async Task LoadRejectsExpiredPlanWithoutChangingIt()
     {
-        var created = await new ReleaseInstallationPlanStore(new FixedTimeProvider(Now)).CreateAsync(
-            temporaryDirectory,
-            CreatePreparation(),
-            1_234,
-            Now.AddMinutes(-1)
-        );
-        var original = await File.ReadAllBytesAsync(created.PlanPath);
+        ReleaseInstallationHandoffPlan created = await new ReleaseInstallationPlanStore(
+            new FixedTimeProvider(Now)
+        ).CreateAsync(temporaryDirectory, CreatePreparation(), 1_234, Now.AddMinutes(-1));
+        byte[] original = await File.ReadAllBytesAsync(created.PlanPath);
         var expiredStore = new ReleaseInstallationPlanStore(new FixedTimeProvider(Now.AddHours(3)));
 
         await Assert.ThrowsAsync<InvalidDataException>(() =>
@@ -80,7 +87,12 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
     public async Task HealthMarkerRequiresMatchingRandomToken()
     {
         var store = new ReleaseInstallationPlanStore(new FixedTimeProvider(Now));
-        var plan = await store.CreateAsync(temporaryDirectory, CreatePreparation(), 1_234, Now.AddMinutes(-1));
+        ReleaseInstallationHandoffPlan plan = await store.CreateAsync(
+            temporaryDirectory,
+            CreatePreparation(),
+            1_234,
+            Now.AddMinutes(-1)
+        );
         Assert.False(await store.IsHealthConfirmedAsync(plan));
         await File.WriteAllTextAsync(
             plan.HealthMarkerPath,
@@ -106,7 +118,7 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
     public async Task HelperReadyMarkerRequiresMatchingRandomToken()
     {
         var store = new ReleaseInstallationPlanStore(new FixedTimeProvider(Now));
-        var plan = await store.CreateAsync(
+        ReleaseInstallationHandoffPlan plan = await store.CreateAsync(
             temporaryDirectory,
             CreatePreparation() with
             {
@@ -125,7 +137,12 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
     public async Task OutcomeMustMatchPlanAndIsAtomicallyReplaced()
     {
         var store = new ReleaseInstallationPlanStore(new FixedTimeProvider(Now));
-        var plan = await store.CreateAsync(temporaryDirectory, CreatePreparation(), 1_234, Now.AddMinutes(-1));
+        ReleaseInstallationHandoffPlan plan = await store.CreateAsync(
+            temporaryDirectory,
+            CreatePreparation(),
+            1_234,
+            Now.AddMinutes(-1)
+        );
         var wrong = new ReleaseInstallationOutcome(
             ReleaseInstallationOutcomeStatus.Aborted,
             Guid.NewGuid(),
@@ -137,7 +154,7 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
         );
 
         await Assert.ThrowsAsync<InvalidDataException>(() => store.WriteOutcomeAsync(plan, wrong));
-        var installed = wrong with
+        ReleaseInstallationOutcome installed = wrong with
         {
             Status = ReleaseInstallationOutcomeStatus.Installed,
             RequestId = plan.Preparation.RequestId,
@@ -145,7 +162,7 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
             Error = null,
         };
         await store.WriteOutcomeAsync(plan, installed);
-        var rolledBack = installed with
+        ReleaseInstallationOutcome rolledBack = installed with
         {
             Status = ReleaseInstallationOutcomeStatus.RolledBack,
             BackupDirectory = null,
@@ -153,7 +170,7 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
             Error = "health timeout",
         };
         await store.WriteOutcomeAsync(plan, rolledBack);
-        var loaded = await store.ReadOutcomeAsync(plan);
+        ReleaseInstallationOutcome loaded = await store.ReadOutcomeAsync(plan);
 
         Assert.Equal(rolledBack, loaded);
         using var document = JsonDocument.Parse(await File.ReadAllBytesAsync(plan.OutcomePath));
@@ -173,8 +190,8 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
     private ReleaseInstallationPreparation CreatePreparation()
     {
         var requestId = Guid.NewGuid();
-        var parent = Path.Combine(temporaryDirectory, "install-parent");
-        var installation = Path.Combine(parent, "SrvSurvey");
+        string parent = Path.Combine(temporaryDirectory, "install-parent");
+        string installation = Path.Combine(parent, "SrvSurvey");
         return new ReleaseInstallationPreparation(
             requestId,
             new Version(2, 0, 95, 23),

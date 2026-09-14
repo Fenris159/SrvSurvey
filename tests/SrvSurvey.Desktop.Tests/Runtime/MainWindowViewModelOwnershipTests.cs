@@ -19,7 +19,7 @@ public sealed class MainWindowViewModelOwnershipTests
         Assert.Contains("Before parent disposal", context.ViewModel.DiagnosticsLog.LogText, StringComparison.Ordinal);
 
         await context.ViewModel.DisposeAsync();
-        var disposedSnapshot = context.ViewModel.DiagnosticsLog.LogText;
+        string disposedSnapshot = context.ViewModel.DiagnosticsLog.LogText;
         context.ApplicationLog.Append("After parent disposal");
 
         Assert.Equal(disposedSnapshot, context.ViewModel.DiagnosticsLog.LogText);
@@ -30,7 +30,7 @@ public sealed class MainWindowViewModelOwnershipTests
     {
         await using var context = new TestViewModelContext();
         await context.ViewModel.DisposeAsync();
-        var guardianNotifications = 0;
+        int guardianNotifications = 0;
         context.ViewModel.Guardian.PropertyChanged += (_, _) => guardianNotifications++;
 
         context.ViewModel.ScreenshotProcessing.TargetFolder = Path.Combine(
@@ -68,7 +68,7 @@ public sealed class MainWindowViewModelOwnershipTests
 
         window.Close();
         await closed.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        var disposedSnapshot = context.ViewModel.DiagnosticsLog.LogText;
+        string disposedSnapshot = context.ViewModel.DiagnosticsLog.LogText;
         context.ApplicationLog.Append("After standalone window closed");
 
         Assert.Equal(disposedSnapshot, context.ViewModel.DiagnosticsLog.LogText);
@@ -82,7 +82,7 @@ public sealed class MainWindowViewModelOwnershipTests
     [InlineData((int)MainWindowViewModelConstructionCheckpoint.OnlineAndShellReady)]
     public void ConstructionFailureRollsBackEveryCompletedFamily(int checkpointValue)
     {
-        var root = CreateTemporaryRoot();
+        string root = CreateTemporaryRoot();
         try
         {
             List<string> disposalOrder = [];
@@ -91,7 +91,7 @@ public sealed class MainWindowViewModelOwnershipTests
             var switcher = new RecordingGameWindowSwitcher(disposalOrder);
             var failure = new InvalidOperationException("construction failed");
 
-            var thrown = Assert.Throws<InvalidOperationException>(() =>
+            InvalidOperationException thrown = Assert.Throws<InvalidOperationException>(() =>
                 MainWindowViewModelTestBuilder.Create(
                     configuredJournalDirectory: null,
                     builder =>
@@ -121,7 +121,7 @@ public sealed class MainWindowViewModelOwnershipTests
     [AvaloniaFact]
     public void ConstructionRollbackIsReversedAndPreservesPrimaryFailure()
     {
-        var root = CreateTemporaryRoot();
+        string root = CreateTemporaryRoot();
         try
         {
             List<string> disposalOrder = [];
@@ -132,7 +132,7 @@ public sealed class MainWindowViewModelOwnershipTests
             var applicationLog = new ApplicationLogService(CreatePaths(root).DataDirectory);
             var primaryFailure = new InvalidOperationException("primary construction failure");
 
-            var thrown = Assert.Throws<InvalidOperationException>(() =>
+            InvalidOperationException thrown = Assert.Throws<InvalidOperationException>(() =>
                 MainWindowViewModelTestBuilder.Create(
                     configuredJournalDirectory: null,
                     builder =>

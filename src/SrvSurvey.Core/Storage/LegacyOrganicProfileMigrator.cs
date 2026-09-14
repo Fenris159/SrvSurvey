@@ -75,15 +75,15 @@ public sealed class LegacyOrganicProfileMigrator
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
 
-        var profilePaths = GetProfilePaths();
-        var profilesByFrontierId = await MigrateCommanderProfilesAsync(
+        string[] profilePaths = GetProfilePaths();
+        Dictionary<string, List<CommanderProfile>> profilesByFrontierId = await MigrateCommanderProfilesAsync(
                 profilePaths,
                 errors,
                 migratedProfilePaths,
                 cancellationToken
             )
             .ConfigureAwait(false);
-        var (migratedBodies, migratedScans, migratedOrganisms) = await MigrateOrganicBodiesAsync(
+        (int migratedBodies, int migratedScans, int migratedOrganisms) = await MigrateOrganicBodiesAsync(
                 profilesByFrontierId,
                 errors,
                 migratedProfilePaths,
@@ -128,15 +128,15 @@ public sealed class LegacyOrganicProfileMigrator
     {
         var profilesByFrontierId = new Dictionary<string, List<CommanderProfile>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var profilePath in profilePaths)
+        foreach (string profilePath in profilePaths)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 EnsureRegularFile(profilePath);
-                var root = await ReadObjectAsync(profilePath, cancellationToken).ConfigureAwait(false);
+                JsonObject root = await ReadObjectAsync(profilePath, cancellationToken).ConfigureAwait(false);
                 ValidateProfile(root);
-                var frontierId = GetString(root, FidProperty) ?? GetFrontierIdFromProfilePath(profilePath);
+                string? frontierId = GetString(root, FidProperty) ?? GetFrontierIdFromProfilePath(profilePath);
                 if (string.IsNullOrWhiteSpace(frontierId))
                 {
                     errors.Add(
@@ -146,14 +146,14 @@ public sealed class LegacyOrganicProfileMigrator
                     continue;
                 }
 
-                var changed = MigrateCommanderClaims(root);
+                bool changed = MigrateCommanderClaims(root);
                 if (changed)
                 {
                     await WriteObjectAsync(profilePath, root, cancellationToken).ConfigureAwait(false);
                     migratedProfilePaths.Add(profilePath);
                 }
 
-                if (!profilesByFrontierId.TryGetValue(frontierId, out var profiles))
+                if (!profilesByFrontierId.TryGetValue(frontierId, out List<CommanderProfile>? profiles))
                 {
                     profiles = [];
                     profilesByFrontierId[frontierId] = profiles;
@@ -178,7 +178,7 @@ public sealed class LegacyOrganicProfileMigrator
         CancellationToken cancellationToken
     )
     {
-        var organicRoot = Path.Combine(dataDirectory, "organic");
+        string organicRoot = Path.Combine(dataDirectory, "organic");
         if (!Directory.Exists(organicRoot))
         {
             return (0, 0, 0);
@@ -193,22 +193,23 @@ public sealed class LegacyOrganicProfileMigrator
             return (0, 0, 0);
         }
 
-        var migratedBodies = 0;
-        var migratedScans = 0;
-        var migratedOrganisms = 0;
+        int migratedBodies = 0;
+        int migratedScans = 0;
+        int migratedOrganisms = 0;
 
-        foreach (var frontierDirectory in Directory.EnumerateDirectories(organicRoot).Order(StringComparer.Ordinal))
+        foreach (string? frontierDirectory in Directory.EnumerateDirectories(organicRoot).Order(StringComparer.Ordinal))
         {
-            var frontierId = Path.GetFileName(frontierDirectory);
-            var migration = await MigrateFrontierDirectoryAsync(
-                    frontierDirectory,
-                    frontierId,
-                    profilesByFrontierId.GetValueOrDefault(frontierId) ?? [],
-                    errors,
-                    migratedProfilePaths,
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            string frontierId = Path.GetFileName(frontierDirectory);
+            (int migratedBodies, int migratedScans, int migratedOrganisms) migration =
+                await MigrateFrontierDirectoryAsync(
+                        frontierDirectory,
+                        frontierId,
+                        profilesByFrontierId.GetValueOrDefault(frontierId) ?? [],
+                        errors,
+                        migratedProfilePaths,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
             migratedBodies += migration.migratedBodies;
             migratedScans += migration.migratedScans;
             migratedOrganisms += migration.migratedOrganisms;
@@ -240,8 +241,8 @@ public sealed class LegacyOrganicProfileMigrator
             return (0, 0, 0);
         }
 
-        var bodyErrorsBefore = errors.Count;
-        var totals = await MigrateBodyFilesAsync(
+        int bodyErrorsBefore = errors.Count;
+        (int migratedBodies, int migratedScans, int migratedOrganisms) totals = await MigrateBodyFilesAsync(
                 frontierDirectory,
                 frontierId,
                 commanderProfiles,
@@ -274,17 +275,17 @@ public sealed class LegacyOrganicProfileMigrator
         CancellationToken cancellationToken
     )
     {
-        var migratedBodies = 0;
-        var migratedScans = 0;
-        var migratedOrganisms = 0;
+        int migratedBodies = 0;
+        int migratedScans = 0;
+        int migratedOrganisms = 0;
         foreach (
-            var bodyPath in Directory
+            string? bodyPath in Directory
                 .EnumerateFiles(frontierDirectory, "*.json", SearchOption.TopDirectoryOnly)
                 .Order(StringComparer.Ordinal)
         )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var result = await TryMigrateBodyFileAsync(
+            (int migratedBodies, int migratedScans, int migratedOrganisms) result = await TryMigrateBodyFileAsync(
                     bodyPath,
                     frontierId,
                     commanderProfiles,
@@ -311,8 +312,13 @@ public sealed class LegacyOrganicProfileMigrator
         try
         {
             EnsureRegularFile(bodyPath);
-            var source = await ReadObjectAsync(bodyPath, cancellationToken).ConfigureAwait(false);
-            var migration = await MigrateBodyAsync(frontierId, source, commanderProfiles, cancellationToken)
+            JsonObject source = await ReadObjectAsync(bodyPath, cancellationToken).ConfigureAwait(false);
+            BodyMigrationResult migration = await MigrateBodyAsync(
+                    frontierId,
+                    source,
+                    commanderProfiles,
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
             return (migration.Changed ? 1 : 0, migration.ScanCount, migration.OrganismCount);
         }
@@ -340,7 +346,7 @@ public sealed class LegacyOrganicProfileMigrator
         CancellationToken cancellationToken
     )
     {
-        foreach (var profile in commanderProfiles)
+        foreach (CommanderProfile profile in commanderProfiles)
         {
             if (GetBoolean(profile.Root, MigratedNonSystemDataOrganicsProperty) == true)
             {
@@ -355,14 +361,14 @@ public sealed class LegacyOrganicProfileMigrator
 
     private bool MigrateCommanderClaims(JsonObject root)
     {
-        var entries = ReadClaimEntries(root);
-        var scannedOrganics = RequireOptionalArray(root, ScannedOrganicsProperty);
+        List<string> entries = ReadClaimEntries(root);
+        JsonArray? scannedOrganics = RequireOptionalArray(root, ScannedOrganicsProperty);
         if (entries.Count == 0 && scannedOrganics is not { Count: > 0 })
         {
             return false;
         }
 
-        var migrated = BuildMigratedClaims(entries, scannedOrganics);
+        List<string> migrated = BuildMigratedClaims(entries, scannedOrganics);
         if (ClaimsAlreadyMigrated(root, entries, migrated))
         {
             return false;
@@ -410,7 +416,7 @@ public sealed class LegacyOrganicProfileMigrator
         }
 
         foreach (
-            var claim in CollectScannedOrganicsClaims(scannedOrganics)
+            string? claim in CollectScannedOrganicsClaims(scannedOrganics)
                 .Where(claim => !migrated.Any(existing => IsSameLegacyClaim(existing, claim)))
         )
         {
@@ -420,7 +426,7 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static bool ClaimsAlreadyMigrated(JsonObject root, List<string> entries, List<string> migrated)
     {
-        var current = entries.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        string[] current = entries.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
         return current.SequenceEqual(migrated, StringComparer.Ordinal)
             && GetBoolean(root, MigratedScannedOrganicsInEntryIdProperty) == true;
     }
@@ -438,11 +444,11 @@ public sealed class LegacyOrganicProfileMigrator
             return entries;
         }
 
-        foreach (var node in existing)
+        foreach (JsonNode? node in existing)
         {
             if (
                 node is not JsonValue value
-                || !value.TryGetValue<string>(out var text)
+                || !value.TryGetValue<string>(out string? text)
                 || string.IsNullOrWhiteSpace(text)
             )
             {
@@ -458,14 +464,14 @@ public sealed class LegacyOrganicProfileMigrator
     private List<string> CollectScannedOrganicsClaims(JsonArray scannedOrganisms)
     {
         var claims = new List<string>();
-        foreach (var node in scannedOrganisms)
+        foreach (JsonNode? node in scannedOrganisms)
         {
             if (node is not JsonObject scan)
             {
                 throw new InvalidDataException("A legacy scannedOrganics entry is not an object.");
             }
 
-            var claim =
+            string claim =
                 CreateLegacyClaim(scan)
                 ?? throw new InvalidDataException(
                     "A legacy scannedOrganics entry is incomplete or has an unknown species."
@@ -487,8 +493,8 @@ public sealed class LegacyOrganicProfileMigrator
 
     private string? NormalizeClaim(string value)
     {
-        var parts = value.Split('_', StringSplitOptions.TrimEntries);
-        if (!TryParseClaimIdentity(parts, out var entryId))
+        string[] parts = value.Split('_', StringSplitOptions.TrimEntries);
+        if (!TryParseClaimIdentity(parts, out long entryId))
         {
             return null;
         }
@@ -506,9 +512,9 @@ public sealed class LegacyOrganicProfileMigrator
     {
         entryId = 0;
         return parts.Length is >= 3 and <= 5
-            && long.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var systemAddress)
+            && long.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long systemAddress)
             && systemAddress > 0
-            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var bodyId)
+            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int bodyId)
             && bodyId >= 0
             && long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out entryId)
             && entryId > 0;
@@ -516,13 +522,13 @@ public sealed class LegacyOrganicProfileMigrator
 
     private string? ExpandShortClaim(string value, long entryId)
     {
-        var reference = FindByEntryIdOrPrefix(entryId.ToString(CultureInfo.InvariantCulture));
+        ExobiologyReference? reference = FindByEntryIdOrPrefix(entryId.ToString(CultureInfo.InvariantCulture));
         return reference is null ? null : $"{value}_{reference.Reward}_{bool.FalseString}";
     }
 
     private static string? ExpandRewardOnlyClaim(string value, string[] parts)
     {
-        if (!long.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var reward) || reward < 0)
+        if (!long.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out long reward) || reward < 0)
         {
             return null;
         }
@@ -532,29 +538,29 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static string? NormalizeFullClaim(string[] parts)
     {
-        if (!long.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var reward) || reward < 0)
+        if (!long.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out long reward) || reward < 0)
         {
             return null;
         }
 
-        return bool.TryParse(parts[4], out var firstFootfall) && (!firstFootfall || reward <= long.MaxValue / 5)
+        return bool.TryParse(parts[4], out bool firstFootfall) && (!firstFootfall || reward <= long.MaxValue / 5)
             ? $"{parts[0]}_{parts[1]}_{parts[2]}_{reward}_{firstFootfall}"
             : null;
     }
 
     private string? CreateLegacyClaim(JsonObject scan)
     {
-        var systemAddress = GetInt64(scan, SystemAddressProperty);
-        var bodyId = GetInt32(scan, BodyIdProperty);
-        var species = GetString(scan, SpeciesProperty);
-        var reward = GetInt64(scan, RewardProperty);
-        var reference = catalog.FindBySpecies(species);
+        long? systemAddress = GetInt64(scan, SystemAddressProperty);
+        int? bodyId = GetInt32(scan, BodyIdProperty);
+        string? species = GetString(scan, SpeciesProperty);
+        long? reward = GetInt64(scan, RewardProperty);
+        ExobiologyReference? reference = catalog.FindBySpecies(species);
         if (systemAddress is not > 0 || bodyId is null or < 0 || reference is null || reward is null or < 0)
         {
             return null;
         }
 
-        var entryId = string.Equals(reference.Platform, OdysseYPlatform, StringComparison.OrdinalIgnoreCase)
+        string entryId = string.Equals(reference.Platform, OdysseYPlatform, StringComparison.OrdinalIgnoreCase)
             ? reference.EntryIdPrefix + "00"
             : reference.EntryId.ToString(CultureInfo.InvariantCulture);
         return $"{systemAddress}_{bodyId}_{entryId}_{reward}_{bool.FalseString}";
@@ -562,8 +568,8 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static bool IsSameLegacyClaim(string existing, string candidate)
     {
-        var existingParts = existing.Split('_');
-        var candidateParts = candidate.Split('_');
+        string[] existingParts = existing.Split('_');
+        string[] candidateParts = candidate.Split('_');
         return existingParts.Length >= 4
             && candidateParts.Length >= 4
             && existingParts[0] == candidateParts[0]
@@ -580,10 +586,10 @@ public sealed class LegacyOrganicProfileMigrator
         CancellationToken cancellationToken
     )
     {
-        var systemName = GetString(source, SystemNameProperty);
-        var bodyName = GetString(source, BodyNameProperty);
-        var systemAddress = GetInt64(source, SystemAddressProperty);
-        var bodyId = GetInt32(source, BodyIdProperty);
+        string? systemName = GetString(source, SystemNameProperty);
+        string? bodyName = GetString(source, BodyNameProperty);
+        long? systemAddress = GetInt64(source, SystemAddressProperty);
+        int? bodyId = GetInt32(source, BodyIdProperty);
         if (
             string.IsNullOrWhiteSpace(systemName)
             || string.IsNullOrWhiteSpace(bodyName)
@@ -594,10 +600,10 @@ public sealed class LegacyOrganicProfileMigrator
             throw new InvalidDataException("The legacy body identity is incomplete.");
         }
 
-        var scanCount = 0;
-        var organismCount = 0;
+        int scanCount = 0;
+        int organismCount = 0;
         EnsureSafeSystemTarget(frontierId);
-        var changed = await systemFileStore
+        LegacySystemDataFileMutationResult<bool> changed = await systemFileStore
             .UpdateWithResultAsync(
                 new LegacySystemDataFileContext(
                     frontierId,
@@ -635,15 +641,15 @@ public sealed class LegacyOrganicProfileMigrator
         ref int organismCount
     )
     {
-        var changed = MergeVisitDates(root, source);
-        var bodies = GetOrCreateArray(root, BodiesProperty, ref changed);
+        bool changed = MergeVisitDates(root, source);
+        JsonArray bodies = GetOrCreateArray(root, BodiesProperty, ref changed);
         ValidateBodyCollection(bodies);
 
-        var body = GetOrCreateBody(bodies, bodyName, bodyId, ref changed);
+        JsonObject body = GetOrCreateBody(bodies, bodyName, bodyId, ref changed);
         changed |= MergeLastTouchdown(body, source);
         changed |= MergeBioScans(body, source, commanderProfiles, ref scanCount);
         changed |= MergeOrganisms(body, source, ref organismCount);
-        foreach (var commanderProfile in commanderProfiles)
+        foreach (CommanderProfile commanderProfile in commanderProfiles)
         {
             RepairCommanderClaimsForBody(
                 commanderProfile.Root,
@@ -666,7 +672,7 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static JsonObject GetOrCreateBody(JsonArray bodies, string bodyName, int bodyId, ref bool changed)
     {
-        var body = FindBody(bodies, bodyName, bodyId);
+        JsonObject? body = FindBody(bodies, bodyName, bodyId);
         if (body is null)
         {
             body = new JsonObject
@@ -744,12 +750,12 @@ public sealed class LegacyOrganicProfileMigrator
             return;
         }
 
-        var exactEntryIds = CollectExactEntryIds(body);
-        var prefix = $"{systemAddress}_{bodyId}_";
-        var firstFootfall = GetBoolean(body, FirstFootFallProperty) == true;
-        var claims = claimArray.Select(node => node!.GetValue<string>()).ToArray();
-        var changed = false;
-        for (var index = 0; index < claims.Length; index++)
+        long[] exactEntryIds = CollectExactEntryIds(body);
+        string prefix = $"{systemAddress}_{bodyId}_";
+        bool firstFootfall = GetBoolean(body, FirstFootFallProperty) == true;
+        string[] claims = claimArray.Select(node => node!.GetValue<string>()).ToArray();
+        bool changed = false;
+        for (int index = 0; index < claims.Length; index++)
         {
             if (TryRepairClaim(claims, index, prefix, exactEntryIds, firstFootfall))
             {
@@ -794,7 +800,7 @@ public sealed class LegacyOrganicProfileMigrator
             return false;
         }
 
-        var parts = claims[index].Split('_');
+        string[] parts = claims[index].Split('_');
         if (parts.Length != 5)
         {
             return false;
@@ -802,7 +808,7 @@ public sealed class LegacyOrganicProfileMigrator
 
         RepairWeakEntryId(parts, exactEntryIds);
         RepairFirstFootfall(parts, firstFootfall);
-        var repaired = string.Join('_', parts);
+        string repaired = string.Join('_', parts);
         if (string.Equals(repaired, claims[index], StringComparison.Ordinal))
         {
             return false;
@@ -815,7 +821,7 @@ public sealed class LegacyOrganicProfileMigrator
     private static void RepairWeakEntryId(string[] parts, long[] exactEntryIds)
     {
         if (
-            !long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var claimedEntryId)
+            !long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out long claimedEntryId)
             || !IsWeakEntryId(claimedEntryId)
             || parts[2].Length < 5
         )
@@ -823,8 +829,8 @@ public sealed class LegacyOrganicProfileMigrator
             return;
         }
 
-        var entryPrefix = parts[2][..5];
-        var exactEntryId = exactEntryIds.FirstOrDefault(candidate =>
+        string entryPrefix = parts[2][..5];
+        long exactEntryId = exactEntryIds.FirstOrDefault(candidate =>
             candidate.ToString(CultureInfo.InvariantCulture).StartsWith(entryPrefix, StringComparison.Ordinal)
         );
         if (exactEntryId > 0)
@@ -835,7 +841,7 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static void RepairFirstFootfall(string[] parts, bool firstFootfall)
     {
-        if (firstFootfall && bool.TryParse(parts[4], out var claimedFirstFootfall) && !claimedFirstFootfall)
+        if (firstFootfall && bool.TryParse(parts[4], out bool claimedFirstFootfall) && !claimedFirstFootfall)
         {
             parts[4] = bool.TrueString;
         }
@@ -858,14 +864,14 @@ public sealed class LegacyOrganicProfileMigrator
             return false;
         }
 
-        var changed = false;
-        var targetScans = GetOrCreateArray(body, BioScansProperty, ref changed);
+        bool changed = false;
+        JsonArray targetScans = GetOrCreateArray(body, BioScansProperty, ref changed);
         if (targetScans.Any(node => node is not JsonObject))
         {
             throw new InvalidDataException("The target bioScans array contains a non-object entry.");
         }
 
-        foreach (var node in sourceScans)
+        foreach (JsonNode? node in sourceScans)
         {
             if (node is not JsonObject sourceScan)
             {
@@ -888,9 +894,9 @@ public sealed class LegacyOrganicProfileMigrator
     {
         ValidateLegacyBioScan(sourceScan);
 
-        var normalized = sourceScan.DeepClone().AsObject();
+        JsonObject normalized = sourceScan.DeepClone().AsObject();
         RepairBioScanEntryId(normalized, source, commanderProfiles);
-        var existing = targetScans.OfType<JsonObject>().FirstOrDefault(scan => IsSameBioScan(scan, normalized));
+        JsonObject? existing = targetScans.OfType<JsonObject>().FirstOrDefault(scan => IsSameBioScan(scan, normalized));
         if (existing is null)
         {
             targetScans.Add(normalized);
@@ -919,10 +925,10 @@ public sealed class LegacyOrganicProfileMigrator
             return false;
         }
 
-        var changed = false;
-        var target = GetOrCreateArray(body, OrganicsProperty, ref changed);
+        bool changed = false;
+        JsonArray target = GetOrCreateArray(body, OrganicsProperty, ref changed);
         EnsureOrganismArray(target);
-        foreach (var pair in sourceOrganisms)
+        foreach (KeyValuePair<string, JsonNode?> pair in sourceOrganisms)
         {
             changed |= MergeOrganismEntry(pair.Key, pair.Value, target, ref organismCount);
         }
@@ -947,14 +953,14 @@ public sealed class LegacyOrganicProfileMigrator
         }
 
         ValidateLegacyOrganism(sourceOrganism);
-        var (reference, genus) = ResolveOrganismMetadata(sourceOrganism);
+        (ExobiologyReference? reference, string? genus) = ResolveOrganismMetadata(sourceOrganism);
         if (string.IsNullOrWhiteSpace(genus))
         {
             throw new InvalidDataException($"The legacy organism '{key}' has no recoverable genus.");
         }
 
-        var existing = FindExistingOrganism(target, sourceOrganism, reference, genus);
-        var changed = false;
+        JsonObject? existing = FindExistingOrganism(target, sourceOrganism, reference, genus);
+        bool changed = false;
         if (existing is null)
         {
             existing = new JsonObject { [GenusProperty] = genus };
@@ -963,7 +969,7 @@ public sealed class LegacyOrganicProfileMigrator
             changed = true;
         }
 
-        var organismChanged = FillOrganism(existing, sourceOrganism, reference, genus);
+        bool organismChanged = FillOrganism(existing, sourceOrganism, reference, genus);
         return changed || organismChanged;
     }
 
@@ -974,7 +980,7 @@ public sealed class LegacyOrganicProfileMigrator
             throw new InvalidDataException("The target bioSignalCount value is not an integer.");
         }
 
-        var currentSignalCount = GetInt32(body, BioSignalCountProperty) ?? 0;
+        int currentSignalCount = GetInt32(body, BioSignalCountProperty) ?? 0;
         if (organismCount <= currentSignalCount)
         {
             return false;
@@ -986,10 +992,10 @@ public sealed class LegacyOrganicProfileMigrator
 
     private (ExobiologyReference? Reference, string? Genus) ResolveOrganismMetadata(JsonObject sourceOrganism)
     {
-        var variant = GetString(sourceOrganism, VariantProperty);
-        var species = GetString(sourceOrganism, SpeciesProperty);
-        var reference = catalog.FindByVariant(variant) ?? catalog.FindBySpecies(species);
-        var genus = reference is null
+        string? variant = GetString(sourceOrganism, VariantProperty);
+        string? species = GetString(sourceOrganism, SpeciesProperty);
+        ExobiologyReference? reference = catalog.FindByVariant(variant) ?? catalog.FindBySpecies(species);
+        string? genus = reference is null
             ? GetString(sourceOrganism, GenusProperty)
             : ExobiologyReferenceCatalog.GetGenusName(reference);
         return (reference, genus);
@@ -1002,10 +1008,10 @@ public sealed class LegacyOrganicProfileMigrator
         string? genus
     )
     {
-        var sourceEntryId = GetInt64(sourceOrganism, EntryIdProperty);
-        var entryId = sourceEntryId is > 0 ? sourceEntryId : reference?.EntryId;
-        var variant = GetString(sourceOrganism, VariantProperty) ?? reference?.VariantName;
-        var species = GetString(sourceOrganism, SpeciesProperty) ?? reference?.SpeciesName;
+        long? sourceEntryId = GetInt64(sourceOrganism, EntryIdProperty);
+        long? entryId = sourceEntryId is > 0 ? sourceEntryId : reference?.EntryId;
+        string? variant = GetString(sourceOrganism, VariantProperty) ?? reference?.VariantName;
+        string? species = GetString(sourceOrganism, SpeciesProperty) ?? reference?.SpeciesName;
         return OrganismIdentityMatcher.FindBestMatch(
             target.OfType<JsonObject>(),
             new OrganismIdentity(genus, entryId, variant, species),
@@ -1020,7 +1026,7 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static void ValidateLegacyBioScan(JsonObject scan)
     {
-        foreach (var propertyName in new[] { GenusProperty, SpeciesProperty, ScanStatusProperty, BodyProperty })
+        foreach (string? propertyName in new[] { GenusProperty, SpeciesProperty, ScanStatusProperty, BodyProperty })
         {
             EnsureOptionalString(scan, propertyName);
         }
@@ -1044,7 +1050,7 @@ public sealed class LegacyOrganicProfileMigrator
     private static void ValidateLegacyOrganism(JsonObject organism)
     {
         foreach (
-            var propertyName in new[]
+            string? propertyName in new[]
             {
                 GenusProperty,
                 GenusLocalizedProperty,
@@ -1064,11 +1070,15 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static bool FillOrganism(JsonObject target, JsonObject source, ExobiologyReference? reference, string genus)
     {
-        var changed = false;
+        bool changed = false;
         EnsureOptionalInt64(target, EntryIdProperty);
         EnsureOptionalInt64(target, RewardProperty);
         EnsureOptionalBoolean(target, AnalyzedProperty);
-        foreach (var property in source.Where(property => target[property.Key] is null && property.Value is not null))
+        foreach (
+            KeyValuePair<string, JsonNode?> property in source.Where(property =>
+                target[property.Key] is null && property.Value is not null
+            )
+        )
         {
             target[property.Key] = property.Value!.DeepClone();
             changed = true;
@@ -1097,7 +1107,7 @@ public sealed class LegacyOrganicProfileMigrator
             return false;
         }
 
-        var changed = SetIfMissing(target, SpeciesProperty, reference.SpeciesName);
+        bool changed = SetIfMissing(target, SpeciesProperty, reference.SpeciesName);
         changed |= SetIfMissing(target, VariantProperty, reference.VariantName);
         changed |= SetIfMissing(target, VariantLocalizedProperty, reference.DisplayName);
         if ((GetInt64(target, EntryIdProperty) ?? 0) <= 0)
@@ -1126,16 +1136,16 @@ public sealed class LegacyOrganicProfileMigrator
             return;
         }
 
-        var species = GetString(scan, SpeciesProperty);
-        var organism = FindOrganismBySpecies(bodySource, species);
-        var reference = catalog.FindByVariant(GetString(organism, VariantProperty));
+        string? species = GetString(scan, SpeciesProperty);
+        JsonObject? organism = FindOrganismBySpecies(bodySource, species);
+        ExobiologyReference? reference = catalog.FindByVariant(GetString(organism, VariantProperty));
         if (reference is not null)
         {
             scan[EntryIdProperty] = reference.EntryId;
             return;
         }
 
-        var speciesReference = catalog.FindBySpecies(species);
+        ExobiologyReference? speciesReference = catalog.FindBySpecies(species);
         if (TryRepairFromClaim(scan, bodySource, commanderProfiles, speciesReference))
         {
             return;
@@ -1146,8 +1156,8 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static JsonObject? FindOrganismBySpecies(JsonObject bodySource, string? species)
     {
-        var organisms = bodySource[OrganicsProperty] as JsonObject ?? EmptyOrganisms;
-        foreach (var pair in organisms)
+        JsonObject organisms = bodySource[OrganicsProperty] as JsonObject ?? EmptyOrganisms;
+        foreach (KeyValuePair<string, JsonNode?> pair in organisms)
         {
             if (
                 pair.Value is JsonObject candidate
@@ -1168,21 +1178,21 @@ public sealed class LegacyOrganicProfileMigrator
         ExobiologyReference? speciesReference
     )
     {
-        var systemAddress = GetInt64(bodySource, SystemAddressProperty);
-        var bodyId = GetInt32(bodySource, BodyIdProperty);
+        long? systemAddress = GetInt64(bodySource, SystemAddressProperty);
+        int? bodyId = GetInt32(bodySource, BodyIdProperty);
         if (systemAddress is null || bodyId is null)
         {
             return false;
         }
 
-        var prefix = speciesReference?.EntryIdPrefix;
-        var claim = string.IsNullOrWhiteSpace(prefix)
+        string? prefix = speciesReference?.EntryIdPrefix;
+        string? claim = string.IsNullOrWhiteSpace(prefix)
             ? null
             : commanderProfiles
                 .Select(profile => profile.Root[ScannedBioEntryIdsProperty])
                 .OfType<JsonArray>()
                 .SelectMany(claims => claims.OfType<JsonValue>())
-                .Select(value => value.TryGetValue<string>(out var text) ? text : null)
+                .Select(value => value.TryGetValue<string>(out string? text) ? text : null)
                 .FirstOrDefault(value =>
                     value is not null
                     && value.StartsWith($"{systemAddress}_{bodyId}_{prefix}", StringComparison.Ordinal)
@@ -1192,8 +1202,8 @@ public sealed class LegacyOrganicProfileMigrator
             return false;
         }
 
-        var claimParts = claim.Split('_');
-        if (claimParts.Length <= 2 || !long.TryParse(claimParts[2], out var claimedEntryId))
+        string[] claimParts = claim.Split('_');
+        if (claimParts.Length <= 2 || !long.TryParse(claimParts[2], out long claimedEntryId))
         {
             return false;
         }
@@ -1220,12 +1230,12 @@ public sealed class LegacyOrganicProfileMigrator
 
     private ExobiologyReference? FindByEntryIdOrPrefix(string entryId)
     {
-        if (!long.TryParse(entryId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var numeric))
+        if (!long.TryParse(entryId, NumberStyles.Integer, CultureInfo.InvariantCulture, out long numeric))
         {
             return null;
         }
 
-        var prefix = entryId.Length >= 5 ? entryId[..5] : entryId;
+        string prefix = entryId.Length >= 5 ? entryId[..5] : entryId;
         return catalog.FindByEntryId(numeric)
             ?? catalog.Entries.FirstOrDefault(reference =>
                 reference.EntryId.ToString(CultureInfo.InvariantCulture).StartsWith(prefix, StringComparison.Ordinal)
@@ -1234,14 +1244,14 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static bool MergeVisitDates(JsonObject target, JsonObject source)
     {
-        var changed = false;
-        var sourceFirst = GetDateTimeOffset(source, FirstVisitedProperty);
+        bool changed = false;
+        DateTimeOffset? sourceFirst = GetDateTimeOffset(source, FirstVisitedProperty);
         if (source[FirstVisitedProperty] is not null && sourceFirst is null)
         {
             throw new InvalidDataException("The legacy firstVisited value is not a valid timestamp.");
         }
 
-        var targetFirst = GetDateTimeOffset(target, FirstVisitedProperty);
+        DateTimeOffset? targetFirst = GetDateTimeOffset(target, FirstVisitedProperty);
         if (target[FirstVisitedProperty] is not null && targetFirst is null)
         {
             throw new InvalidDataException("The target firstVisited value is not a valid timestamp.");
@@ -1253,13 +1263,13 @@ public sealed class LegacyOrganicProfileMigrator
             changed = true;
         }
 
-        var sourceLast = GetDateTimeOffset(source, LastVisitedProperty);
+        DateTimeOffset? sourceLast = GetDateTimeOffset(source, LastVisitedProperty);
         if (source[LastVisitedProperty] is not null && sourceLast is null)
         {
             throw new InvalidDataException("The legacy lastVisited value is not a valid timestamp.");
         }
 
-        var targetLast = GetDateTimeOffset(target, LastVisitedProperty);
+        DateTimeOffset? targetLast = GetDateTimeOffset(target, LastVisitedProperty);
         if (target[LastVisitedProperty] is not null && targetLast is null)
         {
             throw new InvalidDataException("The target lastVisited value is not a valid timestamp.");
@@ -1287,10 +1297,10 @@ public sealed class LegacyOrganicProfileMigrator
             return false;
         }
 
-        var firstLatitude = GetDouble(first[LocationProperty]?[LocationLatitudeProperty]);
-        var firstLongitude = GetDouble(first[LocationProperty]?[LocationLongitudeProperty]);
-        var secondLatitude = GetDouble(second[LocationProperty]?[LocationLatitudeProperty]);
-        var secondLongitude = GetDouble(second[LocationProperty]?[LocationLongitudeProperty]);
+        double? firstLatitude = GetDouble(first[LocationProperty]?[LocationLatitudeProperty]);
+        double? firstLongitude = GetDouble(first[LocationProperty]?[LocationLongitudeProperty]);
+        double? secondLatitude = GetDouble(second[LocationProperty]?[LocationLatitudeProperty]);
+        double? secondLongitude = GetDouble(second[LocationProperty]?[LocationLongitudeProperty]);
         return
             firstLatitude is not null
             && firstLongitude is not null
@@ -1303,28 +1313,28 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static bool IsWeakEntryId(long? entryId)
     {
-        var text = entryId?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+        string text = entryId?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
         return entryId is not > 0 || text.Length < 7 || text.EndsWith("00", StringComparison.Ordinal);
     }
 
     private static long CalculateClaimRewards(IEnumerable<string> claims)
     {
-        var total = 0L;
-        foreach (var claim in claims)
+        long total = 0L;
+        foreach (string claim in claims)
         {
-            var parts = claim.Split('_');
+            string[] parts = claim.Split('_');
             if (
                 parts.Length != 5
-                || !long.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var reward)
+                || !long.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out long reward)
                 || reward < 0
-                || !bool.TryParse(parts[4], out var firstFootfall)
+                || !bool.TryParse(parts[4], out bool firstFootfall)
                 || firstFootfall && reward > long.MaxValue / 5
             )
             {
                 throw new InvalidDataException($"The organic reward in claim '{claim}' is invalid.");
             }
 
-            var claimReward = firstFootfall ? reward * 5 : reward;
+            long claimReward = firstFootfall ? reward * 5 : reward;
             if (claimReward > long.MaxValue - total)
             {
                 throw new InvalidDataException("The total legacy organic reward exceeds the supported range.");
@@ -1338,17 +1348,17 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static bool IsNormalizedClaim(string claim)
     {
-        var parts = claim.Split('_', StringSplitOptions.TrimEntries);
+        string[] parts = claim.Split('_', StringSplitOptions.TrimEntries);
         return parts.Length == 5
-            && long.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var systemAddress)
+            && long.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long systemAddress)
             && systemAddress > 0
-            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var bodyId)
+            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int bodyId)
             && bodyId >= 0
-            && long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var entryId)
+            && long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out long entryId)
             && entryId > 0
-            && long.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var reward)
+            && long.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out long reward)
             && reward >= 0
-            && bool.TryParse(parts[4], out var firstFootfall)
+            && bool.TryParse(parts[4], out bool firstFootfall)
             && (!firstFootfall || reward <= long.MaxValue / 5);
     }
 
@@ -1398,13 +1408,13 @@ public sealed class LegacyOrganicProfileMigrator
 
     private void EnsureSafeSystemTarget(string frontierId)
     {
-        var systemsDirectory = Path.Combine(dataDirectory, "systems");
+        string systemsDirectory = Path.Combine(dataDirectory, "systems");
         if (Directory.Exists(systemsDirectory) && IsReparsePoint(systemsDirectory))
         {
             throw new InvalidDataException("The systems directory is a symbolic link or junction.");
         }
 
-        var frontierDirectory = Path.Combine(systemsDirectory, frontierId);
+        string frontierDirectory = Path.Combine(systemsDirectory, frontierId);
         if (!Directory.Exists(frontierDirectory))
         {
             return;
@@ -1415,7 +1425,7 @@ public sealed class LegacyOrganicProfileMigrator
             throw new InvalidDataException($"The systems/{frontierId} directory is a symbolic link or junction.");
         }
 
-        foreach (var path in Directory.EnumerateFiles(frontierDirectory, "*.json", SearchOption.TopDirectoryOnly))
+        foreach (string path in Directory.EnumerateFiles(frontierDirectory, "*.json", SearchOption.TopDirectoryOnly))
         {
             EnsureRegularFile(path);
         }
@@ -1436,7 +1446,7 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static async Task WriteObjectAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             await using (
@@ -1469,14 +1479,14 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static string? GetFrontierIdFromProfilePath(string path)
     {
-        var fileName = Path.GetFileName(path);
-        var separator = fileName.IndexOf('-', StringComparison.Ordinal);
+        string fileName = Path.GetFileName(path);
+        int separator = fileName.IndexOf('-', StringComparison.Ordinal);
         return separator > 0 ? fileName[..separator] : null;
     }
 
     private static string? GetString(JsonObject? owner, string propertyName)
     {
-        return owner?[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return owner?[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 
     private static void EnsureOptionalString(JsonObject owner, string propertyName)
@@ -1505,29 +1515,34 @@ public sealed class LegacyOrganicProfileMigrator
 
     private static bool? GetBoolean(JsonObject owner, string propertyName)
     {
-        return owner[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return owner[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static int? GetInt32(JsonObject owner, string propertyName)
     {
-        return owner[propertyName] is JsonValue value && value.TryGetValue<int>(out var result) ? result : null;
+        return owner[propertyName] is JsonValue value && value.TryGetValue<int>(out int result) ? result : null;
     }
 
     private static long? GetInt64(JsonObject owner, string propertyName)
     {
-        return owner[propertyName] is JsonValue value && value.TryGetValue<long>(out var result) ? result : null;
+        return owner[propertyName] is JsonValue value && value.TryGetValue<long>(out long result) ? result : null;
     }
 
     private static double? GetDouble(JsonNode? node)
     {
-        return node is JsonValue value && value.TryGetValue<double>(out var result) ? result : null;
+        return node is JsonValue value && value.TryGetValue<double>(out double result) ? result : null;
     }
 
     private static DateTimeOffset? GetDateTimeOffset(JsonObject owner, string propertyName)
     {
         return
             GetString(owner, propertyName) is { } text
-            && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var result)
+            && DateTimeOffset.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind,
+                out global::System.DateTimeOffset result
+            )
             ? result
             : null;
     }

@@ -14,7 +14,7 @@ public sealed class SystemNoteStoreTests : IDisposable
     [Fact]
     public async Task LoadFindsLegacySystemByAddressAndReadsNotes()
     {
-        var systemsDirectory = CreateSystemsDirectory();
+        string systemsDirectory = CreateSystemsDirectory();
         await File.WriteAllTextAsync(
             Path.Combine(systemsDirectory, "Old Name_10477373803.json"),
             """
@@ -27,7 +27,7 @@ public sealed class SystemNoteStoreTests : IDisposable
         );
         var store = new SystemNoteStore(temporaryDirectory);
 
-        var result = await store.LoadAsync("F123", "Renamed System", 10477373803);
+        SystemNoteLoadResult result = await store.LoadAsync("F123", "Renamed System", 10477373803);
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.True(result.Exists);
@@ -38,8 +38,8 @@ public sealed class SystemNoteStoreTests : IDisposable
     [Fact]
     public async Task SavePreservesAllUnknownLegacySystemData()
     {
-        var systemsDirectory = CreateSystemsDirectory();
-        var path = Path.Combine(systemsDirectory, "Test System_42.json");
+        string systemsDirectory = CreateSystemsDirectory();
+        string path = Path.Combine(systemsDirectory, "Test System_42.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -59,7 +59,7 @@ public sealed class SystemNoteStoreTests : IDisposable
             "After"
         );
 
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal("After", root["notes"]!.GetValue<string>());
         Assert.True(root["futureField"]!["enabled"]!.GetValue<bool>());
         Assert.Equal(7, root["bodies"]![0]!["futureBody"]!.GetValue<int>());
@@ -70,8 +70,8 @@ public sealed class SystemNoteStoreTests : IDisposable
     [Fact]
     public async Task SaveRefusesToOverwriteMalformedSystemData()
     {
-        var systemsDirectory = CreateSystemsDirectory();
-        var path = Path.Combine(systemsDirectory, "Test System_42.json");
+        string systemsDirectory = CreateSystemsDirectory();
+        string path = Path.Combine(systemsDirectory, "Test System_42.json");
         const string malformed = "{\"name\":\"Test System\",";
         await File.WriteAllTextAsync(path, malformed);
         var store = new SystemNoteStore(temporaryDirectory);
@@ -95,10 +95,10 @@ public sealed class SystemNoteStoreTests : IDisposable
             new GalacticCoordinate(1.5, -2.25, 3)
         );
 
-        var path = await store.SaveAsync(context, "A new note");
+        string path = await store.SaveAsync(context, "A new note");
 
         Assert.Equal("Test- System-One_42.json", Path.GetFileName(path));
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal("Test: System/One", root["name"]!.GetValue<string>());
         Assert.Equal(42, root["address"]!.GetValue<long>());
         Assert.Equal("Drew", root["commander"]!.GetValue<string>());
@@ -110,14 +110,14 @@ public sealed class SystemNoteStoreTests : IDisposable
     [Fact]
     public async Task LoadFallsBackToLegacySafeSystemName()
     {
-        var systemsDirectory = CreateSystemsDirectory();
+        string systemsDirectory = CreateSystemsDirectory();
         await File.WriteAllTextAsync(
             Path.Combine(systemsDirectory, "Test- System_99.json"),
             "{\"notes\":\"Found by name\"}"
         );
         var store = new SystemNoteStore(temporaryDirectory);
 
-        var result = await store.LoadAsync("F123", "Test: System", 0);
+        SystemNoteLoadResult result = await store.LoadAsync("F123", "Test: System", 0);
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.Equal("Found by name", result.Notes);
@@ -128,7 +128,7 @@ public sealed class SystemNoteStoreTests : IDisposable
     {
         var store = new SystemNoteStore(temporaryDirectory);
 
-        var result = await store.LoadAsync("F123", "Test System", 42);
+        SystemNoteLoadResult result = await store.LoadAsync("F123", "Test System", 42);
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.False(result.Exists);
@@ -146,7 +146,7 @@ public sealed class SystemNoteStoreTests : IDisposable
 
     private string CreateSystemsDirectory()
     {
-        var path = Path.Combine(temporaryDirectory, "systems", "F123");
+        string path = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(path);
         return path;
     }

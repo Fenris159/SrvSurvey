@@ -8,7 +8,7 @@ public sealed class CursorVisibilitySessionTests
     public void DisposeBalancesEveryAdjustmentAndIsIdempotent()
     {
         var requests = new List<bool>();
-        var incrementCount = 0;
+        int incrementCount = 0;
         int ShowCursor(bool show)
         {
             requests.Add(show);
@@ -28,8 +28,8 @@ public sealed class CursorVisibilitySessionTests
     [Fact]
     public void BeginStopsAtTheSafetyLimitWhenTheCounterStaysNegative()
     {
-        var increments = 0;
-        var decrements = 0;
+        int increments = 0;
+        int decrements = 0;
         int ShowCursor(bool show)
         {
             if (show)

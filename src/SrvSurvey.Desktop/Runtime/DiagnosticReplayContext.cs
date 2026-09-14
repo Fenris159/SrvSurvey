@@ -32,14 +32,14 @@ internal sealed class DiagnosticReplayContext
         CancellationToken cancellationToken
     )
     {
-        var session = await DiagnosticReplaySession.LoadAsync(manifestPath, cancellationToken);
+        DiagnosticReplaySession session = await DiagnosticReplaySession.LoadAsync(manifestPath, cancellationToken);
         ReplayPresentationSnapshotStore.Apply(session);
         return new DiagnosticReplayContext(session);
     }
 
     public IGameWindowTracker CreateGameWindowTracker()
     {
-        var bounds = Session.PresentationSnapshot is { } presentation
+        PixelRect bounds = Session.PresentationSnapshot is { } presentation
             ? new PixelRect(0, 0, presentation.ViewportWidth, presentation.ViewportHeight)
             : new PixelRect(0, 0, 1920, 1080);
         return new DiagnosticGameWindowTracker(bounds);
@@ -98,7 +98,7 @@ internal sealed record DesktopStartupContext(AppDataPaths AppDataPaths, Diagnost
     {
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(normalPathsFactory);
-        var replayManifest = StartupOptions.GetDiagnosticReplayManifest(arguments);
+        string? replayManifest = StartupOptions.GetDiagnosticReplayManifest(arguments);
         if (replayManifest is null && StartupOptions.HasDiagnosticReplayOption(arguments))
         {
             throw new ArgumentException(
@@ -112,7 +112,10 @@ internal sealed record DesktopStartupContext(AppDataPaths AppDataPaths, Diagnost
             return new DesktopStartupContext(normalPathsFactory(), null);
         }
 
-        var diagnosticReplay = await DiagnosticReplayContext.LoadAsync(replayManifest, cancellationToken);
+        DiagnosticReplayContext diagnosticReplay = await DiagnosticReplayContext.LoadAsync(
+            replayManifest,
+            cancellationToken
+        );
         return new DesktopStartupContext(diagnosticReplay.AppDataPaths, diagnosticReplay);
     }
 }

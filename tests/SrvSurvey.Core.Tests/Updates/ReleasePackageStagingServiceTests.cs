@@ -24,11 +24,21 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
             ["runtimes/win-x64/native/library.dll"] = [1, 2, 3, 4],
             ["empty.txt"] = [],
         };
-        var bundle = await CreateZipAsync(files);
+        PackageBundle bundle = await CreateZipAsync(files);
         var service = new ReleasePackageStagingService();
 
-        var first = await service.StageAsync(Version, bundle.Package, bundle.ArchivePath, temporaryDirectory);
-        var second = await service.StageAsync(Version, bundle.Package, bundle.ArchivePath, temporaryDirectory);
+        ReleasePackageStagingResult first = await service.StageAsync(
+            Version,
+            bundle.Package,
+            bundle.ArchivePath,
+            temporaryDirectory
+        );
+        ReleasePackageStagingResult second = await service.StageAsync(
+            Version,
+            bundle.Package,
+            bundle.ArchivePath,
+            temporaryDirectory
+        );
 
         Assert.False(first.Reused);
         Assert.True(second.Reused);
@@ -49,7 +59,7 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
     [InlineData("folder/trailing. ")]
     public async Task StageAsyncRejectsUnsafePortablePathsBeforeExtraction(string unsafePath)
     {
-        var bundle = await CreateZipAsync(
+        PackageBundle bundle = await CreateZipAsync(
             new Dictionary<string, byte[]> { ["SrvSurvey.Desktop.exe"] = [1] },
             extraEntry: unsafePath
         );
@@ -70,11 +80,16 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
         {
             ["SrvSurvey.Desktop.exe"] = Encoding.UTF8.GetBytes("known good"),
         };
-        var valid = await CreateZipAsync(originalFiles, archiveName: "valid.zip");
+        PackageBundle valid = await CreateZipAsync(originalFiles, archiveName: "valid.zip");
         var service = new ReleasePackageStagingService();
-        var staged = await service.StageAsync(Version, valid.Package, valid.ArchivePath, temporaryDirectory);
-        var originalReady = await File.ReadAllBytesAsync(staged.EntryPointPath);
-        var invalid = await CreateZipAsync(
+        ReleasePackageStagingResult staged = await service.StageAsync(
+            Version,
+            valid.Package,
+            valid.ArchivePath,
+            temporaryDirectory
+        );
+        byte[] originalReady = await File.ReadAllBytesAsync(staged.EntryPointPath);
+        PackageBundle invalid = await CreateZipAsync(
             new Dictionary<string, byte[]> { ["SrvSurvey.Desktop.exe"] = Encoding.UTF8.GetBytes("corrupt") },
             archiveName: "invalid.zip",
             manifestHashOverride: new string('0', 64)
@@ -95,10 +110,15 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
             ["SrvSurvey.Desktop"] = Encoding.UTF8.GetBytes("linux entry"),
             ["lib/library.so"] = [5, 4, 3, 2, 1],
         };
-        var bundle = await CreateTarAsync(files);
+        PackageBundle bundle = await CreateTarAsync(files);
         var service = new ReleasePackageStagingService();
 
-        var result = await service.StageAsync(Version, bundle.Package, bundle.ArchivePath, temporaryDirectory);
+        ReleasePackageStagingResult result = await service.StageAsync(
+            Version,
+            bundle.Package,
+            bundle.ArchivePath,
+            temporaryDirectory
+        );
 
         Assert.False(result.Reused);
         Assert.Equal(files["SrvSurvey.Desktop"], await File.ReadAllBytesAsync(result.EntryPointPath));
@@ -111,7 +131,7 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
     [Fact]
     public async Task StageAsyncRejectsTarSymbolicLink()
     {
-        var bundle = await CreateTarAsync(
+        PackageBundle bundle = await CreateTarAsync(
             new Dictionary<string, byte[]> { ["SrvSurvey.Desktop"] = [1, 2, 3] },
             includeSymbolicLink: true
         );
@@ -127,7 +147,9 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
     [Fact]
     public async Task StageAsyncRechecksOuterArchiveBeforeInspection()
     {
-        var bundle = await CreateZipAsync(new Dictionary<string, byte[]> { ["SrvSurvey.Desktop.exe"] = [1, 2, 3] });
+        PackageBundle bundle = await CreateZipAsync(
+            new Dictionary<string, byte[]> { ["SrvSurvey.Desktop.exe"] = [1, 2, 3] }
+        );
         await File.AppendAllTextAsync(bundle.ArchivePath, "drift");
         var service = new ReleasePackageStagingService();
 
@@ -152,12 +174,12 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
     )
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var archivePath = Path.Combine(temporaryDirectory, archiveName);
-        var manifest = CreateManifest("win-x64", "SrvSurvey.Desktop.exe", files, manifestHashOverride);
+        string archivePath = Path.Combine(temporaryDirectory, archiveName);
+        byte[] manifest = CreateManifest("win-x64", "SrvSurvey.Desktop.exe", files, manifestHashOverride);
         await using (var stream = new FileStream(archivePath, FileMode.Create, FileAccess.Write, FileShare.None))
         using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
         {
-            foreach (var file in files)
+            foreach (KeyValuePair<string, byte[]> file in files)
             {
                 ZipArchiveEntry entry = archive.CreateEntry(file.Key, CompressionLevel.Optimal);
                 await using Stream output = await entry.OpenAsync();
@@ -187,14 +209,14 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
     )
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var archivePath = Path.Combine(temporaryDirectory, "package.tar.gz");
-        var manifest = CreateManifest("linux-x64", "SrvSurvey.Desktop", files);
+        string archivePath = Path.Combine(temporaryDirectory, "package.tar.gz");
+        byte[] manifest = CreateManifest("linux-x64", "SrvSurvey.Desktop", files);
         await using (var stream = new FileStream(archivePath, FileMode.Create, FileAccess.Write, FileShare.None))
         await using (var gzip = new GZipStream(stream, CompressionLevel.Optimal))
         using (var writer = new TarWriter(gzip, leaveOpen: false))
         {
             await writer.WriteEntryAsync(new PaxTarEntry(TarEntryType.Directory, "./"));
-            foreach (var file in files)
+            foreach (KeyValuePair<string, byte[]> file in files)
             {
                 using var data = new MemoryStream(file.Value, writable: false);
                 var entry = new PaxTarEntry(TarEntryType.RegularFile, file.Key)
@@ -263,8 +285,8 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
     )
     {
         var info = new FileInfo(archivePath);
-        await using var stream = File.OpenRead(archivePath);
-        var hash = await SHA256.HashDataAsync(stream);
+        await using FileStream stream = File.OpenRead(archivePath);
+        byte[] hash = await SHA256.HashDataAsync(stream);
         return new PackageBundle(
             archivePath,
             new CrossPlatformReleasePackage(

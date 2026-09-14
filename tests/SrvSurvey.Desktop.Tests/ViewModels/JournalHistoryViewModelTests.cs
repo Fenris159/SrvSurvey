@@ -9,7 +9,7 @@ public sealed class JournalHistoryViewModelTests
     [Fact]
     public void ReplayCalendarBindingsUseCalendarCompatibleDateTypes()
     {
-        var selectedDateType = CalendarDatePicker.SelectedDateProperty.PropertyType;
+        Type selectedDateType = CalendarDatePicker.SelectedDateProperty.PropertyType;
 
         Assert.Equal(typeof(DateTime?), selectedDateType);
         string[] calendarProperties =
@@ -136,13 +136,13 @@ public sealed class JournalHistoryViewModelTests
             "2026-08-21T18:01:30Z",
             global::System.Globalization.CultureInfo.InvariantCulture
         );
-        var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
+        string packagePath = Path.Combine(temp.Path, "incident.srvreplay");
 
         Assert.Contains("1 selected event", viewModel.ExportPreview, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("sent and received chat", viewModel.ExportPreview, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("location names", viewModel.ExportPreview, StringComparison.OrdinalIgnoreCase);
         Assert.True(await viewModel.ExportAsync(packagePath));
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             packagePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
@@ -249,7 +249,7 @@ public sealed class JournalHistoryViewModelTests
     public async Task LargeHistorySearchCompletesOffTheCallingContext()
     {
         using var temp = new TemporaryDirectory();
-        var lines = Enumerable
+        string[] lines = Enumerable
             .Range(0, 6_000)
             .Select(index =>
                 index == 5_999
@@ -301,7 +301,7 @@ public sealed class JournalHistoryViewModelTests
             "2026-08-21T18:01:00Z",
             global::System.Globalization.CultureInfo.InvariantCulture
         );
-        var packagePath = Path.Combine(temp.Path, "older.srvreplay");
+        string packagePath = Path.Combine(temp.Path, "older.srvreplay");
 
         Assert.Equal(4, viewModel.TotalEventCount);
         Assert.Equal(["Music", "Shutdown"], viewModel.Events.Select(item => item.EventName));

@@ -1,4 +1,6 @@
 using System.Net;
+using System.Text.Json;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests.Mining;
@@ -17,7 +19,9 @@ public sealed class MiningSearchClientTests
             )
         );
         var client = new MiningSearchClient(http);
-        var results = await client.FindRingsAsync(new MiningRingQuery("Sol", "Platinum", "Metallic", 50, 2));
+        IReadOnlyList<MiningRing> results = await client.FindRingsAsync(
+            new MiningRingQuery("Sol", "Platinum", "Metallic", 50, 2)
+        );
         Assert.Single(results);
         Assert.Equal("Earth A Ring", results[0].Body);
         Assert.Null(results[0].Position);
@@ -63,7 +67,7 @@ public sealed class MiningSearchClientTests
     [InlineData(true, true)]
     public async Task MarketsKeepOnlyFreshUsableStationsAndSortForTradeDirection(bool spansh, bool buying)
     {
-        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         (string Name, string Type, bool Pad, DateTimeOffset Age, long Price, long Demand, long Supply)[] candidates =
         {
             ("Good", "Coriolis", true, now, 100L, 100L, 100L),
@@ -76,7 +80,7 @@ public sealed class MiningSearchClientTests
             ("Zero price", "Coriolis", true, now, 0L, 100L, 100L),
             ("No trade volume", "Coriolis", true, now, 300L, 0L, 0L),
         };
-        var rows = candidates
+        object[] rows = candidates
             .Select(c =>
             {
                 int maxLandingPadSize = c.Pad ? 3 : 2;
@@ -117,7 +121,7 @@ public sealed class MiningSearchClientTests
                     };
             })
             .ToArray();
-        var payload = spansh
+        string payload = spansh
             ? System.Text.Json.JsonSerializer.Serialize(new { results = rows })
             : System.Text.Json.JsonSerializer.Serialize(rows);
         using var http = new HttpClient(new Handler(payload));
@@ -130,7 +134,9 @@ public sealed class MiningSearchClientTests
             LargePads: true,
             StationType: "Coriolis"
         );
-        var results = spansh ? await client.FindSpanshMarketsAsync(query) : await client.FindMarketsAsync(query);
+        IReadOnlyList<MiningMarketResult> results = spansh
+            ? await client.FindSpanshMarketsAsync(query)
+            : await client.FindMarketsAsync(query);
         Assert.Equal(buying ? BuyingStationOrder : SellingStationOrder, results.Select(r => r.Station));
         Assert.All(
             results,
@@ -158,10 +164,10 @@ public sealed class MiningSearchClientTests
     [Fact]
     public async Task SpanshFallbackUsesStockAndNumericPadCount()
     {
-        var payload =
+        string payload =
             $$"""{"results":[{"system_name":"Sol","name":"Market","large_pads":2,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","market":[{"commodity":"Platinum","buy_price":50,"stock":25},{"commodity":"Gold","buy_price":100,"stock":20}]}]}""";
         using var http = new HttpClient(new Handler(payload));
-        var result = Assert.Single(
+        MiningMarketResult result = Assert.Single(
             await new MiningSearchClient(http).FindSpanshMarketsAsync(new("Sol", "Platinum", true, LargePads: true))
         );
         Assert.Equal(25, result.Supply);
@@ -178,7 +184,7 @@ public sealed class MiningSearchClientTests
             new("Wille", 75, "High", "Empire", "Democracy", "Boom", "Industrial", "Aisling Duval", "Fortified", 1000, 3)
         );
         using var body = System.Text.Json.JsonDocument.Parse(handler.Body!);
-        var filters = body.RootElement.GetProperty("filters");
+        JsonElement filters = body.RootElement.GetProperty("filters");
         Assert.Equal(3, body.RootElement.GetProperty("page").GetInt32());
         Assert.Equal("High", filters.GetProperty("security").GetProperty("value").GetString());
         Assert.Equal("Aisling Duval", filters.GetProperty("controlling_power").GetProperty("value")[0].GetString());

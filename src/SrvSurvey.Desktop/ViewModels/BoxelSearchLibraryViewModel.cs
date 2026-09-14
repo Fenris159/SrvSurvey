@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Search;
@@ -211,14 +212,14 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
         try
         {
             IsBusy = true;
-            var library = await session.GetLibraryAsync();
+            BoxelSearchLibrarySnapshot library = await session.GetLibraryAsync();
             observedLibraryRevision = library.Revision;
-            var entries = library.Entries;
-            var selectedFileName = SelectedSearch?.FileName;
-            var knownPrefixes =
+            IReadOnlyList<SavedBoxelSearchCatalogEntry> entries = library.Entries;
+            string? selectedFileName = SelectedSearch?.FileName;
+            HashSet<string> knownPrefixes =
                 surveyStats?.Index.Select(entry => entry.Prefix).ToHashSet(StringComparer.Ordinal) ?? [];
             Searches.Clear();
-            foreach (var entry in entries)
+            foreach (SavedBoxelSearchCatalogEntry entry in entries)
             {
                 var item = new BoxelSearchLibraryItemViewModel(
                     entry,
@@ -281,7 +282,7 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
         try
         {
             IsBusy = true;
-            var saved = RequireSavedSearch(
+            SavedBoxelSearchDocument saved = RequireSavedSearch(
                 await session.ExecuteAsync(new SetSavedBoxelSearchFavorite(search.FileName, !search.IsFavorite))
             );
             AcceptLocalLibraryRevision();
@@ -336,7 +337,7 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
         try
         {
             IsBusy = true;
-            var saved = RequireSavedSearch(
+            SavedBoxelSearchDocument saved = RequireSavedSearch(
                 await session.ExecuteAsync(new RenameSavedBoxelSearch(search.FileName, RenameDraft))
             );
             AcceptLocalLibraryRevision();
@@ -366,7 +367,7 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
         try
         {
             IsBusy = true;
-            var saved = RequireSavedSearch(
+            SavedBoxelSearchDocument saved = RequireSavedSearch(
                 await session.ExecuteAsync(new UpdateSavedBoxelSearchNotes(search.FileName, NotesDraft))
             );
             AcceptLocalLibraryRevision();
@@ -398,7 +399,7 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        var refreshAfterDelete = refreshPending;
+        bool refreshAfterDelete = refreshPending;
         refreshPending = false;
         CloseDialogs();
         try
@@ -428,7 +429,9 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
     {
         if (selected.IsSelected)
         {
-            foreach (var search in Searches.Where(search => !ReferenceEquals(search, selected)))
+            foreach (
+                BoxelSearchLibraryItemViewModel? search in Searches.Where(search => !ReferenceEquals(search, selected))
+            )
             {
                 search.SetSelected(false);
             }
@@ -493,7 +496,7 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
             return "No saved boxel searches yet.";
         }
 
-        var pluralSuffix = count == 1 ? string.Empty : "es";
+        string pluralSuffix = count == 1 ? string.Empty : "es";
         return $"Loaded {count:N0} saved boxel search{pluralSuffix}.";
     }
 
@@ -513,13 +516,15 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
             BoxelSearchLibrarySortColumn.Progress => search => search.ProgressFraction,
             _ => search => search.Name,
         };
-        var ordered = sortAscending
+        IOrderedEnumerable<BoxelSearchLibraryItemViewModel> ordered = sortAscending
             ? favorites?.ThenBy(key) ?? source.OrderBy(key)
             : favorites?.ThenByDescending(key) ?? source.OrderByDescending(key);
-        var target = ordered.ThenBy(search => search.Name, StringComparer.OrdinalIgnoreCase).ToArray();
-        for (var index = 0; index < target.Length; index++)
+        BoxelSearchLibraryItemViewModel[] target = ordered
+            .ThenBy(search => search.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        for (int index = 0; index < target.Length; index++)
         {
-            var currentIndex = Searches.IndexOf(target[index]);
+            int currentIndex = Searches.IndexOf(target[index]);
             if (currentIndex != index)
             {
                 Searches.Move(currentIndex, index);
@@ -672,7 +677,7 @@ public sealed class BoxelSearchLibraryViewModel : INotifyPropertyChanged, IDispo
         sortDateCommand.RaiseCanExecuteChanged();
         sortModifiedCommand.RaiseCanExecuteChanged();
         sortProgressCommand.RaiseCanExecuteChanged();
-        foreach (var search in Searches)
+        foreach (BoxelSearchLibraryItemViewModel search in Searches)
         {
             search.RaiseCanExecuteChanged();
         }
@@ -827,11 +832,11 @@ public sealed class BoxelSearchLibraryItemViewModel : INotifyPropertyChanged
 
     public DateTimeOffset CreatedAt { get; }
 
-    public string CreatedAtText => CreatedAt.ToLocalTime().ToString("g");
+    public string CreatedAtText => CreatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
 
     public DateTimeOffset UpdatedAt => updatedAt;
 
-    public string UpdatedAtText => UpdatedAt.ToLocalTime().ToString("g");
+    public string UpdatedAtText => UpdatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
 
     public int CompletedSystems { get; }
 

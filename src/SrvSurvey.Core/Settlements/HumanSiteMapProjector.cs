@@ -25,9 +25,9 @@ public sealed class HumanSiteMapProjector
         ArgumentNullException.ThrowIfNull(template);
         options ??= HumanSiteMapDisplayOptions.Default;
 
-        var skipped = 0;
-        var buildings = template.Buildings.Select(ProjectBuilding).ToArray();
-        var pads = template
+        int skipped = 0;
+        HumanSiteProjectedBuilding[] buildings = template.Buildings.Select(ProjectBuilding).ToArray();
+        HumanSiteProjectedPoint[] pads = template
             .LandingPads.Select(
                 (pad, index) =>
                     new HumanSiteProjectedPoint(
@@ -41,8 +41,12 @@ public sealed class HumanSiteMapProjector
                     )
             )
             .ToArray();
-        var doors = ProjectPoints(template.SecureDoors, HumanSiteMapPointKind.SecureDoor, ref skipped);
-        var namedPoints = template
+        HumanSiteProjectedPoint[] doors = ProjectPoints(
+            template.SecureDoors,
+            HumanSiteMapPointKind.SecureDoor,
+            ref skipped
+        );
+        HumanSiteProjectedPoint[] namedPoints = template
             .NamedPoints.Where(point =>
                 options.ShowMedkits || !string.Equals(point.Name, "Medkit", StringComparison.OrdinalIgnoreCase)
             )
@@ -53,14 +57,14 @@ public sealed class HumanSiteMapProjector
             .Where(point => point is not null)
             .Select(point => point!)
             .ToArray();
-        var terminals = options.ShowDataTerminals
+        HumanSiteProjectedPoint[] terminals = options.ShowDataTerminals
             ? ProjectPoints(template.DataTerminals, HumanSiteMapPointKind.DataTerminal, ref skipped)
             : [];
-        var conflictZonePoints = options.ShowConflictZonePoints
+        HumanSiteProjectedPoint[] conflictZonePoints = options.ShowConflictZonePoints
             ? ProjectPoints(template.ConflictZonePoints, HumanSiteMapPointKind.ConflictZone, ref skipped)
             : [];
 
-        var maximumDistance = buildings
+        double maximumDistance = buildings
             .SelectMany(building => building.Paths)
             .SelectMany(path => path.Segments)
             .SelectMany(GetSegmentPoints)
@@ -97,11 +101,11 @@ public sealed class HumanSiteMapProjector
     private static HumanSiteProjectedPath ProjectPath(HumanSiteBuildingPath path)
     {
         var segments = new List<HumanSitePathSegment>();
-        var index = 0;
+        int index = 0;
         while (index < path.Points.Count)
         {
-            var type = path.PointTypes[index];
-            var baseType = (byte)(type & PathTypeMask);
+            byte type = path.PointTypes[index];
+            byte baseType = (byte)(type & PathTypeMask);
             if (baseType == StartPoint)
             {
                 segments.Add(
@@ -162,7 +166,7 @@ public sealed class HumanSiteMapProjector
     )
     {
         var result = new List<HumanSiteProjectedPoint>();
-        foreach (var point in source)
+        foreach (HumanSitePointOfInterest point in source)
         {
             if (!point.Offset.IsPlausibleMapOffset())
             {

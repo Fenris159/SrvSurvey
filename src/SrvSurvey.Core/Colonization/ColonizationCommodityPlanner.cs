@@ -33,47 +33,52 @@ public static class ColonizationCommodityPlanner
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Projects);
         ArgumentNullException.ThrowIfNull(request.Construction);
-        var projects = request.Projects;
-        var construction = request.Construction;
-        var allProjects = projects.Where(project => !project.IsComplete).ToArray();
-        var hidden = request.HiddenBuildIds?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
-        var carriers = request.FleetCarriers ?? [];
-        var dock = construction.CurrentDock;
-        var depot = construction.CurrentDepot;
-        var atConstructionSite = dock is { IsConstructionSite: true };
-        var hasCurrentDepot = atConstructionSite && depot is not null && dock!.MarketId == depot.MarketId;
-        var localProject = atConstructionSite
+        IEnumerable<ColonizationProject> projects = request.Projects;
+        ColonizationConstructionSnapshot construction = request.Construction;
+        ColonizationProject[] allProjects = projects.Where(project => !project.IsComplete).ToArray();
+        HashSet<string> hidden = request.HiddenBuildIds?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
+        IReadOnlyList<ColonizationFleetCarrier> carriers = request.FleetCarriers ?? [];
+        ColonizationDockingSnapshot? dock = construction.CurrentDock;
+        ColonizationConstructionDepotSnapshot? depot = construction.CurrentDepot;
+        bool atConstructionSite = dock is { IsConstructionSite: true };
+        bool hasCurrentDepot = atConstructionSite && depot is not null && dock!.MarketId == depot.MarketId;
+        ColonizationProject? localProject = atConstructionSite
             ? allProjects.FirstOrDefault(project =>
                 project.SystemAddress == dock!.SystemAddress && project.MarketId == dock.MarketId
             )
             : null;
-        var relevantProjects = SelectProjects(
+        ColonizationProject[] relevantProjects = SelectProjects(
             allProjects,
             hidden,
             request.PrimaryBuildId,
             atConstructionSite,
             localProject
         );
-        var relevantCarriers = SelectCarriers(relevantProjects, carriers, atConstructionSite && localProject is null);
-        var requirements = hasCurrentDepot
+        ColonizationFleetCarrier[] relevantCarriers = SelectCarriers(
+            relevantProjects,
+            carriers,
+            atConstructionSite && localProject is null
+        );
+        Dictionary<string, Requirement> requirements = hasCurrentDepot
             ? CreateDepotRequirements(depot!)
             : CreateProjectRequirements(relevantProjects);
-        var cargoGroups = request.ShipCargo?.Inventory.GroupBy(item => Normalize(item.Name)).ToArray() ?? [];
-        var cargoNames = cargoGroups.ToDictionary(
+        IGrouping<string, CargoItem>[] cargoGroups =
+            request.ShipCargo?.Inventory.GroupBy(item => Normalize(item.Name)).ToArray() ?? [];
+        Dictionary<string, string?> cargoNames = cargoGroups.ToDictionary(
             group => group.Key,
             group => group.Select(item => item.LocalizedName).FirstOrDefault(name => !string.IsNullOrWhiteSpace(name)),
             StringComparer.OrdinalIgnoreCase
         );
-        var shipCounts = cargoGroups.ToDictionary(
+        Dictionary<string, int> shipCounts = cargoGroups.ToDictionary(
             group => group.Key,
             group => group.Sum(item => Math.Max(0, item.Count)),
             StringComparer.OrdinalIgnoreCase
         );
-        var carrierCounts = SumCarrierCargo(relevantCarriers);
-        var localMarket = GetLocalMarketContext(request.Market, dock);
-        var dockedAtLinkedCarrier =
+        Dictionary<string, int> carrierCounts = SumCarrierCargo(relevantCarriers);
+        LocalMarketContext localMarket = GetLocalMarketContext(request.Market, dock);
+        bool dockedAtLinkedCarrier =
             dock is not null && relevantCarriers.Any(carrier => carrier.MarketId == dock.MarketId);
-        var isDockedAtUntrackedFleetCarrier =
+        bool isDockedAtUntrackedFleetCarrier =
             dock is not null
             && string.Equals(dock.StationType, "FleetCarrier", StringComparison.OrdinalIgnoreCase)
             && !carriers.Any(carrier => carrier.MarketId == dock.MarketId);
@@ -88,16 +93,16 @@ public static class ColonizationCommodityPlanner
             Capacity = Math.Max(0, construction.ShipCargoCapacity),
             DockedAtLinkedCarrier = dockedAtLinkedCarrier,
         };
-        var rows = requirements
+        ColonizationCommodityPlanRow[] rows = requirements
             .Where(requirement => requirement.Value.Remaining > 0)
             .Select(requirement => CreateRow(requirement.Key, requirement.Value, rowContext))
             .OrderBy(row => row.Category, StringComparer.OrdinalIgnoreCase)
             .ThenBy(row => row.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var totalRemaining = rows.Sum(row => (long)row.Needed);
-        var carrierCovered = rows.Sum(row => Math.Min((long)row.Needed, row.OnFleetCarriers));
-        var carrierDeficit = Math.Max(0, totalRemaining - carrierCovered);
-        var capacity = Math.Max(0, construction.ShipCargoCapacity);
+        long totalRemaining = rows.Sum(row => (long)row.Needed);
+        long carrierCovered = rows.Sum(row => Math.Min((long)row.Needed, row.OnFleetCarriers));
+        long carrierDeficit = Math.Max(0, totalRemaining - carrierCovered);
+        int capacity = Math.Max(0, construction.ShipCargoCapacity);
         return new ColonizationCommodityPlan
         {
             Title = CreateTitle(relevantProjects, dock, localProject, atConstructionSite),
@@ -132,7 +137,7 @@ public static class ColonizationCommodityPlanner
             return localProject is null ? [] : [localProject];
         }
 
-        var primary = projects.FirstOrDefault(project =>
+        ColonizationProject? primary = projects.FirstOrDefault(project =>
             string.Equals(project.BuildId, primaryBuildId, StringComparison.OrdinalIgnoreCase)
         );
         return primary is not null ? [primary] : projects.Where(project => !hidden.Contains(project.BuildId)).ToArray();
@@ -192,7 +197,7 @@ public static class ColonizationCommodityPlanner
         CommodityRowContext context
     )
     {
-        var assigners = context
+        string[] assigners = context
             .Projects.SelectMany(project => project.Commanders)
             .Where(pair =>
                 pair.Value.Any(assigned =>
@@ -202,17 +207,17 @@ public static class ColonizationCommodityPlanner
             .Select(pair => pair.Key)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var assignedToCommander =
+        bool assignedToCommander =
             !string.IsNullOrWhiteSpace(context.CommanderName)
             && assigners.Contains(context.CommanderName, StringComparer.OrdinalIgnoreCase);
-        var localizedName =
+        string? localizedName =
             requirement.LocalizedName
             ?? context.CargoNames.GetValueOrDefault(commodity)
             ?? context.LocalMarket.LocalizedNames.GetValueOrDefault(commodity);
-        var inShip = Math.Max(0, context.ShipCounts.GetValueOrDefault(commodity));
-        var onCarriers = Math.Max(0, context.CarrierCounts.GetValueOrDefault(commodity));
-        var isAvailable = context.LocalMarket.AvailableCommodities.Contains(commodity);
-        var carrierDeficit = Math.Max(0, requirement.Remaining - onCarriers);
+        int inShip = Math.Max(0, context.ShipCounts.GetValueOrDefault(commodity));
+        int onCarriers = Math.Max(0, context.CarrierCounts.GetValueOrDefault(commodity));
+        bool isAvailable = context.LocalMarket.AvailableCommodities.Contains(commodity);
+        int carrierDeficit = Math.Max(0, requirement.Remaining - onCarriers);
         return new ColonizationCommodityPlanRow
         {
             Commodity = commodity,
@@ -266,7 +271,7 @@ public static class ColonizationCommodityPlanner
             return LocalMarketContext.Empty;
         }
 
-        var availableItems = market.Items.Where(item => item.Stock > 0).ToArray();
+        MarketItem[] availableItems = market.Items.Where(item => item.Stock > 0).ToArray();
         return new LocalMarketContext(
             availableItems.Length > 0,
             availableItems.Select(item => item.Commodity).ToHashSet(StringComparer.OrdinalIgnoreCase),
@@ -284,11 +289,11 @@ public static class ColonizationCommodityPlanner
     private static Dictionary<string, int> SumCarrierCargo(IReadOnlyList<ColonizationFleetCarrier> carriers)
     {
         var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var carrier in carriers)
+        foreach (ColonizationFleetCarrier carrier in carriers)
         {
-            foreach (var pair in carrier.Cargo)
+            foreach (KeyValuePair<string, int> pair in carrier.Cargo)
             {
-                var commodity = Normalize(pair.Key);
+                string commodity = Normalize(pair.Key);
                 result[commodity] = checked(result.GetValueOrDefault(commodity) + Math.Max(0, pair.Value));
             }
         }
@@ -400,7 +405,7 @@ public static class ColonizationCommodityPlanner
         params string[] commodities
     )
     {
-        foreach (var commodity in commodities)
+        foreach (string commodity in commodities)
         {
             destination[commodity] = category;
         }

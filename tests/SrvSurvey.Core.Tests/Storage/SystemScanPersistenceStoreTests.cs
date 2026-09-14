@@ -16,7 +16,7 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
     [Fact]
     public async Task ExplicitFirstFootfallCorrectionCanClearPersistedTrue()
     {
-        var path = CreateSystemFile(
+        string path = CreateSystemFile(
             "Test_42.json",
             """
             {
@@ -26,7 +26,7 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
             }
             """
         );
-        var snapshot = CreateSnapshot(
+        SystemScanSnapshot snapshot = CreateSnapshot(
             """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
             """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""
         );
@@ -43,14 +43,14 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
             false
         );
 
-        var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.False(saved["bodies"]![0]!["firstFootFall"]!.GetValue<bool>());
     }
 
     [Fact]
     public async Task SavePreservesImportedDataAndDetectsCompletedRepeatVisit()
     {
-        var path = CreateSystemFile(
+        string path = CreateSystemFile(
             "Test_42.json",
             """
             {
@@ -78,12 +78,12 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
             }
             """
         );
-        var snapshot = CreateSnapshot(
+        SystemScanSnapshot snapshot = CreateSnapshot(
             """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[1,2,3]}"""
         );
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
-        var result = await store.SaveAsync(
+        SystemScanPersistenceResult result = await store.SaveAsync(
             new SystemScanPersistenceContext(
                 "F123",
                 "Drew",
@@ -96,12 +96,12 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
         Assert.True(result.IsRepeatVisit);
         Assert.Equal(0, result.BiologicalSignalsRemaining);
         Assert.True(result.ShouldSuppressBiologyOverlays);
-        var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(7, saved["futureRoot"]!["value"]!.GetValue<int>());
         Assert.Equal("Drew", saved["commander"]!.GetValue<string>());
         Assert.Equal("2026-07-20T00:00:00Z", saved["firstVisited"]!.GetValue<string>());
         Assert.Equal("2026-07-22T00:00:00.0000000+00:00", saved["lastVisited"]!.GetValue<string>());
-        var body = Assert.IsType<JsonObject>(Assert.Single(saved["bodies"]!.AsArray()));
+        JsonObject body = Assert.IsType<JsonObject>(Assert.Single(saved["bodies"]!.AsArray()));
         Assert.True(body["futureBody"]!.GetValue<bool>());
         Assert.NotNull(body["bookmarks"]);
         Assert.Equal("keep", body["organisms"]![0]!["futureOrganism"]!.GetValue<string>());
@@ -124,7 +124,7 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
         );
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
-        var result = await store.SaveAsync(
+        SystemScanPersistenceResult result = await store.SaveAsync(
             new SystemScanPersistenceContext(
                 "F123",
                 "Drew",
@@ -141,11 +141,11 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
     [Fact]
     public async Task MalformedImportedFileIsNotOverwritten()
     {
-        var path = CreateSystemFile("Test_42.json", "{ malformed");
-        var before = await File.ReadAllBytesAsync(path);
+        string path = CreateSystemFile("Test_42.json", "{ malformed");
+        byte[] before = await File.ReadAllBytesAsync(path);
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             store.SaveAsync(
                 new SystemScanPersistenceContext(
                     "F123",
@@ -166,7 +166,7 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
     [Fact]
     public async Task LoadProjectsImportedSystemHistoryWithoutChangingItsBytes()
     {
-        var path = CreateSystemFile(
+        string path = CreateSystemFile(
             "Test_42.json",
             """
             {
@@ -217,19 +217,19 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
             }
             """
         );
-        var before = await File.ReadAllBytesAsync(path);
+        byte[] before = await File.ReadAllBytesAsync(path);
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
-        var result = await store.LoadAsync("F123", "Drew", "Test", 42);
+        SystemScanHistoryLoadResult result = await store.LoadAsync("F123", "Drew", "Test", 42);
 
         Assert.True(result.Exists);
         Assert.Null(result.Error);
-        var snapshot = Assert.IsType<SystemScanSnapshot>(result.Snapshot);
+        SystemScanSnapshot snapshot = Assert.IsType<SystemScanSnapshot>(result.Snapshot);
         Assert.Equal(new GalacticCoordinate(1, 2, 3), snapshot.StarPosition);
         Assert.True(snapshot.HasDiscoveryScan);
         Assert.Equal(2, snapshot.ExpectedBodyCount);
         Assert.Equal(2, snapshot.Bodies.Count);
-        var body = snapshot.Bodies.Single(candidate => candidate.BodyId == 1);
+        SystemScanBodySnapshot body = snapshot.Bodies.Single(candidate => candidate.BodyId == 1);
         Assert.Equal(SystemBodyKind.LandablePlanet, body.Kind);
         Assert.Equal(9.5, body.SurfaceGravity);
         Assert.Equal(20, body.Materials["iron"]);
@@ -242,7 +242,7 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
     [Fact]
     public async Task LoadRejectsMalformedTypedHistoryWithoutChangingItsBytes()
     {
-        var path = CreateSystemFile(
+        string path = CreateSystemFile(
             "Test_42.json",
             """
             {
@@ -254,9 +254,14 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
             }
             """
         );
-        var before = await File.ReadAllBytesAsync(path);
+        byte[] before = await File.ReadAllBytesAsync(path);
 
-        var result = await new SystemScanPersistenceStore(temporaryDirectory).LoadAsync("F123", "Drew", "Test", 42);
+        SystemScanHistoryLoadResult result = await new SystemScanPersistenceStore(temporaryDirectory).LoadAsync(
+            "F123",
+            "Drew",
+            "Test",
+            42
+        );
 
         Assert.True(result.Exists);
         Assert.Null(result.Snapshot);
@@ -274,9 +279,9 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
 
     private string CreateSystemFile(string fileName, string json)
     {
-        var directory = Path.Combine(temporaryDirectory, "systems", "F123");
+        string directory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, fileName);
+        string path = Path.Combine(directory, fileName);
         File.WriteAllText(path, json);
         return path;
     }
@@ -284,9 +289,12 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
     private static SystemScanSnapshot CreateSnapshot(params string[] events)
     {
         var state = new SystemScanState();
-        foreach (var json in events)
+        foreach (string json in events)
         {
-            Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+            Assert.True(
+                JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+                error
+            );
             state.Apply(Assert.IsType<JournalEventEnvelope>(journalEvent));
         }
 

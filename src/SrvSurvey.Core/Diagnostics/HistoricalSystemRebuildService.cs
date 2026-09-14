@@ -60,7 +60,7 @@ public sealed class HistoricalSystemRebuildService
             throw new DirectoryNotFoundException($"The journal folder does not exist: {journalDirectory}");
         }
 
-        var reconstruction = await ReconstructAsync(frontierId, startTime, progress, cancellationToken)
+        ReconstructionResult reconstruction = await ReconstructAsync(frontierId, startTime, progress, cancellationToken)
             .ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         if (reconstruction.Systems.Count == 0)
@@ -86,7 +86,7 @@ public sealed class HistoricalSystemRebuildService
     )
     {
         var warnings = new List<string>();
-        var files = CollectJournalCandidates(startTime, warnings);
+        JournalCandidate[] files = CollectJournalCandidates(startTime, warnings);
         var systems = new Dictionary<long, ReconstructedSystem>();
         var stats = new ReconstructionStats();
         await ProcessJournalCandidatesAsync(files, frontierId, systems, stats, warnings, progress, cancellationToken)
@@ -110,7 +110,7 @@ public sealed class HistoricalSystemRebuildService
             .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
             .Select(file => new JournalCandidate(
                 file,
-                JournalHistoryAnalyzer.TryGetJournalTimestamp(file.Name, out var openedAt) ? openedAt : null
+                JournalHistoryAnalyzer.TryGetJournalTimestamp(file.Name, out DateTimeOffset openedAt) ? openedAt : null
             ))
             .Where(candidate => IsEligibleJournalCandidate(candidate, startTime, warnings))
             .OrderBy(candidate => candidate.OpenedAt)
@@ -143,10 +143,10 @@ public sealed class HistoricalSystemRebuildService
         CancellationToken cancellationToken
     )
     {
-        for (var index = 0; index < files.Length; index++)
+        for (int index = 0; index < files.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var candidate = files[index];
+            JournalCandidate candidate = files[index];
             Report(progress, "Reading journals", index, files.Length, candidate.File.Name);
             await TryProcessJournalFileAsync(candidate, frontierId, systems, stats, warnings, cancellationToken)
                 .ConfigureAwait(false);
@@ -208,7 +208,7 @@ public sealed class HistoricalSystemRebuildService
     )
     {
         long? currentAddress = null;
-        foreach (var journalEvent in read.Events)
+        foreach (JournalEventEnvelope journalEvent in read.Events)
         {
             cancellationToken.ThrowIfCancellationRequested();
             currentAddress = UpdateCurrentAddress(journalEvent, currentAddress);
@@ -228,7 +228,7 @@ public sealed class HistoricalSystemRebuildService
             return currentAddress;
         }
 
-        var address = GetInt64(journalEvent.Payload, "SystemAddress");
+        long? address = GetInt64(journalEvent.Payload, "SystemAddress");
         return address is > 0 ? address : null;
     }
 
@@ -240,7 +240,7 @@ public sealed class HistoricalSystemRebuildService
         ReconstructionStats stats
     )
     {
-        if (!systems.TryGetValue(address, out var system))
+        if (!systems.TryGetValue(address, out ReconstructedSystem? system))
         {
             system = new ReconstructedSystem(new SystemScanState());
             systems.Add(address, system);
@@ -252,7 +252,7 @@ public sealed class HistoricalSystemRebuildService
         }
 
         stats.AppliedEvents++;
-        var timestamp = journalEvent.Timestamp ?? candidate.OpenedAt!.Value;
+        DateTimeOffset timestamp = journalEvent.Timestamp ?? candidate.OpenedAt!.Value;
         system.FirstVisited = MinTimestamp(system.FirstVisited, timestamp);
         system.LastVisited = MaxTimestamp(system.LastVisited, timestamp);
     }
@@ -270,7 +270,7 @@ public sealed class HistoricalSystemRebuildService
             return false;
         }
 
-        var snapshot = system.State.CreateSnapshot();
+        SystemScanSnapshot snapshot = system.State.CreateSnapshot();
         return snapshot.SystemAddress is > 0 && !string.IsNullOrWhiteSpace(snapshot.SystemName);
     }
 
@@ -292,32 +292,32 @@ public sealed class HistoricalSystemRebuildService
         CancellationToken cancellationToken
     )
     {
-        var operationId = Guid.NewGuid().ToString("N");
-        var operationName =
+        string operationId = Guid.NewGuid().ToString("N");
+        string operationName =
             $"historical-system-rebuild-" + $"{currentTime().UtcDateTime:yyyyMMddTHHmmssZ}-{operationId}";
-        var finalBackup = Path.Combine(backupDirectory, operationName);
-        var stagingBackup = finalBackup + ".preparing";
-        var candidateDirectory = Path.Combine(stagingBackup, "candidates");
-        var originalDirectory = Path.Combine(stagingBackup, "originals");
-        var systemDirectory = Path.Combine(dataDirectory, "systems", frontierId);
+        string finalBackup = Path.Combine(backupDirectory, operationName);
+        string stagingBackup = finalBackup + ".preparing";
+        string candidateDirectory = Path.Combine(stagingBackup, "candidates");
+        string originalDirectory = Path.Combine(stagingBackup, "originals");
+        string systemDirectory = Path.Combine(dataDirectory, "systems", frontierId);
         var entries = new List<ActivationEntry>();
         var warnings = reconstruction.Warnings.ToList();
         try
         {
             Directory.CreateDirectory(candidateDirectory);
             Directory.CreateDirectory(originalDirectory);
-            var existingPaths = Directory.Exists(systemDirectory)
+            string[] existingPaths = Directory.Exists(systemDirectory)
                 ? Directory
                     .EnumerateFiles(systemDirectory, "*.json", SearchOption.TopDirectoryOnly)
                     .Order(StringComparer.Ordinal)
                     .ToArray()
                 : [];
-            for (var index = 0; index < reconstruction.Systems.Count; index++)
+            for (int index = 0; index < reconstruction.Systems.Count; index++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var reconstructed = reconstruction.Systems[index];
-                var snapshot = reconstructed.State.CreateSnapshot();
-                var target = FindTargetPath(
+                ReconstructedSystem reconstructed = reconstruction.Systems[index];
+                SystemScanSnapshot snapshot = reconstructed.State.CreateSnapshot();
+                string target = FindTargetPath(
                     systemDirectory,
                     existingPaths,
                     snapshot.SystemName!,
@@ -330,7 +330,7 @@ public sealed class HistoricalSystemRebuildService
                     reconstruction.Systems.Count,
                     Path.GetFileName(target)
                 );
-                var prepared = await TryPrepareActivationEntryAsync(
+                ActivationEntry? prepared = await TryPrepareActivationEntryAsync(
                         new ActivationPrepareRequest
                         {
                             Reconstructed = reconstructed,
@@ -362,7 +362,7 @@ public sealed class HistoricalSystemRebuildService
             await WriteManifestAsync(stagingBackup, frontierId, entries, cancellationToken).ConfigureAwait(false);
             Directory.CreateDirectory(backupDirectory);
             Directory.Move(stagingBackup, finalBackup);
-            var relocatedEntries = entries
+            ActivationEntry[] relocatedEntries = entries
                 .Select(entry =>
                     entry with
                     {
@@ -422,10 +422,10 @@ public sealed class HistoricalSystemRebuildService
                 return null;
             }
 
-            var originalPath = Path.Combine(request.OriginalDirectory, Path.GetFileName(request.Target));
+            string originalPath = Path.Combine(request.OriginalDirectory, Path.GetFileName(request.Target));
             File.Copy(request.Target, originalPath, false);
             originalHash = await ComputeHashAsync(request.Target, cancellationToken).ConfigureAwait(false);
-            var backupHash = await ComputeHashAsync(originalPath, cancellationToken).ConfigureAwait(false);
+            string backupHash = await ComputeHashAsync(originalPath, cancellationToken).ConfigureAwait(false);
             if (!string.Equals(originalHash, backupHash, StringComparison.Ordinal))
             {
                 throw new InvalidDataException(
@@ -451,10 +451,13 @@ public sealed class HistoricalSystemRebuildService
             return null;
         }
 
-        var candidatePath = Path.Combine(request.CandidateDirectory, $"{request.Snapshot.SystemAddress!.Value}.json");
+        string candidatePath = Path.Combine(
+            request.CandidateDirectory,
+            $"{request.Snapshot.SystemAddress!.Value}.json"
+        );
         await WriteObjectAsync(candidatePath, merged, cancellationToken).ConfigureAwait(false);
         _ = await ReadObjectAsync(candidatePath, cancellationToken).ConfigureAwait(false);
-        var candidateHash = await ComputeHashAsync(candidatePath, cancellationToken).ConfigureAwait(false);
+        string candidateHash = await ComputeHashAsync(candidatePath, cancellationToken).ConfigureAwait(false);
         return new ActivationEntry(
             request.Target,
             candidatePath,
@@ -488,9 +491,9 @@ public sealed class HistoricalSystemRebuildService
         IProgress<HistoricalSystemRebuildProgress>? progress
     )
     {
-        for (var index = 0; index < entries.Count; index++)
+        for (int index = 0; index < entries.Count; index++)
         {
-            var entry = entries[index];
+            ActivationEntry entry = entries[index];
             Report(
                 progress,
                 "Activating reconstructed systems",
@@ -511,7 +514,7 @@ public sealed class HistoricalSystemRebuildService
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(entry.TargetPath)!);
-        var temporaryPath = $"{entry.TargetPath}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{entry.TargetPath}.{Guid.NewGuid():N}.tmp";
         try
         {
             File.Copy(entry.CandidatePath, temporaryPath, false);
@@ -541,7 +544,7 @@ public sealed class HistoricalSystemRebuildService
 
     private static async Task VerifyHashAsync(string path, string expectedHash, string failureMessage)
     {
-        var actualHash = await ComputeHashAsync(path, CancellationToken.None).ConfigureAwait(false);
+        string actualHash = await ComputeHashAsync(path, CancellationToken.None).ConfigureAwait(false);
         if (!string.Equals(actualHash, expectedHash, StringComparison.Ordinal))
         {
             throw new InvalidDataException(failureMessage);
@@ -554,7 +557,7 @@ public sealed class HistoricalSystemRebuildService
         Exception activationException
     )
     {
-        var rollbackErrors = await RollBackAsync(activated, finalBackup).ConfigureAwait(false);
+        IReadOnlyList<Exception> rollbackErrors = await RollBackAsync(activated, finalBackup).ConfigureAwait(false);
         if (rollbackErrors.Count > 0)
         {
             throw new AggregateException(
@@ -575,7 +578,7 @@ public sealed class HistoricalSystemRebuildService
     )
     {
         var errors = new List<Exception>();
-        foreach (var entry in activated.Reverse())
+        foreach (ActivationEntry? entry in activated.Reverse())
         {
             try
             {
@@ -589,8 +592,8 @@ public sealed class HistoricalSystemRebuildService
                     continue;
                 }
 
-                var originalPath = Path.Combine(finalBackup, "originals", Path.GetFileName(entry.TargetPath));
-                var temporaryPath = $"{entry.TargetPath}.{Guid.NewGuid():N}.rollback";
+                string originalPath = Path.Combine(finalBackup, "originals", Path.GetFileName(entry.TargetPath));
+                string temporaryPath = $"{entry.TargetPath}.{Guid.NewGuid():N}.rollback";
                 try
                 {
                     File.Copy(originalPath, temporaryPath, false);
@@ -604,7 +607,7 @@ public sealed class HistoricalSystemRebuildService
                     }
                 }
 
-                var restoredHash = await ComputeHashAsync(entry.TargetPath, CancellationToken.None)
+                string restoredHash = await ComputeHashAsync(entry.TargetPath, CancellationToken.None)
                     .ConfigureAwait(false);
                 if (!string.Equals(restoredHash, entry.OriginalHash, StringComparison.Ordinal))
                 {
@@ -624,10 +627,10 @@ public sealed class HistoricalSystemRebuildService
     private static async Task<JournalReadResult> ReadJournalAsync(FileInfo file, CancellationToken cancellationToken)
     {
         var events = new List<JournalEventEnvelope>();
-        var malformed = 0;
+        int malformed = 0;
         string? frontierId = null;
-        var isShutdown = false;
-        var isOdyssey = true;
+        bool isShutdown = false;
+        bool isOdyssey = true;
         await using var stream = new FileStream(
             file.FullName,
             FileMode.Open,
@@ -644,7 +647,10 @@ public sealed class HistoricalSystemRebuildService
                 continue;
             }
 
-            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
+            if (
+                !JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? journalEvent, out _)
+                || journalEvent is null
+            )
             {
                 malformed++;
                 continue;
@@ -678,7 +684,7 @@ public sealed class HistoricalSystemRebuildService
             16 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        var node = await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        JsonNode? node = await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
         return node as JsonObject ?? throw new InvalidDataException($"{path} does not contain a JSON object.");
     }
 
@@ -714,7 +720,7 @@ public sealed class HistoricalSystemRebuildService
                 ))
                 .ToArray()
         );
-        var path = Path.Combine(stagingBackup, "manifest.json");
+        string path = Path.Combine(stagingBackup, "manifest.json");
         await using var stream = new FileStream(
             path,
             FileMode.CreateNew,
@@ -739,7 +745,7 @@ public sealed class HistoricalSystemRebuildService
             16 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
+        byte[] hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         return Convert.ToHexStringLower(hash);
     }
 
@@ -750,8 +756,8 @@ public sealed class HistoricalSystemRebuildService
         long systemAddress
     )
     {
-        var addressSuffix = $"_{systemAddress}.json";
-        var addressMatch = existingPaths.FirstOrDefault(path =>
+        string addressSuffix = $"_{systemAddress}.json";
+        string? addressMatch = existingPaths.FirstOrDefault(path =>
             Path.GetFileName(path).EndsWith(addressSuffix, StringComparison.OrdinalIgnoreCase)
         );
         if (addressMatch is not null)
@@ -759,7 +765,7 @@ public sealed class HistoricalSystemRebuildService
             return addressMatch;
         }
 
-        var namePrefix = LegacySystemDataFileStore.MakeSafeFileName(systemName) + "_";
+        string namePrefix = LegacySystemDataFileStore.MakeSafeFileName(systemName) + "_";
         return existingPaths.FirstOrDefault(path =>
                 Path.GetFileName(path).StartsWith(namePrefix, StringComparison.OrdinalIgnoreCase)
             )
@@ -771,8 +777,8 @@ public sealed class HistoricalSystemRebuildService
 
     private void ValidateBackupLocation(string candidateBackupDirectory)
     {
-        var systemsDirectory = Path.GetFullPath(Path.Combine(dataDirectory, "systems"));
-        var normalizedBackupDirectory = Path.GetFullPath(candidateBackupDirectory);
+        string systemsDirectory = Path.GetFullPath(Path.Combine(dataDirectory, "systems"));
+        string normalizedBackupDirectory = Path.GetFullPath(candidateBackupDirectory);
         if (PathsOverlap(systemsDirectory, normalizedBackupDirectory))
         {
             throw new ArgumentException(
@@ -784,9 +790,11 @@ public sealed class HistoricalSystemRebuildService
 
     private static bool PathsOverlap(string first, string second)
     {
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        var firstWithSeparator = Path.TrimEndingDirectorySeparator(first) + Path.DirectorySeparatorChar;
-        var secondWithSeparator = Path.TrimEndingDirectorySeparator(second) + Path.DirectorySeparatorChar;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        string firstWithSeparator = Path.TrimEndingDirectorySeparator(first) + Path.DirectorySeparatorChar;
+        string secondWithSeparator = Path.TrimEndingDirectorySeparator(second) + Path.DirectorySeparatorChar;
         return firstWithSeparator.StartsWith(secondWithSeparator, comparison)
             || secondWithSeparator.StartsWith(firstWithSeparator, comparison);
     }
@@ -806,7 +814,7 @@ public sealed class HistoricalSystemRebuildService
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -814,7 +822,7 @@ public sealed class HistoricalSystemRebuildService
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
             : null;
@@ -822,12 +830,12 @@ public sealed class HistoricalSystemRebuildService
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long number))
         {
             return number;
         }

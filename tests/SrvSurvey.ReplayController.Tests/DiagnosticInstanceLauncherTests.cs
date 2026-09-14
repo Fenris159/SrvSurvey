@@ -7,18 +7,18 @@ public sealed class DiagnosticInstanceLauncherTests
     [Fact]
     public async Task LaunchPassesDiagnosticArgumentsAndObservesProcessExit()
     {
-        var executablePath = OperatingSystem.IsWindows()
+        string executablePath = OperatingSystem.IsWindows()
             ? Path.Combine(Environment.SystemDirectory, "where.exe")
             : "/usr/bin/env";
         var launcher = new ProcessDiagnosticInstanceLauncher();
 
-        await using var instance = await launcher.LaunchAsync(
+        await using IDiagnosticInstance instance = await launcher.LaunchAsync(
             executablePath,
             Path.Combine(Path.GetTempPath(), "replay-session.json"),
             CancellationToken.None
         );
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        var exitCode = await instance.WaitForExitAsync(timeout.Token);
+        int exitCode = await instance.WaitForExitAsync(timeout.Token);
 
         Assert.NotEqual(0, exitCode);
         Assert.False(instance.IsRunning);

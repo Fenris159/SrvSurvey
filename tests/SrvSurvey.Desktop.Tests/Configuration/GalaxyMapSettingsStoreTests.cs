@@ -19,7 +19,7 @@ public sealed class GalaxyMapSettingsStoreTests : IDisposable
     public void SavedPreferencesPreserveUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new GalaxyMapSettingsStore(path);
 

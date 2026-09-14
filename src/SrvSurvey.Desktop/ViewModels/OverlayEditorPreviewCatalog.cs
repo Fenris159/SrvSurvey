@@ -83,14 +83,16 @@ internal static class OverlayEditorPreviewCatalog
     public static IReadOnlyList<OverlayEditorPreviewStateDefinition> GetStates(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        return PreviewStates.TryGetValue(plotterName, out var states) ? states : [DefaultState];
+        return PreviewStates.TryGetValue(plotterName, out OverlayEditorPreviewStateDefinition[]? states)
+            ? states
+            : [DefaultState];
     }
 
     public static object Create(string plotterName) => Create(plotterName, 0);
 
     public static object Create(string plotterName, int stateIndex)
     {
-        var states = GetStates(plotterName);
+        IReadOnlyList<OverlayEditorPreviewStateDefinition> states = GetStates(plotterName);
         if (stateIndex < 0 || stateIndex >= states.Count)
         {
             throw new ArgumentOutOfRangeException(
@@ -167,7 +169,11 @@ internal static class OverlayEditorPreviewCatalog
     private static MineMapViewModel CreateMiningReferencePreview()
     {
         var preview = MineMapViewModel.CreateEditorPreview();
-        foreach (var row in preview.HotspotRows.Where(row => row.Name is "Gold" or "Ruby" or "Monazite"))
+        foreach (
+            SurfaceMiningCommodityRowViewModel? row in preview.HotspotRows.Where(row =>
+                row.Name is "Gold" or "Ruby" or "Monazite"
+            )
+        )
         {
             row.IsInOverlay = true;
         }
@@ -177,7 +183,7 @@ internal static class OverlayEditorPreviewCatalog
 
     private static SystemSurveyOverlayViewModel CreateSystemSurveyPreview(string plotterName, string previewState)
     {
-        var settingsPath = Path.Combine(Path.GetTempPath(), "SrvSurvey-OverlayEditorPreview", "ui-settings.json");
+        string settingsPath = Path.Combine(Path.GetTempPath(), "SrvSurvey-OverlayEditorPreview", "ui-settings.json");
         var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(settingsPath));
         survey.InstallEditorPreview(BuildSystemSurveyEditorState(plotterName, previewState));
         return new SystemSurveyOverlayViewModel(survey, OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
@@ -185,8 +191,8 @@ internal static class OverlayEditorPreviewCatalog
 
     private static SystemSurveyEditorPreviewState BuildSystemSurveyEditorState(string plotterName, string previewState)
     {
-        var thresholds = Thresholds;
-        var bioSystem =
+        BiologyRewardThresholds thresholds = Thresholds;
+        BiologySurveyViewModel bioSystem =
             plotterName == "PlotBioSystem"
                 ? previewState switch
                 {
@@ -195,10 +201,10 @@ internal static class OverlayEditorPreviewCatalog
                     _ => CreateBiologySystemOverview(),
                 }
                 : CreateBiologyBodyDetail();
-        var bioStatus =
+        BiologyStatusViewModel bioStatus =
             plotterName == "PlotBioStatus" ? CreateBiologyStatus(previewState) : CreateBiologyStatus("active-sample");
-        var bodyInfo = CreateBodyInformation();
-        var flightWarningGravity = previewState switch
+        BodyInformationViewModel bodyInfo = CreateBodyInformation();
+        double flightWarningGravity = previewState switch
         {
             "noticeable" => 1.5,
             "high-risk" => 4.5,
@@ -245,7 +251,7 @@ internal static class OverlayEditorPreviewCatalog
 
     private static SystemScanSnapshot CreatePreviewSnapshot()
     {
-        var body = CreatePreviewBody();
+        SystemScanBodySnapshot body = CreatePreviewBody();
         return new SystemScanSnapshot(
             SystemName: State.CurrentSystem,
             SystemAddress: 1,
@@ -322,7 +328,7 @@ internal static class OverlayEditorPreviewCatalog
 
     private static BiologySurveyViewModel CreateBiologySystemOverview()
     {
-        var thresholds = Thresholds;
+        BiologyRewardThresholds thresholds = Thresholds;
         return new BiologySurveyViewModel
         {
             Mode = BiologySurveyMode.System,
@@ -531,7 +537,7 @@ internal static class OverlayEditorPreviewCatalog
 
     private static BiologyOrganismRowViewModel CreateBiologyOrganismPreview(BiologyOrganismPreviewSpec preview)
     {
-        var isPrediction = preview.Traits.HasFlag(BiologyOrganismPreviewTraits.Prediction);
+        bool isPrediction = preview.Traits.HasFlag(BiologyOrganismPreviewTraits.Prediction);
         return new BiologyOrganismRowViewModel
         {
             DisplayName = isPrediction
@@ -580,7 +586,7 @@ internal static class OverlayEditorPreviewCatalog
 
     private static BiologyStatusViewModel CreateBiologyStatus(string previewState)
     {
-        var active = CreateActiveBiologyStatus();
+        BiologyStatusViewModel active = CreateActiveBiologyStatus();
         return previewState switch
         {
             "signal-summary" => active with { ActiveSample = null, Footer = "Select an organism to begin sampling." },

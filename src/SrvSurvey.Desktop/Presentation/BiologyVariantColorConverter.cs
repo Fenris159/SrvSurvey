@@ -42,7 +42,7 @@ public sealed class BiologyVariantColorConverter : IValueConverter
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is string variant && VariantColors.TryGetValue(variant.Trim(), out var color)
+        return value is string variant && VariantColors.TryGetValue(variant.Trim(), out Color color)
             ? new SolidColorBrush(color)
             : AvaloniaProperty.UnsetValue;
     }

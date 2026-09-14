@@ -7,8 +7,8 @@ public sealed class SystemIdentityMarkupTests
     [Fact]
     public void SharedEntryShowsEdsmSourceAndId64()
     {
-        var entry = Load("Controls", "SystemNameEntry.axaml");
-        var values = Values(entry);
+        XDocument entry = Load("Controls", "SystemNameEntry.axaml");
+        string[] values = Values(entry);
 
         Assert.Contains("{Binding Name}", values);
         Assert.Contains("{Binding Source}", values);
@@ -19,7 +19,7 @@ public sealed class SystemIdentityMarkupTests
     [Fact]
     public void EverySingleSystemEntryUsesSharedSuggestions()
     {
-        var search = Load("Views", "SearchView.axaml");
+        XDocument search = Load("Views", "SearchView.axaml");
         AssertEntry(search, "{Binding Search.Query, Mode=TwoWay}");
         Assert.Contains(
             search.Descendants(),
@@ -35,15 +35,15 @@ public sealed class SystemIdentityMarkupTests
     [Fact]
     public void SphereLookupActionAlignsWithTheTopOfTheAutocomplete()
     {
-        var search = Load("Views", "SearchView.axaml");
-        var entry = search
+        XDocument search = Load("Views", "SearchView.axaml");
+        XElement entry = search
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "SystemNameEntry"
                 && element.Attribute("Text")?.Value == "{Binding Search.Query, Mode=TwoWay}"
             );
-        var row = entry.Parent!;
-        var button = row.Elements().Single(element => element.Name.LocalName == "Button");
+        XElement row = entry.Parent!;
+        XElement button = row.Elements().Single(element => element.Name.LocalName == "Button");
 
         Assert.Equal("Grid", row.Name.LocalName);
         Assert.Equal("*,Auto", row.Attribute("ColumnDefinitions")?.Value);
@@ -53,21 +53,21 @@ public sealed class SystemIdentityMarkupTests
     [Fact]
     public void ResultTablesDoNotCopyOnSystemNameClick()
     {
-        var search = Load("Views", "SearchView.axaml");
+        XDocument search = Load("Views", "SearchView.axaml");
         AssertNoCopyBehavior(FindItemsHost(search, "{Binding Search.SearchResults}"));
         AssertNoCopyBehavior(FindItemsHost(search, "{Binding NearestSystems.Results}"));
 
-        var guardian = Load("Views", "GuardianView.axaml");
+        XDocument guardian = Load("Views", "GuardianView.axaml");
         AssertNoCopyBehavior(FindItemsHost(guardian, "{Binding Guardian.Rows}"));
 
-        var boxel = Load("Views", "BoxelView.axaml");
+        XDocument boxel = Load("Views", "BoxelView.axaml");
         AssertNoCopyBehavior(FindItemsHost(boxel, "{Binding BoxelSearch.Systems}"));
     }
 
     [Fact]
     public void SystemSummariesExposeThemedCopyLinks()
     {
-        var documents = new[]
+        XDocument[] documents = new[]
         {
             Load("Views", "OverviewView.axaml"),
             Load("Views", "BoxelView.axaml"),
@@ -102,8 +102,8 @@ public sealed class SystemIdentityMarkupTests
     [Fact]
     public void OverviewCopiesSystemNameAndId64Separately()
     {
-        var overview = Load("Views", "OverviewView.axaml");
-        var copyValues = overview
+        XDocument overview = Load("Views", "OverviewView.axaml");
+        string[] copyValues = overview
             .Descendants()
             .Where(element => element.Name.LocalName == "Button")
             .SelectMany(element => element.Attributes())
@@ -122,7 +122,7 @@ public sealed class SystemIdentityMarkupTests
     [Fact]
     public void OptionalSystemIdentitiesAvoidNullableIntermediateBindings()
     {
-        var values = new[]
+        string[] values = new[]
         {
             Load("Views", "SearchView.axaml"),
             Load("Views", "TravelView.axaml"),
@@ -150,7 +150,7 @@ public sealed class SystemIdentityMarkupTests
     [Fact]
     public void OverlaysKeepSystemIdentityDisplayOnly()
     {
-        var documents = new[]
+        XDocument[] documents = new[]
         {
             Load(null, "FleetCarrierRouteOverlayPresentation.axaml"),
             Load(null, "RouteBioOverlayPresentation.axaml"),

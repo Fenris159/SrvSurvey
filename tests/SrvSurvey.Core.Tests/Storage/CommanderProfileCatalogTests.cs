@@ -24,7 +24,7 @@ public sealed class CommanderProfileCatalogTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "F456-live.json"), "{\"commander\":\"Raven\"}");
         await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "F789-live.json"), "{malformed");
 
-        var result = await new CommanderProfileCatalog(temporaryDirectory).LoadAsync();
+        CommanderProfileCatalogResult result = await new CommanderProfileCatalog(temporaryDirectory).LoadAsync();
 
         Assert.Collection(
             result.Profiles,
@@ -50,7 +50,7 @@ public sealed class CommanderProfileCatalogTests : IDisposable
     [Fact]
     public async Task EmptyDirectoryReturnsNoProfiles()
     {
-        var result = await new CommanderProfileCatalog(temporaryDirectory).LoadAsync();
+        CommanderProfileCatalogResult result = await new CommanderProfileCatalog(temporaryDirectory).LoadAsync();
 
         Assert.Empty(result.Profiles);
         Assert.Empty(result.Warnings);
@@ -59,9 +59,9 @@ public sealed class CommanderProfileCatalogTests : IDisposable
     [Fact]
     public async Task DiscoversProfilesAndSourceDirectoriesAcrossJournalRoots()
     {
-        var profileDirectory = Path.Combine(temporaryDirectory, "profiles");
-        var steam = Path.Combine(temporaryDirectory, "steam");
-        var epic = Path.Combine(temporaryDirectory, "epic");
+        string profileDirectory = Path.Combine(temporaryDirectory, "profiles");
+        string steam = Path.Combine(temporaryDirectory, "steam");
+        string epic = Path.Combine(temporaryDirectory, "epic");
         Directory.CreateDirectory(profileDirectory);
         Directory.CreateDirectory(steam);
         Directory.CreateDirectory(epic);
@@ -76,7 +76,10 @@ public sealed class CommanderProfileCatalogTests : IDisposable
                 + "{\"event\":\"LoadGame\",\"Commander\":\"Epic Cmdr\",\"FID\":\"F456\"}\n"
         );
 
-        var result = await new CommanderProfileCatalog(profileDirectory, [steam, epic]).LoadAsync();
+        CommanderProfileCatalogResult result = await new CommanderProfileCatalog(
+            profileDirectory,
+            [steam, epic]
+        ).LoadAsync();
 
         Assert.Collection(
             result.Profiles,

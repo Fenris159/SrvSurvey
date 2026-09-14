@@ -13,11 +13,11 @@ public sealed class LocalizationSettingsStoreTests : IDisposable
     [Fact]
     public void LegacyLanguageLoadsUntilCrossPlatformPreferenceIsSaved()
     {
-        var dataDirectory = Path.Combine(temporaryDirectory, "profile");
-        var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string dataDirectory = Path.Combine(temporaryDirectory, "profile");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         Directory.CreateDirectory(dataDirectory);
         const string legacySettings = "{\"lang\":\"fr\",\"futureLegacyValue\":42}";
-        var legacyPath = Path.Combine(dataDirectory, "settings.json");
+        string legacyPath = Path.Combine(dataDirectory, "settings.json");
         File.WriteAllText(legacyPath, legacySettings);
         var store = new LocalizationSettingsStore(settingsPath, dataDirectory);
 
@@ -34,8 +34,8 @@ public sealed class LocalizationSettingsStoreTests : IDisposable
     [Fact]
     public void InvalidOrCorruptLegacyLanguageFallsBackToEnglish()
     {
-        var dataDirectory = Path.Combine(temporaryDirectory, "profile");
-        var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string dataDirectory = Path.Combine(temporaryDirectory, "profile");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         Directory.CreateDirectory(dataDirectory);
         File.WriteAllText(Path.Combine(dataDirectory, "settings.json"), "{\"lang\":\"Klingon\"}");
 

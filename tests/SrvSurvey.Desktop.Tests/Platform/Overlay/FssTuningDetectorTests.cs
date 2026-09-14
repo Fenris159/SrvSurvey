@@ -8,10 +8,10 @@ public sealed class FssTuningDetectorTests
     [Fact]
     public void WhiteFssTextCompletesThePendingScan()
     {
-        var source = CreateFssPanel();
+        MemoryPixelSource source = CreateFssPanel();
         FillDetectedText(source, new FssRgbPixel(255, 255, 255), 30);
 
-        var result = FssTuningDetector.Analyze(
+        FssTuningAnalysis result = FssTuningDetector.Analyze(
             source,
             FssTuningDetectorSettings.Default,
             FssTuningDetectionState.Waiting
@@ -27,11 +27,11 @@ public sealed class FssTuningDetectorTests
     [Fact]
     public void YellowTextWinsAtTheLegacyQuarterRatio()
     {
-        var source = CreateFssPanel();
+        MemoryPixelSource source = CreateFssPanel();
         FillDetectedText(source, new FssRgbPixel(255, 255, 255), 30);
         FillDetectedText(source, new FssRgbPixel(233, 197, 24), 8, offset: 30);
 
-        var result = FssTuningDetector.Analyze(
+        FssTuningAnalysis result = FssTuningDetector.Analyze(
             source,
             FssTuningDetectorSettings.Default,
             FssTuningDetectionState.Skipped
@@ -47,7 +47,7 @@ public sealed class FssTuningDetectorTests
     {
         var source = new MemoryPixelSource(200, 120);
 
-        var result = FssTuningDetector.Analyze(
+        FssTuningAnalysis result = FssTuningDetector.Analyze(
             source,
             FssTuningDetectorSettings.Default,
             FssTuningDetectionState.Skipped
@@ -63,7 +63,7 @@ public sealed class FssTuningDetectorTests
     {
         var source = new MemoryPixelSource(2, 2);
 
-        var result = FssTuningDetector.Analyze(
+        FssTuningAnalysis result = FssTuningDetector.Analyze(
             source,
             FssTuningDetectorSettings.Default,
             FssTuningDetectionState.Waiting
@@ -77,7 +77,7 @@ public sealed class FssTuningDetectorTests
     {
         var source = new MemoryPixelSource(200, 120, new FssRgbPixel(100, 0, 100));
         var yellowBar = new FssRgbPixel(193, 156, 65);
-        for (var x = 60; x <= 160; x++)
+        for (int x = 60; x <= 160; x++)
         {
             source.SetPixel(x, 80, yellowBar);
         }
@@ -91,9 +91,9 @@ public sealed class FssTuningDetectorTests
         const int areaX = 110;
         const int areaY = 86;
         const int areaWidth = 51;
-        for (var index = 0; index < count; index++)
+        for (int index = 0; index < count; index++)
         {
-            var position = offset + index;
+            int position = offset + index;
             source.SetPixel(areaX + position % areaWidth, areaY + position / areaWidth, color);
         }
     }

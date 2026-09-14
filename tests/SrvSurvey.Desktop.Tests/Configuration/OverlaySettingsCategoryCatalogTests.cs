@@ -7,7 +7,7 @@ public sealed class OverlaySettingsCategoryCatalogTests
     [Fact]
     public void CatalogDefinesEveryNavigableOverlayCategoryInOrder()
     {
-        var categories = OverlaySettingsCategoryCatalog.All;
+        IReadOnlyList<OverlaySettingsCategoryDefinition> categories = OverlaySettingsCategoryCatalog.All;
 
         Assert.Equal(
             [
@@ -53,9 +53,14 @@ public sealed class OverlaySettingsCategoryCatalogTests
     [Fact]
     public void TryGetResolvesEveryExactNavigationKey()
     {
-        foreach (var expected in OverlaySettingsCategoryCatalog.All)
+        foreach (OverlaySettingsCategoryDefinition expected in OverlaySettingsCategoryCatalog.All)
         {
-            Assert.True(OverlaySettingsCategoryCatalog.TryGet(expected.NavigationKey, out var actual));
+            Assert.True(
+                OverlaySettingsCategoryCatalog.TryGet(
+                    expected.NavigationKey,
+                    out OverlaySettingsCategoryDefinition? actual
+                )
+            );
             Assert.Same(expected, actual);
         }
     }
@@ -67,7 +72,7 @@ public sealed class OverlaySettingsCategoryCatalogTests
     [InlineData("search")]
     public void TryGetRejectsUnknownOrNonExactNavigationKeys(string? key)
     {
-        Assert.False(OverlaySettingsCategoryCatalog.TryGet(key, out var definition));
+        Assert.False(OverlaySettingsCategoryCatalog.TryGet(key, out OverlaySettingsCategoryDefinition? definition));
         Assert.Null(definition);
     }
 }

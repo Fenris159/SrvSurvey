@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -55,8 +56,8 @@ public sealed class ColonizationBuildCatalog
 
     public static ColonizationBuildCatalog LoadEmbedded()
     {
-        var assembly = typeof(ColonizationBuildCatalog).Assembly;
-        using var stream =
+        Assembly assembly = typeof(ColonizationBuildCatalog).Assembly;
+        using Stream stream =
             assembly.GetManifestResourceStream(ResourceName)
             ?? throw new InvalidOperationException($"Embedded resource '{ResourceName}' was not found.");
         return Load(stream);
@@ -67,7 +68,7 @@ public sealed class ColonizationBuildCatalog
         ArgumentNullException.ThrowIfNull(stream);
         try
         {
-            var rows =
+            BuildCostRow[] rows =
                 JsonSerializer.Deserialize<BuildCostRow[]>(stream, CaseInsensitiveJson)
                 ?? throw new InvalidDataException("The colonisation build catalog is empty.");
             return new ColonizationBuildCatalog(rows.Select(ToBuildCost));
@@ -80,7 +81,13 @@ public sealed class ColonizationBuildCatalog
 
     private static ColonizationBuildCost ToBuildCost(BuildCostRow row)
     {
-        if (!Enum.TryParse<ColonizationBuildLocation>(row.Location, ignoreCase: true, out var location))
+        if (
+            !Enum.TryParse<ColonizationBuildLocation>(
+                row.Location,
+                ignoreCase: true,
+                out ColonizationBuildLocation location
+            )
+        )
         {
             throw new InvalidDataException($"Unknown colonisation build location '{row.Location}'.");
         }
@@ -92,7 +99,7 @@ public sealed class ColonizationBuildCatalog
             location,
             row.DisplayName ?? string.Empty,
             row.Layouts ?? [],
-            row.Cargo ?? new Dictionary<string, int>()
+            row.Cargo ?? []
         );
     }
 
@@ -103,7 +110,7 @@ public sealed class ColonizationBuildCatalog
             throw new InvalidDataException("The colonisation build catalog has no entries.");
         }
 
-        var duplicateBuildType = candidateBuilds
+        IGrouping<string, ColonizationBuildCost>? duplicateBuildType = candidateBuilds
             .GroupBy(build => build.BuildType, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault(group => group.Count() > 1);
         if (duplicateBuildType is not null)
@@ -111,7 +118,7 @@ public sealed class ColonizationBuildCatalog
             throw new InvalidDataException($"Duplicate colonisation build type '{duplicateBuildType.Key}'.");
         }
 
-        foreach (var build in candidateBuilds)
+        foreach (ColonizationBuildCost build in candidateBuilds)
         {
             if (
                 string.IsNullOrWhiteSpace(build.BuildType)

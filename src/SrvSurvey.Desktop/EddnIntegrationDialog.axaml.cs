@@ -33,7 +33,7 @@ public sealed partial class EddnIntegrationDialog : Window
             return;
         }
 
-        var enabled = EddnUploadEnabledCheckBox.IsChecked == true;
+        bool enabled = EddnUploadEnabledCheckBox.IsChecked == true;
         if (networkPrivacy.TrySetEddnUploadEnabled(enabled))
         {
             Close(true);

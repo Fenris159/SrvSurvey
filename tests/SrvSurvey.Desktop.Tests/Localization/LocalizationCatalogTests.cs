@@ -30,7 +30,9 @@ public sealed class LocalizationCatalogTests : IDisposable
     [Fact]
     public void EveryShippedLegacyLanguageCatalogRetainsAllSourceStrings()
     {
-        foreach (var language in LocalizationCatalog.Languages.Where(language => language.Code != "en"))
+        foreach (
+            LocalizationLanguage? language in LocalizationCatalog.Languages.Where(language => language.Code != "en")
+        )
         {
             LocalizationCatalog.Initialize(language.Code);
 
@@ -56,7 +58,7 @@ public sealed class LocalizationCatalogTests : IDisposable
     public void DynamicAvaloniaFormatRetainsRuntimeValues()
     {
         LocalizationCatalog.Initialize("de");
-        var template = LocalizationCatalog.Translate("Loaded {0} active Raven Colonial projects.");
+        string template = LocalizationCatalog.Translate("Loaded {0} active Raven Colonial projects.");
 
         Assert.Equal(
             template.Replace("{0}", "3", StringComparison.Ordinal),

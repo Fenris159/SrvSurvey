@@ -61,7 +61,7 @@ internal interface IDesktopRuntimePhases
 
 internal sealed partial class DesktopRuntime : IAsyncDisposable
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly IDesktopRuntimeLifetime lifetime;
     private readonly IDesktopRuntimePhases phases;
     private Window? attachedMainWindow;
@@ -254,7 +254,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
 
     private void QuiesceMainWindow(DesktopShutdownReason reason)
     {
-        var window = attachedMainWindow;
+        Window? window = attachedMainWindow;
         attachedMainWindow = null;
         if (window is null)
         {

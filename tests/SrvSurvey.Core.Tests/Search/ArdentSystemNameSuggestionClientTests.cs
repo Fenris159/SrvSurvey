@@ -25,7 +25,7 @@ public sealed class ArdentSystemNameSuggestionClientTests
             new Uri("https://example.test/v2/search/system/name/")
         );
 
-        var results = await client.SearchAsync(" Sol ");
+        IReadOnlyList<SystemNameSuggestion> results = await client.SearchAsync(" Sol ");
 
         Assert.Equal(2, results.Count);
         Assert.Equal(new SystemNameSuggestion("Sol", 10477373803, "Ardent"), results[0]);

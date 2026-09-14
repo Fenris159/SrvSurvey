@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using SkiaSharp;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
@@ -60,7 +61,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             return ScreenshotProcessingResult.Empty;
         }
 
-        var screenshots = journalEvents.Where(entry => entry.EventName == "Screenshot").ToArray();
+        JournalEventEnvelope[] screenshots = journalEvents.Where(entry => entry.EventName == "Screenshot").ToArray();
         if (screenshots.Length == 0)
         {
             return ScreenshotProcessingResult.Empty;
@@ -112,8 +113,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             );
         }
 
-        var sourceDirectory = Path.GetFullPath(preferences.SourceFolder);
-        var targetDirectory = Path.GetFullPath(preferences.TargetFolder);
+        string sourceDirectory = Path.GetFullPath(preferences.SourceFolder);
+        string targetDirectory = Path.GetFullPath(preferences.TargetFolder);
         if (!Directory.Exists(sourceDirectory))
         {
             return new ScreenshotProcessingResult(
@@ -122,14 +123,14 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             );
         }
 
-        var gameClientWidth = gameClientWidthProvider();
-        foreach (var entry in screenshots)
+        int? gameClientWidth = gameClientWidthProvider();
+        foreach (JournalEventEnvelope entry in screenshots)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                var guardianContext = guardianContexts?.GetValueOrDefault(entry);
-                var conversion = await ConvertAsync(
+                ScreenshotGuardianContext? guardianContext = guardianContexts?.GetValueOrDefault(entry);
+                ScreenshotConversion conversion = await ConvertAsync(
                         new ScreenshotConversionRequest(
                             entry,
                             preferences,
@@ -184,33 +185,33 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         CancellationToken cancellationToken
     )
     {
-        var entry = request.Entry;
-        var preferences = request.Preferences;
-        var guardianContext = request.GuardianContext;
-        var sourcePath = ResolveSourcePath(entry, request.SourceDirectory);
+        JournalEventEnvelope entry = request.Entry;
+        ScreenshotProcessingPreferences preferences = request.Preferences;
+        ScreenshotGuardianContext? guardianContext = request.GuardianContext;
+        string sourcePath = ResolveSourcePath(entry, request.SourceDirectory);
         await WaitForCompletedFileAsync(sourcePath, cancellationToken).ConfigureAwait(false);
 
-        using var source =
+        using SKBitmap source =
             SKBitmap.Decode(sourcePath)
             ?? throw new InvalidDataException($"'{sourcePath}' is not a supported bitmap image.");
-        using var output =
+        using SKBitmap output =
             source.Copy() ?? throw new InvalidDataException($"'{sourcePath}' could not be copied for conversion.");
         if (preferences.AddBanner)
         {
             DrawBanner(output, entry, preferences, request.CommanderName, guardianContext, request.NavigationContext);
         }
 
-        var systemName = GetString(entry, "System") ?? UnknownLabel;
-        var bodyName = GetString(entry, "Body") ?? UnknownLabel;
-        var timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
-        var folder = GetSystemFolderPath(request.TargetDirectory, systemName);
+        string systemName = GetString(entry, "System") ?? UnknownLabel;
+        string bodyName = GetString(entry, "Body") ?? UnknownLabel;
+        DateTimeOffset timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
+        string folder = GetSystemFolderPath(request.TargetDirectory, systemName);
         Directory.CreateDirectory(folder);
-        var baseName = SafeFileName(
+        string baseName = SafeFileName(
             $"{bodyName} ({timestamp.UtcDateTime:yyyy-MM-dd HHmmss})"
                 + GetGuardianFileSuffix(guardianContext)
                 + GetHighResolutionSuffix(entry, request.GameClientWidth)
         );
-        var outputPath = GetAvailablePath(folder, baseName, ".png");
+        string outputPath = GetAvailablePath(folder, baseName, ".png");
         WritePngAtomically(output, outputPath);
 
         string? warning = null;
@@ -219,7 +220,11 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         {
             try
             {
-                using var aerial = CreateAerialBitmap(source, guardianContext!.SiteType, preferences.RotateAlphaAerial);
+                using SKBitmap aerial = CreateAerialBitmap(
+                    source,
+                    guardianContext!.SiteType,
+                    preferences.RotateAlphaAerial
+                );
                 DrawBanner(
                     aerial,
                     entry,
@@ -228,7 +233,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                     guardianContext,
                     request.NavigationContext
                 );
-                var aerialFolder = Path.Combine(
+                string aerialFolder = Path.Combine(
                     request.TargetDirectory,
                     SafeFileName("Aerial " + guardianContext.SiteType)
                 );
@@ -251,7 +256,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             }
         }
 
-        var sourceDeleted = false;
+        bool sourceDeleted = false;
         if (preferences.DeleteOriginal && warning is null)
         {
             try
@@ -270,11 +275,11 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     private static void WritePngAtomically(SKBitmap bitmap, string outputPath)
     {
-        var temporaryPath = $"{outputPath}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{outputPath}.{Guid.NewGuid():N}.tmp";
         try
         {
             using (var image = SKImage.FromBitmap(bitmap))
-            using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
+            using (SKData data = image.Encode(SKEncodedImageFormat.Png, 100))
             using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 data.SaveTo(stream);
@@ -328,8 +333,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     {
         return
             gameClientWidth is > 0
-            && entry.Payload.TryGetProperty("Width", out var width)
-            && width.TryGetInt32(out var screenshotWidth)
+            && entry.Payload.TryGetProperty("Width", out JsonElement width)
+            && width.TryGetInt32(out int screenshotWidth)
             && screenshotWidth > gameClientWidth
             ? " (HighRes)"
             : string.Empty;
@@ -342,12 +347,12 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             return source.Copy() ?? throw new InvalidDataException("The Guardian aerial bitmap could not be copied.");
         }
 
-        var cropWidth = Math.Min(source.Width, Math.Max(1, (int)(source.Height * 1.3f)));
+        int cropWidth = Math.Min(source.Width, Math.Max(1, (int)(source.Height * 1.3f)));
         using var cropped = new SKBitmap(cropWidth, source.Height);
         using (var cropCanvas = new SKCanvas(cropped))
         {
             cropCanvas.Clear(SKColors.Black);
-            var sourceX = (source.Width - cropWidth) / 2;
+            int sourceX = (source.Width - cropWidth) / 2;
             cropCanvas.DrawBitmap(
                 source,
                 new SKRect(sourceX, 0, sourceX + cropWidth, source.Height),
@@ -369,10 +374,10 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     private static string ResolveSourcePath(JournalEventEnvelope entry, string sourceDirectory)
     {
-        var journalPath =
+        string journalPath =
             GetString(entry, "Filename") ?? throw new InvalidDataException("The Screenshot event has no Filename.");
-        var normalized = journalPath.Replace('\\', '/');
-        var fileName = Path.GetFileName(normalized);
+        string normalized = journalPath.Replace('\\', '/');
+        string fileName = Path.GetFileName(normalized);
         if (string.IsNullOrWhiteSpace(fileName))
         {
             throw new InvalidDataException("The Screenshot event filename is invalid.");
@@ -385,8 +390,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     {
         Exception? lastError = null;
         long previousLength = -1;
-        var stableReads = 0;
-        for (var attempt = 0; attempt < 25; attempt++)
+        int stableReads = 0;
+        for (int attempt = 0; attempt < 25; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -440,16 +445,16 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     )
     {
         using var canvas = new SKCanvas(bitmap);
-        using var typeface = SKTypeface.Default;
-        var scale = Math.Clamp(bitmap.Width / 1920f, 0.6f, 3f);
+        using SKTypeface typeface = SKTypeface.Default;
+        float scale = Math.Clamp(bitmap.Width / 1920f, 0.6f, 3f);
         using var titleFont = new SKFont(typeface, 30f * scale);
         using var detailFont = new SKFont(typeface, 18f * scale);
         using var background = new SKPaint { Color = new SKColor(0, 0, 0, 220), IsAntialias = true };
         using var foreground = new SKPaint { Color = ParseColor(preferences.BannerColor), IsAntialias = true };
-        var body = GetString(entry, "Body") ?? UnknownLabel;
-        var system = GetString(entry, "System") ?? UnknownLabel;
-        var timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
-        var displayedTime = preferences.BannerLocalTime
+        string body = GetString(entry, "Body") ?? UnknownLabel;
+        string system = GetString(entry, "System") ?? UnknownLabel;
+        DateTimeOffset timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
+        string displayedTime = preferences.BannerLocalTime
             ? timestamp.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)
             : timestamp.ToUniversalTime().ToString("u", CultureInfo.InvariantCulture);
         var details = new List<string>
@@ -459,27 +464,27 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         };
         if (guardianContext is not null)
         {
-            var siteName = ResolveGuardianBannerSiteName(guardianContext);
+            string siteName = ResolveGuardianBannerSiteName(guardianContext);
             details.Add($"{siteName} - {guardianContext.SiteType}");
         }
-        var location = CreateLocationLine(entry, navigationContext);
+        string? location = CreateLocationLine(entry, navigationContext);
         if (location is not null)
         {
             details.Add(location);
         }
 
-        var padding = 12f * scale;
-        var gap = 6f * scale;
-        var lineHeight = detailFont.Size * 1.3f;
-        var title = $"Body: {body}";
-        var width = Math.Max(titleFont.MeasureText(title), details.Max(line => detailFont.MeasureText(line)));
-        var height = padding * 2 + titleFont.Size + gap + (details.Count * lineHeight);
+        float padding = 12f * scale;
+        float gap = 6f * scale;
+        float lineHeight = detailFont.Size * 1.3f;
+        string title = $"Body: {body}";
+        float width = Math.Max(titleFont.MeasureText(title), details.Max(line => detailFont.MeasureText(line)));
+        float height = padding * 2 + titleFont.Size + gap + (details.Count * lineHeight);
         canvas.DrawRect(10f * scale, 10f * scale, width + (padding * 2), height, background);
-        var x = 10f * scale + padding;
-        var y = 10f * scale + padding + titleFont.Size;
+        float x = 10f * scale + padding;
+        float y = 10f * scale + padding + titleFont.Size;
         canvas.DrawText(title, x, y, SKTextAlign.Left, titleFont, foreground);
         y += gap + lineHeight;
-        foreach (var line in details)
+        foreach (string line in details)
         {
             canvas.DrawText(line, x, y, SKTextAlign.Left, detailFont, foreground);
             y += lineHeight;
@@ -496,7 +501,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             return null;
         }
 
-        var age = status.ObservedAt - timestamp;
+        TimeSpan age = status.ObservedAt - timestamp;
         if (age < TimeSpan.Zero || age >= TimeSpan.FromSeconds(10))
         {
             return null;
@@ -520,11 +525,11 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         double? fallback = null
     )
     {
-        var number = fallback;
+        double? number = fallback;
         if (
-            entry.Payload.TryGetProperty(propertyName, out var property)
+            entry.Payload.TryGetProperty(propertyName, out JsonElement property)
             && property.ValueKind == System.Text.Json.JsonValueKind.Number
-            && property.TryGetDouble(out var eventNumber)
+            && property.TryGetDouble(out double eventNumber)
             && double.IsFinite(eventNumber)
         )
         {
@@ -540,14 +545,14 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     private static int? GetGameClientWidth()
     {
-        using var tracker = GameWindowTracker.CreateCurrent();
-        var snapshot = tracker.GetSnapshot();
+        using IGameWindowTracker tracker = GameWindowTracker.CreateCurrent();
+        GameWindowSnapshot snapshot = tracker.GetSnapshot();
         return snapshot.IsAvailable ? snapshot.ClientBounds.Width : null;
     }
 
     private static SKColor ParseColor(string value)
     {
-        if (SKColor.TryParse(value, out var color))
+        if (SKColor.TryParse(value, out SKColor color))
         {
             return color;
         }
@@ -558,7 +563,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     private static string? GetString(JournalEventEnvelope entry, string propertyName)
     {
         return
-            entry.Payload.TryGetProperty(propertyName, out var property)
+            entry.Payload.TryGetProperty(propertyName, out JsonElement property)
             && property.ValueKind == System.Text.Json.JsonValueKind.String
             ? property.GetString()
             : null;
@@ -566,8 +571,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     private static string GetAvailablePath(string directory, string baseName, string extension)
     {
-        var candidate = Path.Combine(directory, baseName + extension);
-        var suffix = 2;
+        string candidate = Path.Combine(directory, baseName + extension);
+        int suffix = 2;
         while (File.Exists(candidate))
         {
             candidate = Path.Combine(directory, $"{baseName} ({suffix++}){extension}");
@@ -578,14 +583,14 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     private static string SafeFileName(string value)
     {
-        var invalid = "<>:\"/\\|?*";
+        string invalid = "<>:\"/\\|?*";
         var result = new StringBuilder(value.Length);
-        foreach (var character in value.Trim())
+        foreach (char character in value.Trim())
         {
             result.Append(character < ' ' || invalid.Contains(character) ? '_' : character);
         }
 
-        var safe = result.ToString().TrimEnd(' ', '.');
+        string safe = result.ToString().TrimEnd(' ', '.');
         return string.IsNullOrWhiteSpace(safe) ? UnknownLabel : safe;
     }
 }

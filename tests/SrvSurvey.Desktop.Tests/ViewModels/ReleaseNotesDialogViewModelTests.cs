@@ -41,7 +41,7 @@ public sealed class ReleaseNotesDialogViewModelTests
         Assert.Equal("Fallback title", result.Title);
         Assert.Empty(result.Introduction);
         Assert.Equal("What's changed", result.ChangesHeading);
-        var change = Assert.Single(result.Changes);
+        ReleaseNoteChangeViewModel change = Assert.Single(result.Changes);
         Assert.Equal(markdown, change.Text);
     }
 
@@ -63,7 +63,7 @@ public sealed class ReleaseNotesDialogViewModelTests
         Assert.Equal("Late title", result.Title);
         Assert.Empty(result.Introduction);
         Assert.Equal("What's changed", result.ChangesHeading);
-        var change = Assert.Single(result.Changes);
+        ReleaseNoteChangeViewModel change = Assert.Single(result.Changes);
         Assert.Equal("First change. # Late title", change.Text);
     }
 }

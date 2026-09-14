@@ -26,8 +26,8 @@ public sealed class LegacyColonizationProfileStore
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
-        var normalizedFrontierId = frontierId.Trim();
-        var path = Path.Combine(dataDirectory, normalizedFrontierId + "-colony.json");
+        string normalizedFrontierId = frontierId.Trim();
+        string path = Path.Combine(dataDirectory, normalizedFrontierId + "-colony.json");
         if (!File.Exists(path))
         {
             return new LegacyColonizationProfileLoadResult(path, false, null, null, []);
@@ -43,13 +43,13 @@ public sealed class LegacyColonizationProfileStore
                 4096,
                 FileOptions.Asynchronous | FileOptions.SequentialScan
             );
-            var document =
+            LegacyDocument document =
                 await JsonSerializer
                     .DeserializeAsync<LegacyDocument>(stream, SerializerOptions, cancellationToken)
                     .ConfigureAwait(false)
                 ?? throw new InvalidDataException("The legacy colonisation profile is empty.");
             var warnings = new List<string>();
-            var projects = (document.Projects ?? [])
+            ColonizationProject[] projects = (document.Projects ?? [])
                 .Where(project =>
                 {
                     if (!string.IsNullOrWhiteSpace(project.BuildId))
@@ -62,12 +62,12 @@ public sealed class LegacyColonizationProfileStore
                 })
                 .Select(NormalizeProject)
                 .ToArray();
-            var hidden = (document.HiddenProjectIds ?? [])
+            string[] hidden = (document.HiddenProjectIds ?? [])
                 .Where(id => !string.IsNullOrWhiteSpace(id))
                 .Select(id => id.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            var carriers = (document.LinkedFleetCarriers ?? new Dictionary<long, ColonizationFleetCarrier>())
+            ColonizationFleetCarrier[] carriers = (document.LinkedFleetCarriers ?? [])
                 .Values.Where(carrier => carrier is not null)
                 .Select(NormalizeFleetCarrier)
                 .GroupBy(carrier => carrier.MarketId)

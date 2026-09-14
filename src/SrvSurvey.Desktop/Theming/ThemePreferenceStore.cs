@@ -19,13 +19,13 @@ public sealed class ThemePreferenceStore
 
     public string? LoadThemeKey()
     {
-        var settings = documentStore.Load();
+        JsonObject settings = documentStore.Load();
         if (
             settings["Version"] is not JsonValue version
-            || !version.TryGetValue<int>(out var versionNumber)
+            || !version.TryGetValue<int>(out int versionNumber)
             || versionNumber != CurrentVersion
             || settings["Theme"] is not JsonValue theme
-            || !theme.TryGetValue<string>(out var themeKey)
+            || !theme.TryGetValue<string>(out string? themeKey)
         )
         {
             return null;

@@ -33,7 +33,7 @@ public sealed class UiSettingsDocumentStore
         ArgumentNullException.ThrowIfNull(update);
         lock (fileLock)
         {
-            var root = ReadObject();
+            JsonObject root = ReadObject();
             update(root);
             WriteObject(root);
         }
@@ -58,12 +58,12 @@ public sealed class UiSettingsDocumentStore
 
     private void WriteObject(JsonObject root)
     {
-        var directory =
+        string directory =
             System.IO.Path.GetDirectoryName(Path)
             ?? throw new InvalidOperationException("The UI settings path has no directory.");
         Directory.CreateDirectory(directory);
 
-        var temporaryPath = $"{Path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{Path}.{Guid.NewGuid():N}.tmp";
         try
         {
             using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))

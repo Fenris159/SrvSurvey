@@ -29,10 +29,10 @@ public sealed class JourneyServiceTests : IDisposable
             {"timestamp":"2026-07-01T00:06:00Z","event":"Screenshot"}
             """
         );
-        var service = CreateService();
-        var start = await service.FindLatestStartAsync("F123", true, 42);
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindLatestStartAsync("F123", true, 42);
 
-        var result = await service.BeginAsync(
+        JourneyServiceResult result = await service.BeginAsync(
             new JourneyBeginRequest("F123", "Drew", true, "  The black  ", "First expedition", start.Entry!)
         );
 
@@ -43,7 +43,7 @@ public sealed class JourneyServiceTests : IDisposable
         Assert.Equal(result.Journey, service.ActiveJourney);
         Assert.True(File.Exists(result.Journey.FilePath));
 
-        var profile = await new CommanderProfileStore(DataDirectory).LoadAsync("F123", true);
+        CommanderProfileLoadResult profile = await new CommanderProfileStore(DataDirectory).LoadAsync("F123", true);
         Assert.Equal(result.Journey.FileName, profile.Data?.ActiveJourneyFileName);
     }
 
@@ -55,9 +55,9 @@ public sealed class JourneyServiceTests : IDisposable
             new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
             BasicJournal("2026-07-01T00:05:00Z", """{"timestamp":"2026-07-01T00:06:00Z","event":"Screenshot"}""")
         );
-        var firstService = CreateService();
-        var start = await firstService.FindLatestStartAsync("F123", true, 42);
-        var begun = await firstService.BeginAsync(
+        JourneyService firstService = CreateService();
+        JourneyJournalSystemSearchResult start = await firstService.FindLatestStartAsync("F123", true, 42);
+        JourneyServiceResult begun = await firstService.BeginAsync(
             new JourneyBeginRequest("F123", "Drew", true, "Journey", string.Empty, start.Entry!)
         );
         Assert.Equal(1, begun.Journey!.CurrentSystem!.Counts.Screenshots);
@@ -72,12 +72,12 @@ public sealed class JourneyServiceTests : IDisposable
             """
         );
 
-        var resumed = await CreateService().InitializeActiveAsync("F123", true);
+        JourneyServiceResult resumed = await CreateService().InitializeActiveAsync("F123", true);
 
         Assert.NotNull(resumed.Journey);
         Assert.Equal(3, resumed.ProcessedEventCount);
         Assert.Equal(2, resumed.Journey.CurrentSystem!.Counts.Screenshots);
-        var stored = await new JourneyStore(DataDirectory).LoadAsync("F123", resumed.Journey.FileName);
+        JourneyLoadResult stored = await new JourneyStore(DataDirectory).LoadAsync("F123", resumed.Journey.FileName);
         Assert.Equal(2, stored.Journey!.CurrentSystem!.Counts.Screenshots);
     }
 
@@ -89,13 +89,13 @@ public sealed class JourneyServiceTests : IDisposable
             new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
             BasicJournal("2026-07-01T00:05:00Z")
         );
-        var service = CreateService();
-        var start = await service.FindLatestStartAsync("F123", true, 42);
-        var begun = await service.BeginAsync(
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindLatestStartAsync("F123", true, 42);
+        JourneyServiceResult begun = await service.BeginAsync(
             new JourneyBeginRequest("F123", "Drew", true, "Journey", string.Empty, start.Entry!)
         );
 
-        var live = await service.ApplyLiveAsync([
+        JourneyServiceResult live = await service.ApplyLiveAsync([
             Parse("""{"timestamp":"2026-07-01T00:07:00Z","event":"Screenshot"}"""),
         ]);
         JourneyDocument? concluded = await service.ConcludeActiveAsync(
@@ -110,9 +110,9 @@ public sealed class JourneyServiceTests : IDisposable
             concluded.EndTime
         );
         Assert.Null(service.ActiveJourney);
-        var stored = await new JourneyStore(DataDirectory).LoadAsync("F123", begun.Journey!.FileName);
+        JourneyLoadResult stored = await new JourneyStore(DataDirectory).LoadAsync("F123", begun.Journey!.FileName);
         Assert.Equal(concluded.EndTime, stored.Journey!.EndTime);
-        var profile = await new CommanderProfileStore(DataDirectory).LoadAsync("F123", true);
+        CommanderProfileLoadResult profile = await new CommanderProfileStore(DataDirectory).LoadAsync("F123", true);
         Assert.Null(profile.Data?.ActiveJourneyFileName);
     }
 
@@ -124,10 +124,10 @@ public sealed class JourneyServiceTests : IDisposable
             new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
             BasicJournal("2026-07-01T00:05:00Z")
         );
-        var service = CreateService();
-        var start = await service.FindLatestStartAsync("F123", true, 42);
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindLatestStartAsync("F123", true, 42);
         var request = new JourneyBeginRequest("F123", "Drew", true, "Journey", string.Empty, start.Entry!);
-        var begun = await service.BeginAsync(request);
+        JourneyServiceResult begun = await service.BeginAsync(request);
 
         Assert.True(await service.IncrementNoteCountAsync(42));
         Assert.False(await service.IncrementNoteCountAsync(999));
@@ -139,7 +139,7 @@ public sealed class JourneyServiceTests : IDisposable
         Assert.False(await service.IncrementNoteCountAsync(42));
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.BeginAsync(request));
 
-        var stored = await new JourneyStore(DataDirectory).LoadAsync("F123", begun.Journey!.FileName);
+        JourneyLoadResult stored = await new JourneyStore(DataDirectory).LoadAsync("F123", begun.Journey!.FileName);
         Assert.Equal(1, stored.Journey!.VisitedSystems[0].Counts.Notes);
         Assert.Equal(0, stored.Journey.CurrentSystem!.Counts.Notes);
         Assert.Equal(1, service.ActiveJourney!.VisitedSystems[0].Counts.Notes);
@@ -161,7 +161,7 @@ public sealed class JourneyServiceTests : IDisposable
             )
         );
         var store = new JourneyStore(DataDirectory);
-        var created = await store.CreateAsync(
+        JourneyDocument created = await store.CreateAsync(
             new JourneyCreationRequest(
                 "F123",
                 "Drew",
@@ -180,7 +180,7 @@ public sealed class JourneyServiceTests : IDisposable
         };
         await store.SaveAsync(created);
 
-        var result = await CreateService().ReprocessAsync(created, true);
+        JourneyServiceResult result = await CreateService().ReprocessAsync(created, true);
 
         Assert.NotNull(result.Journey);
         Assert.Equal(1, result.Journey.CurrentSystem!.Counts.Screenshots);
@@ -196,7 +196,7 @@ public sealed class JourneyServiceTests : IDisposable
         Directory.CreateDirectory(DataDirectory);
         await File.WriteAllTextAsync(Path.Combine(DataDirectory, "F123-live.json"), "{\"fid\":");
 
-        var result = await CreateService().InitializeActiveAsync("F123", true);
+        JourneyServiceResult result = await CreateService().InitializeActiveAsync("F123", true);
 
         Assert.Null(result.Journey);
         Assert.Single(result.Errors);
@@ -216,7 +216,7 @@ public sealed class JourneyServiceTests : IDisposable
     private async Task WriteJournalAsync(string fileName, DateTime lastWriteTime, string content)
     {
         Directory.CreateDirectory(JournalDirectory);
-        var path = Path.Combine(JournalDirectory, fileName);
+        string path = Path.Combine(JournalDirectory, fileName);
         await File.WriteAllTextAsync(path, content);
         File.SetLastWriteTimeUtc(path, lastWriteTime);
     }
@@ -233,7 +233,10 @@ public sealed class JourneyServiceTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 

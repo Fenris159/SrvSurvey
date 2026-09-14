@@ -18,7 +18,7 @@ public sealed class MiningStoreTests
     [Fact]
     public void RecoveryKeepsCommandersSeparateAndRejectsCorruptRestoreWithoutReplacingData()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var store = new MiningStore(directory);

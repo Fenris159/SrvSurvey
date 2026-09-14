@@ -21,7 +21,7 @@ public sealed partial class RouteBioOverlayWindow : Window
 
     private static RouteBioOverlayViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Route-Bio-Overlay-Design");
+        string temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Route-Bio-Overlay-Design");
         return new RouteBioOverlayViewModel(
             new RouteWorkspaceViewModel(
                 new FollowRouteService(new FollowRouteStore(temporaryDirectory)),

@@ -20,8 +20,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task SavesHeadingsNotesPoiStatesRelicsAndObeliskGroups()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey();
-        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        GuardianCommanderSiteSurvey initial = CreateSurvey();
+        string path = await store.SaveAsync("F123", isOdyssey: true, initial);
         GuardianCommanderSiteSurvey? callbackPrevious = null;
         GuardianCommanderSiteSurvey? callbackSaved = null;
         var editor = new GuardianSurveyEditorViewModel(
@@ -44,7 +44,7 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         editor.Notes = "updated note";
         editor.Points.Single(point => point.Name == "p1").Status = GuardianPoiStatus.Empty;
         editor.Points.Single(point => point.Name == "c1").Status = GuardianPoiStatus.Absent;
-        var relic = editor.Points.Single(point => point.Name == "t1");
+        GuardianSurveyPoiViewModel relic = editor.Points.Single(point => point.Name == "t1");
         relic.Status = GuardianPoiStatus.Present;
         relic.RelicHeading = 222;
         editor.ObeliskGroups.Single(group => group.Name == 'A').IsSelected = false;
@@ -55,8 +55,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.NotNull(callbackPrevious);
         Assert.NotNull(callbackSaved);
         Assert.Contains("Saved Guardian survey", editor.StatusMessage);
-        var data = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true);
-        var saved = Assert.Single(data.Surveys);
+        GuardianCommanderDataReadResult data = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(
+            "F123",
+            isOdyssey: true
+        );
+        GuardianCommanderSiteSurvey saved = Assert.Single(data.Surveys);
         Assert.Equal(123, saved.Survey.SiteHeading);
         Assert.Equal(45, saved.Survey.RelicTowerHeading);
         Assert.Equal("updated note", saved.Notes);
@@ -76,8 +79,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         const double radius = 1_000_000;
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
         var correctedLocation = new GuardianSurfaceLocation(0, 0.01);
-        var source = CreateSurvey();
-        var initial = source with
+        GuardianCommanderSiteSurvey source = CreateSurvey();
+        GuardianCommanderSiteSurvey initial = source with
         {
             Survey = new GuardianSurveyData
             {
@@ -102,10 +105,10 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         await editor.SaveAsync();
 
-        var saved = Assert.Single(
+        GuardianCommanderSiteSurvey saved = Assert.Single(
             (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
         );
-        var expected = GuardianMapMarkerOffsetCalculator.Calculate(
+        GuardianMapPoint expected = GuardianMapMarkerOffsetCalculator.Calculate(
             new GuardianSurfaceLocation(0, 0),
             correctedLocation,
             siteHeading: 0,
@@ -119,9 +122,9 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task RejectsInvalidStatusWithoutChangingPersistedSurvey()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey();
-        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
-        var callbackCount = 0;
+        GuardianCommanderSiteSurvey initial = CreateSurvey();
+        string path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        int callbackCount = 0;
         var editor = new GuardianSurveyEditorViewModel(
             store,
             (_, _) =>
@@ -137,17 +140,20 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         Assert.Equal(0, callbackCount);
         Assert.Contains("cannot be marked empty", editor.StatusMessage);
-        var data = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true);
-        var saved = Assert.Single(data.Surveys);
+        GuardianCommanderDataReadResult data = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(
+            "F123",
+            isOdyssey: true
+        );
+        GuardianCommanderSiteSurvey saved = Assert.Single(data.Surveys);
         Assert.Equal(GuardianPoiStatus.Present, saved.Survey.PoiStatuses["c1"]);
     }
 
     [Fact]
     public async Task ReferenceOnlySelectionRemainsReadOnly()
     {
-        var callbackCount = 0;
-        var template = CreateTemplate();
-        var projection = new GuardianSiteMapProjector().Project(
+        int callbackCount = 0;
+        GuardianSiteTemplate template = CreateTemplate();
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(
             template,
             CreateSurvey().Survey,
             [new GuardianObelisk("A01", "H1", true, ["ca"])]
@@ -190,9 +196,13 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     [Fact]
     public void ReferenceSelectionBecomesEditableWhenSurveyAppears()
     {
-        var template = CreateTemplate();
-        var survey = CreateSurvey();
-        var projection = new GuardianSiteMapProjector().Project(template, survey.Survey, survey.ActiveObelisks);
+        GuardianSiteTemplate template = CreateTemplate();
+        GuardianCommanderSiteSurvey survey = CreateSurvey();
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(
+            template,
+            survey.Survey,
+            survey.ActiveObelisks
+        );
         var editor = new GuardianSurveyEditorViewModel(
             new GuardianCommanderSurveyStore(temporaryDirectory),
             (_, _) => Task.CompletedTask
@@ -217,8 +227,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task EditsLegacyComponentTowersAndDestructiblePanels()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey();
-        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        GuardianCommanderSiteSurvey initial = CreateSurvey();
+        string path = await store.SaveAsync("F123", isOdyssey: true, initial);
         var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
         editor.Load(
             new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate())
@@ -227,19 +237,19 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
             }
         );
 
-        var tower = editor.Points.Single(point => point.Name == "c1");
+        GuardianSurveyPoiViewModel tower = editor.Points.Single(point => point.Name == "c1");
         Assert.True(tower.CanEditComponentMaterials);
         Assert.True(tower.SupportsMultipleComponentMaterials);
         Assert.Equal(GuardianComponentMaterial.Cell, tower.TopComponentMaterial);
         tower.MiddleComponentMaterial = GuardianComponentMaterial.Conduit;
-        var panel = editor.Points.Single(point => point.Name == "d1");
+        GuardianSurveyPoiViewModel panel = editor.Points.Single(point => point.Name == "d1");
         Assert.True(panel.SupportsComponentMaterials);
         Assert.False(panel.SupportsMultipleComponentMaterials);
         panel.TopComponentMaterial = GuardianComponentMaterial.Tech;
 
         await editor.SaveAsync();
 
-        var saved = Assert.Single(
+        GuardianCommanderSiteSurvey saved = Assert.Single(
             (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
         );
         Assert.Equal(GuardianComponentMaterial.Conduit, saved.Survey.ComponentMaterials["c1"].GetItem(1));
@@ -250,8 +260,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task AddsAndRemovesMeasuredRawPointsWithoutRedundantStatusData()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey();
-        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        GuardianCommanderSiteSurvey initial = CreateSurvey();
+        string path = await store.SaveAsync("F123", isOdyssey: true, initial);
         var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
         editor.Load(new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate()));
         editor.NewRawPointType = GuardianPoiType.Orb;
@@ -259,7 +269,7 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         await editor.AddRawPointAsync();
 
-        var raw = Assert.IsType<GuardianSurveyPoiViewModel>(editor.SelectedPoint);
+        GuardianSurveyPoiViewModel raw = Assert.IsType<GuardianSurveyPoiViewModel>(editor.SelectedPoint);
         Assert.True(raw.IsRaw);
         Assert.Equal("x1", raw.Name);
         Assert.Equal(GuardianPoiStatus.Present, raw.Status);
@@ -280,10 +290,10 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         await editor.SaveAsync();
 
-        var saved = Assert.Single(
+        GuardianCommanderSiteSurvey saved = Assert.Single(
             (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
         );
-        var savedRaw = Assert.Single(saved.Survey.RawPointsOfInterest!);
+        GuardianPointOfInterest savedRaw = Assert.Single(saved.Survey.RawPointsOfInterest!);
         Assert.Equal("x1", savedRaw.Name);
         Assert.Equal(GuardianPoiType.Tablet, savedRaw.Type);
         Assert.Equal(45.678, savedRaw.Distance, 3);
@@ -296,7 +306,7 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         await editor.RemoveSelectedRawPointAsync();
         await editor.SaveAsync();
 
-        var afterRemoval = Assert.Single(
+        GuardianCommanderSiteSurvey afterRemoval = Assert.Single(
             (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
         );
         Assert.Null(afterRemoval.Survey.RawPointsOfInterest);
@@ -306,10 +316,10 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task RepairsSiteIdentityOriginAndActiveObeliskMetadata()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey();
-        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
-        var beta = CreateTemplate();
-        var gamma = CreateTemplate("Gamma");
+        GuardianCommanderSiteSurvey initial = CreateSurvey();
+        string path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        GuardianSiteTemplate beta = CreateTemplate();
+        GuardianSiteTemplate gamma = CreateTemplate("Gamma");
         var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
         editor.Load(
             new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, beta)
@@ -327,7 +337,9 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var selectionNotifications = new List<string?>();
         editor.PropertyChanged += (_, args) => selectionNotifications.Add(args.PropertyName);
         await editor.AddActiveObeliskAsync();
-        var added = Assert.IsType<GuardianActiveObeliskViewModel>(editor.SelectedActiveObelisk);
+        GuardianActiveObeliskViewModel added = Assert.IsType<GuardianActiveObeliskViewModel>(
+            editor.SelectedActiveObelisk
+        );
         Assert.Contains(nameof(editor.HasSelectedMapMarker), selectionNotifications);
         Assert.Contains(nameof(editor.IsMapSummaryVisible), selectionNotifications);
         Assert.Contains(nameof(editor.CanEditSelectedPoint), selectionNotifications);
@@ -339,14 +351,14 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         await editor.SaveAsync();
 
-        var saved = Assert.Single(
+        GuardianCommanderSiteSurvey saved = Assert.Single(
             (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
         );
         Assert.Equal("Gamma", saved.SiteType);
         Assert.Equal("Gamma", saved.Survey.SiteType);
         Assert.Equal(-12.345678, saved.Survey.Location!.Value.Latitude, 6);
         Assert.Equal(98.765432, saved.Survey.Location.Value.Longitude, 6);
-        var obelisk = Assert.Single(saved.ActiveObelisks, item => item.Name == "B03");
+        GuardianObelisk obelisk = Assert.Single(saved.ActiveObelisks, item => item.Name == "B03");
         Assert.Equal("H12", obelisk.LogCode);
         Assert.Equal(["ca", "or"], obelisk.ItemCodes);
         Assert.True(obelisk.Scanned);
@@ -356,8 +368,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task ResetCoordinatesRestoresLastSavedSurfaceOrigin()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey();
-        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        GuardianCommanderSiteSurvey initial = CreateSurvey();
+        string path = await store.SaveAsync("F123", isOdyssey: true, initial);
         var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
         editor.Load(new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate()));
 
@@ -386,9 +398,9 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task RejectsIncompleteOriginAndDuplicateActiveObeliskNames()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey();
-        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
-        var callbackCount = 0;
+        GuardianCommanderSiteSurvey initial = CreateSurvey();
+        string path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        int callbackCount = 0;
         var editor = new GuardianSurveyEditorViewModel(
             store,
             (_, _) =>
@@ -412,7 +424,7 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         Assert.Equal(0, callbackCount);
         Assert.Contains("duplicated", editor.StatusMessage);
-        var saved = Assert.Single(
+        GuardianCommanderSiteSurvey saved = Assert.Single(
             (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
         );
         Assert.Equal(1, saved.Survey.Location!.Value.Latitude);
@@ -423,8 +435,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task PreservesExplicitLegacyRawPointOverrides()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey();
-        var initialSurvey = initial.Survey;
+        GuardianCommanderSiteSurvey initial = CreateSurvey();
+        GuardianSurveyData initialSurvey = initial.Survey;
         initial = initial with
         {
             Survey = new GuardianSurveyData
@@ -441,7 +453,7 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 RawPointsOfInterest = [new GuardianPointOfInterest("x7", GuardianPoiType.Relic, 10, 20, 30)],
             },
         };
-        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        string path = await store.SaveAsync("F123", isOdyssey: true, initial);
         var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
         editor.Load(new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate()));
         editor.SelectedPoint = editor.Points.Single(point => point.IsRaw);
@@ -449,7 +461,7 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         await editor.SaveAsync();
 
-        var saved = Assert.Single(
+        GuardianCommanderSiteSurvey saved = Assert.Single(
             (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
         );
         Assert.Equal(GuardianPoiStatus.Absent, saved.Survey.PoiStatuses["x7"]);
@@ -469,13 +481,13 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task SavesEditableCatalogDetailsAndRescalesDistanceFromOrigin()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey() with
+        GuardianCommanderSiteSurvey initial = CreateSurvey() with
         {
             CatalogBodyName = "A 1",
             StarPosition = new GalacticCoordinate(10, 0, 0),
             DistanceToArrivalLs = 100,
         };
-        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        string path = await store.SaveAsync("F123", isOdyssey: true, initial);
         var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
         editor.Load(
             new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate())
@@ -492,7 +504,7 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         await editor.SaveAsync();
 
-        var saved = Assert.Single(
+        GuardianCommanderSiteSurvey saved = Assert.Single(
             (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
         );
         Assert.Equal("B 2", saved.CatalogBodyName);
@@ -504,7 +516,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task NegativeDistanceDoesNotMirrorStoredStarPosition()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey() with { CatalogBodyName = "A 1", StarPosition = new GalacticCoordinate(10, 0, 0) };
+        GuardianCommanderSiteSurvey initial = CreateSurvey() with
+        {
+            CatalogBodyName = "A 1",
+            StarPosition = new GalacticCoordinate(10, 0, 0),
+        };
         var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
         editor.Load(
             new GuardianSurveyEditorLoadContext("F123", true, initial, CreateTemplate())
@@ -520,7 +536,7 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         await editor.SaveAsync();
 
-        var saved = Assert.Single(
+        GuardianCommanderSiteSurvey saved = Assert.Single(
             (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
         );
         Assert.Equal(new GalacticCoordinate(10, 0, 0), saved.StarPosition);

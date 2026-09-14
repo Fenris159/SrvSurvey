@@ -19,14 +19,14 @@ public sealed class GuardianOverlayPresentationRenderingTests
         {
             OverlayThemeResources.Apply(window);
             window.Show();
-            var frame = window.CaptureRenderedFrame();
+            WriteableBitmap? frame = window.CaptureRenderedFrame();
 
             Assert.NotNull(frame);
             Assert.Equal(new PixelSize(42, 20), frame.PixelSize);
-            var outputPath = Environment.GetEnvironmentVariable("SRVSURVEY_GUARDIAN_ZOOM_RENDER_OUTPUT");
+            string? outputPath = Environment.GetEnvironmentVariable("SRVSURVEY_GUARDIAN_ZOOM_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(outputPath))
             {
-                var outputDirectory = Path.GetDirectoryName(outputPath);
+                string? outputDirectory = Path.GetDirectoryName(outputPath);
                 if (!string.IsNullOrWhiteSpace(outputDirectory))
                 {
                     Directory.CreateDirectory(outputDirectory);
@@ -45,22 +45,24 @@ public sealed class GuardianOverlayPresentationRenderingTests
     public void EveryGuardianEditorPresentationRendersAtItsCatalogSize()
     {
         var hashes = new HashSet<string>(StringComparer.Ordinal);
-        var outputDirectory = Environment.GetEnvironmentVariable("SRVSURVEY_GUARDIAN_RENDER_OUTPUT");
+        string? outputDirectory = Environment.GetEnvironmentVariable("SRVSURVEY_GUARDIAN_RENDER_OUTPUT");
         if (!string.IsNullOrWhiteSpace(outputDirectory))
         {
             Directory.CreateDirectory(outputDirectory);
         }
 
-        foreach (var plotterName in new[] { "PlotGuardians", "PlotGuardianStatus", "PlotGuardianSystem", "PlotRamTah" })
+        foreach (
+            string? plotterName in new[] { "PlotGuardians", "PlotGuardianStatus", "PlotGuardianSystem", "PlotRamTah" }
+        )
         {
-            var definition = OverlayLayoutCatalog.GetRequired(plotterName);
+            OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired(plotterName);
             var preview = new OverlayPositionPreviewWindow(definition);
             try
             {
                 OverlayThemeResources.Apply(preview);
                 preview.ApplyRuntimePresentationTheme();
                 preview.Show();
-                var frame = preview.CaptureRenderedFrame();
+                WriteableBitmap? frame = preview.CaptureRenderedFrame();
                 Assert.NotNull(frame);
                 // The host size follows its presentation content. Only require a non-empty render and uniqueness
                 // across panels.
@@ -69,7 +71,7 @@ public sealed class GuardianOverlayPresentationRenderingTests
 
                 using var stream = new MemoryStream();
                 frame.Save(stream, PngBitmapEncoderOptions.Default);
-                var png = stream.ToArray();
+                byte[] png = stream.ToArray();
                 hashes.Add(Convert.ToHexString(SHA256.HashData(png)));
                 if (!string.IsNullOrWhiteSpace(outputDirectory))
                 {

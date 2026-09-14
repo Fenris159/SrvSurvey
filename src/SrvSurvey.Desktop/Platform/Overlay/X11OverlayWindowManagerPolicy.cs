@@ -20,7 +20,7 @@ internal static class X11OverlayWindowManagerPolicy
             return X11OverlayStackingMode.StandardTopmost;
         }
 
-        foreach (var atom in supportedAtoms)
+        foreach (nuint atom in supportedAtoms)
         {
             if (atom == kdeOnScreenDisplayAtom)
             {

@@ -13,7 +13,7 @@ public sealed class SystemNicknameSettingsStoreTests : IDisposable
     public void PreferenceRoundTripsWithoutRemovingOtherSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui.json");
+        string path = Path.Combine(temporaryDirectory, "ui.json");
         File.WriteAllText(path, "{\"Theme\":\"green-dark\"}");
         var store = new SystemNicknameSettingsStore(path);
 

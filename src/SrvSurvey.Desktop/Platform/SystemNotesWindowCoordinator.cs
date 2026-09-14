@@ -67,7 +67,7 @@ public sealed class SystemNotesWindowCoordinator : IDisposable
 
         disposed = true;
         viewModel.SetWindowOpener(null);
-        var notesWindow = window;
+        SystemNotesWindow? notesWindow = window;
         window = null;
         if (notesWindow is not null)
         {

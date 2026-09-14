@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using SrvSurvey.Core.Exobiology;
@@ -61,7 +62,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IReadOnlyList<FssBodyRowViewModel> fssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
-    private HashSet<int> canonnBiologyBodyIds = new HashSet<int>();
+    private HashSet<int> canonnBiologyBodyIds = [];
     private bool hasCanonnSystemData;
     private BodyInformationViewModel? bodyInformation;
     private BiologySurveyViewModel? biologySurvey;
@@ -168,7 +169,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         this.regionalCodexCandidates = regionalCodexCandidates ?? RegionalCodexCandidateCatalog.Empty;
         this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         this.biologyRewardThresholds = biologyRewardThresholds ?? BiologyRewardThresholds.Default;
-        var preferences = settingsStore.Load();
+        SystemSurveyPreferences preferences = settingsStore.Load();
         autoShowBodyInfo = preferences.AutoShowBodyInfo;
         showBodyInfoInSystemMap = preferences.ShowBodyInfoInSystemMap;
         bodyInformationPreviewExtensionSeconds = preferences.BodyInformationPreviewExtensionSeconds;
@@ -638,7 +639,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => fssBodiesBeforeScrolling;
         set
         {
-            var normalized = Math.Clamp(value, 1, 20);
+            int normalized = Math.Clamp(value, 1, 20);
             if (SetPreference(ref fssBodiesBeforeScrolling, normalized))
             {
                 OnPropertyChanged(nameof(FssBodyListMaxHeight));
@@ -677,7 +678,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => fssBodyValueFloor;
         set
         {
-            var normalized = Math.Max(0, value);
+            int normalized = Math.Max(0, value);
             if (SetPreference(ref fssBodyValueFloor, normalized))
             {
                 RefreshDisplay();
@@ -702,7 +703,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => dssValueFloor;
         set
         {
-            var normalized = Math.Max(0, value);
+            int normalized = Math.Max(0, value);
             if (SetPreference(ref dssValueFloor, normalized))
             {
                 RefreshDisplay();
@@ -727,7 +728,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => dssDistanceLimitLs;
         set
         {
-            var normalized = Math.Max(0, value);
+            int normalized = Math.Max(0, value);
             if (SetPreference(ref dssDistanceLimitLs, normalized))
             {
                 RefreshDisplay();
@@ -801,7 +802,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return string.Empty;
             }
 
-            var elapsed = utcNow() - lastFssTuningScanAt;
+            TimeSpan elapsed = utcNow() - lastFssTuningScanAt;
             if (
                 FssTuningState == FssTuningDetectionState.Waiting
                 || lastFssTuningScanAt != default && elapsed.TotalMilliseconds < 250
@@ -905,8 +906,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get
         {
-            var selectedBodyId = BiologySurvey?.SelectedBodyId;
-            var currentBodyId = !string.IsNullOrWhiteSpace(status?.BodyName)
+            int? selectedBodyId = BiologySurvey?.SelectedBodyId;
+            int? currentBodyId = !string.IsNullOrWhiteSpace(status?.BodyName)
                 ? snapshot
                     .Bodies.FirstOrDefault(body =>
                         string.Equals(body.Name, status.BodyName, StringComparison.OrdinalIgnoreCase)
@@ -934,8 +935,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return 0;
             }
 
-            var remaining = timedBiologyExpiresAt - utcNow();
-            var total = timedBiologyExpiresAt - timedBiologyStartedAt;
+            TimeSpan remaining = timedBiologyExpiresAt - utcNow();
+            TimeSpan total = timedBiologyExpiresAt - timedBiologyStartedAt;
             return Math.Clamp(remaining.TotalMilliseconds / total.TotalMilliseconds * 100d, 0d, 100d);
         }
     }
@@ -987,12 +988,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return "WAITING FOR SYSTEM";
             }
 
-            var mainStar = snapshot.Bodies.FirstOrDefault(body =>
+            SystemScanBodySnapshot? mainStar = snapshot.Bodies.FirstOrDefault(body =>
                 body.Kind == SystemBodyKind.Star
                 && (body.BodyId == 0 || body.Name.EndsWith(" A", StringComparison.Ordinal))
             );
-            var prefix = mainStar?.WasDiscovered == false ? "⚑ " : string.Empty;
-            var suffix = snapshot.AllBodiesFound ? "  ✓" : string.Empty;
+            string prefix = mainStar?.WasDiscovered == false ? "⚑ " : string.Empty;
+            string suffix = snapshot.AllBodiesFound ? "  ✓" : string.Empty;
             return prefix + snapshot.SystemName + suffix;
         }
     }
@@ -1001,8 +1002,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get
         {
-            var scannedCount = snapshot.Bodies.Count(body => body.IsScanned && body.CountsTowardFss);
-            var prefix = snapshot.AllBodiesFound
+            int scannedCount = snapshot.Bodies.Count(body => body.IsScanned && body.CountsTowardFss);
+            string prefix = snapshot.AllBodiesFound
                 ? $"Scanned all {scannedCount:N0} bodies"
                 : $"Scanned {scannedCount:N0} bodies";
             return $"{prefix} · {FormatCredits(snapshot.CurrentScanValue)}";
@@ -1151,7 +1152,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return DssBodies.Count == 0 ? "DSS survey: None" : "DSS survey";
             }
 
-            var percent =
+            int percent =
                 snapshot.ExpectedBodyCount <= 0
                     ? 0
                     : Math.Clamp((int)(100d * snapshot.FssBodyCount / snapshot.ExpectedBodyCount), 0, 100);
@@ -1212,12 +1213,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var mode = ResolveGameMode();
-            var automatic =
+            OverlayGameMode mode = ResolveGameMode();
+            bool automatic =
                 mode == OverlayGameMode.Fss
                 || ShowFssInfoInSystemMap && mode == OverlayGameMode.SystemMap
                 || ShowFssInfoInNavigationPanel && mode == OverlayGameMode.ExternalPanel;
-            var forced = forceShowFssInfo && !fsdJumping;
+            bool forced = forceShowFssInfo && !fsdJumping;
             return automatic || forced;
         }
     }
@@ -1251,12 +1252,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var mode = ResolveGameMode();
-            var inSystemMap = mode is OverlayGameMode.SystemMap or OverlayGameMode.Orrery;
-            var inNavigationPanel = mode == OverlayGameMode.ExternalPanel;
-            var inOrbit =
+            OverlayGameMode mode = ResolveGameMode();
+            bool inSystemMap = mode is OverlayGameMode.SystemMap or OverlayGameMode.Orrery;
+            bool inNavigationPanel = mode == OverlayGameMode.ExternalPanel;
+            bool inOrbit =
                 status.HasLatitudeLongitude && mode is OverlayGameMode.SuperCruising or OverlayGameMode.GlideMode;
-            var atSurface =
+            bool atSurface =
                 status.HasLatitudeLongitude
                 && status.HudInAnalysisMode
                 && mode is OverlayGameMode.Flying or OverlayGameMode.Landed or OverlayGameMode.InSrv;
@@ -1283,7 +1284,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var mode = ResolveGameMode();
+            OverlayGameMode mode = ResolveGameMode();
             return mode
                 is OverlayGameMode.SuperCruising
                     or OverlayGameMode.Saa
@@ -1298,7 +1299,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get
         {
-            var body = ResolveNearbyLocalBody();
+            SystemScanBodySnapshot? body = ResolveNearbyLocalBody();
             if (
                 !AutoShowFlightWarnings
                 || status is null
@@ -1311,7 +1312,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var mode = ResolveGameMode();
+            OverlayGameMode mode = ResolveGameMode();
             return mode
                 is OverlayGameMode.Landed
                     or OverlayGameMode.SuperCruising
@@ -1331,7 +1332,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return editorFlightWarningText;
             }
 
-            var body = ResolveNearbyLocalBody();
+            SystemScanBodySnapshot? body = ResolveNearbyLocalBody();
             return body is null ? "HIGH-GRAVITY BODY" : $"WARNING: SURFACE GRAVITY {body.SurfaceGravity / 10d:N2} g";
         }
     }
@@ -1415,8 +1416,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var mode = ResolveGameMode();
-            var overviewMode =
+            OverlayGameMode mode = ResolveGameMode();
+            bool overviewMode =
                 mode
                 is OverlayGameMode.SuperCruising
                     or OverlayGameMode.Saa
@@ -1424,7 +1425,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     or OverlayGameMode.ExternalPanel
                     or OverlayGameMode.Orrery
                     or OverlayGameMode.SystemMap;
-            var localBodyMode =
+            bool localBodyMode =
                 BiologySurvey.IsBodyDetail
                 && mode
                     is OverlayGameMode.GlideMode
@@ -1458,7 +1459,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var mode = ResolveGameMode();
+            OverlayGameMode mode = ResolveGameMode();
             return mode
                 is OverlayGameMode.Flying
                     or OverlayGameMode.Landed
@@ -1495,7 +1496,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var mode = ResolveGameMode();
+            OverlayGameMode mode = ResolveGameMode();
             return mode
                 is OverlayGameMode.SuperCruising
                     or OverlayGameMode.Flying
@@ -1528,9 +1529,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return;
         }
 
-        var previousAddress = snapshot.SystemAddress;
-        var previousStatus = status;
-        foreach (var journalEvent in journalEvents)
+        long? previousAddress = snapshot.SystemAddress;
+        EliteStatus? previousStatus = status;
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             ApplyJournalEvent(journalEvent);
         }
@@ -1556,7 +1557,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         UpdateTimedBodyInformationSelection(nextStatus);
         UpdateTimedBiologySelection(previousStatus, nextStatus);
 
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             ApplyBiologyCodexCue(journalEvent);
         }
@@ -1618,7 +1619,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         ClearTimedBodyInformationSelection(refreshDisplay: false);
         ClearTimedBiologySelection(refreshDisplay: false);
         biologyDiscoveryContext = BiologyDiscoveryContext.Unavailable;
-        canonnBiologyBodyIds = new HashSet<int>();
+        canonnBiologyBodyIds = [];
         hasCanonnSystemData = false;
         biologyCodexNotification = null;
         forceShowFssInfo = false;
@@ -1716,7 +1717,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             || !string.Equals(result.SystemName, snapshot.SystemName, StringComparison.OrdinalIgnoreCase)
         )
         {
-            canonnBiologyBodyIds = new HashSet<int>();
+            canonnBiologyBodyIds = [];
             hasCanonnSystemData = false;
         }
         else
@@ -1734,7 +1735,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool RefreshTransientState()
     {
-        var changed = false;
+        bool changed = false;
         if (dssVisibilityWindowWasActive && !IsWithinPostDssBiologyWindow)
         {
             dssVisibilityWindowWasActive = false;
@@ -1872,9 +1873,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private void RefreshDisplay()
     {
-        var allowRetainedBiologyBody = status?.HasLatitudeLongitude == true || IsWithinPostDssBiologyWindow;
-        var restrictBodyBiologyToNearbyTarget = DrawBodyBiosOnlyWhenNear && ResolveGameMode() != OverlayGameMode.Saa;
-        var externalBiologyBodyIds = UseExternalData && AutoShowPriorScans ? canonnBiologyBodyIds : null;
+        bool allowRetainedBiologyBody = status?.HasLatitudeLongitude == true || IsWithinPostDssBiologyWindow;
+        bool restrictBodyBiologyToNearbyTarget = DrawBodyBiosOnlyWhenNear && ResolveGameMode() != OverlayGameMode.Saa;
+        HashSet<int>? externalBiologyBodyIds = UseExternalData && AutoShowPriorScans ? canonnBiologyBodyIds : null;
         BiologySurvey =
             timedBiologyBodyId is { } selectedBodyId && IsBiologyMapMode(status) && utcNow() < timedBiologyExpiresAt
                 ? BiologySurveyViewModel.CreateBodyDetail(
@@ -1936,7 +1937,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             .Select(CreateFssBodyRow)
             .ToArray();
 
-        var destination = GetDestinationShortName();
+        string? destination = GetDestinationShortName();
         DssBodies = CreateDssCandidates().Select(name => CreateBodyReference(name, destination)).ToArray();
         BiologicalBodies = snapshot
             .Bodies.Where(body => body.AnalyzedBiologicalSignalCount < body.BiologicalSignalCount)
@@ -1980,7 +1981,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private static bool IsMatchingCanonnBody(SystemScanBodySnapshot body, string bodyName)
     {
-        var normalized = bodyName.Trim();
+        string normalized = bodyName.Trim();
         return normalized.Length > 0
             && (
                 string.Equals(body.ShortName, normalized, StringComparison.OrdinalIgnoreCase)
@@ -2005,8 +2006,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return;
         }
 
-        var destination = nextStatus.Destination;
-        var body =
+        StatusDestination? destination = nextStatus.Destination;
+        SystemScanBodySnapshot? body =
             destination is not null && destination.System == snapshot.SystemAddress
                 ? snapshot.Bodies.FirstOrDefault(candidate =>
                     candidate.BodyId == destination.Body
@@ -2049,7 +2050,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private bool IsBodyInformationTimedMapMode(EliteStatus? value)
     {
-        var mode = OverlayGameModeResolver.Resolve(value, fsdJumping, musicTrack);
+        OverlayGameMode mode = OverlayGameModeResolver.Resolve(value, fsdJumping, musicTrack);
         return mode is OverlayGameMode.SystemMap or OverlayGameMode.Orrery;
     }
 
@@ -2076,8 +2077,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return;
         }
 
-        var destination = nextStatus.Destination;
-        var body =
+        StatusDestination? destination = nextStatus.Destination;
+        SystemScanBodySnapshot? body =
             destination is not null && destination.System == snapshot.SystemAddress
                 ? snapshot.Bodies.FirstOrDefault(candidate =>
                     candidate.BodyId == destination.Body && candidate.BiologicalSignalCount > 0
@@ -2106,7 +2107,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 ReferenceCatalog = biologyCatalog,
             }
         );
-        var signalCount = Math.Max(1, details?.Organisms.Count ?? body.BiologicalSignalCount);
+        int signalCount = Math.Max(1, details?.Organisms.Count ?? body.BiologicalSignalCount);
         timedBiologyBodyId = body.BodyId;
         timedBiologyStartedAt = utcNow();
         timedBiologyExpiresAt =
@@ -2136,13 +2137,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private bool IsBiologyMapMode(EliteStatus? value)
     {
-        var mode = OverlayGameModeResolver.Resolve(value, fsdJumping, musicTrack);
+        OverlayGameMode mode = OverlayGameModeResolver.Resolve(value, fsdJumping, musicTrack);
         return mode is OverlayGameMode.ExternalPanel or OverlayGameMode.SystemMap or OverlayGameMode.Orrery;
     }
 
     private void ApplyBiologyCodexCue(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         if (journalEvent.EventName == "ScanOrganic")
         {
             biologyCodexNotification = null;
@@ -2170,7 +2171,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return;
         }
 
-        var bodyId =
+        int? bodyId =
             GetInt64(root, "BodyID") is { } parsedBodyId && parsedBodyId is >= int.MinValue and <= int.MaxValue
                 ? (int)parsedBodyId
                 : snapshot.CurrentBodyId;
@@ -2179,9 +2180,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return;
         }
 
-        var body = snapshot.Bodies.FirstOrDefault(candidate => candidate.BodyId == bodyId);
-        var isFirstFootfall = body?.IsFirstFootfall == true;
-        var reward = isFirstFootfall ? reference.Reward * 5 : reference.Reward;
+        SystemScanBodySnapshot? body = snapshot.Bodies.FirstOrDefault(candidate => candidate.BodyId == bodyId);
+        bool isFirstFootfall = body?.IsFirstFootfall == true;
+        long reward = isFirstFootfall ? reference.Reward * 5 : reference.Reward;
         biologyCodexNotification = new BiologyCodexNotificationViewModel(
             reference.EntryId,
             bodyId.Value,
@@ -2199,15 +2200,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return null;
         }
 
-        var body = target.Body;
+        SystemScanBodySnapshot? body = target.Body;
         if (body is null || body.Kind is SystemBodyKind.Unknown or SystemBodyKind.Barycentre)
         {
             return BodyInformationViewModel.ScanRequired(target.BodyId, target.Name);
         }
 
-        var planetish =
+        bool planetish =
             body.Kind is not SystemBodyKind.Star and not SystemBodyKind.Asteroid and not SystemBodyKind.Ring;
-        var gravity = body.SurfaceGravity / 10d;
+        double gravity = body.SurfaceGravity / 10d;
         return new BodyInformationViewModel(
             body.BodyId,
             body.WasDiscovered ? body.Name : "⚑ " + body.Name,
@@ -2335,10 +2336,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return null;
         }
 
-        var mode = ResolveGameMode();
-        var requiresSelectedTarget =
+        OverlayGameMode mode = ResolveGameMode();
+        bool requiresSelectedTarget =
             mode is OverlayGameMode.SystemMap or OverlayGameMode.Orrery or OverlayGameMode.ExternalPanel;
-        var targetBody = ResolveTargetBody(requiresSelectedTarget);
+        SystemScanBodySnapshot? targetBody = ResolveTargetBody(requiresSelectedTarget);
         if (targetBody is null)
         {
             return null;
@@ -2368,7 +2369,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return targetBody.IsDssComplete ? new BodyInfoTarget(targetBody.BodyId, targetBody.Name, targetBody) : null;
         }
 
-        var currentBody = status?.HasLatitudeLongitude == true ? ResolveRetainedLocalBody() : null;
+        SystemScanBodySnapshot? currentBody = status?.HasLatitudeLongitude == true ? ResolveRetainedLocalBody() : null;
         return currentBody is null ? null : new BodyInfoTarget(currentBody.BodyId, currentBody.Name, currentBody);
     }
 
@@ -2388,7 +2389,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
             if (destination.Body >= 0)
             {
-                var selected = snapshot.Bodies.FirstOrDefault(candidate => candidate.BodyId == destination.Body);
+                SystemScanBodySnapshot? selected = snapshot.Bodies.FirstOrDefault(candidate =>
+                    candidate.BodyId == destination.Body
+                );
                 if (selected is not null && string.Equals(selected.Name, destination.Name, StringComparison.Ordinal))
                 {
                     return selected;
@@ -2416,7 +2419,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private FlightWarningLevel ResolveFlightWarningLevel()
     {
-        var gravity = editorFlightWarningGravity ?? ResolveNearbyLocalBody()?.SurfaceGravity / 10d ?? 0;
+        double gravity = editorFlightWarningGravity ?? ResolveNearbyLocalBody()?.SurfaceGravity / 10d ?? 0;
         return gravity switch
         {
             >= 8 => ExtremeFlightWarning,
@@ -2452,7 +2455,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return null;
         }
 
-        var body = !string.IsNullOrWhiteSpace(status?.BodyName)
+        SystemScanBodySnapshot? body = !string.IsNullOrWhiteSpace(status?.BodyName)
             ? snapshot.Bodies.FirstOrDefault(candidate =>
                 string.Equals(candidate.Name, status.BodyName, StringComparison.OrdinalIgnoreCase)
             )
@@ -2501,11 +2504,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return string.Empty;
         }
 
-        var normalized = value.Replace('_', ' ').Trim();
+        string normalized = value.Replace('_', ' ').Trim();
         var output = new System.Text.StringBuilder(normalized.Length + 8);
-        for (var index = 0; index < normalized.Length; index++)
+        for (int index = 0; index < normalized.Length; index++)
         {
-            var character = normalized[index];
+            char character = normalized[index];
             if (index > 0 && char.IsUpper(character) && char.IsLower(normalized[index - 1]))
             {
                 output.Append(' ');
@@ -2514,7 +2517,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             output.Append(character);
         }
 
-        var result = output.ToString();
+        string result = output.ToString();
         return char.ToUpperInvariant(result[0]) + result[1..];
     }
 
@@ -2530,7 +2533,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private static string GetRingName(string bodyName, string ringName)
     {
-        var suffix = ringName.StartsWith(bodyName, StringComparison.OrdinalIgnoreCase)
+        string suffix = ringName.StartsWith(bodyName, StringComparison.OrdinalIgnoreCase)
             ? ringName[bodyName.Length..].Trim()
             : ringName;
         return string.IsNullOrWhiteSpace(suffix) ? "Ring" : suffix.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
@@ -2577,7 +2580,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return false;
         }
 
-        var valuableClass =
+        bool valuableClass =
             body.IsTerraformable
             || body.PlanetClass?.StartsWith("Water ", StringComparison.Ordinal) == true
             || body.PlanetClass?.StartsWith("Ammonia ", StringComparison.Ordinal) == true
@@ -2590,13 +2593,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private FssBodyRowViewModel CreateFssBodyRow(SystemScanBodySnapshot body)
     {
-        var dssWorthy =
+        bool dssWorthy =
             HighlightDssCandidates
             && body.EstimatedMappedValue > DssValueFloor
             && !(SkipDistantDssCandidates && body.DistanceFromArrivalLs > DssDistanceLimitLs)
             && !(SkipGasGiantsForDss && body.Kind == SystemBodyKind.GasGiant)
             && body.Kind != SystemBodyKind.Star;
-        var className =
+        string className =
             body.Kind == SystemBodyKind.Star
                 ? $"{body.StarClass ?? "Unknown"} star"
                 : (body.PlanetClass ?? "Unknown body").Replace("Sudarsky class", "Class", StringComparison.Ordinal);
@@ -2633,14 +2636,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IEnumerable<string> CreateDssCandidates()
     {
         var knownRingBodies = snapshot.Bodies.ToDictionary(body => body.Name, StringComparer.Ordinal);
-        foreach (var body in snapshot.Bodies.OrderBy(body => body.BodyId))
+        foreach (SystemScanBodySnapshot? body in snapshot.Bodies.OrderBy(body => body.BodyId))
         {
             if (body.IsDssComplete || !body.IsMappable)
             {
                 continue;
             }
 
-            foreach (var candidate in CreateBodyDssCandidates(body, knownRingBodies))
+            foreach (string candidate in CreateBodyDssCandidates(body, knownRingBodies))
             {
                 yield return candidate;
             }
@@ -2652,7 +2655,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         IReadOnlyDictionary<string, SystemScanBodySnapshot> knownRingBodies
     )
     {
-        foreach (var ringCandidate in CreateRingDssCandidates(body, knownRingBodies))
+        foreach (string ringCandidate in CreateRingDssCandidates(body, knownRingBodies))
         {
             yield return ringCandidate;
         }
@@ -2675,10 +2678,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             yield break;
         }
 
-        for (var index = 0; index < body.Rings.Count; index++)
+        for (int index = 0; index < body.Rings.Count; index++)
         {
-            var ring = body.Rings[index];
-            if (!knownRingBodies.TryGetValue(ring.Name, out var ringBody) || !ringBody.IsDssComplete)
+            SystemRingSnapshot ring = body.Rings[index];
+            if (
+                !knownRingBodies.TryGetValue(ring.Name, out SystemScanBodySnapshot? ringBody) || !ringBody.IsDssComplete
+            )
             {
                 yield return body.ShortName + "r" + (char)('A' + index);
             }
@@ -2716,7 +2721,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private string? GetDestinationShortName()
     {
-        var name = status?.Destination?.Name;
+        string? name = status?.Destination?.Name;
         if (string.IsNullOrWhiteSpace(name))
         {
             return null;
@@ -2961,7 +2966,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private static string? GetString(System.Text.Json.JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value) && value.ValueKind == System.Text.Json.JsonValueKind.String
+            root.TryGetProperty(propertyName, out JsonElement value)
+            && value.ValueKind == System.Text.Json.JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -2969,7 +2975,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private static bool HasRingParent(System.Text.Json.JsonElement root)
     {
         if (
-            !root.TryGetProperty("Parents", out var parents)
+            !root.TryGetProperty("Parents", out JsonElement parents)
             || parents.ValueKind != System.Text.Json.JsonValueKind.Array
         )
         {
@@ -2985,12 +2991,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private static long? GetInt64(System.Text.Json.JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == System.Text.Json.JsonValueKind.Number && value.TryGetInt64(out var number))
+        if (value.ValueKind == System.Text.Json.JsonValueKind.Number && value.TryGetInt64(out long number))
         {
             return number;
         }

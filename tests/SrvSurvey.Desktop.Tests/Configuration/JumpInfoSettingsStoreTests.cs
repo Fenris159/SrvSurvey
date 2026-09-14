@@ -12,9 +12,9 @@ public sealed class JumpInfoSettingsStoreTests : IDisposable
     [Fact]
     public void MissingDocumentUsesLegacyCompatibleDefaults()
     {
-        var store = CreateStore();
+        JumpInfoSettingsStore store = CreateStore();
 
-        var preferences = store.Load();
+        JumpInfoPreferences preferences = store.Load();
 
         Assert.True(preferences.AutoShow);
         Assert.False(preferences.Minimal);
@@ -26,12 +26,12 @@ public sealed class JumpInfoSettingsStoreTests : IDisposable
     public void PreferencesRoundTripWithoutRemovingOtherUiSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Theme\":\"Blue-dark\"}");
         var store = new JumpInfoSettingsStore(path);
 
         store.Save(new JumpInfoPreferences(false, true, true, true));
-        var reloaded = store.Load();
+        JumpInfoPreferences reloaded = store.Load();
 
         Assert.Equal(new JumpInfoPreferences(false, true, true, true), reloaded);
         Assert.Contains("Blue-dark", File.ReadAllText(path));

@@ -21,7 +21,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         var gameBounds = new PixelRect(100, 200, 1200, 800);
         var overlaySize = new PixelSize(300, 120);
         var desiredPosition = new PixelPoint(475, 525);
-        var anchors = new[]
+        LegacyOverlayPlacement[] anchors = new[]
         {
             new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 0, LegacyVerticalAnchor.Top, 0, 0.7),
             new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Middle, 0, 0.7),
@@ -29,9 +29,9 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             new LegacyOverlayPlacement(LegacyHorizontalAnchor.Screen, 0, LegacyVerticalAnchor.Screen, 0, 0.7),
         };
 
-        foreach (var original in anchors)
+        foreach (LegacyOverlayPlacement? original in anchors)
         {
-            var placement = OverlayInteractionViewModel.CreatePlacement(
+            LegacyOverlayPlacement placement = OverlayInteractionViewModel.CreatePlacement(
                 original,
                 desiredPosition,
                 overlaySize,
@@ -95,7 +95,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     [InlineData("PlotSysStatus")]
     public void LiveMoveKeepsDynamicPanelTopEdgeStableAcrossContentHeights(string plotterName)
     {
-        var original = OverlayLayoutCatalog.GetRequired(plotterName).DefaultPlacement with { Opacity = 0.7 };
+        LegacyOverlayPlacement original = OverlayLayoutCatalog.GetRequired(plotterName).DefaultPlacement with
+        {
+            Opacity = 0.7,
+        };
         var active = new LegacyOverlayLayout(
             new Dictionary<string, LegacyOverlayPlacement> { [plotterName] = original },
             null,
@@ -119,7 +122,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             )
         );
 
-        var placement = session.GetPlacement(plotterName);
+        LegacyOverlayPlacement placement = session.GetPlacement(plotterName);
         Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
         Assert.Equal(placement, previewSession.GetPlacement(plotterName));
         Assert.Equal(movedPosition, active.GetPosition(plotterName, gameBounds, liveSize));
@@ -253,10 +256,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     public void LiveWindowDragPersistsAndIsReloadedByThePositionEditor()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
         File.WriteAllText(path, "{\"PlotJumpInfo\":\"center:0, top:8\"}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var platform = new FakeOverlayPlatform();
         var registry = new OverlayWindowRegistry();
         var host = new FakeEditorHost();
@@ -309,7 +312,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             "{\"PlotGuardians\":\"right:20, bottom:20\"}"
         );
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var platform = new FakeOverlayPlatform();
         var registry = new OverlayWindowRegistry();
         var gameBounds = new PixelRect(100, 200, 1200, 800);
@@ -337,7 +340,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             registry,
             new FakeEditorHost()
         );
-        var original = activeLayout.Placements["PlotGuardians"];
+        LegacyOverlayPlacement original = activeLayout.Placements["PlotGuardians"];
 
         Assert.True(viewModel.ToggleLiveOverlayInteraction());
         child.Position = new PixelPoint(-800, -700);
@@ -355,7 +358,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), "{\"PlotJumpInfo\":\"center:0, top:8\"}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var platform = new FakeOverlayPlatform();
         var registry = new OverlayWindowRegistry();
         var host = new FakeEditorHost();
@@ -383,7 +386,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         Assert.True(viewModel.Begin());
 
-        var savedPlacement = store.Load().Placements["PlotJumpInfo"];
+        LegacyOverlayPlacement savedPlacement = store.Load().Placements["PlotJumpInfo"];
         Assert.Equal(savedPlacement, activeLayout.Placements["PlotJumpInfo"]);
         Assert.Equal(savedPlacement, host.OpenedJumpInfoPlacement);
         Assert.Equal(
@@ -404,7 +407,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), "{\"PlotJumpInfo\":\"center:0, top:8\"}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var registry = new OverlayWindowRegistry();
         var host = new FakeEditorHost();
         var gameBounds = new PixelRect(100, 200, 1200, 800);
@@ -426,13 +429,13 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             registry,
             host
         );
-        var original = activeLayout.Placements["PlotJumpInfo"];
+        LegacyOverlayPlacement original = activeLayout.Placements["PlotJumpInfo"];
 
         Assert.True(viewModel.Begin());
         Assert.True(viewModel.ToggleLiveOverlayInteraction());
         Assert.True(host.RuntimeOverlaysVisibleDuringEditing);
 
-        var definition = OverlayLayoutCatalog.GetRequired("PlotJumpInfo");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired("PlotJumpInfo");
         host.Move(definition.Name, new PixelPoint(460, 340), definition.PreviewSize, gameBounds);
 
         Assert.NotEqual(original, activeLayout.Placements["PlotJumpInfo"]);
@@ -480,10 +483,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     public void OpeningEditorReloadsPersistedLayoutInsteadOfStaleMemory()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
         File.WriteAllText(path, "{\"PlotJumpInfo\":\"center:0, top:8\"}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new FakeEditorHost();
         using var viewModel = new OverlayInteractionViewModel(
             new FakeOverlayPlatform(),
@@ -509,13 +512,13 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     public void SnapToCenterCommandIsSavedWithTheOtherEditorChanges()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
         File.WriteAllText(
             path,
             "{\"PlotJumpInfo\":\"left:315, top:470\"," + "\"PlotGuardians\":\"right:40, bottom:60\"}"
         );
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new FakeEditorHost();
         using var viewModel = new OverlayInteractionViewModel(
             new FakeOverlayPlatform(),
@@ -530,7 +533,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         viewModel.SnapToCenterCommand.Execute(null);
 
         Assert.Equal(1, host.PositionRefreshCount);
-        var centered = host.LastPositionRefreshPlacements["PlotJumpInfo"];
+        LegacyOverlayPlacement centered = host.LastPositionRefreshPlacements["PlotJumpInfo"];
         Assert.Equal(LegacyHorizontalAnchor.Center, centered.Horizontal);
         Assert.Equal(0, centered.HorizontalOffset);
         Assert.Equal(LegacyVerticalAnchor.Top, centered.Vertical);
@@ -543,7 +546,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         viewModel.Save();
 
-        var persisted = store.Load();
+        LegacyOverlayLayout persisted = store.Load();
         Assert.Equal(centered, persisted.Placements["PlotJumpInfo"]);
         Assert.Equal(host.LastPositionRefreshPlacements["PlotGuardians"], persisted.Placements["PlotGuardians"]);
     }
@@ -552,11 +555,11 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     public void CancelDiscardsMovesAndSaveCommitsThemAtomically()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
         const string originalFile = "{\"PlotJumpInfo\":\"center:0, top:8\"}";
         File.WriteAllText(path, originalFile);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new FakeEditorHost();
         using var viewModel = new OverlayInteractionViewModel(
             new FakeOverlayPlatform(),
@@ -566,7 +569,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             new OverlayWindowRegistry(),
             host
         );
-        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotJumpInfo");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotJumpInfo");
         var bounds = new PixelRect(100, 200, 1200, 800);
 
         Assert.True(viewModel.Begin());
@@ -604,7 +607,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new FakeEditorHost();
         using var viewModel = new OverlayInteractionViewModel(
             new FakeOverlayPlatform(),
@@ -628,12 +631,12 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     public void OpacityPreviewCancelAndSaveShareThePositionEditSession()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
-        var settingsPath = Path.Combine(temporaryDirectory, "settings.json");
+        string plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "settings.json");
         File.WriteAllText(plottersPath, "{\"PlotJumpInfo\":\"center:0, top:8\"}");
         File.WriteAllText(settingsPath, "{\"plotterOpacity\":65}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new FakeEditorHost();
         using var viewModel = new OverlayInteractionViewModel(
             new FakeOverlayPlatform(),
@@ -676,10 +679,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     public void PerOverlayScaleCanBeCancelledOrSavedIndependently()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
+        string plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
         File.WriteAllText(plottersPath, "{\"PlotJumpInfo\":\"center:0, top:8\"}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new FakeEditorHost();
         using var viewModel = new OverlayInteractionViewModel(
             new FakeOverlayPlatform(),
@@ -716,7 +719,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), "{\"PlotJumpInfo\":\"center:0, top:8\"}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new FakeEditorHost();
         using var viewModel = new OverlayInteractionViewModel(
             new FakeOverlayPlatform(),
@@ -732,7 +735,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.True(viewModel.IsOverlaySettingsOpen);
         viewModel.SelectedOverlayOpacityPercent = 34;
         viewModel.UseGlobalOverlayOpacity = false;
-        var scaleOptions = OverlayScaleCatalog
+        OverlayScaleOption[] scaleOptions = OverlayScaleCatalog
             .Options.Where(option => option.AbsoluteScale is not null)
             .OrderBy(option => option.AbsoluteScale)
             .ToArray();
@@ -874,7 +877,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         public void RefreshPreviewOpacities(OverlayPositionEditSession session)
         {
             LastDefaultOpacityPercent = session.DefaultOpacity * 100d;
-            foreach (var definition in OverlayLayoutCatalog.Supported)
+            foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
             {
                 LastEffectiveOpacityPercent[definition.Name] = session.GetOpacity(definition.Name) * 100d;
             }
@@ -884,7 +887,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         {
             ScaleRefreshCount++;
             LastScaleIndex = session.ScaleIndex;
-            foreach (var definition in OverlayLayoutCatalog.Supported)
+            foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
             {
                 LastEffectiveScaleIndex[definition.Name] = session.GetScaleIndex(definition.Name);
             }
@@ -902,12 +905,12 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public int SnapPreviewsToCenter(OverlayPositionEditSession session)
         {
-            var category = ShownCategories[^1];
+            OverlayLayoutCategory category = ShownCategories[^1];
             var bounds = new PixelRect(100, 200, 1200, 800);
-            var definitions = OverlayLayoutCatalog.ForCategory(category);
-            foreach (var definition in definitions)
+            IReadOnlyList<OverlayLayoutDefinition> definitions = OverlayLayoutCatalog.ForCategory(category);
+            foreach (OverlayLayoutDefinition definition in definitions)
             {
-                var size = definition.PreviewSize;
+                PixelSize size = definition.PreviewSize;
                 var center = new PixelPoint(
                     bounds.X + ((bounds.Width - size.Width) / 2),
                     bounds.Y + ((bounds.Height - size.Height) / 2)
@@ -959,7 +962,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
                 return;
             }
 
-            var options = OverlayScaleCatalog
+            OverlayScaleOption[] options = OverlayScaleCatalog
                 .Options.Where(option => option.AbsoluteScale is not null)
                 .OrderBy(option => option.AbsoluteScale)
                 .ToArray();

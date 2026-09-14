@@ -15,7 +15,7 @@ public sealed class BiologyCodexViewModelTests : IDisposable
     [Fact]
     public async Task BuildsExactPredictionAndPreservesLegacyDiscoveryStatesAndLinks()
     {
-        var survey = CreateSurvey();
+        SystemSurveyViewModel survey = CreateSurvey();
         using var viewModel = new BiologyCodexViewModel(
             survey,
             ExobiologyReferenceCatalog.LoadEmbedded(),
@@ -44,7 +44,9 @@ public sealed class BiologyCodexViewModelTests : IDisposable
         Assert.True(viewModel.HasSystem);
         Assert.Equal("Test", viewModel.SystemName);
         Assert.Equal("Test 1", viewModel.SelectedBody!.Name);
-        var organism = Assert.IsType<BiologyCodexOrganismViewModel>(viewModel.SelectedOrganism);
+        BiologyCodexOrganismViewModel organism = Assert.IsType<BiologyCodexOrganismViewModel>(
+            viewModel.SelectedOrganism
+        );
         Assert.Equal(2310206, organism.EntryId);
         Assert.Equal("Aleoida Coronamus - Lime", organism.DisplayName);
         Assert.Equal(BiologyCodexDiscoveryStatus.Predicted, organism.Status);
@@ -94,13 +96,13 @@ public sealed class BiologyCodexViewModelTests : IDisposable
     [Fact]
     public void NavigationWrapsBodiesAndEntriesAndWindowAvailability()
     {
-        var survey = CreateSurvey();
+        SystemSurveyViewModel survey = CreateSurvey();
         using var viewModel = new BiologyCodexViewModel(
             survey,
             ExobiologyReferenceCatalog.LoadEmbedded(),
             BiologyCriteriaCatalog.LoadEmbedded()
         );
-        var opened = false;
+        bool opened = false;
         viewModel.SetWindowOpener(() =>
         {
             opened = true;
@@ -132,7 +134,7 @@ public sealed class BiologyCodexViewModelTests : IDisposable
         Assert.True(SpinWait.SpinUntil(() => opened, TimeSpan.FromSeconds(1)));
         Assert.Equal(2, viewModel.Bodies.Count);
         Assert.Equal(2, viewModel.SelectedBody!.Organisms.Count);
-        var firstEntry = viewModel.SelectedOrganism;
+        BiologyCodexOrganismViewModel? firstEntry = viewModel.SelectedOrganism;
         viewModel.PreviousOrganismCommand.Execute(null);
         Assert.NotEqual(firstEntry, viewModel.SelectedOrganism);
         viewModel.NextOrganismCommand.Execute(null);
@@ -148,7 +150,7 @@ public sealed class BiologyCodexViewModelTests : IDisposable
     [Fact]
     public async Task OpenEntrySelectsTheCompositionScannerTargetBeforeOpening()
     {
-        var survey = CreateSurvey();
+        SystemSurveyViewModel survey = CreateSurvey();
         using var viewModel = new BiologyCodexViewModel(
             survey,
             ExobiologyReferenceCatalog.LoadEmbedded(),
@@ -199,7 +201,7 @@ public sealed class BiologyCodexViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

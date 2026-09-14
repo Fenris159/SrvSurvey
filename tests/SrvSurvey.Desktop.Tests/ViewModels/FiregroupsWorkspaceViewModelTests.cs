@@ -13,10 +13,10 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [Fact]
     public void EquippedFilterIncludesDuplicateHardpointsUtilityLimpetsAndBuiltInScannersButNotPassiveDefencesOrCoreModules()
     {
-        var vm = Create();
-        var options = vm.Primary[0].Options;
+        FiregroupsWorkspaceViewModel vm = Create();
+        IReadOnlyList<FiregroupModule> options = vm.Primary[0].Options;
         Assert.Equal(7, options.Count);
-        Assert.Equal(2, options.Count(m => m.Name.StartsWith("Pulse Laser")));
+        Assert.Equal(2, options.Count(m => m.Name.StartsWith("Pulse Laser", StringComparison.Ordinal)));
         Assert.Contains(options, m => m.Slot == "TinyHardpoint1");
         Assert.Contains(options, m => m.Name.Contains("Limpet Controller"));
         Assert.Contains(options, m => m.Name == "D-Scanner");
@@ -29,7 +29,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [Fact]
     public void MultiModuleGroupsSaveReloadAndFollowStatusLetters()
     {
-        var vm = Create();
+        FiregroupsWorkspaceViewModel vm = Create();
         vm.Primary[0].SelectedModule = vm.Primary[0].Options[0];
         vm.AddPrimaryCommand.Execute(null);
         vm.Primary[1].SelectedModule = vm.Primary[1].Options[1];
@@ -60,7 +60,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [Fact]
     public void NamedConfigurationsSwitchByShipIdAndPreserveUnsavedDraftAcrossSwitches()
     {
-        var vm = Create();
+        FiregroupsWorkspaceViewModel vm = Create();
         SaveOne(vm, "First ship");
         vm.ConfigurationName = "Unfinished edit";
         Feed(vm, [Loadout(2, "Other Python")]);
@@ -81,7 +81,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [Fact]
     public void AddRemoveRowsAndLettersKeepGroupsAndSavedNamesEditable()
     {
-        var vm = Create();
+        FiregroupsWorkspaceViewModel vm = Create();
         vm.PreviousGroupCommand.Execute(null);
         Assert.Equal("H", vm.GroupLetter);
         vm.NextGroupCommand.Execute(null);
@@ -91,7 +91,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         vm.Primary[1].RemoveCommand!.Execute(null);
         Assert.Single(vm.Primary);
         SaveOne(vm, "Original");
-        var saved = Assert.Single(vm.SavedProfiles);
+        FiregroupSavedRow saved = Assert.Single(vm.SavedProfiles);
         vm.NewCommand.Execute(null);
         saved.EditCommand.Execute(null);
         Assert.Equal("Original", vm.ConfigurationName);
@@ -110,7 +110,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [Fact]
     public void RemovingAllModuleRowsRemovesThatGroupFromPreviewAndSavedConfiguration()
     {
-        var vm = Create();
+        FiregroupsWorkspaceViewModel vm = Create();
         SaveOne(vm, "Two groups");
         vm.GroupLetter = "B";
         vm.Primary[0].SelectedModule = vm.Primary[0].Options[1];
@@ -130,9 +130,9 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [Fact]
     public void LoadoutRefreshRetainsMissingAssignmentsAndNoOpUpdatesPreserveEditorRows()
     {
-        var vm = Create();
+        FiregroupsWorkspaceViewModel vm = Create();
         SaveOne(vm, "Reference");
-        var row = vm.Primary[0];
+        FiregroupSelectionRow row = vm.Primary[0];
         Feed(vm, []);
         Assert.Same(row, vm.Primary[0]);
         Feed(vm, [Loadout(1, "Survey Python", empty: true)]);
@@ -147,7 +147,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [Fact]
     public void MissingNameDuplicateAssignmentsAndSaveFailureAreVisibleWithoutChangingSavedConfig()
     {
-        var vm = Create();
+        FiregroupsWorkspaceViewModel vm = Create();
         vm.Primary[0].SelectedModule = vm.Primary[0].Options[0];
         vm.SaveCommand.Execute(null);
         Assert.Contains("name", vm.Status);
@@ -159,8 +159,8 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         Assert.Empty(vm.SavedProfiles);
         vm.Primary[1].RemoveCommand!.Execute(null);
         vm.SaveCommand.Execute(null);
-        var saved = Assert.Single(vm.SavedProfiles).Profile;
-        var file = Directory.GetFiles(Path.Combine(directory, "firegroups"), "*.json").Single();
+        FiregroupProfile saved = Assert.Single(vm.SavedProfiles).Profile;
+        string file = Directory.GetFiles(Path.Combine(directory, "firegroups"), "*.json").Single();
         File.Delete(file);
         Directory.CreateDirectory(file);
         vm.ConfigurationName = "Must not be committed";
@@ -173,7 +173,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [Fact]
     public void CommanderSwitchDoesNotCopyPriorCommandersLoadoutIntoTheNewProfile()
     {
-        var vm = Create();
+        FiregroupsWorkspaceViewModel vm = Create();
         SaveOne(vm, "Commander one");
         Feed(
             vm,
@@ -198,7 +198,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         var document = new MiningCommanderData();
         document.Settings.Firegroups.Add(new(0, "Old laser", "Old limpet"));
         legacy.Save("F1", document);
-        var vm = Create();
+        FiregroupsWorkspaceViewModel vm = Create();
         Assert.Equal("Imported firegroups", Assert.Single(vm.SavedProfiles).Name);
         Assert.Equal("Old laser", vm.Primary[0].SelectedModule!.Name);
         Assert.Contains("Not equipped", vm.Primary[0].Warning);
@@ -213,10 +213,10 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [InlineData("Hpt_PlasmaPointDefence_Turret_Tiny")]
     public void CachedPassiveDefencesAreExcludedWithoutDiscardingSavedAssignments(string symbol)
     {
-        var original = Create();
+        FiregroupsWorkspaceViewModel original = Create();
         SaveOne(original, "Existing setup");
         var store = new FiregroupStore(directory);
-        var saved = store.Load("F1");
+        FiregroupDocument saved = store.Load("F1");
         var excluded = new FiregroupModule("TinyHardpoint2", symbol, "Previously assigned defence");
         saved.Ships[0] = saved.Ships[0] with { Modules = saved.Ships[0].Modules.Append(excluded).ToArray() };
         saved.Profiles[0] = saved.Profiles[0] with { Groups = [new(0, [excluded], [])] };
@@ -232,19 +232,19 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
     [Fact]
     public void RowDeletionPreservesAnotherEditorsDraftAndRejectsStaleRows()
     {
-        var vm = Create();
+        FiregroupsWorkspaceViewModel vm = Create();
         SaveOne(vm, "First");
-        var first = Assert.Single(vm.SavedProfiles);
+        FiregroupSavedRow first = Assert.Single(vm.SavedProfiles);
         vm.NewCommand.Execute(null);
         SaveOne(vm, "Second");
         vm.ConfigurationName = "Unsaved second edit";
-        var row = vm.Primary[0];
+        FiregroupSelectionRow row = vm.Primary[0];
         first.DeleteCommand.Execute(null);
         Assert.Equal("Second", Assert.Single(vm.SavedProfiles).Name);
         Assert.Equal("Unsaved second edit", vm.ConfigurationName);
         Assert.Same(row, vm.Primary[0]);
         Assert.Equal("Second", vm.ActiveProfile!.Name);
-        var stale = Assert.Single(vm.SavedProfiles);
+        FiregroupSavedRow stale = Assert.Single(vm.SavedProfiles);
         Feed(
             vm,
             [
@@ -288,7 +288,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
         StatusFlags flags = StatusFlags.InMainShip
     )
     {
-        foreach (var entry in events)
+        foreach (JournalEventEnvelope entry in events)
         {
             journal.Apply(entry);
         }
@@ -323,7 +323,7 @@ public sealed class FiregroupsWorkspaceViewModelTests : IDisposable
 
     internal static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out _));
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out _));
         return entry!;
     }
 

@@ -36,7 +36,7 @@ public static class GameWindowTracker
 
 internal static class SharedGameWindowTrackerPool
 {
-    private static readonly object Gate = new();
+    private static readonly Lock Gate = new();
     private static CachedGameWindowTracker? tracker;
     private static int leaseCount;
 
@@ -104,7 +104,7 @@ internal sealed class CachedGameWindowTracker : IGameWindowTracker
 {
     internal static readonly TimeSpan DefaultFreshness = TimeSpan.FromMilliseconds(40);
 
-    private readonly object gate = new();
+    private readonly Lock gate = new();
     private readonly IGameWindowTracker inner;
     private readonly Func<long> timestampProvider;
     private readonly long freshnessTimestampTicks;
@@ -121,7 +121,7 @@ internal sealed class CachedGameWindowTracker : IGameWindowTracker
     {
         this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
         this.timestampProvider = timestampProvider ?? Stopwatch.GetTimestamp;
-        var effectiveFreshness = freshness ?? DefaultFreshness;
+        TimeSpan effectiveFreshness = freshness ?? DefaultFreshness;
         if (effectiveFreshness < TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(freshness));
@@ -139,7 +139,7 @@ internal sealed class CachedGameWindowTracker : IGameWindowTracker
                 return GameWindowSnapshot.Unavailable;
             }
 
-            var now = timestampProvider();
+            long now = timestampProvider();
             if (hasSnapshot && now >= sampledAt && now - sampledAt <= freshnessTimestampTicks)
             {
                 return snapshot;
@@ -202,7 +202,7 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
     {
         try
         {
-            var foreground = GetForegroundWindow();
+            nint foreground = GetForegroundWindow();
             if (foreground != nint.Zero && foreground != windowHandle && foreground != inspectedForeground)
             {
                 inspectedForeground = foreground;
@@ -224,8 +224,8 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
 
             if (
                 windowHandle == nint.Zero
-                || !TryGetProcessId(windowHandle, out var processId)
-                || !GetClientRect(windowHandle, out var clientRect)
+                || !TryGetProcessId(windowHandle, out int processId)
+                || !GetClientRect(windowHandle, out NativeRect clientRect)
                 || !ClientToScreen(windowHandle, ref clientRect.TopLeft)
             )
             {
@@ -233,8 +233,8 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
                 return GameWindowSnapshot.Unavailable;
             }
 
-            var width = clientRect.Right - clientRect.Left;
-            var height = clientRect.Bottom - clientRect.Top;
+            int width = clientRect.Right - clientRect.Left;
+            int height = clientRect.Bottom - clientRect.Top;
             if (width <= 0 || height <= 0)
             {
                 return new GameWindowSnapshot(
@@ -268,9 +268,9 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
     private static nint FindGameWindow(nint foreground)
     {
         using var currentProcess = Process.GetCurrentProcess();
-        var currentSession = currentProcess.SessionId;
-        var firstWindow = nint.Zero;
-        foreach (var process in Process.GetProcessesByName(EliteGameWindowIdentity.WindowsProcessName))
+        int currentSession = currentProcess.SessionId;
+        nint firstWindow = nint.Zero;
+        foreach (Process process in Process.GetProcessesByName(EliteGameWindowIdentity.WindowsProcessName))
         {
             using (process)
             {
@@ -302,7 +302,7 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
 
     private static bool IsEliteWindow(nint handle)
     {
-        if (!TryGetProcessId(handle, out var processId))
+        if (!TryGetProcessId(handle, out int processId))
         {
             return false;
         }
@@ -325,7 +325,7 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
 
     private static bool TryGetProcessId(nint handle, out int processId)
     {
-        _ = GetWindowThreadProcessId(handle, out var nativeProcessId);
+        _ = GetWindowThreadProcessId(handle, out uint nativeProcessId);
         processId = unchecked((int)nativeProcessId);
         return nativeProcessId != 0;
     }

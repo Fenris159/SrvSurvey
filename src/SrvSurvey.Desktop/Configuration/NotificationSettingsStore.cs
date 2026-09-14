@@ -13,7 +13,7 @@ public sealed class NotificationSettingsStore
 
     public NotificationPreferences Load()
     {
-        var defaults = NotificationPreferences.Default;
+        NotificationPreferences defaults = NotificationPreferences.Default;
         var settings = documentStore.Load()["Notifications"] as JsonObject;
         return new NotificationPreferences(
             GetBoolean(settings, "Enabled", defaults.Enabled),
@@ -49,7 +49,7 @@ public sealed class NotificationSettingsStore
 
     private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result)
             ? result
             : fallback;
     }

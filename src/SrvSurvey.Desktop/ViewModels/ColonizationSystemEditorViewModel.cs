@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Input;
@@ -283,7 +284,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     public void UpdateContext(ColonizationSystemEditorContext updatedContext)
     {
         ArgumentNullException.ThrowIfNull(updatedContext);
-        var changed = !string.Equals(
+        bool changed = !string.Equals(
             GetLoadedContextIdentity(context),
             GetLoadedContextIdentity(updatedContext),
             StringComparison.Ordinal
@@ -315,7 +316,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     public void ApplyJournalEvents(IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             bufferedJournalEvents.Enqueue(journalEvent);
             while (bufferedJournalEvents.Count > MaximumBufferedJournalEvents)
@@ -329,8 +330,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var sites = SnapshotSites();
-        var changed = journalTracker.ApplyJournalEvents(sites, journalEvents);
+        List<ColonizationSystemSite> sites = SnapshotSites();
+        int changed = journalTracker.ApplyJournalEvents(sites, journalEvents);
         RaiseScanProperties();
         if (changed > 0)
         {
@@ -349,7 +350,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var sites = SnapshotSites();
+        List<ColonizationSystemSite> sites = SnapshotSites();
         if (journalTracker.ApplyStatusDestination(sites, status, CaptureUnknownSurfaceSites))
         {
             ReplaceRows(sites);
@@ -370,7 +371,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Loading the current system from Raven Colonial...";
         try
         {
-            var loaded = await client.GetSystemAsync(GetSystemIdentifier());
+            ColonizationSystemRecord loaded = await client.GetSystemAsync(GetSystemIdentifier());
             ApplyLoadedSystem(loaded);
             StatusMessage = CanEdit
                 ? (NeedsBodyImport) switch
@@ -421,7 +422,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Importing the system body catalog into Raven Colonial...";
         try
         {
-            var imported = await client.ImportSystemBodiesAsync(GetSystemIdentifier());
+            ColonizationSystemRecord imported = await client.ImportSystemBodiesAsync(GetSystemIdentifier());
             ApplyLoadedSystem(imported);
             IsBodyImportConfirmationPending = false;
             StatusMessage = imported.Bodies is null
@@ -445,14 +446,14 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var name = NewSiteName.Trim();
+        string name = NewSiteName.Trim();
         if (Sites.Any(site => string.Equals(site.Name, name, StringComparison.OrdinalIgnoreCase)))
         {
             StatusMessage = $"A site named '{name}' already exists.";
             return;
         }
 
-        var id = CreateLocalSiteId();
+        string id = CreateLocalSiteId();
         var row = new ColonizationSystemSiteRowViewModel(
             new ColonizationSystemSite
             {
@@ -476,7 +477,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var removed = SelectedSite;
+        ColonizationSystemSiteRowViewModel removed = SelectedSite;
         Unsubscribe(removed);
         Sites.Remove(removed);
         SelectedSite = null;
@@ -490,7 +491,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (!TryValidateSites(out var edited, out var validationMessage))
+        if (!TryValidateSites(out List<ColonizationSystemSite>? edited, out string? validationMessage))
         {
             StatusMessage = validationMessage;
             return;
@@ -501,7 +502,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Refreshing Raven data and checking for concurrent changes...";
         try
         {
-            var latest = await client.GetSystemAsync(GetSystemIdentifier());
+            ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
             if (!CanCommanderEdit(latest, context.CommanderName))
             {
                 StatusMessage = "Raven secured this system after it was loaded. No changes can be published.";
@@ -509,7 +510,11 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
                 return;
             }
 
-            var plan = ColonizationSystemSiteReconciler.CreatePlan(baseline, latest.Sites, edited);
+            ColonizationSystemSiteReconciliationPlan plan = ColonizationSystemSiteReconciler.CreatePlan(
+                baseline,
+                latest.Sites,
+                edited
+            );
             Conflicts = plan.Conflicts;
             if (plan.Conflicts.Count > 0)
             {
@@ -563,12 +568,16 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var plan = pendingPlan;
+        ColonizationSystemSiteReconciliationPlan plan = pendingPlan;
         IsBusy = true;
         StatusMessage = "Publishing the confirmed site changes to Raven Colonial...";
         try
         {
-            var updated = await client.UpdateSystemSitesAsync(GetSystemIdentifier(), plan.Update, context.RavenApiKey!);
+            ColonizationSystemRecord updated = await client.UpdateSystemSitesAsync(
+                GetSystemIdentifier(),
+                plan.Update,
+                context.RavenApiKey!
+            );
             ApplyLoadedSystem(updated);
             StatusMessage =
                 $"Raven Colonial accepted the update. Revision {updated.Revision:N0} now has {updated.Sites.Count:N0} sites.";
@@ -645,13 +654,13 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     private void ReplaceRows(IEnumerable<ColonizationSystemSite> sites)
     {
-        foreach (var row in Sites)
+        foreach (ColonizationSystemSiteRowViewModel row in Sites)
         {
             Unsubscribe(row);
         }
 
         Sites.Clear();
-        foreach (var site in sites)
+        foreach (ColonizationSystemSite site in sites)
         {
             var row = new ColonizationSystemSiteRowViewModel(site);
             Subscribe(row);
@@ -670,14 +679,14 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     {
         sites = SnapshotSites();
         message = string.Empty;
-        var missingName = sites.FirstOrDefault(site => string.IsNullOrWhiteSpace(site.Name));
+        ColonizationSystemSite? missingName = sites.FirstOrDefault(site => string.IsNullOrWhiteSpace(site.Name));
         if (missingName is not null)
         {
             message = "Every Raven site requires a name.";
             return false;
         }
 
-        var duplicate = sites
+        IGrouping<string, ColonizationSystemSite>? duplicate = sites
             .GroupBy(site => site.Name.Trim(), StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault(group => group.Count() > 1);
         if (duplicate is not null)
@@ -687,7 +696,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
 
         var knownBodies = system?.Bodies?.Select(body => body.Number).ToHashSet();
-        var invalidBody = sites.FirstOrDefault(site =>
+        ColonizationSystemSite? invalidBody = sites.FirstOrDefault(site =>
             site.BodyNumber < -1
             || (site.BodyNumber >= 0 && knownBodies is { Count: > 0 } && !knownBodies.Contains(site.BodyNumber))
         );
@@ -793,7 +802,9 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     private string GetSystemIdentifier()
     {
-        return context.SystemAddress is > 0 ? context.SystemAddress.Value.ToString() : context.SystemName!.Trim();
+        return context.SystemAddress is > 0
+            ? context.SystemAddress.Value.ToString(CultureInfo.InvariantCulture)
+            : context.SystemName!.Trim();
     }
 
     private bool ContextMatchesLoadedSystem()
@@ -810,7 +821,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     private string CreateLocalSiteId()
     {
-        var value = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        long value = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         string id;
         do
         {
@@ -834,11 +845,11 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             throw new InvalidDataException("Raven Colonial returned an incomplete system identity.");
         }
 
-        var duplicateId = loaded
+        IGrouping<string, ColonizationSystemSite>? duplicateId = loaded
             .Sites.Where(site => !string.IsNullOrWhiteSpace(site.Id))
             .GroupBy(site => site.Id, StringComparer.Ordinal)
             .FirstOrDefault(group => group.Count() > 1);
-        var duplicateName = loaded
+        IGrouping<string, ColonizationSystemSite>? duplicateName = loaded
             .Sites.GroupBy(site => site.Name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault(group => group.Count() > 1);
         if (

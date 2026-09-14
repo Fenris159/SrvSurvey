@@ -52,9 +52,9 @@ public sealed class GuardianAlignmentControl : Control
         }
 
         var bounds = new Rect(Bounds.Size);
-        var center = bounds.Center;
-        var guide = GuideBrush ?? Brushes.Gold;
-        var shadow = ShadowBrush ?? Brushes.Black;
+        Point center = bounds.Center;
+        IBrush guide = GuideBrush ?? Brushes.Gold;
+        IBrush shadow = ShadowBrush ?? Brushes.Black;
         var guidePen = new Pen(guide, 3);
         var shadowPen = new Pen(shadow, 6, DashStyle.Dash);
         DrawMode(context, mode, bounds, center, shadowPen);
@@ -124,7 +124,7 @@ public sealed class GuardianAlignmentControl : Control
 
     private static void DrawRelicTower(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
-        var spacing = Math.Min(42, bounds.Width * 0.08);
+        double spacing = Math.Min(42, bounds.Width * 0.08);
         context.DrawLine(
             pen,
             new Point(center.X - spacing, center.Y - 80),
@@ -149,9 +149,9 @@ public sealed class GuardianAlignmentControl : Control
 
     private static void DrawAlpha(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
-        var y = bounds.Bottom - Math.Max(70, bounds.Height * 0.18);
+        double y = bounds.Bottom - Math.Max(70, bounds.Height * 0.18);
         var target = new Point(center.X, y);
-        foreach (var radius in new[] { 18d, 42d, 68d })
+        foreach (double radius in new[] { 18d, 42d, 68d })
         {
             context.DrawEllipse(null, pen, target, radius, radius);
         }
@@ -178,8 +178,8 @@ public sealed class GuardianAlignmentControl : Control
 
     private static void DrawBear(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
-        var unit = Math.Min(bounds.Width, bounds.Height) / 24;
-        var y = center.Y + (bounds.Height * 0.05);
+        double unit = Math.Min(bounds.Width, bounds.Height) / 24;
+        double y = center.Y + (bounds.Height * 0.05);
         context.DrawLine(pen, new Point(bounds.Left + 30, y), new Point(bounds.Right - 30, y));
         context.DrawLine(
             pen,
@@ -196,10 +196,10 @@ public sealed class GuardianAlignmentControl : Control
 
     private static void DrawBowl(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
-        var y = center.Y - (bounds.Height * 0.1);
+        double y = center.Y - (bounds.Height * 0.1);
         context.DrawLine(pen, new Point(bounds.Left + 30, y), new Point(bounds.Right - 30, y));
         context.DrawLine(pen, new Point(center.X, bounds.Top + 25), new Point(center.X, bounds.Bottom - 25));
-        var radius = bounds.Height / 7;
+        double radius = bounds.Height / 7;
         var circleCenter = new Point(center.X, center.Y + radius);
         context.DrawEllipse(null, pen, circleCenter, radius, radius);
         context.DrawEllipse(null, pen, circleCenter, radius * 1.3, radius * 1.3);
@@ -207,7 +207,7 @@ public sealed class GuardianAlignmentControl : Control
 
     private static void DrawFistbump(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
-        var size = Math.Min(bounds.Width, bounds.Height) * 0.12;
+        double size = Math.Min(bounds.Width, bounds.Height) * 0.12;
         var crossCenter = new Point(center.X, center.Y - bounds.Height * 0.1);
         context.DrawLine(
             pen,
@@ -228,8 +228,8 @@ public sealed class GuardianAlignmentControl : Control
 
     private static void DrawHammerbot(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
-        var xUnit = bounds.Width * 0.035;
-        var yUnit = bounds.Height * 0.06;
+        double xUnit = bounds.Width * 0.035;
+        double yUnit = bounds.Height * 0.06;
         context.DrawLine(pen, new Point(center.X - xUnit, center.Y - 10), new Point(center.X + xUnit, center.Y - 10));
         context.DrawLine(
             pen,
@@ -257,7 +257,7 @@ public sealed class GuardianAlignmentControl : Control
     private static void DrawRobolobster(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var target = new Point(center.X, center.Y - (bounds.Height * 0.04));
-        var radius = Math.Min(bounds.Width, bounds.Height) * 0.12;
+        double radius = Math.Min(bounds.Width, bounds.Height) * 0.12;
         context.DrawEllipse(null, pen, target, radius, radius);
         context.DrawEllipse(null, pen, target, radius * 1.5, radius * 1.5);
         context.DrawLine(pen, new Point(center.X, bounds.Top + 25), new Point(center.X, target.Y + (radius * 2.5)));
@@ -265,7 +265,7 @@ public sealed class GuardianAlignmentControl : Control
 
     private static void DrawVerticalTarget(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
-        var half = Math.Min(100, bounds.Height * 0.22);
+        double half = Math.Min(100, bounds.Height * 0.22);
         context.DrawLine(pen, new Point(center.X, center.Y - half), new Point(center.X, center.Y - (half * 2)));
     }
 }

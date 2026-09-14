@@ -18,7 +18,7 @@ public sealed class SystemBodyDataClientTests
             utcNow: () => DateTimeOffset.FromUnixTimeSeconds(120)
         );
 
-        var result = await client.GetAsync("Test System", 42);
+        SystemBodyDataLoadResult result = await client.GetAsync("Test System", 42);
 
         Assert.Empty(result.Warnings);
         Assert.Equal(["EDSM", "Spansh"], result.Providers.Select(provider => provider.Provider));
@@ -26,9 +26,9 @@ public sealed class SystemBodyDataClientTests
             ["https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=4", "https://spansh.test/api/dump/42/"],
             handler.Requests.Order(StringComparer.Ordinal)
         );
-        var edsm = result.Providers[0].Snapshot;
+        SystemScanSnapshot edsm = result.Providers[0].Snapshot;
         Assert.Equal(3, edsm.ExpectedBodyCount);
-        var edsmPlanet = edsm.Bodies.Single(body => body.BodyId == 1);
+        SystemScanBodySnapshot edsmPlanet = edsm.Bodies.Single(body => body.BodyId == 1);
         Assert.Equal(SystemBodyKind.LandablePlanet, edsmPlanet.Kind);
         Assert.Equal("Metal rich body", edsmPlanet.PlanetClass);
         Assert.Equal(1.2, edsmPlanet.Mass);
@@ -42,14 +42,14 @@ public sealed class SystemBodyDataClientTests
         Assert.Equal(new SystemBodyParentSnapshot(SystemBodyParentKind.Star, 0), Assert.Single(edsmPlanet.Parents));
         Assert.Equal(10, Assert.Single(edsmPlanet.Rings).InnerRadius);
 
-        var spansh = result.Providers[1].Snapshot;
+        SystemScanSnapshot spansh = result.Providers[1].Snapshot;
         Assert.Equal(new GalacticCoordinate(1, 2, 3), spansh.StarPosition);
-        var spanshStar = spansh.Bodies.Single(body => body.BodyId == 0);
+        SystemScanBodySnapshot spanshStar = spansh.Bodies.Single(body => body.BodyId == 0);
         Assert.Equal("K", spanshStar.StarClass);
         Assert.Equal(695_700_000, spanshStar.RadiusMeters);
-        var spanshPlanet = spansh.Bodies.Single(body => body.BodyId == 1);
+        SystemScanBodySnapshot spanshPlanet = spansh.Bodies.Single(body => body.BodyId == 1);
         Assert.Equal(2, spanshPlanet.BiologicalSignalCount);
-        var organism = Assert.Single(spanshPlanet.Organisms);
+        SystemOrganismSnapshot organism = Assert.Single(spanshPlanet.Organisms);
         Assert.Equal("$Codex_Ent_Aleoids_Genus_Name;", organism.Genus);
         Assert.Equal("Aleoida", organism.GenusLocalized);
     }
@@ -71,9 +71,9 @@ public sealed class SystemBodyDataClientTests
             new Uri("https://spansh.test/api/")
         );
 
-        var result = await client.GetAsync("Test System", 42);
+        SystemBodyDataLoadResult result = await client.GetAsync("Test System", 42);
 
-        var planet = result.Providers[1].Snapshot.Bodies.Single(body => body.BodyId == 1);
+        SystemScanBodySnapshot planet = result.Providers[1].Snapshot.Bodies.Single(body => body.BodyId == 1);
         Assert.Equal(0, planet.BiologicalSignalCount);
         Assert.Single(planet.Organisms);
     }
@@ -95,7 +95,7 @@ public sealed class SystemBodyDataClientTests
             new Uri("https://spansh.test/api/")
         );
 
-        var result = await client.GetAsync("Test System", 42);
+        SystemBodyDataLoadResult result = await client.GetAsync("Test System", 42);
 
         Assert.Equal("EDSM", Assert.Single(result.Providers).Provider);
         Assert.Contains("address 99, not 42", Assert.Single(result.Warnings), StringComparison.Ordinal);
@@ -111,7 +111,7 @@ public sealed class SystemBodyDataClientTests
             new Uri("https://spansh.test/api/")
         );
 
-        var result = await client.GetAsync("Test System", 42);
+        SystemBodyDataLoadResult result = await client.GetAsync("Test System", 42);
 
         Assert.Equal("Spansh", Assert.Single(result.Providers).Provider);
         Assert.Contains(result.Warnings, warning => warning.Contains("16 MiB", StringComparison.Ordinal));
@@ -128,7 +128,7 @@ public sealed class SystemBodyDataClientTests
             utcNow: () => DateTimeOffset.FromUnixTimeSeconds(120)
         );
 
-        var result = await client.GetAsync("Test System", 42);
+        SystemBodyDataLoadResult result = await client.GetAsync("Test System", 42);
 
         Assert.Empty(result.Providers);
         Assert.Empty(result.Warnings);
@@ -178,7 +178,7 @@ public sealed class SystemBodyDataClientTests
                 return Task.FromResult(Response(SpanshJson, SpanshStatus));
             }
 
-            var response = Response(EdsmJson);
+            HttpResponseMessage response = Response(EdsmJson);
             if (OversizeEdsm)
             {
                 response.Content.Headers.ContentLength = 16 * 1024 * 1024 + 1;

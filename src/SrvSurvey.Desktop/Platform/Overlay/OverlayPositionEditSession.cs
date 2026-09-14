@@ -42,7 +42,7 @@ public sealed class OverlayPositionEditSession
     public LegacyOverlayPlacement GetPlacement(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        return workingLayout.Placements.TryGetValue(plotterName, out var placement)
+        return workingLayout.Placements.TryGetValue(plotterName, out LegacyOverlayPlacement? placement)
             ? placement
             : throw new ArgumentOutOfRangeException(
                 nameof(plotterName),
@@ -53,7 +53,7 @@ public sealed class OverlayPositionEditSession
     public LegacyOverlayPlacement GetOriginalPlacement(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        return original.TryGetValue(plotterName, out var placement)
+        return original.TryGetValue(plotterName, out LegacyOverlayPlacement? placement)
             ? placement
             : throw new ArgumentOutOfRangeException(
                 nameof(plotterName),
@@ -86,7 +86,7 @@ public sealed class OverlayPositionEditSession
             ValidateOpacity(opacity.Value, nameof(opacity));
         }
 
-        var placement = GetPlacement(plotterName);
+        LegacyOverlayPlacement placement = GetPlacement(plotterName);
         return workingLayout.SetPlacement(plotterName, placement with { Opacity = opacity });
     }
 
@@ -98,7 +98,7 @@ public sealed class OverlayPositionEditSession
             throw new ArgumentOutOfRangeException(nameof(scaleIndex), $"Overlay scale index {value} is not supported.");
         }
 
-        var placement = GetPlacement(plotterName);
+        LegacyOverlayPlacement placement = GetPlacement(plotterName);
         return workingLayout.SetPlacement(plotterName, placement with { ScaleIndex = scaleIndex });
     }
 
@@ -118,11 +118,20 @@ public sealed class OverlayPositionEditSession
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        var placement = GetPlacement(plotterName);
-        var definition = OverlayLayoutCatalog.GetRequired(plotterName);
-        var defaults = definition.DefaultPlacement;
-        var reanchored = placement with { Horizontal = defaults.Horizontal, Vertical = definition.MoveVerticalAnchor };
-        var centered = OverlayInteractionViewModel.CreatePlacement(reanchored, position, previewSize, hostBounds);
+        LegacyOverlayPlacement placement = GetPlacement(plotterName);
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired(plotterName);
+        LegacyOverlayPlacement defaults = definition.DefaultPlacement;
+        LegacyOverlayPlacement reanchored = placement with
+        {
+            Horizontal = defaults.Horizontal,
+            Vertical = definition.MoveVerticalAnchor,
+        };
+        LegacyOverlayPlacement centered = OverlayInteractionViewModel.CreatePlacement(
+            reanchored,
+            position,
+            previewSize,
+            hostBounds
+        );
         return workingLayout.SetPlacement(plotterName, centered);
     }
 

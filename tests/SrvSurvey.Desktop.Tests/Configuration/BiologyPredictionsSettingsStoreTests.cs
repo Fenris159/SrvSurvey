@@ -12,7 +12,7 @@ public sealed class BiologyPredictionsSettingsStoreTests : IDisposable
     [Fact]
     public void MissingDocumentUsesLegacyCompatibleDefaults()
     {
-        var preferences = CreateStore().Load();
+        BiologyPredictionsPreferences preferences = CreateStore().Load();
 
         Assert.Equal(BiologyPredictionsPreferences.Default, preferences);
     }
@@ -21,7 +21,7 @@ public sealed class BiologyPredictionsSettingsStoreTests : IDisposable
     public void PreferencesRoundTripWithoutRemovingOtherUiSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Theme\":\"Blue-dark\"}");
         var store = new BiologyPredictionsSettingsStore(path);
         var expected = new BiologyPredictionsPreferences(true, 3);
@@ -38,10 +38,10 @@ public sealed class BiologyPredictionsSettingsStoreTests : IDisposable
     public void RowSizeIsClamped(int storedValue, int expected)
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"BiologyPredictions\":{\"RowSize\":" + storedValue + "}}");
 
-        var preferences = new BiologyPredictionsSettingsStore(path).Load();
+        BiologyPredictionsPreferences preferences = new BiologyPredictionsSettingsStore(path).Load();
 
         Assert.Equal(expected, preferences.RowSize);
     }

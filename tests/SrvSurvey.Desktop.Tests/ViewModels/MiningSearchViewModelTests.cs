@@ -32,7 +32,7 @@ public sealed class MiningSearchViewModelTests
     [Fact]
     public async Task PlainBookmarkDoesNotEraseKnownOverlapOrResAnnotations()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var bookmarks = new BookmarksViewModel(directory);
@@ -89,7 +89,7 @@ public sealed class MiningSearchViewModelTests
         model.Radius = 240;
         model.OnlyRes = true;
         model.TraderType = "Encoded";
-        var restored = MiningStore.Parse(
+        MiningCommanderData restored = MiningStore.Parse(
             MiningStore.Export(
                 new MiningCommanderData { Settings = new MiningPreferences { SearchOptions = model.SaveOptions() } }
             )
@@ -119,7 +119,7 @@ public sealed class MiningSearchViewModelTests
         {
             Reference = "Wille",
         };
-        var error = await Record.ExceptionAsync(() => model.SearchTradersAsync());
+        Exception? error = await Record.ExceptionAsync(() => model.SearchTradersAsync());
         Assert.Null(error);
         Assert.False(model.IsBusy);
         Assert.Contains("Search unavailable", model.Status);
@@ -224,7 +224,7 @@ public sealed class MiningSearchViewModelTests
     public async Task ExpansionUsesLocalObservationsAndIsOnlyAnAcquisitionCandidate()
     {
         var cache = new MiningCommunityCache();
-        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         cache.Apply(
             $$$"""{"$schemaRef":"https://eddn.edcd.io/schemas/journal/1","message":{"timestamp":"{{{now:O}}}","event":"Location","StarSystem":"Wille","StarPos":[0,0,0],"ControllingPower":"Aisling Duval","PowerplayState":"Expansion"}}""",
             now
@@ -266,7 +266,7 @@ public sealed class MiningSearchViewModelTests
             CancellationToken cancellationToken
         )
         {
-            var payload = request.RequestUri!.AbsolutePath switch
+            string payload = request.RequestUri!.AbsolutePath switch
             {
                 "/api/bodies/search" =>
                     """{"results":[{"system_name":"Wille","rings":[{"name":"Wille A Ring","type":"Metallic","signals":[{"name":"Platinum","count":2}]}]}]}""",
@@ -297,8 +297,8 @@ public sealed class MiningSearchViewModelTests
         {
             Reference = "Wille",
         };
-        var first = model.SearchTradersAsync();
-        var replacement = model.SearchTradersAsync();
+        Task first = model.SearchTradersAsync();
+        Task replacement = model.SearchTradersAsync();
         try
         {
             await handler.CancellationEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -333,7 +333,7 @@ public sealed class MiningSearchViewModelTests
                 return new(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"results\":[]}") };
             }
 
-            using var registration = cancellationToken.Register(() =>
+            using CancellationTokenRegistration registration = cancellationToken.Register(() =>
             {
                 CancellationEntered.TrySetResult();
                 Release.Wait(TimeSpan.FromSeconds(10), CancellationToken.None);
@@ -362,7 +362,7 @@ public sealed class MiningSearchViewModelTests
             CancellationToken cancellationToken
         )
         {
-            var content =
+            HttpContent content =
                 ++calls == 1
                     ? (HttpContent)new ByteArrayContent(new byte[8 * 1024 * 1024 + 1])
                     : new StringContent("{\"results\":[]}");

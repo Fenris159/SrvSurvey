@@ -11,10 +11,10 @@ public sealed class HumanSiteActivityTrackerTests
     [Fact]
     public void DataPickupMarksClosestTerminalAndTracksOneMeterAhead()
     {
-        var (site, terminal, status) = CreateSiteAtTerminal();
+        (HumanSiteLiveSnapshot? site, HumanSitePointOfInterest? terminal, EliteStatus? status) = CreateSiteAtTerminal();
         var tracker = new HumanSiteActivityTracker();
 
-        var result = tracker.Apply(
+        HumanSiteActivityApplyResult result = tracker.Apply(
             Parse(
                 """
                 {"timestamp":"2026-07-25T12:00:00Z","event":"BackpackChange","Added":[{"Name":"evacuationprotocols","Name_Localised":"Evacuation Protocols","Count":2,"Type":"Data"}]}
@@ -27,7 +27,7 @@ public sealed class HumanSiteActivityTrackerTests
 
         Assert.True(result.ProcessedTerminalsChanged);
         Assert.Contains(0, tracker.ProcessedTerminalIndexes);
-        var material = Assert.Single(tracker.CollectedMaterials);
+        HumanSiteCollectedMaterial material = Assert.Single(tracker.CollectedMaterials);
         Assert.Equal("evacuationprotocols", material.Name);
         Assert.Equal("Data", material.Type);
         Assert.Equal(2, material.Count);
@@ -38,10 +38,10 @@ public sealed class HumanSiteActivityTrackerTests
     [Fact]
     public void TerminalProcessingDoesNotRequireCollectionSurvey()
     {
-        var (site, _, status) = CreateSiteAtTerminal();
+        (HumanSiteLiveSnapshot? site, HumanSitePointOfInterest _, EliteStatus? status) = CreateSiteAtTerminal();
         var tracker = new HumanSiteActivityTracker();
 
-        var result = tracker.Apply(
+        HumanSiteActivityApplyResult result = tracker.Apply(
             Parse(
                 """
                 {"event":"BackpackChange","Added":[{"Name":"opinionpolls","Count":1,"Type":"Data"}]}
@@ -60,10 +60,10 @@ public sealed class HumanSiteActivityTrackerTests
     [Fact]
     public void ComponentPickupIsTrackedButDataCollectItemsIsIgnored()
     {
-        var (site, _, status) = CreateSiteAtTerminal();
+        (HumanSiteLiveSnapshot? site, HumanSitePointOfInterest _, EliteStatus? status) = CreateSiteAtTerminal();
         var tracker = new HumanSiteActivityTracker();
 
-        var component = tracker.Apply(
+        HumanSiteActivityApplyResult component = tracker.Apply(
             Parse(
                 """
                 {"event":"CollectItems","Name":"graphene","Type":"Component","Count":1}
@@ -73,7 +73,7 @@ public sealed class HumanSiteActivityTrackerTests
             status,
             trackMaterialCollection: true
         );
-        var data = tracker.Apply(
+        HumanSiteActivityApplyResult data = tracker.Apply(
             Parse(
                 """
                 {"event":"CollectItems","Name":"opinionpolls","Type":"Data","Count":1}
@@ -92,8 +92,8 @@ public sealed class HumanSiteActivityTrackerTests
     [Fact]
     public void PickupOutsideFiveMetersDoesNotProcessTerminal()
     {
-        var (site, terminal, status) = CreateSiteAtTerminal();
-        var distant = HumanSiteNavigation.GetSurfaceLocation(
+        (HumanSiteLiveSnapshot? site, HumanSitePointOfInterest? terminal, EliteStatus? status) = CreateSiteAtTerminal();
+        SurfaceCoordinate distant = HumanSiteNavigation.GetSurfaceLocation(
             new SurfaceCoordinate(site.Location.Latitude, site.Location.Longitude),
             new HumanSiteMapPoint(terminal.Offset.X + 10, terminal.Offset.Y),
             Radius,
@@ -101,7 +101,7 @@ public sealed class HumanSiteActivityTrackerTests
         );
         var tracker = new HumanSiteActivityTracker();
 
-        var result = tracker.Apply(
+        HumanSiteActivityApplyResult result = tracker.Apply(
             Parse(
                 """
                 {"event":"BackpackChange","Added":[{"Name":"opinionpolls","Count":1,"Type":"Data"}]}
@@ -123,7 +123,7 @@ public sealed class HumanSiteActivityTrackerTests
     [Fact]
     public void ChangingSettlementsClearsTransientActivity()
     {
-        var (site, _, status) = CreateSiteAtTerminal();
+        (HumanSiteLiveSnapshot? site, HumanSitePointOfInterest _, EliteStatus? status) = CreateSiteAtTerminal();
         var tracker = new HumanSiteActivityTracker();
         tracker.Apply(
             Parse(
@@ -136,7 +136,7 @@ public sealed class HumanSiteActivityTrackerTests
             trackMaterialCollection: true
         );
 
-        var result = tracker.Apply(
+        HumanSiteActivityApplyResult result = tracker.Apply(
             Parse("""{"event":"ApproachSettlement"}"""),
             site with
             {
@@ -157,11 +157,16 @@ public sealed class HumanSiteActivityTrackerTests
         EliteStatus Status
     ) CreateSiteAtTerminal()
     {
-        var template = HumanSiteTemplateCatalog.LoadEmbedded().Find(HumanSiteEconomy.Extraction, 5)!;
-        var terminal = template.DataTerminals[0];
+        HumanSiteTemplate template = HumanSiteTemplateCatalog.LoadEmbedded().Find(HumanSiteEconomy.Extraction, 5)!;
+        HumanSitePointOfInterest terminal = template.DataTerminals[0];
         var origin = new SurfaceCoordinate(-12.5, 44.25);
         const double heading = 231;
-        var terminalLocation = HumanSiteNavigation.GetSurfaceLocation(origin, terminal.Offset, Radius, heading);
+        SurfaceCoordinate terminalLocation = HumanSiteNavigation.GetSurfaceLocation(
+            origin,
+            terminal.Offset,
+            Radius,
+            heading
+        );
         var site = new HumanSiteLiveSnapshot(
             "Test Settlement",
             "Test Settlement",
@@ -204,7 +209,7 @@ public sealed class HumanSiteActivityTrackerTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? value, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(value);
     }
 }

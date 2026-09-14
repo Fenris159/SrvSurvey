@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests.Search;
@@ -24,20 +25,20 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
                 """{"event":"Scan","SystemAddress":2001,"BodyID":2,"PlanetClass":"Water world","MassEM":1.1,"AtmosphereComposition":[{"Name":"Helium","Percent":27.4}]}"""
             )
         );
-        Assert.True(source.TryCreateDocument("Praea Euq IL-P c5-", out var document));
+        Assert.True(source.TryCreateDocument("Praea Euq IL-P c5-", out BoxelSurveyBoxelDocument? document));
 
         await store.SaveBoxelAsync("F123", document);
-        var loaded = await store.LoadBoxelAsync("F123", "Praea Euq IL-P c5-");
-        var index = await store.ListIndexAsync("F123");
-        var catalog = await store.LoadCatalogAsync("F123");
+        BoxelSurveyBoxelDocument? loaded = await store.LoadBoxelAsync("F123", "Praea Euq IL-P c5-");
+        IReadOnlyList<BoxelSurveyIndexEntry> index = await store.ListIndexAsync("F123");
+        BoxelSurveyStatsCatalog catalog = await store.LoadCatalogAsync("F123");
 
         Assert.NotNull(loaded);
         Assert.Equal(document.Prefix, loaded.Prefix);
-        var system = Assert.Single(loaded.Systems);
-        var body = Assert.Single(system.Bodies);
+        BoxelSurveySystemContribution system = Assert.Single(loaded.Systems);
+        BoxelSurveyBodyContribution body = Assert.Single(system.Bodies);
         Assert.Equal(BoxelPlanetClass.WaterWorld, body.Class);
         Assert.Equal(27.4, body.HeliumPercent);
-        var entry = Assert.Single(index);
+        BoxelSurveyIndexEntry entry = Assert.Single(index);
         Assert.Equal("Praea Euq IL-P c5-", entry.Prefix);
         Assert.Equal('c', entry.MassCode);
         Assert.Equal(1, entry.VisitedSystemCount);
@@ -55,8 +56,8 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
     public async Task CommandersAreIsolatedByFrontierId()
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
-        var first = CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001);
-        var second = CreateDocument("Wregoe BU-Y b2-", "Wregoe BU-Y b2-0", 2002);
+        BoxelSurveyBoxelDocument first = CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001);
+        BoxelSurveyBoxelDocument second = CreateDocument("Wregoe BU-Y b2-", "Wregoe BU-Y b2-0", 2002);
         await store.SaveBoxelAsync("F-A", first);
         await store.SaveBoxelAsync("F-B", second);
 
@@ -70,12 +71,12 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
     public async Task BatchSaveWritesEveryDocumentIntoOneCatalog()
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
-        var first = CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001);
-        var second = CreateDocument("Wregoe BU-Y b2-", "Wregoe BU-Y b2-0", 2002);
+        BoxelSurveyBoxelDocument first = CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001);
+        BoxelSurveyBoxelDocument second = CreateDocument("Wregoe BU-Y b2-", "Wregoe BU-Y b2-0", 2002);
 
         await store.SaveBoxelsAsync("F123", [first, second]);
 
-        var index = await store.ListIndexAsync("F123");
+        IReadOnlyList<BoxelSurveyIndexEntry> index = await store.ListIndexAsync("F123");
         Assert.Equal(2, index.Count);
         Assert.NotNull(await store.LoadBoxelAsync("F123", first.Prefix));
         Assert.NotNull(await store.LoadBoxelAsync("F123", second.Prefix));
@@ -86,11 +87,11 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
         await store.SaveBoxelAsync("F123", CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001));
-        var commanderDirectory = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F123");
+        string commanderDirectory = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F123");
         File.Delete(Path.Combine(commanderDirectory, "index.json"));
         await File.WriteAllTextAsync(Path.Combine(commanderDirectory, "broken.json"), "not json");
 
-        var entry = Assert.Single(await store.ListIndexAsync("F123"));
+        BoxelSurveyIndexEntry entry = Assert.Single(await store.ListIndexAsync("F123"));
         Assert.Equal("Praea Euq IL-P c5-", entry.Prefix);
     }
 
@@ -98,9 +99,9 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
     public async Task CollidingSanitizedPrefixesRemainLoadableWhenEitherIsResaved()
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
-        var source = CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001);
-        var first = source with { Prefix = "Odd:name" };
-        var second = source with { Prefix = "Odd/name" };
+        BoxelSurveyBoxelDocument source = CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001);
+        BoxelSurveyBoxelDocument first = source with { Prefix = "Odd:name" };
+        BoxelSurveyBoxelDocument second = source with { Prefix = "Odd/name" };
 
         await store.SaveBoxelAsync("F123", first);
         await store.SaveBoxelAsync("F123", second);
@@ -112,8 +113,8 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
 
         Assert.Equal(first.Prefix, (await store.LoadBoxelAsync("F123", first.Prefix))?.Prefix);
         Assert.Equal(second.Prefix, (await store.LoadBoxelAsync("F123", second.Prefix))?.Prefix);
-        var commanderDirectory = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F123");
-        var boxelFiles = Directory
+        string commanderDirectory = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F123");
+        string[] boxelFiles = Directory
             .EnumerateFiles(commanderDirectory, "*.json")
             .Where(path => !string.Equals(Path.GetFileName(path), "index.json", StringComparison.OrdinalIgnoreCase))
             .ToArray();
@@ -165,14 +166,18 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
                 """
             )
         );
-        Assert.True(state.TryCreateDocument(prefix, out var document));
+        Assert.True(state.TryCreateDocument(prefix, out BoxelSurveyBoxelDocument? document));
         return document;
     }
 
     private static SrvSurvey.Core.Journal.JournalEventEnvelope Parse(string json)
     {
         Assert.True(
-            SrvSurvey.Core.Journal.JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
+            SrvSurvey.Core.Journal.JournalEventEnvelope.TryParse(
+                json,
+                out JournalEventEnvelope? journalEvent,
+                out string? error
+            ),
             error
         );
         return Assert.IsType<SrvSurvey.Core.Journal.JournalEventEnvelope>(journalEvent);

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Avalonia;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -91,7 +92,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var shouldShow =
+        bool shouldShow =
             !isSuppressed
             && viewModel.ShouldShow
             && platform.Capabilities.SupportsPassiveOverlay
@@ -131,7 +132,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
     private void PrepareWindow(QuestIndicatorOverlayWindow overlay)
     {
         PositionWindow(overlay);
-        var preparation = platform.PreparePassiveWindow(overlay);
+        OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
         if (!preparation.IsClickThrough)
         {
             isSuppressed = true;
@@ -142,14 +143,14 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
     private void PositionWindow(QuestIndicatorOverlayWindow overlay)
     {
         OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
-        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
+        Screen? screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
-        var position =
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
+        PixelPoint position =
             overlayLayout.GetPosition(PlotterName, gameWindow.ClientBounds, size)
             ?? OverlayWindowPlacement.TopRight(gameWindow.ClientBounds, size, margin: 8);
         if (overlay.Position != position)
@@ -160,7 +161,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
 
     private void CloseWindow()
     {
-        var overlay = window;
+        QuestIndicatorOverlayWindow? overlay = window;
         if (overlay is null)
         {
             return;

@@ -95,7 +95,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         get => targetPath;
         set
         {
-            var normalized = value?.Trim() ?? string.Empty;
+            string normalized = value?.Trim() ?? string.Empty;
             if (SetField(ref targetPath, normalized))
             {
                 if (!string.Equals(normalized, lastResolvedTarget, PathComparison))
@@ -207,8 +207,8 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             GameIsRunning = externalEffectsAllowed && isGameRunning();
-            var result = await commanderCatalog.LoadAsync();
-            var previous = SelectedCommander?.FrontierId;
+            CommanderProfileCatalogResult result = await commanderCatalog.LoadAsync();
+            string? previous = SelectedCommander?.FrontierId;
             Commanders = result.Profiles.Select(profile => new VisitedStarsCommanderOptionViewModel(profile)).ToArray();
             SelectedCommander =
                 Commanders.FirstOrDefault(option =>
@@ -269,7 +269,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             ResetConfirmations();
-            var result = await cacheService.SwapAsync(SystemName, TargetPath);
+            VisitedStarsCacheSwapResult result = await cacheService.SwapAsync(SystemName, TargetPath);
             StatusMessage =
                 "Swap complete. Restart Elite Dangerous when ready. " + $"Original backup: {result.BackupPath}";
             OnPropertyChanged(nameof(HasBackup));
@@ -306,7 +306,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             ResetConfirmations();
-            var result = await cacheService.RestoreAsync(TargetPath);
+            VisitedStarsCacheRestoreResult result = await cacheService.RestoreAsync(TargetPath);
             StatusMessage = "Original cache restored and verified. Backup retained at " + result.BackupPath;
         }
         catch (Exception exception) when (IsRecoverable(exception))
@@ -356,7 +356,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
             return;
         }
 
-        var resolved = targetResolver(SelectedCommander.FrontierId);
+        string? resolved = targetResolver(SelectedCommander.FrontierId);
         if (string.IsNullOrWhiteSpace(resolved))
         {
             return;
@@ -371,7 +371,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
 
     private void ResetConfirmations()
     {
-        var changed = swapPending || restorePending;
+        bool changed = swapPending || restorePending;
         swapPending = false;
         restorePending = false;
         if (changed)

@@ -146,7 +146,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         try
         {
             status = currentStatus;
-            var count =
+            double count =
                 cargo is not null && string.Equals(cargo.Vessel, "SRV", StringComparison.OrdinalIgnoreCase)
                     ? cargo.Count
                     : status?.Cargo ?? 0;
@@ -155,10 +155,10 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             mineMapSurvey = mapPresentation?.ActiveSurvey;
             isRhino = EliteSrvTypes.IsRhino(srvType);
             isRhinoParked = EliteSrvTypes.IsRhino(parkedSrvType);
-            var body = snapshot.Bodies.FirstOrDefault(candidate =>
+            SystemScanBodySnapshot? body = snapshot.Bodies.FirstOrDefault(candidate =>
                 string.Equals(candidate.Name, status?.BodyName, StringComparison.OrdinalIgnoreCase)
             );
-            var next =
+            SystemSurfaceContext? next =
                 session is not null && body is not null && status?.PlanetRadius is > 0
                     ? new SystemSurfaceContext(
                         session.FrontierId,
@@ -179,7 +179,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 surface = null;
                 if (context is not null)
                 {
-                    var result = await store.LoadBodyAsync(context).ConfigureAwait(true);
+                    SystemSurfaceLoadResult result = await store.LoadBodyAsync(context).ConfigureAwait(true);
                     surface = result.Snapshot;
                     StatusText = result.Error ?? "Rig locations are saved for this commander and body.";
                 }
@@ -201,14 +201,14 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
     private void UpdateDetectionMotion()
     {
-        if (!CanDetectRigs || !TryGetPosition(out var position))
+        if (!CanDetectRigs || !TryGetPosition(out SurfaceCoordinate position))
         {
             detectionPosition = null;
             detectionStillSince = null;
             return;
         }
-        var heading = status!.NormalizedHeading;
-        var turn = Math.Abs(heading - detectionHeading);
+        int heading = status!.NormalizedHeading;
+        double turn = Math.Abs(heading - detectionHeading);
         turn = Math.Min(turn, 360 - turn);
         // Ignore sub-decimetre coordinate noise, but compare with the stationary origin
         // so a sequence of small steps still counts as driving.
@@ -237,13 +237,19 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         await updateLock.WaitAsync().ConfigureAwait(true);
         try
         {
-            if (!ShouldShow || !isRhino || status?.InSrv != true || !TryGetPosition(out var cockpit))
+            if (!ShouldShow || !isRhino || status?.InSrv != true || !TryGetPosition(out SurfaceCoordinate cockpit))
             {
                 return false;
             }
 
-            var location = SurfaceMiningGeometry.DeployedRig(cockpit, status.NormalizedHeading, context!.RadiusMeters);
-            var result = await store.ToggleBookmarkGroupAsync(context, $"#{number}", location).ConfigureAwait(true);
+            SurfaceCoordinate location = SurfaceMiningGeometry.DeployedRig(
+                cockpit,
+                status.NormalizedHeading,
+                context!.RadiusMeters
+            );
+            SurfaceBookmarkMutationResult result = await store
+                .ToggleBookmarkGroupAsync(context, $"#{number}", location)
+                .ConfigureAwait(true);
             surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
             StatusText =
                 result.Mutation == SurfaceBookmarkMutation.Added
@@ -285,7 +291,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 || !Detection.Enabled
                 || Detection.IsCalibrating
                 || !IsDetectionPositionSteady
-                || !TryGetPosition(out var cockpit)
+                || !TryGetPosition(out SurfaceCoordinate cockpit)
             )
             {
                 return;
@@ -304,8 +310,12 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             }
             // Refresh before mutations, including retries after a partially successful write.
             surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
-            var location = SurfaceMiningGeometry.DeployedRig(cockpit, status!.NormalizedHeading, context.RadiusMeters);
-            var changed = await UpdateDetectedBookmarksAsync(states, location, context).ConfigureAwait(true);
+            SurfaceCoordinate location = SurfaceMiningGeometry.DeployedRig(
+                cockpit,
+                status!.NormalizedHeading,
+                context.RadiusMeters
+            );
+            bool changed = await UpdateDetectedBookmarksAsync(states, location, context).ConfigureAwait(true);
             if (changed)
             {
                 surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
@@ -336,11 +346,13 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         SystemSurfaceContext miningContext
     )
     {
-        var changed = false;
-        for (var i = 0; i < 6; i++)
+        bool changed = false;
+        for (int i = 0; i < 6; i++)
         {
-            var name = $"#{i + 1}";
-            var exists = surface?.Bookmarks.TryGetValue(name, out var locations) == true && locations.Count > 0;
+            string name = $"#{i + 1}";
+            bool exists =
+                surface?.Bookmarks.TryGetValue(name, out IReadOnlyList<SurfaceCoordinate>? locations) == true
+                && locations.Count > 0;
             if (states[i] == MiningBarState.Present && !exists)
             {
                 await store.AddBookmarkAsync(miningContext, name, location).ConfigureAwait(true);
@@ -369,7 +381,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     {
         return journalEvents.Any(entry =>
             entry.EventName == "SendText"
-            && entry.Payload.TryGetProperty("Message", out var message)
+            && entry.Payload.TryGetProperty("Message", out JsonElement message)
             && message.ValueKind == JsonValueKind.String
             && message.GetString()?.Trim() == "---"
         )
@@ -382,7 +394,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         await updateLock.WaitAsync().ConfigureAwait(true);
         try
         {
-            var miningContext = shipBoarding ? lastMiningContext ?? context : context;
+            SystemSurfaceContext? miningContext = shipBoarding ? lastMiningContext ?? context : context;
             if (
                 miningContext is null
                 || !string.Equals(miningContext.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
@@ -428,10 +440,11 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
     private static bool IsOwnShipBoarding(JournalEventEnvelope journalEvent)
     {
-        var entry = journalEvent.Payload;
+        JsonElement entry = journalEvent.Payload;
         if (
-            entry.TryGetProperty("Taxi", out var taxi) && taxi.ValueKind != JsonValueKind.False
-            || entry.TryGetProperty("Multicrew", out var multicrew) && multicrew.ValueKind != JsonValueKind.False
+            entry.TryGetProperty("Taxi", out JsonElement taxi) && taxi.ValueKind != JsonValueKind.False
+            || entry.TryGetProperty("Multicrew", out JsonElement multicrew)
+                && multicrew.ValueKind != JsonValueKind.False
         )
         {
             return false;
@@ -439,7 +452,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
         return journalEvent.EventName == "DockSRV"
             || journalEvent.EventName == "Embark"
-                && entry.TryGetProperty("SRV", out var srv)
+                && entry.TryGetProperty("SRV", out JsonElement srv)
                 && srv.ValueKind == JsonValueKind.False;
     }
 
@@ -449,14 +462,14 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         bool validPosition = ShouldShow && TryGetPosition(out _);
         List<MiningRigViewModel> rigs = CreateRigs(validPosition, markers);
 
-        var resources = validPosition ? CreateResourceMarkers() : [];
+        SurfaceRadarMarkerViewModel[] resources = validPosition ? CreateResourceMarkers() : [];
         if (!SameMarkers(Resources.Select(resource => resource.Marker).ToArray(), resources))
         {
             Resources = resources.Select(marker => new MiningResourceViewModel(marker)).ToArray();
         }
         markers.AddRange(Resources.Select(resource => resource.Marker));
 
-        var ships = validPosition
+        SurfaceRadarMarkerViewModel[] ships = validPosition
             ? navigation
                 .Where(marker => marker.Kind is SurfaceRadarMarkerKind.Ship or SurfaceRadarMarkerKind.FormerShip)
                 .ToArray()
@@ -586,21 +599,21 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     {
         if (
             surface is null
-            || !surface.Bookmarks.TryGetValue($"#{number}", out var locations)
+            || !surface.Bookmarks.TryGetValue($"#{number}", out IReadOnlyList<SurfaceCoordinate>? locations)
             || locations.Count == 0
-            || !TryGetPosition(out var cockpit)
+            || !TryGetPosition(out SurfaceCoordinate cockpit)
         )
         {
             return null;
         }
 
-        var current = status!.InSrv
+        SurfaceCoordinate current = status!.InSrv
             ? SurfaceMiningGeometry.VehicleCenter(cockpit, status.NormalizedHeading, context!.RadiusMeters)
             : cockpit;
-        var location = locations[0];
-        var distance = SurfaceNavigation.GetDistance(current, location, context!.RadiusMeters);
-        var bearing = SurfaceNavigation.GetBearing(current, location);
-        var proximity = distance < SurfaceMiningGeometry.ExclusionDistanceMeters ? "TOO CLOSE" : "TRACKED";
+        SurfaceCoordinate location = locations[0];
+        double distance = SurfaceNavigation.GetDistance(current, location, context!.RadiusMeters);
+        double bearing = SurfaceNavigation.GetBearing(current, location);
+        string proximity = distance < SurfaceMiningGeometry.ExclusionDistanceMeters ? "TOO CLOSE" : "TRACKED";
         if (distance < SurfaceMiningGeometry.PickupDistanceMeters)
         {
             proximity = "COLLECT";

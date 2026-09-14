@@ -10,12 +10,12 @@ public sealed class GuidesViewMarkupTests
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "GuidesView.axaml")
         );
-        var values = document
+        string[] values = document
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
-        var categoryTemplate = document
+        XElement categoryTemplate = document
             .Descendants()
             .Single(element => element.Name.LocalName == "ListBox.ItemTemplate");
 

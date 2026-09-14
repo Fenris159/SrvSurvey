@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Colonization;
@@ -309,7 +310,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
     public void UpdateContext(ColonizationProjectEditorContext updatedContext)
     {
         ArgumentNullException.ThrowIfNull(updatedContext);
-        var oldIdentity = GetContextIdentity(context);
+        string oldIdentity = GetContextIdentity(context);
         context = updatedContext;
         if (oldIdentity != GetContextIdentity(updatedContext))
         {
@@ -343,10 +344,10 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Loading planned sites and architect from Raven Colonial...";
         try
         {
-            var sitesTask = client.GetSystemSitesAsync(context.SystemName!);
-            var architectTask = client.GetSystemArchitectAsync(context.SystemName!);
+            Task<IReadOnlyList<ColonizationSystemSite>> sitesTask = client.GetSystemSitesAsync(context.SystemName!);
+            Task<string?> architectTask = client.GetSystemArchitectAsync(context.SystemName!);
             await Task.WhenAll(sitesTask, architectTask);
-            var planned = (await sitesTask)
+            ColonizationSystemSiteOptionViewModel[] planned = (await sitesTask)
                 .Where(site => site.Status == ColonizationSystemSiteStatus.Plan)
                 .OrderBy(site => site.Name)
                 .Select(site => new ColonizationSystemSiteOptionViewModel(site))
@@ -357,7 +358,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsPlannedSiteSelected));
             OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             ProjectName = context.Dock!.DefaultProjectName;
-            var architect = await architectTask;
+            string? architect = await architectTask;
             ArchitectName = string.IsNullOrWhiteSpace(architect) ? context.CommanderName! : architect;
             Notes = string.Empty;
             BodyNumberText = "-1";
@@ -375,7 +376,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(HasCreatedProject));
             OnPropertyChanged(nameof(CreatedProjectSummary));
             OnPropertyChanged(nameof(CreatedProjectId));
-            var autoSelectedPlannedSite = false;
+            bool autoSelectedPlannedSite = false;
             if (planned.Length == 1)
             {
                 SelectedSystemSite = SystemSites[1];
@@ -409,13 +410,13 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
-        if (!int.TryParse(BodyNumberText, out var bodyNumber))
+        if (!int.TryParse(BodyNumberText, out int bodyNumber))
         {
             StatusMessage = "Body number must be -1 for unknown or a non-negative integer.";
             return Task.CompletedTask;
         }
 
-        var result = projectFactory.Create(
+        ColonizationProjectCreateResult result = projectFactory.Create(
             new ColonizationProjectDraft(
                 context.CommanderName ?? string.Empty,
                 context.SystemName ?? string.Empty,
@@ -466,8 +467,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Publishing the project to Raven Colonial...";
         try
         {
-            var result = await projectPublisher.CreateAsync(pendingProject, context.RavenApiKey);
-            var created = result.Project;
+            ColonizationProjectPublishResult result = await projectPublisher.CreateAsync(
+                pendingProject,
+                context.RavenApiKey
+            );
+            ColonizationProject? created = result.Project;
             if (created is null)
             {
                 StatusMessage = "Raven Colonial did not create the project. It may already exist.";
@@ -531,8 +535,8 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             return false;
         }
 
-        var matchingBuilds = buildCatalog.FindByLayout(site.BuildType);
-        var build = matchingBuilds.Count > 0 ? matchingBuilds[0] : null;
+        IReadOnlyList<ColonizationBuildCost> matchingBuilds = buildCatalog.FindByLayout(site.BuildType);
+        ColonizationBuildCost? build = matchingBuilds.Count > 0 ? matchingBuilds[0] : null;
         if (build is null)
         {
             StatusMessage = $"The planned site layout '{site.BuildType}' is not in the local build catalog.";
@@ -551,7 +555,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             string.Equals(layout, site.BuildType, StringComparison.OrdinalIgnoreCase)
         );
         OnPropertyChanged(nameof(SelectedLayout));
-        BodyNumberText = site.BodyNumber.ToString();
+        BodyNumberText = site.BodyNumber.ToString(CultureInfo.InvariantCulture);
         if (context.Dock?.IsPrimaryPortShip == true)
         {
             ProjectName = site.Name;

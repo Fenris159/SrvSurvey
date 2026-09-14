@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 
@@ -39,7 +40,7 @@ public sealed class MiningWorkspaceState
             return false;
         }
 
-        var key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
+        string key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
         if (!processed.Add(key))
         {
             return false;
@@ -57,7 +58,7 @@ public sealed class MiningWorkspaceState
             ActivateSessionForProspector(entry, system, body, ship);
         }
 
-        var changed = Session.Apply(entry);
+        bool changed = Session.Apply(entry);
         Missions.Apply(entry);
         ApplyRing(entry, system, position);
         if (changed && !bootstrap && !IsProspectProgress(entry))
@@ -92,7 +93,7 @@ public sealed class MiningWorkspaceState
 
     public void CacheRing(MiningRing ring)
     {
-        var existing = Data.Rings.Find(r =>
+        MiningRing? existing = Data.Rings.Find(r =>
             r.System.Equals(ring.System, StringComparison.OrdinalIgnoreCase)
             && r.Body.Equals(ring.Body, StringComparison.OrdinalIgnoreCase)
         );
@@ -111,12 +112,16 @@ public sealed class MiningWorkspaceState
 
     public void Import(MiningCommanderData imported)
     {
-        foreach (var ring in imported.Rings)
+        foreach (MiningRing ring in imported.Rings)
         {
             CacheRing(ring);
         }
 
-        foreach (var mission in imported.Missions.Where(mission => !Missions.Missions.Any(m => m.Id == mission.Id)))
+        foreach (
+            MiningMission? mission in imported.Missions.Where(mission =>
+                !Missions.Missions.Any(m => m.Id == mission.Id)
+            )
+        )
         {
             Missions.Missions.Add(mission);
         }
@@ -145,8 +150,8 @@ public sealed class MiningWorkspaceState
 
     private void AddNotice(JournalEventEnvelope entry)
     {
-        var json = entry.Payload;
-        var settings = Data.Settings;
+        JsonElement json = entry.Payload;
+        MiningPreferences settings = Data.Settings;
         string? text = entry.EventName switch
         {
             "MiningRefined" when settings.NotifyRefined =>
@@ -161,7 +166,7 @@ public sealed class MiningWorkspaceState
             return;
         }
 
-        var kind = entry.EventName switch
+        string kind = entry.EventName switch
         {
             "MiningRefined" => "Refined",
             "MaterialCollected" => "Collected",
@@ -176,7 +181,7 @@ public sealed class MiningWorkspaceState
 
     private string? FormatProspect()
     {
-        var last = Session.Current?.Prospects.LastOrDefault();
+        MiningProspect? last = Session.Current?.Prospects.LastOrDefault();
         if (
             last is null
             || (!string.IsNullOrEmpty(last.Core) ? !Data.Settings.AnnounceCores : !Data.Settings.AnnounceNonCores)
@@ -185,10 +190,10 @@ public sealed class MiningWorkspaceState
             return null;
         }
 
-        var selected = last
+        MiningMaterial[] selected = last
             .Materials.Where(m =>
                 Data.Settings.Thresholds.Count == 0
-                || Data.Settings.Thresholds.TryGetValue(m.Name.ToLowerInvariant(), out var threshold)
+                || Data.Settings.Thresholds.TryGetValue(m.Name.ToLowerInvariant(), out double threshold)
                     && m.Percentage >= threshold
             )
             .ToArray();
@@ -204,7 +209,7 @@ public sealed class MiningWorkspaceState
 
     private string? FormatCurrentProspect()
     {
-        var prospect = Session.Current?.ActiveProspect;
+        MiningProspect? prospect = Session.Current?.ActiveProspect;
         if (prospect is null)
         {
             return null;
@@ -222,13 +227,13 @@ public sealed class MiningWorkspaceState
 
     private static bool IsProspectProgress(JournalEventEnvelope entry) =>
         entry.EventName == "ProspectedAsteroid"
-        && entry.Payload.TryGetProperty("Remaining", out var remaining)
-        && remaining.TryGetDouble(out var value)
+        && entry.Payload.TryGetProperty("Remaining", out JsonElement remaining)
+        && remaining.TryGetDouble(out double value)
         && value < 100;
 
     private void ApplyRing(JournalEventEnvelope entry, string system, GalacticCoordinate? position)
     {
-        var json = entry.Payload;
+        JsonElement json = entry.Payload;
         if (string.IsNullOrWhiteSpace(system))
         {
             return;
@@ -236,10 +241,10 @@ public sealed class MiningWorkspaceState
 
         if (entry.EventName == "Scan")
         {
-            foreach (var ring in MiningJson.Array(json, "Rings"))
+            foreach (JsonElement ring in MiningJson.Array(json, "Rings"))
             {
-                var name = MiningJson.Text(ring, "Name");
-                var item = GetRing(system, name, position);
+                string name = MiningJson.Text(ring, "Name");
+                MiningRing item = GetRing(system, name, position);
                 item.RingType = MiningJson.Text(ring, "RingClass").Replace("eRingClass_", "");
                 item.Reserve = MiningJson.Text(json, "ReserveLevel");
                 item.ArrivalLs = MiningJson.Number(json, "DistanceFromArrivalLS");
@@ -251,16 +256,16 @@ public sealed class MiningWorkspaceState
             return;
         }
 
-        var body = MiningJson.Text(json, "BodyName");
+        string body = MiningJson.Text(json, "BodyName");
         if (!body.Contains("Ring", StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
 
-        var target = GetRing(system, body, position);
-        foreach (var signal in MiningJson.Array(json, "Signals"))
+        MiningRing target = GetRing(system, body, position);
+        foreach (JsonElement signal in MiningJson.Array(json, "Signals"))
         {
-            var name = MiningJson.Text(signal, "Type_Localised");
+            string name = MiningJson.Text(signal, "Type_Localised");
             if (name.Length == 0)
             {
                 name = MiningJson.Text(signal, "Type");
@@ -273,7 +278,7 @@ public sealed class MiningWorkspaceState
 
     private MiningRing GetRing(string system, string body, GalacticCoordinate? position)
     {
-        var ring = Data.Rings.Find(r =>
+        MiningRing? ring = Data.Rings.Find(r =>
             r.System.Equals(system, StringComparison.OrdinalIgnoreCase)
             && r.Body.Equals(body, StringComparison.OrdinalIgnoreCase)
         );

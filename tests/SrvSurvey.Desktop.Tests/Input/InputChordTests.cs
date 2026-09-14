@@ -12,7 +12,7 @@ public sealed class InputChordTests
     [InlineData("rt lt", "LT RT")]
     public void NormalizesLegacyKeyboardAndControllerChords(string value, string expected)
     {
-        Assert.True(InputChord.TryNormalize(value, out var normalized));
+        Assert.True(InputChord.TryNormalize(value, out string? normalized));
         Assert.Equal(expected, normalized);
     }
 

@@ -13,7 +13,7 @@ public sealed class GuardianSiteTemplateAuthoringTests : IDisposable
     [Fact]
     public void DraftEditsDoNotMutateSourceTemplate()
     {
-        var source = CreateTemplate();
+        GuardianSiteTemplate source = CreateTemplate();
         var session = new GuardianSiteTemplateAuthoringSession(source);
 
         session.UpdateMetadata("Edited", "edited.png", new GuardianMapPoint(12, 34), 1.5);
@@ -45,25 +45,28 @@ public sealed class GuardianSiteTemplateAuthoringTests : IDisposable
     public async Task ExportRoundTripsEditedCatalogAndBacksUpDestination()
     {
         var catalog = GuardianSiteTemplateCatalog.LoadEmbedded();
-        var source = catalog.Find("Beta")!;
+        GuardianSiteTemplate source = catalog.Find("Beta")!;
         var session = new GuardianSiteTemplateAuthoringSession(source);
         session.AddPoint(new GuardianPointOfInterest("qa1", GuardianPoiType.Orb, 12.5, 45.5, 0));
         session.SetObeliskGroupLabel("QA", new GuardianMapPoint(30, 60));
-        var updated = catalog.WithTemplate(session.Template);
+        GuardianSiteTemplateCatalog updated = catalog.WithTemplate(session.Template);
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, "guardianSiteTemplates.json");
-        var original = new byte[] { 0, 1, 2, 3, 255 };
+        string path = Path.Combine(directory, "guardianSiteTemplates.json");
+        byte[] original = new byte[] { 0, 1, 2, 3, 255 };
         await File.WriteAllBytesAsync(path, original);
 
-        var result = await new GuardianSiteTemplateCatalogExporter().ExportAsync(updated, path);
+        GuardianSiteTemplateExportResult result = await new GuardianSiteTemplateCatalogExporter().ExportAsync(
+            updated,
+            path
+        );
 
         Assert.NotNull(result.BackupPath);
         Assert.Equal(original, await File.ReadAllBytesAsync(result.BackupPath));
         Assert.Equal(result.Sha256, Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(path))));
-        await using var stream = File.OpenRead(path);
+        await using FileStream stream = File.OpenRead(path);
         var roundTrip = GuardianSiteTemplateCatalog.Load(stream);
         Assert.Equal(updated.Count, roundTrip.Count);
-        var beta = roundTrip.Find("Beta")!;
+        GuardianSiteTemplate beta = roundTrip.Find("Beta")!;
         Assert.Contains(beta.PointsOfInterest, point => point.Name == "qa1");
         Assert.Equal(new GuardianMapPoint(30, 60), beta.ObeliskGroupNameLocations["QA"]);
     }
@@ -72,17 +75,17 @@ public sealed class GuardianSiteTemplateAuthoringTests : IDisposable
     public async Task ConcurrentDestinationChangeIsNeverOverwritten()
     {
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, "guardianSiteTemplates.json");
+        string path = Path.Combine(directory, "guardianSiteTemplates.json");
         await File.WriteAllTextAsync(path, "original");
         var exporter = new GuardianSiteTemplateCatalogExporter(target => File.WriteAllTextAsync(target, "newer"));
 
-        var exception = await Assert.ThrowsAsync<IOException>(() =>
+        IOException exception = await Assert.ThrowsAsync<IOException>(() =>
             exporter.ExportAsync(GuardianSiteTemplateCatalog.LoadEmbedded(), path)
         );
 
         Assert.Contains("changed during export", exception.Message);
         Assert.Equal("newer", await File.ReadAllTextAsync(path));
-        var backup = Assert.Single(Directory.GetFiles(directory, "guardianSiteTemplates.json.backup-*"));
+        string backup = Assert.Single(Directory.GetFiles(directory, "guardianSiteTemplates.json.backup-*"));
         Assert.Equal("original", await File.ReadAllTextAsync(backup));
         Assert.Empty(Directory.GetFiles(directory, "*.tmp"));
     }

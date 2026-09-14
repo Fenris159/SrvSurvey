@@ -31,7 +31,7 @@ public sealed class ReplayControllerViewModelTests
     public async Task ImportLaunchStepAndPreviousReconstructAnIsolatedRun()
     {
         using var temp = new TemporaryDirectory();
-        var journalPath = Path.Combine(temp.Path, "Journal.01.log");
+        string journalPath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllLinesAsync(
             journalPath,
             [
@@ -40,7 +40,7 @@ public sealed class ReplayControllerViewModelTests
                 "{\"timestamp\":\"2026-08-21T18:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\"}",
             ]
         );
-        var executable = Path.Combine(temp.Path, "SrvSurvey.Desktop.exe");
+        string executable = Path.Combine(temp.Path, "SrvSurvey.Desktop.exe");
         await File.WriteAllTextAsync(executable, string.Empty);
         var launcher = new RecordingLauncher();
         var viewModel = new ReplayControllerViewModel(Path.Combine(temp.Path, "sessions"), launcher);
@@ -60,8 +60,8 @@ public sealed class ReplayControllerViewModelTests
         Assert.True(await viewModel.StepAsync());
         Assert.True(await viewModel.StepAsync());
         Assert.Equal(2, viewModel.Position);
-        var replayStateMarker = Path.Combine(viewModel.DataDirectory, "state.json");
-        var replayLogMarker = Path.Combine(viewModel.LogsDirectory, "diagnostic.log");
+        string replayStateMarker = Path.Combine(viewModel.DataDirectory, "state.json");
+        string replayLogMarker = Path.Combine(viewModel.LogsDirectory, "diagnostic.log");
         await File.WriteAllTextAsync(replayStateMarker, "stale state");
         await File.WriteAllTextAsync(replayLogMarker, "retained evidence");
 
@@ -77,7 +77,7 @@ public sealed class ReplayControllerViewModelTests
     public async Task LaunchFailureFromInvalidExecutableIsReported()
     {
         using var temp = new TemporaryDirectory();
-        var (journalPath, executable) = await CreateInputsAsync(temp.Path);
+        (string? journalPath, string? executable) = await CreateInputsAsync(temp.Path);
         var viewModel = new ReplayControllerViewModel(
             Path.Combine(temp.Path, "sessions"),
             new FailingLauncher(new Win32Exception("not executable"))
@@ -95,7 +95,7 @@ public sealed class ReplayControllerViewModelTests
     public async Task UnexpectedChildExitReportsCodeAndRetainedLogs()
     {
         using var temp = new TemporaryDirectory();
-        var (journalPath, executable) = await CreateInputsAsync(temp.Path);
+        (string? journalPath, string? executable) = await CreateInputsAsync(temp.Path);
         var launcher = new ControlledLauncher();
         var viewModel = new ReplayControllerViewModel(Path.Combine(temp.Path, "sessions"), launcher);
         viewModel.SrvSurveyExecutablePath = executable;
@@ -114,7 +114,7 @@ public sealed class ReplayControllerViewModelTests
     public async Task PlaybackLocksPreviousStepAndSpeedChangesUntilPaused()
     {
         using var temp = new TemporaryDirectory();
-        var (journalPath, executable) = await CreateInputsAsync(temp.Path);
+        (string? journalPath, string? executable) = await CreateInputsAsync(temp.Path);
         var launcher = new ControlledLauncher();
         var delay = new BlockingDelay();
         var viewModel = new ReplayControllerViewModel(
@@ -127,7 +127,7 @@ public sealed class ReplayControllerViewModelTests
         Assert.True(await viewModel.LaunchAsync());
         viewModel.SpeedMultiplier = 10;
 
-        var playback = viewModel.PlayAsync();
+        Task playback = viewModel.PlayAsync();
         await delay.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
         try
@@ -161,7 +161,7 @@ public sealed class ReplayControllerViewModelTests
     public async Task ChildExitCancelsPlaybackAndKeepsExitOutcomeAuthoritative()
     {
         using var temp = new TemporaryDirectory();
-        var (journalPath, executable) = await CreateInputsAsync(temp.Path);
+        (string? journalPath, string? executable) = await CreateInputsAsync(temp.Path);
         var launcher = new ControlledLauncher();
         var delay = new BlockingDelay();
         var viewModel = new ReplayControllerViewModel(
@@ -172,7 +172,7 @@ public sealed class ReplayControllerViewModelTests
         viewModel.SrvSurveyExecutablePath = executable;
         Assert.True(await viewModel.ImportAsync(journalPath));
         Assert.True(await viewModel.LaunchAsync());
-        var playback = viewModel.PlayAsync();
+        Task playback = viewModel.PlayAsync();
         await delay.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
         launcher.Instances[0].Exit(23);
@@ -189,7 +189,7 @@ public sealed class ReplayControllerViewModelTests
     public async Task PlaybackIoFailureIsReportedWithoutEscapingTheCommandPath()
     {
         using var temp = new TemporaryDirectory();
-        var (journalPath, executable) = await CreateInputsAsync(temp.Path);
+        (string? journalPath, string? executable) = await CreateInputsAsync(temp.Path);
         var launcher = new ControlledLauncher();
         var viewModel = new ReplayControllerViewModel(Path.Combine(temp.Path, "sessions"), launcher);
         viewModel.SrvSurveyExecutablePath = executable;
@@ -208,7 +208,7 @@ public sealed class ReplayControllerViewModelTests
     public async Task ConcurrentRestartIsRejectedWhileStopIsPending()
     {
         using var temp = new TemporaryDirectory();
-        var (journalPath, executable) = await CreateInputsAsync(temp.Path);
+        (string? journalPath, string? executable) = await CreateInputsAsync(temp.Path);
         var launcher = new ControlledLauncher();
         var viewModel = new ReplayControllerViewModel(Path.Combine(temp.Path, "sessions"), launcher);
         viewModel.SrvSurveyExecutablePath = executable;
@@ -216,9 +216,9 @@ public sealed class ReplayControllerViewModelTests
         Assert.True(await viewModel.LaunchAsync());
         launcher.Instances[0].BlockStop();
 
-        var firstRestart = viewModel.RestartAsync();
+        Task<bool> firstRestart = viewModel.RestartAsync();
         await launcher.Instances[0].StopStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        var secondRestart = await viewModel.RestartAsync();
+        bool secondRestart = await viewModel.RestartAsync();
 
         Assert.False(secondRestart);
         launcher.Instances[0].ReleaseStop();
@@ -230,20 +230,20 @@ public sealed class ReplayControllerViewModelTests
     public async Task WindowCloseWaitsForTheDiagnosticProcessToStop()
     {
         using var temp = new TemporaryDirectory();
-        var (journalPath, executable) = await CreateInputsAsync(temp.Path);
+        (string? journalPath, string? executable) = await CreateInputsAsync(temp.Path);
         var launcher = new ControlledLauncher();
         var viewModel = new ReplayControllerViewModel(Path.Combine(temp.Path, "sessions"), launcher);
         viewModel.SrvSurveyExecutablePath = executable;
         Assert.True(await viewModel.ImportAsync(journalPath));
         Assert.True(await viewModel.LaunchAsync());
-        var diagnosticInstance = launcher.Instances[0];
+        ControlledInstance diagnosticInstance = launcher.Instances[0];
         diagnosticInstance.BlockStop();
-        var closeCompleted = false;
+        bool closeCompleted = false;
         var coordinator = new ReplayControllerWindowCloseCoordinator(
             viewModel.DisposeAsync,
             () => closeCompleted = true
         );
-        var closeStarted = false;
+        bool closeStarted = false;
 
         try
         {
@@ -279,7 +279,7 @@ public sealed class ReplayControllerViewModelTests
     public async Task DisposalReleasesTheOwnedReplayPlayer()
     {
         using var temp = new TemporaryDirectory();
-        var (journalPath, _) = await CreateInputsAsync(temp.Path);
+        (string? journalPath, string _) = await CreateInputsAsync(temp.Path);
         JournalReplayPlayer? ownedPlayer = null;
         var viewModel = new ReplayControllerViewModel(
             Path.Combine(temp.Path, "sessions"),
@@ -293,13 +293,13 @@ public sealed class ReplayControllerViewModelTests
 
         await viewModel.DisposeAsync();
 
-        var disposedPlayer = Assert.IsType<JournalReplayPlayer>(ownedPlayer);
+        JournalReplayPlayer disposedPlayer = Assert.IsType<JournalReplayPlayer>(ownedPlayer);
         await Assert.ThrowsAsync<ObjectDisposedException>(() => disposedPlayer.StepAsync(CancellationToken.None));
     }
 
     private static async Task<(string JournalPath, string Executable)> CreateInputsAsync(string root)
     {
-        var journalPath = Path.Combine(root, "Journal.01.log");
+        string journalPath = Path.Combine(root, "Journal.01.log");
         await File.WriteAllLinesAsync(
             journalPath,
             [
@@ -307,7 +307,7 @@ public sealed class ReplayControllerViewModelTests
                 "{\"timestamp\":\"2026-08-21T18:00:05Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\"}",
             ]
         );
-        var executable = Path.Combine(root, "SrvSurvey.Desktop.exe");
+        string executable = Path.Combine(root, "SrvSurvey.Desktop.exe");
         await File.WriteAllTextAsync(executable, string.Empty);
         return (journalPath, executable);
     }

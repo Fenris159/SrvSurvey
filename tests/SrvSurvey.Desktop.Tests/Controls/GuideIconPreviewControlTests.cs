@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -14,9 +15,9 @@ public sealed class GuideIconPreviewControlTests
     [AvaloniaFact]
     public void EveryDocumentedIconKindRendersToTheHeadlessSurface()
     {
-        foreach (var kind in Enum.GetValues<GuideIconKind>())
+        foreach (GuideIconKind kind in Enum.GetValues<GuideIconKind>())
         {
-            var control = CreateControl(kind, "✓");
+            GuideIconPreviewControl control = CreateControl(kind, "✓");
 
             Assert.True(Render(control), $"{kind} rendered no visible pixels.");
         }
@@ -91,7 +92,7 @@ public sealed class GuideIconPreviewControlTests
         try
         {
             window.Show();
-            var frame = window.CaptureRenderedFrame();
+            WriteableBitmap? frame = window.CaptureRenderedFrame();
             return frame?.PixelSize == new PixelSize(96, 96);
         }
         finally

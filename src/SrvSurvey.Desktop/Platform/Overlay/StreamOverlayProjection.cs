@@ -23,8 +23,8 @@ public static class StreamOverlayProjection
             return null;
         }
 
-        var relativeX = overlayPosition.X - gameClientBounds.X;
-        var relativeY = overlayPosition.Y - gameClientBounds.Y;
+        int relativeX = overlayPosition.X - gameClientBounds.X;
+        int relativeY = overlayPosition.Y - gameClientBounds.Y;
         if (relativeX < 0 || relativeY < 0)
         {
             return null;

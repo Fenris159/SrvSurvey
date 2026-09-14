@@ -16,7 +16,7 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
     public void EveryPanelUsesCatalogedSettingsCategoriesAndOneUnboundShortcut()
     {
         var registry = new OverlayWindowRegistry();
-        var viewModel = Create(registry);
+        OverlayPanelVisibilityViewModel viewModel = Create(registry);
 
         Assert.Equal(OverlayLayoutCatalog.Supported.Count, viewModel.Panels.Count);
         Assert.Equal(
@@ -54,13 +54,13 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
     public void TogglePersistsAndUpdatesRegistryAvailability()
     {
         var registry = new OverlayWindowRegistry();
-        var viewModel = Create(registry);
+        OverlayPanelVisibilityViewModel viewModel = Create(registry);
 
         Assert.True(viewModel.Toggle("PlotGuardians"));
         Assert.False(registry.IsUserVisible("PlotGuardians"));
         Assert.False(viewModel.Panels.Single(panel => panel.PlotterName == "PlotGuardians").IsEnabled);
 
-        var reloaded = Create(new OverlayWindowRegistry());
+        OverlayPanelVisibilityViewModel reloaded = Create(new OverlayWindowRegistry());
         Assert.False(reloaded.Panels.Single(panel => panel.PlotterName == "PlotGuardians").IsEnabled);
         Assert.False(viewModel.Toggle("PlotUnknown"));
     }
@@ -128,9 +128,9 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
             [OverlaySettingsCategory.Quests] = ["PlotFootCombat", "PlotHumanSite", "PlotMassacre", "PlotQuestMini"],
             [OverlaySettingsCategory.Colonization] = ["PlotBuildCommodities"],
         };
-        var viewModel = Create(new OverlayWindowRegistry());
+        OverlayPanelVisibilityViewModel viewModel = Create(new OverlayWindowRegistry());
 
-        foreach (var (category, plotterNames) in expected)
+        foreach ((OverlaySettingsCategory category, string[]? plotterNames) in expected)
         {
             Assert.Equal(
                 plotterNames.Order(StringComparer.Ordinal),

@@ -29,13 +29,13 @@ internal sealed class LegacySystemDataFileStore
     )
     {
         ValidateContext(context);
-        var path = FindSystemPath(context) ?? GetNewSystemPath(context);
+        string path = FindSystemPath(context) ?? GetNewSystemPath(context);
         if (!File.Exists(path))
         {
             return new LegacySystemDataFileLoadResult(path, false, null, null);
         }
 
-        var readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+        JsonObjectReadResult readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
         return new LegacySystemDataFileLoadResult(path, true, readResult.Root, readResult.Error);
     }
 
@@ -51,15 +51,18 @@ internal sealed class LegacySystemDataFileStore
                 context.FrontierId,
                 async token =>
                 {
-                    var path = FindSystemPath(context) ?? GetNewSystemPath(context);
-                    var updateLock = UpdateLocks.GetOrAdd(Path.GetFullPath(path), static _ => new SemaphoreSlim(1, 1));
+                    string path = FindSystemPath(context) ?? GetNewSystemPath(context);
+                    SemaphoreSlim updateLock = UpdateLocks.GetOrAdd(
+                        Path.GetFullPath(path),
+                        static _ => new SemaphoreSlim(1, 1)
+                    );
                     await updateLock.WaitAsync(token).ConfigureAwait(false);
                     try
                     {
                         JsonObject root;
                         if (File.Exists(path))
                         {
-                            var readResult = await ReadObjectAsync(path, token).ConfigureAwait(false);
+                            JsonObjectReadResult readResult = await ReadObjectAsync(path, token).ConfigureAwait(false);
                             root =
                                 readResult.Root
                                 ?? throw new InvalidDataException(
@@ -97,15 +100,18 @@ internal sealed class LegacySystemDataFileStore
                 context.FrontierId,
                 async token =>
                 {
-                    var path = FindSystemPath(context) ?? GetNewSystemPath(context);
-                    var updateLock = UpdateLocks.GetOrAdd(Path.GetFullPath(path), static _ => new SemaphoreSlim(1, 1));
+                    string path = FindSystemPath(context) ?? GetNewSystemPath(context);
+                    SemaphoreSlim updateLock = UpdateLocks.GetOrAdd(
+                        Path.GetFullPath(path),
+                        static _ => new SemaphoreSlim(1, 1)
+                    );
                     await updateLock.WaitAsync(token).ConfigureAwait(false);
                     try
                     {
                         JsonObject root;
                         if (File.Exists(path))
                         {
-                            var readResult = await ReadObjectAsync(path, token).ConfigureAwait(false);
+                            JsonObjectReadResult readResult = await ReadObjectAsync(path, token).ConfigureAwait(false);
                             root =
                                 readResult.Root
                                 ?? throw new InvalidDataException(
@@ -117,7 +123,7 @@ internal sealed class LegacySystemDataFileStore
                             root = CreateSystemData(context);
                         }
 
-                        var result = update(root);
+                        T? result = update(root);
                         await WriteObjectAsync(path, root, token).ConfigureAwait(false);
                         return new LegacySystemDataFileMutationResult<T>(path, result);
                     }
@@ -143,8 +149,11 @@ internal sealed class LegacySystemDataFileStore
                 context.FrontierId,
                 async token =>
                 {
-                    var path = FindSystemPath(context) ?? GetNewSystemPath(context);
-                    var updateLock = UpdateLocks.GetOrAdd(Path.GetFullPath(path), static _ => new SemaphoreSlim(1, 1));
+                    string path = FindSystemPath(context) ?? GetNewSystemPath(context);
+                    SemaphoreSlim updateLock = UpdateLocks.GetOrAdd(
+                        Path.GetFullPath(path),
+                        static _ => new SemaphoreSlim(1, 1)
+                    );
                     await updateLock.WaitAsync(token).ConfigureAwait(false);
                     try
                     {
@@ -153,13 +162,13 @@ internal sealed class LegacySystemDataFileStore
                             return new LegacySystemDataFileUpdateResult(path, false, false, null);
                         }
 
-                        var readResult = await ReadObjectAsync(path, token).ConfigureAwait(false);
+                        JsonObjectReadResult readResult = await ReadObjectAsync(path, token).ConfigureAwait(false);
                         if (readResult.Root is null)
                         {
                             return new LegacySystemDataFileUpdateResult(path, true, false, readResult.Error);
                         }
 
-                        var changed = update(readResult.Root);
+                        bool changed = update(readResult.Root);
                         if (changed)
                         {
                             await WriteObjectAsync(path, readResult.Root, token).ConfigureAwait(false);
@@ -185,8 +194,8 @@ internal sealed class LegacySystemDataFileStore
     {
         ValidateFrontierId(frontierId);
         ArgumentNullException.ThrowIfNull(operation);
-        var key = Path.GetFullPath(Path.Combine(dataDirectory, "systems", frontierId));
-        var profileLock = ProfileWriteLocks.GetOrAdd(key, static _ => new SemaphoreSlim(1, 1));
+        string key = Path.GetFullPath(Path.Combine(dataDirectory, "systems", frontierId));
+        SemaphoreSlim profileLock = ProfileWriteLocks.GetOrAdd(key, static _ => new SemaphoreSlim(1, 1));
         await profileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -236,18 +245,18 @@ internal sealed class LegacySystemDataFileStore
 
     private string? FindSystemPath(LegacySystemDataFileContext context)
     {
-        var directory = GetSystemDirectory(context.FrontierId);
+        string directory = GetSystemDirectory(context.FrontierId);
         if (!Directory.Exists(directory))
         {
             return null;
         }
 
-        var paths = Directory
+        string[] paths = Directory
             .EnumerateFiles(directory, "*.json", SearchOption.TopDirectoryOnly)
             .Order(StringComparer.Ordinal)
             .ToArray();
-        var addressSuffix = $"_{context.SystemAddress}.json";
-        var addressMatch = paths.FirstOrDefault(path =>
+        string addressSuffix = $"_{context.SystemAddress}.json";
+        string? addressMatch = paths.FirstOrDefault(path =>
             Path.GetFileName(path).EndsWith(addressSuffix, StringComparison.OrdinalIgnoreCase)
         );
         if (addressMatch is not null)
@@ -255,7 +264,7 @@ internal sealed class LegacySystemDataFileStore
             return addressMatch;
         }
 
-        var namePrefix = $"{MakeSafeFileName(context.SystemName)}_";
+        string namePrefix = $"{MakeSafeFileName(context.SystemName)}_";
         return paths.FirstOrDefault(path =>
             Path.GetFileName(path).StartsWith(namePrefix, StringComparison.OrdinalIgnoreCase)
         );
@@ -306,7 +315,9 @@ internal sealed class LegacySystemDataFileStore
                 16 * 1024,
                 FileOptions.Asynchronous | FileOptions.SequentialScan
             );
-            var node = await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            JsonNode? node = await JsonNode
+                .ParseAsync(stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             return node is JsonObject root
                 ? new JsonObjectReadResult(root, null)
                 : new JsonObjectReadResult(null, $"{path} does not contain a JSON object.");
@@ -319,11 +330,11 @@ internal sealed class LegacySystemDataFileStore
 
     private static async Task WriteObjectAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException($"The system data path has no parent directory: {path}");
         Directory.CreateDirectory(directory);
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             await using (

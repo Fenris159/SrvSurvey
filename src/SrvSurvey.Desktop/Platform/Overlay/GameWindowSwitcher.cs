@@ -56,7 +56,7 @@ internal static class GameWindowCycle
             return nint.Zero;
         }
 
-        var currentIndex = IndexOf(windows, activeWindow);
+        int currentIndex = IndexOf(windows, activeWindow);
         if (currentIndex < 0)
         {
             currentIndex = IndexOf(windows, previousWindow);
@@ -72,7 +72,7 @@ internal static class GameWindowCycle
             return -1;
         }
 
-        for (var index = 0; index < windows.Count; index++)
+        for (int index = 0; index < windows.Count; index++)
         {
             if (windows[index] == value)
             {
@@ -127,8 +127,8 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
     {
         try
         {
-            var handles = GetCandidateWindows();
-            var target = activateNext
+            nint[] handles = GetCandidateWindows();
+            nint target = activateNext
                 ? GameWindowCycle.SelectNext(handles, GetForegroundWindow(), previousWindow)
                 : GameWindowCycle.SelectCurrent(handles, GetForegroundWindow(), previousWindow);
             if (target == nint.Zero)
@@ -159,9 +159,9 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
     private static nint[] GetCandidateWindows()
     {
         using var currentProcess = Process.GetCurrentProcess();
-        var currentSession = currentProcess.SessionId;
+        int currentSession = currentProcess.SessionId;
         var windows = new List<(int ProcessId, nint Handle)>();
-        foreach (var process in Process.GetProcessesByName(EliteGameWindowIdentity.WindowsProcessName))
+        foreach (Process process in Process.GetProcessesByName(EliteGameWindowIdentity.WindowsProcessName))
         {
             using (process)
             {
@@ -205,7 +205,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 {
     private const int RevertToParent = 2;
     private const int PropertyReadLength = 16_384;
-    private readonly object gate = new();
+    private readonly Lock gate = new();
     private nint display;
     private readonly nuint rootWindow;
     private readonly nuint activeWindowAtom;
@@ -229,7 +229,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             return null;
         }
 
-        var display = nint.Zero;
+        nint display = nint.Zero;
         try
         {
             X11OverlayPlatformService.EnsureErrorHandlerInstalled();
@@ -284,8 +284,8 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             return false;
         }
 
-        var candidates = GetCandidateWindows();
-        var target = activateNext
+        nint[] candidates = GetCandidateWindows();
+        nint target = activateNext
             ? GameWindowCycle.SelectNext(
                 candidates,
                 unchecked((nint)ReadSingleWindow(activeWindowAtom)),
@@ -301,7 +301,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             return false;
         }
 
-        var targetWindow = unchecked((nuint)target);
+        nuint targetWindow = unchecked((nuint)target);
         _ = X11Native.XMapRaised(display, targetWindow);
         _ = X11Native.XSetInputFocus(display, targetWindow, RevertToParent, 0);
         _ = X11Native.XFlush(display);
@@ -319,7 +319,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
     private nint[] GetCandidateWindows()
     {
-        var windows = ReadWindowList(clientListStackingAtom);
+        nuint[] windows = ReadWindowList(clientListStackingAtom);
         if (windows.Length == 0)
         {
             windows = ReadWindowList(clientListAtom);
@@ -332,7 +332,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
     {
         lock (gate)
         {
-            var currentDisplay = display;
+            nint currentDisplay = display;
             display = nint.Zero;
             if (currentDisplay != nint.Zero)
             {
@@ -355,7 +355,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
     private bool IsViewable(nuint window)
     {
-        return X11Native.XGetWindowAttributes(display, window, out var attributes) != 0
+        return X11Native.XGetWindowAttributes(display, window, out X11Native.XWindowAttributes attributes) != 0
             && attributes.MapState == X11Native.IsViewable;
     }
 
@@ -363,7 +363,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
     {
         string? resourceName = null;
         string? resourceClass = null;
-        if (X11Native.XGetClassHint(display, window, out var classHint) != 0)
+        if (X11Native.XGetClassHint(display, window, out X11Native.XClassHint classHint) != 0)
         {
             try
             {
@@ -378,7 +378,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
         }
 
         string? title = null;
-        if (X11Native.XFetchName(display, window, out var nativeTitle) != 0)
+        if (X11Native.XFetchName(display, window, out nint nativeTitle) != 0)
         {
             try
             {
@@ -395,7 +395,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
     private nuint ReadSingleWindow(nuint atom)
     {
-        var values = ReadWindowList(atom, rootWindow);
+        nuint[] values = ReadWindowList(atom, rootWindow);
         return values.Length == 0 ? 0 : values[0];
     }
 
@@ -412,10 +412,10 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
                 delete: 0,
                 requestedType: 0,
                 out _,
-                out var actualFormat,
-                out var itemCount,
+                out int actualFormat,
+                out nuint itemCount,
                 out _,
-                out var propertyData
+                out nint propertyData
             ) != 0
             || propertyData == nint.Zero
         )
@@ -430,8 +430,8 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
                 return [];
             }
 
-            var values = new nuint[(int)itemCount];
-            for (var index = 0; index < values.Length; index++)
+            nuint[] values = new nuint[(int)itemCount];
+            for (int index = 0; index < values.Length; index++)
             {
                 values[index] = unchecked((nuint)Marshal.ReadIntPtr(propertyData, index * nint.Size));
             }

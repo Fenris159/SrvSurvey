@@ -11,22 +11,22 @@ public static class GitHubReleaseNotes
             return string.Empty;
         }
 
-        var normalized = markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n');
-        var lines = normalized.Split('\n');
-        var changesHeading = FindChangesHeading(lines);
+        string normalized = markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n');
+        string[] lines = normalized.Split('\n');
+        int changesHeading = FindChangesHeading(lines);
         if (changesHeading < 0)
         {
             return string.Empty;
         }
 
-        var introductionEnd = Array.FindIndex(lines, IsSecondLevelHeading);
+        int introductionEnd = Array.FindIndex(lines, IsSecondLevelHeading);
         if (introductionEnd < 0)
         {
             introductionEnd = changesHeading;
         }
 
-        var end = lines.Length;
-        for (var index = changesHeading + 1; index < lines.Length; index++)
+        int end = lines.Length;
+        for (int index = changesHeading + 1; index < lines.Length; index++)
         {
             if (IsSecondLevelHeading(lines[index]))
             {
@@ -35,23 +35,23 @@ public static class GitHubReleaseNotes
             }
         }
 
-        var introduction = string.Join('\n', lines[..introductionEnd]).Trim();
-        var changes = string.Join('\n', lines[changesHeading..end]).Trim();
-        var excerpt = string.IsNullOrEmpty(introduction) ? changes : introduction + "\n\n" + changes;
+        string introduction = string.Join('\n', lines[..introductionEnd]).Trim();
+        string changes = string.Join('\n', lines[changesHeading..end]).Trim();
+        string excerpt = string.IsNullOrEmpty(introduction) ? changes : introduction + "\n\n" + changes;
         return excerpt.Length <= MaximumExcerptCharacters ? excerpt : excerpt[..MaximumExcerptCharacters].TrimEnd();
     }
 
     private static int FindChangesHeading(string[] lines)
     {
-        for (var index = 0; index < lines.Length; index++)
+        for (int index = 0; index < lines.Length; index++)
         {
-            var line = lines[index].Trim();
+            string line = lines[index].Trim();
             if (!IsSecondLevelHeading(line))
             {
                 continue;
             }
 
-            var heading = line[3..].Trim();
+            string heading = line[3..].Trim();
             if (
                 heading.StartsWith("What's changed", StringComparison.OrdinalIgnoreCase)
                 || heading.StartsWith("What’s changed", StringComparison.OrdinalIgnoreCase)

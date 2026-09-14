@@ -76,9 +76,9 @@ public sealed class GuardianArtifactInventoryStateTests
             new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "SRV", 2, [new CargoItem("ancientcasket", null, 1, 0)])
         );
 
-        var requirements = state.GetRequirements(["ca", "casket", "or"]);
+        IReadOnlyList<GuardianArtifactRequirement> requirements = state.GetRequirements(["ca", "casket", "or"]);
 
-        var casket = Assert.Single(requirements, requirement => requirement.ShortCode == "ca");
+        GuardianArtifactRequirement casket = Assert.Single(requirements, requirement => requirement.ShortCode == "ca");
         Assert.Equal(2, casket.Required);
         Assert.Equal(1, casket.Available);
         Assert.False(casket.IsMet);
@@ -212,8 +212,11 @@ public sealed class GuardianArtifactInventoryStateTests
 
     private static JournalEventEnvelope Event(string name, string properties)
     {
-        var json = $"{{\"timestamp\":\"2026-07-24T12:00:00Z\"," + $"\"event\":\"{name}\",{properties}}}";
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        string json = $"{{\"timestamp\":\"2026-07-24T12:00:00Z\"," + $"\"event\":\"{name}\",{properties}}}";
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 }

@@ -59,7 +59,7 @@ internal sealed class OverlayDispatcherTimer
 
 internal static class OverlayDispatcherTimerScheduler
 {
-    private static readonly object Gate = new();
+    private static readonly Lock Gate = new();
     private static readonly Stopwatch Clock = Stopwatch.StartNew();
     private static readonly HashSet<OverlayDispatcherTimer> Timers = [];
     private static readonly DispatcherTimer DispatcherTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
@@ -104,13 +104,13 @@ internal static class OverlayDispatcherTimerScheduler
     private static void OnTick(object? sender, EventArgs eventArgs)
     {
         OverlayDispatcherTimer[] timers;
-        var now = Clock.Elapsed;
+        TimeSpan now = Clock.Elapsed;
         lock (Gate)
         {
             timers = [.. Timers];
         }
 
-        foreach (var timer in timers)
+        foreach (OverlayDispatcherTimer timer in timers)
         {
             timer.Pulse(now);
         }

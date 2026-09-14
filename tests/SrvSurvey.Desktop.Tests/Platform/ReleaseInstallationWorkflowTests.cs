@@ -11,7 +11,9 @@ public sealed class ReleaseInstallationWorkflowTests
         var fixture = new WorkflowFixture();
         var progress = new RecordingProgress();
 
-        var result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request, progress);
+        ReleaseInstallationWorkflowResult result = await fixture
+            .CreateWorkflow()
+            .ExecuteAsync(fixture.Request, progress);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.HandoffStarted, result.Status);
         Assert.Equal(ReleaseInstallationCleanupStatus.Transferred, result.CleanupStatus);
@@ -35,7 +37,7 @@ public sealed class ReleaseInstallationWorkflowTests
             Confirm = _ => false,
         };
 
-        var result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.Rejected, result.Status);
         Assert.Equal(ReleaseInstallationRejectionReason.InstancesDeclined, result.RejectionReason);
@@ -55,7 +57,7 @@ public sealed class ReleaseInstallationWorkflowTests
             Confirm = _ => false,
         };
 
-        var result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.Rejected, result.Status);
         Assert.Equal(ReleaseInstallationCleanupStatus.Succeeded, result.CleanupStatus);
@@ -78,7 +80,7 @@ public sealed class ReleaseInstallationWorkflowTests
     {
         var fixture = new WorkflowFixture { ScanFailureCall = 2, ScanFailure = new IOException("scan failed") };
 
-        var result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.Failed, result.Status);
         Assert.Equal(ReleaseInstallationCleanupStatus.Succeeded, result.CleanupStatus);
@@ -96,7 +98,7 @@ public sealed class ReleaseInstallationWorkflowTests
             new IOException("helper did not start")
         );
 
-        var result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.Failed, result.Status);
         Assert.Equal(ReleaseInstallationCleanupStatus.Succeeded, result.CleanupStatus);
@@ -112,10 +114,10 @@ public sealed class ReleaseInstallationWorkflowTests
             ScanFailure = new IOException("scan failed"),
             AbortFailure = new IOException("candidate is locked"),
         };
-        var workflow = fixture.CreateWorkflow();
+        ReleaseInstallationWorkflow workflow = fixture.CreateWorkflow();
 
-        var first = await workflow.ExecuteAsync(fixture.Request);
-        var second = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult first = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult second = await workflow.ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.CleanupFailed, first.Status);
         Assert.IsType<IOException>(first.Error);
@@ -133,7 +135,7 @@ public sealed class ReleaseInstallationWorkflowTests
             ScanFailure = new OperationCanceledException("cancelled"),
         };
 
-        var result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.Cancelled, result.Status);
         Assert.Equal(ReleaseInstallationCleanupStatus.Succeeded, result.CleanupStatus);
@@ -149,7 +151,7 @@ public sealed class ReleaseInstallationWorkflowTests
             ScanFailure = new ArgumentException("invalid adapter state"),
         };
 
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+        ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(() =>
             fixture.CreateWorkflow().ExecuteAsync(fixture.Request)
         );
 
@@ -168,10 +170,12 @@ public sealed class ReleaseInstallationWorkflowTests
             ScanFailure = programmingFailure,
             AbortFailure = cleanupFailure,
         };
-        var workflow = fixture.CreateWorkflow();
+        ReleaseInstallationWorkflow workflow = fixture.CreateWorkflow();
 
-        var exception = await Assert.ThrowsAsync<AggregateException>(() => workflow.ExecuteAsync(fixture.Request));
-        var retry = await workflow.ExecuteAsync(fixture.Request);
+        AggregateException exception = await Assert.ThrowsAsync<AggregateException>(() =>
+            workflow.ExecuteAsync(fixture.Request)
+        );
+        ReleaseInstallationWorkflowResult retry = await workflow.ExecuteAsync(fixture.Request);
 
         Assert.Contains(programmingFailure, exception.InnerExceptions);
         Assert.Contains(cleanupFailure, exception.InnerExceptions);
@@ -200,10 +204,10 @@ public sealed class ReleaseInstallationWorkflowTests
             RequestId = fixture.Preparation.RequestId,
             Version = fixture.Preparation.Version,
         };
-        var workflow = fixture.CreateWorkflow();
+        ReleaseInstallationWorkflow workflow = fixture.CreateWorkflow();
 
-        var first = await workflow.ExecuteAsync(fixture.Request);
-        var second = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult first = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult second = await workflow.ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.Failed, first.Status);
         Assert.Equal(ReleaseInstallationCleanupStatus.Succeeded, first.CleanupStatus);
@@ -216,10 +220,10 @@ public sealed class ReleaseInstallationWorkflowTests
     public async Task MissingOutcomeAfterOwnershipTransferBlocksRetry()
     {
         var fixture = new WorkflowFixture { CurrentProcessRunning = true, Outcome = null };
-        var workflow = fixture.CreateWorkflow();
+        ReleaseInstallationWorkflow workflow = fixture.CreateWorkflow();
 
-        var first = await workflow.ExecuteAsync(fixture.Request);
-        var second = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult first = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult second = await workflow.ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.OwnershipUnresolved, first.Status);
         Assert.Equal(ReleaseInstallationCleanupStatus.Transferred, first.CleanupStatus);
@@ -233,10 +237,10 @@ public sealed class ReleaseInstallationWorkflowTests
     {
         var fixture = new WorkflowFixture { CurrentProcessRunning = true };
         fixture.Outcome = fixture.CreateOutcome(ReleaseInstallationOutcomeStatus.Installed);
-        var workflow = fixture.CreateWorkflow();
+        ReleaseInstallationWorkflow workflow = fixture.CreateWorkflow();
 
-        var first = await workflow.ExecuteAsync(fixture.Request);
-        var second = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult first = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult second = await workflow.ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.OwnershipUnresolved, first.Status);
         Assert.Contains("parent remained active", first.Error?.Message);
@@ -249,10 +253,10 @@ public sealed class ReleaseInstallationWorkflowTests
     {
         var fixture = new WorkflowFixture { CurrentProcessRunning = true, CandidateExists = true };
         fixture.Outcome = fixture.CreateOutcome(ReleaseInstallationOutcomeStatus.Aborted, "parent remained active");
-        var workflow = fixture.CreateWorkflow();
+        ReleaseInstallationWorkflow workflow = fixture.CreateWorkflow();
 
-        var first = await workflow.ExecuteAsync(fixture.Request);
-        var second = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult first = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult second = await workflow.ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.CleanupFailed, first.Status);
         Assert.Contains("still exists", first.CleanupError?.Message);
@@ -265,7 +269,7 @@ public sealed class ReleaseInstallationWorkflowTests
     {
         var fixture = new WorkflowFixture { ShutdownFailure = new IOException("shutdown request failed") };
 
-        var result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.HandoffStarted, result.Status);
         Assert.Equal(ReleaseInstallationCleanupStatus.Transferred, result.CleanupStatus);
@@ -280,10 +284,12 @@ public sealed class ReleaseInstallationWorkflowTests
         {
             CurrentProcessProbeFailure = new ArgumentException("invalid process state"),
         };
-        var workflow = fixture.CreateWorkflow();
+        ReleaseInstallationWorkflow workflow = fixture.CreateWorkflow();
 
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => workflow.ExecuteAsync(fixture.Request));
-        var second = await workflow.ExecuteAsync(fixture.Request);
+        ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+            workflow.ExecuteAsync(fixture.Request)
+        );
+        ReleaseInstallationWorkflowResult second = await workflow.ExecuteAsync(fixture.Request);
 
         Assert.Contains("invalid process state", exception.Message);
         Assert.Equal(ReleaseInstallationWorkflowStatus.Rejected, second.Status);
@@ -299,13 +305,13 @@ public sealed class ReleaseInstallationWorkflowTests
             DownloadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
             DownloadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
         };
-        var workflow = fixture.CreateWorkflow();
-        var first = workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflow workflow = fixture.CreateWorkflow();
+        Task<ReleaseInstallationWorkflowResult> first = workflow.ExecuteAsync(fixture.Request);
         await fixture.DownloadStarted.Task;
 
-        var second = await workflow.ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult second = await workflow.ExecuteAsync(fixture.Request);
         fixture.DownloadGate.SetResult();
-        var completedFirst = await first;
+        ReleaseInstallationWorkflowResult completedFirst = await first;
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.Rejected, second.Status);
         Assert.Equal(ReleaseInstallationRejectionReason.Busy, second.RejectionReason);
@@ -320,7 +326,7 @@ public sealed class ReleaseInstallationWorkflowTests
             Capability = new ReleaseInstallationCapability(ReleaseInstallationCapabilityStatus.ReadOnlyAppImage),
         };
 
-        var result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
+        ReleaseInstallationWorkflowResult result = await fixture.CreateWorkflow().ExecuteAsync(fixture.Request);
 
         Assert.Equal(ReleaseInstallationWorkflowStatus.Rejected, result.Status);
         Assert.Equal(ReleaseInstallationRejectionReason.Unsupported, result.RejectionReason);
@@ -331,20 +337,29 @@ public sealed class ReleaseInstallationWorkflowTests
     public void DetectedCapabilityDistinguishesSupportedAndReadOnlyInstallations()
     {
         var fixture = new WorkflowFixture();
-        var installationDirectory = Path.Combine(
+        string installationDirectory = Path.Combine(
             Path.GetTempPath(),
             $"SrvSurvey-workflow-capability-{Guid.NewGuid():N}"
         );
         Directory.CreateDirectory(installationDirectory);
         try
         {
-            var manifestPath = Path.Combine(installationDirectory, "release-package.json");
+            string manifestPath = Path.Combine(installationDirectory, "release-package.json");
             File.WriteAllText(manifestPath, "{}");
 
-            var packaged = fixture.CreateWorkflowWithDetectedCapability(installationDirectory, isAppImage: false);
+            ReleaseInstallationWorkflow packaged = fixture.CreateWorkflowWithDetectedCapability(
+                installationDirectory,
+                isAppImage: false
+            );
             File.Delete(manifestPath);
-            var unpackaged = fixture.CreateWorkflowWithDetectedCapability(installationDirectory, isAppImage: false);
-            var appImage = fixture.CreateWorkflowWithDetectedCapability(installationDirectory, isAppImage: true);
+            ReleaseInstallationWorkflow unpackaged = fixture.CreateWorkflowWithDetectedCapability(
+                installationDirectory,
+                isAppImage: false
+            );
+            ReleaseInstallationWorkflow appImage = fixture.CreateWorkflowWithDetectedCapability(
+                installationDirectory,
+                isAppImage: true
+            );
 
             Assert.Equal(ReleaseInstallationCapabilityStatus.Supported, packaged.Capability.Status);
             Assert.Equal(ReleaseInstallationCapabilityStatus.Unpackaged, unpackaged.Capability.Status);
@@ -360,11 +375,14 @@ public sealed class ReleaseInstallationWorkflowTests
     public async Task OutcomeMonitorReadsACompletedHelperOutcome()
     {
         var fixture = new WorkflowFixture();
-        var planDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-workflow-outcome-{Guid.NewGuid():N}");
+        string planDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-workflow-outcome-{Guid.NewGuid():N}");
         Directory.CreateDirectory(planDirectory);
         try
         {
-            var plan = fixture.Plan with { OutcomePath = Path.Combine(planDirectory, "outcome.json") };
+            ReleaseInstallationHandoffPlan plan = fixture.Plan with
+            {
+                OutcomePath = Path.Combine(planDirectory, "outcome.json"),
+            };
             var expected = new ReleaseInstallationOutcome(
                 ReleaseInstallationOutcomeStatus.Aborted,
                 plan.Preparation.RequestId,
@@ -382,7 +400,7 @@ public sealed class ReleaseInstallationWorkflowTests
                 timeout: TimeSpan.FromSeconds(1)
             );
 
-            var actual = await monitor.WaitForOutcomeAsync(plan);
+            ReleaseInstallationOutcome? actual = await monitor.WaitForOutcomeAsync(plan);
 
             Assert.Equal(expected.Status, actual?.Status);
             Assert.Equal(expected.RequestId, actual?.RequestId);
@@ -405,7 +423,7 @@ public sealed class ReleaseInstallationWorkflowTests
             log: value => message = value
         );
 
-        var outcome = await timedOutMonitor.WaitForOutcomeAsync(fixture.Plan);
+        ReleaseInstallationOutcome? outcome = await timedOutMonitor.WaitForOutcomeAsync(fixture.Plan);
 
         Assert.Null(outcome);
         Assert.Contains(fixture.Preparation.RequestId.ToString("N"), message);
@@ -596,8 +614,8 @@ public sealed class ReleaseInstallationWorkflowTests
             public Task<ApplicationInstanceScan> ScanOtherInstancesAsync(CancellationToken cancellationToken = default)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var call = Interlocked.Increment(ref owner.scanCount);
-                var checkpoint =
+                int call = Interlocked.Increment(ref owner.scanCount);
+                ReleaseInstallationCheckpoint checkpoint =
                     call == 1
                         ? ReleaseInstallationCheckpoint.BeforeDownload
                         : ReleaseInstallationCheckpoint.BeforeHandoff;
@@ -607,13 +625,14 @@ public sealed class ReleaseInstallationWorkflowTests
                     throw owner.ScanFailure;
                 }
 
-                var scan = owner.Scans.Count > 0 ? owner.Scans.Dequeue() : new ApplicationInstanceScan(0, 0);
+                ApplicationInstanceScan scan =
+                    owner.Scans.Count > 0 ? owner.Scans.Dequeue() : new ApplicationInstanceScan(0, 0);
                 return Task.FromResult(scan);
             }
 
             public async Task<int> CountOtherInstancesAsync(CancellationToken cancellationToken = default)
             {
-                var scan = await ScanOtherInstancesAsync(cancellationToken);
+                ApplicationInstanceScan scan = await ScanOtherInstancesAsync(cancellationToken);
                 return scan.TotalCount;
             }
 

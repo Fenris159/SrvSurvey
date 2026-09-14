@@ -19,10 +19,10 @@ public static class CargoFileReader
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumAttempts, 1);
-        var delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
+        TimeSpan delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
         Exception? lastException = null;
 
-        for (var attempt = 1; attempt <= maximumAttempts; attempt++)
+        for (int attempt = 1; attempt <= maximumAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -37,11 +37,11 @@ public static class CargoFileReader
                 );
                 using var content = new MemoryStream();
                 await stream.CopyToAsync(content, cancellationToken).ConfigureAwait(false);
-                var bytes = content.ToArray();
-                var data =
+                byte[] bytes = content.ToArray();
+                CargoData data =
                     JsonSerializer.Deserialize<CargoData>(bytes, SerializerOptions)
                     ?? throw new JsonException("Cargo.json contained no JSON value.");
-                var items = (data.Inventory ?? [])
+                CargoItem[] items = (data.Inventory ?? [])
                     .Where(item => !string.IsNullOrWhiteSpace(item.Name) && item.Count > 0)
                     .GroupBy(item => item.Name!, StringComparer.OrdinalIgnoreCase)
                     .Select(group => new CargoItem(
@@ -61,7 +61,7 @@ public static class CargoFileReader
                     items.Sum(item => item.Count),
                     items
                 );
-                var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
+                string hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
                 return new CargoReadResult(snapshot, hash, null, attempt);
             }
             catch (Exception exception)

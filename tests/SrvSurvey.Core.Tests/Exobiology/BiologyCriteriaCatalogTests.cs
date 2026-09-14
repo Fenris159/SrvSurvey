@@ -43,7 +43,7 @@ public sealed class BiologyCriteriaCatalogTests
     [Fact]
     public void CatalogRejectsChildrenAndCommonChildrenOnSameNode()
     {
-        using var stream = JsonStream(
+        using MemoryStream stream = JsonStream(
             """
             {
               "genus": "Test",
@@ -53,7 +53,7 @@ public sealed class BiologyCriteriaCatalogTests
             """
         );
 
-        var error = Assert.Throws<InvalidDataException>(() => BiologyCriteriaCatalog.Load(stream));
+        InvalidDataException error = Assert.Throws<InvalidDataException>(() => BiologyCriteriaCatalog.Load(stream));
 
         Assert.Contains("both children and useCommonChildren", error.Message);
     }
@@ -61,7 +61,7 @@ public sealed class BiologyCriteriaCatalogTests
     [Fact]
     public void CatalogRejectsUnknownRegionAliases()
     {
-        using var stream = JsonStream(
+        using MemoryStream stream = JsonStream(
             """
             { "genus": "Test", "query": [ "regions [UnknownArm]" ] }
             """

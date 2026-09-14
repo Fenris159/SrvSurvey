@@ -31,8 +31,7 @@ public sealed class SystemNotesSettingsStore(string dataDirectory)
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete
             );
-            var root = JsonNode.Parse(stream) as JsonObject;
-            if (root is null)
+            if (JsonNode.Parse(stream) is not JsonObject root)
             {
                 return new SystemNotesSettingsLoadResult(Path, true, null, $"{Path} does not contain a JSON object.");
             }
@@ -129,7 +128,7 @@ public sealed class SystemNotesSettingsStore(string dataDirectory)
     public string? GetImagesDirectory(string systemName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
-        var result = Load();
+        SystemNotesSettingsLoadResult result = Load();
         if (!result.IsSuccess || string.IsNullOrWhiteSpace(result.Snapshot!.ScreenshotTargetFolder))
         {
             return null;
@@ -143,11 +142,11 @@ public sealed class SystemNotesSettingsStore(string dataDirectory)
 
     private async Task WriteObjectAsync(JsonObject root, CancellationToken cancellationToken)
     {
-        var directory =
+        string directory =
             System.IO.Path.GetDirectoryName(Path)
             ?? throw new InvalidOperationException($"The settings path has no parent directory: {Path}");
         Directory.CreateDirectory(directory);
-        var temporaryPath = $"{Path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{Path}.{Guid.NewGuid():N}.tmp";
         try
         {
             await using (
@@ -180,12 +179,12 @@ public sealed class SystemNotesSettingsStore(string dataDirectory)
 
     private static bool? GetBoolean(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static string? GetString(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 }
 

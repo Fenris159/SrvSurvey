@@ -66,7 +66,7 @@ public sealed class ColonizationSystemSiteJournalTracker
     {
         ArgumentNullException.ThrowIfNull(sites);
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         if (!MatchesSystem(root))
         {
             return false;
@@ -111,7 +111,7 @@ public sealed class ColonizationSystemSiteJournalTracker
     )
     {
         ArgumentNullException.ThrowIfNull(sites);
-        var destination = status?.Destination;
+        StatusDestination? destination = status?.Destination;
         if (
             destination is null
             || destination.System != SystemAddress
@@ -122,12 +122,16 @@ public sealed class ColonizationSystemSiteJournalTracker
             return false;
         }
 
-        var name = destination.Name!.Trim();
-        var index = FindSiteIndex(sites, name);
+        string name = destination.Name!.Trim();
+        int index = FindSiteIndex(sites, name);
         if (index >= 0)
         {
-            var site = sites[index];
-            var updated = site with { BodyNumber = destination.Body, Status = ColonizationSystemSiteStatus.Complete };
+            ColonizationSystemSite site = sites[index];
+            ColonizationSystemSite updated = site with
+            {
+                BodyNumber = destination.Body,
+                Status = ColonizationSystemSiteStatus.Complete,
+            };
             if (KnownFieldsEqual(site, updated))
             {
                 return false;
@@ -153,8 +157,8 @@ public sealed class ColonizationSystemSiteJournalTracker
 
     private bool ApplySignal(IList<ColonizationSystemSite> sites, JsonElement root)
     {
-        var name = GetString(root, "SignalName")?.Trim();
-        var type = GetString(root, "SignalType")?.Trim();
+        string? name = GetString(root, "SignalName")?.Trim();
+        string? type = GetString(root, "SignalType")?.Trim();
         if (
             !IsUsableName(name)
             || HasNonEmptyString(root, "SignalName_Localised")
@@ -172,24 +176,24 @@ public sealed class ColonizationSystemSiteJournalTracker
             return false;
         }
 
-        var buildType = type is not null ? SignalBuildTypes.GetValueOrDefault(type) : null;
+        string? buildType = type is not null ? SignalBuildTypes.GetValueOrDefault(type) : null;
         sites.Insert(0, CreateSite(sites, name, -1, buildType));
         return true;
     }
 
     private bool ApplyApproachSettlement(IList<ColonizationSystemSite> sites, JsonElement root)
     {
-        var name = GetString(root, "Name") ?? GetString(root, "SettlementName");
-        var index = FindSiteIndex(sites, name);
+        string? name = GetString(root, "Name") ?? GetString(root, "SettlementName");
+        int index = FindSiteIndex(sites, name);
         if (index < 0)
         {
             return false;
         }
 
-        var current = sites[index];
-        var bodyNumber = GetInt32(root, "BodyID");
-        var marketId = GetInt64(root, "MarketID");
-        var updated = current with
+        ColonizationSystemSite current = sites[index];
+        int? bodyNumber = GetInt32(root, "BodyID");
+        long? marketId = GetInt64(root, "MarketID");
+        ColonizationSystemSite updated = current with
         {
             BodyNumber = bodyNumber is { } body && IsKnownBody(body) ? body : current.BodyNumber,
             MarketId = marketId is > 0 ? marketId : current.MarketId,
@@ -206,16 +210,16 @@ public sealed class ColonizationSystemSiteJournalTracker
 
     private static bool ApplyDocked(IList<ColonizationSystemSite> sites, JsonElement root)
     {
-        var index = FindSiteIndex(sites, GetString(root, "StationName"));
+        int index = FindSiteIndex(sites, GetString(root, "StationName"));
         if (index < 0)
         {
             return false;
         }
 
-        var current = sites[index];
-        var marketId = GetInt64(root, "MarketID");
-        var buildType = InferDockedBuildType(root, current.BuildType);
-        var updated = current with
+        ColonizationSystemSite current = sites[index];
+        long? marketId = GetInt64(root, "MarketID");
+        string? buildType = InferDockedBuildType(root, current.BuildType);
+        ColonizationSystemSite updated = current with
         {
             MarketId = marketId is > 0 ? marketId : current.MarketId,
             BuildType = buildType,
@@ -232,7 +236,7 @@ public sealed class ColonizationSystemSiteJournalTracker
 
     private static string? InferDockedBuildType(JsonElement root, string? currentBuildType)
     {
-        var stationType = GetString(root, "StationType");
+        string? stationType = GetString(root, "StationType");
         if (string.Equals(stationType, "CraterPort", StringComparison.OrdinalIgnoreCase))
         {
             return string.IsNullOrWhiteSpace(currentBuildType) ? "aphrodite?" : currentBuildType;
@@ -243,10 +247,13 @@ public sealed class ColonizationSystemSiteJournalTracker
             return currentBuildType;
         }
 
-        if (root.TryGetProperty("LandingPads", out var landingPads) && landingPads.ValueKind == JsonValueKind.Object)
+        if (
+            root.TryGetProperty("LandingPads", out JsonElement landingPads)
+            && landingPads.ValueKind == JsonValueKind.Object
+        )
         {
-            var small = GetInt32(landingPads, "Small");
-            var medium = GetInt32(landingPads, "Medium");
+            int? small = GetInt32(landingPads, "Small");
+            int? medium = GetInt32(landingPads, "Medium");
             if (small == 3 && medium == 1)
             {
                 return "plutus";
@@ -275,7 +282,10 @@ public sealed class ColonizationSystemSiteJournalTracker
 
     private static int CountSignificantEconomies(JsonElement root)
     {
-        if (!root.TryGetProperty("StationEconomies", out var economies) || economies.ValueKind != JsonValueKind.Array)
+        if (
+            !root.TryGetProperty("StationEconomies", out JsonElement economies)
+            || economies.ValueKind != JsonValueKind.Array
+        )
         {
             return 0;
         }
@@ -323,7 +333,7 @@ public sealed class ColonizationSystemSiteJournalTracker
             return -1;
         }
 
-        for (var index = 0; index < sites.Count; index++)
+        for (int index = 0; index < sites.Count; index++)
         {
             if (string.Equals(sites[index].Name, name.Trim(), StringComparison.OrdinalIgnoreCase))
             {
@@ -346,28 +356,28 @@ public sealed class ColonizationSystemSiteJournalTracker
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement property) && property.ValueKind == JsonValueKind.String
             ? property.GetString()
             : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var property) && property.TryGetInt32(out var value)
+        return root.TryGetProperty(propertyName, out JsonElement property) && property.TryGetInt32(out int value)
             ? value
             : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var property) && property.TryGetInt64(out var value)
+        return root.TryGetProperty(propertyName, out JsonElement property) && property.TryGetInt64(out long value)
             ? value
             : null;
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var property) && property.TryGetDouble(out var value)
+        return root.TryGetProperty(propertyName, out JsonElement property) && property.TryGetDouble(out double value)
             ? value
             : null;
     }

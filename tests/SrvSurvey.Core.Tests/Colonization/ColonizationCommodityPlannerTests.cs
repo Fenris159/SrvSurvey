@@ -8,10 +8,10 @@ public sealed class ColonizationCommodityPlannerTests
     [Fact]
     public void PrimaryProjectOverridesHiddenAggregateSelection()
     {
-        var primary = Project("primary", 20, 200, new Dictionary<string, int> { ["steel"] = 40 });
-        var other = Project("other", 30, 300, new Dictionary<string, int> { ["water"] = 70 });
+        ColonizationProject primary = Project("primary", 20, 200, new Dictionary<string, int> { ["steel"] = 40 });
+        ColonizationProject other = Project("other", 30, 300, new Dictionary<string, int> { ["water"] = 70 });
 
-        var plan = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan plan = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [other, primary],
@@ -25,7 +25,7 @@ public sealed class ColonizationCommodityPlannerTests
         );
 
         Assert.Equal("primary (no_truss)", plan.Title);
-        var row = Assert.Single(plan.Rows);
+        ColonizationCommodityPlanRow row = Assert.Single(plan.Rows);
         Assert.Equal("steel", row.Commodity);
         Assert.Equal(40, plan.TotalRemaining);
     }
@@ -33,8 +33,8 @@ public sealed class ColonizationCommodityPlannerTests
     [Fact]
     public void LiveDepotOverridesTrackedProjectRequirements()
     {
-        var tracked = Project("tracked", 42, 99, new Dictionary<string, int> { ["steel"] = 900 });
-        var construction = Construction(
+        ColonizationProject tracked = Project("tracked", 42, 99, new Dictionary<string, int> { ["steel"] = 900 });
+        ColonizationConstructionSnapshot construction = Construction(
             new ColonizationConstructionDepotSnapshot(
                 DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 42,
@@ -48,7 +48,7 @@ public sealed class ColonizationCommodityPlannerTests
             )
         );
 
-        var plan = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan plan = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [tracked],
@@ -71,7 +71,12 @@ public sealed class ColonizationCommodityPlannerTests
     [Fact]
     public void CombinesShipFleetCarrierAndAssignmentContext()
     {
-        var project = Project("build-1", 42, 99, new Dictionary<string, int> { ["steel"] = 100, ["water"] = 50 }) with
+        ColonizationProject project = Project(
+            "build-1",
+            42,
+            99,
+            new Dictionary<string, int> { ["steel"] = 100, ["water"] = 50 }
+        ) with
         {
             Commanders = new Dictionary<string, HashSet<string>>
             {
@@ -94,9 +99,9 @@ public sealed class ColonizationCommodityPlannerTests
             DisplayName = "Supply ship",
             Cargo = new Dictionary<string, int> { ["steel"] = 80, ["water"] = 20 },
         };
-        var construction = EmptyConstruction() with { ShipCargoCapacity = 64 };
+        ColonizationConstructionSnapshot construction = EmptyConstruction() with { ShipCargoCapacity = 64 };
 
-        var plan = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan plan = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [project],
@@ -109,8 +114,8 @@ public sealed class ColonizationCommodityPlannerTests
             }
         );
 
-        var steel = plan.Rows.Single(row => row.Commodity == "steel");
-        var water = plan.Rows.Single(row => row.Commodity == "water");
+        ColonizationCommodityPlanRow steel = plan.Rows.Single(row => row.Commodity == "steel");
+        ColonizationCommodityPlanRow water = plan.Rows.Single(row => row.Commodity == "water");
         Assert.True(steel.IsAssignedToCommander);
         Assert.True(steel.ShipHasEnough);
         Assert.True(steel.HasSurplusInShip);
@@ -127,7 +132,7 @@ public sealed class ColonizationCommodityPlannerTests
     [Fact]
     public void UntrackedConstructionSiteUsesDepotAndAllCommanderCarriers()
     {
-        var construction = Construction(
+        ColonizationConstructionSnapshot construction = Construction(
             new ColonizationConstructionDepotSnapshot(
                 DateTimeOffset.UtcNow,
                 42,
@@ -144,7 +149,7 @@ public sealed class ColonizationCommodityPlannerTests
             Cargo = new Dictionary<string, int> { ["steel"] = 8 },
         };
 
-        var plan = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan plan = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [],
@@ -166,8 +171,8 @@ public sealed class ColonizationCommodityPlannerTests
     [Fact]
     public void TrackedConstructionSiteUsesProjectNeedsBeforeDepotIsOpened()
     {
-        var project = Project("tracked", 42, 99, new Dictionary<string, int> { ["steel"] = 25 });
-        var construction = EmptyConstruction() with
+        ColonizationProject project = Project("tracked", 42, 99, new Dictionary<string, int> { ["steel"] = 25 });
+        ColonizationConstructionSnapshot construction = EmptyConstruction() with
         {
             CurrentDock = new ColonizationDockingSnapshot(
                 42,
@@ -179,7 +184,7 @@ public sealed class ColonizationCommodityPlannerTests
             ),
         };
 
-        var plan = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan plan = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [project],
@@ -200,7 +205,7 @@ public sealed class ColonizationCommodityPlannerTests
     [Fact]
     public void UntrackedFleetCarrierWarningUsesStationTypeAndCommanderInventory()
     {
-        var construction = EmptyConstruction() with
+        ColonizationConstructionSnapshot construction = EmptyConstruction() with
         {
             CurrentDock = new ColonizationDockingSnapshot(
                 900,
@@ -214,7 +219,7 @@ public sealed class ColonizationCommodityPlannerTests
             ),
         };
 
-        var untracked = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan untracked = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [],
@@ -230,7 +235,7 @@ public sealed class ColonizationCommodityPlannerTests
         Assert.True(untracked.IsDockedAtUntrackedFleetCarrier);
         Assert.True(untracked.HasContent);
 
-        var linked = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan linked = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [],
@@ -245,7 +250,7 @@ public sealed class ColonizationCommodityPlannerTests
 
         Assert.False(linked.IsDockedAtUntrackedFleetCarrier);
 
-        var ordinaryStation = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan ordinaryStation = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [],
@@ -267,7 +272,7 @@ public sealed class ColonizationCommodityPlannerTests
     [Fact]
     public void CompletedConstructionStillHasVisibleCompletionState()
     {
-        var construction = Construction(
+        ColonizationConstructionSnapshot construction = Construction(
             new ColonizationConstructionDepotSnapshot(
                 DateTimeOffset.UtcNow,
                 42,
@@ -278,7 +283,7 @@ public sealed class ColonizationCommodityPlannerTests
             )
         );
 
-        var plan = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan plan = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [],
@@ -303,7 +308,12 @@ public sealed class ColonizationCommodityPlannerTests
             "2026-07-24T12:00:00Z",
             global::System.Globalization.CultureInfo.InvariantCulture
         );
-        var project = Project("tracked", 42, 99, new Dictionary<string, int> { ["steel"] = 100, ["water"] = 50 }) with
+        ColonizationProject project = Project(
+            "tracked",
+            42,
+            99,
+            new Dictionary<string, int> { ["steel"] = 100, ["water"] = 50 }
+        ) with
         {
             LinkedFleetCarriers = [new ColonizationProjectFleetCarrier { MarketId = 500 }],
         };
@@ -312,7 +322,7 @@ public sealed class ColonizationCommodityPlannerTests
             MarketId = 500,
             Cargo = new Dictionary<string, int> { ["steel"] = 80 },
         };
-        var construction = EmptyConstruction() with
+        ColonizationConstructionSnapshot construction = EmptyConstruction() with
         {
             CurrentDock = new ColonizationDockingSnapshot(
                 900,
@@ -339,7 +349,7 @@ public sealed class ColonizationCommodityPlannerTests
             ]
         );
 
-        var plan = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan plan = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [project],
@@ -353,8 +363,8 @@ public sealed class ColonizationCommodityPlannerTests
             }
         );
 
-        var steel = plan.Rows.Single(row => row.Commodity == "steel");
-        var water = plan.Rows.Single(row => row.Commodity == "water");
+        ColonizationCommodityPlanRow steel = plan.Rows.Single(row => row.Commodity == "steel");
+        ColonizationCommodityPlanRow water = plan.Rows.Single(row => row.Commodity == "water");
         Assert.True(steel.IsAvailableAtCurrentMarket);
         Assert.False(steel.IsUnavailableAtCurrentMarket);
         Assert.True(steel.CanCompleteFleetCarrierLoad);
@@ -363,7 +373,7 @@ public sealed class ColonizationCommodityPlannerTests
         Assert.True(water.IsUnavailableAtCurrentMarket);
         Assert.False(water.CanCompleteFleetCarrierLoad);
 
-        var stalePlan = ColonizationCommodityPlanner.Create(
+        ColonizationCommodityPlan stalePlan = ColonizationCommodityPlanner.Create(
             new ColonizationCommodityPlanRequest
             {
                 Projects = [project],

@@ -39,7 +39,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
             return true;
         }
 
-        var previous = preferences;
+        NetworkPrivacyPreferences previous = preferences;
         if (!Update(previous with { EddnUploadEnabled = value }))
         {
             return false;

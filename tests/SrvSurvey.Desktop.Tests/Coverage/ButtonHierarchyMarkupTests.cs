@@ -7,7 +7,7 @@ public sealed class ButtonHierarchyMarkupTests
     [Fact]
     public void UtilityActionsAreNeverRenderedAsPrimaryButtons()
     {
-        var violations = LoadButtons()
+        string[] violations = LoadButtons()
             .Where(button => HasClass(button.Element, "primary"))
             .Where(button => IsUtilityAction(button.Element))
             .Select(button => $"{button.File}: {Describe(button.Element)}")
@@ -22,8 +22,8 @@ public sealed class ButtonHierarchyMarkupTests
     [Fact]
     public void SharedButtonStylesKeepEmphasisAndControlFillsSeparate()
     {
-        var root = FindRepositoryRoot();
-        var styles = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", "Styles", "RavenStyles.axaml"))
+        string root = FindRepositoryRoot();
+        string styles = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", "Styles", "RavenStyles.axaml"))
             .ReplaceLineEndings("\n");
 
         Assert.Contains(
@@ -36,12 +36,12 @@ public sealed class ButtonHierarchyMarkupTests
 
     private static IEnumerable<(string File, XElement Element)> LoadButtons()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        foreach (var file in Directory.EnumerateFiles(desktop, "*.axaml", SearchOption.AllDirectories))
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        foreach (string file in Directory.EnumerateFiles(desktop, "*.axaml", SearchOption.AllDirectories))
         {
             var document = XDocument.Load(file, LoadOptions.PreserveWhitespace);
-            foreach (var button in document.Descendants().Where(element => element.Name.LocalName == "Button"))
+            foreach (XElement? button in document.Descendants().Where(element => element.Name.LocalName == "Button"))
             {
                 yield return (Path.GetRelativePath(root, file), button);
             }
@@ -50,8 +50,8 @@ public sealed class ButtonHierarchyMarkupTests
 
     private static bool IsUtilityAction(XElement button)
     {
-        var command = button.Attribute("Command")?.Value ?? string.Empty;
-        var content = button.Attribute("Content")?.Value ?? string.Empty;
+        string command = button.Attribute("Command")?.Value ?? string.Empty;
+        string content = button.Attribute("Content")?.Value ?? string.Empty;
         return command.Contains("Refresh", StringComparison.OrdinalIgnoreCase)
             || content.Equals("Close", StringComparison.OrdinalIgnoreCase)
             || content.StartsWith("Open ", StringComparison.OrdinalIgnoreCase)

@@ -88,7 +88,7 @@ public static class OverlayThemePresetCatalog
 
     public static bool TryGet(string? name, out OverlayThemePreset preset)
     {
-        var match = Presets.FirstOrDefault(candidate =>
+        OverlayThemePreset? match = Presets.FirstOrDefault(candidate =>
             string.Equals(candidate.Name, name, StringComparison.OrdinalIgnoreCase)
         );
         preset = match ?? Default;
@@ -99,7 +99,7 @@ public static class OverlayThemePresetCatalog
     {
         ArgumentNullException.ThrowIfNull(colors);
         return Presets.FirstOrDefault(preset =>
-            preset.Colors.All(entry => colors.TryGetValue(entry.Key, out var candidate) && candidate == entry.Value)
+            preset.Colors.All(entry => colors.TryGetValue(entry.Key, out Color candidate) && candidate == entry.Value)
         );
     }
 
@@ -111,21 +111,25 @@ public static class OverlayThemePresetCatalog
             return false;
         }
 
-        var preset = Presets.FirstOrDefault(candidate =>
-            PresetIdentityKeys.All(key => colors.TryGetValue(key, out var color) && candidate.Colors[key] == color)
+        OverlayThemePreset? preset = Presets.FirstOrDefault(candidate =>
+            PresetIdentityKeys.All(key => colors.TryGetValue(key, out Color color) && candidate.Colors[key] == color)
         );
         if (preset is null)
         {
             return false;
         }
 
-        var legacyBiology = CreateLegacyBiologyPalette(preset);
-        if (legacyBiology.Any(entry => !colors.TryGetValue(entry.Key, out var color) || color != entry.Value))
+        Dictionary<string, Color> legacyBiology = CreateLegacyBiologyPalette(preset);
+        if (legacyBiology.Any(entry => !colors.TryGetValue(entry.Key, out Color color) || color != entry.Value))
         {
             return false;
         }
 
-        foreach (var entry in preset.Colors.Where(entry => entry.Key.StartsWith("bio.", StringComparison.Ordinal)))
+        foreach (
+            KeyValuePair<string, Color> entry in preset.Colors.Where(entry =>
+                entry.Key.StartsWith("bio.", StringComparison.Ordinal)
+            )
+        )
         {
             colors[entry.Key] = entry.Value;
         }
@@ -136,12 +140,16 @@ public static class OverlayThemePresetCatalog
     internal static bool AddMissingExpandedBiologyColors(Dictionary<string, Color> colors)
     {
         ArgumentNullException.ThrowIfNull(colors);
-        var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
-        var preset = Presets.FirstOrDefault(candidate =>
-            PresetIdentityKeys.All(key => colors.TryGetValue(key, out var color) && candidate.Colors[key] == color)
+        IReadOnlyDictionary<string, Color> defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        OverlayThemePreset? preset = Presets.FirstOrDefault(candidate =>
+            PresetIdentityKeys.All(key => colors.TryGetValue(key, out Color color) && candidate.Colors[key] == color)
         );
-        var changed = false;
-        foreach (var fallback in defaults.Where(entry => entry.Key.StartsWith("bio.", StringComparison.Ordinal)))
+        bool changed = false;
+        foreach (
+            KeyValuePair<string, Color> fallback in defaults.Where(entry =>
+                entry.Key.StartsWith("bio.", StringComparison.Ordinal)
+            )
+        )
         {
             if (colors.ContainsKey(fallback.Key))
             {
@@ -165,7 +173,7 @@ public static class OverlayThemePresetCatalog
             return false;
         }
 
-        colors[HeaderKey] = colors.TryGetValue(YellowKey, out var existingValue)
+        colors[HeaderKey] = colors.TryGetValue(YellowKey, out Color existingValue)
             ? existingValue
             : LegacyOverlayThemeStore.CreateDefault().Colors[HeaderKey];
         return true;
@@ -241,7 +249,7 @@ public static class OverlayThemePresetCatalog
             };
         }
 
-        var surface = Scale(preset.Colors[OrangeKey], 0.10);
+        Color surface = Scale(preset.Colors[OrangeKey], 0.10);
         return new Dictionary<string, Color>(StringComparer.Ordinal)
         {
             [BioGoldKey] = preset.Colors[YellowKey],
@@ -268,10 +276,10 @@ public static class OverlayThemePresetCatalog
 
     private static void ApplyBiology(Dictionary<string, Color> colors, ExpandedPalette palette)
     {
-        var prediction = Blend(palette.Primary, palette.Secondary, 0.65);
-        var predictionDark = Scale(prediction, 0.45);
-        var goldFill = Scale(palette.Value, 0.68);
-        var goldDarkFill = Scale(goldFill, 0.34);
+        Color prediction = Blend(palette.Primary, palette.Secondary, 0.65);
+        Color predictionDark = Scale(prediction, 0.45);
+        Color goldFill = Scale(palette.Value, 0.68);
+        Color goldDarkFill = Scale(goldFill, 0.34);
         colors[BioConfirmedKey] = palette.Primary;
         colors[BioConfirmedDimKey] = palette.PrimaryDark;
         colors["bio.potential"] = WithAlpha(palette.PrimaryDark, 140);
@@ -314,7 +322,7 @@ public static class OverlayThemePresetCatalog
 
     private static Color DeriveMissingBiologyColor(string key, Dictionary<string, Color> colors, Color fallback)
     {
-        Color Get(string name, Color value) => colors.TryGetValue(name, out var color) ? color : value;
+        Color Get(string name, Color value) => colors.TryGetValue(name, out Color color) ? color : value;
 
         return key switch
         {
@@ -405,7 +413,7 @@ public static class OverlayThemePresetCatalog
 
     private static Color Blend(Color first, Color second, double secondWeight)
     {
-        var firstWeight = 1 - secondWeight;
+        double firstWeight = 1 - secondWeight;
         return Color.FromArgb(
             255,
             (byte)Math.Round(first.R * firstWeight + second.R * secondWeight),

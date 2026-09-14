@@ -18,7 +18,7 @@ public sealed class RouteNameImporterTests
         var importer = new RouteNameImporter(resolver);
         var progress = new SynchronousProgress<RouteNameImportProgress>();
 
-        var result = await importer.ImportAsync([" Sol ", "Unknown Place", "Colonia"], progress);
+        RouteNameImportResult result = await importer.ImportAsync([" Sol ", "Unknown Place", "Colonia"], progress);
 
         Assert.Equal(3, result.Hops.Count);
         Assert.Equal(2, result.ResolvedCount);
@@ -35,7 +35,7 @@ public sealed class RouteNameImporterTests
     [Fact]
     public void ParseNamesHandlesWindowsUnixAndBlankLines()
     {
-        var names = RouteNameImporter.ParseNames(" Sol\r\n\r\nAchenar\n  Colonia  \rSagittarius A* ");
+        IReadOnlyList<string> names = RouteNameImporter.ParseNames(" Sol\r\n\r\nAchenar\n  Colonia  \rSagittarius A* ");
 
         Assert.Equal(["Sol", "Achenar", "Colonia", "Sagittarius A*"], names);
     }
@@ -50,7 +50,9 @@ public sealed class RouteNameImporterTests
         )
         {
             Queries.Add(query);
-            IReadOnlyList<StarSystemReference> result = systems.TryGetValue(query, out var system) ? [system] : [];
+            IReadOnlyList<StarSystemReference> result = systems.TryGetValue(query, out StarSystemReference? system)
+                ? [system]
+                : [];
             return Task.FromResult(result);
         }
     }

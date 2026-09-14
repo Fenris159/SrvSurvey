@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Mining;
@@ -23,13 +24,13 @@ public sealed class MiningMissionTracker
 
     public bool Apply(JournalEventEnvelope entry)
     {
-        var data = entry.Payload;
-        if (!data.TryGetProperty("MissionID", out var idValue) || !idValue.TryGetInt64(out var id))
+        JsonElement data = entry.Payload;
+        if (!data.TryGetProperty("MissionID", out JsonElement idValue) || !idValue.TryGetInt64(out long id))
         {
             return false;
         }
 
-        var existing = Missions.Find(m => m.Id == id);
+        MiningMission? existing = Missions.Find(m => m.Id == id);
         if (entry.EventName == "MissionAccepted")
         {
             if (
@@ -87,7 +88,7 @@ public sealed class MiningMissionTracker
         var available = cargo
             .GroupBy(item => NormalizeCommodity(item.Name))
             .ToDictionary(g => g.Key, g => g.Sum(i => i.Count));
-        foreach (var mission in Missions)
+        foreach (MiningMission mission in Missions)
         {
             mission.OnBoard =
                 mission.Status == "Active"

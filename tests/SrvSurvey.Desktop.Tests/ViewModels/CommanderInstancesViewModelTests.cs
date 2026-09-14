@@ -26,7 +26,7 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
         );
         var launcher = new RecordingLauncher();
         var switcher = new RecordingSwitcher();
-        var journalDirectory = Path.Combine(temporaryDirectory, "journals");
+        string journalDirectory = Path.Combine(temporaryDirectory, "journals");
         Directory.CreateDirectory(journalDirectory);
         var viewModel = new CommanderInstancesViewModel(
             new CommanderProfileCatalog(temporaryDirectory),
@@ -41,9 +41,9 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
 
         await viewModel.RefreshAsync();
         await viewModel.LaunchSelectedAsync();
-        var switched = viewModel.SwitchToNextGameWindow();
+        bool switched = viewModel.SwitchToNextGameWindow();
 
-        var option = Assert.Single(viewModel.Commanders);
+        CommanderInstanceOptionViewModel option = Assert.Single(viewModel.Commanders);
         Assert.Equal("F456", option.FrontierId);
         Assert.Same(option, viewModel.SelectedCommander);
         Assert.Equal("Drew (F123)", viewModel.CurrentCommander);
@@ -64,9 +64,9 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
     [Fact]
     public async Task LaunchesJournalDiscoveredCommanderFromItsOwnPrefix()
     {
-        var profileDirectory = Path.Combine(temporaryDirectory, "profiles");
-        var steam = Path.Combine(temporaryDirectory, "steam");
-        var epic = Path.Combine(temporaryDirectory, "epic");
+        string profileDirectory = Path.Combine(temporaryDirectory, "profiles");
+        string steam = Path.Combine(temporaryDirectory, "steam");
+        string epic = Path.Combine(temporaryDirectory, "epic");
         Directory.CreateDirectory(profileDirectory);
         Directory.CreateDirectory(steam);
         Directory.CreateDirectory(epic);
@@ -90,7 +90,7 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
         await viewModel.RefreshAsync();
         await viewModel.LaunchSelectedAsync();
 
-        var option = Assert.Single(viewModel.Commanders);
+        CommanderInstanceOptionViewModel option = Assert.Single(viewModel.Commanders);
         Assert.Equal("F456", option.FrontierId);
         Assert.Equal(epic, option.JournalDirectory);
         Assert.Equal(epic, launcher.JournalDirectory);

@@ -17,7 +17,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     public async Task FormatsNextCarrierHopAsCompactLogisticsReadout()
     {
         var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
-        var document = (await store.CreateNewAsync("F123")) with
+        FollowRouteDocument document = (await store.CreateNewAsync("F123")) with
         {
             Name = "Carrier Test",
             IsActive = true,
@@ -63,7 +63,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     public async Task FormatsEmptyRouteWithoutInventingCarrierLogistics()
     {
         var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
-        var route = CreateRoute(store);
+        RouteWorkspaceViewModel route = CreateRoute(store);
         await route.UpdateContextAsync("F999", null, null, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
@@ -88,7 +88,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     public async Task NotStartedRouteLabelsItsFirstSystemAsStart()
     {
         var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
-        var document = (await store.CreateNewAsync("F456")) with
+        FollowRouteDocument document = (await store.CreateNewAsync("F456")) with
         {
             Name = "Carrier Start",
             IsActive = true,
@@ -97,7 +97,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             Hops = [Hop("Sol", null, 1), Hop("Colonia", null, 2)],
         };
         await store.SaveAsAsync(document, "Carrier Start");
-        var route = CreateRoute(store);
+        RouteWorkspaceViewModel route = CreateRoute(store);
         await route.UpdateContextAsync("F456", null, null, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
@@ -112,7 +112,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     public async Task FinalCarrierArrivalShowsFinishedForThreeSeconds()
     {
         var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
-        var document = (await store.CreateNewAsync("F321")) with
+        FollowRouteDocument document = (await store.CreateNewAsync("F321")) with
         {
             Name = "Carrier Finish",
             IsActive = true,
@@ -164,7 +164,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     public async Task RouteAndCountdownChangesRaiseTheirCompletePropertyGroups()
     {
         var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
-        var document = (await store.CreateNewAsync("F789")) with
+        FollowRouteDocument document = (await store.CreateNewAsync("F789")) with
         {
             Name = "Carrier Notifications",
             IsActive = true,
@@ -261,7 +261,10 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 

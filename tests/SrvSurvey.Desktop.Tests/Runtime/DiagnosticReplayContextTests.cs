@@ -14,20 +14,23 @@ public sealed class DiagnosticReplayContextTests
     public async Task ContextRedirectsAllMutableRootsAndSimulatesTheGameHost()
     {
         using var temp = new TemporaryDirectory();
-        var journalPath = Path.Combine(temp.Path, "Journal.01.log");
+        string journalPath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllTextAsync(
             journalPath,
             "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n"
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             journalPath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
 
-        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
-        using var gameWindow = context.CreateGameWindowTracker();
-        var snapshot = gameWindow.GetSnapshot();
+        DiagnosticReplayContext context = await DiagnosticReplayContext.LoadAsync(
+            session.ManifestPath,
+            CancellationToken.None
+        );
+        using IGameWindowTracker gameWindow = context.CreateGameWindowTracker();
+        GameWindowSnapshot snapshot = gameWindow.GetSnapshot();
 
         Assert.Equal(session.ConfigDirectory, context.AppDataPaths.ConfigDirectory);
         Assert.Equal(session.DataDirectory, context.AppDataPaths.DataDirectory);
@@ -46,19 +49,19 @@ public sealed class DiagnosticReplayContextTests
     public async Task StartupDoesNotResolveNormalUserPathsInDiagnosticMode()
     {
         using var temp = new TemporaryDirectory();
-        var journalPath = Path.Combine(temp.Path, "Journal.01.log");
+        string journalPath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllTextAsync(
             journalPath,
             "{\"event\":\"Commander\",\"Name\":\"Imported\",\"FID\":\"F987654\"}\n"
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             journalPath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
-        var normalPathsResolved = false;
+        bool normalPathsResolved = false;
 
-        var startup = await DesktopStartupContext.ResolveAsync(
+        DesktopStartupContext startup = await DesktopStartupContext.ResolveAsync(
             ["--diagnostic-replay", session.ManifestPath],
             () =>
             {
@@ -77,9 +80,9 @@ public sealed class DiagnosticReplayContextTests
     [Fact]
     public async Task StartupRejectsDiagnosticOptionWithoutAManifest()
     {
-        var normalPathsResolved = false;
+        bool normalPathsResolved = false;
 
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+        ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(() =>
             DesktopStartupContext.ResolveAsync(
                 ["--diagnostic-replay"],
                 () =>
@@ -99,20 +102,20 @@ public sealed class DiagnosticReplayContextTests
     public async Task DiagnosticNetworkClientDeniesEveryRequest()
     {
         using var temp = new TemporaryDirectory();
-        var journalPath = Path.Combine(temp.Path, "Journal.01.log");
+        string journalPath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllTextAsync(
             journalPath,
             "{\"event\":\"Commander\",\"Name\":\"Imported\",\"FID\":\"F987654\"}\n"
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             journalPath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
         await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
-        using var client = DiagnosticReplayContext.CreateNetworkClient();
+        using HttpClient client = DiagnosticReplayContext.CreateNetworkClient();
 
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+        HttpRequestException exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
             client.GetAsync("https://example.com/must-not-run", CancellationToken.None)
         );
 
@@ -123,18 +126,18 @@ public sealed class DiagnosticReplayContextTests
     public async Task NetworkBackedViewModelReportsDiagnosticDenialWithoutThrowing()
     {
         using var temp = new TemporaryDirectory();
-        var journalPath = Path.Combine(temp.Path, "Journal.01.log");
+        string journalPath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllTextAsync(
             journalPath,
             "{\"event\":\"Commander\",\"Name\":\"Imported\",\"FID\":\"F987654\"}\n"
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             journalPath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
         await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
-        using var client = DiagnosticReplayContext.CreateNetworkClient();
+        using HttpClient client = DiagnosticReplayContext.CreateNetworkClient();
         var viewModel = new NearestSystemsViewModel(new NearestSystemsClient(client), new EmptySystemResolver());
         viewModel.UpdateContext("Replay System", new GalacticCoordinate(1, 2, 3), "Imported");
         viewModel.BiologicalSignal = "Stratum";
@@ -153,13 +156,13 @@ public sealed class DiagnosticReplayContextTests
     public async Task ContextAppliesPortableOverlayPresentationWithoutAProfile()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllTextAsync(
             Path.Combine(journals, "Journal.01.log"),
             "{\"event\":\"Commander\",\"Name\":\"Imported\",\"FID\":\"F987654\"}\n"
         );
-        var packagePath = Path.Combine(temp.Path, "presentation.srvreplay");
+        string packagePath = Path.Combine(temp.Path, "presentation.srvreplay");
         await new JournalReplayExporter().ExportAsync(
             journals,
             packagePath,
@@ -182,17 +185,22 @@ public sealed class DiagnosticReplayContextTests
             ),
             CancellationToken.None
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             packagePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
 
-        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
-        using var gameWindow = context.CreateGameWindowTracker();
-        var visibility = new OverlayPanelVisibilitySettingsStore(context.AppDataPaths.UiSettingsPath).Load();
-        var scale = new OverlayScaleSettingsStore(context.AppDataPaths.UiSettingsPath).Load();
-        var layout = new LegacyOverlayLayoutStore(context.AppDataPaths.DataDirectory).Load();
+        DiagnosticReplayContext context = await DiagnosticReplayContext.LoadAsync(
+            session.ManifestPath,
+            CancellationToken.None
+        );
+        using IGameWindowTracker gameWindow = context.CreateGameWindowTracker();
+        IReadOnlyDictionary<string, bool> visibility = new OverlayPanelVisibilitySettingsStore(
+            context.AppDataPaths.UiSettingsPath
+        ).Load();
+        OverlayScalePreferences scale = new OverlayScaleSettingsStore(context.AppDataPaths.UiSettingsPath).Load();
+        LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(context.AppDataPaths.DataDirectory).Load();
 
         Assert.Equal(new PixelRect(0, 0, 2560, 1440), gameWindow.GetSnapshot().ClientBounds);
         Assert.False(visibility["PlotFSSInfo"]);

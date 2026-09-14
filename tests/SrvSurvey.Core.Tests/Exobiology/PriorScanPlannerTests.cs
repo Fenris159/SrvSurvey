@@ -33,7 +33,7 @@ public sealed class PriorScanPlannerTests
     [Fact]
     public void CreatePlanFiltersGroupsSortsAndCalculatesNavigation()
     {
-        var request = Request(
+        PriorScanPlanRequest request = Request(
             [
                 Signal("A1", 2320101, 0, 0.02),
                 Signal("A 1", 2310101, 0, 0.01),
@@ -45,7 +45,7 @@ public sealed class PriorScanPlannerTests
             activeSpecies: AleoidaSpecies
         );
 
-        var plan = planner.CreatePlan(request);
+        PriorScanPlan plan = planner.CreatePlan(request);
 
         Assert.Collection(
             plan.Species,
@@ -253,7 +253,7 @@ public sealed class PriorScanPlannerTests
                 ),
             ])
         );
-        var plan = legacyPlanner.CreatePlan(
+        PriorScanPlan plan = legacyPlanner.CreatePlan(
             Request([
                 new CanonnSurfaceBiologySignal(
                     "A 1",
@@ -270,16 +270,16 @@ public sealed class PriorScanPlannerTests
     [Fact]
     public void CreatePlanAppliesValueAnalyzedAndPersonalSampleFilters()
     {
-        var signals = new[]
+        CanonnSurfaceBiologySignal[] signals = new[]
         {
             Signal("A 1", 2310101, 0, 0.01),
             Signal("A 1", 2310101, 0, 0.02),
             Signal("A 1", 2320101, 0, 0.03),
         };
-        var analyzed = planner.CreatePlan(Request(signals, analyzed: [2310101]));
+        PriorScanPlan analyzed = planner.CreatePlan(Request(signals, analyzed: [2310101]));
         Assert.Equal(PriorScanTargetState.Analyzed, analyzed.Species[0].Targets[0].State);
 
-        var filtered = planner.CreatePlan(
+        PriorScanPlan filtered = planner.CreatePlan(
             Request(
                 signals,
                 analyzed: [2310101],
@@ -295,21 +295,21 @@ public sealed class PriorScanPlannerTests
     [Fact]
     public void CreatePlanHidesCanonnRowsAttributedToCommander()
     {
-        var plan = planner.CreatePlan(
+        PriorScanPlan plan = planner.CreatePlan(
             Request(
                 [Signal("A 1", 2310101, 0, 0.01, commanderScan: true), Signal("A 1", 2310101, 0, 0.02)],
                 hideOwn: true
             )
         );
 
-        var target = Assert.Single(Assert.Single(plan.Species).Targets);
+        PriorScanTarget target = Assert.Single(Assert.Single(plan.Species).Targets);
         Assert.Equal(349.066, target.DistanceMeters, 3);
     }
 
     [Fact]
     public void CreatePlanDeduplicatesBySurfaceSeparationNotRadialDistance()
     {
-        var plan = planner.CreatePlan(
+        PriorScanPlan plan = planner.CreatePlan(
             Request([
                 Signal("A 1", 2310101, 0.01, 0),
                 Signal("A 1", 2310101, -0.01, 0),
@@ -317,14 +317,16 @@ public sealed class PriorScanPlannerTests
             ])
         );
 
-        var species = Assert.Single(plan.Species);
+        PriorScanSpecies species = Assert.Single(plan.Species);
         Assert.Equal(2, species.Targets.Count);
     }
 
     [Fact]
     public void CreatePlanClassifiesCloseAndFarTargets()
     {
-        var plan = planner.CreatePlan(Request([Signal("A 1", 2310101, 0, 0.001), Signal("A 1", 2310101, 0, 100)]));
+        PriorScanPlan plan = planner.CreatePlan(
+            Request([Signal("A 1", 2310101, 0, 0.001), Signal("A 1", 2310101, 0, 100)])
+        );
 
         Assert.Collection(
             Assert.Single(plan.Species).Targets,
@@ -336,7 +338,7 @@ public sealed class PriorScanPlannerTests
     [Fact]
     public void CreatePlanMatchesFullEliteBodyNameToCanonnShortLabel()
     {
-        var plan = planner.CreatePlan(
+        PriorScanPlan plan = planner.CreatePlan(
             new PriorScanPlanRequest(
                 "Col 285 Sector AB-C d1-2 1 a",
                 Radius,

@@ -15,11 +15,11 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
     public async Task MigratesOldClaimsAndBodyFilesWithoutChangingSources()
     {
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
-        var reference = catalog.BiologyEntries.First(entry =>
+        ExobiologyReference reference = catalog.BiologyEntries.First(entry =>
             string.Equals(entry.VariantName, "$Codex_Ent_Aleoids_01_B_Name;", StringComparison.Ordinal)
         );
         Directory.CreateDirectory(directory);
-        var profilePath = Path.Combine(directory, "F123-live.json");
+        string profilePath = Path.Combine(directory, "F123-live.json");
         await File.WriteAllTextAsync(
             profilePath,
             $$"""
@@ -41,9 +41,9 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             }
             """
         );
-        var organicDirectory = Path.Combine(directory, "organic", "F123");
+        string organicDirectory = Path.Combine(directory, "organic", "F123");
         Directory.CreateDirectory(organicDirectory);
-        var bodyPath = Path.Combine(organicDirectory, "Test 1.json");
+        string bodyPath = Path.Combine(organicDirectory, "Test 1.json");
         await File.WriteAllTextAsync(
             bodyPath,
             $$"""
@@ -82,10 +82,10 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             }
             """
         );
-        var sourceBytes = await File.ReadAllBytesAsync(bodyPath);
-        var systemsDirectory = Path.Combine(directory, "systems", "F123");
+        byte[] sourceBytes = await File.ReadAllBytesAsync(bodyPath);
+        string systemsDirectory = Path.Combine(directory, "systems", "F123");
         Directory.CreateDirectory(systemsDirectory);
-        var systemPath = Path.Combine(systemsDirectory, "Test_42.json");
+        string systemPath = Path.Combine(systemsDirectory, "Test_42.json");
         await File.WriteAllTextAsync(
             systemPath,
             """
@@ -107,7 +107,7 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
         );
         var migrator = new LegacyOrganicProfileMigrator(directory, catalog);
 
-        var result = await migrator.MigrateAsync();
+        LegacyOrganicProfileMigrationResult result = await migrator.MigrateAsync();
 
         Assert.True(result.Migrated);
         Assert.Equal(1, result.MigratedProfileCount);
@@ -116,35 +116,35 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
         Assert.Equal(1, result.MigratedOrganismCount);
         Assert.Empty(result.Errors);
         Assert.Equal(sourceBytes, await File.ReadAllBytesAsync(bodyPath));
-        var profile = JsonNode.Parse(await File.ReadAllTextAsync(profilePath))!.AsObject();
+        JsonObject profile = JsonNode.Parse(await File.ReadAllTextAsync(profilePath))!.AsObject();
         Assert.True(profile["futureProfile"]!["keep"]!.GetValue<bool>());
         Assert.True(profile["migratedScannedOrganicsInEntryId"]!.GetValue<bool>());
         Assert.True(profile["migratedNonSystemDataOrganics"]!.GetValue<bool>());
-        var claims = profile["scannedBioEntryIds"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray();
+        string[] claims = profile["scannedBioEntryIds"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray();
         Assert.Equal(2, claims.Length);
         Assert.All(claims, claim => Assert.Equal(5, claim.Split('_').Length));
         Assert.Equal(reference.Reward * 6, profile["organicRewards"]!.GetValue<long>());
         Assert.Contains(claims, claim => claim == $"42_1_{reference.EntryId}_{reference.Reward}_{bool.TrueString}");
 
-        var system = JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!.AsObject();
+        JsonObject system = JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!.AsObject();
         Assert.Equal(7, system["futureSystem"]!.GetValue<int>());
         Assert.Equal("2024-01-01T00:00:00.0000000+00:00", system["firstVisited"]!.GetValue<string>());
-        var body = system["bodies"]![0]!.AsObject();
+        JsonObject body = system["bodies"]![0]!.AsObject();
         Assert.True(body["futureBody"]!.GetValue<bool>());
         Assert.Equal("LandableBody", body["type"]!.GetValue<string>());
         Assert.Equal(12.5, body["lastTouchdown"]!["lat"]!.GetValue<double>());
-        var scan = Assert.Single(body["bioScans"]!.AsArray())!.AsObject();
+        JsonObject scan = Assert.Single(body["bioScans"]!.AsArray())!.AsObject();
         Assert.Equal(reference.EntryId, scan["entryId"]!.GetValue<long>());
         Assert.True(scan["futureScan"]!.GetValue<bool>());
-        var organism = Assert.Single(body["organisms"]!.AsArray())!.AsObject();
+        JsonObject organism = Assert.Single(body["organisms"]!.AsArray())!.AsObject();
         Assert.Equal(reference.EntryId, organism["entryId"]!.GetValue<long>());
         Assert.Equal(reference.Reward, organism["reward"]!.GetValue<long>());
         Assert.True(organism["analyzed"]!.GetValue<bool>());
         Assert.Equal("source-only", organism["futureOrganism"]!.GetValue<string>());
 
-        var profileBytes = await File.ReadAllBytesAsync(profilePath);
-        var systemBytes = await File.ReadAllBytesAsync(systemPath);
-        var second = await migrator.MigrateAsync();
+        byte[] profileBytes = await File.ReadAllBytesAsync(profilePath);
+        byte[] systemBytes = await File.ReadAllBytesAsync(systemPath);
+        LegacyOrganicProfileMigrationResult second = await migrator.MigrateAsync();
         Assert.False(second.Migrated);
         Assert.Equal(profileBytes, await File.ReadAllBytesAsync(profilePath));
         Assert.Equal(systemBytes, await File.ReadAllBytesAsync(systemPath));
@@ -155,7 +155,7 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
     public async Task MalformedClaimsAndBodiesArePreservedWithoutFalseCompletion()
     {
         Directory.CreateDirectory(directory);
-        var profilePath = Path.Combine(directory, "F123-live.json");
+        string profilePath = Path.Combine(directory, "F123-live.json");
         await File.WriteAllTextAsync(
             profilePath,
             """
@@ -166,14 +166,14 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             }
             """
         );
-        var organicDirectory = Path.Combine(directory, "organic", "F123");
+        string organicDirectory = Path.Combine(directory, "organic", "F123");
         Directory.CreateDirectory(organicDirectory);
-        var bodyPath = Path.Combine(organicDirectory, "broken.json");
+        string bodyPath = Path.Combine(organicDirectory, "broken.json");
         await File.WriteAllTextAsync(bodyPath, """{"systemName":"Missing identity","future":true}""");
-        var profileBefore = await File.ReadAllBytesAsync(profilePath);
-        var bodyBefore = await File.ReadAllBytesAsync(bodyPath);
+        byte[] profileBefore = await File.ReadAllBytesAsync(profilePath);
+        byte[] bodyBefore = await File.ReadAllBytesAsync(bodyPath);
 
-        var result = await new LegacyOrganicProfileMigrator(directory).MigrateAsync();
+        LegacyOrganicProfileMigrationResult result = await new LegacyOrganicProfileMigrator(directory).MigrateAsync();
 
         Assert.False(result.Migrated);
         Assert.Equal(2, result.Errors.Count);
@@ -186,7 +186,7 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
     public async Task MigrationKeepsMultipleSpeciesFromTheSameGenus()
     {
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
-        var references = catalog
+        ExobiologyReference[] references = catalog
             .BiologyEntries.GroupBy(reference => ExobiologyReferenceCatalog.GetGenusName(reference.SpeciesName))
             .Select(group =>
                 group
@@ -196,18 +196,18 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
                     .ToArray()
             )
             .First(group => group.Length == 2);
-        var genus = ExobiologyReferenceCatalog.GetGenusName(references[0].SpeciesName);
+        string genus = ExobiologyReferenceCatalog.GetGenusName(references[0].SpeciesName);
         Directory.CreateDirectory(directory);
         await File.WriteAllTextAsync(
             Path.Combine(directory, "F123-live.json"),
             """{"fid":"F123","commander":"Drew","organicRewards":0,"scannedBioEntryIds":[]}"""
         );
-        var organicDirectory = Path.Combine(directory, "organic", "F123");
+        string organicDirectory = Path.Combine(directory, "organic", "F123");
         Directory.CreateDirectory(organicDirectory);
         var organisms = new JsonObject();
-        for (var index = 0; index < references.Length; index++)
+        for (int index = 0; index < references.Length; index++)
         {
-            var reference = references[index];
+            ExobiologyReference reference = references[index];
             organisms[$"organism-{index}"] = new JsonObject
             {
                 ["genus"] = genus,
@@ -229,13 +229,16 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             }.ToJsonString()
         );
 
-        var result = await new LegacyOrganicProfileMigrator(directory, catalog).MigrateAsync();
+        LegacyOrganicProfileMigrationResult result = await new LegacyOrganicProfileMigrator(
+            directory,
+            catalog
+        ).MigrateAsync();
 
         Assert.Empty(result.Errors);
         Assert.Equal(2, result.MigratedOrganismCount);
-        var systemPath = Assert.Single(Directory.GetFiles(Path.Combine(directory, "systems", "F123"), "*.json"));
-        var body = Assert.Single(JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!["bodies"]!.AsArray())!;
-        var migrated = body["organisms"]!.AsArray();
+        string systemPath = Assert.Single(Directory.GetFiles(Path.Combine(directory, "systems", "F123"), "*.json"));
+        JsonNode body = Assert.Single(JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!["bodies"]!.AsArray())!;
+        JsonArray migrated = body["organisms"]!.AsArray();
         Assert.Equal(2, migrated.Count);
         Assert.Equal(
             references.Select(reference => reference.VariantName).OrderBy(value => value, StringComparer.Ordinal),
@@ -249,8 +252,8 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
     public async Task CorruptClaimShapesAndOverflowArePreservedWithoutWrites()
     {
         Directory.CreateDirectory(directory);
-        var shapePath = Path.Combine(directory, "F123-live.json");
-        var overflowPath = Path.Combine(directory, "F456-live.json");
+        string shapePath = Path.Combine(directory, "F123-live.json");
+        string overflowPath = Path.Combine(directory, "F456-live.json");
         await File.WriteAllTextAsync(
             shapePath,
             """
@@ -271,10 +274,10 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             }
             """
         );
-        var shapeBefore = await File.ReadAllBytesAsync(shapePath);
-        var overflowBefore = await File.ReadAllBytesAsync(overflowPath);
+        byte[] shapeBefore = await File.ReadAllBytesAsync(shapePath);
+        byte[] overflowBefore = await File.ReadAllBytesAsync(overflowPath);
 
-        var result = await new LegacyOrganicProfileMigrator(directory).MigrateAsync();
+        LegacyOrganicProfileMigrationResult result = await new LegacyOrganicProfileMigrator(directory).MigrateAsync();
 
         Assert.False(result.Migrated);
         Assert.Equal(2, result.Errors.Count);
@@ -286,22 +289,22 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
     public async Task SharedBodyHistoryCompletesBothLiveAndLegacyProfiles()
     {
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
-        var reference = catalog.BiologyEntries.First(entry =>
+        ExobiologyReference reference = catalog.BiologyEntries.First(entry =>
             string.Equals(entry.VariantName, "$Codex_Ent_Aleoids_01_B_Name;", StringComparison.Ordinal)
         );
         Directory.CreateDirectory(directory);
-        var profileJson = $$"""
+        string profileJson = $$"""
             {
               "fid": "F123",
               "organicRewards": 1,
               "scannedBioEntryIds": ["42_1_{{reference.EntryIdPrefix}}00"]
             }
             """;
-        var livePath = Path.Combine(directory, "F123-live.json");
-        var legacyPath = Path.Combine(directory, "F123-legacy.json");
+        string livePath = Path.Combine(directory, "F123-live.json");
+        string legacyPath = Path.Combine(directory, "F123-legacy.json");
         await File.WriteAllTextAsync(livePath, profileJson);
         await File.WriteAllTextAsync(legacyPath, profileJson);
-        var organicDirectory = Path.Combine(directory, "organic", "F123");
+        string organicDirectory = Path.Combine(directory, "organic", "F123");
         Directory.CreateDirectory(organicDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(organicDirectory, "Test 1.json"),
@@ -321,7 +324,7 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             }
             """
         );
-        var systemDirectory = Path.Combine(directory, "systems", "F123");
+        string systemDirectory = Path.Combine(directory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(systemDirectory, "Test_42.json"),
@@ -338,12 +341,15 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             """
         );
 
-        var result = await new LegacyOrganicProfileMigrator(directory, catalog).MigrateAsync();
+        LegacyOrganicProfileMigrationResult result = await new LegacyOrganicProfileMigrator(
+            directory,
+            catalog
+        ).MigrateAsync();
 
         Assert.Equal(2, result.MigratedProfileCount);
-        foreach (var path in new[] { livePath, legacyPath })
+        foreach (string? path in new[] { livePath, legacyPath })
         {
-            var profile = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+            JsonObject profile = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
             Assert.True(profile["migratedNonSystemDataOrganics"]!.GetValue<bool>());
             Assert.Equal(reference.Reward * 5, profile["organicRewards"]!.GetValue<long>());
             Assert.Equal(
@@ -357,7 +363,7 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
     public async Task MalformedTargetSystemIsPreservedAndNotMarkedComplete()
     {
         Directory.CreateDirectory(directory);
-        var profilePath = Path.Combine(directory, "F123-live.json");
+        string profilePath = Path.Combine(directory, "F123-live.json");
         await File.WriteAllTextAsync(
             profilePath,
             """
@@ -368,9 +374,9 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             }
             """
         );
-        var organicDirectory = Path.Combine(directory, "organic", "F123");
+        string organicDirectory = Path.Combine(directory, "organic", "F123");
         Directory.CreateDirectory(organicDirectory);
-        var bodyPath = Path.Combine(organicDirectory, "Test 1.json");
+        string bodyPath = Path.Combine(organicDirectory, "Test 1.json");
         await File.WriteAllTextAsync(
             bodyPath,
             """
@@ -383,9 +389,9 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             }
             """
         );
-        var systemDirectory = Path.Combine(directory, "systems", "F123");
+        string systemDirectory = Path.Combine(directory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
-        var systemPath = Path.Combine(systemDirectory, "Test_42.json");
+        string systemPath = Path.Combine(systemDirectory, "Test_42.json");
         await File.WriteAllTextAsync(
             systemPath,
             """
@@ -397,15 +403,15 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
             }
             """
         );
-        var bodyBefore = await File.ReadAllBytesAsync(bodyPath);
-        var systemBefore = await File.ReadAllBytesAsync(systemPath);
+        byte[] bodyBefore = await File.ReadAllBytesAsync(bodyPath);
+        byte[] systemBefore = await File.ReadAllBytesAsync(systemPath);
 
-        var result = await new LegacyOrganicProfileMigrator(directory).MigrateAsync();
+        LegacyOrganicProfileMigrationResult result = await new LegacyOrganicProfileMigrator(directory).MigrateAsync();
 
         Assert.Single(result.Errors);
         Assert.Equal(bodyBefore, await File.ReadAllBytesAsync(bodyPath));
         Assert.Equal(systemBefore, await File.ReadAllBytesAsync(systemPath));
-        var profile = JsonNode.Parse(await File.ReadAllTextAsync(profilePath))!.AsObject();
+        JsonObject profile = JsonNode.Parse(await File.ReadAllTextAsync(profilePath))!.AsObject();
         Assert.Null(profile["migratedNonSystemDataOrganics"]);
     }
 

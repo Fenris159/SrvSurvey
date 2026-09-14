@@ -49,7 +49,7 @@ public sealed partial class GroundTargetState
             currentLocation = null;
         }
 
-        var statusRadius = (double)status.PlanetRadius;
+        double statusRadius = (double)status.PlanetRadius;
         planetRadius = double.IsFinite(statusRadius) && statusRadius > 0 ? statusRadius : 0;
         altitude = status.Altitude;
         heading = status.NormalizedHeading;
@@ -79,7 +79,10 @@ public sealed partial class GroundTargetState
 
     public bool TrySetTarget(string latitude, string longitude, out string? error)
     {
-        if (!TryParseNumber(latitude, out var parsedLatitude) || !TryParseNumber(longitude, out var parsedLongitude))
+        if (
+            !TryParseNumber(latitude, out double parsedLatitude)
+            || !TryParseNumber(longitude, out double parsedLongitude)
+        )
         {
             error = "Enter valid decimal latitude and longitude values.";
             return false;
@@ -90,7 +93,7 @@ public sealed partial class GroundTargetState
 
     public bool TrySetTarget(string text, out string? error)
     {
-        if (!TryParse(text, out var parsed))
+        if (!TryParse(text, out ParsedCoordinate parsed))
         {
             error = "No latitude/longitude pair was found in the clipboard text.";
             return false;
@@ -133,11 +136,11 @@ public sealed partial class GroundTargetState
             return false;
         }
 
-        var cardinal = CardinalPairRegex().Match(text);
+        Match cardinal = CardinalPairRegex().Match(text);
         if (
             cardinal.Success
-            && TryParseNumber(cardinal.Groups["latitude"].Value, out var latitude)
-            && TryParseNumber(cardinal.Groups["longitude"].Value, out var longitude)
+            && TryParseNumber(cardinal.Groups["latitude"].Value, out double latitude)
+            && TryParseNumber(cardinal.Groups["longitude"].Value, out double longitude)
         )
         {
             if (cardinal.Groups["northSouth"].Value.Equals("S", StringComparison.OrdinalIgnoreCase))
@@ -162,7 +165,7 @@ public sealed partial class GroundTargetState
             return true;
         }
 
-        var legacy = LegacyPairRegex().Match(text);
+        Match legacy = LegacyPairRegex().Match(text);
         if (
             !legacy.Success
             || !TryParseNumber(legacy.Groups[1].Value, out latitude)
@@ -199,10 +202,10 @@ public sealed partial class GroundTargetState
             return;
         }
 
-        var distance = SurfaceNavigation.GetDistance(currentLocation.Value, Target, planetRadius);
-        var bearing = SurfaceNavigation.GetBearing(currentLocation.Value, Target);
-        var relativeBearing = SurfaceNavigation.NormalizeDegrees(bearing - heading);
-        var attackAngle = distance == 0 ? 0 : Math.Atan(altitude / distance) * 180d / Math.PI;
+        double distance = SurfaceNavigation.GetDistance(currentLocation.Value, Target, planetRadius);
+        double bearing = SurfaceNavigation.GetBearing(currentLocation.Value, Target);
+        double relativeBearing = SurfaceNavigation.NormalizeDegrees(bearing - heading);
+        double attackAngle = distance == 0 ? 0 : Math.Atan(altitude / distance) * 180d / Math.PI;
         Solution = new GroundTargetSolution(
             distance,
             bearing,

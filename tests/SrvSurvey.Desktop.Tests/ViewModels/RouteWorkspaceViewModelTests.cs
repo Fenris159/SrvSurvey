@@ -16,9 +16,9 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public async Task MissingRouteLoadsAsAnEmptyCommanderWorkspace()
     {
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
 
-        var initialized = await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
+        bool initialized = await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
 
         Assert.True(initialized);
         Assert.True(viewModel.HasProfile);
@@ -34,7 +34,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task LegacyRouteDisplaysSegmentsAndSavesProgressAndPreferences()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
 
         Assert.Equal(3, viewModel.RouteCount);
@@ -54,7 +54,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         await viewModel.SaveAsync();
 
         Assert.False(viewModel.IsDirty);
-        var saved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
+        FollowRouteLoadResult saved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
         Assert.Equal(2, saved.Route!.LastReachedIndex);
         Assert.False(saved.Route.IsActive);
         Assert.False(saved.Route.AutoCopy);
@@ -66,7 +66,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         var resolver = new StubResolver(
             new Dictionary<string, StarSystemReference> { ["Sol"] = new("Sol", 1, new GalacticCoordinate(0, 0, 0)) }
         );
-        var viewModel = CreateViewModel(resolver: resolver);
+        RouteWorkspaceViewModel viewModel = CreateViewModel(resolver: resolver);
         await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
 
         await viewModel.ImportNamesAsync([" Sol ", "Unknown"]);
@@ -84,12 +84,12 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public async Task SpanshImportRejectsInvalidClipboardAndLoadsRouteFlags()
     {
-        var imported = new[]
+        FollowRouteHop[] imported = new[]
         {
             new FollowRouteHop("Jackson's Lighthouse", 7, new GalacticCoordinate(1, 2, 3), null, true, true),
         };
         var spanshClient = new StubSpanshClient(imported);
-        var viewModel = CreateViewModel(spanshClient: spanshClient);
+        RouteWorkspaceViewModel viewModel = CreateViewModel(spanshClient: spanshClient);
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         await viewModel.ImportSpanshUrlAsync("not a URL");
@@ -102,7 +102,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         );
 
         Assert.Equal(1, spanshClient.CallCount);
-        var hop = Assert.Single(viewModel.Hops);
+        RouteHopItemViewModel hop = Assert.Single(viewModel.Hops);
         Assert.Contains("Refuel", hop.Notes);
         Assert.Contains("Neutron", hop.Notes);
     }
@@ -131,7 +131,10 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
                 )
             ),
         ]);
-        var viewModel = CreateViewModel(spanshClient: spanshClient, routeKind: FollowRouteKind.FleetCarrier);
+        RouteWorkspaceViewModel viewModel = CreateViewModel(
+            spanshClient: spanshClient,
+            routeKind: FollowRouteKind.FleetCarrier
+        );
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         await viewModel.ImportSpanshUrlAsync(
@@ -146,7 +149,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         );
 
         Assert.Equal(1, spanshClient.CallCount);
-        var hop = Assert.Single(viewModel.Hops);
+        RouteHopItemViewModel hop = Assert.Single(viewModel.Hops);
         Assert.Equal("Colonia", hop.Hop.Name);
         Assert.True(hop.IsFleetCarrierHop);
         Assert.False(hop.IsStandardHop);
@@ -179,7 +182,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             },
             "Carrier Test"
         );
-        var viewModel = CreateViewModel(routeKind: FollowRouteKind.FleetCarrier);
+        RouteWorkspaceViewModel viewModel = CreateViewModel(routeKind: FollowRouteKind.FleetCarrier);
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         await viewModel.ApplyJournalEventsAsync([
@@ -202,7 +205,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
 
         Assert.Equal(2, viewModel.ReachedCount);
         Assert.True(viewModel.IsComplete);
-        var saved = await store.LoadAsync("F123");
+        FollowRouteLoadResult saved = await store.LoadAsync("F123");
         Assert.Equal(1, saved.Route!.LastReachedIndex);
     }
 
@@ -213,7 +216,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             "2026-08-01T12:00:00Z",
             global::System.Globalization.CultureInfo.InvariantCulture
         );
-        var viewModel = CreateViewModel(routeKind: FollowRouteKind.FleetCarrier, utcNow: () => now);
+        RouteWorkspaceViewModel viewModel = CreateViewModel(routeKind: FollowRouteKind.FleetCarrier, utcNow: () => now);
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         viewModel.ApplyFleetCarrierJumpEvents([
@@ -243,7 +246,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task LiveFsdJumpAdvancesExpectedHopAndPersistsIt()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         await viewModel.ApplyJournalEventsAsync([
@@ -257,7 +260,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.Equal(2, viewModel.ReachedCount);
         Assert.Equal("Third", viewModel.NextHopName);
         Assert.Contains("hop #2", viewModel.StatusMessage);
-        var saved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
+        FollowRouteLoadResult saved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
         Assert.Equal(1, saved.Route!.LastReachedIndex);
     }
 
@@ -265,7 +268,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task OutOfOrderArrivalDoesNotChangeRouteButFinalArrivalCompletes()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: -1);
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Elsewhere", 99, null);
 
         await viewModel.ApplyJournalEventsAsync([
@@ -294,7 +297,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task CopyNextHopUsesDesktopClipboardBoundary()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
         string? copied = null;
         viewModel.SetClipboardWriter(text =>
@@ -314,7 +317,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
         var copied = new List<string>();
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         viewModel.SetClipboardWriter(text =>
         {
             copied.Add(text);
@@ -357,7 +360,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
         var copied = new List<string>();
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         viewModel.SetClipboardWriter(text =>
         {
             copied.Add(text);
@@ -384,7 +387,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
         var copied = new List<string>();
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         viewModel.SetClipboardWriter(text =>
         {
             copied.Add(text);
@@ -403,8 +406,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task GalaxyMapClipboardFailureIsReportedWithoutEscaping()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
-        var viewModel = CreateViewModel();
-        viewModel.SetClipboardWriter(_ => throw new Exception("clipboard locked"));
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        viewModel.SetClipboardWriter(_ => throw new InvalidOperationException("clipboard locked"));
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         await viewModel.UpdateStatusAsync(new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
@@ -416,10 +419,10 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public async Task MalformedRouteIsReportedWithoutCreatingAnEditableDraft()
     {
-        var directory = Path.Combine(temporaryDirectory, "routes");
+        string directory = Path.Combine(temporaryDirectory, "routes");
         Directory.CreateDirectory(directory);
         await File.WriteAllTextAsync(Path.Combine(directory, "F123.json"), "{\"hops\":");
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
 
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
@@ -431,7 +434,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public async Task SaveAsCreatesNamedRouteAndUndoRestoresItsDefinition()
     {
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
         await viewModel.ImportNamesAsync(["Sol", "Achenar"]);
 
@@ -458,7 +461,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public async Task SaveAsErrorVisibilityTracksValidationAndNameChanges()
     {
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
         await viewModel.ImportNamesAsync(["Sol", "Achenar"]);
         viewModel.SaveAsCommand.Execute(null);
@@ -484,7 +487,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task NotesSaveImmediatelyButResetWaitsForSaveChanges()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         viewModel.NotesCommand.Execute(null);
@@ -493,13 +496,13 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         await viewModel.ResetAsync();
 
         var store = new FollowRouteStore(temporaryDirectory);
-        var beforeProgressSave = await store.LoadAsync("F123");
+        FollowRouteLoadResult beforeProgressSave = await store.LoadAsync("F123");
         Assert.Equal("Refuel before the neutron section.", beforeProgressSave.Route!.Notes);
         Assert.Equal(0, beforeProgressSave.Route.LastReachedIndex);
         Assert.True(viewModel.CanSaveChanges);
 
         await viewModel.SaveAsync();
-        var afterProgressSave = await store.LoadAsync("F123");
+        FollowRouteLoadResult afterProgressSave = await store.LoadAsync("F123");
         Assert.Equal(-1, afterProgressSave.Route!.LastReachedIndex);
         Assert.False(viewModel.IsDirty);
     }
@@ -508,14 +511,14 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task NewKeepsSavedRouteWhileDeleteMovesItOutOfLibrary()
     {
         var store = new FollowRouteStore(temporaryDirectory);
-        var saved = await store.SaveAsAsync(
+        FollowRouteDocument saved = await store.SaveAsAsync(
             (await store.CreateNewAsync("F123")) with
             {
                 Hops = [Hop("Sol", 1, new GalacticCoordinate(0, 0, 0))],
             },
             "Keep Until Deleted"
         );
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         viewModel.NewCommand.Execute(null);
@@ -544,7 +547,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task ClosingWorkspaceDismissesPendingConfirmationState()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         viewModel.DeleteCommand.Execute(null);
@@ -560,13 +563,13 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task RouteRowsStayStableAcrossContextAndProgressUpdates()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
-        var rows = viewModel.Hops;
-        var firstRow = rows[0];
-        var secondRow = rows[1];
+        IReadOnlyList<RouteHopItemViewModel> rows = viewModel.Hops;
+        RouteHopItemViewModel firstRow = rows[0];
+        RouteHopItemViewModel secondRow = rows[1];
 
-        var reinitialized = await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
+        bool reinitialized = await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
         viewModel.SetProgressThrough(1, reached: true);
 
         Assert.False(reinitialized);
@@ -581,7 +584,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task EveryWorkspaceDialogCanBeDismissedWithoutChangingRoute()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         var notifications = new List<string?>();
@@ -601,7 +604,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
                 nameof(RouteWorkspaceViewModel.IsDeleteConfirmationVisible)
             ),
         };
-        foreach (var dialog in dialogs)
+        foreach ((ICommand Command, Func<bool> IsVisible, string VisibilityProperty) dialog in dialogs)
         {
             notifications.Clear();
             dialog.Command.Execute(null);
@@ -661,11 +664,11 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
                 ]
             )
         );
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
-        var rows = viewModel.Hops;
-        var hop = Assert.Single(rows, candidate => candidate.IsCurrent);
-        var target = Assert.Single(hop.BioTargets);
+        IReadOnlyList<RouteHopItemViewModel> rows = viewModel.Hops;
+        RouteHopItemViewModel hop = Assert.Single(rows, candidate => candidate.IsCurrent);
+        RouteBioTargetItemViewModel target = Assert.Single(hop.BioTargets);
         var notifications = new List<string?>();
         target.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
@@ -685,7 +688,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.True(target.HasDetails);
         Assert.True(viewModel.ShouldShowRouteBioOverlay);
         Assert.Contains(nameof(RouteBioTargetItemViewModel.IsCompleted), notifications);
-        var reloaded = await store.LoadAsync("F123");
+        FollowRouteLoadResult reloaded = await store.LoadAsync("F123");
         Assert.True(reloaded.Route!.Hops[0].BioTargets[0].IsCompleted);
 
         notifications.Clear();
@@ -720,9 +723,9 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
                 ]
             )
         );
-        var viewModel = CreateViewModel();
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Synuefe NL-N C23-4", 101, new GalacticCoordinate(0, 0, 0));
-        var target = Assert.Single(viewModel.CurrentBioTargets);
+        RouteBioTargetItemViewModel target = Assert.Single(viewModel.CurrentBioTargets);
 
         await viewModel.ApplyJournalEventsAsync([
             Parse(
@@ -734,7 +737,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
 
         Assert.Same(target, Assert.Single(viewModel.CurrentBioTargets));
         Assert.True(target.IsCompleted);
-        var reloaded = await store.LoadAsync("F123");
+        FollowRouteLoadResult reloaded = await store.LoadAsync("F123");
         Assert.True(reloaded.Route!.Hops[0].BioTargets[0].IsCompleted);
     }
 
@@ -743,8 +746,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     {
         var source = new FollowRouteBioTarget("A 1", 10, [], Subtype: "Rocky body");
         var target = new RouteBioTargetItemViewModel(0, 0, source);
-        var originalSegments = target.CompactDetailSegments;
-        var originalInlineSegments = target.InlineSegments;
+        IReadOnlyList<RouteBioDetailSegmentViewModel> originalSegments = target.CompactDetailSegments;
+        IReadOnlyList<RouteBioDetailSegmentViewModel> originalInlineSegments = target.InlineSegments;
         var notifications = new List<string?>();
         target.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
@@ -819,7 +822,10 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 
@@ -838,7 +844,9 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             CancellationToken cancellationToken = default
         )
         {
-            IReadOnlyList<StarSystemReference> result = systems.TryGetValue(query, out var system) ? [system] : [];
+            IReadOnlyList<StarSystemReference> result = systems.TryGetValue(query, out StarSystemReference? system)
+                ? [system]
+                : [];
             return Task.FromResult(result);
         }
     }

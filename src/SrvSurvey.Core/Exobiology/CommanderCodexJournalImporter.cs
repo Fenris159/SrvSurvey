@@ -26,19 +26,19 @@ public sealed class CommanderCodexJournalImporter(string journalDirectory, Comma
             return CommanderCodexJournalImportResult.Failed($"The journal folder does not exist: {journalDirectory}");
         }
 
-        var filesResult = TryEnumerateJournalFiles();
+        (FileInfo[]? Files, string? Error) filesResult = TryEnumerateJournalFiles();
         if (filesResult.Error is not null)
         {
             return CommanderCodexJournalImportResult.Failed(filesResult.Error);
         }
 
-        var files = filesResult.Files!;
+        FileInfo[] files = filesResult.Files!;
         var warnings = new List<string>();
         var totals = new ImportTotals();
-        for (var index = 0; index < files.Length; index++)
+        for (int index = 0; index < files.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var file = files[index];
+            FileInfo file = files[index];
             await ImportFileSafelyAsync(file, frontierId, warnings, totals, cancellationToken).ConfigureAwait(false);
             progress?.Report(
                 new CommanderCodexJournalImportProgress(
@@ -65,7 +65,7 @@ public sealed class CommanderCodexJournalImporter(string journalDirectory, Comma
     {
         try
         {
-            var files = new DirectoryInfo(journalDirectory)
+            FileInfo[] files = new DirectoryInfo(journalDirectory)
                 .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
                 .OrderBy(file => file.Name, StringComparer.Ordinal)
                 .ToArray();
@@ -87,7 +87,8 @@ public sealed class CommanderCodexJournalImporter(string journalDirectory, Comma
     {
         try
         {
-            var fileResult = await ImportFileAsync(file, frontierId, warnings, cancellationToken).ConfigureAwait(false);
+            FileImportCounts fileResult = await ImportFileAsync(file, frontierId, warnings, cancellationToken)
+                .ConfigureAwait(false);
             totals.ParsedEvents += fileResult.ParsedEvents;
             totals.MalformedLines += fileResult.MalformedLines;
             totals.DiscoveryEvents += fileResult.DiscoveryEvents;
@@ -119,10 +120,10 @@ public sealed class CommanderCodexJournalImporter(string journalDirectory, Comma
     {
         var tracker = new CommanderCodexJournalTracker(store, frontierIdFilter: frontierId);
         var batch = new List<JournalEventEnvelope>(BatchSize);
-        var parsedEvents = 0;
-        var malformedLines = 0;
-        var discoveryEvents = 0;
-        var changedEntries = 0;
+        int parsedEvents = 0;
+        int malformedLines = 0;
+        int discoveryEvents = 0;
+        int changedEntries = 0;
         await using var stream = new FileStream(
             file.FullName,
             FileMode.Open,
@@ -139,7 +140,10 @@ public sealed class CommanderCodexJournalImporter(string journalDirectory, Comma
                 continue;
             }
 
-            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
+            if (
+                !JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? journalEvent, out _)
+                || journalEvent is null
+            )
             {
                 malformedLines++;
                 continue;
@@ -199,8 +203,10 @@ public sealed class CommanderCodexJournalImporter(string journalDirectory, Comma
             return;
         }
 
-        var result = await tracker.ApplyAsync(batch, cancellationToken).ConfigureAwait(false);
-        foreach (var warning in result.Warnings)
+        CommanderCodexJournalTrackResult result = await tracker
+            .ApplyAsync(batch, cancellationToken)
+            .ConfigureAwait(false);
+        foreach (string warning in result.Warnings)
         {
             warnings.Add(warning);
         }

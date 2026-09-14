@@ -12,7 +12,7 @@ public sealed class VrOverlaySettingsStoreTests : IDisposable
     [Fact]
     public void MissingSettingsUseSafeDisabledDefaults()
     {
-        var store = CreateStore();
+        VrOverlaySettingsStore store = CreateStore();
 
         Assert.Equal(new VrOverlayPreferences(false, "vrserver"), store.Load());
     }
@@ -21,7 +21,7 @@ public sealed class VrOverlaySettingsStoreTests : IDisposable
     public void SavedPreferencesRoundTripWithoutRemovingFutureSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new VrOverlaySettingsStore(path);
 

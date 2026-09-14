@@ -23,7 +23,7 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
         this.activeLayout = activeLayout ?? throw new ArgumentNullException(nameof(activeLayout));
         this.windowRegistry = windowRegistry ?? OverlayWindowRegistry.Shared;
         Options = OverlayScaleCatalog.Options;
-        var preferences = settingsStore.Load();
+        OverlayScalePreferences preferences = settingsStore.Load();
         selectedOption = Options.Single(option => option.Index == preferences.Index);
         activeLayout.SetScaleIndex(preferences.Index);
     }
@@ -43,13 +43,13 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
                 return;
             }
 
-            var previous = selectedOption;
+            OverlayScaleOption previous = selectedOption;
             try
             {
                 settingsStore.Save(new OverlayScalePreferences(value.Index));
                 selectedOption = value;
                 activeLayout.SetScaleIndex(value.Index);
-                foreach (var registered in windowRegistry.Snapshot())
+                foreach (RegisteredOverlayWindow registered in windowRegistry.Snapshot())
                 {
                     OverlayThemeResources.ApplyScale(registered.Window, activeLayout, registered.PlotterName);
                 }

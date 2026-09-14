@@ -14,13 +14,17 @@ public sealed class EddnTransportTests
     public async Task UploadUsesGzipExactHttp11NoAuthenticationAndLiveSchema()
     {
         RecordedRequest? recorded = null;
-        var transport = createTransport(async request =>
+        EddnTransport transport = createTransport(async request =>
         {
             recorded = await record(request);
             return new HttpResponseMessage(HttpStatusCode.OK);
         });
 
-        var result = await transport.upload(message(), "https://eddn.edcd.io/schemas/dockinggranted/1", header());
+        EddnUploadResult result = await transport.upload(
+            message(),
+            "https://eddn.edcd.io/schemas/dockinggranted/1",
+            header()
+        );
 
         Assert.True(result.isSuccess);
         Assert.False(result.useTestSchemas);
@@ -35,7 +39,7 @@ public sealed class EddnTransportTests
 
         var payload = JObject.Parse(recorded.content);
         Assert.Equal("https://eddn.edcd.io/schemas/dockinggranted/1", payload.Value<string>("$schemaRef"));
-        var payloadHeader = Assert.IsType<JObject>(payload["header"]);
+        JObject payloadHeader = Assert.IsType<JObject>(payload["header"]);
         Assert.Equal("Test Cmdr", payloadHeader.Value<string>("uploaderID"));
         Assert.Equal("4.1.2.3", payloadHeader.Value<string>("gameversion"));
         Assert.Equal("r123/r0 ", payloadHeader.Value<string>("gamebuild"));
@@ -46,13 +50,13 @@ public sealed class EddnTransportTests
     public async Task ExistingTestSuffixIsRemovedForLiveSchemas()
     {
         RecordedRequest? recorded = null;
-        var transport = createTransport(async request =>
+        EddnTransport transport = createTransport(async request =>
         {
             recorded = await record(request);
             return new HttpResponseMessage(HttpStatusCode.OK);
         });
 
-        var result = await transport.upload(
+        EddnUploadResult result = await transport.upload(
             message(),
             "https://eddn.edcd.io/schemas/dockinggranted/1/test/test",
             header()
@@ -71,16 +75,20 @@ public sealed class EddnTransportTests
     [Fact]
     public async Task OversizedUncompressedPayloadIsSkippedWithoutARequest()
     {
-        var calls = 0;
-        var transport = createTransport(request =>
+        int calls = 0;
+        EddnTransport transport = createTransport(request =>
         {
             calls++;
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         });
-        var oversized = message();
+        JObject oversized = message();
         oversized["detail"] = new string('x', EddnTransport.MaximumUncompressedPayloadBytes);
 
-        var result = await transport.upload(oversized, "https://eddn.edcd.io/schemas/dockinggranted/1", header());
+        EddnUploadResult result = await transport.upload(
+            oversized,
+            "https://eddn.edcd.io/schemas/dockinggranted/1",
+            header()
+        );
 
         Assert.Equal(0, calls);
         Assert.False(result.isSuccess);
@@ -91,18 +99,22 @@ public sealed class EddnTransportTests
     [Fact]
     public async Task OversizedCompressedPayloadIsSkippedWithoutARequest()
     {
-        var calls = 0;
-        var transport = createTransport(request =>
+        int calls = 0;
+        EddnTransport transport = createTransport(request =>
         {
             calls++;
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         });
-        var oversized = message();
+        JObject oversized = message();
         oversized["detail"] = Convert.ToBase64String(
             RandomNumberGenerator.GetBytes(EddnTransport.MaximumPayloadBytes + 64_000)
         );
 
-        var result = await transport.upload(oversized, "https://eddn.edcd.io/schemas/dockinggranted/1", header());
+        EddnUploadResult result = await transport.upload(
+            oversized,
+            "https://eddn.edcd.io/schemas/dockinggranted/1",
+            header()
+        );
 
         Assert.Equal(0, calls);
         Assert.False(result.isSuccess);
@@ -118,9 +130,13 @@ public sealed class EddnTransportTests
     [InlineData(HttpStatusCode.InternalServerError, true)]
     public async Task RetryClassificationMatchesTheGatewayContract(HttpStatusCode statusCode, bool expectedRetryable)
     {
-        var transport = createTransport(_ => Task.FromResult(new HttpResponseMessage(statusCode)));
+        EddnTransport transport = createTransport(_ => Task.FromResult(new HttpResponseMessage(statusCode)));
 
-        var result = await transport.upload(message(), "https://eddn.edcd.io/schemas/dockinggranted/1", header());
+        EddnUploadResult result = await transport.upload(
+            message(),
+            "https://eddn.edcd.io/schemas/dockinggranted/1",
+            header()
+        );
 
         Assert.Equal(expectedRetryable, result.isRetryable);
     }
@@ -128,7 +144,7 @@ public sealed class EddnTransportTests
     [Fact]
     public async Task FailureResponseDetailIsBounded()
     {
-        var transport = createTransport(_ =>
+        EddnTransport transport = createTransport(_ =>
             Task.FromResult(
                 new HttpResponseMessage(HttpStatusCode.BadRequest)
                 {
@@ -137,7 +153,11 @@ public sealed class EddnTransportTests
             )
         );
 
-        var result = await transport.upload(message(), "https://eddn.edcd.io/schemas/dockinggranted/1", header());
+        EddnUploadResult result = await transport.upload(
+            message(),
+            "https://eddn.edcd.io/schemas/dockinggranted/1",
+            header()
+        );
 
         Assert.False(result.isSuccess);
         Assert.Equal(HttpStatusCode.BadRequest, result.statusCode);
@@ -168,7 +188,7 @@ public sealed class EddnTransportTests
 
     private static async Task<RecordedRequest> record(HttpRequestMessage request)
     {
-        var compressed = await request.Content!.ReadAsByteArrayAsync();
+        byte[] compressed = await request.Content!.ReadAsByteArrayAsync();
         using var input = new MemoryStream(compressed);
         using var gzip = new GZipStream(input, CompressionMode.Decompress);
         using var reader = new StreamReader(gzip, Encoding.UTF8);

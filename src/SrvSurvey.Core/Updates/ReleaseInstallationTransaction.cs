@@ -96,18 +96,18 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestSha256);
         ArgumentException.ThrowIfNullOrWhiteSpace(installationDirectory);
         ArgumentNullException.ThrowIfNull(startupArguments);
-        var installationRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(installationDirectory));
-        var readyRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(readyDirectory));
+        string installationRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(installationDirectory));
+        string readyRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(readyDirectory));
         ValidateDistinctRoots(installationRoot, readyRoot);
         if (!Directory.Exists(installationRoot))
         {
             throw new DirectoryNotFoundException($"The SrvSurvey installation was not found: {installationRoot}");
         }
 
-        var parent =
+        string parent =
             Directory.GetParent(installationRoot)?.FullName
             ?? throw new InvalidDataException("The SrvSurvey installation cannot be a file-system root.");
-        var installationName = Path.GetFileName(installationRoot);
+        string installationName = Path.GetFileName(installationRoot);
         if (string.IsNullOrWhiteSpace(installationName))
         {
             throw new InvalidDataException("The SrvSurvey installation directory name is invalid.");
@@ -122,7 +122,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             )
             .ConfigureAwait(false);
 
-        var entryPoint = runtimeIdentifier switch
+        string entryPoint = runtimeIdentifier switch
         {
             "win-x64" => "SrvSurvey.Desktop.exe",
             "linux-x64" => "SrvSurvey.Desktop",
@@ -139,11 +139,11 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             .VerifyReadyAsync(version, runtimeIdentifier, readyRoot, manifestSha256, cancellationToken)
             .ConfigureAwait(false);
         var requestId = Guid.NewGuid();
-        var candidateDirectory = Path.Combine(parent, $".{installationName}-update-{requestId:N}");
-        var backupDirectory = Path.Combine(parent, $".{installationName}-backup-{requestId:N}");
-        var failedDirectory = Path.Combine(parent, $".{installationName}-failed-{requestId:N}");
+        string candidateDirectory = Path.Combine(parent, $".{installationName}-update-{requestId:N}");
+        string backupDirectory = Path.Combine(parent, $".{installationName}-backup-{requestId:N}");
+        string failedDirectory = Path.Combine(parent, $".{installationName}-failed-{requestId:N}");
         EnsureMissing(candidateDirectory, backupDirectory, failedDirectory);
-        var requiresElevation = false;
+        bool requiresElevation = false;
         try
         {
             await copyDirectory(readyRoot, candidateDirectory, cancellationToken).ConfigureAwait(false);
@@ -169,7 +169,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
 
         try
         {
-            var fingerprint = await ComputeDirectoryFingerprintAsync(installationRoot, cancellationToken)
+            string fingerprint = await ComputeDirectoryFingerprintAsync(installationRoot, cancellationToken)
                 .ConfigureAwait(false);
             return new ReleaseInstallationPreparation(
                 requestId,
@@ -209,13 +209,13 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         CancellationToken cancellationToken
     )
     {
-        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
+        string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
         if (!Directory.Exists(root))
         {
             throw new DirectoryNotFoundException(root);
         }
 
-        var files = EnumerateFilesWithoutLinks(root);
+        FingerprintFile[] files = EnumerateFilesWithoutLinks(root);
         if (files.Length > MaximumInstallationFileCount)
         {
             throw new InvalidDataException("The installation contains too many files to update safely.");
@@ -223,19 +223,19 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
 
         long totalBytes = 0;
         using var fingerprint = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        foreach (var file in files)
+        foreach (FingerprintFile file in files)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var before = file.RefreshSnapshot();
+            FileSnapshot before = file.RefreshSnapshot();
             totalBytes = checked(totalBytes + before.Length);
             if (totalBytes > MaximumInstallationBytes)
             {
                 throw new InvalidDataException("The installation is too large to update safely.");
             }
 
-            await using var stream = OpenRead(file.FullPath);
-            var fileHash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
-            var after = file.RefreshSnapshot();
+            await using FileStream stream = OpenRead(file.FullPath);
+            byte[] fileHash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
+            FileSnapshot after = file.RefreshSnapshot();
             if (before != after)
             {
                 throw new InvalidDataException(
@@ -260,14 +260,14 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         CancellationToken cancellationToken
     )
     {
-        var files = EnumerateFilesWithoutLinks(source);
+        FingerprintFile[] files = EnumerateFilesWithoutLinks(source);
         Directory.CreateDirectory(destination);
-        foreach (var file in files)
+        foreach (FingerprintFile file in files)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var target = ResolveChild(destination, file.RelativePath);
+            string target = ResolveChild(destination, file.RelativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            await using var input = OpenRead(file.FullPath);
+            await using FileStream input = OpenRead(file.FullPath);
             await using var output = new FileStream(
                 target,
                 FileMode.CreateNew,
@@ -298,9 +298,9 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         var files = new List<FingerprintFile>();
         var pending = new Stack<DirectoryInfo>();
         pending.Push(rootInfo);
-        while (pending.TryPop(out var directory))
+        while (pending.TryPop(out DirectoryInfo? directory))
         {
-            foreach (var child in directory.EnumerateDirectories())
+            foreach (DirectoryInfo child in directory.EnumerateDirectories())
             {
                 if ((child.Attributes & FileAttributes.ReparsePoint) != 0)
                 {
@@ -310,7 +310,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                 pending.Push(child);
             }
 
-            foreach (var file in directory.EnumerateFiles())
+            foreach (FileInfo file in directory.EnumerateFiles())
             {
                 if ((file.Attributes & FileAttributes.ReparsePoint) != 0)
                 {
@@ -331,9 +331,11 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
 
     internal static void ValidateDistinctRoots(string installation, string ready)
     {
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        var installationPrefix = installation + Path.DirectorySeparatorChar;
-        var readyPrefix = ready + Path.DirectorySeparatorChar;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        string installationPrefix = installation + Path.DirectorySeparatorChar;
+        string readyPrefix = ready + Path.DirectorySeparatorChar;
         if (
             string.Equals(installation, ready, comparison)
             || installation.StartsWith(readyPrefix, comparison)
@@ -346,7 +348,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
 
     private static void EnsureMissing(params string[] paths)
     {
-        var existing = paths.FirstOrDefault(path => Directory.Exists(path) || File.Exists(path));
+        string? existing = paths.FirstOrDefault(path => Directory.Exists(path) || File.Exists(path));
         if (existing is not null)
         {
             throw new IOException($"The update transaction path already exists: {existing}");
@@ -355,10 +357,12 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
 
     private static string ResolveChild(string root, string relativePath)
     {
-        var fullRoot = Path.GetFullPath(root);
-        var child = Path.GetFullPath(Path.Combine(fullRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
-        var prefix = Path.TrimEndingDirectorySeparator(fullRoot) + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string fullRoot = Path.GetFullPath(root);
+        string child = Path.GetFullPath(Path.Combine(fullRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        string prefix = Path.TrimEndingDirectorySeparator(fullRoot) + Path.DirectorySeparatorChar;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         if (!child.StartsWith(prefix, comparison))
         {
             throw new InvalidDataException($"Update file escaped its directory: {relativePath}");
@@ -419,7 +423,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                 throw new InvalidDataException($"Update file disappeared while being checked: {RelativePath}");
             }
 
-            var mode = OperatingSystem.IsWindows() ? 0 : (int)File.GetUnixFileMode(FullPath);
+            int mode = OperatingSystem.IsWindows() ? 0 : (int)File.GetUnixFileMode(FullPath);
             return new FileSnapshot(info.Length, info.LastWriteTimeUtc.Ticks, mode);
         }
     }
@@ -454,7 +458,7 @@ public sealed class ReleaseInstallationTransaction
         ArgumentNullException.ThrowIfNull(launchAndConfirm);
         ValidatePreparationPaths(preparation);
         await EnsureCandidateReadyAsync(preparation, cancellationToken).ConfigureAwait(false);
-        var fingerprint = await ReleaseInstallationPreparer
+        string fingerprint = await ReleaseInstallationPreparer
             .ComputeDirectoryFingerprintAsync(preparation.InstallationDirectory, cancellationToken)
             .ConfigureAwait(false);
         if (!string.Equals(fingerprint, preparation.InstallationFingerprint, StringComparison.OrdinalIgnoreCase))
@@ -466,7 +470,7 @@ public sealed class ReleaseInstallationTransaction
 
         checkpoint?.Invoke(ReleaseInstallationCheckpoint.BeforeBackup);
         Directory.Move(preparation.InstallationDirectory, preparation.BackupDirectory);
-        var candidateActivated = false;
+        bool candidateActivated = false;
         try
         {
             checkpoint?.Invoke(ReleaseInstallationCheckpoint.BackupMoved);
@@ -481,7 +485,7 @@ public sealed class ReleaseInstallationTransaction
         }
 
         string? launchError = null;
-        var healthy = false;
+        bool healthy = false;
         try
         {
             healthy = await launchAndConfirm(
@@ -583,7 +587,7 @@ public sealed class ReleaseInstallationTransaction
 
     private static void ValidatePreparationPaths(ReleaseInstallationPreparation preparation)
     {
-        var expectedEntryPoint =
+        string expectedEntryPoint =
             preparation.RuntimeIdentifier == "win-x64" ? "SrvSurvey.Desktop.exe" : "SrvSurvey.Desktop";
         if (
             preparation.RequestId == Guid.Empty
@@ -600,18 +604,20 @@ public sealed class ReleaseInstallationTransaction
             throw new InvalidDataException("The update installation preparation is invalid.");
         }
 
-        var installation = Path.TrimEndingDirectorySeparator(Path.GetFullPath(preparation.InstallationDirectory));
-        var ready = Path.TrimEndingDirectorySeparator(Path.GetFullPath(preparation.ReadyDirectory));
+        string installation = Path.TrimEndingDirectorySeparator(Path.GetFullPath(preparation.InstallationDirectory));
+        string ready = Path.TrimEndingDirectorySeparator(Path.GetFullPath(preparation.ReadyDirectory));
         ReleaseInstallationPreparer.ValidateDistinctRoots(installation, ready);
-        var parent =
+        string parent =
             Directory.GetParent(installation)?.FullName
             ?? throw new InvalidDataException("The installation cannot be a file-system root.");
-        var name = Path.GetFileName(installation);
-        var id = preparation.RequestId.ToString("N");
-        var expectedCandidate = Path.Combine(parent, $".{name}-update-{id}");
-        var expectedBackup = Path.Combine(parent, $".{name}-backup-{id}");
-        var expectedFailed = Path.Combine(parent, $".{name}-failed-{id}");
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string name = Path.GetFileName(installation);
+        string id = preparation.RequestId.ToString("N");
+        string expectedCandidate = Path.Combine(parent, $".{name}-update-{id}");
+        string expectedBackup = Path.Combine(parent, $".{name}-backup-{id}");
+        string expectedFailed = Path.Combine(parent, $".{name}-failed-{id}");
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         if (
             !string.Equals(Path.GetFullPath(preparation.CandidateDirectory), expectedCandidate, comparison)
             || !string.Equals(Path.GetFullPath(preparation.BackupDirectory), expectedBackup, comparison)

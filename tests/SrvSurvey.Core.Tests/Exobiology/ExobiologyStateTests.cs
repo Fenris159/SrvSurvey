@@ -20,7 +20,7 @@ public sealed class ExobiologyStateTests
     [Fact]
     public void ThreeSamplesTrackActiveStateAndFirstFootfallReward()
     {
-        var state = CreateState();
+        ExobiologyState state = CreateState();
         state.UpdateStatus(
             new EliteStatus
             {
@@ -42,7 +42,7 @@ public sealed class ExobiologyStateTests
         Assert.NotNull(state.ScanTwo);
 
         Assert.True(state.Apply(Event(Organic("Analyse"))));
-        var snapshot = state.CreateSnapshot();
+        ExobiologySnapshot snapshot = state.CreateSnapshot();
         Assert.Null(snapshot.LastOrganicScan);
         Assert.Null(snapshot.ScanOne);
         Assert.Null(snapshot.ScanTwo);
@@ -53,12 +53,12 @@ public sealed class ExobiologyStateTests
     [Fact]
     public void AnalyseClearsActiveSampleWhenIntermediateSampleIsMissing()
     {
-        var state = CreateState();
+        ExobiologyState state = CreateState();
         state.Apply(Event(Organic("Log")));
 
         state.Apply(Event(Organic("Analyse")));
 
-        var snapshot = state.CreateSnapshot();
+        ExobiologySnapshot snapshot = state.CreateSnapshot();
         Assert.Null(snapshot.LastOrganicScan);
         Assert.Null(snapshot.ScanOne);
         Assert.Null(snapshot.ScanTwo);
@@ -76,7 +76,7 @@ public sealed class ExobiologyStateTests
             "Aleoida Arcus - Turquoise",
             Aleoida.Reward
         );
-        var sample = Sample(alternateVariant);
+        BioSampleSnapshot sample = Sample(alternateVariant);
         var seed = new ExobiologySnapshot("123456|7|" + AleoidaSpecies, sample, null, 0, [], 0);
 
         var state = new ExobiologyState(new ExobiologyReferenceCatalog([Aleoida, alternateVariant]), seed);
@@ -94,7 +94,7 @@ public sealed class ExobiologyStateTests
             "Bacterium",
             1_000_000
         );
-        var state = CreateState(other);
+        ExobiologyState state = CreateState(other);
         state.Apply(Event(Organic("Log")));
         state.Apply(Event(Organic("Sample")));
 
@@ -107,7 +107,7 @@ public sealed class ExobiologyStateTests
     [Fact]
     public void SwitchingBodyOnNewOrganicAbandonsPriorActiveSamples()
     {
-        var state = CreateState();
+        ExobiologyState state = CreateState();
         state.UpdateStatus(
             new EliteStatus
             {
@@ -140,7 +140,7 @@ public sealed class ExobiologyStateTests
     [Fact]
     public void StatusBodyChangeWithoutNewOrganicKeepsStaleActiveSample()
     {
-        var state = CreateState();
+        ExobiologyState state = CreateState();
         state.UpdateStatus(
             new EliteStatus
             {
@@ -172,7 +172,7 @@ public sealed class ExobiologyStateTests
     [Fact]
     public void StatusComputesDistanceRemainingFromNearestActiveSample()
     {
-        var state = CreateState();
+        ExobiologyState state = CreateState();
         state.UpdateStatus(
             new EliteStatus
             {
@@ -209,7 +209,7 @@ public sealed class ExobiologyStateTests
             "Radicoida Unica",
             119_037
         );
-        var state = CreateState(radicoida);
+        ExobiologyState state = CreateState(radicoida);
         Complete(state, Organic("Log"), Organic("Sample"), Organic("Analyse"));
         Complete(
             state,
@@ -291,7 +291,7 @@ public sealed class ExobiologyStateTests
     [Fact]
     public void CurrentBodyFirstFootfallToggleRequiresBodyContext()
     {
-        var state = CreateState();
+        ExobiologyState state = CreateState();
         Assert.False(state.ToggleCurrentBodyFirstFootfall());
         state.Apply(
             Event(
@@ -309,14 +309,14 @@ public sealed class ExobiologyStateTests
     [Fact]
     public void FirstFootfallCorrectionWithoutOrganicScansAdvancesVersion()
     {
-        var state = CreateState();
+        ExobiologyState state = CreateState();
         state.Apply(
             Event(
                 "{\"event\":\"Scan\",\"SystemAddress\":123456,\"BodyID\":7,"
                     + "\"BodyName\":\"Test A 1\",\"WasFootfalled\":true}"
             )
         );
-        var before = state.Version;
+        int before = state.Version;
 
         Assert.True(state.SetCurrentBodyFirstFootfall(true));
 
@@ -347,7 +347,7 @@ public sealed class ExobiologyStateTests
 
     private static void Complete(ExobiologyState state, params string[] events)
     {
-        foreach (var json in events)
+        foreach (string json in events)
         {
             state.Apply(Event(json));
         }
@@ -381,7 +381,10 @@ public sealed class ExobiologyStateTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 }

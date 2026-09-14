@@ -54,7 +54,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         "CodexEntry",
     };
 
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly HttpClient client;
     private readonly bool ownsClient;
     private readonly Uri endpoint;
@@ -133,7 +133,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             return Task.FromResult(VoxStellarPublicationResult.Empty);
         }
 
-        var matchingEvents = request
+        JournalEventEnvelope[] matchingEvents = request
             .JournalEvents.Where(journalEvent => AllowedEvents.Contains(journalEvent.EventName))
             .ToArray();
         if (matchingEvents.Length == 0)
@@ -151,7 +151,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             );
         }
 
-        var commanderName = request.CommanderName?.Trim();
+        string? commanderName = request.CommanderName?.Trim();
         if (string.IsNullOrWhiteSpace(commanderName))
         {
             return Task.FromResult(
@@ -175,10 +175,10 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
         var queued = new List<string>(matchingEvents.Length);
         var warnings = new List<string>();
-        foreach (var journalEvent in matchingEvents)
+        foreach (JournalEventEnvelope? journalEvent in matchingEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var body = SerializeBody(commanderName, journalEvent.Payload);
+            byte[] body = SerializeBody(commanderName, journalEvent.Payload);
             if (uploads.Writer.TryWrite(new QueuedUpload(generation, journalEvent.EventName, body)))
             {
                 queued.Add(journalEvent.EventName);
@@ -203,7 +203,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
         try
         {
-            await foreach (var upload in uploads.Reader.ReadAllAsync(lifetimeCancellation.Token))
+            await foreach (QueuedUpload upload in uploads.Reader.ReadAllAsync(lifetimeCancellation.Token))
             {
                 try
                 {
@@ -228,7 +228,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
     private async Task SendAsync(QueuedUpload upload, CancellationToken cancellationToken)
     {
-        var signature = Convert.ToHexString(HMACSHA256.HashData(signingKey, upload.Body)).ToLowerInvariant();
+        string signature = Convert.ToHexString(HMACSHA256.HashData(signingKey, upload.Body)).ToLowerInvariant();
         using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {
             Content = new ByteArrayContent(upload.Body),
@@ -250,7 +250,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             sendTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         }
 
-        using var response = await sendTask;
+        using HttpResponseMessage response = await sendTask;
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             WriteLog($"VoxStellar accepted {upload.EventName}.");
@@ -278,7 +278,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
     private static string NormalizeProductVersion(string value)
     {
-        var normalized = value.Trim().Replace('+', '-');
+        string normalized = value.Trim().Replace('+', '-');
         return string.Concat(
             normalized.Select(character => char.IsLetterOrDigit(character) || character is '.' or '-' ? character : '-')
         );

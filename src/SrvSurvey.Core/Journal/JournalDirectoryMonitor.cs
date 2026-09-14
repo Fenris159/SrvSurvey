@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 
 namespace SrvSurvey.Core.Journal;
 
@@ -58,7 +59,9 @@ public sealed class JournalDirectoryMonitor
     {
         ArgumentNullException.ThrowIfNull(journalDirectories);
         ArgumentNullException.ThrowIfNull(companionFileStampReader);
-        var pathComparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        StringComparer pathComparer = OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
         this.journalDirectories = journalDirectories
             .Where(path => !string.IsNullOrWhiteSpace(path))
             .Select(Path.GetFullPath)
@@ -132,8 +135,8 @@ public sealed class JournalDirectoryMonitor
         var events = new List<JournalEventEnvelope>();
         var errors = new List<string>();
         await ReadLatestJournalAsync(events, errors, cancellationToken).ConfigureAwait(false);
-        var companions = await PollAllCompanionsAsync(errors, cancellationToken).ConfigureAwait(false);
-        var sessionContextChanged = isAwaitingCommanderIdentity != lastReportedAwaitingCommanderIdentity;
+        CompanionPollResults companions = await PollAllCompanionsAsync(errors, cancellationToken).ConfigureAwait(false);
+        bool sessionContextChanged = isAwaitingCommanderIdentity != lastReportedAwaitingCommanderIdentity;
 
         var update = new JournalMonitorUpdate(
             currentJournalPath,
@@ -162,7 +165,7 @@ public sealed class JournalDirectoryMonitor
         CancellationToken cancellationToken
     )
     {
-        var latestJournal = await FindLatestJournalAsync(cancellationToken).ConfigureAwait(false);
+        FileInfo? latestJournal = await FindLatestJournalAsync(cancellationToken).ConfigureAwait(false);
         if (latestJournal is null)
         {
             return;
@@ -185,11 +188,13 @@ public sealed class JournalDirectoryMonitor
         CancellationToken cancellationToken
     )
     {
-        var status = await PollStatusCompanionAsync(errors, cancellationToken).ConfigureAwait(false);
-        var navRoute = await PollNavRouteCompanionAsync(errors, cancellationToken).ConfigureAwait(false);
-        var cargo = await PollCargoCompanionAsync(errors, cancellationToken).ConfigureAwait(false);
-        var shipLocker = await PollShipLockerCompanionAsync(errors, cancellationToken).ConfigureAwait(false);
-        var market = await PollMarketCompanionAsync(errors, cancellationToken).ConfigureAwait(false);
+        StatusCompanionPollResult status = await PollStatusCompanionAsync(errors, cancellationToken)
+            .ConfigureAwait(false);
+        NavRouteSnapshot? navRoute = await PollNavRouteCompanionAsync(errors, cancellationToken).ConfigureAwait(false);
+        CargoSnapshot? cargo = await PollCargoCompanionAsync(errors, cancellationToken).ConfigureAwait(false);
+        ShipLockerSnapshot? shipLocker = await PollShipLockerCompanionAsync(errors, cancellationToken)
+            .ConfigureAwait(false);
+        MarketSnapshot? market = await PollMarketCompanionAsync(errors, cancellationToken).ConfigureAwait(false);
         return new CompanionPollResults(status.Status, navRoute, cargo, shipLocker, market, status.ReadErrorRecovered);
     }
 
@@ -205,7 +210,7 @@ public sealed class JournalDirectoryMonitor
 
     private void RaiseJournalEvents(IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             JournalEventReceived?.Invoke(this, journalEvent);
         }
@@ -213,7 +218,7 @@ public sealed class JournalDirectoryMonitor
 
     private void RaiseErrors(IReadOnlyList<string> errors)
     {
-        foreach (var error in errors)
+        foreach (string error in errors)
         {
             ReadError?.Invoke(this, error);
         }
@@ -240,7 +245,7 @@ public sealed class JournalDirectoryMonitor
     public async Task RunAsync(TimeSpan? pollingInterval = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var interval = pollingInterval ?? TimeSpan.FromMilliseconds(250);
+        TimeSpan interval = pollingInterval ?? TimeSpan.FromMilliseconds(250);
         if (interval <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(
@@ -267,7 +272,7 @@ public sealed class JournalDirectoryMonitor
 
     private async Task<FileInfo?> FindLatestJournalAsync(CancellationToken cancellationToken)
     {
-        var journals = journalDirectories
+        FileInfo[] journals = journalDirectories
             .Where(Directory.Exists)
             .SelectMany(EnumerateJournalFiles)
             .OrderByDescending(file => file.LastWriteTimeUtc)
@@ -281,11 +286,11 @@ public sealed class JournalDirectoryMonitor
         }
 
         string? newestFrontierId = null;
-        for (var index = 0; index < journals.Length; index++)
+        for (int index = 0; index < journals.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var journal = journals[index];
-            var frontierId = await ReadFrontierIdAsync(journal, cancellationToken).ConfigureAwait(false);
+            FileInfo journal = journals[index];
+            string? frontierId = await ReadFrontierIdAsync(journal, cancellationToken).ConfigureAwait(false);
             if (index == 0)
             {
                 newestFrontierId = frontierId;
@@ -306,7 +311,7 @@ public sealed class JournalDirectoryMonitor
     {
         journal.Refresh();
         if (
-            journalIdentityCache.TryGetValue(journal.FullName, out var cached)
+            journalIdentityCache.TryGetValue(journal.FullName, out JournalIdentityCacheEntry? cached)
             && cached.Length == journal.Length
             && cached.LastWriteTimeUtc == journal.LastWriteTimeUtc
         )
@@ -329,10 +334,10 @@ public sealed class JournalDirectoryMonitor
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
                 if (
-                    !JournalEventEnvelope.TryParse(line, out var journalEvent, out _)
+                    !JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? journalEvent, out _)
                     || journalEvent is null
                     || (journalEvent.EventName != "Commander" && journalEvent.EventName != "LoadGame")
-                    || !journalEvent.Payload.TryGetProperty("FID", out var value)
+                    || !journalEvent.Payload.TryGetProperty("FID", out JsonElement value)
                     || value.ValueKind != System.Text.Json.JsonValueKind.String
                 )
                 {
@@ -405,20 +410,20 @@ public sealed class JournalDirectoryMonitor
             return;
         }
 
-        var appended = appendedBytes.ToArray();
-        var combined = new byte[pendingJournalBytes.Length + appended.Length];
+        byte[] appended = appendedBytes.ToArray();
+        byte[] combined = new byte[pendingJournalBytes.Length + appended.Length];
         Buffer.BlockCopy(pendingJournalBytes, 0, combined, 0, pendingJournalBytes.Length);
         Buffer.BlockCopy(appended, 0, combined, pendingJournalBytes.Length, appended.Length);
 
-        var lineStart = 0;
-        for (var index = 0; index < combined.Length; index++)
+        int lineStart = 0;
+        for (int index = 0; index < combined.Length; index++)
         {
             if (combined[index] != (byte)'\n')
             {
                 continue;
             }
 
-            var lineLength = index - lineStart;
+            int lineLength = index - lineStart;
             if (lineLength > 0 && combined[index - 1] == (byte)'\r')
             {
                 lineLength--;
@@ -458,7 +463,10 @@ public sealed class JournalDirectoryMonitor
             return;
         }
 
-        if (JournalEventEnvelope.TryParse(line, out var journalEvent, out var error) && journalEvent is not null)
+        if (
+            JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? journalEvent, out string? error)
+            && journalEvent is not null
+        )
         {
             events.Add(journalEvent);
         }
@@ -486,12 +494,16 @@ public sealed class JournalDirectoryMonitor
     )
     {
         EliteStatus? status = null;
-        var readErrorRecovered = false;
-        var statusPath = Path.Combine(GetCompanionDirectory(), StatusFileReader.FileName);
-        var statusStampState = GetCompanionFileStamp(statusPath, errors, out var nextStatusFileStamp);
+        bool readErrorRecovered = false;
+        string statusPath = Path.Combine(GetCompanionDirectory(), StatusFileReader.FileName);
+        CompanionFileStampState statusStampState = GetCompanionFileStamp(
+            statusPath,
+            errors,
+            out CompanionFileStamp nextStatusFileStamp
+        );
         if (statusStampState == CompanionFileStampState.Available && nextStatusFileStamp != statusFileStamp)
         {
-            var statusResult = await StatusFileReader
+            StatusReadResult statusResult = await StatusFileReader
                 .ReadAsync(statusPath, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             if (statusResult.Status is not null && statusResult.ContentHash is not null)
@@ -526,7 +538,7 @@ public sealed class JournalDirectoryMonitor
 
     private bool ResetStatusReadFailure()
     {
-        var wasReported = statusReadFailureReported;
+        bool wasReported = statusReadFailureReported;
         consecutiveStatusReadFailures = 0;
         statusReadFailureReported = false;
         return wasReported;
@@ -540,11 +552,15 @@ public sealed class JournalDirectoryMonitor
     )
     {
         NavRouteSnapshot? navRoute = null;
-        var navRoutePath = Path.Combine(GetCompanionDirectory(), NavRouteFileReader.FileName);
-        var navRouteStampState = GetCompanionFileStamp(navRoutePath, errors, out var nextNavRouteFileStamp);
+        string navRoutePath = Path.Combine(GetCompanionDirectory(), NavRouteFileReader.FileName);
+        CompanionFileStampState navRouteStampState = GetCompanionFileStamp(
+            navRoutePath,
+            errors,
+            out CompanionFileStamp nextNavRouteFileStamp
+        );
         if (navRouteStampState == CompanionFileStampState.Available && nextNavRouteFileStamp != navRouteFileStamp)
         {
-            var navRouteResult = await NavRouteFileReader
+            NavRouteReadResult navRouteResult = await NavRouteFileReader
                 .ReadAsync(navRoutePath, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             if (navRouteResult.Snapshot is not null && navRouteResult.ContentHash is not null)
@@ -573,11 +589,15 @@ public sealed class JournalDirectoryMonitor
     private async Task<CargoSnapshot?> PollCargoCompanionAsync(List<string> errors, CancellationToken cancellationToken)
     {
         CargoSnapshot? cargo = null;
-        var cargoPath = Path.Combine(GetCompanionDirectory(), CargoFileReader.FileName);
-        var cargoStampState = GetCompanionFileStamp(cargoPath, errors, out var nextCargoFileStamp);
+        string cargoPath = Path.Combine(GetCompanionDirectory(), CargoFileReader.FileName);
+        CompanionFileStampState cargoStampState = GetCompanionFileStamp(
+            cargoPath,
+            errors,
+            out CompanionFileStamp nextCargoFileStamp
+        );
         if (cargoStampState == CompanionFileStampState.Available && nextCargoFileStamp != cargoFileStamp)
         {
-            var cargoResult = await CargoFileReader
+            CargoReadResult cargoResult = await CargoFileReader
                 .ReadAsync(cargoPath, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             if (cargoResult.Snapshot is not null && cargoResult.ContentHash is not null)
@@ -609,11 +629,15 @@ public sealed class JournalDirectoryMonitor
     )
     {
         ShipLockerSnapshot? shipLocker = null;
-        var shipLockerPath = Path.Combine(GetCompanionDirectory(), ShipLockerFileReader.FileName);
-        var shipLockerStampState = GetCompanionFileStamp(shipLockerPath, errors, out var nextShipLockerFileStamp);
+        string shipLockerPath = Path.Combine(GetCompanionDirectory(), ShipLockerFileReader.FileName);
+        CompanionFileStampState shipLockerStampState = GetCompanionFileStamp(
+            shipLockerPath,
+            errors,
+            out CompanionFileStamp nextShipLockerFileStamp
+        );
         if (shipLockerStampState == CompanionFileStampState.Available && nextShipLockerFileStamp != shipLockerFileStamp)
         {
-            var shipLockerResult = await ShipLockerFileReader
+            ShipLockerReadResult shipLockerResult = await ShipLockerFileReader
                 .ReadAsync(shipLockerPath, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             if (shipLockerResult.Snapshot is not null && shipLockerResult.ContentHash is not null)
@@ -645,11 +669,15 @@ public sealed class JournalDirectoryMonitor
     )
     {
         MarketSnapshot? market = null;
-        var marketPath = Path.Combine(GetCompanionDirectory(), MarketFileReader.FileName);
-        var marketStampState = GetCompanionFileStamp(marketPath, errors, out var nextMarketFileStamp);
+        string marketPath = Path.Combine(GetCompanionDirectory(), MarketFileReader.FileName);
+        CompanionFileStampState marketStampState = GetCompanionFileStamp(
+            marketPath,
+            errors,
+            out CompanionFileStamp nextMarketFileStamp
+        );
         if (marketStampState == CompanionFileStampState.Available && nextMarketFileStamp != marketFileStamp)
         {
-            var marketResult = await MarketFileReader
+            MarketReadResult marketResult = await MarketFileReader
                 .ReadAsync(marketPath, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             if (marketResult.Snapshot is not null && marketResult.ContentHash is not null)
@@ -713,12 +741,12 @@ public sealed class JournalDirectoryMonitor
         out CompanionFileStamp stamp
     )
     {
-        var result = companionFileStampReader(path);
+        CompanionFileStampReadResult result = companionFileStampReader(path);
         if (result.Error is not null)
         {
             stamp = default;
             if (
-                !companionFileStampErrors.TryGetValue(path, out var previousError)
+                !companionFileStampErrors.TryGetValue(path, out string? previousError)
                 || !string.Equals(previousError, result.Error, StringComparison.Ordinal)
             )
             {

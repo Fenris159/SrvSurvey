@@ -20,8 +20,8 @@ public sealed class MiningReportTests
             System = "=1+1",
             Notes = "<script>alert(1)</script>",
         };
-        session.Collections.Add(new MiningCollection(session.Started, "platinum", 2, false));
-        var html = MiningReport.Html([session]);
+        session.Collections.Add(new MiningCollectionEntry(session.Started, "platinum", 2, false));
+        string html = MiningReport.Html([session]);
         Assert.Contains("&lt;script&gt;", html);
         Assert.DoesNotContain("<script>alert", html);
         Assert.Contains("platinum", html);
@@ -52,7 +52,7 @@ public sealed class MiningReportTests
             System = "Achenar",
         };
         second.Collections.Add(new(second.Started.AddMinutes(5), "platinum", 7, false));
-        var html = MiningReport.Html([first, second]);
+        string html = MiningReport.Html([first, second]);
         Assert.Contains("Yield over time", html);
         Assert.Contains("Cumulative refining over time", html);
         Assert.Contains("2 min · 25 %", html);
@@ -67,8 +67,8 @@ public sealed class MiningReportTests
     [Fact]
     public void ImportedSummariesDoNotInventChartObservations()
     {
-        var session = new MiningSession { Imported = new(45, 10, 1, 0, new()) };
-        var html = MiningReport.Html([session]);
+        var session = new MiningSession { Imported = new(45, 10, 1, 0, []) };
+        string html = MiningReport.Html([session]);
         Assert.Contains("No timed observations were recorded", html);
         Assert.DoesNotContain("<svg", html);
     }

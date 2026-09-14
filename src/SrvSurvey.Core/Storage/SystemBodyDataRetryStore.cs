@@ -26,7 +26,7 @@ public sealed class SystemBodyDataRetryStore
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
-        var path = GetPath(frontierId);
+        string path = GetPath(frontierId);
         if (!File.Exists(path))
         {
             return null;
@@ -42,7 +42,7 @@ public sealed class SystemBodyDataRetryStore
                 4096,
                 FileOptions.Asynchronous | FileOptions.SequentialScan
             );
-            var state = await JsonSerializer
+            SystemBodyDataRetryState? state = await JsonSerializer
                 .DeserializeAsync<SystemBodyDataRetryState>(stream, SerializerOptions, cancellationToken)
                 .ConfigureAwait(false);
             Validate(frontierId, state);
@@ -59,8 +59,8 @@ public sealed class SystemBodyDataRetryStore
         ArgumentNullException.ThrowIfNull(state);
         Validate(state.FrontierId, state);
         Directory.CreateDirectory(stateDirectory);
-        var path = GetPath(state.FrontierId);
-        var temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        string path = GetPath(state.FrontierId);
+        string temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             await using (
@@ -93,8 +93,8 @@ public sealed class SystemBodyDataRetryStore
 
     private string GetPath(string frontierId)
     {
-        var normalizedFrontierId = frontierId.Trim().ToUpperInvariant();
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedFrontierId));
+        string normalizedFrontierId = frontierId.Trim().ToUpperInvariant();
+        byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedFrontierId));
         return Path.Combine(stateDirectory, Convert.ToHexString(hash) + ".json");
     }
 

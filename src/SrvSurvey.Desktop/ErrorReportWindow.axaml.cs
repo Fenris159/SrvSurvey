@@ -78,7 +78,8 @@ public sealed partial class ErrorReportWindow : Window
     private async Task WriteClipboardAsync(string text)
     {
         DesktopExternalEffectPolicy.ThrowIfDisabled();
-        var clipboard = Clipboard ?? throw new InvalidOperationException("The desktop clipboard is not available.");
+        IClipboard clipboard =
+            Clipboard ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
         await clipboard.FlushAsync();
     }

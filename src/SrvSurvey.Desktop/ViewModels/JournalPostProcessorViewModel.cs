@@ -67,7 +67,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         this.codexImporter = codexImporter ?? throw new ArgumentNullException(nameof(codexImporter));
         this.greenGasGiantClient = greenGasGiantClient ?? new GreenGasGiantClient();
         this.isGreenGasGiantPublicationEnabled = isGreenGasGiantPublicationEnabled ?? (() => false);
-        var localNow = DateTimeOffset.Now;
+        DateTimeOffset localNow = DateTimeOffset.Now;
         startDate = new DateTimeOffset(localNow.Date.AddDays(-7), localNow.Offset);
         analyzeCommand = new AsyncCommand(AnalyzeAsync, CanRun);
         analyzeSystemsCommand = new AsyncCommand(AnalyzeSystemsAsync, CanRun);
@@ -134,7 +134,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         get => startDate;
         set
         {
-            var normalized =
+            DateTimeOffset normalized =
                 value < JournalHistoryAnalyzer.EliteReleaseDate
                     ? JournalHistoryAnalyzer.EliteReleaseDate
                     : (value > DateTimeOffset.Now) switch
@@ -260,8 +260,8 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var currentId = SelectedCommander?.FrontierId;
-            var result = await commanderCatalog.LoadAsync(CancellationToken.None);
+            string? currentId = SelectedCommander?.FrontierId;
+            CommanderProfileCatalogResult result = await commanderCatalog.LoadAsync(CancellationToken.None);
             Commanders = result
                 .Profiles.Select(profile => new JournalPostProcessorCommanderViewModel(
                     profile.FrontierId,
@@ -298,7 +298,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var match = Commanders.FirstOrDefault(commander =>
+        JournalPostProcessorCommanderViewModel? match = Commanders.FirstOrDefault(commander =>
             string.Equals(commander.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
         );
         if (match is not null)
@@ -333,7 +333,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                     $"Analyzing journal {value.ProcessedFileCount:N0} of "
                     + $"{value.TotalFileCount:N0}: {value.CurrentFile}";
             });
-            var result = await analyzer.AnalyzeAsync(
+            JournalHistoryAnalysisResult result = await analyzer.AnalyzeAsync(
                 SelectedCommander.FrontierId,
                 StartDate,
                 progress,
@@ -377,19 +377,19 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
 
         operationCancellation = new CancellationTokenSource();
-        var pending = historicalGreenGasGiantMatches.ToArray();
-        var remaining = pending.ToList();
-        var published = 0;
+        HistoricalGreenGasGiantMatch[] pending = historicalGreenGasGiantMatches.ToArray();
+        List<HistoricalGreenGasGiantMatch> remaining = pending.ToList();
+        int published = 0;
         var warnings = new List<string>();
         try
         {
             IsBusy = true;
             ProgressValue = 0;
             ProgressMaximum = pending.Length;
-            for (var index = 0; index < pending.Length; index++)
+            for (int index = 0; index < pending.Length; index++)
             {
                 operationCancellation.Token.ThrowIfCancellationRequested();
-                var match = pending[index];
+                HistoricalGreenGasGiantMatch match = pending[index];
                 StatusMessage =
                     $"Publishing historical Green Gas Giant candidate {index + 1:N0} of {pending.Length:N0}...";
                 try
@@ -474,7 +474,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                     $"Merging Codex journal {value.ProcessedFileCount:N0} of "
                     + $"{value.TotalFileCount:N0}: {value.CurrentFile}";
             });
-            var result = await codexImporter.ImportAsync(
+            CommanderCodexJournalImportResult result = await codexImporter.ImportAsync(
                 SelectedCommander.FrontierId,
                 progress,
                 operationCancellation.Token
@@ -544,7 +544,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                     $"Reading system file {value.ProcessedFileCount:N0} of "
                     + $"{value.TotalFileCount:N0}: {value.CurrentFile}";
             });
-            var result = await systemBiologyAnalyzer.AnalyzeAsync(
+            LegacySystemBiologyAnalysisResult result = await systemBiologyAnalyzer.AnalyzeAsync(
                 SelectedCommander.FrontierId,
                 progress,
                 operationCancellation.Token
@@ -618,7 +618,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                     + $"{value.TotalCount:N0}"
                     + (string.IsNullOrWhiteSpace(value.CurrentFile) ? string.Empty : $" - {value.CurrentFile}");
             });
-            var result = await systemRebuildService.RebuildAsync(
+            HistoricalSystemRebuildResult result = await systemRebuildService.RebuildAsync(
                 SelectedCommander.FrontierId,
                 SelectedCommander.CommanderName,
                 StartDate,
@@ -712,24 +712,24 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private void ApplyResult(JournalHistoryAnalysisResult result)
     {
         SetHistoricalGreenGasGiantMatches(result.GreenGasGiantMatches);
-        var value = result.Statistics;
+        JournalHistoryStatistics value = result.Statistics;
         Statistics =
         [
-            new("Jumps", value.JumpCount.ToString("N0")),
-            new("Distance (ly)", value.JumpDistanceLy.ToString("N0")),
-            new("Bodies approached", value.BodyApproachCount.ToString("N0")),
-            new("Organisms analyzed", value.OrganismAnalysisCount.ToString("N0")),
-            new("Cargo bought", value.CargoBought.ToString("N0")),
-            new("Cargo sold", value.CargoSold.ToString("N0")),
-            new("Cargo transferred", value.CargoTransferred.ToString("N0")),
-            new("Cargo collected", value.CargoCollected.ToString("N0")),
-            new("Cargo contributed", value.CargoContributed.ToString("N0")),
-            new("Docked", value.DockedCount.ToString("N0")),
-            new("Touchdowns", value.TouchdownCount.ToString("N0")),
-            new("Deaths", value.DeathCount.ToString("N0")),
+            new("Jumps", value.JumpCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Distance (ly)", value.JumpDistanceLy.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Bodies approached", value.BodyApproachCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Organisms analyzed", value.OrganismAnalysisCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Cargo bought", value.CargoBought.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Cargo sold", value.CargoSold.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Cargo transferred", value.CargoTransferred.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Cargo collected", value.CargoCollected.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Cargo contributed", value.CargoContributed.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Docked", value.DockedCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Touchdowns", value.TouchdownCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Deaths", value.DeathCount.ToString("N0", CultureInfo.CurrentCulture)),
         ];
-        var before = result.Trailblazers.Before;
-        var after = result.Trailblazers.After;
+        CargoTransactionStatistics before = result.Trailblazers.Before;
+        CargoTransactionStatistics after = result.Trailblazers.After;
         TrailblazersSummary = string.Format(
             CultureInfo.CurrentCulture,
             "Trailblazers cargo - before: {0:N0} bought / {1:N0} sold / {2:N0} transferred; after: {3:N0} / {4:N0} / {5:N0}.",
@@ -828,7 +828,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
 
     private sealed class GuardedProgress<T> : IProgress<T>
     {
-        private readonly object gate = new();
+        private readonly Lock gate = new();
         private readonly Action<T> report;
         private readonly Progress<T> progress;
         private bool closed;

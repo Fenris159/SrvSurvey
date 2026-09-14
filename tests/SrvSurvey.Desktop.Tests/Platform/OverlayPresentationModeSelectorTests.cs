@@ -10,7 +10,7 @@ public sealed class OverlayPresentationModeSelectorTests
     [InlineData(OverlayHostKind.LinuxXWayland)]
     public void OrdinaryDesktopKeepsExistingMultipleWindowBehavior(OverlayHostKind host)
     {
-        var decision = Select(host);
+        OverlayPresentationDecision decision = Select(host);
 
         Assert.Equal(OverlayPresentationMode.MultipleWindows, decision.Mode);
     }
@@ -20,7 +20,7 @@ public sealed class OverlayPresentationModeSelectorTests
     [InlineData(OverlayHostKind.LinuxXWayland)]
     public void GamescopeSelectsCombinedWindowForX11CompatibleHosts(OverlayHostKind host)
     {
-        var decision = Select(host, gamescopeWaylandDisplay: "gamescope-0");
+        OverlayPresentationDecision decision = Select(host, gamescopeWaylandDisplay: "gamescope-0");
 
         Assert.Equal(OverlayPresentationMode.CombinedWindow, decision.Mode);
         Assert.Contains("Gamescope", decision.Reason);
@@ -29,7 +29,7 @@ public sealed class OverlayPresentationModeSelectorTests
     [Fact]
     public void WindowsOnlyUsesCombinedWindowWhenExplicitlyRequested()
     {
-        var decision = Select(OverlayHostKind.Windows, hostOverride: "combined");
+        OverlayPresentationDecision decision = Select(OverlayHostKind.Windows, hostOverride: "combined");
 
         Assert.Equal(OverlayPresentationMode.CombinedWindow, decision.Mode);
     }
@@ -37,7 +37,7 @@ public sealed class OverlayPresentationModeSelectorTests
     [Fact]
     public void MultipleWindowOverrideWinsInsideGamescope()
     {
-        var decision = Select(
+        OverlayPresentationDecision decision = Select(
             OverlayHostKind.LinuxXWayland,
             hostOverride: "separate",
             gamescopeWaylandDisplay: "gamescope-0"
@@ -49,7 +49,7 @@ public sealed class OverlayPresentationModeSelectorTests
     [Fact]
     public void PureWaylandFailsClosedToExistingUnavailablePath()
     {
-        var decision = Select(OverlayHostKind.LinuxWayland, hostOverride: "combined");
+        OverlayPresentationDecision decision = Select(OverlayHostKind.LinuxWayland, hostOverride: "combined");
 
         Assert.Equal(OverlayPresentationMode.MultipleWindows, decision.Mode);
         Assert.Contains("does not expose", decision.Reason);

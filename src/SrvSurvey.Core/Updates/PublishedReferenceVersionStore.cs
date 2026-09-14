@@ -37,8 +37,8 @@ public sealed class PublishedReferenceVersionStore
     public PublishedReferenceVersions Load(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var root = Path.GetFullPath(dataDirectory);
-        var manifestPath = Path.Combine(root, "pub", ManifestFileName);
+        string root = Path.GetFullPath(dataDirectory);
+        string manifestPath = Path.Combine(root, "pub", ManifestFileName);
         if (File.Exists(manifestPath))
         {
             try
@@ -56,7 +56,7 @@ public sealed class PublishedReferenceVersionStore
             }
         }
 
-        var legacySettingsPath = Path.Combine(root, "settings.json");
+        string legacySettingsPath = Path.Combine(root, "settings.json");
         if (!File.Exists(legacySettingsPath))
         {
             return PublishedReferenceVersions.Empty;
@@ -64,8 +64,7 @@ public sealed class PublishedReferenceVersionStore
 
         try
         {
-            var settings = JsonNode.Parse(File.ReadAllText(legacySettingsPath)) as JsonObject;
-            return settings is null
+            return JsonNode.Parse(File.ReadAllText(legacySettingsPath)) is not JsonObject settings
                 ? PublishedReferenceVersions.Empty
                 : new PublishedReferenceVersions(
                     ReadInt(settings, "pubCodexRef"),
@@ -97,10 +96,10 @@ public sealed class PublishedReferenceVersionStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(publishedDataDirectory);
         ArgumentNullException.ThrowIfNull(versions);
-        var directory = Path.GetFullPath(publishedDataDirectory);
+        string directory = Path.GetFullPath(publishedDataDirectory);
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, ManifestFileName);
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string path = Path.Combine(directory, ManifestFileName);
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         var root = new JsonObject
         {
             ["Version"] = ManifestVersion,
@@ -149,7 +148,7 @@ public sealed class PublishedReferenceVersionStore
 
     private static int ReadInt(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<int>(out var number) && number >= 0
+        return root[propertyName] is JsonValue value && value.TryGetValue<int>(out int number) && number >= 0
             ? number
             : 0;
     }

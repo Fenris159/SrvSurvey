@@ -478,11 +478,11 @@ public sealed class ReleaseUpdateViewModelTests
     [Fact]
     public async Task ChannelDefaultsToDevelopmentAndOptOutIsPersistedAndRechecked()
     {
-        var temporaryDirectory = Path.Combine(
+        string temporaryDirectory = Path.Combine(
             Path.GetTempPath(),
             $"SrvSurvey-release-channel-tests-{Guid.NewGuid():N}"
         );
-        var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         var settings = new ReleaseUpdateSettingsStore(settingsPath);
         var service = new RecordingService();
         try
@@ -515,7 +515,7 @@ public sealed class ReleaseUpdateViewModelTests
             new StubService(CreateResult(isAvailable: true)),
             new Version(2, 0, 95, 0)
         );
-        var navigated = false;
+        bool navigated = false;
         viewModel.SetDiagnosticsNavigator(() => navigated = true);
 
         await viewModel.CheckAsync();
@@ -555,7 +555,7 @@ public sealed class ReleaseUpdateViewModelTests
 
     private static async Task WaitUntilAsync(Func<bool> predicate)
     {
-        var timeout = DateTime.UtcNow.AddSeconds(2);
+        DateTime timeout = DateTime.UtcNow.AddSeconds(2);
         while (!predicate() && DateTime.UtcNow < timeout)
         {
             await Task.Delay(10);
@@ -653,7 +653,7 @@ public sealed class ReleaseUpdateViewModelTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             Requests.Add(request);
-            for (var index = 0; index < this.progress.Count; index++)
+            for (int index = 0; index < this.progress.Count; index++)
             {
                 progress?.Report(this.progress[index]);
                 afterProgress?.Invoke(index);

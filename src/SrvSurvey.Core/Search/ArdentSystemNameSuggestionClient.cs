@@ -32,18 +32,18 @@ public sealed class ArdentSystemNameSuggestionClient : ISystemNameSuggestionClie
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
-        var normalized = query.Trim();
+        string normalized = query.Trim();
         if (normalized.Length < 3)
         {
             return [];
         }
 
         var requestUri = new Uri(apiBaseUri, Uri.EscapeDataString(normalized));
-        using var response = await client
+        using HttpResponseMessage response = await client
             .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload = await BoundedHttpContent
+        IReadOnlyList<ArdentSystemSuggestion>? payload = await BoundedHttpContent
             .ReadFromJsonAsync<IReadOnlyList<ArdentSystemSuggestion>>(
                 response.Content,
                 MaximumResponseBytes,

@@ -13,9 +13,9 @@ public sealed class SystemSurveySettingsStore
 
     public SystemSurveyPreferences Load()
     {
-        var root = documentStore.Load();
+        JsonObject root = documentStore.Load();
         var settings = root["SystemSurvey"] as JsonObject;
-        var defaults = SystemSurveyPreferences.Default;
+        SystemSurveyPreferences defaults = SystemSurveyPreferences.Default;
         return new SystemSurveyPreferences(
             GetBoolean(settings, "AutoShowBodyInfo", defaults.AutoShowBodyInfo),
             GetBoolean(settings, "ShowBodyInfoInSystemMap", defaults.ShowBodyInfoInSystemMap),
@@ -230,7 +230,7 @@ public sealed class SystemSurveySettingsStore
 
     private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
     }
 
     private static int GetInt32(
@@ -241,7 +241,7 @@ public sealed class SystemSurveySettingsStore
         int maximum = int.MaxValue
     )
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<int>(out var result)
+        return source?[propertyName] is JsonValue value && value.TryGetValue<int>(out int result)
             ? Math.Clamp(result, minimum, maximum)
             : fallback;
     }
@@ -256,7 +256,7 @@ public sealed class SystemSurveySettingsStore
     {
         return
             source?[propertyName] is JsonValue value
-            && value.TryGetValue<double>(out var result)
+            && value.TryGetValue<double>(out double result)
             && double.IsFinite(result)
             ? Math.Clamp(result, minimum, maximum)
             : fallback;

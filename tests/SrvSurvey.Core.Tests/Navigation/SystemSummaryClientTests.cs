@@ -17,7 +17,7 @@ public sealed class SystemSummaryClientTests
             new Uri("https://spansh.test/api/")
         );
 
-        var result = await client.GetAsync("Test System", 42);
+        SystemSummaryLoadResult result = await client.GetAsync("Test System", 42);
 
         Assert.Empty(result.Warnings);
         Assert.Equal("Test System", result.Summary.SystemName);
@@ -59,7 +59,7 @@ public sealed class SystemSummaryClientTests
         Assert.Equal(2, result.Summary.Factions.Count);
         Assert.Equal("Pathfinder Cooperative", result.Summary.Factions[0].Name);
         Assert.Equal(0.62, result.Summary.Factions[0].Influence);
-        var guardianLab = result.Summary.Stations.Single(station => station.Name == "Guardian Lab");
+        SystemStationSummary guardianLab = result.Summary.Stations.Single(station => station.Name == "Guardian Lab");
         Assert.Equal("Planetary Port", guardianLab.Type);
         Assert.Equal("High Tech", guardianLab.PrimaryEconomy);
         Assert.Equal(72.5, guardianLab.Economies["High Tech"]);
@@ -92,20 +92,20 @@ public sealed class SystemSummaryClientTests
             new Uri("https://spansh.test/api/")
         );
 
-        var result = await client.GetAsync("Test System", 42);
+        SystemSummaryLoadResult result = await client.GetAsync("Test System", 42);
 
         Assert.True(result.Summary.IsKnown);
         Assert.Equal("K", result.Summary.StarClass);
         Assert.Null(result.Summary.Traffic);
         Assert.Equal(2, result.Warnings.Count);
-        Assert.Contains(result.Warnings, warning => warning.StartsWith("EDSM traffic"));
-        Assert.Contains(result.Warnings, warning => warning.StartsWith("Spansh system dump"));
+        Assert.Contains(result.Warnings, warning => warning.StartsWith("EDSM traffic", StringComparison.Ordinal));
+        Assert.Contains(result.Warnings, warning => warning.StartsWith("Spansh system dump", StringComparison.Ordinal));
     }
 
     [Fact]
     public async Task LastUpdatedProviderPreferenceSelectsSpanshTimestamp()
     {
-        var useSpansh = false;
+        bool useSpansh = false;
         var client = new SystemSummaryClient(
             new HttpClient(new ProviderHandler()),
             new Uri("https://edsm.test/"),
@@ -113,9 +113,9 @@ public sealed class SystemSummaryClientTests
             () => useSpansh
         );
 
-        var edsm = await client.GetAsync("Test System", 42);
+        SystemSummaryLoadResult edsm = await client.GetAsync("Test System", 42);
         useSpansh = true;
-        var spansh = await client.GetAsync("Test System", 42);
+        SystemSummaryLoadResult spansh = await client.GetAsync("Test System", 42);
 
         Assert.Equal(
             DateTimeOffset.Parse("2025-02-03T04:05:06Z", global::System.Globalization.CultureInfo.InvariantCulture),
@@ -137,7 +137,7 @@ public sealed class SystemSummaryClientTests
             new Uri("https://spansh.test/api/")
         );
 
-        var result = await client.GetAsync("Test System", 0);
+        SystemSummaryLoadResult result = await client.GetAsync("Test System", 0);
 
         Assert.Equal(42, result.Summary.SystemAddress);
         Assert.Equal(2, handler.Requests.Count);
@@ -157,7 +157,7 @@ public sealed class SystemSummaryClientTests
             CancellationToken cancellationToken
         )
         {
-            var uri = request.RequestUri!;
+            Uri uri = request.RequestUri!;
             Requests.Add(uri.AbsoluteUri);
             if (uri.AbsolutePath.EndsWith("/traffic", StringComparison.Ordinal))
             {

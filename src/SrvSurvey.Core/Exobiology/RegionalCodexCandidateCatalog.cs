@@ -63,14 +63,14 @@ public sealed class RegionalCodexCandidateCatalog
     {
         return regionId is > 0
             && entryId > 0
-            && entryIdsByRegion.TryGetValue(regionId.Value, out var entries)
+            && entryIdsByRegion.TryGetValue(regionId.Value, out IReadOnlySet<long>? entries)
             && entries.Contains(entryId);
     }
 
     public static RegionalCodexCandidateCatalog Load(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var path = Path.Combine(Path.GetFullPath(dataDirectory), LegacyFileName);
+        string path = Path.Combine(Path.GetFullPath(dataDirectory), LegacyFileName);
         if (!File.Exists(path))
         {
             return Empty;
@@ -132,9 +132,9 @@ public sealed class RegionalCodexCandidateCatalog
             StringComparer.OrdinalIgnoreCase
         );
         var candidates = new List<RegionalCodexCandidate>();
-        foreach (var property in document.RootElement.EnumerateObject())
+        foreach (JsonProperty property in document.RootElement.EnumerateObject())
         {
-            if (!regionsByName.TryGetValue(property.Name, out var region))
+            if (!regionsByName.TryGetValue(property.Name, out GalacticRegion? region))
             {
                 throw new InvalidDataException(
                     $"The regional Codex candidate catalog contains an unknown region: {property.Name}."
@@ -146,11 +146,11 @@ public sealed class RegionalCodexCandidateCatalog
                 throw new InvalidDataException($"The regional Codex candidates for {property.Name} are not an array.");
             }
 
-            foreach (var item in property.Value.EnumerateArray())
+            foreach (JsonElement item in property.Value.EnumerateArray())
             {
                 if (
                     item.ValueKind != JsonValueKind.String
-                    || !TryParseLegacyEntry(item.GetString(), out var entryId, out var variant)
+                    || !TryParseLegacyEntry(item.GetString(), out long entryId, out string? variant)
                 )
                 {
                     throw new InvalidDataException(
@@ -191,9 +191,9 @@ public sealed class RegionalCodexCandidateCatalog
     {
         ArgumentNullException.ThrowIfNull(bytes);
         ArgumentNullException.ThrowIfNull(references);
-        var rows = ReadPublishedCsvRows(bytes);
+        List<IReadOnlyList<string>> rows = ReadPublishedCsvRows(bytes);
         ValidatePublishedCsvHeader(rows[0]);
-        var candidates = ParsePublishedCsvCandidates(rows, references);
+        List<RegionalCodexCandidate> candidates = ParsePublishedCsvCandidates(rows, references);
         if (candidates.Count == 0)
         {
             throw new InvalidDataException("The published regional Codex candidate CSV contains no candidates.");
@@ -219,7 +219,7 @@ public sealed class RegionalCodexCandidateCatalog
             throw new InvalidDataException("The published regional Codex candidate CSV is not valid UTF-8.", exception);
         }
 
-        var rows = ParseCsvRows(text);
+        List<IReadOnlyList<string>> rows = ParseCsvRows(text);
         if (rows.Count < 2)
         {
             throw new InvalidDataException("The published regional Codex candidate CSV contains no data rows.");
@@ -251,9 +251,14 @@ public sealed class RegionalCodexCandidateCatalog
     {
         var regionsById = GalacticRegionMap.Regions.ToDictionary(region => region.Id);
         var candidates = new List<RegionalCodexCandidate>();
-        for (var rowIndex = 1; rowIndex < rows.Count; rowIndex++)
+        for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
         {
-            var candidate = TryParsePublishedCsvRow(rows[rowIndex], rowIndex, regionsById, references);
+            RegionalCodexCandidate? candidate = TryParsePublishedCsvRow(
+                rows[rowIndex],
+                rowIndex,
+                regionsById,
+                references
+            );
             if (candidate is null)
             {
                 continue;
@@ -283,18 +288,26 @@ public sealed class RegionalCodexCandidateCatalog
             throw new InvalidDataException($"Published regional Codex row {rowIndex + 1:N0} has too few columns.");
         }
 
-        var region = ResolvePublishedCsvRegion(row, rowIndex, regionsById);
+        GalacticRegion region = ResolvePublishedCsvRegion(row, rowIndex, regionsById);
         if (ParseCsvBoolean(row[3], rowIndex, "Found") || ParseCsvBoolean(row[4], rowIndex, "NotExpectedToBeFound"))
         {
             return null;
         }
 
-        if (!TryResolvePublishedCsvEntry(row, rowIndex, references, out var entryId, out var reference))
+        if (
+            !TryResolvePublishedCsvEntry(
+                row,
+                rowIndex,
+                references,
+                out long entryId,
+                out ExobiologyReference? reference
+            )
+        )
         {
             return null;
         }
 
-        var variant = ResolvePublishedCsvVariant(row, rowIndex, reference);
+        string variant = ResolvePublishedCsvVariant(row, rowIndex, reference);
         return new RegionalCodexCandidate(region.Id, region.Name, entryId, variant);
     }
 
@@ -305,8 +318,8 @@ public sealed class RegionalCodexCandidateCatalog
     )
     {
         if (
-            !int.TryParse(row[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var regionId)
-            || !regionsById.TryGetValue(regionId, out var region)
+            !int.TryParse(row[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int regionId)
+            || !regionsById.TryGetValue(regionId, out GalacticRegion? region)
         )
         {
             throw new InvalidDataException($"Published regional Codex row {rowIndex + 1:N0} has an unknown region.");
@@ -352,7 +365,7 @@ public sealed class RegionalCodexCandidateCatalog
         ExobiologyReference? reference
     )
     {
-        var variant = row[7].Trim();
+        string variant = row[7].Trim();
         if (variant.Length == 0)
         {
             variant = reference?.VariantName ?? row[6].Trim();
@@ -370,10 +383,10 @@ public sealed class RegionalCodexCandidateCatalog
     {
         var regionsById = GalacticRegionMap.Regions.ToDictionary(region => region.Id);
         var normalized = new List<RegionalCodexCandidate>();
-        foreach (var entry in entries)
+        foreach (RegionalCodexCandidate entry in entries)
         {
             if (
-                !regionsById.TryGetValue(entry.RegionId, out var region)
+                !regionsById.TryGetValue(entry.RegionId, out GalacticRegion? region)
                 || entry.EntryId <= 0
                 || string.IsNullOrWhiteSpace(entry.Variant)
             )
@@ -386,7 +399,7 @@ public sealed class RegionalCodexCandidateCatalog
             normalized.Add(new RegionalCodexCandidate(region.Id, region.Name, entry.EntryId, entry.Variant.Trim()));
         }
 
-        var distinct = normalized
+        RegionalCodexCandidate[] distinct = normalized
             .DistinctBy(entry => (entry.RegionId, entry.EntryId))
             .OrderBy(entry => entry.RegionId)
             .ThenBy(entry => entry.EntryId)
@@ -418,7 +431,7 @@ public sealed class RegionalCodexCandidateCatalog
         {
             while (index < text.Length)
             {
-                var character = text[index];
+                char character = text[index];
                 if (inQuotes)
                 {
                     ParseQuoted(character);
@@ -570,7 +583,7 @@ public sealed class RegionalCodexCandidateCatalog
             return false;
         }
 
-        var separator = value.IndexOf('_');
+        int separator = value.IndexOf('_');
         if (
             separator <= 0
             || separator == value.Length - 1

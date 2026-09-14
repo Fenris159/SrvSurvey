@@ -134,9 +134,9 @@ public sealed class MineMapControlTests
     [Fact]
     public void MarkerScaleGrowsWithZoomWithoutObscuringNearbyDeposits()
     {
-        var fitScale = MineMapControl.GetMarkerScale(1);
-        var mediumScale = MineMapControl.GetMarkerScale(4);
-        var maximumScale = MineMapControl.GetMarkerScale(15);
+        double fitScale = MineMapControl.GetMarkerScale(1);
+        double mediumScale = MineMapControl.GetMarkerScale(4);
+        double maximumScale = MineMapControl.GetMarkerScale(15);
 
         Assert.Equal(1, fitScale);
         Assert.True(mediumScale > fitScale);

@@ -17,20 +17,20 @@ public sealed class HostedOverlayWindowTests
     [AvaloniaFact]
     public async Task MiningWarningHostFollowsRangeFocusAndVehicleChanges()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-warning-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-mining-warning-{Guid.NewGuid():N}");
         try
         {
             using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
             var scan = new SystemScanState();
             foreach (
-                var json in new[]
+                string? json in new[]
                 {
                     """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
                     """{"event":"Scan","StarSystem":"Test","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Radius":1000000,"PlanetClass":"Rocky body"}""",
                 }
             )
             {
-                Assert.True(JournalEventEnvelope.TryParse(json, out var envelope, out _));
+                Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? envelope, out _));
                 scan.Apply(envelope!);
             }
             var commander = new SurfaceSurveySessionContext("F123", "Test", "Test", 42, null);
@@ -68,30 +68,32 @@ public sealed class HostedOverlayWindowTests
             );
             using var coordinator = new SurfaceMiningOverlayCoordinator(mining, session);
             Assert.False(coordinator.IsWarningVisible);
-            var far = status with { Latitude = .3 };
+            EliteStatus far = status with { Latitude = .3 };
             await mining.ApplyUpdateAsync(commander, scan.CreateSnapshot(), far, "mev_rhino");
             Assert.True(coordinator.IsWarningVisible);
-            var warning = Assert.Single(platform.PreparedWindows.OfType<MiningWarningOverlayWindow>());
+            MiningWarningOverlayWindow warning = Assert.Single(
+                platform.PreparedWindows.OfType<MiningWarningOverlayWindow>()
+            );
             Assert.True(warning.Topmost);
-            Assert.True(registry.TryGetPlotterName(warning, out var name));
+            Assert.True(registry.TryGetPlotterName(warning, out string? name));
             Assert.Equal("PlotMiningWarning", name);
-            foreach (var tracker in trackers)
+            foreach (RecordingGameWindowTracker tracker in trackers)
             {
                 tracker.Snapshot = AvailableGameWindow with { IsForeground = false };
             }
 
-            foreach (var timer in timers)
+            foreach (ManualHostedOverlayTimer timer in timers)
             {
                 timer.Pulse();
             }
 
             Assert.False(coordinator.IsWarningVisible);
-            foreach (var tracker in trackers)
+            foreach (RecordingGameWindowTracker tracker in trackers)
             {
                 tracker.Snapshot = AvailableGameWindow;
             }
 
-            foreach (var timer in timers)
+            foreach (ManualHostedOverlayTimer timer in timers)
             {
                 timer.Pulse();
             }
@@ -131,10 +133,10 @@ public sealed class HostedOverlayWindowTests
     public void DispatcherTimerSupportsItsHostedLifecycle()
     {
         var timer = new DispatcherHostedOverlayTimer(TimeSpan.FromMinutes(1));
-        var ticks = 0;
+        int ticks = 0;
         EventHandler handler = (_, _) => ticks++;
 
-        var exception = Record.Exception(() =>
+        Exception? exception = Record.Exception(() =>
         {
             timer.Tick += handler;
             timer.Start();
@@ -150,7 +152,9 @@ public sealed class HostedOverlayWindowTests
     [AvaloniaFact]
     public void CurrentSessionReportsTheDetectedPresentationDecision()
     {
-        var expected = OverlayPresentationModeSelector.DetectCurrent(OverlayPlatformCapabilities.DetectCurrent());
+        OverlayPresentationDecision expected = OverlayPresentationModeSelector.DetectCurrent(
+            OverlayPlatformCapabilities.DetectCurrent()
+        );
 
         using var session = OverlayPresentationSession.CreateCurrent();
 
@@ -175,8 +179,8 @@ public sealed class HostedOverlayWindowTests
             )
         );
         var preparation = default(OverlayPreparationResult);
-        var fallbackCalls = 0;
-        using var hosted = session.HostPassiveWindow(
+        int fallbackCalls = 0;
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ => new Window { Width = 128, Height = 108 },
@@ -201,7 +205,7 @@ public sealed class HostedOverlayWindowTests
         Assert.Equal("Prepared", preparation?.Status);
         Assert.Equal(1, fallbackCalls);
         Assert.True(timer.IsStarted);
-        Assert.True(registry.TryGetPlotterName(platform.PreparedWindows[0], out var registeredPlotter));
+        Assert.True(registry.TryGetPlotterName(platform.PreparedWindows[0], out string? registeredPlotter));
         Assert.Equal("PlotTrackTarget", registeredPlotter);
     }
 
@@ -221,8 +225,8 @@ public sealed class HostedOverlayWindowTests
                 diagnostics.Add
             )
         );
-        var factoryCalls = 0;
-        using var hosted = session.HostPassiveWindow(
+        int factoryCalls = 0;
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ =>
@@ -240,7 +244,7 @@ public sealed class HostedOverlayWindowTests
         Assert.False(hosted.IsVisible);
         Assert.Equal(OverlayHostHealth.Faulted, hosted.Health);
         Assert.Equal(1, factoryCalls);
-        var diagnostic = Assert.Single(diagnostics);
+        OverlayHostDiagnostic diagnostic = Assert.Single(diagnostics);
         Assert.Equal("PlotTrackTarget", diagnostic.PlotterName);
         Assert.Equal(OverlayHostPhase.Opening, diagnostic.Phase);
         Assert.Equal(OverlayHostHealth.Faulted, diagnostic.Health);
@@ -262,7 +266,7 @@ public sealed class HostedOverlayWindowTests
                 diagnostics.Add
             )
         );
-        using var hosted = session.HostPassiveWindow(
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition("PlotTrackTarget", _ => null!, (_, _) => new PixelPoint(25, 30))
         );
 
@@ -270,7 +274,7 @@ public sealed class HostedOverlayWindowTests
 
         Assert.Equal(OverlayHostHealth.Faulted, hosted.Health);
         Assert.False(hosted.IsVisible);
-        var diagnostic = Assert.Single(diagnostics);
+        OverlayHostDiagnostic diagnostic = Assert.Single(diagnostics);
         Assert.Contains("returned null", diagnostic.Status);
     }
 
@@ -291,7 +295,7 @@ public sealed class HostedOverlayWindowTests
                 diagnostics.Add
             )
         );
-        using var hosted = session.HostPassiveWindow(
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ => new Window { Width = 128, Height = 108 },
@@ -306,7 +310,7 @@ public sealed class HostedOverlayWindowTests
         Assert.False(hosted.IsVisible);
         Assert.False(timer.IsStarted);
         Assert.Equal(OverlayHostHealth.Unsupported, hosted.Health);
-        var diagnostic = Assert.Single(diagnostics);
+        OverlayHostDiagnostic diagnostic = Assert.Single(diagnostics);
         Assert.Equal(OverlayHostPhase.Hidden, diagnostic.Phase);
         Assert.Equal(OverlayHostHealth.Unsupported, diagnostic.Health);
         Assert.Equal(capabilities.StatusText, diagnostic.Status);
@@ -325,7 +329,7 @@ public sealed class HostedOverlayWindowTests
                 _ => throw new InvalidOperationException("Diagnostic sink failed")
             )
         );
-        using var hosted = session.HostPassiveWindow(
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ => throw new InvalidOperationException("Factory failed"),
@@ -333,7 +337,7 @@ public sealed class HostedOverlayWindowTests
             )
         );
 
-        var exception = Record.Exception(() => hosted.Reconcile(wantsWindow: true));
+        Exception? exception = Record.Exception(() => hosted.Reconcile(wantsWindow: true));
 
         Assert.Null(exception);
         Assert.Equal(OverlayHostHealth.Faulted, hosted.Health);
@@ -353,7 +357,7 @@ public sealed class HostedOverlayWindowTests
             )
         );
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
             session.HostPassiveWindow(
                 new PassiveOverlayWindowDefinition(
                     "PlotTrackTarget",
@@ -370,7 +374,7 @@ public sealed class HostedOverlayWindowTests
     [Fact]
     public void NonPositivePollingIntervalIsRejectedBeforeLeaseAcquisition()
     {
-        var platformFactoryCalls = 0;
+        int platformFactoryCalls = 0;
         using var session = OverlayPresentationSession.CreateForAdapters(
             new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
@@ -384,9 +388,11 @@ public sealed class HostedOverlayWindowTests
                 LegacyOverlayLayout.Empty
             )
         );
-        var definition = CreateDefinition() with { PollInterval = TimeSpan.Zero };
+        PassiveOverlayWindowDefinition definition = CreateDefinition() with { PollInterval = TimeSpan.Zero };
 
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => session.HostPassiveWindow(definition));
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            session.HostPassiveWindow(definition)
+        );
 
         Assert.Equal("definition", exception.ParamName);
         Assert.Equal(0, platformFactoryCalls);
@@ -407,7 +413,9 @@ public sealed class HostedOverlayWindowTests
             )
         );
 
-        var exception = Assert.Throws<InvalidOperationException>(() => session.HostPassiveWindow(CreateDefinition()));
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            session.HostPassiveWindow(CreateDefinition())
+        );
 
         Assert.Equal("Timer failed", exception.Message);
         Assert.Equal(1, platform.DisposeCalls);
@@ -433,7 +441,9 @@ public sealed class HostedOverlayWindowTests
             )
         );
 
-        var exception = Assert.Throws<InvalidOperationException>(() => session.HostPassiveWindow(CreateDefinition()));
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            session.HostPassiveWindow(CreateDefinition())
+        );
 
         Assert.Equal("Timer start failed", exception.Message);
         Assert.Equal(1, platform.DisposeCalls);
@@ -455,9 +465,9 @@ public sealed class HostedOverlayWindowTests
                 LegacyOverlayLayout.Empty
             )
         );
-        var uiThread = Environment.CurrentManagedThreadId;
-        var factoryThread = 0;
-        using var hosted = session.HostPassiveWindow(
+        int uiThread = Environment.CurrentManagedThreadId;
+        int factoryThread = 0;
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ =>
@@ -489,7 +499,7 @@ public sealed class HostedOverlayWindowTests
             )
         );
         HostedOverlayWindow? hosted = null;
-        var visibilityChanges = 0;
+        int visibilityChanges = 0;
         hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
@@ -581,10 +591,10 @@ public sealed class HostedOverlayWindowTests
                 diagnostics.Add
             )
         );
-        var factoryCalls = 0;
-        var visibilityChanges = 0;
+        int factoryCalls = 0;
+        int visibilityChanges = 0;
         var observedPreparations = new List<OverlayPreparationResult>();
-        using var hosted = session.HostPassiveWindow(
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ =>
@@ -606,7 +616,7 @@ public sealed class HostedOverlayWindowTests
         Assert.Equal(1, factoryCalls);
         Assert.Equal(0, visibilityChanges);
         Assert.Single(observedPreparations);
-        var diagnostic = Assert.Single(diagnostics);
+        OverlayHostDiagnostic diagnostic = Assert.Single(diagnostics);
         Assert.Equal(OverlayHostHealth.PassivePreparationFailed, diagnostic.Health);
         Assert.Equal("Click-through failed", diagnostic.Status);
     }
@@ -625,7 +635,7 @@ public sealed class HostedOverlayWindowTests
             )
         );
         var windows = new List<Window>();
-        using var hosted = session.HostPassiveWindow(
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ =>
@@ -637,7 +647,7 @@ public sealed class HostedOverlayWindowTests
                 (_, _) => new PixelPoint(25, 30)
             )
         );
-        var visibilityChanges = 0;
+        int visibilityChanges = 0;
         hosted.VisibilityChanged += (_, _) => visibilityChanges++;
 
         hosted.Reconcile(wantsWindow: true);
@@ -664,7 +674,7 @@ public sealed class HostedOverlayWindowTests
                 LegacyOverlayLayout.Empty
             )
         );
-        var hosted = session.HostPassiveWindow(
+        HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ => new Window { Width = 128, Height = 108 },
@@ -719,7 +729,7 @@ public sealed class HostedOverlayWindowTests
         _ = session.HostPassiveWindow(CreateDefinition());
         _ = session.HostPassiveWindow(CreateDefinition());
 
-        var exception = Assert.Throws<InvalidOperationException>(session.Dispose);
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(session.Dispose);
 
         Assert.Equal("Platform disposal failed", exception.Message);
         Assert.Equal(2, platforms.Sum(platform => platform.DisposeCalls));
@@ -742,9 +752,9 @@ public sealed class HostedOverlayWindowTests
                 LegacyOverlayLayout.Empty
             )
         );
-        var hosted = session.HostPassiveWindow(CreateDefinition());
+        HostedOverlayWindow hosted = session.HostPassiveWindow(CreateDefinition());
 
-        var exception = await Record.ExceptionAsync(() => Task.Run(hosted.Dispose));
+        Exception? exception = await Record.ExceptionAsync(() => Task.Run(hosted.Dispose));
 
         Assert.IsType<InvalidOperationException>(exception);
         Assert.Equal(OverlayHostHealth.Healthy, hosted.Health);
@@ -769,8 +779,8 @@ public sealed class HostedOverlayWindowTests
                 LegacyOverlayLayout.Empty
             )
         );
-        var factoryCalls = 0;
-        using var hosted = session.HostPassiveWindow(
+        int factoryCalls = 0;
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ =>

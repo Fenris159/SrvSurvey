@@ -60,22 +60,22 @@ public static class JumpInfoRoutePlanner
     public static JumpInfoRoutePlan? Create(JumpInfoRoutePlannerRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var fsdTarget = request.FsdTarget;
-        var status = request.Status;
-        var currentSystemName = request.CurrentSystemName;
-        var currentSystemAddress = request.CurrentSystemAddress;
-        var currentPosition = request.CurrentPosition;
-        var navRoute = request.NavRoute;
-        var followedRoute = request.FollowedRoute;
-        var maximumJumpRange = request.MaximumJumpRange;
-        var target = SelectTarget(fsdTarget, status);
+        JumpTarget? fsdTarget = request.FsdTarget;
+        EliteStatus? status = request.Status;
+        string? currentSystemName = request.CurrentSystemName;
+        long? currentSystemAddress = request.CurrentSystemAddress;
+        GalacticCoordinate? currentPosition = request.CurrentPosition;
+        NavRouteSnapshot? navRoute = request.NavRoute;
+        FollowRouteDocument? followedRoute = request.FollowedRoute;
+        double? maximumJumpRange = request.MaximumJumpRange;
+        JumpTarget? target = SelectTarget(fsdTarget, status);
         if (target is null)
         {
             return null;
         }
 
-        var navPoints = CreateNavRoutePoints(navRoute);
-        var routePoints = navPoints.Count >= 3 ? navPoints : CreateFollowedRoutePoints(followedRoute);
+        List<RoutePoint> navPoints = CreateNavRoutePoints(navRoute);
+        List<RoutePoint> routePoints = navPoints.Count >= 3 ? navPoints : CreateFollowedRoutePoints(followedRoute);
         JumpInfoRouteSource source;
         if (navPoints.Count >= 3)
         {
@@ -90,7 +90,7 @@ public static class JumpInfoRoutePlanner
             source = JumpInfoRouteSource.Direct;
         }
 
-        var targetPoint = FindTarget(routePoints, target);
+        RoutePoint? targetPoint = FindTarget(routePoints, target);
         if (targetPoint is not null && string.IsNullOrWhiteSpace(target.StarClass))
         {
             target = target with { StarClass = targetPoint.StarClass };
@@ -102,8 +102,8 @@ public static class JumpInfoRoutePlanner
             source = JumpInfoRouteSource.Direct;
         }
 
-        var legs = CreateLegs(routePoints, maximumJumpRange);
-        var targetLegIndex = legs.FindIndex(leg =>
+        List<JumpInfoRouteLeg> legs = CreateLegs(routePoints, maximumJumpRange);
+        int targetLegIndex = legs.FindIndex(leg =>
             MatchesTarget(
                 leg.ToSystem,
                 routePoints
@@ -125,7 +125,7 @@ public static class JumpInfoRoutePlanner
             return fsdTarget;
         }
 
-        var destination = status?.Destination;
+        StatusDestination? destination = status?.Destination;
         return destination is { Body: 0, System: > 0, Name.Length: > 0 }
             ? new JumpTarget(destination.Name, destination.System)
             : null;
@@ -190,20 +190,20 @@ public static class JumpInfoRoutePlanner
     private static List<JumpInfoRouteLeg> CreateLegs(IReadOnlyList<RoutePoint> route, double? maximumJumpRange)
     {
         var legs = new List<JumpInfoRouteLeg>(Math.Max(0, route.Count - 1));
-        for (var index = 1; index < route.Count; index++)
+        for (int index = 1; index < route.Count; index++)
         {
-            var from = route[index - 1];
-            var to = route[index];
+            RoutePoint from = route[index - 1];
+            RoutePoint to = route[index];
             if (from.Position is not { } fromPosition || to.Position is not { } toPosition)
             {
                 continue;
             }
 
-            var distance = fromPosition.DistanceTo(toPosition);
-            var starClass = to.StarClass?.Trim();
-            var scoopable =
+            double distance = fromPosition.DistanceTo(toPosition);
+            string? starClass = to.StarClass?.Trim();
+            bool scoopable =
                 starClass is { Length: > 0 } && ScoopableStarClasses.Contains(char.ToUpperInvariant(starClass[0]));
-            var requiresBoost = to.Neutron || maximumJumpRange is > 0 && distance > maximumJumpRange.Value;
+            bool requiresBoost = to.Neutron || maximumJumpRange is > 0 && distance > maximumJumpRange.Value;
             legs.Add(new JumpInfoRouteLeg(from.Name, to.Name, distance, scoopable, requiresBoost));
         }
 

@@ -54,9 +54,12 @@ internal static partial class X11Native
             return 0;
         }
 
-        var callback = Marshal.GetDelegateForFunctionPointer(handler, typeof(XErrorHandler));
+        // The native pointer may originate from another managed delegate type with the same ABI.
+#pragma warning disable CA2263
+        Delegate callback = Marshal.GetDelegateForFunctionPointer(handler, typeof(XErrorHandler));
+#pragma warning restore CA2263
         object?[] arguments = [display, errorEvent];
-        var result = callback.DynamicInvoke(arguments);
+        object? result = callback.DynamicInvoke(arguments);
         errorEvent = (XErrorEvent)arguments[1]!;
         return result is int errorCode ? errorCode : 0;
     }

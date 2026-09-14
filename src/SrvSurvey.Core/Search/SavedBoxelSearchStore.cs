@@ -27,19 +27,20 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
         CancellationToken cancellationToken = default
     )
     {
-        var directory = GetCommanderDirectory(frontierId);
+        string directory = GetCommanderDirectory(frontierId);
         if (!Directory.Exists(directory))
         {
             return [];
         }
 
         var entries = new List<SavedBoxelSearchCatalogEntry>();
-        foreach (var path in Directory.EnumerateFiles(directory, "*.json", SearchOption.TopDirectoryOnly))
+        foreach (string path in Directory.EnumerateFiles(directory, "*.json", SearchOption.TopDirectoryOnly))
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                var document = await LoadFromPathAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
+                SavedBoxelSearchDocument document = await LoadFromPathAsync(frontierId, path, cancellationToken)
+                    .ConfigureAwait(false);
                 entries.Add(ToCatalogEntry(document));
             }
             catch (Exception exception)
@@ -61,12 +62,12 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
     )
     {
         ArgumentNullException.ThrowIfNull(search);
-        var normalizedName = NormalizeName(name);
-        var directory = GetCommanderDirectory(frontierId);
-        var fileName = $"{CreateFileStem(normalizedName)}-{Guid.NewGuid():N}.json";
-        var path = Path.Combine(directory, fileName);
-        var now = DateTimeOffset.UtcNow;
-        var linkedSearch = search with { SavedSearchFileName = fileName };
+        string normalizedName = NormalizeName(name);
+        string directory = GetCommanderDirectory(frontierId);
+        string fileName = $"{CreateFileStem(normalizedName)}-{Guid.NewGuid():N}.json";
+        string path = Path.Combine(directory, fileName);
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        BoxelSearchSnapshot linkedSearch = search with { SavedSearchFileName = fileName };
         var document = new SavedBoxelSearchDocument(
             frontierId,
             normalizedName,
@@ -118,9 +119,13 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
         await writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var document = await LoadFromPathAsync(frontierId, GetPath(frontierId, fileName), cancellationToken)
+            SavedBoxelSearchDocument document = await LoadFromPathAsync(
+                    frontierId,
+                    GetPath(frontierId, fileName),
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
-            var updated = document with
+            SavedBoxelSearchDocument updated = document with
             {
                 UpdatedAt = DateTimeOffset.UtcNow,
                 Search = search with { SavedSearchFileName = document.FileName },
@@ -185,7 +190,7 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
         CancellationToken cancellationToken = default
     )
     {
-        var path = GetPath(frontierId, fileName);
+        string path = GetPath(frontierId, fileName);
         await writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -194,9 +199,9 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
                 throw new FileNotFoundException("The saved boxel search no longer exists.", path);
             }
 
-            var trashDirectory = Path.Combine(GetCommanderDirectory(frontierId), ".trash");
+            string trashDirectory = Path.Combine(GetCommanderDirectory(frontierId), ".trash");
             Directory.CreateDirectory(trashDirectory);
-            var trashPath = Path.Combine(
+            string trashPath = Path.Combine(
                 trashDirectory,
                 $"{Path.GetFileNameWithoutExtension(fileName)}-" + $"{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}.json"
             );
@@ -219,9 +224,13 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
         await writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var document = await LoadFromPathAsync(frontierId, GetPath(frontierId, fileName), cancellationToken)
+            SavedBoxelSearchDocument document = await LoadFromPathAsync(
+                    frontierId,
+                    GetPath(frontierId, fileName),
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
-            var updated = update(document) with { UpdatedAt = DateTimeOffset.UtcNow };
+            SavedBoxelSearchDocument updated = update(document) with { UpdatedAt = DateTimeOffset.UtcNow };
             await WriteAsync(updated, cancellationToken).ConfigureAwait(false);
             return updated;
         }
@@ -250,28 +259,28 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
             16 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        var root =
+        JsonObject root =
             await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false) as JsonObject
             ?? throw new InvalidDataException("The saved boxel search did not contain a JSON object.");
-        var storedFrontierId = GetString(root, "frontierId");
+        string? storedFrontierId = GetString(root, "frontierId");
         if (!string.Equals(storedFrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException("The saved boxel search belongs to a different commander profile.");
         }
 
-        var name = GetString(root, "name");
+        string? name = GetString(root, "name");
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new InvalidDataException("The saved boxel search does not have a name.");
         }
 
-        var searchNode =
+        JsonObject searchNode =
             root["search"] as JsonObject
             ?? throw new InvalidDataException("The saved boxel search does not contain progress data.");
-        var fileName = Path.GetFileName(path);
-        var createdAt =
+        string fileName = Path.GetFileName(path);
+        DateTimeOffset createdAt =
             GetDateTimeOffset(root, "createdAt") ?? new DateTimeOffset(File.GetCreationTimeUtc(path), TimeSpan.Zero);
-        var updatedAt =
+        DateTimeOffset updatedAt =
             GetDateTimeOffset(root, "updatedAt") ?? new DateTimeOffset(File.GetLastWriteTimeUtc(path), TimeSpan.Zero);
         return new SavedBoxelSearchDocument(
             frontierId,
@@ -288,7 +297,7 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
 
     private static SavedBoxelSearchCatalogEntry ToCatalogEntry(SavedBoxelSearchDocument document)
     {
-        var progress = CalculateProgress(document.Search);
+        (int Completed, int Total) progress = CalculateProgress(document.Search);
         var prefixes = new List<string>();
         if (!string.IsNullOrWhiteSpace(document.Search.TopBoxel?.Prefix))
         {
@@ -316,23 +325,23 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
     public static (int Completed, int Total) CalculateProgress(BoxelSearchSnapshot search)
     {
         ArgumentNullException.ThrowIfNull(search);
-        var total = search.ProgressByPrefix.Values.Where(count => count > 0).Sum();
+        int total = search.ProgressByPrefix.Values.Where(count => count > 0).Sum();
         if (total == 0)
         {
             total = Math.Max(0, search.CurrentCount);
         }
 
         var completedPrefixes = search.CompletedPrefixes.ToHashSet(StringComparer.Ordinal);
-        var completed = completedPrefixes.Sum(prefix => Math.Max(0, search.ProgressByPrefix.GetValueOrDefault(prefix)));
+        int completed = completedPrefixes.Sum(prefix => Math.Max(0, search.ProgressByPrefix.GetValueOrDefault(prefix)));
         completed += search.CompletedSystems.Count(systemName =>
-            BoxelAddress.TryParse(systemName, out var boxel)
+            BoxelAddress.TryParse(systemName, out BoxelAddress? boxel)
             && boxel is not null
             && !completedPrefixes.Contains(boxel.Prefix)
         );
         var completedSystems = search.CompletedSystems.ToHashSet(StringComparer.Ordinal);
         completed += search.EmptySystems.Count(systemName =>
             !completedSystems.Contains(systemName)
-            && BoxelAddress.TryParse(systemName, out var boxel)
+            && BoxelAddress.TryParse(systemName, out BoxelAddress? boxel)
             && boxel is not null
             && !completedPrefixes.Contains(boxel.Prefix)
         );
@@ -341,14 +350,14 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
 
     private static BoxelSearchSnapshot ReadSnapshot(JsonObject node, string fileName)
     {
-        _ = BoxelAddress.TryParse(GetString(node, "topBoxel"), out var topBoxel);
-        _ = BoxelAddress.TryParse(GetString(node, "currentBoxel"), out var current);
+        _ = BoxelAddress.TryParse(GetString(node, "topBoxel"), out BoxelAddress? topBoxel);
+        _ = BoxelAddress.TryParse(GetString(node, "currentBoxel"), out BoxelAddress? current);
         if (topBoxel is not null && (current is null || !topBoxel.Contains(current)))
         {
             current = topBoxel;
         }
 
-        var lowMassCodeText = GetString(node, "lowMassCode");
+        string? lowMassCodeText = GetString(node, "lowMassCode");
         return new BoxelSearchSnapshot
         {
             Active = GetBoolean(node, "active") ?? false,
@@ -389,7 +398,7 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
             ["updatedAt"] = document.UpdatedAt,
             ["search"] = WriteSnapshot(document.Search),
         };
-        var temporaryPath = $"{document.FilePath}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{document.FilePath}.{Guid.NewGuid():N}.tmp";
         try
         {
             await using (
@@ -489,7 +498,7 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
     private static string NormalizeName(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        var normalized = name.Trim();
+        string normalized = name.Trim();
         if (normalized.Length > 120)
         {
             throw new ArgumentException("The saved search name must be 120 characters or fewer.", nameof(name));
@@ -500,9 +509,9 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
 
     private static string CreateFileStem(string name)
     {
-        var invalid = Path.GetInvalidFileNameChars().ToHashSet();
-        var characters = name.Select(character => invalid.Contains(character) ? '-' : character).ToArray();
-        var stem = new string(characters).Trim().Trim('.');
+        HashSet<char> invalid = Path.GetInvalidFileNameChars().ToHashSet();
+        char[] characters = name.Select(character => invalid.Contains(character) ? '-' : character).ToArray();
+        string stem = new string(characters).Trim().Trim('.');
         if (string.IsNullOrWhiteSpace(stem))
         {
             stem = "boxel-search";
@@ -520,7 +529,7 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
     {
         var array = new JsonArray();
         foreach (
-            var value in values
+            string? value in values
                 .Where(value => !string.IsNullOrWhiteSpace(value))
                 .Distinct(StringComparer.Ordinal)
                 .Order(StringComparer.Ordinal)
@@ -536,7 +545,7 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
     {
         return root[propertyName] is JsonArray array
             ? array
-                .Select(node => node is JsonValue value && value.TryGetValue<string>(out var text) ? text : null)
+                .Select(node => node is JsonValue value && value.TryGetValue<string>(out string? text) ? text : null)
                 .Where(text => !string.IsNullOrWhiteSpace(text))
                 .Select(text => text!)
                 .Distinct(StringComparer.Ordinal)
@@ -547,7 +556,7 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
     private static JsonObject WriteProgress(IReadOnlyDictionary<string, int> progress)
     {
         var node = new JsonObject();
-        foreach (var entry in progress.OrderBy(entry => entry.Key, StringComparer.Ordinal))
+        foreach (KeyValuePair<string, int> entry in progress.OrderBy(entry => entry.Key, StringComparer.Ordinal))
         {
             node[entry.Key] = entry.Value;
         }
@@ -563,9 +572,9 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
         }
 
         var result = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var entry in progress)
+        foreach (KeyValuePair<string, JsonNode?> entry in progress)
         {
-            if (entry.Value is JsonValue value && value.TryGetValue<int>(out var count))
+            if (entry.Value is JsonValue value && value.TryGetValue<int>(out int count))
             {
                 result[entry.Key] = count;
             }
@@ -576,23 +585,28 @@ public sealed class SavedBoxelSearchStore : IBoxelSearchLibraryStore
 
     private static string? GetString(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 
     private static bool? GetBoolean(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static int? GetInt32(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<int>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<int>(out int result) ? result : null;
     }
 
     private static DateTimeOffset? GetDateTimeOffset(JsonObject root, string propertyName)
     {
-        var text = GetString(root, propertyName);
-        return DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var result)
+        string? text = GetString(root, propertyName);
+        return DateTimeOffset.TryParse(
+            text,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.RoundtripKind,
+            out DateTimeOffset result
+        )
             ? result
             : null;
     }

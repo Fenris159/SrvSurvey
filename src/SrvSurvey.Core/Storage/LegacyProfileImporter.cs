@@ -28,9 +28,9 @@ public sealed class LegacyProfileImporter
         CancellationToken cancellationToken = default
     )
     {
-        var source = Path.GetFullPath(sourceDirectory);
-        var destination = Path.GetFullPath(destinationDirectory);
-        var backupParent = Path.GetFullPath(backupDirectory);
+        string source = Path.GetFullPath(sourceDirectory);
+        string destination = Path.GetFullPath(destinationDirectory);
+        string backupParent = Path.GetFullPath(backupDirectory);
         ValidateLocations(source, destination, backupParent);
 
         if (File.Exists(destination))
@@ -45,28 +45,30 @@ public sealed class LegacyProfileImporter
             );
         }
 
-        var sourceInventory = await ProfileInventory.CreateAsync(source, cancellationToken).ConfigureAwait(false);
+        ProfileInventory sourceInventory = await ProfileInventory
+            .CreateAsync(source, cancellationToken)
+            .ConfigureAwait(false);
         if (sourceInventory.Entries.Count == 0)
         {
             throw new InvalidDataException($"The selected legacy profile does not contain any files: {source}");
         }
 
-        var destinationExisted = Directory.Exists(destination);
-        var destinationInventory = destinationExisted
+        bool destinationExisted = Directory.Exists(destination);
+        ProfileInventory destinationInventory = destinationExisted
             ? await ProfileInventory.CreateAsync(destination, cancellationToken).ConfigureAwait(false)
             : EmptyInventory(destination);
-        var conflicts = FindConflicts(sourceInventory, destinationInventory);
-        var operationId = Guid.NewGuid().ToString("N");
-        var timestamp = timeProvider.GetUtcNow();
-        var backupName = $"legacy-profile-{timestamp:yyyyMMddTHHmmssZ}-{operationId}";
-        var finalBackup = Path.Combine(backupParent, backupName);
-        var backupStage = $"{finalBackup}.importing";
-        var destinationStage = $"{destination}.importing-{operationId}";
-        var rollbackDirectory = $"{destination}.rollback-{operationId}";
-        var failedActivationDirectory = $"{destination}.failed-import-{operationId}";
-        var backupProfileStage = Path.Combine(backupStage, "profile");
-        var previousDestinationStage = Path.Combine(backupStage, "previous-destination");
-        var profileActivated = false;
+        ProfileImportConflict[] conflicts = FindConflicts(sourceInventory, destinationInventory);
+        string operationId = Guid.NewGuid().ToString("N");
+        DateTimeOffset timestamp = timeProvider.GetUtcNow();
+        string backupName = $"legacy-profile-{timestamp:yyyyMMddTHHmmssZ}-{operationId}";
+        string finalBackup = Path.Combine(backupParent, backupName);
+        string backupStage = $"{finalBackup}.importing";
+        string destinationStage = $"{destination}.importing-{operationId}";
+        string rollbackDirectory = $"{destination}.rollback-{operationId}";
+        string failedActivationDirectory = $"{destination}.failed-import-{operationId}";
+        string backupProfileStage = Path.Combine(backupStage, "profile");
+        string previousDestinationStage = Path.Combine(backupStage, "previous-destination");
+        bool profileActivated = false;
 
         Directory.CreateDirectory(backupParent);
 
@@ -230,18 +232,18 @@ public sealed class LegacyProfileImporter
         CancellationToken cancellationToken
     )
     {
-        foreach (var relativeDirectory in inventory.RelativeDirectories)
+        foreach (string relativeDirectory in inventory.RelativeDirectories)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Directory.CreateDirectory(ProfileInventory.ResolveEntryPath(destinationRoot, relativeDirectory));
         }
 
-        foreach (var entry in inventory.Entries)
+        foreach (ProfileInventoryEntry entry in inventory.Entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var sourcePath = ProfileInventory.ResolveEntryPath(sourceRoot, entry.RelativePath);
-            var destinationPath = ProfileInventory.ResolveEntryPath(destinationRoot, entry.RelativePath);
-            var destinationParent =
+            string sourcePath = ProfileInventory.ResolveEntryPath(sourceRoot, entry.RelativePath);
+            string destinationPath = ProfileInventory.ResolveEntryPath(destinationRoot, entry.RelativePath);
+            string destinationParent =
                 Path.GetDirectoryName(destinationPath)
                 ?? throw new InvalidDataException($"The profile entry has no parent directory: {entry.RelativePath}");
             Directory.CreateDirectory(destinationParent);
@@ -285,18 +287,20 @@ public sealed class LegacyProfileImporter
     )
     {
         var mergedEntries = previousInventory.Entries.ToDictionary(entry => entry.RelativePath, PathComparer);
-        foreach (var entry in sourceInventory.Entries)
+        foreach (ProfileInventoryEntry entry in sourceInventory.Entries)
         {
             mergedEntries[entry.RelativePath] = entry;
         }
 
-        var actual = await ProfileInventory.CreateAsync(destinationRoot, cancellationToken).ConfigureAwait(false);
-        var actualEntries = actual
+        ProfileInventory actual = await ProfileInventory
+            .CreateAsync(destinationRoot, cancellationToken)
+            .ConfigureAwait(false);
+        ProfileInventoryEntry[] actualEntries = actual
             .Entries.Where(entry =>
                 !hasImportManifest || !string.Equals(entry.RelativePath, ManifestFileName, PathComparison)
             )
             .ToArray();
-        var expectedDirectories = sourceInventory
+        string[] expectedDirectories = sourceInventory
             .RelativeDirectories.Concat(previousInventory.RelativeDirectories)
             .Distinct(PathComparer)
             .Order(StringComparer.Ordinal)
@@ -316,7 +320,9 @@ public sealed class LegacyProfileImporter
         CancellationToken cancellationToken
     )
     {
-        var actual = await ProfileInventory.CreateAsync(destinationRoot, cancellationToken).ConfigureAwait(false);
+        ProfileInventory actual = await ProfileInventory
+            .CreateAsync(destinationRoot, cancellationToken)
+            .ConfigureAwait(false);
         if (
             !expected.RelativeDirectories.SequenceEqual(actual.RelativeDirectories, PathComparer)
             || !EntriesMatchContent(expected.Entries, actual.Entries)
@@ -332,7 +338,7 @@ public sealed class LegacyProfileImporter
         CancellationToken cancellationToken
     )
     {
-        var copiedHash = await ProfileInventory.ComputeSha256Async(path, cancellationToken).ConfigureAwait(false);
+        string copiedHash = await ProfileInventory.ComputeSha256Async(path, cancellationToken).ConfigureAwait(false);
         if (!string.Equals(copiedHash, entry.Sha256, StringComparison.Ordinal))
         {
             throw new IOException($"A profile file changed while it was being imported: {entry.RelativePath}");
@@ -345,10 +351,10 @@ public sealed class LegacyProfileImporter
         CancellationToken cancellationToken
     )
     {
-        var expectedHash = await ProfileInventory
+        string expectedHash = await ProfileInventory
             .ComputeSha256Async(expectedPath, cancellationToken)
             .ConfigureAwait(false);
-        var activatedHash = await ProfileInventory
+        string activatedHash = await ProfileInventory
             .ComputeSha256Async(activatedPath, cancellationToken)
             .ConfigureAwait(false);
         if (!string.Equals(expectedHash, activatedHash, StringComparison.Ordinal))
@@ -406,10 +412,10 @@ public sealed class LegacyProfileImporter
         }
 
         var currentByPath = current.ToDictionary(entry => entry.RelativePath, PathComparer);
-        foreach (var entry in expected)
+        foreach (ProfileInventoryEntry entry in expected)
         {
             if (
-                !currentByPath.TryGetValue(entry.RelativePath, out var currentEntry)
+                !currentByPath.TryGetValue(entry.RelativePath, out ProfileInventoryEntry? currentEntry)
                 || entry.Length != currentEntry.Length
                 || entry.LastWriteTimeUtc != currentEntry.LastWriteTimeUtc
                 || !string.Equals(entry.Sha256, currentEntry.Sha256, StringComparison.Ordinal)
@@ -434,7 +440,7 @@ public sealed class LegacyProfileImporter
 
         var currentByPath = current.ToDictionary(entry => entry.RelativePath, PathComparer);
         return expected.All(entry =>
-            currentByPath.TryGetValue(entry.RelativePath, out var currentEntry)
+            currentByPath.TryGetValue(entry.RelativePath, out ProfileInventoryEntry? currentEntry)
             && entry.Length == currentEntry.Length
             && string.Equals(entry.Sha256, currentEntry.Sha256, StringComparison.Ordinal)
         );
@@ -447,7 +453,7 @@ public sealed class LegacyProfileImporter
             .Entries.Where(entry => destinationEntries.ContainsKey(entry.RelativePath))
             .Select(entry =>
             {
-                var previous = destinationEntries[entry.RelativePath];
+                ProfileInventoryEntry previous = destinationEntries[entry.RelativePath];
                 return new ProfileImportConflict(
                     entry.RelativePath,
                     previous.Sha256,
@@ -560,9 +566,13 @@ public sealed class LegacyProfileImporter
 
     private static bool PathsOverlap(string first, string second)
     {
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        var firstWithSeparator = Path.EndsInDirectorySeparator(first) ? first : first + Path.DirectorySeparatorChar;
-        var secondWithSeparator = Path.EndsInDirectorySeparator(second) ? second : second + Path.DirectorySeparatorChar;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        string firstWithSeparator = Path.EndsInDirectorySeparator(first) ? first : first + Path.DirectorySeparatorChar;
+        string secondWithSeparator = Path.EndsInDirectorySeparator(second)
+            ? second
+            : second + Path.DirectorySeparatorChar;
 
         return string.Equals(first, second, comparison)
             || firstWithSeparator.StartsWith(secondWithSeparator, comparison)

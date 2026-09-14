@@ -233,7 +233,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         {
             await PausePlaybackAsync();
             await StopInstanceCoreAsync(cancellationToken);
-            var imported = await sessionManager.ImportAsync(path, managedRoot, cancellationToken);
+            DiagnosticReplaySession imported = await sessionManager.ImportAsync(path, managedRoot, cancellationToken);
             DetachPlayer();
             session = imported;
             player = playerFactory(imported);
@@ -351,7 +351,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
                 return false;
             }
 
-            var targetPosition = Position - 1;
+            int targetPosition = Position - 1;
             await PausePlaybackAsync();
             await StopInstanceCoreAsync(CancellationToken.None);
             await session.ResetRuntimeAsync(CancellationToken.None);
@@ -389,7 +389,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
                 return false;
             }
 
-            var stepped = await player.StepAsync(CancellationToken.None);
+            bool stepped = await player.StepAsync(CancellationToken.None);
             StatusMessage = stepped ? $"Emitted event {Position:N0} of {TotalEvents:N0}." : "Replay is complete.";
             return stepped;
         }
@@ -522,10 +522,10 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
             return;
         }
 
-        var current = instance;
+        IDiagnosticInstance current = instance;
         instance = null;
-        var monitorCancellation = instanceMonitorCancellation;
-        var monitor = instanceMonitorTask;
+        CancellationTokenSource? monitorCancellation = instanceMonitorCancellation;
+        Task? monitor = instanceMonitorTask;
         instanceMonitorCancellation = null;
         instanceMonitorTask = null;
         if (monitorCancellation is not null)
@@ -589,7 +589,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
     private async Task PausePlaybackAsync()
     {
-        var activePlayback = playbackTask;
+        Task? activePlayback = playbackTask;
         TryCancelPlayback();
         if (activePlayback is null)
         {
@@ -618,8 +618,8 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         await Task.Yield();
         try
         {
-            var exitCode = await observedInstance.WaitForExitAsync(cancellation.Token);
-            var exitTransition = await InvokeOnCapturedContextAsync(() =>
+            int exitCode = await observedInstance.WaitForExitAsync(cancellation.Token);
+            (bool Handled, Task Playback) exitTransition = await InvokeOnCapturedContextAsync(() =>
             {
                 if (!ReferenceEquals(instance, observedInstance))
                 {
@@ -673,7 +673,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
     private void TryCancelPlayback()
     {
-        var cancellation = playbackCancellation;
+        CancellationTokenSource? cancellation = playbackCancellation;
         if (cancellation is null)
         {
             return;
@@ -813,14 +813,14 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
             return string.Empty;
         }
 
-        var presentationStatus = session.PresentationSnapshot is null
+        string presentationStatus = session.PresentationSnapshot is null
             ? "No overlay presentation snapshot was included."
             : "Overlay enablement, layout, scale, opacity, and viewport are included.";
-        var companionStatus =
+        string companionStatus =
             session.MissingCompanionTimelines.Count == 0
                 ? "Synchronized Status, Cargo, ShipLocker, NavRoute, and Market timelines are included."
                 : "Missing companion timelines: " + string.Join(", ", session.MissingCompanionTimelines) + ".";
-        var companionCoverage =
+        string companionCoverage =
             session.CompanionFirstTimestamp is { } first && session.CompanionLastTimestamp is { } last
                 ? $" Companion coverage: {FormatTimestamp(first)} to {FormatTimestamp(last)}."
                 : string.Empty;
@@ -839,7 +839,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
 
     private static string ResolveDefaultExecutablePath()
     {
-        var executableName = OperatingSystem.IsWindows() ? "SrvSurvey.Desktop.exe" : "SrvSurvey.Desktop";
+        string executableName = OperatingSystem.IsWindows() ? "SrvSurvey.Desktop.exe" : "SrvSurvey.Desktop";
         return Path.Combine(AppContext.BaseDirectory, executableName);
     }
 

@@ -18,10 +18,10 @@ public static class StatusFileReader
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumAttempts, 1);
-        var delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
+        TimeSpan delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
         Exception? lastException = null;
 
-        for (var attempt = 1; attempt <= maximumAttempts; attempt++)
+        for (int attempt = 1; attempt <= maximumAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -36,14 +36,11 @@ public static class StatusFileReader
                 );
                 using var content = new MemoryStream();
                 await stream.CopyToAsync(content, cancellationToken).ConfigureAwait(false);
-                var bytes = content.ToArray();
-                var status = JsonSerializer.Deserialize<EliteStatus>(bytes, SerializerOptions);
-                if (status is null)
-                {
-                    throw new JsonException("Status.json contained no JSON value.");
-                }
-
-                var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
+                byte[] bytes = content.ToArray();
+                EliteStatus? status =
+                    JsonSerializer.Deserialize<EliteStatus>(bytes, SerializerOptions)
+                    ?? throw new JsonException("Status.json contained no JSON value.");
+                string hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
                 return new StatusReadResult(status, hash, null, attempt);
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)

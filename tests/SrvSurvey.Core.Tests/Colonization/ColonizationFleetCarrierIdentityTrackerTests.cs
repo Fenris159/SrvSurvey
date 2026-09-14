@@ -36,10 +36,10 @@ public sealed class ColonizationFleetCarrierIdentityTrackerTests
 
     private static JournalEventEnvelope Event(string eventName, string properties)
     {
-        var json = $$"""
+        string json = $$"""
             {"event":"{{eventName}}",{{properties}}}
             """;
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return result!;
     }
 }

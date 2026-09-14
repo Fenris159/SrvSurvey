@@ -51,32 +51,32 @@ public sealed class CodexImageCache : IDisposable
             throw new ArgumentOutOfRangeException(nameof(entryId), "A positive Codex entry ID is required.");
         }
 
-        var locations = ResolveLocations();
+        CodexImageLocations locations = ResolveLocations();
         if (!forceRefresh && ResolveLocalImage(locations.LocalFloraDirectory, localImageName) is { } localPath)
         {
             return new CodexImageCacheResult(localPath, true, true, null, true);
         }
 
-        if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https"))
+        if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out Uri? uri) || uri.Scheme is not ("http" or "https"))
         {
             return CodexImageCacheResult.Failed(string.Empty, "The Codex image URL is invalid.");
         }
 
-        var path = Path.Combine(locations.CacheDirectory, entryId + GetExtension(uri));
-        var cachedPath = !forceRefresh ? ResolveCachedImage(locations.CacheDirectory, entryId, path) : null;
+        string path = Path.Combine(locations.CacheDirectory, entryId + GetExtension(uri));
+        string? cachedPath = !forceRefresh ? ResolveCachedImage(locations.CacheDirectory, entryId, path) : null;
         if (cachedPath is not null)
         {
             return new CodexImageCacheResult(cachedPath, true, true, null);
         }
 
         Directory.CreateDirectory(locations.CacheDirectory);
-        var temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        string temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCancellation.CancelAfter(downloadTimeout);
-        var operationToken = timeoutCancellation.Token;
+        CancellationToken operationToken = timeoutCancellation.Token;
         try
         {
-            using var response = await httpClient
+            using HttpResponseMessage response = await httpClient
                 .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, operationToken)
                 .ConfigureAwait(false);
             if (response.StatusCode == HttpStatusCode.NotFound)
@@ -90,7 +90,7 @@ public sealed class CodexImageCache : IDisposable
                 return CodexImageCacheResult.Failed(path, "The reference image exceeds the 30 MB safety limit.");
             }
 
-            await using var source = await response.Content.ReadAsStreamAsync(operationToken).ConfigureAwait(false);
+            await using Stream source = await response.Content.ReadAsStreamAsync(operationToken).ConfigureAwait(false);
             await using (
                 var target = new FileStream(
                     temporaryPath,
@@ -139,20 +139,20 @@ public sealed class CodexImageCache : IDisposable
     )
     {
         ArgumentNullException.ThrowIfNull(requests);
-        var materialized = requests
+        CodexImageRequest[] materialized = requests
             .Where(request => request.EntryId > 0 && !string.IsNullOrWhiteSpace(request.ImageUrl))
             .GroupBy(request => request.EntryId)
             .Select(group => group.First())
             .ToArray();
-        var downloaded = 0;
-        var cached = 0;
-        var local = 0;
-        var failed = 0;
-        for (var index = 0; index < materialized.Length; index++)
+        int downloaded = 0;
+        int cached = 0;
+        int local = 0;
+        int failed = 0;
+        for (int index = 0; index < materialized.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var request = materialized[index];
-            var result = await GetAsync(
+            CodexImageRequest request = materialized[index];
+            CodexImageCacheResult result = await GetAsync(
                     request.EntryId,
                     request.ImageUrl,
                     request.LocalImageName,
@@ -200,11 +200,11 @@ public sealed class CodexImageCache : IDisposable
 
     private static async Task CopyWithLimitAsync(Stream source, Stream target, CancellationToken cancellationToken)
     {
-        var buffer = new byte[81_920];
+        byte[] buffer = new byte[81_920];
         long total = 0;
         while (true)
         {
-            var read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            int read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 return;
@@ -236,7 +236,7 @@ public sealed class CodexImageCache : IDisposable
 
     private CodexImageLocations ResolveLocations()
     {
-        var locations =
+        CodexImageLocations locations =
             locationProvider()
             ?? throw new InvalidOperationException("The Codex image location provider returned no locations.");
         return new CodexImageLocations(
@@ -262,7 +262,7 @@ public sealed class CodexImageCache : IDisposable
             return null;
         }
 
-        var path = Path.Combine(directory, imageName + ".png");
+        string path = Path.Combine(directory, imageName + ".png");
         return File.Exists(path) ? path : null;
     }
 
@@ -273,9 +273,9 @@ public sealed class CodexImageCache : IDisposable
             return preferredPath;
         }
 
-        foreach (var extension in KnownExtensions)
+        foreach (string extension in KnownExtensions)
         {
-            var candidate = Path.Combine(directory, entryId + extension);
+            string candidate = Path.Combine(directory, entryId + extension);
             if (File.Exists(candidate))
             {
                 return candidate;

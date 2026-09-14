@@ -21,7 +21,7 @@ public sealed class OverlayVisibilityPolicyTests
     {
         var identity = new OverlayId("PlotStationInfo");
 
-        var definition = OverlayLayoutCatalog.GetRequired(identity);
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired(identity);
 
         Assert.Equal(identity, definition.Id);
         Assert.Equal(identity.Value, definition.Name);
@@ -30,7 +30,7 @@ public sealed class OverlayVisibilityPolicyTests
     [Fact]
     public void RequestedEligibleOverlayCanBeHostedAndPresented()
     {
-        var decision = OverlayVisibilityPolicy.Evaluate(CreateVisibleFacts());
+        OverlayVisibilityDecision decision = OverlayVisibilityPolicy.Evaluate(CreateVisibleFacts());
 
         Assert.True(decision.ShouldHost);
         Assert.True(decision.ShouldPresent);
@@ -40,10 +40,25 @@ public sealed class OverlayVisibilityPolicyTests
     [Fact]
     public void PolicyPermissionIsSeparateFromIntentAndHostEligibility()
     {
-        var notRequested = OverlayVisibilityPolicy.Evaluate(CreateVisibleFacts() with { Requested = false });
-        var hostIneligible = OverlayVisibilityPolicy.Evaluate(CreateVisibleFacts() with { HostEligible = false });
-        var userDisabled = OverlayVisibilityPolicy.Evaluate(CreateVisibleFacts() with { UserEnabled = false });
-        var globallySuppressed = OverlayVisibilityPolicy.Evaluate(
+        OverlayVisibilityDecision notRequested = OverlayVisibilityPolicy.Evaluate(
+            CreateVisibleFacts() with
+            {
+                Requested = false,
+            }
+        );
+        OverlayVisibilityDecision hostIneligible = OverlayVisibilityPolicy.Evaluate(
+            CreateVisibleFacts() with
+            {
+                HostEligible = false,
+            }
+        );
+        OverlayVisibilityDecision userDisabled = OverlayVisibilityPolicy.Evaluate(
+            CreateVisibleFacts() with
+            {
+                UserEnabled = false,
+            }
+        );
+        OverlayVisibilityDecision globallySuppressed = OverlayVisibilityPolicy.Evaluate(
             CreateVisibleFacts() with
             {
                 ManualSuppressed = true,
@@ -69,9 +84,9 @@ public sealed class OverlayVisibilityPolicyTests
             (CreateVisibleFacts() with { PriorityObscured = true }, OverlayVisibilityReasons.PriorityObscured),
         };
 
-        foreach (var (facts, expectedReason) in cases)
+        foreach ((OverlayVisibilityFacts facts, OverlayVisibilityReasons expectedReason) in cases)
         {
-            var decision = OverlayVisibilityPolicy.Evaluate(facts);
+            OverlayVisibilityDecision decision = OverlayVisibilityPolicy.Evaluate(facts);
 
             Assert.False(decision.ShouldHost);
             Assert.False(decision.ShouldPresent);
@@ -89,9 +104,9 @@ public sealed class OverlayVisibilityPolicyTests
             (CreateVisibleFacts() with { EditorSuppressed = true }, OverlayVisibilityReasons.EditorSuppressed),
         };
 
-        foreach (var (facts, expectedReason) in cases)
+        foreach ((OverlayVisibilityFacts facts, OverlayVisibilityReasons expectedReason) in cases)
         {
-            var decision = OverlayVisibilityPolicy.Evaluate(facts);
+            OverlayVisibilityDecision decision = OverlayVisibilityPolicy.Evaluate(facts);
 
             Assert.True(decision.ShouldHost);
             Assert.False(decision.ShouldPresent);
@@ -102,7 +117,7 @@ public sealed class OverlayVisibilityPolicyTests
     [Fact]
     public void DecisionRetainsEveryActiveBlockingReason()
     {
-        var facts = CreateVisibleFacts() with
+        OverlayVisibilityFacts facts = CreateVisibleFacts() with
         {
             HostEligible = false,
             UserEnabled = false,
@@ -114,7 +129,7 @@ public sealed class OverlayVisibilityPolicyTests
             PriorityObscured = true,
         };
 
-        var decision = OverlayVisibilityPolicy.Evaluate(facts);
+        OverlayVisibilityDecision decision = OverlayVisibilityPolicy.Evaluate(facts);
 
         Assert.False(decision.ShouldHost);
         Assert.False(decision.ShouldPresent);
@@ -134,10 +149,14 @@ public sealed class OverlayVisibilityPolicyTests
     [Fact]
     public void ClearingTemporaryBlockersRestoresPresentationFromCurrentFacts()
     {
-        var blockedFacts = CreateVisibleFacts() with { UserEnabled = false, GalaxyMapAllowed = false };
+        OverlayVisibilityFacts blockedFacts = CreateVisibleFacts() with
+        {
+            UserEnabled = false,
+            GalaxyMapAllowed = false,
+        };
 
-        var blocked = OverlayVisibilityPolicy.Evaluate(blockedFacts);
-        var restored = OverlayVisibilityPolicy.Evaluate(
+        OverlayVisibilityDecision blocked = OverlayVisibilityPolicy.Evaluate(blockedFacts);
+        OverlayVisibilityDecision restored = OverlayVisibilityPolicy.Evaluate(
             blockedFacts with
             {
                 UserEnabled = true,

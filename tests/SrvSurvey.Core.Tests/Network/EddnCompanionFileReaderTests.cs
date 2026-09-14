@@ -22,7 +22,11 @@ public sealed class EddnCompanionFileReaderTests
             """
         );
 
-        var result = await EddnCompanionFileReader.read(folder.path, notification, retrySchedule: []);
+        EddnCompanionReadResult result = await EddnCompanionFileReader.read(
+            folder.path,
+            notification,
+            retrySchedule: []
+        );
 
         Assert.True(result.isSuccess, result.error);
         Assert.Equal(42, result.content!.Value<long>("MarketID"));
@@ -48,7 +52,11 @@ public sealed class EddnCompanionFileReaderTests
             """
         );
 
-        var result = await EddnCompanionFileReader.read(folder.path, notification, retrySchedule: []);
+        EddnCompanionReadResult result = await EddnCompanionFileReader.read(
+            folder.path,
+            notification,
+            retrySchedule: []
+        );
 
         Assert.False(result.isSuccess);
         Assert.Contains(expectedError, result.error);

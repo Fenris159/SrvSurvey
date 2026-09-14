@@ -19,12 +19,12 @@ public sealed class SystemNicknameViewModelTests : IDisposable
             Path.Combine(temporaryDirectory, "system-nick-names.json"),
             "{\"map\":{\"Sol\":\"Birthplace of Humanity\"}}"
         );
-        var path = Path.Combine(temporaryDirectory, "ui.json");
+        string path = Path.Combine(temporaryDirectory, "ui.json");
         var viewModel = new SystemNicknameViewModel(
             SystemNicknameCatalog.Load(temporaryDirectory),
             new SystemNicknameSettingsStore(path)
         );
-        var changed = 0;
+        int changed = 0;
         viewModel.NamesChanged += (_, _) => changed++;
 
         viewModel.Enabled = true;

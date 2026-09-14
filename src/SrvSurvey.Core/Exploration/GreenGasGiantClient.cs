@@ -40,7 +40,7 @@ public sealed class GreenGasGiantClient : IGreenGasGiantClient
                 }
             ),
         };
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
@@ -48,7 +48,7 @@ public sealed class GreenGasGiantClient : IGreenGasGiantClient
             return;
         }
 
-        var detail = await ReadErrorAsync(response, cancellationToken).ConfigureAwait(false);
+        string detail = await ReadErrorAsync(response, cancellationToken).ConfigureAwait(false);
         throw new HttpRequestException(
             $"Raven Colonial rejected the Green Gas Giant candidate "
                 + $"({(int)response.StatusCode} {response.ReasonPhrase}){detail}.",
@@ -59,7 +59,7 @@ public sealed class GreenGasGiantClient : IGreenGasGiantClient
 
     private static async Task<string> ReadErrorAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
-        var content = await BoundedHttpContent
+        string content = await BoundedHttpContent
             .ReadStringPrefixAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
             .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(content))
@@ -68,7 +68,7 @@ public sealed class GreenGasGiantClient : IGreenGasGiantClient
         }
 
         const int maximumLength = 512;
-        var compact = content.Trim().ReplaceLineEndings(" ");
+        string compact = content.Trim().ReplaceLineEndings(" ");
         if (compact.Length > maximumLength)
         {
             compact = compact[..maximumLength] + "...";

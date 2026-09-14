@@ -15,12 +15,12 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
     [Fact]
     public void DiscoveryReasonsMatchLegacyComparisonRules()
     {
-        var published = Published(
+        GuardianPublishedSite published = Published(
             siteHeading: -1,
             poiStatuses: new Dictionary<string, GuardianPoiStatus> { ["P1"] = GuardianPoiStatus.Present }
         );
         var service = new GuardianSurveyShareService(temporaryDirectory, new GuardianPublishedSiteCatalog([published]));
-        var survey = Survey(
+        GuardianCommanderSiteSurvey survey = Survey(
             Path.Combine(temporaryDirectory, "unused.json"),
             new GuardianSurveyData
             {
@@ -31,7 +31,7 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
             }
         );
 
-        var reasons = service.GetDiscoveryReasons(survey);
+        IReadOnlyList<string> reasons = service.GetDiscoveryReasons(survey);
 
         Assert.Contains("Raw points of interest", reasons);
         Assert.Contains("Site heading", reasons);
@@ -41,16 +41,16 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
     [Fact]
     public async Task PrepareCreatesArchiveWithOnlyNewSurveyData()
     {
-        var published = Published(
+        GuardianPublishedSite published = Published(
             siteHeading: 90,
             poiStatuses: new Dictionary<string, GuardianPoiStatus> { ["P1"] = GuardianPoiStatus.Present }
         );
-        var changedPath = SurveyPath("Body A-ruins-1.json");
-        var unchangedPath = SurveyPath("Body B-ruins-1.json");
+        string changedPath = SurveyPath("Body A-ruins-1.json");
+        string unchangedPath = SurveyPath("Body B-ruins-1.json");
         Directory.CreateDirectory(Path.GetDirectoryName(changedPath)!);
         await File.WriteAllTextAsync(changedPath, "{\"changed\":true}");
         await File.WriteAllTextAsync(unchangedPath, "{\"changed\":false}");
-        var changed = Survey(
+        GuardianCommanderSiteSurvey changed = Survey(
             changedPath,
             new GuardianSurveyData
             {
@@ -59,7 +59,7 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
                 PoiStatuses = new Dictionary<string, GuardianPoiStatus> { ["P1"] = GuardianPoiStatus.Absent },
             }
         );
-        var unchanged = Survey(
+        GuardianCommanderSiteSurvey unchanged = Survey(
             unchangedPath,
             new GuardianSurveyData
             {
@@ -75,13 +75,13 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         var catalog = new GuardianPublishedSiteCatalog([published, published with { FullBodyName = "Body B" }]);
         var service = new GuardianSurveyShareService(temporaryDirectory, catalog);
 
-        var result = await service.PrepareAsync(
+        GuardianSurveyShareBundle result = await service.PrepareAsync(
             FrontierId,
             true,
             new GuardianCommanderDataReadResult([changed, unchanged], [], [])
         );
 
-        var site = Assert.Single(result.Sites);
+        GuardianSurveyShareSite site = Assert.Single(result.Sites);
         Assert.Equal("Guardian Ruins A", site.DisplayName);
         Assert.Contains("Point-of-interest status", site.Reasons);
         Assert.True(File.Exists(result.ArchivePath));
@@ -145,8 +145,10 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         };
 
         await store.SaveAsync(FrontierId, true, survey);
-        var commanderData = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(FrontierId, true);
-        var loaded = Assert.Single(commanderData.Surveys);
+        GuardianCommanderDataReadResult commanderData = await new GuardianCommanderDataReader(
+            temporaryDirectory
+        ).ReadAsync(FrontierId, true);
+        GuardianCommanderSiteSurvey loaded = Assert.Single(commanderData.Surveys);
         var template = new GuardianSiteTemplate(
             "Lacrosse",
             "Lacrosse",
@@ -167,9 +169,9 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         Assert.True(calculator.IsSurveyComplete(loaded.Survey));
 
         var service = new GuardianSurveyShareService(temporaryDirectory, new GuardianPublishedSiteCatalog([]));
-        var result = await service.PrepareAsync(FrontierId, true, commanderData);
+        GuardianSurveyShareBundle result = await service.PrepareAsync(FrontierId, true, commanderData);
 
-        var shared = Assert.Single(result.Sites);
+        GuardianSurveyShareSite shared = Assert.Single(result.Sites);
         Assert.Contains("No published survey", shared.Reasons);
         Assert.Contains("Raw points of interest", shared.Reasons);
         Assert.Contains("Component materials", shared.Reasons);
@@ -205,34 +207,37 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
     {
         const string otherFrontierId = "F999";
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var survey = Survey(string.Empty, new GuardianSurveyData { SiteType = "Alpha" }) with
+        GuardianCommanderSiteSurvey survey = Survey(string.Empty, new GuardianSurveyData { SiteType = "Alpha" }) with
         {
             MapMarkerOffset = new GuardianMapPoint(8.25, -4.5),
         };
-        var path = await store.SaveAsync(FrontierId, true, survey);
+        string path = await store.SaveAsync(FrontierId, true, survey);
         survey = survey with { Path = path };
         var service = new GuardianSurveyShareService(
             temporaryDirectory,
             new GuardianPublishedSiteCatalog([Published(-1, new Dictionary<string, GuardianPoiStatus>())])
         );
 
-        var result = await service.PrepareAsync(
+        GuardianSurveyShareBundle result = await service.PrepareAsync(
             FrontierId,
             true,
             new GuardianCommanderDataReadResult([survey], [], [])
         );
 
-        var shared = Assert.Single(result.Sites);
+        GuardianSurveyShareSite shared = Assert.Single(result.Sites);
         Assert.Equal(["Map alignment offset"], shared.Reasons);
         using (ZipArchive archive = await ZipFile.OpenReadAsync(result.ArchivePath))
         {
-            var entry = Assert.Single(archive.Entries);
-            var destinationDirectory = Path.Combine(temporaryDirectory, "guardian", otherFrontierId);
+            ZipArchiveEntry entry = Assert.Single(archive.Entries);
+            string destinationDirectory = Path.Combine(temporaryDirectory, "guardian", otherFrontierId);
             Directory.CreateDirectory(destinationDirectory);
             await entry.ExtractToFileAsync(Path.Combine(destinationDirectory, entry.Name));
         }
 
-        var loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(otherFrontierId, true);
+        GuardianCommanderDataReadResult loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(
+            otherFrontierId,
+            true
+        );
 
         Assert.Equal(new GuardianMapPoint(8.25, -4.5), Assert.Single(loaded.Surveys).MapMarkerOffset);
     }
@@ -241,15 +246,18 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
     public async Task ContentChangesProduceANewArchiveName()
     {
         var service = new GuardianSurveyShareService(temporaryDirectory, new GuardianPublishedSiteCatalog([]));
-        var path = SurveyPath("Body A-ruins-1.json");
+        string path = SurveyPath("Body A-ruins-1.json");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, "first");
-        var survey = Survey(path, new GuardianSurveyData { SiteType = "Alpha", SiteHeading = 90 });
+        GuardianCommanderSiteSurvey survey = Survey(
+            path,
+            new GuardianSurveyData { SiteType = "Alpha", SiteHeading = 90 }
+        );
         var data = new GuardianCommanderDataReadResult([survey], [], []);
 
-        var first = await service.PrepareAsync(FrontierId, true, data);
+        GuardianSurveyShareBundle first = await service.PrepareAsync(FrontierId, true, data);
         await File.WriteAllTextAsync(path, "second");
-        var second = await service.PrepareAsync(FrontierId, true, data);
+        GuardianSurveyShareBundle second = await service.PrepareAsync(FrontierId, true, data);
 
         Assert.NotEqual(first.ArchivePath, second.ArchivePath);
         Assert.True(File.Exists(first.ArchivePath));
@@ -260,10 +268,13 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
     public async Task PrepareRejectsSurveyOutsideCommanderFolder()
     {
         var service = new GuardianSurveyShareService(temporaryDirectory, new GuardianPublishedSiteCatalog([]));
-        var outsidePath = Path.Combine(temporaryDirectory, "outside.json");
+        string outsidePath = Path.Combine(temporaryDirectory, "outside.json");
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(outsidePath, "survey");
-        var survey = Survey(outsidePath, new GuardianSurveyData { SiteType = "Alpha", SiteHeading = 90 });
+        GuardianCommanderSiteSurvey survey = Survey(
+            outsidePath,
+            new GuardianSurveyData { SiteType = "Alpha", SiteHeading = 90 }
+        );
 
         await Assert.ThrowsAsync<InvalidDataException>(() =>
             service.PrepareAsync(FrontierId, true, new GuardianCommanderDataReadResult([survey], [], []))

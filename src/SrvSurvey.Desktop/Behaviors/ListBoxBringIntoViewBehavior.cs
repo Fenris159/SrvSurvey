@@ -7,7 +7,7 @@ namespace SrvSurvey.Desktop.Behaviors;
 
 public static class ListBoxBringIntoViewBehavior
 {
-    private static readonly ConditionalWeakTable<ListBox, Subscription> Subscriptions = new();
+    private static readonly ConditionalWeakTable<ListBox, Subscription> Subscriptions = [];
 
     public static readonly AttachedProperty<bool> ContainProperty = AvaloniaProperty.RegisterAttached<
         ListBox,
@@ -38,7 +38,7 @@ public static class ListBoxBringIntoViewBehavior
             return;
         }
 
-        if (Subscriptions.TryGetValue(listBox, out var subscription))
+        if (Subscriptions.TryGetValue(listBox, out Subscription? subscription))
         {
             subscription.Dispose();
             Subscriptions.Remove(listBox);

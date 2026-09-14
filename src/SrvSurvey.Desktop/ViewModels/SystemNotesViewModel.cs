@@ -43,7 +43,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         this.noteStore = noteStore ?? throw new ArgumentNullException(nameof(noteStore));
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.journeyService = journeyService;
-        var settings = settingsStore.Load();
+        SystemNotesSettingsLoadResult settings = settingsStore.Load();
         alwaysOnTop = settings.Snapshot?.AlwaysOnTop ?? false;
         statusMessage = settings.IsSuccess
             ? "Open notes for the current system."
@@ -62,7 +62,9 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
     public string SystemName => loadedContext?.SystemName ?? currentContext?.SystemName ?? Unavailable;
 
     public string SystemAddress =>
-        (loadedContext ?? currentContext) is { } context ? context.SystemAddress.ToString() : Unavailable;
+        (loadedContext ?? currentContext) is { } context
+            ? context.SystemAddress.ToString(CultureInfo.InvariantCulture)
+            : Unavailable;
 
     public string Notes
     {
@@ -141,7 +143,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         GalacticCoordinate? starPosition
     )
     {
-        var next =
+        SystemNoteContext? next =
             string.IsNullOrWhiteSpace(frontierId)
             || string.IsNullOrWhiteSpace(systemName)
             || systemAddress is null or <= 0
@@ -192,7 +194,11 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             StatusMessage = $"Loading notes for {context.SystemName}\u2026";
-            var result = await noteStore.LoadAsync(context.FrontierId, context.SystemName, context.SystemAddress);
+            SystemNoteLoadResult result = await noteStore.LoadAsync(
+                context.FrontierId,
+                context.SystemName,
+                context.SystemAddress
+            );
             if (!result.IsSuccess)
             {
                 StatusMessage = result.Error ?? "The system notes could not be loaded.";
@@ -245,7 +251,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var path = await noteStore.SaveAsync(context, Notes);
+            string path = await noteStore.SaveAsync(context, Notes);
             if (journeyService is not null)
             {
                 await journeyService.IncrementNoteCountAsync(context.SystemAddress);
@@ -295,7 +301,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
             return ReportMissingSystemAsync();
         }
 
-        var system = Uri.EscapeDataString(context.SystemName);
+        string system = Uri.EscapeDataString(context.SystemName);
         return LaunchUriAsync(new Uri(WellKnownUris.CanonnSignalsSystemPrefix + system), "Canonn Signals");
     }
 
@@ -331,7 +337,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
 
         try
         {
-            var launched = await directoryLauncher(new DirectoryInfo(imagesDirectory));
+            bool launched = await directoryLauncher(new DirectoryInfo(imagesDirectory));
             StatusMessage = launched
                 ? "Opened the system screenshot folder."
                 : "The operating system could not open the screenshot folder.";
@@ -414,7 +420,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
 
         try
         {
-            var launched = await uriLauncher(uri);
+            bool launched = await uriLauncher(uri);
             StatusMessage = launched ? $"Opened {label}." : $"The operating system could not open {label}.";
         }
         catch (Exception exception)

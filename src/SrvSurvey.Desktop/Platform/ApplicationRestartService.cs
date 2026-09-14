@@ -29,8 +29,8 @@ public sealed class ApplicationRestartService
     public void StartReplacement()
     {
         DesktopExternalEffectPolicy.ThrowIfDisabled();
-        var startInfo = CreateStartInfo(processPath, entryAssemblyPath, arguments);
-        using var process =
+        ProcessStartInfo startInfo = CreateStartInfo(processPath, entryAssemblyPath, arguments);
+        using Process process =
             Process.Start(startInfo)
             ?? throw new InvalidOperationException("The replacement SrvSurvey process did not start.");
     }
@@ -55,7 +55,7 @@ public sealed class ApplicationRestartService
             startInfo.ArgumentList.Add(entryAssemblyPath);
         }
 
-        foreach (var argument in arguments)
+        foreach (string argument in arguments)
         {
             startInfo.ArgumentList.Add(argument);
         }

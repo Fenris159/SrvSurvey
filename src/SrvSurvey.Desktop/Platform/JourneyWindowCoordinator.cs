@@ -49,7 +49,7 @@ public sealed class JourneyWindowCoordinator : IDisposable
 
         disposed = true;
         viewModel.SetWindowOpener(null);
-        var journeyWindow = window;
+        JourneyWindow? journeyWindow = window;
         window = null;
         if (journeyWindow is not null)
         {

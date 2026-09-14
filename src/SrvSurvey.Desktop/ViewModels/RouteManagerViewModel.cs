@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Routes;
@@ -118,7 +119,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     {
         get
         {
-            var routeCount = Routes.Count;
+            int routeCount = Routes.Count;
             if (SelectedCount == 0)
             {
                 return $"{routeCount:N0} saved route{(routeCount == 1 ? string.Empty : "s")}";
@@ -287,7 +288,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     public async Task UpdateContextAsync(string? nextFrontierId)
     {
-        var normalized = string.IsNullOrWhiteSpace(nextFrontierId) ? null : nextFrontierId.Trim();
+        string? normalized = string.IsNullOrWhiteSpace(nextFrontierId) ? null : nextFrontierId.Trim();
         if (string.Equals(frontierId, normalized, StringComparison.OrdinalIgnoreCase))
         {
             return;
@@ -318,8 +319,8 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var imported = 0;
-            foreach (var path in filePaths.Distinct(PathComparer))
+            int imported = 0;
+            foreach (string? path in filePaths.Distinct(PathComparer))
             {
                 await routeService.ImportAsync(frontierId, path);
                 imported++;
@@ -349,8 +350,11 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var selected = Routes.Where(route => route.IsSelected).Select(route => route.ToCatalogEntry()).ToArray();
-            var exported = await routeService.ExportAsync(frontierId, selected, destinationDirectory);
+            FollowRouteCatalogEntry[] selected = Routes
+                .Where(route => route.IsSelected)
+                .Select(route => route.ToCatalogEntry())
+                .ToArray();
+            IReadOnlyList<string> exported = await routeService.ExportAsync(frontierId, selected, destinationDirectory);
             StatusMessage =
                 $"Exported {exported.Count:N0} route file{(exported.Count == 1 ? string.Empty : "s")} to {Path.GetFullPath(destinationDirectory)}.";
         }
@@ -394,8 +398,16 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var selected = Routes.Where(route => route.IsSelected).Select(route => route.ToCatalogEntry()).ToArray();
-            var exported = await export(frontierId, selected, destinationDirectory, CancellationToken.None);
+            FollowRouteCatalogEntry[] selected = Routes
+                .Where(route => route.IsSelected)
+                .Select(route => route.ToCatalogEntry())
+                .ToArray();
+            IReadOnlyList<string> exported = await export(
+                frontierId,
+                selected,
+                destinationDirectory,
+                CancellationToken.None
+            );
             StatusMessage =
                 $"Exported {exported.Count:N0} {format} route file{(exported.Count == 1 ? string.Empty : "s")} to {Path.GetFullPath(destinationDirectory)}.";
         }
@@ -480,7 +492,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     private async Task OpenSelectedAsync()
     {
-        var selected = Routes.SingleOrDefault(route => route.IsSelected);
+        RouteManagerItemViewModel? selected = Routes.SingleOrDefault(route => route.IsSelected);
         if (selected is null)
         {
             return;
@@ -536,13 +548,13 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             return;
         }
 
-        var entries = await routeService.ListAsync(frontierId);
+        IReadOnlyList<FollowRouteCatalogEntry> entries = await routeService.ListAsync(frontierId);
         var existing = Routes.ToDictionary(route => route.FilePath, PathComparer);
         var seen = new HashSet<string>(PathComparer);
-        foreach (var entry in entries)
+        foreach (FollowRouteCatalogEntry entry in entries)
         {
             seen.Add(entry.FilePath);
-            if (existing.TryGetValue(entry.FilePath, out var row))
+            if (existing.TryGetValue(entry.FilePath, out RouteManagerItemViewModel? row))
             {
                 row.Update(entry);
             }
@@ -561,7 +573,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             }
         }
 
-        for (var index = Routes.Count - 1; index >= 0; index--)
+        for (int index = Routes.Count - 1; index >= 0; index--)
         {
             if (!seen.Contains(Routes[index].FilePath))
             {
@@ -583,7 +595,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var saved = await routeService.SetFavoriteAsync(
+            FollowRouteDocument saved = await routeService.SetFavoriteAsync(
                 frontierId,
                 route.FileName,
                 route.IsLegacy,
@@ -630,7 +642,12 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var result = await routeService.RenameAsync(frontierId, route.FileName, route.IsLegacy, RenameDraft);
+            FollowRouteRenameResult result = await routeService.RenameAsync(
+                frontierId,
+                route.FileName,
+                route.IsLegacy,
+                RenameDraft
+            );
             route.Update(result.CatalogEntry);
             await workspace.HandleRouteRenamedAsync(result);
             ReorderRoutes();
@@ -657,7 +674,12 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var saved = await routeService.SaveNotesAsync(frontierId, route.FileName, route.IsLegacy, NotesDraft);
+            FollowRouteDocument saved = await routeService.SaveNotesAsync(
+                frontierId,
+                route.FileName,
+                route.IsLegacy,
+                NotesDraft
+            );
             route.SetNotes(saved.Notes);
             workspace.ApplyExternalNotes(route.FilePath, saved.Notes);
             StatusMessage = $"Saved notes for {route.Name}.";
@@ -686,7 +708,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             return;
         }
 
-        var selected = Routes.Where(route => route.IsSelected).ToArray();
+        RouteManagerItemViewModel[] selected = Routes.Where(route => route.IsSelected).ToArray();
         if (selected.Length == 0)
         {
             return;
@@ -696,8 +718,8 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var deletedLoadedRoute = selected.Any(route => workspace.IsLoadedSavedRoute(route.FilePath));
-            foreach (var route in selected)
+            bool deletedLoadedRoute = selected.Any(route => workspace.IsLoadedSavedRoute(route.FilePath));
+            foreach (RouteManagerItemViewModel? route in selected)
             {
                 await routeService.DeleteNamedAsync(frontierId, route.FileName, route.IsLegacy);
             }
@@ -783,10 +805,12 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
                 ?? source.OrderBy(keySelector, RouteManagerSortComparer.Instance)
             : sorted?.ThenByDescending(keySelector, RouteManagerSortComparer.Instance)
                 ?? source.OrderByDescending(keySelector, RouteManagerSortComparer.Instance);
-        var target = ordered.ThenBy(route => route.FileName, StringComparer.OrdinalIgnoreCase).ToArray();
-        for (var index = 0; index < target.Length; index++)
+        RouteManagerItemViewModel[] target = ordered
+            .ThenBy(route => route.FileName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        for (int index = 0; index < target.Length; index++)
         {
-            var currentIndex = Routes.IndexOf(target[index]);
+            int currentIndex = Routes.IndexOf(target[index]);
             if (currentIndex != index)
             {
                 Routes.Move(currentIndex, index);
@@ -796,7 +820,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     private void SelectAll()
     {
-        foreach (var route in Routes)
+        foreach (RouteManagerItemViewModel route in Routes)
         {
             route.IsSelected = true;
         }
@@ -804,7 +828,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     private void ClearSelection()
     {
-        foreach (var route in Routes)
+        foreach (RouteManagerItemViewModel route in Routes)
         {
             route.IsSelected = false;
         }
@@ -885,7 +909,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         sortDateCommand.RaiseCanExecuteChanged();
         selectAllCommand.RaiseCanExecuteChanged();
         clearSelectionCommand.RaiseCanExecuteChanged();
-        foreach (var route in Routes)
+        foreach (RouteManagerItemViewModel route in Routes)
         {
             route.RaiseCanExecuteChanged();
         }
@@ -1061,7 +1085,7 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
 
     public DateTimeOffset CreatedAt => createdAt;
 
-    public string CreatedAtText => CreatedAt.LocalDateTime.ToString("g");
+    public string CreatedAtText => CreatedAt.LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
 
     public string? Notes => notes;
 

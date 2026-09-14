@@ -26,22 +26,22 @@ public sealed class GuardianArtifactGlyphControl : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
-        if (!TryResolveType(ArtifactCode, out var type))
+        if (!TryResolveType(ArtifactCode, out GuardianPoiType type))
         {
             return;
         }
 
-        var style = GuardianLegacyMapDrawing.GetPointStyle(type, GuardianPoiStatus.Present);
+        GuardianLegacyPointStyle style = GuardianLegacyMapDrawing.GetPointStyle(type, GuardianPoiStatus.Present);
         var fill = new SolidColorBrush(style.Fill);
         var pen = new Pen(new SolidColorBrush(style.Stroke), 2);
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
         if (type == GuardianPoiType.Relic)
         {
             var geometry = new StreamGeometry();
-            var points = GuardianLegacyMapDrawing.CreateGlyphPoints(type, center, 0, 0.65);
-            using var geometryContext = geometry.Open();
+            IReadOnlyList<Point> points = GuardianLegacyMapDrawing.CreateGlyphPoints(type, center, 0, 0.65);
+            using StreamGeometryContext geometryContext = geometry.Open();
             geometryContext.BeginFigure(points[0], isFilled: true);
-            foreach (var point in points.Skip(1))
+            foreach (Point point in points.Skip(1))
             {
                 geometryContext.LineTo(point);
             }

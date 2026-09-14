@@ -50,7 +50,7 @@ public static class BoxelPlanetClassifier
             return false;
         }
 
-        if (percent > 0 && percent <= 100)
+        if (percent is > 0 and <= 100)
         {
             return true;
         }
@@ -129,7 +129,7 @@ public static class BoxelPlanetClassifier
         out double percent
     )
     {
-        var pair = atmosphereComposition.FirstOrDefault(pair =>
+        KeyValuePair<string, double> pair = atmosphereComposition.FirstOrDefault(pair =>
             string.Equals(pair.Key, "Helium", StringComparison.OrdinalIgnoreCase)
         );
         if (pair.Key is not null)

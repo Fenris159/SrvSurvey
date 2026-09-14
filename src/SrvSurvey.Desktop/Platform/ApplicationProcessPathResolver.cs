@@ -17,7 +17,7 @@ internal static partial class ApplicationProcessPathResolver
         error = null;
         try
         {
-            var path = process.MainModule?.FileName;
+            string? path = process.MainModule?.FileName;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 executablePath = Canonicalize(path);
@@ -53,7 +53,7 @@ internal static partial class ApplicationProcessPathResolver
     public static string Canonicalize(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        var fullPath = Path.GetFullPath(path);
+        string fullPath = Path.GetFullPath(path);
         if (OperatingSystem.IsLinux())
         {
             try
@@ -66,7 +66,7 @@ internal static partial class ApplicationProcessPathResolver
                 // The normalized absolute path remains a safe fallback.
             }
         }
-        else if (OperatingSystem.IsWindows() && TryGetFinalWindowsPath(fullPath, out var finalPath))
+        else if (OperatingSystem.IsWindows() && TryGetFinalWindowsPath(fullPath, out string? finalPath))
         {
             fullPath = finalPath;
         }
@@ -76,7 +76,7 @@ internal static partial class ApplicationProcessPathResolver
 
     internal static bool TryResolveWindows(int processId, out string? executablePath, out string? error)
     {
-        using var handle = OpenProcess(ProcessQueryLimitedInformation, inheritHandle: false, processId);
+        using SafeProcessHandle handle = OpenProcess(ProcessQueryLimitedInformation, inheritHandle: false, processId);
         if (handle.IsInvalid)
         {
             executablePath = null;
@@ -84,10 +84,10 @@ internal static partial class ApplicationProcessPathResolver
             return false;
         }
 
-        var buffer = ArrayPool<char>.Shared.Rent(MaximumWindowsPathCapacity);
+        char[] buffer = ArrayPool<char>.Shared.Rent(MaximumWindowsPathCapacity);
         try
         {
-            var capacity = buffer.Length;
+            int capacity = buffer.Length;
             if (!QueryFullProcessImageNameW(handle, 0, buffer, ref capacity))
             {
                 executablePath = null;
@@ -109,7 +109,7 @@ internal static partial class ApplicationProcessPathResolver
     {
         try
         {
-            var link = new FileInfo($"/proc/{processId}/exe").ResolveLinkTarget(returnFinalTarget: true);
+            FileSystemInfo? link = new FileInfo($"/proc/{processId}/exe").ResolveLinkTarget(returnFinalTarget: true);
             if (link is null)
             {
                 executablePath = null;
@@ -134,16 +134,16 @@ internal static partial class ApplicationProcessPathResolver
     {
         try
         {
-            using var handle = File.OpenHandle(
+            using SafeFileHandle handle = File.OpenHandle(
                 path,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete
             );
-            var buffer = ArrayPool<char>.Shared.Rent(MaximumWindowsPathCapacity);
+            char[] buffer = ArrayPool<char>.Shared.Rent(MaximumWindowsPathCapacity);
             try
             {
-                var length = GetFinalPathNameByHandleW(handle, buffer, (uint)buffer.Length, 0);
+                uint length = GetFinalPathNameByHandleW(handle, buffer, (uint)buffer.Length, 0);
                 if (length == 0 || length >= buffer.Length)
                 {
                     finalPath = path;

@@ -516,17 +516,17 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
                 return;
             }
 
-            var updated = catalog.WithTemplate(session.Template);
-            var result = await exporter.ExportAsync(updated, path, cancellationToken);
+            GuardianSiteTemplateCatalog updated = catalog.WithTemplate(session.Template);
+            GuardianSiteTemplateExportResult result = await exporter.ExportAsync(updated, path, cancellationToken);
             catalog = updated;
             activeTemplate = session.Template;
             LastExportPath = result.Path;
-            var installed = string.Equals(
+            bool installed = string.Equals(
                 Path.GetFullPath(result.Path),
                 DefaultCatalogPath,
                 StringComparison.OrdinalIgnoreCase
             );
-            var action = installed ? "Saved and installed" : "Exported a copy of";
+            string action = installed ? "Saved and installed" : "Exported a copy of";
             StatusMessage = result.BackupPath is null
                 ? $"{action} {result.TemplateCount:N0} verified Guardian templates."
                 : $"{action} {result.TemplateCount:N0} verified Guardian templates; the previous file was backed up.";
@@ -584,7 +584,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
         try
         {
-            var sourcePath = Path.GetFullPath(path);
+            string sourcePath = Path.GetFullPath(path);
             if (!File.Exists(sourcePath))
             {
                 StatusMessage = "The selected Guardian map background no longer exists.";
@@ -592,10 +592,10 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             }
 
             Directory.CreateDirectory(ManagedBackgroundDirectory);
-            var siteType = SanitizeFileName(activeTemplate?.SiteType ?? "map");
-            using var source = File.OpenRead(sourcePath);
-            var hash = Convert.ToHexString(SHA256.HashData(source)).ToLowerInvariant()[..12];
-            var targetPath = Path.Combine(
+            string siteType = SanitizeFileName(activeTemplate?.SiteType ?? "map");
+            using FileStream source = File.OpenRead(sourcePath);
+            string hash = Convert.ToHexString(SHA256.HashData(source)).ToLowerInvariant()[..12];
+            string targetPath = Path.Combine(
                 ManagedBackgroundDirectory,
                 $"{siteType}-{hash}-{Path.GetFileName(sourcePath)}"
             );
@@ -621,7 +621,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             return;
         }
 
-        var selectedName = SelectedPoint?.Name;
+        string? selectedName = SelectedPoint?.Name;
         draftMode = GuardianTemplateDraftMode.EditCurrent;
         session = new GuardianSiteTemplateAuthoringSession(activeTemplate);
         LoadMetadata(session.Template);
@@ -669,7 +669,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
         try
         {
-            var name = string.IsNullOrWhiteSpace(NewPointName) ? NextPointName(NewPointType) : NewPointName.Trim();
+            string name = string.IsNullOrWhiteSpace(NewPointName) ? NextPointName(NewPointType) : NewPointName.Trim();
             session.AddPoint(
                 new GuardianPointOfInterest(
                     name,
@@ -803,13 +803,13 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             return null;
         }
 
-        var template = BuildSelectedPointPreview() ?? session.Template;
-        var previewBackground =
+        GuardianSiteTemplate template = BuildSelectedPointPreview() ?? session.Template;
+        string previewBackground =
             IsNewMapDraft && string.IsNullOrWhiteSpace(BackgroundImage)
                 ? "__guardian-map-draft-awaiting-background__.png"
                 : BackgroundImage.Trim();
-        var previewName = string.IsNullOrWhiteSpace(TemplateName) ? template.Name : TemplateName.Trim();
-        var previewScale = ScaleFactor > 0 ? decimal.ToDouble(ScaleFactor) : template.ScaleFactor;
+        string previewName = string.IsNullOrWhiteSpace(TemplateName) ? template.Name : TemplateName.Trim();
+        double previewScale = ScaleFactor > 0 ? decimal.ToDouble(ScaleFactor) : template.ScaleFactor;
         return template with
         {
             Name = previewName,
@@ -860,7 +860,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
     private void RefreshCollections(string? selectedName = null)
     {
-        var template = session?.Template ?? activeTemplate;
+        GuardianSiteTemplate? template = session?.Template ?? activeTemplate;
         Points = template is null
             ? []
             : template
@@ -874,7 +874,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
                 .Select(pair => new GuardianTemplateGroupViewModel(pair.Key, pair.Value))
                 .ToArray()
             ?? [];
-        var selectedPointName = selectedName ?? SelectedPoint?.Name;
+        string? selectedPointName = selectedName ?? SelectedPoint?.Name;
         SelectedPoint = selectedPointName is null
             ? null
             : Points.FirstOrDefault(point =>
@@ -921,7 +921,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
     private string NextPointName(GuardianPoiType type)
     {
-        var prefix = type switch
+        string prefix = type switch
         {
             GuardianPoiType.Relic => "t",
             GuardianPoiType.Pylon => "py",
@@ -934,10 +934,10 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             .Concat(session?.Template.DestructiblePanels ?? [])
             .Select(point => point.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var index = 1;
+        int index = 1;
         while (true)
         {
-            var candidate = prefix == "A" ? $"A{index:00}" : $"{prefix}{index}";
+            string candidate = prefix == "A" ? $"A{index:00}" : $"{prefix}{index}";
             if (!names.Contains(candidate))
             {
                 return candidate;
@@ -949,8 +949,10 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
 
     private static string SanitizeFileName(string value)
     {
-        var invalid = Path.GetInvalidFileNameChars().ToHashSet();
-        var sanitized = new string(value.Select(character => invalid.Contains(character) ? '-' : character).ToArray());
+        HashSet<char> invalid = Path.GetInvalidFileNameChars().ToHashSet();
+        string sanitized = new string(
+            value.Select(character => invalid.Contains(character) ? '-' : character).ToArray()
+        );
         return string.IsNullOrWhiteSpace(sanitized) ? "map" : sanitized;
     }
 

@@ -13,9 +13,9 @@ public sealed class JumpInfoSettingsStore
 
     public JumpInfoPreferences Load()
     {
-        var root = documentStore.Load();
+        JsonObject root = documentStore.Load();
         var jumpInfo = root["JumpInfo"] as JsonObject;
-        var defaults = JumpInfoPreferences.Default;
+        JumpInfoPreferences defaults = JumpInfoPreferences.Default;
         return new JumpInfoPreferences(
             GetBoolean(jumpInfo, "AutoShow", defaults.AutoShow),
             GetBoolean(jumpInfo, "Minimal", defaults.Minimal),
@@ -46,7 +46,7 @@ public sealed class JumpInfoSettingsStore
 
     private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
     }
 }
 

@@ -13,7 +13,7 @@ public sealed class BoxelSurveyStatsSettingsStore
 
     public BoxelSurveyStatsPreferences Load()
     {
-        var defaults = BoxelSurveyStatsPreferences.Default;
+        BoxelSurveyStatsPreferences defaults = BoxelSurveyStatsPreferences.Default;
         var settings = documentStore.Load()["BoxelSurveyStats"] as JsonObject;
         return new BoxelSurveyStatsPreferences(
             GetInt32(settings, "MinSystemsForAverages", defaults.MinSystemsForAverages, 1, 1000),
@@ -44,11 +44,11 @@ public sealed class BoxelSurveyStatsSettingsStore
     private static int Clamp(int value) => Math.Clamp(value, 1, 1000);
 
     private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback) =>
-        settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
+        settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
 
     private static int GetInt32(JsonObject? settings, string propertyName, int fallback, int minimum, int maximum)
     {
-        if (settings?[propertyName] is not JsonValue value || !value.TryGetValue<int>(out var number))
+        if (settings?[propertyName] is not JsonValue value || !value.TryGetValue<int>(out int number))
         {
             return fallback;
         }

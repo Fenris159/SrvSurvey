@@ -26,7 +26,7 @@ public sealed class GitHubReleaseNotesTests
             Hidden notice.
             """;
 
-        var result = GitHubReleaseNotes.ExtractChanges(markdown);
+        string result = GitHubReleaseNotes.ExtractChanges(markdown);
 
         Assert.Contains("Summary of this release.", result);
         Assert.Contains("- Second change.", result);
@@ -64,7 +64,7 @@ public sealed class GitHubReleaseNotesTests
             - Do not include this section either.
             """;
 
-        var result = GitHubReleaseNotes.ExtractChanges(markdown);
+        string result = GitHubReleaseNotes.ExtractChanges(markdown);
 
         Assert.Contains("Summary of this release.", result);
         Assert.Contains("Include this change.", result);

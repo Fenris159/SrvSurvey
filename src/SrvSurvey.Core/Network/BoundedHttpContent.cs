@@ -24,15 +24,14 @@ internal static class BoundedHttpContent
             throw TooLarge(description, maximumBytes);
         }
 
-        await using var input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        using var output =
-            content.Headers.ContentLength is > 0 && content.Headers.ContentLength <= int.MaxValue
-                ? new MemoryStream((int)content.Headers.ContentLength.Value)
-                : new MemoryStream();
-        var buffer = new byte[BufferSize];
+        await using Stream input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        using MemoryStream output = content.Headers.ContentLength is > 0 and <= int.MaxValue
+            ? new MemoryStream((int)content.Headers.ContentLength.Value)
+            : new MemoryStream();
+        byte[] buffer = new byte[BufferSize];
         while (true)
         {
-            var read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            int read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 return output.ToArray();
@@ -54,7 +53,8 @@ internal static class BoundedHttpContent
         CancellationToken cancellationToken = default
     )
     {
-        var bytes = await ReadBytesAsync(content, maximumBytes, description, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await ReadBytesAsync(content, maximumBytes, description, cancellationToken)
+            .ConfigureAwait(false);
         return JsonDocument.Parse(bytes);
     }
 
@@ -65,7 +65,8 @@ internal static class BoundedHttpContent
         CancellationToken cancellationToken = default
     )
     {
-        var bytes = await ReadBytesAsync(content, maximumBytes, description, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await ReadBytesAsync(content, maximumBytes, description, cancellationToken)
+            .ConfigureAwait(false);
         return JsonNode.Parse(bytes);
     }
 
@@ -77,7 +78,8 @@ internal static class BoundedHttpContent
         CancellationToken cancellationToken = default
     )
     {
-        var bytes = await ReadBytesAsync(content, maximumBytes, description, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await ReadBytesAsync(content, maximumBytes, description, cancellationToken)
+            .ConfigureAwait(false);
         return JsonSerializer.Deserialize<T>(bytes, options ?? JsonSerializerOptions.Web);
     }
 
@@ -88,8 +90,9 @@ internal static class BoundedHttpContent
         CancellationToken cancellationToken = default
     )
     {
-        var bytes = await ReadBytesAsync(content, maximumBytes, description, cancellationToken).ConfigureAwait(false);
-        var encoding = ResolveEncoding(content.Headers.ContentType?.CharSet);
+        byte[] bytes = await ReadBytesAsync(content, maximumBytes, description, cancellationToken)
+            .ConfigureAwait(false);
+        Encoding encoding = ResolveEncoding(content.Headers.ContentType?.CharSet);
         return encoding.GetString(bytes);
     }
 
@@ -102,14 +105,14 @@ internal static class BoundedHttpContent
         ArgumentNullException.ThrowIfNull(content);
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumBytes, 1);
 
-        await using var input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var output = new MemoryStream(maximumBytes);
-        var buffer = new byte[Math.Min(BufferSize, maximumBytes)];
-        var truncated = content.Headers.ContentLength > maximumBytes;
+        byte[] buffer = new byte[Math.Min(BufferSize, maximumBytes)];
+        bool truncated = content.Headers.ContentLength > maximumBytes;
         while (output.Length < maximumBytes)
         {
-            var remaining = maximumBytes - (int)output.Length;
-            var read = await input
+            int remaining = maximumBytes - (int)output.Length;
+            int read = await input
                 .ReadAsync(buffer.AsMemory(0, Math.Min(buffer.Length, remaining)), cancellationToken)
                 .ConfigureAwait(false);
             if (read == 0)
@@ -125,7 +128,7 @@ internal static class BoundedHttpContent
             truncated = await input.ReadAsync(buffer.AsMemory(0, 1), cancellationToken).ConfigureAwait(false) > 0;
         }
 
-        var encoding = ResolveEncoding(content.Headers.ContentType?.CharSet);
+        Encoding encoding = ResolveEncoding(content.Headers.ContentType?.CharSet);
         return encoding.GetString(output.ToArray()) + (truncated ? "..." : string.Empty);
     }
 

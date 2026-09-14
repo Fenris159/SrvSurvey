@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -102,7 +103,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
             return;
         }
 
-        var gameWindow = gameWindowTracker.GetSnapshot();
+        GameWindowSnapshot gameWindow = gameWindowTracker.GetSnapshot();
         if (!gameWindow.IsAvailable || !gameWindow.IsVisible || !gameWindow.IsForeground)
         {
             CloseWindow();
@@ -131,7 +132,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameBounds);
-            var preparation = platform.PreparePassiveWindow(overlay);
+            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
             if (!preparation.IsClickThrough)
             {
                 viewModel.StatusMessage = preparation.Status;
@@ -151,7 +152,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
 
     private static void PositionWindow(Window target, PixelRect gameBounds)
     {
-        var screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
+        Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
         if (screen is null)
         {
             return;
@@ -164,7 +165,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
 
     private void RenderFrames(StreamOverlayWindow target, PixelRect gameBounds)
     {
-        var screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
+        Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
         if (screen is null)
         {
             return;
@@ -173,19 +174,24 @@ public sealed class StreamOverlayCoordinator : IDisposable
         var rendered = new List<StreamOverlayRenderedFrame>();
         try
         {
-            foreach (var registered in registry.Snapshot())
+            foreach (RegisteredOverlayWindow registered in registry.Snapshot())
             {
-                var source = registered.Window;
-                var renderSource = registered.RenderSource;
-                var renderBounds = renderSource.Bounds;
+                Window source = registered.Window;
+                Visual renderSource = registered.RenderSource;
+                Rect renderBounds = renderSource.Bounds;
                 if (!registered.IsVisible || renderBounds.Width <= 0 || renderBounds.Height <= 0)
                 {
                     continue;
                 }
 
-                var sourceScaling = source.RenderScaling;
+                double sourceScaling = source.RenderScaling;
                 var pixelSize = PixelSize.FromSize(renderBounds.Size, sourceScaling);
-                var projection = StreamOverlayProjection.Create(gameBounds, source.Position, pixelSize, screen.Scaling);
+                StreamOverlayFrame? projection = StreamOverlayProjection.Create(
+                    gameBounds,
+                    source.Position,
+                    pixelSize,
+                    screen.Scaling
+                );
                 if (projection is null)
                 {
                     continue;
@@ -216,7 +222,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         }
         catch (Exception exception)
         {
-            foreach (var frame in rendered)
+            foreach (StreamOverlayRenderedFrame frame in rendered)
             {
                 frame.Bitmap.Dispose();
             }
@@ -227,7 +233,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
 
     private void CloseWindow()
     {
-        var overlay = window;
+        StreamOverlayWindow? overlay = window;
         if (overlay is null)
         {
             return;

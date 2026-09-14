@@ -39,7 +39,9 @@ public sealed class SystemSurfaceStore
     )
     {
         ValidateContext(context);
-        var result = await fileStore.LoadAsync(ToFileContext(context), cancellationToken).ConfigureAwait(false);
+        LegacySystemDataFileLoadResult result = await fileStore
+            .LoadAsync(ToFileContext(context), cancellationToken)
+            .ConfigureAwait(false);
         if (result.Root is null)
         {
             return result.Exists
@@ -48,7 +50,7 @@ public sealed class SystemSurfaceStore
         }
 
         var warnings = new List<string>();
-        var body = FindBody(result.Root, context);
+        JsonObject? body = FindBody(result.Root, context);
         if (body is null)
         {
             return new SystemSurfaceLoadResult(result.Path, true, false, CreateEmptySnapshot(context), null, warnings);
@@ -76,7 +78,7 @@ public sealed class SystemSurfaceStore
                 ToFileContext(context),
                 root =>
                 {
-                    var body = GetOrCreateBody(root, context);
+                    JsonObject body = GetOrCreateBody(root, context);
                     if (location is null)
                     {
                         body.Remove(LastTouchdownProperty);
@@ -107,17 +109,17 @@ public sealed class SystemSurfaceStore
             throw new ArgumentOutOfRangeException(nameof(minimumSeparationMeters));
         }
 
-        var outcome = SurfaceBookmarkMutation.Added;
-        var path = await fileStore
+        SurfaceBookmarkMutation outcome = SurfaceBookmarkMutation.Added;
+        string path = await fileStore
             .UpdateAsync(
                 ToFileContext(context),
                 root =>
                 {
-                    var body = GetOrCreateBody(root, context);
-                    var bookmarks = GetOrCreateObject(body, BookmarksProperty);
+                    JsonObject body = GetOrCreateBody(root, context);
+                    JsonObject bookmarks = GetOrCreateObject(body, BookmarksProperty);
                     NormalizeLegacyBookmarkKeys(bookmarks);
-                    var locations = GetOrCreateArray(bookmarks, name);
-                    var existing = locations
+                    JsonArray locations = GetOrCreateArray(bookmarks, name);
+                    IEnumerable<SurfaceCoordinate> existing = locations
                         .Select(ReadCoordinate)
                         .Where(coordinate => coordinate is not null)
                         .Select(coordinate => coordinate!.Value);
@@ -153,7 +155,7 @@ public sealed class SystemSurfaceStore
                 ToFileContext(context),
                 root =>
                 {
-                    var body = FindBody(root, context);
+                    JsonObject? body = FindBody(root, context);
                     if (body?[BookmarksProperty] is not JsonObject bookmarks)
                     {
                         return;
@@ -196,8 +198,8 @@ public sealed class SystemSurfaceStore
         ValidateContext(context);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         name = LegacySurfaceBookmarkNames.Canonicalize(name);
-        var outcome = SurfaceBookmarkMutation.Added;
-        var path = await fileStore
+        SurfaceBookmarkMutation outcome = SurfaceBookmarkMutation.Added;
+        string path = await fileStore
             .UpdateAsync(
                 ToFileContext(context),
                 root =>
@@ -217,10 +219,10 @@ public sealed class SystemSurfaceStore
         SurfaceCoordinate location
     )
     {
-        var body = GetOrCreateBody(root, context);
+        JsonObject body = GetOrCreateBody(root, context);
         if (body[BookmarksProperty] is not JsonObject existing)
         {
-            var bookmarks = GetOrCreateObject(body, BookmarksProperty);
+            JsonObject bookmarks = GetOrCreateObject(body, BookmarksProperty);
             bookmarks[name] = new JsonArray(WriteCoordinate(location));
             return SurfaceBookmarkMutation.Added;
         }
@@ -257,8 +259,8 @@ public sealed class SystemSurfaceStore
             throw new ArgumentOutOfRangeException(nameof(maximumDistanceMeters));
         }
 
-        var outcome = SurfaceBookmarkMutation.NotFound;
-        var path = await fileStore
+        SurfaceBookmarkMutation outcome = SurfaceBookmarkMutation.NotFound;
+        string path = await fileStore
             .UpdateAsync(
                 ToFileContext(context),
                 root =>
@@ -283,7 +285,7 @@ public sealed class SystemSurfaceStore
         double? maximumDistanceMeters
     )
     {
-        var body = FindBody(root, context);
+        JsonObject? body = FindBody(root, context);
         if (body?[BookmarksProperty] is not JsonObject bookmarks)
         {
             return false;
@@ -295,7 +297,7 @@ public sealed class SystemSurfaceStore
             return false;
         }
 
-        var selectedIndex = FindBookmarkIndex(
+        int? selectedIndex = FindBookmarkIndex(
             locations,
             location,
             context.RadiusMeters,
@@ -361,7 +363,7 @@ public sealed class SystemSurfaceStore
     {
         ValidateContext(context);
         ArgumentNullException.ThrowIfNull(scans);
-        foreach (var scan in scans)
+        foreach (SurfaceBioScan scan in scans)
         {
             ArgumentNullException.ThrowIfNull(scan);
             if (!double.IsFinite(scan.RadiusMeters) || scan.RadiusMeters <= 0)
@@ -377,9 +379,9 @@ public sealed class SystemSurfaceStore
                 ToFileContext(context),
                 root =>
                 {
-                    var body = GetOrCreateBody(root, context);
-                    var bioScans = GetOrCreateArray(body, BioScansProperty);
-                    foreach (var scan in scans)
+                    JsonObject body = GetOrCreateBody(root, context);
+                    JsonArray bioScans = GetOrCreateArray(body, BioScansProperty);
+                    foreach (SurfaceBioScan scan in scans)
                     {
                         if (bioScans.Any(node => IsSameScan(node, scan)))
                         {
@@ -404,9 +406,9 @@ public sealed class SystemSurfaceStore
         ArgumentNullException.ThrowIfNull(scannedBioEntryIds);
         var warnings = new List<string>();
         var claims = new HashSet<SurfaceBioScanClaim>();
-        foreach (var value in scannedBioEntryIds)
+        foreach (string value in scannedBioEntryIds)
         {
-            if (TryParseBioScanClaim(value, out var claim))
+            if (TryParseBioScanClaim(value, out SurfaceBioScanClaim claim))
             {
                 claims.Add(claim);
             }
@@ -418,12 +420,12 @@ public sealed class SystemSurfaceStore
             }
         }
 
-        var markedScanCount = 0;
-        var changedFileCount = 0;
-        foreach (var systemGroup in claims.GroupBy(claim => claim.SystemAddress))
+        int markedScanCount = 0;
+        int changedFileCount = 0;
+        foreach (IGrouping<long, SurfaceBioScanClaim> systemGroup in claims.GroupBy(claim => claim.SystemAddress))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var systemAddress = systemGroup.Key;
+            long systemAddress = systemGroup.Key;
             var claimsByBody = systemGroup
                 .GroupBy(claim => claim.BodyId)
                 .ToDictionary(group => group.Key, group => group.Select(claim => claim.EntryId).ToHashSet());
@@ -434,12 +436,12 @@ public sealed class SystemSurfaceStore
                 systemAddress,
                 null
             );
-            var result = await fileStore
+            LegacySystemDataFileUpdateResult result = await fileStore
                 .UpdateExistingAsync(
                     fileContext,
                     root =>
                     {
-                        var marked = MarkSystemBioScansDied(root, claimsByBody);
+                        int marked = MarkSystemBioScansDied(root, claimsByBody);
                         markedScanCount += marked;
                         return marked > 0;
                     },
@@ -467,19 +469,19 @@ public sealed class SystemSurfaceStore
             return 0;
         }
 
-        var markedScanCount = 0;
-        foreach (var body in bodies.OfType<JsonObject>())
+        int markedScanCount = 0;
+        foreach (JsonObject body in bodies.OfType<JsonObject>())
         {
             if (
                 GetInt32(body[BodyIdProperty]) is not { } bodyId
-                || !claimsByBody.TryGetValue(bodyId, out var entryIds)
+                || !claimsByBody.TryGetValue(bodyId, out HashSet<long>? entryIds)
                 || body[BioScansProperty] is not JsonArray scans
             )
             {
                 continue;
             }
 
-            foreach (var scan in scans.OfType<JsonObject>())
+            foreach (JsonObject scan in scans.OfType<JsonObject>())
             {
                 if (
                     GetInt64(scan[EntryIdProperty]) is not { } entryId
@@ -515,12 +517,12 @@ public sealed class SystemSurfaceStore
             return false;
         }
 
-        var parts = value.Split('_', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        string[] parts = value.Split('_', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (
             parts.Length < 5
-            || !long.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var systemAddress)
-            || !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var bodyId)
-            || !long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var entryId)
+            || !long.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out long systemAddress)
+            || !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int bodyId)
+            || !long.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out long entryId)
             || systemAddress <= 0
             || bodyId < 0
             || entryId <= 0
@@ -539,9 +541,9 @@ public sealed class SystemSurfaceStore
         List<string> warnings
     )
     {
-        var bookmarks = ReadBookmarks(body, warnings);
-        var scans = ReadBioScans(body, warnings);
-        var touchdown = ReadCoordinate(body[LastTouchdownProperty]);
+        Dictionary<string, IReadOnlyList<SurfaceCoordinate>> bookmarks = ReadBookmarks(body, warnings);
+        List<SurfaceBioScan> scans = ReadBioScans(body, warnings);
+        SurfaceCoordinate? touchdown = ReadCoordinate(body[LastTouchdownProperty]);
         if (body[LastTouchdownProperty] is not null && touchdown is null)
         {
             warnings.Add("The saved touchdown coordinates are invalid and were ignored.");
@@ -573,10 +575,10 @@ public sealed class SystemSurfaceStore
             return new Dictionary<string, IReadOnlyList<SurfaceCoordinate>>(StringComparer.Ordinal);
         }
 
-        var normalizedBookmarks = bookmarks.DeepClone().AsObject();
+        JsonObject normalizedBookmarks = bookmarks.DeepClone().AsObject();
         NormalizeLegacyBookmarkKeys(normalizedBookmarks);
         var result = new Dictionary<string, IReadOnlyList<SurfaceCoordinate>>(StringComparer.Ordinal);
-        foreach (var pair in normalizedBookmarks)
+        foreach (KeyValuePair<string, JsonNode?> pair in normalizedBookmarks)
         {
             if (pair.Value is not JsonArray locations)
             {
@@ -585,7 +587,7 @@ public sealed class SystemSurfaceStore
             }
 
             var parsed = new List<SurfaceCoordinate>();
-            foreach (var node in locations)
+            foreach (JsonNode? node in locations)
             {
                 if (ReadCoordinate(node) is { } coordinate)
                 {
@@ -597,8 +599,8 @@ public sealed class SystemSurfaceStore
                 }
             }
 
-            var name = LegacySurfaceBookmarkNames.Canonicalize(pair.Key);
-            if (result.TryGetValue(name, out var existing))
+            string name = LegacySurfaceBookmarkNames.Canonicalize(pair.Key);
+            if (result.TryGetValue(name, out IReadOnlyList<SurfaceCoordinate>? existing))
             {
                 result[name] = [.. existing, .. parsed];
             }
@@ -613,9 +615,9 @@ public sealed class SystemSurfaceStore
 
     private static void NormalizeLegacyBookmarkKeys(JsonObject bookmarks)
     {
-        foreach (var pair in bookmarks.ToArray())
+        foreach (KeyValuePair<string, JsonNode?> pair in bookmarks.ToArray())
         {
-            var canonical = LegacySurfaceBookmarkNames.Canonicalize(pair.Key);
+            string canonical = LegacySurfaceBookmarkNames.Canonicalize(pair.Key);
             if (
                 string.Equals(canonical, pair.Key, StringComparison.Ordinal)
                 || pair.Value is not JsonArray legacyLocations
@@ -636,7 +638,7 @@ public sealed class SystemSurfaceStore
                 continue;
             }
 
-            foreach (var location in legacyLocations)
+            foreach (JsonNode? location in legacyLocations)
             {
                 canonicalLocations.Add(location?.DeepClone());
             }
@@ -659,7 +661,7 @@ public sealed class SystemSurfaceStore
         }
 
         var result = new List<SurfaceBioScan>();
-        foreach (var node in scans)
+        foreach (JsonNode? node in scans)
         {
             if (node is not JsonObject scan || ReadCoordinate(scan[LocationProperty]) is not { } location)
             {
@@ -667,7 +669,7 @@ public sealed class SystemSurfaceStore
                 continue;
             }
 
-            var radius = GetDouble(scan[BodyRadiusProperty]) ?? 50;
+            double radius = GetDouble(scan[BodyRadiusProperty]) ?? 50;
             if (!double.IsFinite(radius) || radius <= 0)
             {
                 warnings.Add("A biological scan with an invalid radius was ignored.");
@@ -726,7 +728,7 @@ public sealed class SystemSurfaceStore
             throw new InvalidDataException("The legacy system body's collection is malformed and was not overwritten.");
         }
 
-        var body = FindBody(root, context);
+        JsonObject? body = FindBody(root, context);
         if (body is not null)
         {
             return body;
@@ -856,7 +858,7 @@ public sealed class SystemSurfaceStore
 
     private static string? GetString(JsonNode? node)
     {
-        return node is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return node is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 
     private static int? GetInt32(JsonNode? node)
@@ -866,13 +868,13 @@ public sealed class SystemSurfaceStore
             return null;
         }
 
-        if (value.TryGetValue<int>(out var result))
+        if (value.TryGetValue<int>(out int result))
         {
             return result;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out result)
             ? result
             : null;
@@ -885,13 +887,13 @@ public sealed class SystemSurfaceStore
             return null;
         }
 
-        if (value.TryGetValue<long>(out var result))
+        if (value.TryGetValue<long>(out long result))
         {
             return result;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out result)
             ? result
             : null;
@@ -904,13 +906,13 @@ public sealed class SystemSurfaceStore
             return null;
         }
 
-        if (value.TryGetValue<double>(out var result))
+        if (value.TryGetValue<double>(out double result))
         {
             return result;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out result)
             ? result
             : null;

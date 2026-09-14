@@ -28,63 +28,41 @@ internal static class MainWindowPlacement
     )
     {
         ArgumentNullException.ThrowIfNull(monitors);
-        var requestedScale = ApplicationWindowScaleCatalog.Normalize(applicationScalePercent) / 100d;
-        MainWindowMonitor? savedMonitor = null;
-        if (lastPosition is not null)
-        {
-            savedMonitor = FindMonitor(monitors, lastPosition.MonitorId);
-            if (savedMonitor is null && lastPosition.MonitorId is null)
-            {
-                savedMonitor = FindMonitorContainingPoint(monitors, new PixelPoint(lastPosition.X, lastPosition.Y));
-            }
-        }
+        double requestedScale = ApplicationWindowScaleCatalog.Normalize(applicationScalePercent) / 100d;
+        MainWindowMonitor? savedMonitor = ResolveSavedMonitor(monitors, lastPosition);
 
-        var preferredMonitor = FindMonitor(monitors, preferredMonitorId);
-        var targetMonitor =
+        MainWindowMonitor? preferredMonitor = FindMonitor(monitors, preferredMonitorId);
+        MainWindowMonitor? targetMonitor =
             savedMonitor
             ?? preferredMonitor
             ?? FindMonitor(monitors, automaticMonitorId)
             ?? monitors.FirstOrDefault(monitor => monitor.IsPrimary)
-            ?? monitors.FirstOrDefault();
-        var shouldPosition = lastPosition is not null || !string.IsNullOrWhiteSpace(preferredMonitorId);
+            ?? (monitors.Count > 0 ? monitors[0] : null);
+        bool shouldPosition = lastPosition is not null || !string.IsNullOrWhiteSpace(preferredMonitorId);
 
         if (targetMonitor is null)
         {
             return CreateResult(requestedScale, monitor: null, position: null, usedPreferredMonitor: false);
         }
 
-        var screenScale =
+        double screenScale =
             double.IsFinite(targetMonitor.Scaling) && targetMonitor.Scaling > 0 ? targetMonitor.Scaling : 1d;
-        var workingArea =
+        PixelRect workingArea =
             targetMonitor.WorkingArea.Width > 0 && targetMonitor.WorkingArea.Height > 0
                 ? targetMonitor.WorkingArea
                 : targetMonitor.Bounds;
-        var availableWidth = (workingArea.Width / screenScale) - (WorkingAreaMargin * 2);
-        var availableHeight = (workingArea.Height / screenScale) - (WorkingAreaMargin * 2);
-        var fitScale = Math.Min(availableWidth / DefaultWidth, availableHeight / DefaultHeight);
-        var effectiveScale = fitScale > 0 ? Math.Min(requestedScale, fitScale) : requestedScale;
-        PixelPoint? position = null;
-        if (shouldPosition)
-        {
-            var widthInPixels = (int)Math.Round(DefaultWidth * effectiveScale * screenScale);
-            var heightInPixels = (int)Math.Round(DefaultHeight * effectiveScale * screenScale);
-            if (savedMonitor is not null)
-            {
-                position = ClampPosition(
-                    new PixelPoint(lastPosition!.X, lastPosition.Y),
-                    workingArea,
-                    widthInPixels,
-                    heightInPixels
-                );
-            }
-            else
-            {
-                position = new PixelPoint(
-                    workingArea.X + Math.Max(0, (workingArea.Width - widthInPixels) / 2),
-                    workingArea.Y + Math.Max(0, (workingArea.Height - heightInPixels) / 2)
-                );
-            }
-        }
+        double availableWidth = (workingArea.Width / screenScale) - (WorkingAreaMargin * 2);
+        double availableHeight = (workingArea.Height / screenScale) - (WorkingAreaMargin * 2);
+        double fitScale = Math.Min(availableWidth / DefaultWidth, availableHeight / DefaultHeight);
+        double effectiveScale = fitScale > 0 ? Math.Min(requestedScale, fitScale) : requestedScale;
+        PixelPoint? position = ResolvePosition(
+            shouldPosition,
+            savedMonitor,
+            lastPosition,
+            workingArea,
+            effectiveScale,
+            screenScale
+        );
 
         return CreateResult(
             effectiveScale,
@@ -92,6 +70,49 @@ internal static class MainWindowPlacement
             position,
             preferredMonitor is not null && ReferenceEquals(targetMonitor, preferredMonitor)
         );
+    }
+
+    private static MainWindowMonitor? ResolveSavedMonitor(
+        IReadOnlyList<MainWindowMonitor> monitors,
+        ApplicationWindowPosition? lastPosition
+    )
+    {
+        if (lastPosition is null)
+        {
+            return null;
+        }
+
+        MainWindowMonitor? monitor = FindMonitor(monitors, lastPosition.MonitorId);
+        return monitor
+            ?? (
+                lastPosition.MonitorId is null
+                    ? FindMonitorContainingPoint(monitors, new PixelPoint(lastPosition.X, lastPosition.Y))
+                    : null
+            );
+    }
+
+    private static PixelPoint? ResolvePosition(
+        bool shouldPosition,
+        MainWindowMonitor? savedMonitor,
+        ApplicationWindowPosition? lastPosition,
+        PixelRect workingArea,
+        double effectiveScale,
+        double screenScale
+    )
+    {
+        if (!shouldPosition)
+        {
+            return null;
+        }
+
+        int widthInPixels = (int)Math.Round(DefaultWidth * effectiveScale * screenScale);
+        int heightInPixels = (int)Math.Round(DefaultHeight * effectiveScale * screenScale);
+        return savedMonitor is not null
+            ? ClampPosition(new PixelPoint(lastPosition!.X, lastPosition.Y), workingArea, widthInPixels, heightInPixels)
+            : new PixelPoint(
+                workingArea.X + Math.Max(0, (workingArea.Width - widthInPixels) / 2),
+                workingArea.Y + Math.Max(0, (workingArea.Height - heightInPixels) / 2)
+            );
     }
 
     private static MainWindowPlacementResult CreateResult(
@@ -115,17 +136,17 @@ internal static class MainWindowPlacement
 
     private static MainWindowMonitor DescribeScreen(Screen screen, int index)
     {
-        var displayName = screen.DisplayName?.Trim();
-        var id = !string.IsNullOrWhiteSpace(displayName)
+        string? displayName = screen.DisplayName?.Trim();
+        string id = !string.IsNullOrWhiteSpace(displayName)
             ? displayName
             : string.Create(
                 CultureInfo.InvariantCulture,
                 $"bounds:{screen.Bounds.X},{screen.Bounds.Y}," + $"{screen.Bounds.Width},{screen.Bounds.Height}"
             );
-        var friendlyName = displayName?.Replace(@"\\.\", string.Empty) ?? $"Monitor {index + 1}";
-        var primary = screen.IsPrimary ? " (Primary)" : string.Empty;
-        var displayScale = double.IsFinite(screen.Scaling) && screen.Scaling > 0 ? screen.Scaling : 1d;
-        var label = string.Create(
+        string friendlyName = displayName?.Replace(@"\\.\", string.Empty) ?? $"Monitor {index + 1}";
+        string primary = screen.IsPrimary ? " (Primary)" : string.Empty;
+        double displayScale = double.IsFinite(screen.Scaling) && screen.Scaling > 0 ? screen.Scaling : 1d;
+        string label = string.Create(
             CultureInfo.InvariantCulture,
             $"{friendlyName}{primary} - {screen.Bounds.Width} x " + $"{screen.Bounds.Height} - {displayScale * 100:0}%"
         );
@@ -139,7 +160,9 @@ internal static class MainWindowPlacement
             return null;
         }
 
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         return monitors.FirstOrDefault(monitor => string.Equals(monitor.Id, id, comparison));
     }
 
@@ -163,8 +186,8 @@ internal static class MainWindowPlacement
         int windowHeight
     )
     {
-        var maximumX = workingArea.X + Math.Max(0, workingArea.Width - windowWidth);
-        var maximumY = workingArea.Y + Math.Max(0, workingArea.Height - windowHeight);
+        int maximumX = workingArea.X + Math.Max(0, workingArea.Width - windowWidth);
+        int maximumY = workingArea.Y + Math.Max(0, workingArea.Height - windowHeight);
         return new PixelPoint(
             Math.Clamp(position.X, workingArea.X, maximumX),
             Math.Clamp(position.Y, workingArea.Y, maximumY)

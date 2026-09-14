@@ -10,7 +10,7 @@ public sealed class JournalFolderLocatorTests
         const string configured = @"D:\Elite\Journals";
         const string environment = @"E:\Other\Journals";
 
-        var result = JournalFolderLocator.Resolve(
+        JournalFolderResolution result = JournalFolderLocator.Resolve(
             configured,
             environment,
             @"C:\Users\Cmdr",
@@ -27,7 +27,7 @@ public sealed class JournalFolderLocatorTests
     [Fact]
     public void ResolveDeduplicatesWindowsPathsCaseInsensitively()
     {
-        var result = JournalFolderLocator.Resolve(
+        JournalFolderResolution result = JournalFolderLocator.Resolve(
             @"D:\Elite\Journals",
             @"d:\elite\journals",
             @"C:\Users\Cmdr",
@@ -41,7 +41,7 @@ public sealed class JournalFolderLocatorTests
     [Fact]
     public void LinuxDefaultsIncludeCommonSteamInstallations()
     {
-        var paths = JournalFolderLocator.GetPlatformDefaults("/home/cmdr", DesktopPlatform.Linux);
+        IReadOnlyList<string> paths = JournalFolderLocator.GetPlatformDefaults("/home/cmdr", DesktopPlatform.Linux);
 
         Assert.Equal(4, paths.Count);
         Assert.Contains(
@@ -61,10 +61,10 @@ public sealed class JournalFolderLocatorTests
     [Fact]
     public void LinuxCandidatesDiscoverMixedLauncherPrefixes()
     {
-        var home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-linux-journal-candidates-{Guid.NewGuid():N}");
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-linux-journal-candidates-{Guid.NewGuid():N}");
         try
         {
-            var steam = CreateJournalDirectory(
+            string steam = CreateJournalDirectory(
                 home,
                 ".local",
                 "share",
@@ -77,8 +77,8 @@ public sealed class JournalFolderLocatorTests
                 "users",
                 "steamuser"
             );
-            var frontier = CreateJournalDirectory(home, ".wine", "drive_c", "users", "cmdr");
-            var heroic = CreateJournalDirectory(
+            string frontier = CreateJournalDirectory(home, ".wine", "drive_c", "users", "cmdr");
+            string heroic = CreateJournalDirectory(
                 home,
                 "Games",
                 "Heroic",
@@ -90,8 +90,8 @@ public sealed class JournalFolderLocatorTests
                 "users",
                 "steamuser"
             );
-            var lutris = CreateJournalDirectory(home, "Games", "elite-dangerous", "drive_c", "users", "cmdr");
-            var bottles = CreateJournalDirectory(
+            string lutris = CreateJournalDirectory(home, "Games", "elite-dangerous", "drive_c", "users", "cmdr");
+            string bottles = CreateJournalDirectory(
                 home,
                 ".local",
                 "share",
@@ -103,7 +103,7 @@ public sealed class JournalFolderLocatorTests
                 "cmdr"
             );
 
-            var candidates = JournalFolderLocator.GetPlatformCandidates(home, DesktopPlatform.Linux);
+            IReadOnlyList<string> candidates = JournalFolderLocator.GetPlatformCandidates(home, DesktopPlatform.Linux);
 
             Assert.Contains(steam, candidates);
             Assert.Contains(frontier, candidates);
@@ -123,10 +123,10 @@ public sealed class JournalFolderLocatorTests
     [Fact]
     public void LinuxCandidatesGiveSiblingGamePrefixesIndependentDirectoryBudgets()
     {
-        var home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-linux-prefix-budget-{Guid.NewGuid():N}");
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-linux-prefix-budget-{Guid.NewGuid():N}");
         try
         {
-            var heroic = CreateJournalDirectory(
+            string heroic = CreateJournalDirectory(
                 home,
                 "Games",
                 "Heroic",
@@ -138,16 +138,16 @@ public sealed class JournalFolderLocatorTests
                 "users",
                 "steamuser"
             );
-            var unrelated = Path.Combine(home, "Games", "Unrelated");
-            for (var group = 0; group < 65; group++)
+            string unrelated = Path.Combine(home, "Games", "Unrelated");
+            for (int group = 0; group < 65; group++)
             {
-                for (var leaf = 0; leaf < 65; leaf++)
+                for (int leaf = 0; leaf < 65; leaf++)
                 {
                     Directory.CreateDirectory(Path.Combine(unrelated, $"group-{group:D2}", $"leaf-{leaf:D2}"));
                 }
             }
 
-            var candidates = JournalFolderLocator.GetPlatformCandidates(home, DesktopPlatform.Linux);
+            IReadOnlyList<string> candidates = JournalFolderLocator.GetPlatformCandidates(home, DesktopPlatform.Linux);
 
             Assert.Contains(heroic, candidates);
         }
@@ -163,29 +163,29 @@ public sealed class JournalFolderLocatorTests
     [Fact]
     public async Task LinuxCandidatesReadCustomLauncherAndSteamLibraryPrefixes()
     {
-        var home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-linux-launcher-config-{Guid.NewGuid():N}");
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-linux-launcher-config-{Guid.NewGuid():N}");
         try
         {
-            var heroicPrefix = Path.Combine(home, "custom", "heroic-prefix");
-            var heroic = CreateJournalDirectory(heroicPrefix, "pfx", "drive_c", "users", "heroic");
-            var heroicConfig = Path.Combine(home, ".config", "heroic", "GamesConfig");
+            string heroicPrefix = Path.Combine(home, "custom", "heroic-prefix");
+            string heroic = CreateJournalDirectory(heroicPrefix, "pfx", "drive_c", "users", "heroic");
+            string heroicConfig = Path.Combine(home, ".config", "heroic", "GamesConfig");
             Directory.CreateDirectory(heroicConfig);
             await File.WriteAllTextAsync(
                 Path.Combine(heroicConfig, "elite.json"),
                 $$"""{"winePrefix":"{{heroicPrefix.Replace("\\", "\\\\", StringComparison.Ordinal)}}"}"""
             );
 
-            var lutrisPrefix = Path.Combine(home, "custom", "lutris-prefix");
-            var lutris = CreateJournalDirectory(lutrisPrefix, "drive_c", "users", "lutris");
-            var lutrisConfig = Path.Combine(home, ".config", "lutris", "games");
+            string lutrisPrefix = Path.Combine(home, "custom", "lutris-prefix");
+            string lutris = CreateJournalDirectory(lutrisPrefix, "drive_c", "users", "lutris");
+            string lutrisConfig = Path.Combine(home, ".config", "lutris", "games");
             Directory.CreateDirectory(lutrisConfig);
             await File.WriteAllTextAsync(
                 Path.Combine(lutrisConfig, "elite.yml"),
                 $"game:\n  prefix: '{lutrisPrefix}'\n"
             );
 
-            var steamLibrary = Path.Combine(home, "custom", "steam-library");
-            var steam = CreateJournalDirectory(
+            string steamLibrary = Path.Combine(home, "custom", "steam-library");
+            string steam = CreateJournalDirectory(
                 steamLibrary,
                 "steamapps",
                 "compatdata",
@@ -195,15 +195,15 @@ public sealed class JournalFolderLocatorTests
                 "users",
                 "steamuser"
             );
-            var steamConfig = Path.Combine(home, ".local", "share", "Steam", "steamapps");
+            string steamConfig = Path.Combine(home, ".local", "share", "Steam", "steamapps");
             Directory.CreateDirectory(steamConfig);
-            var escapedSteamLibrary = steamLibrary.Replace("\\", "\\\\", StringComparison.Ordinal);
+            string escapedSteamLibrary = steamLibrary.Replace("\\", "\\\\", StringComparison.Ordinal);
             await File.WriteAllTextAsync(
                 Path.Combine(steamConfig, "libraryfolders.vdf"),
                 $"\"libraryfolders\" {{ \"0\" {{ \"path\" \"{escapedSteamLibrary}\" }} }}"
             );
 
-            var candidates = JournalFolderLocator.GetPlatformCandidates(home, DesktopPlatform.Linux);
+            IReadOnlyList<string> candidates = JournalFolderLocator.GetPlatformCandidates(home, DesktopPlatform.Linux);
 
             Assert.Contains(heroic, candidates);
             Assert.Contains(lutris, candidates);
@@ -227,7 +227,7 @@ public sealed class JournalFolderLocatorTests
             "/home/cmdr/Games/Heroic/Prefixes/default/Elite Dangerous/pfx/drive_c/users/steamuser/Saved Games/Frontier Developments/Elite Dangerous";
         var existing = new HashSet<string>([steam, heroic], StringComparer.Ordinal);
 
-        var result = JournalFolderLocator.Resolve(
+        JournalFolderResolution result = JournalFolderLocator.Resolve(
             configuredPath: null,
             environmentPath: null,
             userProfile: "/home/cmdr",
@@ -241,7 +241,13 @@ public sealed class JournalFolderLocatorTests
 
     private static string CreateJournalDirectory(string home, params string[] prefixSegments)
     {
-        var path = Path.Combine([home, .. prefixSegments, "Saved Games", "Frontier Developments", "Elite Dangerous"]);
+        string path = Path.Combine([
+            home,
+            .. prefixSegments,
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous",
+        ]);
         Directory.CreateDirectory(path);
         return Path.GetFullPath(path);
     }

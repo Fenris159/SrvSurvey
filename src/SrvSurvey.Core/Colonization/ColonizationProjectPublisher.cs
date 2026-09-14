@@ -14,9 +14,11 @@ public sealed class ColonizationProjectPublisher(IRavenColonialClient client)
     {
         ArgumentNullException.ThrowIfNull(project);
 
-        var systemKey = project.SystemAddress.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        var sitesBeforeCreation = await client.GetSystemSitesAsync(systemKey, cancellationToken).ConfigureAwait(false);
-        var primarySiteId = GetPrimarySiteId(sitesBeforeCreation);
+        string systemKey = project.SystemAddress.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        IReadOnlyList<ColonizationSystemSite> sitesBeforeCreation = await client
+            .GetSystemSitesAsync(systemKey, cancellationToken)
+            .ConfigureAwait(false);
+        string? primarySiteId = GetPrimarySiteId(sitesBeforeCreation);
 
         if (sitesBeforeCreation.Count > 0 && primarySiteId is null)
         {
@@ -35,7 +37,9 @@ public sealed class ColonizationProjectPublisher(IRavenColonialClient client)
             );
         }
 
-        var created = await client.CreateProjectAsync(project, cancellationToken).ConfigureAwait(false);
+        ColonizationProject? created = await client
+            .CreateProjectAsync(project, cancellationToken)
+            .ConfigureAwait(false);
         if (created is null)
         {
             return new ColonizationProjectPublishResult(null, ColonizationPrimarySiteOrderStatus.NotRequired, null);
@@ -48,7 +52,7 @@ public sealed class ColonizationProjectPublisher(IRavenColonialClient client)
 
         try
         {
-            var status = await PreservePrimarySiteOrderAsync(
+            ColonizationPrimarySiteOrderStatus status = await PreservePrimarySiteOrderAsync(
                     systemKey,
                     primarySiteId,
                     created,
@@ -78,12 +82,14 @@ public sealed class ColonizationProjectPublisher(IRavenColonialClient client)
         CancellationToken cancellationToken
     )
     {
-        var correctionSent = false;
-        var latest = await client.GetSystemSitesAsync(systemKey, cancellationToken).ConfigureAwait(false);
+        bool correctionSent = false;
+        IReadOnlyList<ColonizationSystemSite> latest = await client
+            .GetSystemSitesAsync(systemKey, cancellationToken)
+            .ConfigureAwait(false);
 
-        for (var attempt = 0; attempt < MaximumOrderCorrectionAttempts; attempt++)
+        for (int attempt = 0; attempt < MaximumOrderCorrectionAttempts; attempt++)
         {
-            var orderedSiteIds = GetOrderedSiteIds(latest);
+            List<string> orderedSiteIds = GetOrderedSiteIds(latest);
             if (!orderedSiteIds.Contains(primarySiteId, StringComparer.Ordinal))
             {
                 throw new InvalidDataException(
@@ -149,7 +155,7 @@ public sealed class ColonizationProjectPublisher(IRavenColonialClient client)
 
         var ids = new List<string>(sites.Count);
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var persistedId in sites.Select(site => site.Id))
+        foreach (string? persistedId in sites.Select(site => site.Id))
         {
             if (string.IsNullOrWhiteSpace(persistedId))
             {
@@ -158,7 +164,7 @@ public sealed class ColonizationProjectPublisher(IRavenColonialClient client)
                 );
             }
 
-            var id = persistedId.Trim();
+            string id = persistedId.Trim();
             if (!seen.Add(id))
             {
                 throw new InvalidDataException(

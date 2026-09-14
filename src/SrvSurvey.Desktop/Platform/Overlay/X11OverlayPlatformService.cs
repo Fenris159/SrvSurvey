@@ -15,7 +15,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     private const nint SubstructureNotifyMask = 1 << 19;
     private const nint SubstructureRedirectMask = 1 << 20;
     private static readonly X11Native.XErrorHandler ErrorHandler = HandleXError;
-    private static readonly object ErrorHandlerSync = new();
+    private static readonly Lock ErrorHandlerSync = new();
     private static readonly ConcurrentDictionary<nint, byte> ErrorHandledDisplays = new();
     private static nint previousErrorHandlerPointer;
     private static bool errorHandlerInstalled;
@@ -92,7 +92,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
         RegisterErrorHandledDisplay(display);
 
-        var shapeAvailable = false;
+        bool shapeAvailable = false;
         try
         {
             shapeAvailable = X11Native.XShapeQueryExtension(display, out _, out _) != 0;
@@ -107,7 +107,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
         nuint windowTypeAtom = 0;
         nuint kdeOnScreenDisplayAtom = 0;
         nuint normalWindowAtom = 0;
-        var stackingMode = X11OverlayStackingMode.StandardTopmost;
+        X11OverlayStackingMode stackingMode = X11OverlayStackingMode.StandardTopmost;
         try
         {
             atomType = X11Native.XInternAtom(display, "ATOM", onlyIfExists: 1);
@@ -126,7 +126,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                 X11OverlayWindowManagerPolicy.NormalWindowAtomName,
                 onlyIfExists: 0
             );
-            var supportedAtoms = ReadSupportedAtoms(display, atomType);
+            nuint[] supportedAtoms = ReadSupportedAtoms(display, atomType);
             stackingMode = X11OverlayWindowManagerPolicy.Select(kdeOnScreenDisplayAtom, supportedAtoms);
         }
         catch (Exception exception)
@@ -161,7 +161,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)
     {
-        var result = SetInteractive(window, interactive: false);
+        OverlayInteractionResult result = SetInteractive(window, interactive: false);
         return new OverlayPreparationResult(
             result.IsPrepared,
             IsClickThrough: result.IsPrepared && !result.IsInteractive,
@@ -172,7 +172,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);
-        var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
             return new OverlayInteractionResult(
@@ -184,12 +184,12 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
         lock (displaySync)
         {
-            if (!TryGetDisplay(out var currentDisplay) || !shapeAvailable)
+            if (!TryGetDisplay(out nint currentDisplay) || !shapeAvailable)
             {
                 return new OverlayInteractionResult(IsPrepared: false, IsInteractive: false, Capabilities.StatusText);
             }
 
-            var windowHandle = unchecked((nuint)handle);
+            nuint windowHandle = unchecked((nuint)handle);
             if (!interactive)
             {
                 interactiveWindowHandles.Remove(windowHandle);
@@ -206,7 +206,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                     );
                 }
 
-                var stackingApplied = ApplyWindowType(currentDisplay, handle);
+                bool stackingApplied = ApplyWindowType(currentDisplay, handle);
                 if (interactive)
                 {
                     X11Native.XShapeCombineMask(
@@ -262,7 +262,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     public IDisposable? BeginVisibleCursorSession(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);
-        var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
             window.Activate();
@@ -271,7 +271,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
         lock (displaySync)
         {
-            if (!TryGetDisplay(out var currentDisplay))
+            if (!TryGetDisplay(out nint currentDisplay))
             {
                 window.Activate();
                 return null;
@@ -279,10 +279,10 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
             try
             {
-                var rootWindow = X11Native.XDefaultRootWindow(currentDisplay);
-                var activeWindowAtom = X11Native.XInternAtom(currentDisplay, "_NET_ACTIVE_WINDOW", onlyIfExists: 0);
-                var previousActiveWindow = ReadActiveWindow(currentDisplay, rootWindow, activeWindowAtom);
-                var interactionWindow = unchecked((nuint)handle);
+                nuint rootWindow = X11Native.XDefaultRootWindow(currentDisplay);
+                nuint activeWindowAtom = X11Native.XInternAtom(currentDisplay, "_NET_ACTIVE_WINDOW", onlyIfExists: 0);
+                nuint previousActiveWindow = ReadActiveWindow(currentDisplay, rootWindow, activeWindowAtom);
+                nuint interactionWindow = unchecked((nuint)handle);
                 interactiveWindowHandles.RemoveWhere(candidate => !IsValidWindow(currentDisplay, candidate));
                 if (!IsValidWindow(currentDisplay, interactionWindow))
                 {
@@ -290,13 +290,13 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                     return null;
                 }
 
-                var interactionWindows = interactiveWindowHandles.Append(interactionWindow).Distinct().ToArray();
+                nuint[] interactionWindows = interactiveWindowHandles.Append(interactionWindow).Distinct().ToArray();
 
                 window.Activate();
-                var cursor = X11Native.XCreateFontCursor(currentDisplay, LeftPointerCursor);
+                nuint cursor = X11Native.XCreateFontCursor(currentDisplay, LeftPointerCursor);
                 if (cursor != 0)
                 {
-                    foreach (var currentWindow in interactionWindows)
+                    foreach (nuint currentWindow in interactionWindows)
                     {
                         _ = X11Native.XDefineCursor(currentDisplay, currentWindow, cursor);
                     }
@@ -352,7 +352,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     public bool SuppressNativeWindow(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);
-        var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
             return false;
@@ -360,7 +360,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
         lock (displaySync)
         {
-            if (!TryGetDisplay(out var currentDisplay))
+            if (!TryGetDisplay(out nint currentDisplay))
             {
                 return false;
             }
@@ -383,7 +383,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(regions);
-        var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
             return new OverlayInteractionResult(
@@ -400,12 +400,12 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
         lock (displaySync)
         {
-            if (!TryGetDisplay(out var currentDisplay) || !shapeAvailable)
+            if (!TryGetDisplay(out nint currentDisplay) || !shapeAvailable)
             {
                 return new OverlayInteractionResult(IsPrepared: false, IsInteractive: false, Capabilities.StatusText);
             }
 
-            var windowHandle = unchecked((nuint)handle);
+            nuint windowHandle = unchecked((nuint)handle);
             try
             {
                 if (!IsValidWindow(currentDisplay, windowHandle))
@@ -419,18 +419,18 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                 }
 
                 var rectangles = new X11Native.XRectangle[regions.Count];
-                var rectangleCount = 0;
-                foreach (var region in regions)
+                int rectangleCount = 0;
+                foreach (PixelRect region in regions)
                 {
                     if (region.Width <= 0 || region.Height <= 0)
                     {
                         continue;
                     }
 
-                    var left = Math.Clamp(region.X, short.MinValue, short.MaxValue);
-                    var top = Math.Clamp(region.Y, short.MinValue, short.MaxValue);
-                    var width = Math.Clamp(region.Width, 1, ushort.MaxValue);
-                    var height = Math.Clamp(region.Height, 1, ushort.MaxValue);
+                    int left = Math.Clamp(region.X, short.MinValue, short.MaxValue);
+                    int top = Math.Clamp(region.Y, short.MinValue, short.MaxValue);
+                    int width = Math.Clamp(region.Width, 1, ushort.MaxValue);
+                    int height = Math.Clamp(region.Height, 1, ushort.MaxValue);
                     rectangles[rectangleCount++] = new X11Native.XRectangle
                     {
                         X = (short)left,
@@ -445,7 +445,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                     return SetInteractive(window, interactive: false);
                 }
 
-                var stackingApplied = ApplyWindowType(currentDisplay, handle);
+                bool stackingApplied = ApplyWindowType(currentDisplay, handle);
                 var pinnedRectangles = GCHandle.Alloc(rectangles, GCHandleType.Pinned);
                 try
                 {
@@ -493,7 +493,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
         lock (displaySync)
         {
             interactiveWindowHandles.Clear();
-            var currentDisplay = display;
+            nint currentDisplay = display;
             display = nint.Zero;
             if (currentDisplay != nint.Zero)
             {
@@ -518,8 +518,8 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                 return;
             }
 
-            var errorHandlerPointer = Marshal.GetFunctionPointerForDelegate(ErrorHandler);
-            var previousHandlerPointer = X11Native.XSetErrorHandler(errorHandlerPointer);
+            nint errorHandlerPointer = Marshal.GetFunctionPointerForDelegate(ErrorHandler);
+            nint previousHandlerPointer = X11Native.XSetErrorHandler(errorHandlerPointer);
             previousErrorHandlerPointer =
                 previousHandlerPointer != errorHandlerPointer ? previousHandlerPointer : nint.Zero;
 
@@ -545,7 +545,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
         try
         {
-            var detail =
+            string detail =
                 $"error {errorEvent.ErrorCode}, request "
                 + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
                 + $"{errorEvent.ResourceId}, display {errorDisplay}.";
@@ -630,7 +630,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
             return [];
         }
 
-        var supportedAtom = X11Native.XInternAtom(
+        nuint supportedAtom = X11Native.XInternAtom(
             display,
             X11OverlayWindowManagerPolicy.SupportedAtomName,
             onlyIfExists: 1
@@ -640,8 +640,8 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
             return [];
         }
 
-        var root = X11Native.XDefaultRootWindow(display);
-        var status = X11Native.XGetWindowProperty(
+        nuint root = X11Native.XDefaultRootWindow(display);
+        int status = X11Native.XGetWindowProperty(
             display,
             root,
             supportedAtom,
@@ -649,11 +649,11 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
             16_384,
             delete: 0,
             atomType,
-            out var actualType,
-            out var actualFormat,
-            out var itemCount,
+            out nuint actualType,
+            out int actualFormat,
+            out nuint itemCount,
             out _,
-            out var propertyData
+            out nint propertyData
         );
         try
         {
@@ -668,8 +668,8 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                 return [];
             }
 
-            var atoms = new nuint[(int)itemCount];
-            for (var index = 0; index < atoms.Length; index++)
+            nuint[] atoms = new nuint[(int)itemCount];
+            for (int index = 0; index < atoms.Length; index++)
             {
                 atoms[index] = unchecked((nuint)Marshal.ReadIntPtr(propertyData, index * nint.Size));
             }
@@ -698,10 +698,10 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                 delete: 0,
                 requestedType: 0,
                 out _,
-                out var actualFormat,
-                out var itemCount,
+                out int actualFormat,
+                out nuint itemCount,
                 out _,
-                out var propertyData
+                out nint propertyData
             ) != 0
             || propertyData == nint.Zero
         )
@@ -721,7 +721,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
     private static nuint ReadFocusWindow(nint display)
     {
-        return X11Native.XGetInputFocus(display, out var focusWindow, out _) == 0 ? 0 : focusWindow;
+        return X11Native.XGetInputFocus(display, out nuint focusWindow, out _) == 0 ? 0 : focusWindow;
     }
 
     private static bool ActivateWindow(
@@ -781,7 +781,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     {
         return display != nint.Zero
             && window != 0
-            && X11Native.XGetWindowAttributes(display, window, out var attributes) != 0
+            && X11Native.XGetWindowAttributes(display, window, out X11Native.XWindowAttributes attributes) != 0
             && attributes.MapState == X11Native.IsViewable;
     }
 
@@ -796,7 +796,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     {
         lock (displaySync)
         {
-            var currentDisplay = display;
+            nint currentDisplay = display;
             return currentDisplay == nint.Zero ? 0 : ReadActiveWindow(currentDisplay, rootWindow, activeWindowAtom);
         }
     }
@@ -805,7 +805,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     {
         lock (displaySync)
         {
-            var currentDisplay = display;
+            nint currentDisplay = display;
             return currentDisplay == nint.Zero ? 0 : ReadFocusWindow(currentDisplay);
         }
     }
@@ -814,7 +814,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     {
         lock (displaySync)
         {
-            var currentDisplay = display;
+            nint currentDisplay = display;
             return currentDisplay != nint.Zero
                 && ActivateWindow(currentDisplay, rootWindow, activeWindowAtom, targetWindow, requestorWindow);
         }
@@ -824,7 +824,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     {
         lock (displaySync)
         {
-            var currentDisplay = display;
+            nint currentDisplay = display;
             return currentDisplay == nint.Zero || !IsValidWindow(currentDisplay, targetWindow)
                 ? 0
                 : X11Native.XUndefineCursor(currentDisplay, targetWindow);
@@ -835,13 +835,13 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     {
         lock (displaySync)
         {
-            var currentDisplay = display;
+            nint currentDisplay = display;
             if (currentDisplay == nint.Zero)
             {
                 return 0;
             }
 
-            var result = X11Native.XFreeCursor(currentDisplay, cursor);
+            int result = X11Native.XFreeCursor(currentDisplay, cursor);
             _ = X11Native.XFlush(currentDisplay);
             return result;
         }
@@ -849,7 +849,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
     private bool ApplyWindowType(nint currentDisplay, nint handle)
     {
-        var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
+        nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             stackingMode,
             kdeOnScreenDisplayAtom,
             normalWindowAtom
@@ -864,8 +864,8 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
             return false;
         }
 
-        var values = new nint[windowTypes.Length];
-        for (var index = 0; index < windowTypes.Length; index++)
+        nint[] values = new nint[windowTypes.Length];
+        for (int index = 0; index < windowTypes.Length; index++)
         {
             values[index] = unchecked((nint)windowTypes[index]);
         }

@@ -4,9 +4,9 @@ namespace SrvSurvey.Desktop.Input;
 
 public sealed class GlobalControllerInputService : IAsyncDisposable
 {
-    private readonly object lifecycleLock = new();
-    private readonly object trackerLock = new();
-    private readonly object statusLock = new();
+    private readonly Lock lifecycleLock = new();
+    private readonly Lock trackerLock = new();
+    private readonly Lock statusLock = new();
     private readonly IControllerInputBackend backend;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly Func<bool> isApplicationActive;
@@ -73,8 +73,8 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
     public void Start()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        var currentSettings = Volatile.Read(ref settings);
-        var inactiveStatus = GetInactiveStatus(currentSettings);
+        GlobalInputSettings currentSettings = Volatile.Read(ref settings);
+        string? inactiveStatus = GetInactiveStatus(currentSettings);
         if (inactiveStatus is not null)
         {
             SetStatus(inactiveStatus);
@@ -112,11 +112,11 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(updatedSettings);
-        var previous = Volatile.Read(ref settings);
+        GlobalInputSettings previous = Volatile.Read(ref settings);
         Volatile.Write(ref settings, updatedSettings);
         router.Update(updatedSettings);
 
-        var mustRestart =
+        bool mustRestart =
             previous.ControllerEnabled != updatedSettings.ControllerEnabled
             || !string.Equals(
                 previous.ControllerDeviceId,
@@ -125,7 +125,7 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
             );
         if (mustRestart)
         {
-            var stoppedTask = StopRun();
+            Task? stoppedTask = StopRun();
             _ = RestartAfterStopAsync(stoppedTask);
             if (!updatedSettings.ControllerEnabled)
             {
@@ -210,12 +210,12 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
             chord = tracker.UpdateToken(change.Token, change.IsPressed);
         }
 
-        var currentSettings = Volatile.Read(ref settings);
+        GlobalInputSettings currentSettings = Volatile.Read(ref settings);
         if (
             chord is null
             || !currentSettings.ControllerEnabled
             || !IsInputContextActive()
-            || !router.TryResolve(chord, out var action)
+            || !router.TryResolve(chord, out GlobalInputAction action)
         )
         {
             return;
@@ -260,7 +260,7 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
         }
         finally
         {
-            var isCurrent = false;
+            bool isCurrent = false;
             lock (lifecycleLock)
             {
                 if (version == runVersion && ReferenceEquals(runCancellation, cancellation))

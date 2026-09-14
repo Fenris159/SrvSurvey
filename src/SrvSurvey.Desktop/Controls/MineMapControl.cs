@@ -207,18 +207,18 @@ public sealed class MineMapControl : Control
     {
         base.Render(context);
         context.DrawRectangle(MapBackground ?? Brushes.Transparent, null, new Rect(Bounds.Size));
-        var survey = Survey;
-        var text = TextBrush ?? Brushes.White;
+        MineMapSurvey? survey = Survey;
+        IBrush text = TextBrush ?? Brushes.White;
         if (survey is null)
         {
             DrawText(context, "No live mining map", new Point(8, Bounds.Height / 2), text, 14);
             return;
         }
 
-        var radiusPixels = Math.Max(1, Math.Min(Bounds.Width, Bounds.Height) / 2 - 28);
+        double radiusPixels = Math.Max(1, Math.Min(Bounds.Width, Bounds.Height) / 2 - 28);
         var viewportCenter = new Point(Bounds.Width / 2, Bounds.Height / 2);
-        var center = viewportCenter + viewportOffset;
-        var zoom = NormalizeViewportZoom(ViewportZoom);
+        Point center = viewportCenter + viewportOffset;
+        double zoom = NormalizeViewportZoom(ViewportZoom);
         int mapRadiusKilometers = GetMapRadiusKilometers(survey.LocationRadiusMeters);
         double scale = radiusPixels / (mapRadiusKilometers * 1000) * zoom;
         IBrush grid = GridBrush ?? Brushes.Gray;
@@ -239,7 +239,7 @@ public sealed class MineMapControl : Control
             DrawPlanningCircle(context, survey, center, scale, accent);
             DrawSurveyGuideTarget(context, survey, center, scale, zone, text);
 
-            var markerScale = GetMarkerScale(zoom);
+            double markerScale = GetMarkerScale(zoom);
             DrawPlayerSightLine(context, survey, center, scale, markerScale, radiusPixels * zoom, localBounds);
             DrawMarkers(context, survey, center, scale, markerScale, localBounds, text);
             DrawPlayer(context, survey, center, scale, markerScale, localBounds);
@@ -291,16 +291,16 @@ public sealed class MineMapControl : Control
             );
         }
 
-        foreach (var heading in Enumerable.Range(0, 8).Select(index => index * 45))
+        foreach (int heading in Enumerable.Range(0, 8).Select(index => index * 45))
         {
-            var radians = heading * Math.PI / 180d;
+            double radians = heading * Math.PI / 180d;
             var edge = new Point(
                 center.X + Math.Sin(radians) * bearingSpokeRadius,
                 center.Y - Math.Cos(radians) * bearingSpokeRadius
             );
             context.DrawLine(gridPen, center, edge);
-            var label = heading.ToString(CultureInfo.InvariantCulture) + "°";
-            var horizontalOffset = heading switch
+            string label = heading.ToString(CultureInfo.InvariantCulture) + "°";
+            int horizontalOffset = heading switch
             {
                 0 or 180 => 8,
                 > 180 => 22,
@@ -324,8 +324,8 @@ public sealed class MineMapControl : Control
         IBrush text
     )
     {
-        var markerLabelScale = GetMarkerLabelScale(ViewportZoom);
-        foreach (var marker in survey.Markers)
+        double markerLabelScale = GetMarkerLabelScale(ViewportZoom);
+        foreach (MineMapMarker marker in survey.Markers)
         {
             if (VisibleMaterials is { } visible && !visible.Contains(marker.Material))
             {
@@ -337,7 +337,7 @@ public sealed class MineMapControl : Control
                 continue;
             }
 
-            var point = ToPoint(survey, marker.Location, center, scale);
+            Point point = ToPoint(survey, marker.Location, center, scale);
             if (!localBounds.Inflate(12 * markerScale).Contains(point))
             {
                 continue;
@@ -405,7 +405,7 @@ public sealed class MineMapControl : Control
             return;
         }
 
-        var point = ToPoint(survey, player, center, scale);
+        Point point = ToPoint(survey, player, center, scale);
         if (!localBounds.Inflate(12).Contains(point))
         {
             return;
@@ -449,13 +449,13 @@ public sealed class MineMapControl : Control
 
     public static Color ColorFor(string material)
     {
-        if (SurfaceMiningCommodityCatalog.TryResolve(material, out var commodity))
+        if (SurfaceMiningCommodityCatalog.TryResolve(material, out SurfaceMiningCommodity? commodity))
         {
             return Color.Parse(commodity.ColorHex);
         }
 
-        var hash = 17;
-        foreach (var character in material.ToUpperInvariant())
+        int hash = 17;
+        foreach (char character in material.ToUpperInvariant())
         {
             hash = unchecked(hash * 31 + character);
         }
@@ -479,12 +479,12 @@ public sealed class MineMapControl : Control
             return;
         }
 
-        var currentZoom = NormalizeViewportZoom(ViewportZoom);
-        var nextZoom = NormalizeViewportZoom(currentZoom * (e.Delta.Y > 0 ? 1.1 : 0.9));
-        var pointer = e.GetPosition(this);
-        var center = new Rect(Bounds.Size).Center;
-        var ratio = nextZoom / currentZoom;
-        var relative = pointer - center - viewportOffset;
+        double currentZoom = NormalizeViewportZoom(ViewportZoom);
+        double nextZoom = NormalizeViewportZoom(currentZoom * (e.Delta.Y > 0 ? 1.1 : 0.9));
+        Point pointer = e.GetPosition(this);
+        Point center = new Rect(Bounds.Size).Center;
+        double ratio = nextZoom / currentZoom;
+        Point relative = pointer - center - viewportOffset;
         viewportOffset = new Vector(
             pointer.X - center.X - relative.X * ratio,
             pointer.Y - center.Y - relative.Y * ratio
@@ -609,7 +609,7 @@ public sealed class MineMapControl : Control
 
     internal static Vector ClampViewportOffset(Vector requested, Size viewportSize, double zoom)
     {
-        var normalizedZoom = NormalizeViewportZoom(zoom);
+        double normalizedZoom = NormalizeViewportZoom(zoom);
         if (normalizedZoom <= 1 || viewportSize.Width <= 0 || viewportSize.Height <= 0)
         {
             return default;
@@ -724,8 +724,8 @@ public sealed class MineMapControl : Control
 
     private static Point ToPoint(MineMapSurvey survey, SurfaceCoordinate location, Point center, double scale)
     {
-        var distance = SurfaceNavigation.GetDistance(survey.Center, location, survey.PlanetRadiusMeters);
-        var bearing = SurfaceNavigation.GetBearing(survey.Center, location) * Math.PI / 180d;
+        double distance = SurfaceNavigation.GetDistance(survey.Center, location, survey.PlanetRadiusMeters);
+        double bearing = SurfaceNavigation.GetBearing(survey.Center, location) * Math.PI / 180d;
         return new Point(
             center.X + Math.Sin(bearing) * distance * scale,
             center.Y - Math.Cos(bearing) * distance * scale
@@ -742,7 +742,7 @@ public sealed class MineMapControl : Control
 
     private void DrawCommander(DrawingContext context, Point position, double heading, IBrush brush, double markerScale)
     {
-        var radius = 6 * markerScale;
+        double radius = 6 * markerScale;
         var pen = new Pen(brush, 2 * markerScale);
         context.DrawEllipse(MapBackground ?? Brushes.Transparent, pen, position, radius, radius);
         context.DrawLine(pen, position, GetCommanderHeadingEnd(position, radius, heading));

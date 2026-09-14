@@ -42,7 +42,7 @@ public static class LocalizationCatalog
 
     public static void Initialize(string? language)
     {
-        var normalized = NormalizeLanguage(language);
+        string normalized = NormalizeLanguage(language);
         CurrentLanguage = normalized;
         if (normalized == "en")
         {
@@ -75,12 +75,12 @@ public static class LocalizationCatalog
             return source ?? string.Empty;
         }
 
-        if (translations.TryGetValue(source, out var exact))
+        if (translations.TryGetValue(source, out string? exact))
         {
             return exact;
         }
 
-        if (normalizedTranslations.TryGetValue(NormalizeSource(source), out var candidate))
+        if (normalizedTranslations.TryGetValue(NormalizeSource(source), out TranslationCandidate? candidate))
         {
             return AdaptPresentation(source, candidate);
         }
@@ -90,9 +90,9 @@ public static class LocalizationCatalog
             return exact;
         }
 
-        foreach (var pattern in formatPatterns)
+        foreach (FormatTranslationPattern pattern in formatPatterns)
         {
-            if (pattern.TryTranslate(source, out var formatted))
+            if (pattern.TryTranslate(source, out string? formatted))
             {
                 return formatted;
             }
@@ -103,7 +103,7 @@ public static class LocalizationCatalog
 
     public static string NormalizeLanguage(string? language)
     {
-        var value = language?.Trim();
+        string? value = language?.Trim();
         return Languages
                 .FirstOrDefault(option => string.Equals(option.Code, value, StringComparison.OrdinalIgnoreCase))
                 ?.Code
@@ -112,7 +112,7 @@ public static class LocalizationCatalog
 
     public static void ApplyCulture(string? language)
     {
-        var normalized = NormalizeLanguage(language);
+        string normalized = NormalizeLanguage(language);
         var culture = CultureInfo.CreateSpecificCulture(normalized);
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
@@ -122,7 +122,7 @@ public static class LocalizationCatalog
 
     private static string NormalizeSource(string source)
     {
-        var value = source
+        string value = source
             .Replace("&", string.Empty, StringComparison.Ordinal)
             .Replace("…", "...", StringComparison.Ordinal)
             .Trim();
@@ -145,7 +145,7 @@ public static class LocalizationCatalog
 
     private static string AdaptPresentation(string source, TranslationCandidate candidate)
     {
-        var translated = source.Contains('&', StringComparison.Ordinal)
+        string translated = source.Contains('&', StringComparison.Ordinal)
             ? candidate.Translation
             : candidate.Translation.Replace("&", string.Empty, StringComparison.Ordinal);
         translated = AlignTrailingMark(source, candidate.Source, translated, ':');
@@ -155,8 +155,8 @@ public static class LocalizationCatalog
 
     private static string AlignTrailingMark(string source, string candidateSource, string translated, char mark)
     {
-        var sourceHasMark = source.TrimEnd().EndsWith(mark);
-        var candidateHasMark = candidateSource.TrimEnd().EndsWith(mark);
+        bool sourceHasMark = source.TrimEnd().EndsWith(mark);
+        bool candidateHasMark = candidateSource.TrimEnd().EndsWith(mark);
         if (sourceHasMark == candidateHasMark)
         {
             return translated;
@@ -167,8 +167,8 @@ public static class LocalizationCatalog
 
     private static string AlignEllipsis(string source, string candidateSource, string translated)
     {
-        var sourceHasEllipsis = HasEllipsis(source);
-        var candidateHasEllipsis = HasEllipsis(candidateSource);
+        bool sourceHasEllipsis = HasEllipsis(source);
+        bool candidateHasEllipsis = HasEllipsis(candidateSource);
         if (sourceHasEllipsis == candidateHasEllipsis)
         {
             return translated;
@@ -179,7 +179,7 @@ public static class LocalizationCatalog
             return translated.TrimEnd() + (source.TrimEnd().EndsWith('…') ? "…" : "...");
         }
 
-        var value = translated.TrimEnd();
+        string value = translated.TrimEnd();
         return value.EndsWith('…')
             ? value[..^1].TrimEnd()
             : (value.EndsWith("...", StringComparison.Ordinal)) switch
@@ -191,13 +191,13 @@ public static class LocalizationCatalog
 
     private static bool HasEllipsis(string value)
     {
-        var trimmed = value.TrimEnd();
+        string trimmed = value.TrimEnd();
         return trimmed.EndsWith('…') || trimmed.EndsWith("...", StringComparison.Ordinal);
     }
 
     private static bool IsAllUpper(string value)
     {
-        var letters = value.Where(char.IsLetter).ToArray();
+        char[] letters = value.Where(char.IsLetter).ToArray();
         return letters.Length > 0 && letters.All(char.IsUpper);
     }
 
@@ -205,9 +205,9 @@ public static class LocalizationCatalog
 
     private static IReadOnlyDictionary<string, string> LoadLegacyTranslations(string language)
     {
-        using var document = OpenResource(LegacyResourceName);
+        using JsonDocument document = OpenResource(LegacyResourceName);
         if (
-            !document.RootElement.TryGetProperty(language, out var languageMap)
+            !document.RootElement.TryGetProperty(language, out JsonElement languageMap)
             || languageMap.ValueKind != JsonValueKind.Object
         )
         {
@@ -225,9 +225,9 @@ public static class LocalizationCatalog
 
     private static IReadOnlyDictionary<string, string> LoadApplicationTranslations(string language)
     {
-        using var document = OpenResource(ApplicationResourceName);
+        using JsonDocument document = OpenResource(ApplicationResourceName);
         if (
-            !document.RootElement.TryGetProperty(language, out var languageMap)
+            !document.RootElement.TryGetProperty(language, out JsonElement languageMap)
             || languageMap.ValueKind != JsonValueKind.Array
         )
         {
@@ -248,13 +248,13 @@ public static class LocalizationCatalog
 
     private static int LoadSourceCount()
     {
-        using var document = OpenResource(SourceResourceName);
+        using JsonDocument document = OpenResource(SourceResourceName);
         return document.RootElement.ValueKind == JsonValueKind.Array ? document.RootElement.GetArrayLength() : 0;
     }
 
     private static JsonDocument OpenResource(string resourceName)
     {
-        var stream =
+        Stream stream =
             typeof(LocalizationCatalog).Assembly.GetManifestResourceStream(resourceName)
             ?? throw new InvalidOperationException($"The embedded localization catalog {resourceName} is missing.");
         try
@@ -301,17 +301,17 @@ public static class LocalizationCatalog
         {
             var expression = new StringBuilder("^");
             var literals = new List<string>();
-            var offset = 0;
+            int offset = 0;
             foreach (Match placeholder in Placeholder.Matches(source))
             {
-                var literal = source[offset..placeholder.Index];
+                string literal = source[offset..placeholder.Index];
                 literals.Add(literal);
                 expression.Append(Regex.Escape(literal));
                 expression.Append("(?<arg").Append(placeholder.Groups[1].Value).Append(">.*?)");
                 offset = placeholder.Index + placeholder.Length;
             }
 
-            var tail = source[offset..];
+            string tail = source[offset..];
             literals.Add(tail);
             expression.Append(Regex.Escape(tail)).Append('$');
             return new FormatTranslationPattern(
@@ -334,7 +334,7 @@ public static class LocalizationCatalog
                 return false;
             }
 
-            var match = matcher.Match(source);
+            Match match = matcher.Match(source);
             if (!match.Success)
             {
                 result = string.Empty;

@@ -9,9 +9,9 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
     public async Task BootstrapBuildsContextWithoutPublishingHistory()
     {
         var client = new RecordingClient();
-        var coordinator = Create(client);
+        GreenGasGiantPublicationCoordinator coordinator = Create(client);
 
-        var bootstrap = await coordinator.ApplyAsync(
+        GreenGasGiantPublicationResult bootstrap = await coordinator.ApplyAsync(
             [
                 Event("{\"event\":\"Commander\",\"Name\":\"Test Cmdr\"}"),
                 Event("{\"event\":\"Location\",\"StarPos\":[1.5,-2,3]}"),
@@ -20,10 +20,14 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
             enabled: true,
             allowPublishing: false
         );
-        var live = await coordinator.ApplyAsync([Scan(310)], enabled: true, allowPublishing: true);
+        GreenGasGiantPublicationResult live = await coordinator.ApplyAsync(
+            [Scan(310)],
+            enabled: true,
+            allowPublishing: true
+        );
 
         Assert.Empty(bootstrap.Published);
-        var candidate = Assert.Single(live.Published);
+        GreenGasGiantCandidate candidate = Assert.Single(live.Published);
         Assert.Single(client.Candidates);
         Assert.Equal("Test Cmdr", candidate.CommanderName);
         Assert.Equal("potential", candidate.Tag);
@@ -37,7 +41,7 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
     public async Task DisabledPublicationStillRefreshesContext()
     {
         var client = new RecordingClient();
-        var coordinator = Create(client);
+        GreenGasGiantPublicationCoordinator coordinator = Create(client);
 
         await coordinator.ApplyAsync(
             [
@@ -48,10 +52,14 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
             enabled: false,
             allowPublishing: true
         );
-        var result = await coordinator.ApplyAsync([Scan(310)], enabled: true, allowPublishing: true);
+        GreenGasGiantPublicationResult result = await coordinator.ApplyAsync(
+            [Scan(310)],
+            enabled: true,
+            allowPublishing: true
+        );
 
         Assert.Single(client.Candidates);
-        var candidate = Assert.Single(result.Published);
+        GreenGasGiantCandidate candidate = Assert.Single(result.Published);
         Assert.Equal("Later Cmdr", candidate.CommanderName);
         Assert.Equal(4, candidate.StarPosition.X);
     }
@@ -59,11 +67,11 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
     [Fact]
     public async Task MissingContextAndNetworkErrorsAreNonFatalWarnings()
     {
-        var missingContext = await Create(new RecordingClient())
+        GreenGasGiantPublicationResult missingContext = await Create(new RecordingClient())
             .ApplyAsync([Scan(310)], enabled: true, allowPublishing: true);
         var failingClient = new RecordingClient { Error = new HttpRequestException("offline") };
-        var coordinator = Create(failingClient);
-        var failed = await coordinator.ApplyAsync(
+        GreenGasGiantPublicationCoordinator coordinator = Create(failingClient);
+        GreenGasGiantPublicationResult failed = await coordinator.ApplyAsync(
             [
                 Event("{\"event\":\"Commander\",\"Name\":\"Cmdr\"}"),
                 Event("{\"event\":\"Location\",\"StarPos\":[1,2,3]}"),
@@ -95,7 +103,7 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out _));
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out _));
         return result!;
     }
 

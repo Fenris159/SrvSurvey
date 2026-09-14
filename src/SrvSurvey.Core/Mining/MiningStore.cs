@@ -15,7 +15,7 @@ public sealed record MiningPreferences
     public int SpeechRate { get; set; }
     public bool AnnounceCores { get; set; } = true;
     public bool AnnounceNonCores { get; set; } = true;
-    public Dictionary<string, MiningAnnouncementPreset> AnnouncementPresets { get; set; } = new();
+    public Dictionary<string, MiningAnnouncementPreset> AnnouncementPresets { get; set; } = [];
     public bool AutoSwitchTabs { get; set; }
     public bool AutoSearch { get; set; }
     public bool NotifyProspecting { get; set; } = true;
@@ -54,7 +54,7 @@ public sealed record MiningRing
     public double? ArrivalLs { get; set; }
     public double? DistanceLy { get; init; }
     public Search.GalacticCoordinate? Position { get; set; }
-    public Dictionary<string, int> Hotspots { get; set; } = new();
+    public Dictionary<string, int> Hotspots { get; set; } = [];
     public DateTimeOffset Scanned { get; set; }
     public string Source { get; init; } = "Journal";
     public string Overlaps { get; init; } = "";
@@ -70,7 +70,7 @@ public sealed class MiningStore(string directory)
 
     public MiningCommanderData Load(string commander)
     {
-        var path = GetPath(commander);
+        string path = GetPath(commander);
         return File.Exists(path) ? Parse(File.ReadAllText(path)) : new();
     }
 
@@ -78,9 +78,9 @@ public sealed class MiningStore(string directory)
 
     public void Save(string commander, MiningCommanderData state)
     {
-        var path = GetPath(commander);
+        string path = GetPath(commander);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        string temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             File.WriteAllText(temporary, Export(state));
@@ -97,9 +97,9 @@ public sealed class MiningStore(string directory)
 
     public MiningCommanderData Restore(string commander, string json)
     {
-        var state = Parse(json);
+        MiningCommanderData state = Parse(json);
         // Retain the pre-restore state for recovery even when an otherwise valid backup was selected accidentally.
-        var path = GetPath(commander);
+        string path = GetPath(commander);
         if (File.Exists(path))
         {
             File.Copy(path, path + ".before-restore", true);
@@ -124,16 +124,16 @@ public sealed class MiningStore(string directory)
         using var document = JsonDocument.Parse(json);
         if (
             document.RootElement.ValueKind != JsonValueKind.Object
-            || !document.RootElement.TryGetProperty("SchemaVersion", out var version)
+            || !document.RootElement.TryGetProperty("SchemaVersion", out JsonElement version)
             || version.ValueKind != JsonValueKind.Number
-            || !version.TryGetInt32(out var number)
+            || !version.TryGetInt32(out int number)
             || number != 1
         )
         {
             throw new JsonException("Unsupported mining backup format.");
         }
 
-        var state =
+        MiningCommanderData state =
             JsonSerializer.Deserialize<MiningCommanderData>(json, Options)
             ?? throw new JsonException("Empty mining backup.");
         if (

@@ -67,7 +67,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         this.guardianSites = guardianSites ?? GuardianSiteCatalog.LoadEmbedded();
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.log = log;
-        var preferences = settingsStore.Load();
+        JumpInfoPreferences preferences = settingsStore.Load();
         autoShow = preferences.AutoShow;
         minimal = preferences.Minimal;
         showWhenNextHopSelected = preferences.ShowWhenNextHopSelected;
@@ -152,16 +152,16 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 return false;
             }
 
-            var mode = OverlayGameModeResolver.Resolve(status, fsdJumping, musicTrack);
-            var chargingForJump =
+            OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, fsdJumping, musicTrack);
+            bool chargingForJump =
                 status?.FsdChargingJump == true
                 && (mode == OverlayGameMode.Flying || mode == OverlayGameMode.SuperCruising);
-            var automatic =
+            bool automatic =
                 chargingForJump
                 || fsdJumping
                 || jumpVisibleUntil > timeProvider.GetUtcNow() && mode != OverlayGameMode.GalaxyMap
                 || ShowWhenNextHopSelected && IsSelectedFollowedRouteHop();
-            var forced = forceShow && mode != OverlayGameMode.Fss;
+            bool forced = forceShow && mode != OverlayGameMode.Fss;
             return automatic || forced;
         }
     }
@@ -187,7 +187,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         get
         {
-            var starClass = (routePlan?.Target.StarClass ?? summary?.StarClass)?.Trim();
+            string? starClass = (routePlan?.Target.StarClass ?? summary?.StarClass)?.Trim();
             return starClass is { Length: 1 } && ScoopableStarClasses.Contains(char.ToUpperInvariant(starClass[0]));
         }
     }
@@ -428,7 +428,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private void ApplyJournalEvents(IReadOnlyList<JournalEventEnvelope> journalEvents, bool isBootstrapRead)
     {
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             ApplyMusicAndLoadout(journalEvent);
             if (!isBootstrapRead)
@@ -486,9 +486,9 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             case "CarrierJump":
                 fsdJumping = false;
                 inFlightTarget = null;
-                var isFinalFollowedRouteArrival =
+                bool isFinalFollowedRouteArrival =
                     journalEvent.EventName == "FSDJump" && IsFinalFollowedRouteArrival(journalEvent.Payload);
-                var transitionAt = timeProvider.GetUtcNow().AddSeconds(isFinalFollowedRouteArrival ? 3 : 1);
+                DateTimeOffset transitionAt = timeProvider.GetUtcNow().AddSeconds(isFinalFollowedRouteArrival ? 3 : 1);
                 jumpVisibleUntil = transitionAt;
                 if (routePlan is not null)
                 {
@@ -517,9 +517,9 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var previousTarget = routePlan?.Target;
+        JumpTarget? previousTarget = routePlan?.Target;
         displayedFollowedRoute = followedRoute;
-        var nextPlan = JumpInfoRoutePlanner.Create(
+        JumpInfoRoutePlan? nextPlan = JumpInfoRoutePlanner.Create(
             new JumpInfoRoutePlannerRequest
             {
                 FsdTarget = fsdTarget,
@@ -536,7 +536,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         routePlan = PreserveInFlightStarClass(nextPlan);
         RaisePlanProperties();
 
-        var nextTarget = routePlan?.Target;
+        JumpTarget? nextTarget = routePlan?.Target;
         if (SameTarget(previousTarget, nextTarget))
         {
             RefreshDetailLines();
@@ -566,7 +566,11 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         {
             IsLoading = true;
             DataStatus = "Loading EDSM and Spansh system data\u2026";
-            var result = await summaryClient.GetAsync(target.Name, target.SystemAddress, cancellationToken);
+            SystemSummaryLoadResult result = await summaryClient.GetAsync(
+                target.Name,
+                target.SystemAddress,
+                cancellationToken
+            );
             if (cancellationToken.IsCancellationRequested || !SameTarget(routePlan?.Target, target))
             {
                 return;
@@ -583,7 +587,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 RaisePlanProperties();
             }
 
-            foreach (var warning in result.Warnings)
+            foreach (string warning in result.Warnings)
             {
                 LogLookupFailure(target, warning);
             }
@@ -623,7 +627,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return string.Empty;
         }
 
-        var providers = warnings
+        string[] providers = warnings
             .Select(warning =>
                 warning switch
                 {
@@ -682,10 +686,11 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var sites = target.SystemAddress > 0 ? guardianSites.FindBySystemAddress(target.SystemAddress) : [];
-        var ruins = sites.Count(site => site.Kind == GuardianSiteKind.Ruins);
-        var structures = sites.Count(site => site.Kind == GuardianSiteKind.Structure);
-        var beacons = sites.Count(site => site.Kind == GuardianSiteKind.Beacon);
+        IReadOnlyList<GuardianSiteReference> sites =
+            target.SystemAddress > 0 ? guardianSites.FindBySystemAddress(target.SystemAddress) : [];
+        int ruins = sites.Count(site => site.Kind == GuardianSiteKind.Ruins);
+        int structures = sites.Count(site => site.Kind == GuardianSiteKind.Structure);
+        int beacons = sites.Count(site => site.Kind == GuardianSiteKind.Beacon);
         var guardianDetails = new List<string>();
         if (ruins > 0)
         {
@@ -715,7 +720,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var nextHop = displayedFollowedRoute?.NextHop;
+        FollowRouteHop? nextHop = displayedFollowedRoute?.NextHop;
         if (nextHop is null || !MatchesTarget(nextHop, target))
         {
             return;
@@ -744,7 +749,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var targetPosition = routePlan.TargetPosition ?? summary?.Position;
+        GalacticCoordinate? targetPosition = routePlan.TargetPosition ?? summary?.Position;
         if (
             currentPosition is not { } origin
             || targetPosition is not { } destination
@@ -766,9 +771,9 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return false;
         }
 
-        var mode = OverlayGameModeResolver.Resolve(status, fsdJumping, musicTrack);
-        var isVisibleMode = mode == OverlayGameMode.SuperCruising;
-        var destinationMatches =
+        OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, fsdJumping, musicTrack);
+        bool isVisibleMode = mode == OverlayGameMode.SuperCruising;
+        bool destinationMatches =
             destination.System > 0 && destination.System == nextHop.SystemAddress
             || !string.IsNullOrWhiteSpace(destination.Name)
                 && string.Equals(destination.Name, nextHop.Name, StringComparison.OrdinalIgnoreCase);
@@ -824,8 +829,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        var totalHops = Math.Max(0, displayedFollowedRoute.Hops.Count - 1);
-        var nextIndex = displayedFollowedRoute.LastReachedIndex + 1;
+        int totalHops = Math.Max(0, displayedFollowedRoute.Hops.Count - 1);
+        int nextIndex = displayedFollowedRoute.LastReachedIndex + 1;
         return nextIndex <= 0 ? "START" : $"HOP {Math.Min(nextIndex, totalHops):N0} / {totalHops:N0}";
     }
 
@@ -839,8 +844,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return false;
         }
 
-        var systemName = GetString(payload, "StarSystem");
-        var systemAddress = GetInt64(payload, "SystemAddress");
+        string? systemName = GetString(payload, "StarSystem");
+        long? systemAddress = GetInt64(payload, "SystemAddress");
         return systemAddress is > 0 && nextHop.SystemAddress == systemAddress
             || !string.IsNullOrWhiteSpace(systemName)
                 && string.Equals(nextHop.Name, systemName, StringComparison.OrdinalIgnoreCase);
@@ -863,14 +868,14 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private void CaptureInFlightTarget()
     {
-        var target = JumpInfoRoutePlanner.SelectTarget(fsdTarget, status) ?? routePlan?.Target;
+        JumpTarget? target = JumpInfoRoutePlanner.SelectTarget(fsdTarget, status) ?? routePlan?.Target;
         if (target is null)
         {
             inFlightTarget = null;
             return;
         }
 
-        var starClass = target.StarClass;
+        string? starClass = target.StarClass;
         if (
             string.IsNullOrWhiteSpace(starClass)
             && routePlan is { } displayedPlan
@@ -931,7 +936,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return "Undiscovered system";
         }
 
-        var discovered = value.DiscoveredAt is { } discoveredAt
+        string discovered = value.DiscoveredAt is { } discoveredAt
             ? FormatDiscoveredText(value, discoveredAt)
             : FormatScanStatusText(value);
         return AppendUpdatedSuffix(value, discovered);
@@ -951,7 +956,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private static string FormatDiscoveredText(SystemSummary value, DateTimeOffset discoveredAt)
     {
-        var byline = string.IsNullOrWhiteSpace(value.DiscoveredBy) ? string.Empty : " by " + value.DiscoveredBy;
+        string byline = string.IsNullOrWhiteSpace(value.DiscoveredBy) ? string.Empty : " by " + value.DiscoveredBy;
         return "Discovered" + byline + $" on {discoveredAt.ToLocalTime():g}";
     }
 
@@ -977,7 +982,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return string.Empty;
         }
 
-        var points = value.PointsOfInterest;
+        SystemPoiSummary points = value.PointsOfInterest;
         var values = new List<string>();
         AddCount(values, "Bodies", points.Bodies);
         AddCount(values, "Genus", points.Genus);
@@ -999,8 +1004,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private static JumpTarget? ParseTarget(JsonElement root)
     {
-        var name = GetString(root, "Name");
-        var address = GetInt64(root, "SystemAddress") ?? 0;
+        string? name = GetString(root, "Name");
+        long address = GetInt64(root, "SystemAddress") ?? 0;
         return string.IsNullOrWhiteSpace(name)
             ? null
             : new JumpTarget(name, address, GetString(root, nameof(StarClass)));
@@ -1026,7 +1031,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -1034,9 +1039,9 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private static long? GetInt64(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var result)
+            && value.TryGetInt64(out long result)
             ? result
             : null;
     }
@@ -1044,9 +1049,9 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var result)
+            && value.TryGetDouble(out double result)
             && double.IsFinite(result)
             ? result
             : null;

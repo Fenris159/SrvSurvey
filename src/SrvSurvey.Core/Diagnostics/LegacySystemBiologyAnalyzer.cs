@@ -19,26 +19,27 @@ public sealed class LegacySystemBiologyAnalyzer
     )
     {
         ValidateFrontierId(frontierId);
-        var systemDirectory = Path.Combine(dataDirectory, "systems", frontierId);
+        string systemDirectory = Path.Combine(dataDirectory, "systems", frontierId);
         if (!Directory.Exists(systemDirectory))
         {
             return LegacySystemBiologyAnalysisResult.Empty;
         }
 
-        var files = new DirectoryInfo(systemDirectory)
+        FileInfo[] files = new DirectoryInfo(systemDirectory)
             .EnumerateFiles("*.json", SearchOption.TopDirectoryOnly)
             .OrderBy(file => file.Name, StringComparer.Ordinal)
             .ToArray();
         var warnings = new List<string>();
         var summaries = new Dictionary<string, MutableSpeciesSummary>(StringComparer.Ordinal);
-        var processedFiles = 0;
-        var bodyCount = 0;
-        var organismCount = 0;
-        for (var index = 0; index < files.Length; index++)
+        int processedFiles = 0;
+        int bodyCount = 0;
+        int organismCount = 0;
+        for (int index = 0; index < files.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var file = files[index];
-            var analyzed = await TryAnalyzeFileAsync(file, summaries, cancellationToken).ConfigureAwait(false);
+            FileInfo file = files[index];
+            FileAnalysisCounts analyzed = await TryAnalyzeFileAsync(file, summaries, cancellationToken)
+                .ConfigureAwait(false);
             if (analyzed.Warning is not null)
             {
                 warnings.Add(analyzed.Warning);
@@ -82,7 +83,7 @@ public sealed class LegacySystemBiologyAnalyzer
                 16 * 1024,
                 FileOptions.Asynchronous | FileOptions.SequentialScan
             );
-            using var document = await JsonDocument
+            using JsonDocument document = await JsonDocument
                 .ParseAsync(stream, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             if (document.RootElement.ValueKind != JsonValueKind.Object)
@@ -90,8 +91,8 @@ public sealed class LegacySystemBiologyAnalyzer
                 return FileAnalysisCounts.Failed($"{file.Name}: the root value is not an object.");
             }
 
-            var bodyCount = 0;
-            var organismCount = 0;
+            int bodyCount = 0;
+            int organismCount = 0;
             AnalyzeBodies(document.RootElement, summaries, ref bodyCount, ref organismCount, cancellationToken);
             return new FileAnalysisCounts(bodyCount, organismCount, null);
         }
@@ -114,12 +115,12 @@ public sealed class LegacySystemBiologyAnalyzer
         CancellationToken cancellationToken
     )
     {
-        if (!TryGetProperty(root, "bodies", out var bodies) || bodies.ValueKind != JsonValueKind.Array)
+        if (!TryGetProperty(root, "bodies", out JsonElement bodies) || bodies.ValueKind != JsonValueKind.Array)
         {
             return;
         }
 
-        foreach (var body in bodies.EnumerateArray())
+        foreach (JsonElement body in bodies.EnumerateArray())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (body.ValueKind != JsonValueKind.Object)
@@ -138,26 +139,26 @@ public sealed class LegacySystemBiologyAnalyzer
         ref int organismCount
     )
     {
-        if (!TryGetProperty(body, "organisms", out var organisms) || organisms.ValueKind != JsonValueKind.Array)
+        if (!TryGetProperty(body, "organisms", out JsonElement organisms) || organisms.ValueKind != JsonValueKind.Array)
         {
             return;
         }
 
         string? atmosphereComponents = null;
         if (
-            TryGetProperty(body, "atmosphereComposition", out var composition)
+            TryGetProperty(body, "atmosphereComposition", out JsonElement composition)
             && composition.ValueKind == JsonValueKind.Object
         )
         {
             atmosphereComponents = string.Join(',', composition.EnumerateObject().Select(property => property.Name));
         }
 
-        foreach (var organism in organisms.EnumerateArray())
+        foreach (JsonElement organism in organisms.EnumerateArray())
         {
             organismCount++;
             if (
                 organism.ValueKind != JsonValueKind.Object
-                || !TryGetProperty(organism, "speciesLocalized", out var species)
+                || !TryGetProperty(organism, "speciesLocalized", out JsonElement species)
                 || species.ValueKind != JsonValueKind.String
                 || string.IsNullOrWhiteSpace(species.GetString())
             )
@@ -165,8 +166,8 @@ public sealed class LegacySystemBiologyAnalyzer
                 continue;
             }
 
-            var name = species.GetString()!;
-            if (!summaries.TryGetValue(name, out var summary))
+            string name = species.GetString()!;
+            if (!summaries.TryGetValue(name, out MutableSpeciesSummary? summary))
             {
                 summary = new MutableSpeciesSummary(name);
                 summaries.Add(name, summary);
@@ -188,7 +189,7 @@ public sealed class LegacySystemBiologyAnalyzer
             return true;
         }
 
-        var matchedValue = root.EnumerateObject()
+        JsonElement? matchedValue = root.EnumerateObject()
             .Where(property => string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
             .Select(property => (JsonElement?)property.Value)
             .FirstOrDefault();

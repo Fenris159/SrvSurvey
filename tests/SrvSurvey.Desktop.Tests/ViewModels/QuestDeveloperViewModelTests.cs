@@ -15,7 +15,7 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
     [Fact]
     public async Task ImportEditDebugPublishAndRemoveWorkflowIsReachable()
     {
-        var source = Path.Combine(temporaryDirectory, "source");
+        string source = Path.Combine(temporaryDirectory, "source");
         Directory.CreateDirectory(source);
         await File.WriteAllTextAsync(
             Path.Combine(source, "quest.json"),
@@ -32,7 +32,9 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
             """
         );
         await File.WriteAllTextAsync(Path.Combine(source, "start.lua"), "counter = 1");
-        var sourceBytes = Directory.GetFiles(source).ToDictionary(path => path, File.ReadAllBytes);
+        Dictionary<string, byte[]> sourceBytes = Directory
+            .GetFiles(source)
+            .ToDictionary(path => path, File.ReadAllBytes);
         using var viewModel = new QuestDeveloperViewModel(coordinator!);
 
         await viewModel.ImportFolderAsync(source);
@@ -66,7 +68,7 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
         await viewModel.RemoveAsync();
         Assert.False(viewModel.HasDevelopmentQuest);
         Assert.Empty(coordinator!.Snapshot);
-        foreach (var pair in sourceBytes)
+        foreach (KeyValuePair<string, byte[]> pair in sourceBytes)
         {
             Assert.Equal(pair.Value, await File.ReadAllBytesAsync(pair.Key));
         }
@@ -75,7 +77,7 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
     [Fact]
     public async Task InvalidEditorDoesNotChangeSavedChapterVariables()
     {
-        var source = Path.Combine(temporaryDirectory, "source-invalid");
+        string source = Path.Combine(temporaryDirectory, "source-invalid");
         Directory.CreateDirectory(source);
         await File.WriteAllTextAsync(
             Path.Combine(source, "quest.json"),

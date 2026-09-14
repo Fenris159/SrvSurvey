@@ -41,7 +41,7 @@ public sealed partial class GuardianView : UserControl
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard =
+        IClipboard clipboard =
             TopLevel.GetTopLevel(this)?.Clipboard
             ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
@@ -131,7 +131,7 @@ public sealed partial class GuardianView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var folderPath = ScreenshotProcessingService.GetSystemFolderPath(
+            string folderPath = ScreenshotProcessingService.GetSystemFolderPath(
                 viewModel.ScreenshotProcessing.TargetFolder,
                 selectedSite.Reference.SystemName
             );
@@ -143,10 +143,10 @@ public sealed partial class GuardianView : UserControl
                 return;
             }
 
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException("The desktop folder launcher is not available.");
-            var launched = await launcher.LaunchDirectoryInfoAsync(new DirectoryInfo(folderPath));
+            bool launched = await launcher.LaunchDirectoryInfoAsync(new DirectoryInfo(folderPath));
             viewModel.Guardian.ReportSelectedSiteLaunch(
                 launched
                     ? "Opened the selected system screenshot folder."
@@ -178,8 +178,8 @@ public sealed partial class GuardianView : UserControl
             return;
         }
 
-        var defaultPath = viewModel.Guardian.TemplateAuthoring.DefaultCatalogPath;
-        var defaultDirectory = Path.GetDirectoryName(defaultPath)!;
+        string defaultPath = viewModel.Guardian.TemplateAuthoring.DefaultCatalogPath;
+        string defaultDirectory = Path.GetDirectoryName(defaultPath)!;
         IStorageFolder? suggestedFolder = null;
         try
         {
@@ -191,7 +191,7 @@ public sealed partial class GuardianView : UserControl
         {
             // The picker remains usable even if its suggested folder cannot be prepared.
         }
-        var file = await storage.SaveFilePickerAsync(
+        IStorageFile? file = await storage.SaveFilePickerAsync(
             new FilePickerSaveOptions
             {
                 Title = "Save Guardian map catalog",
@@ -201,7 +201,7 @@ public sealed partial class GuardianView : UserControl
                 FileTypeChoices = [new FilePickerFileType("JSON catalog") { Patterns = ["*.json"] }],
             }
         );
-        var path = file?.TryGetLocalPath();
+        string? path = file?.TryGetLocalPath();
         if (!string.IsNullOrWhiteSpace(path))
         {
             await viewModel.Guardian.TemplateAuthoring.ExportAsync(path);
@@ -218,7 +218,7 @@ public sealed partial class GuardianView : UserControl
             return;
         }
 
-        var backgroundDirectory = viewModel.Guardian.TemplateAuthoring.ManagedBackgroundDirectory;
+        string backgroundDirectory = viewModel.Guardian.TemplateAuthoring.ManagedBackgroundDirectory;
         IStorageFolder? suggestedFolder = null;
         try
         {
@@ -230,7 +230,7 @@ public sealed partial class GuardianView : UserControl
         {
             // The picker remains usable even if its suggested folder cannot be prepared.
         }
-        var files = await storage.OpenFilePickerAsync(
+        IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
             new FilePickerOpenOptions
             {
                 Title = "Choose Guardian map background",
@@ -242,7 +242,7 @@ public sealed partial class GuardianView : UserControl
                 ],
             }
         );
-        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
+        string? path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
         if (!string.IsNullOrWhiteSpace(path))
         {
             viewModel.Guardian.TemplateAuthoring.ImportBackgroundImage(path);
@@ -270,11 +270,11 @@ public sealed partial class GuardianView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException("The desktop launcher is not available.");
             var directory = new DirectoryInfo(Path.GetDirectoryName(archivePath)!);
-            var launched = await launcher.LaunchDirectoryInfoAsync(directory);
+            bool launched = await launcher.LaunchDirectoryInfoAsync(directory);
             viewModel.Guardian.ReportShareLaunch(
                 launched
                     ? "Opened the Guardian survey bundle folder."
@@ -308,12 +308,12 @@ public sealed partial class GuardianView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var topLevel =
+            TopLevel topLevel =
                 TopLevel.GetTopLevel(this)
                 ?? throw new InvalidOperationException("The desktop clipboard is not available.");
-            var clipboard =
+            IClipboard clipboard =
                 topLevel.Clipboard ?? throw new InvalidOperationException("The desktop clipboard is not available.");
-            var file =
+            IStorageFile file =
                 await topLevel.StorageProvider.TryGetFileFromPathAsync(archivePath)
                 ?? throw new FileNotFoundException(
                     "The prepared Guardian survey bundle no longer exists.",
@@ -346,7 +346,7 @@ public sealed partial class GuardianView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException("The desktop link launcher is not available.");
             bool launched;
@@ -382,7 +382,7 @@ public sealed partial class GuardianView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException("The desktop link launcher is not available.");
             await launcher.LaunchUriAsync(new Uri(address));
@@ -409,10 +409,10 @@ public sealed partial class GuardianView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException("The desktop link launcher is not available.");
-            var launched = await launcher.LaunchUriAsync(address);
+            bool launched = await launcher.LaunchUriAsync(address);
             main.Guardian.ReportSelectedSiteLaunch(
                 launched
                     ? $"Opened the selected system at {label}."

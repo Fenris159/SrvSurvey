@@ -74,7 +74,7 @@ public sealed partial class JourneyWindow : Window
 
     private static JourneyWorkspaceViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Journey-Design");
+        string temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Journey-Design");
         return new JourneyWorkspaceViewModel(
             new JourneyService(
                 new JourneyStore(temporaryDirectory),

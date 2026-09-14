@@ -13,7 +13,7 @@ public sealed class CargoFileReaderTests : IDisposable
     public async Task ReadAsyncPortsInventoryAndNormalizesDuplicateEntries()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, CargoFileReader.FileName);
+        string path = Path.Combine(temporaryDirectory, CargoFileReader.FileName);
         await File.WriteAllTextAsync(
             path,
             """
@@ -47,10 +47,10 @@ public sealed class CargoFileReaderTests : IDisposable
             """
         );
 
-        var result = await CargoFileReader.ReadAsync(path);
+        CargoReadResult result = await CargoFileReader.ReadAsync(path);
 
         Assert.True(result.IsSuccess, result.Error);
-        var snapshot = Assert.IsType<CargoSnapshot>(result.Snapshot);
+        CargoSnapshot snapshot = Assert.IsType<CargoSnapshot>(result.Snapshot);
         Assert.Equal("Cargo", snapshot.EventName);
         Assert.Equal("SRV", snapshot.Vessel);
         Assert.Equal(6, snapshot.Count);
@@ -66,10 +66,10 @@ public sealed class CargoFileReaderTests : IDisposable
     public async Task ReadAsyncRetriesMalformedPartialWrite()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, CargoFileReader.FileName);
+        string path = Path.Combine(temporaryDirectory, CargoFileReader.FileName);
         await File.WriteAllTextAsync(path, "{\"event\":\"Cargo\"");
 
-        var result = await CargoFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
+        CargoReadResult result = await CargoFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(2, result.Attempts);

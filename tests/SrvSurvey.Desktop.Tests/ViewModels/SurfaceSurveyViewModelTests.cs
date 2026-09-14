@@ -18,12 +18,12 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task NamedResourceChatCommandsReachMiningWhileBiologyPanelIsSuppressed()
     {
-        var (surface, survey, _) = CreateViewModel();
-        using var disposable = surface;
+        (SurfaceSurveyViewModel? surface, SystemSurveyViewModel? survey, SystemSurfaceStore _) = CreateViewModel();
+        using SurfaceSurveyViewModel disposable = surface;
         using var mining = new SurfaceMiningViewModel(
             new SystemSurfaceStore(Path.Combine(temporaryDirectory, "mining"))
         );
-        var status = Status(StatusFlags.InSrv);
+        EliteStatus status = Status(StatusFlags.InSrv);
         ApplySurveyContext(survey, status, "mev_rhino");
         await surface.ApplyUpdateAsync(
             Session(),
@@ -52,7 +52,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             "mev_rhino",
             mapPresentation: new SurfaceMiningMapPresentation(surface.RadarMarkers)
         );
-        var moved = Assert.Single(mining.Resources);
+        MiningResourceViewModel moved = Assert.Single(mining.Resources);
         Assert.InRange(moved.Marker.DistanceMeters, 174, 175);
         Assert.Equal(90, moved.Bearing, precision: 6);
         Assert.False(moved.IsNear);
@@ -76,13 +76,14 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task ShipBoardingClearsPersistedRigsAndPreservesSurveyBookmarks()
     {
-        var (surface, survey, surveyStore) = CreateViewModel();
-        using var disposable = surface;
+        (SurfaceSurveyViewModel? surface, SystemSurveyViewModel? survey, SystemSurfaceStore? surveyStore) =
+            CreateViewModel();
+        using SurfaceSurveyViewModel disposable = surface;
         var miningStore = new SystemSurfaceStore(Path.Combine(temporaryDirectory, "mining"));
         using var mining = new SurfaceMiningViewModel(miningStore);
         await surveyStore.AddBookmarkAsync(BodyContext(), "helium", new SurfaceCoordinate(0, 2));
         await surveyStore.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 3));
-        var status = Status(StatusFlags.InSrv);
+        EliteStatus status = Status(StatusFlags.InSrv);
         ApplySurveyContext(survey, status, "mev_rhino");
         await surface.ApplyUpdateAsync(Session(), [], status, ExobiologySnapshot.Empty);
         await mining.ApplyUpdateAsync(
@@ -92,17 +93,17 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             "mev_rhino",
             mapPresentation: new SurfaceMiningMapPresentation(surface.RadarMarkers)
         );
-        for (var number = 1; number <= 6; number++)
+        for (int number = 1; number <= 6; number++)
         {
             Assert.True(await mining.ToggleRigAsync(number));
         }
 
         Assert.True(await mining.ClearRigsOnShipBoardingAsync([Event("""{"event":"DockSRV"}""")], "F123"));
 
-        var savedRigs = await miningStore.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult savedRigs = await miningStore.LoadBodyAsync(BodyContext());
         Assert.NotNull(savedRigs.Snapshot);
         Assert.Empty(savedRigs.Snapshot.Bookmarks);
-        var savedSurvey = await surveyStore.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult savedSurvey = await surveyStore.LoadBodyAsync(BodyContext());
         Assert.NotNull(savedSurvey.Snapshot);
         Assert.Equal(2, savedSurvey.Snapshot.Bookmarks.Count);
         Assert.Equal(new SurfaceCoordinate(0, 2), Assert.Single(savedSurvey.Snapshot.Bookmarks["helium"]));
@@ -139,7 +140,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task ClearAllTrackersRemovesBodyBookmarks()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 2));
         await store.AddBookmarkAsync(BodyContext(), "#1", new SurfaceCoordinate(0, 3));
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
@@ -149,7 +151,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.True(await viewModel.ClearAllTrackersAsync());
         Assert.Empty(viewModel.TrackerGroups);
         Assert.Contains("cleared", viewModel.StatusText, StringComparison.OrdinalIgnoreCase);
-        var reloaded = await store.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult reloaded = await store.LoadBodyAsync(BodyContext());
         Assert.NotNull(reloaded.Snapshot);
         Assert.Empty(reloaded.Snapshot.Bookmarks);
 
@@ -161,8 +163,9 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task RhinoExclusivelyOwnsSurfaceTrackingUntilVehicleChanges()
     {
-        var (viewModel, survey, store) = CreateViewModel();
-        using var disposable = viewModel;
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
+        using SurfaceSurveyViewModel disposable = viewModel;
         survey.AutoShowSurfaceRadar = true;
         survey.AutoShowMiniTrack = true;
         await store.AddBookmarkAsync(BodyContext(), "#1", new SurfaceCoordinate(0, 2));
@@ -192,7 +195,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task ClearAllTrackersRequiresBodyContext()
     {
-        var (viewModel, _, _) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel _, SystemSurfaceStore _) = CreateViewModel();
         Assert.False(await viewModel.ClearAllTrackersAsync());
         Assert.Contains("required", viewModel.StatusText, StringComparison.OrdinalIgnoreCase);
     }
@@ -200,7 +203,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task LoadsHistoryTrackersActiveSamplesAndShipMarker()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.SetLastTouchdownAsync(BodyContext(), new SurfaceCoordinate(0, 3));
         await store.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 2));
         await store.AppendBioScansAsync(
@@ -218,7 +222,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             ]
         );
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
-        var exobiology = ExobiologySnapshot.Empty with { ScanOne = Sample(new SurfaceLocation(0, 4)) };
+        ExobiologySnapshot exobiology = ExobiologySnapshot.Empty with { ScanOne = Sample(new SurfaceLocation(0, 4)) };
 
         await viewModel.ApplyUpdateAsync(Session(), [], survey.CurrentStatus, exobiology);
 
@@ -234,15 +238,15 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.Equal(2, viewModel.NavigationMarkers.Count);
         Assert.Contains(viewModel.NavigationMarkers, marker => marker.Name == "Sample 1");
         Assert.True(viewModel.HasNavigationMarkers);
-        var group = Assert.Single(viewModel.TrackerGroups);
+        SurfaceTrackerGroupViewModel group = Assert.Single(viewModel.TrackerGroups);
         Assert.True(group.IsActive);
         Assert.Equal("Aleoida", group.Name);
         Assert.All(group.Targets, marker => Assert.True(marker.IsActive));
 
-        var markers = viewModel.RadarMarkers;
-        var navigationMarkers = viewModel.NavigationMarkers;
-        var groups = viewModel.TrackerGroups;
-        var quickGroups = viewModel.QuickTrackerGroups;
+        IReadOnlyList<SurfaceRadarMarkerViewModel> markers = viewModel.RadarMarkers;
+        IReadOnlyList<SurfaceRadarMarkerViewModel> navigationMarkers = viewModel.NavigationMarkers;
+        IReadOnlyList<SurfaceTrackerGroupViewModel> groups = viewModel.TrackerGroups;
+        IReadOnlyList<SurfaceTrackerGroupViewModel> quickGroups = viewModel.QuickTrackerGroups;
         var notifications = new List<string?>();
         viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
         await viewModel.ApplyUpdateAsync(Session(), [], null, exobiology with { ScannedBioEntryIds = [] });
@@ -256,7 +260,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task LiftoffRendersPersistedTouchdownAsFormerShipLocation()
     {
-        var (viewModel, survey, _) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore _) = CreateViewModel();
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
 
         await viewModel.ApplyUpdateAsync(
@@ -273,7 +277,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             ExobiologySnapshot.Empty
         );
 
-        var marker = Assert.Single(viewModel.RadarMarkers);
+        SurfaceRadarMarkerViewModel marker = Assert.Single(viewModel.RadarMarkers);
         Assert.Equal(SurfaceRadarMarkerKind.FormerShip, marker.Kind);
         Assert.Equal("Former ship location", marker.Name);
         Assert.Equal("Departed", marker.Status);
@@ -284,7 +288,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task NomadDisembarkRendersOnlyTheShipVehicleMarker()
     {
-        var (viewModel, survey, _) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore _) = CreateViewModel();
         ApplySurveyContext(survey, Status(StatusFlags.None));
 
         await viewModel.ApplyUpdateAsync(
@@ -308,7 +312,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             ExobiologySnapshot.Empty
         );
 
-        var marker = Assert.Single(viewModel.NavigationMarkers);
+        SurfaceRadarMarkerViewModel marker = Assert.Single(viewModel.NavigationMarkers);
         Assert.Equal(SurfaceRadarMarkerKind.Ship, marker.Kind);
         Assert.Equal("Ship", marker.Name);
         Assert.DoesNotContain(viewModel.RadarMarkers, candidate => candidate.Kind == SurfaceRadarMarkerKind.Srv);
@@ -317,7 +321,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task EligibilityAppliesAltitudePanelLandingGearAndSupercruiseRules()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 2));
 
         ApplySurveyContext(survey, Status(StatusFlags.InMainShip));
@@ -360,7 +365,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task SupercruiseAllowsSurfaceAndMiniTrackWithoutLandingGearPreference()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.AddBookmarkAsync(BodyContext(), "#1", new SurfaceCoordinate(0, 2));
         await store.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 3));
         survey.AutoShowMiniTrack = true;
@@ -378,7 +384,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task NomadLandingGearControlsSurfaceAndMiniTrackerVisibility()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.AddBookmarkAsync(BodyContext(), "#1", new SurfaceCoordinate(0, 2));
         await store.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 3));
         survey.AutoShowMiniTrack = true;
@@ -410,10 +417,11 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task OnFootSamplerGateTracksLiveSelectedWeapon()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.AddBookmarkAsync(BodyContext(), Genus, new SurfaceCoordinate(0, 2));
         await store.AddBookmarkAsync(BodyContext(), "#1", new SurfaceCoordinate(0, 3));
-        var unarmed = Status(StatusFlags.None) with
+        EliteStatus unarmed = Status(StatusFlags.None) with
         {
             Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
             SelectedWeapon = "$humanoid_fists_name;",
@@ -449,7 +457,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task HiddenQuickTrackersDoNotOpenRadarByThemselves()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.AddBookmarkAsync(BodyContext(), "#temporary", new SurfaceCoordinate(0, 2));
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
 
@@ -464,7 +473,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task MiniTrackUsesQuickTargetsAndLegacyModes()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.AddBookmarkAsync(BodyContext(), "#1", new SurfaceCoordinate(0, 2));
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
         await viewModel.ApplyUpdateAsync(Session(), [], survey.CurrentStatus, ExobiologySnapshot.Empty);
@@ -493,7 +503,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [InlineData(GuiFocus.RolePanel)]
     public async Task MiniTrackHonorsLandingGearSuppressionDuringFocusedFlight(GuiFocus focus)
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.AddBookmarkAsync(BodyContext(), "#1", new SurfaceCoordinate(0, 2));
         survey.AutoShowMiniTrack = true;
         survey.AutoHideSurfaceRadarWithoutLandingGear = true;
@@ -508,7 +519,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public void RadarZoomUsesLegacyFactorBoundsAndAutomaticReset()
     {
-        var (viewModel, _, _) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel _, SystemSurfaceStore _) = CreateViewModel();
 
         Assert.Equal(1, viewModel.RadarScale);
         Assert.Equal("ZOOM AUTO", viewModel.RadarScaleText);
@@ -520,7 +531,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.True(viewModel.ResetRadarScale());
         Assert.Equal("ZOOM AUTO", viewModel.RadarScaleText);
 
-        for (var index = 0; index < 17; index++)
+        for (int index = 0; index < 17; index++)
         {
             viewModel.AdjustRadarScale(zoomIn: true);
         }
@@ -532,20 +543,21 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task BootstrapJournalDoesNotMutateSurfaceTrackers()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
-        var organic = Event(
+        JournalEventEnvelope organic = Event(
             """
             {"event":"ScanOrganic","ScanType":"Log","Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;","SystemAddress":42,"Body":7}
             """
         );
         // Would auto-track a composition bookmark when processJournalMutations is true.
-        var codex = Event(
+        JournalEventEnvelope codex = Event(
             """
             {"event":"CodexEntry","SubCategory":"$Codex_SubCategory_Organic_Structures;","EntryID":2310101,"SystemAddress":42,"BodyID":7,"Latitude":0.1,"Longitude":0.2}
             """
         );
-        var bookmark = Event(
+        JournalEventEnvelope bookmark = Event(
             """
             {"event":"SendText","Message":"+tracker","To":"Local"}
             """
@@ -559,7 +571,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             processJournalMutations: false
         );
 
-        var body = await store.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult body = await store.LoadBodyAsync(BodyContext());
         Assert.NotNull(body.Snapshot);
         Assert.Empty(body.Snapshot.Bookmarks);
         Assert.Empty(body.Snapshot.BioScans);
@@ -568,9 +580,10 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task LiveJournalMutatesSurfaceTrackersWhenEnabled()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
-        var bookmark = Event(
+        JournalEventEnvelope bookmark = Event(
             """
             {"event":"SendText","Message":"+tracker","To":"Local"}
             """
@@ -584,7 +597,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             processJournalMutations: true
         );
 
-        var body = await store.LoadBodyAsync(BodyContext());
+        SystemSurfaceLoadResult body = await store.LoadBodyAsync(BodyContext());
         Assert.NotNull(body.Snapshot);
         Assert.True(body.Snapshot.Bookmarks.Count > 0);
     }
@@ -592,9 +605,9 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task ActiveSampleOnOtherBodyDoesNotCountAsRadarContent()
     {
-        var (viewModel, survey, _) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore _) = CreateViewModel();
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
-        var otherBodySample = Sample(new SurfaceLocation(0, 1)) with { Body = "Test System 2" };
+        BioSampleSnapshot otherBodySample = Sample(new SurfaceLocation(0, 1)) with { Body = "Test System 2" };
 
         await viewModel.ApplyUpdateAsync(
             Session(),
@@ -613,7 +626,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task PriorScanMarkersDrawOnSurfaceRadarWhenEnabled()
     {
-        var (viewModel, survey, store) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore? store) =
+            CreateViewModel();
         await store.AppendBioScansAsync(
             BodyContext(),
             [
@@ -656,7 +670,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task VisibleCanonnPriorMarkersCountAsRadarContent()
     {
-        var (viewModel, survey, _) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore _) = CreateViewModel();
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
         await viewModel.ApplyUpdateAsync(Session(), [], survey.CurrentStatus, ExobiologySnapshot.Empty);
 
@@ -685,7 +699,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     [Fact]
     public async Task QuickTrackerChordTogglesCurrentSurfaceLocation()
     {
-        var (viewModel, survey, _) = CreateViewModel();
+        (SurfaceSurveyViewModel? viewModel, SystemSurveyViewModel? survey, SystemSurfaceStore _) = CreateViewModel();
         ApplySurveyContext(survey, Status(StatusFlags.InSrv));
         await viewModel.ApplyUpdateAsync(Session(), [], survey.CurrentStatus, ExobiologySnapshot.Empty);
 
@@ -798,7 +812,10 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 

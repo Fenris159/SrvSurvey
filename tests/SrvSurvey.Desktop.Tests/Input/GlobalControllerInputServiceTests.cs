@@ -43,7 +43,7 @@ public sealed class GlobalControllerInputServiceTests
             isApplicationActive: () => false,
             backend
         );
-        var triggerCount = 0;
+        int triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
 
         service.Start();
@@ -65,7 +65,7 @@ public sealed class GlobalControllerInputServiceTests
             isApplicationActive: () => false,
             backend
         );
-        var triggerCount = 0;
+        int triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
 
         service.Start();
@@ -87,9 +87,9 @@ public sealed class GlobalControllerInputServiceTests
             isApplicationActive: () => false,
             backend
         );
-        var owner = new object();
+        object owner = new object();
         List<ControllerInputChange> captured = [];
-        var triggerCount = 0;
+        int triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
         ShortcutCaptureSession.Begin(owner, captured.Add);
         try
@@ -119,8 +119,8 @@ public sealed class GlobalControllerInputServiceTests
             isApplicationActive: () => false,
             backend
         );
-        var owner = new object();
-        var triggerCount = 0;
+        object owner = new object();
+        int triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
         service.Start();
         backend.Emit("B1", isPressed: true);
@@ -152,7 +152,7 @@ public sealed class GlobalControllerInputServiceTests
             isApplicationActive: () => true,
             backend
         );
-        var triggerCount = 0;
+        int triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
 
         service.Start();
@@ -281,7 +281,7 @@ public sealed class GlobalControllerInputServiceTests
         service.Update(EnabledSettings() with { ControllerDeviceId = "controller-2" });
         await backend.CancellationObserved.WaitAsync(TimeSpan.FromSeconds(2));
 
-        var disposal = service.DisposeAsync().AsTask();
+        Task disposal = service.DisposeAsync().AsTask();
         backend.AllowStop();
         await disposal.WaitAsync(TimeSpan.FromSeconds(2));
 
@@ -361,7 +361,7 @@ public sealed class GlobalControllerInputServiceTests
 
     private sealed class BlockingStopControllerInputBackend : IControllerInputBackend
     {
-        private readonly object startedDeviceIdsLock = new();
+        private readonly Lock startedDeviceIdsLock = new();
         private readonly List<string> startedDeviceIds = [];
         private readonly TaskCompletionSource cancellationObserved = new(
             TaskCreationOptions.RunContinuationsAsynchronously
@@ -398,7 +398,7 @@ public sealed class GlobalControllerInputServiceTests
             {
                 startedDeviceIds.Add(deviceId);
             }
-            var currentRun = Interlocked.Increment(ref runCount);
+            int currentRun = Interlocked.Increment(ref runCount);
             if (currentRun > 1)
             {
                 secondRunStarted.TrySetResult();

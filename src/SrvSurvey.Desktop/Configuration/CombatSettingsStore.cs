@@ -14,7 +14,7 @@ public sealed class CombatSettingsStore
     public CombatPreferences Load()
     {
         var settings = documentStore.Load()["Combat"] as JsonObject;
-        var defaults = CombatPreferences.Default;
+        CombatPreferences defaults = CombatPreferences.Default;
         return new CombatPreferences(
             GetBoolean(settings, "AutoShowFootCombat", defaults.AutoShowFootCombat),
             GetBoolean(settings, "AutoShowMassacreMissions", defaults.AutoShowMassacreMissions),
@@ -43,7 +43,7 @@ public sealed class CombatSettingsStore
 
     private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result)
             ? result
             : fallback;
     }

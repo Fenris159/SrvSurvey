@@ -48,16 +48,20 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
             """
         );
         await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "start.lua"), "return 'file'");
-        var originals = Directory.GetFiles(temporaryDirectory).ToDictionary(path => path, File.ReadAllBytes);
+        Dictionary<string, byte[]> originals = Directory
+            .GetFiles(temporaryDirectory)
+            .ToDictionary(path => path, File.ReadAllBytes);
 
-        var result = await new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory);
+        QuestDevelopmentFolderLoadResult result = await new QuestDevelopmentFolderLoader().LoadAsync(
+            temporaryDirectory
+        );
 
         Assert.Equal("Sample Quest", result.Definition.Title);
         Assert.Equal("Scan the target", result.Definition.Strings["scan"]);
         Assert.False(result.Definition.Strings.ContainsKey("old"));
         Assert.Equal("return 'file'", result.Definition.Chapters["start"]);
         Assert.True(result.Definition.ExtensionData.ContainsKey("future"));
-        var message = result.Definition.Messages.Single(item => item.Id == "welcome");
+        RavenQuestMessageDefinition message = result.Definition.Messages.Single(item => item.Id == "welcome");
         Assert.Equal("Raven Colonial", message.From);
         Assert.Equal("Welcome", message.Subject);
         Assert.Equal("Proceed: now", message.Actions!["go"]);
@@ -66,7 +70,7 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
         Assert.Equal(4, result.SourceFiles.Count);
         Assert.All(result.SourceFiles, file => Assert.Equal(64, file.Sha256.Length));
         Assert.Empty(result.Warnings);
-        foreach (var pair in originals)
+        foreach (KeyValuePair<string, byte[]> pair in originals)
         {
             Assert.Equal(pair.Value, await File.ReadAllBytesAsync(pair.Key));
         }
@@ -90,7 +94,7 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
             """
         );
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory)
         );
 
@@ -101,7 +105,7 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
     public async Task RejectsMissingFirstChapterAndInvalidUtf8WithoutWriting()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var questPath = Path.Combine(temporaryDirectory, "quest.json");
+        string questPath = Path.Combine(temporaryDirectory, "quest.json");
         await File.WriteAllTextAsync(
             questPath,
             """
@@ -115,16 +119,16 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
             }
             """
         );
-        var original = await File.ReadAllBytesAsync(questPath);
+        byte[] original = await File.ReadAllBytesAsync(questPath);
 
-        var missing = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException missing = await Assert.ThrowsAsync<InvalidDataException>(() =>
             new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory)
         );
         Assert.Contains("First chapter", missing.Message, StringComparison.Ordinal);
         Assert.Equal(original, await File.ReadAllBytesAsync(questPath));
 
         await File.WriteAllBytesAsync(questPath, [0xff, 0xfe, 0xfd]);
-        var invalid = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException invalid = await Assert.ThrowsAsync<InvalidDataException>(() =>
             new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory)
         );
         Assert.Contains("UTF-8", invalid.Message, StringComparison.Ordinal);
@@ -151,7 +155,9 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
         );
         await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "welcome.md"), "from: Two\n\nTwo");
 
-        var result = await new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory);
+        QuestDevelopmentFolderLoadResult result = await new QuestDevelopmentFolderLoader().LoadAsync(
+            temporaryDirectory
+        );
 
         Assert.Equal(2, result.Definition.Messages.Count(message => message.Id == "welcome"));
         Assert.Single(result.Warnings);

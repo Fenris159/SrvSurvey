@@ -11,9 +11,9 @@ public sealed class VrOverlayFrameRendererTests
         using var bitmap = new SKBitmap(new SKImageInfo(1, 1, SKColorType.Rgba8888, SKAlphaType.Unpremul));
         bitmap.SetPixel(0, 0, new SKColor(10, 20, 30, 40));
         using var image = SKImage.FromBitmap(bitmap);
-        using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+        using SKData encoded = image.Encode(SKEncodedImageFormat.Png, 100);
 
-        var frame = VrOverlayFrameRenderer.DecodePng(encoded.ToArray());
+        VrOverlayFrame frame = VrOverlayFrameRenderer.DecodePng(encoded.ToArray());
 
         Assert.Equal(1, frame.Width);
         Assert.Equal(1, frame.Height);

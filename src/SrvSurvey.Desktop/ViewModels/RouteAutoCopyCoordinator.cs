@@ -75,7 +75,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
             return;
         }
 
-        var version = Interlocked.Increment(ref claimVersion);
+        long version = Interlocked.Increment(ref claimVersion);
         await ownershipGate.WaitAsync();
         try
         {
@@ -133,7 +133,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
                 return;
             }
 
-            var other = ReferenceEquals(source, standardRoute) ? fleetCarrierRoute : standardRoute;
+            RouteWorkspaceViewModel other = ReferenceEquals(source, standardRoute) ? fleetCarrierRoute : standardRoute;
             if (other.AutoCopy)
             {
                 await other.DisableAutoCopyForCompetingRouteAsync();

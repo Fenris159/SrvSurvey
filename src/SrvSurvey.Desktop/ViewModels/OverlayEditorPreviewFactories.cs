@@ -30,7 +30,7 @@ internal static class OverlayEditorPreviewFactories
 
     public static RouteBioOverlayViewModel CreateRouteBio()
     {
-        var temporaryDirectory = SettingsDir("route-bio");
+        string temporaryDirectory = SettingsDir("route-bio");
         var vm = new RouteBioOverlayViewModel(
             new RouteWorkspaceViewModel(
                 new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
@@ -39,11 +39,14 @@ internal static class OverlayEditorPreviewFactories
             ),
             Caps()
         );
-        var content = OverlayPreviewSimulationProjector.Project(
+        OverlayPreviewSimulationContent content = OverlayPreviewSimulationProjector.Project(
             OverlayLayoutCatalog.GetRequired("PlotRouteBio"),
             State
         );
-        var targets = content.Rows.Select(row => row.RouteBody).OfType<RouteBioTargetItemViewModel>().ToArray();
+        RouteBioTargetItemViewModel[] targets = content
+            .Rows.Select(row => row.RouteBody)
+            .OfType<RouteBioTargetItemViewModel>()
+            .ToArray();
         vm.InstallEditorPreview(State.CurrentSystem, targets);
         return vm;
     }
@@ -134,7 +137,7 @@ internal static class OverlayEditorPreviewFactories
 
     public static GalaxyMapOverlayViewModel CreateGalaxyMap()
     {
-        var nicknameDir = SettingsDir("nicknames");
+        string nicknameDir = SettingsDir("nicknames");
         var vm = new GalaxyMapOverlayViewModel(
             new EmptySystemSummaryClient(),
             new GalaxyMapSettingsStore(Path.Combine(SettingsDir("galmap"), UiSettingsFileName)),
@@ -220,7 +223,7 @@ internal static class OverlayEditorPreviewFactories
 
     public static SurfaceSurveyOverlayViewModel CreateSurfaceSurvey()
     {
-        var root = SettingsDir("surface");
+        string root = SettingsDir("surface");
         var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(Path.Combine(root, UiSettingsFileName)));
         var store = new SystemSurfaceStore(root);
         var surface = new SurfaceSurveyViewModel(
@@ -228,8 +231,15 @@ internal static class OverlayEditorPreviewFactories
             store,
             new SurfaceTracker(store, ExobiologyReferenceCatalog.LoadEmbedded())
         );
-        var acies = Marker("Bacterium Acies", SurfaceRadarMarkerKind.ActiveSample, 146, 68, -6, 500);
-        var tussock = Marker(
+        SurfaceRadarMarkerViewModel acies = Marker(
+            "Bacterium Acies",
+            SurfaceRadarMarkerKind.ActiveSample,
+            146,
+            68,
+            -6,
+            500
+        );
+        SurfaceRadarMarkerViewModel tussock = Marker(
             "Tussock Capillum",
             SurfaceRadarMarkerKind.Bookmark,
             412,
@@ -237,7 +247,7 @@ internal static class OverlayEditorPreviewFactories
             17,
             ExobiologyReferenceCatalog.GetSampleDistanceMeters("Tussock")
         );
-        var ship = Marker("Ship", SurfaceRadarMarkerKind.Ship, 860, 184, 110, 0);
+        SurfaceRadarMarkerViewModel ship = Marker("Ship", SurfaceRadarMarkerKind.Ship, 860, 184, 110, 0);
         surface.InstallEditorPreview(
             State.CurrentBody,
             "HEADING 074°",
@@ -343,7 +353,7 @@ internal static class OverlayEditorPreviewFactories
         FleetCarrierRouteEditorPreviewState state = FleetCarrierRouteEditorPreviewState.Cooldown
     )
     {
-        var temporaryDirectory = SettingsDir("fc-route");
+        string temporaryDirectory = SettingsDir("fc-route");
         var vm = new FleetCarrierRouteOverlayViewModel(
             new RouteWorkspaceViewModel(
                 new FollowRouteService(new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier)),
@@ -532,7 +542,7 @@ internal static class OverlayEditorPreviewFactories
 
     public static SphericalSearchOverlayViewModel CreateSphericalSearch()
     {
-        var temporaryDirectory = SettingsDir("spherical");
+        string temporaryDirectory = SettingsDir("spherical");
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var resolver = new EmptySystemResolver();
         var route = new RouteWorkspaceViewModel(
@@ -702,7 +712,7 @@ internal static class OverlayEditorPreviewFactories
 
         private BoxelSearchOutcome CreateRejectedOutcome(BoxelSearchMessageCode code)
         {
-            var snapshot = Current;
+            BoxelSearchSessionSnapshot snapshot = Current;
             return new BoxelSearchOutcome(
                 BoxelSearchOutcomeKind.Rejected,
                 code,

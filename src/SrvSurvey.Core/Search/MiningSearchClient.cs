@@ -94,7 +94,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         CancellationToken cancellationToken = default
     )
     {
-        var filters = DistanceFilter(query.Radius);
+        Dictionary<string, object> filters = DistanceFilter(query.Radius);
         if (query.SystemOnly)
         {
             filters[SystemNameField] = new { value = new[] { query.ReferenceSystem } };
@@ -118,13 +118,19 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             filters["rings"] = new[] { new { type = new[] { query.RingType } } };
         }
 
-        using var response = await SearchAsync("bodies", query.ReferenceSystem, filters, query.Page, cancellationToken);
+        using JsonDocument response = await SearchAsync(
+            "bodies",
+            query.ReferenceSystem,
+            filters,
+            query.Page,
+            cancellationToken
+        );
         var output = new List<MiningRing>();
-        foreach (var body in Results(response))
+        foreach (JsonElement body in Results(response))
         {
-            foreach (var ring in MiningJson.Array(body, "rings"))
+            foreach (JsonElement ring in MiningJson.Array(body, "rings"))
             {
-                var type = MiningJson.Text(ring, "type");
+                string type = MiningJson.Text(ring, "type");
                 if (!MatchesRingType(query.RingType, type))
                 {
                     continue;
@@ -180,18 +186,18 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             return await FindSpanshMarketsAsync(query, cancellationToken).ConfigureAwait(false);
         }
 
-        var commodity = MiningCommodityName.Normalize(query.Commodity);
-        var direction = query.Buying ? "exports" : "imports";
-        var path = query.GalaxyWide
+        string commodity = MiningCommodityName.Normalize(query.Commodity);
+        string direction = query.Buying ? "exports" : "imports";
+        string path = query.GalaxyWide
             ? $"commodity/name/{Uri.EscapeDataString(commodity)}/{direction}"
             : $"system/name/{Uri.EscapeDataString(query.ReferenceSystem)}/commodity/name/{Uri.EscapeDataString(commodity)}/nearby/{direction}";
-        var uri =
+        string uri =
             $"https://api.ardent-insight.com/v2/{path}?minVolume=1&maxDaysAgo={query.MaximumAgeDays}&maxDistance={query.Radius.ToString(System.Globalization.CultureInfo.InvariantCulture)}&fleetCarriers={!query.ExcludeCarriers}";
-        using var response = await client
+        using HttpResponseMessage response = await client
             .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        using var document = await BoundedHttpContent
+        using JsonDocument document = await BoundedHttpContent
             .ReadJsonDocumentAsync(response.Content, MaximumResponseBytes, "Mining market response", cancellationToken)
             .ConfigureAwait(false);
         if (document.RootElement.ValueKind != JsonValueKind.Array)
@@ -210,17 +216,17 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
 
     private static MiningMarketResult? ReadArdentMarket(JsonElement item, MiningMarketQuery query)
     {
-        var type = MiningJson.Text(item, "stationType");
-        var largePad = Number(item, "maxLandingPadSize") is { } pad ? pad >= 3 : (bool?)null;
+        string type = MiningJson.Text(item, "stationType");
+        bool? largePad = Number(item, "maxLandingPadSize") is { } pad ? pad >= 3 : (bool?)null;
         if (!MatchesStation(type, largePad, query))
         {
             return null;
         }
 
-        var price = (long)MiningJson.Number(item, query.Buying ? "buyPrice" : "sellPrice");
-        var demand = (long)MiningJson.Number(item, "demand");
-        var supply = (long)MiningJson.Number(item, "stock");
-        var updated = RecentObservation(MiningJson.Text(item, "updatedAt"), query.MaximumAgeDays);
+        long price = (long)MiningJson.Number(item, query.Buying ? "buyPrice" : "sellPrice");
+        long demand = (long)MiningJson.Number(item, "demand");
+        long supply = (long)MiningJson.Number(item, "stock");
+        DateTimeOffset? updated = RecentObservation(MiningJson.Text(item, "updatedAt"), query.MaximumAgeDays);
         if (!HasTradeVolume(price, demand, supply, query.Buying) || updated is null)
         {
             return null;
@@ -246,7 +252,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         CancellationToken cancellationToken = default
     )
     {
-        var filters = query.GalaxyWide ? new Dictionary<string, object>() : DistanceFilter(query.Radius);
+        Dictionary<string, object> filters = query.GalaxyWide ? [] : DistanceFilter(query.Radius);
         if (query.SystemOnly && !query.GalaxyWide)
         {
             filters[SystemNameField] = new { value = new[] { query.ReferenceSystem } };
@@ -256,7 +262,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         {
             value = new[] { query.Commodity },
         };
-        using var response = await SearchAsync(
+        using JsonDocument response = await SearchAsync(
             "stations",
             query.ReferenceSystem,
             filters,
@@ -269,28 +275,31 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
 
     private static IEnumerable<MiningMarketResult> ReadSpanshMarkets(JsonElement station, MiningMarketQuery query)
     {
-        var type = MiningJson.Text(station, "type");
-        var largePad = HasLargePad(station);
+        string type = MiningJson.Text(station, "type");
+        bool? largePad = HasLargePad(station);
         if (!MatchesStation(type, largePad, query))
         {
             yield break;
         }
 
-        var updated = RecentObservation(MiningJson.Text(station, "market_updated_at"), query.MaximumAgeDays);
+        DateTimeOffset? updated = RecentObservation(
+            MiningJson.Text(station, "market_updated_at"),
+            query.MaximumAgeDays
+        );
         if (updated is null)
         {
             yield break;
         }
 
         foreach (
-            var item in MiningJson
+            JsonElement item in MiningJson
                 .Array(station, "market")
                 .Where(m => MiningJson.Text(m, "commodity").Equals(query.Commodity, StringComparison.OrdinalIgnoreCase))
         )
         {
-            var price = (long)MiningJson.Number(item, query.Buying ? "buy_price" : "sell_price");
-            var supply = (long)(Number(item, "supply") ?? Number(item, "stock") ?? 0);
-            var demand = (long)MiningJson.Number(item, "demand");
+            long price = (long)MiningJson.Number(item, query.Buying ? "buy_price" : "sell_price");
+            long supply = (long)(Number(item, "supply") ?? Number(item, "stock") ?? 0);
+            long demand = (long)MiningJson.Number(item, "demand");
             if (!HasTradeVolume(price, demand, supply, query.Buying))
             {
                 continue;
@@ -324,7 +333,12 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         buying ? results.OrderBy(r => r.Price).ToArray() : results.OrderByDescending(r => r.Price).ToArray();
 
     private static DateTimeOffset? RecentObservation(string value, int maximumAgeDays) =>
-        DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var time)
+        DateTimeOffset.TryParse(
+            value,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal,
+            out DateTimeOffset time
+        )
         && DateTimeOffset.UtcNow - time <= TimeSpan.FromDays(maximumAgeDays)
         && time <= DateTimeOffset.UtcNow.AddMinutes(5)
             ? time
@@ -338,7 +352,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         }
 
         if (
-            station.TryGetProperty("has_large_pad", out var pad)
+            station.TryGetProperty("has_large_pad", out JsonElement pad)
             && pad.ValueKind is JsonValueKind.True or JsonValueKind.False
         )
         {
@@ -353,9 +367,9 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         CancellationToken cancellationToken = default
     )
     {
-        var filters = DistanceFilter(query.Radius);
+        Dictionary<string, object> filters = DistanceFilter(query.Radius);
         foreach (
-            var (name, value, array) in new[]
+            (string? name, string? value, bool array) in new[]
             {
                 ("security", query.Security, false),
                 ("allegiance", query.Allegiance, false),
@@ -378,7 +392,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             filters["population"] = new { min = query.MinimumPopulation };
         }
 
-        using var response = await SearchAsync(
+        using JsonDocument response = await SearchAsync(
             "systems",
             query.ReferenceSystem,
             filters,
@@ -409,9 +423,9 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         CancellationToken cancellationToken = default
     )
     {
-        var filters = DistanceFilter(radius);
+        Dictionary<string, object> filters = DistanceFilter(radius);
         filters["material_trader"] = new { value = trader };
-        using var response = await SearchAsync("stations", reference, filters, page, cancellationToken);
+        using JsonDocument response = await SearchAsync("stations", reference, filters, page, cancellationToken);
         return Results(response)
             .Select(s => new MiningMarketResult(
                 MiningJson.Text(s, SystemNameField),
@@ -458,7 +472,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
                 }
             ),
         };
-        using var response = await client
+        using HttpResponseMessage response = await client
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -481,9 +495,9 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         MiningJson.Array(document.RootElement, "results");
 
     private static double? Number(JsonElement data, string property) =>
-        data.TryGetProperty(property, out var value)
+        data.TryGetProperty(property, out JsonElement value)
         && value.ValueKind == JsonValueKind.Number
-        && value.TryGetDouble(out var number)
+        && value.TryGetDouble(out double number)
         && double.IsFinite(number)
             ? number
             : null;

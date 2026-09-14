@@ -23,7 +23,7 @@ public sealed class BiologyPredictionEvaluator
         knowledge ??= BiologyPredictionKnowledge.Empty;
 
         var state = new EvaluationState(context, knowledge, targetVariant);
-        foreach (var criteria in catalog.Roots)
+        foreach (BiologyCriteriaNode criteria in catalog.Roots)
         {
             state.Evaluate(
                 criteria,
@@ -82,11 +82,11 @@ public sealed class BiologyPredictionEvaluator
                 return false;
             }
 
-            var currentClauses = inheritedClauses
+            BiologyCriteriaClause[] currentClauses = inheritedClauses
                 .Concat(criteria.Query.Where(clause => clause.Operator != BiologyCriteriaOperator.Comment))
                 .ToArray();
-            var currentName = FormatPredictionName(genus, species, variant);
-            var targetMatch = false;
+            string? currentName = FormatPredictionName(genus, species, variant);
+            bool targetMatch = false;
             if (currentName is not null)
             {
                 targetMatch = string.Equals(targetVariant, currentName, StringComparison.Ordinal);
@@ -101,13 +101,15 @@ public sealed class BiologyPredictionEvaluator
                 }
             }
 
-            var children = criteria.UseCommonChildren ? commonChildren : criteria.Children;
+            IReadOnlyList<BiologyCriteriaNode>? children = criteria.UseCommonChildren
+                ? commonChildren
+                : criteria.Children;
             if (children is null)
             {
                 return targetMatch;
             }
 
-            foreach (var child in children)
+            foreach (BiologyCriteriaNode child in children)
             {
                 targetMatch |= Evaluate(child, genus, species, variant, commonChildren, currentClauses);
             }
@@ -148,7 +150,7 @@ public sealed class BiologyPredictionEvaluator
                 return true;
             }
 
-            if (!TryGetValue(clause.Property, out var bodyValue))
+            if (!TryGetValue(clause.Property, out object? bodyValue))
             {
                 missingProperties.Add(clause.Property);
                 return false;
@@ -177,7 +179,7 @@ public sealed class BiologyPredictionEvaluator
                 );
             }
 
-            var bodyValues = ToStrings(bodyValue);
+            IReadOnlyList<string> bodyValues = ToStrings(bodyValue);
             if (clause.Property == "body")
             {
                 return clause.Values.Any(value =>
@@ -204,7 +206,7 @@ public sealed class BiologyPredictionEvaluator
 
         private static bool MatchesAll(BiologyCriteriaClause clause, object bodyValue)
         {
-            var bodyValues = ToStrings(bodyValue);
+            IReadOnlyList<string> bodyValues = ToStrings(bodyValue);
             return clause.Values.All(value =>
                 bodyValues.Any(body => body.Equals(value, StringComparison.OrdinalIgnoreCase))
             );
@@ -212,7 +214,7 @@ public sealed class BiologyPredictionEvaluator
 
         private static bool MatchesNone(BiologyCriteriaClause clause, object bodyValue)
         {
-            var bodyValues = ToStrings(bodyValue);
+            IReadOnlyList<string> bodyValues = ToStrings(bodyValue);
             return !clause.Values.Any(value =>
                 bodyValues.Any(body => body.Equals(value, StringComparison.OrdinalIgnoreCase))
             );
@@ -286,7 +288,7 @@ public sealed class BiologyPredictionEvaluator
                 return composition;
             }
 
-            var item = composition.First();
+            KeyValuePair<string, double> item = composition.First();
             return new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase) { [item.Key] = 100 };
         }
 

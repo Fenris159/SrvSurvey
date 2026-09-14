@@ -330,7 +330,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         get
         {
-            var ship = Snapshot?.CurrentShip;
+            FrontierShipSnapshot? ship = Snapshot?.CurrentShip;
             if (ship is null)
             {
                 return "—";
@@ -348,7 +348,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         get
         {
-            var ship = Snapshot?.CurrentShip;
+            FrontierShipSnapshot? ship = Snapshot?.CurrentShip;
             if (ship is null)
             {
                 return "Health unavailable";
@@ -484,7 +484,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 return "Local cargo and ship-locker inventory is hidden while multiple Elite windows are running because the shared companion files cannot be attributed safely.";
             }
 
-            var latest = new DateTimeOffset?[] { localShipCargo?.Timestamp, localShipLocker?.Timestamp }
+            DateTimeOffset latest = new DateTimeOffset?[] { localShipCargo?.Timestamp, localShipLocker?.Timestamp }
                 .Where(value => value is not null)
                 .Select(value => value!.Value)
                 .DefaultIfEmpty()
@@ -505,18 +505,18 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private void ApplyLocalInventorySelection()
     {
-        var manualSuppression =
+        bool manualSuppression =
             manuallySelectedFrontierId is not null
             && !string.Equals(manuallySelectedFrontierId, detectedFrontierId, StringComparison.OrdinalIgnoreCase);
-        var suppression = isCompanionInventorySuppressed || manualSuppression;
-        var nextCargo =
+        bool suppression = isCompanionInventorySuppressed || manualSuppression;
+        CargoSnapshot? nextCargo =
             !suppression && string.Equals(detectedShipCargo?.Vessel, "Ship", StringComparison.OrdinalIgnoreCase)
                 ? detectedShipCargo
                 : null;
-        var nextShipLocker = suppression ? null : detectedShipLocker;
-        var cargoChanged = !ReferenceEquals(localShipCargo, nextCargo);
-        var shipLockerChanged = !ReferenceEquals(localShipLocker, nextShipLocker);
-        var suppressionChanged =
+        ShipLockerSnapshot? nextShipLocker = suppression ? null : detectedShipLocker;
+        bool cargoChanged = !ReferenceEquals(localShipCargo, nextCargo);
+        bool shipLockerChanged = !ReferenceEquals(localShipLocker, nextShipLocker);
+        bool suppressionChanged =
             isLocalInventorySuppressed != suppression || isManualInventorySuppressed != manualSuppression;
 
         localShipCargo = nextCargo;
@@ -567,8 +567,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public void UpdateJournalReputation(string? commanderName, IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        var normalizedCommander = commanderName?.Trim();
-        var commanderChanged = !string.Equals(
+        string? normalizedCommander = commanderName?.Trim();
+        bool commanderChanged = !string.Equals(
             journalReputationCommanderName,
             normalizedCommander,
             StringComparison.OrdinalIgnoreCase
@@ -580,7 +580,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             journalReputationUpdatedAt = null;
         }
 
-        var latest = journalEvents.LastOrDefault(journalEvent =>
+        JournalEventEnvelope? latest = journalEvents.LastOrDefault(journalEvent =>
             string.Equals(journalEvent.EventName, "Reputation", StringComparison.OrdinalIgnoreCase)
         );
         if (latest is null)
@@ -612,8 +612,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public void UpdateJournalCarrierJump(string? commanderName, IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        var normalizedCommander = commanderName?.Trim();
-        var commanderChanged = !string.Equals(
+        string? normalizedCommander = commanderName?.Trim();
+        bool commanderChanged = !string.Equals(
             journalCarrierJumpCommanderName,
             normalizedCommander,
             StringComparison.OrdinalIgnoreCase
@@ -628,65 +628,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             hasJournalCarrierJumpState = false;
         }
 
-        var changed = commanderChanged;
-        foreach (var journalEvent in journalEvents)
+        bool changed = commanderChanged;
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
-            var observedAt = journalEvent.Timestamp ?? now().ToUniversalTime();
-            switch (journalEvent.EventName)
-            {
-                case "CarrierJumpRequest":
-                    journalCarrierId = ReadJournalIdentifier(journalEvent.Payload, "CarrierID");
-                    journalCarrierJumpDestination = FirstNonEmpty(
-                        ReadJournalString(journalEvent.Payload, "SystemName"),
-                        ReadJournalString(journalEvent.Payload, "StarSystem"),
-                        ReadJournalString(journalEvent.Payload, "Body")
-                    );
-                    journalCarrierJumpDepartureAt = ReadJournalDateTimeOffset(journalEvent.Payload, "DepartureTime");
-                    journalCarrierJumpUpdatedAt = observedAt;
-                    hasJournalCarrierJumpState = true;
-                    changed = true;
-                    break;
-                case "CarrierJumpCancelled":
-                    if (MatchesJournalCarrier(journalEvent.Payload))
-                    {
-                        journalCarrierJumpDestination = string.Empty;
-                        journalCarrierJumpDepartureAt = null;
-                        journalCarrierJumpUpdatedAt = observedAt;
-                        hasJournalCarrierJumpState = true;
-                        changed = true;
-                    }
-
-                    break;
-                case "CarrierJump":
-                    if (
-                        hasJournalCarrierJumpState
-                        && !string.IsNullOrWhiteSpace(journalCarrierJumpDestination)
-                        && MatchesJournalCarrier(journalEvent.Payload)
-                    )
-                    {
-                        journalCarrierJumpDestination = string.Empty;
-                        journalCarrierJumpDepartureAt = null;
-                        journalCarrierJumpUpdatedAt = observedAt;
-                        changed = true;
-                    }
-
-                    break;
-                case "CarrierLocation":
-                    if (
-                        hasJournalCarrierJumpState
-                        && !string.IsNullOrWhiteSpace(journalCarrierJumpDestination)
-                        && MatchesJournalCarrier(journalEvent.Payload)
-                        && (journalCarrierJumpDepartureAt is null || observedAt >= journalCarrierJumpDepartureAt)
-                    )
-                    {
-                        journalCarrierJumpDestination = string.Empty;
-                        journalCarrierJumpDepartureAt = null;
-                        journalCarrierJumpUpdatedAt = observedAt;
-                        changed = true;
-                    }
-
-                    break;
-            }
+            DateTimeOffset observedAt = journalEvent.Timestamp ?? now().ToUniversalTime();
+            changed |= ApplyJournalCarrierJumpEvent(journalEvent, observedAt);
         }
 
         if (changed)
@@ -696,11 +642,55 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
+    private bool ApplyJournalCarrierJumpEvent(JournalEventEnvelope journalEvent, DateTimeOffset observedAt)
+    {
+        switch (journalEvent.EventName)
+        {
+            case "CarrierJumpRequest":
+                journalCarrierId = ReadJournalIdentifier(journalEvent.Payload, "CarrierID");
+                journalCarrierJumpDestination = FirstNonEmpty(
+                    ReadJournalString(journalEvent.Payload, "SystemName"),
+                    ReadJournalString(journalEvent.Payload, "StarSystem"),
+                    ReadJournalString(journalEvent.Payload, "Body")
+                );
+                journalCarrierJumpDepartureAt = ReadJournalDateTimeOffset(journalEvent.Payload, "DepartureTime");
+                journalCarrierJumpUpdatedAt = observedAt;
+                hasJournalCarrierJumpState = true;
+                return true;
+            case "CarrierJumpCancelled" when MatchesJournalCarrier(journalEvent.Payload):
+                ClearJournalCarrierJump(observedAt);
+                hasJournalCarrierJumpState = true;
+                return true;
+            case "CarrierJump" when HasMatchingPendingCarrierJump(journalEvent.Payload):
+                ClearJournalCarrierJump(observedAt);
+                return true;
+            case "CarrierLocation"
+                when HasMatchingPendingCarrierJump(journalEvent.Payload)
+                    && (journalCarrierJumpDepartureAt is null || observedAt >= journalCarrierJumpDepartureAt):
+                ClearJournalCarrierJump(observedAt);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private bool HasMatchingPendingCarrierJump(JsonElement payload) =>
+        hasJournalCarrierJumpState
+        && !string.IsNullOrWhiteSpace(journalCarrierJumpDestination)
+        && MatchesJournalCarrier(payload);
+
+    private void ClearJournalCarrierJump(DateTimeOffset observedAt)
+    {
+        journalCarrierJumpDestination = string.Empty;
+        journalCarrierJumpDepartureAt = null;
+        journalCarrierJumpUpdatedAt = observedAt;
+    }
+
     public void UpdateJournalCommunityGoals(string? commanderName, IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        var normalizedCommander = commanderName?.Trim();
-        var commanderChanged = !string.Equals(
+        string? normalizedCommander = commanderName?.Trim();
+        bool commanderChanged = !string.Equals(
             journalCommunityGoalCommanderName,
             normalizedCommander,
             StringComparison.OrdinalIgnoreCase
@@ -714,7 +704,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             journalCommunityGoalHistoryError = string.Empty;
         }
 
-        var goalEvents = journalEvents
+        JournalEventEnvelope[] goalEvents = journalEvents
             .Where(journalEvent =>
                 string.Equals(journalEvent.EventName, "CommunityGoal", StringComparison.OrdinalIgnoreCase)
             )
@@ -730,12 +720,14 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
-        var updated = false;
-        foreach (var goalEvent in goalEvents)
+        bool updated = false;
+        foreach (JournalEventEnvelope? goalEvent in goalEvents)
         {
             try
             {
-                var parsed = FrontierCapiSnapshotParser.ParseCommunityGoals(goalEvent.RawJson);
+                IReadOnlyList<FrontierCommunityGoalSnapshot> parsed = FrontierCapiSnapshotParser.ParseCommunityGoals(
+                    goalEvent.RawJson
+                );
                 journalCommunityGoals = StampJournalCommunityGoals(parsed, goalEvent.Timestamp);
                 journalCommunityGoalsUpdatedAt = goalEvent.Timestamp;
                 journalCommunityGoalHistory = MergeJournalCommunityGoalHistory(
@@ -1066,19 +1058,19 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         get
         {
-            var goals = EffectiveCommunityGoals();
+            IReadOnlyList<FrontierCommunityGoalSnapshot> goals = EffectiveCommunityGoals();
             if (goals.Count == 0)
             {
                 return "No community goals were returned for this commander.";
             }
 
-            var currentTime = now().ToUniversalTime();
-            var active = goals
+            DateTimeOffset currentTime = now().ToUniversalTime();
+            FrontierCommunityGoalSnapshot[] active = goals
                 .Where(goal => !goal.IsComplete && (goal.ExpiresAt is null || goal.ExpiresAt > currentTime))
                 .ToArray();
-            var frontierActive = active.Count(goal => !IsInaraOnlyGoal(goal));
-            var inaraActive = active.Length - frontierActive;
-            var ended = goals.Count - active.Length;
+            int frontierActive = active.Count(goal => !IsInaraOnlyGoal(goal));
+            int inaraActive = active.Length - frontierActive;
+            int ended = goals.Count - active.Length;
             return $"{active.Length:N0} active ({frontierActive:N0} Frontier, "
                 + $"{inaraActive:N0} Inara) · {ended:N0} recently completed or ended";
         }
@@ -1101,9 +1093,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private FrontierCommunityGoalCardViewModel CreateCommunityGoalCard(FrontierCommunityGoalSnapshot item)
     {
-        var fields = ResolveCommunityGoalCardFields(item);
-        var currentTime = now().ToUniversalTime();
-        var progress = ComputeCommunityGoalProgress(fields);
+        CommunityGoalCardFields fields = ResolveCommunityGoalCardFields(item);
+        DateTimeOffset currentTime = now().ToUniversalTime();
+        double progress = ComputeCommunityGoalProgress(fields);
         return new FrontierCommunityGoalCardViewModel(
             item.Title,
             fields.Briefing,
@@ -1195,15 +1187,15 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static CommunityGoalCardFields ResolveCommunityGoalCardFields(FrontierCommunityGoalSnapshot item)
     {
-        var dataPoints = item.DataPoints ?? [];
-        var system = FirstNonEmpty(
+        IReadOnlyList<FrontierDataPointSnapshot> dataPoints = item.DataPoints ?? [];
+        string system = FirstNonEmpty(
             item.System,
             CommunityGoalDataValue(dataPoints, "starsystem_name", "starsystemName")
         );
-        var market = FirstNonEmpty(item.Market, CommunityGoalDataValue(dataPoints, "market_name", "marketName"));
-        var objective = FirstNonEmpty(item.Objective, CommunityGoalDataValue(dataPoints, "objective"));
-        var reward = FirstNonEmpty(item.Reward, CommunityGoalDataValue(dataPoints, "reward", "rewardText"));
-        var briefing = CleanCommunityGoalBriefing(
+        string market = FirstNonEmpty(item.Market, CommunityGoalDataValue(dataPoints, "market_name", "marketName"));
+        string objective = FirstNonEmpty(item.Objective, CommunityGoalDataValue(dataPoints, "objective"));
+        string reward = FirstNonEmpty(item.Reward, CommunityGoalDataValue(dataPoints, "reward", "rewardText"));
+        string briefing = CleanCommunityGoalBriefing(
             FirstNonEmpty(
                 item.Description,
                 CommunityGoalDataValue(dataPoints, "bulletin"),
@@ -1211,13 +1203,13 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             ),
             item.Title
         );
-        var activityType = FirstNonEmpty(
+        string activityType = FirstNonEmpty(
             item.ActivityType,
             CommunityGoalDataValue(dataPoints, "activityType", "activity_type")
         );
-        var currentTotal =
+        long currentTotal =
             item.CurrentTotal != 0 ? item.CurrentTotal : CommunityGoalDataLong(dataPoints, "qty", "currentTotal") ?? 0;
-        var cachedTarget = CommunityGoalDataLong(dataPoints, "target_qty", "targetTotal");
+        long? cachedTarget = CommunityGoalDataLong(dataPoints, "target_qty", "targetTotal");
         long? target;
         if (item.TargetTotal is > 0)
         {
@@ -1231,16 +1223,16 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             target = null;
         }
-        var hasPlayerContributionData =
+        bool hasPlayerContributionData =
             item.HasPlayerContributionData
             || HasCommunityGoalData(dataPoints, "playerContribution", "commander.contribution");
-        var playerContribution = item.HasPlayerContributionData
+        long playerContribution = item.HasPlayerContributionData
             ? item.PlayerContribution
             : CommunityGoalDataLong(dataPoints, "playerContribution", "commander.contribution") ?? 0;
-        var hasContributorData =
+        bool hasContributorData =
             item.HasContributorData
             || HasCommunityGoalData(dataPoints, "numContributors", "contributorsNum", "contributors");
-        var contributors = item.HasContributorData
+        int contributors = item.HasContributorData
             ? item.Contributors
             : (int)
                 Math.Clamp(
@@ -1248,11 +1240,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                     int.MinValue,
                     int.MaxValue
                 );
-        var tier = FirstNonEmpty(item.TierReached, CommunityGoalDataValue(dataPoints, "tierReached", "tier"));
-        var inaraLastUpdated = CommunityGoalDataDateTimeOffset(dataPoints, "inara.lastUpdate");
-        var inaraFetchedAt = CommunityGoalDataDateTimeOffset(dataPoints, "inara.fetchedAt");
-        var journalRecordedAt = CommunityGoalDataDateTimeOffset(dataPoints, CommunityGoalTimestampKey);
-        var hasInaraData = inaraLastUpdated is not null || inaraFetchedAt is not null;
+        string tier = FirstNonEmpty(item.TierReached, CommunityGoalDataValue(dataPoints, "tierReached", "tier"));
+        DateTimeOffset? inaraLastUpdated = CommunityGoalDataDateTimeOffset(dataPoints, "inara.lastUpdate");
+        DateTimeOffset? inaraFetchedAt = CommunityGoalDataDateTimeOffset(dataPoints, "inara.fetchedAt");
+        DateTimeOffset? journalRecordedAt = CommunityGoalDataDateTimeOffset(dataPoints, CommunityGoalTimestampKey);
+        bool hasInaraData = inaraLastUpdated is not null || inaraFetchedAt is not null;
         return new CommunityGoalCardFields
         {
             DataPoints = dataPoints,
@@ -1350,9 +1342,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     )
     {
         ThrowIfDisposed();
-        var normalizedId = NormalizeFrontierId(frontierId);
-        var normalizedName = string.IsNullOrWhiteSpace(commanderName) ? null : commanderName.Trim();
-        var detectedIdentityChanged = !string.Equals(
+        string? normalizedId = NormalizeFrontierId(frontierId);
+        string? normalizedName = string.IsNullOrWhiteSpace(commanderName) ? null : commanderName.Trim();
+        bool detectedIdentityChanged = !string.Equals(
             detectedFrontierId,
             normalizedId,
             StringComparison.OrdinalIgnoreCase
@@ -1406,7 +1398,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         try
         {
-            var result = await communityGoalHistoryReader.ReadAsync(frontierId, cancellationToken);
+            CommunityGoalJournalHistoryReadResult result = await communityGoalHistoryReader.ReadAsync(
+                frontierId,
+                cancellationToken
+            );
             if (!string.Equals(detectedFrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
             {
                 return;
@@ -1435,9 +1430,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         CancellationToken cancellationToken = default
     )
     {
-        var normalizedId = NormalizeFrontierId(frontierId);
-        var normalizedName = string.IsNullOrWhiteSpace(commanderName) ? null : commanderName.Trim();
-        var identityChanged = !string.Equals(activeFrontierId, normalizedId, StringComparison.OrdinalIgnoreCase);
+        string? normalizedId = NormalizeFrontierId(frontierId);
+        string? normalizedName = string.IsNullOrWhiteSpace(commanderName) ? null : commanderName.Trim();
+        bool identityChanged = !string.Equals(activeFrontierId, normalizedId, StringComparison.OrdinalIgnoreCase);
 
         activeFrontierId = normalizedId;
         activeCommanderName = normalizedName;
@@ -1453,10 +1448,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
-        var activationVersion = Interlocked.Increment(ref commanderContextVersion);
-        var automaticLoad = automaticLoadCancellation;
+        long activationVersion = Interlocked.Increment(ref commanderContextVersion);
+        CancellationTokenSource? automaticLoad = automaticLoadCancellation;
         automaticLoadCancellation = null;
-        var previousConnection = connectionCancellation;
+        CancellationTokenSource? previousConnection = connectionCancellation;
         connectionCancellation = null;
         if (automaticLoad is not null)
         {
@@ -1532,10 +1527,14 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         try
         {
-            var linkedCommanders = await accountService.GetLinkedCommandersAsync(cancellationToken);
+            IReadOnlyList<FrontierLinkedCommander> linkedCommanders = await accountService.GetLinkedCommandersAsync(
+                cancellationToken
+            );
             var automatic = FrontierCommanderSelectionOption.Automatic(detectedFrontierId, detectedCommanderName);
-            var allLinkedOptions = linkedCommanders.Select(FrontierCommanderSelectionOption.Linked).ToArray();
-            var selected = manuallySelectedFrontierId is null
+            FrontierCommanderSelectionOption[] allLinkedOptions = linkedCommanders
+                .Select(FrontierCommanderSelectionOption.Linked)
+                .ToArray();
+            FrontierCommanderSelectionOption? selected = manuallySelectedFrontierId is null
                 ? automatic
                 : allLinkedOptions.FirstOrDefault(option =>
                     string.Equals(option.FrontierId, manuallySelectedFrontierId, StringComparison.OrdinalIgnoreCase)
@@ -1552,7 +1551,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 manuallySelectedCommanderName = selected.CommanderName;
             }
 
-            var linkedOptions = allLinkedOptions
+            FrontierCommanderSelectionOption[] linkedOptions = allLinkedOptions
                 .Where(option =>
                     !string.Equals(option.FrontierId, detectedFrontierId, StringComparison.OrdinalIgnoreCase)
                     || !selected.IsAutomatic
@@ -1618,7 +1617,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
-        var contextVersion = Interlocked.Read(ref commanderContextVersion);
+        long contextVersion = Interlocked.Read(ref commanderContextVersion);
         try
         {
             IsBusy = true;
@@ -1643,7 +1642,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private async Task OpenLinkedCommanderAsync(long contextVersion, CancellationToken cancellationToken)
     {
-        var state = await accountService.GetStateAsync(cancellationToken);
+        FrontierAccountState state = await accountService.GetStateAsync(cancellationToken);
         if (contextVersion != Interlocked.Read(ref commanderContextVersion))
         {
             return;
@@ -1665,7 +1664,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         if (!initialized && ShouldAutoRefresh(state) && !IsRefreshCooled(state))
         {
             StatusMessage = "Refreshing commander data from Frontier...";
-            var refreshed = await accountService.RefreshAsync(cancellationToken);
+            FrontierAccountSnapshot refreshed = await accountService.RefreshAsync(cancellationToken);
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -1683,7 +1682,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private bool IsRefreshCooled(FrontierAccountState state)
     {
-        var lastRequest =
+        DateTimeOffset? lastRequest =
             state.LastCapiAttemptAt is { } attempt
             && (state.LastCapiRefreshAt is null || attempt > state.LastCapiRefreshAt)
                 ? attempt
@@ -1693,18 +1692,18 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private async Task ConnectAsync()
     {
-        var contextVersion = Interlocked.Read(ref commanderContextVersion);
+        long contextVersion = Interlocked.Read(ref commanderContextVersion);
         connectionCancellation?.Dispose();
         var cancellation = new CancellationTokenSource();
         connectionCancellation = cancellation;
-        var cancellationToken = cancellation.Token;
+        CancellationToken cancellationToken = cancellation.Token;
         try
         {
             IsBusy = true;
             IsConnecting = true;
             StatusMessage =
                 "Complete authorization in your browser. SrvSurvey will update this page when Frontier returns.";
-            var connected = await accountService.ConnectAsync(cancellationToken);
+            FrontierAccountSnapshot connected = await accountService.ConnectAsync(cancellationToken);
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -1760,12 +1759,15 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private async Task RefreshAsync()
     {
-        var contextVersion = Interlocked.Read(ref commanderContextVersion);
+        long contextVersion = Interlocked.Read(ref commanderContextVersion);
         try
         {
             IsBusy = true;
             StatusMessage = "Refreshing commander data from Frontier...";
-            var refreshed = await accountService.RefreshAsync(forceCarrierRefresh: true, CancellationToken.None);
+            FrontierAccountSnapshot refreshed = await accountService.RefreshAsync(
+                forceCarrierRefresh: true,
+                CancellationToken.None
+            );
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -1794,8 +1796,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private async Task UnlinkAsync()
     {
-        var contextVersion = Interlocked.Read(ref commanderContextVersion);
-        var wasManuallySelected = manuallySelectedFrontierId is not null;
+        long contextVersion = Interlocked.Read(ref commanderContextVersion);
+        bool wasManuallySelected = manuallySelectedFrontierId is not null;
         try
         {
             IsBusy = true;
@@ -1839,9 +1841,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private FrontierShipModuleRowViewModel CreateModuleRow(FrontierShipModuleSnapshot item)
     {
-        var internalName = ResolveInternalName(item);
-        var group = ModuleGroup(item.Slot);
-        var blueprint = FriendlyGameIdentifier(item.Blueprint);
+        string internalName = ResolveInternalName(item);
+        string group = ModuleGroup(item.Slot);
+        string blueprint = FriendlyGameIdentifier(item.Blueprint);
         return new FrontierShipModuleRowViewModel(
             FriendlyModuleSlot(item.Slot),
             FriendlyModuleName(item.Name, internalName),
@@ -1874,7 +1876,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         const string prefix = "ship.modules.";
         const string suffix = ".module.name";
-        var slotKey = NormalizeLookupKey(item.Slot);
+        string slotKey = NormalizeLookupKey(item.Slot);
         return Snapshot
                 ?.CurrentShip?.DataPoints?.FirstOrDefault(point =>
                     point.Path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
@@ -1887,7 +1889,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static bool IsLiverySlot(string slot)
     {
-        var key = NormalizeLookupKey(slot);
+        string key = NormalizeLookupKey(slot);
         return key.StartsWith(DecalPrefix, StringComparison.Ordinal)
             || key is "enginecolour" or "paintjob" or "vesselvoice" or "weaponcolour"
             || key.StartsWith("shipkit", StringComparison.Ordinal)
@@ -1896,7 +1898,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string FriendlyLiverySlot(string slot)
     {
-        var key = NormalizeLookupKey(slot);
+        string key = NormalizeLookupKey(slot);
         if (key.StartsWith(DecalPrefix, StringComparison.Ordinal))
         {
             return "Decal";
@@ -1929,8 +1931,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return item.Name.Trim();
         }
 
-        var key = NormalizeLookupKey(item.Slot);
-        var value = internalName;
+        string key = NormalizeLookupKey(item.Slot);
+        string value = internalName;
         if (
             key.StartsWith(DecalPrefix, StringComparison.Ordinal)
             && value.Contains("SquadronLogo", StringComparison.OrdinalIgnoreCase)
@@ -1960,7 +1962,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return localizedName.Trim();
         }
 
-        var key = internalName.ToLowerInvariant();
+        string key = internalName.ToLowerInvariant();
         if (key.Contains("int_engine_", StringComparison.Ordinal))
         {
             return "Thrusters";
@@ -1996,7 +1998,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return "Shield Generator";
         }
 
-        var cleaned = Regex.Replace(
+        string cleaned = Regex.Replace(
             internalName,
             @"^(int|hpt)_|_size\d+|_class\d+|_(fixed|gimbal|turret)$",
             string.Empty,
@@ -2018,7 +2020,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return true;
         }
 
-        var trimmed = value.Trim('$', ';', ' ');
+        string trimmed = value.Trim('$', ';', ' ');
         return trimmed.EndsWith("_Name", StringComparison.OrdinalIgnoreCase)
             || trimmed.EndsWith("_Info", StringComparison.OrdinalIgnoreCase)
             || trimmed.EndsWith("_Description", StringComparison.OrdinalIgnoreCase);
@@ -2031,7 +2033,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return string.Empty;
         }
 
-        var cleaned = value.Trim('$', ';', ' ');
+        string cleaned = value.Trim('$', ';', ' ');
         cleaned = Regex.Replace(
             cleaned,
             @"_(Name|Info|Description)$",
@@ -2062,7 +2064,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string ModuleGroup(string slot)
     {
-        var key = NormalizeLookupKey(slot);
+        string key = NormalizeLookupKey(slot);
         if (key.Contains("tinyhardpoint", StringComparison.Ordinal))
         {
             return UtilityMountsGroup;
@@ -2120,7 +2122,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static int ModuleSlotOrder(string slot)
     {
-        var key = NormalizeLookupKey(slot);
+        string key = NormalizeLookupKey(slot);
         return key switch
         {
             "armour" => 0,
@@ -2148,7 +2150,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string ModuleGlyph(string name, string group)
     {
-        var value = name.ToLowerInvariant();
+        string value = name.ToLowerInvariant();
         return ResolveModuleGlyphFromName(value) ?? ModuleGroupGlyph(group);
     }
 
@@ -2217,15 +2219,15 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string ModuleClassRating(string internalName, string slot, string group)
     {
-        var match = Regex.Match(
+        Match match = Regex.Match(
             internalName,
             @"size(?<size>\d+)_class(?<rating>\d+)",
             RegexOptions.IgnoreCase,
             RegexTimeout
         );
-        if (match.Success && int.TryParse(match.Groups["rating"].Value, out var rating))
+        if (match.Success && int.TryParse(match.Groups["rating"].Value, out int rating))
         {
-            var letter = rating switch
+            string letter = rating switch
             {
                 1 => "E",
                 2 => "D",
@@ -2237,7 +2239,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return match.Groups["size"].Value + letter;
         }
 
-        var key = (internalName + " " + slot).ToLowerInvariant();
+        string key = (internalName + " " + slot).ToLowerInvariant();
         if (key.Contains("huge", StringComparison.Ordinal))
         {
             return "H";
@@ -2263,7 +2265,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string FriendlyModuleSlot(string slot)
     {
-        var optional = Regex.Match(
+        Match optional = Regex.Match(
             slot,
             @"^Slot(?<number>\d+)\s+Size(?<size>\d+)$",
             RegexOptions.IgnoreCase,
@@ -2274,13 +2276,13 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return $"Optional {optional.Groups["number"].Value} · Class {optional.Groups["size"].Value}";
         }
 
-        var utility = Regex.Match(slot, @"^Tiny\s*Hardpoint(?<number>\d+)$", RegexOptions.IgnoreCase, RegexTimeout);
+        Match utility = Regex.Match(slot, @"^Tiny\s*Hardpoint(?<number>\d+)$", RegexOptions.IgnoreCase, RegexTimeout);
         if (utility.Success)
         {
             return $"Utility mount {utility.Groups["number"].Value}";
         }
 
-        var cargo = Regex.Match(slot, @"^Cargo(?<number>\d+)$", RegexOptions.IgnoreCase, RegexTimeout);
+        Match cargo = Regex.Match(slot, @"^Cargo(?<number>\d+)$", RegexOptions.IgnoreCase, RegexTimeout);
         if (cargo.Success)
         {
             return $"Cargo slot {cargo.Groups["number"].Value}";
@@ -2318,7 +2320,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCurrentShipValueRows()
     {
-        var ship = Snapshot?.CurrentShip;
+        FrontierShipSnapshot? ship = Snapshot?.CurrentShip;
         return ship is null
             ? []
             :
@@ -2333,13 +2335,15 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCurrentShipConditionRows()
     {
-        var ship = Snapshot?.CurrentShip;
+        FrontierShipSnapshot? ship = Snapshot?.CurrentShip;
         if (ship is null)
         {
             return [];
         }
 
-        var oxygen = ship.OxygenRemaining is { } oxygenRemaining ? $"{oxygenRemaining:N0} seconds" : UnavailableLabel;
+        string oxygen = ship.OxygenRemaining is { } oxygenRemaining
+            ? $"{oxygenRemaining:N0} seconds"
+            : UnavailableLabel;
         return
         [
             new("Hull", FormatPercent(ship.HullHealth)),
@@ -2352,7 +2356,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCarrierOperations()
     {
-        var carrier = Carrier;
+        FrontierCarrierSnapshot? carrier = Carrier;
         if (carrier is null)
         {
             return [];
@@ -2392,7 +2396,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCarrierFinances()
     {
-        var carrier = Carrier;
+        FrontierCarrierSnapshot? carrier = Carrier;
         return carrier is null
             ? []
             :
@@ -2448,7 +2452,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             group => group.IsExpanded,
             StringComparer.CurrentCultureIgnoreCase
         );
-        var groups = CurrentShipModules
+        FrontierShipModuleGroupViewModel[] groups = CurrentShipModules
             .GroupBy(item => item.Group, StringComparer.CurrentCultureIgnoreCase)
             .OrderBy(group => ModuleGroupOrder(group.Key))
             .Select(group => new FrontierShipModuleGroupViewModel(
@@ -2458,9 +2462,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             ))
             .ToArray();
 
-        foreach (var group in groups)
+        foreach (FrontierShipModuleGroupViewModel? group in groups)
         {
-            if (expansionState.TryGetValue(group.Name, out var isExpanded))
+            if (expansionState.TryGetValue(group.Name, out bool isExpanded))
             {
                 group.IsExpanded = isExpanded;
             }
@@ -2476,7 +2480,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             group => group.IsExpanded,
             StringComparer.CurrentCultureIgnoreCase
         );
-        var groups = CurrentShipLocker
+        FrontierLockerCategoryViewModel[] groups = CurrentShipLocker
             .GroupBy(item => item.Category, StringComparer.CurrentCultureIgnoreCase)
             .OrderBy(group => LockerCategoryOrder(group.Key))
             .ThenBy(group => group.Key, StringComparer.CurrentCultureIgnoreCase)
@@ -2486,9 +2490,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             ))
             .ToArray();
 
-        foreach (var group in groups)
+        foreach (FrontierLockerCategoryViewModel? group in groups)
         {
-            if (expansionState.TryGetValue(group.Category, out var isExpanded))
+            if (expansionState.TryGetValue(group.Category, out bool isExpanded))
             {
                 group.IsExpanded = isExpanded;
             }
@@ -2512,8 +2516,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private IReadOnlyList<FrontierCommunityGoalSnapshot> EffectiveCommunityGoals()
     {
-        var accountGoals = Snapshot?.CommunityGoals ?? [];
-        var journalCandidates =
+        IReadOnlyList<FrontierCommunityGoalSnapshot> accountGoals = Snapshot?.CommunityGoals ?? [];
+        IReadOnlyList<FrontierCommunityGoalSnapshot> journalCandidates =
             journalCommunityGoalHistory.Count > 0 ? journalCommunityGoalHistory : journalCommunityGoals;
         if (
             journalCandidates.Count == 0
@@ -2532,9 +2536,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         var matchedJournalGoals = new HashSet<int>();
         var result = new List<FrontierCommunityGoalSnapshot>(accountGoals.Count + journalCommunityGoals.Count);
-        foreach (var accountGoal in accountGoals)
+        foreach (FrontierCommunityGoalSnapshot accountGoal in accountGoals)
         {
-            var matchIndex = FindCommunityGoalMatch(accountGoal, journalCandidates, matchedJournalGoals);
+            int? matchIndex = FindCommunityGoalMatch(accountGoal, journalCandidates, matchedJournalGoals);
             if (matchIndex is null)
             {
                 result.Add(accountGoal);
@@ -2542,17 +2546,18 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             }
 
             matchedJournalGoals.Add(matchIndex.Value);
-            var journalGoal = journalCandidates[matchIndex.Value];
-            var journalUpdatedAt = JournalCommunityGoalTimestamp(journalGoal) ?? journalCommunityGoalsUpdatedAt;
-            var journalIsCurrent =
+            FrontierCommunityGoalSnapshot journalGoal = journalCandidates[matchIndex.Value];
+            DateTimeOffset? journalUpdatedAt =
+                JournalCommunityGoalTimestamp(journalGoal) ?? journalCommunityGoalsUpdatedAt;
+            bool journalIsCurrent =
                 Snapshot.CommunityGoalsFetchedAt is null
                 || journalUpdatedAt is { } timestamp && timestamp >= Snapshot.CommunityGoalsFetchedAt;
             result.Add(MergeJournalCommunityGoal(accountGoal, journalGoal, journalIsCurrent, journalUpdatedAt));
         }
 
         foreach (
-            var currentGoal in journalCommunityGoals.Where(currentGoal =>
-                FindCommunityGoalMatch(currentGoal, result, new HashSet<int>()) is null
+            FrontierCommunityGoalSnapshot? currentGoal in journalCommunityGoals.Where(currentGoal =>
+                FindCommunityGoalMatch(currentGoal, result, []) is null
             )
         )
         {
@@ -2576,7 +2581,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .Select(goal =>
             {
                 var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var point in goal.DataPoints ?? [])
+                foreach (FrontierDataPointSnapshot point in goal.DataPoints ?? [])
                 {
                     data[point.Path] = point.Value;
                 }
@@ -2596,11 +2601,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     )
     {
         var history = new Dictionary<string, FrontierCommunityGoalSnapshot>(StringComparer.Ordinal);
-        foreach (var goal in existing.Concat(incoming))
+        foreach (FrontierCommunityGoalSnapshot? goal in existing.Concat(incoming))
         {
-            var key = CommunityGoalHistoryKey(goal);
+            string key = CommunityGoalHistoryKey(goal);
             if (
-                !history.TryGetValue(key, out var prior)
+                !history.TryGetValue(key, out FrontierCommunityGoalSnapshot? prior)
                 || (JournalCommunityGoalTimestamp(goal) ?? DateTimeOffset.MinValue)
                     >= (JournalCommunityGoalTimestamp(prior) ?? DateTimeOffset.MinValue)
             )
@@ -2638,7 +2643,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         HashSet<int> alreadyMatched
     )
     {
-        var idMatch = FindCommunityGoalIdMatch(goal, candidates, alreadyMatched);
+        int? idMatch = FindCommunityGoalIdMatch(goal, candidates, alreadyMatched);
         if (idMatch is not null)
         {
             return idMatch;
@@ -2658,7 +2663,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return null;
         }
 
-        var idMatch = candidates
+        (FrontierCommunityGoalSnapshot candidate, int index) idMatch = candidates
             .Select((candidate, index) => (candidate, index))
             .FirstOrDefault(pair => !alreadyMatched.Contains(pair.index) && pair.candidate.Id == id);
         return idMatch.candidate is not null ? idMatch.index : null;
@@ -2670,7 +2675,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         HashSet<int> alreadyMatched
     )
     {
-        var matches = candidates
+        (FrontierCommunityGoalSnapshot candidate, int index)[] matches = candidates
             .Select((candidate, index) => (candidate, index))
             .Where(pair => IsCommunityGoalTextMatchCandidate(goal, pair.candidate, pair.index, alreadyMatched))
             .ToArray();
@@ -2707,7 +2712,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         DateTimeOffset? journalUpdatedAt
     )
     {
-        var data = MergeCommunityGoalDataPoints(account, journal, journalIsCurrent, journalUpdatedAt);
+        Dictionary<string, string> data = MergeCommunityGoalDataPoints(
+            account,
+            journal,
+            journalIsCurrent,
+            journalUpdatedAt
+        );
         return BuildMergedCommunityGoalSnapshot(account, journal, journalIsCurrent, data);
     }
 
@@ -2719,13 +2729,15 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     )
     {
         var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var point in account.DataPoints ?? [])
+        foreach (FrontierDataPointSnapshot point in account.DataPoints ?? [])
         {
             data[point.Path] = point.Value;
         }
 
         foreach (
-            var point in (journal.DataPoints ?? []).Where(point => journalIsCurrent || !data.ContainsKey(point.Path))
+            FrontierDataPointSnapshot? point in (journal.DataPoints ?? []).Where(point =>
+                journalIsCurrent || !data.ContainsKey(point.Path)
+            )
         )
         {
             data[point.Path] = point.Value;
@@ -2838,7 +2850,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private IReadOnlyList<FrontierReputationSnapshot> EffectiveCommanderReputation()
     {
-        var capiReputation = Snapshot?.CommanderReputation is { Count: > 0 } account
+        IReadOnlyList<FrontierReputationSnapshot> capiReputation = Snapshot?.CommanderReputation
+            is { Count: > 0 } account
             ? account
             : Carrier?.Reputation ?? [];
         if (
@@ -2856,8 +2869,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return capiReputation;
         }
 
-        var capiUpdatedAt = Snapshot.CommanderReputationFetchedAt ?? Snapshot.CarrierFetchedAt;
-        var journalIsCurrent =
+        DateTimeOffset? capiUpdatedAt = Snapshot.CommanderReputationFetchedAt ?? Snapshot.CarrierFetchedAt;
+        bool journalIsCurrent =
             capiReputation.Count == 0
             || journalReputationUpdatedAt is { } journalUpdatedAt
                 && (capiUpdatedAt is null || journalUpdatedAt >= capiUpdatedAt);
@@ -2876,7 +2889,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static double? ReadJournalNumber(JsonElement value)
     {
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out double number))
         {
             return number;
         }
@@ -2890,7 +2903,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private bool MatchesJournalCarrier(JsonElement payload)
     {
-        var candidate = FirstNonEmpty(
+        string candidate = FirstNonEmpty(
             ReadJournalIdentifier(payload, "CarrierID"),
             ReadJournalIdentifier(payload, "MarketID")
         );
@@ -2901,14 +2914,14 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string ReadJournalString(JsonElement payload, string name)
     {
-        return payload.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+        return payload.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()?.Trim() ?? string.Empty
             : string.Empty;
     }
 
     private static string ReadJournalIdentifier(JsonElement payload, string name)
     {
-        if (!payload.TryGetProperty(name, out var value))
+        if (!payload.TryGetProperty(name, out JsonElement value))
         {
             return string.Empty;
         }
@@ -2923,12 +2936,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static DateTimeOffset? ReadJournalDateTimeOffset(JsonElement payload, string name)
     {
-        var value = ReadJournalString(payload, name);
+        string value = ReadJournalString(payload, name);
         return DateTimeOffset.TryParse(
             value,
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-            out var parsed
+            out DateTimeOffset parsed
         )
             ? parsed
             : null;
@@ -2977,9 +2990,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
 
         var result = new List<char>(value.Length + 8);
-        for (var index = 0; index < value.Length; index++)
+        for (int index = 0; index < value.Length; index++)
         {
-            var current = value[index];
+            char current = value[index];
             if (
                 index > 0
                 && char.IsUpper(current)
@@ -3000,7 +3013,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string RankIcon(string key, int level)
     {
-        var rank = Math.Clamp(level + 1, 1, 9);
+        int rank = Math.Clamp(level + 1, 1, 9);
         return key.ToLowerInvariant() switch
         {
             "combat" => RankAsset("combat", rank),
@@ -3021,7 +3034,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return string.Empty;
         }
 
-        var value = faction.ToLowerInvariant();
+        string value = faction.ToLowerInvariant();
         if (value.Contains(FederationFaction, StringComparison.Ordinal))
         {
             return FactionAsset(FederationFaction);
@@ -3056,7 +3069,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string FriendlyCommunityGoalActivity(string activityType)
     {
-        var normalized = NormalizeLookupKey(activityType);
+        string normalized = NormalizeLookupKey(activityType);
         return normalized switch
         {
             "tradelist" or "trade" => "Trade delivery",
@@ -3084,13 +3097,13 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         params string[] names
     )
     {
-        var value = CommunityGoalDataValue(dataPoints, names);
+        string value = CommunityGoalDataValue(dataPoints, names);
         if (
             long.TryParse(
                 value,
                 NumberStyles.Integer | NumberStyles.AllowThousands,
                 CultureInfo.InvariantCulture,
-                out var parsed
+                out long parsed
             )
         )
         {
@@ -3117,12 +3130,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         params string[] names
     )
     {
-        var value = CommunityGoalDataValue(dataPoints, names);
+        string value = CommunityGoalDataValue(dataPoints, names);
         return DateTimeOffset.TryParse(
             value,
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-            out var parsed
+            out DateTimeOffset parsed
         )
             ? parsed
             : null;
@@ -3146,7 +3159,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return string.Empty;
         }
 
-        var normalized = value
+        string normalized = value
             .Replace("\r\n", "\n", StringComparison.Ordinal)
             .Replace('\r', '\n')
             .Replace("{{top5}}", string.Empty, StringComparison.OrdinalIgnoreCase)
@@ -3180,7 +3193,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return "Deadline not supplied";
         }
 
-        var remaining = deadline - currentTime;
+        TimeSpan remaining = deadline - currentTime;
         if (remaining <= TimeSpan.Zero)
         {
             return "Deadline reached";
@@ -3211,7 +3224,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string? NormalizeFrontierId(string? frontierId)
     {
-        var normalized = frontierId?.Trim().ToUpperInvariant();
+        string? normalized = frontierId?.Trim().ToUpperInvariant();
         return
             normalized is not null
             && normalized.Length > 1
@@ -3237,7 +3250,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         try
         {
-            var state = await accountService.GetStateAsync(CancellationToken.None);
+            FrontierAccountState state = await accountService.GetStateAsync(CancellationToken.None);
             IsLinked = state.IsLinked;
             Snapshot = state.Snapshot;
         }
@@ -3332,8 +3345,8 @@ public sealed record FrontierCommanderSelectionOption(
 {
     public static FrontierCommanderSelectionOption Automatic(string? frontierId, string? commanderName)
     {
-        var commander = string.IsNullOrWhiteSpace(commanderName) ? frontierId : commanderName.Trim();
-        var detail = "waiting for journal";
+        string? commander = string.IsNullOrWhiteSpace(commanderName) ? frontierId : commanderName.Trim();
+        string detail = "waiting for journal";
         if (!string.IsNullOrWhiteSpace(commander))
         {
             detail = string.IsNullOrWhiteSpace(frontierId) ? commander : $"{commander} ({frontierId})";
@@ -3599,8 +3612,8 @@ public sealed class FrontierConsolePaneStates
 
     public FrontierPaneStateViewModel GetCommunityGoalData(long? id, string title)
     {
-        var key = id is { } goalId ? $"id:{goalId}" : $"title:{title}";
-        if (!communityGoalData.TryGetValue(key, out var state))
+        string key = id is { } goalId ? $"id:{goalId}" : $"title:{title}";
+        if (!communityGoalData.TryGetValue(key, out FrontierPaneStateViewModel? state))
         {
             state = new FrontierPaneStateViewModel(false);
             communityGoalData.Add(key, state);

@@ -7,14 +7,14 @@ public sealed class GuardianSiteMapProjectorTests
     [Fact]
     public void ProjectsLegacyPolarCoordinatesIntoSiteOrientedMap()
     {
-        var template = CreateTemplate([
+        GuardianSiteTemplate template = CreateTemplate([
             new GuardianPointOfInterest("north", GuardianPoiType.Relic, 180, 10, 0),
             new GuardianPointOfInterest("east", GuardianPoiType.Orb, 270, 20, 0),
             new GuardianPointOfInterest("south", GuardianPoiType.Tablet, 0, 30, 0),
             new GuardianPointOfInterest("west", GuardianPoiType.Totem, 90, 40, 0),
         ]);
 
-        var projection = new GuardianSiteMapProjector().Project(template);
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(template);
 
         AssertPoint(projection.Points[0], 0, -10);
         AssertPoint(projection.Points[1], 20, 0);
@@ -37,7 +37,7 @@ public sealed class GuardianSiteMapProjectorTests
             new Dictionary<string, GuardianMapPoint>()
         );
 
-        var projection = new GuardianSiteMapProjector().Project(template);
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(template);
 
         Assert.Equal("beta-background.png", projection.BackgroundImage);
         Assert.Equal(new GuardianMapPoint(487, 556), projection.ImageOffset);
@@ -59,7 +59,7 @@ public sealed class GuardianSiteMapProjectorTests
         );
         var offset = new GuardianMapPoint(12, -7);
 
-        var projection = new GuardianSiteMapProjector().Project(
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(
             template,
             obeliskGroups: new HashSet<char> { 'A' },
             markerOffset: offset
@@ -76,7 +76,7 @@ public sealed class GuardianSiteMapProjectorTests
     [Fact]
     public void CombinesSurveyStateRawPointsAndActiveObelisks()
     {
-        var template = CreateTemplate([
+        GuardianSiteTemplate template = CreateTemplate([
             new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 0, 10, 20),
             new GuardianPointOfInterest("p1", GuardianPoiType.Orb, 90, 20, 0),
         ]);
@@ -86,7 +86,7 @@ public sealed class GuardianSiteMapProjectorTests
             RawPointsOfInterest = [new GuardianPointOfInterest("x1", GuardianPoiType.Relic, 180, 30, 45)],
         };
 
-        var projection = new GuardianSiteMapProjector().Project(
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(
             template,
             survey,
             [new GuardianObelisk("A01", "H1", true, ["ca"])],
@@ -94,13 +94,13 @@ public sealed class GuardianSiteMapProjectorTests
         );
 
         Assert.Equal(3, projection.Points.Count);
-        var puddle = projection.Points.Single(point => point.Name == "p1");
+        GuardianProjectedPoint puddle = projection.Points.Single(point => point.Name == "p1");
         Assert.Equal(GuardianPoiStatus.Present, puddle.Status);
-        var obelisk = projection.Points.Single(point => point.Name == "A01");
+        GuardianProjectedPoint obelisk = projection.Points.Single(point => point.Name == "A01");
         Assert.True(obelisk.IsActiveObelisk);
         Assert.True(obelisk.IsScannedObelisk);
         Assert.Equal("H1", obelisk.LogCode);
-        var raw = Assert.Single(projection.Points, point => point.Name == "x1");
+        GuardianProjectedPoint raw = Assert.Single(projection.Points, point => point.Name == "x1");
         Assert.Equal(GuardianPoiStatus.Present, raw.Status);
     }
 
@@ -126,12 +126,15 @@ public sealed class GuardianSiteMapProjectorTests
             }
         );
 
-        var projection = new GuardianSiteMapProjector().Project(template, obeliskGroups: new HashSet<char> { 'A' });
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(
+            template,
+            obeliskGroups: new HashSet<char> { 'A' }
+        );
 
         Assert.Contains(projection.Points, point => point.Name == "A01");
         Assert.DoesNotContain(projection.Points, point => point.Name == "B01");
         Assert.Contains(projection.Points, point => point.Name == "p1");
-        var group = Assert.Single(projection.Groups);
+        GuardianProjectedGroup group = Assert.Single(projection.Groups);
         Assert.Equal("A", group.Name);
         AssertPoint(group.X, group.Y, 0, 15);
     }
@@ -162,15 +165,15 @@ public sealed class GuardianSiteMapProjectorTests
         };
         var projector = new GuardianSiteMapProjector();
 
-        var standard = projector.Project(template, survey);
-        var componentMode = projector.Project(template, survey, includeComponentMaterials: true);
+        GuardianSiteMapProjection standard = projector.Project(template, survey);
+        GuardianSiteMapProjection componentMode = projector.Project(template, survey, includeComponentMaterials: true);
 
         Assert.DoesNotContain(standard.Points, point => point.Name == "d1");
         Assert.Equal(
             [GuardianComponentMaterial.Cell, GuardianComponentMaterial.Conduit, GuardianComponentMaterial.Tech],
             componentMode.Points.Single(point => point.Name == "c1").ComponentMaterials
         );
-        var panel = componentMode.Points.Single(point => point.Name == "d1");
+        GuardianProjectedPoint panel = componentMode.Points.Single(point => point.Name == "d1");
         Assert.Equal(GuardianPoiStatus.Present, panel.Status);
         Assert.Equal(GuardianComponentMaterial.Tech, Assert.Single(panel.ComponentMaterials));
     }
@@ -200,7 +203,7 @@ public sealed class GuardianSiteMapProjectorTests
             RelicHeadings = new Dictionary<string, int> { ["t1"] = 220 },
         };
 
-        var projection = new GuardianSiteMapProjector().Project(
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(
             template,
             survey,
             [new GuardianObelisk("A01", "H1", false, [])],
@@ -210,10 +213,10 @@ public sealed class GuardianSiteMapProjectorTests
         Assert.True(projection.IsRuins);
         Assert.Equal(120, projection.SiteHeading);
         Assert.Equal(35, projection.RelicTowerHeading);
-        var individual = projection.Points.Single(point => point.Name == "t1");
+        GuardianProjectedPoint individual = projection.Points.Single(point => point.Name == "t1");
         Assert.Equal(220, individual.RelicHeading);
         Assert.True(individual.HasIndividualRelicHeading);
-        var general = projection.Points.Single(point => point.Name == "t2");
+        GuardianProjectedPoint general = projection.Points.Single(point => point.Name == "t2");
         Assert.Equal(35, general.RelicHeading);
         Assert.False(general.HasIndividualRelicHeading);
         Assert.True(projection.Points.Single(point => point.Name == "A01").IsRamTahNeededObelisk);
@@ -234,7 +237,7 @@ public sealed class GuardianSiteMapProjectorTests
             new Dictionary<string, GuardianMapPoint>()
         );
 
-        var projection = new GuardianSiteMapProjector().Project(
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(
             template,
             new GuardianSurveyData { SiteHeading = 10, RelicTowerHeading = 90 }
         );
@@ -250,9 +253,9 @@ public sealed class GuardianSiteMapProjectorTests
         var projector = new GuardianSiteMapProjector();
 
         Assert.Equal(13, templates.Templates.Count);
-        foreach (var template in templates.Templates)
+        foreach (GuardianSiteTemplate template in templates.Templates)
         {
-            var projection = projector.Project(template);
+            GuardianSiteMapProjection projection = projector.Project(template);
             Assert.NotEmpty(projection.Points);
             Assert.True(double.IsFinite(projection.MaximumDistance));
             Assert.True(projection.MaximumDistance > 0);

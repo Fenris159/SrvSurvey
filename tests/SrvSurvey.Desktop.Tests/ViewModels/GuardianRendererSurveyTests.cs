@@ -8,14 +8,19 @@ public sealed class GuardianRendererSurveyTests
     [Fact]
     public void PublishedGuardianMapStateIsRenderedWithoutCommanderSurvey()
     {
-        var published = Published(
+        GuardianPublishedSite published = Published(
             siteHeading: 123,
             towerHeading: 45,
             statuses: new Dictionary<string, GuardianPoiStatus> { ["p1"] = GuardianPoiStatus.Present },
             relicHeadings: new Dictionary<string, int> { ["t1"] = 200 }
         );
 
-        var merged = GuardianViewModel.MergeRendererSurvey("Alpha", commander: null, published, reference: null);
+        GuardianSurveyData merged = GuardianViewModel.MergeRendererSurvey(
+            "Alpha",
+            commander: null,
+            published,
+            reference: null
+        );
 
         Assert.Equal(123, merged.SiteHeading);
         Assert.Equal(45, merged.RelicTowerHeading);
@@ -26,7 +31,7 @@ public sealed class GuardianRendererSurveyTests
     [Fact]
     public void CommanderGuardianMapStateOverridesPublishedValues()
     {
-        var published = Published(
+        GuardianPublishedSite published = Published(
             siteHeading: 123,
             towerHeading: 45,
             statuses: new Dictionary<string, GuardianPoiStatus>
@@ -44,7 +49,12 @@ public sealed class GuardianRendererSurveyTests
             RelicHeadings = new Dictionary<string, int> { ["t1"] = 220 },
         };
 
-        var merged = GuardianViewModel.MergeRendererSurvey("Alpha", commander, published, reference: null);
+        GuardianSurveyData merged = GuardianViewModel.MergeRendererSurvey(
+            "Alpha",
+            commander,
+            published,
+            reference: null
+        );
 
         Assert.Equal(321, merged.SiteHeading);
         Assert.Equal(54, merged.RelicTowerHeading);

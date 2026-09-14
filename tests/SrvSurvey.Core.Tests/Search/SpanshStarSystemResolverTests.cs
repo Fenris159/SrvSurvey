@@ -23,7 +23,7 @@ public sealed class SpanshStarSystemResolverTests
         );
         var resolver = new SpanshStarSystemResolver(new HttpClient(handler), new Uri("https://example.test/api/"));
 
-        var systems = await resolver.SearchAsync(" Sol ");
+        IReadOnlyList<StarSystemReference> systems = await resolver.SearchAsync(" Sol ");
 
         Assert.Equal(2, systems.Count);
         Assert.Equal(new StarSystemReference("Sol", 10477373803, new GalacticCoordinate(0, 0, 0)), systems[0]);

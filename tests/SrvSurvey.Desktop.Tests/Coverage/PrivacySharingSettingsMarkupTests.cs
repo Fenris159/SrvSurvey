@@ -11,15 +11,15 @@ public sealed class PrivacySharingSettingsMarkupTests
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "SettingsView.axaml")
         );
         var nameAttribute = XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml");
-        var warning = Assert.Single(
+        XElement warning = Assert.Single(
             document.Descendants(),
             element => (string?)element.Attribute(nameAttribute) == "SharingConflictWarning"
         );
-        var firstSharingCard = Assert.Single(
+        XElement firstSharingCard = Assert.Single(
             document.Descendants(),
             element => (string?)element.Attribute(nameAttribute) == "NetworkPrivacyCard"
         );
-        var values = warning
+        string[] values = warning
             .DescendantsAndSelf()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)

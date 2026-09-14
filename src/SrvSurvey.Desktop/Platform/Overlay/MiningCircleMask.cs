@@ -17,35 +17,35 @@ internal static class MiningCircleMask
         int requiredCircles = 4
     )
     {
-        var separation = centers
+        double separation = centers
             .SelectMany(
                 (a, i) => centers.Skip(i + 1).Select(b => Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2)))
             )
             .Min();
         // Stay well inside the distance to the next rig: empty circles must not renumber rows.
-        var steps = (int)(Math.Min(radius * .7, separation * .35) / 2);
-        var directions = Directions(geometry);
+        int steps = (int)(Math.Min(radius * .7, separation * .35) / 2);
+        Vector[] directions = Directions(geometry);
         (double X, double Y)? best = null;
-        var bestCount = 0;
-        var bestScore = 0d;
-        for (var sy = -steps; sy <= steps; sy++)
+        int bestCount = 0;
+        double bestScore = 0d;
+        for (int sy = -steps; sy <= steps; sy++)
         {
-            for (var sx = -steps; sx <= steps; sx++)
+            for (int sx = -steps; sx <= steps; sx++)
             {
-                var x = offset.X + sx * 2;
-                var y = offset.Y + sy * 2;
+                double x = offset.X + sx * 2;
+                double y = offset.Y + sy * 2;
                 if (Math.Abs(x) > allowance || Math.Abs(y) > allowance)
                 {
                     continue;
                 }
 
-                var (top, bottom, columns, total) = ScoreGrid(image, centers, radius, directions, x, y);
+                (int top, int bottom, int columns, double total) = ScoreGrid(image, centers, radius, directions, x, y);
                 if (top < 2 || bottom < 2 || columns != 7 || top + bottom < requiredCircles)
                 {
                     continue;
                 }
 
-                var count = top + bottom;
+                int count = top + bottom;
                 total -= .01 * (sx * sx + sy * sy);
                 if (!IsBetterMatch(count, total, bestCount, bestScore))
                 {
@@ -70,14 +70,14 @@ internal static class MiningCircleMask
         double y
     )
     {
-        var top = 0;
-        var bottom = 0;
-        var columns = 0;
-        var total = 0d;
-        for (var i = 0; i < centers.Length; i++)
+        int top = 0;
+        int bottom = 0;
+        int columns = 0;
+        double total = 0d;
+        for (int i = 0; i < centers.Length; i++)
         {
-            var confidence = 0d;
-            for (var scale = 0; scale <= 4; scale++)
+            double confidence = 0d;
+            for (int scale = 0; scale <= 4; scale++)
             {
                 confidence = Math.Max(
                     confidence,
@@ -116,15 +116,16 @@ internal static class MiningCircleMask
     {
         var best = new Rim(x, y, radius, 0);
         // The lower arc is deliberately excluded: that is where deployment bars live.
-        var directions = Directions(geometry);
-        for (var dy = -2; dy <= 2; dy++)
+        Vector[] directions = Directions(geometry);
+        for (int dy = -2; dy <= 2; dy++)
         {
-            for (var dx = -2; dx <= 2; dx++)
+            for (int dx = -2; dx <= 2; dx++)
             {
-                for (var step = 0; step <= 16; step++)
+                for (int step = 0; step <= 16; step++)
                 {
-                    var candidateRadius = radius * (.85 + step * .025);
-                    var score = Score(image, x + dx, y + dy, candidateRadius, directions) - .01 * (dx * dx + dy * dy);
+                    double candidateRadius = radius * (.85 + step * .025);
+                    double score =
+                        Score(image, x + dx, y + dy, candidateRadius, directions) - .01 * (dx * dx + dy * dy);
                     if (score > best.Confidence)
                     {
                         best = new(x + dx, y + dy, candidateRadius, score);
@@ -144,19 +145,19 @@ internal static class MiningCircleMask
         sums.Clear();
         positive.Clear();
         negative.Clear();
-        foreach (var direction in directions)
+        foreach (Vector direction in directions)
         {
-            var center = Sample(image, x + direction.X * radius, y + direction.Y * radius);
-            var inner = Sample(image, x + direction.X * (radius - 3), y + direction.Y * (radius - 3));
-            var outer = Sample(image, x + direction.X * (radius + 3), y + direction.Y * (radius + 3));
+            FssRgbPixel? center = Sample(image, x + direction.X * radius, y + direction.Y * radius);
+            FssRgbPixel? inner = Sample(image, x + direction.X * (radius - 3), y + direction.Y * (radius - 3));
+            FssRgbPixel? outer = Sample(image, x + direction.X * (radius + 3), y + direction.Y * (radius + 3));
             if (center is null || inner is null || outer is null)
             {
                 return 0;
             }
 
-            for (var channel = 0; channel < 3; channel++)
+            for (int channel = 0; channel < 3; channel++)
             {
-                var ridge =
+                double ridge =
                     Value(center.Value, channel) - (Value(inner.Value, channel) + Value(outer.Value, channel)) / 2;
                 sums[channel] += ridge;
                 if (ridge > 5)
@@ -170,8 +171,8 @@ internal static class MiningCircleMask
                 }
             }
         }
-        var score = 0d;
-        for (var channel = 0; channel < 3; channel++)
+        double score = 0d;
+        for (int channel = 0; channel < 3; channel++)
         {
             if (Math.Max(positive[channel], negative[channel]) < directions.Length * .7)
             {
@@ -193,8 +194,8 @@ internal static class MiningCircleMask
 
     private static FssRgbPixel? Sample(IFssPixelSource image, double x, double y)
     {
-        var px = (int)Math.Round(x);
-        var py = (int)Math.Round(y);
+        int px = (int)Math.Round(x);
+        int py = (int)Math.Round(y);
         return (uint)px < image.Width && (uint)py < image.Height ? image.GetPixel(px, py) : null;
     }
 }

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -120,7 +121,7 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
-            var preparation = platform.PreparePassiveWindow(overlay);
+            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
             viewModel.ApplyPreparation(preparation);
             if (!preparation.IsClickThrough)
             {
@@ -142,14 +143,14 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
     private void PositionWindow(Window target, PixelRect gameBounds)
     {
         OverlayThemeResources.ApplyOpacity(target, overlayLayout, PlotterName);
-        var screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
+        Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(target, overlayLayout, PlotterName, screen.Scaling);
-        var position =
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(target, overlayLayout, PlotterName, screen.Scaling);
+        PixelPoint position =
             overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopRight(gameBounds, size, margin: 8);
         if (target.Position != position)
@@ -160,7 +161,7 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
 
     private void CloseWindow()
     {
-        var overlay = window;
+        RouteBioOverlayWindow? overlay = window;
         if (overlay is null)
         {
             return;

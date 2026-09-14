@@ -115,7 +115,7 @@ public sealed class LegacyOverlayThemeStore
 
         try
         {
-            var root =
+            JsonObject root =
                 JsonNode.Parse(
                     File.ReadAllText(path),
                     documentOptions: new JsonDocumentOptions
@@ -133,7 +133,7 @@ public sealed class LegacyOverlayThemeStore
             UpgradeLegacyDefaultHeaderColor(colors);
             _ = OverlayThemePresetCatalog.TryUpgradeLegacyBiologyPalette(colors);
             _ = OverlayThemePresetCatalog.AddMissingExpandedBiologyColors(colors);
-            foreach (var fallback in DefaultColors)
+            foreach (KeyValuePair<string, Color> fallback in DefaultColors)
             {
                 colors.TryAdd(fallback.Key, fallback.Value);
             }
@@ -150,7 +150,7 @@ public sealed class LegacyOverlayThemeStore
                         or OverflowException
             )
         {
-            var fallback = CreateDefault();
+            LegacyOverlayTheme fallback = CreateDefault();
             return fallback with { Error = $"Could not read legacy overlay theme '{path}': " + exception.Message };
         }
     }
@@ -158,22 +158,22 @@ public sealed class LegacyOverlayThemeStore
     public LegacyOverlayThemeSaveResult Save(LegacyOverlayTheme theme)
     {
         ArgumentNullException.ThrowIfNull(theme);
-        var missingColor = DefaultColors.Keys.FirstOrDefault(required => !theme.Colors.ContainsKey(required));
+        string? missingColor = DefaultColors.Keys.FirstOrDefault(required => !theme.Colors.ContainsKey(required));
         if (missingColor is not null)
         {
             throw new InvalidDataException($"The overlay theme does not define required colour '{missingColor}'.");
         }
 
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException("The overlay theme path has no parent directory.");
         Directory.CreateDirectory(directory);
-        var backupPath = File.Exists(path) ? CreateVerifiedBackup(directory) : null;
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string? backupPath = File.Exists(path) ? CreateVerifiedBackup(directory) : null;
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             WriteTheme(temporaryPath, theme.Colors, theme.EffectiveTypography);
-            var verified = new LegacyOverlayThemeStore(temporaryPath).Load();
+            LegacyOverlayTheme verified = new LegacyOverlayThemeStore(temporaryPath).Load();
             if (
                 verified.Error is not null
                 || !ColorsEqual(theme.Colors, verified.Colors)
@@ -208,13 +208,13 @@ public sealed class LegacyOverlayThemeStore
     private static void UpgradeLegacyDefaultMutedColor(Dictionary<string, Color> colors)
     {
         var previousMuted = Color.FromArgb(255, 100, 100, 100);
-        if (!colors.TryGetValue("grey", out var muted) || muted != previousMuted)
+        if (!colors.TryGetValue("grey", out Color muted) || muted != previousMuted)
         {
             return;
         }
 
         string[] unchangedGeneralKeys = ["orange", "orangeDark", "cyan", "cyanDark", "yellow", "white", "menuGold"];
-        if (unchangedGeneralKeys.All(key => colors.TryGetValue(key, out var color) && color == DefaultColors[key]))
+        if (unchangedGeneralKeys.All(key => colors.TryGetValue(key, out Color color) && color == DefaultColors[key]))
         {
             colors["grey"] = DefaultColors["grey"];
         }
@@ -223,7 +223,7 @@ public sealed class LegacyOverlayThemeStore
     private static void UpgradeLegacyDefaultHeaderColor(Dictionary<string, Color> colors)
     {
         var previousHeader = Color.FromArgb(255, 255, 255, 0);
-        if (!colors.TryGetValue(HeaderKey, out var header) || header != previousHeader)
+        if (!colors.TryGetValue(HeaderKey, out Color header) || header != previousHeader)
         {
             return;
         }
@@ -244,7 +244,7 @@ public sealed class LegacyOverlayThemeStore
             "menuGold",
             "grey",
         ];
-        if (unchangedGeneralKeys.All(key => !colors.TryGetValue(key, out var color) || color == DefaultColors[key]))
+        if (unchangedGeneralKeys.All(key => !colors.TryGetValue(key, out Color color) || color == DefaultColors[key]))
         {
             colors[HeaderKey] = DefaultColors[HeaderKey];
         }
@@ -252,14 +252,14 @@ public sealed class LegacyOverlayThemeStore
 
     private static void ParseObject(JsonObject source, string prefix, Dictionary<string, Color> colors)
     {
-        foreach (var entry in source)
+        foreach (KeyValuePair<string, JsonNode?> entry in source)
         {
             if (prefix.Length == 0 && string.Equals(entry.Key, "typography", StringComparison.Ordinal))
             {
                 continue;
             }
 
-            var name = prefix + entry.Key;
+            string name = prefix + entry.Key;
             if (entry.Value is JsonObject child)
             {
                 ParseObject(child, name + ".", colors);
@@ -274,7 +274,7 @@ public sealed class LegacyOverlayThemeStore
     {
         if (value is null)
         {
-            if (DefaultColors.TryGetValue(name, out var fallback))
+            if (DefaultColors.TryGetValue(name, out Color fallback))
             {
                 return fallback;
             }
@@ -287,14 +287,14 @@ public sealed class LegacyOverlayThemeStore
             return ParseComponents(name, components);
         }
 
-        if (value is JsonValue textValue && textValue.TryGetValue<string>(out var text))
+        if (value is JsonValue textValue && textValue.TryGetValue<string>(out string? text))
         {
             if (text.StartsWith('#'))
             {
                 return ParseHtmlColor(name, text);
             }
 
-            if (parsedColors.TryGetValue(text, out var referenced))
+            if (parsedColors.TryGetValue(text, out Color referenced))
             {
                 return referenced;
             }
@@ -313,17 +313,17 @@ public sealed class LegacyOverlayThemeStore
         }
 
         Span<byte> values = stackalloc byte[4];
-        var offset = components.Count == 3 ? 1 : 0;
+        int offset = components.Count == 3 ? 1 : 0;
         if (offset == 1)
         {
             values[0] = 255;
         }
 
-        for (var index = 0; index < components.Count; index++)
+        for (int index = 0; index < components.Count; index++)
         {
             if (
                 components[index] is not JsonValue component
-                || !component.TryGetValue<int>(out var number)
+                || !component.TryGetValue<int>(out int number)
                 || number is < 0 or > 255
             )
             {
@@ -338,16 +338,16 @@ public sealed class LegacyOverlayThemeStore
 
     private static Color ParseHtmlColor(string name, string text)
     {
-        var hex = text.AsSpan(1);
+        ReadOnlySpan<char> hex = text.AsSpan(1);
         if (hex.Length is not 6 and not 8)
         {
             throw new InvalidDataException($"HTML colour '{name}' must use #RRGGBB or #RRGGBBAA.");
         }
 
-        var red = ParseHexByte(hex[..2]);
-        var green = ParseHexByte(hex.Slice(2, 2));
-        var blue = ParseHexByte(hex.Slice(4, 2));
-        var alpha = hex.Length == 8 ? ParseHexByte(hex.Slice(6, 2)) : (byte)255;
+        byte red = ParseHexByte(hex[..2]);
+        byte green = ParseHexByte(hex.Slice(2, 2));
+        byte blue = ParseHexByte(hex.Slice(4, 2));
+        byte alpha = hex.Length == 8 ? ParseHexByte(hex.Slice(6, 2)) : (byte)255;
         return Color.FromArgb(alpha, red, green, blue);
     }
 
@@ -367,7 +367,7 @@ public sealed class LegacyOverlayThemeStore
     {
         try
         {
-            var normalized = text?.Trim() ?? string.Empty;
+            string normalized = text?.Trim() ?? string.Empty;
             if (!normalized.StartsWith('#'))
             {
                 color = default;
@@ -387,17 +387,17 @@ public sealed class LegacyOverlayThemeStore
 
     private string CreateVerifiedBackup(string directory)
     {
-        var backupDirectory = Path.Combine(
+        string backupDirectory = Path.Combine(
             directory,
             "legacy-backups",
             "overlay-themes",
             DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture)
         );
         Directory.CreateDirectory(backupDirectory);
-        var backupPath = Path.Combine(backupDirectory, Path.GetFileName(path));
+        string backupPath = Path.Combine(backupDirectory, Path.GetFileName(path));
         File.Copy(path, backupPath, overwrite: false);
-        var sourceHash = SHA256.HashData(File.ReadAllBytes(path));
-        var backupHash = SHA256.HashData(File.ReadAllBytes(backupPath));
+        byte[] sourceHash = SHA256.HashData(File.ReadAllBytes(path));
+        byte[] backupHash = SHA256.HashData(File.ReadAllBytes(backupPath));
         if (!sourceHash.AsSpan().SequenceEqual(backupHash))
         {
             throw new IOException("The overlay theme backup failed checksum verification.");
@@ -413,7 +413,7 @@ public sealed class LegacyOverlayThemeStore
     )
     {
         var root = new JsonObject();
-        foreach (var entry in colors.OrderBy(entry => entry.Key, StringComparer.Ordinal))
+        foreach (KeyValuePair<string, Color> entry in colors.OrderBy(entry => entry.Key, StringComparer.Ordinal))
         {
             SetNestedValue(root, entry.Key, FormatHtmlColor(entry.Value));
         }
@@ -430,18 +430,18 @@ public sealed class LegacyOverlayThemeStore
 
     private static void SetNestedValue(JsonObject root, string name, string value)
     {
-        var parts = name.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        string[] parts = name.Split('.', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 0)
         {
             throw new InvalidDataException("An overlay colour name cannot be empty.");
         }
 
-        var current = root;
-        for (var index = 0; index < parts.Length - 1; index++)
+        JsonObject current = root;
+        for (int index = 0; index < parts.Length - 1; index++)
         {
             if (current[parts[index]] is not JsonObject child)
             {
-                child = new JsonObject();
+                child = [];
                 current[parts[index]] = child;
             }
 
@@ -457,7 +457,7 @@ public sealed class LegacyOverlayThemeStore
     )
     {
         return expected.Count == actual.Count
-            && expected.All(entry => actual.TryGetValue(entry.Key, out var color) && color == entry.Value);
+            && expected.All(entry => actual.TryGetValue(entry.Key, out Color color) && color == entry.Value);
     }
 }
 
@@ -472,7 +472,7 @@ public sealed record LegacyOverlayTheme(
 
     public Color GetColor(string name)
     {
-        return Colors.TryGetValue(name, out var color)
+        return Colors.TryGetValue(name, out Color color)
             ? color
             : throw new KeyNotFoundException($"The legacy overlay theme does not define '{name}'.");
     }

@@ -15,7 +15,7 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
     [Fact]
     public async Task ApiKeyIsSavedWithTheCurrentCommanderName()
     {
-        var viewModel = CreateViewModel();
+        EdsmSettingsViewModel viewModel = CreateViewModel();
         viewModel.SetCommanderProfile("F123", "Game Commander", isOdyssey: true, savedApiKey: null);
 
         Assert.False(viewModel.SaveCredentialsCommand.CanExecute(null));
@@ -24,7 +24,10 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
         Assert.True(viewModel.SaveCredentialsCommand.CanExecute(null));
         await ExecuteAndWaitForCredentialsChangedAsync(viewModel, viewModel.SaveCredentialsCommand);
 
-        var profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", isOdyssey: true);
+        CommanderProfileLoadResult profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync(
+            "F123",
+            isOdyssey: true
+        );
         Assert.Equal("Game Commander", profile.Data?.EdsmCommanderName);
         Assert.Equal("personal-key", profile.Data?.EdsmApiKey);
         Assert.False(File.Exists(Path.Combine(temporaryDirectory, "ui-settings.json")));
@@ -33,9 +36,9 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
     [Fact]
     public async Task ClearingCredentialsRequiresConfirmationAndRaisesAChange()
     {
-        var viewModel = CreateViewModel();
+        EdsmSettingsViewModel viewModel = CreateViewModel();
         viewModel.SetCommanderProfile("F123", "Game Commander", isOdyssey: true, savedApiKey: "personal-key");
-        var changes = 0;
+        int changes = 0;
         viewModel.CredentialsChanged += (_, _) => changes++;
 
         viewModel.RequestClearCredentialsCommand.Execute(null);
@@ -45,7 +48,10 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
 
         await ExecuteAndWaitForCredentialsChangedAsync(viewModel, viewModel.ConfirmClearCredentialsCommand);
 
-        var profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", isOdyssey: true);
+        CommanderProfileLoadResult profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync(
+            "F123",
+            isOdyssey: true
+        );
         Assert.Null(profile.Data?.EdsmCommanderName);
         Assert.Null(profile.Data?.EdsmApiKey);
         Assert.Equal(1, changes);
@@ -76,8 +82,8 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
             await releaseSave.Task.WaitAsync(cancellationToken);
         }
 
-        var viewModel = CreateViewModel(SaveAsync);
-        var changes = 0;
+        EdsmSettingsViewModel viewModel = CreateViewModel(SaveAsync);
+        int changes = 0;
         viewModel.CredentialsChanged += (_, _) => changes++;
         viewModel.SetCommanderProfile("F123", "First Commander", isOdyssey: true, savedApiKey: null);
         viewModel.ApiKey = "first-key";
@@ -111,7 +117,7 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
     [Fact]
     public void PublicationResultIsPresentedWithoutExposingCredentials()
     {
-        var viewModel = CreateViewModel();
+        EdsmSettingsViewModel viewModel = CreateViewModel();
 
         viewModel.ReportPublicationResult(
             new EdsmPublicationResult(

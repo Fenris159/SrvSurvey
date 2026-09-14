@@ -1,3 +1,4 @@
+using System.Globalization;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
@@ -17,7 +18,7 @@ public sealed class CommanderCodexJournalTrackerTests : IDisposable
         var store = new CommanderCodexStore(temporaryDirectory);
         var tracker = new CommanderCodexJournalTracker(store);
 
-        var result = await tracker.ApplyAsync([
+        CommanderCodexJournalTrackResult result = await tracker.ApplyAsync([
             Parse("""{"timestamp":"2026-07-24T10:00:00Z","event":"Commander","Name":"Cmdr Test","FID":"F123"}"""),
             Parse(
                 """{"timestamp":"2026-07-24T10:01:00Z","event":"Location","StarSystem":"Sol","SystemAddress":10477373803,"StarPos":[0,0,0]}"""
@@ -37,13 +38,16 @@ public sealed class CommanderCodexJournalTrackerTests : IDisposable
         Assert.Equal(3, result.DiscoveryEventCount);
         Assert.Equal(4, result.ChangedEntryCount);
         Assert.Equal(2, result.ChangedFileCount);
-        var global = await store.LoadAsync("F123", null);
+        CommanderCodexLoadResult global = await store.LoadAsync("F123", null);
         Assert.Equal(2, global.Data!.Firsts.Count);
         Assert.Equal(2, global.Data.Firsts[2310101].BodyId);
-        var regionalFiles = Directory.GetFiles(temporaryDirectory, "F123-codex-*.json");
-        var regionalPath = Assert.Single(regionalFiles);
-        var regionId = int.Parse(Path.GetFileNameWithoutExtension(regionalPath).Split('-')[2]);
-        var regional = await store.LoadAsync("F123", null, regionId);
+        string[] regionalFiles = Directory.GetFiles(temporaryDirectory, "F123-codex-*.json");
+        string regionalPath = Assert.Single(regionalFiles);
+        int regionId = int.Parse(
+            Path.GetFileNameWithoutExtension(regionalPath).Split('-')[2],
+            CultureInfo.InvariantCulture
+        );
+        CommanderCodexLoadResult regional = await store.LoadAsync("F123", null, regionId);
         Assert.Equal(2, regional.Data!.Firsts.Count);
         Assert.False(string.IsNullOrWhiteSpace(regional.Data.RegionName));
     }
@@ -60,12 +64,12 @@ public sealed class CommanderCodexJournalTrackerTests : IDisposable
             ),
         ]);
 
-        var result = await tracker.ApplyAsync([
+        CommanderCodexJournalTrackResult result = await tracker.ApplyAsync([
             Parse("""{"timestamp":"2026-07-24T10:02:00Z","event":"CodexEntry","EntryID":2310101,"BodyID":1}"""),
         ]);
 
         Assert.True(result.HasChanges);
-        var global = await store.LoadAsync("F123", null);
+        CommanderCodexLoadResult global = await store.LoadAsync("F123", null);
         Assert.Equal(42, Assert.Single(global.Data!.Firsts).Value.SystemAddress);
     }
 
@@ -75,7 +79,7 @@ public sealed class CommanderCodexJournalTrackerTests : IDisposable
         var store = new CommanderCodexStore(temporaryDirectory);
         var tracker = new CommanderCodexJournalTracker(store);
 
-        var result = await tracker.ApplyAsync([
+        CommanderCodexJournalTrackResult result = await tracker.ApplyAsync([
             Parse("""{"timestamp":"2026-07-24T10:00:00Z","event":"Commander","Name":"Cmdr Test","FID":"F123"}"""),
             Parse(
                 """{"timestamp":"2026-07-24T10:01:00Z","event":"CodexEntry","EntryID":2310101,"SystemAddress":42,"BodyID":1,"Region":"$Codex_RegionName_18;"}"""
@@ -84,7 +88,7 @@ public sealed class CommanderCodexJournalTrackerTests : IDisposable
 
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.ChangedFileCount);
-        var regional = await store.LoadAsync("F123", null, 18);
+        CommanderCodexLoadResult regional = await store.LoadAsync("F123", null, 18);
         Assert.True(regional.Exists);
         Assert.Equal(42, Assert.Single(regional.Data!.Firsts).Value.SystemAddress);
         Assert.Equal(GalacticRegionMap.Regions.Single(region => region.Id == 18).Name, regional.Data.RegionName);
@@ -95,7 +99,7 @@ public sealed class CommanderCodexJournalTrackerTests : IDisposable
     {
         var tracker = new CommanderCodexJournalTracker(new CommanderCodexStore(temporaryDirectory));
 
-        var result = await tracker.ApplyAsync([
+        CommanderCodexJournalTrackResult result = await tracker.ApplyAsync([
             Parse("""{"event":"CodexEntry","EntryID":2310101,"SystemAddress":42}"""),
         ]);
 
@@ -114,7 +118,7 @@ public sealed class CommanderCodexJournalTrackerTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

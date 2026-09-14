@@ -25,28 +25,28 @@ public sealed class EdsmSystemNameSuggestionClient : ISystemNameSuggestionClient
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
-        var normalized = query.Trim();
+        string normalized = query.Trim();
         if (normalized.Length < 3)
         {
             return [];
         }
 
-        var queryParameter =
+        string queryParameter =
             long.TryParse(
                 normalized,
                 System.Globalization.NumberStyles.None,
                 System.Globalization.CultureInfo.InvariantCulture,
-                out var systemAddress
+                out long systemAddress
             )
             && systemAddress > 0
                 ? $"systemId64={systemAddress}"
                 : $"systemName={Uri.EscapeDataString(normalized)}";
         var uriBuilder = new UriBuilder(apiUri) { Query = queryParameter + "&showId=1" };
-        using var response = await client
+        using HttpResponseMessage response = await client
             .GetAsync(uriBuilder.Uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload = await BoundedHttpContent
+        IReadOnlyList<EdsmSystemSuggestion>? payload = await BoundedHttpContent
             .ReadFromJsonAsync<IReadOnlyList<EdsmSystemSuggestion>>(
                 response.Content,
                 MaximumResponseBytes,

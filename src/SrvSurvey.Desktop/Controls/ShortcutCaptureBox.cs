@@ -135,7 +135,7 @@ public sealed class ShortcutCaptureBox : TextBox
 
         if (heldModifiers.Count == 0 && heldKey is null)
         {
-            if (InputChord.TryNormalize(candidateChord, out var normalized))
+            if (InputChord.TryNormalize(candidateChord, out string? normalized))
             {
                 Commit(normalized);
             }
@@ -153,7 +153,7 @@ public sealed class ShortcutCaptureBox : TextBox
             return;
         }
 
-        var chord = controllerTracker.UpdateToken(change.Token, change.IsPressed);
+        string? chord = controllerTracker.UpdateToken(change.Token, change.IsPressed);
         if (chord is not null)
         {
             Commit(chord);
@@ -162,7 +162,7 @@ public sealed class ShortcutCaptureBox : TextBox
 
         if (
             controllerTracker.Pressed.Count > 0
-            && InputChord.TryNormalize(string.Join(' ', controllerTracker.Pressed), out var candidate)
+            && InputChord.TryNormalize(string.Join(' ', controllerTracker.Pressed), out string? candidate)
         )
         {
             candidateChord = candidate;
@@ -198,7 +198,7 @@ public sealed class ShortcutCaptureBox : TextBox
 
     private void OnCaptureKeyUp(object? sender, KeyEventArgs eventArgs)
     {
-        var wasCapturing = capturing;
+        bool wasCapturing = capturing;
         CaptureKeyUp(eventArgs.Key);
         eventArgs.Handled = wasCapturing;
     }
@@ -346,7 +346,7 @@ public sealed class ShortcutCaptureBox : TextBox
 
     private static string? GetKeyName(Key key)
     {
-        var name = key.ToString();
+        string name = key.ToString();
         return key switch
         {
             Key.None or Key.Escape or Key.Back or Key.Delete => null,

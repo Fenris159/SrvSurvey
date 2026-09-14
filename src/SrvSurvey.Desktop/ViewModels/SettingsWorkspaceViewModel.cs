@@ -66,7 +66,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
         get => searchQuery;
         set
         {
-            var normalized = value ?? string.Empty;
+            string normalized = value ?? string.Empty;
             if (searchQuery == normalized)
             {
                 return;
@@ -107,7 +107,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
 
     public void MoveSearchSelection(int delta)
     {
-        var results = GetFlattenedResults();
+        SettingsSearchResultViewModel[] results = GetFlattenedResults();
         if (results.Length == 0)
         {
             SetSelectedSearchResult(-1);
@@ -129,7 +129,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
 
     public SettingsSearchResultViewModel? ActivateSelectedSearchResult()
     {
-        var result = SelectedSearchResult;
+        SettingsSearchResultViewModel? result = SelectedSearchResult;
         if (result is not null)
         {
             ActivateSearchResult(result);
@@ -162,7 +162,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
 
     private void RefreshSearchResults()
     {
-        var terms = SearchQuery.Split(
+        string[] terms = SearchQuery.Split(
             [' ', '\t'],
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
         );
@@ -173,7 +173,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
             return;
         }
 
-        var matches = catalog
+        SettingsSearchResultViewModel[] matches = catalog
             .Where(entry => terms.All(term => entry.SearchText.Contains(term, StringComparison.OrdinalIgnoreCase)))
             .Select(entry => new SettingsSearchResultViewModel(entry))
             .ToArray();
@@ -189,8 +189,8 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
 
     private void SetSelectedSearchResult(int index)
     {
-        var results = GetFlattenedResults();
-        for (var resultIndex = 0; resultIndex < results.Length; resultIndex++)
+        SettingsSearchResultViewModel[] results = GetFlattenedResults();
+        for (int resultIndex = 0; resultIndex < results.Length; resultIndex++)
         {
             results[resultIndex].IsSelected = resultIndex == index;
         }

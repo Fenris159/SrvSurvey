@@ -4,7 +4,7 @@ internal sealed class UploadSuccessLogAggregator
 {
     internal static readonly TimeSpan DefaultInterval = TimeSpan.FromMinutes(15);
 
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly Func<DateTimeOffset> utcNow;
     private readonly TimeSpan interval;
     private DateTimeOffset? windowStartedAt;
@@ -26,10 +26,10 @@ internal sealed class UploadSuccessLogAggregator
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
         lock (sync)
         {
-            var now = utcNow();
+            DateTimeOffset now = utcNow();
             if (windowStartedAt is { } startedAt && now - startedAt >= interval)
             {
-                var completedCount = successfulCount;
+                long completedCount = successfulCount;
                 windowStartedAt = now;
                 successfulCount = count;
                 return completedCount > 0 ? completedCount : null;

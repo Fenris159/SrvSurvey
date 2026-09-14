@@ -126,7 +126,7 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
     /// </summary>
     private static long ToPreviewRewardAbove(double millions)
     {
-        var credits = checked((long)Math.Ceiling(Math.Max(0d, millions) * 1_000_000d));
+        long credits = checked((long)Math.Ceiling(Math.Max(0d, millions) * 1_000_000d));
         return Math.Max(1, credits + 1);
     }
 

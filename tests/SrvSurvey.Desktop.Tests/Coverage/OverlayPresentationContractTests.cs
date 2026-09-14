@@ -507,15 +507,15 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void EveryOverlayHasItsInformationGroupsInProductionMarkup()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         Assert.Equal(28, Contracts.Length);
-        foreach (var contract in Contracts)
+        foreach (PresentationContract contract in Contracts)
         {
-            var production = string.Join(
+            string production = string.Join(
                 Environment.NewLine,
                 contract.ProductionFiles.Select(path => File.ReadAllText(Path.Combine(root, Native(path))))
             );
-            foreach (var token in contract.RequiredTokens)
+            foreach (string token in contract.RequiredTokens)
             {
                 Assert.Contains(token, production, StringComparison.Ordinal);
             }
@@ -525,15 +525,15 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void EveryRuntimeOverlayWindowTitleMatchesTheDocumentedKdeRule()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var overlayFiles = Directory.GetFiles(desktop, "*OverlayWindow.axaml", SearchOption.TopDirectoryOnly);
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string[] overlayFiles = Directory.GetFiles(desktop, "*OverlayWindow.axaml", SearchOption.TopDirectoryOnly);
 
         Assert.NotEmpty(overlayFiles);
         var titles = new List<string>();
-        foreach (var overlayFile in overlayFiles)
+        foreach (string overlayFile in overlayFiles)
         {
-            var title = XDocument.Load(overlayFile).Root?.Attribute("Title")?.Value;
+            string? title = XDocument.Load(overlayFile).Root?.Attribute("Title")?.Value;
             Assert.NotNull(title);
             Assert.Matches(KdeOverlayTitlePattern, title);
             titles.Add(title);
@@ -541,21 +541,21 @@ public sealed class OverlayPresentationContractTests
 
         Assert.Equal(titles.Count, titles.Distinct(StringComparer.Ordinal).Count());
 
-        var troubleshooting = File.ReadAllText(Path.Combine(root, "docs", "Overlay_Troubleshooting.md"));
+        string troubleshooting = File.ReadAllText(Path.Combine(root, "docs", "Overlay_Troubleshooting.md"));
         Assert.Contains($"`{KdeOverlayTitlePattern}`", troubleshooting, StringComparison.Ordinal);
     }
 
     [Fact]
     public void DirectionalTrackersUseSharedVectorChevronsInsteadOfFontGlyphs()
     {
-        var root = FindRepositoryRoot();
-        var miniTrack = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string miniTrack = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "MiniTrackOverlayPresentation.axaml")
         );
-        var surfaceSurvey = File.ReadAllText(
+        string surfaceSurvey = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "SurfaceSurveyOverlayPresentation.axaml")
         );
-        var priorScans = File.ReadAllText(
+        string priorScans = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "PriorScansOverlayPresentation.axaml")
         );
 
@@ -575,11 +575,11 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void GroundTargetUsesTheSharedRingedPointerDrawing()
     {
-        var root = FindRepositoryRoot();
-        var guidance = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string guidance = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "Controls", "GroundTargetGuidanceControl.cs")
         );
-        var guidePreview = File.ReadAllText(
+        string guidePreview = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "Controls", "GuideIconPreviewControl.cs")
         );
 
@@ -591,8 +591,8 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void GuardianPresentationsUseDedicatedCompactVisualGrammar()
     {
-        var root = FindRepositoryRoot();
-        var presentations = new[]
+        string root = FindRepositoryRoot();
+        string[] presentations = new[]
         {
             "GuardianSiteOverlayPresentation.axaml",
             "GuardianStatusOverlayPresentation.axaml",
@@ -600,9 +600,9 @@ public sealed class OverlayPresentationContractTests
             "RamTahOverlayPresentation.axaml",
         };
 
-        foreach (var presentation in presentations)
+        foreach (string? presentation in presentations)
         {
-            var markup = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", presentation));
+            string markup = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", presentation));
             Assert.Contains("guardian-panel", markup);
             Assert.Contains("RavenGuardian", markup);
             Assert.DoesNotContain("LegacyOverlayBackgroundControl", markup);
@@ -613,7 +613,7 @@ public sealed class OverlayPresentationContractTests
             Assert.DoesNotContain("Classes=\"badge", markup);
         }
 
-        var styles = File.ReadAllText(
+        string styles = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "Styles", "GuardianLegacyOverlayStyles.axaml")
         );
         Assert.Contains("Assets/Fonts/Oxanium#Oxanium", styles);
@@ -625,7 +625,7 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("guardian-panel", styles);
         Assert.Contains("guardian-title", styles);
 
-        var ramTah = File.ReadAllText(
+        string ramTah = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "RamTahOverlayPresentation.axaml")
         );
         Assert.DoesNotContain("&lt;A01&gt;", ramTah);
@@ -634,8 +634,8 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void GuardianSiteOverlayTracksWorkspacePointSelection()
     {
-        var root = FindRepositoryRoot();
-        var markup = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string markup = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "GuardianSiteOverlayPresentation.axaml")
         );
 
@@ -697,10 +697,10 @@ public sealed class OverlayPresentationContractTests
         bool isContentSized
     )
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var presentation = File.ReadAllText(Path.Combine(desktop, presentationName));
-        var window = File.ReadAllText(Path.Combine(desktop, windowName));
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string presentation = File.ReadAllText(Path.Combine(desktop, presentationName));
+        string window = File.ReadAllText(Path.Combine(desktop, windowName));
 
         if (isContentSized)
         {
@@ -720,10 +720,10 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void CompactOverlayDetailsWrapWithoutSplittingRouteGroups()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var fss = File.ReadAllText(Path.Combine(desktop, "FssInfoOverlayPresentation.axaml"));
-        var routeRow = File.ReadAllText(Path.Combine(desktop, "Controls", "RouteBioTargetRow.axaml"));
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string fss = File.ReadAllText(Path.Combine(desktop, "FssInfoOverlayPresentation.axaml"));
+        string routeRow = File.ReadAllText(Path.Combine(desktop, "Controls", "RouteBioTargetRow.axaml"));
 
         Assert.Contains("FssFilterDescription", fss);
         Assert.Contains("TextWrapping=\"Wrap\"", fss);
@@ -731,7 +731,7 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("Padding=\"3\"", fss);
         Assert.Contains("RowSpacing=\"0\"", fss);
         Assert.Equal(2, fss.Split("Classes=\"overlay-divider\"", StringSplitOptions.None).Length - 1);
-        var lowerDivider = XDocument
+        XElement lowerDivider = XDocument
             .Parse(fss)
             .Descendants()
             .Last(element =>
@@ -749,11 +749,11 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void CompactValueCellsAutoSizeAndTypographyUsesSemanticRoles()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var lastFss = File.ReadAllText(Path.Combine(desktop, "LastFssBodyOverlayPresentation.axaml"));
-        var bodyInfo = File.ReadAllText(Path.Combine(desktop, "BodyInformationOverlayPresentation.axaml"));
-        var typography = File.ReadAllText(Path.Combine(desktop, "Styles", "OverlayTypographyStyles.axaml"));
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string lastFss = File.ReadAllText(Path.Combine(desktop, "LastFssBodyOverlayPresentation.axaml"));
+        string bodyInfo = File.ReadAllText(Path.Combine(desktop, "BodyInformationOverlayPresentation.axaml"));
+        string typography = File.ReadAllText(Path.Combine(desktop, "Styles", "OverlayTypographyStyles.axaml"));
 
         Assert.Contains("ColumnDefinitions=\"Auto,Auto\"", lastFss);
         Assert.Contains("ColumnDefinitions=\"Auto,Auto\"", bodyInfo);
@@ -768,17 +768,17 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void LastFssBiologyPipsUseTheirStateFramesWithoutAGroupBorder()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var lastFss = XDocument.Load(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "LastFssBodyOverlayPresentation.axaml")
         );
-        var rewardBands = lastFss
+        XElement rewardBands = lastFss
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ItemsControl"
                 && element.Attribute("ItemsSource")?.Value == "{Binding Survey.LastFssBiologyRewardBands}"
             );
-        var rewardBand = rewardBands
+        XElement rewardBand = rewardBands
             .Descendants()
             .Single(element => element.Name.LocalName == "BiologyRewardBandControl");
 
@@ -793,8 +793,8 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void BodyInformationBindingsUseTheNonNullDisplayProjection()
     {
-        var root = FindRepositoryRoot();
-        var bodyInfo = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string bodyInfo = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "BodyInformationOverlayPresentation.axaml")
         );
 
@@ -805,8 +805,8 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void BodyInformationHeaderAndCompositionRowsRemainCompact()
     {
-        var root = FindRepositoryRoot();
-        var bodyInfo = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string bodyInfo = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "BodyInformationOverlayPresentation.axaml")
         );
 
@@ -822,8 +822,8 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void BiologyStatusBindingsUseTheNonNullActiveSampleProjection()
     {
-        var root = FindRepositoryRoot();
-        var biologyStatus = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string biologyStatus = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "BiologyStatusOverlayPresentation.axaml")
         );
 
@@ -834,14 +834,14 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void RequestedCompactRowsDoNotUsePanelFillingValueColumns()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var bodyInfo = File.ReadAllText(Path.Combine(desktop, "BodyInformationOverlayPresentation.axaml"));
-        var lastFss = File.ReadAllText(Path.Combine(desktop, "LastFssBodyOverlayPresentation.axaml"));
-        var quest = File.ReadAllText(Path.Combine(desktop, "QuestIndicatorOverlayPresentation.axaml"));
-        var station = File.ReadAllText(Path.Combine(desktop, "StationInfoOverlayPresentation.axaml"));
-        var carrier = File.ReadAllText(Path.Combine(desktop, "FleetCarrierRouteOverlayPresentation.axaml"));
-        var humanSite = File.ReadAllText(Path.Combine(desktop, "HumanSiteOverlayPresentation.axaml"));
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string bodyInfo = File.ReadAllText(Path.Combine(desktop, "BodyInformationOverlayPresentation.axaml"));
+        string lastFss = File.ReadAllText(Path.Combine(desktop, "LastFssBodyOverlayPresentation.axaml"));
+        string quest = File.ReadAllText(Path.Combine(desktop, "QuestIndicatorOverlayPresentation.axaml"));
+        string station = File.ReadAllText(Path.Combine(desktop, "StationInfoOverlayPresentation.axaml"));
+        string carrier = File.ReadAllText(Path.Combine(desktop, "FleetCarrierRouteOverlayPresentation.axaml"));
+        string humanSite = File.ReadAllText(Path.Combine(desktop, "HumanSiteOverlayPresentation.axaml"));
 
         Assert.Contains("ColumnDefinitions=\"Auto,Auto,Auto\"", bodyInfo);
         Assert.DoesNotContain("Width=\"132\"", bodyInfo);
@@ -860,10 +860,10 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void PriorScanStatePillsShareOneVisualContract()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var priorScans = File.ReadAllText(Path.Combine(desktop, "PriorScansOverlayPresentation.axaml"));
-        var ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string priorScans = File.ReadAllText(Path.Combine(desktop, "PriorScansOverlayPresentation.axaml"));
+        string ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
 
         Assert.Equal(3, priorScans.Split("Classes=\"badge overlay-state-pill\"").Length - 1);
         Assert.Contains("Border.badge.overlay-state-pill", ravenStyles);
@@ -874,10 +874,10 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void SystemBiologyUsesAnAnalyzedPillWithoutMutingVariantColors()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var biologySurvey = File.ReadAllText(Path.Combine(desktop, "BiologySurveyOverlayPresentation.axaml"));
-        var ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string biologySurvey = File.ReadAllText(Path.Combine(desktop, "BiologySurveyOverlayPresentation.axaml"));
+        string ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
 
         Assert.Contains("Classes=\"badge overlay-state-pill overlay-state-pill-compact\"", biologySurvey);
         Assert.Contains("IsVisible=\"{Binding IsAnalyzed}\"", biologySurvey);
@@ -890,10 +890,10 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void SystemBiologyUsesSharedBodyPipAndRewardColumns()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var biologySurvey = File.ReadAllText(Path.Combine(desktop, "BiologySurveyOverlayPresentation.axaml"));
-        var biologyWindow = File.ReadAllText(Path.Combine(desktop, "BiologySurveyOverlayWindow.axaml"));
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string biologySurvey = File.ReadAllText(Path.Combine(desktop, "BiologySurveyOverlayPresentation.axaml"));
+        string biologyWindow = File.ReadAllText(Path.Combine(desktop, "BiologySurveyOverlayWindow.axaml"));
 
         Assert.Contains("Grid.IsSharedSizeScope=\"True\"", biologySurvey);
         Assert.Contains("SharedSizeGroup=\"SystemBiologyBodyName\"", biologySurvey);
@@ -915,36 +915,36 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void OverlaySettingsDisableInactiveDssAndCanonnDependencies()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var document = XDocument.Load(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
         );
-        var controls = document.Descendants().ToArray();
+        XElement[] controls = document.Descendants().ToArray();
         XElement BoundControl(string name, string property, string binding) =>
             controls.Single(element =>
                 element.Name.LocalName == name
                 && element.Attribute(property)?.Value.Contains(binding, StringComparison.Ordinal) == true
             );
 
-        var distance = BoundControl("NumericUpDown", "Value", "SystemSurvey.DssDistanceLimitLs");
+        XElement distance = BoundControl("NumericUpDown", "Value", "SystemSurvey.DssDistanceLimitLs");
         Assert.Equal("{Binding SystemSurvey.SkipDistantDssCandidates}", distance.Parent?.Attribute("IsEnabled")?.Value);
 
-        var priorScans = BoundControl("CheckBox", "IsChecked", "SystemSurvey.AutoShowPriorScans");
+        XElement priorScans = BoundControl("CheckBox", "IsChecked", "SystemSurvey.AutoShowPriorScans");
         Assert.Equal("{Binding SystemSurvey.UseExternalData}", priorScans.Parent?.Attribute("IsEnabled")?.Value);
 
-        var radar = BoundControl("CheckBox", "IsChecked", "SystemSurvey.ShowCanonnSignalsOnRadar");
+        XElement radar = BoundControl("CheckBox", "IsChecked", "SystemSurvey.ShowCanonnSignalsOnRadar");
         Assert.Equal("{Binding SystemSurvey.AutoShowPriorScans}", radar.Parent?.Attribute("IsEnabled")?.Value);
         Assert.Equal("{Binding SystemSurvey.UseExternalData}", radar.Parent?.Parent?.Attribute("IsEnabled")?.Value);
 
-        var miniTrack = BoundControl("CheckBox", "IsChecked", "SystemSurvey.AutoShowMiniTrack");
-        var samplerGate = BoundControl(
+        XElement miniTrack = BoundControl("CheckBox", "IsChecked", "SystemSurvey.AutoShowMiniTrack");
+        XElement samplerGate = BoundControl(
             "CheckBox",
             "IsChecked",
             "SystemSurvey.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn"
         );
         Assert.Same(miniTrack, samplerGate.ElementsBeforeSelf().Last());
         Assert.Equal("{Binding SystemSurvey.AutoShowSurfaceRadar}", samplerGate.Attribute("IsEnabled")?.Value);
-        var samplerGateLabel = Assert.Single(samplerGate.Elements());
+        XElement samplerGateLabel = Assert.Single(samplerGate.Elements());
         Assert.Equal("TextBlock", samplerGateLabel.Name.LocalName);
         Assert.Equal("Wrap", samplerGateLabel.Attribute("TextWrapping")?.Value);
         Assert.Equal("Onfoot: Show only when Genetic Sampler is drawn.", samplerGateLabel.Attribute("Text")?.Value);
@@ -953,11 +953,11 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void ExobiologySettingsUseBalancedSeparatedSections()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var document = XDocument.Load(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
         );
-        var controls = document.Descendants().ToArray();
+        XElement[] controls = document.Descendants().ToArray();
         XElement Named(string name) =>
             controls.Single(element =>
                 element.Attributes().Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == name)
@@ -968,12 +968,12 @@ public sealed class OverlayPresentationContractTests
                 && element.Attribute("IsChecked")?.Value.Contains(binding, StringComparison.Ordinal) == true
             );
 
-        var canonnGrid = Named("ExobiologyExternalDataGrid");
-        var canonnRadar = BoundCheckBox("SystemSurvey.ShowCanonnSignalsOnRadar");
+        XElement canonnGrid = Named("ExobiologyExternalDataGrid");
+        XElement canonnRadar = BoundCheckBox("SystemSurvey.ShowCanonnSignalsOnRadar");
         Assert.Same(canonnGrid.Elements().ElementAt(1), canonnRadar.Parent?.Parent);
 
-        var surfaceRadarSeparator = Named("SurfaceRadarSeparator");
-        var surfaceRadarPanel = Named("SurfaceRadarPanel");
+        XElement surfaceRadarSeparator = Named("SurfaceRadarSeparator");
+        XElement surfaceRadarPanel = Named("SurfaceRadarPanel");
         Assert.Same(surfaceRadarSeparator, surfaceRadarPanel.PreviousNode);
         Assert.Contains(BoundCheckBox("SystemSurvey.AutoShowSurfaceRadar"), surfaceRadarPanel.Descendants());
         Assert.Equal(
@@ -981,10 +981,10 @@ public sealed class OverlayPresentationContractTests
             surfaceRadarPanel.Elements().Single(element => element.Name.LocalName == "Grid").Elements().Count()
         );
 
-        var rewardSeparator = Named("BiologyRewardSeparator");
-        var rewardPanel = Named("BiologyRewardPanel");
+        XElement rewardSeparator = Named("BiologyRewardSeparator");
+        XElement rewardPanel = Named("BiologyRewardPanel");
         Assert.Same(rewardSeparator, rewardPanel.PreviousNode);
-        var rewardHeading = rewardPanel.Elements().First();
+        XElement rewardHeading = rewardPanel.Elements().First();
         Assert.Equal("eyebrow", rewardHeading.Attribute("Classes")?.Value);
         Assert.Equal("SPECIES REWARD GROUPS", rewardHeading.Attribute("Text")?.Value);
     }
@@ -992,23 +992,23 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void GuardianSettingsUseBalancedWrappingColumns()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var document = XDocument.Load(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
         );
-        var controls = document.Descendants().ToArray();
+        XElement[] controls = document.Descendants().ToArray();
         XElement Named(string name) =>
             controls.Single(element =>
                 element.Attributes().Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == name)
             );
 
-        var primaryColumns = Named("GuardianPrimaryColumns");
-        var settingsColumns = Named("GuardianSettingsColumns");
+        XElement primaryColumns = Named("GuardianPrimaryColumns");
+        XElement settingsColumns = Named("GuardianSettingsColumns");
         Assert.Equal("*,*", primaryColumns.Attribute("ColumnDefinitions")?.Value);
         Assert.Equal("*,*", settingsColumns.Attribute("ColumnDefinitions")?.Value);
 
-        var leftColumn = Named("GuardianLeftColumn");
-        var rightColumn = Named("GuardianRightColumn");
+        XElement leftColumn = Named("GuardianLeftColumn");
+        XElement rightColumn = Named("GuardianRightColumn");
         Assert.Equal(
             ["MAP ZOOM", "ALIGNMENT GUIDES"],
             leftColumn
@@ -1024,21 +1024,23 @@ public sealed class OverlayPresentationContractTests
                 .Select(element => element.Attribute("Text")?.Value)
         );
 
-        var sizeSection = Named("GuardianOverlaySizeSection");
-        var sizeSelector = Assert.Single(sizeSection.Elements(), element => element.Name.LocalName == "ComboBox");
+        XElement sizeSection = Named("GuardianOverlaySizeSection");
+        XElement sizeSelector = Assert.Single(sizeSection.Elements(), element => element.Name.LocalName == "ComboBox");
         Assert.Equal(
             "{Binding Guardian.SelectedOverlaySize, Mode=TwoWay}",
             sizeSelector.Attribute("SelectedItem")?.Value
         );
         Assert.Equal("200", sizeSelector.Attribute("Width")?.Value);
 
-        var guardianCard = Named("GuardianOverlayCard");
-        var guardianCheckBoxes = guardianCard.Descendants().Where(element => element.Name.LocalName == "CheckBox");
+        XElement guardianCard = Named("GuardianOverlayCard");
+        IEnumerable<XElement> guardianCheckBoxes = guardianCard
+            .Descendants()
+            .Where(element => element.Name.LocalName == "CheckBox");
         Assert.All(
             guardianCheckBoxes,
             checkBox =>
             {
-                var label = Assert.Single(checkBox.Elements());
+                XElement label = Assert.Single(checkBox.Elements());
                 Assert.Equal("TextBlock", label.Name.LocalName);
                 Assert.Equal("Wrap", label.Attribute("TextWrapping")?.Value);
             }
@@ -1048,9 +1050,9 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void CurrentCommanderValueIsVerticallyAlignedWithItsLabel()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var document = XDocument.Load(Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverviewView.axaml"));
-        var currentCommander = document
+        XElement currentCommander = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "TextBlock"
@@ -1069,14 +1071,14 @@ public sealed class OverlayPresentationContractTests
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "OverviewView.axaml")
         );
-        var metrics = document
+        XElement metrics = document
             .Descendants()
             .Single(element =>
                 element
                     .Attributes()
                     .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "ExplorationTripMetrics")
             );
-        var columns = metrics.Elements().Where(element => element.Name.LocalName == "StackPanel").ToArray();
+        XElement[] columns = metrics.Elements().Where(element => element.Name.LocalName == "StackPanel").ToArray();
 
         Assert.Equal("1*,2*,2*", metrics.Attribute("ColumnDefinitions")?.Value);
         Assert.Equal(3, columns.Length);
@@ -1094,11 +1096,11 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void OverlaySettingsPlaceLongNumericEditorsBelowTheirLabels()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var document = XDocument.Load(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
         );
-        var controls = document.Descendants().ToArray();
+        XElement[] controls = document.Descendants().ToArray();
         XElement NumericEditor(string binding) =>
             controls.Single(element =>
                 element.Name.LocalName == "NumericUpDown"
@@ -1106,7 +1108,7 @@ public sealed class OverlayPresentationContractTests
             );
 
         foreach (
-            var binding in new[]
+            string? binding in new[]
             {
                 "SystemSurvey.FssBodyValueFloor",
                 "SystemSurvey.DssValueFloor",
@@ -1114,7 +1116,7 @@ public sealed class OverlayPresentationContractTests
             }
         )
         {
-            var editor = NumericEditor(binding);
+            XElement editor = NumericEditor(binding);
             Assert.Equal("150", editor.Attribute("Width")?.Value);
             Assert.Equal("Left", editor.Attribute("HorizontalAlignment")?.Value);
             Assert.Equal("StackPanel", editor.Parent?.Name.LocalName);
@@ -1122,7 +1124,7 @@ public sealed class OverlayPresentationContractTests
             Assert.Equal("TextBlock", editor.PreviousNode is XElement label ? label.Name.LocalName : null);
         }
 
-        var bodyInformationExtension = NumericEditor("SystemSurvey.BodyInformationPreviewExtensionSeconds");
+        XElement bodyInformationExtension = NumericEditor("SystemSurvey.BodyInformationPreviewExtensionSeconds");
         Assert.Equal("150", bodyInformationExtension.Attribute("Width")?.Value);
         Assert.Equal("Horizontal", bodyInformationExtension.Parent?.Attribute("Orientation")?.Value);
         Assert.Equal("24,0,0,0", bodyInformationExtension.Parent?.Parent?.Attribute("Margin")?.Value);
@@ -1131,7 +1133,7 @@ public sealed class OverlayPresentationContractTests
             bodyInformationExtension.Parent?.Parent?.Elements().First().Attribute("Text")?.Value
         );
 
-        var extension = NumericEditor("SystemSurvey.BodyPredictionPreviewExtensionSeconds");
+        XElement extension = NumericEditor("SystemSurvey.BodyPredictionPreviewExtensionSeconds");
         Assert.Equal("150", extension.Attribute("Width")?.Value);
         Assert.Equal("Horizontal", extension.Parent?.Attribute("Orientation")?.Value);
         Assert.Equal("24,0,0,0", extension.Parent?.Parent?.Attribute("Margin")?.Value);
@@ -1140,27 +1142,27 @@ public sealed class OverlayPresentationContractTests
             extension.Parent?.Parent?.Elements().First().Attribute("Text")?.Value
         );
 
-        var fssBodyCount = NumericEditor("SystemSurvey.FssBodiesBeforeScrolling");
+        XElement fssBodyCount = NumericEditor("SystemSurvey.FssBodiesBeforeScrolling");
         Assert.Equal("150", fssBodyCount.Attribute("Width")?.Value);
         Assert.Equal("StackPanel", fssBodyCount.Parent?.Name.LocalName);
         Assert.Equal("28,0,0,0", fssBodyCount.Parent?.Attribute("Margin")?.Value);
         Assert.Equal("# of bodies before scrolling:", fssBodyCount.Parent?.Elements().First().Attribute("Text")?.Value);
 
-        var skipDistant = controls.Single(element =>
+        XElement skipDistant = controls.Single(element =>
             element.Name.LocalName == "CheckBox"
             && element
                 .Attribute("IsChecked")
                 ?.Value.Contains("SystemSurvey.SkipDistantDssCandidates", StringComparison.Ordinal) == true
         );
-        var showNonBodySignals = controls.Single(element =>
+        XElement showNonBodySignals = controls.Single(element =>
             element.Name.LocalName == "CheckBox"
             && element
                 .Attribute("IsChecked")
                 ?.Value.Contains("SystemSurvey.ShowNonBodySignals", StringComparison.Ordinal) == true
         );
-        var distance = NumericEditor("SystemSurvey.DssDistanceLimitLs");
-        var minimumValue = NumericEditor("SystemSurvey.DssValueFloor");
-        var surveyStatusControls = skipDistant.Parent?.Elements().ToArray();
+        XElement distance = NumericEditor("SystemSurvey.DssDistanceLimitLs");
+        XElement minimumValue = NumericEditor("SystemSurvey.DssValueFloor");
+        XElement[]? surveyStatusControls = skipDistant.Parent?.Elements().ToArray();
         Assert.NotNull(surveyStatusControls);
         Assert.True(
             Array.IndexOf(surveyStatusControls, skipDistant) < Array.IndexOf(surveyStatusControls, distance.Parent)
@@ -1178,12 +1180,12 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void CategoryOverlaySettingsKeepOwnedControlsOutOfCategoryPages()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var mainWindow = File.ReadAllText(Path.Combine(desktop, "MainWindow.axaml"));
-        var settings = File.ReadAllText(Path.Combine(desktop, "Views", "OverlaySettingsView.axaml"));
-        var categoryWindow = File.ReadAllText(Path.Combine(desktop, "OverlayCategorySettingsWindow.axaml"));
-        var colonization = File.ReadAllText(Path.Combine(desktop, "Views", "ColonizationView.axaml"));
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string mainWindow = File.ReadAllText(Path.Combine(desktop, "MainWindow.axaml"));
+        string settings = File.ReadAllText(Path.Combine(desktop, "Views", "OverlaySettingsView.axaml"));
+        string categoryWindow = File.ReadAllText(Path.Combine(desktop, "OverlayCategorySettingsWindow.axaml"));
+        string colonization = File.ReadAllText(Path.Combine(desktop, "Views", "ColonizationView.axaml"));
 
         Assert.Contains("window_multiple_regular", mainWindow);
         Assert.Contains("HasOverlaySettings", mainWindow);
@@ -1198,15 +1200,15 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void SharedPresentationsOwnCompactionMapSizingAndDividerBehavior()
     {
-        var root = FindRepositoryRoot();
-        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var notification = File.ReadAllText(Path.Combine(desktop, "NotificationOverlayPresentation.axaml"));
-        var guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
-        var commodities = File.ReadAllText(Path.Combine(desktop, "ColonizationCommodityOverlayPresentation.axaml"));
-        var ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
-        var guardianStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "GuardianLegacyOverlayStyles.axaml"));
-        var pulseWindow = File.ReadAllText(Path.Combine(desktop, "PulseOverlayWindow.axaml"));
-        var pulsePresentation = File.ReadAllText(Path.Combine(desktop, "PulseOverlayPresentation.axaml"));
+        string root = FindRepositoryRoot();
+        string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string notification = File.ReadAllText(Path.Combine(desktop, "NotificationOverlayPresentation.axaml"));
+        string guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
+        string commodities = File.ReadAllText(Path.Combine(desktop, "ColonizationCommodityOverlayPresentation.axaml"));
+        string ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
+        string guardianStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "GuardianLegacyOverlayStyles.axaml"));
+        string pulseWindow = File.ReadAllText(Path.Combine(desktop, "PulseOverlayWindow.axaml"));
+        string pulsePresentation = File.ReadAllText(Path.Combine(desktop, "PulseOverlayPresentation.axaml"));
 
         Assert.Contains("RowDefinitions=\"Auto,Auto\"", notification);
         Assert.Contains("Value=\"{Binding ProgressPercent}\"", notification);
@@ -1232,12 +1234,12 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void FixedNonGuardianHeadersUseTheSharedHeaderRole()
     {
-        var desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        string desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
 
-        foreach (var expected in FixedHeaders)
+        foreach (KeyValuePair<string, string> expected in FixedHeaders)
         {
             var document = XDocument.Load(Path.Combine(desktop, expected.Key));
-            var header = document
+            XElement header = document
                 .Descendants()
                 .Single(element =>
                     element.Name.LocalName == "TextBlock"
@@ -1256,7 +1258,7 @@ public sealed class OverlayPresentationContractTests
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "BiologySurveyOverlayPresentation.axaml")
         );
-        var heading = document
+        XElement heading = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "TextBlock"
@@ -1272,7 +1274,7 @@ public sealed class OverlayPresentationContractTests
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "RouteBioOverlayPresentation.axaml")
         );
-        var systemName = document
+        XElement systemName = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "{Binding SystemName}"
@@ -1287,7 +1289,7 @@ public sealed class OverlayPresentationContractTests
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "FlightWarningOverlayPresentation.axaml")
         );
-        var header = document
+        XElement header = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "FLIGHT WARNING"
@@ -1302,7 +1304,7 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void RequestedDynamicAndGuardianHeadersUseTheSharedHeaderRole()
     {
-        var desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        string desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
         var expectedBindings = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["ColonizationCommodityOverlayPresentation.axaml"] = "HeaderTitle",
@@ -1311,10 +1313,10 @@ public sealed class OverlayPresentationContractTests
             ["RamTahOverlayPresentation.axaml"] = "Guardian.CurrentRamTahTitle",
         };
 
-        foreach (var expected in expectedBindings)
+        foreach (KeyValuePair<string, string> expected in expectedBindings)
         {
             var document = XDocument.Load(Path.Combine(desktop, expected.Key));
-            var header = document
+            XElement header = document
                 .Descendants()
                 .Single(element =>
                     element.Name.LocalName == "TextBlock"
@@ -1331,7 +1333,7 @@ public sealed class OverlayPresentationContractTests
         }
 
         var guardianStatus = XDocument.Load(Path.Combine(desktop, "GuardianStatusOverlayPresentation.axaml"));
-        var statusHeaders = guardianStatus
+        XElement[] statusHeaders = guardianStatus
             .Descendants()
             .Where(element =>
                 element.Name.LocalName == "TextBlock"
@@ -1342,7 +1344,7 @@ public sealed class OverlayPresentationContractTests
         Assert.All(statusHeaders, header => Assert.Equal("overlay-header", header.Attribute("Classes")?.Value));
 
         foreach (
-            var fileName in new[]
+            string? fileName in new[]
             {
                 "GuardianSystemOverlayPresentation.axaml",
                 "GuardianStatusOverlayPresentation.axaml",
@@ -1350,11 +1352,11 @@ public sealed class OverlayPresentationContractTests
             }
         )
         {
-            var markup = File.ReadAllText(Path.Combine(desktop, fileName));
+            string markup = File.ReadAllText(Path.Combine(desktop, fileName));
             Assert.Contains("general-header-rule", markup);
         }
 
-        var guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
+        string guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
         Assert.Contains("Classes=\"guardian-title\"", guardianSite);
         Assert.DoesNotContain("Classes=\"overlay-header\"", guardianSite);
     }

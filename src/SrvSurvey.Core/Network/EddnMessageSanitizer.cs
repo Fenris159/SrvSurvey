@@ -189,14 +189,14 @@ internal static class EddnMessageSanitizer
     {
         ArgumentNullException.ThrowIfNull(raw);
 
-        var eventName = raw.Value<string>(EventKey);
+        string? eventName = raw.Value<string>(EventKey);
         if (eventName is not (LocationEvent or FsdJumpEvent or CarrierJumpEvent))
         {
             return null;
         }
 
-        var systemName = raw.Value<string>(StarSystemProperty);
-        var systemAddress = raw.Value<long?>(SystemAddressProperty);
+        string? systemName = raw.Value<string>(StarSystemProperty);
+        long? systemAddress = raw.Value<long?>(SystemAddressProperty);
         var position = raw[StarPosProperty] as JArray;
         if (
             string.IsNullOrWhiteSpace(systemName)
@@ -222,7 +222,7 @@ internal static class EddnMessageSanitizer
         ArgumentNullException.ThrowIfNull(context);
 
         prepared = null;
-        var eventName = raw.Value<string>(EventKey);
+        string? eventName = raw.Value<string>(EventKey);
         if (string.IsNullOrWhiteSpace(eventName))
         {
             reason = "the journal event name was missing";
@@ -234,7 +234,16 @@ internal static class EddnMessageSanitizer
             return tryBuildGenericJournal(raw, context, out prepared, out reason);
         }
 
-        if (!tryBuildSpecificJournalMessage(eventName, raw, context, out var message, out var schema, out reason))
+        if (
+            !tryBuildSpecificJournalMessage(
+                eventName,
+                raw,
+                context,
+                out JObject? message,
+                out string? schema,
+                out reason
+            )
+        )
         {
             return false;
         }
@@ -347,7 +356,7 @@ internal static class EddnMessageSanitizer
 
     private static void FillCodexBodyContext(JObject message, EddnMessageContext context)
     {
-        var bodyNamesAgree = BodyNamesAgree(context);
+        bool bodyNamesAgree = BodyNamesAgree(context);
         TryFillCodexBodyName(message, context, bodyNamesAgree);
         TryFillCodexBodyId(message, context, bodyNamesAgree);
     }
@@ -639,7 +648,7 @@ internal static class EddnMessageSanitizer
         ArgumentNullException.ThrowIfNull(context);
 
         prepared = null;
-        var eventName = companion.Value<string>(EventKey);
+        string? eventName = companion.Value<string>(EventKey);
         JObject message;
         string schema;
         switch (eventName)
@@ -708,7 +717,7 @@ internal static class EddnMessageSanitizer
         }
 
         var signals = new JArray();
-        foreach (var raw in pendingSignals)
+        foreach (JObject raw in pendingSignals)
         {
             if (
                 raw.Value<long?>(SystemAddressProperty) != location.systemAddress
@@ -718,7 +727,7 @@ internal static class EddnMessageSanitizer
                 continue;
             }
 
-            var signal = select(
+            JObject signal = select(
                 raw,
                 TimestampKey,
                 SignalNameKey,
@@ -769,7 +778,7 @@ internal static class EddnMessageSanitizer
     )
     {
         prepared = null;
-        var eventName = raw.Value<string>(EventKey)!;
+        string eventName = raw.Value<string>(EventKey)!;
         if (
             !hasMatchingLocation(
                 raw,
@@ -837,7 +846,7 @@ internal static class EddnMessageSanitizer
     private static JObject buildCommodity(JObject source, EddnMessageContext context)
     {
         var commodities = new List<JObject>();
-        foreach (var item in source[ItemsKey] as JArray ?? [])
+        foreach (JToken item in source[ItemsKey] as JArray ?? [])
         {
             if (
                 item is not JObject commodity
@@ -850,7 +859,7 @@ internal static class EddnMessageSanitizer
                 continue;
             }
 
-            var name = canonicalCommodity(commodity.Value<string>(NameSourceProperty));
+            string? name = canonicalCommodity(commodity.Value<string>(NameSourceProperty));
             if (string.IsNullOrWhiteSpace(name))
             {
                 continue;
@@ -872,7 +881,7 @@ internal static class EddnMessageSanitizer
                 continue;
             }
             var statusFlags = new JArray();
-            foreach (var flag in CommodityStatusFlags.Where(flag => commodity.Value<bool?>(flag) == true))
+            foreach (string? flag in CommodityStatusFlags.Where(flag => commodity.Value<bool?>(flag) == true))
             {
                 statusFlags.Add(flag);
             }
@@ -894,7 +903,7 @@ internal static class EddnMessageSanitizer
             [TimestampKey] = source[TimestampKey]?.DeepClone(),
             [CommoditiesProperty] = sorted,
         };
-        var access = source.Value<string>(CarrierDockingAccessSourceProperty);
+        string? access = source.Value<string>(CarrierDockingAccessSourceProperty);
         if (!string.IsNullOrWhiteSpace(access))
         {
             message[CarrierDockingAccessProperty] = access;
@@ -908,15 +917,15 @@ internal static class EddnMessageSanitizer
     private static JObject buildOutfitting(JObject source, EddnMessageContext context)
     {
         var modules = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in source[ItemsKey] as JArray ?? [])
+        foreach (JToken item in source[ItemsKey] as JArray ?? [])
         {
             if (item is not JObject module)
             {
                 continue;
             }
 
-            var name = module.Value<string>(NameProperty);
-            var sku = module.Value<string>("sku") ?? module.Value<string>("SKU");
+            string? name = module.Value<string>(NameProperty);
+            string? sku = module.Value<string>("sku") ?? module.Value<string>("SKU");
             if (
                 string.IsNullOrWhiteSpace(name)
                 || !moduleName.IsMatch(name)
@@ -945,14 +954,14 @@ internal static class EddnMessageSanitizer
     private static JObject buildShipyard(JObject source, EddnMessageContext context)
     {
         var ships = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in source["PriceList"] as JArray ?? [])
+        foreach (JToken item in source["PriceList"] as JArray ?? [])
         {
             if (item is not JObject ship)
             {
                 continue;
             }
 
-            var type = ship.Value<string>("ShipType");
+            string? type = ship.Value<string>("ShipType");
             if (!string.IsNullOrWhiteSpace(type))
             {
                 ships.Add(type);
@@ -980,14 +989,14 @@ internal static class EddnMessageSanitizer
     private static JObject buildFleetCarrierMaterials(JObject source, EddnMessageContext context)
     {
         var items = new JArray();
-        foreach (var item in source[ItemsKey] as JArray ?? [])
+        foreach (JToken item in source[ItemsKey] as JArray ?? [])
         {
             if (item is not JObject material)
             {
                 continue;
             }
 
-            var output = select(
+            JObject output = select(
                 material,
                 IdProperty,
                 NameProperty,
@@ -1007,7 +1016,14 @@ internal static class EddnMessageSanitizer
             }
         }
 
-        var message = select(source, TimestampKey, EventKey, MarketIdProperty, CarrierNameProperty, CarrierIdProperty);
+        JObject message = select(
+            source,
+            TimestampKey,
+            EventKey,
+            MarketIdProperty,
+            CarrierNameProperty,
+            CarrierIdProperty
+        );
         message[ItemsKey] = items;
         addFlags(message, context);
         return message;
@@ -1016,14 +1032,14 @@ internal static class EddnMessageSanitizer
     private static JObject buildNavRoute(JObject source, EddnMessageContext context)
     {
         var route = new JArray();
-        foreach (var item in source[RouteProperty] as JArray ?? [])
+        foreach (JToken item in source[RouteProperty] as JArray ?? [])
         {
             if (item is not JObject waypoint)
             {
                 continue;
             }
 
-            var output = select(
+            JObject output = select(
                 waypoint,
                 StarSystemProperty,
                 SystemAddressProperty,
@@ -1036,7 +1052,7 @@ internal static class EddnMessageSanitizer
             }
         }
 
-        var message = select(source, TimestampKey, EventKey);
+        JObject message = select(source, TimestampKey, EventKey);
         message[RouteProperty] = route;
         addFlags(message, context);
         return message;
@@ -1044,7 +1060,7 @@ internal static class EddnMessageSanitizer
 
     private static bool hasMatchingLocation(JObject raw, EddnMessageContext context, string? systemNameField = null)
     {
-        var location = context.location;
+        EddnLocationContext? location = context.location;
         if (location == null || raw.Value<long?>(SystemAddressProperty) != location.systemAddress)
         {
             return false;
@@ -1055,7 +1071,7 @@ internal static class EddnMessageSanitizer
             return true;
         }
 
-        var eventName = raw.Value<string>(systemNameField);
+        string? eventName = raw.Value<string>(systemNameField);
         return !string.IsNullOrWhiteSpace(eventName) && eventName.Equals(location.systemName, StringComparison.Ordinal);
     }
 
@@ -1179,7 +1195,7 @@ internal static class EddnMessageSanitizer
             _ => [],
         };
 
-        var missing = required.Where(name => !hasValue(message, name)).ToArray();
+        string[] missing = required.Where(name => !hasValue(message, name)).ToArray();
         if (missing.Length > 0)
         {
             reason = "required field(s) were missing: " + string.Join(", ", missing);
@@ -1198,7 +1214,7 @@ internal static class EddnMessageSanitizer
 
     private static bool hasValidCodexStrings(JObject message, out string reason)
     {
-        foreach (var field in CodexRequiredProperties)
+        foreach (string field in CodexRequiredProperties)
         {
             if (message[field]?.Type == JTokenType.String && string.IsNullOrWhiteSpace(message.Value<string>(field)))
             {
@@ -1222,7 +1238,7 @@ internal static class EddnMessageSanitizer
 
     private static bool hasValue(JObject obj, string name)
     {
-        var value = obj[name];
+        JToken? value = obj[name];
         return value != null
             && value.Type != JTokenType.Null
             && (value.Type != JTokenType.String || !string.IsNullOrWhiteSpace(value.Value<string>()));
@@ -1231,7 +1247,7 @@ internal static class EddnMessageSanitizer
     private static JObject select(JObject source, params string[] names)
     {
         var result = new JObject();
-        foreach (var name in names)
+        foreach (string name in names)
         {
             if (source[name] != null)
             {
@@ -1268,7 +1284,7 @@ internal static class EddnMessageSanitizer
             return null;
         }
 
-        var match = canonicalCommodityName.Match(value);
+        Match match = canonicalCommodityName.Match(value);
         return match.Success ? match.Groups[1].Value : value;
     }
 
@@ -1278,7 +1294,7 @@ internal static class EddnMessageSanitizer
             value,
             match =>
             {
-                var lower = match.Value.ToLowerInvariant();
+                string lower = match.Value.ToLowerInvariant();
                 return char.ToUpperInvariant(lower[0]) + lower[1..];
             }
         );
@@ -1291,7 +1307,7 @@ internal static class EddnMessageSanitizer
             return;
         }
 
-        foreach (var faction in factions.OfType<JObject>())
+        foreach (JObject faction in factions.OfType<JObject>())
         {
             remove(faction, "HappiestSystem", "HomeSystem", "MyReputation", "SquadronFaction");
         }
@@ -1299,7 +1315,7 @@ internal static class EddnMessageSanitizer
 
     private static void remove(JObject message, params string[] names)
     {
-        foreach (var name in names)
+        foreach (string name in names)
         {
             message.Remove(name);
         }
@@ -1309,7 +1325,7 @@ internal static class EddnMessageSanitizer
     {
         if (token is JObject message)
         {
-            foreach (var property in message.Properties().ToArray())
+            foreach (JProperty? property in message.Properties().ToArray())
             {
                 if (property.Value.Type == JTokenType.Null)
                 {
@@ -1323,7 +1339,7 @@ internal static class EddnMessageSanitizer
         }
         else if (token is JArray array)
         {
-            foreach (var item in array.ToArray())
+            foreach (JToken? item in array.ToArray())
             {
                 if (item.Type == JTokenType.Null)
                 {
@@ -1341,7 +1357,7 @@ internal static class EddnMessageSanitizer
     {
         if (token is JObject obj)
         {
-            foreach (var property in obj.Properties().ToArray())
+            foreach (JProperty? property in obj.Properties().ToArray())
             {
                 if (property.Name.EndsWith("_Localised", StringComparison.Ordinal))
                 {
@@ -1355,7 +1371,7 @@ internal static class EddnMessageSanitizer
         }
         else if (token is JArray array)
         {
-            foreach (var item in array)
+            foreach (JToken item in array)
             {
                 removeLocalised(item);
             }

@@ -10,7 +10,7 @@ public sealed class ReplayControllerMarkupTests
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.ReplayController", "MainWindow.axaml")
         );
-        var speedPicker = document
+        XElement speedPicker = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ComboBox"

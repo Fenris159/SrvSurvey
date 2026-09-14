@@ -11,7 +11,7 @@ public sealed class JournalInspectorViewModelTests
     public void RetainsNewestOneHundredTwentyEvents()
     {
         var viewModel = new JournalInspectorViewModel();
-        var events = Enumerable
+        JournalEventEnvelope[] events = Enumerable
             .Range(0, 125)
             .Select(index => Event($$"""{"timestamp":"2026-07-25T12:00:00Z","event":"Event{{index}}"}"""))
             .ToArray();
@@ -29,8 +29,8 @@ public sealed class JournalInspectorViewModelTests
     {
         var viewModel = new JournalInspectorViewModel();
         viewModel.ApplyUpdate([Event("{\"event\":\"Initial0\"}"), Event("{\"event\":\"Initial1\"}")], null);
-        var collection = viewModel.Events;
-        var retainedRow = viewModel.Events[1];
+        IReadOnlyList<JournalInspectorEventViewModel> collection = viewModel.Events;
+        JournalInspectorEventViewModel retainedRow = viewModel.Events[1];
         viewModel.SelectedEvent = retainedRow;
         var changes = new List<NotifyCollectionChangedEventArgs>();
         ((INotifyCollectionChanged)collection).CollectionChanged += (_, eventArgs) => changes.Add(eventArgs);
@@ -158,7 +158,7 @@ public sealed class JournalInspectorViewModelTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return result!;
     }
 }

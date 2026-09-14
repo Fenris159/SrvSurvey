@@ -53,7 +53,7 @@ internal sealed record FrontierCommanderIdentity(string FrontierId, string Comma
 {
     public static FrontierCommanderIdentity? Create(string? frontierId, string? commanderName)
     {
-        var normalizedId = frontierId?.Trim().ToUpperInvariant();
+        string? normalizedId = frontierId?.Trim().ToUpperInvariant();
         if (
             normalizedId is null
             || normalizedId.Length < 2
@@ -148,11 +148,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
     public static FrontierAccountService CreateCurrent(string dataDirectory)
     {
         var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-        var version = typeof(FrontierAccountService).Assembly.GetName().Version?.ToString(3) ?? "unknown";
+        string version = typeof(FrontierAccountService).Assembly.GetName().Version?.ToString(3) ?? "unknown";
         client.DefaultRequestHeaders.UserAgent.ParseAdd(
             $"SrvSurvey/{version} (+https://github.com/nithomson/SrvSurvey)"
         );
-        var inaraApiKey = InaraApplicationKeyProvider.GetApplicationKey();
+        string? inaraApiKey = InaraApplicationKeyProvider.GetApplicationKey();
         IInaraCommunityGoalClient? inaraCommunityGoals = string.IsNullOrWhiteSpace(inaraApiKey)
             ? null
             : new InaraCommunityGoalClient(
@@ -185,7 +185,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
     )
     {
         ThrowIfDisposed();
-        var document = activeCommander is { } commander
+        FrontierCredentialDocument? document = activeCommander is { } commander
             ? await LoadAndMigrateLegacyAsync(commander, cancellationToken).ConfigureAwait(false)
             : await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
         if (document is null)
@@ -193,7 +193,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
             return [];
         }
 
-        var linked = CollectLinkedCommanderIds(document);
+        Dictionary<string, string> linked = CollectLinkedCommanderIds(document);
         await ResolveLinkedCommanderNamesAsync(linked, cancellationToken).ConfigureAwait(false);
         return linked
             .Select(pair => new FrontierLinkedCommander(
@@ -208,7 +208,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
     private Dictionary<string, string> CollectLinkedCommanderIds(FrontierCredentialDocument document)
     {
         var linked = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var account in document.Accounts.Where(pair => pair.Value.IsLinked))
+        foreach (
+            KeyValuePair<string, FrontierAccountCredential> account in document.Accounts.Where(pair =>
+                pair.Value.IsLinked
+            )
+        )
         {
             var identity = FrontierCommanderIdentity.Create(account.Key, null);
             if (identity is not null)
@@ -236,12 +240,14 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        foreach (var frontierId in linked.Keys.ToArray())
+        foreach (string? frontierId in linked.Keys.ToArray())
         {
-            var identity = FrontierCommanderIdentity.Create(frontierId, null)!;
+            FrontierCommanderIdentity identity = FrontierCommanderIdentity.Create(frontierId, null)!;
             try
             {
-                var snapshot = await CacheFor(identity).LoadAsync(cancellationToken).ConfigureAwait(false);
+                FrontierAccountSnapshot? snapshot = await CacheFor(identity)
+                    .LoadAsync(cancellationToken)
+                    .ConfigureAwait(false);
                 if (snapshot is not null)
                 {
                     linked[frontierId] = snapshot.CommanderName;
@@ -267,21 +273,22 @@ public sealed class FrontierAccountService : IFrontierAccountService
     public async Task<FrontierAccountState> GetStateAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        var commander = activeCommander;
+        FrontierCommanderIdentity? commander = activeCommander;
         if (commander is null)
         {
             return new FrontierAccountState(false, null, null);
         }
 
-        var document = await LoadAndMigrateLegacyAsync(commander, cancellationToken).ConfigureAwait(false);
-        var loaded = FindCredential(document, commander);
+        FrontierCredentialDocument document = await LoadAndMigrateLegacyAsync(commander, cancellationToken)
+            .ConfigureAwait(false);
+        LoadedCredential? loaded = FindCredential(document, commander);
         if (loaded?.Credential.IsLinked != true)
         {
             return new FrontierAccountState(false, null, null);
         }
 
         FrontierAccountSnapshot? snapshot = null;
-        var cache = CacheFor(commander);
+        FrontierProfileCacheStore cache = CacheFor(commander);
         try
         {
             snapshot = await cache.LoadAsync(cancellationToken).ConfigureAwait(false);
@@ -315,14 +322,14 @@ public sealed class FrontierAccountService : IFrontierAccountService
     public async Task<FrontierAccountSnapshot> ConnectAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        var commander = RequireActiveCommander();
+        FrontierCommanderIdentity commander = RequireActiveCommander();
         EnsureCommanderNameIsAvailable(commander);
         await registerProtocol(cancellationToken).ConfigureAwait(false);
 
-        var now = utcNow();
-        var verifier = Base64Url(RandomNumberGenerator.GetBytes(48));
-        var challenge = Base64Url(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
-        var state = Base64Url(RandomNumberGenerator.GetBytes(32));
+        DateTimeOffset now = utcNow();
+        string verifier = Base64Url(RandomNumberGenerator.GetBytes(48));
+        string challenge = Base64Url(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
+        string state = Base64Url(RandomNumberGenerator.GetBytes(32));
         var pending = new FrontierPendingAuthorization(
             state,
             verifier,
@@ -332,7 +339,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         );
         await SavePendingAuthorizationAsync(pending, cancellationToken).ConfigureAwait(false);
 
-        var authorizationUri = BuildAuthorizationUri(challenge, state);
+        Uri authorizationUri = BuildAuthorizationUri(challenge, state);
         try
         {
             await openBrowser(authorizationUri, cancellationToken).ConfigureAwait(false);
@@ -349,9 +356,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
     public async Task CancelConnectionAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        var commander = activeCommander;
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
+        FrontierCommanderIdentity? commander = activeCommander;
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument? document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
         if (
             document?.PendingAuthorization is not { } pending
             || commander is not null
@@ -400,22 +409,25 @@ public sealed class FrontierAccountService : IFrontierAccountService
     )
     {
         EnsureCommanderNameIsAvailable(commander);
-        var cache = CacheFor(commander);
-        await using var refreshLease = await cache.AcquireRefreshLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document = await LoadAndMigrateLegacyAsync(commander, cancellationToken).ConfigureAwait(false);
-        var loaded = FindCredential(document, commander);
+        FrontierProfileCacheStore cache = CacheFor(commander);
+        await using IAsyncDisposable refreshLease = await cache
+            .AcquireRefreshLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument document = await LoadAndMigrateLegacyAsync(commander, cancellationToken)
+            .ConfigureAwait(false);
+        LoadedCredential? loaded = FindCredential(document, commander);
         if (loaded?.Credential.IsLinked != true)
         {
             throw new InvalidOperationException("Connect your Frontier account before refreshing this page.");
         }
 
-        var credential = loaded.Credential;
+        FrontierAccountCredential credential = loaded.Credential;
 
-        var now = utcNow();
-        var lastRequest = Latest(credential.LastCapiRefreshAt, credential.LastCapiAttemptAt);
+        DateTimeOffset now = utcNow();
+        DateTimeOffset? lastRequest = Latest(credential.LastCapiRefreshAt, credential.LastCapiAttemptAt);
         if (lastRequest is { } priorRequest)
         {
-            var remaining = MinimumRefreshInterval - (now - priorRequest);
+            TimeSpan remaining = MinimumRefreshInterval - (now - priorRequest);
             if (remaining > TimeSpan.Zero)
             {
                 throw new FrontierRefreshCooldownException(remaining);
@@ -438,7 +450,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
             await cache.ClearAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        var profile = await RequestCapiAsync(
+        CapiResponse profile = await RequestCapiAsync(
                 ProfileEndpoint,
                 commander,
                 credential,
@@ -448,8 +460,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
             )
             .ConfigureAwait(false);
         credential = profile.Credential;
-        var fetchedAt = utcNow();
-        var snapshot = FrontierCapiSnapshotParser.Parse(
+        DateTimeOffset fetchedAt = utcNow();
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(
             profile.Content ?? throw new InvalidDataException("Frontier did not return commander profile data."),
             null,
             fetchedAt
@@ -470,11 +482,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
             loaded = new LoadedCredential(credential, false);
         }
 
-        var carrierDue =
+        bool carrierDue =
             forceCarrierRefresh
             || previousSnapshot?.CarrierFetchedAt is not { } carrierFetched
             || now - carrierFetched >= MinimumCarrierRefreshInterval;
-        var carrier = carrierDue
+        OptionalCapiResponse carrier = carrierDue
             ? await TryRequestOptionalCapiAsync(
                     CarrierEndpoint,
                     commander,
@@ -485,7 +497,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 .ConfigureAwait(false)
             : OptionalCapiResponse.Skipped(credential);
         credential = carrier.Credential;
-        var market = await TryRequestOptionalCapiAsync(
+        OptionalCapiResponse market = await TryRequestOptionalCapiAsync(
                 MarketEndpoint,
                 commander,
                 credential,
@@ -494,7 +506,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
             )
             .ConfigureAwait(false);
         credential = market.Credential;
-        var shipyard = await TryRequestOptionalCapiAsync(
+        OptionalCapiResponse shipyard = await TryRequestOptionalCapiAsync(
                 ShipyardEndpoint,
                 commander,
                 credential,
@@ -503,7 +515,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
             )
             .ConfigureAwait(false);
         credential = shipyard.Credential;
-        var communityGoals = await TryRequestOptionalCapiAsync(
+        OptionalCapiResponse communityGoals = await TryRequestOptionalCapiAsync(
                 CommunityGoalsEndpoint,
                 commander,
                 credential,
@@ -543,7 +555,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
     {
         try
         {
-            var response = await RequestCapiAsync(
+            CapiResponse response = await RequestCapiAsync(
                     endpoint,
                     commander,
                     credential,
@@ -557,8 +569,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
         catch (HttpRequestException exception)
             when (exception.StatusCode is not HttpStatusCode.Unauthorized and not HttpStatusCode.UnprocessableEntity)
         {
-            var latestDocument = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
-            var latest = FindCredential(latestDocument, commander);
+            FrontierCredentialDocument? latestDocument = await credentials
+                .LoadAsync(cancellationToken)
+                .ConfigureAwait(false);
+            LoadedCredential? latest = FindCredential(latestDocument, commander);
             return new OptionalCapiResponse(
                 latest?.Credential.IsLinked == true ? latest.Credential : credential,
                 null,
@@ -667,8 +681,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
         DateTimeOffset fetchedAt
     )
     {
-        var endpoint = FrontierCapiSnapshotParser.ParseCarrierEndpoint(content, fetchedAt);
-        var commanderReputation = MergeReputation(
+        FrontierCarrierEndpointSnapshot endpoint = FrontierCapiSnapshotParser.ParseCarrierEndpoint(content, fetchedAt);
+        FrontierReputationSnapshot[] commanderReputation = MergeReputation(
             previous?.CommanderReputation,
             snapshot.CommanderReputation,
             endpoint.CommanderReputation
@@ -846,7 +860,9 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
         try
         {
-            var result = await inaraCommunityGoals.GetRecentAsync(cancellationToken).ConfigureAwait(false);
+            InaraCommunityGoalsResult result = await inaraCommunityGoals
+                .GetRecentAsync(cancellationToken)
+                .ConfigureAwait(false);
             return snapshot with
             {
                 CommunityGoals = InaraCommunityGoalEnricher.Enrich(snapshot.CommunityGoals, result),
@@ -874,7 +890,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
     public async Task UnlinkAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        var commander = RequireActiveCommander();
+        FrontierCommanderIdentity commander = RequireActiveCommander();
         await RemoveAccountCredentialAsync(commander, cancellationToken).ConfigureAwait(false);
         await CacheFor(commander).ClearAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -883,10 +899,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(callback);
-        var document =
+        FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false)
             ?? throw new InvalidOperationException("No Frontier authorization is waiting for this callback.");
-        var pending =
+        FrontierPendingAuthorization pending =
             document.PendingAuthorization
             ?? throw new InvalidOperationException("No Frontier authorization is waiting for this callback.");
         if (!FrontierOAuthCallback.FixedTimeEquals(callback.State, pending.State))
@@ -896,7 +912,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
             );
         }
 
-        var commander =
+        FrontierCommanderIdentity commander =
             FrontierCommanderIdentity.Create(pending.FrontierId, pending.CommanderName)
             ?? throw new InvalidOperationException(
                 "This Frontier authorization was started by an older application version. Return to SrvSurvey and connect the active commander again."
@@ -904,7 +920,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
         if (!string.IsNullOrWhiteSpace(callback.Error))
         {
-            var detail = string.IsNullOrWhiteSpace(callback.ErrorDescription)
+            string detail = string.IsNullOrWhiteSpace(callback.ErrorDescription)
                 ? callback.Error
                 : callback.ErrorDescription;
             await SaveCallbackFailureAsync(pending.State, detail, cancellationToken).ConfigureAwait(false);
@@ -924,7 +940,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
         try
         {
-            var tokens = await RequestTokensAsync(
+            FrontierAccountCredential tokens = await RequestTokensAsync(
                     new Dictionary<string, string>
                     {
                         ["redirect_uri"] = FrontierOAuthCallback.RedirectUri,
@@ -967,7 +983,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        var response = await SendCapiAsync(endpoint, credential, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage response = await SendCapiAsync(endpoint, credential, cancellationToken)
+            .ConfigureAwait(false);
         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.UnprocessableEntity)
         {
             response.Dispose();
@@ -991,11 +1008,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
             if (!response.IsSuccessStatusCode)
             {
-                var detail = await ReadBoundedStringAsync(response.Content, 4096, cancellationToken)
+                string detail = await ReadBoundedStringAsync(response.Content, 4096, cancellationToken)
                     .ConfigureAwait(false);
                 if ((int)response.StatusCode == 429)
                 {
-                    var retry = response.Headers.RetryAfter?.Delta;
+                    TimeSpan? retry = response.Headers.RetryAfter?.Delta;
                     throw new InvalidOperationException(
                         retry is null
                             ? "Frontier is rate limiting requests. Please wait before trying again."
@@ -1011,7 +1028,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 );
             }
 
-            var content = await ReadBoundedStringAsync(response.Content, MaximumCapiResponseBytes, cancellationToken)
+            string content = await ReadBoundedStringAsync(response.Content, MaximumCapiResponseBytes, cancellationToken)
                 .ConfigureAwait(false);
             return new CapiResponse(credential, content);
         }
@@ -1028,7 +1045,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         {
             if (lastCapiRequestAt is { } prior)
             {
-                var delay = MinimumCapiRequestSpacing - (utcNow() - prior);
+                TimeSpan delay = MinimumCapiRequestSpacing - (utcNow() - prior);
                 if (delay > TimeSpan.Zero)
                 {
                     await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
@@ -1076,7 +1093,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
         try
         {
-            var refreshed = await RequestTokensAsync(
+            FrontierAccountCredential refreshed = await RequestTokensAsync(
                     new Dictionary<string, string>
                     {
                         ["grant_type"] = "refresh_token",
@@ -1120,14 +1137,14 @@ public sealed class FrontierAccountService : IFrontierAccountService
         {
             Content = new FormUrlEncodedContent(values),
         };
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        var json = await ReadBoundedStringAsync(response.Content, MaximumTokenResponseBytes, cancellationToken)
+        string json = await ReadBoundedStringAsync(response.Content, MaximumTokenResponseBytes, cancellationToken)
             .ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            var detail = TryReadTokenError(json);
+            string detail = TryReadTokenError(json);
             throw new HttpRequestException(
                 $"Frontier token request failed ({(int)response.StatusCode}): "
                     + FirstNonEmpty(detail, response.ReasonPhrase, "Unknown response"),
@@ -1137,17 +1154,21 @@ public sealed class FrontierAccountService : IFrontierAccountService
         }
 
         using var document = JsonDocument.Parse(json);
-        var root = document.RootElement;
-        var accessToken = root.TryGetProperty("access_token", out var access) ? access.GetString() : null;
+        JsonElement root = document.RootElement;
+        string? accessToken = root.TryGetProperty("access_token", out JsonElement access) ? access.GetString() : null;
         if (string.IsNullOrWhiteSpace(accessToken))
         {
             throw new InvalidDataException("Frontier did not return an access token.");
         }
 
-        var refreshToken = root.TryGetProperty("refresh_token", out var refresh) ? refresh.GetString() : null;
-        var tokenType = root.TryGetProperty("token_type", out var type) ? type.GetString() : null;
-        var expiresIn =
-            root.TryGetProperty("expires_in", out var expires) && expires.TryGetInt32(out var seconds) ? seconds : 0;
+        string? refreshToken = root.TryGetProperty("refresh_token", out JsonElement refresh)
+            ? refresh.GetString()
+            : null;
+        string? tokenType = root.TryGetProperty("token_type", out JsonElement type) ? type.GetString() : null;
+        int expiresIn =
+            root.TryGetProperty("expires_in", out JsonElement expires) && expires.TryGetInt32(out int seconds)
+                ? seconds
+                : 0;
         return previous with
         {
             AccessToken = accessToken,
@@ -1185,7 +1206,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         FrontierCommanderIdentity commander
     )
     {
-        var scoped = GetAccount(document, commander.FrontierId);
+        FrontierAccountCredential? scoped = GetAccount(document, commander.FrontierId);
         if (scoped?.IsLinked == true)
         {
             return new LoadedCredential(scoped, false);
@@ -1212,7 +1233,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        var document =
+        FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false) ?? new FrontierCredentialDocument();
         document = await MigrateMiskeyedCapiAccountsAsync(commander, document, cancellationToken).ConfigureAwait(false);
         if (!document.IsLinked || GetAccount(document, commander.FrontierId)?.IsLinked == true || legacyCache is null)
@@ -1257,14 +1278,18 @@ public sealed class FrontierAccountService : IFrontierAccountService
             return document;
         }
 
-        var candidates = await CollectMiskeyedCandidatesAsync(commander, document, cancellationToken)
+        List<(string FrontierId, FrontierAccountSnapshot Snapshot)> candidates = await CollectMiskeyedCandidatesAsync(
+                commander,
+                document,
+                cancellationToken
+            )
             .ConfigureAwait(false);
         if (candidates.Count == 0)
         {
             return document;
         }
 
-        var migratedAliases = await RelinkMiskeyedAccountsAsync(commander, candidates, cancellationToken)
+        HashSet<string> migratedAliases = await RelinkMiskeyedAccountsAsync(commander, candidates, cancellationToken)
             .ConfigureAwait(false);
         if (migratedAliases.Count == 0)
         {
@@ -1283,7 +1308,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
     )
     {
         var candidates = new List<(string FrontierId, FrontierAccountSnapshot Snapshot)>();
-        foreach (var account in document.Accounts.Where(pair => IsForeignLinkedAccount(pair, commander.FrontierId)))
+        foreach (
+            KeyValuePair<string, FrontierAccountCredential> account in document.Accounts.Where(pair =>
+                IsForeignLinkedAccount(pair, commander.FrontierId)
+            )
+        )
         {
             var candidate = FrontierCommanderIdentity.Create(account.Key, null);
             if (candidate is null)
@@ -1291,7 +1320,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 continue;
             }
 
-            var snapshot = await TryLoadCandidateSnapshotAsync(candidate, cancellationToken).ConfigureAwait(false);
+            FrontierAccountSnapshot? snapshot = await TryLoadCandidateSnapshotAsync(candidate, cancellationToken)
+                .ConfigureAwait(false);
             if (!IsMiskeyedCandidate(commander, candidate, snapshot))
             {
                 continue;
@@ -1344,14 +1374,16 @@ public sealed class FrontierAccountService : IFrontierAccountService
     )
     {
         var migratedAliases = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document =
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false) ?? new FrontierCredentialDocument();
-        var accounts = CopyAccounts(document);
-        var target = GetAccount(document, commander.FrontierId);
-        foreach (var candidateFrontierId in candidates.Select(candidate => candidate.FrontierId))
+        Dictionary<string, FrontierAccountCredential> accounts = CopyAccounts(document);
+        FrontierAccountCredential? target = GetAccount(document, commander.FrontierId);
+        foreach (string? candidateFrontierId in candidates.Select(candidate => candidate.FrontierId))
         {
-            if (!accounts.TryGetValue(candidateFrontierId, out var source) || !source.IsLinked)
+            if (!accounts.TryGetValue(candidateFrontierId, out FrontierAccountCredential? source) || !source.IsLinked)
             {
                 continue;
             }
@@ -1393,7 +1425,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
             // Replace the malformed active cache with the verified alias below.
         }
 
-        var bestSnapshot = candidates
+        FrontierAccountSnapshot bestSnapshot = candidates
             .Where(candidate => migratedAliases.Contains(candidate.FrontierId))
             .Select(candidate => candidate.Snapshot)
             .Append(activeSnapshot)
@@ -1401,7 +1433,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
             .Cast<FrontierAccountSnapshot>()
             .OrderByDescending(snapshot => snapshot.FetchedAt)
             .First();
-        foreach (var candidate in candidates.Where(candidate => migratedAliases.Contains(candidate.FrontierId)))
+        foreach (
+            (string FrontierId, FrontierAccountSnapshot Snapshot) candidate in candidates.Where(candidate =>
+                migratedAliases.Contains(candidate.FrontierId)
+            )
+        )
         {
             await CacheFor(FrontierCommanderIdentity.Create(candidate.FrontierId, candidate.Snapshot.CommanderName)!)
                 .ClearAsync(cancellationToken)
@@ -1426,8 +1462,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document =
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false) ?? new FrontierCredentialDocument();
         if (document.PendingAuthorization is { } active && utcNow() - active.StartedAt < AuthorizationTimeout)
         {
@@ -1453,8 +1491,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document =
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false)
             ?? throw new InvalidOperationException("No Frontier authorization is waiting for this callback.");
         if (
@@ -1483,8 +1523,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document =
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false) ?? new FrontierCredentialDocument();
         document = isLegacy
             ? WithLegacyCredential(document, credential)
@@ -1499,9 +1541,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        await using (var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false))
+        await using (
+            IAsyncDisposable lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false)
+        )
         {
-            var document =
+            FrontierCredentialDocument document =
                 await credentials.LoadAsync(cancellationToken).ConfigureAwait(false)
                 ?? new FrontierCredentialDocument();
             document = ClearLegacyCredential(WithAccount(document, commander.FrontierId, credential));
@@ -1542,8 +1586,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument? document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
         if (document?.IsLinked != true)
         {
             return;
@@ -1566,16 +1612,18 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument? document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
         if (document is null)
         {
             return;
         }
 
-        var accounts = CopyAccounts(document);
+        Dictionary<string, FrontierAccountCredential> accounts = CopyAccounts(document);
         foreach (
-            var key in accounts
+            string? key in accounts
                 .Keys.Where(key => string.Equals(key, commander.FrontierId, StringComparison.OrdinalIgnoreCase))
                 .ToArray()
         )
@@ -1598,8 +1646,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
     private async Task ClearLegacyCredentialAsync(CancellationToken cancellationToken)
     {
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument? document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
         if (document is null)
         {
             return;
@@ -1628,7 +1678,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         FrontierAccountCredential credential
     )
     {
-        var accounts = CopyAccounts(document);
+        Dictionary<string, FrontierAccountCredential> accounts = CopyAccounts(document);
         accounts[frontierId] = credential;
         return document with { Version = 2, Accounts = accounts };
     }
@@ -1667,11 +1717,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
     private async Task WaitForAuthorizationAsync(string state, CancellationToken cancellationToken)
     {
-        var deadline = utcNow() + AuthorizationTimeout;
+        DateTimeOffset deadline = utcNow() + AuthorizationTimeout;
         while (utcNow() < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
+            FrontierCredentialDocument? document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
             if (
                 document?.AuthorizationResult is { } result
                 && FrontierOAuthCallback.FixedTimeEquals(result.State, state)
@@ -1701,8 +1751,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
     private async Task ClearPendingAuthorizationAsync(string state, CancellationToken cancellationToken)
     {
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument? document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
         if (
             document?.PendingAuthorization is not { } pending
             || !FrontierOAuthCallback.FixedTimeEquals(pending.State, state)
@@ -1718,8 +1770,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
     private async Task SaveCallbackFailureAsync(string state, string error, CancellationToken cancellationToken)
     {
-        await using var lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false);
-        var document =
+        await using IAsyncDisposable lease = await credentials
+            .AcquireLeaseAsync(cancellationToken)
+            .ConfigureAwait(false);
+        FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false) ?? new FrontierCredentialDocument();
         if (
             document.PendingAuthorization is not { } pending
@@ -1782,12 +1836,12 @@ public sealed class FrontierAccountService : IFrontierAccountService
             throw new InvalidDataException($"Frontier response exceeded the {maximumBytes:N0}-byte safety limit.");
         }
 
-        await using var input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var output = new MemoryStream();
-        var buffer = new byte[64 * 1024];
+        byte[] buffer = new byte[64 * 1024];
         while (true)
         {
-            var read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            int read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 break;
@@ -1809,10 +1863,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
         try
         {
             using var document = JsonDocument.Parse(json);
-            var root = document.RootElement;
-            foreach (var name in new[] { "error_description", "message", "error" })
+            JsonElement root = document.RootElement;
+            foreach (string? name in new[] { "error_description", "message", "error" })
             {
-                if (root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String)
+                if (root.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String)
                 {
                     return value.GetString() ?? string.Empty;
                 }

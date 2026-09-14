@@ -13,7 +13,7 @@ public sealed class CodexImageCacheTests : IDisposable
     [Fact]
     public async Task DownloadsAtomicallyThenReusesCachedImage()
     {
-        var requestCount = 0;
+        int requestCount = 0;
         using var client = new HttpClient(
             new StubHandler(_ =>
             {
@@ -23,8 +23,8 @@ public sealed class CodexImageCacheTests : IDisposable
         );
         using var cache = new CodexImageCache(temporaryDirectory, client);
 
-        var downloaded = await cache.GetAsync(2310206, "https://example.test/reference.png");
-        var cached = await cache.GetAsync(2310206, "https://example.test/reference.png");
+        CodexImageCacheResult downloaded = await cache.GetAsync(2310206, "https://example.test/reference.png");
+        CodexImageCacheResult cached = await cache.GetAsync(2310206, "https://example.test/reference.png");
 
         Assert.True(downloaded.IsSuccess);
         Assert.False(downloaded.IsFromCache);
@@ -54,9 +54,9 @@ public sealed class CodexImageCacheTests : IDisposable
         );
         using var cache = new CodexImageCache(temporaryDirectory, client);
 
-        var invalid = await cache.GetAsync(1, "file:///tmp/image.png");
-        var missing = await cache.GetAsync(2, "https://example.test/missing.png");
-        var oversized = await cache.GetAsync(3, "https://example.test/oversized.jpg");
+        CodexImageCacheResult invalid = await cache.GetAsync(1, "file:///tmp/image.png");
+        CodexImageCacheResult missing = await cache.GetAsync(2, "https://example.test/missing.png");
+        CodexImageCacheResult oversized = await cache.GetAsync(3, "https://example.test/oversized.jpg");
 
         Assert.False(invalid.IsSuccess);
         Assert.Contains("invalid", invalid.Error, StringComparison.OrdinalIgnoreCase);
@@ -73,7 +73,7 @@ public sealed class CodexImageCacheTests : IDisposable
         using var client = new HttpClient(new BlockingHandler());
         using var cache = new CodexImageCache(temporaryDirectory, client, TimeSpan.FromMilliseconds(25));
 
-        var result = await cache.GetAsync(2310206, "https://example.test/stalled.png");
+        CodexImageCacheResult result = await cache.GetAsync(2310206, "https://example.test/stalled.png");
 
         Assert.False(result.IsSuccess);
         Assert.Contains("timed out", result.Error, StringComparison.OrdinalIgnoreCase);
@@ -83,15 +83,15 @@ public sealed class CodexImageCacheTests : IDisposable
     [Fact]
     public async Task PrefersLocalFloraAndReusesLegacyJpgCacheAcrossUrlExtensions()
     {
-        var cacheDirectory = Path.Combine(temporaryDirectory, "cache");
-        var floraDirectory = Path.Combine(temporaryDirectory, "flora");
+        string cacheDirectory = Path.Combine(temporaryDirectory, "cache");
+        string floraDirectory = Path.Combine(temporaryDirectory, "flora");
         Directory.CreateDirectory(cacheDirectory);
         Directory.CreateDirectory(floraDirectory);
-        var legacyCache = Path.Combine(cacheDirectory, "2310101.jpg");
-        var localImage = Path.Combine(floraDirectory, "aleoida-arcus-yellow.png");
+        string legacyCache = Path.Combine(cacheDirectory, "2310101.jpg");
+        string localImage = Path.Combine(floraDirectory, "aleoida-arcus-yellow.png");
         await File.WriteAllBytesAsync(legacyCache, [1, 2, 3]);
         await File.WriteAllBytesAsync(localImage, [4, 5, 6]);
-        var requests = 0;
+        int requests = 0;
         using var client = new HttpClient(
             new StubHandler(_ =>
             {
@@ -101,9 +101,17 @@ public sealed class CodexImageCacheTests : IDisposable
         );
         using var cache = new CodexImageCache(() => new CodexImageLocations(cacheDirectory, floraDirectory), client);
 
-        var local = await cache.GetAsync(2310101, "https://example.test/reference.png", "aleoida-arcus-yellow");
+        CodexImageCacheResult local = await cache.GetAsync(
+            2310101,
+            "https://example.test/reference.png",
+            "aleoida-arcus-yellow"
+        );
         File.Delete(localImage);
-        var imported = await cache.GetAsync(2310101, "https://example.test/reference.png", "aleoida-arcus-yellow");
+        CodexImageCacheResult imported = await cache.GetAsync(
+            2310101,
+            "https://example.test/reference.png",
+            "aleoida-arcus-yellow"
+        );
 
         Assert.True(local.IsSuccess);
         Assert.True(local.IsLocal);
@@ -118,8 +126,8 @@ public sealed class CodexImageCacheTests : IDisposable
     [Fact]
     public async Task PreDownloadReportsDownloadedCachedLocalAndUnavailableImages()
     {
-        var cacheDirectory = Path.Combine(temporaryDirectory, "cache");
-        var floraDirectory = Path.Combine(temporaryDirectory, "flora");
+        string cacheDirectory = Path.Combine(temporaryDirectory, "cache");
+        string floraDirectory = Path.Combine(temporaryDirectory, "flora");
         Directory.CreateDirectory(cacheDirectory);
         Directory.CreateDirectory(floraDirectory);
         await File.WriteAllBytesAsync(Path.Combine(cacheDirectory, "2.jpg"), [2]);
@@ -133,7 +141,7 @@ public sealed class CodexImageCacheTests : IDisposable
         );
         using var cache = new CodexImageCache(() => new CodexImageLocations(cacheDirectory, floraDirectory), client);
 
-        var result = await cache.PreDownloadAsync([
+        CodexImagePreDownloadResult result = await cache.PreDownloadAsync([
             new CodexImageRequest(1, "https://example.test/one.png"),
             new CodexImageRequest(2, "https://example.test/two.png"),
             new CodexImageRequest(3, "https://example.test/three.png", "local-three"),

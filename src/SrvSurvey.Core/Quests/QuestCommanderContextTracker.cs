@@ -17,7 +17,7 @@ public sealed class QuestCommanderContextTracker
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
 
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             Apply(journalEvent);
         }
@@ -40,8 +40,8 @@ public sealed class QuestCommanderContextTracker
 
     public QuestCommanderContext CreateContext(string commanderName, EliteStatus? status)
     {
-        var statusPayload = status is null ? (JsonElement?)null : JsonSerializer.SerializeToElement(status);
-        var surface =
+        JsonElement? statusPayload = status is null ? (JsonElement?)null : JsonSerializer.SerializeToElement(status);
+        QuestSurfaceContext? surface =
             status?.HasLatitudeLongitude == true
                 ? new QuestSurfaceContext(
                     status.Latitude,
@@ -68,25 +68,25 @@ public sealed class QuestCommanderContextTracker
 
     private void UpdateFactions(JsonElement payload)
     {
-        if (!payload.TryGetProperty("Factions", out var factionArray) || factionArray.ValueKind != JsonValueKind.Array)
+        if (
+            !payload.TryGetProperty("Factions", out JsonElement factionArray)
+            || factionArray.ValueKind != JsonValueKind.Array
+        )
         {
             return;
         }
 
         var updated = new Dictionary<string, QuestFactionSnapshot>(StringComparer.Ordinal);
-        foreach (var faction in factionArray.EnumerateArray())
+        foreach (JsonElement faction in factionArray.EnumerateArray())
         {
-            if (faction.ValueKind != JsonValueKind.Object || !TryGetString(faction, "Name", out var name))
+            if (faction.ValueKind != JsonValueKind.Object || !TryGetString(faction, "Name", out string? name))
             {
                 continue;
             }
 
-            var activeStates = ReadStates(faction, "ActiveStates");
-            if (activeStates is null)
-            {
-                activeStates = TryGetString(faction, "FactionState", out var factionState) ? [factionState] : [];
-            }
-
+            string[]? activeStates =
+                ReadStates(faction, "ActiveStates")
+                ?? (TryGetString(faction, "FactionState", out string? factionState) ? [factionState] : []);
             updated[name] = new QuestFactionSnapshot(
                 ReadDouble(faction, "MyReputation"),
                 ReadDouble(faction, "Influence"),
@@ -97,7 +97,7 @@ public sealed class QuestCommanderContextTracker
         }
 
         factions.Clear();
-        foreach (var pair in updated)
+        foreach (KeyValuePair<string, QuestFactionSnapshot> pair in updated)
         {
             factions.Add(pair.Key, pair.Value);
         }
@@ -105,7 +105,7 @@ public sealed class QuestCommanderContextTracker
 
     private static string[]? ReadStates(JsonElement faction, string propertyName)
     {
-        if (!faction.TryGetProperty(propertyName, out var states))
+        if (!faction.TryGetProperty(propertyName, out JsonElement states))
         {
             return null;
         }
@@ -118,7 +118,7 @@ public sealed class QuestCommanderContextTracker
         return states
             .EnumerateArray()
             .Where(state => state.ValueKind == JsonValueKind.Object)
-            .Select(state => TryGetString(state, "State", out var value) ? value : null)
+            .Select(state => TryGetString(state, "State", out string? value) ? value : null)
             .Where(value => value is not null)
             .Select(value => value!)
             .ToArray();
@@ -127,7 +127,7 @@ public sealed class QuestCommanderContextTracker
     private static bool TryGetString(JsonElement value, string propertyName, out string result)
     {
         result = string.Empty;
-        if (!value.TryGetProperty(propertyName, out var property) || property.ValueKind != JsonValueKind.String)
+        if (!value.TryGetProperty(propertyName, out JsonElement property) || property.ValueKind != JsonValueKind.String)
         {
             return false;
         }
@@ -138,7 +138,7 @@ public sealed class QuestCommanderContextTracker
 
     private static double ReadDouble(JsonElement value, string propertyName)
     {
-        return value.TryGetProperty(propertyName, out var property) && property.TryGetDouble(out var result)
+        return value.TryGetProperty(propertyName, out JsonElement property) && property.TryGetDouble(out double result)
             ? result
             : 0;
     }

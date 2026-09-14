@@ -24,7 +24,7 @@ public sealed record FollowRouteDocument(
     {
         get
         {
-            var nextIndex = LastReachedIndex + 1;
+            int nextIndex = LastReachedIndex + 1;
             return IsActive && nextIndex >= 0 && nextIndex < Hops.Count ? Hops[nextIndex] : null;
         }
     }

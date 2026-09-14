@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -41,8 +42,8 @@ public sealed class HumanSiteTemplateCatalog
     public HumanSiteTemplateCatalog WithTemplate(HumanSiteTemplate template)
     {
         ArgumentNullException.ThrowIfNull(template);
-        var updated = templates.ToList();
-        var existingIndex = updated.FindIndex(candidate =>
+        List<HumanSiteTemplate> updated = templates.ToList();
+        int existingIndex = updated.FindIndex(candidate =>
             candidate.Economy == template.Economy && candidate.SubType == template.SubType
         );
         if (existingIndex >= 0)
@@ -59,8 +60,8 @@ public sealed class HumanSiteTemplateCatalog
 
     public static HumanSiteTemplateCatalog LoadEmbedded()
     {
-        var assembly = typeof(HumanSiteTemplateCatalog).Assembly;
-        using var stream =
+        Assembly assembly = typeof(HumanSiteTemplateCatalog).Assembly;
+        using Stream stream =
             assembly.GetManifestResourceStream(ResourceName)
             ?? throw new InvalidOperationException($"Embedded resource '{ResourceName}' was not found.");
         return Load(stream);
@@ -71,7 +72,7 @@ public sealed class HumanSiteTemplateCatalog
         ArgumentNullException.ThrowIfNull(stream);
         try
         {
-            var rows =
+            TemplateRow[] rows =
                 JsonSerializer.Deserialize<TemplateRow[]>(stream, CaseInsensitiveJson)
                 ?? throw new InvalidDataException("The human settlement template catalog is empty.");
             return new HumanSiteTemplateCatalog(rows.Select(ToTemplate));
@@ -85,7 +86,7 @@ public sealed class HumanSiteTemplateCatalog
     private static HumanSiteTemplate ToTemplate(TemplateRow row)
     {
         if (
-            !Enum.TryParse<HumanSiteEconomy>(row.Economy, ignoreCase: true, out var economy)
+            !Enum.TryParse<HumanSiteEconomy>(row.Economy, ignoreCase: true, out HumanSiteEconomy economy)
             || economy == HumanSiteEconomy.Unknown
         )
         {
@@ -107,7 +108,7 @@ public sealed class HumanSiteTemplateCatalog
 
     private static HumanSiteLandingPad ToLandingPad(PoiRow row)
     {
-        if (!Enum.TryParse<HumanSiteLandingPadSize>(row.Size, ignoreCase: true, out var size))
+        if (!Enum.TryParse<HumanSiteLandingPadSize>(row.Size, ignoreCase: true, out HumanSiteLandingPadSize size))
         {
             throw new InvalidDataException($"Unknown human settlement landing-pad size '{row.Size}'.");
         }
@@ -138,8 +139,8 @@ public sealed class HumanSiteTemplateCatalog
 
     private static HumanSiteBuildingPath ToBuildingPath(PathRow row)
     {
-        var points = (row.PathPoints ?? []).Select(ToPoint).ToArray();
-        var pointTypes = row.PathTypes ?? [];
+        HumanSiteMapPoint[] points = (row.PathPoints ?? []).Select(ToPoint).ToArray();
+        byte[] pointTypes = row.PathTypes ?? [];
         if (pointTypes.Length > points.Length)
         {
             pointTypes = pointTypes[..points.Length];
@@ -160,7 +161,7 @@ public sealed class HumanSiteTemplateCatalog
             throw new InvalidDataException("The human settlement template catalog has no entries.");
         }
 
-        var duplicate = templates
+        IGrouping<HumanSiteTemplateKey, HumanSiteTemplate>? duplicate = templates
             .GroupBy(template => new HumanSiteTemplateKey(template.Economy, template.SubType))
             .FirstOrDefault(group => group.Count() > 1);
         if (duplicate is not null)
@@ -170,7 +171,7 @@ public sealed class HumanSiteTemplateCatalog
             );
         }
 
-        foreach (var template in templates)
+        foreach (HumanSiteTemplate template in templates)
         {
             if (
                 template.SubType <= 0
@@ -190,7 +191,7 @@ public sealed class HumanSiteTemplateCatalog
 
     private static void ValidatePoints(HumanSiteTemplate template)
     {
-        var points = template
+        IEnumerable<HumanSiteMapPoint> points = template
             .LandingPads.Select(point => point.Offset)
             .Concat(template.SecureDoors.Select(point => point.Offset))
             .Concat(template.NamedPoints.Select(point => point.Offset))

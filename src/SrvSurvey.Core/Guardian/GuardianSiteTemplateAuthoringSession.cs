@@ -69,7 +69,7 @@ public sealed class GuardianSiteTemplateAuthoringSession
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(originalName);
         ValidatePoint(replacement);
-        var existing =
+        GuardianPointOfInterest existing =
             AllPoints()
                 .FirstOrDefault(point => string.Equals(point.Name, originalName, StringComparison.OrdinalIgnoreCase))
             ?? throw new InvalidOperationException($"Guardian template point '{originalName}' was not found.");
@@ -88,10 +88,10 @@ public sealed class GuardianSiteTemplateAuthoringSession
     public void RemovePoint(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        var points = Template
+        GuardianPointOfInterest[] points = Template
             .PointsOfInterest.Where(point => !string.Equals(point.Name, name, StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        var panels = Template
+        GuardianPointOfInterest[] panels = Template
             .DestructiblePanels.Where(point => !string.Equals(point.Name, name, StringComparison.OrdinalIgnoreCase))
             .ToArray();
         if (points.Length == Template.PointsOfInterest.Count && panels.Length == Template.DestructiblePanels.Count)

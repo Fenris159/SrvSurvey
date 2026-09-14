@@ -15,7 +15,7 @@ public sealed class LegacySystemDataReader(string dataDirectory) : IBoxelLocalSy
     )
     {
         ArgumentNullException.ThrowIfNull(boxel);
-        var result = await ReadAllAsync(frontierId, cancellationToken).ConfigureAwait(false);
+        LegacySystemDataReadResult result = await ReadAllAsync(frontierId, cancellationToken).ConfigureAwait(false);
         return new LegacySystemDataReadResult(
             result
                 .Systems.Where(system => string.Equals(system.Boxel.Prefix, boxel.Prefix, StringComparison.Ordinal))
@@ -30,7 +30,7 @@ public sealed class LegacySystemDataReader(string dataDirectory) : IBoxelLocalSy
     )
     {
         ValidateFrontierId(frontierId);
-        var systemDirectory = Path.Combine(dataDirectory, "systems", frontierId);
+        string systemDirectory = Path.Combine(dataDirectory, "systems", frontierId);
         if (!Directory.Exists(systemDirectory))
         {
             return LegacySystemDataReadResult.Empty;
@@ -38,13 +38,13 @@ public sealed class LegacySystemDataReader(string dataDirectory) : IBoxelLocalSy
 
         var systems = new List<BoxelSystemObservation>();
         var errors = new List<string>();
-        foreach (var path in Directory.EnumerateFiles(systemDirectory, "*.json", SearchOption.TopDirectoryOnly))
+        foreach (string path in Directory.EnumerateFiles(systemDirectory, "*.json", SearchOption.TopDirectoryOnly))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var data = await ReadSystemAsync(path, errors, cancellationToken).ConfigureAwait(false);
-            var resolved =
+            LegacySystemData? data = await ReadSystemAsync(path, errors, cancellationToken).ConfigureAwait(false);
+            bool resolved =
                 data?.Address > 0
-                    ? BoxelAddress.TryFromSystemAddress(data.Address, data.Name, out var systemBoxel)
+                    ? BoxelAddress.TryFromSystemAddress(data.Address, data.Name, out BoxelAddress? systemBoxel)
                     : BoxelAddress.TryParse(data?.Name, out systemBoxel);
             if (data is null || !resolved || systemBoxel is null)
             {

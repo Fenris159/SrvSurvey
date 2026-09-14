@@ -291,7 +291,7 @@ public sealed class HumanSiteTemplateAuthoringViewModel : INotifyPropertyChanged
         bool currentShieldsUp
     )
     {
-        var identity = site is null
+        string? identity = site is null
             ? null
             : $"{site.SystemAddress}/{site.MarketId}/" + $"{site.Template?.Economy}/{site.Template?.SubType}";
         if (!string.Equals(identity, activeIdentity, StringComparison.Ordinal))
@@ -347,8 +347,8 @@ public sealed class HumanSiteTemplateAuthoringViewModel : INotifyPropertyChanged
         StatusMessage = "Staging and verifying the settlement template catalog...";
         try
         {
-            var updated = catalog.WithTemplate(session.Template);
-            var result = await exporter.ExportAsync(updated, path, cancellationToken);
+            HumanSiteTemplateCatalog updated = catalog.WithTemplate(session.Template);
+            HumanSiteTemplateExportResult result = await exporter.ExportAsync(updated, path, cancellationToken);
             catalog = updated;
             activeTemplate = session.Template;
             LastExportPath = result.Path;

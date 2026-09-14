@@ -277,10 +277,15 @@ public sealed record BoxelSearchOutcome(
     IReadOnlyList<BoxelSearchWarning>? Warnings = null
 );
 
-public sealed record BoxelSearchSessionChangedEventArgs(
-    BoxelSearchSessionSnapshot Previous,
-    BoxelSearchSessionSnapshot Current
-);
+public sealed class BoxelSearchSessionChangedEventArgs(
+    BoxelSearchSessionSnapshot previous,
+    BoxelSearchSessionSnapshot current
+) : EventArgs
+{
+    public BoxelSearchSessionSnapshot Previous { get; } = previous;
+
+    public BoxelSearchSessionSnapshot Current { get; } = current;
+}
 
 public sealed record BoxelSearchSessionSnapshot(
     long Version,
@@ -361,14 +366,14 @@ public sealed record BoxelSearchSessionSearchSnapshot
     public BoxelProgress GetProgress(BoxelAddress boxel)
     {
         ArgumentNullException.ThrowIfNull(boxel);
-        if (!Persistence.ProgressByPrefix.TryGetValue(boxel.Prefix, out var expectedSystemCount))
+        if (!Persistence.ProgressByPrefix.TryGetValue(boxel.Prefix, out int expectedSystemCount))
         {
             return BoxelProgress.Unknown;
         }
 
-        var expected = Math.Max(0, expectedSystemCount);
-        var complete = Persistence.CompletedPrefixes.Contains(boxel.Prefix, StringComparer.Ordinal);
-        var completed = complete
+        int expected = Math.Max(0, expectedSystemCount);
+        bool complete = Persistence.CompletedPrefixes.Contains(boxel.Prefix, StringComparer.Ordinal);
+        int completed = complete
             ? expected
             : Persistence.CompletedSystems.Count(name => IsInBoxel(name, boxel.Prefix))
                 + Persistence.EmptySystems.Count(name => IsInBoxel(name, boxel.Prefix));
@@ -377,7 +382,7 @@ public sealed record BoxelSearchSessionSearchSnapshot
 
     public bool IsSystemDeferred(string prefix, int systemNumber)
     {
-        var generatedName = BoxelAddress.Parse(prefix + systemNumber).GeneratedName;
+        string generatedName = BoxelAddress.Parse(prefix + systemNumber).GeneratedName;
         if (Persistence.DeferredSystems.Contains(generatedName, StringComparer.Ordinal))
         {
             return true;
@@ -411,7 +416,7 @@ public sealed record BoxelSearchSessionSearchSnapshot
 
     private static bool IsInBoxel(string systemName, string prefix)
     {
-        return BoxelAddress.TryParse(systemName, out var address)
+        return BoxelAddress.TryParse(systemName, out BoxelAddress? address)
             && address is not null
             && string.Equals(address.Prefix, prefix, StringComparison.Ordinal);
     }

@@ -31,7 +31,7 @@ public sealed class SharedTrackerShortcutTests : IDisposable
             Path.Combine(root, "cache"),
             []
         );
-        using var viewModel = MainWindowViewModelTestBuilder.Create(
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
             Path.Combine(root, "journals"),
             builder => builder.WithAppDataPaths(paths)
         );
@@ -44,8 +44,8 @@ public sealed class SharedTrackerShortcutTests : IDisposable
             PlanetRadius = 1000,
             BodyName = "Test System 1",
         };
-        var srvType = aboardRhino ? EliteSrvTypes.Rhino : "testbuggy";
-        var parkedType = parkedRhino ? EliteSrvTypes.Rhino : null;
+        string srvType = aboardRhino ? EliteSrvTypes.Rhino : "testbuggy";
+        string? parkedType = parkedRhino ? EliteSrvTypes.Rhino : null;
         viewModel.SystemSurvey.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test System","SystemAddress":42}"""),
@@ -99,9 +99,9 @@ public sealed class SharedTrackerShortcutTests : IDisposable
             Path.Combine(root, "cache"),
             []
         );
-        var journals = Path.Combine(root, "journals");
+        string journals = Path.Combine(root, "journals");
         Directory.CreateDirectory(journals);
-        var journalPath = Path.Combine(journals, "Journal.2026-09-05T120000.01.log");
+        string journalPath = Path.Combine(journals, "Journal.2026-09-05T120000.01.log");
         await File.WriteAllTextAsync(
             journalPath,
             """
@@ -121,7 +121,10 @@ public sealed class SharedTrackerShortcutTests : IDisposable
             """
         );
         using (
-            var viewModel = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(paths))
+            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(paths)
+            )
         )
         {
             await viewModel.RefreshAsync();
@@ -145,7 +148,7 @@ public sealed class SharedTrackerShortcutTests : IDisposable
             Assert.True(await viewModel.Mining.ToggleRigAsync(2));
         }
 
-        using var reopened = MainWindowViewModelTestBuilder.Create(
+        using MainWindowViewModel reopened = MainWindowViewModelTestBuilder.Create(
             journals,
             builder => builder.WithAppDataPaths(paths)
         );
@@ -156,7 +159,7 @@ public sealed class SharedTrackerShortcutTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(entry);
     }
 

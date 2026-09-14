@@ -7,10 +7,10 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
     [Fact]
     public void GuardianZoomUsesTwoCircularOrbsInAnInteractiveChildWindow()
     {
-        var desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        string desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
         var presentation = XDocument.Load(Path.Combine(desktop, "GuardianZoomOverlayPresentation.axaml"));
-        var guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
-        var buttons = presentation.Descendants().Where(element => element.Name.LocalName == "Button").ToArray();
+        string guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
+        XElement[] buttons = presentation.Descendants().Where(element => element.Name.LocalName == "Button").ToArray();
 
         Assert.Equal(2, buttons.Length);
         Assert.All(
@@ -31,15 +31,15 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
     [Fact]
     public void GuardianMapShowsLandedShipChevronAtBottomLeft()
     {
-        var desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        string desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
         var presentation = XDocument.Load(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
-        var shipIndicator = presentation
+        XElement shipIndicator = presentation
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Border"
                 && element.Attribute("IsVisible")?.Value == "{Binding Guardian.IsShipNavigationVisible}"
             );
-        var chevron = shipIndicator
+        XElement chevron = shipIndicator
             .Descendants()
             .Single(element => element.Name.LocalName == "DirectionalChevronControl");
 
@@ -57,16 +57,16 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
     [Fact]
     public void GuardianFiregroupChoicesUseHighContrastSelectedState()
     {
-        var desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        string desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
         var presentation = XDocument.Load(Path.Combine(desktop, "GuardianStatusOverlayPresentation.axaml"));
-        var styles = presentation.Descendants().Where(element => element.Name.LocalName == "Style").ToArray();
-        var selectedChoice = styles.Single(style =>
+        XElement[] styles = presentation.Descendants().Where(element => element.Name.LocalName == "Style").ToArray();
+        XElement selectedChoice = styles.Single(style =>
             style.Attribute("Selector")?.Value == "Border.guardian-legacy-choice.selected"
         );
-        var selectedText = styles.Single(style =>
+        XElement selectedText = styles.Single(style =>
             style.Attribute("Selector")?.Value == "Border.guardian-legacy-choice.selected TextBlock"
         );
-        var selectedBindings = presentation
+        int selectedBindings = presentation
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Count(attribute =>
@@ -101,16 +101,22 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
     [Fact]
     public void OverlaySettingsOfferMasterAvailabilityAndOptionalShortcuts()
     {
-        var path = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml");
+        string path = Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "SrvSurvey.Desktop",
+            "Views",
+            "OverlaySettingsView.axaml"
+        );
         var settings = XDocument.Load(path);
-        var card = settings
+        XElement card = settings
             .Descendants()
             .Single(element =>
                 element
                     .Attributes()
                     .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "PanelVisibilityCard")
             );
-        var values = card.Descendants()
+        string[] values = card.Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
@@ -120,8 +126,8 @@ public sealed class GuardianZoomAndPanelVisibilityContractTests
         Assert.Contains("Click, then hold shortcut keys", values);
         Assert.Contains(values, value => value.Contains("no default binding", StringComparison.Ordinal));
 
-        var outerStack = settings.Root!.Elements().Single(element => element.Name.LocalName == "StackPanel");
-        var lastCard = outerStack.Elements().Last(element => element.Name.LocalName == "Border");
+        XElement outerStack = settings.Root!.Elements().Single(element => element.Name.LocalName == "StackPanel");
+        XElement lastCard = outerStack.Elements().Last(element => element.Name.LocalName == "Border");
         Assert.Contains(
             lastCard.Attributes(),
             attribute => attribute.Name.LocalName == "Name" && attribute.Value == "PanelVisibilityCard"

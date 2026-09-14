@@ -15,7 +15,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void LegacyFormatsReferencesNullsAndMissingEntriesAreSupported()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         File.WriteAllText(
             path,
             """
@@ -33,7 +33,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
             """
         );
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
         Assert.True(theme.IsCustom);
         Assert.Null(theme.Error);
@@ -63,10 +63,10 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void PersistedTypographyIsNormalizedToHalfPointIncrements()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         File.WriteAllText(path, "{\"typography\":{\"header\":10.26}}");
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
         Assert.Null(theme.Error);
         Assert.Equal(10.5, theme.EffectiveTypography.Header);
@@ -76,14 +76,14 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void SaveRoundTripsCustomGuardianPrimary()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         var store = new LegacyOverlayThemeStore(path);
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
         var customPrimary = Color.FromArgb(255, 9, 18, 27);
         colors["guardian.primary"] = customPrimary;
 
         _ = store.Save(new LegacyOverlayTheme(colors, true, null));
-        var loaded = store.Load();
+        LegacyOverlayTheme loaded = store.Load();
 
         Assert.Null(loaded.Error);
         Assert.Equal(customPrimary, loaded.GetColor("guardian.primary"));
@@ -94,11 +94,11 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void InvalidThemeFallsBackWithoutChangingTheSource()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         const string invalid = "{\"orange\":\"futureColour\"}";
         File.WriteAllText(path, invalid);
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
         Assert.False(theme.IsCustom);
         Assert.NotNull(theme.Error);
@@ -112,10 +112,10 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void ReferenceMustNameAColorDefinedEarlierInTheFile()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         File.WriteAllText(path, "{\"colonise\":{\"item\":\"orange\"},\"orange\":[1,2,3]}");
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
         Assert.False(theme.IsCustom);
         Assert.Contains("was not found", theme.Error);
@@ -125,16 +125,16 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void SaveRoundTripsAllColorsAndCreatesVerifiedBackup()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         File.WriteAllText(path, "{\"orange\":[1,2,3]}");
         var store = new LegacyOverlayThemeStore(path);
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
         colors["orange"] = Color.FromArgb(128, 12, 34, 56);
         colors["custom.future"] = Color.FromArgb(255, 90, 80, 70);
-        var typography = OverlayTypographySettings.Default with { Header = 11.5, Title = 16 };
+        OverlayTypographySettings typography = OverlayTypographySettings.Default with { Header = 11.5, Title = 16 };
 
-        var result = store.Save(new LegacyOverlayTheme(colors, true, null, typography));
-        var loaded = store.Load();
+        LegacyOverlayThemeSaveResult result = store.Save(new LegacyOverlayTheme(colors, true, null, typography));
+        LegacyOverlayTheme loaded = store.Load();
 
         Assert.Null(loaded.Error);
         Assert.Equal(colors.Count, loaded.Colors.Count);
@@ -149,12 +149,12 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void LegacyCeruleanGoldBiologyPaletteIsUpgradedInMemory()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         File.WriteAllText(path, JsonSerializer.Serialize(CreateLegacyCeruleanGoldColors()));
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
-        Assert.True(OverlayThemePresetCatalog.TryGet("Cerulean Gold", out var currentPreset));
+        Assert.True(OverlayThemePresetCatalog.TryGet("Cerulean Gold", out OverlayThemePreset? currentPreset));
         Assert.Equal(currentPreset.Colors["bio.prediction"], theme.GetColor("bio.prediction"));
         Assert.Equal(Color.Parse("#FFCC33"), theme.GetColor("header"));
         Assert.NotEqual(Color.Parse("#4D4F51"), theme.GetColor("bio.prediction"));
@@ -165,7 +165,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void OriginalDefaultBiologyPaletteGainsLegacyPipLayersAndEdges()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         var colors = new Dictionary<string, int[]>(StringComparer.Ordinal)
         {
             ["orange"] = [255, 255, 111, 0],
@@ -185,8 +185,8 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         };
         File.WriteAllText(path, JsonSerializer.Serialize(colors));
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
-        var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
+        IReadOnlyDictionary<string, Color> defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
 
         Assert.Null(theme.Error);
         Assert.Equal(defaults["bio.prediction"], theme.GetColor("bio.prediction"));
@@ -205,7 +205,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void CustomLegacyMutedGreyIsNotMigrated()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         File.WriteAllText(
             path,
             """
@@ -216,7 +216,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
             """
         );
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
         Assert.Null(theme.Error);
         Assert.Equal(Color.Parse("#646464"), theme.GetColor("grey"));
@@ -226,10 +226,10 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void CustomHeaderColorIsNotMigrated()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         File.WriteAllText(path, "{\"header\":\"#123456\"}");
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
         Assert.Equal(Color.Parse("#123456"), theme.GetColor("header"));
     }
@@ -243,10 +243,10 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void CustomizedGeneralPalettePreventsLegacyHeaderMigration(string key)
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         File.WriteAllText(path, $"{{\"header\":\"#FFFF00\",\"{key}\":\"#123456\"}}");
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
         Assert.Equal(Color.Parse("#FFFF00"), theme.GetColor("header"));
         Assert.Equal(Color.Parse("#123456"), theme.GetColor(key));
@@ -256,7 +256,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void NonPresetLegacyBiologyPaletteDerivesExpandedCustomRoles()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
+        string path = Path.Combine(temporaryDirectory, "theme.json");
         var colors = new Dictionary<string, int[]>(StringComparer.Ordinal)
         {
             ["orange"] = [255, 10, 20, 30],
@@ -277,7 +277,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         };
         File.WriteAllText(path, JsonSerializer.Serialize(colors));
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
         Assert.Null(theme.Error);
         Assert.Null(OverlayThemePresetCatalog.FindMatching(theme.Colors));
@@ -292,12 +292,12 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
     public void ExplicitExpandedBiologyPaletteIsNotMigrated()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "theme.json");
-        var colors = CreateLegacyCeruleanGoldColors();
+        string path = Path.Combine(temporaryDirectory, "theme.json");
+        Dictionary<string, string> colors = CreateLegacyCeruleanGoldColors();
         colors["bio.confirmed"] = "#010203";
         File.WriteAllText(path, JsonSerializer.Serialize(colors));
 
-        var theme = new LegacyOverlayThemeStore(path).Load();
+        LegacyOverlayTheme theme = new LegacyOverlayThemeStore(path).Load();
 
         Assert.Equal(Color.Parse("#4D4F51"), theme.GetColor("bio.prediction"));
         Assert.Equal(Color.Parse("#010203"), theme.GetColor("bio.confirmed"));
@@ -305,7 +305,9 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
 
     private static Dictionary<string, string> CreateLegacyCeruleanGoldColors()
     {
-        var preset = OverlayThemePresetCatalog.Presets.Single(candidate => candidate.Name == "Cerulean Gold");
+        OverlayThemePreset preset = OverlayThemePresetCatalog.Presets.Single(candidate =>
+            candidate.Name == "Cerulean Gold"
+        );
         var colors = preset
             .Colors.Where(entry => !entry.Key.StartsWith("bio.", StringComparison.Ordinal))
             .ToDictionary(

@@ -10,8 +10,8 @@ public sealed class SphereLimitStateTests
         var state = new SphereLimitState();
         var center = new StarSystemReference("Center", 42, new GalacticCoordinate(10, 20, 30));
 
-        var enabled = state.TryEnable(center, 100, out var error);
-        var evaluation = state.Evaluate("Target", new GalacticCoordinate(13, 24, 30));
+        bool enabled = state.TryEnable(center, 100, out string? error);
+        SphereLimitEvaluation? evaluation = state.Evaluate("Target", new GalacticCoordinate(13, 24, 30));
 
         Assert.True(enabled, error);
         Assert.NotNull(evaluation);
@@ -26,7 +26,7 @@ public sealed class SphereLimitStateTests
         var state = new SphereLimitState();
         state.TryEnable(new StarSystemReference("Center", 42, new GalacticCoordinate(0, 0, 0)), 5, out _);
 
-        var evaluation = state.Evaluate("Boundary", new GalacticCoordinate(3, 4, 0));
+        SphereLimitEvaluation? evaluation = state.Evaluate("Boundary", new GalacticCoordinate(3, 4, 0));
 
         Assert.NotNull(evaluation);
         Assert.Equal(5, evaluation.Distance);
@@ -42,10 +42,10 @@ public sealed class SphereLimitStateTests
     {
         var state = new SphereLimitState();
 
-        var enabled = state.TryEnable(
+        bool enabled = state.TryEnable(
             new StarSystemReference("Sol", 10477373803, new GalacticCoordinate(0, 0, 0)),
             radius,
-            out var error
+            out string? error
         );
 
         Assert.False(enabled);

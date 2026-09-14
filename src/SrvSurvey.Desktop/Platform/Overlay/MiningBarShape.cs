@@ -1,3 +1,5 @@
+using Avalonia;
+
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal static class MiningBarShape
@@ -41,18 +43,18 @@ internal static class MiningBarShape
     private static (double X, double Y, bool Filled)[] CreateSamples(bool lowerOnly)
     {
         var samples = new List<(double, double, bool)>();
-        for (var y = 0; y < Mask.Length; y += 2)
+        for (int y = 0; y < Mask.Length; y += 2)
         {
-            for (var x = 0; x < Mask[y].Length; x += 2)
+            for (int x = 0; x < Mask[y].Length; x += 2)
             {
-                var nearBar = IsNearBar(x, y);
+                bool nearBar = IsNearBar(x, y);
                 if (lowerOnly && Mask[y][x] != '#' && !IsBelowBar(x, y))
                 {
                     continue;
                 }
 
-                var rx = (x - 28) / 22d;
-                var ry = (y + 6) / 22d;
+                double rx = (x - 28) / 22d;
+                double ry = (y + 6) / 22d;
                 // The inner ring and its changing white progress arc are not bar background.
                 if (!lowerOnly && Mask[y][x] != '#' && rx * rx + ry * ry / (.65 * .65) < 1.3)
                 {
@@ -71,9 +73,9 @@ internal static class MiningBarShape
 
     private static bool IsNearBar(int x, int y)
     {
-        for (var ny = Math.Max(0, y - 3); ny <= Math.Min(Mask.Length - 1, y + 3); ny++)
+        for (int ny = Math.Max(0, y - 3); ny <= Math.Min(Mask.Length - 1, y + 3); ny++)
         {
-            for (var nx = Math.Max(0, x - 3); nx <= Math.Min(Mask[y].Length - 1, x + 3); nx++)
+            for (int nx = Math.Max(0, x - 3); nx <= Math.Min(Mask[y].Length - 1, x + 3); nx++)
             {
                 if (Mask[ny][nx] == '#')
                 {
@@ -87,7 +89,7 @@ internal static class MiningBarShape
 
     private static bool IsBelowBar(int x, int y)
     {
-        for (var ny = 0; ny < y; ny++)
+        for (int ny = 0; ny < y; ny++)
         {
             if (Mask[ny][x] == '#')
             {
@@ -109,23 +111,23 @@ internal static class MiningBarShape
         bool lowerOnly = false
     )
     {
-        var sum = 0d;
-        var square = 0d;
-        var filledSum = 0d;
-        var colored = 0;
-        var filled = 0;
-        var samples = lowerOnly ? LowerSamples : Samples;
-        foreach (var sample in samples)
+        double sum = 0d;
+        double square = 0d;
+        double filledSum = 0d;
+        int colored = 0;
+        int filled = 0;
+        (double X, double Y, bool Filled)[] samples = lowerOnly ? LowerSamples : Samples;
+        foreach ((double X, double Y, bool Filled) sample in samples)
         {
-            var offset = geometry.Transform(sample.X, sample.Y + sample.X * tilt, radius);
-            var px = (int)Math.Round(x + offset.X);
-            var py = (int)Math.Round(y + offset.Y);
+            Vector offset = geometry.Transform(sample.X, sample.Y + sample.X * tilt, radius);
+            int px = (int)Math.Round(x + offset.X);
+            int py = (int)Math.Round(y + offset.Y);
             if ((uint)px >= source.Width || (uint)py >= source.Height)
             {
                 return 0;
             }
 
-            var value = ColoredBrightness(source.GetPixel(px, py));
+            double value = ColoredBrightness(source.GetPixel(px, py));
             sum += value;
             square += value * value;
             if (sample.Filled)
@@ -144,23 +146,23 @@ internal static class MiningBarShape
             return 0;
         }
 
-        var count = samples.Length;
-        var maskVariance = filled - filled * filled / (double)count;
-        var variance = square - sum * sum / count;
+        int count = samples.Length;
+        double maskVariance = filled - filled * filled / (double)count;
+        double variance = square - sum * sum / count;
         if (variance < count * 25)
         {
             return 0;
         }
 
-        var covariance = filledSum - filled * sum / count;
+        double covariance = filledSum - filled * sum / count;
         return Math.Max(0, covariance / Math.Sqrt(maskVariance * variance));
     }
 
     internal static double ColoredBrightness(FssRgbPixel color)
     {
-        var maximum = Math.Max(color.Red, Math.Max(color.Green, color.Blue));
-        var minimum = Math.Min(color.Red, Math.Min(color.Green, color.Blue));
-        var chroma = maximum - minimum;
+        byte maximum = Math.Max(color.Red, Math.Max(color.Green, color.Blue));
+        byte minimum = Math.Min(color.Red, Math.Min(color.Green, color.Blue));
+        int chroma = maximum - minimum;
         // Hue-independent: excludes black, white, gray and nearly neutral highlights.
         return maximum >= 96 && chroma >= 24 && chroma >= maximum * .2 ? chroma : 0;
     }

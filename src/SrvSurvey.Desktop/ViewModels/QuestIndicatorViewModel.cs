@@ -62,11 +62,11 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
     )
     {
         ArgumentNullException.ThrowIfNull(quests);
-        var firstQuest = quests.Count > 0 ? quests[0] : null;
-        var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+        QuestRuntimeSnapshot? firstQuest = quests.Count > 0 ? quests[0] : null;
+        OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
         ShouldShow = enabled && firstQuest is not null && IsVisibleMode(mode);
         QuestTitle = firstQuest?.Title ?? string.Empty;
-        var unread = quests.Sum(quest => quest.UnreadMessageCount);
+        int unread = quests.Sum(quest => quest.UnreadMessageCount);
         HasUnreadMessages = unread > 0;
         if (unread == 0)
         {
@@ -118,12 +118,12 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
 
     private static QuestIndicatorLocationViewModel? CreateLocation(string name, string encoded, EliteStatus? status)
     {
-        var parts = encoded.Split(',', StringSplitOptions.TrimEntries);
+        string[] parts = encoded.Split(',', StringSplitOptions.TrimEntries);
         if (
             parts.Length != 3
-            || !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var latitude)
-            || !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var longitude)
-            || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var targetRadius)
+            || !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double latitude)
+            || !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double longitude)
+            || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double targetRadius)
             || !double.IsFinite(targetRadius)
             || targetRadius < 0
         )
@@ -140,9 +140,9 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
             }
 
             var origin = new SurfaceCoordinate(status.Latitude, status.Longitude);
-            var distance = SurfaceNavigation.GetDistance(origin, target, decimal.ToDouble(status.PlanetRadius));
-            var bearing = SurfaceNavigation.GetBearing(origin, target);
-            var relative = SurfaceNavigation.NormalizeDegrees(bearing - status.NormalizedHeading);
+            double distance = SurfaceNavigation.GetDistance(origin, target, decimal.ToDouble(status.PlanetRadius));
+            double bearing = SurfaceNavigation.GetBearing(origin, target);
+            double relative = SurfaceNavigation.NormalizeDegrees(bearing - status.NormalizedHeading);
             return new QuestIndicatorLocationViewModel(
                 name,
                 FormatDistance(distance),

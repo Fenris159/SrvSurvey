@@ -20,36 +20,36 @@ public sealed class HumanSiteNavigation(HumanSiteTemplateCatalog templates)
     {
         ArgumentNullException.ThrowIfNull(site);
         ValidateRadius(bodyRadius);
-        var location = AdjustForVehicle(observedLocation, observerHeading, bodyRadius, vehicle);
-        var candidates = templates
+        SurfaceCoordinate location = AdjustForVehicle(observedLocation, observerHeading, bodyRadius, vehicle);
+        IEnumerable<HumanSiteTemplate> candidates = templates
             .ForEconomy(site.Economy)
             .Where(template =>
                 site.AvailablePads.Total == 0 || HumanSiteLandingPads.From(template) == site.AvailablePads
             );
-        foreach (var template in candidates)
+        foreach (HumanSiteTemplate? template in candidates)
         {
             if (targetPad > template.LandingPads.Count)
             {
                 continue;
             }
 
-            for (var index = 0; index < template.LandingPads.Count; index++)
+            for (int index = 0; index < template.LandingPads.Count; index++)
             {
-                var padNumber = index + 1;
+                int padNumber = index + 1;
                 if (targetPad > 0 && targetPad != padNumber)
                 {
                     continue;
                 }
 
-                var pad = template.LandingPads[index];
-                var siteHeading = SurfaceNavigation.NormalizeDegrees(observerHeading - pad.Rotation);
-                var offset = GetSiteOffset(
+                HumanSiteLandingPad pad = template.LandingPads[index];
+                double siteHeading = SurfaceNavigation.NormalizeDegrees(observerHeading - pad.Rotation);
+                HumanSiteMapPoint offset = GetSiteOffset(
                     new SurfaceCoordinate(site.Location.Latitude, site.Location.Longitude),
                     location,
                     bodyRadius,
                     siteHeading
                 );
-                var distance = GetDistance(offset, pad.Offset);
+                double distance = GetDistance(offset, pad.Offset);
                 if (distance < MaximumPadDistance)
                 {
                     return new HumanSiteGeometrySolution(template.SubType, template, siteHeading, padNumber, distance);
@@ -68,9 +68,9 @@ public sealed class HumanSiteNavigation(HumanSiteTemplateCatalog templates)
     )
     {
         ValidateRadius(bodyRadius);
-        var distance = SurfaceNavigation.GetDistance(site, current, bodyRadius);
-        var bearing = SurfaceNavigation.GetBearing(site, current);
-        var relativeBearing = DegreesToRadians(SurfaceNavigation.NormalizeDegrees(bearing - siteHeading));
+        double distance = SurfaceNavigation.GetDistance(site, current, bodyRadius);
+        double bearing = SurfaceNavigation.GetBearing(site, current);
+        double relativeBearing = DegreesToRadians(SurfaceNavigation.NormalizeDegrees(bearing - siteHeading));
         return new HumanSiteMapPoint(Math.Sin(relativeBearing) * distance, Math.Cos(relativeBearing) * distance);
     }
 
@@ -87,13 +87,13 @@ public sealed class HumanSiteNavigation(HumanSiteTemplateCatalog templates)
             throw new ArgumentOutOfRangeException(nameof(offset), "The site offset must be finite.");
         }
 
-        var distance = Math.Sqrt((offset.X * offset.X) + (offset.Y * offset.Y));
+        double distance = Math.Sqrt((offset.X * offset.X) + (offset.Y * offset.Y));
         if (distance == 0)
         {
             return site;
         }
 
-        var localBearing = RadiansToDegrees(Math.Atan2(offset.X, offset.Y));
+        double localBearing = RadiansToDegrees(Math.Atan2(offset.X, offset.Y));
         return Move(site, distance, SurfaceNavigation.NormalizeDegrees(siteHeading + localBearing), bodyRadius);
     }
 
@@ -105,53 +105,53 @@ public sealed class HumanSiteNavigation(HumanSiteTemplateCatalog templates)
     )
     {
         ValidateRadius(bodyRadius);
-        var offset = HumanSiteVehicleOffsets.Find(vehicle);
+        HumanSiteMapPoint offset = HumanSiteVehicleOffsets.Find(vehicle);
         if (offset == default)
         {
             return observedLocation;
         }
 
-        var rotated = Rotate(offset, heading);
+        HumanSiteMapPoint rotated = Rotate(offset, heading);
         return GetSurfaceLocation(observedLocation, rotated, bodyRadius, siteHeading: 0);
     }
 
     private static SurfaceCoordinate Move(SurfaceCoordinate origin, double distance, double bearing, double radius)
     {
-        var angularDistance = distance / radius;
-        var bearingRadians = DegreesToRadians(bearing);
-        var latitude = DegreesToRadians(origin.Latitude);
-        var longitude = DegreesToRadians(origin.Longitude);
-        var destinationLatitude = Math.Asin(
+        double angularDistance = distance / radius;
+        double bearingRadians = DegreesToRadians(bearing);
+        double latitude = DegreesToRadians(origin.Latitude);
+        double longitude = DegreesToRadians(origin.Longitude);
+        double destinationLatitude = Math.Asin(
             (Math.Sin(latitude) * Math.Cos(angularDistance))
                 + (Math.Cos(latitude) * Math.Sin(angularDistance) * Math.Cos(bearingRadians))
         );
-        var destinationLongitude =
+        double destinationLongitude =
             longitude
             + Math.Atan2(
                 Math.Sin(bearingRadians) * Math.Sin(angularDistance) * Math.Cos(latitude),
                 Math.Cos(angularDistance) - (Math.Sin(latitude) * Math.Sin(destinationLatitude))
             );
-        var normalizedLongitude = ((RadiansToDegrees(destinationLongitude) + 540) % 360) - 180;
+        double normalizedLongitude = ((RadiansToDegrees(destinationLongitude) + 540) % 360) - 180;
         return new SurfaceCoordinate(RadiansToDegrees(destinationLatitude), normalizedLongitude);
     }
 
     private static HumanSiteMapPoint Rotate(HumanSiteMapPoint point, double rotation)
     {
-        var distance = Math.Sqrt((point.X * point.X) + (point.Y * point.Y));
+        double distance = Math.Sqrt((point.X * point.X) + (point.Y * point.Y));
         if (distance == 0)
         {
             return point;
         }
 
-        var angle = RadiansToDegrees(Math.Atan2(point.X, point.Y));
-        var radians = DegreesToRadians(angle + rotation);
+        double angle = RadiansToDegrees(Math.Atan2(point.X, point.Y));
+        double radians = DegreesToRadians(angle + rotation);
         return new HumanSiteMapPoint(Math.Sin(radians) * distance, Math.Cos(radians) * distance);
     }
 
     private static double GetDistance(HumanSiteMapPoint left, HumanSiteMapPoint right)
     {
-        var x = left.X - right.X;
-        var y = left.Y - right.Y;
+        double x = left.X - right.X;
+        double y = left.Y - right.Y;
         return Math.Sqrt((x * x) + (y * y));
     }
 

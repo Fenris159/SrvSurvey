@@ -25,13 +25,13 @@ public sealed class HumanSiteActivityTracker
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var reset = SynchronizeSite(site);
+        bool reset = SynchronizeSite(site);
         if (!CanTrackSite(site, status))
         {
             return CompleteIfReset(reset);
         }
 
-        var commanderOffset = GetCommanderOffset(site!, status!);
+        HumanSiteMapPoint? commanderOffset = GetCommanderOffset(site!, status!);
         if (commanderOffset is null)
         {
             return HumanSiteActivityApplyResult.None;
@@ -66,8 +66,12 @@ public sealed class HumanSiteActivityTracker
         bool reset
     )
     {
-        var collectionOffset = MoveOneMeterAhead(commanderOffset, status.NormalizedHeading, site.Heading!.Value);
-        var (terminalsChanged, added) = ApplyCollectionEvents(
+        HumanSiteMapPoint collectionOffset = MoveOneMeterAhead(
+            commanderOffset,
+            status.NormalizedHeading,
+            site.Heading!.Value
+        );
+        (bool terminalsChanged, HumanSiteCollectedMaterial[]? added) = ApplyCollectionEvents(
             journalEvent,
             site,
             commanderOffset,
@@ -122,7 +126,7 @@ public sealed class HumanSiteActivityTracker
         bool trackMaterialCollection
     )
     {
-        var dataItems = ReadAddedItems(journalEvent.Payload)
+        HumanSiteMaterialItem[] dataItems = ReadAddedItems(journalEvent.Payload)
             .Where(item => string.Equals(item.Type, "Data", StringComparison.OrdinalIgnoreCase))
             .ToArray();
         if (dataItems.Length == 0)
@@ -130,8 +134,8 @@ public sealed class HumanSiteActivityTracker
             return (false, []);
         }
 
-        var terminalsChanged = MarkClosestTerminal(site, commanderOffset);
-        var added = trackMaterialCollection
+        bool terminalsChanged = MarkClosestTerminal(site, commanderOffset);
+        HumanSiteCollectedMaterial[] added = trackMaterialCollection
             ? dataItems.Select(item => CreateMaterial(item, collectionOffset, journalEvent.Timestamp)).ToArray()
             : [];
         return (terminalsChanged, added);
@@ -140,7 +144,7 @@ public sealed class HumanSiteActivityTracker
     public bool ReplaceCollectedMaterials(IEnumerable<HumanSiteCollectedMaterial> materials)
     {
         ArgumentNullException.ThrowIfNull(materials);
-        var replacement = materials.ToArray();
+        HumanSiteCollectedMaterial[] replacement = materials.ToArray();
         if (collectedMaterials.SequenceEqual(replacement))
         {
             return false;
@@ -154,7 +158,7 @@ public sealed class HumanSiteActivityTracker
 
     private bool SynchronizeSite(HumanSiteLiveSnapshot? site)
     {
-        var nextKey = site is null ? null : $"{site.SystemAddress}/{site.MarketId}";
+        string? nextKey = site is null ? null : $"{site.SystemAddress}/{site.MarketId}";
         if (string.Equals(siteKey, nextKey, StringComparison.Ordinal))
         {
             return false;
@@ -168,7 +172,7 @@ public sealed class HumanSiteActivityTracker
 
     private bool MarkClosestTerminal(HumanSiteLiveSnapshot site, HumanSiteMapPoint currentOffset)
     {
-        var terminals = site.Template!.DataTerminals;
+        IReadOnlyList<HumanSitePointOfInterest> terminals = site.Template!.DataTerminals;
         var closest = terminals
             .Select((terminal, index) => new { Index = index, Distance = GetDistance(terminal.Offset, currentOffset) })
             .Where(candidate => candidate.Distance < 5)
@@ -197,8 +201,8 @@ public sealed class HumanSiteActivityTracker
         double siteHeading
     )
     {
-        var relativeHeading = SurfaceNavigation.NormalizeDegrees(commanderHeading - siteHeading);
-        var radians = relativeHeading * Math.PI / 180;
+        double relativeHeading = SurfaceNavigation.NormalizeDegrees(commanderHeading - siteHeading);
+        double radians = relativeHeading * Math.PI / 180;
         return new HumanSiteMapPoint(offset.X + Math.Sin(radians), offset.Y + Math.Cos(radians));
     }
 
@@ -220,7 +224,7 @@ public sealed class HumanSiteActivityTracker
 
     private static HumanSiteMaterialItem[] ReadAddedItems(JsonElement root)
     {
-        if (!root.TryGetProperty("Added", out var added) || added.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Added", out JsonElement added) || added.ValueKind != JsonValueKind.Array)
         {
             return [];
         }
@@ -240,9 +244,9 @@ public sealed class HumanSiteActivityTracker
 
     private static HumanSiteMaterialItem? ReadMaterialItem(JsonElement root)
     {
-        var name = GetString(root, "Name");
-        var type = GetString(root, "Type");
-        var count = GetInt32(root, "Count") ?? 0;
+        string? name = GetString(root, "Name");
+        string? type = GetString(root, "Type");
+        int count = GetInt32(root, "Count") ?? 0;
         return string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(type) || count <= 0
             ? null
             : new HumanSiteMaterialItem(name, GetString(root, "Name_Localised"), type, count);
@@ -250,26 +254,26 @@ public sealed class HumanSiteActivityTracker
 
     private static double GetDistance(HumanSiteMapPoint left, HumanSiteMapPoint right)
     {
-        var x = left.X - right.X;
-        var y = left.Y - right.Y;
+        double x = left.X - right.X;
+        double y = left.Y - right.Y;
         return Math.Sqrt((x * x) + (y * y));
     }
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int number))
         {
             return number;
         }

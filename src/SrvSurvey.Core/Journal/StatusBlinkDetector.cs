@@ -14,8 +14,8 @@ public sealed class StatusBlinkDetector(StatusFlags trigger, TimeSpan maximumInt
     public StatusBlinkResult Update(EliteStatus status, DateTimeOffset observedAt)
     {
         ArgumentNullException.ThrowIfNull(status);
-        var activeTrigger = status.OnFootExterior ? StatusFlags.ShieldsUp : Trigger;
-        var currentState = status.Flags.HasFlag(activeTrigger);
+        StatusFlags activeTrigger = status.OnFootExterior ? StatusFlags.ShieldsUp : Trigger;
+        bool currentState = status.Flags.HasFlag(activeTrigger);
         if (previousState is null || previousTrigger != activeTrigger)
         {
             previousState = currentState;
@@ -26,7 +26,7 @@ public sealed class StatusBlinkDetector(StatusFlags trigger, TimeSpan maximumInt
 
         if (previousState == currentState)
         {
-            var primed = previousChange is { } last && observedAt - last < MaximumInterval;
+            bool primed = previousChange is { } last && observedAt - last < MaximumInterval;
             if (!primed)
             {
                 previousChange = null;
@@ -36,7 +36,7 @@ public sealed class StatusBlinkDetector(StatusFlags trigger, TimeSpan maximumInt
         }
 
         previousState = currentState;
-        var detected =
+        bool detected =
             previousChange is { } previous && observedAt >= previous && observedAt - previous < MaximumInterval;
         previousChange = detected ? null : observedAt;
         return new StatusBlinkResult(detected, !detected, activeTrigger);

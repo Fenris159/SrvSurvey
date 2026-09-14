@@ -11,7 +11,7 @@ public sealed class ColonizationProjectEditorViewModelTests
     public async Task DoesNotReadOrWriteWithoutCompleteConsentedContext()
     {
         var client = new StubRavenColonialClient();
-        var editor = Create(client);
+        ColonizationProjectEditorViewModel editor = Create(client);
 
         await editor.PrepareAsync();
 
@@ -26,7 +26,7 @@ public sealed class ColonizationProjectEditorViewModelTests
     [Fact]
     public async Task PrepareReadsContextAndMapsAPlannedSiteWithoutPublishing()
     {
-        var layout = catalog.FindByBuildType("no_truss")!.Layouts[1];
+        string layout = catalog.FindByBuildType("no_truss")!.Layouts[1];
         var client = new StubRavenColonialClient
         {
             Architect = "Project Architect",
@@ -49,7 +49,7 @@ public sealed class ColonizationProjectEditorViewModelTests
                 },
             ],
         };
-        var editor = Create(client);
+        ColonizationProjectEditorViewModel editor = Create(client);
         editor.UpdateContext(ReadyContext());
 
         await editor.PrepareAsync();
@@ -70,9 +70,9 @@ public sealed class ColonizationProjectEditorViewModelTests
     [Fact]
     public async Task ReviewIsLocalAndConfirmationPublishesExactlyOnce()
     {
-        var createdCount = 0;
+        int createdCount = 0;
         var client = new StubRavenColonialClient();
-        var editor = Create(
+        ColonizationProjectEditorViewModel editor = Create(
             client,
             _ =>
             {
@@ -127,7 +127,7 @@ public sealed class ColonizationProjectEditorViewModelTests
                 [primary, createdSite],
             ]),
         };
-        var editor = Create(client);
+        ColonizationProjectEditorViewModel editor = Create(client);
         editor.UpdateContext(ReadyContext() with { RavenApiKey = "secret-key" });
         await editor.PrepareAsync();
         editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
@@ -159,7 +159,7 @@ public sealed class ColonizationProjectEditorViewModelTests
                 },
             ],
         };
-        var editor = Create(client);
+        ColonizationProjectEditorViewModel editor = Create(client);
         editor.UpdateContext(ReadyContext());
         await editor.PrepareAsync();
         editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
@@ -177,7 +177,7 @@ public sealed class ColonizationProjectEditorViewModelTests
     public async Task InvalidBodyNumberCannotReachPublishConfirmation()
     {
         var client = new StubRavenColonialClient();
-        var editor = Create(client);
+        ColonizationProjectEditorViewModel editor = Create(client);
         editor.UpdateContext(ReadyContext());
         await editor.PrepareAsync();
         editor.BodyNumberText = "invalid";
@@ -207,7 +207,7 @@ public sealed class ColonizationProjectEditorViewModelTests
                 },
             ],
         };
-        var editor = Create(client);
+        ColonizationProjectEditorViewModel editor = Create(client);
         editor.UpdateContext(ReadyContext());
 
         await editor.PrepareAsync();
@@ -224,7 +224,7 @@ public sealed class ColonizationProjectEditorViewModelTests
     public async Task ContextChangeDiscardsStaleConfirmation()
     {
         var client = new StubRavenColonialClient();
-        var editor = Create(client);
+        ColonizationProjectEditorViewModel editor = Create(client);
         editor.UpdateContext(ReadyContext());
         await editor.PrepareAsync();
         await editor.ReviewAsync();

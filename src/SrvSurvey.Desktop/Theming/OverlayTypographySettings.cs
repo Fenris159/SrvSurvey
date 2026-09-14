@@ -62,7 +62,7 @@ public sealed record OverlayTypographySettings(
 
         if (
             values[key] is not JsonValue value
-            || !value.TryGetValue<double>(out var fontSize)
+            || !value.TryGetValue<double>(out double fontSize)
             || !double.IsFinite(fontSize)
             || fontSize is < MinimumFontSize or > MaximumFontSize
         )

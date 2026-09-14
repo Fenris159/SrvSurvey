@@ -10,8 +10,8 @@ public sealed class CachingCanonnSystemPoiClientTests
         var inner = new StubClient();
         var client = new CachingCanonnSystemPoiClient(inner);
 
-        var first = client.GetAsync(" Test ", " Cmdr ");
-        var second = client.GetAsync("test", "cmdr");
+        Task<CanonnSystemPoiResult> first = client.GetAsync(" Test ", " Cmdr ");
+        Task<CanonnSystemPoiResult> second = client.GetAsync("test", "cmdr");
         inner.Complete(new CanonnSystemPoiResult("Test", []));
 
         Assert.Same(await first, await second);
@@ -25,11 +25,11 @@ public sealed class CachingCanonnSystemPoiClientTests
     {
         var inner = new StubClient();
         var client = new CachingCanonnSystemPoiClient(inner);
-        var failed = client.GetAsync("Test", "Cmdr");
+        Task<CanonnSystemPoiResult> failed = client.GetAsync("Test", "Cmdr");
         inner.Fail(new HttpRequestException("offline"));
         await Assert.ThrowsAsync<HttpRequestException>(() => failed);
 
-        var retry = client.GetAsync("Test", "Cmdr");
+        Task<CanonnSystemPoiResult> retry = client.GetAsync("Test", "Cmdr");
         inner.Complete(new CanonnSystemPoiResult("Test", []));
 
         Assert.Equal("Test", (await retry).SystemName);

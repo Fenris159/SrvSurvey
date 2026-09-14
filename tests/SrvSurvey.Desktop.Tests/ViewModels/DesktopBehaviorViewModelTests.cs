@@ -16,7 +16,7 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     public void StartupAndMinimizeFocusTheCurrentCommanderWindow()
     {
         var switcher = new RecordingSwitcher();
-        var viewModel = CreateViewModel(switcher);
+        DesktopBehaviorViewModel viewModel = CreateViewModel(switcher);
 
         Assert.True(viewModel.RequestStartupFocus());
         Assert.True(viewModel.RequestMinimizeFocus());
@@ -29,9 +29,9 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     public void OnlyLiveFsdJumpUsesOptionalFocusPolicy()
     {
         var switcher = new RecordingSwitcher();
-        var viewModel = CreateViewModel(switcher);
+        DesktopBehaviorViewModel viewModel = CreateViewModel(switcher);
         viewModel.FocusGameAfterFsdJump = true;
-        var jump = Parse("{\"event\":\"FSDJump\"}");
+        JournalEventEnvelope jump = Parse("{\"event\":\"FSDJump\"}");
 
         viewModel.ApplyJournalEvents([jump], isBootstrapRead: true);
         viewModel.ApplyJournalEvents([Parse("{\"event\":\"Scan\"}")], isBootstrapRead: false);
@@ -47,7 +47,7 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     public void MissingGameWindowReportsNonFatalStatus()
     {
         var switcher = new RecordingSwitcher { Result = false };
-        var viewModel = CreateViewModel(switcher);
+        DesktopBehaviorViewModel viewModel = CreateViewModel(switcher);
 
         Assert.False(viewModel.RequestStartupFocus());
 
@@ -57,10 +57,10 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     [Fact]
     public void ApplicationWindowPreferencesPersistAndSignalPlacementChange()
     {
-        var viewModel = CreateViewModel(new RecordingSwitcher());
+        DesktopBehaviorViewModel viewModel = CreateViewModel(new RecordingSwitcher());
         var monitor = new ApplicationMonitorOption("\\\\.\\DISPLAY2", "DISPLAY2 · 2560 × 1440 · 100%");
         viewModel.SetAvailableMonitors([monitor]);
-        var changeCount = 0;
+        int changeCount = 0;
         viewModel.ApplicationWindowPreferencesChanged += (_, _) => changeCount++;
 
         viewModel.SelectedMonitor = monitor;
@@ -72,7 +72,9 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
         Assert.Equal(2, changeCount);
         Assert.Same(monitor, viewModel.SelectedMonitor);
         Assert.Equal(125, viewModel.SelectedApplicationWindowScale.Percent);
-        var saved = new DesktopBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")).Load();
+        DesktopBehaviorPreferences saved = new DesktopBehaviorSettingsStore(
+            Path.Combine(temporaryDirectory, "ui-settings.json")
+        ).Load();
         Assert.Equal("\\\\.\\DISPLAY2", saved.PreferredMonitorId);
         Assert.Equal(125, saved.ApplicationWindowScalePercent);
         Assert.Equal(new ApplicationWindowPosition(2100, 75, "\\\\.\\DISPLAY2"), saved.LastApplicationWindowPosition);
@@ -81,8 +83,8 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     [Fact]
     public void ReducedMotionPreferencePersistsWithoutPlacementNotification()
     {
-        var viewModel = CreateViewModel(new RecordingSwitcher());
-        var placementChangeCount = 0;
+        DesktopBehaviorViewModel viewModel = CreateViewModel(new RecordingSwitcher());
+        int placementChangeCount = 0;
         viewModel.ApplicationWindowPreferencesChanged += (_, _) => placementChangeCount++;
 
         viewModel.ReduceMotion = true;
@@ -97,11 +99,11 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     [Fact]
     public void SavedMonitorFallsBackToAutomaticBeforeMonitorEnumeration()
     {
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         new DesktopBehaviorSettingsStore(path).Save(
             new DesktopBehaviorPreferences(true, true, false, false, "DP-2", 100)
         );
-        var viewModel = CreateViewModel(new RecordingSwitcher());
+        DesktopBehaviorViewModel viewModel = CreateViewModel(new RecordingSwitcher());
 
         Assert.Same(ApplicationMonitorOption.Automatic, viewModel.SelectedMonitor);
     }
@@ -109,11 +111,11 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
     [Fact]
     public void DisconnectedSavedMonitorRemainsSelectedWithFallbackLabel()
     {
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         new DesktopBehaviorSettingsStore(path).Save(
             new DesktopBehaviorPreferences(true, true, false, false, "DP-2", 100)
         );
-        var viewModel = CreateViewModel(new RecordingSwitcher());
+        DesktopBehaviorViewModel viewModel = CreateViewModel(new RecordingSwitcher());
 
         viewModel.SetAvailableMonitors([new ApplicationMonitorOption("DP-1", "DP-1 (Primary)")]);
 
@@ -139,7 +141,7 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out _));
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out _));
         return result!;
     }
 

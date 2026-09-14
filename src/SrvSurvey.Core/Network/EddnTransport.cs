@@ -75,8 +75,8 @@ internal sealed class EddnTransport
         ArgumentNullException.ThrowIfNull(queued);
         queued.normalizeSchemaMode();
 
-        var payload = JsonConvert.SerializeObject(queued.toPayload(), Formatting.None);
-        var payloadBytes = Encoding.UTF8.GetBytes(payload);
+        string payload = JsonConvert.SerializeObject(queued.toPayload(), Formatting.None);
+        byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
         if (payloadBytes.Length > MaximumUncompressedPayloadBytes)
         {
             return EddnUploadResult.skipped(
@@ -86,7 +86,7 @@ internal sealed class EddnTransport
             );
         }
 
-        var compressed = compress(payloadBytes);
+        byte[] compressed = compress(payloadBytes);
         if (compressed.Length > MaximumPayloadBytes)
         {
             return EddnUploadResult.skipped(
@@ -105,10 +105,10 @@ internal sealed class EddnTransport
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
         request.Content.Headers.ContentEncoding.Add("gzip");
 
-        using var response = await client
+        using HttpResponseMessage response = await client
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        var detail = response.IsSuccessStatusCode
+        string detail = response.IsSuccessStatusCode
             ? string.Empty
             : await readBoundedResponse(response.Content, cancellationToken).ConfigureAwait(false);
 
@@ -142,12 +142,12 @@ internal sealed class EddnTransport
 
     private static async Task<string> readBoundedResponse(HttpContent content, CancellationToken cancellationToken)
     {
-        using var stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var buffer = new byte[MaximumResponseDetailBytes];
-        var total = 0;
+        using Stream stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        byte[] buffer = new byte[MaximumResponseDetailBytes];
+        int total = 0;
         while (total < buffer.Length)
         {
-            var read = await stream
+            int read = await stream
                 .ReadAsync(buffer.AsMemory(total, buffer.Length - total), cancellationToken)
                 .ConfigureAwait(false);
             if (read == 0)
@@ -210,7 +210,7 @@ internal sealed class EddnQueuedMessage
     public string? legacyEnvironment;
     public string schemaRef = string.Empty;
     public UploadPayloadHeader header = new();
-    public JObject message = new();
+    public JObject message = [];
 
     internal void normalizeSchemaMode()
     {

@@ -17,7 +17,7 @@ public sealed class BiologyOrganismGroupViewModelTests
             Prediction("Capillum", "Yellow", 19_010_000),
         ];
 
-        var group = Assert.Single(BiologyOrganismGroupViewModel.Create(organisms));
+        BiologyOrganismGroupViewModel group = Assert.Single(BiologyOrganismGroupViewModel.Create(organisms));
 
         Assert.Equal("Tussock:", group.GenusLabel);
         Assert.Equal("1 M – 19.01 M", group.RewardText);
@@ -42,7 +42,7 @@ public sealed class BiologyOrganismGroupViewModelTests
             Prediction("Tectonicas", "Emerald", 95_190_000, isGlobalRegionalFirst: true),
         ];
 
-        var group = Assert.Single(BiologyOrganismGroupViewModel.Create(organisms));
+        BiologyOrganismGroupViewModel group = Assert.Single(BiologyOrganismGroupViewModel.Create(organisms));
 
         Assert.True(group.IsGlobalRegionalFirst);
         Assert.False(group.IsCommanderFirst);
@@ -71,7 +71,7 @@ public sealed class BiologyOrganismGroupViewModelTests
             },
         ];
 
-        var group = Assert.Single(BiologyOrganismGroupViewModel.Create(organisms));
+        BiologyOrganismGroupViewModel group = Assert.Single(BiologyOrganismGroupViewModel.Create(organisms));
 
         Assert.True(group.IsAnalyzed);
         Assert.Equal("Yellow", Assert.Single(group.Species).VariantName);
@@ -199,9 +199,9 @@ public sealed class BiologyOrganismGroupViewModelTests
                 """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;"}"""
             )
         );
-        var snapshot = scan.CreateSnapshot();
-        var body = Assert.Single(snapshot.Bodies);
-        var organism = Assert.Single(body.Organisms);
+        SystemScanSnapshot snapshot = scan.CreateSnapshot();
+        SystemScanBodySnapshot body = Assert.Single(snapshot.Bodies);
+        SystemOrganismSnapshot organism = Assert.Single(body.Organisms);
         var discoveryContext = new BiologyDiscoveryContext(
             42,
             new CommanderCodexData("fid", "Drew", 0, null, new Dictionary<long, CommanderCodexFirst>()),
@@ -219,7 +219,7 @@ public sealed class BiologyOrganismGroupViewModelTests
             DiscoveryContext = discoveryContext,
         };
 
-        var missingEntryBody = body with { Organisms = [organism with { EntryId = null }] };
+        SystemScanBodySnapshot missingEntryBody = body with { Organisms = [organism with { EntryId = null }] };
         var resolved = BiologySurveyViewModel.CreateBodyDetail(
             snapshot with
             {
@@ -231,7 +231,7 @@ public sealed class BiologyOrganismGroupViewModelTests
         );
         Assert.True(Assert.Single(resolved!.Organisms).IsCommanderFirst);
 
-        var unresolvedBody = body with
+        SystemScanBodySnapshot unresolvedBody = body with
         {
             Organisms = [organism with { EntryId = 0, Species = "$Unknown_Species;", Variant = "$Unknown_Variant;" }],
         };
@@ -289,7 +289,7 @@ public sealed class BiologyOrganismGroupViewModelTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? value, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(value);
     }
 }

@@ -13,7 +13,7 @@ public sealed class QuestSettingsStoreTests : IDisposable
     public void PreferenceRoundTripsWithoutRemovingOtherSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui.json");
+        string path = Path.Combine(temporaryDirectory, "ui.json");
         File.WriteAllText(path, "{\"Theme\":\"green-dark\",\"Future\":{\"Value\":42}}");
         var store = new QuestSettingsStore(path);
 
@@ -22,7 +22,7 @@ public sealed class QuestSettingsStoreTests : IDisposable
         store.SaveEnabled(true);
 
         Assert.True(store.LoadEnabled());
-        var saved = File.ReadAllText(path);
+        string saved = File.ReadAllText(path);
         Assert.Contains("green-dark", saved);
         Assert.Contains("42", saved);
     }

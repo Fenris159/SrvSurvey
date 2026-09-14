@@ -12,7 +12,7 @@ public sealed class FrontierCapiSnapshotParserTests
             global::System.Globalization.CultureInfo.InvariantCulture
         );
 
-        var snapshot = FrontierCapiSnapshotParser.Parse(ProfileJson, CarrierJson, fetchedAt);
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(ProfileJson, CarrierJson, fetchedAt);
 
         Assert.Equal("Fenris", snapshot.CommanderName);
         Assert.Equal(1_234_567_890, snapshot.Credits);
@@ -27,7 +27,7 @@ public sealed class FrontierCapiSnapshotParserTests
         Assert.Contains("Horizons", snapshot.Capabilities);
         Assert.Equal(100, Assert.Single(snapshot.CommanderReputation!).Score);
 
-        var carrier = Assert.IsType<FrontierCarrierSnapshot>(snapshot.Carrier);
+        FrontierCarrierSnapshot carrier = Assert.IsType<FrontierCarrierSnapshot>(snapshot.Carrier);
         Assert.Equal("RAV-001", carrier.Callsign);
         Assert.Equal("Raven's Rest", carrier.Name);
         Assert.Equal("Colonia", carrier.System);
@@ -63,7 +63,11 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var snapshot = FrontierCapiSnapshotParser.Parse(profile, carrierEnvelope, DateTimeOffset.UnixEpoch);
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(
+            profile,
+            carrierEnvelope,
+            DateTimeOffset.UnixEpoch
+        );
 
         Assert.Null(snapshot.Carrier);
         Assert.Equal(3, snapshot.CommanderReputation!.Count);
@@ -91,10 +95,10 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var snapshot = FrontierCapiSnapshotParser.Parse(profile, carrier, DateTimeOffset.UnixEpoch);
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(profile, carrier, DateTimeOffset.UnixEpoch);
 
         Assert.Equal("Sidewinder", Assert.Single(snapshot.Ships).Type);
-        var sale = Assert.Single(snapshot.Carrier!.SellOrders);
+        FrontierMarketOrderSnapshot sale = Assert.Single(snapshot.Carrier!.SellOrders);
         Assert.Equal("Health Monitor", sale.Name);
         Assert.Equal("Microresource", sale.Category);
     }
@@ -112,7 +116,7 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var snapshot = FrontierCapiSnapshotParser.Parse(profile, carrier, DateTimeOffset.UnixEpoch);
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(profile, carrier, DateTimeOffset.UnixEpoch);
 
         Assert.Equal("Honoto", snapshot.Carrier!.CurrentJump);
     }
@@ -139,16 +143,16 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var snapshot = FrontierCapiSnapshotParser.Parse(profile, null, DateTimeOffset.UnixEpoch);
+        FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(profile, null, DateTimeOffset.UnixEpoch);
 
         Assert.Equal(88, snapshot.CommanderId);
         Assert.Equal("Federation", snapshot.LastSystemDetails!.Allegiance);
         Assert.Contains("Shipyard", snapshot.LastStationDetails!.Services);
-        var ship = Assert.IsType<FrontierShipSnapshot>(snapshot.CurrentShip);
+        FrontierShipSnapshot ship = Assert.IsType<FrontierShipSnapshot>(snapshot.CurrentShip);
         Assert.Equal(95, ship.HullHealth);
         Assert.Equal(6.206, ship.Paintwork);
         Assert.Equal(34, ship.SystemAddress);
-        var module = Assert.Single(ship.Modules!);
+        FrontierShipModuleSnapshot module = Assert.Single(ship.Modules!);
         Assert.Equal("Felicity Farseer", module.Engineer);
         Assert.Equal("int_engine_size2_class1", module.InternalName);
         Assert.Equal(5, Assert.Single(ship.LaunchBays!).Rebuilds);
@@ -185,8 +189,8 @@ public sealed class FrontierCapiSnapshotParserTests
             global::System.Globalization.CultureInfo.InvariantCulture
         );
 
-        var parsedMarket = FrontierCapiSnapshotParser.ParseMarket(market, fetchedAt);
-        var parsedShipyard = FrontierCapiSnapshotParser.ParseShipyard(shipyard, fetchedAt);
+        FrontierMarketSnapshot parsedMarket = FrontierCapiSnapshotParser.ParseMarket(market, fetchedAt);
+        FrontierShipyardSnapshot parsedShipyard = FrontierCapiSnapshotParser.ParseShipyard(shipyard, fetchedAt);
 
         Assert.Equal("Starport", parsedMarket.OutpostType);
         Assert.Equal("Gold", Assert.Single(parsedMarket.Commodities).Name);
@@ -220,7 +224,9 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var goal = Assert.Single(FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals));
+        FrontierCommunityGoalSnapshot goal = Assert.Single(
+            FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals)
+        );
 
         Assert.Equal(321, goal.Id);
         Assert.Equal("Support the relief effort.", goal.Description);
@@ -254,7 +260,9 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var goal = Assert.Single(FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals));
+        FrontierCommunityGoalSnapshot goal = Assert.Single(
+            FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals)
+        );
 
         Assert.Equal(855, goal.Id);
         Assert.Equal("Robardin Rock", goal.Market);
@@ -281,7 +289,9 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var goals = FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals);
+        IReadOnlyList<FrontierCommunityGoalSnapshot> goals = FrontierCapiSnapshotParser.ParseCommunityGoals(
+            communityGoals
+        );
 
         Assert.Equal(3, goals.Count);
         Assert.Equal([855, 856, 857], goals.Select(goal => goal.Id));
@@ -290,7 +300,7 @@ public sealed class FrontierCapiSnapshotParserTests
     [Fact]
     public void RejectsProfileWithoutCommanderIdentity()
     {
-        var exception = Assert.Throws<InvalidDataException>(() =>
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
             FrontierCapiSnapshotParser.Parse("{\"commander\":{}}", null, DateTimeOffset.UnixEpoch)
         );
 

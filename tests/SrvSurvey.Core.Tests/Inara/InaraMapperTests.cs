@@ -22,10 +22,10 @@ public sealed class InaraMapperTests
     public void PayloadUsesOnlyTheCommandersPersonalKey()
     {
         var credentials = new InaraCredentials("Test Commander", "F123456", "personal-key");
-        var events = new[] { new InaraEvent("getCommanderProfile", "2026-07-28T12:00:00Z", new JObject()) };
+        InaraEvent[] events = new[] { new InaraEvent("getCommanderProfile", "2026-07-28T12:00:00Z", new JObject()) };
 
-        var payload = InaraPayloadBuilder.Build("2.0.95.0", credentials, events);
-        var header = Assert.IsType<JObject>(payload["header"]);
+        JObject payload = InaraPayloadBuilder.Build("2.0.95.0", credentials, events);
+        JObject header = Assert.IsType<JObject>(payload["header"]);
 
         Assert.Equal("SrvSurvey", header.Value<string>("appName"));
         Assert.Equal("personal-key", header.Value<string>("APIkey"));
@@ -84,7 +84,7 @@ public sealed class InaraMapperTests
     public void FsdJumpMapsToInaraTravelEvent()
     {
         var mapper = new InaraEventMapper();
-        var mapped = mapper.Process(
+        IReadOnlyList<InaraEvent> mapped = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -100,7 +100,7 @@ public sealed class InaraMapperTests
             true
         );
 
-        var jump = Assert.Single(mapped, item => item.Name == "addCommanderTravelFSDJump");
+        InaraEvent jump = Assert.Single(mapped, item => item.Name == "addCommanderTravelFSDJump");
         Assert.Equal("Alpha Centauri", jump.Data.Value<string>("starsystemName"));
         Assert.Equal(4.37, jump.Data.Value<double>("jumpDistance"));
         Assert.Equal(42, jump.Data.Value<long>("shipGameID"));
@@ -111,7 +111,7 @@ public sealed class InaraMapperTests
     {
         var mapper = new InaraEventMapper();
 
-        var major = mapper.Process(
+        IReadOnlyList<InaraEvent> major = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -125,10 +125,10 @@ public sealed class InaraMapperTests
             Context,
             true
         );
-        var majorEvent = Assert.Single(major, item => item.Name == "setCommanderReputationMajorFaction");
+        InaraEvent majorEvent = Assert.Single(major, item => item.Name == "setCommanderReputationMajorFaction");
         Assert.Equal(2, Assert.IsType<JArray>(majorEvent.Data).Count);
 
-        var minor = mapper.Process(
+        IReadOnlyList<InaraEvent> minor = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -145,7 +145,7 @@ public sealed class InaraMapperTests
             Context,
             true
         );
-        var minorEvent = Assert.Single(minor, item => item.Name == "setCommanderReputationMinorFaction");
+        InaraEvent minorEvent = Assert.Single(minor, item => item.Name == "setCommanderReputationMinorFaction");
         Assert.Equal(2, Assert.IsType<JArray>(minorEvent.Data).Count);
     }
 
@@ -153,7 +153,7 @@ public sealed class InaraMapperTests
     public void UnknownTaxiStateDoesNotClaimTheCommandersShip()
     {
         var mapper = new InaraEventMapper();
-        var mapped = mapper.Process(
+        IReadOnlyList<InaraEvent> mapped = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -172,7 +172,7 @@ public sealed class InaraMapperTests
             true
         );
 
-        var jump = Assert.Single(mapped, item => item.Name == "addCommanderTravelFSDJump");
+        InaraEvent jump = Assert.Single(mapped, item => item.Name == "addCommanderTravelFSDJump");
         Assert.Null(jump.Data["isTaxiShuttle"]);
         Assert.Null(jump.Data["shipGameID"]);
         Assert.Null(jump.Data["shipType"]);
@@ -185,7 +185,7 @@ public sealed class InaraMapperTests
         var credentials = new InaraCredentials("Test Commander", "F123456", "personal-key");
         var queue = new InaraEventQueue();
 
-        var initial = mapper.Process(
+        IReadOnlyList<InaraEvent> initial = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -201,7 +201,7 @@ public sealed class InaraMapperTests
         );
         queue.Enqueue(credentials.ApiKey, initial.Where(item => item.ReplaceKey == "inventory:cargo"));
 
-        var changed = mapper.Process(
+        IReadOnlyList<InaraEvent> changed = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -218,8 +218,8 @@ public sealed class InaraMapperTests
         );
         queue.Enqueue(credentials.ApiKey, changed.Where(item => item.ReplaceKey == "inventory:cargo"));
 
-        var queued = Assert.Single(queue.TakeAll());
-        var cargo = Assert.IsType<JArray>(queued.Event.Data);
+        InaraQueuedEvent queued = Assert.Single(queue.TakeAll());
+        JArray cargo = Assert.IsType<JArray>(queued.Event.Data);
         Assert.Equal(5, Assert.Single(cargo.OfType<JObject>()).Value<int>("itemCount"));
     }
 
@@ -230,7 +230,7 @@ public sealed class InaraMapperTests
         var second = new InaraCredentials("Second", "F2", "key-2");
         var queue = new InaraEventQueue();
 
-        var dropped = queue.Enqueue(
+        int dropped = queue.Enqueue(
             first.ApiKey,
             Enumerable
                 .Range(0, 5)
@@ -244,7 +244,7 @@ public sealed class InaraMapperTests
             maximumCount: 5
         );
 
-        var batch = queue.TakeBatch(second.ApiKey, 2, out var discarded);
+        List<InaraQueuedEvent> batch = queue.TakeBatch(second.ApiKey, 2, out int discarded);
 
         Assert.Equal(4, discarded);
         Assert.Equal("second", Assert.Single(batch).Event.Name);
@@ -264,7 +264,7 @@ public sealed class InaraMapperTests
         var mapper = new InaraEventMapper();
         var credentials = new InaraCredentials("Test Commander", "F123456", "personal-key");
         var queue = new InaraEventQueue();
-        var accepted = mapper.Process(
+        IReadOnlyList<InaraEvent> accepted = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -281,7 +281,7 @@ public sealed class InaraMapperTests
             true
         );
         queue.Enqueue(credentials.ApiKey, accepted);
-        var terminal = mapper.Process(
+        IReadOnlyList<InaraEvent> terminal = mapper.Process(
             JObject.Parse(
                 $$"""
                 {
@@ -296,7 +296,7 @@ public sealed class InaraMapperTests
         );
         queue.Enqueue(credentials.ApiKey, terminal);
 
-        var missionEvents = queue
+        InaraQueuedEvent[] missionEvents = queue
             .TakeAll()
             .Where(item => item.Event.Name.Contains("Mission", StringComparison.Ordinal))
             .ToArray();
@@ -320,7 +320,7 @@ public sealed class InaraMapperTests
             true
         );
 
-        var suppressed = mapper.Process(
+        IReadOnlyList<InaraEvent> suppressed = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -347,7 +347,7 @@ public sealed class InaraMapperTests
             Context,
             true
         );
-        var resumed = mapper.Process(
+        IReadOnlyList<InaraEvent> resumed = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -371,7 +371,7 @@ public sealed class InaraMapperTests
     public void MulticrewRequiresFreshInventorySnapshotsAfterReturning()
     {
         var mapper = new InaraEventMapper();
-        var ownCargo = mapper.Process(
+        IReadOnlyList<InaraEvent> ownCargo = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -396,7 +396,7 @@ public sealed class InaraMapperTests
             Context,
             true
         );
-        var crewCargo = mapper.Process(
+        IReadOnlyList<InaraEvent> crewCargo = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -413,7 +413,7 @@ public sealed class InaraMapperTests
         );
         Assert.Empty(crewCargo);
 
-        var leaving = mapper.Process(
+        IReadOnlyList<InaraEvent> leaving = mapper.Process(
             JObject.Parse(
                 """
                 { "timestamp": "2026-07-28T12:03:00Z", "event": "QuitACrew" }
@@ -424,7 +424,7 @@ public sealed class InaraMapperTests
         );
         Assert.DoesNotContain(leaving, item => item.Name == "setCommanderInventoryCargo");
 
-        var resumed = mapper.Process(
+        IReadOnlyList<InaraEvent> resumed = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -441,7 +441,7 @@ public sealed class InaraMapperTests
         );
         Assert.DoesNotContain(resumed, item => item.Name == "setCommanderInventoryCargo");
 
-        var refreshed = mapper.Process(
+        IReadOnlyList<InaraEvent> refreshed = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -455,8 +455,8 @@ public sealed class InaraMapperTests
             Context,
             true
         );
-        var snapshot = Assert.Single(refreshed, item => item.Name == "setCommanderInventoryCargo");
-        var item = Assert.Single(Assert.IsType<JArray>(snapshot.Data).OfType<JObject>());
+        InaraEvent snapshot = Assert.Single(refreshed, item => item.Name == "setCommanderInventoryCargo");
+        JObject item = Assert.Single(Assert.IsType<JArray>(snapshot.Data).OfType<JObject>());
         Assert.Equal("tea", item.Value<string>("itemName"));
         Assert.Equal(3, item.Value<int>("itemCount"));
     }
@@ -465,7 +465,7 @@ public sealed class InaraMapperTests
     public void CreditTransactionsUseTheDocumentedHourlyCadence()
     {
         var mapper = new InaraEventMapper();
-        var startup = mapper.Process(
+        IReadOnlyList<InaraEvent> startup = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -481,7 +481,7 @@ public sealed class InaraMapperTests
         );
         Assert.Single(startup, item => item.Name == "setCommanderCredits");
 
-        var purchase = mapper.Process(
+        IReadOnlyList<InaraEvent> purchase = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -498,7 +498,7 @@ public sealed class InaraMapperTests
         );
         Assert.DoesNotContain(purchase, item => item.Name == "setCommanderCredits");
 
-        var hourly = mapper.Process(
+        IReadOnlyList<InaraEvent> hourly = mapper.Process(
             JObject.Parse(
                 """
                 {
@@ -511,7 +511,7 @@ public sealed class InaraMapperTests
             Context,
             true
         );
-        var report = Assert.Single(hourly, item => item.Name == "setCommanderCredits");
+        InaraEvent report = Assert.Single(hourly, item => item.Name == "setCommanderCredits");
         Assert.Equal(900, report.Data.Value<long>("commanderCredits"));
     }
 
@@ -549,7 +549,7 @@ public sealed class InaraMapperTests
             true
         );
 
-        var shutdown = mapper.Process(
+        IReadOnlyList<InaraEvent> shutdown = mapper.Process(
             JObject.Parse(
                 """
                 { "timestamp": "2026-07-28T12:06:00Z", "event": "Shutdown" }
@@ -558,7 +558,7 @@ public sealed class InaraMapperTests
             Context,
             true
         );
-        var report = Assert.Single(shutdown, item => item.Name == "setCommanderCredits");
+        InaraEvent report = Assert.Single(shutdown, item => item.Name == "setCommanderCredits");
         Assert.Equal(1250, report.Data.Value<long>("commanderCredits"));
     }
 }

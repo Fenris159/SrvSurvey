@@ -15,7 +15,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
     {
         var store = new CommanderCodexStore(temporaryDirectory);
 
-        var result = await store.LoadAsync("F123", "Cmdr Test");
+        CommanderCodexLoadResult result = await store.LoadAsync("F123", "Cmdr Test");
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Exists);
@@ -43,7 +43,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
         );
         var store = new CommanderCodexStore(temporaryDirectory);
 
-        var result = await store.DiscoverCommandersAsync();
+        CommanderCodexCommanderCatalogResult result = await store.DiscoverCommandersAsync();
 
         Assert.True(result.IsSuccess);
         Assert.Equal(["F1", "F2"], result.Commanders.Select(commander => commander.FrontierId));
@@ -54,7 +54,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
     public async Task LoadsLegacyStringsAndIsolatesMalformedEntries()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "F123-codex.json");
+        string path = Path.Combine(temporaryDirectory, "F123-codex.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -71,12 +71,12 @@ public sealed class CommanderCodexStoreTests : IDisposable
         );
         var store = new CommanderCodexStore(temporaryDirectory);
 
-        var result = await store.LoadAsync("F123", "Cmdr Current");
+        CommanderCodexLoadResult result = await store.LoadAsync("F123", "Cmdr Current");
 
         Assert.True(result.IsSuccess);
         Assert.True(result.Exists);
         Assert.Equal("Cmdr Legacy", result.Data!.CommanderName);
-        var first = Assert.Single(result.Data.Firsts).Value;
+        CommanderCodexFirst first = Assert.Single(result.Data.Firsts).Value;
         Assert.Equal(669611992529, first.SystemAddress);
         Assert.Equal(11, first.BodyId);
         Assert.Single(result.Warnings);
@@ -90,7 +90,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
     public async Task TrackingIsAtomicLosslessAndKeepsEarliestValidFirst()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "F123-codex.json");
+        string path = Path.Combine(temporaryDirectory, "F123-codex.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -105,7 +105,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
         var store = new CommanderCodexStore(temporaryDirectory);
         var firstTime = new DateTimeOffset(2025, 1, 2, 3, 4, 5, TimeSpan.Zero);
 
-        var repaired = await store.TrackAsync(
+        CommanderCodexTrackResult repaired = await store.TrackAsync(
             new CommanderCodexTrackRequest
             {
                 FrontierId = "F123",
@@ -116,7 +116,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
                 BodyId = 7,
             }
         );
-        var later = await store.TrackAsync(
+        CommanderCodexTrackResult later = await store.TrackAsync(
             new CommanderCodexTrackRequest
             {
                 FrontierId = "F123",
@@ -127,7 +127,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
                 BodyId = 8,
             }
         );
-        var earlier = await store.TrackAsync(
+        CommanderCodexTrackResult earlier = await store.TrackAsync(
             new CommanderCodexTrackRequest
             {
                 FrontierId = "F123",
@@ -144,11 +144,11 @@ public sealed class CommanderCodexStoreTests : IDisposable
         Assert.True(later.IsSuccess);
         Assert.False(later.Changed);
         Assert.True(earlier.Changed);
-        var loaded = await store.LoadAsync("F123", null);
-        var first = Assert.Single(loaded.Data!.Firsts).Value;
+        CommanderCodexLoadResult loaded = await store.LoadAsync("F123", null);
+        CommanderCodexFirst first = Assert.Single(loaded.Data!.Firsts).Value;
         Assert.Equal(24, first.SystemAddress);
         Assert.Equal(3, first.BodyId);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["future"]!["keep"]!.GetValue<bool>());
         Assert.Equal("Cmdr Test", root["commander"]!.GetValue<string>());
         Assert.Empty(Directory.GetFiles(temporaryDirectory, "*.tmp-*"));
@@ -159,7 +159,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
     {
         var store = new CommanderCodexStore(temporaryDirectory);
 
-        var tracked = await store.TrackAsync(
+        CommanderCodexTrackResult tracked = await store.TrackAsync(
             new CommanderCodexTrackRequest
             {
                 FrontierId = "F123",
@@ -175,7 +175,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
                 RegionName = "Inner Orion Spur",
             }
         );
-        var loaded = await store.LoadAsync("F123", "Cmdr Test", regionId: 18);
+        CommanderCodexLoadResult loaded = await store.LoadAsync("F123", "Cmdr Test", regionId: 18);
 
         Assert.True(tracked.IsSuccess);
         Assert.EndsWith("F123-codex-18.json", tracked.Path);
@@ -188,7 +188,7 @@ public sealed class CommanderCodexStoreTests : IDisposable
     public async Task ManualOverridesAreLosslessAndCannotRemoveJournalFirsts()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "F123-codex.json");
+        string path = Path.Combine(temporaryDirectory, "F123-codex.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -206,9 +206,25 @@ public sealed class CommanderCodexStoreTests : IDisposable
             global::System.Globalization.CultureInfo.InvariantCulture
         );
 
-        var added = await store.SetManualDiscoveryAsync("F123", "Cmdr Test", 2310206, true, timestamp);
-        var protectedFirst = await store.SetManualDiscoveryAsync("F123", "Cmdr Test", 2310101, false);
-        var removed = await store.SetManualDiscoveryAsync("F123", "Cmdr Test", 2310206, false);
+        CommanderCodexManualUpdateResult added = await store.SetManualDiscoveryAsync(
+            "F123",
+            "Cmdr Test",
+            2310206,
+            true,
+            timestamp
+        );
+        CommanderCodexManualUpdateResult protectedFirst = await store.SetManualDiscoveryAsync(
+            "F123",
+            "Cmdr Test",
+            2310101,
+            false
+        );
+        CommanderCodexManualUpdateResult removed = await store.SetManualDiscoveryAsync(
+            "F123",
+            "Cmdr Test",
+            2310206,
+            false
+        );
 
         Assert.True(added.IsSuccess);
         Assert.True(added.Changed);
@@ -217,10 +233,10 @@ public sealed class CommanderCodexStoreTests : IDisposable
         Assert.True(protectedFirst.IsDiscovered);
         Assert.True(removed.Changed);
         Assert.False(removed.IsDiscovered);
-        var loaded = await store.LoadAsync("F123", null);
-        var first = Assert.Single(loaded.Data!.Firsts).Value;
+        CommanderCodexLoadResult loaded = await store.LoadAsync("F123", null);
+        CommanderCodexFirst first = Assert.Single(loaded.Data!.Firsts).Value;
         Assert.Equal(42, first.SystemAddress);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["future"]!["keep"]!.GetValue<bool>());
         Assert.Equal("Cmdr Test", root["commander"]!.GetValue<string>());
     }

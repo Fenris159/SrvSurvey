@@ -18,7 +18,7 @@ public sealed class VoxStellarPublisherTests
         using var publisher = new VoxStellarPublisher("2.1.3.0", sharedKey, client);
         publisher.SetEnabled(true);
 
-        var result = await publisher.ApplyAsync(
+        VoxStellarPublicationResult result = await publisher.ApplyAsync(
             new VoxStellarApplyRequest
             {
                 JournalEvents =
@@ -32,7 +32,7 @@ public sealed class VoxStellarPublisherTests
             }
         );
 
-        var request = await handler.Request.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        RecordedRequest request = await handler.Request.Task.WaitAsync(TimeSpan.FromSeconds(2));
         Assert.Equal(["Scan"], result.QueuedEventNames);
         Assert.Empty(result.Warnings);
         Assert.Equal(HttpMethod.Post, request.Method);
@@ -53,9 +53,9 @@ public sealed class VoxStellarPublisherTests
         var handler = new RecordingHandler();
         using var client = new HttpClient(handler);
         using var publisher = new VoxStellarPublisher("1.0.0", "test-key", client);
-        var scan = Parse("""{"event":"Scan","BodyName":"Test A 1"}""");
+        JournalEventEnvelope scan = Parse("""{"event":"Scan","BodyName":"Test A 1"}""");
 
-        var bootstrap = await publisher.ApplyAsync(
+        VoxStellarPublicationResult bootstrap = await publisher.ApplyAsync(
             new VoxStellarApplyRequest
             {
                 JournalEvents = [scan],
@@ -64,7 +64,7 @@ public sealed class VoxStellarPublisherTests
                 AllowPublishing = false,
             }
         );
-        var disabled = await publisher.ApplyAsync(
+        VoxStellarPublicationResult disabled = await publisher.ApplyAsync(
             new VoxStellarApplyRequest
             {
                 JournalEvents = [scan],
@@ -129,7 +129,7 @@ public sealed class VoxStellarPublisherTests
         await handler.TransportStartEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
         var disableStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var disableTask = Task.Factory.StartNew(
+        Task disableTask = Task.Factory.StartNew(
             () =>
             {
                 disableStarted.TrySetResult();
@@ -160,7 +160,7 @@ public sealed class VoxStellarPublisherTests
         using var client = new HttpClient(handler);
         using var publisher = new VoxStellarPublisher("1.0.0", sharedKey: null, client);
 
-        var result = await publisher.ApplyAsync(
+        VoxStellarPublicationResult result = await publisher.ApplyAsync(
             new VoxStellarApplyRequest
             {
                 JournalEvents = [Parse("""{"event":"FSDJump","StarSystem":"Test A"}""")],
@@ -178,7 +178,10 @@ public sealed class VoxStellarPublisherTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 
