@@ -282,6 +282,12 @@ rig detection can use the desktop ScreenCast portal and PipeWire when the
 compositor blocks X11 screen capture. Pure native Wayland is not currently a
 full-functionality overlay target.
 
+If the wrong window or monitor was shared, use **Settings → Application →
+Wayland screen capture → Choose capture source again**. This control is enabled
+only in Linux Wayland/XWayland sessions and restarts SrvSurvey before the next
+capture attempt; the desktop picker opens only if normal X11 capture fails and
+the Wayland fallback is needed.
+
 ## Build and validation
 
 Install the .NET 10 SDK, then run:

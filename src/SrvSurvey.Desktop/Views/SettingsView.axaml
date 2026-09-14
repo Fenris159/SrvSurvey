@@ -114,6 +114,33 @@
         </Grid>
       </Border>
 
+      <Border x:Name="WaylandCaptureCard"
+              Classes="card"
+              IsVisible="{Binding SettingsWorkspace.IsApplicationSelected}">
+        <Grid RowDefinitions="Auto,Auto"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="20">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Wayland screen capture" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this." />
+          </StackPanel>
+          <Button x:Name="ChooseWaylandCaptureSourceAgainButton"
+                  Grid.Column="1"
+                  Classes="secondary"
+                  VerticalAlignment="Center"
+                  Command="{Binding WaylandCapture.ChooseCaptureSourceAgainCommand}"
+                  Content="Choose capture source again" />
+          <TextBlock Grid.Row="1"
+                     Grid.ColumnSpan="2"
+                     Classes="muted"
+                     Margin="0,10,0,0"
+                     TextWrapping="Wrap"
+                     Text="{Binding WaylandCapture.StatusMessage}" />
+        </Grid>
+      </Border>
+
       <Border x:Name="DesktopBehaviorCard"
               Classes="card raised"
               IsVisible="{Binding SettingsWorkspace.IsDesktopSelected}">

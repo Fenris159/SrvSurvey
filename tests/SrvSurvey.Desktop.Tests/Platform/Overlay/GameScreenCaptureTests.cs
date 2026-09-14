@@ -68,16 +68,23 @@ public sealed class GameScreenCaptureTests
     public void X11CaptureFailureFallsBackToWaylandPortal()
     {
         var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var logs = new List<string>();
         using var capture = new FallbackGameScreenCapture(
             new StubCapture(_ =>
                 throw new InvalidOperationException("X11 could not capture the Elite Dangerous window.")
             ),
-            new StubCapture(_ => expected)
+            new StubCapture(_ => expected),
+            logs.Add,
+            "test detection"
         );
 
         CapturedPixelBuffer actual = capture.Capture(new PixelRect(0, 0, 1, 1));
 
         Assert.Same(expected, actual);
+        string message = Assert.Single(logs);
+        Assert.Contains("test detection", message);
+        Assert.Contains("switching to the Wayland portal", message);
+        Assert.Contains("X11 could not capture", message);
     }
 
     [Fact]
@@ -115,19 +122,53 @@ public sealed class GameScreenCaptureTests
     }
 
     [Fact]
+    public void WaylandReselectionRequestOverridesSavedSourceExactlyOnce()
+    {
+        string directory = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-wayland-reselect-" + Guid.NewGuid().ToString("N")
+        );
+        try
+        {
+            Directory.CreateDirectory(directory);
+            File.WriteAllText(WaylandCaptureSourceSelection.GetRestoreTokenPath(directory), "saved-source");
+
+            WaylandCaptureSourceSelection.RequestReselection(directory);
+
+            Assert.False(File.Exists(WaylandCaptureSourceSelection.GetRestoreTokenPath(directory)));
+            Assert.True(WaylandCaptureSourceSelection.ConsumeReselectionRequest(directory));
+            Assert.False(WaylandCaptureSourceSelection.ConsumeReselectionRequest(directory));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public void RepeatedCaptureFailuresBackOffAndRecover()
     {
         var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
         var time = new MutableTimeProvider(new DateTimeOffset(2026, 9, 13, 12, 0, 0, TimeSpan.Zero));
+        var logs = new List<string>();
         int attempts = 0;
         using var capture = new BackoffGameScreenCapture(
             new StubCapture(_ => ++attempts < 3 ? throw new IOException("capture failed") : expected),
-            time
+            time,
+            logs.Add,
+            "test detection"
         );
         var bounds = new PixelRect(0, 0, 1, 1);
 
         Assert.Throws<IOException>(() => capture.Capture(bounds));
-        Assert.Throws<ScreenCaptureBackoffException>(() => capture.Capture(bounds));
+        ScreenCaptureBackoffException firstBackoff = Assert.Throws<ScreenCaptureBackoffException>(() =>
+            capture.Capture(bounds)
+        );
+        Assert.IsType<IOException>(firstBackoff.InnerException);
+        Assert.Contains("capture failed", firstBackoff.Message);
         Assert.Equal(1, attempts);
 
         time.Advance(TimeSpan.FromSeconds(1));
@@ -140,6 +181,11 @@ public sealed class GameScreenCaptureTests
         Assert.Same(expected, capture.Capture(bounds));
         Assert.Same(expected, capture.Capture(bounds));
         Assert.Equal(4, attempts);
+        Assert.Equal(2, logs.Count);
+        Assert.Contains("test detection", logs[0]);
+        Assert.Contains("IOException: capture failed", logs[0]);
+        Assert.Contains("recovered after 2 failed attempts", logs[1]);
+        Assert.Contains("1 suppressed repeat reports", logs[1]);
     }
 
     [Fact]
@@ -216,12 +262,14 @@ public sealed class GameScreenCaptureTests
         Assert.Equal(1U, stream.SourceType);
         Assert.Equal(new PixelPoint(100, 200), stream.Position);
         Assert.Equal(new PixelSize(1920, 1080), stream.Size);
+        Assert.Equal("a monitor at (100,200) sized 1920x1080", stream.DescribeSource());
 
         properties.Clear();
         stream = PortalStreamInfo.Read(results);
         Assert.Equal(0U, stream.SourceType);
         Assert.Null(stream.Position);
         Assert.Null(stream.Size);
+        Assert.Equal("an unspecified source", stream.DescribeSource());
     }
 
     [Fact]

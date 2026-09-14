@@ -21,8 +21,11 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     private static int nextToken;
 
     private readonly Lock gate = new();
+    private readonly string dataDirectory;
     private readonly string restoreTokenPath;
     private readonly Func<CancellationToken, Task<bool>>? confirmScreenShare;
+    private readonly Action<string>? log;
+    private readonly string capturePurpose;
     private readonly CancellationTokenSource shutdown = new();
     private Task? initialization;
     private Connection? connection;
@@ -31,22 +34,36 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     private PipeWireVideoCapture? pipeWireCapture;
     private PortalStreamInfo streamInfo;
     private CaptureRequest? pendingRequest;
+    private bool hasLoggedFirstFrame;
+    private bool hasLoggedFirstCrop;
     private bool disposed;
 
-    public WaylandPortalGameScreenCapture(Func<CancellationToken, Task<bool>>? confirmScreenShare = null)
+    public WaylandPortalGameScreenCapture(
+        Func<CancellationToken, Task<bool>>? confirmScreenShare = null,
+        Action<string>? log = null,
+        string capturePurpose = "game-screen detection"
+    )
         : this(
-            Path.Combine(AppDataPaths.ResolveCurrent().DataDirectory, "wayland-screen-capture.token"),
-            confirmScreenShare
+            WaylandCaptureSourceSelection.GetRestoreTokenPath(AppDataPaths.ResolveCurrent().DataDirectory),
+            confirmScreenShare,
+            log,
+            capturePurpose
         ) { }
 
     internal WaylandPortalGameScreenCapture(
         string restoreTokenPath,
-        Func<CancellationToken, Task<bool>>? confirmScreenShare = null
+        Func<CancellationToken, Task<bool>>? confirmScreenShare = null,
+        Action<string>? log = null,
+        string capturePurpose = "game-screen detection"
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(restoreTokenPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(capturePurpose);
         this.restoreTokenPath = Path.GetFullPath(restoreTokenPath);
+        dataDirectory = Path.GetDirectoryName(this.restoreTokenPath)!;
         this.confirmScreenShare = confirmScreenShare;
+        this.log = log;
+        this.capturePurpose = capturePurpose;
     }
 
     public bool IsAvailable => !disposed;
@@ -166,7 +183,18 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             throw new NotSupportedException("The Wayland desktop does not offer window or monitor sharing.");
         }
 
-        string? restoreToken = portalVersion >= 4 ? TryReadRestoreToken() : null;
+        bool forceReselection = TryConsumeReselectionRequest();
+        string? restoreToken = portalVersion >= 4 && !forceReselection ? TryReadRestoreToken() : null;
+        if (forceReselection)
+        {
+            log?.Invoke($"Wayland capture ({capturePurpose}): Settings requested a fresh source selection.");
+        }
+
+        log?.Invoke(
+            $"Wayland capture ({capturePurpose}): portal version {portalVersion}; "
+                + $"available sources {DescribeAvailableSources(sourceTypes)}; "
+                + $"saved selection {(restoreToken is null ? "not available" : "requested")}."
+        );
         if (
             GameScreenCapture.ShouldShowWaylandSelectionGuidance(portalVersion, restoreToken)
             && confirmScreenShare is not null
@@ -214,6 +242,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             shutdown.Token
         );
         streamInfo = PortalStreamInfo.Read(startResponse.Results);
+        log?.Invoke($"Wayland capture ({capturePurpose}): portal selected {streamInfo.DescribeSource()}.");
         SaveRestoreToken(startResponse.Results);
 
         using CloseSafeHandle remote = await screenCast.OpenPipeWireRemoteAsync(
@@ -249,9 +278,32 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
 
         try
         {
-            request.Completion.TrySetResult(
-                PortalFrameCropper.Crop(frame, streamInfo, request.Bounds, request.SourceBounds)
+            if (!hasLoggedFirstFrame)
+            {
+                hasLoggedFirstFrame = true;
+                log?.Invoke(
+                    $"Wayland capture ({capturePurpose}): first PipeWire frame "
+                        + $"{frame.Width}x{frame.Height}, stride {frame.Stride}, format {frame.Format}; "
+                        + $"requested {DescribeBounds(request.Bounds)} from game source "
+                        + $"{DescribeBounds(request.SourceBounds)}."
+                );
+            }
+
+            CapturedPixelBuffer result = PortalFrameCropper.Crop(
+                frame,
+                streamInfo,
+                request.Bounds,
+                request.SourceBounds
             );
+            if (!hasLoggedFirstCrop)
+            {
+                hasLoggedFirstCrop = true;
+                log?.Invoke(
+                    $"Wayland capture ({capturePurpose}): first cropped frame is {result.Width}x{result.Height}."
+                );
+            }
+
+            request.Completion.TrySetResult(result);
         }
         catch (Exception exception)
         {
@@ -355,7 +407,27 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
+            log?.Invoke(
+                $"Wayland capture ({capturePurpose}): saved source selection could not be read. "
+                    + CaptureFailureDiagnostics.Describe(exception)
+            );
             return null;
+        }
+    }
+
+    private bool TryConsumeReselectionRequest()
+    {
+        try
+        {
+            return WaylandCaptureSourceSelection.ConsumeReselectionRequest(dataDirectory);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            log?.Invoke(
+                $"Wayland capture ({capturePurpose}): the source-reselection request could not be cleared. "
+                    + CaptureFailureDiagnostics.Describe(exception)
+            );
+            return true;
         }
     }
 
@@ -373,7 +445,10 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            // Persistence is optional; capture remains valid for the current session.
+            log?.Invoke(
+                $"Wayland capture ({capturePurpose}): selected source could not be saved for reuse. "
+                    + CaptureFailureDiagnostics.Describe(exception)
+            );
         }
     }
 
@@ -392,6 +467,25 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     }
 
     private static string NormalizeSenderName(string localName) => localName.TrimStart(':').Replace('.', '_');
+
+    private static string DescribeAvailableSources(uint sourceTypes)
+    {
+        var sources = new List<string>(2);
+        if ((sourceTypes & 1U) != 0)
+        {
+            sources.Add("monitor");
+        }
+
+        if ((sourceTypes & 2U) != 0)
+        {
+            sources.Add("window");
+        }
+
+        return string.Join(" and ", sources);
+    }
+
+    private static string DescribeBounds(PixelRect bounds) =>
+        $"{bounds.Width}x{bounds.Height} at ({bounds.X},{bounds.Y})";
 
     private static string ReadRequiredString(IDictionary<string, object> values, string key)
     {
@@ -422,6 +516,19 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
 
 internal readonly record struct PortalStreamInfo(uint NodeId, uint SourceType, PixelPoint? Position, PixelSize? Size)
 {
+    public string DescribeSource()
+    {
+        string source = SourceType switch
+        {
+            1U => "a monitor",
+            2U => "a window",
+            _ => "an unspecified source",
+        };
+        string position = Position is { } point ? $" at ({point.X},{point.Y})" : string.Empty;
+        string size = Size is { } dimensions ? $" sized {dimensions.Width}x{dimensions.Height}" : string.Empty;
+        return source + position + size;
+    }
+
     public static PortalStreamInfo Read(IDictionary<string, object> results)
     {
         if (

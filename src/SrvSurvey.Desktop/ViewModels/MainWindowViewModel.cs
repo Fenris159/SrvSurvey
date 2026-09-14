@@ -305,6 +305,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             Localization = new LocalizationViewModel(
                 new LocalizationSettingsStore(AppDataPaths.UiSettingsPath, AppDataPaths.DataDirectory)
             );
+            WaylandCapture = new WaylandCaptureSettingsViewModel(
+                AppDataPaths.DataDirectory,
+                !IsDiagnosticReplay && OperatingSystem.IsLinux() && GameScreenCapture.IsWaylandSession(),
+                message => resolvedApplicationLogService?.Append(message)
+            );
 
             Uri? ravenServiceUri = new RavenServiceSettingsStore(AppDataPaths.UiSettingsPath).LoadServiceUri();
             this.questSettingsStore = new QuestSettingsStore(AppDataPaths.UiSettingsPath);
@@ -1083,6 +1088,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public ReferenceDataUpdateViewModel ReferenceDataUpdates { get; }
 
     public LocalizationViewModel Localization { get; }
+
+    public WaylandCaptureSettingsViewModel WaylandCapture { get; }
 
     public ReleaseUpdateViewModel ReleaseUpdates { get; }
 

@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.2**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.3**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -32,21 +32,21 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/"
 cd "$HOME/Applications/SrvSurvey"
-chmod +x SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage
-./SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage
+chmod +x SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage
+./SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage
 ```
 
 To launch the standalone diagnostic replay controller from the same AppImage,
 pass its explicit dispatcher option:
 
 ```bash
-./SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage --replay-controller
+./SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.48.2` with the downloaded version. Keep the AppImage in this folder;
+Replace `2.1.3.0-rc.48.3` with the downloaded version. Keep the AppImage in this folder;
 create a launcher or shortcut that points to it instead of moving internal
 files out of the AppImage.
 
@@ -55,7 +55,7 @@ the same folder:
 
 ```bash
 cd "$HOME/Applications/SrvSurvey"
-./SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage --appimage-extract-and-run
+./SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage --appimage-extract-and-run
 ```
 
 ## Run the portable archive
@@ -64,10 +64,10 @@ The extracted archive directory is the application's container folder. Keep
 all files together and run `SrvSurvey.Desktop` from that directory:
 
 ```bash
-mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.2"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.2-linux-x64.tar.gz" \
-    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.2"
-cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.2"
+mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.3"
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.3-linux-x64.tar.gz" \
+    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.3"
+cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.3"
 chmod +x SrvSurvey.Desktop
 ./SrvSurvey.Desktop
 ```
@@ -155,8 +155,10 @@ The fallback requires PipeWire, WirePlumber (or another PipeWire session
 manager), `xdg-desktop-portal`, and the portal backend for the active desktop,
 such as `xdg-desktop-portal-gnome` or `xdg-desktop-portal-kde`. Full GNOME and
 KDE installations normally provide these. If the picker is canceled or the
-wrong source is shared, restart SrvSurvey and use **Test** again to start a new
-capture session.
+wrong source is shared, open **Settings → Application → Wayland screen
+capture** and choose **Choose capture source again**. SrvSurvey restarts, and
+the picker opens if the next capture attempt must fall back from X11 to Wayland
+screen sharing.
 
 ## Elite journal discovery
 

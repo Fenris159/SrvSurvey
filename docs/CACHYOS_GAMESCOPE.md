@@ -325,6 +325,11 @@ Use **Alt+Tab** if the SrvSurvey explanation or KDE picker appears behind the
 game. KDE may remember a successful selection, so the prompts normally return
 only when permission is unavailable or has expired.
 
+If the wrong source was selected, open **SrvSurvey Settings → Application →
+Wayland screen capture** and choose **Choose capture source again**. SrvSurvey
+restarts, and the KDE picker opens if FSS, first-footfall, or Surface Mining
+capture must fall back from X11 to Wayland screen sharing again.
+
 ## 6. Confirm SrvSurvey's selected path
 
 The default Linux log directory is:
