@@ -1961,6 +1961,14 @@
       "translation": "Anwendungsprotokolle und Absturzberichte"
     },
     {
+      "source": "Application renderer: automatic.",
+      "translation": "Anwendungsrenderer: automatisch."
+    },
+    {
+      "source": "Application renderer: software (diagnostic override).",
+      "translation": "Anwendungsrenderer: Software (Diagnoseüberschreibung)."
+    },
+    {
       "source": "Application service shutdown failed: {0}",
       "translation": "Das Herunterfahren des Anwendungsdienstes ist fehlgeschlagen: {0}"
     },
@@ -22409,6 +22417,14 @@
       "translation": "SrvSurvey erfordert xdg-mime, um die Frontier-Autorisierung unter Linux zu registrieren."
     },
     {
+      "source": "SrvSurvey restart helper arguments were invalid.",
+      "translation": "SrvSurvey Die Argumente der Neustarthilfe waren ungültig."
+    },
+    {
+      "source": "SrvSurvey restart helper failed: {0}",
+      "translation": "SrvSurvey Neustarthilfe fehlgeschlagen: {0}"
+    },
+    {
       "source": "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
       "translation": "SrvSurvey stellt die letzte Fensterposition auf dem Bildschirm wieder her, wenn diese Anzeige noch verfügbar ist. Andernfalls wird der konfigurierte Standardmonitor verwendet und das Fenster auf den nutzbaren Desktop beschränkt."
     },
@@ -23003,6 +23019,14 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "SuppressForActiveBuildProjects"
+    },
+    {
+      "source": "Suppressed {0} repeated Avalonia render-loop failures; latest follows.",
+      "translation": "Unterdrückte {0} wiederholte Avalonia-Renderschleifenfehler; Neueste folgt."
+    },
+    {
+      "source": "Suppressed {0} repeated unexpected X11 errors; latest: {1}",
+      "translation": "Unterdrückte {0} wiederholte unerwartete X11-Fehler; aktuell: {1}"
     },
     {
       "source": "Suppressed {0} repeated {1} events; latest: {2}",
@@ -24067,6 +24091,14 @@
     {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "Der SrvSurvey Issue-Tracker konnte nicht geöffnet werden."
+    },
+    {
+      "source": "The SrvSurvey restart helper did not start.",
+      "translation": "Der Neustarthelfer SrvSurvey wurde nicht gestartet."
+    },
+    {
+      "source": "The SrvSurvey restart working directory could not be resolved.",
+      "translation": "Das Neustart-Arbeitsverzeichnis SrvSurvey konnte nicht aufgelöst werden."
     },
     {
       "source": "The UI settings path has no directory.",
@@ -27829,14 +27861,6 @@
       "translation": "Der Windows-Overlay-Interaktionsmodus konnte nicht aktualisiert werden (Fehler {0})."
     },
     {
-      "source": "Windows renderer: automatic.",
-      "translation": "Windows-Renderer: automatisch."
-    },
-    {
-      "source": "Windows renderer: software (diagnostic override).",
-      "translation": "Windows-Renderer: Software (Diagnoseüberschreibung)."
-    },
-    {
       "source": "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending.",
       "translation": "Höchste Windows-Transparenz, natives Durchklicken und globale Tastatureingabe sind verfügbar; Die Verfolgung des Spielfensters steht noch aus."
     },
@@ -28019,6 +28043,10 @@
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
       "translation": "[Control] PlatformImpl ist null, die Eingabe konnte nicht verarbeitet werden. (Präsentationsquelle #"
+    },
+    {
+      "source": "[Visual]Exception in render loop:",
+      "translation": "[Visual]Ausnahme in der Renderschleife:"
     },
     {
       "source": "a monitor",
@@ -31489,12 +31517,12 @@
       "translation": "{0}: {1} t"
     },
     {
-      "source": "{0}; replacement process started.",
-      "translation": "{0}; Austauschprozess gestartet."
-    },
-    {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
       "translation": "{0}; Erforderliche Header-, Commander-, Load- und Location-Bootstrap-Ereignisse, bevor der Bereich automatisch hinzugefügt wird. Validierte Status-, Fracht-, ShipLocker-, NavRoute- und Markt-Snapshots, die während der letzten 24 Stunden gespeichert wurden, werden mit der Journalzeitleiste synchronisiert. {1} Anmeldeinformationen und API-Tokens werden immer entfernt. Die Wiederholungsbereiche sind auf {2} Tage begrenzt."
+    },
+    {
+      "source": "{0}; restart helper started and will launch the replacement after this process exits.",
+      "translation": "{0}; Der Neustart-Helfer wurde gestartet und startet den Ersatz, nachdem dieser Prozess beendet wurde."
     },
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
@@ -33657,6 +33685,14 @@
     {
       "source": "Application logs and crash reports",
       "translation": "Registros de aplicaciones e informes de fallos"
+    },
+    {
+      "source": "Application renderer: automatic.",
+      "translation": "Renderizador de aplicaciones: automático."
+    },
+    {
+      "source": "Application renderer: software (diagnostic override).",
+      "translation": "Renderizador de aplicaciones: software (anulación de diagnóstico)."
     },
     {
       "source": "Application service shutdown failed: {0}",
@@ -54107,6 +54143,14 @@
       "translation": "SrvSurvey requiere xdg-mime para registrar la autorización Frontier en Linux."
     },
     {
+      "source": "SrvSurvey restart helper arguments were invalid.",
+      "translation": "SrvSurvey Los argumentos del asistente de reinicio no eran válidos."
+    },
+    {
+      "source": "SrvSurvey restart helper failed: {0}",
+      "translation": "SrvSurvey falló el asistente de reinicio: {0}"
+    },
+    {
       "source": "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
       "translation": "SrvSurvey restaura la última posición de la ventana en pantalla cuando esa visualización aún está disponible. De lo contrario, utiliza el monitor predeterminado configurado y sujeta la ventana al escritorio utilizable."
     },
@@ -54701,6 +54745,14 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "Suprimir para proyectos de construcción activa"
+    },
+    {
+      "source": "Suppressed {0} repeated Avalonia render-loop failures; latest follows.",
+      "translation": "Se suprimieron los fallos repetidos del bucle de renderizado de Avalonia en {0}; Lo último sigue."
+    },
+    {
+      "source": "Suppressed {0} repeated unexpected X11 errors; latest: {1}",
+      "translation": "{0} suprimido repitió errores X11 inesperados; último: {1}"
     },
     {
       "source": "Suppressed {0} repeated {1} events; latest: {2}",
@@ -55765,6 +55817,14 @@
     {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "No se pudo abrir el rastreador de problemas SrvSurvey."
+    },
+    {
+      "source": "The SrvSurvey restart helper did not start.",
+      "translation": "El asistente de reinicio SrvSurvey no se inició."
+    },
+    {
+      "source": "The SrvSurvey restart working directory could not be resolved.",
+      "translation": "No se pudo resolver el directorio de trabajo de reinicio SrvSurvey."
     },
     {
       "source": "The UI settings path has no directory.",
@@ -59527,14 +59587,6 @@
       "translation": "No se pudo actualizar el modo de interacción de superposición de Windows (error {0})."
     },
     {
-      "source": "Windows renderer: automatic.",
-      "translation": "Renderizador de Windows: automático."
-    },
-    {
-      "source": "Windows renderer: software (diagnostic override).",
-      "translation": "Renderizador de Windows: software (anulación de diagnóstico)."
-    },
-    {
       "source": "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending.",
       "translation": "Están disponibles la transparencia superior de Windows, el clic nativo y la entrada de teclado global; El seguimiento de la ventana del juego está pendiente."
     },
@@ -59717,6 +59769,10 @@
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
       "translation": "[Control] PlatformImpl es nulo, no se pudo manejar la entrada. (PresentaciónFuente #"
+    },
+    {
+      "source": "[Visual]Exception in render loop:",
+      "translation": "[Visual]Excepción en el bucle de renderizado:"
     },
     {
       "source": "a monitor",
@@ -63187,12 +63243,12 @@
       "translation": "{0}: {1}"
     },
     {
-      "source": "{0}; replacement process started.",
-      "translation": "{0}; Se inició el proceso de reemplazo."
-    },
-    {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
       "translation": "{0}; Los eventos de arranque de encabezado, comandante, carga y ubicación requeridos antes de que el rango se agregue automáticamente. Las instantáneas validadas de estado, carga, ShipLocker, NavRoute y mercado retenidas durante las 24 horas más recientes se sincronizarán con la línea de tiempo del diario. Las credenciales {1} y los tokens API siempre se eliminan. Los rangos de repetición están limitados a días {2}."
+    },
+    {
+      "source": "{0}; restart helper started and will launch the replacement after this process exits.",
+      "translation": "{0}; Se inició el asistente de reinicio e iniciará el reemplazo después de que finalice este proceso."
     },
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
@@ -65355,6 +65411,14 @@
     {
       "source": "Application logs and crash reports",
       "translation": "Journaux d'application et rapports d'erreur"
+    },
+    {
+      "source": "Application renderer: automatic.",
+      "translation": "Moteur de rendu d'application : automatique."
+    },
+    {
+      "source": "Application renderer: software (diagnostic override).",
+      "translation": "Moteur de rendu d'application : logiciel (remplacement de diagnostic)."
     },
     {
       "source": "Application service shutdown failed: {0}",
@@ -85805,6 +85869,14 @@
       "translation": "SrvSurvey nécessite xdg-mime pour enregistrer l'autorisation Frontier sous Linux."
     },
     {
+      "source": "SrvSurvey restart helper arguments were invalid.",
+      "translation": "SrvSurvey les arguments d'aide au redémarrage n'étaient pas valides."
+    },
+    {
+      "source": "SrvSurvey restart helper failed: {0}",
+      "translation": "SrvSurvey échec de l'aide au redémarrage : {0}"
+    },
+    {
       "source": "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
       "translation": "SrvSurvey restaure la dernière position de la fenêtre à l'écran lorsque cet affichage est toujours disponible. Sinon, il utilise le moniteur par défaut configuré et fixe la fenêtre au bureau utilisable."
     },
@@ -86399,6 +86471,14 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "SupprimerForActiveBuildProjects"
+    },
+    {
+      "source": "Suppressed {0} repeated Avalonia render-loop failures; latest follows.",
+      "translation": "Suppression des échecs répétés de la boucle de rendu Avalonia de {0} ; le dernier suit."
+    },
+    {
+      "source": "Suppressed {0} repeated unexpected X11 errors; latest: {1}",
+      "translation": "Suppression des erreurs X11 inattendues et répétées de {0} ; dernier: {1}"
     },
     {
       "source": "Suppressed {0} repeated {1} events; latest: {2}",
@@ -87463,6 +87543,14 @@
     {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "L'outil de suivi des problèmes SrvSurvey n'a pas pu être ouvert."
+    },
+    {
+      "source": "The SrvSurvey restart helper did not start.",
+      "translation": "L'assistant de redémarrage SrvSurvey n'a pas démarré."
+    },
+    {
+      "source": "The SrvSurvey restart working directory could not be resolved.",
+      "translation": "Le répertoire de travail de redémarrage SrvSurvey n'a pas pu être résolu."
     },
     {
       "source": "The UI settings path has no directory.",
@@ -91225,14 +91313,6 @@
       "translation": "Le mode d'interaction de la superposition Windows n'a pas pu être actualisé (erreur {0})."
     },
     {
-      "source": "Windows renderer: automatic.",
-      "translation": "Moteur de rendu Windows : automatique."
-    },
-    {
-      "source": "Windows renderer: software (diagnostic override).",
-      "translation": "Moteur de rendu Windows : logiciel (remplacement de diagnostic)."
-    },
-    {
       "source": "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending.",
       "translation": "La transparence la plus élevée de Windows, le clic natif et la saisie au clavier globale sont disponibles ; Le suivi de la fenêtre de jeu est en attente."
     },
@@ -91415,6 +91495,10 @@
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
       "translation": "[Contrôle] PlatformImpl est nul, n'a pas pu gérer les entrées. (Source de présentation #"
+    },
+    {
+      "source": "[Visual]Exception in render loop:",
+      "translation": "[Visuel]Exception dans la boucle de rendu :"
     },
     {
       "source": "a monitor",
@@ -94885,12 +94969,12 @@
       "translation": "{0} : {1} t"
     },
     {
-      "source": "{0}; replacement process started.",
-      "translation": "{0} ; le processus de remplacement a commencé."
-    },
-    {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
       "translation": "{0}; Les événements d'amorçage d'en-tête, de commandant, de chargement et d'emplacement requis avant que la plage ne soit ajoutée automatiquement. Les instantanés validés du statut, du fret, de ShipLocker, de NavRoute et du marché conservés au cours des 24 heures les plus récentes seront synchronisés avec la chronologie du journal. {1} Les informations d'identification et les jetons API sont toujours supprimés. Les plages de relecture sont limitées aux jours {2}."
+    },
+    {
+      "source": "{0}; restart helper started and will launch the replacement after this process exits.",
+      "translation": "{0}; L'assistant de redémarrage a démarré et lancera le remplacement une fois ce processus terminé."
     },
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
@@ -97053,6 +97137,14 @@
     {
       "source": "Application logs and crash reports",
       "translation": "Logs de aplicativos e relatórios de falhas"
+    },
+    {
+      "source": "Application renderer: automatic.",
+      "translation": "Renderizador de aplicativos: automático."
+    },
+    {
+      "source": "Application renderer: software (diagnostic override).",
+      "translation": "Renderizador de aplicativos: software (substituição de diagnóstico)."
     },
     {
       "source": "Application service shutdown failed: {0}",
@@ -117503,6 +117595,14 @@
       "translation": "SrvSurvey requer xdg-mime para registrar a autorização Frontier no Linux."
     },
     {
+      "source": "SrvSurvey restart helper arguments were invalid.",
+      "translation": "SrvSurvey os argumentos auxiliares de reinicialização eram inválidos."
+    },
+    {
+      "source": "SrvSurvey restart helper failed: {0}",
+      "translation": "SrvSurvey falha no auxiliar de reinicialização: {0}"
+    },
+    {
       "source": "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
       "translation": "SrvSurvey restaura a última posição da janela na tela quando essa exibição ainda está disponível. Caso contrário, ele usará o monitor padrão configurado e fixará a janela na área de trabalho utilizável."
     },
@@ -118097,6 +118197,14 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "SuprimirForActiveBuildProjects"
+    },
+    {
+      "source": "Suppressed {0} repeated Avalonia render-loop failures; latest follows.",
+      "translation": "{0} suprimidas falhas repetidas de loop de renderização do Avalonia; o mais recente segue."
+    },
+    {
+      "source": "Suppressed {0} repeated unexpected X11 errors; latest: {1}",
+      "translation": "{0} suprimido repetiu erros X11 inesperados; mais recente: {1}"
     },
     {
       "source": "Suppressed {0} repeated {1} events; latest: {2}",
@@ -119161,6 +119269,14 @@
     {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "O rastreador de problemas SrvSurvey não pôde ser aberto."
+    },
+    {
+      "source": "The SrvSurvey restart helper did not start.",
+      "translation": "O auxiliar de reinicialização SrvSurvey não foi iniciado."
+    },
+    {
+      "source": "The SrvSurvey restart working directory could not be resolved.",
+      "translation": "O diretório de trabalho de reinicialização SrvSurvey não pôde ser resolvido."
     },
     {
       "source": "The UI settings path has no directory.",
@@ -122923,14 +123039,6 @@
       "translation": "O modo de interação de sobreposição do Windows não pôde ser atualizado (erro {0})."
     },
     {
-      "source": "Windows renderer: automatic.",
-      "translation": "Renderizador do Windows: automático."
-    },
-    {
-      "source": "Windows renderer: software (diagnostic override).",
-      "translation": "Renderizador do Windows: software (substituição de diagnóstico)."
-    },
-    {
       "source": "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending.",
       "translation": "Estão disponíveis transparência superior do Windows, clique nativo e entrada de teclado global; O seguimento da janela do jogo está pendente."
     },
@@ -123113,6 +123221,10 @@
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
       "translation": "[Control] PlatformImpl é nulo, não foi possível processar a entrada. (Fonte de apresentação #"
+    },
+    {
+      "source": "[Visual]Exception in render loop:",
+      "translation": "[Visual]Exceção no loop de renderização:"
     },
     {
       "source": "a monitor",
@@ -126583,12 +126695,12 @@
       "translation": "{0}: {1} t"
     },
     {
-      "source": "{0}; replacement process started.",
-      "translation": "{0}; processo de substituição iniciado."
-    },
-    {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
       "translation": "{0}; os eventos de bootstrap de cabeçalho, comandante, carregamento e localização necessários antes que o intervalo seja adicionado automaticamente. Os instantâneos validados de status, carga, ShipLocker, NavRoute e Market retidos durante as 24 horas mais recentes serão sincronizados com a linha do tempo do diário. {1} Credenciais e tokens de API são sempre removidos. Os intervalos de repetição são limitados a dias {2}."
+    },
+    {
+      "source": "{0}; restart helper started and will launch the replacement after this process exits.",
+      "translation": "{0}; restart helper iniciado e iniciará a substituição após o encerramento do processo."
     },
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
@@ -128751,6 +128863,14 @@
     {
       "source": "Application logs and crash reports",
       "translation": "Журналы приложений и отчеты о сбоях"
+    },
+    {
+      "source": "Application renderer: automatic.",
+      "translation": "Рендеринг приложений: автоматический."
+    },
+    {
+      "source": "Application renderer: software (diagnostic override).",
+      "translation": "Средство визуализации приложений: программное обеспечение (переопределение диагностики)."
     },
     {
       "source": "Application service shutdown failed: {0}",
@@ -149201,6 +149321,14 @@
       "translation": "SrvSurvey требует xdg-mime для регистрации авторизации Frontier в Linux."
     },
     {
+      "source": "SrvSurvey restart helper arguments were invalid.",
+      "translation": "SrvSurvey аргументы помощника перезапуска недействительны."
+    },
+    {
+      "source": "SrvSurvey restart helper failed: {0}",
+      "translation": "SrvSurvey не удалось перезапустить помощник: {0}"
+    },
+    {
       "source": "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
       "translation": "SrvSurvey восстанавливает последнее положение окна на экране, когда это изображение все еще доступно. В противном случае он использует настроенный монитор по умолчанию и прижимает окно к рабочему столу."
     },
@@ -149795,6 +149923,14 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "Супрессфорактивебилдпроектс"
+    },
+    {
+      "source": "Suppressed {0} repeated Avalonia render-loop failures; latest follows.",
+      "translation": "Подавлены повторяющиеся сбои цикла рендеринга Avalonia {0}; последнее следует."
+    },
+    {
+      "source": "Suppressed {0} repeated unexpected X11 errors; latest: {1}",
+      "translation": "Подавлен {0}, повторяющиеся непредвиденные ошибки X11; последний: {1}"
     },
     {
       "source": "Suppressed {0} repeated {1} events; latest: {2}",
@@ -150859,6 +150995,14 @@
     {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "Не удалось открыть систему отслеживания ошибок SrvSurvey."
+    },
+    {
+      "source": "The SrvSurvey restart helper did not start.",
+      "translation": "Помощник перезапуска SrvSurvey не запустился."
+    },
+    {
+      "source": "The SrvSurvey restart working directory could not be resolved.",
+      "translation": "Не удалось разрешить рабочий каталог перезапуска SrvSurvey."
     },
     {
       "source": "The UI settings path has no directory.",
@@ -154621,14 +154765,6 @@
       "translation": "Не удалось обновить режим взаимодействия с наложением Windows (ошибка {0})."
     },
     {
-      "source": "Windows renderer: automatic.",
-      "translation": "Рендеринг Windows: автоматический."
-    },
-    {
-      "source": "Windows renderer: software (diagnostic override).",
-      "translation": "Средство визуализации Windows: программное обеспечение (переопределение диагностики)."
-    },
-    {
       "source": "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending.",
       "translation": "Доступны высочайшая прозрачность Windows, встроенный интерфейс щелчка мышью и глобальный ввод с клавиатуры; Ожидается следующее игровое окно."
     },
@@ -154811,6 +154947,10 @@
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
       "translation": "[Control] PlatformImpl имеет значение null, не удалось обработать ввод. (Источник презентации #"
+    },
+    {
+      "source": "[Visual]Exception in render loop:",
+      "translation": "[Визуальное]Исключение в цикле рендеринга:"
     },
     {
       "source": "a monitor",
@@ -158281,12 +158421,12 @@
       "translation": "{0}: {1} т"
     },
     {
-      "source": "{0}; replacement process started.",
-      "translation": "{0}; начался процесс замены."
-    },
-    {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
       "translation": "{0}; необходимые события начальной загрузки заголовка, командира, загрузки и местоположения, прежде чем диапазон будет добавлен автоматически. Снимки подтвержденного статуса, груза, ShipLocker, NavRoute и рынка, сохраненные в течение последних 24 часов, будут синхронизированы с временной шкалой журнала. {1} Учетные данные и токены API всегда удаляются. Диапазон повторов ограничен {2} днями."
+    },
+    {
+      "source": "{0}; restart helper started and will launch the replacement after this process exits.",
+      "translation": "{0}; Помощник перезапуска запущен и запустит замену после завершения процесса."
     },
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
@@ -160449,6 +160589,14 @@
     {
       "source": "Application logs and crash reports",
       "translation": "应用程序日志和崩溃报告"
+    },
+    {
+      "source": "Application renderer: automatic.",
+      "translation": "应用程序渲染器：自动。"
+    },
+    {
+      "source": "Application renderer: software (diagnostic override).",
+      "translation": "应用程序渲染器：软件（诊断覆盖）。"
     },
     {
       "source": "Application service shutdown failed: {0}",
@@ -180899,6 +181047,14 @@
       "translation": "SrvSurvey 需要 xdg-mime 在 Linux 上注册 Frontier 授权。"
     },
     {
+      "source": "SrvSurvey restart helper arguments were invalid.",
+      "translation": "SrvSurvey 重新启动帮助程序参数无效。"
+    },
+    {
+      "source": "SrvSurvey restart helper failed: {0}",
+      "translation": "SrvSurvey重启助手失败：{0}"
+    },
+    {
       "source": "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
       "translation": "当显示仍然可用时，SrvSurvey 恢复最后一个屏幕窗口位置。否则，它将使用配置的默认监视器并将窗口固定到可用桌面。"
     },
@@ -181493,6 +181649,14 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "抑制ActiveBuildProjects"
+    },
+    {
+      "source": "Suppressed {0} repeated Avalonia render-loop failures; latest follows.",
+      "translation": "抑制 {0} 重复的 Avalonia 渲染循环失败；最新的如下。"
+    },
+    {
+      "source": "Suppressed {0} repeated unexpected X11 errors; latest: {1}",
+      "translation": "抑制了 {0} 重复的意外 X11 错误；最新：{1}"
     },
     {
       "source": "Suppressed {0} repeated {1} events; latest: {2}",
@@ -182557,6 +182721,14 @@
     {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "无法打开 SrvSurvey 问题跟踪器。"
+    },
+    {
+      "source": "The SrvSurvey restart helper did not start.",
+      "translation": "SrvSurvey 重新启动帮助程序未启动。"
+    },
+    {
+      "source": "The SrvSurvey restart working directory could not be resolved.",
+      "translation": "无法解析SrvSurvey重新启动工作目录。"
     },
     {
       "source": "The UI settings path has no directory.",
@@ -186319,14 +186491,6 @@
       "translation": "Windows覆盖交互模式无法刷新（错误{0}）。"
     },
     {
-      "source": "Windows renderer: automatic.",
-      "translation": "Windows 渲染器：自动。"
-    },
-    {
-      "source": "Windows renderer: software (diagnostic override).",
-      "translation": "Windows 渲染器：软件（诊断覆盖）。"
-    },
-    {
       "source": "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending.",
       "translation": "Windows顶层透明、原生点击、全局键盘输入可用；游戏窗口跟随待定。"
     },
@@ -186509,6 +186673,10 @@
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
       "translation": "[Control] PlatformImpl 为空，无法处理输入。 （演示来源#"
+    },
+    {
+      "source": "[Visual]Exception in render loop:",
+      "translation": "[视觉]渲染循环中出现异常："
     },
     {
       "source": "a monitor",
@@ -189979,12 +190147,12 @@
       "translation": "{0}: {1} t"
     },
     {
-      "source": "{0}; replacement process started.",
-      "translation": "{0};更换过程开始。"
-    },
-    {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
       "translation": "{0};范围之前所需的标头、指挥官、加载和位置引导事件将自动添加。最近 24 小时内保留的验证状态、Cargo、ShipLocker、NavRoute 和 Market 快照将与日志时间线同步。 {1} 凭证和 API 令牌始终被删除。重播范围仅限于 {2} 天。"
+    },
+    {
+      "source": "{0}; restart helper started and will launch the replacement after this process exits.",
+      "translation": "{0};重新启动助手已启动，并将在此进程退出后启动替换。"
     },
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
@@ -192147,6 +192315,14 @@
     {
       "source": "Application logs and crash reports",
       "translation": "* APPLICATION LOGS AND CRASH REPORTS >>>!"
+    },
+    {
+      "source": "Application renderer: automatic.",
+      "translation": "* APPLICATION RENDERER: AUTOMATIC. >>>!"
+    },
+    {
+      "source": "Application renderer: software (diagnostic override).",
+      "translation": "* APPLICATION RENDERER: SOFTWARE (DIAGNOSTIC OVERRIDE). >>>!"
     },
     {
       "source": "Application service shutdown failed: {0}",
@@ -212597,6 +212773,14 @@
       "translation": "* SRVSURVEY REQUIRES XDG-MIME TO REGISTER FRONTIER AUTHORIZATION ON LINUX. >>>!"
     },
     {
+      "source": "SrvSurvey restart helper arguments were invalid.",
+      "translation": "* SRVSURVEY RESTART HELPER ARGUMENTS WERE INVALID. >>>!"
+    },
+    {
+      "source": "SrvSurvey restart helper failed: {0}",
+      "translation": "* SRVSURVEY RESTART HELPER FAILED: {0} >>>!"
+    },
+    {
       "source": "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
       "translation": "* SRVSURVEY RESTORES THE LAST ON-SCREEN WINDOW POSITION WHEN THAT DISPLAY IS STILL AVAILABLE. OTHERWISE IT USES THE CONFIGURED DEFAULT MONITOR AND CLAMPS THE WINDOW TO THE USABLE DESKTOP. >>>!"
     },
@@ -213191,6 +213375,14 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "* SUPPRESSFORACTIVEBUILDPROJECTS >>>!"
+    },
+    {
+      "source": "Suppressed {0} repeated Avalonia render-loop failures; latest follows.",
+      "translation": "* SUPPRESSED {0} REPEATED AVALONIA RENDER-LOOP FAILURES; LATEST FOLLOWS. >>>!"
+    },
+    {
+      "source": "Suppressed {0} repeated unexpected X11 errors; latest: {1}",
+      "translation": "* SUPPRESSED {0} REPEATED UNEXPECTED X11 ERRORS; LATEST: {1} >>>!"
     },
     {
       "source": "Suppressed {0} repeated {1} events; latest: {2}",
@@ -214255,6 +214447,14 @@
     {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "* THE SRVSURVEY ISSUE TRACKER COULD NOT BE OPENED. >>>!"
+    },
+    {
+      "source": "The SrvSurvey restart helper did not start.",
+      "translation": "* THE SRVSURVEY RESTART HELPER DID NOT START. >>>!"
+    },
+    {
+      "source": "The SrvSurvey restart working directory could not be resolved.",
+      "translation": "* THE SRVSURVEY RESTART WORKING DIRECTORY COULD NOT BE RESOLVED. >>>!"
     },
     {
       "source": "The UI settings path has no directory.",
@@ -218017,14 +218217,6 @@
       "translation": "* WINDOWS OVERLAY INTERACTION MODE COULD NOT BE REFRESHED (ERROR {0}). >>>!"
     },
     {
-      "source": "Windows renderer: automatic.",
-      "translation": "* WINDOWS RENDERER: AUTOMATIC. >>>!"
-    },
-    {
-      "source": "Windows renderer: software (diagnostic override).",
-      "translation": "* WINDOWS RENDERER: SOFTWARE (DIAGNOSTIC OVERRIDE). >>>!"
-    },
-    {
       "source": "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending.",
       "translation": "* WINDOWS TOPMOST TRANSPARENCY, NATIVE CLICK-THROUGH, AND GLOBAL KEYBOARD INPUT ARE AVAILABLE; GAME-WINDOW FOLLOWING IS PENDING. >>>!"
     },
@@ -218207,6 +218399,10 @@
     {
       "source": "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #",
       "translation": "* [CONTROL] PLATFORMIMPL IS NULL, COULDN'T HANDLE INPUT. (PRESENTATIONSOURCE # >>>!"
+    },
+    {
+      "source": "[Visual]Exception in render loop:",
+      "translation": "* [VISUAL]EXCEPTION IN RENDER LOOP: >>>!"
     },
     {
       "source": "a monitor",
@@ -221677,12 +221873,12 @@
       "translation": "* {0}: {1} T >>>!"
     },
     {
-      "source": "{0}; replacement process started.",
-      "translation": "* {0}; REPLACEMENT PROCESS STARTED. >>>!"
-    },
-    {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
       "translation": "* {0}; REQUIRED HEADER, COMMANDER, LOAD, AND LOCATION BOOTSTRAP EVENTS BEFORE THE RANGE WILL BE ADDED AUTOMATICALLY. VALIDATED STATUS, CARGO, SHIPLOCKER, NAVROUTE, AND MARKET SNAPSHOTS RETAINED DURING THE MOST RECENT 24 HOURS WILL BE SYNCHRONIZED WITH THE JOURNAL TIMELINE. {1} CREDENTIALS AND API TOKENS ARE ALWAYS REMOVED. REPLAY RANGES ARE LIMITED TO {2} DAYS. >>>!"
+    },
+    {
+      "source": "{0}; restart helper started and will launch the replacement after this process exits.",
+      "translation": "* {0}; RESTART HELPER STARTED AND WILL LAUNCH THE REPLACEMENT AFTER THIS PROCESS EXITS. >>>!"
     },
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",

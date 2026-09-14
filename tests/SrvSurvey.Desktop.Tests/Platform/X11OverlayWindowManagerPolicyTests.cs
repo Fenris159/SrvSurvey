@@ -6,6 +6,17 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class X11OverlayWindowManagerPolicyTests
 {
     [Fact]
+    public void StackingPolicyLoggingReportsEachPolicyOnlyOnce()
+    {
+        var limiter = new X11StackingPolicyLogLimiter();
+
+        Assert.True(limiter.ShouldLog(X11OverlayStackingMode.StandardTopmost));
+        Assert.False(limiter.ShouldLog(X11OverlayStackingMode.StandardTopmost));
+        Assert.True(limiter.ShouldLog(X11OverlayStackingMode.KdeOnScreenDisplay));
+        Assert.False(limiter.ShouldLog(X11OverlayStackingMode.KdeOnScreenDisplay));
+    }
+
+    [Fact]
     public void AdvertisedKdeOnScreenDisplayAtomEnablesKdePolicy()
     {
         X11OverlayStackingMode mode = X11OverlayWindowManagerPolicy.Select(kdeOnScreenDisplayAtom: 42, [4, 17, 42, 93]);

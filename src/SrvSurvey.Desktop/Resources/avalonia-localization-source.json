@@ -2278,7 +2278,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationRestartService.cs"
   },
   {
     "Text": "APPLICATION UPDATE",
@@ -3921,6 +3921,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Application renderer: automatic.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
+  },
+  {
+    "Text": "Application renderer: software (diagnostic override).",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
   },
   {
     "Text": "Application service shutdown failed: {0}",
@@ -44937,6 +44953,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
+    "Text": "SrvSurvey restart helper arguments were invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationRestartService.cs"
+  },
+  {
+    "Text": "SrvSurvey restart helper failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationRestartService.cs"
+  },
+  {
     "Text": "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
     "IsFormat": false,
     "SourceKinds": [
@@ -46128,6 +46160,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CombatSettingsStore.cs"
+  },
+  {
+    "Text": "Suppressed {0} repeated Avalonia render-loop failures; latest follows.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationLogTraceListener.cs"
+  },
+  {
+    "Text": "Suppressed {0} repeated unexpected X11 errors; latest: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayPlatformService.cs"
   },
   {
     "Text": "Suppressed {0} repeated {1} events; latest: {2}",
@@ -48264,6 +48312,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ErrorReportViewModel.cs"
+  },
+  {
+    "Text": "The SrvSurvey restart helper did not start.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationRestartService.cs"
+  },
+  {
+    "Text": "The SrvSurvey restart working directory could not be resolved.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationRestartService.cs"
   },
   {
     "Text": "The UI settings path has no directory.",
@@ -50455,7 +50519,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationRestartService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
     "Text": "The replay overlay presentation contains an unknown overlay.",
@@ -55797,22 +55861,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs"
   },
   {
-    "Text": "Windows renderer: automatic.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
-  },
-  {
-    "Text": "Windows renderer: software (diagnostic override).",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
-  },
-  {
     "Text": "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending.",
     "IsFormat": false,
     "SourceKinds": [
@@ -56174,6 +56222,14 @@
   },
   {
     "Text": "[Control] PlatformImpl is null, couldn\u0027t handle input. (PresentationSource #",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationLogTraceListener.cs"
+  },
+  {
+    "Text": "[Visual]Exception in render loop:",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -63118,20 +63174,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
-    "Text": "{0}; replacement process started.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
-  },
-  {
     "Text": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalHistoryViewModel.cs"
+  },
+  {
+    "Text": "{0}; restart helper started and will launch the replacement after this process exits.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
     "Text": "{0}?entry.987977054={1}\u0026entry.1282362439={2}\u0026entry.468337930={3}",

@@ -1242,8 +1242,10 @@ internal sealed partial class DesktopRuntime
     {
         await RestartAsync(() =>
         {
-            new ApplicationRestartService().StartReplacement();
-            applicationLogService?.Append(reason + "; replacement process started.");
+            new ApplicationRestartService().StartRestartHelper();
+            applicationLogService?.Append(
+                reason + "; restart helper started and will launch the replacement after this process exits."
+            );
         });
     }
 

@@ -73,6 +73,35 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
         );
     }
 
+    [Fact]
+    public void ListenerAggregatesRepeatedGlxRenderLoopFailures()
+    {
+        var now = new DateTimeOffset(2026, 9, 14, 17, 51, 51, TimeSpan.Zero);
+        var log = new ApplicationLogService(temporaryDirectory);
+        var listener = new ApplicationLogTraceListener(log, () => now);
+        const string failure =
+            "[Visual]Exception in render loop: 'Avalonia.OpenGL.OpenGlException: glXMakeContextCurrent failed\n"
+            + "   at Avalonia.X11.Glx.GlxContext.MakeCurrent(IntPtr xid)'";
+
+        listener.WriteLine(failure);
+        listener.WriteLine(failure);
+        listener.WriteLine(failure);
+
+        Assert.Single(log.Entries, line => line.Contains("glXMakeContextCurrent failed", StringComparison.Ordinal));
+
+        now = now.AddMinutes(1);
+        listener.WriteLine(failure);
+
+        Assert.Contains(
+            log.Entries,
+            line => line.Contains("Suppressed 2 repeated Avalonia render-loop failures", StringComparison.Ordinal)
+        );
+        Assert.Equal(
+            2,
+            log.Entries.Count(line => line.Contains("glXMakeContextCurrent failed", StringComparison.Ordinal))
+        );
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
