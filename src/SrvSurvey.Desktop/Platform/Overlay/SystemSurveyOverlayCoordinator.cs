@@ -65,7 +65,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         this.surfaceSurvey = surfaceSurvey ?? throw new ArgumentNullException(nameof(surfaceSurvey));
         this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.gameScreenCapture = options.GameScreenCapture ?? GameScreenCapture.CreateCurrent();
+        this.gameScreenCapture =
+            options.GameScreenCapture ?? GameScreenCapture.CreateCurrent(enableWaylandPortalFallback: true);
         this.fssDiagnosticDirectory = string.IsNullOrWhiteSpace(options.FssDiagnosticDirectory)
             ? null
             : options.FssDiagnosticDirectory;
@@ -300,23 +301,13 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private async Task CaptureAndApplyFssTuningAsync(FssTuningCaptureRequest request)
     {
-        int halfWidth = gameWindow.ClientBounds.Width / 2;
-        int halfHeight = gameWindow.ClientBounds.Height / 2;
-        if (halfWidth <= 0 || halfHeight <= 0)
-        {
-            return;
-        }
-
-        var captureBounds = new PixelRect(
-            gameWindow.ClientBounds.X + halfWidth,
-            gameWindow.ClientBounds.Y,
-            halfWidth,
-            halfHeight
-        );
         (CapturedPixelBuffer Pixels, FssTuningAnalysis Analysis) captureResult = await Task.Run(
                 () =>
                 {
-                    CapturedPixelBuffer pixels = gameScreenCapture.Capture(captureBounds);
+                    CapturedPixelBuffer pixels = FssTuningScreenCapture.Capture(
+                        gameScreenCapture,
+                        gameWindow.ClientBounds
+                    );
                     FssTuningAnalysis analysis = FssTuningDetector.Analyze(pixels, request.Settings, request.State);
                     return (Pixels: pixels, Analysis: analysis);
                 },

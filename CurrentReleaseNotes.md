@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.48.1
+# SrvSurvey-XP 2.1.3.0-rc.48.2
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -14,6 +14,22 @@
 - Adds announcement filters/presets and optional Windows speech, CSV history
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
+
+RC48.2 makes Linux game-screen capture resilient across X11 and Wayland and
+bundles the symbols used by SrvSurvey overlays. It retains the full RC48.1
+feature set and the prior release-candidate changes summarized below.
+
+## New in RC48.2
+
+- Extends the Wayland ScreenCast portal and PipeWire fallback to FSS tuning and
+  first-footfall inference as well as Surface Mining rig detection. All three
+  paths now crop from the selected Elite Dangerous window consistently.
+- Adds bounded retry backoff and recovery when X11 or portal capture fails, and
+  condenses repeated expected X11 capture errors into periodic summaries instead
+  of flooding the application log.
+- Bundles Noto symbol and color-emoji fallbacks for every symbol currently used
+  by the overlays. This avoids depending on incomplete or broken system icon
+  fonts such as the Font Awesome installation reported on some Linux systems.
 
 RC48.1 corrects Surface Mining bookmark export and streamlines deposit-rating
 commands. It retains the full RC48 feature set and the prior release-candidate
@@ -161,11 +177,11 @@ release-candidate changes summarized below.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.48.1`
-- Tag: `xp-v2.1.3.0-rc.48.1`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.1-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.1-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.1-x86_64.AppImage`
+- Version: `2.1.3.0-rc.48.2`
+- Tag: `xp-v2.1.3.0-rc.48.2`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.2-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.2-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

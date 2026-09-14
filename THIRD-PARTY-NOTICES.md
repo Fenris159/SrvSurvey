@@ -89,3 +89,17 @@ SrvSurvey includes source derived from PipeWire.NET at commit
 desktop portal file-descriptor connections and CPU-readable capture
 buffers. PipeWire.NET is distributed under the MIT License. Its license is
 included at `src/ThirdParty/PipeWire.NET/LICENSE`.
+
+## Noto symbol and emoji fonts
+
+SrvSurvey bundles Noto Sans Symbols 2.003, Noto Sans Symbols 2 version 2.008,
+and Noto Color Emoji 2.051 as deterministic fallbacks for the symbols used by
+its overlays. The font files are distributed under the SIL Open Font License
+1.1. A copy of that license is included beside each font under
+`src/SrvSurvey.Desktop/Assets/Fonts`.
+
+Sources:
+
+- [Noto Sans Symbols 2.003](https://github.com/notofonts/symbols/releases/tag/NotoSansSymbols-v2.003)
+- [Noto Sans Symbols 2 version 2.008](https://github.com/notofonts/symbols/releases/tag/NotoSansSymbols2-v2.008)
+- [Noto Color Emoji 2.051](https://github.com/googlefonts/noto-emoji/releases/tag/v2.051)

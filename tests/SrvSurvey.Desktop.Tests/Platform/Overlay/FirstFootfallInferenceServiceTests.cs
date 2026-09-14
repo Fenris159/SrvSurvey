@@ -55,6 +55,7 @@ public sealed class FirstFootfallInferenceServiceTests
         Assert.Equal(0.25, result.MaximumMatchRatio);
         Assert.Equal(1, result.SampleCount);
         Assert.Equal(new PixelRect(820, 383, 480, 154), capture.LastBounds);
+        Assert.Equal(new PixelRect(100, 200, 1920, 1080), capture.LastSourceBounds);
     }
 
     [Fact]
@@ -100,6 +101,8 @@ public sealed class FirstFootfallInferenceServiceTests
 
         public PixelRect? LastBounds { get; private set; }
 
+        public PixelRect? LastSourceBounds { get; private set; }
+
         public bool IsAvailable => true;
 
         public string? UnavailableReason => null;
@@ -109,6 +112,12 @@ public sealed class FirstFootfallInferenceServiceTests
             CaptureCount++;
             LastBounds = bounds;
             return buffer;
+        }
+
+        public CapturedPixelBuffer Capture(PixelRect bounds, PixelRect sourceBounds)
+        {
+            LastSourceBounds = sourceBounds;
+            return Capture(bounds);
         }
 
         public void Dispose() { }

@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Styling;
+using SkiaSharp;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -183,6 +184,61 @@ public sealed class OverlayThemeResourcesTests
         );
         Assert.True(
             File.Exists(Path.Combine(root, "src", "SrvSurvey.Desktop", "Assets", "Fonts", "Rajdhani", "OFL.txt"))
+        );
+        AssertFontContains(
+            Path.Combine(
+                root,
+                "src",
+                "SrvSurvey.Desktop",
+                "Assets",
+                "Fonts",
+                "NotoSansSymbols",
+                "NotoSansSymbols-Regular.ttf"
+            ),
+            "⚑⚐"
+        );
+        AssertFontContains(
+            Path.Combine(
+                root,
+                "src",
+                "SrvSurvey.Desktop",
+                "Assets",
+                "Fonts",
+                "NotoSansSymbols2",
+                "NotoSansSymbols2-Regular.ttf"
+            ),
+            "☀◆◇✓✕⏳✋🌎"
+        );
+        AssertFontContains(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Assets", "Fonts", "NotoColorEmoji", "NotoColorEmoji.ttf"),
+            "📡🚀"
+        );
+        Assert.True(
+            File.Exists(Path.Combine(root, "src", "SrvSurvey.Desktop", "Assets", "Fonts", "NotoSansSymbols", "OFL.txt"))
+        );
+        Assert.True(
+            File.Exists(
+                Path.Combine(root, "src", "SrvSurvey.Desktop", "Assets", "Fonts", "NotoSansSymbols2", "OFL.txt")
+            )
+        );
+        Assert.True(
+            File.Exists(Path.Combine(root, "src", "SrvSurvey.Desktop", "Assets", "Fonts", "NotoColorEmoji", "OFL.txt"))
+        );
+    }
+
+    [Fact]
+    public void ApplicationRegistersBundledSymbolFallbacksBeforeSystemFonts()
+    {
+        FontManagerOptions options = SrvSurveyFontConfiguration.CreateOptions();
+        IReadOnlyList<FontFallback> fallbacks = Assert.IsAssignableFrom<IReadOnlyList<FontFallback>>(
+            options.FontFallbacks
+        );
+
+        Assert.Collection(
+            fallbacks,
+            fallback => Assert.Equal("Noto Sans Symbols", fallback.FontFamily.Name),
+            fallback => Assert.Equal("Noto Sans Symbols 2", fallback.FontFamily.Name),
+            fallback => Assert.Equal("Noto Color Emoji", fallback.FontFamily.Name)
         );
     }
 
@@ -540,5 +596,11 @@ public sealed class OverlayThemeResourcesTests
         }
 
         throw new DirectoryNotFoundException("Could not locate the repository root.");
+    }
+
+    private static void AssertFontContains(string path, string glyphs)
+    {
+        using var typeface = SKTypeface.FromFile(path);
+        Assert.True(typeface.ContainsGlyphs(glyphs), $"{Path.GetFileName(path)} does not contain {glyphs}.");
     }
 }

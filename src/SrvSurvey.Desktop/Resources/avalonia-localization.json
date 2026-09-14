@@ -613,6 +613,10 @@
       "translation": "Eine VR-Überschreibung darf nur einen Kalibrierungsblock enthalten."
     },
     {
+      "source": "A Wayland screen capture is already in progress.",
+      "translation": "Eine Wayland-Screenshot-Aufnahme ist bereits im Gange."
+    },
+    {
       "source": "A binding is reported as unavailable when the current operating system cannot provide the required global input capability.",
       "translation": "Eine Bindung wird als nicht verfügbar gemeldet, wenn das aktuelle Betriebssystem die erforderliche globale Eingabefunktion nicht bereitstellen kann."
     },
@@ -2485,6 +2489,10 @@
       "translation": "Verfolgen Sie Rigs automatisch über das Rhino HUD"
     },
     {
+      "source": "AvailableSourceTypes",
+      "translation": "Verfügbare Quelltypen"
+    },
+    {
       "source": "Average",
       "translation": "Durchschnittlich"
     },
@@ -4075,6 +4083,10 @@
     {
       "source": "Caption",
       "translation": "Untertitel"
+    },
+    {
+      "source": "Capture bounds must have a positive size.",
+      "translation": "Erfassungsgrenzen müssen eine positive Größe haben."
     },
     {
       "source": "Capture selected surface sites",
@@ -11033,8 +11045,8 @@
       "translation": "{0} fehlerhafte Zeilen wurden ignoriert."
     },
     {
-      "source": "Ignoring an expected X11 window or capture lifecycle race: {0}",
-      "translation": "Ignorieren eines erwarteten X11-Fensters oder Capture-Lebenszyklusrennens: {0}"
+      "source": "Ignoring an expected X11 window lifecycle race",
+      "translation": "Ignorieren eines erwarteten X11-Fenster-Lebenszyklusrennens"
     },
     {
       "source": "Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M).",
@@ -15083,6 +15095,30 @@
     {
       "source": "Notifications.Enabled",
       "translation": "Benachrichtigungen.Aktiviert"
+    },
+    {
+      "source": "Noto Color Emoji",
+      "translation": "Noto-Farb-Emoji"
+    },
+    {
+      "source": "Noto Sans Symbols",
+      "translation": "Noto ohne Symbole"
+    },
+    {
+      "source": "Noto Sans Symbols 2",
+      "translation": "Noto Sans Symbols 2"
+    },
+    {
+      "source": "NotoColorEmoji",
+      "translation": "NotoColorEmoji"
+    },
+    {
+      "source": "NotoSansSymbols",
+      "translation": "NotoSansSymbols"
+    },
+    {
+      "source": "NotoSansSymbols2",
+      "translation": "NotoSansSymbols2"
     },
     {
       "source": "Notorious access",
@@ -20477,6 +20513,10 @@
       "translation": "Bildschirmaufnahme nicht verfügbar."
     },
     {
+      "source": "Screen capture will retry in {0} seconds.",
+      "translation": "Die Bildschirmaufnahme wird in {0} Sekunden erneut versucht."
+    },
+    {
       "source": "Screenshot",
       "translation": "Screenshot"
     },
@@ -20827,6 +20867,10 @@
     {
       "source": "Select an overlay theme",
       "translation": "Wählen Sie ein Overlay-Thema aus"
+    },
+    {
+      "source": "Select exactly one Elite Dangerous window for screen capture.",
+      "translation": "Wählen Sie genau ein Elite Dangerous Fenster für die Bildschirmaufnahme aus."
     },
     {
       "source": "Select folder containing quest definition files",
@@ -22449,6 +22493,10 @@
       "translation": "SrvSurvey.Inara.ReadKey"
     },
     {
+      "source": "SrvSurvey.ScreenCapture",
+      "translation": "SrvSurvey.ScreenCapture"
+    },
+    {
       "source": "SrvSurvey.VoxStellar.SharedKey",
       "translation": "SrvSurvey.VoxStellar.SharedKey"
     },
@@ -22879,6 +22927,10 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "SuppressForActiveBuildProjects"
+    },
+    {
+      "source": "Suppressed {0} repeated {1} events; latest: {2}",
+      "translation": "Unterdrückte {0} wiederholte {1}-Ereignisse; aktuell: {2}"
     },
     {
       "source": "Surface",
@@ -23957,6 +24009,30 @@
       "translation": "Die VoxStellar-Einstellung wurde für diese Sitzung geändert, konnte aber nicht gespeichert werden: {0}"
     },
     {
+      "source": "The Wayland desktop denied screen sharing.",
+      "translation": "Der Wayland-Desktop verweigerte die Bildschirmfreigabe."
+    },
+    {
+      "source": "The Wayland desktop does not offer window or monitor sharing.",
+      "translation": "Der Wayland-Desktop bietet keine Fenster- oder Monitorfreigabe."
+    },
+    {
+      "source": "The Wayland portal response did not include {0}.",
+      "translation": "Die Antwort des Wayland-Portals enthielt kein {0}."
+    },
+    {
+      "source": "The Wayland portal returned an unreadable video frame.",
+      "translation": "Das Wayland-Portal hat ein unlesbares Videobild zurückgegeben."
+    },
+    {
+      "source": "The Wayland portal returned unsupported {0} pixels.",
+      "translation": "Das Wayland-Portal hat nicht unterstützte {0}-Pixel zurückgegeben."
+    },
+    {
+      "source": "The Wayland screen capture session is closed.",
+      "translation": "Die Wayland-Screenshot-Sitzung ist geschlossen."
+    },
+    {
       "source": "The Windows overlay input region could not be applied.",
       "translation": "Der Windows-Overlay-Eingabebereich konnte nicht angewendet werden."
     },
@@ -24277,6 +24353,10 @@
       "translation": "Der Desktop-Link-Launcher ist nicht verfügbar."
     },
     {
+      "source": "The desktop portal returned an unexpected request handle.",
+      "translation": "Das Desktop-Portal hat ein unerwartetes Anforderungshandle zurückgegeben."
+    },
+    {
       "source": "The desktop runtime already has a main window.",
       "translation": "Die Desktop-Runtime verfügt bereits über ein Hauptfenster."
     },
@@ -24395,6 +24475,10 @@
     {
       "source": "The full-area audit could not be completed.",
       "translation": "Die flächendeckende Prüfung konnte nicht abgeschlossen werden."
+    },
+    {
+      "source": "The game capture area must have a positive size.",
+      "translation": "Der Wildfangbereich muss eine positive Größe haben."
     },
     {
       "source": "The game-window tracker factory returned null.",
@@ -25011,6 +25095,10 @@
     {
       "source": "The replay overlay presentation uses an unsupported scale.",
       "translation": "Die Replay-Overlay-Darstellung verwendet einen nicht unterstützten Maßstab."
+    },
+    {
+      "source": "The requested game area is outside the shared Wayland source.",
+      "translation": "Der angeforderte Spielbereich liegt außerhalb der gemeinsamen Wayland-Quelle."
     },
     {
       "source": "The response could not be applied: {0}",
@@ -26123,6 +26211,18 @@
     {
       "source": "Typography",
       "translation": "Typografie"
+    },
+    {
+      "source": "U+1F4E1,U+1F680",
+      "translation": "U+1F4E1,U+1F680"
+    },
+    {
+      "source": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E",
+      "translation": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E"
+    },
+    {
+      "source": "U+2690,U+2691",
+      "translation": "U+2690,U+2691"
     },
     {
       "source": "UL",
@@ -27385,8 +27485,20 @@
       "translation": "Wasserwelt | 1,24 Mio. cr"
     },
     {
+      "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
+      "translation": "Wayland hat keinen Frame aus dem freigegebenen Fenster Elite Dangerous bereitgestellt."
+    },
+    {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Wayland-Overlay-Positionierung, Transparenz, Click-through und globale Eingabe erfordern Compositor-Unterstützung und sind nicht aktiviert."
+    },
+    {
+      "source": "Wayland screen sharing could not start: {0}",
+      "translation": "Wayland-Bildschirmfreigabe konnte nicht gestartet werden: {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled.",
+      "translation": "Die Bildschirmfreigabe von Wayland wurde abgebrochen."
     },
     {
       "source": "Waypoint 3 of 12",
@@ -27663,6 +27775,10 @@
     {
       "source": "X11 screen capture could not connect to the display.",
       "translation": "Die X11-Bildschirmaufnahme konnte keine Verbindung zum Display herstellen."
+    },
+    {
+      "source": "X11 screen capture failed and was handed to the managed capture fallback",
+      "translation": "Die X11-Bildschirmaufnahme ist fehlgeschlagen und wurde dem verwalteten Capture-Fallback übergeben"
     },
     {
       "source": "X11 threading: initialization was unavailable; native X11 access may be unsafe.",
@@ -29473,6 +29589,10 @@
       "translation": "Polymere"
     },
     {
+      "source": "position",
+      "translation": "Position"
+    },
+    {
       "source": "power",
       "translation": "Macht"
     },
@@ -29563,6 +29683,10 @@
     {
       "source": "repeat",
       "translation": "wiederholen"
+    },
+    {
+      "source": "request",
+      "translation": "Anfrage"
     },
     {
       "source": "rescue",
@@ -29683,6 +29807,10 @@
     {
       "source": "service",
       "translation": "Dienst"
+    },
+    {
+      "source": "session",
+      "translation": "Sitzung"
     },
     {
       "source": "settings",
@@ -29851,6 +29979,10 @@
     {
       "source": "store",
       "translation": "speichern"
+    },
+    {
+      "source": "streams",
+      "translation": "Ströme"
     },
     {
       "source": "suffix {0}",
@@ -30145,6 +30277,10 @@
       "translation": "Typ9"
     },
     {
+      "source": "types",
+      "translation": "Typen"
+    },
+    {
       "source": "typex",
       "translation": "Typx"
     },
@@ -30291,6 +30427,10 @@
     {
       "source": "wayland",
       "translation": "Wayland"
+    },
+    {
+      "source": "wayland-screen-capture.token",
+      "translation": "wayland-screen-capture.token"
     },
     {
       "source": "waypoint",
@@ -31969,6 +32109,10 @@
     {
       "source": "A VR override must contain only a calibration block.",
       "translation": "Una anulación de VR debe contener solo un bloque de calibración."
+    },
+    {
+      "source": "A Wayland screen capture is already in progress.",
+      "translation": "Ya se está realizando una captura de pantalla de Wayland."
     },
     {
       "source": "A binding is reported as unavailable when the current operating system cannot provide the required global input capability.",
@@ -33843,6 +33987,10 @@
       "translation": "Seguimiento automático de equipos desde Rhino HUD"
     },
     {
+      "source": "AvailableSourceTypes",
+      "translation": "Tipos de fuente disponibles"
+    },
+    {
       "source": "Average",
       "translation": "Promedio"
     },
@@ -35433,6 +35581,10 @@
     {
       "source": "Caption",
       "translation": "subtítulo"
+    },
+    {
+      "source": "Capture bounds must have a positive size.",
+      "translation": "Los límites de captura deben tener un tamaño positivo."
     },
     {
       "source": "Capture selected surface sites",
@@ -42391,8 +42543,8 @@
       "translation": "Se ignoraron {0} líneas con formato incorrecto."
     },
     {
-      "source": "Ignoring an expected X11 window or capture lifecycle race: {0}",
-      "translation": "Ignorar una ventana X11 esperada o una carrera del ciclo de vida de captura: {0}"
+      "source": "Ignoring an expected X11 window lifecycle race",
+      "translation": "Ignorando una carrera esperada del ciclo de vida de la ventana X11"
     },
     {
       "source": "Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M).",
@@ -46441,6 +46593,30 @@
     {
       "source": "Notifications.Enabled",
       "translation": "Notificaciones.Habilitadas"
+    },
+    {
+      "source": "Noto Color Emoji",
+      "translation": "Emoji de color noto"
+    },
+    {
+      "source": "Noto Sans Symbols",
+      "translation": "Símbolos de Noto Sans"
+    },
+    {
+      "source": "Noto Sans Symbols 2",
+      "translation": "Símbolos de Noto Sans 2"
+    },
+    {
+      "source": "NotoColorEmoji",
+      "translation": "NotoColorEmoji"
+    },
+    {
+      "source": "NotoSansSymbols",
+      "translation": "NotoSansSímbolos"
+    },
+    {
+      "source": "NotoSansSymbols2",
+      "translation": "NotoSansSímbolos2"
     },
     {
       "source": "Notorious access",
@@ -51835,6 +52011,10 @@
       "translation": "Captura de pantalla no disponible."
     },
     {
+      "source": "Screen capture will retry in {0} seconds.",
+      "translation": "La captura de pantalla se volverá a intentar en {0} segundos."
+    },
+    {
       "source": "Screenshot",
       "translation": "Captura de pantalla"
     },
@@ -52185,6 +52365,10 @@
     {
       "source": "Select an overlay theme",
       "translation": "Seleccione un tema de superposición"
+    },
+    {
+      "source": "Select exactly one Elite Dangerous window for screen capture.",
+      "translation": "Seleccione exactamente una ventana Elite Dangerous para la captura de pantalla."
     },
     {
       "source": "Select folder containing quest definition files",
@@ -53807,6 +53991,10 @@
       "translation": "SrvSurvey.Inara.ReadKey"
     },
     {
+      "source": "SrvSurvey.ScreenCapture",
+      "translation": "SrvSurvey.Captura de pantalla"
+    },
+    {
       "source": "SrvSurvey.VoxStellar.SharedKey",
       "translation": "SrvSurvey.VoxStellar.Clave compartida"
     },
@@ -54237,6 +54425,10 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "Suprimir para proyectos de construcción activa"
+    },
+    {
+      "source": "Suppressed {0} repeated {1} events; latest: {2}",
+      "translation": "Se suprimieron los eventos {0} repetidos de {1}; más reciente: {2}"
     },
     {
       "source": "Surface",
@@ -55315,6 +55507,30 @@
       "translation": "La preferencia VoxStellar cambió para esta sesión pero no se pudo guardar: {0}"
     },
     {
+      "source": "The Wayland desktop denied screen sharing.",
+      "translation": "El escritorio Wayland negó el uso compartido de pantalla."
+    },
+    {
+      "source": "The Wayland desktop does not offer window or monitor sharing.",
+      "translation": "El escritorio Wayland no permite compartir ventanas ni monitores."
+    },
+    {
+      "source": "The Wayland portal response did not include {0}.",
+      "translation": "La respuesta del portal Wayland no incluyó {0}."
+    },
+    {
+      "source": "The Wayland portal returned an unreadable video frame.",
+      "translation": "El portal Wayland devolvió un fotograma de vídeo ilegible."
+    },
+    {
+      "source": "The Wayland portal returned unsupported {0} pixels.",
+      "translation": "El portal Wayland devolvió píxeles {0} no compatibles."
+    },
+    {
+      "source": "The Wayland screen capture session is closed.",
+      "translation": "La sesión de captura de pantalla de Wayland está cerrada."
+    },
+    {
       "source": "The Windows overlay input region could not be applied.",
       "translation": "No se pudo aplicar la región de entrada de superposición de Windows."
     },
@@ -55635,6 +55851,10 @@
       "translation": "El iniciador de enlaces de escritorio no está disponible."
     },
     {
+      "source": "The desktop portal returned an unexpected request handle.",
+      "translation": "El portal de escritorio devolvió un identificador de solicitud inesperado."
+    },
+    {
       "source": "The desktop runtime already has a main window.",
       "translation": "El tiempo de ejecución del escritorio ya tiene una ventana principal."
     },
@@ -55753,6 +55973,10 @@
     {
       "source": "The full-area audit could not be completed.",
       "translation": "No se pudo completar la auditoría de área completa."
+    },
+    {
+      "source": "The game capture area must have a positive size.",
+      "translation": "El área de captura del juego debe tener un tamaño positivo."
     },
     {
       "source": "The game-window tracker factory returned null.",
@@ -56369,6 +56593,10 @@
     {
       "source": "The replay overlay presentation uses an unsupported scale.",
       "translation": "La presentación de superposición de repetición utiliza una escala no compatible."
+    },
+    {
+      "source": "The requested game area is outside the shared Wayland source.",
+      "translation": "El área de juego solicitada está fuera de la fuente compartida de Wayland."
     },
     {
       "source": "The response could not be applied: {0}",
@@ -57481,6 +57709,18 @@
     {
       "source": "Typography",
       "translation": "tipografía"
+    },
+    {
+      "source": "U+1F4E1,U+1F680",
+      "translation": "U+1F4E1,U+1F680"
+    },
+    {
+      "source": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E",
+      "translation": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E"
+    },
+    {
+      "source": "U+2690,U+2691",
+      "translation": "U+2690, U+2691"
     },
     {
       "source": "UL",
@@ -58743,8 +58983,20 @@
       "translation": "Mundo acuático | 1,24 millones de euros"
     },
     {
+      "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
+      "translation": "Wayland no proporcionó un marco de la ventana compartida Elite Dangerous."
+    },
+    {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "El posicionamiento de superposición de Wayland, la transparencia, los clics y la entrada global requieren compatibilidad con el compositor y no están habilitados."
+    },
+    {
+      "source": "Wayland screen sharing could not start: {0}",
+      "translation": "No se pudo iniciar el uso compartido de pantalla de Wayland: {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled.",
+      "translation": "Se canceló el uso compartido de pantalla de Wayland."
     },
     {
       "source": "Waypoint 3 of 12",
@@ -59021,6 +59273,10 @@
     {
       "source": "X11 screen capture could not connect to the display.",
       "translation": "La captura de pantalla X11 no se pudo conectar a la pantalla."
+    },
+    {
+      "source": "X11 screen capture failed and was handed to the managed capture fallback",
+      "translation": "La captura de pantalla X11 falló y se entregó al respaldo de captura administrada"
     },
     {
       "source": "X11 threading: initialization was unavailable; native X11 access may be unsafe.",
@@ -60831,6 +61087,10 @@
       "translation": "polímeros"
     },
     {
+      "source": "position",
+      "translation": "posición"
+    },
+    {
       "source": "power",
       "translation": "poder"
     },
@@ -60921,6 +61181,10 @@
     {
       "source": "repeat",
       "translation": "repetir"
+    },
+    {
+      "source": "request",
+      "translation": "pedido"
     },
     {
       "source": "rescue",
@@ -61041,6 +61305,10 @@
     {
       "source": "service",
       "translation": "servicio"
+    },
+    {
+      "source": "session",
+      "translation": "sesión"
     },
     {
       "source": "settings",
@@ -61209,6 +61477,10 @@
     {
       "source": "store",
       "translation": "tienda"
+    },
+    {
+      "source": "streams",
+      "translation": "corrientes"
     },
     {
       "source": "suffix {0}",
@@ -61503,6 +61775,10 @@
       "translation": "tipo9"
     },
     {
+      "source": "types",
+      "translation": "tipos"
+    },
+    {
       "source": "typex",
       "translation": "tipox"
     },
@@ -61649,6 +61925,10 @@
     {
       "source": "wayland",
       "translation": "tierra del camino"
+    },
+    {
+      "source": "wayland-screen-capture.token",
+      "translation": "captura-de-pantalla-wayland.token"
     },
     {
       "source": "waypoint",
@@ -63327,6 +63607,10 @@
     {
       "source": "A VR override must contain only a calibration block.",
       "translation": "Un remplacement VR doit contenir uniquement un bloc d’étalonnage."
+    },
+    {
+      "source": "A Wayland screen capture is already in progress.",
+      "translation": "Une capture d'écran Wayland est déjà en cours."
     },
     {
       "source": "A binding is reported as unavailable when the current operating system cannot provide the required global input capability.",
@@ -65201,6 +65485,10 @@
       "translation": "Suivez automatiquement les plates-formes depuis le Rhino HUD"
     },
     {
+      "source": "AvailableSourceTypes",
+      "translation": "Types de sources disponibles"
+    },
+    {
       "source": "Average",
       "translation": "Moyenne"
     },
@@ -66791,6 +67079,10 @@
     {
       "source": "Caption",
       "translation": "légende"
+    },
+    {
+      "source": "Capture bounds must have a positive size.",
+      "translation": "Les limites de capture doivent avoir une taille positive."
     },
     {
       "source": "Capture selected surface sites",
@@ -73749,8 +74041,8 @@
       "translation": "{0} lignes mal formées ignorées."
     },
     {
-      "source": "Ignoring an expected X11 window or capture lifecycle race: {0}",
-      "translation": "Ignorer une fenêtre X11 attendue ou capturer une course au cycle de vie : {0}"
+      "source": "Ignoring an expected X11 window lifecycle race",
+      "translation": "Ignorer une course attendue dans le cycle de vie des fenêtres X11"
     },
     {
       "source": "Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M).",
@@ -77799,6 +78091,30 @@
     {
       "source": "Notifications.Enabled",
       "translation": "Notifications.Activé"
+    },
+    {
+      "source": "Noto Color Emoji",
+      "translation": "Emoji couleur Noto"
+    },
+    {
+      "source": "Noto Sans Symbols",
+      "translation": "Symboles Noto Sans"
+    },
+    {
+      "source": "Noto Sans Symbols 2",
+      "translation": "Noto Sans Symboles 2"
+    },
+    {
+      "source": "NotoColorEmoji",
+      "translation": "NotoCouleurEmoji"
+    },
+    {
+      "source": "NotoSansSymbols",
+      "translation": "NotoSansSymboles"
+    },
+    {
+      "source": "NotoSansSymbols2",
+      "translation": "NotoSansSymboles2"
     },
     {
       "source": "Notorious access",
@@ -83193,6 +83509,10 @@
       "translation": "Capture d'écran indisponible."
     },
     {
+      "source": "Screen capture will retry in {0} seconds.",
+      "translation": "La capture d'écran sera réessayée dans {0} secondes."
+    },
+    {
       "source": "Screenshot",
       "translation": "Capture d'écran"
     },
@@ -83543,6 +83863,10 @@
     {
       "source": "Select an overlay theme",
       "translation": "Sélectionnez un thème de superposition"
+    },
+    {
+      "source": "Select exactly one Elite Dangerous window for screen capture.",
+      "translation": "Sélectionnez exactement une fenêtre Elite Dangerous pour la capture d'écran."
     },
     {
       "source": "Select folder containing quest definition files",
@@ -85165,6 +85489,10 @@
       "translation": "SrvSurvey.Inara.ReadKey"
     },
     {
+      "source": "SrvSurvey.ScreenCapture",
+      "translation": "SrvSurvey.Capture d'écran"
+    },
+    {
       "source": "SrvSurvey.VoxStellar.SharedKey",
       "translation": "SrvSurvey.VoxStellar.SharedKey"
     },
@@ -85595,6 +85923,10 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "SupprimerForActiveBuildProjects"
+    },
+    {
+      "source": "Suppressed {0} repeated {1} events; latest: {2}",
+      "translation": "Événements {0} répétés {1} supprimés ; dernier : {2}"
     },
     {
       "source": "Surface",
@@ -86673,6 +87005,30 @@
       "translation": "La préférence VoxStellar a été modifiée pour cette session mais n'a pas pu être enregistrée : {0}"
     },
     {
+      "source": "The Wayland desktop denied screen sharing.",
+      "translation": "Le bureau Wayland a refusé le partage d'écran."
+    },
+    {
+      "source": "The Wayland desktop does not offer window or monitor sharing.",
+      "translation": "Le bureau Wayland n'offre pas de partage de fenêtres ou de moniteurs."
+    },
+    {
+      "source": "The Wayland portal response did not include {0}.",
+      "translation": "La réponse du portail Wayland n’incluait pas {0}."
+    },
+    {
+      "source": "The Wayland portal returned an unreadable video frame.",
+      "translation": "Le portail Wayland a renvoyé une image vidéo illisible."
+    },
+    {
+      "source": "The Wayland portal returned unsupported {0} pixels.",
+      "translation": "Le portail Wayland a renvoyé des pixels {0} non pris en charge."
+    },
+    {
+      "source": "The Wayland screen capture session is closed.",
+      "translation": "La session de capture d'écran Wayland est fermée."
+    },
+    {
       "source": "The Windows overlay input region could not be applied.",
       "translation": "La région d'entrée de superposition Windows n'a pas pu être appliquée."
     },
@@ -86993,6 +87349,10 @@
       "translation": "Le lanceur de liens de bureau n'est pas disponible."
     },
     {
+      "source": "The desktop portal returned an unexpected request handle.",
+      "translation": "Le portail de bureau a renvoyé un handle de requête inattendu."
+    },
+    {
       "source": "The desktop runtime already has a main window.",
       "translation": "Le runtime de bureau possède déjà une fenêtre principale."
     },
@@ -87111,6 +87471,10 @@
     {
       "source": "The full-area audit could not be completed.",
       "translation": "L’audit de l’ensemble de la zone n’a pas pu être réalisé."
+    },
+    {
+      "source": "The game capture area must have a positive size.",
+      "translation": "La zone de capture du gibier doit avoir une taille positive."
     },
     {
       "source": "The game-window tracker factory returned null.",
@@ -87727,6 +88091,10 @@
     {
       "source": "The replay overlay presentation uses an unsupported scale.",
       "translation": "La présentation superposée en rediffusion utilise une échelle non prise en charge."
+    },
+    {
+      "source": "The requested game area is outside the shared Wayland source.",
+      "translation": "La zone de jeu demandée se trouve en dehors de la source Wayland partagée."
     },
     {
       "source": "The response could not be applied: {0}",
@@ -88839,6 +89207,18 @@
     {
       "source": "Typography",
       "translation": "Typographie"
+    },
+    {
+      "source": "U+1F4E1,U+1F680",
+      "translation": "U+1F4E1,U+1F680"
+    },
+    {
+      "source": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E",
+      "translation": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E"
+    },
+    {
+      "source": "U+2690,U+2691",
+      "translation": "U+2690,U+2691"
     },
     {
       "source": "UL",
@@ -90101,8 +90481,20 @@
       "translation": "Monde aquatique | 1,24 Mcr"
     },
     {
+      "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
+      "translation": "Wayland n'a pas fourni de cadre à partir de la fenêtre partagée Elite Dangerous."
+    },
+    {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Le positionnement de la superposition Wayland, la transparence, le clic et la saisie globale nécessitent la prise en charge du compositeur et ne sont pas activés."
+    },
+    {
+      "source": "Wayland screen sharing could not start: {0}",
+      "translation": "Le partage d'écran Wayland n'a pas pu démarrer : {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled.",
+      "translation": "Le partage d'écran Wayland a été annulé."
     },
     {
       "source": "Waypoint 3 of 12",
@@ -90379,6 +90771,10 @@
     {
       "source": "X11 screen capture could not connect to the display.",
       "translation": "La capture d'écran X11 n'a pas pu se connecter à l'écran."
+    },
+    {
+      "source": "X11 screen capture failed and was handed to the managed capture fallback",
+      "translation": "La capture d'écran X11 a échoué et a été transmise à la capture de secours gérée"
     },
     {
       "source": "X11 threading: initialization was unavailable; native X11 access may be unsafe.",
@@ -92189,6 +92585,10 @@
       "translation": "polymères"
     },
     {
+      "source": "position",
+      "translation": "position"
+    },
+    {
       "source": "power",
       "translation": "puissance"
     },
@@ -92279,6 +92679,10 @@
     {
       "source": "repeat",
       "translation": "répéter"
+    },
+    {
+      "source": "request",
+      "translation": "demande"
     },
     {
       "source": "rescue",
@@ -92399,6 +92803,10 @@
     {
       "source": "service",
       "translation": "services"
+    },
+    {
+      "source": "session",
+      "translation": "session"
     },
     {
       "source": "settings",
@@ -92567,6 +92975,10 @@
     {
       "source": "store",
       "translation": "magasin"
+    },
+    {
+      "source": "streams",
+      "translation": "flux"
     },
     {
       "source": "suffix {0}",
@@ -92861,6 +93273,10 @@
       "translation": "tapez9"
     },
     {
+      "source": "types",
+      "translation": "genres"
+    },
+    {
       "source": "typex",
       "translation": "typex"
     },
@@ -93007,6 +93423,10 @@
     {
       "source": "wayland",
       "translation": "Wayland"
+    },
+    {
+      "source": "wayland-screen-capture.token",
+      "translation": "wayland-screen-capture.token"
     },
     {
       "source": "waypoint",
@@ -94685,6 +95105,10 @@
     {
       "source": "A VR override must contain only a calibration block.",
       "translation": "Uma substituição de VR deve conter apenas um bloco de calibração."
+    },
+    {
+      "source": "A Wayland screen capture is already in progress.",
+      "translation": "Uma captura de tela do Wayland já está em andamento."
     },
     {
       "source": "A binding is reported as unavailable when the current operating system cannot provide the required global input capability.",
@@ -96559,6 +96983,10 @@
       "translation": "Rastreie automaticamente as plataformas do Rhino HUD"
     },
     {
+      "source": "AvailableSourceTypes",
+      "translation": "Tipos de Fonte Disponíveis"
+    },
+    {
       "source": "Average",
       "translation": "Média"
     },
@@ -98149,6 +98577,10 @@
     {
       "source": "Caption",
       "translation": "rubrica"
+    },
+    {
+      "source": "Capture bounds must have a positive size.",
+      "translation": "Os limites de captura devem ter um tamanho positivo."
     },
     {
       "source": "Capture selected surface sites",
@@ -105107,8 +105539,8 @@
       "translation": "{0} linhas malformadas ignoradas."
     },
     {
-      "source": "Ignoring an expected X11 window or capture lifecycle race: {0}",
-      "translation": "Ignorando uma janela X11 esperada ou corrida de ciclo de vida de captura: {0}"
+      "source": "Ignoring an expected X11 window lifecycle race",
+      "translation": "Ignorando uma corrida esperada do ciclo de vida da janela X11"
     },
     {
       "source": "Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M).",
@@ -109157,6 +109589,30 @@
     {
       "source": "Notifications.Enabled",
       "translation": "Notificações.Ativado"
+    },
+    {
+      "source": "Noto Color Emoji",
+      "translation": "Emoji colorido de Noto"
+    },
+    {
+      "source": "Noto Sans Symbols",
+      "translation": "Símbolos Noto Sans"
+    },
+    {
+      "source": "Noto Sans Symbols 2",
+      "translation": "Noto Sem Símbolos 2"
+    },
+    {
+      "source": "NotoColorEmoji",
+      "translation": "NotoColorEmoji"
+    },
+    {
+      "source": "NotoSansSymbols",
+      "translation": "Símbolos NotoSans"
+    },
+    {
+      "source": "NotoSansSymbols2",
+      "translation": "NotoSansSymbols2"
     },
     {
       "source": "Notorious access",
@@ -114551,6 +115007,10 @@
       "translation": "Captura de tela indisponível."
     },
     {
+      "source": "Screen capture will retry in {0} seconds.",
+      "translation": "A captura de tela será repetida em {0} segundos."
+    },
+    {
       "source": "Screenshot",
       "translation": "Captura de tela"
     },
@@ -114901,6 +115361,10 @@
     {
       "source": "Select an overlay theme",
       "translation": "Selecione um tema de sobreposição"
+    },
+    {
+      "source": "Select exactly one Elite Dangerous window for screen capture.",
+      "translation": "Selecione exatamente uma janela Elite Dangerous para captura de tela."
     },
     {
       "source": "Select folder containing quest definition files",
@@ -116523,6 +116987,10 @@
       "translation": "SrvSurvey.Inara.ReadKey"
     },
     {
+      "source": "SrvSurvey.ScreenCapture",
+      "translation": "SrvSurvey.Captura de tela"
+    },
+    {
       "source": "SrvSurvey.VoxStellar.SharedKey",
       "translation": "SrvSurvey.VoxStellar.Chave compartilhada"
     },
@@ -116953,6 +117421,10 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "SuprimirForActiveBuildProjects"
+    },
+    {
+      "source": "Suppressed {0} repeated {1} events; latest: {2}",
+      "translation": "Eventos {1} {0} repetidos suprimidos; mais recente: {2}"
     },
     {
       "source": "Surface",
@@ -118031,6 +118503,30 @@
       "translation": "A preferência VoxStellar foi alterada para esta sessão, mas não pôde ser salva: {0}"
     },
     {
+      "source": "The Wayland desktop denied screen sharing.",
+      "translation": "O desktop Wayland negou o compartilhamento de tela."
+    },
+    {
+      "source": "The Wayland desktop does not offer window or monitor sharing.",
+      "translation": "A área de trabalho do Wayland não oferece compartilhamento de janelas ou monitores."
+    },
+    {
+      "source": "The Wayland portal response did not include {0}.",
+      "translation": "A resposta do portal Wayland não incluiu {0}."
+    },
+    {
+      "source": "The Wayland portal returned an unreadable video frame.",
+      "translation": "O portal Wayland retornou um quadro de vídeo ilegível."
+    },
+    {
+      "source": "The Wayland portal returned unsupported {0} pixels.",
+      "translation": "O portal Wayland retornou pixels {0} não suportados."
+    },
+    {
+      "source": "The Wayland screen capture session is closed.",
+      "translation": "A sessão de captura de tela do Wayland está fechada."
+    },
+    {
       "source": "The Windows overlay input region could not be applied.",
       "translation": "A região de entrada de sobreposição do Windows não pôde ser aplicada."
     },
@@ -118351,6 +118847,10 @@
       "translation": "O iniciador de link da área de trabalho não está disponível."
     },
     {
+      "source": "The desktop portal returned an unexpected request handle.",
+      "translation": "O portal da área de trabalho retornou um identificador de solicitação inesperado."
+    },
+    {
       "source": "The desktop runtime already has a main window.",
       "translation": "O tempo de execução da área de trabalho já possui uma janela principal."
     },
@@ -118469,6 +118969,10 @@
     {
       "source": "The full-area audit could not be completed.",
       "translation": "A auditoria de toda a área não pôde ser concluída."
+    },
+    {
+      "source": "The game capture area must have a positive size.",
+      "translation": "A área de captura da caça deve ter um tamanho positivo."
     },
     {
       "source": "The game-window tracker factory returned null.",
@@ -119085,6 +119589,10 @@
     {
       "source": "The replay overlay presentation uses an unsupported scale.",
       "translation": "A apresentação de sobreposição de repetição usa uma escala não suportada."
+    },
+    {
+      "source": "The requested game area is outside the shared Wayland source.",
+      "translation": "A área de jogo solicitada está fora da fonte compartilhada do Wayland."
     },
     {
       "source": "The response could not be applied: {0}",
@@ -120197,6 +120705,18 @@
     {
       "source": "Typography",
       "translation": "Tipografia"
+    },
+    {
+      "source": "U+1F4E1,U+1F680",
+      "translation": "U+1F4E1,U+1F680"
+    },
+    {
+      "source": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E",
+      "translation": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E"
+    },
+    {
+      "source": "U+2690,U+2691",
+      "translation": "U+2690,U+2691"
     },
     {
       "source": "UL",
@@ -121459,8 +121979,20 @@
       "translation": "Mundo da água | 1,24 milhões de cr"
     },
     {
+      "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
+      "translation": "Wayland não forneceu um quadro da janela compartilhada Elite Dangerous."
+    },
+    {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Posicionamento de sobreposição de Wayland, transparência, clique e entrada global requerem suporte de compositor e não estão habilitados."
+    },
+    {
+      "source": "Wayland screen sharing could not start: {0}",
+      "translation": "O compartilhamento de tela do Wayland não pôde ser iniciado: {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled.",
+      "translation": "O compartilhamento de tela do Wayland foi cancelado."
     },
     {
       "source": "Waypoint 3 of 12",
@@ -121737,6 +122269,10 @@
     {
       "source": "X11 screen capture could not connect to the display.",
       "translation": "A captura de tela do X11 não pôde ser conectada ao monitor."
+    },
+    {
+      "source": "X11 screen capture failed and was handed to the managed capture fallback",
+      "translation": "A captura de tela do X11 falhou e foi entregue ao substituto de captura gerenciada"
     },
     {
       "source": "X11 threading: initialization was unavailable; native X11 access may be unsafe.",
@@ -123547,6 +124083,10 @@
       "translation": "polímeros"
     },
     {
+      "source": "position",
+      "translation": "posição"
+    },
+    {
       "source": "power",
       "translation": "poder"
     },
@@ -123637,6 +124177,10 @@
     {
       "source": "repeat",
       "translation": "repetir"
+    },
+    {
+      "source": "request",
+      "translation": "solicitar"
     },
     {
       "source": "rescue",
@@ -123757,6 +124301,10 @@
     {
       "source": "service",
       "translation": "serviço"
+    },
+    {
+      "source": "session",
+      "translation": "sessão"
     },
     {
       "source": "settings",
@@ -123925,6 +124473,10 @@
     {
       "source": "store",
       "translation": "loja"
+    },
+    {
+      "source": "streams",
+      "translation": "fluxos"
     },
     {
       "source": "suffix {0}",
@@ -124219,6 +124771,10 @@
       "translation": "tipo9"
     },
     {
+      "source": "types",
+      "translation": "tipos"
+    },
+    {
       "source": "typex",
       "translation": "tipox"
     },
@@ -124365,6 +124921,10 @@
     {
       "source": "wayland",
       "translation": "caminho"
+    },
+    {
+      "source": "wayland-screen-capture.token",
+      "translation": "wayland-screen-capture.token"
     },
     {
       "source": "waypoint",
@@ -126043,6 +126603,10 @@
     {
       "source": "A VR override must contain only a calibration block.",
       "translation": "Отмена VR должна содержать только калибровочный блок."
+    },
+    {
+      "source": "A Wayland screen capture is already in progress.",
+      "translation": "Снимок экрана Wayland уже выполняется."
     },
     {
       "source": "A binding is reported as unavailable when the current operating system cannot provide the required global input capability.",
@@ -127917,6 +128481,10 @@
       "translation": "Автоматически отслеживайте буровые установки из Rhino HUD"
     },
     {
+      "source": "AvailableSourceTypes",
+      "translation": "Доступные типы источников"
+    },
+    {
       "source": "Average",
       "translation": "Средний"
     },
@@ -129507,6 +130075,10 @@
     {
       "source": "Caption",
       "translation": "подпись"
+    },
+    {
+      "source": "Capture bounds must have a positive size.",
+      "translation": "Границы захвата должны иметь положительный размер."
     },
     {
       "source": "Capture selected surface sites",
@@ -136465,8 +137037,8 @@
       "translation": "Игнорируются {0} неверные строки."
     },
     {
-      "source": "Ignoring an expected X11 window or capture lifecycle race: {0}",
-      "translation": "Игнорирование ожидаемого окна X11 или захват жизненного цикла: {0}"
+      "source": "Ignoring an expected X11 window lifecycle race",
+      "translation": "Игнорирование ожидаемой гонки жизненного цикла окна X11"
     },
     {
       "source": "Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M).",
@@ -140515,6 +141087,30 @@
     {
       "source": "Notifications.Enabled",
       "translation": "Уведомления. Включено"
+    },
+    {
+      "source": "Noto Color Emoji",
+      "translation": "Ното Цвет Эмодзи"
+    },
+    {
+      "source": "Noto Sans Symbols",
+      "translation": "Ното-без символов"
+    },
+    {
+      "source": "Noto Sans Symbols 2",
+      "translation": "Ното без символов 2"
+    },
+    {
+      "source": "NotoColorEmoji",
+      "translation": "NotoColorEmoji"
+    },
+    {
+      "source": "NotoSansSymbols",
+      "translation": "NotoSansСимволы"
+    },
+    {
+      "source": "NotoSansSymbols2",
+      "translation": "НотоСансСимволс2"
     },
     {
       "source": "Notorious access",
@@ -145909,6 +146505,10 @@
       "translation": "Снимок экрана недоступен."
     },
     {
+      "source": "Screen capture will retry in {0} seconds.",
+      "translation": "Снимок экрана будет повторен через {0} секунд."
+    },
+    {
       "source": "Screenshot",
       "translation": "Скриншот"
     },
@@ -146259,6 +146859,10 @@
     {
       "source": "Select an overlay theme",
       "translation": "Выберите тему наложения"
+    },
+    {
+      "source": "Select exactly one Elite Dangerous window for screen capture.",
+      "translation": "Выберите ровно одно окно Elite Dangerous для захвата экрана."
     },
     {
       "source": "Select folder containing quest definition files",
@@ -147881,6 +148485,10 @@
       "translation": "SrvSurvey.Inara.ReadKey"
     },
     {
+      "source": "SrvSurvey.ScreenCapture",
+      "translation": "SrvSurvey.Снимок экрана"
+    },
+    {
       "source": "SrvSurvey.VoxStellar.SharedKey",
       "translation": "SrvSurvey.VoxStellar.SharedKey"
     },
@@ -148311,6 +148919,10 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "Супрессфорактивебилдпроектс"
+    },
+    {
+      "source": "Suppressed {0} repeated {1} events; latest: {2}",
+      "translation": "Подавлены повторяющиеся события {0} {1}; последний: {2}"
     },
     {
       "source": "Surface",
@@ -149389,6 +150001,30 @@
       "translation": "Предпочтение VoxStellar изменилось для этого сеанса, но не удалось сохранить: {0}"
     },
     {
+      "source": "The Wayland desktop denied screen sharing.",
+      "translation": "Рабочий стол Wayland запретил совместное использование экрана."
+    },
+    {
+      "source": "The Wayland desktop does not offer window or monitor sharing.",
+      "translation": "Рабочий стол Wayland не поддерживает совместное использование окон или мониторов."
+    },
+    {
+      "source": "The Wayland portal response did not include {0}.",
+      "translation": "Ответ портала Wayland не включал {0}."
+    },
+    {
+      "source": "The Wayland portal returned an unreadable video frame.",
+      "translation": "Портал Wayland вернул нечитаемый видеокадр."
+    },
+    {
+      "source": "The Wayland portal returned unsupported {0} pixels.",
+      "translation": "Портал Wayland вернул неподдерживаемые пиксели {0}."
+    },
+    {
+      "source": "The Wayland screen capture session is closed.",
+      "translation": "Сеанс захвата экрана Wayland закрыт."
+    },
+    {
       "source": "The Windows overlay input region could not be applied.",
       "translation": "Не удалось применить область ввода наложения Windows."
     },
@@ -149709,6 +150345,10 @@
       "translation": "Средство запуска ссылок на рабочий стол недоступно."
     },
     {
+      "source": "The desktop portal returned an unexpected request handle.",
+      "translation": "Портал настольных компьютеров вернул неожиданный дескриптор запроса."
+    },
+    {
       "source": "The desktop runtime already has a main window.",
       "translation": "В среде выполнения рабочего стола уже есть главное окно."
     },
@@ -149827,6 +150467,10 @@
     {
       "source": "The full-area audit could not be completed.",
       "translation": "Полную проверку провести не удалось."
+    },
+    {
+      "source": "The game capture area must have a positive size.",
+      "translation": "Область захвата игры должна иметь положительный размер."
     },
     {
       "source": "The game-window tracker factory returned null.",
@@ -150443,6 +151087,10 @@
     {
       "source": "The replay overlay presentation uses an unsupported scale.",
       "translation": "В представлении наложения повтора используется неподдерживаемый масштаб."
+    },
+    {
+      "source": "The requested game area is outside the shared Wayland source.",
+      "translation": "Запрошенная игровая зона находится за пределами общего источника Wayland."
     },
     {
       "source": "The response could not be applied: {0}",
@@ -151555,6 +152203,18 @@
     {
       "source": "Typography",
       "translation": "Типография"
+    },
+    {
+      "source": "U+1F4E1,U+1F680",
+      "translation": "U + 1F4E1, U + 1F680"
+    },
+    {
+      "source": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E",
+      "translation": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E"
+    },
+    {
+      "source": "U+2690,U+2691",
+      "translation": "U+2690,U+2691"
     },
     {
       "source": "UL",
@@ -152817,8 +153477,20 @@
       "translation": "Водный мир | 1,24 млн кр"
     },
     {
+      "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
+      "translation": "Wayland не предоставил кадр из общего окна Elite Dangerous."
+    },
+    {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Позиционирование наложения Wayland, прозрачность, переход по щелчку и глобальный ввод требуют поддержки композитора и не включены."
+    },
+    {
+      "source": "Wayland screen sharing could not start: {0}",
+      "translation": "Не удалось запустить совместное использование экрана Wayland: {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled.",
+      "translation": "Демонстрация экрана Wayland отменена."
     },
     {
       "source": "Waypoint 3 of 12",
@@ -153095,6 +153767,10 @@
     {
       "source": "X11 screen capture could not connect to the display.",
       "translation": "Снимок экрана X11 не удалось подключить к дисплею."
+    },
+    {
+      "source": "X11 screen capture failed and was handed to the managed capture fallback",
+      "translation": "Не удалось сделать снимок экрана X11, и он был передан в резервный вариант управляемого захвата."
     },
     {
       "source": "X11 threading: initialization was unavailable; native X11 access may be unsafe.",
@@ -154905,6 +155581,10 @@
       "translation": "полимеры"
     },
     {
+      "source": "position",
+      "translation": "позиция"
+    },
+    {
       "source": "power",
       "translation": "власть"
     },
@@ -154995,6 +155675,10 @@
     {
       "source": "repeat",
       "translation": "повторять"
+    },
+    {
+      "source": "request",
+      "translation": "запрос"
     },
     {
       "source": "rescue",
@@ -155115,6 +155799,10 @@
     {
       "source": "service",
       "translation": "услуга"
+    },
+    {
+      "source": "session",
+      "translation": "сессия"
     },
     {
       "source": "settings",
@@ -155283,6 +155971,10 @@
     {
       "source": "store",
       "translation": "магазин"
+    },
+    {
+      "source": "streams",
+      "translation": "ручьи"
     },
     {
       "source": "suffix {0}",
@@ -155577,6 +156269,10 @@
       "translation": "тип9"
     },
     {
+      "source": "types",
+      "translation": "типы"
+    },
+    {
       "source": "typex",
       "translation": "типекс"
     },
@@ -155723,6 +156419,10 @@
     {
       "source": "wayland",
       "translation": "дорога"
+    },
+    {
+      "source": "wayland-screen-capture.token",
+      "translation": "wayland-screen-capture.token"
     },
     {
       "source": "waypoint",
@@ -157401,6 +158101,10 @@
     {
       "source": "A VR override must contain only a calibration block.",
       "translation": "VR 覆盖必须仅包含校准块。"
+    },
+    {
+      "source": "A Wayland screen capture is already in progress.",
+      "translation": "Wayland 屏幕截图已经在进行中。"
     },
     {
       "source": "A binding is reported as unavailable when the current operating system cannot provide the required global input capability.",
@@ -159275,6 +159979,10 @@
       "translation": "从 Rhino HUD 自动跟踪装备"
     },
     {
+      "source": "AvailableSourceTypes",
+      "translation": "可用源类型"
+    },
+    {
       "source": "Average",
       "translation": "平均"
     },
@@ -160865,6 +161573,10 @@
     {
       "source": "Caption",
       "translation": "标题"
+    },
+    {
+      "source": "Capture bounds must have a positive size.",
+      "translation": "捕获边界必须具有正值。"
     },
     {
       "source": "Capture selected surface sites",
@@ -167823,8 +168535,8 @@
       "translation": "忽略 {0} 格式错误的行。"
     },
     {
-      "source": "Ignoring an expected X11 window or capture lifecycle race: {0}",
-      "translation": "忽略预期的 X11 窗口或捕获生命周期竞争：{0}"
+      "source": "Ignoring an expected X11 window lifecycle race",
+      "translation": "忽略预期的 X11 窗口生命周期竞争"
     },
     {
       "source": "Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M).",
@@ -171873,6 +172585,30 @@
     {
       "source": "Notifications.Enabled",
       "translation": "通知.已启用"
+    },
+    {
+      "source": "Noto Color Emoji",
+      "translation": "能登颜色表情符号"
+    },
+    {
+      "source": "Noto Sans Symbols",
+      "translation": "Noto Sans 符号"
+    },
+    {
+      "source": "Noto Sans Symbols 2",
+      "translation": "Noto Sans 符号 2"
+    },
+    {
+      "source": "NotoColorEmoji",
+      "translation": "能登颜色表情符号"
+    },
+    {
+      "source": "NotoSansSymbols",
+      "translation": "NotoSans 符号"
+    },
+    {
+      "source": "NotoSansSymbols2",
+      "translation": "NotoSansSymbols2"
     },
     {
       "source": "Notorious access",
@@ -177267,6 +178003,10 @@
       "translation": "屏幕截图不可用。"
     },
     {
+      "source": "Screen capture will retry in {0} seconds.",
+      "translation": "屏幕捕获将在 {0} 秒后重试。"
+    },
+    {
       "source": "Screenshot",
       "translation": "截图"
     },
@@ -177617,6 +178357,10 @@
     {
       "source": "Select an overlay theme",
       "translation": "选择叠加主题"
+    },
+    {
+      "source": "Select exactly one Elite Dangerous window for screen capture.",
+      "translation": "准确选择一个 Elite Dangerous 窗口进行屏幕捕获。"
     },
     {
       "source": "Select folder containing quest definition files",
@@ -179239,6 +179983,10 @@
       "translation": "SrvSurvey.Inara.ReadKey"
     },
     {
+      "source": "SrvSurvey.ScreenCapture",
+      "translation": "SrvSurvey.ScreenCapture"
+    },
+    {
       "source": "SrvSurvey.VoxStellar.SharedKey",
       "translation": "SrvSurvey.VoxStellar.共享密钥"
     },
@@ -179669,6 +180417,10 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "抑制ActiveBuildProjects"
+    },
+    {
+      "source": "Suppressed {0} repeated {1} events; latest: {2}",
+      "translation": "抑制{0}重复的{1}事件；最新：{2}"
     },
     {
       "source": "Surface",
@@ -180747,6 +181499,30 @@
       "translation": "此会话的 VoxStellar 首选项已更改，但无法保存：{0}"
     },
     {
+      "source": "The Wayland desktop denied screen sharing.",
+      "translation": "Wayland 桌面拒绝屏幕共享。"
+    },
+    {
+      "source": "The Wayland desktop does not offer window or monitor sharing.",
+      "translation": "Wayland 桌面不提供窗口或显示器共享。"
+    },
+    {
+      "source": "The Wayland portal response did not include {0}.",
+      "translation": "Wayland 门户响应不包含 {0}。"
+    },
+    {
+      "source": "The Wayland portal returned an unreadable video frame.",
+      "translation": "Wayland 门户返回了一个无法读取的视频帧。"
+    },
+    {
+      "source": "The Wayland portal returned unsupported {0} pixels.",
+      "translation": "Wayland 门户返回了不受支持的 {0} 像素。"
+    },
+    {
+      "source": "The Wayland screen capture session is closed.",
+      "translation": "Wayland 屏幕捕获会话已关闭。"
+    },
+    {
       "source": "The Windows overlay input region could not be applied.",
       "translation": "无法应用 Windows 覆盖输入区域。"
     },
@@ -181067,6 +181843,10 @@
       "translation": "桌面链接启动器不可用。"
     },
     {
+      "source": "The desktop portal returned an unexpected request handle.",
+      "translation": "桌面门户返回了意外的请求句柄。"
+    },
+    {
       "source": "The desktop runtime already has a main window.",
       "translation": "桌面运行时已经有一个主窗口。"
     },
@@ -181185,6 +181965,10 @@
     {
       "source": "The full-area audit could not be completed.",
       "translation": "全区审计无法完成。"
+    },
+    {
+      "source": "The game capture area must have a positive size.",
+      "translation": "游戏捕获区域的大小必须为正值。"
     },
     {
       "source": "The game-window tracker factory returned null.",
@@ -181801,6 +182585,10 @@
     {
       "source": "The replay overlay presentation uses an unsupported scale.",
       "translation": "重放叠加演示使用了不受支持的比例。"
+    },
+    {
+      "source": "The requested game area is outside the shared Wayland source.",
+      "translation": "请求的游戏区域位于共享 Wayland 源之外。"
     },
     {
       "source": "The response could not be applied: {0}",
@@ -182913,6 +183701,18 @@
     {
       "source": "Typography",
       "translation": "版式"
+    },
+    {
+      "source": "U+1F4E1,U+1F680",
+      "translation": "U+1F4E1,U+1F680"
+    },
+    {
+      "source": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E",
+      "translation": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E"
+    },
+    {
+      "source": "U+2690,U+2691",
+      "translation": "U+2690,U+2691"
     },
     {
       "source": "UL",
@@ -184175,8 +184975,20 @@
       "translation": "水世界| 1.24M铬"
     },
     {
+      "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
+      "translation": "Wayland 没有提供共享 Elite Dangerous 窗口的框架。"
+    },
+    {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Wayland 叠加定位、透明度、点击率和全局输入需要合成器支持，并且未启用。"
+    },
+    {
+      "source": "Wayland screen sharing could not start: {0}",
+      "translation": "Wayland 屏幕共享无法启动：{0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled.",
+      "translation": "Wayland 屏幕共享已取消。"
     },
     {
       "source": "Waypoint 3 of 12",
@@ -184453,6 +185265,10 @@
     {
       "source": "X11 screen capture could not connect to the display.",
       "translation": "X11 屏幕截图无法连接到显示器。"
+    },
+    {
+      "source": "X11 screen capture failed and was handed to the managed capture fallback",
+      "translation": "X11 屏幕捕获失败并移交给托管捕获后备"
     },
     {
       "source": "X11 threading: initialization was unavailable; native X11 access may be unsafe.",
@@ -186263,6 +187079,10 @@
       "translation": "聚合物"
     },
     {
+      "source": "position",
+      "translation": "位置"
+    },
+    {
       "source": "power",
       "translation": "电源"
     },
@@ -186353,6 +187173,10 @@
     {
       "source": "repeat",
       "translation": "重复"
+    },
+    {
+      "source": "request",
+      "translation": "要求"
     },
     {
       "source": "rescue",
@@ -186473,6 +187297,10 @@
     {
       "source": "service",
       "translation": "服务"
+    },
+    {
+      "source": "session",
+      "translation": "会议"
     },
     {
       "source": "settings",
@@ -186641,6 +187469,10 @@
     {
       "source": "store",
       "translation": "商店"
+    },
+    {
+      "source": "streams",
+      "translation": "溪流"
     },
     {
       "source": "suffix {0}",
@@ -186935,6 +187767,10 @@
       "translation": "9型"
     },
     {
+      "source": "types",
+      "translation": "类型"
+    },
+    {
       "source": "typex",
       "translation": "类型x"
     },
@@ -187081,6 +187917,10 @@
     {
       "source": "wayland",
       "translation": "韦兰"
+    },
+    {
+      "source": "wayland-screen-capture.token",
+      "translation": "Wayland-屏幕捕获.token"
     },
     {
       "source": "waypoint",
@@ -188759,6 +189599,10 @@
     {
       "source": "A VR override must contain only a calibration block.",
       "translation": "* A VR OVERRIDE MUST CONTAIN ONLY A CALIBRATION BLOCK. >>>!"
+    },
+    {
+      "source": "A Wayland screen capture is already in progress.",
+      "translation": "* A WAYLAND SCREEN CAPTURE IS ALREADY IN PROGRESS. >>>!"
     },
     {
       "source": "A binding is reported as unavailable when the current operating system cannot provide the required global input capability.",
@@ -190633,6 +191477,10 @@
       "translation": "* AUTOMATICALLY TRACK RIGS FROM THE RHINO HUD >>>!"
     },
     {
+      "source": "AvailableSourceTypes",
+      "translation": "* AVAILABLESOURCETYPES >>>!"
+    },
+    {
       "source": "Average",
       "translation": "* AVERAGE >>>!"
     },
@@ -192223,6 +193071,10 @@
     {
       "source": "Caption",
       "translation": "* CAPTION >>>!"
+    },
+    {
+      "source": "Capture bounds must have a positive size.",
+      "translation": "* CAPTURE BOUNDS MUST HAVE A POSITIVE SIZE. >>>!"
     },
     {
       "source": "Capture selected surface sites",
@@ -199181,8 +200033,8 @@
       "translation": "* IGNORED {0} MALFORMED LINES. >>>!"
     },
     {
-      "source": "Ignoring an expected X11 window or capture lifecycle race: {0}",
-      "translation": "* IGNORING AN EXPECTED X11 WINDOW OR CAPTURE LIFECYCLE RACE: {0} >>>!"
+      "source": "Ignoring an expected X11 window lifecycle race",
+      "translation": "* IGNORING AN EXPECTED X11 WINDOW LIFECYCLE RACE >>>!"
     },
     {
       "source": "Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M).",
@@ -203231,6 +204083,30 @@
     {
       "source": "Notifications.Enabled",
       "translation": "* NOTIFICATIONS.ENABLED >>>!"
+    },
+    {
+      "source": "Noto Color Emoji",
+      "translation": "* NOTO COLOR EMOJI >>>!"
+    },
+    {
+      "source": "Noto Sans Symbols",
+      "translation": "* NOTO SANS SYMBOLS >>>!"
+    },
+    {
+      "source": "Noto Sans Symbols 2",
+      "translation": "* NOTO SANS SYMBOLS 2 >>>!"
+    },
+    {
+      "source": "NotoColorEmoji",
+      "translation": "* NOTOCOLOREMOJI >>>!"
+    },
+    {
+      "source": "NotoSansSymbols",
+      "translation": "* NOTOSANSSYMBOLS >>>!"
+    },
+    {
+      "source": "NotoSansSymbols2",
+      "translation": "* NOTOSANSSYMBOLS2 >>>!"
     },
     {
       "source": "Notorious access",
@@ -208625,6 +209501,10 @@
       "translation": "* SCREEN CAPTURE UNAVAILABLE. >>>!"
     },
     {
+      "source": "Screen capture will retry in {0} seconds.",
+      "translation": "* SCREEN CAPTURE WILL RETRY IN {0} SECONDS. >>>!"
+    },
+    {
       "source": "Screenshot",
       "translation": "* SCREENSHOT >>>!"
     },
@@ -208975,6 +209855,10 @@
     {
       "source": "Select an overlay theme",
       "translation": "* SELECT AN OVERLAY THEME >>>!"
+    },
+    {
+      "source": "Select exactly one Elite Dangerous window for screen capture.",
+      "translation": "* SELECT EXACTLY ONE ELITE DANGEROUS WINDOW FOR SCREEN CAPTURE. >>>!"
     },
     {
       "source": "Select folder containing quest definition files",
@@ -210597,6 +211481,10 @@
       "translation": "* SRVSURVEY.INARA.READKEY >>>!"
     },
     {
+      "source": "SrvSurvey.ScreenCapture",
+      "translation": "* SRVSURVEY.SCREENCAPTURE >>>!"
+    },
+    {
       "source": "SrvSurvey.VoxStellar.SharedKey",
       "translation": "* SRVSURVEY.VOXSTELLAR.SHAREDKEY >>>!"
     },
@@ -211027,6 +211915,10 @@
     {
       "source": "SuppressForActiveBuildProjects",
       "translation": "* SUPPRESSFORACTIVEBUILDPROJECTS >>>!"
+    },
+    {
+      "source": "Suppressed {0} repeated {1} events; latest: {2}",
+      "translation": "* SUPPRESSED {0} REPEATED {1} EVENTS; LATEST: {2} >>>!"
     },
     {
       "source": "Surface",
@@ -212105,6 +212997,30 @@
       "translation": "* THE VOXSTELLAR PREFERENCE CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
     },
     {
+      "source": "The Wayland desktop denied screen sharing.",
+      "translation": "* THE WAYLAND DESKTOP DENIED SCREEN SHARING. >>>!"
+    },
+    {
+      "source": "The Wayland desktop does not offer window or monitor sharing.",
+      "translation": "* THE WAYLAND DESKTOP DOES NOT OFFER WINDOW OR MONITOR SHARING. >>>!"
+    },
+    {
+      "source": "The Wayland portal response did not include {0}.",
+      "translation": "* THE WAYLAND PORTAL RESPONSE DID NOT INCLUDE {0}. >>>!"
+    },
+    {
+      "source": "The Wayland portal returned an unreadable video frame.",
+      "translation": "* THE WAYLAND PORTAL RETURNED AN UNREADABLE VIDEO FRAME. >>>!"
+    },
+    {
+      "source": "The Wayland portal returned unsupported {0} pixels.",
+      "translation": "* THE WAYLAND PORTAL RETURNED UNSUPPORTED {0} PIXELS. >>>!"
+    },
+    {
+      "source": "The Wayland screen capture session is closed.",
+      "translation": "* THE WAYLAND SCREEN CAPTURE SESSION IS CLOSED. >>>!"
+    },
+    {
       "source": "The Windows overlay input region could not be applied.",
       "translation": "* THE WINDOWS OVERLAY INPUT REGION COULD NOT BE APPLIED. >>>!"
     },
@@ -212425,6 +213341,10 @@
       "translation": "* THE DESKTOP LINK LAUNCHER IS NOT AVAILABLE. >>>!"
     },
     {
+      "source": "The desktop portal returned an unexpected request handle.",
+      "translation": "* THE DESKTOP PORTAL RETURNED AN UNEXPECTED REQUEST HANDLE. >>>!"
+    },
+    {
       "source": "The desktop runtime already has a main window.",
       "translation": "* THE DESKTOP RUNTIME ALREADY HAS A MAIN WINDOW. >>>!"
     },
@@ -212543,6 +213463,10 @@
     {
       "source": "The full-area audit could not be completed.",
       "translation": "* THE FULL-AREA AUDIT COULD NOT BE COMPLETED. >>>!"
+    },
+    {
+      "source": "The game capture area must have a positive size.",
+      "translation": "* THE GAME CAPTURE AREA MUST HAVE A POSITIVE SIZE. >>>!"
     },
     {
       "source": "The game-window tracker factory returned null.",
@@ -213159,6 +214083,10 @@
     {
       "source": "The replay overlay presentation uses an unsupported scale.",
       "translation": "* THE REPLAY OVERLAY PRESENTATION USES AN UNSUPPORTED SCALE. >>>!"
+    },
+    {
+      "source": "The requested game area is outside the shared Wayland source.",
+      "translation": "* THE REQUESTED GAME AREA IS OUTSIDE THE SHARED WAYLAND SOURCE. >>>!"
     },
     {
       "source": "The response could not be applied: {0}",
@@ -214271,6 +215199,18 @@
     {
       "source": "Typography",
       "translation": "* TYPOGRAPHY >>>!"
+    },
+    {
+      "source": "U+1F4E1,U+1F680",
+      "translation": "* U+1F4E1,U+1F680 >>>!"
+    },
+    {
+      "source": "U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E",
+      "translation": "* U+23F3,U+25C6,U+25C7,U+2600,U+270B,U+2713,U+2715,U+1F30E >>>!"
+    },
+    {
+      "source": "U+2690,U+2691",
+      "translation": "* U+2690,U+2691 >>>!"
     },
     {
       "source": "UL",
@@ -215533,8 +216473,20 @@
       "translation": "* WATER WORLD | 1.24 M CR >>>!"
     },
     {
+      "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
+      "translation": "* WAYLAND DID NOT PROVIDE A FRAME FROM THE SHARED ELITE DANGEROUS WINDOW. >>>!"
+    },
+    {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "* WAYLAND OVERLAY POSITIONING, TRANSPARENCY, CLICK-THROUGH, AND GLOBAL INPUT REQUIRE COMPOSITOR SUPPORT AND ARE NOT ENABLED. >>>!"
+    },
+    {
+      "source": "Wayland screen sharing could not start: {0}",
+      "translation": "* WAYLAND SCREEN SHARING COULD NOT START: {0} >>>!"
+    },
+    {
+      "source": "Wayland screen sharing was canceled.",
+      "translation": "* WAYLAND SCREEN SHARING WAS CANCELED. >>>!"
     },
     {
       "source": "Waypoint 3 of 12",
@@ -215811,6 +216763,10 @@
     {
       "source": "X11 screen capture could not connect to the display.",
       "translation": "* X11 SCREEN CAPTURE COULD NOT CONNECT TO THE DISPLAY. >>>!"
+    },
+    {
+      "source": "X11 screen capture failed and was handed to the managed capture fallback",
+      "translation": "* X11 SCREEN CAPTURE FAILED AND WAS HANDED TO THE MANAGED CAPTURE FALLBACK >>>!"
     },
     {
       "source": "X11 threading: initialization was unavailable; native X11 access may be unsafe.",
@@ -217621,6 +218577,10 @@
       "translation": "* POLYMERS >>>!"
     },
     {
+      "source": "position",
+      "translation": "* POSITION >>>!"
+    },
+    {
       "source": "power",
       "translation": "* POWER >>>!"
     },
@@ -217711,6 +218671,10 @@
     {
       "source": "repeat",
       "translation": "* REPEAT >>>!"
+    },
+    {
+      "source": "request",
+      "translation": "* REQUEST >>>!"
     },
     {
       "source": "rescue",
@@ -217831,6 +218795,10 @@
     {
       "source": "service",
       "translation": "* SERVICE >>>!"
+    },
+    {
+      "source": "session",
+      "translation": "* SESSION >>>!"
     },
     {
       "source": "settings",
@@ -217999,6 +218967,10 @@
     {
       "source": "store",
       "translation": "* STORE >>>!"
+    },
+    {
+      "source": "streams",
+      "translation": "* STREAMS >>>!"
     },
     {
       "source": "suffix {0}",
@@ -218293,6 +219265,10 @@
       "translation": "* TYPE9 >>>!"
     },
     {
+      "source": "types",
+      "translation": "* TYPES >>>!"
+    },
+    {
       "source": "typex",
       "translation": "* TYPEX >>>!"
     },
@@ -218439,6 +219415,10 @@
     {
       "source": "wayland",
       "translation": "* WAYLAND >>>!"
+    },
+    {
+      "source": "wayland-screen-capture.token",
+      "translation": "* WAYLAND-SCREEN-CAPTURE.TOKEN >>>!"
     },
     {
       "source": "waypoint",

@@ -205,6 +205,43 @@ public sealed class OverlayPlatformServiceTests
         Assert.False(X11OverlayPlatformService.ShouldSuppressXError(ownedDisplay, X11Native.BadWindow));
     }
 
+    [Fact]
+    public void X11ExpectedErrorLoggingReportsFirstFailureAndPeriodicAggregate()
+    {
+        var limiter = new X11ExpectedErrorLogLimiter(TimeSpan.FromSeconds(30));
+        var signature = new X11ExpectedErrorSignature(
+            (nint)42,
+            X11Native.BadMatch,
+            X11Native.GetImageRequest,
+            MinorCode: 0,
+            ResourceId: 1070
+        );
+        var now = new DateTimeOffset(2026, 9, 13, 12, 0, 0, TimeSpan.Zero);
+
+        Assert.Equal(
+            new X11ExpectedErrorLogDecision(ShouldLog: true, SuppressedCount: 0),
+            limiter.Record(signature, now)
+        );
+        Assert.Equal(
+            new X11ExpectedErrorLogDecision(ShouldLog: false, SuppressedCount: 0),
+            limiter.Record(signature, now.AddSeconds(1))
+        );
+        Assert.Equal(
+            new X11ExpectedErrorLogDecision(ShouldLog: false, SuppressedCount: 0),
+            limiter.Record(signature, now.AddSeconds(2))
+        );
+        Assert.Equal(
+            new X11ExpectedErrorLogDecision(ShouldLog: true, SuppressedCount: 2),
+            limiter.Record(signature, now.AddSeconds(30))
+        );
+
+        limiter.RemoveDisplay((nint)42);
+        Assert.Equal(
+            new X11ExpectedErrorLogDecision(ShouldLog: true, SuppressedCount: 0),
+            limiter.Record(signature, now.AddSeconds(31))
+        );
+    }
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate int CompatibleX11ErrorHandler(nint display, ref X11Native.XErrorEvent errorEvent);
 

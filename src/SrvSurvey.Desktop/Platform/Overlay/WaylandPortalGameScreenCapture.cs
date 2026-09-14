@@ -17,7 +17,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     private static readonly TimeSpan FrameTimeout = TimeSpan.FromSeconds(5);
     private static int nextToken;
 
-    private readonly object gate = new();
+    private readonly Lock gate = new();
     private readonly string restoreTokenPath;
     private readonly CancellationTokenSource shutdown = new();
     private Task? initialization;
@@ -200,11 +200,11 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             sessionPath,
             new Dictionary<string, object>()
         );
-        var context = new PipeWireContext("SrvSurvey.RigDetection");
+        var context = new PipeWireContext("SrvSurvey.ScreenCapture");
         pipeWireContext = context;
         await context.StartAsync(remote, shutdown.Token);
 
-        var videoCapture = new PipeWireVideoCapture(context, "SrvSurvey.RigDetection");
+        var videoCapture = new PipeWireVideoCapture(context, "SrvSurvey.ScreenCapture");
         pipeWireCapture = videoCapture;
         videoCapture.FrameReady += OnFrameReady;
         videoCapture.Connect(
@@ -414,7 +414,7 @@ internal readonly record struct PortalStreamInfo(uint NodeId, uint SourceType, P
 
         if (streams.Length != 1)
         {
-            throw new InvalidDataException("Select exactly one Elite Dangerous window for rig detection.");
+            throw new InvalidDataException("Select exactly one Elite Dangerous window for screen capture.");
         }
 
         (uint nodeId, IDictionary<string, object> properties) = streams[0];
@@ -490,7 +490,7 @@ internal static class PortalFrameCropper
         bottom = Math.Clamp(bottom, 0, frameHeight);
         if (right <= left || bottom <= top)
         {
-            throw new InvalidDataException("The calibrated rig area is outside the shared Wayland source.");
+            throw new InvalidDataException("The requested game area is outside the shared Wayland source.");
         }
 
         return new PixelRect(left, top, right - left, bottom - top);

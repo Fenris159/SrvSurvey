@@ -81,6 +81,34 @@ public sealed class GameScreenCaptureTests
     }
 
     [Fact]
+    public void RepeatedCaptureFailuresBackOffAndRecover()
+    {
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var time = new MutableTimeProvider(new DateTimeOffset(2026, 9, 13, 12, 0, 0, TimeSpan.Zero));
+        int attempts = 0;
+        using var capture = new BackoffGameScreenCapture(
+            new StubCapture(_ => ++attempts < 3 ? throw new IOException("capture failed") : expected),
+            time
+        );
+        var bounds = new PixelRect(0, 0, 1, 1);
+
+        Assert.Throws<IOException>(() => capture.Capture(bounds));
+        Assert.Throws<ScreenCaptureBackoffException>(() => capture.Capture(bounds));
+        Assert.Equal(1, attempts);
+
+        time.Advance(TimeSpan.FromSeconds(1));
+        Assert.Throws<IOException>(() => capture.Capture(bounds));
+        time.Advance(TimeSpan.FromSeconds(1));
+        Assert.Throws<ScreenCaptureBackoffException>(() => capture.Capture(bounds));
+        Assert.Equal(2, attempts);
+
+        time.Advance(TimeSpan.FromSeconds(1));
+        Assert.Same(expected, capture.Capture(bounds));
+        Assert.Same(expected, capture.Capture(bounds));
+        Assert.Equal(4, attempts);
+    }
+
+    [Fact]
     public void PortalWindowCaptureUsesGameRelativeCalibrationBounds()
     {
         byte[] pixels = Enumerable.Range(0, 4 * 4).SelectMany(index => new byte[] { (byte)index, 0, 0, 255 }).ToArray();
@@ -192,5 +220,15 @@ public sealed class GameScreenCaptureTests
         public CapturedPixelBuffer Capture(PixelRect bounds) => capture(bounds);
 
         public void Dispose() { }
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
+
+        public void Advance(TimeSpan amount)
+        {
+            utcNow += amount;
+        }
     }
 }
