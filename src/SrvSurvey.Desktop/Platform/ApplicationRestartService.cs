@@ -21,36 +21,72 @@ public sealed class ApplicationRestartService
     private readonly string processPath;
     private readonly string entryAssemblyPath;
     private readonly IReadOnlyList<string> arguments;
+    private readonly Func<(int ProcessId, long StartTimeUtcTicks)> currentProcessIdentity;
+    private readonly Func<ProcessStartInfo, bool> processStarter;
 
     public ApplicationRestartService()
         : this(ResolveLauncherPath(), ResolveEntryAssemblyPath(), Program.StartupArguments) { }
 
     internal ApplicationRestartService(string processPath, string entryAssemblyPath, IReadOnlyList<string> arguments)
+        : this(processPath, entryAssemblyPath, arguments, GetCurrentProcessIdentity, StartProcess) { }
+
+    internal ApplicationRestartService(
+        string processPath,
+        string entryAssemblyPath,
+        IReadOnlyList<string> arguments,
+        Func<(int ProcessId, long StartTimeUtcTicks)> currentProcessIdentity,
+        Func<ProcessStartInfo, bool> processStarter
+    )
     {
         this.processPath = Path.GetFullPath(processPath);
         this.entryAssemblyPath = Path.GetFullPath(entryAssemblyPath);
         this.arguments = arguments?.ToArray() ?? throw new ArgumentNullException(nameof(arguments));
+        this.currentProcessIdentity =
+            currentProcessIdentity ?? throw new ArgumentNullException(nameof(currentProcessIdentity));
+        this.processStarter = processStarter ?? throw new ArgumentNullException(nameof(processStarter));
     }
 
     public void StartRestartHelper()
     {
         DesktopExternalEffectPolicy.ThrowIfDisabled();
-        using var current = Process.GetCurrentProcess();
+        (int processId, long startTimeUtcTicks) = currentProcessIdentity();
         ProcessStartInfo startInfo = CreateRestartHelperStartInfo(
             processPath,
             entryAssemblyPath,
             arguments,
-            current.Id,
-            current.StartTime.ToUniversalTime().Ticks
+            processId,
+            startTimeUtcTicks
         );
-        using Process process =
-            Process.Start(startInfo)
-            ?? throw new InvalidOperationException("The SrvSurvey restart helper did not start.");
+        if (!processStarter(startInfo))
+        {
+            throw new InvalidOperationException("The SrvSurvey restart helper did not start.");
+        }
     }
 
     internal static bool TryRunRestartHelper(IReadOnlyList<string> arguments)
     {
+        return TryRunRestartHelper(
+            arguments,
+            WaitForParentExit,
+            StartCurrentApplication,
+            Console.Error,
+            exitCode => Environment.ExitCode = exitCode
+        );
+    }
+
+    internal static bool TryRunRestartHelper(
+        IReadOnlyList<string> arguments,
+        Func<int, long, bool> waitForParentExit,
+        Func<IReadOnlyList<string>, bool> startReplacement,
+        TextWriter errorWriter,
+        Action<int> setExitCode
+    )
+    {
         ArgumentNullException.ThrowIfNull(arguments);
+        ArgumentNullException.ThrowIfNull(waitForParentExit);
+        ArgumentNullException.ThrowIfNull(startReplacement);
+        ArgumentNullException.ThrowIfNull(errorWriter);
+        ArgumentNullException.ThrowIfNull(setExitCode);
         if (arguments.Count == 0 || !string.Equals(arguments[0], RestartAfterProcessArgument, StringComparison.Ordinal))
         {
             return false;
@@ -58,14 +94,14 @@ public sealed class ApplicationRestartService
 
         if (!TryParseRestartRequest(arguments, out ApplicationRestartRequest? request))
         {
-            Console.Error.WriteLine("SrvSurvey restart helper arguments were invalid.");
-            Environment.ExitCode = 2;
+            errorWriter.WriteLine("SrvSurvey restart helper arguments were invalid.");
+            setExitCode(2);
             return true;
         }
 
         try
         {
-            Environment.ExitCode = RunRestartHelper(request, WaitForParentExit, StartCurrentApplication);
+            setExitCode(RunRestartHelper(request, waitForParentExit, startReplacement));
         }
         catch (Exception exception)
             when (exception
@@ -76,8 +112,8 @@ public sealed class ApplicationRestartService
                         or NotSupportedException
             )
         {
-            Console.Error.WriteLine("SrvSurvey restart helper failed: " + exception.Message);
-            Environment.ExitCode = 1;
+            errorWriter.WriteLine("SrvSurvey restart helper failed: " + exception.Message);
+            setExitCode(1);
         }
 
         return true;
@@ -186,6 +222,11 @@ public sealed class ApplicationRestartService
 
     private static bool WaitForParentExit(int parentProcessId, long parentProcessStartTimeUtcTicks)
     {
+        return WaitForParentExit(parentProcessId, parentProcessStartTimeUtcTicks, ParentExitTimeout);
+    }
+
+    internal static bool WaitForParentExit(int parentProcessId, long parentProcessStartTimeUtcTicks, TimeSpan timeout)
+    {
         try
         {
             using var parent = Process.GetProcessById(parentProcessId);
@@ -195,7 +236,7 @@ public sealed class ApplicationRestartService
                 return true;
             }
 
-            return parent.WaitForExit((int)ParentExitTimeout.TotalMilliseconds);
+            return parent.WaitForExit((int)timeout.TotalMilliseconds);
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or Win32Exception)
         {
@@ -206,6 +247,18 @@ public sealed class ApplicationRestartService
     private static bool StartCurrentApplication(IReadOnlyList<string> arguments)
     {
         ProcessStartInfo startInfo = CreateStartInfo(ResolveLauncherPath(), ResolveEntryAssemblyPath(), arguments);
+        using var process = Process.Start(startInfo);
+        return process is not null;
+    }
+
+    private static (int ProcessId, long StartTimeUtcTicks) GetCurrentProcessIdentity()
+    {
+        using var current = Process.GetCurrentProcess();
+        return (current.Id, current.StartTime.ToUniversalTime().Ticks);
+    }
+
+    private static bool StartProcess(ProcessStartInfo startInfo)
+    {
         using var process = Process.Start(startInfo);
         return process is not null;
     }

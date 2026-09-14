@@ -551,55 +551,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
         try
         {
-            string detail =
-                $"error {errorEvent.ErrorCode}, request "
-                + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
-                + $"{errorEvent.ResourceId}, display {errorDisplay}.";
-            if (suppressExpectedLifecycleRace)
-            {
-                var signature = new X11ExpectedErrorSignature(
-                    errorDisplay,
-                    errorEvent.ErrorCode,
-                    errorEvent.RequestCode,
-                    errorEvent.MinorCode,
-                    errorEvent.ResourceId
-                );
-                X11ExpectedErrorLogDecision decision = ExpectedErrorLogLimiter.Record(signature, DateTimeOffset.UtcNow);
-                if (decision.ShouldLog)
-                {
-                    string category =
-                        errorEvent.RequestCode == X11Native.GetImageRequest
-                            ? "X11 screen capture failed and was handed to the managed capture fallback"
-                            : "Ignoring an expected X11 window lifecycle race";
-                    Trace.TraceInformation(
-                        decision.SuppressedCount > 0
-                            ? $"Suppressed {decision.SuppressedCount} repeated {category.ToLowerInvariant()} events; latest: {detail}"
-                            : category + ": " + detail
-                    );
-                }
-            }
-            else
-            {
-                var signature = new X11ExpectedErrorSignature(
-                    errorDisplay,
-                    errorEvent.ErrorCode,
-                    errorEvent.RequestCode,
-                    errorEvent.MinorCode,
-                    errorEvent.ResourceId
-                );
-                X11ExpectedErrorLogDecision decision = UnexpectedErrorLogLimiter.Record(
-                    signature,
-                    DateTimeOffset.UtcNow
-                );
-                if (decision.ShouldLog)
-                {
-                    Trace.TraceWarning(
-                        decision.SuppressedCount > 0
-                            ? $"Suppressed {decision.SuppressedCount} repeated unexpected X11 errors; latest: {detail}"
-                            : "X11 request failed and will be delegated to the previous error handler: " + detail
-                    );
-                }
-            }
+            LogXError(errorDisplay, errorEvent, suppressExpectedLifecycleRace);
         }
         catch (Exception)
         {
@@ -620,6 +572,52 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
             // Managed exceptions must never unwind through this Xlib callback.
             return 0;
         }
+    }
+
+    private static void LogXError(
+        nint errorDisplay,
+        X11Native.XErrorEvent errorEvent,
+        bool suppressExpectedLifecycleRace
+    )
+    {
+        string detail =
+            $"error {errorEvent.ErrorCode}, request "
+            + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
+            + $"{errorEvent.ResourceId}, display {errorDisplay}.";
+        var signature = new X11ExpectedErrorSignature(
+            errorDisplay,
+            errorEvent.ErrorCode,
+            errorEvent.RequestCode,
+            errorEvent.MinorCode,
+            errorEvent.ResourceId
+        );
+        X11ExpectedErrorLogDecision decision = (
+            suppressExpectedLifecycleRace ? ExpectedErrorLogLimiter : UnexpectedErrorLogLimiter
+        ).Record(signature, DateTimeOffset.UtcNow);
+        if (!decision.ShouldLog)
+        {
+            return;
+        }
+
+        if (suppressExpectedLifecycleRace)
+        {
+            string category =
+                errorEvent.RequestCode == X11Native.GetImageRequest
+                    ? "X11 screen capture failed and was handed to the managed capture fallback"
+                    : "Ignoring an expected X11 window lifecycle race";
+            Trace.TraceInformation(
+                decision.SuppressedCount > 0
+                    ? $"Suppressed {decision.SuppressedCount} repeated {category.ToLowerInvariant()} events; latest: {detail}"
+                    : category + ": " + detail
+            );
+            return;
+        }
+
+        Trace.TraceWarning(
+            decision.SuppressedCount > 0
+                ? $"Suppressed {decision.SuppressedCount} repeated unexpected X11 errors; latest: {detail}"
+                : "X11 request failed and will be delegated to the previous error handler: " + detail
+        );
     }
 
     internal static void RegisterErrorHandledDisplay(nint errorDisplay)
