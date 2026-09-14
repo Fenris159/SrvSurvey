@@ -999,10 +999,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             editorHost.Dispose();
         }
 
-        if (activeLayout is not null)
-        {
-            activeLayout.ScaleIndexChanged -= OnOverlayScaleIndexChanged;
-        }
+        activeLayout?.ScaleIndexChanged -= OnOverlayScaleIndexChanged;
 
         editSession = null;
         IsEditing = false;

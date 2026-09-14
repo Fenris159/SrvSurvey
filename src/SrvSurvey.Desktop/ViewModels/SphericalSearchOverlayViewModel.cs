@@ -36,15 +36,8 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         Sphere.PropertyChanged += OnSourcePropertyChanged;
         Boxel.PropertyChanged += OnSourcePropertyChanged;
         Route.PropertyChanged += OnSourcePropertyChanged;
-        if (systemNicknames is not null)
-        {
-            systemNicknames.NamesChanged += OnNamesChanged;
-        }
-
-        if (inputSettings is not null)
-        {
-            inputSettings.SettingsChanged += OnInputSettingsChanged;
-        }
+        systemNicknames?.NamesChanged += OnNamesChanged;
+        inputSettings?.SettingsChanged += OnInputSettingsChanged;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -110,15 +103,8 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         Sphere.PropertyChanged -= OnSourcePropertyChanged;
         Boxel.PropertyChanged -= OnSourcePropertyChanged;
         Route.PropertyChanged -= OnSourcePropertyChanged;
-        if (systemNicknames is not null)
-        {
-            systemNicknames.NamesChanged -= OnNamesChanged;
-        }
-
-        if (inputSettings is not null)
-        {
-            inputSettings.SettingsChanged -= OnInputSettingsChanged;
-        }
+        systemNicknames?.NamesChanged -= OnNamesChanged;
+        inputSettings?.SettingsChanged -= OnInputSettingsChanged;
     }
 
     private string Resolve(string? value)
