@@ -71,7 +71,9 @@ internal sealed partial class DesktopRuntime
     private readonly CancellationTokenSource releaseHistoryCleanupCancellation = new();
 #pragma warning restore CA2213
     private readonly ReleaseUpdateHistoryCleanupCoordinator releaseHistoryCleanup = new();
+    private readonly Lock waylandScreenSharePromptGate = new();
     private Task? releaseHistoryCleanupTask;
+    private Task<bool>? waylandScreenSharePromptTask;
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
     private readonly JournalMonitorSession journalMonitorSession = new();
@@ -88,6 +90,8 @@ internal sealed partial class DesktopRuntime
         HttpClient? externalNetworkClient = DiagnosticReplayContext.CreateNetworkClient(diagnosticReplay);
         diagnosticNetworkClientOwnership = externalNetworkClient;
         AppDataPaths appDataPaths = startup.AppDataPathsOverride ?? AppDataPaths.ResolveCurrent();
+        Func<CancellationToken, Task<bool>> confirmWaylandScreenShare = cancellationToken =>
+            ConfirmWaylandScreenShareAsync(desktop, cancellationToken);
         ApplicationLogService applicationLog =
             startup.ApplicationLog ?? new ApplicationLogService(appDataPaths.DataDirectory);
         applicationLogService = applicationLog;
@@ -164,7 +168,7 @@ internal sealed partial class DesktopRuntime
 
         string? targetFrontierId = commanderPreferenceResolution.TargetFrontierId;
         IFirstFootfallInferenceService firstFootfallInferenceService = diagnosticReplay is null
-            ? FirstFootfallInferenceService.CreateCurrent()
+            ? FirstFootfallInferenceService.CreateCurrent(confirmWaylandScreenShare)
             : new UnavailableFirstFootfallInferenceService();
         var canonnHumanSiteClient = new CanonnHumanSiteClient(externalNetworkClient);
         using var mainViewModelStartup = new MainWindowViewModelStartup(
@@ -329,7 +333,14 @@ internal sealed partial class DesktopRuntime
             viewModel.Firegroups,
             overlayPresentation
         );
-        miningDetectionCoordinator = new MiningDetectionCoordinator(viewModel.Mining, CreateRawGameWindowTracker());
+        miningDetectionCoordinator = new MiningDetectionCoordinator(
+            viewModel.Mining,
+            CreateRawGameWindowTracker(),
+            GameScreenCapture.CreateCurrent(
+                enableWaylandPortalFallback: true,
+                confirmWaylandScreenShare: confirmWaylandScreenShare
+            )
+        );
         groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
             viewModel.GroundTarget,
             overlayPresentation
@@ -357,6 +368,10 @@ internal sealed partial class DesktopRuntime
                 CommanderNameProvider = () => viewModel.CommanderName,
                 ExobiologyCatalog = viewModel.SystemSurvey.BiologyReferenceCatalog,
                 OverlayLayout = overlayLayout,
+                GameScreenCapture = GameScreenCapture.CreateCurrent(
+                    enableWaylandPortalFallback: true,
+                    confirmWaylandScreenShare: confirmWaylandScreenShare
+                ),
                 FssDiagnosticDirectory = Path.Combine(appDataPaths.CacheDirectory, "fss-diagnostics"),
             }
         );
@@ -532,6 +547,52 @@ internal sealed partial class DesktopRuntime
 
         var dialog = new MultipleApplicationInstancesDialog(scan.TotalCount, scan.UnverifiedCount);
         return await dialog.ShowDialog<bool>(owner);
+    }
+
+    private Task<bool> ConfirmWaylandScreenShareAsync(
+        IClassicDesktopStyleApplicationLifetime desktop,
+        CancellationToken cancellationToken
+    )
+    {
+        lock (waylandScreenSharePromptGate)
+        {
+            waylandScreenSharePromptTask ??= ShowWaylandScreenSharePromptAsync(desktop, cancellationToken);
+            return waylandScreenSharePromptTask;
+        }
+    }
+
+    private static async Task<bool> ShowWaylandScreenSharePromptAsync(
+        IClassicDesktopStyleApplicationLifetime desktop,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            return await await Dispatcher.UIThread.InvokeAsync(
+                () => ShowWaylandScreenSharePromptAsync(desktop, cancellationToken),
+                DispatcherPriority.Normal,
+                cancellationToken
+            );
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        if (desktop.MainWindow is not Window owner)
+        {
+            return false;
+        }
+
+        var dialog = new WaylandScreenSharePromptDialog();
+        Task<bool> result = dialog.ShowDialog<bool>(owner);
+        using CancellationTokenRegistration registration = cancellationToken.Register(() =>
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (dialog.IsVisible)
+                {
+                    dialog.Close(false);
+                }
+            })
+        );
+        return await result;
     }
 
     private PosixSignalRegistration? RegisterLinuxTermination()

@@ -59,7 +59,10 @@ public sealed class CapturedPixelBuffer : IFssPixelSource
 
 public static class GameScreenCapture
 {
-    public static IGameScreenCapture CreateCurrent(bool enableWaylandPortalFallback = false)
+    public static IGameScreenCapture CreateCurrent(
+        bool enableWaylandPortalFallback = false,
+        Func<CancellationToken, Task<bool>>? confirmWaylandScreenShare = null
+    )
     {
         if (OperatingSystem.IsWindows())
         {
@@ -74,14 +77,17 @@ public static class GameScreenCapture
                 ?? new UnavailableGameScreenCapture("X11 screen capture could not connect to the display.");
             IGameScreenCapture capture =
                 enableWaylandPortalFallback && OperatingSystem.IsLinux() && IsWaylandSession()
-                    ? new FallbackGameScreenCapture(x11Capture, new WaylandPortalGameScreenCapture())
+                    ? new FallbackGameScreenCapture(
+                        x11Capture,
+                        new WaylandPortalGameScreenCapture(confirmWaylandScreenShare)
+                    )
                     : x11Capture;
             return OperatingSystem.IsLinux() ? new BackoffGameScreenCapture(capture) : capture;
         }
 
         if (enableWaylandPortalFallback && OperatingSystem.IsLinux() && IsWaylandSession())
         {
-            return new BackoffGameScreenCapture(new WaylandPortalGameScreenCapture());
+            return new BackoffGameScreenCapture(new WaylandPortalGameScreenCapture(confirmWaylandScreenShare));
         }
 
         return new UnavailableGameScreenCapture(
@@ -107,6 +113,9 @@ public static class GameScreenCapture
                 or InvalidDataException
                 or InvalidOperationException
                 or NotSupportedException;
+
+    internal static bool ShouldShowWaylandSelectionGuidance(uint portalVersion, string? restoreToken) =>
+        portalVersion < 4 || string.IsNullOrWhiteSpace(restoreToken);
 }
 
 public sealed class UnavailableGameScreenCapture : IGameScreenCapture

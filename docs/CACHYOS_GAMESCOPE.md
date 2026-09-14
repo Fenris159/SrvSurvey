@@ -313,6 +313,18 @@ If SrvSurvey replaces the game view, steals focus, remains invisible, or
 cannot find Elite, stop using the wrapper and return to the KDE/XWayland setup
 in section 2.
 
+### Choose the screen-sharing source
+
+If X11 cannot read the game pixels needed for FSS, first-footfall, or Surface
+Mining detection, SrvSurvey explains the choice before KDE opens its
+screen-sharing picker. Select the **Elite Dangerous** window when it is listed.
+Gamescope may expose only its desktop surface; in that case, select the desktop
+or monitor where Elite is running. Select one source and click **Share**.
+
+Use **Alt+Tab** if the SrvSurvey explanation or KDE picker appears behind the
+game. KDE may remember a successful selection, so the prompts normally return
+only when permission is unavailable or has expired.
+
 ## 6. Confirm SrvSurvey's selected path
 
 The default Linux log directory is:

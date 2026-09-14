@@ -8860,6 +8860,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Choose Elite Dangerous or its desktop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
+  },
+  {
     "Text": "Choose Guardian map background",
     "IsFormat": false,
     "SourceKinds": [
@@ -11616,6 +11624,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Continue to picker",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
   },
   {
     "Text": "Contributions",
@@ -22086,6 +22102,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "If the picker appears behind the game, use Alt\u002BTab to find it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
   },
   {
     "Text": "Ignis",
@@ -41126,6 +41150,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
+    "Text": "Screen capture permission",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
+  },
+  {
     "Text": "Screen capture unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -41881,6 +41913,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
   },
   {
     "Text": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -44751,6 +44791,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/PriorScansOverlayWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey processes the shared image locally for FSS, first-footfall, and surface-mining detection. It does not transmit your screen.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
   },
   {
     "Text": "SrvSurvey quest indicator overlay",
@@ -54635,6 +54683,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "WAYLAND SCREEN CAPTURE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
+  },
+  {
     "Text": "WG",
     "IsFormat": false,
     "SourceKinds": [
@@ -55125,6 +55181,14 @@
   {
     "Text": "Wayland screen sharing could not start: {0}",
     "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland screen sharing was canceled before the desktop picker opened.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -55802,6 +55866,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ErrorReportWindow.axaml"
+  },
+  {
+    "Text": "Your desktop will open a screen-sharing picker.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
   },
   {
     "Text": "Your pledged Power",

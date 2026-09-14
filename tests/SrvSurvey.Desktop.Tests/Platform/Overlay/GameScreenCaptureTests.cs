@@ -81,6 +81,40 @@ public sealed class GameScreenCaptureTests
     }
 
     [Fact]
+    public void SuccessfulX11CaptureDoesNotUseWaylandPortalFallback()
+    {
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        int portalAttempts = 0;
+        using var capture = new FallbackGameScreenCapture(
+            new StubCapture(_ => expected),
+            new StubCapture(_ =>
+            {
+                portalAttempts++;
+                return expected;
+            })
+        );
+
+        CapturedPixelBuffer actual = capture.Capture(new PixelRect(0, 0, 1, 1));
+
+        Assert.Same(expected, actual);
+        Assert.Equal(0, portalAttempts);
+    }
+
+    [Theory]
+    [InlineData(3U, null, true)]
+    [InlineData(4U, null, true)]
+    [InlineData(4U, "", true)]
+    [InlineData(4U, "saved-portal-token", false)]
+    public void PortalSelectionGuidanceIsSkippedOnlyForReusablePermission(
+        uint portalVersion,
+        string? restoreToken,
+        bool expected
+    )
+    {
+        Assert.Equal(expected, GameScreenCapture.ShouldShowWaylandSelectionGuidance(portalVersion, restoreToken));
+    }
+
+    [Fact]
     public void RepeatedCaptureFailuresBackOffAndRecover()
     {
         var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);

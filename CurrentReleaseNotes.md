@@ -27,6 +27,9 @@ feature set and the prior release-candidate changes summarized below.
 - Adds bounded retry backoff and recovery when X11 or portal capture fails, and
   condenses repeated expected X11 capture errors into periodic summaries instead
   of flooding the application log.
+- Explains the Wayland screen-sharing choice before the desktop portal opens.
+  Choose the Elite Dangerous window when available, or its desktop or monitor
+  when Gamescope does not expose the game as a separate window.
 - Bundles Noto symbol and color-emoji fallbacks for every symbol currently used
   by the overlays. This avoids depending on incomplete or broken system icon
   fonts such as the Font Awesome installation reported on some Linux systems.

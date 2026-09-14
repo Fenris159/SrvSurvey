@@ -95,11 +95,16 @@ public sealed class FirstFootfallInferenceService : IFirstFootfallInferenceServi
 
     public string? UnavailableReason => screenCapture.UnavailableReason;
 
-    public static IFirstFootfallInferenceService CreateCurrent()
+    public static IFirstFootfallInferenceService CreateCurrent(
+        Func<CancellationToken, Task<bool>>? confirmWaylandScreenShare = null
+    )
     {
         return new FirstFootfallInferenceService(
             GameWindowTracker.CreateCurrent(),
-            GameScreenCapture.CreateCurrent(enableWaylandPortalFallback: true)
+            GameScreenCapture.CreateCurrent(
+                enableWaylandPortalFallback: true,
+                confirmWaylandScreenShare: confirmWaylandScreenShare
+            )
         );
     }
 
@@ -150,7 +155,10 @@ public sealed class FirstFootfallInferenceService : IFirstFootfallInferenceServi
             }
 
             PixelRect watchBounds = GetLegacyWatchBounds(window.ClientBounds);
-            CapturedPixelBuffer capture = screenCapture.Capture(watchBounds, window.ClientBounds);
+            CapturedPixelBuffer capture = await Task.Run(
+                () => screenCapture.Capture(watchBounds, window.ClientBounds),
+                cancellationToken
+            );
             double ratio = FirstFootfallColorDetector.GetMatchRatio(capture, preferences);
             maximumRatio = Math.Max(maximumRatio, ratio);
             if (ratio > preferences.Threshold)

@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.WaylandScreenSharePromptDialog"
+        Width="620"
+        SizeToContent="Height"
+        MinWidth="520"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Title="Screen capture permission">
+  <Grid RowDefinitions="Auto,Auto" Margin="24">
+    <StackPanel Spacing="16">
+      <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="WAYLAND SCREEN CAPTURE" />
+        <TextBlock Classes="page-title"
+                   FontSize="24"
+                   Text="Choose Elite Dangerous or its desktop"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+
+      <Border Classes="card" Padding="16">
+        <StackPanel Spacing="10">
+          <TextBlock Text="Your desktop will open a screen-sharing picker."
+                     FontWeight="SemiBold"
+                     TextWrapping="Wrap" />
+          <TextBlock Text="Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running."
+                     TextWrapping="Wrap" />
+          <TextBlock Text="If the picker appears behind the game, use Alt+Tab to find it."
+                     TextWrapping="Wrap" />
+          <TextBlock Classes="muted"
+                     Text="SrvSurvey processes the shared image locally for FSS, first-footfall, and surface-mining detection. It does not transmit your screen."
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+
+    <StackPanel Grid.Row="1"
+                Margin="0,20,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="10">
+      <Button Classes="secondary"
+              Click="Cancel_Click"
+              Content="Cancel" />
+      <Button Classes="primary"
+              Click="Continue_Click"
+              Content="Continue to picker" />
+    </StackPanel>
+  </Grid>
+</Window>

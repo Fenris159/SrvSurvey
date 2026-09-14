@@ -22,6 +22,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
 
     private readonly Lock gate = new();
     private readonly string restoreTokenPath;
+    private readonly Func<CancellationToken, Task<bool>>? confirmScreenShare;
     private readonly CancellationTokenSource shutdown = new();
     private Task? initialization;
     private Connection? connection;
@@ -32,13 +33,20 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     private CaptureRequest? pendingRequest;
     private bool disposed;
 
-    public WaylandPortalGameScreenCapture()
-        : this(Path.Combine(AppDataPaths.ResolveCurrent().DataDirectory, "wayland-screen-capture.token")) { }
+    public WaylandPortalGameScreenCapture(Func<CancellationToken, Task<bool>>? confirmScreenShare = null)
+        : this(
+            Path.Combine(AppDataPaths.ResolveCurrent().DataDirectory, "wayland-screen-capture.token"),
+            confirmScreenShare
+        ) { }
 
-    internal WaylandPortalGameScreenCapture(string restoreTokenPath)
+    internal WaylandPortalGameScreenCapture(
+        string restoreTokenPath,
+        Func<CancellationToken, Task<bool>>? confirmScreenShare = null
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(restoreTokenPath);
         this.restoreTokenPath = Path.GetFullPath(restoreTokenPath);
+        this.confirmScreenShare = confirmScreenShare;
     }
 
     public bool IsAvailable => !disposed;
@@ -158,6 +166,16 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             throw new NotSupportedException("The Wayland desktop does not offer window or monitor sharing.");
         }
 
+        string? restoreToken = portalVersion >= 4 ? TryReadRestoreToken() : null;
+        if (
+            GameScreenCapture.ShouldShowWaylandSelectionGuidance(portalVersion, restoreToken)
+            && confirmScreenShare is not null
+            && !await confirmScreenShare(shutdown.Token).ConfigureAwait(false)
+        )
+        {
+            throw new NotSupportedException("Wayland screen sharing was canceled before the desktop picker opened.");
+        }
+
         var createOptions = new Dictionary<string, object> { ["session_handle_token"] = NextToken("session") };
         PortalResponse createResponse = await InvokeRequestAsync(
             portalConnection,
@@ -177,7 +195,6 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         if (portalVersion >= 4)
         {
             selectOptions["persist_mode"] = 2U;
-            string? restoreToken = TryReadRestoreToken();
             if (restoreToken is not null)
             {
                 selectOptions["restore_token"] = restoreToken;

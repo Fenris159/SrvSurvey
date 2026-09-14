@@ -138,10 +138,13 @@ X11/XWayland desktop session.
 When FSS tuning, first-footfall inference, rig detection, or the rig calibration
 panel's **Test** option first needs pixels that XWayland cannot provide, the
 desktop opens its normal screen-sharing picker. Select only the **Elite
-Dangerous** window. SrvSurvey crops each requested game region from that shared
-window; existing rig calibration controls and saved positions continue to work
-as they do on Xorg. The desktop may remember the selection; it can ask again
-after a restart or when its permission token expires.
+Dangerous** window. If the game is not offered as a separate window, select the
+desktop or monitor where Elite is running. SrvSurvey explains these choices
+before opening the picker; use **Alt+Tab** if either prompt appears behind the
+game. SrvSurvey crops each requested game region from that shared source;
+existing rig calibration controls and saved positions continue to work as they
+do on Xorg. The desktop may remember the selection; it can ask again after a
+restart or when its permission token expires.
 
 Temporary X11 or portal capture failures are retried with an increasing delay
 and normal capture resumes after the next successful frame. Repeated expected

@@ -4421,6 +4421,10 @@
       "translation": "Wählen Sie Overlay-Positionen bearbeiten, um kategorisierte Vorschauen aus einem isolierten simulierten Spielstatus zu laden. Elite muss nicht laufen."
     },
     {
+      "source": "Choose Elite Dangerous or its desktop",
+      "translation": "Wählen Sie Elite Dangerous oder seinen Desktop"
+    },
+    {
       "source": "Choose Guardian map background",
       "translation": "Wählen Sie den Kartenhintergrund „Guardian“."
     },
@@ -5795,6 +5799,10 @@
     {
       "source": "Context and visibility",
       "translation": "Kontext und Sichtbarkeit"
+    },
+    {
+      "source": "Continue to picker",
+      "translation": "Weiter zur Kommissionierung"
     },
     {
       "source": "Contributions",
@@ -11011,6 +11019,10 @@
     {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Wenn die bekannten Daten zu früh enden, geben Sie Erwartete Systeme ein und wählen Sie Übernehmen. Dies erweitert den Suffixbereich, den SrvSurvey verfolgt, ohne zu behaupten, dass jeder generierte Name im Spiel existiert."
+    },
+    {
+      "source": "If the picker appears behind the game, use Alt+Tab to find it.",
+      "translation": "Wenn der Picker hinter dem Spiel erscheint, verwenden Sie Alt+Tab, um ihn zu finden."
     },
     {
       "source": "Ignis",
@@ -20509,6 +20521,10 @@
       "translation": "Die Bildschirmaufnahme ist nicht verfügbar."
     },
     {
+      "source": "Screen capture permission",
+      "translation": "Erlaubnis zur Bildschirmaufnahme"
+    },
+    {
       "source": "Screen capture unavailable.",
       "translation": "Bildschirmaufnahme nicht verfügbar."
     },
@@ -20883,6 +20899,10 @@
     {
       "source": "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
       "translation": "Wählen Sie die Active Commander-Karte aus, um das aktuelle Profil Frontier zu öffnen. Die Übersicht bleibt oben in der Seitenleiste."
+    },
+    {
+      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
+      "translation": "Wählen Sie das Fenster Elite Dangerous aus und klicken Sie auf „Teilen“. Wenn Elite Dangerous nicht aufgeführt ist, wählen Sie den Desktop oder Monitor aus, auf dem das Spiel ausgeführt wird."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -22315,6 +22335,10 @@
     {
       "source": "SrvSurvey prior scans overlay",
       "translation": "SrvSurvey Überlagerung früherer Scans"
+    },
+    {
+      "source": "SrvSurvey processes the shared image locally for FSS, first-footfall, and surface-mining detection. It does not transmit your screen.",
+      "translation": "SrvSurvey verarbeitet das freigegebene Bild lokal für FSS, First-Footfall- und Tagebauerkennung. Es überträgt Ihren Bildschirm nicht."
     },
     {
       "source": "SrvSurvey quest indicator overlay",
@@ -27249,6 +27273,10 @@
       "translation": "WARNUNG: OBERFLÄCHENSCHWERKRAFT {0} g"
     },
     {
+      "source": "WAYLAND SCREEN CAPTURE",
+      "translation": "WAYLAND-BILDSCHIRMAUFNAHME"
+    },
+    {
       "source": "WG",
       "translation": "WG"
     },
@@ -27495,6 +27523,10 @@
     {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Wayland-Bildschirmfreigabe konnte nicht gestartet werden: {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled before the desktop picker opened.",
+      "translation": "Die Bildschirmfreigabe von Wayland wurde abgebrochen, bevor die Desktop-Auswahl geöffnet wurde."
     },
     {
       "source": "Wayland screen sharing was canceled.",
@@ -27831,6 +27863,10 @@
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Ihre Daten bleiben unverändert. Überprüfen Sie die Details und erstellen Sie einen GitHub-Bericht oder teilen Sie sie auf Discord."
+    },
+    {
+      "source": "Your desktop will open a screen-sharing picker.",
+      "translation": "Auf Ihrem Desktop wird eine Bildschirmfreigabeauswahl geöffnet."
     },
     {
       "source": "Your pledged Power",
@@ -35919,6 +35955,10 @@
       "translation": "Elija Editar posiciones de superposición para cargar vistas previas categorizadas desde un estado de juego simulado aislado. Elite no necesita estar corriendo."
     },
     {
+      "source": "Choose Elite Dangerous or its desktop",
+      "translation": "Elija Elite Dangerous o su escritorio"
+    },
+    {
       "source": "Choose Guardian map background",
       "translation": "Elija el fondo del mapa Guardian"
     },
@@ -37293,6 +37333,10 @@
     {
       "source": "Context and visibility",
       "translation": "Contexto y visibilidad"
+    },
+    {
+      "source": "Continue to picker",
+      "translation": "Continuar al selector"
     },
     {
       "source": "Contributions",
@@ -42509,6 +42553,10 @@
     {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Si los datos conocidos finalizan demasiado pronto, ingrese Sistemas esperados y seleccione Aplicar. Esto amplía el rango de sufijos que SrvSurvey rastreará sin afirmar que todos los nombres generados existen en el juego."
+    },
+    {
+      "source": "If the picker appears behind the game, use Alt+Tab to find it.",
+      "translation": "Si el selector aparece detrás del juego, usa Alt+Tab para encontrarlo."
     },
     {
       "source": "Ignis",
@@ -52007,6 +52055,10 @@
       "translation": "La captura de pantalla no está disponible."
     },
     {
+      "source": "Screen capture permission",
+      "translation": "Permiso de captura de pantalla"
+    },
+    {
       "source": "Screen capture unavailable.",
       "translation": "Captura de pantalla no disponible."
     },
@@ -52381,6 +52433,10 @@
     {
       "source": "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
       "translation": "Seleccione la tarjeta Active Commander para abrir el perfil actual Frontier. La descripción general permanece en la parte superior de la barra lateral."
+    },
+    {
+      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
+      "translation": "Seleccione la ventana Elite Dangerous y haga clic en Compartir. Si Elite Dangerous no aparece en la lista, seleccione el escritorio o monitor donde se ejecuta el juego."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -53813,6 +53869,10 @@
     {
       "source": "SrvSurvey prior scans overlay",
       "translation": "SrvSurvey superposición de escaneos anteriores"
+    },
+    {
+      "source": "SrvSurvey processes the shared image locally for FSS, first-footfall, and surface-mining detection. It does not transmit your screen.",
+      "translation": "SrvSurvey procesa la imagen compartida localmente para detección de FSS, primer paso y minería a cielo abierto. No transmite tu pantalla."
     },
     {
       "source": "SrvSurvey quest indicator overlay",
@@ -58747,6 +58807,10 @@
       "translation": "ADVERTENCIA: GRAVEDAD SUPERFICIAL {0} g"
     },
     {
+      "source": "WAYLAND SCREEN CAPTURE",
+      "translation": "CAPTURA DE PANTALLA DE WAYLAND"
+    },
+    {
       "source": "WG",
       "translation": "GT"
     },
@@ -58993,6 +59057,10 @@
     {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "No se pudo iniciar el uso compartido de pantalla de Wayland: {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled before the desktop picker opened.",
+      "translation": "El uso compartido de pantalla de Wayland se canceló antes de que se abriera el selector de escritorio."
     },
     {
       "source": "Wayland screen sharing was canceled.",
@@ -59329,6 +59397,10 @@
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Tus datos no han cambiado. Revise los detalles y prepare un informe de GitHub, o compártalos en Discord."
+    },
+    {
+      "source": "Your desktop will open a screen-sharing picker.",
+      "translation": "Su escritorio abrirá un selector para compartir pantalla."
     },
     {
       "source": "Your pledged Power",
@@ -67417,6 +67489,10 @@
       "translation": "Choisissez Modifier les positions de superposition pour charger des aperçus catégorisés à partir d’un état de jeu simulé isolé. Elite n'a pas besoin de courir."
     },
     {
+      "source": "Choose Elite Dangerous or its desktop",
+      "translation": "Choisissez Elite Dangerous ou son bureau"
+    },
+    {
       "source": "Choose Guardian map background",
       "translation": "Choisir l'arrière-plan de la carte Guardian"
     },
@@ -68791,6 +68867,10 @@
     {
       "source": "Context and visibility",
       "translation": "Contexte et visibilité"
+    },
+    {
+      "source": "Continue to picker",
+      "translation": "Continuer à sélectionner"
     },
     {
       "source": "Contributions",
@@ -74007,6 +74087,10 @@
     {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Si les données connues se terminent trop tôt, entrez Systèmes attendus et sélectionnez Appliquer. Cela étend la plage de suffixes que SrvSurvey suivra sans prétendre que chaque nom généré existe dans le jeu."
+    },
+    {
+      "source": "If the picker appears behind the game, use Alt+Tab to find it.",
+      "translation": "Si le sélecteur apparaît derrière le jeu, utilisez Alt+Tab pour le trouver."
     },
     {
       "source": "Ignis",
@@ -83505,6 +83589,10 @@
       "translation": "La capture d'écran n'est pas disponible."
     },
     {
+      "source": "Screen capture permission",
+      "translation": "Autorisation de capture d'écran"
+    },
+    {
       "source": "Screen capture unavailable.",
       "translation": "Capture d'écran indisponible."
     },
@@ -83879,6 +83967,10 @@
     {
       "source": "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
       "translation": "Sélectionnez la carte Active Commander pour ouvrir le profil actuel Frontier. L'aperçu reste en haut de la barre latérale."
+    },
+    {
+      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
+      "translation": "Sélectionnez la fenêtre Elite Dangerous et cliquez sur Partager. Si Elite Dangerous n'est pas répertorié, sélectionnez le bureau ou le moniteur sur lequel le jeu est exécuté."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -85311,6 +85403,10 @@
     {
       "source": "SrvSurvey prior scans overlay",
       "translation": "SrvSurvey superposition des analyses précédentes"
+    },
+    {
+      "source": "SrvSurvey processes the shared image locally for FSS, first-footfall, and surface-mining detection. It does not transmit your screen.",
+      "translation": "SrvSurvey traite l'image partagée localement pour la détection FSS, du premier pas et de l'exploitation minière à ciel ouvert. Il ne transmet pas votre écran."
     },
     {
       "source": "SrvSurvey quest indicator overlay",
@@ -90245,6 +90341,10 @@
       "translation": "AVERTISSEMENT : GRAVITÉ DE SURFACE {0} g"
     },
     {
+      "source": "WAYLAND SCREEN CAPTURE",
+      "translation": "CAPTURE D'ÉCRAN WAYLAND"
+    },
+    {
       "source": "WG",
       "translation": "GT"
     },
@@ -90491,6 +90591,10 @@
     {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Le partage d'écran Wayland n'a pas pu démarrer : {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled before the desktop picker opened.",
+      "translation": "Le partage d'écran Wayland a été annulé avant l'ouverture du sélecteur de bureau."
     },
     {
       "source": "Wayland screen sharing was canceled.",
@@ -90827,6 +90931,10 @@
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Vos données sont inchangées. Examinez les détails et préparez un rapport GitHub, ou partagez-les sur Discord."
+    },
+    {
+      "source": "Your desktop will open a screen-sharing picker.",
+      "translation": "Votre bureau ouvrira un sélecteur de partage d'écran."
     },
     {
       "source": "Your pledged Power",
@@ -98915,6 +99023,10 @@
       "translation": "Escolha Editar posições de sobreposição para carregar visualizações categorizadas de um estado de jogo simulado isolado. Elite não precisa estar correndo."
     },
     {
+      "source": "Choose Elite Dangerous or its desktop",
+      "translation": "Escolha Elite Dangerous ou seu desktop"
+    },
+    {
       "source": "Choose Guardian map background",
       "translation": "Escolha o plano de fundo do mapa do Guardião"
     },
@@ -100289,6 +100401,10 @@
     {
       "source": "Context and visibility",
       "translation": "Contexto e visibilidade"
+    },
+    {
+      "source": "Continue to picker",
+      "translation": "Continuar para o selecionador"
     },
     {
       "source": "Contributions",
@@ -105505,6 +105621,10 @@
     {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Se os dados conhecidos terminarem muito cedo, insira Sistemas esperados e selecione Aplicar. Isso estende o intervalo de sufixos que SrvSurvey rastreará sem afirmar que todos os nomes gerados existem no jogo."
+    },
+    {
+      "source": "If the picker appears behind the game, use Alt+Tab to find it.",
+      "translation": "Se o seletor aparecer atrás do jogo, use Alt+Tab para encontrá-lo."
     },
     {
       "source": "Ignis",
@@ -115003,6 +115123,10 @@
       "translation": "A captura de tela não está disponível."
     },
     {
+      "source": "Screen capture permission",
+      "translation": "Permissão de captura de tela"
+    },
+    {
       "source": "Screen capture unavailable.",
       "translation": "Captura de tela indisponível."
     },
@@ -115377,6 +115501,10 @@
     {
       "source": "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
       "translation": "Selecione a placa Active Commander para abrir o perfil atual Frontier. A visão geral permanece no topo da barra lateral."
+    },
+    {
+      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
+      "translation": "Selecione a janela Elite Dangerous e clique em Compartilhar. Se Elite Dangerous não estiver listado, selecione a área de trabalho ou monitor onde o jogo está sendo executado."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -116809,6 +116937,10 @@
     {
       "source": "SrvSurvey prior scans overlay",
       "translation": "SrvSurvey sobreposição de verificações anteriores"
+    },
+    {
+      "source": "SrvSurvey processes the shared image locally for FSS, first-footfall, and surface-mining detection. It does not transmit your screen.",
+      "translation": "SrvSurvey processa a imagem compartilhada localmente para detecção de FSS, primeiros passos e mineração de superfície. Não transmite sua tela."
     },
     {
       "source": "SrvSurvey quest indicator overlay",
@@ -121743,6 +121875,10 @@
       "translation": "AVISO: GRAVIDADE DE SUPERFÍCIE {0} g"
     },
     {
+      "source": "WAYLAND SCREEN CAPTURE",
+      "translation": "CAPTURA DE TELA DE WAYLAND"
+    },
+    {
       "source": "WG",
       "translation": "GT"
     },
@@ -121989,6 +122125,10 @@
     {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "O compartilhamento de tela do Wayland não pôde ser iniciado: {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled before the desktop picker opened.",
+      "translation": "O compartilhamento de tela do Wayland foi cancelado antes da abertura do seletor de desktop."
     },
     {
       "source": "Wayland screen sharing was canceled.",
@@ -122325,6 +122465,10 @@
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Seus dados permanecem inalterados. Revise os detalhes e prepare um relatório GitHub ou compartilhe-os em Discord."
+    },
+    {
+      "source": "Your desktop will open a screen-sharing picker.",
+      "translation": "Sua área de trabalho abrirá um seletor de compartilhamento de tela."
     },
     {
       "source": "Your pledged Power",
@@ -130413,6 +130557,10 @@
       "translation": "Выберите «Редактировать позиции наложения», чтобы загрузить предварительный просмотр по категориям из изолированного смоделированного состояния игры. Элите не обязательно бежать."
     },
     {
+      "source": "Choose Elite Dangerous or its desktop",
+      "translation": "Выберите Elite Dangerous или его рабочий стол."
+    },
+    {
       "source": "Choose Guardian map background",
       "translation": "Выберите фон карты Guardian"
     },
@@ -131787,6 +131935,10 @@
     {
       "source": "Context and visibility",
       "translation": "Контекст и видимость"
+    },
+    {
+      "source": "Continue to picker",
+      "translation": "Продолжить выбор"
     },
     {
       "source": "Contributions",
@@ -137003,6 +137155,10 @@
     {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Если известные данные заканчиваются слишком рано, введите «Ожидаемые системы» и выберите «Применить». Это расширяет диапазон суффиксов, который SrvSurvey будет отслеживать, не утверждая, что каждое сгенерированное имя существует в игре."
+    },
+    {
+      "source": "If the picker appears behind the game, use Alt+Tab to find it.",
+      "translation": "Если сборщик появляется за игрой, используйте Alt+Tab, чтобы найти его."
     },
     {
       "source": "Ignis",
@@ -146501,6 +146657,10 @@
       "translation": "Снимок экрана недоступен."
     },
     {
+      "source": "Screen capture permission",
+      "translation": "Разрешение на захват экрана"
+    },
+    {
       "source": "Screen capture unavailable.",
       "translation": "Снимок экрана недоступен."
     },
@@ -146875,6 +147035,10 @@
     {
       "source": "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
       "translation": "Выберите карту Active Commander, чтобы открыть текущий профиль Frontier. Обзор остается в верхней части боковой панели."
+    },
+    {
+      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
+      "translation": "Выберите окно Elite Dangerous и нажмите «Поделиться». Если Elite Dangerous нет в списке, выберите рабочий стол или монитор, на котором запущена игра."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -148307,6 +148471,10 @@
     {
       "source": "SrvSurvey prior scans overlay",
       "translation": "SrvSurvey наложение предыдущих сканирований"
+    },
+    {
+      "source": "SrvSurvey processes the shared image locally for FSS, first-footfall, and surface-mining detection. It does not transmit your screen.",
+      "translation": "SrvSurvey локально обрабатывает общее изображение для обнаружения FSS, первого шага и обнаружения открытых горных работ. Он не передает ваш экран."
     },
     {
       "source": "SrvSurvey quest indicator overlay",
@@ -153241,6 +153409,10 @@
       "translation": "ВНИМАНИЕ: ПОВЕРХНОСТНАЯ ГРАВИТАЦИЯ {0} g"
     },
     {
+      "source": "WAYLAND SCREEN CAPTURE",
+      "translation": "ЗАХВАТ ЭКРАНА WAYLAND"
+    },
+    {
       "source": "WG",
       "translation": "РГ"
     },
@@ -153487,6 +153659,10 @@
     {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Не удалось запустить совместное использование экрана Wayland: {0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled before the desktop picker opened.",
+      "translation": "Совместное использование экрана Wayland было отменено до открытия средства выбора рабочего стола."
     },
     {
       "source": "Wayland screen sharing was canceled.",
@@ -153823,6 +153999,10 @@
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Ваши данные не изменяются. Просмотрите подробности и подготовьте отчет на GitHub или поделитесь им на Discord."
+    },
+    {
+      "source": "Your desktop will open a screen-sharing picker.",
+      "translation": "На рабочем столе откроется окно выбора совместного использования экрана."
     },
     {
       "source": "Your pledged Power",
@@ -161911,6 +162091,10 @@
       "translation": "选择“编辑叠加位置”以从隔离的模拟游戏状态加载分类预览。精英不需要跑步。"
     },
     {
+      "source": "Choose Elite Dangerous or its desktop",
+      "translation": "选择Elite Dangerous或其桌面"
+    },
+    {
       "source": "Choose Guardian map background",
       "translation": "选择守护者地图背景"
     },
@@ -163285,6 +163469,10 @@
     {
       "source": "Context and visibility",
       "translation": "背景和可见性"
+    },
+    {
+      "source": "Continue to picker",
+      "translation": "继续选择器"
     },
     {
       "source": "Contributions",
@@ -168501,6 +168689,10 @@
     {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "如果已知数据结束得太早，请输入预期系统并选择应用。这扩展了 SrvSurvey 将跟踪的后缀范围，而不声明游戏中存在每个生成的名称。"
+    },
+    {
+      "source": "If the picker appears behind the game, use Alt+Tab to find it.",
+      "translation": "如果选择器出现在游戏后面，请使用Alt+Tab找到它。"
     },
     {
       "source": "Ignis",
@@ -177999,6 +178191,10 @@
       "translation": "屏幕截图不可用。"
     },
     {
+      "source": "Screen capture permission",
+      "translation": "屏幕截图权限"
+    },
+    {
       "source": "Screen capture unavailable.",
       "translation": "屏幕截图不可用。"
     },
@@ -178373,6 +178569,10 @@
     {
       "source": "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
       "translation": "选择 Active Commander 卡以打开当前 Frontier 配置文件。概述仍然位于侧边栏的顶部。"
+    },
+    {
+      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
+      "translation": "选择 Elite Dangerous 窗口并单击共享。如果 Elite Dangerous 未列出，请选择运行游戏的桌面或显示器。"
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -179805,6 +180005,10 @@
     {
       "source": "SrvSurvey prior scans overlay",
       "translation": "SrvSurvey 之前的扫描覆盖"
+    },
+    {
+      "source": "SrvSurvey processes the shared image locally for FSS, first-footfall, and surface-mining detection. It does not transmit your screen.",
+      "translation": "SrvSurvey 在本地处理共享图像，以进行 FSS、首次脚步声和露天采矿检测。它不会传输您的屏幕。"
     },
     {
       "source": "SrvSurvey quest indicator overlay",
@@ -184739,6 +184943,10 @@
       "translation": "警告：表面重力 {0} g"
     },
     {
+      "source": "WAYLAND SCREEN CAPTURE",
+      "translation": "韦兰屏幕截图"
+    },
+    {
       "source": "WG",
       "translation": "工作组"
     },
@@ -184985,6 +185193,10 @@
     {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Wayland 屏幕共享无法启动：{0}"
+    },
+    {
+      "source": "Wayland screen sharing was canceled before the desktop picker opened.",
+      "translation": "在桌面选择器打开之前，Wayland 屏幕共享被取消。"
     },
     {
       "source": "Wayland screen sharing was canceled.",
@@ -185321,6 +185533,10 @@
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "您的数据没有变化。查看详细信息并准备 GitHub 报告，或在 Discord 上分享。"
+    },
+    {
+      "source": "Your desktop will open a screen-sharing picker.",
+      "translation": "您的桌面将打开一个屏幕共享选择器。"
     },
     {
       "source": "Your pledged Power",
@@ -193409,6 +193625,10 @@
       "translation": "* CHOOSE EDIT OVERLAY POSITIONS TO LOAD CATEGORIZED PREVIEWS FROM AN ISOLATED SIMULATED GAME STATE. ELITE DOES NOT NEED TO BE RUNNING. >>>!"
     },
     {
+      "source": "Choose Elite Dangerous or its desktop",
+      "translation": "* CHOOSE ELITE DANGEROUS OR ITS DESKTOP >>>!"
+    },
+    {
       "source": "Choose Guardian map background",
       "translation": "* CHOOSE GUARDIAN MAP BACKGROUND >>>!"
     },
@@ -194783,6 +195003,10 @@
     {
       "source": "Context and visibility",
       "translation": "* CONTEXT AND VISIBILITY >>>!"
+    },
+    {
+      "source": "Continue to picker",
+      "translation": "* CONTINUE TO PICKER >>>!"
     },
     {
       "source": "Contributions",
@@ -199999,6 +200223,10 @@
     {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "* IF THE KNOWN DATA ENDS TOO EARLY, ENTER EXPECTED SYSTEMS AND SELECT APPLY. THIS EXTENDS THE SUFFIX RANGE SRVSURVEY WILL TRACK WITHOUT CLAIMING THAT EVERY GENERATED NAME EXISTS IN THE GAME. >>>!"
+    },
+    {
+      "source": "If the picker appears behind the game, use Alt+Tab to find it.",
+      "translation": "* IF THE PICKER APPEARS BEHIND THE GAME, USE ALT+TAB TO FIND IT. >>>!"
     },
     {
       "source": "Ignis",
@@ -209497,6 +209725,10 @@
       "translation": "* SCREEN CAPTURE IS UNAVAILABLE. >>>!"
     },
     {
+      "source": "Screen capture permission",
+      "translation": "* SCREEN CAPTURE PERMISSION >>>!"
+    },
+    {
       "source": "Screen capture unavailable.",
       "translation": "* SCREEN CAPTURE UNAVAILABLE. >>>!"
     },
@@ -209871,6 +210103,10 @@
     {
       "source": "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
       "translation": "* SELECT THE ACTIVE COMMANDER CARD TO OPEN THE CURRENT FRONTIER PROFILE. OVERVIEW REMAINS AT THE TOP OF THE SIDEBAR. >>>!"
+    },
+    {
+      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
+      "translation": "* SELECT THE ELITE DANGEROUS WINDOW AND CLICK SHARE. IF ELITE DANGEROUS IS NOT LISTED, SELECT THE DESKTOP OR MONITOR WHERE THE GAME IS RUNNING. >>>!"
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -211303,6 +211539,10 @@
     {
       "source": "SrvSurvey prior scans overlay",
       "translation": "* SRVSURVEY PRIOR SCANS OVERLAY >>>!"
+    },
+    {
+      "source": "SrvSurvey processes the shared image locally for FSS, first-footfall, and surface-mining detection. It does not transmit your screen.",
+      "translation": "* SRVSURVEY PROCESSES THE SHARED IMAGE LOCALLY FOR FSS, FIRST-FOOTFALL, AND SURFACE-MINING DETECTION. IT DOES NOT TRANSMIT YOUR SCREEN. >>>!"
     },
     {
       "source": "SrvSurvey quest indicator overlay",
@@ -216237,6 +216477,10 @@
       "translation": "* WARNING: SURFACE GRAVITY {0} G >>>!"
     },
     {
+      "source": "WAYLAND SCREEN CAPTURE",
+      "translation": "* WAYLAND SCREEN CAPTURE >>>!"
+    },
+    {
       "source": "WG",
       "translation": "* WG >>>!"
     },
@@ -216483,6 +216727,10 @@
     {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "* WAYLAND SCREEN SHARING COULD NOT START: {0} >>>!"
+    },
+    {
+      "source": "Wayland screen sharing was canceled before the desktop picker opened.",
+      "translation": "* WAYLAND SCREEN SHARING WAS CANCELED BEFORE THE DESKTOP PICKER OPENED. >>>!"
     },
     {
       "source": "Wayland screen sharing was canceled.",
@@ -216819,6 +217067,10 @@
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "* YOUR DATA IS UNCHANGED. REVIEW THE DETAILS AND PREPARE A GITHUB REPORT, OR SHARE THEM ON DISCORD. >>>!"
+    },
+    {
+      "source": "Your desktop will open a screen-sharing picker.",
+      "translation": "* YOUR DESKTOP WILL OPEN A SCREEN-SHARING PICKER. >>>!"
     },
     {
       "source": "Your pledged Power",
