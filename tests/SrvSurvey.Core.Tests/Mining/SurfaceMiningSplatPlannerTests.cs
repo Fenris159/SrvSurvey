@@ -113,6 +113,46 @@ public sealed class SurfaceMiningSplatPlannerTests
         Assert.True(timer.Elapsed < TimeSpan.FromSeconds(10), $"Packing took {timer.Elapsed}.");
     }
 
+    [Fact]
+    public void ExpiredExactSearchReportsIncompleteAndPreservesItsSeed()
+    {
+        SurfaceMiningSplatPlanner.Point2[] points = [new(0, 0), new(100, 0)];
+        SurfaceMiningSplatPlanner.Point2[] seed = [points[0]];
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+
+        SurfaceMiningCandidatePackingSolver.SearchResult result = SurfaceMiningCandidatePackingSolver.FindMaximum(
+            points,
+            SurfaceMiningGeometry.ExclusionDistanceMeters,
+            seed,
+            maximumSuggestions: 6,
+            timer: timer,
+            deadline: TimeSpan.Zero
+        );
+
+        Assert.False(result.Completed);
+        Assert.Equal(seed, result.Layout);
+    }
+
+    [Fact]
+    public void FinishedExactSearchReportsCompletion()
+    {
+        SurfaceMiningSplatPlanner.Point2[] points = [new(0, 0), new(100, 0)];
+        SurfaceMiningSplatPlanner.Point2[] seed = [points[0]];
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+
+        SurfaceMiningCandidatePackingSolver.SearchResult result = SurfaceMiningCandidatePackingSolver.FindMaximum(
+            points,
+            SurfaceMiningGeometry.ExclusionDistanceMeters,
+            seed,
+            maximumSuggestions: 6,
+            timer: timer,
+            deadline: TimeSpan.FromSeconds(1)
+        );
+
+        Assert.True(result.Completed);
+        Assert.Equal(2, result.Layout.Count);
+    }
+
     private static SurfaceCoordinate AtOffset(double east, double north)
     {
         double distance = Math.Sqrt((east * east) + (north * north));

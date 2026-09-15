@@ -148,6 +148,58 @@ public sealed class ApplicationInstanceManagerTests
     }
 
     [Fact]
+    public void RegistrationMatchesResolvedCandidateAgainstItsRecordedExecutable()
+    {
+        var record = new ApplicationInstanceRecord(
+            1,
+            "SrvSurvey.XP",
+            42,
+            1,
+            "/opt/SrvSurvey/SrvSurvey.Desktop",
+            "SrvSurvey.XP.test.pipe"
+        );
+
+        Assert.True(
+            SystemApplicationInstanceProcessSource.IsRegisteredPathMatch(
+                record,
+                pathResolved: true,
+                "/opt/SrvSurvey/SrvSurvey.Desktop",
+                isWindows: false
+            )
+        );
+        Assert.False(
+            SystemApplicationInstanceProcessSource.IsRegisteredPathMatch(
+                record,
+                pathResolved: true,
+                "/opt/Other/SrvSurvey.Desktop",
+                isWindows: false
+            )
+        );
+    }
+
+    [Fact]
+    public void RegistrationRemainsAFallbackWhenCandidatePathCannotBeResolved()
+    {
+        var record = new ApplicationInstanceRecord(
+            1,
+            "SrvSurvey.XP",
+            42,
+            1,
+            "/opt/SrvSurvey/SrvSurvey.Desktop",
+            "SrvSurvey.XP.test.pipe"
+        );
+
+        Assert.True(
+            SystemApplicationInstanceProcessSource.IsRegisteredPathMatch(
+                record,
+                pathResolved: false,
+                candidatePath: null,
+                isWindows: false
+            )
+        );
+    }
+
+    [Fact]
     public async Task SystemProcessWrapperHandlesAnExitedProcess()
     {
         using var process = Process.Start(

@@ -9,7 +9,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDisposable
 {
-    private readonly CommanderProfileCatalog catalog;
+    private readonly Func<Task<CommanderProfileCatalogResult>> loadProfilesAsync;
     private readonly ICommanderInstanceLauncher launcher;
     private readonly string journalDirectory;
     private readonly IGameWindowSwitcher gameWindowSwitcher;
@@ -34,7 +34,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         IGameWindowSwitcher? gameWindowSwitcher = null
     )
     {
-        this.catalog = catalog;
+        loadProfilesAsync = () => catalog.LoadAsync();
         this.launcher = launcher;
         this.journalDirectory = journalDirectory;
         this.gameWindowSwitcher = gameWindowSwitcher ?? GameWindowSwitcher.CreateCurrent();
@@ -45,6 +45,19 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         RefreshCommand = refreshCommand;
         SwitchWindowCommand = new RelayCommand(SwitchToNextGameWindow);
         RefreshGameWindowCount();
+    }
+
+    internal CommanderInstancesViewModel(
+        CommanderProfileCatalog catalog,
+        ICommanderInstanceLauncher launcher,
+        string journalDirectory,
+        string? currentFrontierId,
+        IGameWindowSwitcher gameWindowSwitcher,
+        Func<Task<CommanderProfileCatalogResult>> loadProfilesAsync
+    )
+        : this(catalog, launcher, journalDirectory, currentFrontierId, gameWindowSwitcher)
+    {
+        this.loadProfilesAsync = loadProfilesAsync ?? throw new ArgumentNullException(nameof(loadProfilesAsync));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -177,7 +190,8 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         try
         {
             IsBusy = true;
-            CommanderProfileCatalogResult result = await catalog.LoadAsync();
+            profilesScanned = false;
+            CommanderProfileCatalogResult result = await loadProfilesAsync();
             catalogProfiles = result.Profiles;
             catalogWarnings = result.Warnings;
             profilesScanned = true;

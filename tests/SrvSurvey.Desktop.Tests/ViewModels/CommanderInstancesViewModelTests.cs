@@ -128,6 +128,46 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
         Assert.Equal("Only the current commander profile is available.", viewModel.StatusMessage);
     }
 
+    [Fact]
+    public async Task IdentityUpdatePreservesRefreshFailureAndStaleProfiles()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(temporaryDirectory, "F123-live.json"),
+            "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(temporaryDirectory, "F456-live.json"),
+            "{\"fid\":\"F456\",\"commander\":\"Raven\"}"
+        );
+        var catalog = new CommanderProfileCatalog(temporaryDirectory);
+        bool failRefresh = false;
+        Task<CommanderProfileCatalogResult> LoadProfilesAsync() =>
+            failRefresh
+                ? Task.FromException<CommanderProfileCatalogResult>(new IOException("simulated scan failure"))
+                : catalog.LoadAsync();
+        var viewModel = new CommanderInstancesViewModel(
+            catalog,
+            new RecordingLauncher(),
+            temporaryDirectory,
+            currentFrontierId: null,
+            gameWindowSwitcher: new RecordingSwitcher(),
+            loadProfilesAsync: LoadProfilesAsync
+        );
+
+        await viewModel.RefreshAsync();
+        Assert.Equal(2, viewModel.Commanders.Count);
+        failRefresh = true;
+
+        await viewModel.RefreshAsync();
+        string failure = viewModel.StatusMessage;
+        viewModel.UpdateCurrent("F999", "Current");
+
+        Assert.Equal(2, viewModel.Commanders.Count);
+        Assert.Equal("Commander profiles could not be scanned: simulated scan failure", failure);
+        Assert.Equal(failure, viewModel.StatusMessage);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

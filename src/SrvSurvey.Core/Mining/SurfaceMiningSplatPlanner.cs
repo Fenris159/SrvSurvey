@@ -65,17 +65,18 @@ public static class SurfaceMiningSplatPlanner
             UseIfBetter(CreateGreedyLayout(ordering, minimumSpacingMeters), ref best);
         }
 
-        UseIfBetter(
-            SurfaceMiningCandidatePackingSolver.FindMaximum(
-                hybridCandidates,
-                minimumSpacingMeters,
-                best,
-                MaximumSuggestions,
-                searchTimer,
-                MaximumSearchDuration
-            ),
-            ref best
+        SurfaceMiningCandidatePackingSolver.SearchResult exactSearch = SurfaceMiningCandidatePackingSolver.FindMaximum(
+            hybridCandidates,
+            minimumSpacingMeters,
+            best,
+            MaximumSuggestions,
+            searchTimer,
+            MaximumSearchDuration
         );
+        if (exactSearch.Completed)
+        {
+            UseIfBetter(exactSearch.Layout, ref best);
+        }
 
         return best.Select(point => Unproject(origin, point, planetRadiusMeters)).ToArray();
     }

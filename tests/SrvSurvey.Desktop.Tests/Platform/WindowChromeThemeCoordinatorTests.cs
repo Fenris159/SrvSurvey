@@ -49,16 +49,29 @@ public sealed class WindowChromeThemeCoordinatorTests : IDisposable
         var platform = new RecordingWindowChromeThemePlatform();
         var window = new Window();
         using var coordinator = new WindowChromeThemeCoordinator(window, themeService, platform);
+        int paletteCountAtOpened = -1;
+        window.Opened += (_, _) => paletteCountAtOpened = platform.Palettes.Count;
 
-        coordinator.Apply(isActive: true);
-        themeService.Select("orange-dark");
-        coordinator.Apply(isActive: false);
+        try
+        {
+            window.Show();
 
-        Assert.Collection(
-            platform.Palettes,
-            palette => Assert.Equal(Color.Parse("#FF13293F"), palette.Caption),
-            palette => Assert.Equal(Color.Parse("#FF291600"), palette.Caption)
-        );
+            Assert.True(paletteCountAtOpened > 0);
+            Assert.Equal(
+                WindowChromeThemePalette.Create(themeService.Current, window.IsActive),
+                platform.Palettes[paletteCountAtOpened - 1]
+            );
+            int paletteCountAfterShow = platform.Palettes.Count;
+
+            themeService.Select("orange-dark");
+
+            Assert.Equal(paletteCountAfterShow + 1, platform.Palettes.Count);
+            Assert.Equal(WindowChromeThemePalette.Create(themeService.Current, window.IsActive), platform.Palettes[^1]);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     public void Dispose()

@@ -11,6 +11,7 @@ internal sealed class SurfaceMiningCandidatePackingSolver
     private readonly int maximumSuggestions;
     private readonly Stopwatch timer;
     private readonly TimeSpan deadline;
+    private readonly bool compatibilityGraphCompleted;
     private readonly List<int> current = [];
     private List<Point2> best;
 
@@ -30,10 +31,10 @@ internal sealed class SurfaceMiningCandidatePackingSolver
         best = [.. seed];
         compatible = new bool[points.Count, points.Count];
         compatibilityDegrees = new int[points.Count];
-        BuildCompatibilityGraph(spacing);
+        compatibilityGraphCompleted = BuildCompatibilityGraph(spacing);
     }
 
-    public static List<Point2> FindMaximum(
+    public static SearchResult FindMaximum(
         IReadOnlyList<Point2> points,
         double spacing,
         IReadOnlyList<Point2> seed,
@@ -42,9 +43,14 @@ internal sealed class SurfaceMiningCandidatePackingSolver
         TimeSpan deadline
     )
     {
-        if (points.Count == 0 || seed.Count >= maximumSuggestions || timer.Elapsed >= deadline)
+        if (points.Count == 0 || seed.Count >= maximumSuggestions)
         {
-            return [.. seed];
+            return new SearchResult([.. seed], Completed: true);
+        }
+
+        if (timer.Elapsed >= deadline)
+        {
+            return new SearchResult([.. seed], Completed: false);
         }
 
         var solver = new SurfaceMiningCandidatePackingSolver(
@@ -55,13 +61,13 @@ internal sealed class SurfaceMiningCandidatePackingSolver
             timer,
             deadline
         );
-        solver.Search();
-        return solver.best;
+        bool completed = solver.Search();
+        return new SearchResult(solver.best, completed);
     }
 
     private bool IsExpired => timer.Elapsed >= deadline;
 
-    private void BuildCompatibilityGraph(double spacing)
+    private bool BuildCompatibilityGraph(double spacing)
     {
         double spacingSquared = spacing * spacing;
         for (int left = 0; left < points.Count && !IsExpired; left++)
@@ -79,13 +85,15 @@ internal sealed class SurfaceMiningCandidatePackingSolver
                 compatibilityDegrees[right]++;
             }
         }
+
+        return !IsExpired;
     }
 
-    private void Search()
+    private bool Search()
     {
-        if (IsExpired)
+        if (!compatibilityGraphCompleted || IsExpired)
         {
-            return;
+            return false;
         }
 
         var candidates = Enumerable
@@ -93,22 +101,37 @@ internal sealed class SurfaceMiningCandidatePackingSolver
             .OrderByDescending(index => compatibilityDegrees[index])
             .ThenBy(index => index)
             .ToList();
-        Expand(candidates);
+        return !IsExpired && Expand(candidates);
     }
 
-    private void Expand(IReadOnlyList<int> candidates)
+    private bool Expand(IReadOnlyList<int> candidates)
     {
-        if (IsExpired || best.Count >= maximumSuggestions)
+        if (best.Count >= maximumSuggestions)
         {
-            return;
+            return true;
+        }
+
+        if (IsExpired)
+        {
+            return false;
         }
 
         ColoredCandidates colored = ColorSort(candidates);
+        if (!colored.Completed)
+        {
+            return false;
+        }
+
         for (int index = colored.Vertices.Count - 1; index >= 0; index--)
         {
-            if (IsExpired || current.Count + colored.ColorBounds[index] <= best.Count)
+            if (IsExpired)
             {
-                return;
+                return false;
+            }
+
+            if (current.Count + colored.ColorBounds[index] <= best.Count)
+            {
+                return true;
             }
 
             int vertex = colored.Vertices[index];
@@ -120,11 +143,20 @@ internal sealed class SurfaceMiningCandidatePackingSolver
             }
             else
             {
-                Expand(next);
+                bool completed = Expand(next);
+                current.RemoveAt(current.Count - 1);
+                if (!completed)
+                {
+                    return false;
+                }
+
+                continue;
             }
 
             current.RemoveAt(current.Count - 1);
         }
+
+        return true;
     }
 
     private ColoredCandidates ColorSort(IReadOnlyList<int> candidates)
@@ -155,7 +187,7 @@ internal sealed class SurfaceMiningCandidatePackingSolver
             remaining = deferred;
         }
 
-        return new ColoredCandidates(ordered, colorBounds);
+        return new ColoredCandidates(ordered, colorBounds, Completed: !IsExpired);
     }
 
     private List<int> CreateCompatiblePrefix(List<int> ordered, int end, int vertex)
@@ -187,5 +219,7 @@ internal sealed class SurfaceMiningCandidatePackingSolver
         return (deltaX * deltaX) + (deltaY * deltaY);
     }
 
-    private sealed record ColoredCandidates(List<int> Vertices, List<int> ColorBounds);
+    internal readonly record struct SearchResult(List<Point2> Layout, bool Completed);
+
+    private sealed record ColoredCandidates(List<int> Vertices, List<int> ColorBounds, bool Completed);
 }

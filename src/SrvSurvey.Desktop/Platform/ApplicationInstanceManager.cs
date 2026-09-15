@@ -400,7 +400,7 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
             out string? error
         );
         bool actualMatch = resolved && PathsMatch(candidatePath, currentPath, OperatingSystem.IsWindows());
-        bool registeredMatch = record is not null;
+        bool registeredMatch = IsRegisteredPathMatch(record, resolved, candidatePath, OperatingSystem.IsWindows());
         bool sameProcessName = HasProcessName(process, currentProcessName);
         bool confirmed = IsConfirmedProcess(
             actualMatch,
@@ -465,6 +465,13 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
         bool sameProcessName,
         bool restartManagerMatch
     ) => actualPathMatch || hasValidatedRegistration || (!pathResolved && sameProcessName && restartManagerMatch);
+
+    internal static bool IsRegisteredPathMatch(
+        ApplicationInstanceRecord? record,
+        bool pathResolved,
+        string? candidatePath,
+        bool isWindows
+    ) => record is not null && (!pathResolved || PathsMatch(candidatePath, record.ExecutablePath, isWindows));
 
     private ApplicationInstanceRecord? ValidateRecord(Process process, IReadOnlyList<ApplicationInstanceRecord> records)
     {
