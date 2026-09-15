@@ -111,7 +111,7 @@ public sealed class ApplicationInstanceManagerTests
 
         IOException exception = await Assert.ThrowsAsync<IOException>(() => manager.CloseOtherInstancesAsync());
 
-        Assert.Contains("update was not started", exception.Message);
+        Assert.Contains("Could not close", exception.Message);
         Assert.Equal(2, process.ForceExitRequests);
         Assert.True(process.Disposed);
     }
@@ -131,6 +131,72 @@ public sealed class ApplicationInstanceManagerTests
     )
     {
         Assert.Equal(expected, SystemApplicationInstanceProcessSource.PathsMatch(candidate, current, isWindows));
+    }
+
+    [Fact]
+    public void ValidatedRegistrationConfirmsAnInstanceFromAnotherInstallPath()
+    {
+        Assert.True(
+            SystemApplicationInstanceProcessSource.IsConfirmedProcess(
+                actualPathMatch: false,
+                hasValidatedRegistration: true,
+                pathResolved: true,
+                sameProcessName: false,
+                restartManagerMatch: false
+            )
+        );
+    }
+
+    [Fact]
+    public void RegistrationMatchesResolvedCandidateAgainstItsRecordedExecutable()
+    {
+        var record = new ApplicationInstanceRecord(
+            1,
+            "SrvSurvey.XP",
+            42,
+            1,
+            "/opt/SrvSurvey/SrvSurvey.Desktop",
+            "SrvSurvey.XP.test.pipe"
+        );
+
+        Assert.True(
+            SystemApplicationInstanceProcessSource.IsRegisteredPathMatch(
+                record,
+                pathResolved: true,
+                "/opt/SrvSurvey/SrvSurvey.Desktop",
+                isWindows: false
+            )
+        );
+        Assert.False(
+            SystemApplicationInstanceProcessSource.IsRegisteredPathMatch(
+                record,
+                pathResolved: true,
+                "/opt/Other/SrvSurvey.Desktop",
+                isWindows: false
+            )
+        );
+    }
+
+    [Fact]
+    public void RegistrationRemainsAFallbackWhenCandidatePathCannotBeResolved()
+    {
+        var record = new ApplicationInstanceRecord(
+            1,
+            "SrvSurvey.XP",
+            42,
+            1,
+            "/opt/SrvSurvey/SrvSurvey.Desktop",
+            "SrvSurvey.XP.test.pipe"
+        );
+
+        Assert.True(
+            SystemApplicationInstanceProcessSource.IsRegisteredPathMatch(
+                record,
+                pathResolved: false,
+                candidatePath: null,
+                isWindows: false
+            )
+        );
     }
 
     [Fact]

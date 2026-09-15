@@ -2281,6 +2281,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationRestartService.cs"
   },
   {
+    "Text": "APPLICATION STARTUP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
     "Text": "APPLICATION UPDATE",
     "IsFormat": false,
     "SourceKinds": [
@@ -3811,6 +3819,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "Another SrvSurvey instance is already open",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
     "Text": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
     "IsFormat": false,
     "SourceKinds": [
@@ -3897,6 +3913,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "Application instance startup check failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
   },
   {
     "Text": "Application logging is unavailable.",
@@ -8932,6 +8956,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Choose No to leave the existing instance running. Multiple instances should be started from the Multiple Commanders panel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
     "Text": "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9691,6 +9723,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Closing the existing SrvSurvey instance...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
     "Text": "Closing the other SrvSurvey instance...",
@@ -12203,7 +12243,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
   },
   {
-    "Text": "Could not close {0} other SrvSurvey instance(s). The update was not started.",
+    "Text": "Could not close {0} other SrvSurvey instance(s).",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -14537,6 +14577,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardChordFormatter.cs"
+  },
+  {
+    "Text": "Do you want to close the existing instance and continue opening this one?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
+    "Text": "Do you want to close the existing instances and continue opening this one?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
     "Text": "Dock at a Fleet Carrier to publish and link it. Registration preserves Raven\u0027s existing cargo; a freshly opened market is reconciled afterward.",
@@ -28815,6 +28871,7 @@
     "Text": "No",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/DeleteFiregroupDialog.axaml"
@@ -31856,6 +31913,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
+    "Text": "Other SrvSurvey instances are already open",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
     "Text": "Outfitting",
@@ -44705,6 +44770,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
+    "Text": "SrvSurvey could not verify whether another instance is running: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/App.axaml.cs"
+  },
+  {
     "Text": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
     "IsFormat": false,
     "SourceKinds": [
@@ -44783,6 +44856,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/HumanSiteOverlayWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey is already running",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
     "Text": "SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar\u0027s current privacy policy and terms of service.",
@@ -45071,6 +45152,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderPreferenceViewModel.cs"
+  },
+  {
+    "Text": "SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
+    "Text": "SrvSurvey will not force-close an unverified process. Choose No and close it manually if replacement cannot continue.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
     "Text": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
@@ -49218,6 +49315,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs"
   },
   {
+    "Text": "The existing instance could not be closed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
     "Text": "The existing live overlays stop being click-through and can be dragged in place.",
     "IsFormat": false,
     "SourceKinds": [
@@ -50034,7 +50139,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
-    "Text": "The operating system prevented verification of {0} matching process(es). SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
+    "Text": "The operating system prevented verification of {0} matching process(es). {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -51745,6 +51850,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "This dialog was not configured for application startup.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
     "Text": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
@@ -55829,7 +55942,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
-    "Text": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then retry the update. No installation files were changed.",
+    "Text": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -56115,6 +56228,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/DeleteFiregroupDialog.axaml"
+  },
+  {
+    "Text": "Yes, close it and continue",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
     "Text": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",

@@ -11,8 +11,9 @@
   <Grid RowDefinitions="Auto,Auto" Margin="24">
     <StackPanel Spacing="16">
       <StackPanel Spacing="5">
-        <TextBlock Classes="eyebrow" Text="APPLICATION UPDATE" />
-        <TextBlock Classes="page-title"
+        <TextBlock x:Name="EyebrowText" Classes="eyebrow" Text="APPLICATION UPDATE" />
+        <TextBlock x:Name="HeadlineText"
+                   Classes="page-title"
                    FontSize="24"
                    Text="More than one SrvSurvey instance is running"
                    TextWrapping="Wrap" />
@@ -23,12 +24,18 @@
           <TextBlock x:Name="InstanceCountText"
                      FontWeight="SemiBold"
                      TextWrapping="Wrap" />
-          <TextBlock Text="Are you sure you want to proceed? Doing so will close all instances."
+          <TextBlock x:Name="ConfirmationText"
+                     Text="Are you sure you want to proceed? Doing so will close all instances."
                      TextWrapping="Wrap" />
-          <TextBlock Classes="muted"
+          <TextBlock x:Name="DetailText"
+                     Classes="muted"
                      Text="The other instances will close before downloading begins. This instance will remain open until the verified update helper is ready, then close normally to complete the update."
                      TextWrapping="Wrap" />
           <TextBlock x:Name="VerificationWarningText"
+                     Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="False"
+                     TextWrapping="Wrap" />
+          <TextBlock x:Name="ActionStatusText"
                      Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="False"
                      TextWrapping="Wrap" />
@@ -41,10 +48,12 @@
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Spacing="10">
-      <Button Classes="secondary"
+      <Button x:Name="CancelButton"
+              Classes="secondary"
               Click="Cancel_Click"
               Content="Cancel" />
-      <Button Classes="primary"
+      <Button x:Name="ContinueButton"
+              Classes="primary"
               Click="Continue_Click"
               Content="Close all and continue" />
     </StackPanel>

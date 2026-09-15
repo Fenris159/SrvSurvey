@@ -1141,6 +1141,10 @@
       "translation": "APPIMAGE"
     },
     {
+      "source": "APPLICATION STARTUP",
+      "translation": "ANWENDUNGSSTART"
+    },
+    {
       "source": "APPLICATION UPDATE",
       "translation": "ANWENDUNGS-UPDATE"
     },
@@ -1905,6 +1909,10 @@
       "translation": "Anomalie"
     },
     {
+      "source": "Another SrvSurvey instance is already open",
+      "translation": "Eine weitere Instanz SrvSurvey ist bereits geöffnet"
+    },
+    {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Eine andere SrvSurvey-Instanz wird ausgeführt. Bestätigen Sie, ob alle Instanzen vor der Aktualisierung geschlossen werden sollen."
     },
@@ -1947,6 +1955,10 @@
     {
       "source": "Application exit",
       "translation": "Anwendungsausgang"
+    },
+    {
+      "source": "Application instance startup check failed: {0}",
+      "translation": "Die Startprüfung der Anwendungsinstanz ist fehlgeschlagen: {0}"
     },
     {
       "source": "Application logging is unavailable.",
@@ -4457,6 +4469,10 @@
       "translation": "Wählen Sie „Als primär festlegen“ für das geplante Projekt aus, bevor Sie sich auf den Einkaufsplan konzentrieren."
     },
     {
+      "source": "Choose No to leave the existing instance running. Multiple instances should be started from the Multiple Commanders panel.",
+      "translation": "Wählen Sie „Nein“, um die vorhandene Instanz weiterlaufen zu lassen. Mehrere Instanzen sollten über das Bedienfeld „Mehrere Kommandanten“ gestartet werden."
+    },
+    {
       "source": "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
       "translation": "Wählen Sie „Verstärken“, „Untergraben“ oder „Erwerben“ und Ihre versprochene Macht. Powerplay-Journalveranstaltungen erfüllen das Versprechen, sofern verfügbar; Sie können es manuell auswählen. Verstärken Sie Spiele mit bekanntem Besitz durch Ihre Macht; „Unterminieren“ passt zu einer anderen bekannten Kraft. Acquire zeigt explizit unbesetzte/Erweiterungskandidaten an, nicht unbekannte Eigentümer."
     },
@@ -4835,6 +4851,10 @@
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
       "translation": "Schließen Sie andere SrvSurvey Instanzen, bevor Sie mit dem Update fortfahren."
+    },
+    {
+      "source": "Closing the existing SrvSurvey instance...",
+      "translation": "Die vorhandene Instanz SrvSurvey wird geschlossen..."
     },
     {
       "source": "Closing the other SrvSurvey instance...",
@@ -6089,8 +6109,8 @@
       "translation": "Es konnte kein Exportordner ausgewählt werden: {0}"
     },
     {
-      "source": "Could not close {0} other SrvSurvey instance(s). The update was not started.",
-      "translation": "{0} andere SrvSurvey Instanz(en) konnten nicht geschlossen werden. Das Update wurde nicht gestartet."
+      "source": "Could not close {0} other SrvSurvey instance(s).",
+      "translation": "{0} andere Instanz(en) SrvSurvey konnte nicht geschlossen werden."
     },
     {
       "source": "Could not copy the Elite Dangerous window.",
@@ -7251,6 +7271,14 @@
     {
       "source": "Divide",
       "translation": "Teilen"
+    },
+    {
+      "source": "Do you want to close the existing instance and continue opening this one?",
+      "translation": "Möchten Sie die bestehende Instanz schließen und mit dem Öffnen dieser fortfahren?"
+    },
+    {
+      "source": "Do you want to close the existing instances and continue opening this one?",
+      "translation": "Möchten Sie die vorhandenen Instanzen schließen und diese weiterhin öffnen?"
     },
     {
       "source": "Dock at a Fleet Carrier to publish and link it. Registration preserves Raven's existing cargo; a freshly opened market is reconciled afterward.",
@@ -15885,6 +15913,10 @@
       "translation": "Andere / unbekannt"
     },
     {
+      "source": "Other SrvSurvey instances are already open",
+      "translation": "Andere SrvSurvey Instanzen sind bereits geöffnet"
+    },
+    {
       "source": "Outfitting",
       "translation": "Ausstattung"
     },
@@ -22293,6 +22325,10 @@
       "translation": "SrvSurvey konnte nach dem Update-Rollback nicht neu gestartet werden."
     },
     {
+      "source": "SrvSurvey could not verify whether another instance is running: {0}",
+      "translation": "SrvSurvey konnte nicht überprüfen, ob eine andere Instanz ausgeführt wird: {0}"
+    },
+    {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
       "translation": "SrvSurvey lädt den beim Start oder bei der Wiedergabe gelesenen Journalverlauf nicht hoch. Durch Deaktivieren der Option werden Einträge ungültig, die noch im Speicher warten, und mehrere gleichzeitige Elite-Fenster unterbrechen die Veröffentlichung neuer VoxStellar, um zu vermeiden, dass Daten dem falschen Kommandanten zugeordnet werden."
     },
@@ -22331,6 +22367,10 @@
     {
       "source": "SrvSurvey human settlement overlay",
       "translation": "SrvSurvey Überlagerung menschlicher Siedlungen"
+    },
+    {
+      "source": "SrvSurvey is already running",
+      "translation": "SrvSurvey läuft bereits"
     },
     {
       "source": "SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar's current privacy policy and terms of service.",
@@ -22475,6 +22515,14 @@
     {
       "source": "SrvSurvey will follow the newest active journal.",
       "translation": "SrvSurvey folgt dem neuesten aktiven Journal."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
+      "translation": "SrvSurvey erzwingt das Schließen eines ungeprüften Prozesses nicht und das Update wird sicher beendet, wenn es geöffnet bleibt."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process. Choose No and close it manually if replacement cannot continue.",
+      "translation": "SrvSurvey erzwingt das Schließen eines nicht überprüften Prozesses nicht. Wählen Sie „Nein“ und schließen Sie es manuell, wenn der Austausch nicht fortgesetzt werden kann."
     },
     {
       "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
@@ -24545,6 +24593,10 @@
       "translation": "Der ausführbare Pfad war nicht verfügbar."
     },
     {
+      "source": "The existing instance could not be closed: {0}",
+      "translation": "Die vorhandene Instanz konnte nicht geschlossen werden: {0}"
+    },
+    {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "Die vorhandenen Live-Overlays sind nicht mehr durchklickbar und können an die richtige Stelle gezogen werden."
     },
@@ -24953,8 +25005,8 @@
       "translation": "Das Betriebssystem konnte {0} nicht öffnen."
     },
     {
-      "source": "The operating system prevented verification of {0} matching process(es). SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
-      "translation": "Das Betriebssystem hat die Überprüfung der {0}-Übereinstimmungsprozesse verhindert. SrvSurvey erzwingt das Schließen eines ungeprüften Prozesses nicht und das Update wird sicher beendet, wenn es geöffnet bleibt."
+      "source": "The operating system prevented verification of {0} matching process(es). {1}",
+      "translation": "Das Betriebssystem hat die Überprüfung der {0}-Übereinstimmungsprozesse verhindert. {1}"
     },
     {
       "source": "The operation did not complete.",
@@ -25807,6 +25859,10 @@
     {
       "source": "This development or unpackaged build cannot replace itself; use Open releases.",
       "translation": "Diese Entwicklung oder dieser unverpackte Build kann sich nicht selbst ersetzen; Verwenden Sie offene Versionen."
+    },
+    {
+      "source": "This dialog was not configured for application startup.",
+      "translation": "Dieser Dialog wurde nicht für den Anwendungsstart konfiguriert."
     },
     {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
@@ -27845,8 +27901,8 @@
       "translation": "Zum Aktualisieren dieser geschützten Installation ist die Genehmigung eines Windows-Administrators erforderlich. Das Spielerprofil bleibt unangetastet."
     },
     {
-      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then retry the update. No installation files were changed.",
-      "translation": "Windows oder Linux haben SrvSurvey daran gehindert, {0}-Übereinstimmungsprozesse zu überprüfen. Schließen Sie jede SrvSurvey-XP-Instanz manuell und versuchen Sie dann das Update erneut. Es wurden keine Installationsdateien geändert."
+      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
+      "translation": "Windows oder Linux haben SrvSurvey daran gehindert, {0}-Übereinstimmungsprozesse zu überprüfen. Schließen Sie jede SrvSurvey-XP-Instanz manuell und versuchen Sie es dann erneut."
     },
     {
       "source": "Windows overlay input pass-through could not be enabled.",
@@ -27987,6 +28043,10 @@
     {
       "source": "Yes",
       "translation": "Ja"
+    },
+    {
+      "source": "Yes, close it and continue",
+      "translation": "Ja, schließen Sie es und fahren Sie fort"
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -32867,6 +32927,10 @@
       "translation": "IMAGEN DE LA APLICACIÓN"
     },
     {
+      "source": "APPLICATION STARTUP",
+      "translation": "INICIO DE LA APLICACIÓN"
+    },
+    {
       "source": "APPLICATION UPDATE",
       "translation": "ACTUALIZACIÓN DE LA APLICACIÓN"
     },
@@ -33631,6 +33695,10 @@
       "translation": "anomalía"
     },
     {
+      "source": "Another SrvSurvey instance is already open",
+      "translation": "Otra instancia SrvSurvey ya está abierta"
+    },
+    {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Se está ejecutando otra instancia SrvSurvey. Confirme si todas las instancias deben cerrarse antes de actualizar."
     },
@@ -33673,6 +33741,10 @@
     {
       "source": "Application exit",
       "translation": "Salida de la aplicación"
+    },
+    {
+      "source": "Application instance startup check failed: {0}",
+      "translation": "Error en la verificación de inicio de la instancia de la aplicación: {0}"
     },
     {
       "source": "Application logging is unavailable.",
@@ -36183,6 +36255,10 @@
       "translation": "Elija Convertirse en principal en el proyecto previsto antes de centrarse en el plan de compras."
     },
     {
+      "source": "Choose No to leave the existing instance running. Multiple instances should be started from the Multiple Commanders panel.",
+      "translation": "Elija No para dejar la instancia existente ejecutándose. Se deben iniciar varias instancias desde el panel Múltiples comandantes."
+    },
+    {
       "source": "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
       "translation": "Elija Reforzar, Socavar o Adquirir y su Poder prometido. Los eventos del diario Powerplay llenan el compromiso cuando están disponibles; puedes seleccionarlo manualmente. Reforzar los partidos de propiedad conocida por su Poder; Socavar coincide con otro Poder conocido. Adquirir muestra candidatos de expansión o desocupados explícitamente, no propietarios desconocidos."
     },
@@ -36561,6 +36637,10 @@
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
       "translation": "Cerrar otras instancias SrvSurvey antes de continuar con la actualización."
+    },
+    {
+      "source": "Closing the existing SrvSurvey instance...",
+      "translation": "Cerrando la instancia existente SrvSurvey..."
     },
     {
       "source": "Closing the other SrvSurvey instance...",
@@ -37815,8 +37895,8 @@
       "translation": "No se pudo elegir una carpeta de exportación: {0}"
     },
     {
-      "source": "Could not close {0} other SrvSurvey instance(s). The update was not started.",
-      "translation": "No se pudieron cerrar {0} otras SrvSurvey instancias. La actualización no se inició."
+      "source": "Could not close {0} other SrvSurvey instance(s).",
+      "translation": "No se pudieron cerrar otras instancias de {0} SrvSurvey."
     },
     {
       "source": "Could not copy the Elite Dangerous window.",
@@ -38977,6 +39057,14 @@
     {
       "source": "Divide",
       "translation": "dividir"
+    },
+    {
+      "source": "Do you want to close the existing instance and continue opening this one?",
+      "translation": "¿Quiere cerrar la instancia existente y continuar abriendo ésta?"
+    },
+    {
+      "source": "Do you want to close the existing instances and continue opening this one?",
+      "translation": "¿Quieres cerrar las instancias existentes y continuar abriendo esta?"
     },
     {
       "source": "Dock at a Fleet Carrier to publish and link it. Registration preserves Raven's existing cargo; a freshly opened market is reconciled afterward.",
@@ -47611,6 +47699,10 @@
       "translation": "Otro / desconocido"
     },
     {
+      "source": "Other SrvSurvey instances are already open",
+      "translation": "Otras instancias SrvSurvey ya están abiertas"
+    },
+    {
       "source": "Outfitting",
       "translation": "Equipamiento"
     },
@@ -54019,6 +54111,10 @@
       "translation": "SrvSurvey no pudo reiniciarse después de la reversión de la actualización."
     },
     {
+      "source": "SrvSurvey could not verify whether another instance is running: {0}",
+      "translation": "SrvSurvey no pudo verificar si se está ejecutando otra instancia: {0}"
+    },
+    {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
       "translation": "SrvSurvey no carga el historial del diario leído durante el inicio o la reproducción. Desactivar la opción invalida las entradas que aún están esperando en la memoria y varias ventanas Elite simultáneas pausan la nueva VoxStellar publicación para evitar atribuir datos al Commander incorrecto."
     },
@@ -54057,6 +54153,10 @@
     {
       "source": "SrvSurvey human settlement overlay",
       "translation": "SrvSurvey superposición de asentamientos humanos"
+    },
+    {
+      "source": "SrvSurvey is already running",
+      "translation": "SrvSurvey ya se está ejecutando"
     },
     {
       "source": "SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar's current privacy policy and terms of service.",
@@ -54201,6 +54301,14 @@
     {
       "source": "SrvSurvey will follow the newest active journal.",
       "translation": "SrvSurvey seguirá el diario activo más reciente."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
+      "translation": "SrvSurvey no forzará el cierre de un proceso no verificado y la actualización se detendrá de forma segura si permanece abierto."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process. Choose No and close it manually if replacement cannot continue.",
+      "translation": "SrvSurvey no forzará el cierre de un proceso no verificado. Elija No y ciérrelo manualmente si el reemplazo no puede continuar."
     },
     {
       "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
@@ -56271,6 +56379,10 @@
       "translation": "La ruta del ejecutable no estaba disponible."
     },
     {
+      "source": "The existing instance could not be closed: {0}",
+      "translation": "No se pudo cerrar la instancia existente: {0}"
+    },
+    {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "Las superposiciones en vivo existentes dejan de ser accesibles con clics y se pueden arrastrar a su lugar."
     },
@@ -56679,8 +56791,8 @@
       "translation": "El sistema operativo no pudo abrir {0}."
     },
     {
-      "source": "The operating system prevented verification of {0} matching process(es). SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
-      "translation": "El sistema operativo impidió la verificación de los procesos de coincidencia {0}. SrvSurvey no forzará el cierre de un proceso no verificado y la actualización se detendrá de forma segura si permanece abierto."
+      "source": "The operating system prevented verification of {0} matching process(es). {1}",
+      "translation": "El sistema operativo impidió la verificación de los procesos de coincidencia {0}. {1}"
     },
     {
       "source": "The operation did not complete.",
@@ -57533,6 +57645,10 @@
     {
       "source": "This development or unpackaged build cannot replace itself; use Open releases.",
       "translation": "Este desarrollo o compilación no empaquetada no puede reemplazarse a sí mismo; utilice versiones abiertas."
+    },
+    {
+      "source": "This dialog was not configured for application startup.",
+      "translation": "Este cuadro de diálogo no se configuró para el inicio de la aplicación."
     },
     {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
@@ -59571,8 +59687,8 @@
       "translation": "Se requiere la aprobación del administrador de Windows para actualizar esta instalación protegida. El perfil del jugador permanece intacto."
     },
     {
-      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then retry the update. No installation files were changed.",
-      "translation": "Windows o Linux impidieron que SrvSurvey verificara los procesos de coincidencia de {0}. Cierre cada instancia de SrvSurvey-XP manualmente y luego vuelva a intentar la actualización. No se cambiaron archivos de instalación."
+      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
+      "translation": "Windows o Linux impidieron que SrvSurvey verificara los procesos de coincidencia de {0}. Cierre todas las instancias de SrvSurvey-XP manualmente y vuelva a intentarlo."
     },
     {
       "source": "Windows overlay input pass-through could not be enabled.",
@@ -59713,6 +59829,10 @@
     {
       "source": "Yes",
       "translation": "si"
+    },
+    {
+      "source": "Yes, close it and continue",
+      "translation": "Sí, ciérralo y continúa."
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -64593,6 +64713,10 @@
       "translation": "APPIMAGE"
     },
     {
+      "source": "APPLICATION STARTUP",
+      "translation": "DÉMARRAGE DE L'APPLICATION"
+    },
+    {
       "source": "APPLICATION UPDATE",
       "translation": "MISE À JOUR DE LA DEMANDE"
     },
@@ -65357,6 +65481,10 @@
       "translation": "Anomalie"
     },
     {
+      "source": "Another SrvSurvey instance is already open",
+      "translation": "Une autre instance SrvSurvey est déjà ouverte"
+    },
+    {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Une autre instance SrvSurvey est en cours d'exécution. Confirmez si toutes les instances doivent se fermer avant la mise à jour."
     },
@@ -65399,6 +65527,10 @@
     {
       "source": "Application exit",
       "translation": "Sortie de l'application"
+    },
+    {
+      "source": "Application instance startup check failed: {0}",
+      "translation": "Échec de la vérification du démarrage de l'instance d'application : {0}"
     },
     {
       "source": "Application logging is unavailable.",
@@ -67909,6 +68041,10 @@
       "translation": "Choisissez Rendre principal le projet prévu avant de concentrer le plan d'achat."
     },
     {
+      "source": "Choose No to leave the existing instance running. Multiple instances should be started from the Multiple Commanders panel.",
+      "translation": "Choisissez Non pour laisser l’instance existante en cours d’exécution. Plusieurs instances doivent être démarrées à partir du panneau Multiple Commanders."
+    },
+    {
       "source": "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
       "translation": "Choisissez Renforcer, Saper ou Acquérir et votre pouvoir promis. Les événements du journal Powerplay remplissent l'engagement lorsqu'ils sont disponibles ; vous pouvez le sélectionner manuellement. Renforcez les correspondances dont la propriété est connue de votre Puissance ; Undermine correspond à un autre pouvoir connu. L'acquisition montre des candidats explicitement inoccupés/agrandissants, et non une propriété inconnue."
     },
@@ -68287,6 +68423,10 @@
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
       "translation": "Fermeture des autres instances SrvSurvey avant de poursuivre la mise à jour."
+    },
+    {
+      "source": "Closing the existing SrvSurvey instance...",
+      "translation": "Fermeture de l'instance existante SrvSurvey..."
     },
     {
       "source": "Closing the other SrvSurvey instance...",
@@ -69541,8 +69681,8 @@
       "translation": "Impossible de choisir un dossier d'exportation : {0}"
     },
     {
-      "source": "Could not close {0} other SrvSurvey instance(s). The update was not started.",
-      "translation": "Impossible de fermer {0} autre(s) instance(s) SrvSurvey. La mise à jour n'a pas démarré."
+      "source": "Could not close {0} other SrvSurvey instance(s).",
+      "translation": "Impossible de fermer les autres instances de {0} SrvSurvey."
     },
     {
       "source": "Could not copy the Elite Dangerous window.",
@@ -70703,6 +70843,14 @@
     {
       "source": "Divide",
       "translation": "Diviser"
+    },
+    {
+      "source": "Do you want to close the existing instance and continue opening this one?",
+      "translation": "Voulez-vous fermer l'instance existante et continuer à ouvrir celle-ci ?"
+    },
+    {
+      "source": "Do you want to close the existing instances and continue opening this one?",
+      "translation": "Voulez-vous fermer les instances existantes et continuer à ouvrir celle-ci ?"
     },
     {
       "source": "Dock at a Fleet Carrier to publish and link it. Registration preserves Raven's existing cargo; a freshly opened market is reconciled afterward.",
@@ -79337,6 +79485,10 @@
       "translation": "Autre / inconnu"
     },
     {
+      "source": "Other SrvSurvey instances are already open",
+      "translation": "D'autres instances SrvSurvey sont déjà ouvertes"
+    },
+    {
       "source": "Outfitting",
       "translation": "Pourvoirie"
     },
@@ -85745,6 +85897,10 @@
       "translation": "SrvSurvey n'a pas pu redémarrer après l'annulation de la mise à jour."
     },
     {
+      "source": "SrvSurvey could not verify whether another instance is running: {0}",
+      "translation": "SrvSurvey n'a pas pu vérifier si une autre instance est en cours d'exécution : {0}"
+    },
+    {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
       "translation": "SrvSurvey ne télécharge pas l'historique du journal lu lors du démarrage ou de la relecture. La désactivation de l'option invalide les entrées qui sont toujours en attente en mémoire, et plusieurs fenêtres Elite simultanées suspendent la nouvelle publication VoxStellar pour éviter d'attribuer des données au mauvais commandant."
     },
@@ -85783,6 +85939,10 @@
     {
       "source": "SrvSurvey human settlement overlay",
       "translation": "SrvSurvey superposition d'établissements humains"
+    },
+    {
+      "source": "SrvSurvey is already running",
+      "translation": "SrvSurvey est déjà en cours d'exécution"
     },
     {
       "source": "SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar's current privacy policy and terms of service.",
@@ -85927,6 +86087,14 @@
     {
       "source": "SrvSurvey will follow the newest active journal.",
       "translation": "SrvSurvey suivra le journal actif le plus récent."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
+      "translation": "SrvSurvey ne forcera pas la fermeture d'un processus non vérifié et la mise à jour s'arrêtera en toute sécurité si elle reste ouverte."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process. Choose No and close it manually if replacement cannot continue.",
+      "translation": "SrvSurvey ne forcera pas la fermeture d'un processus non vérifié. Choisissez Non et fermez-le manuellement si le remplacement ne peut pas continuer."
     },
     {
       "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
@@ -87997,6 +88165,10 @@
       "translation": "Le chemin de l'exécutable n'était pas disponible."
     },
     {
+      "source": "The existing instance could not be closed: {0}",
+      "translation": "L'instance existante n'a pas pu être fermée : {0}"
+    },
+    {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "Les superpositions en direct existantes ne sont plus cliquables et peuvent être glissées en place."
     },
@@ -88405,8 +88577,8 @@
       "translation": "Le système d'exploitation n'a pas pu ouvrir {0}."
     },
     {
-      "source": "The operating system prevented verification of {0} matching process(es). SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
-      "translation": "Le système d'exploitation a empêché la vérification du ou des processus de correspondance {0}. SrvSurvey ne forcera pas la fermeture d'un processus non vérifié et la mise à jour s'arrêtera en toute sécurité si elle reste ouverte."
+      "source": "The operating system prevented verification of {0} matching process(es). {1}",
+      "translation": "Le système d'exploitation a empêché la vérification du ou des processus de correspondance {0}. {1}"
     },
     {
       "source": "The operation did not complete.",
@@ -89259,6 +89431,10 @@
     {
       "source": "This development or unpackaged build cannot replace itself; use Open releases.",
       "translation": "Ce développement ou cette version non packagée ne peut pas se remplacer ; utilisez les versions ouvertes."
+    },
+    {
+      "source": "This dialog was not configured for application startup.",
+      "translation": "Cette boîte de dialogue n'a pas été configurée pour le démarrage de l'application."
     },
     {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
@@ -91297,8 +91473,8 @@
       "translation": "L'approbation de l'administrateur Windows est requise pour mettre à jour cette installation protégée. Le profil du joueur reste inchangé."
     },
     {
-      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then retry the update. No installation files were changed.",
-      "translation": "Windows ou Linux ont empêché SrvSurvey de vérifier le(s) processus de correspondance {0}. Fermez chaque instance SrvSurvey-XP manuellement, puis réessayez la mise à jour. Aucun fichier d'installation n'a été modifié."
+      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
+      "translation": "Windows ou Linux ont empêché SrvSurvey de vérifier le(s) processus de correspondance {0}. Fermez chaque instance SrvSurvey-XP manuellement, puis réessayez."
     },
     {
       "source": "Windows overlay input pass-through could not be enabled.",
@@ -91439,6 +91615,10 @@
     {
       "source": "Yes",
       "translation": "Oui"
+    },
+    {
+      "source": "Yes, close it and continue",
+      "translation": "Oui, ferme-le et continue"
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -96319,6 +96499,10 @@
       "translation": "APPIMAGEM"
     },
     {
+      "source": "APPLICATION STARTUP",
+      "translation": "INICIALIZAÇÃO DO APLICATIVO"
+    },
+    {
       "source": "APPLICATION UPDATE",
       "translation": "ATUALIZAÇÃO DO APLICATIVO"
     },
@@ -97083,6 +97267,10 @@
       "translation": "Anomalia"
     },
     {
+      "source": "Another SrvSurvey instance is already open",
+      "translation": "Outra instância SrvSurvey já está aberta"
+    },
+    {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Outra instância SrvSurvey está em execução. Confirme se todas as instâncias devem ser fechadas antes da atualização."
     },
@@ -97125,6 +97313,10 @@
     {
       "source": "Application exit",
       "translation": "Saída do aplicativo"
+    },
+    {
+      "source": "Application instance startup check failed: {0}",
+      "translation": "Falha na verificação de inicialização da instância do aplicativo: {0}"
     },
     {
       "source": "Application logging is unavailable.",
@@ -99635,6 +99827,10 @@
       "translation": "Escolha Tornar primário no projeto pretendido antes de focar no plano de compras."
     },
     {
+      "source": "Choose No to leave the existing instance running. Multiple instances should be started from the Multiple Commanders panel.",
+      "translation": "Escolha Não para deixar a instância existente em execução. Múltiplas instâncias devem ser iniciadas no painel Multiple Commanders."
+    },
+    {
       "source": "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
       "translation": "Escolha Reforçar, Prejudicar ou Adquirir e seu poder prometido. Os eventos do diário Powerplay preenchem a promessa quando disponíveis; você pode selecioná-lo manualmente. Reforçar corresponde à propriedade conhecida do seu Poder; Undermine corresponde a outro poder conhecido. Adquirir mostra candidatos explicitamente desocupados/de expansão, e não propriedade desconhecida."
     },
@@ -100013,6 +100209,10 @@
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
       "translation": "Fechar outras instâncias SrvSurvey antes de continuar a atualização."
+    },
+    {
+      "source": "Closing the existing SrvSurvey instance...",
+      "translation": "Fechando a instância existente SrvSurvey..."
     },
     {
       "source": "Closing the other SrvSurvey instance...",
@@ -101267,8 +101467,8 @@
       "translation": "Não foi possível escolher uma pasta de exportação: {0}"
     },
     {
-      "source": "Could not close {0} other SrvSurvey instance(s). The update was not started.",
-      "translation": "Não foi possível fechar {0} outra(s) SrvSurvey instância(s). A atualização não foi iniciada."
+      "source": "Could not close {0} other SrvSurvey instance(s).",
+      "translation": "Não foi possível fechar outra(s) instância(s) {0} SrvSurvey."
     },
     {
       "source": "Could not copy the Elite Dangerous window.",
@@ -102429,6 +102629,14 @@
     {
       "source": "Divide",
       "translation": "Dividir"
+    },
+    {
+      "source": "Do you want to close the existing instance and continue opening this one?",
+      "translation": "Deseja fechar a instância existente e continuar abrindo esta?"
+    },
+    {
+      "source": "Do you want to close the existing instances and continue opening this one?",
+      "translation": "Deseja fechar as instâncias existentes e continuar abrindo esta?"
     },
     {
       "source": "Dock at a Fleet Carrier to publish and link it. Registration preserves Raven's existing cargo; a freshly opened market is reconciled afterward.",
@@ -111063,6 +111271,10 @@
       "translation": "Outro/desconhecido"
     },
     {
+      "source": "Other SrvSurvey instances are already open",
+      "translation": "Outras instâncias SrvSurvey já estão abertas"
+    },
+    {
       "source": "Outfitting",
       "translation": "Equipamento"
     },
@@ -117471,6 +117683,10 @@
       "translation": "SrvSurvey não pôde reiniciar após a reversão da atualização."
     },
     {
+      "source": "SrvSurvey could not verify whether another instance is running: {0}",
+      "translation": "SrvSurvey não foi possível verificar se outra instância está em execução: {0}"
+    },
+    {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
       "translation": "SrvSurvey não carrega o histórico do diário lido durante a inicialização ou reprodução. Desativar a opção invalida as entradas que ainda estão aguardando na memória e várias janelas Elite simultâneas pausam a nova publicação VoxStellar para evitar a atribuição de dados ao Commander errado."
     },
@@ -117509,6 +117725,10 @@
     {
       "source": "SrvSurvey human settlement overlay",
       "translation": "SrvSurvey sobreposição de assentamentos humanos"
+    },
+    {
+      "source": "SrvSurvey is already running",
+      "translation": "SrvSurvey já está em execução"
     },
     {
       "source": "SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar's current privacy policy and terms of service.",
@@ -117653,6 +117873,14 @@
     {
       "source": "SrvSurvey will follow the newest active journal.",
       "translation": "SrvSurvey seguirá o mais novo diário ativo."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
+      "translation": "SrvSurvey não forçará o fechamento de um processo não verificado e a atualização será interrompida com segurança se permanecer aberta."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process. Choose No and close it manually if replacement cannot continue.",
+      "translation": "SrvSurvey não forçará o fechamento de um processo não verificado. Escolha Não e feche-o manualmente se a substituição não puder continuar."
     },
     {
       "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
@@ -119723,6 +119951,10 @@
       "translation": "O caminho do executável não estava disponível."
     },
     {
+      "source": "The existing instance could not be closed: {0}",
+      "translation": "A instância existente não pôde ser fechada: {0}"
+    },
+    {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "As sobreposições ao vivo existentes deixam de ser clicadas e podem ser arrastadas no lugar."
     },
@@ -120131,8 +120363,8 @@
       "translation": "O sistema operacional não pôde abrir {0}."
     },
     {
-      "source": "The operating system prevented verification of {0} matching process(es). SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
-      "translation": "O sistema operacional impediu a verificação do(s) processo(s) correspondente(s) {0}. SrvSurvey não forçará o fechamento de um processo não verificado e a atualização será interrompida com segurança se permanecer aberta."
+      "source": "The operating system prevented verification of {0} matching process(es). {1}",
+      "translation": "O sistema operacional impediu a verificação do(s) processo(s) correspondente(s) {0}. {1}"
     },
     {
       "source": "The operation did not complete.",
@@ -120985,6 +121217,10 @@
     {
       "source": "This development or unpackaged build cannot replace itself; use Open releases.",
       "translation": "Este desenvolvimento ou compilação não empacotada não pode substituir a si mesmo; use versões abertas."
+    },
+    {
+      "source": "This dialog was not configured for application startup.",
+      "translation": "Esta caixa de diálogo não foi configurada para inicialização do aplicativo."
     },
     {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
@@ -123023,8 +123259,8 @@
       "translation": "A aprovação do administrador do Windows é necessária para atualizar esta instalação protegida. O perfil do jogador permanece intacto."
     },
     {
-      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then retry the update. No installation files were changed.",
-      "translation": "Windows ou Linux impediram SrvSurvey de verificar processo(s) correspondente(s) {0}. Feche cada instância SrvSurvey-XP manualmente e tente atualizar novamente. Nenhum arquivo de instalação foi alterado."
+      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
+      "translation": "Windows ou Linux impediram SrvSurvey de verificar processo(s) correspondente(s) {0}. Feche cada instância SrvSurvey-XP manualmente e tente novamente."
     },
     {
       "source": "Windows overlay input pass-through could not be enabled.",
@@ -123165,6 +123401,10 @@
     {
       "source": "Yes",
       "translation": "Sim"
+    },
+    {
+      "source": "Yes, close it and continue",
+      "translation": "Sim, feche e continue"
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -128045,6 +128285,10 @@
       "translation": "ПРИЛОЖЕНИЕ"
     },
     {
+      "source": "APPLICATION STARTUP",
+      "translation": "ЗАПУСК ПРИЛОЖЕНИЯ"
+    },
+    {
       "source": "APPLICATION UPDATE",
       "translation": "ОБНОВЛЕНИЕ ПРИЛОЖЕНИЯ"
     },
@@ -128809,6 +129053,10 @@
       "translation": "Аномалия"
     },
     {
+      "source": "Another SrvSurvey instance is already open",
+      "translation": "Другой экземпляр SrvSurvey уже открыт."
+    },
+    {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Другой экземпляр SrvSurvey запущен. Перед обновлением убедитесь, что все экземпляры должны быть закрыты."
     },
@@ -128851,6 +129099,10 @@
     {
       "source": "Application exit",
       "translation": "Выход из приложения"
+    },
+    {
+      "source": "Application instance startup check failed: {0}",
+      "translation": "Не удалось проверить запуск экземпляра приложения: {0}"
     },
     {
       "source": "Application logging is unavailable.",
@@ -131361,6 +131613,10 @@
       "translation": "Прежде чем приступить к плану покупок, выберите «Сделать основным» намеченный проект."
     },
     {
+      "source": "Choose No to leave the existing instance running. Multiple instances should be started from the Multiple Commanders panel.",
+      "translation": "Выберите «Нет», чтобы оставить существующий экземпляр работающим. Несколько экземпляров следует запускать с панели Multiple Commanders."
+    },
+    {
       "source": "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
       "translation": "Выберите «Укрепить», «Подорвать» или «Приобрести» и свою обещанную Силу. События журнала Powerplay пополняют залог, если они доступны; вы можете выбрать его вручную. Укрепите соответствие известному владению вашей Силой; Подорвать совпадения с другой известной Силой. Acquire отображает явно незанятых/кандидатов на расширение, а не неизвестных владельцев."
     },
@@ -131739,6 +131995,10 @@
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
       "translation": "Закрытие других экземпляров SrvSurvey перед продолжением обновления."
+    },
+    {
+      "source": "Closing the existing SrvSurvey instance...",
+      "translation": "Закрытие существующего экземпляра SrvSurvey..."
     },
     {
       "source": "Closing the other SrvSurvey instance...",
@@ -132993,8 +133253,8 @@
       "translation": "Не удалось выбрать папку экспорта: {0}"
     },
     {
-      "source": "Could not close {0} other SrvSurvey instance(s). The update was not started.",
-      "translation": "Не удалось закрыть {0} других экземпляров SrvSurvey. Обновление не запустилось."
+      "source": "Could not close {0} other SrvSurvey instance(s).",
+      "translation": "Не удалось закрыть другие экземпляры {0} SrvSurvey."
     },
     {
       "source": "Could not copy the Elite Dangerous window.",
@@ -134155,6 +134415,14 @@
     {
       "source": "Divide",
       "translation": "Разделить"
+    },
+    {
+      "source": "Do you want to close the existing instance and continue opening this one?",
+      "translation": "Вы хотите закрыть существующий экземпляр и продолжить открытие этого?"
+    },
+    {
+      "source": "Do you want to close the existing instances and continue opening this one?",
+      "translation": "Вы хотите закрыть существующие экземпляры и продолжить открытие этого?"
     },
     {
       "source": "Dock at a Fleet Carrier to publish and link it. Registration preserves Raven's existing cargo; a freshly opened market is reconciled afterward.",
@@ -142789,6 +143057,10 @@
       "translation": "Другое/неизвестно"
     },
     {
+      "source": "Other SrvSurvey instances are already open",
+      "translation": "Другие экземпляры SrvSurvey уже открыты."
+    },
+    {
       "source": "Outfitting",
       "translation": "Экипировка"
     },
@@ -149197,6 +149469,10 @@
       "translation": "SrvSurvey не удалось перезапустить после отката обновления."
     },
     {
+      "source": "SrvSurvey could not verify whether another instance is running: {0}",
+      "translation": "SrvSurvey не удалось проверить, запущен ли другой экземпляр: {0}."
+    },
+    {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
       "translation": "SrvSurvey не загружает историю журнала, прочитанную во время запуска или воспроизведения. Отключение этой опции делает недействительными записи, которые все еще ожидают в памяти, а несколько одновременных окон Elite приостанавливают новую публикацию VoxStellar во избежание отнесения данных к неправильному Commander."
     },
@@ -149235,6 +149511,10 @@
     {
       "source": "SrvSurvey human settlement overlay",
       "translation": "SrvSurvey наложение населенных пунктов"
+    },
+    {
+      "source": "SrvSurvey is already running",
+      "translation": "SrvSurvey уже запущен"
     },
     {
       "source": "SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar's current privacy policy and terms of service.",
@@ -149379,6 +149659,14 @@
     {
       "source": "SrvSurvey will follow the newest active journal.",
       "translation": "SrvSurvey будет следить за последним активным журналом."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
+      "translation": "SrvSurvey не будет принудительно закрывать непроверенный процесс, и обновление будет безопасно остановлено, если оно останется открытым."
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process. Choose No and close it manually if replacement cannot continue.",
+      "translation": "SrvSurvey не закроет принудительно непроверенный процесс. Выберите «Нет» и закройте его вручную, если замена не может быть продолжена."
     },
     {
       "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
@@ -151449,6 +151737,10 @@
       "translation": "Путь к исполняемому файлу недоступен."
     },
     {
+      "source": "The existing instance could not be closed: {0}",
+      "translation": "Не удалось закрыть существующий экземпляр: {0}."
+    },
+    {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "Существующие живые наложения перестают быть кликабельными, и их можно перетаскивать на место."
     },
@@ -151857,8 +152149,8 @@
       "translation": "Операционной системе не удалось открыть {0}."
     },
     {
-      "source": "The operating system prevented verification of {0} matching process(es). SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
-      "translation": "Операционная система препятствовала проверке процессов соответствия {0}. SrvSurvey не будет принудительно закрывать непроверенный процесс, и обновление будет безопасно остановлено, если оно останется открытым."
+      "source": "The operating system prevented verification of {0} matching process(es). {1}",
+      "translation": "Операционная система препятствовала проверке процессов соответствия {0}. {1}"
     },
     {
       "source": "The operation did not complete.",
@@ -152711,6 +153003,10 @@
     {
       "source": "This development or unpackaged build cannot replace itself; use Open releases.",
       "translation": "Эта разрабатываемая или неупакованная сборка не может заменить себя; используйте открытые релизы."
+    },
+    {
+      "source": "This dialog was not configured for application startup.",
+      "translation": "Этот диалог не был настроен для запуска приложения."
     },
     {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
@@ -154749,8 +155045,8 @@
       "translation": "Для обновления этой защищенной установки требуется одобрение администратора Windows. Профиль игрока остается нетронутым."
     },
     {
-      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then retry the update. No installation files were changed.",
-      "translation": "Windows или Linux не позволяют SrvSurvey проверять соответствующие процессы {0}. Закройте каждый экземпляр SrvSurvey-XP вручную, затем повторите попытку обновления. Никакие установочные файлы не были изменены."
+      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
+      "translation": "Windows или Linux не позволяют SrvSurvey проверять соответствующие процессы {0}. Закройте каждый экземпляр SrvSurvey-XP вручную и повторите попытку."
     },
     {
       "source": "Windows overlay input pass-through could not be enabled.",
@@ -154891,6 +155187,10 @@
     {
       "source": "Yes",
       "translation": "Да"
+    },
+    {
+      "source": "Yes, close it and continue",
+      "translation": "Да, закройте и продолжайте"
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -159771,6 +160071,10 @@
       "translation": "应用图像"
     },
     {
+      "source": "APPLICATION STARTUP",
+      "translation": "应用程序启动"
+    },
+    {
       "source": "APPLICATION UPDATE",
       "translation": "应用程序更新"
     },
@@ -160535,6 +160839,10 @@
       "translation": "异常"
     },
     {
+      "source": "Another SrvSurvey instance is already open",
+      "translation": "另一个SrvSurvey实例已打开"
+    },
+    {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "另一个 SrvSurvey 实例正在运行。确认更新前是否应关闭所有实例。"
     },
@@ -160577,6 +160885,10 @@
     {
       "source": "Application exit",
       "translation": "应用程序退出"
+    },
+    {
+      "source": "Application instance startup check failed: {0}",
+      "translation": "应用程序实例启动检查失败：{0}"
     },
     {
       "source": "Application logging is unavailable.",
@@ -163087,6 +163399,10 @@
       "translation": "在重点关注购物计划之前，选择“将主要项目放在预期项目上”。"
     },
     {
+      "source": "Choose No to leave the existing instance running. Multiple instances should be started from the Multiple Commanders panel.",
+      "translation": "选择“否”以使现有实例保持运行。应从“多个指挥官”面板启动多个实例。"
+    },
+    {
       "source": "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
       "translation": "选择“强化”、“削弱”或“获取”以及您承诺的力量。 Powerplay 日记活动在可用时兑现了承诺；您可以手动选择它。强化您权力的已知所有权；破坏与另一种已知的力量相匹配。获取明确显示未占用/扩展候选者，而不是未知的所有权。"
     },
@@ -163465,6 +163781,10 @@
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
       "translation": "在继续更新之前关闭其他 SrvSurvey 实例。"
+    },
+    {
+      "source": "Closing the existing SrvSurvey instance...",
+      "translation": "正在关闭现有的 SrvSurvey 实例..."
     },
     {
       "source": "Closing the other SrvSurvey instance...",
@@ -164719,8 +165039,8 @@
       "translation": "无法选择导出文件夹：{0}"
     },
     {
-      "source": "Could not close {0} other SrvSurvey instance(s). The update was not started.",
-      "translation": "无法关闭 {0} 其他 SrvSurvey 实例。更新尚未开始。"
+      "source": "Could not close {0} other SrvSurvey instance(s).",
+      "translation": "无法关闭 {0} 其他 SrvSurvey 实例。"
     },
     {
       "source": "Could not copy the Elite Dangerous window.",
@@ -165881,6 +166201,14 @@
     {
       "source": "Divide",
       "translation": "划分"
+    },
+    {
+      "source": "Do you want to close the existing instance and continue opening this one?",
+      "translation": "您想关闭现有实例并继续打开此实例吗？"
+    },
+    {
+      "source": "Do you want to close the existing instances and continue opening this one?",
+      "translation": "您要关闭现有实例并继续打开此实例吗？"
     },
     {
       "source": "Dock at a Fleet Carrier to publish and link it. Registration preserves Raven's existing cargo; a freshly opened market is reconciled afterward.",
@@ -174515,6 +174843,10 @@
       "translation": "其他/未知"
     },
     {
+      "source": "Other SrvSurvey instances are already open",
+      "translation": "其他SrvSurvey实例已开放"
+    },
+    {
       "source": "Outfitting",
       "translation": "舾装"
     },
@@ -180923,6 +181255,10 @@
       "translation": "SrvSurvey 更新回滚后无法重新启动。"
     },
     {
+      "source": "SrvSurvey could not verify whether another instance is running: {0}",
+      "translation": "SrvSurvey 无法验证另一个实例是否正在运行：{0}"
+    },
+    {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
       "translation": "SrvSurvey 不会上传启动或重播期间读取的日志历史记录。关闭该选项会使内存中仍在等待的条目无效，并且多个同时出现的 Elite 窗口会暂停新的 VoxStellar 发布，以避免将数据归因于错误的指挥官。"
     },
@@ -180961,6 +181297,10 @@
     {
       "source": "SrvSurvey human settlement overlay",
       "translation": "SrvSurvey 人类住区叠加层"
+    },
+    {
+      "source": "SrvSurvey is already running",
+      "translation": "SrvSurvey 已经运行"
     },
     {
       "source": "SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar's current privacy policy and terms of service.",
@@ -181105,6 +181445,14 @@
     {
       "source": "SrvSurvey will follow the newest active journal.",
       "translation": "SrvSurvey 将关注最新的活跃期刊。"
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
+      "translation": "SrvSurvey不会强制关闭未经验证的进程，如果它保持打开状态，更新将安全停止。"
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process. Choose No and close it manually if replacement cannot continue.",
+      "translation": "SrvSurvey不会强制关闭未经验证的进程。如果替换无法继续，请选择“否”并手动关闭它。"
     },
     {
       "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
@@ -183175,6 +183523,10 @@
       "translation": "可执行路径不可用。"
     },
     {
+      "source": "The existing instance could not be closed: {0}",
+      "translation": "无法关闭现有实例：{0}"
+    },
+    {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "现有的实时叠加不再需要点击，可以拖动到位。"
     },
@@ -183583,8 +183935,8 @@
       "translation": "操作系统无法打开 {0}。"
     },
     {
-      "source": "The operating system prevented verification of {0} matching process(es). SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
-      "translation": "操作系统阻止了 {0} 匹配进程的验证。 SrvSurvey不会强制关闭未经验证的进程，如果它保持打开状态，更新将安全停止。"
+      "source": "The operating system prevented verification of {0} matching process(es). {1}",
+      "translation": "操作系统阻止了 {0} 匹配进程的验证。 {1}"
     },
     {
       "source": "The operation did not complete.",
@@ -184437,6 +184789,10 @@
     {
       "source": "This development or unpackaged build cannot replace itself; use Open releases.",
       "translation": "此开发或未打包的构建无法自行替换；使用开放版本。"
+    },
+    {
+      "source": "This dialog was not configured for application startup.",
+      "translation": "该对话框未配置为应用程序启动。"
     },
     {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
@@ -186475,8 +186831,8 @@
       "translation": "更新此受保护的安装需要 Windows 管理员批准。玩家资料保持不变。"
     },
     {
-      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then retry the update. No installation files were changed.",
-      "translation": "Windows 或 Linux 阻止 SrvSurvey 验证 {0} 匹配进程。手动关闭每个 SrvSurvey-XP 实例，然后重试更新。没有更改安装文件。"
+      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
+      "translation": "Windows 或 Linux 阻止 SrvSurvey 验证 {0} 匹配进程。手动关闭每个 SrvSurvey-XP 实例，然后重试。"
     },
     {
       "source": "Windows overlay input pass-through could not be enabled.",
@@ -186617,6 +186973,10 @@
     {
       "source": "Yes",
       "translation": "是的"
+    },
+    {
+      "source": "Yes, close it and continue",
+      "translation": "是的，关闭它并继续"
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -191497,6 +191857,10 @@
       "translation": "* APPIMAGE >>>!"
     },
     {
+      "source": "APPLICATION STARTUP",
+      "translation": "* APPLICATION STARTUP >>>!"
+    },
+    {
       "source": "APPLICATION UPDATE",
       "translation": "* APPLICATION UPDATE >>>!"
     },
@@ -192261,6 +192625,10 @@
       "translation": "* ANOMALY >>>!"
     },
     {
+      "source": "Another SrvSurvey instance is already open",
+      "translation": "* ANOTHER SRVSURVEY INSTANCE IS ALREADY OPEN >>>!"
+    },
+    {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "* ANOTHER SRVSURVEY INSTANCE IS RUNNING. CONFIRM WHETHER ALL INSTANCES SHOULD CLOSE BEFORE UPDATING. >>>!"
     },
@@ -192303,6 +192671,10 @@
     {
       "source": "Application exit",
       "translation": "* APPLICATION EXIT >>>!"
+    },
+    {
+      "source": "Application instance startup check failed: {0}",
+      "translation": "* APPLICATION INSTANCE STARTUP CHECK FAILED: {0} >>>!"
     },
     {
       "source": "Application logging is unavailable.",
@@ -194813,6 +195185,10 @@
       "translation": "* CHOOSE MAKE PRIMARY ON THE INTENDED PROJECT BEFORE FOCUSING THE SHOPPING PLAN. >>>!"
     },
     {
+      "source": "Choose No to leave the existing instance running. Multiple instances should be started from the Multiple Commanders panel.",
+      "translation": "* CHOOSE NO TO LEAVE THE EXISTING INSTANCE RUNNING. MULTIPLE INSTANCES SHOULD BE STARTED FROM THE MULTIPLE COMMANDERS PANEL. >>>!"
+    },
+    {
       "source": "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
       "translation": "* CHOOSE REINFORCE, UNDERMINE OR ACQUIRE AND YOUR PLEDGED POWER. POWERPLAY JOURNAL EVENTS FILL THE PLEDGE WHEN AVAILABLE; YOU CAN SELECT IT MANUALLY. REINFORCE MATCHES KNOWN OWNERSHIP BY YOUR POWER; UNDERMINE MATCHES ANOTHER KNOWN POWER. ACQUIRE SHOWS EXPLICITLY UNOCCUPIED/EXPANSION CANDIDATES, NOT UNKNOWN OWNERSHIP. >>>!"
     },
@@ -195191,6 +195567,10 @@
     {
       "source": "Closing other SrvSurvey instances before continuing the update.",
       "translation": "* CLOSING OTHER SRVSURVEY INSTANCES BEFORE CONTINUING THE UPDATE. >>>!"
+    },
+    {
+      "source": "Closing the existing SrvSurvey instance...",
+      "translation": "* CLOSING THE EXISTING SRVSURVEY INSTANCE... >>>!"
     },
     {
       "source": "Closing the other SrvSurvey instance...",
@@ -196445,8 +196825,8 @@
       "translation": "* COULD NOT CHOOSE AN EXPORT FOLDER: {0} >>>!"
     },
     {
-      "source": "Could not close {0} other SrvSurvey instance(s). The update was not started.",
-      "translation": "* COULD NOT CLOSE {0} OTHER SRVSURVEY INSTANCE(S). THE UPDATE WAS NOT STARTED. >>>!"
+      "source": "Could not close {0} other SrvSurvey instance(s).",
+      "translation": "* COULD NOT CLOSE {0} OTHER SRVSURVEY INSTANCE(S). >>>!"
     },
     {
       "source": "Could not copy the Elite Dangerous window.",
@@ -197607,6 +197987,14 @@
     {
       "source": "Divide",
       "translation": "* DIVIDE >>>!"
+    },
+    {
+      "source": "Do you want to close the existing instance and continue opening this one?",
+      "translation": "* DO YOU WANT TO CLOSE THE EXISTING INSTANCE AND CONTINUE OPENING THIS ONE? >>>!"
+    },
+    {
+      "source": "Do you want to close the existing instances and continue opening this one?",
+      "translation": "* DO YOU WANT TO CLOSE THE EXISTING INSTANCES AND CONTINUE OPENING THIS ONE? >>>!"
     },
     {
       "source": "Dock at a Fleet Carrier to publish and link it. Registration preserves Raven's existing cargo; a freshly opened market is reconciled afterward.",
@@ -206241,6 +206629,10 @@
       "translation": "* OTHER / UNKNOWN >>>!"
     },
     {
+      "source": "Other SrvSurvey instances are already open",
+      "translation": "* OTHER SRVSURVEY INSTANCES ARE ALREADY OPEN >>>!"
+    },
+    {
       "source": "Outfitting",
       "translation": "* OUTFITTING >>>!"
     },
@@ -212649,6 +213041,10 @@
       "translation": "* SRVSURVEY COULD NOT RESTART AFTER UPDATE ROLLBACK. >>>!"
     },
     {
+      "source": "SrvSurvey could not verify whether another instance is running: {0}",
+      "translation": "* SRVSURVEY COULD NOT VERIFY WHETHER ANOTHER INSTANCE IS RUNNING: {0} >>>!"
+    },
+    {
       "source": "SrvSurvey does not upload journal history read during startup or replay. Turning the option off invalidates entries that are still waiting in memory, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
       "translation": "* SRVSURVEY DOES NOT UPLOAD JOURNAL HISTORY READ DURING STARTUP OR REPLAY. TURNING THE OPTION OFF INVALIDATES ENTRIES THAT ARE STILL WAITING IN MEMORY, AND MULTIPLE SIMULTANEOUS ELITE WINDOWS PAUSE NEW VOXSTELLAR PUBLICATION TO AVOID ATTRIBUTING DATA TO THE WRONG COMMANDER. >>>!"
     },
@@ -212687,6 +213083,10 @@
     {
       "source": "SrvSurvey human settlement overlay",
       "translation": "* SRVSURVEY HUMAN SETTLEMENT OVERLAY >>>!"
+    },
+    {
+      "source": "SrvSurvey is already running",
+      "translation": "* SRVSURVEY IS ALREADY RUNNING >>>!"
     },
     {
       "source": "SrvSurvey is not affiliated with VoxStellar. Your use of VoxStellar is governed by VoxStellar's current privacy policy and terms of service.",
@@ -212831,6 +213231,14 @@
     {
       "source": "SrvSurvey will follow the newest active journal.",
       "translation": "* SRVSURVEY WILL FOLLOW THE NEWEST ACTIVE JOURNAL. >>>!"
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
+      "translation": "* SRVSURVEY WILL NOT FORCE-CLOSE AN UNVERIFIED PROCESS, AND THE UPDATE WILL STOP SAFELY IF IT REMAINS OPEN. >>>!"
+    },
+    {
+      "source": "SrvSurvey will not force-close an unverified process. Choose No and close it manually if replacement cannot continue.",
+      "translation": "* SRVSURVEY WILL NOT FORCE-CLOSE AN UNVERIFIED PROCESS. CHOOSE NO AND CLOSE IT MANUALLY IF REPLACEMENT CANNOT CONTINUE. >>>!"
     },
     {
       "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
@@ -214901,6 +215309,10 @@
       "translation": "* THE EXECUTABLE PATH WAS NOT AVAILABLE. >>>!"
     },
     {
+      "source": "The existing instance could not be closed: {0}",
+      "translation": "* THE EXISTING INSTANCE COULD NOT BE CLOSED: {0} >>>!"
+    },
+    {
       "source": "The existing live overlays stop being click-through and can be dragged in place.",
       "translation": "* THE EXISTING LIVE OVERLAYS STOP BEING CLICK-THROUGH AND CAN BE DRAGGED IN PLACE. >>>!"
     },
@@ -215309,8 +215721,8 @@
       "translation": "* THE OPERATING SYSTEM COULD NOT OPEN {0}. >>>!"
     },
     {
-      "source": "The operating system prevented verification of {0} matching process(es). SrvSurvey will not force-close an unverified process, and the update will stop safely if it remains open.",
-      "translation": "* THE OPERATING SYSTEM PREVENTED VERIFICATION OF {0} MATCHING PROCESS(ES). SRVSURVEY WILL NOT FORCE-CLOSE AN UNVERIFIED PROCESS, AND THE UPDATE WILL STOP SAFELY IF IT REMAINS OPEN. >>>!"
+      "source": "The operating system prevented verification of {0} matching process(es). {1}",
+      "translation": "* THE OPERATING SYSTEM PREVENTED VERIFICATION OF {0} MATCHING PROCESS(ES). {1} >>>!"
     },
     {
       "source": "The operation did not complete.",
@@ -216163,6 +216575,10 @@
     {
       "source": "This development or unpackaged build cannot replace itself; use Open releases.",
       "translation": "* THIS DEVELOPMENT OR UNPACKAGED BUILD CANNOT REPLACE ITSELF; USE OPEN RELEASES. >>>!"
+    },
+    {
+      "source": "This dialog was not configured for application startup.",
+      "translation": "* THIS DIALOG WAS NOT CONFIGURED FOR APPLICATION STARTUP. >>>!"
     },
     {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
@@ -218201,8 +218617,8 @@
       "translation": "* WINDOWS ADMINISTRATOR APPROVAL IS REQUIRED TO UPDATE THIS PROTECTED INSTALLATION. THE PLAYER PROFILE REMAINS UNTOUCHED. >>>!"
     },
     {
-      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then retry the update. No installation files were changed.",
-      "translation": "* WINDOWS OR LINUX PREVENTED SRVSURVEY FROM VERIFYING {0} MATCHING PROCESS(ES). CLOSE EVERY SRVSURVEY-XP INSTANCE MANUALLY, THEN RETRY THE UPDATE. NO INSTALLATION FILES WERE CHANGED. >>>!"
+      "source": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
+      "translation": "* WINDOWS OR LINUX PREVENTED SRVSURVEY FROM VERIFYING {0} MATCHING PROCESS(ES). CLOSE EVERY SRVSURVEY-XP INSTANCE MANUALLY, THEN TRY AGAIN. >>>!"
     },
     {
       "source": "Windows overlay input pass-through could not be enabled.",
@@ -218343,6 +218759,10 @@
     {
       "source": "Yes",
       "translation": "* YES >>>!"
+    },
+    {
+      "source": "Yes, close it and continue",
+      "translation": "* YES, CLOSE IT AND CONTINUE >>>!"
     },
     {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",

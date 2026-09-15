@@ -182,6 +182,16 @@ public sealed class MainWindowRedesignMarkupTests
         Assert.Contains("{Binding CommanderInstances.SelectedCommander}", values);
         Assert.Contains("{Binding CommanderInstances.LaunchCommand}", values);
         Assert.Contains("{Binding CommanderInstances.StatusMessage}", values);
+        XElement commanderSelector = overview
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ComboBox"
+                && element.Attribute("ItemsSource")?.Value == "{Binding CommanderInstances.Commanders}"
+            );
+        Assert.Equal(
+            "{Binding CommanderInstances.HasAvailableCommanders}",
+            commanderSelector.Attribute("IsEnabled")?.Value
+        );
         Assert.DoesNotContain("COMMANDER CONSOLE", values);
         Assert.DoesNotContain("LIVE", values);
     }

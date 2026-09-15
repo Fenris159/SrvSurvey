@@ -1,6 +1,6 @@
 # Install SrvSurvey on Windows
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.4**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.5**.
 
 > [!IMPORTANT]
 > If RC4 or earlier is installed under a protected folder such as
@@ -54,6 +54,22 @@ the same Windows user folder by default:
 `%USERPROFILE%\Saved Games\Frontier Developments\Elite Dangerous`. SrvSurvey
 uses that storefront-neutral location, so mixed Windows installations do not
 need separate path configuration.
+
+## Multiple Commander instances
+
+Starting `SrvSurvey.Desktop.exe` while SrvSurvey is already running shows a
+confirmation instead of silently opening a duplicate. Choose **No** to keep the
+existing instance, or choose **Yes, close it and continue** to close the old
+process and bring the replacement window forward.
+
+To run more than one Commander deliberately, use the **Multiple commanders**
+card on the Overview page. Its selector is disabled when no other saved profile
+is available. Selecting another Commander and choosing **Launch instance** is
+the supported bypass for parallel clients.
+
+On Windows 11, the native title bar and border follow the selected application
+theme and dim when the window is inactive. Older Windows releases keep their
+system-provided title-bar colors.
 
 The review build is unsigned. If Windows marks the download as coming from the
 Internet, right-click the package ZIP, select **Properties**, and use

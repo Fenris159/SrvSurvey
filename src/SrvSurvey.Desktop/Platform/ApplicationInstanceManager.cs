@@ -120,16 +120,13 @@ internal sealed class ApplicationInstanceManager : IApplicationInstanceManager, 
             throw new IOException(
                 $"Windows or Linux prevented SrvSurvey from verifying "
                     + $"{verification.UnverifiedCount:N0} matching process(es). "
-                    + "Close every SrvSurvey-XP instance manually, then retry the update. "
-                    + "No installation files were changed."
+                    + "Close every SrvSurvey-XP instance manually, then try again."
             );
         }
 
         if (remaining > 0)
         {
-            throw new IOException(
-                $"Could not close {remaining:N0} other SrvSurvey instance(s). " + "The update was not started."
-            );
+            throw new IOException($"Could not close {remaining:N0} other SrvSurvey instance(s).");
         }
     }
 
@@ -403,12 +400,15 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
             out string? error
         );
         bool actualMatch = resolved && PathsMatch(candidatePath, currentPath, OperatingSystem.IsWindows());
-        bool registeredMatch =
-            !resolved
-            && record is not null
-            && PathsMatch(record.ExecutablePath, currentPath, OperatingSystem.IsWindows());
+        bool registeredMatch = IsRegisteredPathMatch(record, resolved, candidatePath, OperatingSystem.IsWindows());
         bool sameProcessName = HasProcessName(process, currentProcessName);
-        bool confirmed = actualMatch || registeredMatch || (!resolved && sameProcessName && restartManagerMatch);
+        bool confirmed = IsConfirmedProcess(
+            actualMatch,
+            registeredMatch,
+            resolved,
+            sameProcessName,
+            restartManagerMatch
+        );
         bool unverified = !confirmed && ((!resolved && sameProcessName) || restartManagerMatch);
         return new ProcessClassification(confirmed, unverified, record, candidatePath, method, error);
     }
@@ -457,6 +457,21 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
             isWindows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
         );
     }
+
+    internal static bool IsConfirmedProcess(
+        bool actualPathMatch,
+        bool hasValidatedRegistration,
+        bool pathResolved,
+        bool sameProcessName,
+        bool restartManagerMatch
+    ) => actualPathMatch || hasValidatedRegistration || (!pathResolved && sameProcessName && restartManagerMatch);
+
+    internal static bool IsRegisteredPathMatch(
+        ApplicationInstanceRecord? record,
+        bool pathResolved,
+        string? candidatePath,
+        bool isWindows
+    ) => record is not null && (!pathResolved || PathsMatch(candidatePath, record.ExecutablePath, isWindows));
 
     private ApplicationInstanceRecord? ValidateRecord(Process process, IReadOnlyList<ApplicationInstanceRecord> records)
     {

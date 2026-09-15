@@ -12,6 +12,8 @@ internal sealed record DesktopStartup(string[] Arguments, ApplicationLogService?
 
     internal DiagnosticReplayContext? DiagnosticReplay { get; init; }
 
+    internal bool BringMainWindowToFront { get; init; }
+
     internal Action<DesktopStartupCheckpoint>? Checkpoint { get; init; }
 }
 

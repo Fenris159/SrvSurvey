@@ -56,7 +56,9 @@ The images stay compact on this page. Select any tile to open the full screensho
 - Discovers Elite journals across supported Windows installations and common
   Linux Steam, Heroic, Frontier/Wine, Lutris and Bottles layouts.
 - Supports multiple Commander profiles and can start an isolated SrvSurvey
-  process for another saved Commander.
+  process for another saved Commander. Reopening the executable directly warns
+  before replacing an existing instance; intentional parallel instances start
+  from the Multiple commanders card.
 - Optionally links a Frontier account with OAuth to enrich the Commander, Fleet
   Carrier, cargo, shipyard, market and Community Goal views.
 - Combines live and historical journal data with public Community Goal details
@@ -176,8 +178,10 @@ adjust or finish the route manually.
 
 Use `.mine splat` while driving the visible edge of a mapped deposit in turret
 mode. SrvSurvey traces the Rhino's path and closes the outline after a valid full
-circuit returns to its starting area. It then fits separate square rig suggestions
-inside the traced shape while respecting the 78 m placement exclusion distance.
+circuit returns to its starting area. A hybrid search then fits the greatest
+valid arrangement it can find, up to six separate square rig suggestions, inside
+circular, oval and irregular traces while respecting the 78 m placement exclusion
+distance. A small valid trace still receives a single suggestion.
 
 The compact radar draws the splat as a dotted outline and keeps recommended
 positions separate from rigs that were actually deployed. It automatically zooms
@@ -219,7 +223,9 @@ alignment practical before placing and tracking the rig.
 ### Themes, overlays and accessibility
 
 - Includes Blue, Green and Monochrome application themes in coordinated light
-  and dark variants. In-game overlay palettes are configured independently.
+  and dark variants. On Windows 11, the main window's native caption and border
+  follow the selected theme and use a quieter palette while inactive. In-game
+  overlay palettes are configured independently.
 - Provides a visual overlay editor with live previews, category filtering,
   drag-and-drop placement, anchors, global and per-panel opacity, scale and
   visibility controls.

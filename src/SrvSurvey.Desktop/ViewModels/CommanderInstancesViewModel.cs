@@ -9,13 +9,14 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDisposable
 {
-    private readonly CommanderProfileCatalog catalog;
+    private readonly Func<Task<CommanderProfileCatalogResult>> loadProfilesAsync;
     private readonly ICommanderInstanceLauncher launcher;
     private readonly string journalDirectory;
     private readonly IGameWindowSwitcher gameWindowSwitcher;
     private readonly AsyncCommand launchCommand;
     private readonly AsyncCommand refreshCommand;
     private IReadOnlyList<CommanderProfileIdentity> catalogProfiles = [];
+    private IReadOnlyList<string> catalogWarnings = [];
     private IReadOnlyList<CommanderInstanceOptionViewModel> commanders = [];
     private CommanderInstanceOptionViewModel? selectedCommander;
     private string? currentFrontierId;
@@ -23,6 +24,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
     private string statusMessage = "Commander profiles have not been scanned yet.";
     private bool isBusy;
     private int availableGameWindowCount;
+    private bool profilesScanned;
 
     public CommanderInstancesViewModel(
         CommanderProfileCatalog catalog,
@@ -32,7 +34,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         IGameWindowSwitcher? gameWindowSwitcher = null
     )
     {
-        this.catalog = catalog;
+        loadProfilesAsync = () => catalog.LoadAsync();
         this.launcher = launcher;
         this.journalDirectory = journalDirectory;
         this.gameWindowSwitcher = gameWindowSwitcher ?? GameWindowSwitcher.CreateCurrent();
@@ -45,13 +47,34 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         RefreshGameWindowCount();
     }
 
+    internal CommanderInstancesViewModel(
+        CommanderProfileCatalog catalog,
+        ICommanderInstanceLauncher launcher,
+        string journalDirectory,
+        string? currentFrontierId,
+        IGameWindowSwitcher gameWindowSwitcher,
+        Func<Task<CommanderProfileCatalogResult>> loadProfilesAsync
+    )
+        : this(catalog, launcher, journalDirectory, currentFrontierId, gameWindowSwitcher)
+    {
+        this.loadProfilesAsync = loadProfilesAsync ?? throw new ArgumentNullException(nameof(loadProfilesAsync));
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public IReadOnlyList<CommanderInstanceOptionViewModel> Commanders
     {
         get => commanders;
-        private set => SetField(ref commanders, value);
+        private set
+        {
+            if (SetField(ref commanders, value))
+            {
+                OnPropertyChanged(nameof(HasAvailableCommanders));
+            }
+        }
     }
+
+    public bool HasAvailableCommanders => Commanders.Count > 0;
 
     public CommanderInstanceOptionViewModel? SelectedCommander
     {
@@ -149,6 +172,10 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         currentFrontierId = string.IsNullOrWhiteSpace(frontierId) ? currentFrontierId : frontierId.Trim();
         currentCommanderName = string.IsNullOrWhiteSpace(commanderName) ? currentCommanderName : commanderName.Trim();
         RebuildOptions();
+        if (profilesScanned)
+        {
+            UpdateProfileStatus();
+        }
         OnPropertyChanged(nameof(CurrentCommander));
         OnPropertyChanged(nameof(MultiGameOverlayLabel));
     }
@@ -163,35 +190,13 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         try
         {
             IsBusy = true;
-            CommanderProfileCatalogResult result = await catalog.LoadAsync();
+            profilesScanned = false;
+            CommanderProfileCatalogResult result = await loadProfilesAsync();
             catalogProfiles = result.Profiles;
+            catalogWarnings = result.Warnings;
+            profilesScanned = true;
             RebuildOptions();
-            if (result.Warnings.Count > 0)
-            {
-                StatusMessage =
-                    $"Found {result.Profiles.Count:N0} commander profile(s). " + string.Join(" ", result.Warnings);
-            }
-            else if (Directory.Exists(journalDirectory))
-            {
-                if (result.Profiles.Count == 0)
-                {
-                    StatusMessage =
-                        "No saved commander profiles were found. Import the original profile or start Elite once.";
-                }
-                else if (Commanders.Count == 0)
-                {
-                    StatusMessage = "Only the current commander profile is available.";
-                }
-                else
-                {
-                    StatusMessage = $"Choose one of {Commanders.Count:N0} other commander profile(s) to launch.";
-                }
-            }
-            else
-            {
-                StatusMessage =
-                    "The Elite journal folder is unavailable; configure it before launching another commander instance.";
-            }
+            UpdateProfileStatus();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -242,6 +247,32 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
 
     private string GetJournalDirectory(CommanderInstanceOptionViewModel commander) =>
         commander.JournalDirectory ?? journalDirectory;
+
+    private void UpdateProfileStatus()
+    {
+        if (catalogWarnings.Count > 0)
+        {
+            StatusMessage =
+                $"Found {catalogProfiles.Count:N0} commander profile(s). " + string.Join(" ", catalogWarnings);
+        }
+        else if (!Directory.Exists(journalDirectory))
+        {
+            StatusMessage =
+                "The Elite journal folder is unavailable; configure it before launching another commander instance.";
+        }
+        else if (catalogProfiles.Count == 0)
+        {
+            StatusMessage = "No saved commander profiles were found. Import the original profile or start Elite once.";
+        }
+        else if (!HasAvailableCommanders)
+        {
+            StatusMessage = "Only the current commander profile is available.";
+        }
+        else
+        {
+            StatusMessage = $"Choose one of {Commanders.Count:N0} other commander profile(s) to launch.";
+        }
+    }
 
     private void RebuildOptions()
     {

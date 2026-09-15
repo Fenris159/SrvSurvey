@@ -203,6 +203,7 @@
 
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
             <ComboBox ItemsSource="{Binding CommanderInstances.Commanders}"
+                      IsEnabled="{Binding CommanderInstances.HasAvailableCommanders}"
                       SelectedItem="{Binding CommanderInstances.SelectedCommander}"
                       PlaceholderText="Choose another commander">
               <ComboBox.ItemTemplate>
