@@ -112,6 +112,16 @@ public sealed partial class ReleaseWorkflowContractTests
         Assert.Contains("SrvSurvey.ReplayController", appRun, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void LinuxAppImageSmokeRunsAreStoppedAsOwnedProcessGroups()
+    {
+        string script = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "scripts", "Test-LinuxAppImageRuntime.sh"));
+
+        Assert.Contains("setsid --wait xvfb-run", script, StringComparison.Ordinal);
+        Assert.Contains("kill -TERM -- \"-$process_group_id\"", script, StringComparison.Ordinal);
+        Assert.Contains("kill -KILL -- \"-$process_group_id\"", script, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

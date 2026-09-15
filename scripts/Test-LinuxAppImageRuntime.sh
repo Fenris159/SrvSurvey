@@ -12,7 +12,7 @@ if [[ ! -x "$appimage" ]]; then
     exit 1
 fi
 
-for command_name in file ldd readelf timeout xvfb-run; do
+for command_name in file ldd readelf setsid timeout xvfb-run; do
     if ! command -v "$command_name" >/dev/null 2>&1; then
         echo "Required validation command is unavailable: '$command_name'." >&2
         exit 1
@@ -96,6 +96,28 @@ dump_logs() {
     fi
 }
 
+stop_smoke_process_group() {
+    local process_group_id=$1
+    if [[ ! "$process_group_id" =~ ^[0-9]+$ ]] \
+        || (( process_group_id <= 1 )); then
+        echo "Refusing to stop an invalid smoke-test process group: '$process_group_id'." >&2
+        return 1
+    fi
+
+    # xvfb-run is a wrapper. Stopping only its PID can leave Xvfb and SrvSurvey
+    # alive, so own each smoke run as a session and stop the whole process group.
+    kill -TERM -- "-$process_group_id" 2>/dev/null || true
+    sleep 1
+    kill -KILL -- "-$process_group_id" 2>/dev/null || true
+
+    local wait_status=0
+    set +e
+    wait "$process_group_id" 2>/dev/null
+    wait_status=$?
+    set -e
+    SMOKE_WAIT_STATUS=$wait_status
+}
+
 # Start the AppImage under Xvfb and wait until expected log markers appear
 # (or until the deadline). Avalonia/X11 init can take longer than a fixed
 # 8s kill window under busy CI runners.
@@ -107,7 +129,7 @@ run_smoke_until_logs() {
     local markers=("$@")
 
     set +e
-    xvfb-run --auto-servernum --server-args="-screen 0 1280x800x24" \
+    setsid --wait xvfb-run --auto-servernum --server-args="-screen 0 1280x800x24" \
         env \
             HOME="$smoke_root/home" \
             XDG_CONFIG_HOME="$smoke_root/config" \
@@ -148,10 +170,7 @@ run_smoke_until_logs() {
     done
 
     if (( all_found != 1 )); then
-        kill -TERM "$app_pid" 2>/dev/null || true
-        sleep 1
-        kill -KILL "$app_pid" 2>/dev/null || true
-        wait "$app_pid" 2>/dev/null || true
+        stop_smoke_process_group "$app_pid"
         echo "Timed out after ${deadline_seconds}s waiting for AppImage log markers:" >&2
         printf '  - %s\n' "${markers[@]}" >&2
         dump_logs "$process_log" "$data_root"
@@ -159,14 +178,11 @@ run_smoke_until_logs() {
     fi
 
     # Markers observed while the process is still alive — success for this phase.
-    kill -TERM "$app_pid" 2>/dev/null || true
-    local wait_status=0
-    set +e
-    wait "$app_pid"
-    wait_status=$?
-    set -e
+    stop_smoke_process_group "$app_pid"
     # 143 = 128+SIGTERM is expected; 0 if it exited cleanly after TERM.
-    if [[ $wait_status -ne 0 && $wait_status -ne 143 && $wait_status -ne 137 ]]; then
+    if [[ $SMOKE_WAIT_STATUS -ne 0 \
+        && $SMOKE_WAIT_STATUS -ne 143 \
+        && $SMOKE_WAIT_STATUS -ne 137 ]]; then
         # Still accept if markers were found; native shutdown can be noisy.
         :
     fi
