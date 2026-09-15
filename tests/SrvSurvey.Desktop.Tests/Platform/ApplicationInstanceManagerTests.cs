@@ -111,7 +111,7 @@ public sealed class ApplicationInstanceManagerTests
 
         IOException exception = await Assert.ThrowsAsync<IOException>(() => manager.CloseOtherInstancesAsync());
 
-        Assert.Contains("update was not started", exception.Message);
+        Assert.Contains("Could not close", exception.Message);
         Assert.Equal(2, process.ForceExitRequests);
         Assert.True(process.Disposed);
     }
@@ -131,6 +131,20 @@ public sealed class ApplicationInstanceManagerTests
     )
     {
         Assert.Equal(expected, SystemApplicationInstanceProcessSource.PathsMatch(candidate, current, isWindows));
+    }
+
+    [Fact]
+    public void ValidatedRegistrationConfirmsAnInstanceFromAnotherInstallPath()
+    {
+        Assert.True(
+            SystemApplicationInstanceProcessSource.IsConfirmedProcess(
+                actualPathMatch: false,
+                hasValidatedRegistration: true,
+                pathResolved: true,
+                sameProcessName: false,
+                restartManagerMatch: false
+            )
+        );
     }
 
     [Fact]

@@ -66,6 +66,7 @@ internal sealed partial class DesktopRuntime
     private MainWindow? mainWindow;
     private ApplicationLogService? applicationLogService;
     private ApplicationInstanceManager? applicationInstanceManager;
+    private WindowChromeThemeCoordinator? windowChromeThemeCoordinator;
     private IDisposable? diagnosticNetworkClientOwnership;
     private DiagnosticReplayContext? diagnosticReplayContext;
     private readonly CancellationTokenSource releaseHistoryCleanupCancellation = new();
@@ -225,6 +226,7 @@ internal sealed partial class DesktopRuntime
         mainViewModel = MainWindowViewModelFactory.Create(mainViewModelStartup);
         MainWindowViewModel viewModel = mainViewModel;
         mainWindow = new MainWindow(viewModel);
+        windowChromeThemeCoordinator = new WindowChromeThemeCoordinator(mainWindow, themeService);
         mainWindow.Opened += HandleMainWindowOpened;
         AttachMainWindow(mainWindow);
         if (diagnosticReplay is null)
@@ -451,7 +453,7 @@ internal sealed partial class DesktopRuntime
             );
         }
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.ProducersReady);
-        desktop.MainWindow = mainWindow;
+        ApplicationStartupWindowPresenter.Present(desktop, mainWindow, startup.BringMainWindowToFront);
     }
 
     private void HandleMainWindowOpened(object? sender, EventArgs eventArgs)
@@ -865,6 +867,7 @@ internal sealed partial class DesktopRuntime
 
     private Task DisposeDesktopDependentsAsync()
     {
+        DisposeResource(ref windowChromeThemeCoordinator);
         if (mainWindow is { } window)
         {
             TryCleanup(window.ReleaseRuntimeDependents);

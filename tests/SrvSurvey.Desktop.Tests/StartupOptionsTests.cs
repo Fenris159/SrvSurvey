@@ -3,6 +3,24 @@ namespace SrvSurvey.Desktop.Tests;
 public sealed class StartupOptionsTests
 {
     [Theory]
+    [InlineData("--multi-commander-instance")]
+    [InlineData("--MULTI-COMMANDER-INSTANCE")]
+    [InlineData("--diagnostic-replay=session.json")]
+    public void ExplicitLaunchModesAllowConcurrentInstances(string argument)
+    {
+        Assert.True(StartupOptions.AllowsConcurrentInstance([argument]));
+    }
+
+    [Theory]
+    [InlineData()]
+    [InlineData("--frontier-id", "F123")]
+    [InlineData("--journal-directory", "journals")]
+    public void OrdinaryLaunchDoesNotAllowConcurrentInstances(params string[] arguments)
+    {
+        Assert.False(StartupOptions.AllowsConcurrentInstance(arguments));
+    }
+
+    [Theory]
     [InlineData("--frontier-id", "F123")]
     [InlineData("-fid", "f456")]
     public void ReadsFrontierIdValue(string option, string value)

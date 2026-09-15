@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
+using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.Tests.Presentation;
 
@@ -71,6 +72,44 @@ public sealed class ApplicationUpdateInstanceWarningPresentationTests
                 text,
                 value => value!.Contains("will not force-close an unverified process", StringComparison.Ordinal)
             );
+        }
+        finally
+        {
+            dialog.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void StartupPromptExplainsReplacementAndMultipleCommanderLaunches()
+    {
+        var dialog = new MultipleApplicationInstancesDialog(
+            new ApplicationInstanceScan(1, 0),
+            () => Task.CompletedTask
+        );
+        try
+        {
+            dialog.Show();
+            Assert.NotNull(dialog.CaptureRenderedFrame());
+
+            string text = string.Join(
+                '\n',
+                dialog
+                    .GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Select(block => block.Text)
+                    .Where(value => !string.IsNullOrWhiteSpace(value))
+            );
+            Assert.Contains("Another SrvSurvey instance is already open", text, StringComparison.Ordinal);
+            Assert.Contains("close the existing instance and continue", text, StringComparison.Ordinal);
+            Assert.Contains("Multiple Commanders panel", text, StringComparison.Ordinal);
+
+            string?[] buttons = dialog
+                .GetVisualDescendants()
+                .OfType<Button>()
+                .Select(button => button.Content?.ToString())
+                .ToArray();
+            Assert.Contains("No", buttons);
+            Assert.Contains("Yes, close it and continue", buttons);
         }
         finally
         {

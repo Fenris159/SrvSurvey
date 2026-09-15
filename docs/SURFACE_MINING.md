@@ -1,6 +1,6 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.48.4**. Surface Mining combines Rhino rig
+Available in **SrvSurvey-XP 2.1.3.0-rc.48.5**. Surface Mining combines Rhino rig
 guidance with reusable maps of planetary mining-location signals and their
 deposits. The same workflow is covered inside the application under
 **Guides > Surface mining**.
@@ -144,13 +144,20 @@ the nearest deposit within 0.5 km and records the Rhino's path as you drive slow
 around the visible boundary. Returning within 12 m of the starting point after at
 least 50 m of travel closes the trace.
 
-The compact Surface Mining radar draws the trace as a dotted line and places
-separate square rig suggestions using the 78 m exclusion distance. It zooms to
-2× within 100 m of a suggestion, 4× within 50 m and 6× within 25 m so the player
-marker and target can be aligned precisely. Active traces receive the same local
-zoom from their nearby path points. The suggestions remain separate from actual
-tracked rigs; use them to position the Rhino, then deploy and track each rig as
-normal. Send `.mine splat cancel` to discard an unfinished trace.
+The compact Surface Mining radar draws the trace as a dotted line. A deterministic
+hybrid search samples the interior, boundary and offset grids, then performs a
+bounded exact packing pass to find the greatest valid arrangement it can within
+eight seconds. It supports circular, oval and irregular outlines, returns one
+suggestion when that is all a valid trace can hold, and never suggests more than
+the six available rigs. Every separate square suggestion respects the 78 m
+exclusion distance.
+
+The radar zooms to 2× within 100 m of a suggestion, 4× within 50 m and 6× within
+25 m so the player marker and target can be aligned precisely. Active traces
+receive the same local zoom from their nearby path points. The suggestions remain
+separate from actual tracked rigs; use them to position the Rhino, then deploy
+and track each rig as normal. Send `.mine splat cancel` to discard an unfinished
+trace.
 
 The **Survey Map** and Overview Map overlay share the selected bookmark, live
 player position, 1 km rings extending through the whole-kilometer ring that

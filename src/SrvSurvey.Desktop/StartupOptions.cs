@@ -6,6 +6,14 @@ internal static class StartupOptions
     private const string DiagnosticReplayOption = "--diagnostic-replay";
     private const string FrontierIdOption = "--frontier-id";
     private const string LegacyFrontierIdOption = "-fid";
+    internal const string MultiCommanderInstanceOption = "--multi-commander-instance";
+
+    public static bool AllowsConcurrentInstance(IReadOnlyList<string> args)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+        return HasDiagnosticReplayOption(args)
+            || args.Any(argument => argument.Equals(MultiCommanderInstanceOption, StringComparison.OrdinalIgnoreCase));
+    }
 
     public static string? GetJournalDirectory(IReadOnlyList<string> args)
     {

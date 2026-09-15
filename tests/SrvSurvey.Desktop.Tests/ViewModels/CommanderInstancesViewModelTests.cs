@@ -96,6 +96,38 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
         Assert.Equal(epic, launcher.JournalDirectory);
     }
 
+    [Fact]
+    public async Task CurrentIdentityRemovesTheOnlyScannedProfileAndUpdatesAvailability()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(temporaryDirectory, "F123-live.json"),
+            "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
+        );
+        var viewModel = new CommanderInstancesViewModel(
+            new CommanderProfileCatalog(temporaryDirectory),
+            new RecordingLauncher(),
+            temporaryDirectory,
+            gameWindowSwitcher: new RecordingSwitcher()
+        );
+
+        await viewModel.RefreshAsync();
+        Assert.Single(viewModel.Commanders);
+        Assert.True(viewModel.HasAvailableCommanders);
+        Assert.Contains("1 other commander", viewModel.StatusMessage, StringComparison.Ordinal);
+        var changes = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) => changes.Add(eventArgs.PropertyName);
+
+        viewModel.UpdateCurrent("F123", "Drew");
+
+        Assert.Empty(viewModel.Commanders);
+        Assert.False(viewModel.HasAvailableCommanders);
+        Assert.Contains(nameof(viewModel.HasAvailableCommanders), changes);
+        Assert.Null(viewModel.SelectedCommander);
+        Assert.False(viewModel.LaunchCommand.CanExecute(null));
+        Assert.Equal("Only the current commander profile is available.", viewModel.StatusMessage);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

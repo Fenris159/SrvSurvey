@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.48.4
+# SrvSurvey-XP 2.1.3.0-rc.48.5
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -15,9 +15,27 @@
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
 
-RC48.4 prevents Linux renderer lockups during automatic restart and further
-reduces repeated X11 and Avalonia log noise. It retains the full RC48.3 feature
-set summarized below.
+RC48.5 improves Surface Mining rig placement and makes application-instance and
+main-window behavior safer and clearer. It retains the full RC48.4 feature set
+summarized below.
+
+## New in RC48.5
+
+- Replaces the circular-biased splat fit with a deterministic hybrid candidate
+  search and bounded exact packing pass. Irregular and oval traces can use their
+  available area, small valid traces still suggest one rig, and the solver seeks
+  the greatest valid arrangement up to the six-rig limit within an eight-second
+  budget.
+- Prevents accidental duplicate launches on Windows and Linux. A normal launch
+  now offers to close existing SrvSurvey processes before continuing; deliberate
+  additional instances remain available through the Multiple commanders panel.
+- Brings an accepted replacement launch to the foreground after the old process
+  exits, including restoration from hidden or minimized taskbar state.
+- Disables the commander selector when no alternative profile remains and keeps
+  its status synchronized when the journal identifies the current commander.
+- Matches the Windows 11 native caption, border and title text to the selected
+  application theme, with a quieter inactive-window palette. Earlier Windows
+  releases and Linux retain their platform-native window decorations.
 
 ## New in RC48.4
 
@@ -30,28 +48,13 @@ set summarized below.
 - Extends `SRVSURVEY_SOFTWARE_RENDERING=1` to the Linux X11 renderer as a
   diagnostic recovery option when the default GLX renderer cannot initialize.
 
-RC48.3 adds an explicit Wayland capture-source reset and actionable diagnostics
-for Linux capture troubleshooting.
-
-## New in RC48.3
-
-- Adds **Settings → Application → Wayland screen capture** with a clearly scoped
-  **Choose capture source again** action. It clears the saved portal source and
-  restarts SrvSurvey so the desktop picker opens if X11 capture fails and the
-  Wayland fallback is needed again.
-- Preserves the original capture failure in the retry-countdown status instead
-  of replacing it with only a timer.
-- Adds low-noise diagnostics for X11-to-portal fallback, portal capabilities and
-  selected-source geometry, the first PipeWire frame and crop, repeated failures,
-  and recovery. Matching failures are throttled instead of flooding the log.
-
 ## Packaging
 
-- Version: `2.1.3.0-rc.48.4`
-- Tag: `xp-v2.1.3.0-rc.48.4`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.4-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.4-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage`
+- Version: `2.1.3.0-rc.48.5`
+- Tag: `xp-v2.1.3.0-rc.48.5`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.5-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.5-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.5-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

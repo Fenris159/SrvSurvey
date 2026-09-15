@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.4**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.5**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -32,21 +32,21 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.5-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/"
 cd "$HOME/Applications/SrvSurvey"
-chmod +x SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage
-./SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage
+chmod +x SrvSurvey-XP-2.1.3.0-rc.48.5-x86_64.AppImage
+./SrvSurvey-XP-2.1.3.0-rc.48.5-x86_64.AppImage
 ```
 
 To launch the standalone diagnostic replay controller from the same AppImage,
 pass its explicit dispatcher option:
 
 ```bash
-./SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage --replay-controller
+./SrvSurvey-XP-2.1.3.0-rc.48.5-x86_64.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.48.4` with the downloaded version. Keep the AppImage in this folder;
+Replace `2.1.3.0-rc.48.5` with the downloaded version. Keep the AppImage in this folder;
 create a launcher or shortcut that points to it instead of moving internal
 files out of the AppImage.
 
@@ -55,7 +55,7 @@ the same folder:
 
 ```bash
 cd "$HOME/Applications/SrvSurvey"
-./SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage --appimage-extract-and-run
+./SrvSurvey-XP-2.1.3.0-rc.48.5-x86_64.AppImage --appimage-extract-and-run
 ```
 
 ## Run the portable archive
@@ -64,10 +64,10 @@ The extracted archive directory is the application's container folder. Keep
 all files together and run `SrvSurvey.Desktop` from that directory:
 
 ```bash
-mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.4"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.4-linux-x64.tar.gz" \
-    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.4"
-cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.4"
+mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.5"
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.5-linux-x64.tar.gz" \
+    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.5"
+cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.5"
 chmod +x SrvSurvey.Desktop
 ./SrvSurvey.Desktop
 ```
@@ -190,6 +190,13 @@ The Multiple commanders card combines commander identities found in all of
 those journal folders. Launching another SrvSurvey instance passes that
 commander's own journal folder to the new process, so Steam and Epic/Heroic
 clients can be monitored at the same time without mixing their companion files.
+The selector is disabled when only the current Commander is available.
+
+Starting the executable or AppImage again outside that card shows a confirmation
+instead of silently opening a duplicate. Choose **No** to keep the running
+instance, or choose **Yes, close it and continue** to terminate it cleanly and
+open the replacement. Only **Launch instance** from the Multiple commanders card
+authorizes an intentional parallel SrvSurvey process.
 
 Launcher prefixes remain configurable and can live elsewhere. If an unusual
 layout is not detected, set `SRVSURVEY_JOURNAL_DIR` or pass
