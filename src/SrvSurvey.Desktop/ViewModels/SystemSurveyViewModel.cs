@@ -1733,15 +1733,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         else
         {
             hasCanonnSystemData = true;
-            canonnBiologySignalsByBodyId = snapshot
-                .Bodies.Select(body => new
-                {
-                    body.BodyId,
-                    Signals = (IReadOnlyList<CanonnSurfaceBiologySignal>)
-                        result.Signals.Where(signal => IsMatchingCanonnBody(body, signal.BodyName)).ToArray(),
-                })
-                .Where(item => item.Signals.Count > 0)
-                .ToDictionary(item => item.BodyId, item => item.Signals);
+            canonnBiologySignalsByBodyId = MatchCanonnBiologySignals(snapshot.Bodies, result.Signals);
             canonnBiologyBodyIds = canonnBiologySignalsByBodyId.Keys.ToHashSet();
         }
 
@@ -1999,15 +1991,59 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanonnBiologyHint));
     }
 
-    private static bool IsMatchingCanonnBody(SystemScanBodySnapshot body, string bodyName)
+    private static Dictionary<int, IReadOnlyList<CanonnSurfaceBiologySignal>> MatchCanonnBiologySignals(
+        IReadOnlyList<SystemScanBodySnapshot> bodies,
+        IReadOnlyList<CanonnSurfaceBiologySignal> signals
+    )
+    {
+        var matches = new Dictionary<int, List<CanonnSurfaceBiologySignal>>();
+        foreach (CanonnSurfaceBiologySignal signal in signals)
+        {
+            SystemScanBodySnapshot? body = ResolveCanonnBody(bodies, signal.BodyName);
+            if (body is null)
+            {
+                continue;
+            }
+
+            if (!matches.TryGetValue(body.BodyId, out List<CanonnSurfaceBiologySignal>? bodySignals))
+            {
+                bodySignals = [];
+                matches.Add(body.BodyId, bodySignals);
+            }
+            bodySignals.Add(signal);
+        }
+
+        return matches.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<CanonnSurfaceBiologySignal>)pair.Value);
+    }
+
+    private static SystemScanBodySnapshot? ResolveCanonnBody(
+        IReadOnlyList<SystemScanBodySnapshot> bodies,
+        string bodyName
+    )
     {
         string normalized = bodyName.Trim();
-        return normalized.Length > 0
-            && (
+        if (normalized.Length == 0)
+        {
+            return null;
+        }
+
+        SystemScanBodySnapshot[] exactMatches = bodies
+            .Where(body =>
                 string.Equals(body.ShortName, normalized, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(body.Name, normalized, StringComparison.OrdinalIgnoreCase)
-                || body.Name.EndsWith(" " + normalized, StringComparison.OrdinalIgnoreCase)
-            );
+            )
+            .Take(2)
+            .ToArray();
+        if (exactMatches.Length > 0)
+        {
+            return exactMatches.Length == 1 ? exactMatches[0] : null;
+        }
+
+        SystemScanBodySnapshot[] suffixMatches = bodies
+            .Where(body => body.Name.EndsWith(" " + normalized, StringComparison.OrdinalIgnoreCase))
+            .Take(2)
+            .ToArray();
+        return suffixMatches.Length == 1 ? suffixMatches[0] : null;
     }
 
     private void UpdateTimedBodyInformationSelection(EliteStatus? nextStatus)

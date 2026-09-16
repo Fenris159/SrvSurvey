@@ -2142,6 +2142,35 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void CanonnSignalsWithAmbiguousBodySuffixRemainUnassigned()
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test A 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test B 1","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+            ],
+            null
+        );
+        viewModel.UseExternalData = true;
+        viewModel.AutoShowPriorScans = true;
+
+        viewModel.UpdateCanonnSystemPoi(
+            new CanonnSystemPoiResult(
+                "Test",
+                [new CanonnSurfaceBiologySignal("1", null, 2310101, new SurfaceCoordinate(1, 2), false)]
+            )
+        );
+
+        Assert.Empty(viewModel.ConfirmedExternalBiologySignals);
+    }
+
+    [Fact]
     public void BiologySurveyShowsExactCriteriaPredictionsAndHonorsDisableSetting()
     {
         ExobiologyReference? reference = ExobiologyReferenceCatalog
