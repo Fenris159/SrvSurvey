@@ -2278,7 +2278,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationRestartService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationInstanceManager.cs"
   },
   {
     "Text": "APPLICATION STARTUP",
@@ -47922,6 +47922,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
   },
   {
+    "Text": "The /proc command line was empty.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs"
+  },
+  {
     "Text": "The /proc executable link was unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51649,6 +51657,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "The {0} environment variable was not present.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs"
   },
   {
     "Text": "The {0} guide could not be opened: {1}",
