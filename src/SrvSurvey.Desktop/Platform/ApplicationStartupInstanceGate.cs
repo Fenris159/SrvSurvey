@@ -33,7 +33,9 @@ internal sealed class ApplicationStartupInstanceGate(IApplicationInstanceManager
         ApplicationInstanceScan scan = await instanceManager
             .ScanOtherInstancesAsync(cancellationToken)
             .ConfigureAwait(false);
-        if (scan.TotalCount == 0)
+        // Unverified-only matches cannot be force-closed and are too weak to block startup
+        // (Linux same-name permission races, short-lived PIDs). Prompt only on confirmed peers.
+        if (scan.ConfirmedCount == 0)
         {
             return ApplicationStartupInstanceDecision.Continue;
         }

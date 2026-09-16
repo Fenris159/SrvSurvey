@@ -147,6 +147,52 @@ public sealed class ApplicationInstanceManagerTests
         );
     }
 
+    [Theory]
+    [InlineData(false, false, true, false, false, false)] // Linux same-name unresolved → ignore
+    [InlineData(false, false, true, false, true, true)] // Windows same-name unresolved → unverified
+    [InlineData(false, true, true, true, true, true)] // Restart Manager without confirm → unverified
+    [InlineData(true, false, true, false, true, false)] // Already confirmed → not unverified
+    public void UnverifiedClassificationAvoidsLinuxNameOnlyFalsePositives(
+        bool confirmed,
+        bool pathResolved,
+        bool sameProcessName,
+        bool restartManagerMatch,
+        bool isWindows,
+        bool expected
+    )
+    {
+        Assert.Equal(
+            expected,
+            SystemApplicationInstanceProcessSource.IsUnverifiedProcess(
+                confirmed,
+                pathResolved,
+                sameProcessName,
+                restartManagerMatch,
+                isWindows
+            )
+        );
+    }
+
+    [Fact]
+    public void SharedDotnetHostPathIsNotTreatedAsApplicationIdentityByItself()
+    {
+        Assert.True(SystemApplicationInstanceProcessSource.IsSharedRuntimeHost("dotnet"));
+        Assert.True(SystemApplicationInstanceProcessSource.IsSharedRuntimeHost("DOTNET"));
+        Assert.False(SystemApplicationInstanceProcessSource.IsSharedRuntimeHost("SrvSurvey.Desktop"));
+        Assert.True(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
+                ["/home/ubuntu/.dotnet/dotnet", "/opt/SrvSurvey/SrvSurvey.Desktop.dll"],
+                "/opt/SrvSurvey/SrvSurvey.Desktop.dll"
+            )
+        );
+        Assert.False(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
+                ["/home/ubuntu/.dotnet/dotnet", "build"],
+                "/opt/SrvSurvey/SrvSurvey.Desktop.dll"
+            )
+        );
+    }
+
     [Fact]
     public void RegistrationMatchesResolvedCandidateAgainstItsRecordedExecutable()
     {

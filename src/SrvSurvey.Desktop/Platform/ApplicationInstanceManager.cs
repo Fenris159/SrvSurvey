@@ -235,6 +235,7 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
     {
         using var current = Process.GetCurrentProcess();
         string? currentPath = ResolveCurrentPath();
+        string? currentApplicationIdentity = ResolveCurrentApplicationIdentity();
         IReadOnlySet<int> restartManagerProcessIds = FindRestartManagerProcesses(currentPath);
         IReadOnlyList<ApplicationInstanceRecord> records = registry?.ReadOtherRecords() ?? [];
         var recordsByProcess = records
@@ -254,6 +255,7 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
                     process,
                     currentPath,
                     current.ProcessName,
+                    currentApplicationIdentity,
                     processRecords,
                     restartManagerProcessIds.Contains(process.Id)
                 );
@@ -302,9 +304,14 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
 
     private static string? ResolveCurrentPath()
     {
-        return string.IsNullOrWhiteSpace(Environment.ProcessPath)
-            ? null
-            : ApplicationProcessPathResolver.Canonicalize(Environment.ProcessPath);
+        // AppImage sets APPIMAGE to the stable image path; ProcessPath points at the temporary mount.
+        string? processPath = Environment.GetEnvironmentVariable("APPIMAGE");
+        if (string.IsNullOrWhiteSpace(processPath))
+        {
+            processPath = Environment.ProcessPath;
+        }
+
+        return string.IsNullOrWhiteSpace(processPath) ? null : ApplicationProcessPathResolver.Canonicalize(processPath);
     }
 
     private IReadOnlySet<int> FindRestartManagerProcesses(string? currentPath)
@@ -388,6 +395,7 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
         Process process,
         string? currentPath,
         string currentProcessName,
+        string? currentApplicationIdentity,
         IReadOnlyList<ApplicationInstanceRecord> records,
         bool restartManagerMatch
     )
@@ -399,8 +407,10 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
             out string? method,
             out string? error
         );
-        bool actualMatch = resolved && PathsMatch(candidatePath, currentPath, OperatingSystem.IsWindows());
-        bool registeredMatch = IsRegisteredPathMatch(record, resolved, candidatePath, OperatingSystem.IsWindows());
+        bool isWindows = OperatingSystem.IsWindows();
+        bool pathMatch = ResolvePathMatch(process.Id, candidatePath, currentPath, resolved, isWindows);
+        bool actualMatch = IsActualApplicationMatch(process, pathMatch, currentProcessName, currentApplicationIdentity);
+        bool registeredMatch = IsRegisteredPathMatch(record, resolved, candidatePath, isWindows);
         bool sameProcessName = HasProcessName(process, currentProcessName);
         bool confirmed = IsConfirmedProcess(
             actualMatch,
@@ -409,8 +419,166 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
             sameProcessName,
             restartManagerMatch
         );
-        bool unverified = !confirmed && ((!resolved && sameProcessName) || restartManagerMatch);
+        bool unverified = IsUnverifiedProcess(confirmed, resolved, sameProcessName, restartManagerMatch, isWindows);
         return new ProcessClassification(confirmed, unverified, record, candidatePath, method, error);
+    }
+
+    private static bool ResolvePathMatch(
+        int processId,
+        string? candidatePath,
+        string? currentPath,
+        bool resolved,
+        bool isWindows
+    )
+    {
+        if (resolved && PathsMatch(candidatePath, currentPath, isWindows))
+        {
+            return true;
+        }
+
+        // Two AppImage launches of the same file share APPIMAGE but not the temporary mount path.
+        if (
+            !isWindows
+            && currentPath is not null
+            && ApplicationProcessPathResolver.TryReadLinuxEnvironmentValue(
+                processId,
+                "APPIMAGE",
+                out string? otherAppImage,
+                out _
+            )
+        )
+        {
+            return PathsMatch(
+                ApplicationProcessPathResolver.Canonicalize(otherAppImage!),
+                currentPath,
+                isWindows: false
+            );
+        }
+
+        return false;
+    }
+
+    private static bool IsActualApplicationMatch(
+        Process process,
+        bool pathMatch,
+        string currentProcessName,
+        string? currentApplicationIdentity
+    )
+    {
+        if (!pathMatch)
+        {
+            return false;
+        }
+
+        // Every `dotnet`-hosted process shares the host executable path.
+        if (!IsSharedRuntimeHost(currentProcessName))
+        {
+            return true;
+        }
+
+        return SharesApplicationIdentity(process, currentApplicationIdentity);
+    }
+
+    internal static bool IsSharedRuntimeHost(string processName) =>
+        processName.Equals("dotnet", StringComparison.OrdinalIgnoreCase);
+
+    internal static bool SharesApplicationIdentity(Process process, string? currentApplicationIdentity)
+    {
+        ArgumentNullException.ThrowIfNull(process);
+        if (string.IsNullOrWhiteSpace(currentApplicationIdentity))
+        {
+            return false;
+        }
+
+        if (!OperatingSystem.IsLinux())
+        {
+            // Windows does not expose a reliable same-user cmdline API here; shared-host
+            // confirmation falls back to validated registration instead of host-path matches.
+            return false;
+        }
+
+        if (
+            !ApplicationProcessPathResolver.TryReadLinuxCommandLine(
+                process.Id,
+                out IReadOnlyList<string> arguments,
+                out _
+            )
+        )
+        {
+            return false;
+        }
+
+        return CommandLineContainsIdentity(arguments, currentApplicationIdentity);
+    }
+
+    internal static bool CommandLineContainsIdentity(IReadOnlyList<string> arguments, string applicationIdentity)
+    {
+        ArgumentNullException.ThrowIfNull(arguments);
+        ArgumentException.ThrowIfNullOrWhiteSpace(applicationIdentity);
+        string canonicalIdentity = ApplicationProcessPathResolver.Canonicalize(applicationIdentity);
+        string identityFileName = Path.GetFileName(canonicalIdentity);
+        foreach (string argument in arguments)
+        {
+            if (string.IsNullOrWhiteSpace(argument) || argument.StartsWith('-'))
+            {
+                continue;
+            }
+
+            try
+            {
+                string candidate = ApplicationProcessPathResolver.Canonicalize(argument);
+                if (PathsMatch(candidate, canonicalIdentity, OperatingSystem.IsWindows()))
+                {
+                    return true;
+                }
+
+                if (
+                    identityFileName.Length > 0
+                    && string.Equals(Path.GetFileName(candidate), identityFileName, StringComparison.Ordinal)
+                )
+                {
+                    return true;
+                }
+            }
+            catch (Exception exception)
+                when (exception is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                // Command-line tokens are not always filesystem paths.
+            }
+        }
+
+        return false;
+    }
+
+    internal static string? ResolveCurrentApplicationIdentity()
+    {
+        string? entryAssemblyPath = System.Reflection.Assembly.GetEntryAssembly()?.Location;
+        if (!string.IsNullOrWhiteSpace(entryAssemblyPath))
+        {
+            return ApplicationProcessPathResolver.Canonicalize(entryAssemblyPath);
+        }
+
+        foreach (
+            string argument in Environment
+                .GetCommandLineArgs()
+                .Where(candidate =>
+                    candidate.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                    && candidate.Contains("SrvSurvey", StringComparison.OrdinalIgnoreCase)
+                )
+        )
+        {
+            try
+            {
+                return ApplicationProcessPathResolver.Canonicalize(argument);
+            }
+            catch (Exception exception)
+                when (exception is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     private static bool TryOpenProcess(int processId, out Process? process)
@@ -465,6 +633,24 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
         bool sameProcessName,
         bool restartManagerMatch
     ) => actualPathMatch || hasValidatedRegistration || (!pathResolved && sameProcessName && restartManagerMatch);
+
+    internal static bool IsUnverifiedProcess(
+        bool confirmed,
+        bool pathResolved,
+        bool sameProcessName,
+        bool restartManagerMatch,
+        bool isWindows
+    )
+    {
+        if (confirmed)
+        {
+            return false;
+        }
+
+        // Restart Manager hits remain unverified without a resolvable path.
+        // On Linux, same-name + unresolved alone is too weak (permission races / short-lived PIDs).
+        return restartManagerMatch || (!pathResolved && sameProcessName && isWindows);
+    }
 
     internal static bool IsRegisteredPathMatch(
         ApplicationInstanceRecord? record,
