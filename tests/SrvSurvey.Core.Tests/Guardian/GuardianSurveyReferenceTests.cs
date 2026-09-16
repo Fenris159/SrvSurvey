@@ -17,6 +17,15 @@ public sealed class GuardianSurveyReferenceTests
         Assert.Equal(50, beta.SurveyPoints.Count);
         Assert.Equal(8, beta.RelicTowers.Count);
         Assert.Contains(beta.PointsOfInterest, point => point.Type == GuardianPoiType.BrokenObelisk);
+        GuardianPointOfInterest broken = Assert.Single(
+            beta.PointsOfInterest,
+            point => point.Name == "P10" && point.Type == GuardianPoiType.BrokenObelisk
+        );
+        GuardianPointOfInterest urn = Assert.Single(
+            beta.PointsOfInterest,
+            point => point.Name == "p10" && point.Type == GuardianPoiType.Urn
+        );
+        Assert.NotEqual(broken.Angle, urn.Angle);
     }
 
     [Fact]

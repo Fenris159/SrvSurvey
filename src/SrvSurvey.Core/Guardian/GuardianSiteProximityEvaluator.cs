@@ -58,8 +58,8 @@ public sealed class GuardianSiteProximityEvaluator
         double mapX = Math.Sin(mapAngleRadians) * siteDistance;
         double mapY = -Math.Cos(mapAngleRadians) * siteDistance;
         var activeByName = (activeObelisks ?? [])
-            .GroupBy(obelisk => obelisk.Name, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+            .GroupBy(obelisk => obelisk.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
 
         GuardianNearbyPoint? nearest = null;
         foreach (

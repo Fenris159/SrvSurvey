@@ -472,7 +472,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         get => selectedPointName;
         set
         {
-            if (string.Equals(selectedPointName, value, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(selectedPointName, value, StringComparison.Ordinal))
             {
                 return;
             }
@@ -482,7 +482,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             GuardianSurveyPoiViewModel? point = value is null
                 ? null
                 : selectableMapPoints.FirstOrDefault(candidate =>
-                    string.Equals(candidate.Name, value, StringComparison.OrdinalIgnoreCase)
+                    string.Equals(candidate.Name, value, StringComparison.Ordinal)
                 );
             if (!ReferenceEquals(selectedPoint, point))
             {
@@ -493,7 +493,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
             SelectedActiveObelisk = value is not null
                 ? ActiveObelisks.FirstOrDefault(candidate =>
-                    string.Equals(candidate.Name, value, StringComparison.OrdinalIgnoreCase)
+                    string.Equals(candidate.Name, value, StringComparison.Ordinal)
                 )
                 : null;
         }
@@ -506,10 +506,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         {
             if (SetField(ref selectedActiveObelisk, value))
             {
-                if (
-                    value is not null
-                    && !string.Equals(selectedPointName, value.Name, StringComparison.OrdinalIgnoreCase)
-                )
+                if (value is not null && !string.Equals(selectedPointName, value.Name, StringComparison.Ordinal))
                 {
                     selectedPointName = value.Name;
                     NotifySelectedPointStateChanged(selectionNameChanged: true);
@@ -592,18 +589,15 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             RelicTowerHeading = -1;
             SurfaceLatitude = null;
             SurfaceLongitude = null;
-            CatalogBodyName = string.Empty;
-            SetGalacticCoordinates(null, updateDistance: true);
-            ArrivalDistanceLs = null;
+            CatalogBodyName = siteReference?.BodyName ?? string.Empty;
+            SetGalacticCoordinates(siteReference?.Position, updateDistance: true);
+            ArrivalDistanceLs = (decimal?)siteReference?.DistanceToArrival;
             catalogMetadataDirty = false;
             Notes = string.Empty;
-            Points = [];
-            selectableMapPoints = BuildSelectableMapPoints(template, referenceProjection, Points);
-            ObeliskGroups = [];
             ActiveObelisks = [];
-            SelectedPointName = previousSelectionName;
             SelectedActiveObelisk = null;
             UpdateLiveMeasurement(null);
+            LoadReferencePreviewPoints(template, previousSelectionName, referenceProjection);
             StatusMessage = AvailabilityMessage;
             isLoading = false;
             return;
@@ -646,6 +640,57 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             : $"Loaded {Points.Count:N0} surveyable point(s) from " + $"{Path.GetFileName(survey.Path)}.";
     }
 
+    private void LoadReferencePreviewPoints(
+        GuardianSiteTemplate? template,
+        string? selectedPointName,
+        GuardianSiteMapProjection? referenceProjection
+    )
+    {
+        if (template is null)
+        {
+            Points = [];
+            selectableMapPoints = BuildSelectableMapPoints(template, referenceProjection, Points);
+            ObeliskGroups = [];
+            SelectedPoint = null;
+            return;
+        }
+
+        var projectedByName = referenceProjection
+            ?.Points.GroupBy(point => point.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        Points = template
+            .SurveyPoints.Concat(showComponentMaterials ? template.DestructiblePanels : [])
+            .Select(point =>
+                projectedByName is not null
+                && projectedByName.TryGetValue(point.Name, out GuardianProjectedPoint? projected)
+                    ? CreateReferencePointRow(projected, isRaw: false)
+                    : new GuardianSurveyPoiViewModel(
+                        point,
+                        GuardianPoiStatus.Unknown,
+                        -1,
+                        isRaw: false,
+                        componentMaterials: null,
+                        showComponentMaterials,
+                        isReferenceOnly: true
+                    )
+            )
+            .OrderBy(point => point.Name, StringComparer.Ordinal)
+            .ToArray();
+        selectableMapPoints = BuildSelectableMapPoints(template, referenceProjection, Points);
+        ObeliskGroups = template
+            .ObeliskGroupNameLocations.Keys.Where(name => !string.IsNullOrEmpty(name))
+            .Select(name => name[0])
+            .Distinct()
+            .Order()
+            .Select(group => new GuardianObeliskGroupViewModel(group, isSelected: false))
+            .ToArray();
+        SelectedPoint = selectedPointName is null
+            ? null
+            : selectableMapPoints.FirstOrDefault(point =>
+                string.Equals(point.Name, selectedPointName, StringComparison.Ordinal)
+            );
+    }
+
     private void LoadPointRows(
         GuardianSiteTemplate? template,
         GuardianSurveyData survey,
@@ -683,7 +728,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                     showComponentMaterials
                 ))
             )
-            .OrderBy(point => point.Name, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(point => point.Name, StringComparer.Ordinal)
             .ToArray();
         selectableMapPoints = BuildSelectableMapPoints(template, referenceProjection, Points);
         ObeliskGroups = template
@@ -699,7 +744,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         SelectedPoint = selectedPointName is null
             ? null
             : selectableMapPoints.FirstOrDefault(point =>
-                string.Equals(point.Name, selectedPointName, StringComparison.OrdinalIgnoreCase)
+                string.Equals(point.Name, selectedPointName, StringComparison.Ordinal)
             );
     }
 
@@ -714,18 +759,18 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return editablePoints;
         }
 
-        var editableByName = editablePoints.ToDictionary(point => point.Name, StringComparer.OrdinalIgnoreCase);
+        var editableByName = editablePoints.ToDictionary(point => point.Name, StringComparer.Ordinal);
         var templatePointNames = (template?.PointsOfInterest ?? [])
             .Concat(template?.DestructiblePanels ?? [])
             .Select(point => point.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            .ToHashSet(StringComparer.Ordinal);
         GuardianSurveyPoiViewModel[] projectedRows = referenceProjection
             .Points.Select(point =>
                 editableByName.GetValueOrDefault(point.Name)
                 ?? CreateReferencePointRow(point, isRaw: !templatePointNames.Contains(point.Name))
             )
             .ToArray();
-        var projectedNames = projectedRows.Select(point => point.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var projectedNames = projectedRows.Select(point => point.Name).ToHashSet(StringComparer.Ordinal);
         return projectedRows.Concat(editablePoints.Where(point => !projectedNames.Contains(point.Name))).ToArray();
     }
 
@@ -827,7 +872,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         }
 
         ActiveObelisks = ActiveObelisks.Where(obelisk => !ReferenceEquals(obelisk, selected)).ToArray();
-        if (string.Equals(SelectedPointName, selected.Name, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(SelectedPointName, selected.Name, StringComparison.Ordinal))
         {
             SelectedPointName = null;
         }
@@ -871,11 +916,11 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             isRaw: true,
             componentModeEnabled: showComponentMaterials
         );
-        Points = Points.Append(row).OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+        Points = Points.Append(row).OrderBy(item => item.Name, StringComparer.Ordinal).ToArray();
         selectableMapPoints = selectableMapPoints
-            .Where(item => !string.Equals(item.Name, row.Name, StringComparison.OrdinalIgnoreCase))
+            .Where(item => !string.Equals(item.Name, row.Name, StringComparison.Ordinal))
             .Append(row)
-            .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(item => item.Name, StringComparer.Ordinal)
             .ToArray();
         SelectedPoint = row;
         StatusMessage = $"Added {name} as a local raw {NewRawPointType} point. Save the survey to persist it.";
@@ -1347,7 +1392,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private static string NextRawPointName(IEnumerable<string> names)
     {
-        var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var used = names.ToHashSet(StringComparer.Ordinal);
         int index = 1;
         while (true)
         {

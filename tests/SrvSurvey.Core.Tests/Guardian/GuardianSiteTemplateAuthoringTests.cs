@@ -42,6 +42,21 @@ public sealed class GuardianSiteTemplateAuthoringTests : IDisposable
     }
 
     [Fact]
+    public void AuthoringAllowsCaseDistinctPointNames()
+    {
+        var session = new GuardianSiteTemplateAuthoringSession(CreateTemplate());
+
+        session.AddPoint(new GuardianPointOfInterest("P10", GuardianPoiType.BrokenObelisk, 10, 20, 0));
+        session.AddPoint(new GuardianPointOfInterest("p10", GuardianPoiType.Urn, 30, 40, 0));
+
+        Assert.Contains(session.Template.PointsOfInterest, point => point.Name == "P10");
+        Assert.Contains(session.Template.PointsOfInterest, point => point.Name == "p10");
+        session.RemovePoint("P10");
+        Assert.DoesNotContain(session.Template.PointsOfInterest, point => point.Name == "P10");
+        Assert.Contains(session.Template.PointsOfInterest, point => point.Name == "p10");
+    }
+
+    [Fact]
     public async Task ExportRoundTripsEditedCatalogAndBacksUpDestination()
     {
         var catalog = GuardianSiteTemplateCatalog.LoadEmbedded();
