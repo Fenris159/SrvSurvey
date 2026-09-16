@@ -1408,7 +1408,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private static string NextActiveObeliskName(IEnumerable<string> names)
     {
-        var used = names.ToHashSet(StringComparer.Ordinal);
+        var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
         for (int index = 1; index <= 999; index++)
         {
             string candidate = $"A{index:00}";

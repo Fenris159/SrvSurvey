@@ -4145,14 +4145,17 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         }
     }
 
-    private bool TryFollowActiveSiteSelection()
+    private void TryFollowActiveSiteSelection()
     {
         if (SelectActiveReference())
         {
-            return true;
+            return;
         }
 
-        return ActiveSite is { IsKnownReference: true } && RevealAndSelectActiveReference();
+        if (ActiveSite is { IsKnownReference: true })
+        {
+            RevealAndSelectActiveReference();
+        }
     }
 
     private static GuardianAlignmentMode? ParseAlignmentMode(string? siteType)
@@ -4269,7 +4272,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
 
     private void SetTargetObelisk(string? requestedName)
     {
-        string? name = requestedName?.Trim().ToUpperInvariant();
+        string? name = requestedName?.Trim();
         GuardianCommanderSiteSurvey? survey = ActiveSite is { } site ? FindSurvey(site) : null;
         GuardianObelisk? target = GetMergedActiveObelisks(ActiveSite?.Reference, survey)
             .FirstOrDefault(obelisk => string.Equals(obelisk.Name, name, StringComparison.Ordinal));
