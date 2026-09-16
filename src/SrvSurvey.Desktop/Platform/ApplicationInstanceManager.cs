@@ -558,10 +558,17 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
     internal static bool TryResolveCommandLinePath(string argument, string? workingDirectory, out string? absolutePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(argument);
-        if (Path.IsPathRooted(argument))
+        if (Path.IsPathFullyQualified(argument) || (OperatingSystem.IsLinux() && Path.IsPathRooted(argument)))
         {
             absolutePath = argument;
             return true;
+        }
+
+        if (Path.IsPathRooted(argument))
+        {
+            // Windows rooted-but-not-qualified paths (e.g. \opt\app) need a drive.
+            absolutePath = Path.GetFullPath(argument);
+            return Path.IsPathFullyQualified(absolutePath);
         }
 
         if (string.IsNullOrWhiteSpace(workingDirectory))
@@ -570,8 +577,13 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
             return false;
         }
 
-        absolutePath = Path.GetFullPath(argument, workingDirectory);
-        return Path.IsPathRooted(absolutePath);
+        // Path.GetFullPath(path, basePath) requires a fully-qualified base on Windows.
+        string absoluteWorkingDirectory = Path.IsPathFullyQualified(workingDirectory)
+            ? workingDirectory
+            : Path.GetFullPath(workingDirectory);
+        absolutePath = Path.GetFullPath(argument, absoluteWorkingDirectory);
+        return Path.IsPathFullyQualified(absolutePath)
+            || (OperatingSystem.IsLinux() && Path.IsPathRooted(absolutePath));
     }
 
     internal static string? ResolveCurrentApplicationIdentity()

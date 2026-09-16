@@ -179,42 +179,38 @@ public sealed class ApplicationInstanceManagerTests
         Assert.True(SystemApplicationInstanceProcessSource.IsSharedRuntimeHost("dotnet"));
         Assert.True(SystemApplicationInstanceProcessSource.IsSharedRuntimeHost("DOTNET"));
         Assert.False(SystemApplicationInstanceProcessSource.IsSharedRuntimeHost("SrvSurvey.Desktop"));
-        Assert.True(
-            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
-                ["/home/ubuntu/.dotnet/dotnet", "/opt/SrvSurvey/SrvSurvey.Desktop.dll"],
-                "/opt/SrvSurvey/SrvSurvey.Desktop.dll"
-            )
+
+        string installDirectory = Path.GetFullPath(
+            Path.Combine(Path.GetTempPath(), "SrvSurvey-identity-tests", "install")
         );
+        string otherDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "SrvSurvey-identity-tests", "other"));
+        string identity = Path.Combine(installDirectory, "SrvSurvey.Desktop.dll");
+        string otherIdentity = Path.Combine(otherDirectory, "SrvSurvey.Desktop.dll");
+        string host = Path.Combine(Path.GetTempPath(), "dotnet");
+
+        Assert.True(SystemApplicationInstanceProcessSource.CommandLineContainsIdentity([host, identity], identity));
+        Assert.False(SystemApplicationInstanceProcessSource.CommandLineContainsIdentity([host, "build"], identity));
         Assert.False(
-            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
-                ["/home/ubuntu/.dotnet/dotnet", "build"],
-                "/opt/SrvSurvey/SrvSurvey.Desktop.dll"
-            )
-        );
-        Assert.False(
-            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
-                ["/home/ubuntu/.dotnet/dotnet", "/opt/Other/SrvSurvey.Desktop.dll"],
-                "/opt/SrvSurvey/SrvSurvey.Desktop.dll"
-            )
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity([host, otherIdentity], identity)
         );
         Assert.True(
             SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
-                ["/home/ubuntu/.dotnet/dotnet", "SrvSurvey.Desktop.dll"],
-                "/opt/SrvSurvey/SrvSurvey.Desktop.dll",
-                workingDirectory: "/opt/SrvSurvey"
+                [host, "SrvSurvey.Desktop.dll"],
+                identity,
+                workingDirectory: installDirectory
             )
         );
         Assert.False(
             SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
-                ["/home/ubuntu/.dotnet/dotnet", "SrvSurvey.Desktop.dll"],
-                "/opt/SrvSurvey/SrvSurvey.Desktop.dll",
-                workingDirectory: "/opt/Other"
+                [host, "SrvSurvey.Desktop.dll"],
+                identity,
+                workingDirectory: otherDirectory
             )
         );
         Assert.False(
             SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
-                ["/home/ubuntu/.dotnet/dotnet", "SrvSurvey.Desktop.dll"],
-                "/opt/SrvSurvey/SrvSurvey.Desktop.dll"
+                [host, "SrvSurvey.Desktop.dll"],
+                identity
             )
         );
     }
