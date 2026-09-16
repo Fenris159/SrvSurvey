@@ -48,23 +48,28 @@ public sealed partial class App : Application
     {
         try
         {
-            ApplicationStartupInstanceDecision startupDecision = await EvaluateStartupAsync(desktop);
+            ApplicationStartupInstanceDecision startupDecision = await EvaluateStartupAsync(desktop)
+                .ConfigureAwait(false);
             if (startupDecision == ApplicationStartupInstanceDecision.Exit)
             {
-                desktop.Shutdown();
+                await ShutdownOnUiThreadAsync(desktop);
                 return;
             }
 
-            desktopRuntime = DesktopRuntime.Start(
-                this,
-                desktop,
-                new DesktopStartup(Program.StartupArguments, Program.ApplicationLog)
-                {
-                    AppDataPathsOverride = Program.StartupContext?.AppDataPaths,
-                    DiagnosticReplay = Program.StartupContext?.DiagnosticReplay,
-                    BringMainWindowToFront = startupDecision == ApplicationStartupInstanceDecision.ReplacedExisting,
-                }
-            );
+            // Instance scanning resumes off the UI thread; Avalonia window construction must not.
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                desktopRuntime = DesktopRuntime.Start(
+                    this,
+                    desktop,
+                    new DesktopStartup(Program.StartupArguments, Program.ApplicationLog)
+                    {
+                        AppDataPathsOverride = Program.StartupContext?.AppDataPaths,
+                        DiagnosticReplay = Program.StartupContext?.DiagnosticReplay,
+                        BringMainWindowToFront = startupDecision == ApplicationStartupInstanceDecision.ReplacedExisting,
+                    }
+                );
+            });
         }
         catch (Exception exception)
             when (exception
@@ -78,8 +83,19 @@ public sealed partial class App : Application
             await Console.Error.WriteLineAsync(
                 "SrvSurvey could not verify whether another instance is running: " + exception.Message
             );
-            desktop.Shutdown(1);
+            await ShutdownOnUiThreadAsync(desktop, exitCode: 1);
         }
+    }
+
+    private static async Task ShutdownOnUiThreadAsync(IClassicDesktopStyleApplicationLifetime desktop, int exitCode = 0)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            desktop.Shutdown(exitCode);
+            return;
+        }
+
+        await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown(exitCode));
     }
 
     private static async Task<ApplicationStartupInstanceDecision> EvaluateStartupAsync(

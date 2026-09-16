@@ -9,16 +9,18 @@ internal static class ApplicationStartupWindowPresenter
     {
         ArgumentNullException.ThrowIfNull(desktop);
         ArgumentNullException.ThrowIfNull(mainWindow);
+        // Avalonia only Show()s MainWindow once at lifetime start. Async startup assigns the
+        // real window after that one-shot, so Present must always Show() here.
         desktop.MainWindow = mainWindow;
-        if (!bringToFront)
-        {
-            return;
-        }
-
         mainWindow.ShowInTaskbar = true;
         if (!mainWindow.IsVisible)
         {
             mainWindow.Show();
+        }
+
+        if (!bringToFront)
+        {
+            return;
         }
 
         mainWindow.WindowState = WindowState.Normal;
