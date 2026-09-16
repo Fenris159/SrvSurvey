@@ -633,7 +633,8 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("BorderThickness=\"1\"", overlaySettings);
         Assert.Contains("Command=\"{Binding OverlayTheme.PreviewCommand}\"", themeShell);
         Assert.Contains("Text=\"Overlay theme presets and saved states\"", themeShell);
-        Assert.Contains("ColumnDefinitions=\"64,128,*,118\"", themeShell);
+        Assert.Contains("SharedSizeGroup=\"OverlayThemeColorName\"", themeShell);
+        Assert.Contains("Grid.IsSharedSizeScope=\"True\"", themeShell);
         Assert.Contains("Slider.overlay-theme-opacity /template/ Thumb#thumb", themeShell);
         Assert.Contains("Content=\"Load Defaults\"", themeShell);
         Assert.Contains("Overlay Opacity Override", overlaySettings);

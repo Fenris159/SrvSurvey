@@ -91,7 +91,7 @@ public sealed class LegacyOverlayThemeStore
         ["guardian.secondary"] = Color.FromArgb(255, 84, 223, 237),
         ["guardian.secondaryDark"] = Color.FromArgb(255, 0, 139, 139),
         ["guardian.text"] = Color.FromArgb(255, 255, 255, 255),
-        ["guardian.muted"] = Color.FromArgb(255, 100, 100, 100),
+        ["guardian.muted"] = Color.FromArgb(255, 153, 175, 191),
         ["guardian.danger"] = Color.FromArgb(255, 255, 0, 0),
         ["guardian.success"] = Color.FromArgb(255, 0, 255, 0),
         ["guardian.warning"] = Color.FromArgb(255, 255, 255, 0),
