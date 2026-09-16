@@ -247,21 +247,25 @@
                 <Expander.Header>
                   <TextBlock Classes="card-title" Text="{Binding Name}" />
                 </Expander.Header>
-                <Border Classes="card" Margin="0,8,0,0">
+                <Border Classes="card" Margin="0,8,0,0" Grid.IsSharedSizeScope="True">
                   <ItemsControl ItemsSource="{Binding Colors}">
                     <ItemsControl.ItemsPanel>
                       <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" ItemWidth="490" />
+                        <WrapPanel Orientation="Horizontal" />
                       </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="vm:OverlayThemeColorEditorViewModel">
-                        <Grid Width="476"
-                              Height="36"
+                        <Grid Height="36"
                               Margin="0,0,12,6"
                               Classes="overlay-theme-color-row"
-                              ColumnDefinitions="64,128,*,118"
                               ColumnSpacing="8">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="64" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="OverlayThemeColorName" />
+                            <ColumnDefinition Width="142" />
+                            <ColumnDefinition Width="118" />
+                          </Grid.ColumnDefinitions>
                           <ColorPicker Width="64"
                                        Height="32"
                                        MinHeight="0"
@@ -278,12 +282,10 @@
                                       Spacing="0">
                             <TextBlock FontSize="12"
                                        FontWeight="SemiBold"
-                                       Text="{Binding DisplayName}"
-                                       TextTrimming="CharacterEllipsis" />
+                                       Text="{Binding DisplayName}" />
                             <TextBlock Classes="muted"
                                        FontSize="9"
-                                       Text="{Binding Key}"
-                                       TextTrimming="CharacterEllipsis" />
+                                       Text="{Binding Key}" />
                           </StackPanel>
                           <Grid Grid.Column="2"
                                 VerticalAlignment="Center"

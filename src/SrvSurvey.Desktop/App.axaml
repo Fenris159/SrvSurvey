@@ -117,7 +117,7 @@
     <SolidColorBrush x:Key="RavenOverlayGuardianSecondaryBrush" Color="#54DFED" />
     <SolidColorBrush x:Key="RavenOverlayGuardianSecondaryDimBrush" Color="#008B8B" />
     <SolidColorBrush x:Key="RavenOverlayGuardianTextBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="RavenOverlayGuardianMutedBrush" Color="#646464" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianMutedBrush" Color="#99AFBF" />
     <SolidColorBrush x:Key="RavenOverlayGuardianDangerBrush" Color="#FF0000" />
     <SolidColorBrush x:Key="RavenOverlayGuardianSuccessBrush" Color="#00FF00" />
     <SolidColorBrush x:Key="RavenOverlayGuardianWarningBrush" Color="#FFFF00" />

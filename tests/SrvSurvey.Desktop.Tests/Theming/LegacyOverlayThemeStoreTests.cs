@@ -51,7 +51,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.Equal(Color.FromArgb(255, 84, 223, 237), theme.GetColor("guardian.secondary"));
         Assert.Equal(Color.FromArgb(255, 0, 139, 139), theme.GetColor("guardian.secondaryDark"));
         Assert.Equal(Color.FromArgb(255, 255, 255, 255), theme.GetColor("guardian.text"));
-        Assert.Equal(Color.FromArgb(255, 100, 100, 100), theme.GetColor("guardian.muted"));
+        Assert.Equal(Color.FromArgb(255, 153, 175, 191), theme.GetColor("guardian.muted"));
         Assert.Equal(Color.FromArgb(255, 255, 0, 0), theme.GetColor("guardian.danger"));
         Assert.Equal(Color.FromArgb(255, 0, 255, 0), theme.GetColor("guardian.success"));
         Assert.Equal(Color.FromArgb(255, 255, 255, 0), theme.GetColor("guardian.warning"));
