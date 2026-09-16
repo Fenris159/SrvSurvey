@@ -1797,8 +1797,8 @@
       "translation": "Ein Overlay-Timer erfordert ein positives Intervall."
     },
     {
-      "source": "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
-      "translation": "Ein nicht geschlüpftes PIP bedeutet, dass der Organismus und seine Belohnung bestätigt sind. Jedes ausgefüllte Segment erreicht einen Belohnungsschwellenwert. Schwarze leere Felder zeigen Schwellenwerte an, die die Belohnung nicht erreicht. Der gepunktete Außenrahmen und die durchgezogenen Segmentumrisse sind unabhängig thematisch anpassbar."
+      "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+      "translation": "Ein nicht schraffierter PIP bedeutet, dass Journaldaten Canonn oder Spansh den Organismus oder die Gattung bestätigen. Jedes ausgefüllte Segment erreicht einen bestätigten Belohnungsschwellenwert. Es kann ein dunkleres mögliches Segment verbleiben, wenn die genaue Art oder der First Logged-Bonus noch ungewiss ist. Schwarze leere Felder zeigen Schwellenwerte an, die die Belohnung nicht erreicht. Der gepunktete Außenrahmen und die durchgezogenen Segmentumrisse sind unabhängig thematisch anpassbar."
     },
     {
       "source": "Anaconda",
@@ -7057,8 +7057,8 @@
       "translation": "Diagnose, Einstellungen, Design und Anleitungen bleiben im Dienstprogrammbereich. Die kleine Schaltfläche „Overlay-Einstellungen“ neben den unterstützten Aktivitäten öffnet nur die Overlay-Steuerelemente dieser Aktivität."
     },
     {
-      "source": "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
-      "translation": "Die diagonale Schraffur markiert einen vorhergesagten Organismus oder eine vorhergesagte Belohnung. Solide Vorhersagesegmente zeigen das zuverlässige untere Band; Das dunklere mögliche Segment zeigt, wie hoch die Belohnungsspanne reichen kann. Jedes Segment behält seinen alten festen Umriss. Der gepunktete Gruppenrahmen umfasst die vom Körper gemeldete biologische Signalzahl; Zusätzliche PIPs außerhalb davon sind alternative Gattungskandidaten, keine additiven Belohnungen."
+      "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
+      "translation": "Die diagonale Schraffur markiert einen Organismenkandidaten, der nur durch die biologischen Vorhersagedaten bereitgestellt wird, ohne Journal-, Canonn- oder Spansh-Beweise. Solide Vorhersagesegmente zeigen das zuverlässige untere Band; Das dunklere mögliche Segment zeigt, wie hoch die Belohnungsspanne reichen kann. Jedes Segment behält seinen alten festen Umriss. Der gepunktete Gruppenrahmen umfasst die vom Körper gemeldete biologische Signalzahl; Zusätzliche PIPs außerhalb davon sind alternative Gattungskandidaten, keine additiven Belohnungen."
     },
     {
       "source": "Diamondback Explorer",
@@ -33583,8 +33583,8 @@
       "translation": "Un temporizador de superposición requiere un intervalo positivo."
     },
     {
-      "source": "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
-      "translation": "Un PIP no eclosionado significa que el organismo y su recompensa están confirmados. Cada segmento completado supera un umbral de recompensa; Las ranuras negras vacías muestran umbrales que la recompensa no alcanza. El marco exterior punteado y los contornos de los segmentos sólidos se pueden tematizar de forma independiente."
+      "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+      "translation": "Un PIP sin eclosionar significa que los datos del diario Canonn o Spansh confirman el organismo o género. Cada segmento completado supera un umbral de recompensa confirmado; Es posible que quede un segmento más oscuro cuando la especie exacta o la bonificación por primer registro aún sean inciertas. Las ranuras negras vacías muestran umbrales que la recompensa no alcanza. El marco exterior punteado y los contornos de los segmentos sólidos se pueden tematizar de forma independiente."
     },
     {
       "source": "Anaconda",
@@ -38843,8 +38843,8 @@
       "translation": "Diagnóstico, Configuración, Tema y Guías permanecen en el área de utilidades. El pequeño botón de configuración de superposición al lado de las actividades admitidas abre solo los controles superpuestos de esa actividad."
     },
     {
-      "source": "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
-      "translation": "La eclosión diagonal marca un organismo o recompensa predicha. Los segmentos de predicción sólidos muestran la banda inferior confiable; el segmento más oscuro posible muestra hasta qué punto puede extenderse el rango de recompensa. Cada segmento conserva su sólido esquema heredado. El marco del grupo de puntos abarca el recuento de señales biológicas reportadas por el cuerpo; Los PIP adicionales fuera de él son candidatos de género alternativos, no recompensas aditivas."
+      "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
+      "translation": "La rayado diagonal marca un organismo candidato proporcionado únicamente por los datos de predicción biológica, sin evidencia de diario Canonn o Spansh. Los segmentos de predicción sólidos muestran la banda inferior confiable; el segmento más oscuro posible muestra hasta qué punto puede extenderse el rango de recompensa. Cada segmento conserva su sólido esquema heredado. El marco del grupo de puntos abarca el recuento de señales biológicas reportadas por el cuerpo; Los PIP adicionales fuera de él son candidatos de género alternativos, no recompensas aditivas."
     },
     {
       "source": "Diamondback Explorer",
@@ -65369,8 +65369,8 @@
       "translation": "Une minuterie de superposition nécessite un intervalle positif."
     },
     {
-      "source": "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
-      "translation": "Un PIP non éclos signifie que l'organisme et sa récompense sont confirmés. Chaque segment rempli efface un seuil de récompense ; les emplacements vides noirs indiquent les seuils que la récompense n'atteint pas. Le cadre extérieur en pointillés et les contours des segments pleins peuvent être thématiques indépendamment."
+      "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+      "translation": "Un PIP non hachuré signifie que les données du journal Canonn ou Spansh confirment l'organisme ou le genre. Chaque segment rempli efface un seuil de récompense confirmé ; un segment plus sombre peut subsister lorsque l'espèce exacte ou le bonus de première connexion est encore incertain. Les emplacements noirs vides indiquent les seuils que la récompense n'atteint pas. Le cadre extérieur en pointillés et les contours des segments pleins peuvent être thématiques indépendamment."
     },
     {
       "source": "Anaconda",
@@ -70629,8 +70629,8 @@
       "translation": "Les diagnostics, les paramètres, le thème et les guides restent dans la zone des utilitaires. Le petit bouton des paramètres de superposition à côté des activités prises en charge ouvre uniquement les contrôles de superposition de cette activité."
     },
     {
-      "source": "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
-      "translation": "Les hachures diagonales marquent un organisme ou une récompense prédit. Les segments de prédiction solides montrent la bande inférieure fiable ; le segment le plus sombre possible montre jusqu'où la plage de récompense peut s'étendre. Chaque segment conserve sa silhouette solide héritée. Le cadre de groupe en pointillés couvre le nombre de signaux biologiques signalés par le corps ; les PIP supplémentaires en dehors de celui-ci sont des candidats de genre alternatifs, et non des récompenses additives."
+      "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
+      "translation": "Les hachures diagonales marquent un organisme candidat fourni uniquement par les données de prédiction biologique, sans preuve de journal Canonn ou Spansh. Les segments de prédiction solides montrent la bande inférieure fiable ; le segment le plus sombre possible montre jusqu'où la plage de récompense peut s'étendre. Chaque segment conserve sa silhouette solide héritée. Le cadre de groupe en pointillés couvre le nombre de signaux biologiques signalés par le corps ; les PIP supplémentaires en dehors de celui-ci sont des candidats de genre alternatifs, et non des récompenses additives."
     },
     {
       "source": "Diamondback Explorer",
@@ -97155,8 +97155,8 @@
       "translation": "Um temporizador de sobreposição requer um intervalo positivo."
     },
     {
-      "source": "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
-      "translation": "Um PIP não eclodido significa que o organismo e sua recompensa estão confirmados. Cada segmento preenchido elimina um limite de recompensa; os slots pretos vazios mostram limites que a recompensa não atinge. A moldura externa pontilhada e os contornos dos segmentos sólidos podem ser tematizados de forma independente."
+      "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+      "translation": "Um PIP não hachurado significa diário, Canonn ou Spansh dados que confirmam o organismo ou gênero. Cada segmento preenchido atinge um limite de recompensa confirmado; um possível segmento mais escuro pode permanecer quando a espécie exata ou o bônus de primeira captura ainda for incerto. Os slots pretos vazios mostram limites que a recompensa não atinge. A moldura externa pontilhada e os contornos dos segmentos sólidos podem ser tematizados de forma independente."
     },
     {
       "source": "Anaconda",
@@ -102415,8 +102415,8 @@
       "translation": "Diagnósticos, Configurações, Tema e Guias permanecem na área de utilidades. O pequeno botão de configurações de sobreposição ao lado das atividades suportadas abre apenas os controles de sobreposição dessa atividade."
     },
     {
-      "source": "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
-      "translation": "A eclosão diagonal marca um organismo ou recompensa prevista. Segmentos de previsão sólidos mostram a banda inferior confiável; o segmento mais escuro possível mostra até que ponto a faixa de recompensa pode se estender. Cada segmento mantém seu contorno sólido legado. O quadro de grupo pontilhado abrange a contagem de sinais biológicos relatados pelo corpo; PIPs adicionais fora dele são candidatos a gêneros alternativos, e não recompensas aditivas."
+      "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
+      "translation": "A eclosão diagonal marca um candidato a organismo fornecido apenas pelos dados de previsão biológica, sem evidência de diário, Canonn ou Spansh. Segmentos de previsão sólidos mostram a banda inferior confiável; o segmento mais escuro possível mostra até que ponto a faixa de recompensa pode se estender. Cada segmento mantém seu contorno sólido legado. O quadro de grupo pontilhado abrange a contagem de sinais biológicos relatados pelo corpo; PIPs adicionais fora dele são candidatos a gêneros alternativos, e não recompensas aditivas."
     },
     {
       "source": "Diamondback Explorer",
@@ -128941,8 +128941,8 @@
       "translation": "Таймер наложения требует положительного интервала."
     },
     {
-      "source": "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
-      "translation": "Невылупившийся PIP означает, что организм и его награда подтверждены. Каждый заполненный сегмент очищает один порог вознаграждения; черные пустые слоты обозначают пороговые значения, которых не достигает награда. Пунктирную внешнюю рамку и сплошные контуры сегментов можно независимо темизировать."
+      "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+      "translation": "Незаштрихованный PIP означает, что журнальные данные Canonn или Spansh подтверждают организм или род. Каждый заполненный сегмент очищает подтвержденный порог вознаграждения; более темный возможный сегмент может остаться, если точный вид или бонус за первую регистрацию все еще неизвестен. Черные пустые слоты обозначают пороговые значения, которых не достигает награда. Пунктирную внешнюю рамку и сплошные контуры сегментов можно независимо темизировать."
     },
     {
       "source": "Anaconda",
@@ -134201,8 +134201,8 @@
       "translation": "Диагностика, настройки, темы и руководства остаются в области утилит. Небольшая кнопка настроек наложения рядом с поддерживаемыми действиями открывает только элементы управления наложением этого действия."
     },
     {
-      "source": "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
-      "translation": "Диагональная штриховка обозначает предсказанный организм или награду. Сплошные сегменты прогноза показывают надежную нижнюю полосу; более темный возможный сегмент показывает, насколько высоко может простираться диапазон вознаграждения. Каждый сегмент сохраняет свой устаревший сплошной контур. Пунктирная групповая рамка охватывает количество биологических сигналов, сообщаемых организмом; дополнительные PIP за его пределами являются альтернативными кандидатами на род, а не аддитивными вознаграждениями."
+      "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
+      "translation": "Диагональная штриховка отмечает организм-кандидат, предоставленный только на основе данных биологического прогноза, без журнальных доказательств Canonn или Spansh. Сплошные сегменты прогноза показывают надежную нижнюю полосу; более темный возможный сегмент показывает, насколько высоко может простираться диапазон вознаграждения. Каждый сегмент сохраняет свой устаревший сплошной контур. Пунктирная групповая рамка охватывает количество биологических сигналов, сообщаемых организмом; дополнительные PIP за его пределами являются альтернативными кандидатами на род, а не аддитивными вознаграждениями."
     },
     {
       "source": "Diamondback Explorer",
@@ -160727,8 +160727,8 @@
       "translation": "覆盖计时器需要正间隔。"
     },
     {
-      "source": "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
-      "translation": "未孵化的 PIP 意味着生物体及其奖励已得到确认。每个填充的分段都会清除一个奖励阈值；黑色空槽显示奖励未达到的阈值。虚线外框和实线段轮廓可独立主题化。"
+      "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+      "translation": "未划线的 PIP 表示期刊、Canonn 或 Spansh 数据确认生物体或属。每个填充的段都清除了已确认的奖励阈值；当确切的物种或首次登录奖励仍不确定时，可能会保留较暗的部分。黑色空槽显示奖励未达到的阈值。虚线外框和实线段轮廓可独立主题化。"
     },
     {
       "source": "Anaconda",
@@ -165987,8 +165987,8 @@
       "translation": "诊断、设置、主题和指南保留在实用程序区域中。支持的活动旁边的小覆盖设置按钮仅打开该活动的覆盖控件。"
     },
     {
-      "source": "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
-      "translation": "对角线孵化标志着预测的有机体或奖励。可靠的预测段显示了可靠的下限；较暗的可能部分显示奖励范围可能扩大到多高。每个部分都保留了其传统的实体轮廓。虚线组框涵盖了身体报告的生物信号计数；它之外的其他 PIP 是替代属候选者，而不是附加奖励。"
+      "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
+      "translation": "对角线阴影标记仅由生物学预测数据提供的候选生物体，没有期刊Canonn或Spansh证据。可靠的预测段显示了可靠的下限；较暗的可能部分显示奖励范围可能扩大到多高。每个部分都保留了其传统的实体轮廓。虚线组框涵盖了身体报告的生物信号计数；它之外的其他 PIP 是替代属候选者，而不是附加奖励。"
     },
     {
       "source": "Diamondback Explorer",
@@ -192513,8 +192513,8 @@
       "translation": "* AN OVERLAY TIMER REQUIRES A POSITIVE INTERVAL. >>>!"
     },
     {
-      "source": "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
-      "translation": "* AN UNHATCHED PIP MEANS THE ORGANISM AND ITS REWARD ARE CONFIRMED. EACH FILLED SEGMENT CLEARS ONE REWARD THRESHOLD; BLACK EMPTY SLOTS SHOW THRESHOLDS THE REWARD DOES NOT REACH. THE DOTTED OUTER FRAME AND SOLID SEGMENT OUTLINES ARE INDEPENDENTLY THEMEABLE. >>>!"
+      "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+      "translation": "* AN UNHATCHED PIP MEANS JOURNAL, CANONN, OR SPANSH DATA CONFIRMS THE ORGANISM OR GENUS. EACH FILLED SEGMENT CLEARS A CONFIRMED REWARD THRESHOLD; A DARKER POSSIBLE SEGMENT MAY REMAIN WHEN THE EXACT SPECIES OR FIRST LOGGED BONUS IS STILL UNCERTAIN. BLACK EMPTY SLOTS SHOW THRESHOLDS THE REWARD DOES NOT REACH. THE DOTTED OUTER FRAME AND SOLID SEGMENT OUTLINES ARE INDEPENDENTLY THEMEABLE. >>>!"
     },
     {
       "source": "Anaconda",
@@ -197773,8 +197773,8 @@
       "translation": "* DIAGNOSTICS, SETTINGS, THEME, AND GUIDES REMAIN IN THE UTILITY AREA. THE SMALL OVERLAY-SETTINGS BUTTON BESIDE SUPPORTED ACTIVITIES OPENS ONLY THAT ACTIVITY'S OVERLAY CONTROLS. >>>!"
     },
     {
-      "source": "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
-      "translation": "* DIAGONAL HATCHING MARKS A PREDICTED ORGANISM OR REWARD. SOLID PREDICTION SEGMENTS SHOW THE DEPENDABLE LOWER BAND; THE DARKER POSSIBLE SEGMENT SHOWS HOW HIGH THE REWARD RANGE MAY EXTEND. EACH SEGMENT RETAINS ITS LEGACY SOLID OUTLINE. THE DOTTED GROUP FRAME SPANS THE BODY'S REPORTED BIOLOGICAL SIGNAL COUNT; ADDITIONAL PIPS OUTSIDE IT ARE ALTERNATIVE GENUS CANDIDATES, NOT ADDITIVE REWARDS. >>>!"
+      "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
+      "translation": "* DIAGONAL HATCHING MARKS AN ORGANISM CANDIDATE SUPPLIED ONLY BY THE BIOLOGY PREDICTION DATA, WITHOUT JOURNAL, CANONN, OR SPANSH EVIDENCE. SOLID PREDICTION SEGMENTS SHOW THE DEPENDABLE LOWER BAND; THE DARKER POSSIBLE SEGMENT SHOWS HOW HIGH THE REWARD RANGE MAY EXTEND. EACH SEGMENT RETAINS ITS LEGACY SOLID OUTLINE. THE DOTTED GROUP FRAME SPANS THE BODY'S REPORTED BIOLOGICAL SIGNAL COUNT; ADDITIONAL PIPS OUTSIDE IT ARE ALTERNATIVE GENUS CANDIDATES, NOT ADDITIVE REWARDS. >>>!"
     },
     {
       "source": "Diamondback Explorer",
