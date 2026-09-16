@@ -1930,6 +1930,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
             statusBlinkDetector.Reset();
             IsBlinkGesturePrimed = false;
             SetTargetObelisk(null);
+            TryFollowActiveSiteSelection();
             NotifyActiveSiteChanged();
             UpdateProximity();
             SetLiveMapModeFromSurvey();
@@ -1939,7 +1940,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         {
             RebuildVisits();
             ApplyFilters();
-            SelectActiveReference();
+            TryFollowActiveSiteSelection();
             UpdateProximity();
         }
 
@@ -2562,7 +2563,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         {
             ActiveObelisks = existing
                 .ActiveObelisks.Where(obelisk =>
-                    !string.Equals(obelisk.Name, currentObelisk.Name, StringComparison.OrdinalIgnoreCase)
+                    !string.Equals(obelisk.Name, currentObelisk.Name, StringComparison.Ordinal)
                 )
                 .Append(updatedObelisk)
                 .OrderBy(obelisk => obelisk.Name)
@@ -2581,7 +2582,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
             ReplaceSurvey(updated, existing);
             RebuildVisits();
             ApplyFilters();
-            SelectActiveReference();
+            TryFollowActiveSiteSelection();
             UpdateProximity();
 
             await ApplyObeliskScanRamTahSideEffectsAsync(currentObelisk, scanned);
@@ -3688,12 +3689,10 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
                 );
                 bool isCurrent =
                     CurrentObelisk is { } current
-                    && obelisks.Any(obelisk =>
-                        string.Equals(obelisk.Name, current.Name, StringComparison.OrdinalIgnoreCase)
-                    );
+                    && obelisks.Any(obelisk => string.Equals(obelisk.Name, current.Name, StringComparison.Ordinal));
                 bool isTarget =
                     TargetObeliskName is { } target
-                    && obelisks.Any(obelisk => string.Equals(obelisk.Name, target, StringComparison.OrdinalIgnoreCase));
+                    && obelisks.Any(obelisk => string.Equals(obelisk.Name, target, StringComparison.Ordinal));
                 return new GuardianRamTahLogViewModel(
                     group.Key,
                     GetLogDisplayName(group.Key),
@@ -4131,16 +4130,29 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
     {
         bool retainDuringGlide =
             OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack) == OverlayGameMode.GlideMode;
-        if (!liveSiteState.SynchronizeProximity(status, retainDuringGlide))
+        if (liveSiteState.SynchronizeProximity(status, retainDuringGlide))
         {
-            return;
+            statusBlinkDetector.Reset();
+            IsBlinkGesturePrimed = false;
+            SetTargetObelisk(null);
+            NotifyActiveSiteChanged();
+            SetLiveMapModeFromSurvey();
         }
 
-        statusBlinkDetector.Reset();
-        IsBlinkGesturePrimed = false;
-        SetTargetObelisk(null);
-        NotifyActiveSiteChanged();
-        SetLiveMapModeFromSurvey();
+        if (ActiveSite is not null)
+        {
+            TryFollowActiveSiteSelection();
+        }
+    }
+
+    private bool TryFollowActiveSiteSelection()
+    {
+        if (SelectActiveReference())
+        {
+            return true;
+        }
+
+        return ActiveSite is { IsKnownReference: true } && RevealAndSelectActiveReference();
     }
 
     private static GuardianAlignmentMode? ParseAlignmentMode(string? siteType)
@@ -4260,7 +4272,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         string? name = requestedName?.Trim().ToUpperInvariant();
         GuardianCommanderSiteSurvey? survey = ActiveSite is { } site ? FindSurvey(site) : null;
         GuardianObelisk? target = GetMergedActiveObelisks(ActiveSite?.Reference, survey)
-            .FirstOrDefault(obelisk => string.Equals(obelisk.Name, name, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(obelisk => string.Equals(obelisk.Name, name, StringComparison.Ordinal));
         targetObeliskName = target?.Name;
         currentRamTahLogs = BuildCurrentRamTahLogs();
         OnPropertyChanged(nameof(TargetObeliskName));
@@ -4281,7 +4293,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
             TargetObeliskName is null
             || Proximity is not { } current
             || ActiveMapProjection?.Points.FirstOrDefault(point =>
-                string.Equals(point.Name, TargetObeliskName, StringComparison.OrdinalIgnoreCase)
+                string.Equals(point.Name, TargetObeliskName, StringComparison.Ordinal)
             )
                 is not { } target
         )
@@ -4344,7 +4356,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
 
     private static string GetNextRawPointName(IEnumerable<string> names)
     {
-        var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var used = names.ToHashSet(StringComparer.Ordinal);
         int index = 1;
         while (true)
         {
@@ -4667,7 +4679,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         GuardianCommanderSiteSurvey? survey
     )
     {
-        var merged = new Dictionary<string, GuardianObelisk>(StringComparer.OrdinalIgnoreCase);
+        var merged = new Dictionary<string, GuardianObelisk>(StringComparer.Ordinal);
         GuardianPublishedSite? published;
         if (reference is null && ActiveSite is { } site)
         {
@@ -4862,7 +4874,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         }
 
         string? selectedName = TemplateAuthoring.SelectedPoint?.Name;
-        if (!string.Equals(SurveyEditor.SelectedPointName, selectedName, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(SurveyEditor.SelectedPointName, selectedName, StringComparison.Ordinal))
         {
             SurveyEditor.SelectedPointName = selectedName;
         }

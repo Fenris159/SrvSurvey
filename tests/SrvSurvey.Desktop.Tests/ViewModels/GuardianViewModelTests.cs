@@ -2009,6 +2009,115 @@ public sealed class GuardianViewModelTests
         return path;
     }
 
+    [Fact]
+    public async Task ProximitySwitchSelectsMatchingRuinOnSharedBody()
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            GuardianSiteReference first = CreateProximityReference() with
+            {
+                SiteId = 8,
+                Index = 1,
+                SiteType = "Beta",
+                SiteHeading = 90,
+                Latitude = 0,
+                Longitude = 0,
+            };
+            GuardianSiteReference second = first with { SiteId = 25, Index = 2, Latitude = 1, Longitude = 0 };
+            GuardianPublishedSite firstPublished = CreatePublishedSite(first, []) with
+            {
+                SiteHeading = 90,
+                Location = new GuardianSurfaceLocation(0, 0),
+            };
+            GuardianPublishedSite secondPublished = CreatePublishedSite(second, []) with
+            {
+                SiteHeading = 90,
+                Location = new GuardianSurfaceLocation(1, 0),
+            };
+            var template = new GuardianSiteTemplate(
+                "Beta",
+                "Beta",
+                string.Empty,
+                new GuardianMapPoint(0, 0),
+                1,
+                [new GuardianPointOfInterest("p1", GuardianPoiType.Orb, 0, 0, 0)],
+                [],
+                new Dictionary<string, GuardianMapPoint>()
+            );
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([first, second]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([firstPublished, secondPublished]),
+                    Templates = new GuardianSiteTemplateCatalog([template]),
+                }
+            );
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            viewModel.SelectedSite = viewModel.Rows.Single(row => row.Reference.SiteId == 8);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [
+                    Parse(
+                        """{"event":"Location","StarSystem":"Test","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1"}"""
+                    ),
+                    Parse(
+                        """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}"""
+                    ),
+                ],
+                "Drew"
+            );
+            Assert.Equal(8, viewModel.SelectedSite?.Reference.SiteId);
+            Assert.Equal(1, viewModel.ActiveSite?.Index);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [
+                    Parse(
+                        """{"event":"ApproachSettlement","Name":"$Ancient:#index=2;","Name_Localised":"Ancient Ruins (2)","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":1,"Longitude":0}"""
+                    ),
+                ],
+                "Drew"
+            );
+            Assert.Equal(2, viewModel.ActiveSite?.Index);
+            Assert.Equal(25, viewModel.SelectedSite?.Reference.SiteId);
+
+            const double radius = 1_000_000;
+            viewModel.UpdateStatus(
+                new EliteStatus
+                {
+                    Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+                    BodyName = "Test A 1",
+                    Latitude = 1,
+                    Longitude = 0,
+                    PlanetRadius = (decimal)radius,
+                    Altitude = 0,
+                }
+            );
+            Assert.Equal(25, viewModel.SelectedSite?.Reference.SiteId);
+            Assert.NotNull(viewModel.SelectedMapCommanderPosition);
+
+            viewModel.SelectedSite = viewModel.Rows.Single(row => row.Reference.SiteId == 8);
+            viewModel.UpdateStatus(
+                new EliteStatus
+                {
+                    Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+                    BodyName = "Test A 1",
+                    Latitude = 1,
+                    Longitude = 0,
+                    PlanetRadius = (decimal)radius,
+                    Altitude = 0,
+                }
+            );
+            Assert.Equal(25, viewModel.SelectedSite?.Reference.SiteId);
+            Assert.Same(viewModel.Proximity, viewModel.SelectedMapCommanderPosition);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     private static GuardianSiteReference CreateProximityReference()
     {
         return new GuardianSiteReference(

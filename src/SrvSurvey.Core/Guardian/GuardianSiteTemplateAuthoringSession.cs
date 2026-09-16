@@ -39,7 +39,7 @@ public sealed class GuardianSiteTemplateAuthoringSession
     public void AddPoint(GuardianPointOfInterest point)
     {
         ValidatePoint(point);
-        if (AllPoints().Any(candidate => string.Equals(candidate.Name, point.Name, StringComparison.OrdinalIgnoreCase)))
+        if (AllPoints().Any(candidate => string.Equals(candidate.Name, point.Name, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException($"Guardian template point '{point.Name}' already exists.");
         }
@@ -50,7 +50,7 @@ public sealed class GuardianSiteTemplateAuthoringSession
             {
                 DestructiblePanels = Template
                     .DestructiblePanels.Append(point)
-                    .OrderBy(candidate => candidate.Name, StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(candidate => candidate.Name, StringComparer.Ordinal)
                     .ToArray(),
             };
             return;
@@ -60,7 +60,7 @@ public sealed class GuardianSiteTemplateAuthoringSession
         {
             PointsOfInterest = Template
                 .PointsOfInterest.Append(point)
-                .OrderBy(candidate => candidate.Name, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(candidate => candidate.Name, StringComparer.Ordinal)
                 .ToArray(),
         };
     }
@@ -70,12 +70,11 @@ public sealed class GuardianSiteTemplateAuthoringSession
         ArgumentException.ThrowIfNullOrWhiteSpace(originalName);
         ValidatePoint(replacement);
         GuardianPointOfInterest existing =
-            AllPoints()
-                .FirstOrDefault(point => string.Equals(point.Name, originalName, StringComparison.OrdinalIgnoreCase))
+            AllPoints().FirstOrDefault(point => string.Equals(point.Name, originalName, StringComparison.Ordinal))
             ?? throw new InvalidOperationException($"Guardian template point '{originalName}' was not found.");
         if (
-            !string.Equals(originalName, replacement.Name, StringComparison.OrdinalIgnoreCase)
-            && AllPoints().Any(point => string.Equals(point.Name, replacement.Name, StringComparison.OrdinalIgnoreCase))
+            !string.Equals(originalName, replacement.Name, StringComparison.Ordinal)
+            && AllPoints().Any(point => string.Equals(point.Name, replacement.Name, StringComparison.Ordinal))
         )
         {
             throw new InvalidOperationException($"Guardian template point '{replacement.Name}' already exists.");
@@ -89,10 +88,10 @@ public sealed class GuardianSiteTemplateAuthoringSession
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         GuardianPointOfInterest[] points = Template
-            .PointsOfInterest.Where(point => !string.Equals(point.Name, name, StringComparison.OrdinalIgnoreCase))
+            .PointsOfInterest.Where(point => !string.Equals(point.Name, name, StringComparison.Ordinal))
             .ToArray();
         GuardianPointOfInterest[] panels = Template
-            .DestructiblePanels.Where(point => !string.Equals(point.Name, name, StringComparison.OrdinalIgnoreCase))
+            .DestructiblePanels.Where(point => !string.Equals(point.Name, name, StringComparison.Ordinal))
             .ToArray();
         if (points.Length == Template.PointsOfInterest.Count && panels.Length == Template.DestructiblePanels.Count)
         {
@@ -113,7 +112,7 @@ public sealed class GuardianSiteTemplateAuthoringSession
         ValidateFinite(location.Y, nameof(location));
         var labels = new Dictionary<string, GuardianMapPoint>(
             Template.ObeliskGroupNameLocations,
-            StringComparer.OrdinalIgnoreCase
+            StringComparer.Ordinal
         )
         {
             [name.Trim()] = location,
@@ -126,7 +125,7 @@ public sealed class GuardianSiteTemplateAuthoringSession
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         var labels = new Dictionary<string, GuardianMapPoint>(
             Template.ObeliskGroupNameLocations,
-            StringComparer.OrdinalIgnoreCase
+            StringComparer.Ordinal
         );
         if (!labels.Remove(name))
         {
@@ -149,7 +148,7 @@ public sealed class GuardianSiteTemplateAuthoringSession
             DestructiblePanels = source.DestructiblePanels.ToArray(),
             ObeliskGroupNameLocations = new Dictionary<string, GuardianMapPoint>(
                 source.ObeliskGroupNameLocations,
-                StringComparer.OrdinalIgnoreCase
+                StringComparer.Ordinal
             ),
         };
     }

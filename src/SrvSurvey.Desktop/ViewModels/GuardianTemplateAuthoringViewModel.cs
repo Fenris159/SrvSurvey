@@ -496,7 +496,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
     {
         SelectedPoint = string.IsNullOrWhiteSpace(name)
             ? null
-            : Points.FirstOrDefault(point => string.Equals(point.Name, name, StringComparison.OrdinalIgnoreCase));
+            : Points.FirstOrDefault(point => string.Equals(point.Name, name, StringComparison.Ordinal));
     }
 
     public async Task ExportAsync(string path, CancellationToken cancellationToken = default)
@@ -565,7 +565,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
                 ScaleFactor = 1,
                 PointsOfInterest = [],
                 DestructiblePanels = [],
-                ObeliskGroupNameLocations = new Dictionary<string, GuardianMapPoint>(StringComparer.OrdinalIgnoreCase),
+                ObeliskGroupNameLocations = new Dictionary<string, GuardianMapPoint>(StringComparer.Ordinal),
             }
         );
         LoadMetadata(session.Template);
@@ -865,12 +865,12 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             ? []
             : template
                 .PointsOfInterest.Concat(template.DestructiblePanels)
-                .OrderBy(point => point.Name, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(point => point.Name, StringComparer.Ordinal)
                 .Select(point => new GuardianTemplatePointViewModel(point))
                 .ToArray();
         Groups =
             template
-                ?.ObeliskGroupNameLocations.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                ?.ObeliskGroupNameLocations.OrderBy(pair => pair.Key, StringComparer.Ordinal)
                 .Select(pair => new GuardianTemplateGroupViewModel(pair.Key, pair.Value))
                 .ToArray()
             ?? [];
@@ -878,7 +878,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
         SelectedPoint = selectedPointName is null
             ? null
             : Points.FirstOrDefault(point =>
-                string.Equals(point.Point.Name, selectedPointName, StringComparison.OrdinalIgnoreCase)
+                string.Equals(point.Point.Name, selectedPointName, StringComparison.Ordinal)
             );
         SelectedGroup = Groups.Count > 0 ? Groups[0] : null;
         OnPropertyChanged(nameof(PreviewTemplate));
@@ -933,7 +933,7 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
         var names = (session?.Template.PointsOfInterest ?? [])
             .Concat(session?.Template.DestructiblePanels ?? [])
             .Select(point => point.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            .ToHashSet(StringComparer.Ordinal);
         int index = 1;
         while (true)
         {

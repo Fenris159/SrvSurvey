@@ -79,7 +79,7 @@ public sealed class GuardianSiteMapProjector
     )
     {
         GuardianObelisk? active = activeObelisks?.FirstOrDefault(obelisk =>
-            string.Equals(obelisk.Name, point.Name, StringComparison.OrdinalIgnoreCase)
+            string.Equals(obelisk.Name, point.Name, StringComparison.Ordinal)
         );
         GuardianComponentLoadout? componentLoadout = null;
         survey?.ComponentMaterials.TryGetValue(point.Name, out componentLoadout);

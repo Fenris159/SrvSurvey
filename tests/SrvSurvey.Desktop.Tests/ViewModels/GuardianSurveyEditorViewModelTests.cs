@@ -180,6 +180,11 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.Equal(GuardianPoiStatus.Present, editor.SelectedPoint!.Status);
         Assert.True(editor.SelectedPoint.IsReferenceOnly);
         Assert.True(editor.SelectedPoint.HasComponentRecord);
+        Assert.Equal(3, editor.Points.Count);
+        Assert.All(editor.Points, point => Assert.True(point.IsReferenceOnly));
+        Assert.Contains(editor.Points, point => point.Name == "p1");
+        Assert.Contains(editor.Points, point => point.Name == "t1");
+        Assert.Contains(editor.Points, point => point.Name == "c1");
 
         editor.SelectedPointName = null;
 
@@ -188,9 +193,79 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         await editor.SaveAsync();
 
         Assert.False(editor.IsAvailable);
-        Assert.Empty(editor.Points);
+        Assert.Equal(3, editor.Points.Count);
         Assert.Equal(0, callbackCount);
         Assert.Contains("Visit the selected site", editor.StatusMessage);
+    }
+
+    [Fact]
+    public void CaseSensitivePoiNamesKeepBrokenObeliskAndUrnDistinct()
+    {
+        var template = new GuardianSiteTemplate(
+            "Beta",
+            "Beta",
+            string.Empty,
+            new GuardianMapPoint(0, 0),
+            1,
+            [
+                new GuardianPointOfInterest("P10", GuardianPoiType.BrokenObelisk, 0, 10, 0),
+                new GuardianPointOfInterest("p10", GuardianPoiType.Urn, 90, 20, 0),
+                new GuardianPointOfInterest("P09", GuardianPoiType.Obelisk, 180, 30, 0),
+            ],
+            [],
+            new Dictionary<string, GuardianMapPoint> { ["P"] = new GuardianMapPoint(0, 15) }
+        );
+        GuardianCommanderSiteSurvey survey = CreateSurvey() with
+        {
+            Survey = new GuardianSurveyData
+            {
+                SiteType = "Beta",
+                SiteHeading = 10,
+                RelicTowerHeading = 20,
+                Location = new GuardianSurfaceLocation(1, 2),
+                PoiStatuses = new Dictionary<string, GuardianPoiStatus>(StringComparer.Ordinal)
+                {
+                    ["p10"] = GuardianPoiStatus.Present,
+                },
+                RelicHeadings = new Dictionary<string, int>(StringComparer.Ordinal),
+                ComponentMaterials = new Dictionary<string, GuardianComponentLoadout>(StringComparer.Ordinal),
+            },
+            ActiveObelisks = [new GuardianObelisk("P09", "C1", false, ["to"])],
+            ObeliskGroups = new HashSet<char> { 'P' },
+        };
+        GuardianSiteMapProjection projection = new GuardianSiteMapProjector().Project(
+            template,
+            survey.Survey,
+            survey.ActiveObelisks,
+            survey.ObeliskGroups
+        );
+        var editor = new GuardianSurveyEditorViewModel(
+            new GuardianCommanderSurveyStore(temporaryDirectory),
+            (_, _) => Task.CompletedTask
+        );
+        editor.Load(
+            new GuardianSurveyEditorLoadContext("F123", true, survey, template) { ReferenceProjection = projection }
+        );
+
+        Assert.Equal(GuardianPoiType.Urn, editor.Points.Single(point => point.Name == "p10").Type);
+        Assert.DoesNotContain(editor.Points, point => point.Name == "P10");
+        editor.SelectedPointName = "P10";
+        Assert.Equal("P10", editor.SelectedPointName);
+        Assert.NotNull(editor.SelectedPoint);
+        Assert.Equal(GuardianPoiType.BrokenObelisk, editor.SelectedPoint.Type);
+        Assert.Equal(GuardianPoiStatus.Unknown, editor.SelectedPoint.Status);
+        editor.SelectedPointName = "p10";
+        Assert.Equal("p10", editor.SelectedPointName);
+        Assert.NotNull(editor.SelectedPoint);
+        Assert.Equal(GuardianPoiType.Urn, editor.SelectedPoint.Type);
+        Assert.Equal(GuardianPoiStatus.Present, editor.SelectedPoint.Status);
+        GuardianProjectedPoint broken = projection.Points.Single(point => point.Name == "P10");
+        GuardianProjectedPoint urn = projection.Points.Single(point => point.Name == "p10");
+        Assert.Equal(GuardianPoiType.BrokenObelisk, broken.Type);
+        Assert.Equal(GuardianPoiType.Urn, urn.Type);
+        Assert.False(broken.IsActiveObelisk);
+        Assert.False(urn.IsActiveObelisk);
+        Assert.True(projection.Points.Single(point => point.Name == "P09").IsActiveObelisk);
     }
 
     [Fact]

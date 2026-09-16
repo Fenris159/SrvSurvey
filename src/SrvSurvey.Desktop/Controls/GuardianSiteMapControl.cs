@@ -1027,10 +1027,10 @@ public sealed class GuardianSiteMapControl : Control
         double markerScale
     )
     {
-        bool isTarget = string.Equals(point.Name, TargetPointName, StringComparison.OrdinalIgnoreCase);
+        bool isTarget = string.Equals(point.Name, TargetPointName, StringComparison.Ordinal);
         bool isNearest =
             Proximity?.NearestPoint is { Distance: <= 75 } nearest
-            && string.Equals(nearest.Point.Name, point.Name, StringComparison.OrdinalIgnoreCase);
+            && string.Equals(nearest.Point.Name, point.Name, StringComparison.Ordinal);
         if (!isTarget && !isNearest)
         {
             return;
@@ -1053,11 +1053,11 @@ public sealed class GuardianSiteMapControl : Control
         double markerScale
     )
     {
-        bool isHovered = string.Equals(point.Name, HoveredPointName, StringComparison.OrdinalIgnoreCase);
+        bool isHovered = string.Equals(point.Name, HoveredPointName, StringComparison.Ordinal);
         bool isSelected = string.Equals(
             point.Name,
             HighlightedPointName ?? SelectedPointName,
-            StringComparison.OrdinalIgnoreCase
+            StringComparison.Ordinal
         );
         if (!isHovered && !isSelected)
         {
