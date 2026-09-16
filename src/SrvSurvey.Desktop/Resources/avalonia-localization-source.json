@@ -47938,6 +47938,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs"
   },
   {
+    "Text": "The /proc working directory link was unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs"
+  },
+  {
     "Text": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
     "IsFormat": false,
     "SourceKinds": [

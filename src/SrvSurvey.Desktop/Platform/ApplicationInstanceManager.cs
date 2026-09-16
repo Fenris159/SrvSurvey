@@ -508,15 +508,20 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
             return false;
         }
 
-        return CommandLineContainsIdentity(arguments, currentApplicationIdentity);
+        string? workingDirectory = null;
+        _ = ApplicationProcessPathResolver.TryReadLinuxWorkingDirectory(process.Id, out workingDirectory, out _);
+        return CommandLineContainsIdentity(arguments, currentApplicationIdentity, workingDirectory);
     }
 
-    internal static bool CommandLineContainsIdentity(IReadOnlyList<string> arguments, string applicationIdentity)
+    internal static bool CommandLineContainsIdentity(
+        IReadOnlyList<string> arguments,
+        string applicationIdentity,
+        string? workingDirectory = null
+    )
     {
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentException.ThrowIfNullOrWhiteSpace(applicationIdentity);
         string canonicalIdentity = ApplicationProcessPathResolver.Canonicalize(applicationIdentity);
-        string identityFileName = Path.GetFileName(canonicalIdentity);
         foreach (string argument in arguments)
         {
             if (string.IsNullOrWhiteSpace(argument) || argument.StartsWith('-'))
@@ -526,16 +531,16 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
 
             try
             {
-                string candidate = ApplicationProcessPathResolver.Canonicalize(argument);
-                if (PathsMatch(candidate, canonicalIdentity, OperatingSystem.IsWindows()))
+                if (
+                    !TryResolveCommandLinePath(argument, workingDirectory, out string? absolutePath)
+                    || absolutePath is null
+                )
                 {
-                    return true;
+                    continue;
                 }
 
-                if (
-                    identityFileName.Length > 0
-                    && string.Equals(Path.GetFileName(candidate), identityFileName, StringComparison.Ordinal)
-                )
+                string candidate = ApplicationProcessPathResolver.Canonicalize(absolutePath);
+                if (PathsMatch(candidate, canonicalIdentity, OperatingSystem.IsWindows()))
                 {
                     return true;
                 }
@@ -548,6 +553,25 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
         }
 
         return false;
+    }
+
+    internal static bool TryResolveCommandLinePath(string argument, string? workingDirectory, out string? absolutePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(argument);
+        if (Path.IsPathRooted(argument))
+        {
+            absolutePath = argument;
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(workingDirectory))
+        {
+            absolutePath = null;
+            return false;
+        }
+
+        absolutePath = Path.GetFullPath(argument, workingDirectory);
+        return Path.IsPathRooted(absolutePath);
     }
 
     internal static string? ResolveCurrentApplicationIdentity()

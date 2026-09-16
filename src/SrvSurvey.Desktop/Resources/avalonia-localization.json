@@ -23905,6 +23905,10 @@
       "translation": "Der Link zur ausführbaren Datei /proc war nicht verfügbar."
     },
     {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "Der Link zum Arbeitsverzeichnis /proc war nicht verfügbar."
+    },
+    {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
       "translation": "Der API-Schlüssel wird nur in diesem lokalen Commander-Profil gespeichert. Durch das Löschen wird die aktive Zustellung abgebrochen und ausstehende Ereignisse im Speicher entfernt."
     },
@@ -55697,6 +55701,10 @@
     {
       "source": "The /proc executable link was unavailable.",
       "translation": "El enlace ejecutable /proc no estaba disponible."
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "El enlace del directorio de trabajo /proc no estaba disponible."
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
@@ -87493,6 +87501,10 @@
       "translation": "Le lien exécutable /proc n'était pas disponible."
     },
     {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "Le lien vers le répertoire de travail /proc n'était pas disponible."
+    },
+    {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
       "translation": "La clé API est stockée uniquement dans ce profil Commander local. L'effacer annule la livraison active et supprime les événements en mémoire en attente."
     },
@@ -119285,6 +119297,10 @@
     {
       "source": "The /proc executable link was unavailable.",
       "translation": "O link executável /proc não estava disponível."
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "O link do diretório de trabalho /proc não estava disponível."
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
@@ -151081,6 +151097,10 @@
       "translation": "Ссылка на исполняемый файл /proc была недоступна."
     },
     {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "Ссылка на рабочий каталог /proc была недоступна."
+    },
+    {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
       "translation": "Ключ API хранится только в этом локальном профиле Commander. Его очистка отменяет активную доставку и удаляет ожидающие события в памяти."
     },
@@ -182875,6 +182895,10 @@
       "translation": "/proc 可执行链接不可用。"
     },
     {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "/proc 工作目录链接不可用。"
+    },
+    {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
       "translation": "API 密钥仅存储在此本地 Commander 配置文件中。清除它会取消主动传递并删除待处理的内存中事件。"
     },
@@ -214667,6 +214691,10 @@
     {
       "source": "The /proc executable link was unavailable.",
       "translation": "* THE /PROC EXECUTABLE LINK WAS UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "* THE /PROC WORKING DIRECTORY LINK WAS UNAVAILABLE. >>>!"
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",

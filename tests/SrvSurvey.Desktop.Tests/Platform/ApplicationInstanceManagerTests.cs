@@ -191,6 +191,32 @@ public sealed class ApplicationInstanceManagerTests
                 "/opt/SrvSurvey/SrvSurvey.Desktop.dll"
             )
         );
+        Assert.False(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
+                ["/home/ubuntu/.dotnet/dotnet", "/opt/Other/SrvSurvey.Desktop.dll"],
+                "/opt/SrvSurvey/SrvSurvey.Desktop.dll"
+            )
+        );
+        Assert.True(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
+                ["/home/ubuntu/.dotnet/dotnet", "SrvSurvey.Desktop.dll"],
+                "/opt/SrvSurvey/SrvSurvey.Desktop.dll",
+                workingDirectory: "/opt/SrvSurvey"
+            )
+        );
+        Assert.False(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
+                ["/home/ubuntu/.dotnet/dotnet", "SrvSurvey.Desktop.dll"],
+                "/opt/SrvSurvey/SrvSurvey.Desktop.dll",
+                workingDirectory: "/opt/Other"
+            )
+        );
+        Assert.False(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
+                ["/home/ubuntu/.dotnet/dotnet", "SrvSurvey.Desktop.dll"],
+                "/opt/SrvSurvey/SrvSurvey.Desktop.dll"
+            )
+        );
     }
 
     [Fact]

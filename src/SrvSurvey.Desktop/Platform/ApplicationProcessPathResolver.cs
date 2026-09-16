@@ -131,6 +131,31 @@ internal static partial class ApplicationProcessPathResolver
         }
     }
 
+    internal static bool TryReadLinuxWorkingDirectory(int processId, out string? workingDirectory, out string? error)
+    {
+        try
+        {
+            FileSystemInfo? link = new FileInfo($"/proc/{processId}/cwd").ResolveLinkTarget(returnFinalTarget: true);
+            if (link is null)
+            {
+                workingDirectory = null;
+                error = "The /proc working directory link was unavailable.";
+                return false;
+            }
+
+            workingDirectory = Canonicalize(link.FullName);
+            error = null;
+            return true;
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            workingDirectory = null;
+            error = exception.Message;
+            return false;
+        }
+    }
+
     internal static bool TryReadLinuxEnvironmentValue(int processId, string name, out string? value, out string? error)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
