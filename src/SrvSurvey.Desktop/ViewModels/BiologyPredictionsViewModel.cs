@@ -285,6 +285,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
                 ReferenceCatalog = survey.BiologyReferenceCatalog,
                 HighlightRegionalFirsts = survey.HighlightRegionalFirsts,
                 DiscoveryContext = survey.CurrentBiologyDiscoveryContext,
+                ConfirmedExternalBiologySignals = survey.ConfirmedExternalBiologySignals,
             }
         );
         if (overview is null)
@@ -331,6 +332,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
                         RewardThresholds = survey.BiologyRewardThresholds,
                         PredictionEvaluator = survey.BiologyPredictionEvaluator,
                         ReferenceCatalog = survey.BiologyReferenceCatalog,
+                        ConfirmedExternalBiologySignals = survey.ConfirmedExternalBiologySignals,
                     }
                 )!;
                 bool isExpanded = expandedState.GetValueOrDefault(body.BodyId, !CurrentBodyOnly || row.IsCurrentBody);
@@ -503,9 +505,14 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         foreach (BiologyBodyRowViewModel row in rows)
         {
             SystemScanBodySnapshot body = snapshot.Bodies.Single(candidate => candidate.BodyId == row.BodyId);
-            int multiplier = body.IsFirstFootfall ? 5 : 1;
-            minimum += row.MinimumReward * multiplier;
-            maximum += row.MaximumReward * multiplier;
+            int minimumMultiplier = body.IsFirstFootfall ? 5 : 1;
+            int maximumMultiplier = body.WasFootfalled == true ? 1 : 5;
+            if (body.IsFirstFootfall)
+            {
+                maximumMultiplier = 5;
+            }
+            minimum += row.MinimumReward * minimumMultiplier;
+            maximum += row.MaximumReward * maximumMultiplier;
             hasUnknown |= row.HasUnknownReward;
         }
 
