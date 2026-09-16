@@ -1245,7 +1245,7 @@ public static class GuideCatalog
                 GuideIconKind.BiologyRewardKnown,
                 "",
                 "Confirmed reward PIPs",
-                "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+                "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
                 "Bio signals and biology system overlays",
                 "bars pips confirmed solid filled empty border"
             ),
@@ -1253,7 +1253,7 @@ public static class GuideCatalog
                 GuideIconKind.BiologyRewardPredicted,
                 "",
                 "Predicted reward PIPs",
-                "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
+                "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
                 "Bio signals and biology predictions",
                 "bars pips estimate range hatched potential alternative genus overflow dotted frame"
             ),

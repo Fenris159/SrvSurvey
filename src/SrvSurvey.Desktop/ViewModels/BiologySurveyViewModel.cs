@@ -85,6 +85,8 @@ public sealed class BiologySurveyViewModel
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
         ArgumentNullException.ThrowIfNull(options);
+        ExobiologyReferenceCatalog referenceCatalog = options.ReferenceCatalog ?? DefaultBioReferenceCatalog.Value;
+        snapshot = AddConfirmedExternalBiology(snapshot, options.ConfirmedExternalBiologySignals, referenceCatalog);
         SystemScanBodySnapshot[] biologicalBodies = snapshot
             .Bodies.Where(body => body.BiologicalSignalCount > 0)
             .OrderBy(body => body.BodyId)
@@ -115,7 +117,7 @@ public sealed class BiologySurveyViewModel
                     RadicoidaUnicaCount = exobiology.CountRadicoidaUnica,
                     RewardThresholds = options.RewardThresholds ?? BiologyRewardThresholds.Default,
                     PredictionEvaluator = options.PredictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                    ReferenceCatalog = options.ReferenceCatalog ?? DefaultBioReferenceCatalog.Value,
+                    ReferenceCatalog = referenceCatalog,
                     CanonnBiologyBodyIds = options.CanonnBiologyBodyIds,
                 }
             )
@@ -132,7 +134,7 @@ public sealed class BiologySurveyViewModel
                     DiscoveryContext = options.DiscoveryContext ?? BiologyDiscoveryContext.Unavailable,
                     RewardThresholds = options.RewardThresholds ?? BiologyRewardThresholds.Default,
                     PredictionEvaluator = options.PredictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                    ReferenceCatalog = options.ReferenceCatalog ?? DefaultBioReferenceCatalog.Value,
+                    ReferenceCatalog = referenceCatalog,
                 }
             );
     }
@@ -145,6 +147,8 @@ public sealed class BiologySurveyViewModel
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(options);
+        ExobiologyReferenceCatalog referenceCatalog = options.ReferenceCatalog ?? DefaultBioReferenceCatalog.Value;
+        snapshot = AddConfirmedExternalBiology(snapshot, options.ConfirmedExternalBiologySignals, referenceCatalog);
         SystemScanBodySnapshot[] biologicalBodies = snapshot
             .Bodies.Where(body => body.BiologicalSignalCount > 0)
             .OrderBy(body => body.BodyId)
@@ -163,7 +167,7 @@ public sealed class BiologySurveyViewModel
                     RadicoidaUnicaCount = options.RadicoidaUnicaCount,
                     RewardThresholds = options.RewardThresholds ?? BiologyRewardThresholds.Default,
                     PredictionEvaluator = options.PredictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                    ReferenceCatalog = options.ReferenceCatalog ?? DefaultBioReferenceCatalog.Value,
+                    ReferenceCatalog = referenceCatalog,
                     CanonnBiologyBodyIds = null,
                 }
             );
@@ -179,6 +183,8 @@ public sealed class BiologySurveyViewModel
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
         ArgumentNullException.ThrowIfNull(options);
+        ExobiologyReferenceCatalog referenceCatalog = options.ReferenceCatalog ?? DefaultBioReferenceCatalog.Value;
+        snapshot = AddConfirmedExternalBiology(snapshot, options.ConfirmedExternalBiologySignals, referenceCatalog);
         SystemScanBodySnapshot? body = snapshot.Bodies.FirstOrDefault(candidate =>
             candidate.BodyId == bodyId && candidate.BiologicalSignalCount > 0
         );
@@ -197,7 +203,7 @@ public sealed class BiologySurveyViewModel
                     DiscoveryContext = options.DiscoveryContext ?? BiologyDiscoveryContext.Unavailable,
                     RewardThresholds = options.RewardThresholds ?? BiologyRewardThresholds.Default,
                     PredictionEvaluator = options.PredictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                    ReferenceCatalog = options.ReferenceCatalog ?? DefaultBioReferenceCatalog.Value,
+                    ReferenceCatalog = referenceCatalog,
                 }
             );
     }
@@ -721,6 +727,90 @@ public sealed class BiologySurveyViewModel
             && string.Equals(sample.Species, reference.SpeciesName, StringComparison.Ordinal);
     }
 
+    private static SystemScanSnapshot AddConfirmedExternalBiology(
+        SystemScanSnapshot snapshot,
+        IReadOnlyDictionary<int, IReadOnlyList<CanonnSurfaceBiologySignal>>? signalsByBodyId,
+        ExobiologyReferenceCatalog referenceCatalog
+    )
+    {
+        if (signalsByBodyId is null || signalsByBodyId.Count == 0)
+        {
+            return snapshot;
+        }
+
+        SystemScanBodySnapshot[] bodies = snapshot
+            .Bodies.Select(body =>
+                signalsByBodyId.TryGetValue(body.BodyId, out IReadOnlyList<CanonnSurfaceBiologySignal>? signals)
+                    ? AddConfirmedExternalBiology(body, signals, referenceCatalog)
+                    : body
+            )
+            .ToArray();
+        return bodies.SequenceEqual(snapshot.Bodies) ? snapshot : snapshot with { Bodies = bodies };
+    }
+
+    private static SystemScanBodySnapshot AddConfirmedExternalBiology(
+        SystemScanBodySnapshot body,
+        IReadOnlyList<CanonnSurfaceBiologySignal> signals,
+        ExobiologyReferenceCatalog referenceCatalog
+    )
+    {
+        var organisms = body.Organisms.ToList();
+        foreach (CanonnSurfaceBiologySignal signal in signals)
+        {
+            SystemOrganismSnapshot? confirmed = CreateConfirmedExternalOrganism(signal, referenceCatalog);
+            if (confirmed is null || organisms.Any(organism => organism.EntryId == confirmed.EntryId))
+            {
+                continue;
+            }
+
+            int genusOnlyIndex = organisms.FindIndex(organism => IsSameUnresolvedGenus(organism, confirmed));
+            if (genusOnlyIndex >= 0)
+            {
+                organisms[genusOnlyIndex] = confirmed;
+            }
+            else
+            {
+                organisms.Add(confirmed);
+            }
+        }
+
+        return organisms.SequenceEqual(body.Organisms) ? body : body with { Organisms = organisms };
+    }
+
+    private static SystemOrganismSnapshot? CreateConfirmedExternalOrganism(
+        CanonnSurfaceBiologySignal signal,
+        ExobiologyReferenceCatalog referenceCatalog
+    )
+    {
+        ExobiologyReference? reference = referenceCatalog.FindByEntryId(signal.EntryId);
+        reference ??= referenceCatalog.FindByDisplayName(signal.DisplayName);
+        if (reference is not { IsBiology: true, Reward: > 0 })
+        {
+            return null;
+        }
+
+        return new SystemOrganismSnapshot(
+            ExobiologyReferenceCatalog.GetGenusName(reference),
+            ExobiologyReferenceCatalog.GetGenusDisplayName(reference),
+            reference.SpeciesName,
+            null,
+            reference.VariantName,
+            signal.DisplayName ?? reference.DisplayName,
+            reference.EntryId,
+            reference.Reward,
+            signal.IsCommanderScan,
+            false,
+            false
+        );
+    }
+
+    private static bool IsSameUnresolvedGenus(SystemOrganismSnapshot organism, SystemOrganismSnapshot confirmed) =>
+        organism.Species is null
+        && (
+            string.Equals(organism.Genus, confirmed.Genus, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(organism.GenusLocalized, confirmed.GenusLocalized, StringComparison.OrdinalIgnoreCase)
+        );
+
     private static BiologyPredictionSet CreatePredictions(
         SystemScanSnapshot snapshot,
         SystemScanBodySnapshot body,
@@ -869,7 +959,7 @@ public sealed class BiologySurveyViewModel
             if (predictionsByGenus.TryGetValue(genus, out BiologySignalRewardRange? prediction))
             {
                 bands.Add(
-                    BiologySignalRewardBandViewModel.Predicted(
+                    BiologySignalRewardBandViewModel.KnownRange(
                         prediction.Minimum,
                         prediction.Maximum,
                         isHighlighted || prediction.IsHighlighted,
@@ -1322,6 +1412,26 @@ public sealed class BiologySignalRewardBandViewModel
             RewardBucketThreeMillions = thresholds.BucketThreeMillions,
         };
 
+    public static BiologySignalRewardBandViewModel KnownRange(
+        long minimumReward,
+        long maximumReward,
+        bool isHighlighted,
+        BiologyRewardThresholds thresholds,
+        bool isGlobalRegionalFirst = false
+    ) =>
+        new()
+        {
+            MinimumReward = minimumReward,
+            MaximumReward = maximumReward,
+            IsPrediction = false,
+            IsHighlighted = isHighlighted,
+            IsGlobalRegionalFirst = isGlobalRegionalFirst,
+            ShouldDim = false,
+            RewardBucketOneMillions = thresholds.BucketOneMillions,
+            RewardBucketTwoMillions = thresholds.BucketTwoMillions,
+            RewardBucketThreeMillions = thresholds.BucketThreeMillions,
+        };
+
     public static BiologySignalRewardBandViewModel Unknown(BiologyRewardThresholds thresholds) =>
         new()
         {
@@ -1646,6 +1756,10 @@ public sealed class BiologySurveyCreateOptions
     public BiologyPredictionEvaluator? PredictionEvaluator { get; init; }
     public ExobiologyReferenceCatalog? ReferenceCatalog { get; init; }
     public IReadOnlySet<int>? CanonnBiologyBodyIds { get; init; }
+    public IReadOnlyDictionary<
+        int,
+        IReadOnlyList<CanonnSurfaceBiologySignal>
+    >? ConfirmedExternalBiologySignals { get; init; }
     public bool AllowRetainedCurrentBody { get; init; } = true;
     public bool ForceSystemOverview { get; init; }
 
@@ -1680,6 +1794,10 @@ public sealed class BiologySurveySystemOverviewOptions
     public int RadicoidaUnicaCount { get; init; }
     public bool HighlightRegionalFirsts { get; init; }
     public BiologyDiscoveryContext? DiscoveryContext { get; init; }
+    public IReadOnlyDictionary<
+        int,
+        IReadOnlyList<CanonnSurfaceBiologySignal>
+    >? ConfirmedExternalBiologySignals { get; init; }
 
     public BiologySurveySystemOverviewOptions(bool disablePredictions)
     {
@@ -1697,6 +1815,10 @@ public sealed class BiologySurveyBodyDetailOptions
     public BiologyRewardThresholds? RewardThresholds { get; init; }
     public BiologyPredictionEvaluator? PredictionEvaluator { get; init; }
     public ExobiologyReferenceCatalog? ReferenceCatalog { get; init; }
+    public IReadOnlyDictionary<
+        int,
+        IReadOnlyList<CanonnSurfaceBiologySignal>
+    >? ConfirmedExternalBiologySignals { get; init; }
 
     public BiologySurveyBodyDetailOptions(
         bool highlightRegionalFirsts,

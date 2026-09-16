@@ -137,6 +137,32 @@ public sealed class BiologyPredictionsViewModelTests : IDisposable
         Assert.True(SpinWait.SpinUntil(() => opened, TimeSpan.FromSeconds(1)));
     }
 
+    [Fact]
+    public void UnknownFirstFootfallKeepsBaseToFirstLoggedRewardRange()
+    {
+        string settingsPath = Path.Combine(temporaryDirectory, "unknown-first-footfall-settings.json");
+        var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(settingsPath));
+        using var viewModel = new BiologyPredictionsViewModel(
+            survey,
+            new BiologyPredictionsSettingsStore(settingsPath)
+        );
+        survey.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+                ),
+                Parse(PredictableAleoidaScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap }
+        );
+
+        Assert.Equal("6.28 M CR - 31.42 M CR", viewModel.FirstFootfallEstimate);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

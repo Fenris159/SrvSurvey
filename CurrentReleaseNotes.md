@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.48.5
+# SrvSurvey-XP 2.1.3.0-rc.48.6
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -15,9 +15,22 @@
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
 
-RC48.5 improves Surface Mining rig placement and makes application-instance and
-main-window behavior safer and clearer. It retains the full RC48.4 feature set
-summarized below.
+RC48.6 distinguishes confirmed external biology from prediction-only candidates
+and preserves honest reward ranges when First Logged eligibility is unknown. It
+retains the full RC48.5 feature set summarized below.
+
+## New in RC48.6
+
+- Shows journal-, Canonn-, and Spansh-backed biology reward PIPs without
+  prediction hatching. Biology supplied only by the built-in prediction data
+  remains hatched.
+- Uses exact Canonn organism records as confirmed organism and reward evidence,
+  while confirmed genus-only records retain a solid minimum-to-maximum reward
+  band until the species is known.
+- Keeps the base reward as the minimum and the possible five-times First Logged
+  value as the maximum when bonus eligibility is not known.
+- Updates the in-app PIP glossary to explain confirmed evidence, prediction-only
+  hatching, and reward uncertainty.
 
 ## New in RC48.5
 
@@ -50,11 +63,11 @@ summarized below.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.48.5`
-- Tag: `xp-v2.1.3.0-rc.48.5`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.5-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.5-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.5-x86_64.AppImage`
+- Version: `2.1.3.0-rc.48.6`
+- Tag: `xp-v2.1.3.0-rc.48.6`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.6-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.6-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.6-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

@@ -83,7 +83,17 @@ public sealed class GuidesViewModelTests
             StringComparison.OrdinalIgnoreCase
         );
         Assert.Contains(
+            "Canonn, or Spansh",
+            Icon(GuideIconKind.BiologyRewardKnown).Meaning,
+            StringComparison.OrdinalIgnoreCase
+        );
+        Assert.Contains(
             "hatching",
+            Icon(GuideIconKind.BiologyRewardPredicted).Meaning,
+            StringComparison.OrdinalIgnoreCase
+        );
+        Assert.Contains(
+            "only by the biology prediction data",
             Icon(GuideIconKind.BiologyRewardPredicted).Meaning,
             StringComparison.OrdinalIgnoreCase
         );

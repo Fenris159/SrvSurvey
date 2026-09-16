@@ -1901,7 +1901,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
-    public void BiologySystemOverviewHighlightsPredictedRegionalFirstCandidates()
+    public void BiologySystemOverviewHighlightsConfirmedGenusRegionalFirstCandidates()
     {
         ExobiologyReference? reference = ExobiologyReferenceCatalog
             .LoadEmbedded()
@@ -1951,7 +1951,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         BiologySurveyViewModel overview = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
         BiologySignalRewardBandViewModel band = Assert.Single(Assert.Single(overview.Bodies).RewardBands);
-        Assert.True(band.IsPrediction);
+        Assert.False(band.IsPrediction);
         Assert.False(band.IsHighlighted);
 
         viewModel.HighlightRegionalFirsts = true;
@@ -2142,6 +2142,35 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void CanonnSignalsWithAmbiguousBodySuffixRemainUnassigned()
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test A 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test B 1","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+            ],
+            null
+        );
+        viewModel.UseExternalData = true;
+        viewModel.AutoShowPriorScans = true;
+
+        viewModel.UpdateCanonnSystemPoi(
+            new CanonnSystemPoiResult(
+                "Test",
+                [new CanonnSurfaceBiologySignal("1", null, 2310101, new SurfaceCoordinate(1, 2), false)]
+            )
+        );
+
+        Assert.Empty(viewModel.ConfirmedExternalBiologySignals);
+    }
+
+    [Fact]
     public void BiologySurveyShowsExactCriteriaPredictionsAndHonorsDisableSetting()
     {
         ExobiologyReference? reference = ExobiologyReferenceCatalog
@@ -2179,7 +2208,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         BiologyBodyRowViewModel bodySummary = Assert.Single(systemSurvey.Bodies);
         Assert.True(bodySummary.HasPredictedReward);
         BiologySignalRewardBandViewModel systemBand = Assert.Single(bodySummary.RewardBands);
-        Assert.True(systemBand.IsPrediction);
+        Assert.False(systemBand.IsPrediction);
         Assert.True(systemBand.MinimumReward > 0);
         Assert.True(systemBand.MaximumReward >= systemBand.MinimumReward);
         Assert.StartsWith("Estimated reward:", systemSurvey.RewardSummary);
@@ -2220,7 +2249,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         BiologySignalRewardBandViewModel candidateBand = Assert.Single(
             Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands
         );
-        Assert.True(candidateBand.IsPrediction);
+        Assert.False(candidateBand.IsPrediction);
         Assert.True(candidateBand.IsHighlighted);
         Assert.True(candidateBand.IsGlobalRegionalFirst);
 
@@ -2233,6 +2262,59 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(genus.IsPrediction);
         Assert.True(genus.IsGenusIdentified);
         Assert.Equal("Reward pending identification", viewModel.BiologySurvey.RewardSummary);
+    }
+
+    [Fact]
+    public void BiologySurveyUsesCanonnExactOrganismAsConfirmedSolidReward()
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.UseExternalData = true;
+        viewModel.AutoShowPriorScans = true;
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+                ),
+                Parse(PredictableAleoidaScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap }
+        );
+
+        Assert.All(Assert.Single(viewModel.BiologySurvey!.Bodies).RewardBands, band => Assert.True(band.IsPrediction));
+
+        viewModel.UpdateCanonnSystemPoi(
+            new CanonnSystemPoiResult(
+                "Test",
+                [
+                    new CanonnSurfaceBiologySignal(
+                        "1",
+                        "Aleoida Coronamus - Lime",
+                        2310206,
+                        new SurfaceCoordinate(1, 2),
+                        false
+                    ),
+                ]
+            )
+        );
+
+        BiologySignalRewardBandViewModel band = Assert.Single(
+            Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands,
+            candidate => !candidate.IsPrediction
+        );
+        Assert.False(band.IsPrediction);
+        Assert.Equal(6_284_600, band.MinimumReward);
+        Assert.Equal(band.MinimumReward, band.MaximumReward);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        BiologyOrganismRowViewModel organism = Assert.Single(viewModel.BiologySurvey.Organisms);
+        Assert.Equal("Aleoida Coronamus - Lime", organism.DisplayName);
+        Assert.False(organism.IsPrediction);
+        Assert.Equal(6_284_600, organism.Reward);
     }
 
     [Fact]
