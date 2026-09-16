@@ -88,6 +88,8 @@ public sealed class ApplicationUpdateInstanceWarningPresentationTests
         );
         try
         {
+            Assert.True(dialog.ShowInTaskbar);
+            Assert.Equal(WindowStartupLocation.CenterScreen, dialog.WindowStartupLocation);
             dialog.Show();
             Assert.NotNull(dialog.CaptureRenderedFrame());
 

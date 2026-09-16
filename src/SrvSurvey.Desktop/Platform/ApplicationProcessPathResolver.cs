@@ -2,6 +2,7 @@ using System.Buffers;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 namespace SrvSurvey.Desktop.Platform;
@@ -125,6 +126,93 @@ internal static partial class ApplicationProcessPathResolver
             when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
         {
             executablePath = null;
+            error = exception.Message;
+            return false;
+        }
+    }
+
+    internal static bool TryReadLinuxWorkingDirectory(int processId, out string? workingDirectory, out string? error)
+    {
+        try
+        {
+            FileSystemInfo? link = new FileInfo($"/proc/{processId}/cwd").ResolveLinkTarget(returnFinalTarget: true);
+            if (link is null)
+            {
+                workingDirectory = null;
+                error = "The /proc working directory link was unavailable.";
+                return false;
+            }
+
+            workingDirectory = Canonicalize(link.FullName);
+            error = null;
+            return true;
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            workingDirectory = null;
+            error = exception.Message;
+            return false;
+        }
+    }
+
+    internal static bool TryReadLinuxEnvironmentValue(int processId, string name, out string? value, out string? error)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        try
+        {
+            byte[] data = File.ReadAllBytes($"/proc/{processId}/environ");
+            foreach (string entry in Encoding.UTF8.GetString(data).Split('\0', StringSplitOptions.RemoveEmptyEntries))
+            {
+                int separator = entry.IndexOf('=');
+                if (separator <= 0)
+                {
+                    continue;
+                }
+
+                if (!entry.AsSpan(0, separator).SequenceEqual(name))
+                {
+                    continue;
+                }
+
+                value = entry[(separator + 1)..];
+                error = null;
+                return !string.IsNullOrWhiteSpace(value);
+            }
+
+            value = null;
+            error = $"The {name} environment variable was not present.";
+            return false;
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException)
+        {
+            value = null;
+            error = exception.Message;
+            return false;
+        }
+    }
+
+    internal static bool TryReadLinuxCommandLine(int processId, out IReadOnlyList<string> arguments, out string? error)
+    {
+        try
+        {
+            byte[] data = File.ReadAllBytes($"/proc/{processId}/cmdline");
+            if (data.Length == 0)
+            {
+                arguments = [];
+                error = "The /proc command line was empty.";
+                return false;
+            }
+
+            arguments = Encoding.UTF8.GetString(data).Split('\0', StringSplitOptions.RemoveEmptyEntries);
+            error = null;
+            return arguments.Count > 0;
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException)
+        {
+            arguments = [];
             error = exception.Message;
             return false;
         }

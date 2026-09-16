@@ -44,6 +44,9 @@ public sealed partial class MultipleApplicationInstancesDialog : Window
             "Choose No to leave the existing instance running. Multiple instances should be started from the Multiple Commanders panel.";
         CancelButton.Content = "No";
         ContinueButton.Content = "Yes, close it and continue";
+        // Startup has no owner window; CenterOwner + hidden taskbar makes this dialog invisible on Linux.
+        ShowInTaskbar = true;
+        WindowStartupLocation = WindowStartupLocation.CenterScreen;
         ConfigureInstanceCount(scan.TotalCount, scan.UnverifiedCount, isStartupReplacement: true);
     }
 

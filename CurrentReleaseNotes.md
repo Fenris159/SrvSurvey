@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.48.6
+# SrvSurvey-XP 2.1.3.0-rc.48.7
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -15,9 +15,23 @@
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
 
-RC48.6 distinguishes confirmed external biology from prediction-only candidates
-and preserves honest reward ranges when First Logged eligibility is unknown. It
-retains the full RC48.5 feature set summarized below.
+RC48.7 restores reliable main-window startup after the RC48.5 instance gate and
+hardens Linux duplicate-instance detection. It retains the full RC48.6 feature
+set summarized below.
+
+## New in RC48.7
+
+- Shows the main window after async instance-gate startup. Avalonia only shows
+  `MainWindow` once at lifetime start; deferred assignment now calls `Show()`
+  so ordinary launches are no longer invisible while the process keeps running.
+- Marshals desktop runtime start and shutdown onto the UI thread after instance
+  scanning, avoiding off-thread Avalonia window construction.
+- Makes the startup multi-instance confirmation visible in the taskbar and
+  centered on screen when no owner window exists yet.
+- Stops treating shared `dotnet` host executables as duplicate SrvSurvey
+  instances unless application identity matches, ignores weak Linux name-only
+  unresolved `/proc` hits, prompts only on confirmed peers, and prefers the
+  stable AppImage path for identity matching.
 
 ## New in RC48.6
 
@@ -50,24 +64,13 @@ retains the full RC48.5 feature set summarized below.
   application theme, with a quieter inactive-window palette. Earlier Windows
   releases and Linux retain their platform-native window decorations.
 
-## New in RC48.4
-
-- Routes automatic restarts through a helper that waits for the retiring process
-  to exit before launching its replacement. AppImage restarts use the stable
-  original image path instead of its temporary mount path.
-- Reports each X11 overlay stacking policy once per process and aggregates
-  repeated matching X11 and Avalonia render-loop failures while preserving the
-  first failure and periodic counts for diagnosis.
-- Extends `SRVSURVEY_SOFTWARE_RENDERING=1` to the Linux X11 renderer as a
-  diagnostic recovery option when the default GLX renderer cannot initialize.
-
 ## Packaging
 
-- Version: `2.1.3.0-rc.48.6`
-- Tag: `xp-v2.1.3.0-rc.48.6`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.6-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.6-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.6-x86_64.AppImage`
+- Version: `2.1.3.0-rc.48.7`
+- Tag: `xp-v2.1.3.0-rc.48.7`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.7-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.7-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.7-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

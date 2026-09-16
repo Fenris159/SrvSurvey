@@ -43,8 +43,14 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
 
         using var current = Process.GetCurrentProcess();
         string processPath =
-            Environment.ProcessPath
+            Environment.GetEnvironmentVariable("APPIMAGE")
+            ?? Environment.ProcessPath
             ?? throw new InvalidOperationException("The running SrvSurvey executable path is unavailable.");
+        if (string.IsNullOrWhiteSpace(processPath))
+        {
+            throw new InvalidOperationException("The running SrvSurvey executable path is unavailable.");
+        }
+
         string canonicalPath = ApplicationProcessPathResolver.Canonicalize(processPath);
         long startTicks = current.StartTime.ToUniversalTime().Ticks;
         string pipeName = $"SrvSurvey.XP.{current.Id}.{startTicks}.{Guid.NewGuid():N}";

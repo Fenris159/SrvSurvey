@@ -47,6 +47,27 @@ public sealed class ApplicationStartupInstanceGateTests
     }
 
     [Fact]
+    public async Task UnverifiedOnlyMatchesDoNotPromptOrBlockStartup()
+    {
+        var manager = new RecordingInstanceManager(new ApplicationInstanceScan(0, 2));
+        var gate = new ApplicationStartupInstanceGate(manager);
+        bool prompted = false;
+
+        ApplicationStartupInstanceDecision result = await gate.EvaluateAsync(
+            concurrentInstanceAuthorized: false,
+            (_, _, _) =>
+            {
+                prompted = true;
+                return Task.FromResult(false);
+            }
+        );
+
+        Assert.Equal(ApplicationStartupInstanceDecision.Continue, result);
+        Assert.Equal(1, manager.ScanCount);
+        Assert.False(prompted);
+    }
+
+    [Fact]
     public async Task DecliningReplacementStopsTheNewInstance()
     {
         var manager = new RecordingInstanceManager(new ApplicationInstanceScan(1, 0));

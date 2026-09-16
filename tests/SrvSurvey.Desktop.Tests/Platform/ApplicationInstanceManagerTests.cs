@@ -147,6 +147,74 @@ public sealed class ApplicationInstanceManagerTests
         );
     }
 
+    [Theory]
+    [InlineData(false, false, true, false, false, false)] // Linux same-name unresolved → ignore
+    [InlineData(false, false, true, false, true, true)] // Windows same-name unresolved → unverified
+    [InlineData(false, true, true, true, true, true)] // Restart Manager without confirm → unverified
+    [InlineData(true, false, true, false, true, false)] // Already confirmed → not unverified
+    public void UnverifiedClassificationAvoidsLinuxNameOnlyFalsePositives(
+        bool confirmed,
+        bool pathResolved,
+        bool sameProcessName,
+        bool restartManagerMatch,
+        bool isWindows,
+        bool expected
+    )
+    {
+        Assert.Equal(
+            expected,
+            SystemApplicationInstanceProcessSource.IsUnverifiedProcess(
+                confirmed,
+                pathResolved,
+                sameProcessName,
+                restartManagerMatch,
+                isWindows
+            )
+        );
+    }
+
+    [Fact]
+    public void SharedDotnetHostPathIsNotTreatedAsApplicationIdentityByItself()
+    {
+        Assert.True(SystemApplicationInstanceProcessSource.IsSharedRuntimeHost("dotnet"));
+        Assert.True(SystemApplicationInstanceProcessSource.IsSharedRuntimeHost("DOTNET"));
+        Assert.False(SystemApplicationInstanceProcessSource.IsSharedRuntimeHost("SrvSurvey.Desktop"));
+
+        string installDirectory = Path.GetFullPath(
+            Path.Combine(Path.GetTempPath(), "SrvSurvey-identity-tests", "install")
+        );
+        string otherDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "SrvSurvey-identity-tests", "other"));
+        string identity = Path.Combine(installDirectory, "SrvSurvey.Desktop.dll");
+        string otherIdentity = Path.Combine(otherDirectory, "SrvSurvey.Desktop.dll");
+        string host = Path.Combine(Path.GetTempPath(), "dotnet");
+
+        Assert.True(SystemApplicationInstanceProcessSource.CommandLineContainsIdentity([host, identity], identity));
+        Assert.False(SystemApplicationInstanceProcessSource.CommandLineContainsIdentity([host, "build"], identity));
+        Assert.False(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity([host, otherIdentity], identity)
+        );
+        Assert.True(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
+                [host, "SrvSurvey.Desktop.dll"],
+                identity,
+                workingDirectory: installDirectory
+            )
+        );
+        Assert.False(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
+                [host, "SrvSurvey.Desktop.dll"],
+                identity,
+                workingDirectory: otherDirectory
+            )
+        );
+        Assert.False(
+            SystemApplicationInstanceProcessSource.CommandLineContainsIdentity(
+                [host, "SrvSurvey.Desktop.dll"],
+                identity
+            )
+        );
+    }
+
     [Fact]
     public void RegistrationMatchesResolvedCandidateAgainstItsRecordedExecutable()
     {

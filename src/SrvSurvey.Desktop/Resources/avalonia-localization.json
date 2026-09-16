@@ -23897,8 +23897,16 @@
       "translation": "Die Startoption --journal-directory steuert diese Instanz. Entfernen Sie diese Option, um den dauerhaften Ordner zu verwenden."
     },
     {
+      "source": "The /proc command line was empty.",
+      "translation": "Die Befehlszeile /proc war leer."
+    },
+    {
       "source": "The /proc executable link was unavailable.",
       "translation": "Der Link zur ausführbaren Datei /proc war nicht verfügbar."
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "Der Link zum Arbeitsverzeichnis /proc war nicht verfügbar."
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
@@ -25759,6 +25767,10 @@
     {
       "source": "The {0} could not be copied: {1}",
       "translation": "Der {0} konnte nicht kopiert werden: {1}"
+    },
+    {
+      "source": "The {0} environment variable was not present.",
+      "translation": "Die Umgebungsvariable {0} war nicht vorhanden."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -55683,8 +55695,16 @@
       "translation": "La opción de inicio --journal-directory controla esta instancia. Elimine esa opción para usar la carpeta persistente."
     },
     {
+      "source": "The /proc command line was empty.",
+      "translation": "La línea de comando /proc estaba vacía."
+    },
+    {
       "source": "The /proc executable link was unavailable.",
       "translation": "El enlace ejecutable /proc no estaba disponible."
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "El enlace del directorio de trabajo /proc no estaba disponible."
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
@@ -57545,6 +57565,10 @@
     {
       "source": "The {0} could not be copied: {1}",
       "translation": "El {0} no se pudo copiar: {1}"
+    },
+    {
+      "source": "The {0} environment variable was not present.",
+      "translation": "La variable de entorno {0} no estaba presente."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -87469,8 +87493,16 @@
       "translation": "L'option de démarrage --journal-directory contrôle cette instance. Supprimez cette option pour utiliser le dossier persistant."
     },
     {
+      "source": "The /proc command line was empty.",
+      "translation": "La ligne de commande /proc était vide."
+    },
+    {
       "source": "The /proc executable link was unavailable.",
       "translation": "Le lien exécutable /proc n'était pas disponible."
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "Le lien vers le répertoire de travail /proc n'était pas disponible."
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
@@ -89331,6 +89363,10 @@
     {
       "source": "The {0} could not be copied: {1}",
       "translation": "Le {0} n'a pas pu être copié : {1}"
+    },
+    {
+      "source": "The {0} environment variable was not present.",
+      "translation": "La variable d'environnement {0} n'était pas présente."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -119255,8 +119291,16 @@
       "translation": "A opção de inicialização --journal-directory controla esta instância. Remova essa opção para usar a pasta persistente."
     },
     {
+      "source": "The /proc command line was empty.",
+      "translation": "A linha de comando /proc estava vazia."
+    },
+    {
       "source": "The /proc executable link was unavailable.",
       "translation": "O link executável /proc não estava disponível."
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "O link do diretório de trabalho /proc não estava disponível."
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
@@ -121117,6 +121161,10 @@
     {
       "source": "The {0} could not be copied: {1}",
       "translation": "O {0} não pôde ser copiado: {1}"
+    },
+    {
+      "source": "The {0} environment variable was not present.",
+      "translation": "A variável de ambiente {0} não estava presente."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -151041,8 +151089,16 @@
       "translation": "Параметр запуска --journal-directory управляет этим экземпляром. Удалите эту опцию, чтобы использовать сохраненную папку."
     },
     {
+      "source": "The /proc command line was empty.",
+      "translation": "Командная строка /proc была пуста."
+    },
+    {
       "source": "The /proc executable link was unavailable.",
       "translation": "Ссылка на исполняемый файл /proc была недоступна."
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "Ссылка на рабочий каталог /proc была недоступна."
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
@@ -152903,6 +152959,10 @@
     {
       "source": "The {0} could not be copied: {1}",
       "translation": "{0} не удалось скопировать: {1}"
+    },
+    {
+      "source": "The {0} environment variable was not present.",
+      "translation": "Переменная среды {0} не присутствовала."
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -182827,8 +182887,16 @@
       "translation": "--journal-directory 启动选项控制此实例。删除该选项以使用持久文件夹。"
     },
     {
+      "source": "The /proc command line was empty.",
+      "translation": "/proc 命令行为空。"
+    },
+    {
       "source": "The /proc executable link was unavailable.",
       "translation": "/proc 可执行链接不可用。"
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "/proc 工作目录链接不可用。"
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
@@ -184689,6 +184757,10 @@
     {
       "source": "The {0} could not be copied: {1}",
       "translation": "无法复制 {0}：{1}"
+    },
+    {
+      "source": "The {0} environment variable was not present.",
+      "translation": "{0} 环境变量不存在。"
     },
     {
       "source": "The {0} guide could not be opened: {1}",
@@ -214613,8 +214685,16 @@
       "translation": "* THE --JOURNAL-DIRECTORY STARTUP OPTION CONTROLS THIS INSTANCE. REMOVE THAT OPTION TO USE THE PERSISTED FOLDER. >>>!"
     },
     {
+      "source": "The /proc command line was empty.",
+      "translation": "* THE /PROC COMMAND LINE WAS EMPTY. >>>!"
+    },
+    {
       "source": "The /proc executable link was unavailable.",
       "translation": "* THE /PROC EXECUTABLE LINK WAS UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "The /proc working directory link was unavailable.",
+      "translation": "* THE /PROC WORKING DIRECTORY LINK WAS UNAVAILABLE. >>>!"
     },
     {
       "source": "The API key is stored only in this local Commander profile. Clearing it cancels active delivery and removes pending in-memory events.",
@@ -216475,6 +216555,10 @@
     {
       "source": "The {0} could not be copied: {1}",
       "translation": "* THE {0} COULD NOT BE COPIED: {1} >>>!"
+    },
+    {
+      "source": "The {0} environment variable was not present.",
+      "translation": "* THE {0} ENVIRONMENT VARIABLE WAS NOT PRESENT. >>>!"
     },
     {
       "source": "The {0} guide could not be opened: {1}",

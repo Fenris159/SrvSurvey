@@ -34,7 +34,7 @@ public sealed class ApplicationStartupWindowPresenterTests
     }
 
     [AvaloniaFact]
-    public void OrdinaryStartupDoesNotOverrideLifetimeWindowPresentation()
+    public void OrdinaryStartupShowsMainWindowAfterDeferredAssignment()
     {
         var desktop = new ClassicDesktopStyleApplicationLifetime();
         var mainWindow = new Window { ShowInTaskbar = false, WindowState = WindowState.Minimized };
@@ -43,12 +43,14 @@ public sealed class ApplicationStartupWindowPresenterTests
             ApplicationStartupWindowPresenter.Present(desktop, mainWindow, bringToFront: false);
 
             Assert.Same(mainWindow, desktop.MainWindow);
-            Assert.False(mainWindow.IsVisible);
-            Assert.False(mainWindow.ShowInTaskbar);
+            Assert.True(mainWindow.IsVisible);
+            Assert.True(mainWindow.ShowInTaskbar);
+            // Ordinary startup shows the window but does not force Normal/Activate (replacement does).
             Assert.Equal(WindowState.Minimized, mainWindow.WindowState);
         }
         finally
         {
+            mainWindow.Close();
             desktop.MainWindow = null;
         }
     }
