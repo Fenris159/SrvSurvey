@@ -12409,6 +12409,10 @@
       "translation": "Kalk"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Verlinktes Raven-Projekt {0} in die aktive Liste für diese Baustelle aufgenommen."
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Verknüpfte Fracht von RavenColonial. Kapazität und Finanzen stammen aus der letzten Aktualisierung Frontier."
     },
@@ -44205,6 +44209,10 @@
     {
       "source": "Lime",
       "translation": "Cal"
+    },
+    {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Vinculé el proyecto Raven {0} a la lista activa para este sitio de construcción."
     },
     {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
@@ -76005,6 +76013,10 @@
       "translation": "Citron vert"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Projet Raven lié {0} dans la liste active pour ce chantier de construction."
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Cargaison liée de RavenColonial. La capacité et les finances proviennent de la dernière actualisation Frontier."
     },
@@ -107801,6 +107813,10 @@
     {
       "source": "Lime",
       "translation": "Lima"
+    },
+    {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Vinculou o projeto Raven {0} à lista ativa deste canteiro de obras."
     },
     {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
@@ -139601,6 +139617,10 @@
       "translation": "Лайм"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Связанный проект Raven {0} в активный список для этой строительной площадки."
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Связанный груз от RavenColonial. Емкость и финансы взяты из последнего Frontier обновления."
     },
@@ -171399,6 +171419,10 @@
       "translation": "酸橙"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "将 Raven 项目 {0} 链接到该建筑站点的活动列表中。"
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "来自 RavenColonial 的链接货物。产能和财务来自上次 Frontier 刷新。"
     },
@@ -203195,6 +203219,10 @@
     {
       "source": "Lime",
       "translation": "* LIME >>>!"
+    },
+    {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "* LINKED RAVEN PROJECT {0} INTO THE ACTIVE LIST FOR THIS CONSTRUCTION SITE. >>>!"
     },
     {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",

@@ -24889,6 +24889,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "Linked Raven project {0} into the active list for this construction site.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
     "IsFormat": false,
     "SourceKinds": [
