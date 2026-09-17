@@ -2265,7 +2265,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
-    public void BiologySurveyUsesCanonnExactOrganismAsConfirmedSolidReward()
+    public void BiologySurveyUsesCanonnNonCommanderScanAsPrediction()
     {
         SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.UseExternalData = true;
@@ -2301,10 +2301,57 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             )
         );
 
-        BiologySignalRewardBandViewModel band = Assert.Single(
-            Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands,
-            candidate => !candidate.IsPrediction
+        BiologySignalRewardBandViewModel band = Assert.Single(Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands);
+        Assert.True(band.IsPrediction);
+        Assert.Equal(6_284_600, band.MinimumReward);
+        Assert.Equal(band.MinimumReward, band.MaximumReward);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        BiologyOrganismRowViewModel organism = Assert.Single(viewModel.BiologySurvey.Organisms);
+        Assert.Equal("Aleoida Coronamus - Lime", organism.DisplayName);
+        Assert.True(organism.IsPrediction);
+        Assert.Equal(6_284_600, organism.Reward);
+    }
+
+    [Fact]
+    public void BiologySurveyUsesCanonnCommanderScanAsConfirmedSolid()
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.UseExternalData = true;
+        viewModel.AutoShowPriorScans = true;
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+                ),
+                Parse(PredictableAleoidaScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap }
         );
+
+        Assert.All(Assert.Single(viewModel.BiologySurvey!.Bodies).RewardBands, band => Assert.True(band.IsPrediction));
+
+        viewModel.UpdateCanonnSystemPoi(
+            new CanonnSystemPoiResult(
+                "Test",
+                [
+                    new CanonnSurfaceBiologySignal(
+                        "1",
+                        "Aleoida Coronamus - Lime",
+                        2310206,
+                        new SurfaceCoordinate(1, 2),
+                        true
+                    ),
+                ]
+            )
+        );
+
+        BiologySignalRewardBandViewModel band = Assert.Single(Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands);
         Assert.False(band.IsPrediction);
         Assert.Equal(6_284_600, band.MinimumReward);
         Assert.Equal(band.MinimumReward, band.MaximumReward);
