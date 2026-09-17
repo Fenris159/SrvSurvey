@@ -53744,6 +53744,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Updated Raven remaining cargo after contribution for {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Updated master-template point {0}.",
     "IsFormat": true,
     "SourceKinds": [

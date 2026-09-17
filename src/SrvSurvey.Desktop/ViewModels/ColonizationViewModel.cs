@@ -73,6 +73,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     /// already sent AdjustFleetCarrierCargo for this linked squadron FC (legacy parity).
     /// </summary>
     private bool skipNextCargoEvent;
+    private bool pendingContributionRemainingSync;
     private string ravenCredentialStatus = "Load a commander profile to configure a Raven API key.";
     private string fleetCarrierSyncStatus = FleetCarrierSyncOffMessage;
     private string shipCargoPublishingStatus = "Automatic ship cargo publishing is off.";
@@ -1155,7 +1156,41 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         await client.ContributeToProjectAsync(project.BuildId, CommanderName!, contributions, CancellationToken.None);
-        return $"Published {contributions.Values.Sum(value => (long)value):N0} contributed cargo units to {project.BuildName}.";
+        // Contribute only credits history. Remaining need rows stay stale until an absolute
+        // depot/commodity update lands — force that publish here so Raven cannot track a
+        // delivery without updating what is still required.
+        pendingContributionRemainingSync = true;
+        string? remainingMessage = await PublishRemainingAfterContributionAsync(project, marketId.Value, contributions);
+        return CombineMessages(
+            $"Published {contributions.Values.Sum(value => (long)value):N0} contributed cargo units to {project.BuildName}.",
+            remainingMessage
+        );
+    }
+
+    private async Task<string?> PublishRemainingAfterContributionAsync(
+        ColonizationProject project,
+        long marketId,
+        IReadOnlyDictionary<string, int> contributions
+    )
+    {
+        ColonizationConstructionDepotSnapshot? depot = constructionState.CurrentDepot;
+        if (depot is not null && depot.MarketId == marketId)
+        {
+            Dictionary<string, int> depotRemaining = ToRemainingCommodities(depot);
+            if (!DictionariesEqual(project.Commodities, depotRemaining))
+            {
+                // Depot already moved ahead of the cached project (depot before contribute).
+                return await PublishProjectRemainingAsync(project, depot, depotRemaining, force: true);
+            }
+        }
+
+        Dictionary<string, int> remaining = ApplyContributionToRemaining(project.Commodities, contributions);
+        return await PublishProjectRemainingAsync(
+            project,
+            depot is not null && depot.MarketId == marketId ? depot : null,
+            remaining,
+            force: true
+        );
     }
 
     private async Task<string?> SynchronizeDepotAsync(JournalEventEnvelope journalEvent)
@@ -1178,11 +1213,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return "Raven did not identify a project for the current construction depot.";
         }
 
-        var remaining = depot.Resources.ToDictionary(
-            resource => resource.Name,
-            resource => resource.RemainingAmount,
-            StringComparer.OrdinalIgnoreCase
-        );
+        Dictionary<string, int> remaining = ToRemainingCommodities(depot);
         long maximumRequiredLong = depot.Resources.Sum(resource => (long)resource.RequiredAmount);
         if (maximumRequiredLong > int.MaxValue)
         {
@@ -1190,40 +1221,113 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         int maximumRequired = (int)maximumRequiredLong;
-        ColonizationProject updated = project;
-        if (
-            project.MaximumRequired != maximumRequired
+        bool force = pendingContributionRemainingSync;
+        bool requiresUpdate =
+            force
+            || project.MaximumRequired != maximumRequired
             || !DictionariesEqual(project.Commodities, remaining)
-            || depot.IsFailed
+            || depot.IsFailed;
+        if (!requiresUpdate)
+        {
+            return null;
+        }
+
+        string? message = await PublishProjectRemainingAsync(project, depot, remaining, force);
+        if (depot.IsComplete)
+        {
+            ColonizationProject latest =
+                Projects.Select(row => row.Project).FirstOrDefault(candidate => candidate.BuildId == project.BuildId)
+                ?? project;
+            if (!latest.IsComplete)
+            {
+                await client.MarkProjectCompleteAsync(latest.BuildId, CancellationToken.None);
+                latest = latest with
+                {
+                    IsComplete = true,
+                    RemainingRequired = 0,
+                    Commodities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+                };
+                UpsertProject(latest);
+                return CombineMessages(message, $"Marked Raven project {latest.BuildName} complete.");
+            }
+        }
+
+        return message;
+    }
+
+    private async Task<string?> PublishProjectRemainingAsync(
+        ColonizationProject project,
+        ColonizationConstructionDepotSnapshot? depot,
+        Dictionary<string, int> remaining,
+        bool force
+    )
+    {
+        int? maximumRequired = depot is null
+            ? project.MaximumRequired
+            : checked((int)depot.Resources.Sum(resource => (long)resource.RequiredAmount));
+        if (
+            !force
+            && project.MaximumRequired == maximumRequired
+            && DictionariesEqual(project.Commodities, remaining)
+            && depot is not { IsFailed: true }
         )
         {
-            updated = await client.UpdateProjectAsync(
-                new ColonizationProjectUpdate
-                {
-                    BuildId = project.BuildId,
-                    MaximumRequired = maximumRequired,
-                    Commodities = remaining,
-                    ConstructionDepot = ColonizationConstructionDepotPayload.FromSnapshot(depot),
-                },
-                CancellationToken.None
-            );
-            UpsertProject(updated);
+            return null;
         }
 
-        if (depot.IsComplete && !updated.IsComplete)
-        {
-            await client.MarkProjectCompleteAsync(updated.BuildId, CancellationToken.None);
-            updated = updated with
+        ColonizationProject updated = await client.UpdateProjectAsync(
+            new ColonizationProjectUpdate
             {
-                IsComplete = true,
-                RemainingRequired = 0,
-                Commodities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
-            };
-            UpsertProject(updated);
-            return $"Marked Raven project {updated.BuildName} complete.";
+                BuildId = project.BuildId,
+                MaximumRequired = maximumRequired,
+                Commodities = remaining,
+                ConstructionDepot = depot is null ? null : ColonizationConstructionDepotPayload.FromSnapshot(depot),
+            },
+            CancellationToken.None
+        );
+        UpsertProject(updated);
+        pendingContributionRemainingSync = false;
+        return force
+            ? $"Updated Raven remaining cargo after contribution for {updated.BuildName}."
+            : $"Updated Raven construction requirements for {updated.BuildName}.";
+    }
+
+    private static Dictionary<string, int> ToRemainingCommodities(ColonizationConstructionDepotSnapshot depot)
+    {
+        return depot.Resources.ToDictionary(
+            resource => resource.Name,
+            resource => resource.RemainingAmount,
+            StringComparer.OrdinalIgnoreCase
+        );
+    }
+
+    private static Dictionary<string, int> ApplyContributionToRemaining(
+        IReadOnlyDictionary<string, int> commodities,
+        IReadOnlyDictionary<string, int> contributions
+    )
+    {
+        var remaining = new Dictionary<string, int>(commodities, StringComparer.OrdinalIgnoreCase);
+        foreach (KeyValuePair<string, int> contribution in contributions)
+        {
+            string name = ColonizationConstructionState.NormalizeCommodityName(contribution.Key);
+            if (name.Length == 0 || contribution.Value <= 0)
+            {
+                continue;
+            }
+
+            int current = remaining.GetValueOrDefault(name);
+            int next = Math.Max(0, current - contribution.Value);
+            if (next == 0)
+            {
+                remaining.Remove(name);
+            }
+            else
+            {
+                remaining[name] = next;
+            }
         }
 
-        return updated == project ? null : $"Updated Raven construction requirements for {updated.BuildName}.";
+        return remaining;
     }
 
     private async Task<ColonizationProjectLookup> FindOrLoadProjectAsync(long? systemAddress, long marketId)

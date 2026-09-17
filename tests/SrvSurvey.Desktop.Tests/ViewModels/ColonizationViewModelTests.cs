@@ -246,7 +246,55 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal("Test Cmdr", contribution.CommanderName);
         Assert.Equal(25, contribution.Commodities["steel"]);
         Assert.Equal(75, Assert.Single(viewModel.Projects).Project.RemainingRequired);
-        Assert.Contains("Updated Raven construction requirements", viewModel.StatusMessage);
+        Assert.Contains("Updated Raven remaining cargo after contribution", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task ContributionPublishesRemainingEvenWithoutAFollowingDepotEvent()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [Project("build-1", "Port", remaining: 100, marketId: 10, systemAddress: 20)],
+                [],
+                null,
+                []
+            ),
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        JournalEventEnvelope[] events =
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":10,"SystemAddress":20,"StarSystem":"Test System",
+                "StationName":"Orbital Construction Site: Hope",
+                "StationFaction":{"Name":"Builders"},
+                "StationServices":["colonisationcontribution"]
+                """
+            ),
+            Event(
+                "ColonisationContribution",
+                """
+                "MarketID":10,
+                "Contributions":[{"Name":"$Steel_name;","Amount":25}]
+                """
+            ),
+        ];
+        viewModel.ApplyJournalEvents(events);
+
+        await viewModel.SynchronizeLiveProjectsAsync(events, allowPublishing: true);
+
+        Assert.Contains(
+            client.ProjectUpdates,
+            update => update.Commodities is not null && update.Commodities.GetValueOrDefault("steel") == 75
+        );
+        ContributionCall contribution = Assert.Single(client.Contributions);
+        Assert.Equal(25, contribution.Commodities["steel"]);
+        Assert.Equal(75, Assert.Single(viewModel.Projects).Project.Commodities["steel"]);
+        Assert.Contains("Updated Raven remaining cargo after contribution", viewModel.StatusMessage);
     }
 
     [Fact]

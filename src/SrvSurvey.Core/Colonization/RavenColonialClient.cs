@@ -344,10 +344,18 @@ public sealed class RavenColonialClient : IRavenColonialClient
         }
 
         var normalized = contributions.ToDictionary(
-            pair => pair.Key.Trim(),
+            pair => ColonizationConstructionState.NormalizeCommodityName(pair.Key),
             pair => pair.Value,
             StringComparer.OrdinalIgnoreCase
         );
+        if (normalized.Any(pair => pair.Key.Length == 0 || pair.Value <= 0))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(contributions),
+                "Project contributions require a commodity name and a positive amount."
+            );
+        }
+
         return SendWithoutResponseAsync(
             HttpMethod.Post,
             $"api/project/{Uri.EscapeDataString(buildId.Trim())}/contribute/"

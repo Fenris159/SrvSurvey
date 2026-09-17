@@ -195,6 +195,7 @@ try {
         }
 
         $ruleSetPath = Join-Path $repositoryRoot "tools/SonarCloud.ruleset"
+        & dotnet build-server shutdown *> $null
         & dotnet build $Solution `
             --configuration Release `
             --no-restore `

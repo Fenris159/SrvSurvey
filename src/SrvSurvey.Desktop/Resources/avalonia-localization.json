@@ -26805,6 +26805,10 @@
       "translation": "Aktualisierte Raven-Projektfraktion für {0}."
     },
     {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Die verbleibende Raven-Fracht nach dem Beitrag für {0} wurde aktualisiert."
+    },
+    {
       "source": "Updated master-template point {0}.",
       "translation": "Aktualisierter Master-Vorlagenpunkt {0}."
     },
@@ -58605,6 +58609,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "Facción del proyecto Raven actualizada para {0}."
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Se actualizó la carga restante de Raven después de la contribución para {0}."
     },
     {
       "source": "Updated master-template point {0}.",
@@ -90409,6 +90417,10 @@
       "translation": "Faction du projet Raven mise à jour pour {0}."
     },
     {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Mise à jour de la cargaison restante de Raven après contribution pour {0}."
+    },
+    {
       "source": "Updated master-template point {0}.",
       "translation": "Point de modèle principal mis à jour {0}."
     },
@@ -122209,6 +122221,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "Facção do projeto Raven atualizada para {0}."
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Carga restante Raven atualizada após contribuição para {0}."
     },
     {
       "source": "Updated master-template point {0}.",
@@ -154013,6 +154029,10 @@
       "translation": "Обновлена фракция проекта Raven для {0}."
     },
     {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Обновлен оставшийся груз Raven после вклада для {0}."
+    },
+    {
       "source": "Updated master-template point {0}.",
       "translation": "Обновлена точка основного шаблона {0}."
     },
@@ -185815,6 +185835,10 @@
       "translation": "更新了 {0} 的 Raven 项目派别。"
     },
     {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "为 {0} 贡献后更新了 Raven 剩余货物。"
+    },
+    {
       "source": "Updated master-template point {0}.",
       "translation": "更新了主模板点 {0}。"
     },
@@ -217615,6 +217639,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "* UPDATED RAVEN PROJECT FACTION FOR {0}. >>>!"
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "* UPDATED RAVEN REMAINING CARGO AFTER CONTRIBUTION FOR {0}. >>>!"
     },
     {
       "source": "Updated master-template point {0}.",
