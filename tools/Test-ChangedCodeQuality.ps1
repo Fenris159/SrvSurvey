@@ -87,7 +87,13 @@ function Invoke-LocalizationCatalogVerify {
     }
 
     Write-Output "Avalonia localization catalogs match the extracted sources."
+}
 
+function Invoke-LocalizationCatalogTests {
+    param([string]$RepositoryRoot)
+
+    # Run after the Sonar rebuild so MSBuild/test hosts do not share a poisoned
+    # build-server session on Linux.
     & dotnet test `
         (Join-Path $RepositoryRoot "tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj") `
         --configuration Release `
@@ -143,6 +149,7 @@ try {
 
     if ($changedRanges.Count -eq 0) {
         Write-Output "No changed C# lines to check."
+        Invoke-LocalizationCatalogTests -RepositoryRoot $repositoryRoot
         exit 0
     }
 
@@ -245,6 +252,7 @@ try {
         }
 
         Write-Output "Changed C# lines match the .editorconfig style and local SonarCloud profile."
+        Invoke-LocalizationCatalogTests -RepositoryRoot $repositoryRoot
     }
     finally {
         if (Test-Path -LiteralPath $reportPath) {
