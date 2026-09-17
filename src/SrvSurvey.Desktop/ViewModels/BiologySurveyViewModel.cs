@@ -644,7 +644,7 @@ public sealed class BiologySurveyViewModel
             IsGlobalRegionalFirst = firstDiscovery.IsGlobalRegionalFirst,
             IsHighlightedFirst = firstDiscovery.IsHighlighted(highlightRegionalFirsts),
             IsCurrentSample = activeSample,
-            IsPrediction = false,
+            IsPrediction = organism.Variant is not null && !organism.IsScanned,
             IsGenusIdentified = organism.Variant is null,
             IsUnknown = false,
             ShouldDim = dimAnalyzedOrganisms && organism.IsAnalyzed,
@@ -944,13 +944,21 @@ public sealed class BiologySurveyViewModel
             if (organism.Reward is { } reward && reward > 0)
             {
                 bands.Add(
-                    BiologySignalRewardBandViewModel.Known(
-                        reward,
-                        isHighlighted,
-                        organism.IsAnalyzed,
-                        rewardThresholds,
-                        discoveryState.IsGlobalRegionalFirst
-                    )
+                    organism.IsScanned
+                        ? BiologySignalRewardBandViewModel.Known(
+                            reward,
+                            isHighlighted,
+                            organism.IsAnalyzed,
+                            rewardThresholds,
+                            discoveryState.IsGlobalRegionalFirst
+                        )
+                        : BiologySignalRewardBandViewModel.Predicted(
+                            reward,
+                            reward,
+                            isHighlighted,
+                            rewardThresholds,
+                            discoveryState.IsGlobalRegionalFirst
+                        )
                 );
                 consumedPredictionGenera.Add(genus);
                 continue;
