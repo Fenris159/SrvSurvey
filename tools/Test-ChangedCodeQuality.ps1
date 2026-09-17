@@ -87,6 +87,17 @@ function Invoke-LocalizationCatalogVerify {
     }
 
     Write-Output "Avalonia localization catalogs match the extracted sources."
+
+    & dotnet test `
+        (Join-Path $RepositoryRoot "tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj") `
+        --configuration Release `
+        --filter "FullyQualifiedName~Localization.LocalizationCatalogTests" `
+        --no-restore
+    if ($LASTEXITCODE -ne 0) {
+        throw "Localization catalog tests failed."
+    }
+
+    Write-Output "Localization catalog tests passed."
 }
 
 function Invoke-CSharpierCheck {
