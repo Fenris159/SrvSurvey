@@ -77,6 +77,54 @@ public sealed class BiologySurveyRewardSummaryTests
     }
 
     [Fact]
+    public void IdentifiedBodyFormatsUnscannedOrganismAsEstimatedReward()
+    {
+        SystemScanSnapshot snapshot = CreateSnapshot(
+            biologicalSignalCount: 1,
+            isDssComplete: true,
+            isFirstFootfall: false,
+            [UnscannedOrganism(6_284_600)]
+        );
+
+        BiologySurveyViewModel survey = CreateBodyDetail(snapshot, disablePredictions: true);
+
+        Assert.Equal("Estimated reward:\n6.28 M CR", survey.RewardSummary);
+    }
+
+    [Fact]
+    public void IdentifiedBodyFormatsMixedScannedAndUnscannedAsEstimatedReward()
+    {
+        SystemScanSnapshot snapshot = CreateSnapshot(
+            biologicalSignalCount: 2,
+            isDssComplete: true,
+            isFirstFootfall: true,
+            [KnownOrganism(1_000_000), UnscannedOrganism(2_000_000)]
+        );
+
+        BiologySurveyViewModel survey = CreateBodyDetail(snapshot, disablePredictions: true);
+
+        Assert.Equal("Estimated reward:\n3.00 M CR", survey.RewardSummary);
+        Assert.Equal("First-footfall estimate:\n15.00 M", survey.FirstFootfallRewardSummary);
+    }
+
+    [Fact]
+    public void IdentifiedBodyFormatsUnscannedWithPendingSignalsAsEstimatedRange()
+    {
+        SystemScanSnapshot snapshot = CreateSnapshot(
+            biologicalSignalCount: 2,
+            isDssComplete: true,
+            isFirstFootfall: false,
+            [UnscannedOrganism(1_000_000)]
+        );
+        BiologySurveyBodyDetailOptions options = CreatePredictionOptions(("Arcus", "Green", 500_000));
+
+        BiologySurveyViewModel survey = CreateBodyDetail(snapshot, options);
+
+        Assert.StartsWith("Estimated reward:\n", survey.RewardSummary);
+        Assert.Contains("pending", survey.RewardSummary);
+    }
+
+    [Fact]
     public void SystemOverviewOmitsZeroKnownRewardWithoutPendingSignals()
     {
         SystemScanSnapshot snapshot = CreateSnapshot(
@@ -212,6 +260,23 @@ public sealed class BiologySurveyRewardSummaryTests
             reward,
             IsScanned: true,
             IsAnalyzed: true,
+            IsRegionalFirst: false
+        );
+    }
+
+    private static SystemOrganismSnapshot UnscannedOrganism(long reward)
+    {
+        return new SystemOrganismSnapshot(
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "Aleoida",
+            "$Codex_Ent_Aleoids_02_Name;",
+            "Aleoida Coronamus",
+            "$Codex_Ent_Aleoids_02_C_Name;",
+            "Aleoida Coronamus - Lime",
+            10_002,
+            reward,
+            IsScanned: false,
+            IsAnalyzed: false,
             IsRegionalFirst: false
         );
     }

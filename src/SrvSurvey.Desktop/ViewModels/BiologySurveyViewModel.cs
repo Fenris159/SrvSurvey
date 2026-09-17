@@ -420,9 +420,29 @@ public sealed class BiologySurveyViewModel
 
     private static string FormatIdentifiedRewardSummary(BiologyRewardEstimate rewardEstimate)
     {
+        if (rewardEstimate.HasUnscannedOrganismReward)
+        {
+            return "Estimated reward:\n"
+                + FormatRewardRange(
+                    rewardEstimate.MinimumReward,
+                    rewardEstimate.MaximumReward,
+                    rewardEstimate.HasUnknownReward
+                );
+        }
+
         if (rewardEstimate.KnownReward <= 0)
         {
             return rewardEstimate.HasUnknownReward ? "Reward pending identification" : string.Empty;
+        }
+
+        if (rewardEstimate.HasPredictedReward)
+        {
+            return "Estimated reward:\n"
+                + FormatRewardRange(
+                    rewardEstimate.MinimumReward,
+                    rewardEstimate.MaximumReward,
+                    rewardEstimate.HasUnknownReward
+                );
         }
 
         string value = FormatCompactCredits(rewardEstimate.KnownReward);
@@ -644,7 +664,7 @@ public sealed class BiologySurveyViewModel
             IsGlobalRegionalFirst = firstDiscovery.IsGlobalRegionalFirst,
             IsHighlightedFirst = firstDiscovery.IsHighlighted(highlightRegionalFirsts),
             IsCurrentSample = activeSample,
-            IsPrediction = false,
+            IsPrediction = organism.Variant is not null && !organism.IsScanned,
             IsGenusIdentified = organism.Variant is null,
             IsUnknown = false,
             ShouldDim = dimAnalyzedOrganisms && organism.IsAnalyzed,
@@ -857,14 +877,25 @@ public sealed class BiologySurveyViewModel
         BiologyPredictionSet predictionSet
     )
     {
-        long knownReward = body.Organisms.Sum(organism => organism.Reward ?? 0);
+        long knownReward = body.Organisms.Where(organism => organism.IsScanned).Sum(organism => organism.Reward ?? 0);
+        long unscannedReward = body
+            .Organisms.Where(organism => !organism.IsScanned && organism.Reward.HasValue)
+            .Sum(organism => organism.Reward!.Value);
         int remainingSignals = Math.Max(
             0,
             body.BiologicalSignalCount - body.Organisms.Count(organism => organism.Species is not null)
         );
+        bool hasUnscannedOrganismReward = unscannedReward > 0;
         if (remainingSignals == 0)
         {
-            return new BiologyRewardEstimate(knownReward, knownReward, knownReward, false, false);
+            return new BiologyRewardEstimate(
+                knownReward,
+                knownReward + unscannedReward,
+                knownReward + unscannedReward,
+                hasUnscannedOrganismReward,
+                false,
+                hasUnscannedOrganismReward
+            );
         }
 
         var rewardGroups = predictionSet
@@ -888,10 +919,11 @@ public sealed class BiologySurveyViewModel
 
         return new BiologyRewardEstimate(
             knownReward,
-            knownReward + minimumAdd,
-            knownReward + maximumAdd,
-            predictedCount > 0,
-            !predictionSet.IsComplete || predictedCount < remainingSignals
+            knownReward + unscannedReward + minimumAdd,
+            knownReward + unscannedReward + maximumAdd,
+            hasUnscannedOrganismReward || predictedCount > 0,
+            !predictionSet.IsComplete || predictedCount < remainingSignals,
+            hasUnscannedOrganismReward
         );
     }
 
@@ -944,13 +976,21 @@ public sealed class BiologySurveyViewModel
             if (organism.Reward is { } reward && reward > 0)
             {
                 bands.Add(
-                    BiologySignalRewardBandViewModel.Known(
-                        reward,
-                        isHighlighted,
-                        organism.IsAnalyzed,
-                        rewardThresholds,
-                        discoveryState.IsGlobalRegionalFirst
-                    )
+                    organism.IsScanned
+                        ? BiologySignalRewardBandViewModel.Known(
+                            reward,
+                            isHighlighted,
+                            organism.IsAnalyzed,
+                            rewardThresholds,
+                            discoveryState.IsGlobalRegionalFirst
+                        )
+                        : BiologySignalRewardBandViewModel.Predicted(
+                            reward,
+                            reward,
+                            isHighlighted,
+                            rewardThresholds,
+                            discoveryState.IsGlobalRegionalFirst
+                        )
                 );
                 consumedPredictionGenera.Add(genus);
                 continue;
@@ -1229,7 +1269,8 @@ public sealed class BiologySurveyViewModel
         long MinimumReward,
         long MaximumReward,
         bool HasPredictedReward,
-        bool HasUnknownReward
+        bool HasUnknownReward,
+        bool HasUnscannedOrganismReward
     );
 
     private sealed record BiologySignalRewardRange(
