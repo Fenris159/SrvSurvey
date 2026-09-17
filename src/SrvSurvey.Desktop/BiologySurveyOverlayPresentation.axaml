@@ -97,7 +97,7 @@
       <Setter Property="FrameBrush" Value="{DynamicResource RavenPrimaryBrush}" />
     </Style>
     <Style Selector="controls|BiologyRewardBandGroupControl.highlight">
-      <Setter Property="FrameBrush" Value="{DynamicResource RavenSecondaryBrush}" />
+      <Setter Property="FrameBrush" Value="{DynamicResource RavenOverlaySuccessBrush}" />
     </Style>
   </UserControl.Styles>
   <Border Margin="0"
