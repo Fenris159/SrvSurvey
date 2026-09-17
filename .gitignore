@@ -349,3 +349,7 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Local Cursor / agent skills (install with: npx skills add mattpocock/skills --agent cursor)
+.agents/
+skills-lock.json
