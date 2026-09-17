@@ -8,7 +8,28 @@
              x:Class="SrvSurvey.Desktop.Views.ColonizationView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+  <UserControl.Styles>
+    <!-- Let entry fields and dropdowns size to their content instead of fixed column widths. -->
+    <Style Selector="ComboBox">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="behaviors:ComboBoxFitContentBehavior.Enabled" Value="True" />
+    </Style>
+    <Style Selector="ComboBox TextBlock">
+      <Setter Property="TextWrapping" Value="NoWrap" />
+      <Setter Property="TextTrimming" Value="None" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="MinWidth" Value="0" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="MinWidth" Value="0" />
+    </Style>
+  </UserControl.Styles>
+  <ScrollViewer HorizontalScrollBarVisibility="Auto">
     <StackPanel Margin="32" Spacing="24" MaxWidth="1100">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
         <StackPanel Spacing="5">
@@ -20,7 +41,6 @@
         </StackPanel>
         <Button Grid.Column="1"
                 Classes="secondary"
-                MinWidth="132"
                 VerticalAlignment="Center"
                 Command="{Binding Colonization.RefreshCommand}"
                 Content="{Binding Colonization.RefreshButtonText}" />
@@ -240,45 +260,57 @@
                         Content="Remove selected" />
               </Grid>
 
-              <Grid ColumnDefinitions="2*,90,150,135,110"
-                    ColumnSpacing="10"
-                    Margin="12,0">
-                <TextBlock Classes="muted" Text="SITE" />
-                <TextBlock Grid.Column="1" Classes="muted" Text="BODY" />
-                <TextBlock Grid.Column="2" Classes="muted" Text="BUILD TYPE" />
-                <TextBlock Grid.Column="3" Classes="muted" Text="MARKET ID" />
-                <TextBlock Grid.Column="4" Classes="muted" Text="STATUS" />
-              </Grid>
+              <StackPanel Grid.IsSharedSizeScope="True" Spacing="0">
+                <Grid ColumnSpacing="10" Margin="12,0">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="120" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteBody" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteBuildType" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteMarketId" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteStatus" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Classes="muted" Text="SITE" />
+                  <TextBlock Grid.Column="1" Classes="muted" Text="BODY" />
+                  <TextBlock Grid.Column="2" Classes="muted" Text="BUILD TYPE" />
+                  <TextBlock Grid.Column="3" Classes="muted" Text="MARKET ID" />
+                  <TextBlock Grid.Column="4" Classes="muted" Text="STATUS" />
+                </Grid>
 
-              <ListBox ItemsSource="{Binding Colonization.SystemEditor.Sites}"
-                       SelectedItem="{Binding Colonization.SystemEditor.SelectedSite, Mode=TwoWay}"
-                       IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
-                       MaxHeight="360">
-                <ListBox.ItemTemplate>
-                  <DataTemplate x:DataType="vm:ColonizationSystemSiteRowViewModel">
-                    <Grid ColumnDefinitions="2*,90,150,135,110"
-                          ColumnSpacing="10"
-                          Margin="4,5">
-                      <TextBox Text="{Binding Name, Mode=TwoWay}" />
-                      <NumericUpDown Grid.Column="1"
-                                     Minimum="-1"
-                                     Maximum="10000"
-                                     Increment="1"
-                                     FormatString="0"
-                                     Value="{Binding BodyNumber, Mode=TwoWay}" />
-                      <TextBox Grid.Column="2"
-                               Text="{Binding BuildType, Mode=TwoWay}"
-                               PlaceholderText="Unknown" />
-                      <TextBox Grid.Column="3"
-                               Text="{Binding MarketId, Mode=TwoWay}"
-                               PlaceholderText="Unknown" />
-                      <ComboBox Grid.Column="4"
-                                ItemsSource="{Binding AllowedStatuses}"
-                                SelectedItem="{Binding Status, Mode=TwoWay}" />
-                    </Grid>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
+                <ListBox ItemsSource="{Binding Colonization.SystemEditor.Sites}"
+                         SelectedItem="{Binding Colonization.SystemEditor.SelectedSite, Mode=TwoWay}"
+                         IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
+                         MaxHeight="360">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ColonizationSystemSiteRowViewModel">
+                      <Grid ColumnSpacing="10" Margin="4,5">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" MinWidth="120" />
+                          <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteBody" />
+                          <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteBuildType" />
+                          <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteMarketId" />
+                          <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteStatus" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding Name, Mode=TwoWay}" />
+                        <NumericUpDown Grid.Column="1"
+                                       Minimum="-1"
+                                       Maximum="10000"
+                                       Increment="1"
+                                       FormatString="0"
+                                       Value="{Binding BodyNumber, Mode=TwoWay}" />
+                        <TextBox Grid.Column="2"
+                                 Text="{Binding BuildType, Mode=TwoWay}"
+                                 PlaceholderText="Unknown" />
+                        <TextBox Grid.Column="3"
+                                 Text="{Binding MarketId, Mode=TwoWay}"
+                                 PlaceholderText="Unknown" />
+                        <ComboBox Grid.Column="4"
+                                  ItemsSource="{Binding AllowedStatuses}"
+                                  SelectedItem="{Binding Status, Mode=TwoWay}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
 
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
@@ -367,66 +399,85 @@
                        Text="{Binding Colonization.ProjectSummary}" />
           </Border>
 
-          <Grid ColumnDefinitions="Auto,*,150,220,150,Auto"
-                ColumnSpacing="12"
-                Margin="4,0">
-            <TextBlock Classes="muted" Text="SHOW" />
-            <TextBlock Grid.Column="1" Classes="muted" Text="PROJECT" />
-            <TextBlock Grid.Column="2" Classes="muted" Text="PROGRESS" />
-            <TextBlock Grid.Column="3" Classes="muted" Text="TYPE" />
-            <TextBlock Grid.Column="4" Classes="muted" Text="SYSTEM" />
-            <TextBlock Grid.Column="5" Classes="muted" Text="PRIMARY" />
-          </Grid>
+          <StackPanel Grid.IsSharedSizeScope="True" Spacing="0">
+            <Grid ColumnSpacing="12" Margin="4,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectShow" />
+                <ColumnDefinition Width="*" MinWidth="140" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectProgress" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectType" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectSystem" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectPrimary" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Classes="muted" Text="SHOW" />
+              <TextBlock Grid.Column="1" Classes="muted" Text="PROJECT" />
+              <TextBlock Grid.Column="2" Classes="muted" Text="PROGRESS" />
+              <TextBlock Grid.Column="3" Classes="muted" Text="TYPE" />
+              <TextBlock Grid.Column="4" Classes="muted" Text="SYSTEM" />
+              <TextBlock Grid.Column="5" Classes="muted" Text="PRIMARY" />
+            </Grid>
 
-          <ItemsControl ItemsSource="{Binding Colonization.Projects}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:ColonizationProjectRowViewModel">
-                <Border BorderBrush="{DynamicResource RavenBorderBrush}"
-                        BorderThickness="0,1,0,0"
-                        Padding="4,12">
-                  <Grid ColumnDefinitions="Auto,*,150,220,150,Auto"
-                        ColumnSpacing="12">
-                    <CheckBox VerticalAlignment="Center"
-                              IsChecked="{Binding IsShown, Mode=TwoWay}" />
-                    <StackPanel Grid.Column="1" Spacing="2">
-                      <TextBlock FontWeight="SemiBold"
-                                 Text="{Binding BuildName}" />
-                      <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                                 FontSize="10"
-                                 FontWeight="Bold"
-                                 Text="{Binding PrimaryLabel}" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="2"
-                               VerticalAlignment="Center"
-                               Text="{Binding ProgressText}" />
-                    <TextBlock Grid.Column="3"
-                               VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding TypeDescription}" />
-                    <StackPanel Grid.Column="4"
-                                VerticalAlignment="Center"
-                                Spacing="2">
-                      <Button Classes="link" HorizontalAlignment="Left"
-                              behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}">
-                        <TextBlock TextTrimming="CharacterEllipsis"
-                                   Text="{Binding SystemName}" />
-                      </Button>
-                      <Button Classes="link" HorizontalAlignment="Left"
-                              behaviors:ClipboardCopyBehavior.Text="{Binding Project.SystemAddress}">
-                        <TextBlock Classes="muted monospace" FontSize="9"
-                                   Text="{Binding SystemAddressText}" />
-                      </Button>
-                    </StackPanel>
-                    <Button Grid.Column="5"
-                            Classes="secondary"
-                            MinWidth="110"
-                            Command="{Binding TogglePrimaryCommand}"
-                            Content="{Binding PrimaryActionLabel}" />
-                  </Grid>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
+            <ItemsControl ItemsSource="{Binding Colonization.Projects}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ColonizationProjectRowViewModel">
+                  <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                          BorderThickness="0,1,0,0"
+                          Padding="4,12">
+                    <Grid ColumnSpacing="12">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectShow" />
+                        <ColumnDefinition Width="*" MinWidth="140" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectProgress" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectType" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectSystem" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationProjectPrimary" />
+                      </Grid.ColumnDefinitions>
+                      <CheckBox VerticalAlignment="Center"
+                                IsChecked="{Binding IsShown, Mode=TwoWay}" />
+                      <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock FontWeight="SemiBold"
+                                   Text="{Binding BuildName}"
+                                   TextWrapping="NoWrap" />
+                        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Text="{Binding PrimaryLabel}"
+                                   TextWrapping="NoWrap" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="2"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding ProgressText}"
+                                 TextWrapping="NoWrap" />
+                      <TextBlock Grid.Column="3"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding TypeDescription}"
+                                 TextWrapping="NoWrap" />
+                      <StackPanel Grid.Column="4"
+                                  VerticalAlignment="Center"
+                                  Spacing="2">
+                        <Button Classes="link" HorizontalAlignment="Left"
+                                behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}">
+                          <TextBlock Text="{Binding SystemName}"
+                                     TextWrapping="NoWrap" />
+                        </Button>
+                        <Button Classes="link" HorizontalAlignment="Left"
+                                behaviors:ClipboardCopyBehavior.Text="{Binding Project.SystemAddress}">
+                          <TextBlock Classes="muted monospace" FontSize="9"
+                                     Text="{Binding SystemAddressText}"
+                                     TextWrapping="NoWrap" />
+                        </Button>
+                      </StackPanel>
+                      <Button Grid.Column="5"
+                              Classes="secondary"
+                              HorizontalAlignment="Stretch"
+                              Command="{Binding TogglePrimaryCommand}"
+                              Content="{Binding PrimaryActionLabel}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
 
           <TextBlock Classes="muted"
                      IsVisible="{Binding Colonization.HasNoProjects}"
@@ -449,26 +500,40 @@
                        Text="{Binding Colonization.ConstructionStatus}" />
           </StackPanel>
 
-          <ItemsControl ItemsSource="{Binding Colonization.ConstructionResources}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:ColonizationResourceRowViewModel">
-                <Border BorderBrush="{DynamicResource RavenBorderBrush}"
-                        BorderThickness="0,1,0,0"
-                        Padding="4,10">
-                  <Grid ColumnDefinitions="*,150,150,110" ColumnSpacing="14">
-                    <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                    <TextBlock Grid.Column="1"
-                               Foreground="{DynamicResource RavenAccentBrush}"
-                               Text="{Binding RemainingText}" />
-                    <TextBlock Grid.Column="2" Text="{Binding ProgressText}" />
-                    <TextBlock Grid.Column="3"
-                               Classes="muted"
-                               Text="{Binding PaymentText}" />
-                  </Grid>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
+          <StackPanel Grid.IsSharedSizeScope="True" Spacing="0">
+            <ItemsControl ItemsSource="{Binding Colonization.ConstructionResources}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ColonizationResourceRowViewModel">
+                  <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                          BorderThickness="0,1,0,0"
+                          Padding="4,10">
+                    <Grid ColumnSpacing="14">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="120" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationResourceRemaining" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationResourceProgress" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationResourcePayment" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock FontWeight="SemiBold"
+                                 Text="{Binding Name}"
+                                 TextWrapping="NoWrap" />
+                      <TextBlock Grid.Column="1"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 Text="{Binding RemainingText}"
+                                 TextWrapping="NoWrap" />
+                      <TextBlock Grid.Column="2"
+                                 Text="{Binding ProgressText}"
+                                 TextWrapping="NoWrap" />
+                      <TextBlock Grid.Column="3"
+                                 Classes="muted"
+                                 Text="{Binding PaymentText}"
+                                 TextWrapping="NoWrap" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
         </StackPanel>
       </Border>
 
@@ -505,7 +570,8 @@
                           SelectedItem="{Binding Colonization.ProjectEditor.SelectedSystemSite, Mode=TwoWay}">
                   <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ColonizationSystemSiteOptionViewModel">
-                      <TextBlock Text="{Binding DisplayName}" />
+                      <TextBlock Text="{Binding DisplayName}"
+                                 TextWrapping="NoWrap" />
                     </DataTemplate>
                   </ComboBox.ItemTemplate>
                 </ComboBox>
@@ -517,12 +583,13 @@
               </StackPanel>
             </Grid>
 
-            <Grid ColumnDefinitions="150,*,*" ColumnSpacing="18">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="18">
               <StackPanel Spacing="6">
                 <TextBlock Classes="muted" Text="LOCATION" />
                 <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
                           ItemsSource="{Binding Colonization.ProjectEditor.Locations}"
-                          SelectedItem="{Binding Colonization.ProjectEditor.SelectedLocation, Mode=TwoWay}" />
+                          SelectedItem="{Binding Colonization.ProjectEditor.SelectedLocation, Mode=TwoWay}"
+                          HorizontalAlignment="Left" />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="6">
                 <TextBlock Classes="muted" Text="BUILD TYPE" />
@@ -531,7 +598,8 @@
                           SelectedItem="{Binding Colonization.ProjectEditor.SelectedBuild, Mode=TwoWay}">
                   <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ColonizationBuildOptionViewModel">
-                      <TextBlock Text="{Binding DisplayName}" />
+                      <TextBlock Text="{Binding DisplayName}"
+                                 TextWrapping="NoWrap" />
                     </DataTemplate>
                   </ComboBox.ItemTemplate>
                 </ComboBox>
@@ -540,11 +608,12 @@
                 <TextBlock Classes="muted" Text="LAYOUT" />
                 <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
                           ItemsSource="{Binding Colonization.ProjectEditor.Layouts}"
-                          SelectedItem="{Binding Colonization.ProjectEditor.SelectedLayout, Mode=TwoWay}" />
+                          SelectedItem="{Binding Colonization.ProjectEditor.SelectedLayout, Mode=TwoWay}"
+                          HorizontalAlignment="Left" />
               </StackPanel>
             </Grid>
 
-            <Grid ColumnDefinitions="*,140,*" ColumnSpacing="18">
+            <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="18">
               <StackPanel Spacing="6">
                 <TextBlock Classes="muted" Text="ARCHITECT" />
                 <TextBox Text="{Binding Colonization.ProjectEditor.ArchitectName, Mode=TwoWay}"
@@ -553,7 +622,8 @@
               <StackPanel Grid.Column="1" Spacing="6">
                 <TextBlock Classes="muted" Text="BODY NUMBER" />
                 <TextBox Text="{Binding Colonization.ProjectEditor.BodyNumberText, Mode=TwoWay}"
-                         PlaceholderText="-1" />
+                         PlaceholderText="-1"
+                         HorizontalAlignment="Left" />
               </StackPanel>
               <StackPanel Grid.Column="2" Spacing="6">
                 <TextBlock Classes="muted" Text="BODY NAME" />
@@ -573,7 +643,6 @@
 
             <Button Classes="primary"
                     HorizontalAlignment="Left"
-                    MinWidth="150"
                     Command="{Binding Colonization.ProjectEditor.ReviewCommand}"
                     Content="{Binding Colonization.ProjectEditor.ReviewButtonText}" />
 

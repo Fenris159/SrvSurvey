@@ -338,6 +338,18 @@ public sealed class ColonizationSystemEditorViewModelTests
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
 
+        public Task LinkCommanderAsync(
+            string buildId,
+            string commanderName,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task UnlinkCommanderAsync(
+            string buildId,
+            string commanderName,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
         public Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
             string systemNameOrAddress,
             CancellationToken cancellationToken = default

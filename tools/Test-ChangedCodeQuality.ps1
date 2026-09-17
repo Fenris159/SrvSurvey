@@ -77,6 +77,44 @@ function Find-NullConditionalEventFindings {
     }
 }
 
+function Invoke-LocalizationCatalogVerify {
+    param([string]$RepositoryRoot)
+
+    $scriptPath = Join-Path $RepositoryRoot "tools/Generate-AvaloniaLocalization.ps1"
+    & $scriptPath -Verify
+    if ($LASTEXITCODE -ne 0) {
+        throw "Avalonia localization catalog verification failed. Run tools/Generate-AvaloniaLocalization.ps1."
+    }
+
+    Write-Output "Avalonia localization catalogs match the extracted sources."
+}
+
+function Invoke-LocalizationCatalogTests {
+    param([string]$RepositoryRoot)
+
+    # Run after the Sonar rebuild so MSBuild/test hosts do not share a poisoned
+    # build-server session on Linux.
+    & dotnet test `
+        (Join-Path $RepositoryRoot "tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj") `
+        --configuration Release `
+        --filter "FullyQualifiedName~Localization.LocalizationCatalogTests" `
+        --no-restore
+    if ($LASTEXITCODE -ne 0) {
+        throw "Localization catalog tests failed."
+    }
+
+    Write-Output "Localization catalog tests passed."
+}
+
+function Invoke-CSharpierCheck {
+    & dotnet csharpier check .
+    if ($LASTEXITCODE -ne 0) {
+        throw "CSharpier formatting check failed. Run 'dotnet csharpier format .' and retry."
+    }
+
+    Write-Output "CSharpier formatting check passed."
+}
+
 $repositoryRoot = (Invoke-Git rev-parse --show-toplevel | Select-Object -First 1).Trim()
 $mergeBase = (Invoke-Git merge-base $BaseRef HEAD | Select-Object -First 1).Trim()
 $changedRanges = @{}
@@ -84,6 +122,10 @@ $currentFile = $null
 
 Push-Location $repositoryRoot
 try {
+    # Match the CI pre-build gates that fail independently of changed-line Sonar scope.
+    Invoke-CSharpierCheck
+    Invoke-LocalizationCatalogVerify -RepositoryRoot $repositoryRoot
+
     $diffLines = Invoke-Git -c core.quotepath=false diff --unified=0 --no-color $mergeBase -- "*.cs"
     foreach ($line in $diffLines) {
         if ($line -match '^\+\+\+ b/(.+)$') {
@@ -107,6 +149,7 @@ try {
 
     if ($changedRanges.Count -eq 0) {
         Write-Output "No changed C# lines to check."
+        Invoke-LocalizationCatalogTests -RepositoryRoot $repositoryRoot
         exit 0
     }
 
@@ -152,6 +195,7 @@ try {
         }
 
         $ruleSetPath = Join-Path $repositoryRoot "tools/SonarCloud.ruleset"
+        & dotnet build-server shutdown *> $null
         & dotnet build $Solution `
             --configuration Release `
             --no-restore `
@@ -209,6 +253,7 @@ try {
         }
 
         Write-Output "Changed C# lines match the .editorconfig style and local SonarCloud profile."
+        Invoke-LocalizationCatalogTests -RepositoryRoot $repositoryRoot
     }
     finally {
         if (Test-Path -LiteralPath $reportPath) {

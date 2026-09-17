@@ -16,14 +16,21 @@ Domain documentation uses the single-context layout. See `docs/agents/domain.md`
 
 `SonarAnalyzer.CSharp` is applied to every C# project from `Directory.Build.props`,
 and analyzer warnings fail the build. CSharpier is the repository formatter.
-After changing C# code, run `dotnet csharpier check .` and the appropriate
-Release build. Do not suppress or fix unrelated analyzer findings unless the
-user asks; report them separately.
+After changing C# or desktop UI markup, run:
 
-Before the formatter and build, run
-`pwsh ./tools/Test-ChangedCodeQuality.ps1` to enforce the `.editorconfig`
-`var` rules and the checked-in SonarCloud quality-profile snapshot on changed
-lines, using the same new-code scope as SonarCloud.
+```console
+pwsh ./tools/Test-ChangedCodeQuality.ps1
+```
+
+That script now mirrors the CI pre-build gates: CSharpier formatting, Avalonia
+localization catalog freshness (`tools/Generate-AvaloniaLocalization.ps1 -Verify`),
+and the `.editorconfig` / SonarCloud-profile checks scoped to changed C# lines.
+Adding or renaming Desktop source files can change localization `FirstSource`
+metadata even when visible strings are unchanged; regenerate with
+`pwsh ./tools/Generate-AvaloniaLocalization.ps1` before committing.
+
+Do not suppress or fix unrelated analyzer findings unless the user asks; report
+them separately.
 
 Tests that assert `IProgress<T>` callbacks must use a synchronous test recorder.
 Do not use `System.Progress<T>` for those assertions because it schedules

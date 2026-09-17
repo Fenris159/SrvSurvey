@@ -46,6 +46,10 @@ public interface IRavenColonialClient
 
     Task SetPrimaryProjectAsync(string commanderName, string? buildId, CancellationToken cancellationToken = default);
 
+    Task LinkCommanderAsync(string buildId, string commanderName, CancellationToken cancellationToken = default);
+
+    Task UnlinkCommanderAsync(string buildId, string commanderName, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
         string systemNameOrAddress,
         CancellationToken cancellationToken = default
@@ -291,8 +295,13 @@ public sealed class RavenColonialClient : IRavenColonialClient
     {
         ArgumentNullException.ThrowIfNull(update);
         ArgumentException.ThrowIfNullOrWhiteSpace(update.BuildId);
+        if (update.Commodities is not null)
+        {
+            update = update with { Commodities = ColonizationCommodityMaps.NormalizeNeedMap(update.Commodities) };
+        }
+
         using var request = new HttpRequestMessage(
-            HttpMethod.Post,
+            HttpMethod.Patch,
             CreateUri($"api/project/{Uri.EscapeDataString(update.BuildId.Trim())}")
         )
         {
@@ -301,11 +310,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        return await ReadRequiredAsync<ColonizationProject>(
-                response,
-                "update a colonisation project",
-                cancellationToken
-            )
+        return await ReadRequiredAsync<ColonizationProject>(response, "patch a colonisation project", cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -340,10 +345,18 @@ public sealed class RavenColonialClient : IRavenColonialClient
         }
 
         var normalized = contributions.ToDictionary(
-            pair => pair.Key.Trim(),
+            pair => ColonizationConstructionState.NormalizeCommodityName(pair.Key),
             pair => pair.Value,
             StringComparer.OrdinalIgnoreCase
         );
+        if (normalized.Any(pair => pair.Key.Length == 0 || pair.Value <= 0))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(contributions),
+                "Project contributions require a commodity name and a positive amount."
+            );
+        }
+
         return SendWithoutResponseAsync(
             HttpMethod.Post,
             $"api/project/{Uri.EscapeDataString(buildId.Trim())}/contribute/"
@@ -378,6 +391,36 @@ public sealed class RavenColonialClient : IRavenColonialClient
             relativeUri + Uri.EscapeDataString(buildId.Trim()),
             content: null,
             "set the primary colonisation project",
+            cancellationToken
+        );
+    }
+
+    public Task LinkCommanderAsync(string buildId, string commanderName, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
+        return SendWithoutResponseAsync(
+            HttpMethod.Put,
+            $"api/project/{Uri.EscapeDataString(buildId.Trim())}/link/" + Uri.EscapeDataString(commanderName.Trim()),
+            content: null,
+            "link a commander to a colonisation project",
+            cancellationToken
+        );
+    }
+
+    public Task UnlinkCommanderAsync(
+        string buildId,
+        string commanderName,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
+        return SendWithoutResponseAsync(
+            HttpMethod.Delete,
+            $"api/project/{Uri.EscapeDataString(buildId.Trim())}/link/" + Uri.EscapeDataString(commanderName.Trim()),
+            content: null,
+            "unlink a commander from a colonisation project",
             cancellationToken
         );
     }
@@ -526,6 +569,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
     )
     {
         ArgumentNullException.ThrowIfNull(project);
+        project = project with { Commodities = ColonizationCommodityMaps.NormalizeNeedMap(project.Commodities) };
         using var request = new HttpRequestMessage(HttpMethod.Put, CreateUri("api/project/"))
         {
             Content = JsonContent.Create(project, options: JsonOptions),
@@ -993,6 +1037,14 @@ public sealed record ColonizationProjectUpdate
 
 public sealed record ColonizationConstructionDepotPayload
 {
+    public const string JournalEventName = "ColonisationConstructionDepot";
+
+    [JsonPropertyName("timestamp")]
+    public DateTimeOffset Timestamp { get; init; }
+
+    [JsonPropertyName("event")]
+    public string Event { get; init; } = JournalEventName;
+
     [JsonPropertyName("MarketID")]
     public long MarketId { get; init; }
 
@@ -1013,6 +1065,8 @@ public sealed record ColonizationConstructionDepotPayload
         ArgumentNullException.ThrowIfNull(snapshot);
         return new ColonizationConstructionDepotPayload
         {
+            Timestamp = snapshot.Timestamp ?? DateTimeOffset.UtcNow,
+            Event = JournalEventName,
             MarketId = snapshot.MarketId,
             ConstructionProgress = snapshot.ReportedProgress,
             IsComplete = snapshot.IsComplete,

@@ -307,12 +307,12 @@ Install the .NET 10 SDK, then run:
 dotnet tool restore
 dotnet restore SrvSurvey.slnx
 pwsh ./tools/Test-ChangedCodeQuality.ps1
-dotnet csharpier check .
-pwsh ./tools/Generate-AvaloniaLocalization.ps1 -Verify
 dotnet build SrvSurvey.slnx --configuration Release --no-restore
 dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
 ```
 
+`Test-ChangedCodeQuality.ps1` covers CSharpier, Avalonia localization catalog
+verification, and changed-line Sonar/style gates.
 The supported stack is intentionally small:
 
 | Area | Technology |

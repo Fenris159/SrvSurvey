@@ -12409,6 +12409,10 @@
       "translation": "Kalk"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Verlinktes Raven-Projekt {0} in die aktive Liste für diese Baustelle aufgenommen."
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Verknüpfte Fracht von RavenColonial. Kapazität und Finanzen stammen aus der letzten Aktualisierung Frontier."
     },
@@ -26799,6 +26803,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "Aktualisierte Raven-Projektfraktion für {0}."
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Die verbleibende Raven-Fracht nach dem Beitrag für {0} wurde aktualisiert."
     },
     {
       "source": "Updated master-template point {0}.",
@@ -44207,6 +44215,10 @@
       "translation": "Cal"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Vinculé el proyecto Raven {0} a la lista activa para este sitio de construcción."
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Carga vinculada de RavenColonial. La capacidad y las finanzas provienen de la última actualización Frontier."
     },
@@ -58597,6 +58609,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "Facción del proyecto Raven actualizada para {0}."
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Se actualizó la carga restante de Raven después de la contribución para {0}."
     },
     {
       "source": "Updated master-template point {0}.",
@@ -76005,6 +76021,10 @@
       "translation": "Citron vert"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Projet Raven lié {0} dans la liste active pour ce chantier de construction."
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Cargaison liée de RavenColonial. La capacité et les finances proviennent de la dernière actualisation Frontier."
     },
@@ -90395,6 +90415,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "Faction du projet Raven mise à jour pour {0}."
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Mise à jour de la cargaison restante de Raven après contribution pour {0}."
     },
     {
       "source": "Updated master-template point {0}.",
@@ -107803,6 +107827,10 @@
       "translation": "Lima"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Vinculou o projeto Raven {0} à lista ativa deste canteiro de obras."
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Carga vinculada da RavenColonial. A capacidade e as finanças são da última atualização Frontier."
     },
@@ -122193,6 +122221,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "Facção do projeto Raven atualizada para {0}."
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Carga restante Raven atualizada após contribuição para {0}."
     },
     {
       "source": "Updated master-template point {0}.",
@@ -139601,6 +139633,10 @@
       "translation": "Лайм"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "Связанный проект Raven {0} в активный список для этой строительной площадки."
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Связанный груз от RavenColonial. Емкость и финансы взяты из последнего Frontier обновления."
     },
@@ -153991,6 +154027,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "Обновлена фракция проекта Raven для {0}."
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "Обновлен оставшийся груз Raven после вклада для {0}."
     },
     {
       "source": "Updated master-template point {0}.",
@@ -171399,6 +171439,10 @@
       "translation": "酸橙"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "将 Raven 项目 {0} 链接到该建筑站点的活动列表中。"
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "来自 RavenColonial 的链接货物。产能和财务来自上次 Frontier 刷新。"
     },
@@ -185789,6 +185833,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "更新了 {0} 的 Raven 项目派别。"
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "为 {0} 贡献后更新了 Raven 剩余货物。"
     },
     {
       "source": "Updated master-template point {0}.",
@@ -203197,6 +203245,10 @@
       "translation": "* LIME >>>!"
     },
     {
+      "source": "Linked Raven project {0} into the active list for this construction site.",
+      "translation": "* LINKED RAVEN PROJECT {0} INTO THE ACTIVE LIST FOR THIS CONSTRUCTION SITE. >>>!"
+    },
+    {
       "source": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "* LINKED CARGO FROM RAVENCOLONIAL. CAPACITY AND FINANCES ARE FROM THE LAST FRONTIER REFRESH. >>>!"
     },
@@ -217587,6 +217639,10 @@
     {
       "source": "Updated Raven project faction for {0}.",
       "translation": "* UPDATED RAVEN PROJECT FACTION FOR {0}. >>>!"
+    },
+    {
+      "source": "Updated Raven remaining cargo after contribution for {0}.",
+      "translation": "* UPDATED RAVEN REMAINING CARGO AFTER CONTRIBUTION FOR {0}. >>>!"
     },
     {
       "source": "Updated master-template point {0}.",

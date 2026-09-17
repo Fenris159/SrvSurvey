@@ -16016,7 +16016,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Behaviors/HorizontalScrollInputBehavior.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Behaviors/ComboBoxFitContentBehavior.cs"
   },
   {
     "Text": "Encoded",
@@ -24887,6 +24887,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
+  },
+  {
+    "Text": "Linked Raven project {0} into the active list for this construction site.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
@@ -53729,6 +53737,14 @@
   },
   {
     "Text": "Updated Raven project faction for {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Updated Raven remaining cargo after contribution for {0}.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

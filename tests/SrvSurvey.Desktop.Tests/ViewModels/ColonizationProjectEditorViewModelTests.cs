@@ -238,6 +238,32 @@ public sealed class ColonizationProjectEditorViewModelTests
         Assert.Equal(0, client.CreateCount);
     }
 
+    [Fact]
+    public async Task DepotProgressOnlyChangePreservesPreparedEditor()
+    {
+        var client = new StubRavenColonialClient();
+        ColonizationProjectEditorViewModel editor = Create(client);
+        ColonizationProjectEditorContext ready = ReadyContext();
+        editor.UpdateContext(ready);
+        await editor.PrepareAsync();
+        await editor.ReviewAsync();
+        Assert.True(editor.IsPrepared);
+        Assert.True(editor.IsConfirmationPending);
+
+        ColonizationConstructionDepotSnapshot progressed = ready.Depot! with
+        {
+            Timestamp = ready.Depot.Timestamp?.AddSeconds(3),
+            ReportedProgress = 0.4,
+            Resources = [new ColonizationResourceRequirement("steel", "Steel", 100, 40, 1)],
+        };
+        editor.UpdateContext(ready with { Depot = progressed });
+
+        Assert.True(editor.IsPrepared);
+        Assert.True(editor.IsConfirmationPending);
+        await editor.ConfirmCreateAsync();
+        Assert.Equal(1, client.CreateCount);
+    }
+
     private ColonizationProjectEditorViewModel Create(
         StubRavenColonialClient client,
         Func<ColonizationProject, Task>? onCreated = null
@@ -343,6 +369,18 @@ public sealed class ColonizationProjectEditorViewModelTests
         public Task SetPrimaryProjectAsync(
             string commanderName,
             string? buildId,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task LinkCommanderAsync(
+            string buildId,
+            string commanderName,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task UnlinkCommanderAsync(
+            string buildId,
+            string commanderName,
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
 

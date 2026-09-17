@@ -14,6 +14,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly TimeSpan DockingRefreshDelay = TimeSpan.FromSeconds(4);
+    private static readonly TimeSpan ProjectLocationCacheTtl = TimeSpan.FromSeconds(4);
     private const int MaximumBuildSiteRepairVisits = 50;
     private const string FleetCarrierStationType = "FleetCarrier";
     private const string FleetCarrierSyncOffMessage = "Automatic Fleet Carrier cargo sync is off.";
@@ -73,6 +74,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     /// already sent AdjustFleetCarrierCargo for this linked squadron FC (legacy parity).
     /// </summary>
     private bool skipNextCargoEvent;
+    private bool pendingContributionRemainingSync;
+    private string? lastDepotPatchPayloadSignature;
+    private (long SystemAddress, long MarketId, ColonizationProject Project, long MonotonicTicks)? projectLocationCache;
     private string ravenCredentialStatus = "Load a commander profile to configure a Raven API key.";
     private string fleetCarrierSyncStatus = FleetCarrierSyncOffMessage;
     private string shipCargoPublishingStatus = "Automatic ship cargo publishing is off.";
@@ -561,6 +565,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             detectedSquadronCommander = owner;
         }
         SystemEditor.ApplyJournalEvents(journalEvents);
+        ColonizationDockingSnapshot? dockBefore = constructionState.CurrentDock;
         long before = constructionState.Version;
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
@@ -575,6 +580,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             }
             fleetCarrierIdentityTracker.Apply(journalEvent);
             ApplyShipIdentity(journalEvent);
+        }
+
+        if (dockBefore is not null && constructionState.CurrentDock is null)
+        {
+            InvalidateProjectLocationCache();
+            lastDepotPatchPayloadSignature = null;
         }
 
         if (constructionState.Version != before)
@@ -982,7 +993,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        ColonizationProject? project = await FindOrLoadProjectAsync(dock.SystemAddress, dock.MarketId);
+        ColonizationProjectLookup lookup = await FindOrLoadProjectAsync(dock.SystemAddress, dock.MarketId);
+        ColonizationProject? project = lookup.Project;
         if (project is null)
         {
             return null;
@@ -993,6 +1005,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             || string.Equals(dock.FactionName, project.FactionName, StringComparison.Ordinal)
         )
         {
+            if (lookup.LinkedCommander)
+            {
+                return $"Linked Raven project {project.BuildName} into the active list for this construction site.";
+            }
+
             return localUntrackedProject?.BuildId == project.BuildId
                 ? $"Loaded untracked Raven project {project.BuildName} for this construction site."
                 : null;
@@ -1002,6 +1019,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             new ColonizationProjectUpdate { BuildId = project.BuildId, FactionName = dock.FactionName },
             CancellationToken.None
         );
+        updated = await ClearPhantomCommoditiesAsync(updated);
         UpsertProject(updated);
         return $"Updated Raven project faction for {updated.BuildName}.";
     }
@@ -1137,17 +1155,53 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
-        ColonizationProject? project = await FindOrLoadProjectAsync(
-            dock?.MarketId == marketId ? dock.SystemAddress : currentSystemAddress,
-            marketId.Value
-        );
+        ColonizationProject? project = (
+            await FindOrLoadProjectAsync(
+                dock?.MarketId == marketId ? dock.SystemAddress : currentSystemAddress,
+                marketId.Value
+            )
+        ).Project;
         if (project is null)
         {
             return "Raven did not identify a project for the recorded construction contribution.";
         }
 
         await client.ContributeToProjectAsync(project.BuildId, CommanderName!, contributions, CancellationToken.None);
-        return $"Published {contributions.Values.Sum(value => (long)value):N0} contributed cargo units to {project.BuildName}.";
+        // Contribute only credits history. Remaining need rows stay stale until an absolute
+        // depot/commodity update lands — force that publish here so Raven cannot track a
+        // delivery without updating what is still required.
+        pendingContributionRemainingSync = true;
+        string? remainingMessage = await PublishRemainingAfterContributionAsync(project, marketId.Value, contributions);
+        return CombineMessages(
+            $"Published {contributions.Values.Sum(value => (long)value):N0} contributed cargo units to {project.BuildName}.",
+            remainingMessage
+        );
+    }
+
+    private async Task<string?> PublishRemainingAfterContributionAsync(
+        ColonizationProject project,
+        long marketId,
+        IReadOnlyDictionary<string, int> contributions
+    )
+    {
+        ColonizationConstructionDepotSnapshot? depot = constructionState.CurrentDepot;
+        if (depot is not null && depot.MarketId == marketId)
+        {
+            Dictionary<string, int> depotRemaining = ToRemainingCommodities(depot);
+            if (!DictionariesEqual(project.Commodities, depotRemaining))
+            {
+                // Depot already moved ahead of the cached project (depot before contribute).
+                return await PublishProjectRemainingAsync(project, depot, depotRemaining, force: true);
+            }
+        }
+
+        Dictionary<string, int> remaining = ApplyContributionToRemaining(project.Commodities, contributions);
+        return await PublishProjectRemainingAsync(
+            project,
+            depot is not null && depot.MarketId == marketId ? depot : null,
+            remaining,
+            force: true
+        );
     }
 
     private async Task<string?> SynchronizeDepotAsync(JournalEventEnvelope journalEvent)
@@ -1159,20 +1213,18 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
-        ColonizationProject? project = await FindOrLoadProjectAsync(
-            dock?.MarketId == depot.MarketId ? dock.SystemAddress : currentSystemAddress,
-            depot.MarketId
-        );
+        ColonizationProject? project = (
+            await FindOrLoadProjectAsync(
+                dock?.MarketId == depot.MarketId ? dock.SystemAddress : currentSystemAddress,
+                depot.MarketId
+            )
+        ).Project;
         if (project is null)
         {
             return "Raven did not identify a project for the current construction depot.";
         }
 
-        var remaining = depot.Resources.ToDictionary(
-            resource => resource.Name,
-            resource => resource.RemainingAmount,
-            StringComparer.OrdinalIgnoreCase
-        );
+        Dictionary<string, int> remaining = ToRemainingCommodities(depot);
         long maximumRequiredLong = depot.Resources.Sum(resource => (long)resource.RequiredAmount);
         if (maximumRequiredLong > int.MaxValue)
         {
@@ -1180,61 +1232,235 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         int maximumRequired = (int)maximumRequiredLong;
-        ColonizationProject updated = project;
-        if (
-            project.MaximumRequired != maximumRequired
+        bool force = pendingContributionRemainingSync;
+        bool requiresUpdate =
+            force
+            || project.MaximumRequired != maximumRequired
             || !DictionariesEqual(project.Commodities, remaining)
-            || depot.IsFailed
-        )
+            || depot.IsFailed;
+        if (!requiresUpdate)
         {
-            updated = await client.UpdateProjectAsync(
-                new ColonizationProjectUpdate
-                {
-                    BuildId = project.BuildId,
-                    MaximumRequired = maximumRequired,
-                    Commodities = remaining,
-                    ConstructionDepot = ColonizationConstructionDepotPayload.FromSnapshot(depot),
-                },
-                CancellationToken.None
-            );
-            UpsertProject(updated);
+            return null;
         }
 
-        if (depot.IsComplete && !updated.IsComplete)
+        string? message = await PublishProjectRemainingAsync(project, depot, remaining, force);
+        if (depot.IsComplete)
         {
-            await client.MarkProjectCompleteAsync(updated.BuildId, CancellationToken.None);
-            updated = updated with
+            ColonizationProject latest =
+                Projects.Select(row => row.Project).FirstOrDefault(candidate => candidate.BuildId == project.BuildId)
+                ?? project;
+            if (!latest.IsComplete)
             {
-                IsComplete = true,
-                RemainingRequired = 0,
-                Commodities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
-            };
-            UpsertProject(updated);
-            return $"Marked Raven project {updated.BuildName} complete.";
+                await client.MarkProjectCompleteAsync(latest.BuildId, CancellationToken.None);
+                latest = latest with
+                {
+                    IsComplete = true,
+                    RemainingRequired = 0,
+                    Commodities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+                };
+                UpsertProject(latest);
+                return CombineMessages(message, $"Marked Raven project {latest.BuildName} complete.");
+            }
         }
 
-        return updated == project ? null : $"Updated Raven construction requirements for {updated.BuildName}.";
+        return message;
     }
 
-    private async Task<ColonizationProject?> FindOrLoadProjectAsync(long? systemAddress, long marketId)
+    private async Task<string?> PublishProjectRemainingAsync(
+        ColonizationProject project,
+        ColonizationConstructionDepotSnapshot? depot,
+        Dictionary<string, int> remaining,
+        bool force
+    )
+    {
+        remaining = ColonizationCommodityMaps.NormalizeNeedMap(remaining);
+        int? maximumRequired = depot is null
+            ? project.MaximumRequired
+            : checked((int)depot.Resources.Sum(resource => (long)resource.RequiredAmount));
+        if (
+            !force
+            && project.MaximumRequired == maximumRequired
+            && DictionariesEqual(project.Commodities, remaining)
+            && depot is not { IsFailed: true }
+        )
+        {
+            return null;
+        }
+
+        string signature = ColonizationCommodityMaps.CreateDepotUpdateSignature(
+            project.BuildId,
+            maximumRequired,
+            remaining,
+            includeDepot: depot is not null,
+            depotFailed: depot?.IsFailed == true
+        );
+        if (!force && string.Equals(signature, lastDepotPatchPayloadSignature, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        await ClearPhantomCommoditiesAsync(project);
+
+        ColonizationProject updated = await client.UpdateProjectAsync(
+            new ColonizationProjectUpdate
+            {
+                BuildId = project.BuildId,
+                MaximumRequired = maximumRequired,
+                Commodities = remaining,
+                ConstructionDepot = depot is null ? null : ColonizationConstructionDepotPayload.FromSnapshot(depot),
+            },
+            CancellationToken.None
+        );
+        updated = await ClearPhantomCommoditiesAsync(updated);
+        UpsertProject(updated);
+        lastDepotPatchPayloadSignature = signature;
+        InvalidateProjectLocationCache();
+        pendingContributionRemainingSync = false;
+        return force
+            ? $"Updated Raven remaining cargo after contribution for {updated.BuildName}."
+            : $"Updated Raven construction requirements for {updated.BuildName}.";
+    }
+
+    private async Task<ColonizationProject> ClearPhantomCommoditiesAsync(ColonizationProject project)
+    {
+        Dictionary<string, int> zeroes = ColonizationCommodityMaps.PhantomZeroPatchMap(project.Commodities);
+        if (zeroes.Count == 0)
+        {
+            return project;
+        }
+
+        Dictionary<string, int> cleared = ColonizationCommodityMaps.ApplyPhantomZeros(project.Commodities);
+        ColonizationProject updated = await client.UpdateProjectAsync(
+            new ColonizationProjectUpdate { BuildId = project.BuildId, Commodities = zeroes },
+            CancellationToken.None
+        );
+        // Prefer the cleared need map when the API echoes a partial merge response.
+        if (ColonizationCommodityMaps.PhantomZeroPatchMap(updated.Commodities).Count > 0)
+        {
+            return updated with { Commodities = cleared, RemainingRequired = cleared.Values.Sum() };
+        }
+
+        return updated with
+        {
+            Commodities = ColonizationCommodityMaps.ApplyPhantomZeros(updated.Commodities),
+        };
+    }
+
+    private static Dictionary<string, int> ToRemainingCommodities(ColonizationConstructionDepotSnapshot depot)
+    {
+        return depot.Resources.ToDictionary(
+            resource => resource.Name,
+            resource => resource.RemainingAmount,
+            StringComparer.OrdinalIgnoreCase
+        );
+    }
+
+    private static Dictionary<string, int> ApplyContributionToRemaining(
+        IReadOnlyDictionary<string, int> commodities,
+        IReadOnlyDictionary<string, int> contributions
+    )
+    {
+        var remaining = new Dictionary<string, int>(commodities, StringComparer.OrdinalIgnoreCase);
+        foreach (KeyValuePair<string, int> contribution in contributions)
+        {
+            string name = ColonizationConstructionState.NormalizeCommodityName(contribution.Key);
+            if (name.Length == 0 || contribution.Value <= 0)
+            {
+                continue;
+            }
+
+            int current = remaining.GetValueOrDefault(name);
+            int next = Math.Max(0, current - contribution.Value);
+            if (next == 0)
+            {
+                remaining.Remove(name);
+            }
+            else
+            {
+                remaining[name] = next;
+            }
+        }
+
+        return remaining;
+    }
+
+    private async Task<ColonizationProjectLookup> FindOrLoadProjectAsync(long? systemAddress, long marketId)
     {
         ColonizationProject? project =
             Projects.Select(row => row.Project).FirstOrDefault(candidate => candidate.MarketId == marketId)
             ?? (localUntrackedProject?.MarketId == marketId ? localUntrackedProject : null);
         if (project is not null || systemAddress is not > 0)
         {
-            return project;
+            return new ColonizationProjectLookup(project, LinkedCommander: false);
         }
 
-        project = await client.GetProjectAsync(systemAddress.Value, marketId, CancellationToken.None);
-        if (project is not null)
+        if (TryGetCachedProject(systemAddress.Value, marketId, out ColonizationProject? cached))
+        {
+            project = cached;
+        }
+        else
+        {
+            project = await client.GetProjectAsync(systemAddress.Value, marketId, CancellationToken.None);
+            if (project is not null)
+            {
+                RememberProjectLocation(systemAddress.Value, marketId, project);
+            }
+        }
+
+        if (project is null)
+        {
+            return new ColonizationProjectLookup(null, LinkedCommander: false);
+        }
+
+        project = await ClearPhantomCommoditiesAsync(project);
+
+        bool linkedCommander = false;
+        if (!string.IsNullOrWhiteSpace(CommanderName))
+        {
+            await client.LinkCommanderAsync(project.BuildId, CommanderName, CancellationToken.None);
+            localUntrackedProject = null;
+            linkedCommander = true;
+            InvalidateProjectLocationCache();
+        }
+        else
         {
             localUntrackedProject = project;
-            UpsertProject(project);
         }
 
-        return project;
+        UpsertProject(project);
+        return new ColonizationProjectLookup(project, linkedCommander);
     }
+
+    private bool TryGetCachedProject(long systemAddress, long marketId, out ColonizationProject? project)
+    {
+        project = null;
+        if (projectLocationCache is not { } cache || cache.SystemAddress != systemAddress || cache.MarketId != marketId)
+        {
+            return false;
+        }
+
+        long ageMilliseconds = Environment.TickCount64 - cache.MonotonicTicks;
+        if (ageMilliseconds < 0 || ageMilliseconds > ProjectLocationCacheTtl.TotalMilliseconds)
+        {
+            projectLocationCache = null;
+            return false;
+        }
+
+        project = cache.Project;
+        return true;
+    }
+
+    private void RememberProjectLocation(long systemAddress, long marketId, ColonizationProject project)
+    {
+        projectLocationCache = (systemAddress, marketId, project, Environment.TickCount64);
+    }
+
+    private void InvalidateProjectLocationCache()
+    {
+        projectLocationCache = null;
+    }
+
+    private readonly record struct ColonizationProjectLookup(ColonizationProject? Project, bool LinkedCommander);
 
     private void UpsertProject(ColonizationProject project)
     {
@@ -1978,8 +2204,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    private Task OnProjectCreatedAsync(ColonizationProject project)
+    private async Task OnProjectCreatedAsync(ColonizationProject project)
     {
+        InvalidateProjectLocationCache();
+        lastDepotPatchPayloadSignature = null;
+        project = await ClearPhantomCommoditiesAsync(project);
         Projects = Projects
             .Where(row => !string.Equals(row.Project.BuildId, project.BuildId, StringComparison.OrdinalIgnoreCase))
             .Select(row => row.Project)
@@ -1989,7 +2218,6 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             .Select(CreateRow)
             .ToArray();
         UpdateProjectSummary();
-        return Task.CompletedTask;
     }
 
     private void UpdateProjectEditorContext()
