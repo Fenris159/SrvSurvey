@@ -982,7 +982,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        ColonizationProject? project = await FindOrLoadProjectAsync(dock.SystemAddress, dock.MarketId);
+        ColonizationProjectLookup lookup = await FindOrLoadProjectAsync(dock.SystemAddress, dock.MarketId);
+        ColonizationProject? project = lookup.Project;
         if (project is null)
         {
             return null;
@@ -993,6 +994,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             || string.Equals(dock.FactionName, project.FactionName, StringComparison.Ordinal)
         )
         {
+            if (lookup.LinkedCommander)
+            {
+                return $"Linked Raven project {project.BuildName} into the active list for this construction site.";
+            }
+
             return localUntrackedProject?.BuildId == project.BuildId
                 ? $"Loaded untracked Raven project {project.BuildName} for this construction site."
                 : null;
@@ -1137,10 +1143,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
-        ColonizationProject? project = await FindOrLoadProjectAsync(
-            dock?.MarketId == marketId ? dock.SystemAddress : currentSystemAddress,
-            marketId.Value
-        );
+        ColonizationProject? project = (
+            await FindOrLoadProjectAsync(
+                dock?.MarketId == marketId ? dock.SystemAddress : currentSystemAddress,
+                marketId.Value
+            )
+        ).Project;
         if (project is null)
         {
             return "Raven did not identify a project for the recorded construction contribution.";
@@ -1159,10 +1167,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
-        ColonizationProject? project = await FindOrLoadProjectAsync(
-            dock?.MarketId == depot.MarketId ? dock.SystemAddress : currentSystemAddress,
-            depot.MarketId
-        );
+        ColonizationProject? project = (
+            await FindOrLoadProjectAsync(
+                dock?.MarketId == depot.MarketId ? dock.SystemAddress : currentSystemAddress,
+                depot.MarketId
+            )
+        ).Project;
         if (project is null)
         {
             return "Raven did not identify a project for the current construction depot.";
@@ -1216,25 +1226,39 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         return updated == project ? null : $"Updated Raven construction requirements for {updated.BuildName}.";
     }
 
-    private async Task<ColonizationProject?> FindOrLoadProjectAsync(long? systemAddress, long marketId)
+    private async Task<ColonizationProjectLookup> FindOrLoadProjectAsync(long? systemAddress, long marketId)
     {
         ColonizationProject? project =
             Projects.Select(row => row.Project).FirstOrDefault(candidate => candidate.MarketId == marketId)
             ?? (localUntrackedProject?.MarketId == marketId ? localUntrackedProject : null);
         if (project is not null || systemAddress is not > 0)
         {
-            return project;
+            return new ColonizationProjectLookup(project, LinkedCommander: false);
         }
 
         project = await client.GetProjectAsync(systemAddress.Value, marketId, CancellationToken.None);
-        if (project is not null)
+        if (project is null)
         {
-            localUntrackedProject = project;
-            UpsertProject(project);
+            return new ColonizationProjectLookup(null, LinkedCommander: false);
         }
 
-        return project;
+        bool linkedCommander = false;
+        if (!string.IsNullOrWhiteSpace(CommanderName))
+        {
+            await client.LinkCommanderAsync(project.BuildId, CommanderName, CancellationToken.None);
+            localUntrackedProject = null;
+            linkedCommander = true;
+        }
+        else
+        {
+            localUntrackedProject = project;
+        }
+
+        UpsertProject(project);
+        return new ColonizationProjectLookup(project, linkedCommander);
     }
+
+    private readonly record struct ColonizationProjectLookup(ColonizationProject? Project, bool LinkedCommander);
 
     private void UpsertProject(ColonizationProject project)
     {

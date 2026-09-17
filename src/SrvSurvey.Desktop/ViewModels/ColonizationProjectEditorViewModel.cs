@@ -614,6 +614,8 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
 
     private static string GetContextIdentity(ColonizationProjectEditorContext value)
     {
+        // Stable site identity only. Live depot progress/resource ticks must not wipe an
+        // in-progress create form while the commander remains at the same construction site.
         return string.Join(
             "|",
             value.IsExternalDataEnabled,
@@ -626,30 +628,9 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             value.Dock?.SystemAddress,
             value.Dock?.SystemName,
             value.Dock?.StationName,
-            value.Dock?.FactionName,
             value.Depot?.MarketId,
-            value.Depot?.Timestamp,
-            value.Depot?.ReportedProgress,
             value.Depot?.IsComplete,
-            value.Depot?.IsFailed,
-            value.Depot?.TotalProvided,
-            value.Depot?.TotalRequired,
-            value.Depot is null
-                ? null
-                : string.Join(
-                    ",",
-                    value
-                        .Depot.Resources.OrderBy(resource => resource.Name)
-                        .Select(resource =>
-                            string.Join(
-                                ":",
-                                resource.Name,
-                                resource.RequiredAmount,
-                                resource.ProvidedAmount,
-                                resource.Payment
-                            )
-                        )
-                )
+            value.Depot?.IsFailed
         );
     }
 

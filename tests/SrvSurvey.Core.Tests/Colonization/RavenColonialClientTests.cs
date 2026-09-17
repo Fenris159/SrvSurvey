@@ -149,9 +149,37 @@ public sealed class RavenColonialClientTests
         Assert.Equal("no_truss", root.GetProperty("buildType").GetString());
         JsonElement depotJson = root.GetProperty("colonisationConstructionDepot");
         Assert.Equal(42, depotJson.GetProperty("MarketID").GetInt64());
+        Assert.Equal("ColonisationConstructionDepot", depotJson.GetProperty("event").GetString());
+        Assert.Equal(depot.Timestamp, depotJson.GetProperty("timestamp").GetDateTimeOffset());
         JsonElement resource = depotJson.GetProperty("ResourcesRequired")[0];
         Assert.Equal("$steel_name;", resource.GetProperty("Name").GetString());
         Assert.Equal(25, resource.GetProperty("ProvidedAmount").GetInt32());
+    }
+
+    [Fact]
+    public void DepotPayloadSerializesJournalTimestampAndEvent()
+    {
+        var timestamp = DateTimeOffset.Parse(
+            "2026-07-25T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var depot = new ColonizationConstructionDepotSnapshot(
+            timestamp,
+            456,
+            0.25,
+            IsComplete: false,
+            IsFailed: false,
+            [new ColonizationResourceRequirement("steel", "Steel", 100, 25, 5_000)]
+        );
+
+        var payload = ColonizationConstructionDepotPayload.FromSnapshot(depot);
+        string json = JsonSerializer.Serialize(payload);
+        using var document = JsonDocument.Parse(json);
+        JsonElement root = document.RootElement;
+
+        Assert.Equal("ColonisationConstructionDepot", root.GetProperty("event").GetString());
+        Assert.Equal(timestamp, root.GetProperty("timestamp").GetDateTimeOffset());
+        Assert.Equal(456, root.GetProperty("MarketID").GetInt64());
     }
 
     [Fact]
@@ -529,8 +557,34 @@ public sealed class RavenColonialClientTests
         Assert.Equal("build-1", updateRoot.GetProperty("buildId").GetString());
         Assert.Equal(75, updateRoot.GetProperty("commodities").GetProperty("steel").GetInt32());
         Assert.False(updateRoot.TryGetProperty("buildType", out _));
+        JsonElement depotJson = updateRoot.GetProperty("colonisationConstructionDepot");
+        Assert.Equal("ColonisationConstructionDepot", depotJson.GetProperty("event").GetString());
+        Assert.Equal(depot.Timestamp, depotJson.GetProperty("timestamp").GetDateTimeOffset());
         using var contributionJson = JsonDocument.Parse(requests[1].Body!);
         Assert.Equal(25, contributionJson.RootElement.GetProperty("steel").GetInt32());
+    }
+
+    [Fact]
+    public async Task LinksAndUnlinksCommanderWithLegacyEndpoints()
+    {
+        var requests = new List<(HttpMethod Method, string Path)>();
+        var handler = new StubHandler(request =>
+        {
+            requests.Add((request.Method, request.RequestUri!.AbsolutePath));
+            return new HttpResponseMessage(HttpStatusCode.NoContent);
+        });
+        RavenColonialClient client = Create(handler);
+
+        await client.LinkCommanderAsync("build-1", "Test Cmdr");
+        await client.UnlinkCommanderAsync("build-1", "Test Cmdr");
+
+        Assert.Equal(
+            [
+                (HttpMethod.Put, "/root/api/project/build-1/link/Test%20Cmdr"),
+                (HttpMethod.Delete, "/root/api/project/build-1/link/Test%20Cmdr"),
+            ],
+            requests
+        );
     }
 
     [Fact]

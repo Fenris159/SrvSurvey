@@ -382,7 +382,10 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         Assert.Equal(1, client.SiteProjectLoadCount);
         Assert.Equal("other-build", Assert.Single(viewModel.Projects).Project.BuildId);
-        Assert.Contains("untracked Raven project", viewModel.StatusMessage);
+        LinkCall link = Assert.Single(client.LinkRequests);
+        Assert.Equal("other-build", link.BuildId);
+        Assert.Equal("Test Cmdr", link.CommanderName);
+        Assert.Contains("Linked Raven project", viewModel.StatusMessage);
     }
 
     [Fact]
@@ -1801,6 +1804,10 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public List<string?> PrimaryProjectRequests { get; } = [];
 
+        public List<LinkCall> LinkRequests { get; } = [];
+
+        public List<LinkCall> UnlinkRequests { get; } = [];
+
         public List<SystemUpdateCall> SystemUpdates { get; } = [];
 
         public List<SystemSitePatchCall> SystemSitePatches { get; } = [];
@@ -1908,6 +1915,26 @@ public sealed class ColonizationViewModelTests : IDisposable
         )
         {
             PrimaryProjectRequests.Add(buildId);
+            return Task.CompletedTask;
+        }
+
+        public Task LinkCommanderAsync(
+            string buildId,
+            string commanderName,
+            CancellationToken cancellationToken = default
+        )
+        {
+            LinkRequests.Add(new LinkCall(buildId, commanderName));
+            return Task.CompletedTask;
+        }
+
+        public Task UnlinkCommanderAsync(
+            string buildId,
+            string commanderName,
+            CancellationToken cancellationToken = default
+        )
+        {
+            UnlinkRequests.Add(new LinkCall(buildId, commanderName));
             return Task.CompletedTask;
         }
 
@@ -2074,6 +2101,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         string CommanderName,
         IReadOnlyDictionary<string, int> Commodities
     );
+
+    private sealed record LinkCall(string BuildId, string CommanderName);
 
     private sealed record SystemUpdateCall(
         string SystemNameOrAddress,
