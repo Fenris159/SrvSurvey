@@ -544,7 +544,7 @@ public sealed class RavenColonialClientTests
         Assert.Equal(75, updated.RemainingRequired);
         Assert.Equal(
             [
-                (HttpMethod.Post, "/root/api/project/build-1"),
+                (HttpMethod.Patch, "/root/api/project/build-1"),
                 (HttpMethod.Post, "/root/api/project/build-1/contribute/Test%20Cmdr"),
                 (HttpMethod.Post, "/root/api/project/build-1/complete"),
                 (HttpMethod.Put, "/root/api/cmdr/Test%20Cmdr/primary/build-1"),
@@ -562,6 +562,32 @@ public sealed class RavenColonialClientTests
         Assert.Equal(depot.Timestamp, depotJson.GetProperty("timestamp").GetDateTimeOffset());
         using var contributionJson = JsonDocument.Parse(requests[1].Body!);
         Assert.Equal(25, contributionJson.RootElement.GetProperty("steel").GetInt32());
+    }
+
+    [Fact]
+    public async Task UpdateProjectClampsNegativeCommodityNeedBeforePatch()
+    {
+        string? body = null;
+        var handler = new StubHandler(async request =>
+        {
+            Assert.Equal(HttpMethod.Patch, request.Method);
+            body = await request.Content!.ReadAsStringAsync();
+            return Json("{\"buildId\":\"build-1\",\"sumNeed\":0,\"commodities\":{\"steel\":0,\"titanium\":0}}");
+        });
+        RavenColonialClient client = Create(handler);
+
+        await client.UpdateProjectAsync(
+            new ColonizationProjectUpdate
+            {
+                BuildId = "build-1",
+                Commodities = new Dictionary<string, int> { ["steel"] = -1, ["$Titanium_name;"] = -4 },
+            }
+        );
+
+        using var document = JsonDocument.Parse(body!);
+        JsonElement commodities = document.RootElement.GetProperty("commodities");
+        Assert.Equal(0, commodities.GetProperty("steel").GetInt32());
+        Assert.Equal(0, commodities.GetProperty("titanium").GetInt32());
     }
 
     [Fact]

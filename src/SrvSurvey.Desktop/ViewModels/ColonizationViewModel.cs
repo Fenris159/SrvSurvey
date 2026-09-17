@@ -14,6 +14,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly TimeSpan DockingRefreshDelay = TimeSpan.FromSeconds(4);
+    private static readonly TimeSpan ProjectLocationCacheTtl = TimeSpan.FromSeconds(4);
     private const int MaximumBuildSiteRepairVisits = 50;
     private const string FleetCarrierStationType = "FleetCarrier";
     private const string FleetCarrierSyncOffMessage = "Automatic Fleet Carrier cargo sync is off.";
@@ -74,6 +75,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     private bool skipNextCargoEvent;
     private bool pendingContributionRemainingSync;
+    private string? lastDepotPatchPayloadSignature;
+    private (long SystemAddress, long MarketId, ColonizationProject Project, long MonotonicTicks)? projectLocationCache;
     private string ravenCredentialStatus = "Load a commander profile to configure a Raven API key.";
     private string fleetCarrierSyncStatus = FleetCarrierSyncOffMessage;
     private string shipCargoPublishingStatus = "Automatic ship cargo publishing is off.";
@@ -562,6 +565,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             detectedSquadronCommander = owner;
         }
         SystemEditor.ApplyJournalEvents(journalEvents);
+        ColonizationDockingSnapshot? dockBefore = constructionState.CurrentDock;
         long before = constructionState.Version;
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
@@ -576,6 +580,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             }
             fleetCarrierIdentityTracker.Apply(journalEvent);
             ApplyShipIdentity(journalEvent);
+        }
+
+        if (dockBefore is not null && constructionState.CurrentDock is null)
+        {
+            InvalidateProjectLocationCache();
+            lastDepotPatchPayloadSignature = null;
         }
 
         if (constructionState.Version != before)
@@ -1009,6 +1019,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             new ColonizationProjectUpdate { BuildId = project.BuildId, FactionName = dock.FactionName },
             CancellationToken.None
         );
+        updated = await ClearPhantomCommoditiesAsync(updated);
         UpsertProject(updated);
         return $"Updated Raven project faction for {updated.BuildName}.";
     }
@@ -1262,6 +1273,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         bool force
     )
     {
+        remaining = ColonizationCommodityMaps.NormalizeNeedMap(remaining);
         int? maximumRequired = depot is null
             ? project.MaximumRequired
             : checked((int)depot.Resources.Sum(resource => (long)resource.RequiredAmount));
@@ -1275,6 +1287,20 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
+        string signature = ColonizationCommodityMaps.CreateDepotUpdateSignature(
+            project.BuildId,
+            maximumRequired,
+            remaining,
+            includeDepot: depot is not null,
+            depotFailed: depot?.IsFailed == true
+        );
+        if (!force && string.Equals(signature, lastDepotPatchPayloadSignature, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        await ClearPhantomCommoditiesAsync(project);
+
         ColonizationProject updated = await client.UpdateProjectAsync(
             new ColonizationProjectUpdate
             {
@@ -1285,11 +1311,39 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             },
             CancellationToken.None
         );
+        updated = await ClearPhantomCommoditiesAsync(updated);
         UpsertProject(updated);
+        lastDepotPatchPayloadSignature = signature;
+        InvalidateProjectLocationCache();
         pendingContributionRemainingSync = false;
         return force
             ? $"Updated Raven remaining cargo after contribution for {updated.BuildName}."
             : $"Updated Raven construction requirements for {updated.BuildName}.";
+    }
+
+    private async Task<ColonizationProject> ClearPhantomCommoditiesAsync(ColonizationProject project)
+    {
+        Dictionary<string, int> zeroes = ColonizationCommodityMaps.PhantomZeroPatchMap(project.Commodities);
+        if (zeroes.Count == 0)
+        {
+            return project;
+        }
+
+        Dictionary<string, int> cleared = ColonizationCommodityMaps.ApplyPhantomZeros(project.Commodities);
+        ColonizationProject updated = await client.UpdateProjectAsync(
+            new ColonizationProjectUpdate { BuildId = project.BuildId, Commodities = zeroes },
+            CancellationToken.None
+        );
+        // Prefer the cleared need map when the API echoes a partial merge response.
+        if (ColonizationCommodityMaps.PhantomZeroPatchMap(updated.Commodities).Count > 0)
+        {
+            return updated with { Commodities = cleared, RemainingRequired = cleared.Values.Sum() };
+        }
+
+        return updated with
+        {
+            Commodities = ColonizationCommodityMaps.ApplyPhantomZeros(updated.Commodities),
+        };
     }
 
     private static Dictionary<string, int> ToRemainingCommodities(ColonizationConstructionDepotSnapshot depot)
@@ -1340,11 +1394,25 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return new ColonizationProjectLookup(project, LinkedCommander: false);
         }
 
-        project = await client.GetProjectAsync(systemAddress.Value, marketId, CancellationToken.None);
+        if (TryGetCachedProject(systemAddress.Value, marketId, out ColonizationProject? cached))
+        {
+            project = cached;
+        }
+        else
+        {
+            project = await client.GetProjectAsync(systemAddress.Value, marketId, CancellationToken.None);
+            if (project is not null)
+            {
+                RememberProjectLocation(systemAddress.Value, marketId, project);
+            }
+        }
+
         if (project is null)
         {
             return new ColonizationProjectLookup(null, LinkedCommander: false);
         }
+
+        project = await ClearPhantomCommoditiesAsync(project);
 
         bool linkedCommander = false;
         if (!string.IsNullOrWhiteSpace(CommanderName))
@@ -1352,6 +1420,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             await client.LinkCommanderAsync(project.BuildId, CommanderName, CancellationToken.None);
             localUntrackedProject = null;
             linkedCommander = true;
+            InvalidateProjectLocationCache();
         }
         else
         {
@@ -1360,6 +1429,35 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
         UpsertProject(project);
         return new ColonizationProjectLookup(project, linkedCommander);
+    }
+
+    private bool TryGetCachedProject(long systemAddress, long marketId, out ColonizationProject? project)
+    {
+        project = null;
+        if (projectLocationCache is not { } cache || cache.SystemAddress != systemAddress || cache.MarketId != marketId)
+        {
+            return false;
+        }
+
+        long ageMilliseconds = Environment.TickCount64 - cache.MonotonicTicks;
+        if (ageMilliseconds < 0 || ageMilliseconds > ProjectLocationCacheTtl.TotalMilliseconds)
+        {
+            projectLocationCache = null;
+            return false;
+        }
+
+        project = cache.Project;
+        return true;
+    }
+
+    private void RememberProjectLocation(long systemAddress, long marketId, ColonizationProject project)
+    {
+        projectLocationCache = (systemAddress, marketId, project, Environment.TickCount64);
+    }
+
+    private void InvalidateProjectLocationCache()
+    {
+        projectLocationCache = null;
     }
 
     private readonly record struct ColonizationProjectLookup(ColonizationProject? Project, bool LinkedCommander);
@@ -2106,8 +2204,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    private Task OnProjectCreatedAsync(ColonizationProject project)
+    private async Task OnProjectCreatedAsync(ColonizationProject project)
     {
+        InvalidateProjectLocationCache();
+        lastDepotPatchPayloadSignature = null;
+        project = await ClearPhantomCommoditiesAsync(project);
         Projects = Projects
             .Where(row => !string.Equals(row.Project.BuildId, project.BuildId, StringComparison.OrdinalIgnoreCase))
             .Select(row => row.Project)
@@ -2117,7 +2218,6 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             .Select(CreateRow)
             .ToArray();
         UpdateProjectSummary();
-        return Task.CompletedTask;
     }
 
     private void UpdateProjectEditorContext()

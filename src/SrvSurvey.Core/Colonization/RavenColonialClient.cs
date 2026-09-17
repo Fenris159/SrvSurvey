@@ -295,8 +295,13 @@ public sealed class RavenColonialClient : IRavenColonialClient
     {
         ArgumentNullException.ThrowIfNull(update);
         ArgumentException.ThrowIfNullOrWhiteSpace(update.BuildId);
+        if (update.Commodities is not null)
+        {
+            update = update with { Commodities = ColonizationCommodityMaps.NormalizeNeedMap(update.Commodities) };
+        }
+
         using var request = new HttpRequestMessage(
-            HttpMethod.Post,
+            HttpMethod.Patch,
             CreateUri($"api/project/{Uri.EscapeDataString(update.BuildId.Trim())}")
         )
         {
@@ -305,11 +310,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        return await ReadRequiredAsync<ColonizationProject>(
-                response,
-                "update a colonisation project",
-                cancellationToken
-            )
+        return await ReadRequiredAsync<ColonizationProject>(response, "patch a colonisation project", cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -568,6 +569,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
     )
     {
         ArgumentNullException.ThrowIfNull(project);
+        project = project with { Commodities = ColonizationCommodityMaps.NormalizeNeedMap(project.Commodities) };
         using var request = new HttpRequestMessage(HttpMethod.Put, CreateUri("api/project/"))
         {
             Content = JsonContent.Create(project, options: JsonOptions),

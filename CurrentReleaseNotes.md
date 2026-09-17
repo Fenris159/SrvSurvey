@@ -1,28 +1,37 @@
-# SrvSurvey-XP 2.1.3.0-rc.48.8
+# SrvSurvey-XP 2.1.3.0-rc.48.9
 
-RC48.8 fixes a Canonn biology prediction regression and improves the biology
-overlay targeting indicator visibility.
+RC48.9 improves Avalonia colonization sync with Raven Colonial, aligning
+depot remaining updates with the proven EDMC plugin API paths and fixing
+delivery history drift after contributions.
 
-## New in RC48.8
+## New in RC48.9
 
-- Restores hatched cyan rendering for non-commander-scanned Canonn biology
-  signals. PR [#136](https://github.com/Fenris159/SrvSurvey/pull/136) fixes a
-  regression where all Canonn data was shown as confirmed organisms (solid
-  orange PIPs) instead of distinguishing commander-verified scans from external
-  predictions. Unverified Canonn signals now display with hatched cyan fill and
-  `?` markers around species names.
-- Changes the biology overlay targeting border from secondary (cyan) to the
-  themed success color (green). PR [#137](https://github.com/Fenris159/SrvSurvey/pull/137)
-  makes the pip group highlight visible over prediction pips, which are also
-  cyan-colored. The success brush respects the user's selected theme.
+- Aligns Raven project updates with journal-aware clients: create/setup
+  stays `PUT /api/project`, while remaining need and depot snapshots use
+  `PATCH /api/project/{buildId}` (matching RavenColonial EDMC). PR
+  [#139](https://github.com/Fenris159/SrvSurvey/pull/139).
+- Publishes absolute remaining need immediately after
+  `ColonisationContribution` so Raven delivery history cannot advance
+  without updating what is still required.
+- Ports additional EDMC colonization hardening: clamp outbound need maps
+  to non-negative values, clear phantom template commodity slots
+  (negative/`-1` → `0`), skip duplicate depot PATCH payloads, and
+  invalidate the short-lived project location cache on undock, create,
+  link, and successful remaining sync.
+- Auto-sizes colonization workspace tables and dropdowns to content so
+  market, commodity, and project columns stay readable without manual
+  resizing.
+- Continues the colonization create/link UX and depot sync repairs from
+  earlier work on this branch, including site MarketID repair when docking
+  at player colony markets.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.48.8`
-- Tag: `xp-v2.1.3.0-rc.48.8`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.8-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.8-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.8-x86_64.AppImage`
+- Version: `2.1.3.0-rc.48.9`
+- Tag: `xp-v2.1.3.0-rc.48.9`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.9-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.9-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.9-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated
