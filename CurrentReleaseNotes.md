@@ -1,29 +1,49 @@
 # SrvSurvey-XP 2.1.3.0-rc.48.9
 
-RC48.9 improves Avalonia colonization sync with Raven Colonial, aligning
-depot remaining updates with the proven EDMC plugin API paths and fixing
-delivery history drift after contributions.
+RC48.9 focuses on Avalonia colonization: Raven Colonial depot sync,
+create/link reliability, delivery remaining accuracy, and clearer
+workspace layout. All of this ships in PR
+[#139](https://github.com/Fenris159/SrvSurvey/pull/139).
 
 ## New in RC48.9
 
-- Aligns Raven project updates with journal-aware clients: create/setup
-  stays `PUT /api/project`, while remaining need and depot snapshots use
-  `PATCH /api/project/{buildId}` (matching RavenColonial EDMC). PR
-  [#139](https://github.com/Fenris159/SrvSurvey/pull/139).
+### Raven depot sync and create/link
+
+- Fixes Raven HTTP 400 on depot create/update by including journal
+  `timestamp` and `event` on the nested `colonisationConstructionDepot`
+  payload (legacy forwarded the raw journal entry; Avalonia had omitted
+  those required members).
+- Stops progress-only depot ticks from wiping an in-progress create or
+  review form; the editor still resets when system or site identity
+  changes.
+- Adds commander link/unlink for Raven projects and auto-links when a
+  docked construction site resolves an existing project, so it survives
+  the `/active` refresh instead of vanishing as “untracked.”
+- Refreshes Avalonia localization for the new linked-project status
+  string.
+
+### Delivery remaining and EDMC-aligned API paths
+
 - Publishes absolute remaining need immediately after
   `ColonisationContribution` so Raven delivery history cannot advance
-  without updating what is still required.
+  without updating what is still required; forces a follow-up depot sync
+  when needed and normalizes contribution commodity keys.
+- Aligns remaining updates with journal-aware clients: create/setup stays
+  `PUT /api/project`, while remaining need and depot snapshots use
+  `PATCH /api/project/{buildId}` (matching RavenColonial EDMC).
 - Ports additional EDMC colonization hardening: clamp outbound need maps
   to non-negative values, clear phantom template commodity slots
   (negative/`-1` → `0`), skip duplicate depot PATCH payloads, and
   invalidate the short-lived project location cache on undock, create,
   link, and successful remaining sync.
+
+### Colonization workspace UI
+
 - Auto-sizes colonization workspace tables and dropdowns to content so
-  market, commodity, and project columns stay readable without manual
-  resizing.
-- Continues the colonization create/link UX and depot sync repairs from
-  earlier work on this branch, including site MarketID repair when docking
-  at player colony markets.
+  site, project, commodity, and create-form controls no longer clip text.
+- Adds fit-to-longest-item ComboBox behavior with headless coverage, and
+  tightens local quality gates (CSharpier, localization verify, dynamic
+  catalog counts) so those CI failures are caught before push.
 
 ## Packaging
 
