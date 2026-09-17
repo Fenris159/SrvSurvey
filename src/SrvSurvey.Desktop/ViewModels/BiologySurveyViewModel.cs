@@ -420,7 +420,7 @@ public sealed class BiologySurveyViewModel
 
     private static string FormatIdentifiedRewardSummary(BiologyRewardEstimate rewardEstimate)
     {
-        if (rewardEstimate.HasPredictedReward)
+        if (rewardEstimate.HasUnscannedOrganismReward)
         {
             return "Estimated reward:\n"
                 + FormatRewardRange(
@@ -433,6 +433,16 @@ public sealed class BiologySurveyViewModel
         if (rewardEstimate.KnownReward <= 0)
         {
             return rewardEstimate.HasUnknownReward ? "Reward pending identification" : string.Empty;
+        }
+
+        if (rewardEstimate.HasPredictedReward)
+        {
+            return "Estimated reward:\n"
+                + FormatRewardRange(
+                    rewardEstimate.MinimumReward,
+                    rewardEstimate.MaximumReward,
+                    rewardEstimate.HasUnknownReward
+                );
         }
 
         string value = FormatCompactCredits(rewardEstimate.KnownReward);
@@ -875,15 +885,16 @@ public sealed class BiologySurveyViewModel
             0,
             body.BiologicalSignalCount - body.Organisms.Count(organism => organism.Species is not null)
         );
-        bool hasUnscannedPredictions = unscannedReward > 0;
+        bool hasUnscannedOrganismReward = unscannedReward > 0;
         if (remainingSignals == 0)
         {
             return new BiologyRewardEstimate(
                 knownReward,
                 knownReward + unscannedReward,
                 knownReward + unscannedReward,
-                hasUnscannedPredictions,
-                false
+                hasUnscannedOrganismReward,
+                false,
+                hasUnscannedOrganismReward
             );
         }
 
@@ -910,8 +921,9 @@ public sealed class BiologySurveyViewModel
             knownReward,
             knownReward + unscannedReward + minimumAdd,
             knownReward + unscannedReward + maximumAdd,
-            hasUnscannedPredictions || predictedCount > 0,
-            !predictionSet.IsComplete || predictedCount < remainingSignals
+            hasUnscannedOrganismReward || predictedCount > 0,
+            !predictionSet.IsComplete || predictedCount < remainingSignals,
+            hasUnscannedOrganismReward
         );
     }
 
@@ -1257,7 +1269,8 @@ public sealed class BiologySurveyViewModel
         long MinimumReward,
         long MaximumReward,
         bool HasPredictedReward,
-        bool HasUnknownReward
+        bool HasUnknownReward,
+        bool HasUnscannedOrganismReward
     );
 
     private sealed record BiologySignalRewardRange(
