@@ -2301,12 +2301,13 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             )
         );
 
-        BiologySignalRewardBandViewModel band = Assert.Single(
-            Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands
-        );
+        BiologyBodyRowViewModel bodyRow = Assert.Single(viewModel.BiologySurvey.Bodies);
+        BiologySignalRewardBandViewModel band = Assert.Single(bodyRow.RewardBands);
         Assert.True(band.IsPrediction);
         Assert.Equal(6_284_600, band.MinimumReward);
         Assert.Equal(band.MinimumReward, band.MaximumReward);
+        Assert.True(bodyRow.HasPredictedReward);
+        Assert.StartsWith("Estimated reward:", viewModel.BiologySurvey.RewardSummary);
 
         viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
 

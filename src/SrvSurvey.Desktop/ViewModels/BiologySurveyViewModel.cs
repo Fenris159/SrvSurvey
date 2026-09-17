@@ -420,6 +420,16 @@ public sealed class BiologySurveyViewModel
 
     private static string FormatIdentifiedRewardSummary(BiologyRewardEstimate rewardEstimate)
     {
+        if (rewardEstimate.HasPredictedReward)
+        {
+            return "Estimated reward:\n"
+                + FormatRewardRange(
+                    rewardEstimate.MinimumReward,
+                    rewardEstimate.MaximumReward,
+                    rewardEstimate.HasUnknownReward
+                );
+        }
+
         if (rewardEstimate.KnownReward <= 0)
         {
             return rewardEstimate.HasUnknownReward ? "Reward pending identification" : string.Empty;
@@ -857,14 +867,24 @@ public sealed class BiologySurveyViewModel
         BiologyPredictionSet predictionSet
     )
     {
-        long knownReward = body.Organisms.Sum(organism => organism.Reward ?? 0);
+        long knownReward = body.Organisms.Where(organism => organism.IsScanned).Sum(organism => organism.Reward ?? 0);
+        long unscannedReward = body
+            .Organisms.Where(organism => !organism.IsScanned && organism.Reward.HasValue)
+            .Sum(organism => organism.Reward!.Value);
         int remainingSignals = Math.Max(
             0,
             body.BiologicalSignalCount - body.Organisms.Count(organism => organism.Species is not null)
         );
+        bool hasUnscannedPredictions = unscannedReward > 0;
         if (remainingSignals == 0)
         {
-            return new BiologyRewardEstimate(knownReward, knownReward, knownReward, false, false);
+            return new BiologyRewardEstimate(
+                knownReward,
+                knownReward + unscannedReward,
+                knownReward + unscannedReward,
+                hasUnscannedPredictions,
+                false
+            );
         }
 
         var rewardGroups = predictionSet
@@ -888,9 +908,9 @@ public sealed class BiologySurveyViewModel
 
         return new BiologyRewardEstimate(
             knownReward,
-            knownReward + minimumAdd,
-            knownReward + maximumAdd,
-            predictedCount > 0,
+            knownReward + unscannedReward + minimumAdd,
+            knownReward + unscannedReward + maximumAdd,
+            hasUnscannedPredictions || predictedCount > 0,
             !predictionSet.IsComplete || predictedCount < remainingSignals
         );
     }
