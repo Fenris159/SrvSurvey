@@ -469,11 +469,21 @@ public sealed class MiningWorkspacePresentationTests
             );
             window.Content = new Views.FleetCarrierWorkspaceView { DataContext = model };
             using WriteableBitmap? fleetFrame = window.CaptureRenderedFrame();
-            FrontierCarrierTabView fullCarrier = Assert.Single(
-                ((Control)window.Content).GetVisualDescendants().OfType<Views.FrontierCarrierTabView>()
+            var fleetRoot = (Control)window.Content;
+            Views.FrontierCarrierTabView[] carrierTabs = fleetRoot
+                .GetVisualDescendants()
+                .OfType<Views.FrontierCarrierTabView>()
+                .ToArray();
+            Assert.Equal(2, carrierTabs.Length);
+            Assert.All(carrierTabs, tab => Assert.Same(model.FrontierProfile, tab.DataContext));
+            Assert.Equal(
+                ["Fleet Carrier", "Squadron Carrier", "Linked"],
+                fleetRoot
+                    .GetVisualDescendants()
+                    .OfType<Button>()
+                    .Where(button => button.Classes.Contains("workspace-tab"))
+                    .Select(button => button.Content)
             );
-            Assert.Same(model.FrontierProfile, fullCarrier.DataContext);
-            Assert.Same(model.FleetCarrierWorkspace, fullCarrier.SupplementaryContent!.DataContext);
         }
         finally
         {
