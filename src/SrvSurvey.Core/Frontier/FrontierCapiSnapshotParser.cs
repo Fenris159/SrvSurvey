@@ -572,8 +572,50 @@ public static partial class FrontierCapiSnapshotParser
         ArgumentException.ThrowIfNullOrWhiteSpace(carrierJson);
         using var document = JsonDocument.Parse(carrierJson);
         JsonElement root = RequireObject(document.RootElement, "Frontier fleet carrier");
+        return ParseCarrierEndpoint(root, fetchedAt, dataPathPrefix: "fleetcarrier");
+    }
+
+    /// <summary>
+    /// Parses Frontier CAPI <c>/squadron</c> payloads. EDDI reads the nested
+    /// <c>squadronCarrier</c> object with the same shape as <c>/fleetcarrier</c>.
+    /// </summary>
+    public static FrontierCarrierEndpointSnapshot ParseSquadronEndpoint(string squadronJson, DateTimeOffset fetchedAt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(squadronJson);
+        using var document = JsonDocument.Parse(squadronJson);
+        JsonElement root = RequireObject(document.RootElement, "Frontier squadron");
+        List<FrontierDataPointSnapshot> squadronData = Flatten(root, "squadron");
+        if (GetObject(root, "squadronCarrier") is not { } carrierRoot)
+        {
+            return new FrontierCarrierEndpointSnapshot(
+                null,
+                ParseReputation(GetProperty(root, "reputation")),
+                squadronData
+            );
+        }
+
+        FrontierCarrierEndpointSnapshot carrier = ParseCarrierEndpoint(
+            carrierRoot,
+            fetchedAt,
+            dataPathPrefix: "squadron.squadronCarrier"
+        );
+        return new FrontierCarrierEndpointSnapshot(
+            carrier.Carrier,
+            carrier.CommanderReputation.Count > 0
+                ? carrier.CommanderReputation
+                : ParseReputation(GetProperty(root, "reputation")),
+            squadronData.Concat(carrier.DataPoints).ToArray()
+        );
+    }
+
+    private static FrontierCarrierEndpointSnapshot ParseCarrierEndpoint(
+        JsonElement root,
+        DateTimeOffset fetchedAt,
+        string dataPathPrefix
+    )
+    {
         FrontierReputationSnapshot[] reputation = ParseReputation(GetProperty(root, "reputation"));
-        List<FrontierDataPointSnapshot> dataPoints = Flatten(root, "fleetcarrier");
+        List<FrontierDataPointSnapshot> dataPoints = Flatten(root, dataPathPrefix);
         JsonElement? name = GetObject(root, "name");
         if (string.IsNullOrWhiteSpace(GetString(name, "callsign")))
         {
@@ -696,9 +738,9 @@ public static partial class FrontierCapiSnapshotParser
             ParseCarrierItinerary(GetProperty(itinerary, "completed")),
             reputation,
             GetObject(root, "market") is { } carrierMarket
-                ? ParseMarket(carrierMarket, fetchedAt, "fleetcarrier.market")
+                ? ParseMarket(carrierMarket, fetchedAt, dataPathPrefix + ".market")
                 : null,
-            ParseShipyard(root, fetchedAt, "fleetcarrier.shipyard"),
+            ParseShipyard(root, fetchedAt, dataPathPrefix + ".shipyard"),
             dataPoints
         );
         return new FrontierCarrierEndpointSnapshot(carrier, reputation, dataPoints);

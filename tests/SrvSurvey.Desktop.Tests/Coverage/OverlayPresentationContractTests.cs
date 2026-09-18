@@ -1193,6 +1193,8 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("Margin=\"32,16,32,32\"", categoryWindow);
         Assert.Contains("x:Name=\"ColonizationShoppingCard\"", settings);
         Assert.Contains("Colonization.AutoShowCommodityOverlay", settings);
+        Assert.Contains("Colonization.UseCompactScrollingCommoditiesList", settings);
+        Assert.Contains("Use compact/scrolling commodities list", settings);
         Assert.DoesNotContain("Colonization.AutoShowCommodityOverlay", colonization);
         Assert.DoesNotContain("Colonisation projects", colonization);
     }
@@ -1215,6 +1217,11 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("Width=\"{Binding Guardian.PreferredOverlayWidth}\"", guardianSite);
         Assert.Contains("Height=\"{Binding Guardian.PreferredOverlayHeight}\"", guardianSite);
         Assert.Contains("Classes.alternate=\"{Binding IsAlternateRow}\"", commodities);
+        Assert.Contains("MaxHeight=\"{Binding CommodityListMaxHeight}\"", commodities);
+        Assert.Contains("Classes.compact-scrolling=\"{Binding UseCompactScrollingCommoditiesList}\"", commodities);
+        Assert.Contains("Grid.IsSharedSizeScope=\"True\"", commodities);
+        Assert.Contains("SharedSizeGroup=\"ColoniseCommodity\"", commodities);
+        Assert.Contains("SharedSizeGroup=\"ColoniseStatus\"", commodities);
         Assert.Contains("Border.overlay-divider", ravenStyles);
         Assert.Contains("HorizontalAlignment\" Value=\"Stretch\"", ravenStyles);
         Assert.Contains("Border.guardian-header-rule", guardianStyles);

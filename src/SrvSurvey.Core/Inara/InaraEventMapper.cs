@@ -137,7 +137,13 @@ internal sealed class InaraEventMapper
         }
 
         mapEvent(name, timestamp, entry, context, events);
-        addInventorySnapshots(events, timestamp, inventoryChanged.cargo, inventoryChanged.materials);
+        bool publishInventory = name is not "MiningRefined";
+        addInventorySnapshots(
+            events,
+            timestamp,
+            inventoryChanged.cargo && publishInventory,
+            inventoryChanged.materials && publishInventory
+        );
 
         // The common Statistics event supplies the authoritative assets value.
         // Otherwise, coalesce transaction deltas to Inara's recommended hourly

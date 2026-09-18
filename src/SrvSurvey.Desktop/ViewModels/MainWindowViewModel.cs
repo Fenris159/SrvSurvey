@@ -437,7 +437,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 resolvedInaraPublisher
                 ?? new InaraPublisher(
                     (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
-                    httpClient: externalNetworkClient
+                    httpClient: externalNetworkClient,
+                    log: message => resolvedApplicationLogService?.Append(message),
+                    acceptedEventLog: new InaraAcceptedEventLog(
+                        Path.Combine(AppDataPaths.DataDirectory, "logs", "inara-accepted.txt")
+                    )
                 );
             rollback.AddIfCreated(resolvedInaraPublisher, this.inaraPublisher);
             Inara.ApiKeyChanged += OnInaraApiKeyChanged;

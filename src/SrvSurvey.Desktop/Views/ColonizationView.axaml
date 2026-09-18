@@ -24,6 +24,18 @@
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="MinWidth" Value="0" />
     </Style>
+    <Style Selector="TextBox.market-id">
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="MinWidth" Value="72" />
+      <Setter Property="MaxWidth" Value="140" />
+    </Style>
+    <Style Selector="ComboBox.build-type ComboBoxItem" x:DataType="vm:ColonizationSiteBuildTypeChoice">
+      <Setter Property="IsEnabled" Value="{Binding IsSelectable}" />
+    </Style>
+    <Style Selector="ComboBox.build-type ComboBoxItem:disabled">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
     <Style Selector="NumericUpDown">
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="MinWidth" Value="0" />
@@ -266,7 +278,7 @@
                     <ColumnDefinition Width="*" MinWidth="120" />
                     <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteBody" />
                     <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteBuildType" />
-                    <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteMarketId" />
+                    <ColumnDefinition Width="Auto" MaxWidth="140" SharedSizeGroup="ColonizationSiteMarketId" />
                     <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteStatus" />
                   </Grid.ColumnDefinitions>
                   <TextBlock Classes="muted" Text="SITE" />
@@ -282,12 +294,12 @@
                          MaxHeight="360">
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ColonizationSystemSiteRowViewModel">
-                      <Grid ColumnSpacing="10" Margin="4,5">
+                      <Grid ColumnSpacing="10" Margin="4,5" RowDefinitions="Auto,Auto">
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="*" MinWidth="120" />
                           <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteBody" />
                           <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteBuildType" />
-                          <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteMarketId" />
+                          <ColumnDefinition Width="Auto" MaxWidth="140" SharedSizeGroup="ColonizationSiteMarketId" />
                           <ColumnDefinition Width="Auto" SharedSizeGroup="ColonizationSiteStatus" />
                         </Grid.ColumnDefinitions>
                         <TextBox Text="{Binding Name, Mode=TwoWay}" />
@@ -297,15 +309,55 @@
                                        Increment="1"
                                        FormatString="0"
                                        Value="{Binding BodyNumber, Mode=TwoWay}" />
-                        <TextBox Grid.Column="2"
-                                 Text="{Binding BuildType, Mode=TwoWay}"
-                                 PlaceholderText="Unknown" />
+                        <ComboBox Grid.Column="2"
+                                  Classes="build-type"
+                                  HorizontalAlignment="Left"
+                                  PlaceholderText="Unknown"
+                                  ItemsSource="{Binding AllowedBuildTypes}"
+                                  SelectedItem="{Binding SelectedBuildType, Mode=TwoWay}">
+                          <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ColonizationSiteBuildTypeChoice">
+                              <Panel>
+                                <TextBlock Classes="muted"
+                                           FontWeight="SemiBold"
+                                           IsVisible="{Binding IsCategory}"
+                                           Text="{Binding DisplayName}"
+                                           TextWrapping="NoWrap" />
+                                <TextBlock Margin="16,0,0,0"
+                                           IsVisible="{Binding IsOption}"
+                                           Text="{Binding DisplayName}"
+                                           TextWrapping="NoWrap" />
+                              </Panel>
+                            </DataTemplate>
+                          </ComboBox.ItemTemplate>
+                          <ComboBox.SelectionBoxItemTemplate>
+                            <DataTemplate x:DataType="vm:ColonizationSiteBuildTypeChoice">
+                              <TextBlock Text="{Binding SelectionLabel}"
+                                         TextWrapping="NoWrap" />
+                            </DataTemplate>
+                          </ComboBox.SelectionBoxItemTemplate>
+                        </ComboBox>
                         <TextBox Grid.Column="3"
-                                 Text="{Binding MarketId, Mode=TwoWay}"
-                                 PlaceholderText="Unknown" />
+                                 Classes="market-id"
+                                 MinWidth="72"
+                                 MaxWidth="140"
+                                 HorizontalAlignment="Left"
+                                 MaxLength="19"
+                                 PlaceholderText="Unknown"
+                                 Text="{Binding MarketIdText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <ComboBox Grid.Column="4"
                                   ItemsSource="{Binding AllowedStatuses}"
                                   SelectedItem="{Binding Status, Mode=TwoWay}" />
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="0"
+                                   Grid.ColumnSpan="5"
+                                   Margin="0,4,0,0"
+                                   MaxWidth="520"
+                                   HorizontalAlignment="Left"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource RavenWarningBrush}"
+                                   IsVisible="{Binding HasMarketIdWarning}"
+                                   Text="{Binding MarketIdWarning}" />
                       </Grid>
                     </DataTemplate>
                   </ListBox.ItemTemplate>

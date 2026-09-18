@@ -33,16 +33,29 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private FrontierAccountSnapshot? snapshot;
     private IReadOnlyList<SrvSurvey.Core.Colonization.ColonizationFleetCarrier> linkedFleetCarriers = [];
     private string? linkedCarrierCommander;
+    private CarrierWorkspaceKind carrierWorkspaceKind = CarrierWorkspaceKind.Personal;
     private SrvSurvey.Core.Colonization.ColonizationFleetCarrier? LinkedCarrier =>
         string.Equals(Snapshot?.CommanderName, linkedCarrierCommander, StringComparison.OrdinalIgnoreCase)
             ? linkedFleetCarriers.FirstOrDefault(c =>
                 string.Equals(c.Name, Carrier?.Callsign, StringComparison.OrdinalIgnoreCase)
             )
             : null;
-    public string CarrierCargoSource =>
-        LinkedCarrier is null
-            ? "Stored cargo from Frontier."
-            : "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.";
+    public string CarrierCargoSource
+    {
+        get
+        {
+            if (LinkedCarrier is not null)
+            {
+                return carrierWorkspaceKind == CarrierWorkspaceKind.Squadron
+                    ? "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh."
+                    : "Linked cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.";
+            }
+
+            return carrierWorkspaceKind == CarrierWorkspaceKind.Squadron
+                ? "Stored cargo from Frontier squadron data."
+                : "Stored cargo from Frontier.";
+        }
+    }
 
     public void UpdateLinkedFleetCarriers(
         string? commander,
@@ -766,18 +779,57 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public bool HasCapabilities => Capabilities.Count > 0;
 
-    public FrontierCarrierSnapshot? Carrier => Snapshot?.Carrier;
+    public FrontierCarrierSnapshot? PersonalCarrier => Snapshot?.Carrier;
+
+    public FrontierCarrierSnapshot? SquadronCarrier => Snapshot?.SquadronCarrier;
+
+    /// <summary>
+    /// Carrier bound by the Fleet Carrier workspace form. Switches between personal
+    /// <c>/fleetcarrier</c> and nested <c>squadronCarrier</c> from <c>/squadron</c>.
+    /// </summary>
+    public FrontierCarrierSnapshot? Carrier =>
+        carrierWorkspaceKind == CarrierWorkspaceKind.Squadron ? SquadronCarrier : PersonalCarrier;
+
+    public CarrierWorkspaceKind CarrierWorkspaceKind => carrierWorkspaceKind;
+
+    public void SetCarrierWorkspaceKind(CarrierWorkspaceKind kind)
+    {
+        if (carrierWorkspaceKind == kind)
+        {
+            return;
+        }
+
+        carrierWorkspaceKind = kind;
+        ResetCarrierProjectionCache();
+        OnPropertyChanged(nameof(CarrierWorkspaceKind));
+        OnPropertyChanged(nameof(CarrierCargoSource));
+        RaiseCarrierPresentationProperties();
+    }
 
     public bool HasCarrier => Carrier is not null;
 
-    public string CarrierTitle =>
-        Carrier is null
-            ? "No Fleet Carrier is associated with this account."
-            : (string.Equals(Carrier.Name, Carrier.Callsign, StringComparison.OrdinalIgnoreCase)) switch
+    public string CarrierEyebrow =>
+        carrierWorkspaceKind == CarrierWorkspaceKind.Squadron ? "SQUADRON CARRIER" : "FLEET CARRIER";
+
+    public string CarrierEmptyHeading =>
+        carrierWorkspaceKind == CarrierWorkspaceKind.Squadron ? "No Squadron Carrier" : "No Fleet Carrier";
+
+    public string CarrierTitle
+    {
+        get
+        {
+            if (Carrier is null)
             {
-                true => Carrier.Callsign,
-                false => $"{Carrier.Name} · {Carrier.Callsign}",
-            };
+                return carrierWorkspaceKind == CarrierWorkspaceKind.Squadron
+                    ? "No Squadron Carrier is associated with this account."
+                    : "No Fleet Carrier is associated with this account.";
+            }
+
+            return string.Equals(Carrier.Name, Carrier.Callsign, StringComparison.OrdinalIgnoreCase)
+                ? Carrier.Callsign
+                : $"{Carrier.Name} · {Carrier.Callsign}";
+        }
+    }
 
     public string CarrierLocation =>
         Carrier is null
@@ -877,9 +929,17 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public IReadOnlyList<string> CarrierServices => Carrier?.Services ?? [];
 
-    public string CarrierError => Snapshot?.CarrierError ?? string.Empty;
+    public string CarrierError =>
+        carrierWorkspaceKind == CarrierWorkspaceKind.Squadron
+            ? Snapshot?.SquadronCarrierError ?? string.Empty
+            : Snapshot?.CarrierError ?? string.Empty;
 
     public bool HasCarrierError => !string.IsNullOrWhiteSpace(CarrierError);
+
+    public string CarrierDataHeading =>
+        carrierWorkspaceKind == CarrierWorkspaceKind.Squadron
+            ? $"All Squadron Carrier data points ({CarrierData.Count})"
+            : $"All Fleet Carrier data points ({CarrierData.Count})";
 
     public IReadOnlyList<FrontierDetailRowViewModel> CarrierOperations =>
         carrierOperationRows ??= BuildCarrierOperations();
@@ -945,7 +1005,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray();
 
     public IReadOnlyList<FrontierDataPointSnapshot> CarrierData =>
-        Snapshot?.CarrierEndpointData ?? Carrier?.DataPoints ?? [];
+        carrierWorkspaceKind == CarrierWorkspaceKind.Squadron
+            ? Snapshot?.SquadronEndpointData ?? []
+            : Snapshot?.CarrierEndpointData ?? Carrier?.DataPoints ?? [];
 
     public FrontierMarketSnapshot? Market => Snapshot?.Market;
 
@@ -2385,7 +2447,16 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 StringComparison.OrdinalIgnoreCase
             )
             || journalCarrierJumpUpdatedAt is null
-            || Snapshot.CarrierFetchedAt is { } carrierFetchedAt && journalCarrierJumpUpdatedAt < carrierFetchedAt
+            || (
+                carrierWorkspaceKind == CarrierWorkspaceKind.Personal
+                && Snapshot.CarrierFetchedAt is { } carrierFetchedAt
+                && journalCarrierJumpUpdatedAt < carrierFetchedAt
+            )
+            || (
+                carrierWorkspaceKind == CarrierWorkspaceKind.Squadron
+                && Snapshot.SquadronCarrierFetchedAt is { } squadronFetchedAt
+                && journalCarrierJumpUpdatedAt < squadronFetchedAt
+            )
         )
         {
             return NormalizeCurrentJump(Carrier?.CurrentJump);
@@ -2426,6 +2497,17 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         currentShipLiveryRows = null;
         currentShipLaunchBayRows = null;
         shipRows = null;
+        ResetCarrierProjectionCache();
+        commanderReputationRows = null;
+        marketCommodityRows = null;
+        marketEconomyRows = null;
+        shipyardShipRows = null;
+        shipyardModuleRows = null;
+        communityGoalRows = null;
+    }
+
+    private void ResetCarrierProjectionCache()
+    {
         carrierCapacityRows = null;
         carrierCargoRows = null;
         carrierLockerRows = null;
@@ -2437,12 +2519,39 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         carrierCrewRows = null;
         carrierItineraryRows = null;
         carrierReputationRows = null;
-        commanderReputationRows = null;
-        marketCommodityRows = null;
-        marketEconomyRows = null;
-        shipyardShipRows = null;
-        shipyardModuleRows = null;
-        communityGoalRows = null;
+    }
+
+    private void RaiseCarrierPresentationProperties()
+    {
+        OnPropertyChanged(nameof(Carrier));
+        OnPropertyChanged(nameof(PersonalCarrier));
+        OnPropertyChanged(nameof(SquadronCarrier));
+        OnPropertyChanged(nameof(HasCarrier));
+        OnPropertyChanged(nameof(CarrierEyebrow));
+        OnPropertyChanged(nameof(CarrierEmptyHeading));
+        OnPropertyChanged(nameof(CarrierTitle));
+        OnPropertyChanged(nameof(CarrierLocation));
+        OnPropertyChanged(nameof(CarrierBalance));
+        OnPropertyChanged(nameof(CarrierCapacity));
+        OnPropertyChanged(nameof(CarrierCapacityHeader));
+        OnPropertyChanged(nameof(CarrierMarketSummary));
+        OnPropertyChanged(nameof(CarrierCapacityRows));
+        OnPropertyChanged(nameof(CarrierCargo));
+        OnPropertyChanged(nameof(CarrierCargoSource));
+        OnPropertyChanged(nameof(CarrierLocker));
+        OnPropertyChanged(nameof(CarrierSellOrders));
+        OnPropertyChanged(nameof(CarrierBuyOrders));
+        OnPropertyChanged(nameof(CarrierServices));
+        OnPropertyChanged(nameof(CarrierError));
+        OnPropertyChanged(nameof(HasCarrierError));
+        OnPropertyChanged(nameof(CarrierDataHeading));
+        OnPropertyChanged(nameof(CarrierOperations));
+        OnPropertyChanged(nameof(CarrierFinances));
+        OnPropertyChanged(nameof(CarrierServiceTaxation));
+        OnPropertyChanged(nameof(CarrierCrew));
+        OnPropertyChanged(nameof(CarrierItinerary));
+        OnPropertyChanged(nameof(CarrierReputation));
+        OnPropertyChanged(nameof(CarrierData));
     }
 
     private void RebuildCurrentShipModuleGroups()

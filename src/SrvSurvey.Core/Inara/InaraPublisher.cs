@@ -1,8 +1,8 @@
-using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Journal;
 
 // Behavioral reference:
@@ -32,6 +32,15 @@ public sealed class InaraPublisher : IInaraPublisher
 {
     public const string Endpoint = "https://inara.cz/inapi/v1/";
     public static readonly TimeSpan SendInterval = TimeSpan.FromSeconds(35);
+
+    /// <summary>
+    /// Sliding window for commander-write POSTs to <see cref="Endpoint"/>.
+    /// At most <see cref="MaximumPostsPerWindow"/> attempted POSTs may occur in any
+    /// <see cref="RateLimitWindow"/>; overflow stays queued until the next slot.
+    /// </summary>
+    public static readonly TimeSpan RateLimitWindow = TimeSpan.FromMinutes(1);
+    public const int MaximumPostsPerWindow = 2;
+    public static readonly TimeSpan InventoryIdleInterval = TimeSpan.FromMinutes(10);
     private static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(45);
     private const int MaximumEventsPerRequest = 128;
     private const int MaximumPayloadBytes = 1024 * 1024;
@@ -41,6 +50,10 @@ public sealed class InaraPublisher : IInaraPublisher
     private readonly bool ownsHttpClient;
     private readonly string appVersion;
     private readonly TimeProvider timeProvider;
+    private readonly Action<string> log;
+    private readonly InaraAcceptedEventLog? acceptedEventLog;
+    private readonly UploadSuccessLogAggregator successfulUploads;
+    private readonly InaraWriteRateLimiter rateLimiter = new();
     private readonly InaraEventMapper mapper = new();
     private readonly InaraEventQueue queue = new();
 
@@ -66,14 +79,26 @@ public sealed class InaraPublisher : IInaraPublisher
     private volatile bool stopping;
     private volatile bool disposed;
 
-    public InaraPublisher(string appVersion, HttpClient? httpClient = null, TimeProvider? timeProvider = null)
+    public InaraPublisher(
+        string appVersion,
+        HttpClient? httpClient = null,
+        TimeProvider? timeProvider = null,
+        Action<string>? log = null,
+        InaraAcceptedEventLog? acceptedEventLog = null
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(appVersion);
         this.appVersion = appVersion;
         this.timeProvider = timeProvider ?? TimeProvider.System;
+        this.log = log ?? (_ => { });
+        this.acceptedEventLog = acceptedEventLog;
+        successfulUploads = new UploadSuccessLogAggregator(() => this.timeProvider.GetUtcNow());
         if (httpClient is null)
         {
-            this.httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+            this.httpClient = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false })
+            {
+                Timeout = TimeSpan.FromSeconds(20),
+            };
             this.httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"SrvSurvey/{appVersion}");
             ownsHttpClient = true;
         }
@@ -317,9 +342,35 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         queuedNames.AddRange(mapped.Select(item => item.Name));
+        ArmOutgoingSend(queue.HasOnlyInventoryReplaceKeys());
+    }
+
+    private void ArmOutgoingSend(bool inventoryOnly)
+    {
         lock (sendStateSync)
         {
-            nextSendAt ??= timeProvider.GetUtcNow() + SendInterval;
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            DateTimeOffset slot = rateLimiter.NextAllowedAt(now);
+            if (consecutiveTransientFailures > 0 && nextSendAt is { } retry && retry > slot)
+            {
+                return;
+            }
+
+            if (inventoryOnly)
+            {
+                DateTimeOffset idle = now + InventoryIdleInterval;
+                nextSendAt ??= idle > slot ? idle : slot;
+                return;
+            }
+
+            if (nextSendAt is { } scheduled && scheduled >= now + InventoryIdleInterval)
+            {
+                nextSendAt = slot > now ? slot : now;
+                return;
+            }
+
+            DateTimeOffset due = slot > now ? slot : now + SendInterval;
+            nextSendAt ??= due;
         }
     }
 
@@ -354,7 +405,7 @@ public sealed class InaraPublisher : IInaraPublisher
         {
             if (!TryStartBackgroundSend(force: true, out Task<InaraPublicationResult>? started))
             {
-                return completed;
+                return Combine(completed, CreateSendResult(0, []));
             }
 
             active = started;
@@ -618,7 +669,19 @@ public sealed class InaraPublisher : IInaraPublisher
                 return sendTask is not null;
             }
 
-            if (!force && (nextSendAt is null || timeProvider.GetUtcNow() < nextSendAt.Value))
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            DateTimeOffset allowedAt = rateLimiter.NextAllowedAt(now);
+            if (allowedAt > now)
+            {
+                if (nextSendAt is null || allowedAt < nextSendAt.Value)
+                {
+                    nextSendAt = allowedAt;
+                }
+
+                return false;
+            }
+
+            if (!force && (nextSendAt is null || now < nextSendAt.Value))
             {
                 return false;
             }
@@ -869,6 +932,7 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        rateLimiter.Record(timeProvider.GetUtcNow());
         using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
@@ -882,7 +946,7 @@ public sealed class InaraPublisher : IInaraPublisher
         CancellationToken cancellationToken
     )
     {
-        if (IsTransient(response.StatusCode))
+        if (IsTransient((int)response.StatusCode, SafeStatusText(response.ReasonPhrase)))
         {
             return DeferBatch(
                 batch,
@@ -890,6 +954,24 @@ public sealed class InaraPublisher : IInaraPublisher
                 $"Inara upload was deferred after HTTP {(int)response.StatusCode} ({SafeStatusText(response.ReasonPhrase)}); {batch.Count} event(s) were retained.",
                 GetRetryAfter(response.Headers.RetryAfter)
             );
+        }
+
+        if ((int)response.StatusCode == 400)
+        {
+            string badRequestBody = await ReadBoundedTextAsync(response.Content, cancellationToken)
+                .ConfigureAwait(false);
+            try
+            {
+                return ProcessInaraResponseBody(badRequestBody, batch, warnings);
+            }
+            catch (Exception exception) when (exception is JsonException or InvalidDataException)
+            {
+                return DeferBatch(
+                    batch,
+                    warnings,
+                    $"Inara upload was deferred after HTTP 400 ({SafeStatusText(response.ReasonPhrase)}); {batch.Count} event(s) were retained."
+                );
+            }
         }
 
         if (!IsSuccess((int)response.StatusCode))
@@ -1016,15 +1098,27 @@ public sealed class InaraPublisher : IInaraPublisher
             }
 
             int exponent = Math.Min(Math.Max(consecutiveTransientFailures - 1, 0), 4);
+            DateTimeOffset now = timeProvider.GetUtcNow();
             TimeSpan delay = transientFailure
                 ? TimeSpan.FromTicks(SendInterval.Ticks * (1L << exponent))
-                : SendInterval;
+                : TimeSpan.Zero;
+            if (!transientFailure && queue.HasOnlyInventoryReplaceKeys())
+            {
+                delay = InventoryIdleInterval;
+            }
+
             if (retryAfter is { } requestedDelay && requestedDelay > delay)
             {
                 delay = requestedDelay;
             }
 
-            DateTimeOffset candidate = timeProvider.GetUtcNow() + delay;
+            DateTimeOffset candidate = now + delay;
+            DateTimeOffset allowedAt = rateLimiter.NextAllowedAt(now);
+            if (allowedAt > candidate)
+            {
+                candidate = allowedAt;
+            }
+
             if (nextSendAt is null || candidate > nextSendAt.Value)
             {
                 nextSendAt = candidate;
@@ -1091,7 +1185,7 @@ public sealed class InaraPublisher : IInaraPublisher
     )
     {
         string detail = SafeStatusText(headerStatusText);
-        if (IsTransient(headerStatus))
+        if (IsTransient(headerStatus, detail))
         {
             Requeue(batch, warnings);
             ScheduleNextAttempt(transientFailure: true);
@@ -1125,10 +1219,12 @@ public sealed class InaraPublisher : IInaraPublisher
             )
             .ToArray();
         InaraQueuedEvent[] transient = statuses
-            .Where(item => IsTransient(item.Status))
+            .Where(item => IsTransient(item.Status, item.Text))
             .Select(item => batch[item.Index])
             .ToArray();
-        var rejected = statuses.Where(item => !IsSuccess(item.Status) && !IsTransient(item.Status)).ToArray();
+        var rejected = statuses
+            .Where(item => !IsSuccess(item.Status) && !IsTransient(item.Status, item.Text))
+            .ToArray();
         if (transient.Length > 0)
         {
             Requeue(transient, warnings);
@@ -1157,12 +1253,64 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         int accepted = statuses.Count(item => IsSuccess(item.Status));
+        foreach (var item in statuses.Where(status => IsSuccess(status.Status)))
+        {
+            InaraEvent acceptedEvent = batch[item.Index].Event;
+            RecordAcceptedEvent(acceptedEvent);
+        }
+
         return CreateSendResult(accepted, warnings);
+    }
+
+    private void RecordAcceptedEvent(InaraEvent acceptedEvent)
+    {
+        if (acceptedEventLog is null)
+        {
+            return;
+        }
+
+        try
+        {
+            acceptedEventLog.Record(acceptedEvent.Name, acceptedEvent.Timestamp, SummarizeAcceptedEvent(acceptedEvent));
+        }
+        catch
+        {
+            // Detail logging must never interrupt journal publication or requeue
+            // an already-accepted batch.
+        }
     }
 
     private InaraPublicationResult CreateSendResult(int accepted, IReadOnlyList<string> warnings)
     {
+        if (accepted > 0 && successfulUploads.Record(accepted) is { } completedCount)
+        {
+            string eventLabel = completedCount == 1 ? "Inara event" : "Inara events";
+            WriteLog($"Inara uploaded {completedCount:N0} {eventLabel} in the previous 15-minute activity window.");
+        }
+
         return new InaraPublicationResult(0, accepted, queue.Count, [], warnings);
+    }
+
+    private void WriteLog(string message)
+    {
+        try
+        {
+            log(message);
+        }
+        catch
+        {
+            // Diagnostics must never interrupt journal publication.
+        }
+    }
+
+    private static string? SummarizeAcceptedEvent(InaraEvent acceptedEvent)
+    {
+        if (acceptedEvent.Data is not JObject data)
+        {
+            return null;
+        }
+
+        return data.Value<string>("starsystemName") ?? data.Value<string>("stationName");
     }
 
     private int GetPendingCount()
@@ -1282,14 +1430,21 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
-    private static bool IsTransient(HttpStatusCode statusCode)
+    private static bool IsTransient(int statusCode, string? statusText = null)
     {
-        return IsTransient((int)statusCode);
-    }
+        if (statusCode is 408 or 429 or >= 500)
+        {
+            return true;
+        }
 
-    private static bool IsTransient(int statusCode)
-    {
-        return statusCode is 408 or 429 or >= 500;
+        if (statusCode != 400 || string.IsNullOrWhiteSpace(statusText))
+        {
+            return false;
+        }
+
+        return statusText.Contains("rate", StringComparison.OrdinalIgnoreCase)
+            || statusText.Contains("revoke", StringComparison.OrdinalIgnoreCase)
+            || statusText.Contains("too many", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsSuccess(int statusCode)
@@ -1324,6 +1479,47 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         return Encoding.UTF8.GetString(output.ToArray());
+    }
+
+    /// <summary>
+    /// Caps attempted Inara POSTs to <see cref="MaximumPostsPerWindow"/> per rolling
+    /// <see cref="RateLimitWindow"/>. Timestamps are pruned when <c>now - t &gt;= window</c>.
+    /// </summary>
+    private sealed class InaraWriteRateLimiter
+    {
+        private readonly Lock sync = new();
+        private readonly Queue<DateTimeOffset> posts = new();
+
+        public void Record(DateTimeOffset utcNow)
+        {
+            lock (sync)
+            {
+                Prune(utcNow);
+                posts.Enqueue(utcNow);
+            }
+        }
+
+        public DateTimeOffset NextAllowedAt(DateTimeOffset utcNow)
+        {
+            lock (sync)
+            {
+                Prune(utcNow);
+                if (posts.Count < MaximumPostsPerWindow)
+                {
+                    return utcNow;
+                }
+
+                return posts.Peek() + RateLimitWindow;
+            }
+        }
+
+        private void Prune(DateTimeOffset utcNow)
+        {
+            while (posts.Count > 0 && utcNow - posts.Peek() >= RateLimitWindow)
+            {
+                posts.Dequeue();
+            }
+        }
     }
 }
 

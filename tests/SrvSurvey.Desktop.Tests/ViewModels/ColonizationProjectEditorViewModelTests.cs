@@ -53,13 +53,12 @@ public sealed class ColonizationProjectEditorViewModelTests
         editor.UpdateContext(ReadyContext());
 
         await editor.PrepareAsync();
-        editor.SelectedSystemSite = editor.SystemSites[1];
 
         Assert.True(editor.IsPrepared);
         Assert.Equal(1, client.SiteReadCount);
         Assert.Equal(1, client.ArchitectReadCount);
         Assert.Equal(0, client.CreateCount);
-        Assert.Equal(2, editor.SystemSites.Count);
+        Assert.Equal("Hope", Assert.Single(editor.SystemSites).Site!.Name);
         Assert.Equal("Project Architect", editor.ArchitectName);
         Assert.Equal(layout, editor.SelectedLayout);
         Assert.Equal("7", editor.BodyNumberText);
@@ -71,7 +70,7 @@ public sealed class ColonizationProjectEditorViewModelTests
     public async Task ReviewIsLocalAndConfirmationPublishesExactlyOnce()
     {
         int createdCount = 0;
-        var client = new StubRavenColonialClient();
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
         ColonizationProjectEditorViewModel editor = Create(
             client,
             _ =>
@@ -120,6 +119,7 @@ public sealed class ColonizationProjectEditorViewModelTests
         };
         var client = new StubRavenColonialClient
         {
+            Architect = "Test Cmdr",
             SiteResponses = new Queue<IReadOnlyList<ColonizationSystemSite>>([
                 [primary],
                 [primary],
@@ -149,6 +149,7 @@ public sealed class ColonizationProjectEditorViewModelTests
     {
         var client = new StubRavenColonialClient
         {
+            Architect = "Test Cmdr",
             Sites =
             [
                 new ColonizationSystemSite
@@ -176,7 +177,7 @@ public sealed class ColonizationProjectEditorViewModelTests
     [Fact]
     public async Task InvalidBodyNumberCannotReachPublishConfirmation()
     {
-        var client = new StubRavenColonialClient();
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
         ColonizationProjectEditorViewModel editor = Create(client);
         editor.UpdateContext(ReadyContext());
         await editor.PrepareAsync();
@@ -195,6 +196,7 @@ public sealed class ColonizationProjectEditorViewModelTests
     {
         var client = new StubRavenColonialClient
         {
+            Architect = "Test Cmdr",
             Sites =
             [
                 new ColonizationSystemSite
@@ -221,9 +223,326 @@ public sealed class ColonizationProjectEditorViewModelTests
     }
 
     [Fact]
-    public async Task ContextChangeDiscardsStaleConfirmation()
+    public async Task PrepareShowsEveryPlannedSiteToTheSystemArchitect()
+    {
+        string orbitalLayout = catalog.FindByBuildType("no_truss")!.Layouts[1];
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Test Cmdr",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "orbital",
+                    Name = "Hope",
+                    BuildType = orbitalLayout,
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+                new ColonizationSystemSite
+                {
+                    Id = "surface",
+                    Name = "Settlement",
+                    BuildType = "hestia",
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+
+        await editor.PrepareAsync();
+
+        Assert.Equal(3, editor.SystemSites.Count);
+        Assert.Equal(["Hope", "Settlement"], editor.SystemSites.Skip(1).Select(option => option.Site!.Name));
+        Assert.Contains("2 planned sites", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task PrepareShowsOnlyOrbitalPlannedSitesToNonArchitects()
+    {
+        string orbitalLayout = catalog.FindByBuildType("no_truss")!.Layouts[1];
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "orbital",
+                    Name = "Hope",
+                    BuildType = orbitalLayout,
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+                new ColonizationSystemSite
+                {
+                    Id = "surface",
+                    Name = "Settlement",
+                    BuildType = "hestia",
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+
+        await editor.PrepareAsync();
+
+        Assert.Equal("Hope", Assert.Single(editor.SystemSites).Site!.Name);
+        Assert.True(editor.IsPlannedSiteSelected);
+        Assert.Contains("orbital planned", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task PrepareHidesSurfaceOnlyPlansFromNonArchitects()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "surface",
+                    Name = "Settlement",
+                    BuildType = "hestia",
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+
+        await editor.PrepareAsync();
+
+        Assert.Empty(editor.SystemSites);
+        Assert.False(editor.IsPlannedSiteSelected);
+        Assert.False(editor.IsBuildSelectionEnabled);
+        Assert.Contains("No orbital planned Raven sites", editor.StatusMessage);
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.False(editor.IsConfirmationPending);
+        Assert.Equal(0, client.CreateCount);
+        Assert.Contains("system architect", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task NonArchitectCannotStartAProjectWithoutAPlannedSite()
+    {
+        var client = new StubRavenColonialClient { Architect = "Project Architect" };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+        editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
+        editor.SelectedLayout = "no_truss";
+        editor.SelectedSystemSite = ColonizationSystemSiteOptionViewModel.None;
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.False(editor.IsPlannedSiteSelected);
+        Assert.False(editor.IsBuildSelectionEnabled);
+        Assert.False(editor.IsConfirmationPending);
+        Assert.Equal(0, client.CreateCount);
+        Assert.Contains("system architect", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task UnassignedArchitectCannotStartAProjectWithoutAPlannedSite()
     {
         var client = new StubRavenColonialClient();
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+        editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
+        editor.SelectedLayout = "no_truss";
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.False(editor.IsBuildSelectionEnabled);
+        Assert.False(editor.IsConfirmationPending);
+        Assert.Equal(0, client.CreateCount);
+        Assert.Contains("system architect", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task NonArchitectCannotClearASelectedPlannedSite()
+    {
+        string orbitalLayout = catalog.FindByBuildType("no_truss")!.Layouts[1];
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "site-1",
+                    Name = "Hope",
+                    BuildType = orbitalLayout,
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+
+        editor.SelectedSystemSite = ColonizationSystemSiteOptionViewModel.None;
+
+        Assert.True(editor.IsPlannedSiteSelected);
+        Assert.Equal("Hope", editor.SelectedSystemSite?.Site?.Name);
+        Assert.False(editor.IsBuildSelectionEnabled);
+    }
+
+    [Fact]
+    public async Task NonArchitectMustChooseAmongMultipleOrbitalPlansBeforeReview()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "a",
+                    Name = "Hope",
+                    BuildType = "vesta",
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+                new ColonizationSystemSite
+                {
+                    Id = "b",
+                    Name = "Nexus",
+                    BuildType = "no_truss",
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext() with { RavenApiKey = "secret-key" });
+        await editor.PrepareAsync();
+
+        Assert.Equal(2, editor.SystemSites.Count);
+        Assert.False(editor.IsPlannedSiteSelected);
+        Assert.Contains("Choose one to link", editor.StatusMessage);
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.False(editor.IsConfirmationPending);
+        Assert.Equal(0, client.CreateCount);
+        Assert.Contains("Choose a planned Raven site", editor.StatusMessage);
+
+        editor.SelectedSystemSite = editor.SystemSites[0];
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.Equal(1, client.CreateCount);
+        Assert.Equal("a", client.LastCreated!.SystemSiteId);
+    }
+
+    [Fact]
+    public async Task NonArchitectCanLinkNormalizedPrimaryOrbitalLayout()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "site-1",
+                    Name = "Hope",
+                    BodyNumber = 3,
+                    BuildType = "Vesta (primary)",
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext() with { RavenApiKey = "secret-key" });
+        await editor.PrepareAsync();
+
+        Assert.True(editor.IsPlannedSiteSelected);
+        Assert.Equal("Vesta", editor.SelectedLayout, StringComparer.OrdinalIgnoreCase);
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.Equal(1, client.CreateCount);
+        Assert.Equal("site-1", client.LastCreated!.SystemSiteId);
+        Assert.Equal("vesta", client.LastCreated.BuildType);
+    }
+
+    [Fact]
+    public async Task NonArchitectDoesNotSeeUnresolvableOrbitalJournalGuesses()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "guess",
+                    Name = "Guessed Outpost",
+                    BuildType = "outpost?",
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+
+        Assert.Empty(editor.SystemSites);
+        Assert.False(editor.IsPlannedSiteSelected);
+        Assert.False(editor.IsBuildSelectionEnabled);
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.Equal(0, client.CreateCount);
+        Assert.Contains("system architect", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task NonArchitectCanPublishWhenLinkingAVisiblePlannedSite()
+    {
+        string orbitalLayout = catalog.FindByBuildType("no_truss")!.Layouts[1];
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "site-1",
+                    Name = "Hope",
+                    BodyNumber = 7,
+                    BuildType = orbitalLayout,
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext() with { RavenApiKey = "secret-key" });
+        await editor.PrepareAsync();
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.Equal(1, client.CreateCount);
+        Assert.Equal("site-1", client.LastCreated!.SystemSiteId);
+        Assert.Equal(orbitalLayout.ToLowerInvariant(), client.LastCreated.BuildType);
+    }
+
+    [Fact]
+    public async Task ContextChangeDiscardsStaleConfirmation()
+    {
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
         ColonizationProjectEditorViewModel editor = Create(client);
         editor.UpdateContext(ReadyContext());
         await editor.PrepareAsync();
@@ -241,7 +560,7 @@ public sealed class ColonizationProjectEditorViewModelTests
     [Fact]
     public async Task DepotProgressOnlyChangePreservesPreparedEditor()
     {
-        var client = new StubRavenColonialClient();
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
         ColonizationProjectEditorViewModel editor = Create(client);
         ColonizationProjectEditorContext ready = ReadyContext();
         editor.UpdateContext(ready);

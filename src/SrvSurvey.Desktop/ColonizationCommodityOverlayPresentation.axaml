@@ -6,7 +6,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:ColonizationCommodityOverlayViewModel"
              mc:Ignorable="d"
-             ClipToBounds="True">
+             ClipToBounds="True"
+             HorizontalAlignment="Left">
   <UserControl.Styles>
     <Style Selector="Border.commodity-row">
       <Setter Property="Background" Value="Transparent" />
@@ -14,16 +15,24 @@
     <Style Selector="Border.commodity-row.alternate">
       <Setter Property="Background" Value="{DynamicResource RavenColoniseRowHighlightBrush}" />
     </Style>
+    <Style Selector="Grid.commodity-headers">
+      <Setter Property="Margin" Value="3,1,3,0" />
+    </Style>
+    <Style Selector="Grid.commodity-headers.compact-scrolling">
+      <Setter Property="Margin" Value="3,1,17,0" />
+    </Style>
   </UserControl.Styles>
-  <!-- Slim shopping list: compact chrome, no word-wrap, ~15 visible rows. -->
+  <!-- Slim shopping list: shared column widths, content-sized commodity. Compact mode caps ~15 rows. -->
   <Border Margin="0"
           Padding="4"
+          HorizontalAlignment="Left"
           Background="{DynamicResource RavenWindowBrush}"
           BorderThickness="0"
           CornerRadius="5">
-    <Grid RowDefinitions="Auto,Auto,*,Auto"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
           RowSpacing="3"
-          MinWidth="200">
+          HorizontalAlignment="Left"
+          Grid.IsSharedSizeScope="True">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="0">
           <TextBlock Classes="overlay-header"
@@ -65,9 +74,25 @@
                    FontWeight="Bold"
                    IsVisible="{Binding IsConstructionComplete}"
                    Text="Construction complete" />
-        <Grid ColumnDefinitions="*,40,34,34,12"
-              ColumnSpacing="3"
-              Margin="0,1,0,0">
+        <!-- Match row Padding (3). Compact scrolling reserves a scrollbar gutter. -->
+        <Grid Classes="commodity-headers"
+              Classes.compact-scrolling="{Binding UseCompactScrollingCommoditiesList}"
+              ColumnSpacing="3">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" SharedSizeGroup="ColoniseCommodity" />
+            <ColumnDefinition Width="Auto"
+                              MinWidth="40"
+                              SharedSizeGroup="ColoniseNeed" />
+            <ColumnDefinition Width="Auto"
+                              MinWidth="34"
+                              SharedSizeGroup="ColoniseFc" />
+            <ColumnDefinition Width="Auto"
+                              MinWidth="34"
+                              SharedSizeGroup="ColoniseShip" />
+            <ColumnDefinition Width="Auto"
+                              MinWidth="12"
+                              SharedSizeGroup="ColoniseStatus" />
+          </Grid.ColumnDefinitions>
           <TextBlock Classes="muted" FontSize="8" Text="COMMODITY" />
           <TextBlock Grid.Column="1"
                      Classes="muted"
@@ -84,29 +109,36 @@
                      FontSize="8"
                      HorizontalAlignment="Right"
                      Text="{Binding ShipColumnHeader}" />
+          <TextBlock Grid.Column="4"
+                     Classes="muted"
+                     FontSize="8"
+                     HorizontalAlignment="Center"
+                     Text="&#x2713;"
+                     Opacity="0.55" />
         </Grid>
       </StackPanel>
 
-      <!-- ~15 commodity rows at ~18px before scroll; alternating fill, no dividers -->
+      <!-- Compact mode caps ~15 commodity rows at ~18px before scroll; full list sizes to content. -->
       <ScrollViewer Grid.Row="2"
-                    MaxHeight="300"
+                    MaxHeight="{Binding CommodityListMaxHeight}"
+                    HorizontalAlignment="Left"
                     HorizontalScrollBarVisibility="Disabled"
                     VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding Groups}">
+        <ItemsControl ItemsSource="{Binding Groups}"
+                      HorizontalAlignment="Left">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:ColonizationCommodityGroupViewModel">
-              <StackPanel Margin="0,0,0,3" Spacing="0">
+              <StackPanel Margin="0,0,0,3" Spacing="0" HorizontalAlignment="Left">
                 <TextBlock Foreground="{DynamicResource RavenColoniseItemBrush}"
                            FontSize="9"
                            FontWeight="Bold"
-                           Text="{Binding Name}"
-                           TextTrimming="CharacterEllipsis" />
+                           Text="{Binding Name}" />
                 <TextBlock Classes="muted"
                            FontSize="8"
                            IsVisible="{Binding IsCollapsed}"
-                           Text="{Binding CollapsedSummary}"
-                           TextTrimming="CharacterEllipsis" />
-                <ItemsControl ItemsSource="{Binding Rows}">
+                           Text="{Binding CollapsedSummary}" />
+                <ItemsControl ItemsSource="{Binding Rows}"
+                              HorizontalAlignment="Left">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ColonizationCommodityOverlayRowViewModel">
                       <!-- Alternate rows use colonise.rowHighlight; no divider lines. -->
@@ -115,22 +147,35 @@
                               Margin="0,0,0,1"
                               Padding="3,2"
                               CornerRadius="1"
+                              HorizontalAlignment="Left"
                               Opacity="{Binding RowOpacity}">
-                        <Grid ColumnDefinitions="*,40,34,34,12"
-                              ColumnSpacing="3">
+                        <Grid ColumnSpacing="3">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ColoniseCommodity" />
+                            <ColumnDefinition Width="Auto"
+                                              MinWidth="40"
+                                              SharedSizeGroup="ColoniseNeed" />
+                            <ColumnDefinition Width="Auto"
+                                              MinWidth="34"
+                                              SharedSizeGroup="ColoniseFc" />
+                            <ColumnDefinition Width="Auto"
+                                              MinWidth="34"
+                                              SharedSizeGroup="ColoniseShip" />
+                            <ColumnDefinition Width="Auto"
+                                              MinWidth="12"
+                                              SharedSizeGroup="ColoniseStatus" />
+                          </Grid.ColumnDefinitions>
                           <StackPanel Orientation="Horizontal" Spacing="3">
                             <TextBlock VerticalAlignment="Center"
                                        FontSize="10"
                                        Foreground="{DynamicResource RavenColoniseItemBrush}"
                                        IsVisible="{Binding IsActiveItem}"
-                                       Text="{Binding DisplayName}"
-                                       TextTrimming="CharacterEllipsis" />
+                                       Text="{Binding DisplayName}" />
                             <TextBlock VerticalAlignment="Center"
                                        FontSize="10"
                                        Foreground="{DynamicResource RavenColoniseItemDimBrush}"
                                        IsVisible="{Binding IsDimmedItem}"
-                                       Text="{Binding DisplayName}"
-                                       TextTrimming="CharacterEllipsis" />
+                                       Text="{Binding DisplayName}" />
                             <TextBlock Foreground="{DynamicResource RavenColoniseHighlightBrush}"
                                        FontSize="8"
                                        FontWeight="Bold"
@@ -205,16 +250,14 @@
         </ItemsControl>
       </ScrollViewer>
 
-      <StackPanel Grid.Row="3" Spacing="2">
+      <StackPanel Grid.Row="3" Spacing="2" HorizontalAlignment="Left">
         <TextBlock FontSize="10"
                    FontWeight="SemiBold"
-                   Text="{Binding RemainingSummary}"
-                   TextTrimming="CharacterEllipsis" />
+                   Text="{Binding RemainingSummary}" />
         <TextBlock Classes="muted"
                    FontSize="8"
                    IsVisible="{Binding HasFleetCarriers}"
-                   Text="{Binding FleetCarrierSummary}"
-                   TextTrimming="CharacterEllipsis" />
+                   Text="{Binding FleetCarrierSummary}" />
       </StackPanel>
     </Grid>
   </Border>

@@ -47,6 +47,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         var store = new ColonizationSettingsStore(path);
 
         Assert.Equal(ColonizationOverlayPreferences.Default, store.LoadOverlayPreferences());
+        Assert.False(store.LoadOverlayPreferences().UseCompactScrollingCommoditiesList);
 
         ColonizationOverlayPreferences updated = ColonizationOverlayPreferences.Default with
         {
@@ -55,6 +56,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
             InlineFleetCarrierCargo = true,
             CollapseCoveredGroups = false,
             HighlightAlmostCoveredFleetCarrierLoads = true,
+            UseCompactScrollingCommoditiesList = true,
         };
         store.SaveOverlayPreferences(updated);
 

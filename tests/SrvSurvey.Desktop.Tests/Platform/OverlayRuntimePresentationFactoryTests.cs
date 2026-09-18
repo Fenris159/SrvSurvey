@@ -106,6 +106,7 @@ public sealed class OverlayRuntimePresentationFactoryTests
         );
         Assert.True(colonization.HasRows);
         Assert.NotEmpty(colonization.Groups);
+        Assert.Contains(colonization.Groups.SelectMany(group => group.Rows), row => row.IsSatisfied);
 
         NotificationViewModel notification = Assert.IsType<NotificationViewModel>(
             OverlayRuntimePresentationFactory.CreateEditorDataContextOnly("PlotFloatie")

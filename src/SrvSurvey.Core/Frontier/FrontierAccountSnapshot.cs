@@ -34,7 +34,11 @@ public sealed record FrontierAccountSnapshot(
     DateTimeOffset? CommanderReputationFetchedAt = null,
     IReadOnlyList<FrontierDataPointSnapshot>? CarrierEndpointData = null,
     DateTimeOffset? InaraCommunityGoalsFetchedAt = null,
-    string InaraCommunityGoalsError = ""
+    string InaraCommunityGoalsError = "",
+    FrontierCarrierSnapshot? SquadronCarrier = null,
+    DateTimeOffset? SquadronCarrierFetchedAt = null,
+    string SquadronCarrierError = "",
+    IReadOnlyList<FrontierDataPointSnapshot>? SquadronEndpointData = null
 )
 {
     public long FleetValue => Ships.Sum(ship => ship.Value);

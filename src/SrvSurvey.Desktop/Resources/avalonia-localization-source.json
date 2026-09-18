@@ -3202,6 +3202,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BookmarksViewModel.cs"
   },
   {
+    "Text": "All Fleet Carrier data points ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "All Squadron Carrier data points ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "All dates and times use UTC.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9039,9 +9055,10 @@
     "Text": "Choose a linked squadron carrier, or dock there to identify it automatically.",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FleetCarrierWorkspaceView.axaml"
   },
   {
     "Text": "Choose a local background image and adjust its X, Y, and scale values while reviewing the preview on the same map.",
@@ -9050,6 +9067,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
     "Text": "Choose a preferred Commander when more than one profile appears in the same journal folder.",
@@ -11680,6 +11705,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Consumer items",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "Contain",
@@ -14708,6 +14741,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Docking an untracked Raven construction site auto-links the commander only when the active commander name matches the project\u0027s architect; otherwise the site loads as untracked for shopping.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Docking denied",
     "IsFormat": false,
     "SourceKinds": [
@@ -16475,6 +16516,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
+    "Text": "Evacuation shelter",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
     "Text": "Every Raven site requires a name.",
     "IsFormat": false,
     "SourceKinds": [
@@ -17368,9 +17417,9 @@
     "Text": "FLEET CARRIER",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "FLEET CARRIER ROUTE",
@@ -18498,6 +18547,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Fleet Carrier dock baseline was not loaded: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Fleet Carrier loading",
     "IsFormat": false,
     "SourceKinds": [
@@ -18514,7 +18571,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+    "Text": "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -18954,6 +19011,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Frontier CAPI cargo seed was not applied: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Frontier Developments",
     "IsFormat": false,
     "SourceKinds": [
@@ -19187,6 +19252,14 @@
   },
   {
     "Text": "Frontier shipyard data could not be read: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
+    "Text": "Frontier squadron data could not be read: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -21265,6 +21338,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Helpers can only link a visible planned Raven site; only the system architect can start a build project without a plan.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active",
@@ -24889,6 +24970,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "Linked",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FleetCarrierWorkspaceView.axaml"
+  },
+  {
     "Text": "Linked Raven project {0} into the active list for this construction site.",
     "IsFormat": true,
     "SourceKinds": [
@@ -24911,6 +25000,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Listening for community observations\u2026",
@@ -25177,6 +25274,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Load system only succeeds when the architect is unassigned or matches the active commander. Anyone else is refused with a not-the-architect warning.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Load the active commander before validating a Raven API key.",
     "IsFormat": false,
     "SourceKinds": [
@@ -25201,8 +25306,16 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "Loaded and selected the one planned Raven site.",
-    "IsFormat": false,
+    "Text": "Loaded Raven Colonial cargo baseline for {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Loaded and selected the one {0} Raven site.",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -25367,6 +25480,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "Loaded {0} orbital planned sites. Choose one to link.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
     "Text": "Loaded {0} personal and {1} Raven system nickname(s).",
@@ -26554,6 +26675,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
+  },
+  {
+    "Text": "Market ID accepts numbers only. Extra characters were removed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
     "Text": "Market cargo",
@@ -28920,9 +29049,9 @@
     "Text": "No Fleet Carrier",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "No Fleet Carrier is associated with this account.",
@@ -29043,6 +29172,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerInputBackend.cs"
+  },
+  {
+    "Text": "No Squadron Carrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "No Squadron Carrier is associated with this account.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "No absolute overlay placement conversion was required.",
@@ -29747,6 +29892,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
+  },
+  {
+    "Text": "No orbital planned Raven sites are available to link. Only the system architect can start a build without a plan.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
     "Text": "No organism available",
@@ -30929,6 +31082,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Only the system architect can start a build project without a planned Raven site.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
     "Text": "Only this system (rings / markets)",
     "IsFormat": false,
     "SourceKinds": [
@@ -31873,6 +32034,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Original",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
     "Text": "Original backup",
@@ -35156,6 +35325,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/EdsmSettingsViewModel.cs"
   },
   {
+    "Text": "Queued {0} Fleet Carrier cargo update(s) until dock baseline finishes.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Queued {0} Inara event(s); {1} waiting for the next batch.",
     "IsFormat": true,
     "SourceKinds": [
@@ -35194,6 +35371,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NetworkPrivacyViewModel.cs"
+  },
+  {
+    "Text": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "Quick statistics",
@@ -35298,6 +35483,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "RC Linked Carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FleetCarrierWorkspaceView.axaml"
   },
   {
     "Text": "READ",
@@ -37428,6 +37621,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
+  },
+  {
+    "Text": "Refresh linked RavenColonial carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FleetCarrierWorkspaceView.axaml"
   },
   {
     "Text": "Refresh preview",
@@ -40003,6 +40204,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"
   },
   {
+    "Text": "SQUADRON CARRIER",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "SRV",
     "IsFormat": false,
     "SourceKinds": [
@@ -41793,6 +42002,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Seeded linked carrier {0} cargo from Frontier CAPI ({1}).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -44570,20 +44787,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Squadron Carrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FleetCarrierWorkspaceView.axaml"
+  },
+  {
     "Text": "Squadron Logo",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "Squadron carrier",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FleetCarrierWorkspaceView.axaml"
   },
   {
     "Text": "SquadronLogo",
@@ -46049,6 +46266,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Stored cargo from Frontier squadron data.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Stored cargo from Frontier.",
@@ -47914,6 +48139,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "That Market ID is too large.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
     "Text": "That name is already saved for this ship. Select it below to edit, or choose a different name.",
     "IsFormat": false,
     "SourceKinds": [
@@ -48321,6 +48554,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
@@ -50203,6 +50444,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
     "Text": "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51259,14 +51508,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
   },
   {
-    "Text": "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "The staged SrvSurvey update helper did not start.",
     "IsFormat": false,
     "SourceKinds": [
@@ -52010,14 +52251,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/DeleteFiregroupDialog.axaml"
-  },
-  {
-    "Text": "This secured system can only be edited by its architect.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
     "Text": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -54113,6 +54346,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Use compact/scrolling commodities list",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Use current",
     "IsFormat": false,
     "SourceKinds": [
@@ -54407,6 +54648,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "UseCompactScrollingCommoditiesList",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.cs"
   },
   {
     "Text": "UseDevelopmentReleases",
@@ -56294,6 +56543,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
+    "Text": "You are not the architect of this system ({0}). The system was not loaded.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
     "Text": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
     "IsFormat": false,
     "SourceKinds": [
@@ -56628,14 +56885,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
-  },
-  {
-    "Text": "aphrodite?",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
     "Text": "app",
@@ -57782,14 +58031,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
-    "Text": "dodec?",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
-  },
-  {
     "Text": "dolphin",
     "IsFormat": false,
     "SourceKinds": [
@@ -58886,6 +59127,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "inara-accepted.txt",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
     "Text": "inara.contributors",
     "IsFormat": false,
     "SourceKinds": [
@@ -58932,14 +59181,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "installation?",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
     "Text": "instances",
@@ -59140,6 +59381,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "logs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "lookup",
@@ -59702,12 +59951,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "orbis?",
+    "Text": "orbital planned",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
     "Text": "orca",
@@ -59732,14 +59981,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
-  },
-  {
-    "Text": "outpost?",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
     "Text": "overlay",
@@ -59860,6 +60101,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "planned",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
     "Text": "platinum",
@@ -60020,6 +60269,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
+  },
+  {
+    "Text": "queued dock baseline",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "radar",
@@ -60380,14 +60637,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml.cs"
-  },
-  {
-    "Text": "settlement?",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
     "Text": "share",
@@ -63189,6 +63438,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "{0} \u00B7 Tier {1}: {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
     "Text": "{0} \u00B7 active",

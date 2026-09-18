@@ -1121,6 +1121,8 @@
                       Content="Show when looking at right-hand panel" />
             <CheckBox IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
                       Content="Collapse cargo groups when enough on FCs" />
+            <CheckBox IsChecked="{Binding Colonization.UseCompactScrollingCommoditiesList, Mode=TwoWay}"
+                      Content="Use compact/scrolling commodities list" />
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="10">
             <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierCargo, Mode=TwoWay}"

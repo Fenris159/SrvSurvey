@@ -1038,6 +1038,43 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task SquadronWorkspaceUsesLinkedCargoWhenCallsignMatches()
+    {
+        FrontierCarrierSnapshot squadron = CreateSnapshot(DateTimeOffset.UtcNow).Carrier! with
+        {
+            Callsign = "SQD-001",
+            Cargo = [new FrontierInventorySnapshot("Cargo", "Tritium", 1, 0)],
+        };
+        FrontierAccountSnapshot snapshot = CreateSnapshot(DateTimeOffset.UtcNow) with
+        {
+            SquadronCarrier = squadron,
+            SquadronCarrierFetchedAt = DateTimeOffset.UtcNow,
+        };
+        using var profile = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await profile.OpenAsync();
+        profile.SetCarrierWorkspaceKind(CarrierWorkspaceKind.Squadron);
+        Assert.Contains("Frontier squadron", profile.CarrierCargoSource);
+
+        profile.UpdateLinkedFleetCarriers(
+            snapshot.CommanderName,
+            [
+                new SrvSurvey.Core.Colonization.ColonizationFleetCarrier
+                {
+                    MarketId = 42,
+                    Name = "SQD-001",
+                    Cargo = new() { ["steel"] = 85 },
+                },
+            ]
+        );
+
+        Assert.Equal("85", Assert.Single(profile.CarrierCargo).Quantity);
+        Assert.Equal("steel", Assert.Single(profile.CarrierCargo).Name);
+        Assert.Contains("Linked squadron cargo", profile.CarrierCargoSource);
+    }
+
+    [Fact]
     public async Task SlowFrontierRefreshDoesNotBlockLocalJournalStartup()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");

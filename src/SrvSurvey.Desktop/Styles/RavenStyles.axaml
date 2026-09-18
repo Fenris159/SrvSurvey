@@ -152,6 +152,20 @@
     <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
     <Setter Property="Padding" Value="0" />
   </Style>
+  <Style Selector="Button.link.workspace-tab">
+    <Setter Property="FontSize" Value="28" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+  </Style>
+  <Style Selector="Button.link.workspace-tab.selected">
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,2" />
+    <Setter Property="Padding" Value="0,0,0,2" />
+  </Style>
+  <Style Selector="Button.link.workspace-tab:pointerover">
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
   <Style Selector="Button.link:pointerover">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource RavenAccentHoverBrush}" />

@@ -118,7 +118,10 @@ public sealed class FrontierAccountServiceTests
             FrontierAccountSnapshot snapshot = await service.RefreshAsync();
 
             Assert.Equal("Fenris", snapshot.CommanderName);
-            Assert.Equal(["/profile", "/fleetcarrier", "/market", "/shipyard", "/communitygoals"], requests);
+            Assert.Equal(
+                ["/profile", "/fleetcarrier", "/squadron", "/market", "/shipyard", "/communitygoals"],
+                requests
+            );
             FrontierAccountCredential credential = store.Document.Accounts["F123"];
             Assert.NotNull(credential.LastCapiRefreshAt);
             Assert.NotNull(credential.LastCapiAttemptAt);
@@ -126,7 +129,7 @@ public sealed class FrontierAccountServiceTests
                 service.RefreshAsync()
             );
             Assert.True(cooldown.Remaining > TimeSpan.FromSeconds(50));
-            Assert.Equal(5, requests.Count);
+            Assert.Equal(6, requests.Count);
         }
         finally
         {
@@ -247,6 +250,7 @@ public sealed class FrontierAccountServiceTests
             Assert.Null(second.Carrier);
             Assert.Equal(first.CarrierFetchedAt, second.CarrierFetchedAt);
             Assert.DoesNotContain("/fleetcarrier", requests);
+            Assert.DoesNotContain("/squadron", requests);
             Assert.Equal(["/profile", "/market", "/shipyard", "/communitygoals"], requests);
         }
         finally
@@ -303,6 +307,7 @@ public sealed class FrontierAccountServiceTests
 
             Assert.Equal("Honoto", second.Carrier!.CurrentJump);
             Assert.Contains("/fleetcarrier", requests);
+            Assert.Contains("/squadron", requests);
             Assert.Equal(now, second.CarrierFetchedAt);
         }
         finally

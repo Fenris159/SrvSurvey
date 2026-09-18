@@ -6,7 +6,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class ColonizationSystemEditorViewModelTests
 {
     [Fact]
-    public async Task LoadIsReadOnlyAndSecuredSystemRejectsEditing()
+    public async Task LoadRefusesWhenAnotherArchitectIsAssigned()
     {
         var client = new StubClient { Current = System(architect: "Other Cmdr", isOpen: false) };
         ColonizationSystemEditorViewModel editor = Create(client);
@@ -14,13 +14,60 @@ public sealed class ColonizationSystemEditorViewModelTests
 
         await editor.LoadAsync();
 
-        Assert.True(editor.IsLoaded);
+        Assert.False(editor.IsLoaded);
         Assert.False(editor.CanEdit);
-        Assert.Equal(2, editor.Bodies.Count);
-        Assert.Same(editor.Bodies, editor.Bodies);
+        Assert.Empty(editor.Sites);
         Assert.Equal(1, client.SystemReadCount);
         Assert.Equal(0, client.BodyImportCount);
         Assert.Equal(0, client.UpdateCount);
+        Assert.Contains("not the architect", editor.StatusMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Other Cmdr", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task LoadRefusesAssignedArchitectEvenWhenTheSystemIsOpen()
+    {
+        var client = new StubClient { Current = PlannedSystem(architect: "Other Cmdr", isOpen: true) };
+        ColonizationSystemEditorViewModel editor = Create(client);
+        editor.UpdateContext(Context());
+
+        await editor.LoadAsync();
+
+        Assert.False(editor.IsLoaded);
+        Assert.False(editor.CanEdit);
+        Assert.Empty(editor.Sites);
+        Assert.Equal(0, client.UpdateCount);
+        Assert.Contains("not the architect", editor.StatusMessage, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task UnassignedArchitectCanLoadAndSeeEveryPlannedSite()
+    {
+        var client = new StubClient { Current = PlannedSystem(architect: null) };
+        ColonizationSystemEditorViewModel editor = Create(client);
+        editor.UpdateContext(Context());
+
+        await editor.LoadAsync();
+
+        Assert.True(editor.IsLoaded);
+        Assert.True(editor.CanEdit);
+        Assert.Equal(["complete", "orbital-plan", "surface-plan"], editor.Sites.Select(row => row.Id));
+        Assert.False(editor.HasLocalChanges);
+        Assert.Contains("Loaded", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task ArchitectSeesEveryPlannedSiteWhenLoaded()
+    {
+        var client = new StubClient { Current = PlannedSystem() };
+        ColonizationSystemEditorViewModel editor = Create(client);
+        editor.UpdateContext(Context());
+
+        await editor.LoadAsync();
+
+        Assert.True(editor.CanEdit);
+        Assert.Equal(["complete", "orbital-plan", "surface-plan"], editor.Sites.Select(row => row.Id));
+        Assert.False(editor.HasLocalChanges);
     }
 
     [Fact]
@@ -70,6 +117,154 @@ public sealed class ColonizationSystemEditorViewModelTests
         Assert.Equal(2, update.BodyNumber);
         Assert.Empty(client.LastUpdate.DeletedSiteIds);
         Assert.False(editor.HasLocalChanges);
+    }
+
+    [Fact]
+    public void MarketIdTextAcceptsDigitsAndClearsInvalidOrEmptyInput()
+    {
+        ColonizationSystemSiteRowViewModel row = new(Site("site-1", "Orbital One", 1) with { MarketId = 42 });
+
+        Assert.Equal("42", row.MarketIdText);
+        Assert.False(row.HasMarketIdWarning);
+
+        row.MarketIdText = "4310842115";
+        Assert.Equal(4_310_842_115, row.MarketId);
+        Assert.False(row.HasMarketIdWarning);
+
+        row.MarketIdText = "12a3";
+        Assert.Equal(123, row.MarketId);
+        Assert.Equal("123", row.MarketIdText);
+        Assert.True(row.HasMarketIdWarning);
+        Assert.Contains("numbers only", row.MarketIdWarning, StringComparison.OrdinalIgnoreCase);
+
+        row.MarketIdText = string.Empty;
+        Assert.Null(row.MarketId);
+        Assert.Equal(string.Empty, row.MarketIdText);
+        Assert.False(row.HasMarketIdWarning);
+
+        row.MarketIdText = "99";
+        Assert.Equal(99, row.MarketId);
+        Assert.False(row.HasMarketIdWarning);
+
+        row.MarketIdText = "18446744073709551615";
+        Assert.Equal(99, row.MarketId);
+        Assert.True(row.HasMarketIdWarning);
+        Assert.Contains("too large", row.MarketIdWarning, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("99", row.MarketIdText);
+    }
+
+    [Fact]
+    public void BuildTypeChoicesKeepUnknownOriginalThenCatalogTypes()
+    {
+        IReadOnlyList<ColonizationSiteBuildTypeChoice> catalog = ColonizationSiteBuildTypeChoice.FromCatalog(
+            TinyCatalog()
+        );
+        ColonizationSystemSiteRowViewModel row = new(
+            Site("site-1", "Orbital One", 1) with
+            {
+                BuildType = "outpost?",
+            },
+            catalog
+        );
+
+        Assert.Equal("outpost?", row.BuildType);
+        Assert.Equal("Original", row.AllowedBuildTypes[0].DisplayName);
+        Assert.True(row.AllowedBuildTypes[0].IsCategory);
+        Assert.Equal("outpost?", row.AllowedBuildTypes[1].Value);
+        Assert.Equal("outpost?", row.SelectedBuildType?.Value);
+        Assert.Contains(
+            row.AllowedBuildTypes,
+            choice => choice.IsCategory && choice.DisplayName.StartsWith("Orbital", StringComparison.Ordinal)
+        );
+        Assert.Contains(
+            row.AllowedBuildTypes,
+            choice => string.Equals(choice.Value, "vesta", StringComparison.OrdinalIgnoreCase)
+        );
+
+        row.BuildType = "vesta";
+        Assert.Equal("vesta", row.BuildType);
+        Assert.Equal("outpost?", row.AllowedBuildTypes[1].Value);
+
+        row.SelectedBuildType = row.AllowedBuildTypes[1];
+        Assert.Equal("outpost?", row.BuildType);
+    }
+
+    [Fact]
+    public async Task LoadedUnknownBuildTypeRemainsFirstDropdownChoice()
+    {
+        var client = new StubClient
+        {
+            Current = System() with { Sites = [Site("site-1", "Orbital One", 1) with { BuildType = "installation?" }] },
+        };
+        ColonizationSystemEditorViewModel editor = Create(client);
+        editor.UpdateContext(Context());
+
+        await editor.LoadAsync();
+
+        ColonizationSystemSiteRowViewModel row = Assert.Single(editor.Sites);
+        Assert.Equal("installation?", row.BuildType);
+        Assert.Equal("Original", row.AllowedBuildTypes[0].DisplayName);
+        Assert.Equal("installation?", row.AllowedBuildTypes[1].Value);
+        Assert.Contains(
+            row.AllowedBuildTypes,
+            choice => string.Equals(choice.Value, "vesta", StringComparison.OrdinalIgnoreCase)
+        );
+        Assert.DoesNotContain(
+            row.AllowedBuildTypes.Skip(2),
+            choice => string.Equals(choice.Value, "installation?", StringComparison.Ordinal)
+        );
+    }
+
+    [Fact]
+    public void KnownBuildTypeStaysInCatalogOrderWithoutADuplicateOriginal()
+    {
+        IReadOnlyList<ColonizationSiteBuildTypeChoice> catalog = ColonizationSiteBuildTypeChoice.FromCatalog(
+            TinyCatalog()
+        );
+        ColonizationSystemSiteRowViewModel row = new(
+            Site("site-1", "Orbital One", 1) with
+            {
+                BuildType = "Vesta",
+            },
+            catalog
+        );
+
+        Assert.DoesNotContain(row.AllowedBuildTypes, choice => choice.DisplayName == "Original");
+        Assert.Equal("Vesta", row.BuildType);
+        Assert.Equal("Vesta", row.SelectedBuildType?.Value);
+        Assert.Single(
+            row.AllowedBuildTypes,
+            choice => string.Equals(choice.Value, "vesta", StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
+    [Fact]
+    public void CatalogBuildTypeChoicesAreGroupedByLocationAndTier()
+    {
+        IReadOnlyList<ColonizationSiteBuildTypeChoice> choices = ColonizationSiteBuildTypeChoice.FromCatalog(
+            TinyCatalog()
+        );
+
+        Assert.Equal("Orbital · Tier 1: Civilian Outpost", choices[0].DisplayName);
+        Assert.True(choices[0].IsCategory);
+        Assert.False(choices[0].IsSelectable);
+        Assert.Equal("Vesta", choices[1].Value);
+        Assert.Equal("Vesta — Civilian Outpost", choices[1].SelectionLabel);
+        Assert.Contains(
+            choices,
+            choice => choice.IsCategory && choice.DisplayName == "Orbital · Tier 2: Coriolis Starport"
+        );
+        Assert.Contains(
+            choices,
+            choice => choice.IsCategory && choice.DisplayName == "Surface · Tier 1: Civilian Settlement"
+        );
+        string[] headers = choices.Where(choice => choice.IsCategory).Select(choice => choice.DisplayName).ToArray();
+        Assert.StartsWith("Orbital", headers[0], StringComparison.Ordinal);
+        Assert.Contains(headers, header => header.StartsWith("Surface", StringComparison.Ordinal));
+        Assert.True(
+            Array.FindIndex(headers, header => header.StartsWith("Orbital", StringComparison.Ordinal))
+                < Array.FindIndex(headers, header => header.StartsWith("Surface", StringComparison.Ordinal))
+        );
     }
 
     [Fact]
@@ -184,9 +379,63 @@ public sealed class ColonizationSystemEditorViewModelTests
         return new ColonizationSystemEditorViewModel(client, ColonizationBuildCatalog.LoadEmbedded());
     }
 
+    private static ColonizationBuildCatalog TinyCatalog()
+    {
+        return new ColonizationBuildCatalog([
+            new ColonizationBuildCost(
+                "vesta",
+                "Civilian Outpost",
+                1,
+                ColonizationBuildLocation.Orbital,
+                "Civilian Outpost",
+                ["Vesta"],
+                new Dictionary<string, int> { ["steel"] = 1 }
+            ),
+            new ColonizationBuildCost(
+                "no_truss",
+                "Coriolis",
+                2,
+                ColonizationBuildLocation.Orbital,
+                "Coriolis Starport",
+                ["no_truss", "dual_truss"],
+                new Dictionary<string, int> { ["steel"] = 1 }
+            ),
+            new ColonizationBuildCost(
+                "hestia",
+                "Outpost",
+                1,
+                ColonizationBuildLocation.Surface,
+                "Civilian Settlement",
+                ["Hestia"],
+                new Dictionary<string, int> { ["steel"] = 1 }
+            ),
+        ]);
+    }
+
     private static ColonizationSystemEditorContext Context()
     {
         return new ColonizationSystemEditorContext(true, "Test Cmdr", "Test System", 42, "secret");
+    }
+
+    private static ColonizationSystemRecord PlannedSystem(string? architect = "Test Cmdr", bool isOpen = false)
+    {
+        return System(architect, isOpen) with
+        {
+            Sites =
+            [
+                Site("complete", "Done", 1),
+                Site("orbital-plan", "Orbital Plan", 1) with
+                {
+                    Status = ColonizationSystemSiteStatus.Plan,
+                    BuildType = "vesta",
+                },
+                Site("surface-plan", "Surface Plan", 2) with
+                {
+                    Status = ColonizationSystemSiteStatus.Plan,
+                    BuildType = "hestia",
+                },
+            ],
+        };
     }
 
     private static ColonizationSystemRecord System(string? architect = "Test Cmdr", bool isOpen = false)

@@ -1,60 +1,63 @@
-# SrvSurvey-XP 2.1.3.0-rc.49.0
+# SrvSurvey-XP 2.1.3.0-rc.49.1
 
-RC49.0 continues Avalonia colonization work from PR
-[#139](https://github.com/Fenris159/SrvSurvey/pull/139) and fixes biology
-overlay confirmed-vs-predicted styling, Canonn/journal scan recovery, and
-theme defaults for prediction markers.
+RC49.1 focuses on colonization architect/helper safety, Fleet Carrier cargo
+accuracy, a full-height construction shopping overlay, and Inara upload
+rate-limit compliance with durable logging.
 
-## New in RC49.0
+## What's changed since rc.49.0
 
-### Biology overlay confirmed vs predicted
+### Colonization architect and helper access
 
-- System Biology PIPs for DSS genus + species guesses now use predicted
-  styling (`bio.prediction`) to match Identified Bio rows with trailing
-  `?`, instead of solid confirmed PIPs.
-- Canonn merge no longer demotes a locally scanned organism when Canonn
-  reports `scanned=false` for the commander; local `ScanOrganic`
-  confirmation is preserved and Canonn commander-scanned rows can still
-  upgrade unscanned identity.
-- Organic `CodexEntry` alone still does not mark an organism confirmed;
-  confirmation requires `ScanOrganic` or Canonn commander-scanned data.
+- Load system succeeds only when the architect is unassigned or matches the
+  active commander. Anyone else is refused with a not-the-architect warning.
+- Architects see every planned Raven site. Helpers only see orbital planned
+  sites that resolve in the Raven build catalog.
+- Helpers cannot scratch-create a project; they can only work from a visible
+  planned site.
+- Build Type is a categorized Raven catalog dropdown (unmatched original
+  first). Market ID is digits-only, with a friendly warning when extra
+  characters are removed.
 
-### Journal ScanOrganic backfill
+### Construction shopping overlay
 
-- When a system loads, recent journals are scanned for matching
-  `ScanOrganic` events so samples taken while the app was off (or before
-  a patch) become confirmed after restart.
-- Lookback is the last 12 hours of **journal event timestamps** (anchored
-  to the newest timestamp in the logs), not wall-clock time. Shorter
-  journal spans simply keep every matching scan.
-- Journals are opened shared read/write (`FileShare.ReadWrite`), same as
-  the live monitor, so Elite can keep appending.
+- The commodities overlay shows the full list on screen by default instead of
+  compacting into a ~15-row scroller.
+- Colonization overlay settings add **Use compact/scrolling commodities list**
+  under **Collapse cargo groups when enough on FCs**. It is off by default;
+  turn it on to restore the previous compact scroller.
 
-### Overlay theme defaults
+### Fleet Carrier cargo and workspace
 
-- Default `bio.unknownGlyph` (trailing `?`) now matches `bio.prediction`
-  across all seven overlay presets; the picker remains independently
-  customizable.
-- Expanded presets warm confirmed PIPs toward the values accent and pin
-  prediction to the secondary accent so solid vs hatched PIPs stay
-  distinct.
-- Monochrome Companion uses muted Default orange for confirmed /
-  confirmedDim / potential so confirmed PIPs stay apart from the
-  white-like galactic-region candidate.
+- Seeds RavenColonial Fleet Carrier cargo from Frontier CAPI at most once per
+  carrier per session, and never while docked (market/journal is fresher).
+  Later updates use journal deltas.
+- Queues cargo deltas while a Market.json or server baseline is in flight,
+  then replays them so dock-time transfers are not lost.
+- Fleet Carrier workspace can switch between personal `/fleetcarrier` and
+  nested squadron carrier data from `/squadron`.
 
-### Colonization (continued from RC48.9)
+### Inara uploads
 
-- Raven depot create/update, commander link/unlink, delivery remaining
-  PATCH alignment, phantom need clears, and colonization workspace
-  fit-to-content table/dropdown behavior from PR #139.
+- Caps commander writes at **2 POSTs per rolling minute** to
+  `https://inara.cz/inapi/v1/`. Overflow waits and batches; Shutdown force
+  flush and payload splits respect the same budget.
+- `MiningRefined` still updates local cargo but no longer emits inventory
+  snapshots. Inventory-only queues wait 10 minutes unless a travel or other
+  non-inventory event is already going out.
+- Header 400 rate-limit / temporary revoke requeues with backoff. Invalid API
+  key still drops the batch. Secrets never appear in warnings or detail logs.
+- Main app log gets EDSM-style 15-minute success aggregates. Accepted events
+  go to `logs/inara-accepted.txt` (event name, timestamp, system/station; 12
+  hour rolling retention). A throwing or unwritable log cannot fail or
+  duplicate an accepted upload.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.49.0`
-- Tag: `xp-v2.1.3.0-rc.49.0`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.49.0-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.49.0-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.49.0-x86_64.AppImage`
+- Version: `2.1.3.0-rc.49.1`
+- Tag: `xp-v2.1.3.0-rc.49.1`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.49.1-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.49.1-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.49.1-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

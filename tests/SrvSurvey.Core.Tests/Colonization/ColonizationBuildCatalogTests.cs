@@ -33,6 +33,16 @@ public sealed class ColonizationBuildCatalogTests
         Assert.Equal(3, coriolis.Layouts.Count);
         Assert.Equal(2, tellus.Count);
         Assert.Equal(["tellus", "molae"], tellus.Select(build => build.BuildType));
+        Assert.Contains("Vesta", catalog.SiteBuildTypes, StringComparer.OrdinalIgnoreCase);
+        Assert.Contains("no_truss", catalog.SiteBuildTypes, StringComparer.OrdinalIgnoreCase);
+        Assert.DoesNotContain(catalog.SiteBuildTypes, value => value.EndsWith('?'));
+        Assert.Equal(
+            catalog
+                .Builds.SelectMany(build => build.Layouts.Concat([build.BuildType]))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count(),
+            catalog.SiteBuildTypes.Count
+        );
     }
 
     [Fact]
@@ -45,6 +55,32 @@ public sealed class ColonizationBuildCatalogTests
         Assert.Equal(24, orbital.Count);
         Assert.True(orbital[0].Tier <= orbital[^1].Tier);
         Assert.All(orbital, build => Assert.Equal(ColonizationBuildLocation.Orbital, build.Location));
+    }
+
+    [Fact]
+    public void ClassifiesOrbitalSiteBuildTypesIncludingJournalGuesses()
+    {
+        var catalog = ColonizationBuildCatalog.LoadEmbedded();
+
+        Assert.True(catalog.IsOrbitalSiteBuildType("vesta"));
+        Assert.True(catalog.IsOrbitalSiteBuildType("Vesta (primary)"));
+        Assert.True(catalog.IsOrbitalSiteBuildType("outpost?"));
+        Assert.True(catalog.IsOrbitalSiteBuildType("installation?"));
+        Assert.True(catalog.IsOrbitalSiteBuildType("no truss"));
+        Assert.True(catalog.IsOrbitalSiteBuildType("orbis?"));
+        Assert.False(catalog.IsOrbitalSiteBuildType("hestia"));
+        Assert.False(catalog.IsOrbitalSiteBuildType("Hestia"));
+        Assert.False(catalog.IsOrbitalSiteBuildType("settlement?"));
+        Assert.False(catalog.IsOrbitalSiteBuildType("aphrodite"));
+        Assert.False(catalog.IsOrbitalSiteBuildType(string.Empty));
+        Assert.False(catalog.IsOrbitalSiteBuildType(null));
+        Assert.Equal("outpost", ColonizationBuildCatalog.NormalizeSiteBuildTypeKey("outpost?"));
+        Assert.Equal("Vesta", ColonizationBuildCatalog.NormalizeSiteBuildTypeKey("Vesta (primary)"));
+        Assert.Equal("no_truss", ColonizationBuildCatalog.NormalizeSiteBuildTypeKey("no truss"));
+        Assert.True(catalog.TryResolveSiteBuildType("Vesta (primary)", out ColonizationBuildCost? vesta));
+        Assert.Equal("vesta", vesta!.BuildType, StringComparer.OrdinalIgnoreCase);
+        Assert.False(catalog.TryResolveSiteBuildType("outpost?", out _));
+        Assert.False(catalog.TryResolveSiteBuildType("installation?", out _));
     }
 
     [Fact]

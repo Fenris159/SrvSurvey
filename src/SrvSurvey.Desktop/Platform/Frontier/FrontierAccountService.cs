@@ -91,12 +91,14 @@ public sealed class FrontierAccountService : IFrontierAccountService
     private const string TokenEndpoint = "https://auth.frontierstore.net/token";
     private const string ProfileEndpoint = "https://companion.orerve.net/profile?language=en";
     private const string CarrierEndpoint = "https://companion.orerve.net/fleetcarrier?language=en";
+    private const string SquadronEndpoint = "https://companion.orerve.net/squadron?language=en";
     private const string MarketEndpoint = "https://companion.orerve.net/market?language=en";
     private const string ShipyardEndpoint = "https://companion.orerve.net/shipyard?language=en";
     private const string CommunityGoalsEndpoint = "https://companion.orerve.net/communitygoals?language=en";
     private static readonly TimeSpan AuthorizationTimeout = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan MinimumRefreshInterval = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan MinimumCarrierRefreshInterval = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan MinimumSquadronRefreshInterval = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan MinimumCapiRequestSpacing = TimeSpan.FromMilliseconds(650);
     private const long MaximumTokenResponseBytes = 1024 * 1024;
     private const long MaximumCapiResponseBytes = 16 * 1024 * 1024;
@@ -497,6 +499,21 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 .ConfigureAwait(false)
             : OptionalCapiResponse.Skipped(credential);
         credential = carrier.Credential;
+        bool squadronDue =
+            forceCarrierRefresh
+            || previousSnapshot?.SquadronCarrierFetchedAt is not { } squadronFetched
+            || now - squadronFetched >= MinimumSquadronRefreshInterval;
+        OptionalCapiResponse squadron = squadronDue
+            ? await TryRequestOptionalCapiAsync(
+                    SquadronEndpoint,
+                    commander,
+                    credential,
+                    loaded.IsLegacy,
+                    cancellationToken
+                )
+                .ConfigureAwait(false)
+            : OptionalCapiResponse.Skipped(credential);
+        credential = squadron.Credential;
         OptionalCapiResponse market = await TryRequestOptionalCapiAsync(
                 MarketEndpoint,
                 commander,
@@ -526,6 +543,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         credential = communityGoals.Credential;
 
         snapshot = ApplyCarrierResult(snapshot, previousSnapshot, carrier, fetchedAt);
+        snapshot = ApplySquadronResult(snapshot, previousSnapshot, squadron, fetchedAt);
         snapshot = ApplyMarketResult(snapshot, previousSnapshot, market, fetchedAt);
         snapshot = ApplyShipyardResult(snapshot, previousSnapshot, shipyard, fetchedAt);
         snapshot = ApplyCommunityGoalsResult(snapshot, previousSnapshot, communityGoals, fetchedAt);
@@ -698,6 +716,82 @@ public sealed class FrontierAccountService : IFrontierAccountService
                     ? fetchedAt
                     : previous?.CommanderReputationFetchedAt,
             CarrierEndpointData = endpoint.DataPoints,
+        };
+    }
+
+    private static FrontierAccountSnapshot ApplySquadronResult(
+        FrontierAccountSnapshot snapshot,
+        FrontierAccountSnapshot? previous,
+        OptionalCapiResponse result,
+        DateTimeOffset fetchedAt
+    )
+    {
+        previous = IsSameCommander(snapshot, previous) ? previous : null;
+        if (!result.Queried)
+        {
+            return PreserveSquadronState(snapshot, previous, previous?.SquadronCarrierError ?? string.Empty);
+        }
+
+        if (!result.Succeeded)
+        {
+            return PreserveSquadronState(snapshot, previous, result.Error);
+        }
+
+        if (string.IsNullOrWhiteSpace(result.Content))
+        {
+            return ClearSquadronState(snapshot, fetchedAt);
+        }
+
+        try
+        {
+            FrontierCarrierEndpointSnapshot endpoint = FrontierCapiSnapshotParser.ParseSquadronEndpoint(
+                result.Content,
+                fetchedAt
+            );
+            return snapshot with
+            {
+                SquadronCarrier = endpoint.Carrier,
+                SquadronCarrierFetchedAt = fetchedAt,
+                SquadronCarrierError = string.Empty,
+                SquadronEndpointData = endpoint.DataPoints,
+            };
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidDataException)
+        {
+            return PreserveSquadronState(
+                snapshot,
+                previous,
+                "Frontier squadron data could not be read: " + exception.Message
+            );
+        }
+    }
+
+    private static FrontierAccountSnapshot PreserveSquadronState(
+        FrontierAccountSnapshot snapshot,
+        FrontierAccountSnapshot? previous,
+        string squadronError
+    )
+    {
+        return snapshot with
+        {
+            SquadronCarrier = previous?.SquadronCarrier,
+            SquadronCarrierFetchedAt = previous?.SquadronCarrierFetchedAt,
+            SquadronCarrierError = squadronError,
+            SquadronEndpointData = previous?.SquadronEndpointData,
+        };
+    }
+
+    private static FrontierAccountSnapshot ClearSquadronState(
+        FrontierAccountSnapshot snapshot,
+        DateTimeOffset fetchedAt
+    )
+    {
+        return snapshot with
+        {
+            SquadronCarrier = null,
+            SquadronCarrierFetchedAt = fetchedAt,
+            SquadronCarrierError = string.Empty,
+            SquadronEndpointData = [],
         };
     }
 

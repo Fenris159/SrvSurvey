@@ -40,7 +40,8 @@ public sealed class ColonizationSettingsStore
                 overlay,
                 "HighlightAlmostCoveredFleetCarrierLoads",
                 defaults.HighlightAlmostCoveredFleetCarrierLoads
-            )
+            ),
+            GetBoolean(overlay, "UseCompactScrollingCommoditiesList", defaults.UseCompactScrollingCommoditiesList)
         );
     }
 
@@ -136,6 +137,7 @@ public sealed class ColonizationSettingsStore
             overlay["InlineFleetCarrierCargo"] = preferences.InlineFleetCarrierCargo;
             overlay["CollapseCoveredGroups"] = preferences.CollapseCoveredGroups;
             overlay["HighlightAlmostCoveredFleetCarrierLoads"] = preferences.HighlightAlmostCoveredFleetCarrierLoads;
+            overlay["UseCompactScrollingCommoditiesList"] = preferences.UseCompactScrollingCommoditiesList;
         });
     }
 
@@ -217,7 +219,8 @@ public sealed record ColonizationOverlayPreferences(
     bool ShowFleetCarrierDelta,
     bool InlineFleetCarrierCargo,
     bool CollapseCoveredGroups,
-    bool HighlightAlmostCoveredFleetCarrierLoads
+    bool HighlightAlmostCoveredFleetCarrierLoads,
+    bool UseCompactScrollingCommoditiesList
 )
 {
     public static ColonizationOverlayPreferences Default { get; } =
@@ -228,6 +231,7 @@ public sealed record ColonizationOverlayPreferences(
             ShowFleetCarrierDelta: false,
             InlineFleetCarrierCargo: false,
             CollapseCoveredGroups: true,
-            HighlightAlmostCoveredFleetCarrierLoads: false
+            HighlightAlmostCoveredFleetCarrierLoads: false,
+            UseCompactScrollingCommoditiesList: false
         );
 }

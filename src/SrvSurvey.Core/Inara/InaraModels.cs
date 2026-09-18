@@ -147,6 +147,15 @@ internal sealed class InaraEventQueue
         }
     }
 
+    public bool HasOnlyInventoryReplaceKeys()
+    {
+        lock (sync)
+        {
+            return pending.Count > 0
+                && pending.All(item => item.Event.ReplaceKey is "inventory:cargo" or "inventory:materials");
+        }
+    }
+
     public List<InaraQueuedEvent> TakeBatch(string? apiKey, int maximumCount, out int discarded)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumCount, 1);
