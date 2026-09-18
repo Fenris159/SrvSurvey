@@ -149,10 +149,10 @@ public sealed class PipeWireContext : IAsyncDisposable
         }
     }
 
-    [DllImport("libc", EntryPoint = "dup", SetLastError = true)]
+    [DllImport("libc", EntryPoint = "dup")]
     private static extern int DuplicateFileDescriptor(int fileDescriptor);
 
-    [DllImport("libc", EntryPoint = "close", SetLastError = true)]
+    [DllImport("libc", EntryPoint = "close")]
     private static extern int CloseFileDescriptor(int fileDescriptor);
 
     private unsafe void StartNative()

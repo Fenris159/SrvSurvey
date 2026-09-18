@@ -149,6 +149,29 @@ public sealed class GameScreenCaptureTests
     }
 
     [Fact]
+    public void CaptureFailureDiagnosticsIncludeExceptionChainAndThrowSite()
+    {
+        Exception failure;
+        try
+        {
+            throw new InvalidOperationException("inner capture failure");
+        }
+        catch (Exception inner)
+        {
+            failure = new NotSupportedException("Wayland screen sharing could not start: " + inner.Message, inner);
+        }
+
+        string description = CaptureFailureDiagnostics.Describe(failure);
+
+        Assert.Contains(
+            "NotSupportedException: Wayland screen sharing could not start: inner capture failure",
+            description
+        );
+        Assert.Contains("InvalidOperationException: inner capture failure", description);
+        Assert.Contains("CaptureFailureDiagnosticsIncludeExceptionChainAndThrowSite", description);
+    }
+
+    [Fact]
     public void RepeatedCaptureFailuresBackOffAndRecover()
     {
         var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);

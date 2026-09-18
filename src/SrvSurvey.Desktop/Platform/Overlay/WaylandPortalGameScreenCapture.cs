@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Avalonia;
 using PipeWire.NET;
@@ -163,13 +164,50 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         {
             initializationTask.GetAwaiter().GetResult();
         }
-        catch (Exception exception) when (exception is not NotSupportedException)
+        catch (Exception exception)
         {
+            lock (gate)
+            {
+                if (
+                    !disposed
+                    && ReferenceEquals(initialization, initializationTask)
+                    && IsRetryableInitializationFailure(exception)
+                )
+                {
+                    initialization = null;
+                }
+            }
+
+            if (exception is NotSupportedException)
+            {
+                throw;
+            }
+
             throw new NotSupportedException("Wayland screen sharing could not start: " + exception.Message, exception);
         }
     }
 
+    private static bool IsRetryableInitializationFailure(Exception exception) =>
+        exception is not NotSupportedException || exception.InnerException is not null;
+
     private async Task InitializeAsync()
+    {
+        try
+        {
+            await InitializePortalSessionAsync().ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            log?.Invoke(
+                $"Wayland capture ({capturePurpose}): initialization failed. "
+                    + CaptureFailureDiagnostics.Describe(exception)
+            );
+            await ReleaseSessionResourcesAsync().ConfigureAwait(false);
+            throw;
+        }
+    }
+
+    private async Task InitializePortalSessionAsync()
     {
         var portalConnection = new Connection(Address.Session);
         connection = portalConnection;
@@ -242,16 +280,29 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             shutdown.Token
         );
         streamInfo = PortalStreamInfo.Read(startResponse.Results);
-        log?.Invoke($"Wayland capture ({capturePurpose}): portal selected {streamInfo.DescribeSource()}.");
+        log?.Invoke(
+            $"Wayland capture ({capturePurpose}): portal selected {streamInfo.DescribeSource()} "
+                + $"(PipeWire node {streamInfo.NodeId})."
+        );
         SaveRestoreToken(startResponse.Results);
 
+        log?.Invoke($"Wayland capture ({capturePurpose}): opening the portal PipeWire remote.");
         using CloseSafeHandle remote = await screenCast.OpenPipeWireRemoteAsync(
             sessionPath,
             new Dictionary<string, object>()
         );
+        log?.Invoke(
+            $"Wayland capture ({capturePurpose}): portal PipeWire descriptor is "
+                + $"{DescribePortalDescriptor(remote)}."
+        );
         var context = new PipeWireContext("SrvSurvey.ScreenCapture");
         pipeWireContext = context;
+        log?.Invoke($"Wayland capture ({capturePurpose}): starting PipeWire with the portal descriptor.");
         await context.StartAsync(remote, shutdown.Token);
+        log?.Invoke(
+            $"Wayland capture ({capturePurpose}): PipeWire connected; attaching video stream on node "
+                + $"{streamInfo.NodeId}."
+        );
 
         var videoCapture = new PipeWireVideoCapture(context, "SrvSurvey.ScreenCapture");
         pipeWireCapture = videoCapture;
@@ -260,7 +311,13 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             streamInfo.NodeId,
             [PixelFormat.Bgra, PixelFormat.Bgrx, PixelFormat.Rgba, PixelFormat.Rgbx]
         );
+        log?.Invoke(
+            $"Wayland capture ({capturePurpose}): PipeWire video stream connected; waiting for the first frame."
+        );
     }
+
+    private static string DescribePortalDescriptor(SafeHandle remote) =>
+        remote.IsInvalid || remote.IsClosed ? "unusable" : "open";
 
     private void OnFrameReady(PipeWireVideoCapture sender, VideoFrame frame)
     {
@@ -313,16 +370,22 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
 
     private async Task DisposeAsyncResources()
     {
+        await ReleaseSessionResourcesAsync().ConfigureAwait(false);
+        shutdown.Dispose();
+    }
+
+    private async Task ReleaseSessionResourcesAsync()
+    {
         if (pipeWireCapture is not null)
         {
             pipeWireCapture.FrameReady -= OnFrameReady;
-            await pipeWireCapture.DisposeAsync();
+            await pipeWireCapture.DisposeAsync().ConfigureAwait(false);
             pipeWireCapture = null;
         }
 
         if (pipeWireContext is not null)
         {
-            await pipeWireContext.DisposeAsync();
+            await pipeWireContext.DisposeAsync().ConfigureAwait(false);
             pipeWireContext = null;
         }
 
@@ -330,7 +393,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         {
             try
             {
-                await portalSession.CloseAsync();
+                await portalSession.CloseAsync().ConfigureAwait(false);
             }
             catch (DBusException)
             {
@@ -342,7 +405,6 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
 
         connection?.Dispose();
         connection = null;
-        shutdown.Dispose();
     }
 
     private static async Task<PortalResponse> InvokeRequestAsync(

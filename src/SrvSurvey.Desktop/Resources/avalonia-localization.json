@@ -16565,6 +16565,10 @@
       "translation": "Hängen Sie diese SrvSurvey-Instanz an die stabile Frontier-ID eines Kommandanten an oder folgen Sie automatisch dem neuesten aktiven Journal."
     },
     {
+      "source": "PipeWire",
+      "translation": "PipeWire"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planen Sie eine Bergbaureise"
     },
@@ -27813,6 +27817,14 @@
       "translation": "Wasserwelt | 1,24 Mio. cr"
     },
     {
+      "source": "Wayland capture ({0}): PipeWire connected; attaching video stream on node {1}.",
+      "translation": "Wayland-Erfassung ({0}): PipeWire verbunden; Anhängen des Videostreams am Knoten {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): PipeWire video stream connected; waiting for the first frame.",
+      "translation": "Wayland-Aufnahme ({0}): PipeWire-Videostream verbunden; warte auf den ersten Frame."
+    },
+    {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "Wayland-Erfassung ({0}): Die Einstellungen erforderten eine neue Quellenauswahl."
     },
@@ -27825,8 +27837,20 @@
       "translation": "Wayland-Aufnahme ({0}): Das erste zugeschnittene Bild ist {1}x{2}."
     },
     {
-      "source": "Wayland capture ({0}): portal selected {1}.",
-      "translation": "Wayland-Erfassung ({0}): Portal ausgewählt {1}."
+      "source": "Wayland capture ({0}): initialization failed. {1}",
+      "translation": "Wayland-Erfassung ({0}): Initialisierung fehlgeschlagen. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
+      "translation": "Wayland-Erfassung ({0}): Öffnen des PipeWire-Fernportals."
+    },
+    {
+      "source": "Wayland capture ({0}): portal PipeWire descriptor is {1}.",
+      "translation": "Wayland-Erfassung ({0}): Der PipeWire-Deskriptor des Portals ist {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1} (PipeWire node {2}).",
+      "translation": "Wayland-Erfassung ({0}): Portal ausgewählt {1} (PipeWire-Knoten {2})."
     },
     {
       "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
@@ -27839,6 +27863,10 @@
     {
       "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
       "translation": "Wayland-Erfassung ({0}): Die ausgewählte Quelle konnte nicht zur Wiederverwendung gespeichert werden. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): starting PipeWire with the portal descriptor.",
+      "translation": "Wayland-Erfassung ({0}): Starten von PipeWire mit dem Portaldeskriptor."
     },
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
@@ -30749,6 +30777,10 @@
       "translation": "bis"
     },
     {
+      "source": "unusable",
+      "translation": "unbrauchbar"
+    },
+    {
       "source": "updates",
       "translation": "Aktualisierungen"
     },
@@ -31087,6 +31119,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} wie gescannt · {1} falls zugeordnet"
+    },
+    {
+      "source": "{0} at {1}",
+      "translation": "{0} und {1}"
     },
     {
       "source": "{0} available",
@@ -48507,6 +48543,10 @@
       "translation": "Fija esta instancia SrvSurvey al ID estable de un comandante Frontier o sigue automáticamente el diario activo más reciente."
     },
     {
+      "source": "PipeWire",
+      "translation": "TuberíaAlambre"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planifica un viaje minero"
     },
@@ -59755,6 +59795,14 @@
       "translation": "Mundo acuático | 1,24 millones de euros"
     },
     {
+      "source": "Wayland capture ({0}): PipeWire connected; attaching video stream on node {1}.",
+      "translation": "Captura de Wayland ({0}): PipeWire conectado; adjuntando transmisión de video en el nodo {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): PipeWire video stream connected; waiting for the first frame.",
+      "translation": "Captura de Wayland ({0}): transmisión de video PipeWire conectada; esperando el primer fotograma."
+    },
+    {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "Captura de Wayland ({0}): la configuración solicitó una nueva selección de fuente."
     },
@@ -59767,8 +59815,20 @@
       "translation": "Captura de Wayland ({0}): el primer fotograma recortado es {1}x{2}."
     },
     {
-      "source": "Wayland capture ({0}): portal selected {1}.",
-      "translation": "Captura de Wayland ({0}): portal seleccionado {1}."
+      "source": "Wayland capture ({0}): initialization failed. {1}",
+      "translation": "Captura de Wayland ({0}): falló la inicialización. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
+      "translation": "Captura de Wayland ({0}): apertura remota del portal PipeWire."
+    },
+    {
+      "source": "Wayland capture ({0}): portal PipeWire descriptor is {1}.",
+      "translation": "Captura de Wayland ({0}): el descriptor de PipeWire del portal es {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1} (PipeWire node {2}).",
+      "translation": "Captura de Wayland ({0}): portal seleccionado {1} (nodo PipeWire {2})."
     },
     {
       "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
@@ -59781,6 +59841,10 @@
     {
       "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
       "translation": "Captura de Wayland ({0}): la fuente seleccionada no se pudo guardar para su reutilización. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): starting PipeWire with the portal descriptor.",
+      "translation": "Captura de Wayland ({0}): iniciando PipeWire con el descriptor del portal."
     },
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
@@ -62691,6 +62755,10 @@
       "translation": "hasta"
     },
     {
+      "source": "unusable",
+      "translation": "inutilizable"
+    },
+    {
       "source": "updates",
       "translation": "actualizaciones"
     },
@@ -63029,6 +63097,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} como escaneado · {1} si está asignado"
+    },
+    {
+      "source": "{0} at {1}",
+      "translation": "{0} en {1}"
     },
     {
       "source": "{0} available",
@@ -80449,6 +80521,10 @@
       "translation": "Épinglez cette instance de SrvSurvey à l'identifiant Frontier stable d'un commandant, ou suivez automatiquement le journal actif le plus récent."
     },
     {
+      "source": "PipeWire",
+      "translation": "Fil de tuyau"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planifier un voyage minier"
     },
@@ -91697,6 +91773,14 @@
       "translation": "Monde aquatique | 1,24 Mcr"
     },
     {
+      "source": "Wayland capture ({0}): PipeWire connected; attaching video stream on node {1}.",
+      "translation": "Capture Wayland ({0}) : PipeWire connecté ; attachement du flux vidéo sur le nœud {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): PipeWire video stream connected; waiting for the first frame.",
+      "translation": "Capture Wayland ({0}) : flux vidéo PipeWire connecté ; en attendant la première image."
+    },
+    {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "Capture Wayland ({0}) : les paramètres ont demandé une nouvelle sélection de source."
     },
@@ -91709,8 +91793,20 @@
       "translation": "Capture Wayland ({0}) : la première image recadrée est {1}x{2}."
     },
     {
-      "source": "Wayland capture ({0}): portal selected {1}.",
-      "translation": "Capture Wayland ({0}) : portail sélectionné {1}."
+      "source": "Wayland capture ({0}): initialization failed. {1}",
+      "translation": "Capture Wayland ({0}) : échec de l'initialisation. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
+      "translation": "Capture Wayland ({0}) : ouverture du portail PipeWire à distance."
+    },
+    {
+      "source": "Wayland capture ({0}): portal PipeWire descriptor is {1}.",
+      "translation": "Capture Wayland ({0}) : le descripteur du portail PipeWire est {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1} (PipeWire node {2}).",
+      "translation": "Capture Wayland ({0}) : portail sélectionné {1} (nœud PipeWire {2})."
     },
     {
       "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
@@ -91723,6 +91819,10 @@
     {
       "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
       "translation": "Capture Wayland ({0}) : la source sélectionnée n'a pas pu être enregistrée pour être réutilisée. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): starting PipeWire with the portal descriptor.",
+      "translation": "Capture Wayland ({0}) : démarrage de PipeWire avec le descripteur de portail."
     },
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
@@ -94633,6 +94733,10 @@
       "translation": "jusqu'à"
     },
     {
+      "source": "unusable",
+      "translation": "inutilisable"
+    },
+    {
       "source": "updates",
       "translation": "mises à jour"
     },
@@ -94971,6 +95075,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} tel qu'analysé · {1} si mappé"
+    },
+    {
+      "source": "{0} at {1}",
+      "translation": "{0} à {1}"
     },
     {
       "source": "{0} available",
@@ -112391,6 +112499,10 @@
       "translation": "Fixe esta instância SrvSurvey no ID estável Frontier de um comandante ou siga o diário ativo mais recente automaticamente."
     },
     {
+      "source": "PipeWire",
+      "translation": "PipeWire"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planeje uma viagem de mineração"
     },
@@ -123639,6 +123751,14 @@
       "translation": "Mundo da água | 1,24 milhões de cr"
     },
     {
+      "source": "Wayland capture ({0}): PipeWire connected; attaching video stream on node {1}.",
+      "translation": "Captura Wayland ({0}): PipeWire conectado; anexando fluxo de vídeo no nó {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): PipeWire video stream connected; waiting for the first frame.",
+      "translation": "Captura Wayland ({0}): Stream de vídeo PipeWire conectado; aguardando o primeiro quadro."
+    },
+    {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "Captura Wayland ({0}): As configurações solicitaram uma nova seleção de fonte."
     },
@@ -123651,8 +123771,20 @@
       "translation": "Captura Wayland ({0}): o primeiro quadro recortado é {1}x{2}."
     },
     {
-      "source": "Wayland capture ({0}): portal selected {1}.",
-      "translation": "Captura de Wayland ({0}): portal selecionado {1}."
+      "source": "Wayland capture ({0}): initialization failed. {1}",
+      "translation": "Captura de Wayland ({0}): falha na inicialização. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
+      "translation": "Captura Wayland ({0}): abrindo o portal PipeWire remoto."
+    },
+    {
+      "source": "Wayland capture ({0}): portal PipeWire descriptor is {1}.",
+      "translation": "Captura Wayland ({0}): o descritor PipeWire do portal é {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1} (PipeWire node {2}).",
+      "translation": "Captura de Wayland ({0}): portal selecionado {1} (nó PipeWire {2})."
     },
     {
       "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
@@ -123665,6 +123797,10 @@
     {
       "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
       "translation": "Captura Wayland ({0}): a fonte selecionada não pôde ser salva para reutilização. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): starting PipeWire with the portal descriptor.",
+      "translation": "Captura Wayland ({0}): iniciando o PipeWire com o descritor do portal."
     },
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
@@ -126575,6 +126711,10 @@
       "translation": "até"
     },
     {
+      "source": "unusable",
+      "translation": "inutilizável"
+    },
+    {
       "source": "updates",
       "translation": "atualizações"
     },
@@ -126913,6 +127053,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} conforme verificado · {1} se mapeado"
+    },
+    {
+      "source": "{0} at {1}",
+      "translation": "{0} e {1}"
     },
     {
       "source": "{0} available",
@@ -144333,6 +144477,10 @@
       "translation": "Прикрепите этот экземпляр SrvSurvey к идентификатору конюшни Frontier одного командира или автоматически следите за последним активным журналом."
     },
     {
+      "source": "PipeWire",
+      "translation": "ТрубаПроволока"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Запланируйте поездку на добычу полезных ископаемых"
     },
@@ -155581,6 +155729,14 @@
       "translation": "Водный мир | 1,24 млн кр"
     },
     {
+      "source": "Wayland capture ({0}): PipeWire connected; attaching video stream on node {1}.",
+      "translation": "Захват Wayland ({0}): PipeWire подключен; подключение видеопотока на узле {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): PipeWire video stream connected; waiting for the first frame.",
+      "translation": "Захват Wayland ({0}): подключен видеопоток PipeWire; ждем первого кадра."
+    },
+    {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "Захват Wayland ({0}): настройки запросили новый выбор источника."
     },
@@ -155593,8 +155749,20 @@
       "translation": "Захват Wayland ({0}): первый обрезанный кадр — {1}x{2}."
     },
     {
-      "source": "Wayland capture ({0}): portal selected {1}.",
-      "translation": "Захват Вэйланда ({0}): выбран портал {1}."
+      "source": "Wayland capture ({0}): initialization failed. {1}",
+      "translation": "Захват Wayland ({0}): инициализация не удалась. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
+      "translation": "Захват Wayland ({0}): открытие удаленного портала PipeWire."
+    },
+    {
+      "source": "Wayland capture ({0}): portal PipeWire descriptor is {1}.",
+      "translation": "Захват Wayland ({0}): дескриптор PipeWire портала — {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1} (PipeWire node {2}).",
+      "translation": "Захват Wayland ({0}): выбран портал {1} (узел PipeWire {2})."
     },
     {
       "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
@@ -155607,6 +155775,10 @@
     {
       "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
       "translation": "Захват Wayland ({0}): выбранный источник не удалось сохранить для повторного использования. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): starting PipeWire with the portal descriptor.",
+      "translation": "Захват Wayland ({0}): запуск PipeWire с дескриптором портала."
     },
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
@@ -158517,6 +158689,10 @@
       "translation": "пока"
     },
     {
+      "source": "unusable",
+      "translation": "непригодный для использования"
+    },
+    {
       "source": "updates",
       "translation": "обновления"
     },
@@ -158855,6 +159031,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} при сканировании · {1} при сопоставлении"
+    },
+    {
+      "source": "{0} at {1}",
+      "translation": "{0} и {1}"
     },
     {
       "source": "{0} available",
@@ -176275,6 +176455,10 @@
       "translation": "将此 SrvSurvey 实例固定到一名指挥官的稳定 Frontier ID，或自动关注最新的活动日志。"
     },
     {
+      "source": "PipeWire",
+      "translation": "管材线材"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "计划一次采矿之旅"
     },
@@ -187523,6 +187707,14 @@
       "translation": "水世界| 1.24M铬"
     },
     {
+      "source": "Wayland capture ({0}): PipeWire connected; attaching video stream on node {1}.",
+      "translation": "Wayland 捕获（{0}）：PipeWire 连接；在节点 {1} 上附加视频流。"
+    },
+    {
+      "source": "Wayland capture ({0}): PipeWire video stream connected; waiting for the first frame.",
+      "translation": "Wayland捕获（{0}）：PipeWire视频流已连接；等待第一帧。"
+    },
+    {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "Wayland 捕获 ({0})：设置请求新的源选择。"
     },
@@ -187535,8 +187727,20 @@
       "translation": "Wayland 捕获 ({0})：第一个裁剪帧是 {1}x{2}。"
     },
     {
-      "source": "Wayland capture ({0}): portal selected {1}.",
-      "translation": "Wayland 捕获 ({0})：传送门选择 {1}。"
+      "source": "Wayland capture ({0}): initialization failed. {1}",
+      "translation": "Wayland 捕获（{0}）：初始化失败。 {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
+      "translation": "Wayland 捕获 ({0})：远程打开门户 PipeWire。"
+    },
+    {
+      "source": "Wayland capture ({0}): portal PipeWire descriptor is {1}.",
+      "translation": "Wayland 捕获 ({0})：门户 PipeWire 描述符为 {1}。"
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1} (PipeWire node {2}).",
+      "translation": "Wayland 捕获 ({0})：门户选择 {1}（PipeWire 节点 {2}）。"
     },
     {
       "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
@@ -187549,6 +187753,10 @@
     {
       "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
       "translation": "Wayland 捕获 ({0})：无法保存所选源以供重复使用。 {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): starting PipeWire with the portal descriptor.",
+      "translation": "Wayland 捕获 ({0})：使用门户描述符启动 PipeWire。"
     },
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
@@ -190459,6 +190667,10 @@
       "translation": "直到"
     },
     {
+      "source": "unusable",
+      "translation": "无法使用的"
+    },
+    {
       "source": "updates",
       "translation": "更新"
     },
@@ -190797,6 +191009,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} 扫描 · {1} 如果映射"
+    },
+    {
+      "source": "{0} at {1}",
+      "translation": "{0} 在 {1}"
     },
     {
       "source": "{0} available",
@@ -208217,6 +208433,10 @@
       "translation": "* PIN THIS SRVSURVEY INSTANCE TO ONE COMMANDER'S STABLE FRONTIER ID, OR FOLLOW THE NEWEST ACTIVE JOURNAL AUTOMATICALLY. >>>!"
     },
     {
+      "source": "PipeWire",
+      "translation": "* PIPEWIRE >>>!"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "* PLAN A MINING TRIP >>>!"
     },
@@ -219465,6 +219685,14 @@
       "translation": "* WATER WORLD | 1.24 M CR >>>!"
     },
     {
+      "source": "Wayland capture ({0}): PipeWire connected; attaching video stream on node {1}.",
+      "translation": "* WAYLAND CAPTURE ({0}): PIPEWIRE CONNECTED; ATTACHING VIDEO STREAM ON NODE {1}. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): PipeWire video stream connected; waiting for the first frame.",
+      "translation": "* WAYLAND CAPTURE ({0}): PIPEWIRE VIDEO STREAM CONNECTED; WAITING FOR THE FIRST FRAME. >>>!"
+    },
+    {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "* WAYLAND CAPTURE ({0}): SETTINGS REQUESTED A FRESH SOURCE SELECTION. >>>!"
     },
@@ -219477,8 +219705,20 @@
       "translation": "* WAYLAND CAPTURE ({0}): FIRST CROPPED FRAME IS {1}X{2}. >>>!"
     },
     {
-      "source": "Wayland capture ({0}): portal selected {1}.",
-      "translation": "* WAYLAND CAPTURE ({0}): PORTAL SELECTED {1}. >>>!"
+      "source": "Wayland capture ({0}): initialization failed. {1}",
+      "translation": "* WAYLAND CAPTURE ({0}): INITIALIZATION FAILED. {1} >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): opening the portal PipeWire remote.",
+      "translation": "* WAYLAND CAPTURE ({0}): OPENING THE PORTAL PIPEWIRE REMOTE. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): portal PipeWire descriptor is {1}.",
+      "translation": "* WAYLAND CAPTURE ({0}): PORTAL PIPEWIRE DESCRIPTOR IS {1}. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1} (PipeWire node {2}).",
+      "translation": "* WAYLAND CAPTURE ({0}): PORTAL SELECTED {1} (PIPEWIRE NODE {2}). >>>!"
     },
     {
       "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
@@ -219491,6 +219731,10 @@
     {
       "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
       "translation": "* WAYLAND CAPTURE ({0}): SELECTED SOURCE COULD NOT BE SAVED FOR REUSE. {1} >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): starting PipeWire with the portal descriptor.",
+      "translation": "* WAYLAND CAPTURE ({0}): STARTING PIPEWIRE WITH THE PORTAL DESCRIPTOR. >>>!"
     },
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
@@ -222401,6 +222645,10 @@
       "translation": "* UNTIL >>>!"
     },
     {
+      "source": "unusable",
+      "translation": "* UNUSABLE >>>!"
+    },
+    {
       "source": "updates",
       "translation": "* UPDATES >>>!"
     },
@@ -222739,6 +222987,10 @@
     {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "* {0} AS SCANNED · {1} IF MAPPED >>>!"
+    },
+    {
+      "source": "{0} at {1}",
+      "translation": "* {0} AT {1} >>>!"
     },
     {
       "source": "{0} available",

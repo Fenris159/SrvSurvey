@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Avalonia;
@@ -435,13 +437,49 @@ internal static class CaptureFailureDiagnostics
     public static string Describe(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
+        var parts = new List<string>();
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            parts.Add(current.GetType().Name + ": " + current.Message);
+        }
+
+        string chain = string.Join(" <- ", parts);
+        string? site = TryDescribeThrowSite(exception);
+        return site is null ? chain : chain + " at " + site;
+    }
+
+    internal static string? TryDescribeThrowSite(Exception exception)
+    {
         Exception root = exception;
         while (root.InnerException is not null)
         {
             root = root.InnerException;
         }
 
-        return root.GetType().Name + ": " + root.Message;
+        foreach (StackFrame frame in new StackTrace(root, fNeedFileInfo: true).GetFrames() ?? [])
+        {
+            MethodBase? method = frame.GetMethod();
+            Type? declaringType = method?.DeclaringType;
+            if (declaringType is null || method is null)
+            {
+                continue;
+            }
+
+            string typeName = declaringType.FullName ?? declaringType.Name;
+            if (
+                !typeName.StartsWith("SrvSurvey", StringComparison.Ordinal)
+                && !typeName.StartsWith("PipeWire", StringComparison.Ordinal)
+            )
+            {
+                continue;
+            }
+
+            string site = declaringType.Name + "." + method.Name;
+            int line = frame.GetFileLineNumber();
+            return line > 0 ? site + ":" + line.ToString(System.Globalization.CultureInfo.InvariantCulture) : site;
+        }
+
+        return null;
     }
 }
 
