@@ -373,6 +373,94 @@ public sealed class FrontierAccountServiceTests
     }
 
     [Fact]
+    public async Task SquadronEndpointReputationMergesIntoCommanderReputation()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-squadron-rep-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse(
+                "2026-07-29T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
+            var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
+            using FrontierAccountService service = CreateService(
+                store,
+                request =>
+                    request.RequestUri!.AbsolutePath switch
+                    {
+                        "/profile" => Json(
+                            HttpStatusCode.OK,
+                            "{\"commander\":{\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}"
+                        ),
+                        "/squadron" => Json(
+                            HttpStatusCode.OK,
+                            "{\"name\":\"Raven Wing\",\"reputation\":[{\"majorFaction\":\"empire\",\"score\":44}]}"
+                        ),
+                        _ => Json(HttpStatusCode.NoContent, string.Empty),
+                    },
+                root,
+                () => now
+            );
+
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
+
+            Assert.Equal(44, Assert.Single(snapshot.CommanderReputation!).Score);
+            Assert.Equal("Empire", Assert.Single(snapshot.CommanderReputation!).Faction);
+            Assert.Equal(now, snapshot.CommanderReputationFetchedAt);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SquadronEndpointWithoutReputationPreservesCommanderReputationTimestamp()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-squadron-rep-keep-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse(
+                "2026-07-29T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
+            const string profile = "{\"commander\":{\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}";
+            var cache = new FrontierProfileCacheStore(Path.Combine(root, "cache.json"));
+            await cache.SaveAsync(
+                FrontierCapiSnapshotParser.Parse(
+                    profile,
+                    "{\"name\":{\"callsign\":\"RAV-001\"},\"reputation\":[{\"majorFaction\":\"federation\",\"score\":91}]}",
+                    now.AddMinutes(-16)
+                )
+            );
+            var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
+            using FrontierAccountService service = CreateService(
+                store,
+                request =>
+                    request.RequestUri!.AbsolutePath switch
+                    {
+                        "/profile" => Json(HttpStatusCode.OK, profile),
+                        "/squadron" => Json(HttpStatusCode.OK, "{\"name\":\"Raven Wing\"}"),
+                        _ => Json(HttpStatusCode.NoContent, string.Empty),
+                    },
+                root,
+                () => now
+            );
+
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
+
+            Assert.Equal(91, Assert.Single(snapshot.CommanderReputation!).Score);
+            Assert.Equal(now.AddMinutes(-16), snapshot.CommanderReputationFetchedAt);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task NoCarrierResponseRetainsIndependentCommanderReputation()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-removed-{Guid.NewGuid():N}");

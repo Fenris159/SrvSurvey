@@ -618,4 +618,42 @@ public sealed class InaraMapperTests
             item => item.Value<string>("itemName") == "tea" && item.Value<int>("itemCount") == 3
         );
     }
+
+    [Fact]
+    public void MiningRefinedSessionStartDoesNotPublishInventorySnapshots()
+    {
+        var mapper = new InaraEventMapper();
+        mapper.Process(
+            JObject.Parse(
+                """
+                {
+                  "timestamp": "2026-07-28T12:00:00Z",
+                  "event": "Cargo",
+                  "Vessel": "Ship",
+                  "Inventory": [{ "Name": "tea", "Count": 2 }]
+                }
+                """
+            ),
+            Context,
+            false
+        );
+
+        IReadOnlyList<InaraEvent> refined = mapper.Process(
+            JObject.Parse(
+                """
+                {
+                  "timestamp": "2026-07-28T12:01:00Z",
+                  "event": "MiningRefined",
+                  "Type": "platinum"
+                }
+                """
+            ),
+            Context,
+            true
+        );
+
+        Assert.Contains(refined, item => item.Name == "getCommanderProfile");
+        Assert.DoesNotContain(refined, item => item.Name == "setCommanderInventoryCargo");
+        Assert.DoesNotContain(refined, item => item.Name == "setCommanderInventoryMaterials");
+    }
 }

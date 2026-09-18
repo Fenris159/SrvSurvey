@@ -23,6 +23,7 @@ public static partial class FrontierCapiSnapshotParser
     private const string JsonSystemName = "systemName";
     private const string JsonPlayerContribution = "playerContribution";
     private const string JsonContribution = "contribution";
+    private const string JsonReputation = "reputation";
 
     private static readonly Dictionary<string, string[]> RankNames = new Dictionary<string, string[]>(
         StringComparer.OrdinalIgnoreCase
@@ -279,7 +280,7 @@ public static partial class FrontierCapiSnapshotParser
             ? null
             : ParseCarrierEndpoint(carrierJson, fetchedAt);
         FrontierReputationSnapshot[] profileReputation = ParseReputation(
-            GetProperty(root, "reputation") ?? GetProperty(commander, "reputation")
+            GetProperty(root, JsonReputation) ?? GetProperty(commander, JsonReputation)
         );
         FrontierReputationSnapshot[] commanderReputation = MergeReputation(
             profileReputation,
@@ -589,7 +590,7 @@ public static partial class FrontierCapiSnapshotParser
         {
             return new FrontierCarrierEndpointSnapshot(
                 null,
-                ParseReputation(GetProperty(root, "reputation")),
+                ParseReputation(GetProperty(root, JsonReputation)),
                 squadronData
             );
         }
@@ -603,8 +604,8 @@ public static partial class FrontierCapiSnapshotParser
             carrier.Carrier,
             carrier.CommanderReputation.Count > 0
                 ? carrier.CommanderReputation
-                : ParseReputation(GetProperty(root, "reputation")),
-            squadronData.Concat(carrier.DataPoints).ToArray()
+                : ParseReputation(GetProperty(root, JsonReputation)),
+            squadronData
         );
     }
 
@@ -614,7 +615,7 @@ public static partial class FrontierCapiSnapshotParser
         string dataPathPrefix
     )
     {
-        FrontierReputationSnapshot[] reputation = ParseReputation(GetProperty(root, "reputation"));
+        FrontierReputationSnapshot[] reputation = ParseReputation(GetProperty(root, JsonReputation));
         List<FrontierDataPointSnapshot> dataPoints = Flatten(root, dataPathPrefix);
         JsonElement? name = GetObject(root, "name");
         if (string.IsNullOrWhiteSpace(GetString(name, "callsign")))

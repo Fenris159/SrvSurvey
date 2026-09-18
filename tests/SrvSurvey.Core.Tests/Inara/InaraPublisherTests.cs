@@ -1093,15 +1093,19 @@ public sealed class InaraPublisherTests
         await ApplyLiveAsync(publisher, CargoJson(), FsdJumpJson("Sol"));
         InaraPublicationResult second = await publisher.FlushAsync();
         await ApplyLiveAsync(publisher, CargoJson(), FsdJumpJson("Achenar"), ShutdownJson());
-        InaraPublicationResult blocked = await publisher.FlushAsync();
 
         Assert.True(first.AcceptedEventCount > 0);
         Assert.True(second.AcceptedEventCount > 0);
         Assert.Equal(2, handler.RequestCount);
-        Assert.True(blocked.PendingEventCount > 0);
-        Assert.Equal(0, blocked.AcceptedEventCount);
 
-        time.Advance(TimeSpan.FromMinutes(1));
+        using var flushCancel = new CancellationTokenSource();
+        Task<InaraPublicationResult> waitingFlush = publisher.FlushAsync(flushCancel.Token);
+        await Task.Delay(50);
+        Assert.False(waitingFlush.IsCompleted);
+        await flushCancel.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waitingFlush);
+
+        time.Advance(InaraPublisher.RateLimitWindow);
         InaraPublicationResult later = await publisher.FlushAsync();
 
         Assert.Equal(3, handler.RequestCount);
@@ -1192,6 +1196,41 @@ public sealed class InaraPublisherTests
         Assert.Contains(
             handler.LastPayload["events"]!,
             eventToken => eventToken.Value<string>("eventName") == "setCommanderInventoryCargo"
+        );
+    }
+
+    [Fact]
+    public async Task TravelEventAdvancesAnOutdatedInventoryDeadline()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler), time);
+
+        await ApplyLiveAsync(publisher, LoadGameJson());
+        await publisher.FlushAsync();
+        await ApplyLiveAsync(publisher, CargoJson());
+        Assert.Equal(1, handler.RequestCount);
+
+        time.Advance(TimeSpan.FromMinutes(1));
+        await ApplyLiveAsync(publisher, FsdJumpJson("Sol"));
+        Assert.Equal(1, handler.RequestCount);
+
+        time.Advance(InaraPublisher.SendInterval);
+        await ApplyLiveAsync(
+            publisher,
+            """
+            {
+              "timestamp": "2026-07-28T12:01:35Z",
+              "event": "Music"
+            }
+            """
+        );
+        await WaitForAsync(() => handler.Payloads.Count == 2);
+        Assert.Contains(
+            handler.LastPayload!["events"]!,
+            eventToken => eventToken.Value<string>("eventName") == "addCommanderTravelFSDJump"
         );
     }
 
@@ -1589,13 +1628,126 @@ public sealed class InaraPublisherTests
         public override void Post(SendOrPostCallback d, object? state) { }
     }
 
-    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    private sealed class MutableTimeProvider : TimeProvider
     {
-        public override DateTimeOffset GetUtcNow() => utcNow;
+        private DateTimeOffset utcNow;
+        private readonly List<VirtualTimer> timers = [];
+        private readonly Lock sync = new();
+
+        public MutableTimeProvider(DateTimeOffset utcNow)
+        {
+            this.utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            lock (sync)
+            {
+                return utcNow;
+            }
+        }
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            var timer = new VirtualTimer(this, callback, state);
+            lock (sync)
+            {
+                timers.Add(timer);
+            }
+
+            timer.Change(dueTime, period);
+            return timer;
+        }
 
         public void Advance(TimeSpan duration)
         {
-            utcNow += duration;
+            var due = new List<Action>();
+            lock (sync)
+            {
+                utcNow += duration;
+                foreach (VirtualTimer timer in timers.ToArray())
+                {
+                    timer.CollectDue(utcNow, due);
+                }
+            }
+
+            foreach (Action fire in due)
+            {
+                fire();
+            }
+        }
+
+        private sealed class VirtualTimer(MutableTimeProvider owner, TimerCallback callback, object? state) : ITimer
+        {
+            private DateTimeOffset? dueAt;
+            private TimeSpan period = Timeout.InfiniteTimeSpan;
+            private bool disposed;
+
+            public bool Change(TimeSpan dueTime, TimeSpan period)
+            {
+                Action? immediate = null;
+                lock (owner.sync)
+                {
+                    if (disposed)
+                    {
+                        return false;
+                    }
+
+                    this.period = period;
+                    if (dueTime == Timeout.InfiniteTimeSpan)
+                    {
+                        dueAt = null;
+                        return true;
+                    }
+
+                    if (dueTime <= TimeSpan.Zero)
+                    {
+                        dueAt = null;
+                        immediate = () => callback(state);
+                    }
+                    else
+                    {
+                        dueAt = owner.utcNow + dueTime;
+                    }
+                }
+
+                immediate?.Invoke();
+                return true;
+            }
+
+            public void CollectDue(DateTimeOffset now, List<Action> due)
+            {
+                if (disposed || dueAt is not { } scheduled || scheduled > now)
+                {
+                    return;
+                }
+
+                due.Add(() => callback(state));
+                if (period > TimeSpan.Zero && period != Timeout.InfiniteTimeSpan)
+                {
+                    dueAt = now + period;
+                }
+                else
+                {
+                    dueAt = null;
+                }
+            }
+
+            public void Dispose()
+            {
+                lock (owner.sync)
+                {
+                    disposed = true;
+                    dueAt = null;
+                    owner.timers.Remove(this);
+                }
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                Dispose();
+                return ValueTask.CompletedTask;
+            }
         }
     }
 }

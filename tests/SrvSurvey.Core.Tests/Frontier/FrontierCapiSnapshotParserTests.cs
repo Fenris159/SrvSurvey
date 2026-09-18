@@ -106,6 +106,14 @@ public sealed class FrontierCapiSnapshotParserTests
         Assert.Equal(420, carrier.Tritium);
         Assert.Equal(12, carrier.Cargo.Single(item => item.Name == "Steel").Quantity);
         Assert.Contains(endpoint.DataPoints, point => point.Path.StartsWith("squadron.", StringComparison.Ordinal));
+        Assert.Contains(
+            endpoint.DataPoints,
+            point => point.Path == "squadron.squadronCarrier.fuel" && point.Value == "420"
+        );
+        Assert.Equal(
+            endpoint.DataPoints.Count,
+            endpoint.DataPoints.Select(point => point.Path).Distinct(StringComparer.Ordinal).Count()
+        );
     }
 
     [Fact]

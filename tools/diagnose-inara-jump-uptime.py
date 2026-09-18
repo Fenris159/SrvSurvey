@@ -10,26 +10,40 @@ Does not print secrets.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-JOURNAL = Path(
-    "/mnt/lr-gamingpc/c/Users/Drew/Saved Games/Frontier Developments/Elite Dangerous"
-)
-LOGS = Path("/mnt/lr-gamingpc/c/Users/Drew/AppData/Roaming/SrvSurvey/cross-platform/logs")
 CDT = timezone(timedelta(hours=-5))
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--journal-dir",
+        type=Path,
+        required=True,
+        help="Elite Dangerous journal directory containing Journal.*.log files",
+    )
+    parser.add_argument(
+        "--log-dir",
+        type=Path,
+        required=True,
+        help="SrvSurvey log directory containing srvs-*.txt files",
+    )
+    return parser.parse_args(argv)
 
 
 def parse_journal_ts(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
-def sessions() -> list[tuple[datetime, datetime, str]]:
+def sessions(logs: Path) -> list[tuple[datetime, datetime, str]]:
     result: list[tuple[datetime, datetime, str]] = []
-    for path in sorted(LOGS.glob("srvs-*.txt")):
+    for path in sorted(logs.glob("srvs-*.txt")):
         match = re.match(r"srvs-(\d{8})_(\d{6})\.txt", path.name)
         if not match:
             continue
@@ -52,13 +66,16 @@ def sessions() -> list[tuple[datetime, datetime, str]]:
     return result
 
 
-def main() -> int:
-    if not JOURNAL.is_dir() or not LOGS.is_dir():
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    journal = args.journal_dir
+    logs = args.log_dir
+    if not journal.is_dir() or not logs.is_dir():
         print("LOOP_ERROR: journal or SrvSurvey log path missing on mount")
         return 1
 
     jumps: list[tuple[datetime, str]] = []
-    for path in sorted(JOURNAL.glob("Journal.*.log")):
+    for path in sorted(journal.glob("Journal.*.log")):
         for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
             try:
                 entry = json.loads(line)
@@ -73,7 +90,7 @@ def main() -> int:
         return 1
 
     after = jumps[last_wille + 1 :]
-    window = sessions()
+    window = sessions(logs)
     during = 0
     print(f"last_Wille={jumps[last_wille][0].isoformat()} after_count={len(after)}")
     for ts, system in after:

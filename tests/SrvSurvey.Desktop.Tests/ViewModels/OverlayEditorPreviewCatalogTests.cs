@@ -157,4 +157,15 @@ public sealed class OverlayEditorPreviewCatalogTests
 
         Assert.Equal(expected, body.IsRewardBandGroupHighlighted);
     }
+
+    [Fact]
+    public void ColonizationPreviewRemainingMatchesTheSevenDisplayedRows()
+    {
+        ColonizationCommodityOverlayViewModel preview = Assert.IsType<ColonizationCommodityOverlayViewModel>(
+            OverlayEditorPreviewCatalog.Create("PlotBuildCommodities", 0)
+        );
+
+        Assert.Equal(7, preview.Plan.Rows.Count);
+        Assert.Equal(4675, preview.Plan.TotalRemaining);
+    }
 }

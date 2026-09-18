@@ -2447,15 +2447,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 StringComparison.OrdinalIgnoreCase
             )
             || journalCarrierJumpUpdatedAt is null
+            || !CanApplyJournalCarrierJump()
             || (
                 carrierWorkspaceKind == CarrierWorkspaceKind.Personal
                 && Snapshot.CarrierFetchedAt is { } carrierFetchedAt
                 && journalCarrierJumpUpdatedAt < carrierFetchedAt
-            )
-            || (
-                carrierWorkspaceKind == CarrierWorkspaceKind.Squadron
-                && Snapshot.SquadronCarrierFetchedAt is { } squadronFetchedAt
-                && journalCarrierJumpUpdatedAt < squadronFetchedAt
             )
         )
         {
@@ -2463,6 +2459,39 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
 
         return journalCarrierJumpDestination;
+    }
+
+    private bool CanApplyJournalCarrierJump()
+    {
+        return carrierWorkspaceKind == CarrierWorkspaceKind.Personal
+            || (carrierWorkspaceKind == CarrierWorkspaceKind.Squadron && JournalMatchesSelectedSquadronCarrier());
+    }
+
+    private bool JournalMatchesSelectedSquadronCarrier()
+    {
+        if (string.IsNullOrWhiteSpace(journalCarrierId) || Snapshot?.SquadronCarrier is not { } squadron)
+        {
+            return false;
+        }
+
+        foreach (FrontierDataPointSnapshot point in squadron.DataPoints ?? [])
+        {
+            if (!string.Equals(point.Value, journalCarrierId, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (
+                point.Path.EndsWith(".marketId", StringComparison.OrdinalIgnoreCase)
+                || point.Path.EndsWith(".carrierId", StringComparison.OrdinalIgnoreCase)
+                || point.Path.EndsWith(".id", StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCarrierFinances()

@@ -432,6 +432,76 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task PersonalJournalJumpDoesNotOverwriteSquadronCurrentJump()
+    {
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-09-12T15:50:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        FrontierAccountSnapshot snapshot = CreateSnapshot(fetchedAt) with
+        {
+            SquadronCarrier = CreateSnapshot(fetchedAt).Carrier! with { CurrentJump = "Achenar", Callsign = "SQD-001" },
+            SquadronCarrierFetchedAt = fetchedAt,
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await viewModel.OpenAsync();
+        viewModel.SetCarrierWorkspaceKind(CarrierWorkspaceKind.Squadron);
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T15:57:43Z","event":"CarrierJumpRequest","CarrierID":3710879232,"SystemName":"Honoto","DepartureTime":"2026-09-12T16:14:10Z"}
+                    """
+                ),
+            ]
+        );
+
+        Assert.Equal("Achenar", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+    }
+
+    [Fact]
+    public async Task JournalJumpAppliesToSquadronWhenCarrierIdMatches()
+    {
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-09-12T15:50:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        FrontierCarrierSnapshot squadron = CreateSnapshot(fetchedAt).Carrier! with
+        {
+            CurrentJump = "Achenar",
+            Callsign = "SQD-001",
+            DataPoints = [new FrontierDataPointSnapshot("squadron.squadronCarrier.market.id", "3710879232")],
+        };
+        FrontierAccountSnapshot snapshot = CreateSnapshot(fetchedAt) with
+        {
+            SquadronCarrier = squadron,
+            SquadronCarrierFetchedAt = fetchedAt,
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await viewModel.OpenAsync();
+        viewModel.SetCarrierWorkspaceKind(CarrierWorkspaceKind.Squadron);
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T15:57:43Z","event":"CarrierJumpRequest","CarrierID":3710879232,"SystemName":"Honoto","DepartureTime":"2026-09-12T16:14:10Z"}
+                    """
+                ),
+            ]
+        );
+
+        Assert.Equal("Honoto", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+    }
+
+    [Fact]
     public async Task JournalAddsPersonalGoalProgressWithoutLosingInaraDetails()
     {
         var fetchedAt = DateTimeOffset.Parse(

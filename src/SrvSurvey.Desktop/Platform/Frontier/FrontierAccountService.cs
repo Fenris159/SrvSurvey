@@ -748,11 +748,19 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 result.Content,
                 fetchedAt
             );
+            FrontierReputationSnapshot[] commanderReputation = MergeReputation(
+                previous?.CommanderReputation,
+                snapshot.CommanderReputation,
+                endpoint.CommanderReputation
+            );
             return snapshot with
             {
                 SquadronCarrier = endpoint.Carrier,
                 SquadronCarrierFetchedAt = fetchedAt,
                 SquadronCarrierError = string.Empty,
+                CommanderReputation = commanderReputation,
+                CommanderReputationFetchedAt =
+                    endpoint.CommanderReputation.Count > 0 ? fetchedAt : snapshot.CommanderReputationFetchedAt,
                 SquadronEndpointData = endpoint.DataPoints,
             };
         }

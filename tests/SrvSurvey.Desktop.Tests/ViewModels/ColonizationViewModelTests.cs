@@ -1517,6 +1517,47 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task FailedDockBaselineAllowsRetryWhenServerCarrierIsMissing()
+    {
+        var local = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            Cargo = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([], [], null, [local]),
+            FleetCarrierResponse = null,
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        JournalEventEnvelope docked = Event(
+            "Docked",
+            """
+            "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+            "StationName":"ABC-123","StationType":"FleetCarrier",
+            "StationServices":["commodities"]
+            """
+        );
+        viewModel.ApplyJournalEvents([docked]);
+
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
+        Assert.Equal(1, client.GetFleetCarrierCount);
+        Assert.Empty(Assert.Single(viewModel.LinkedFleetCarriers).Cargo);
+
+        client.FleetCarrierResponse = local with { Cargo = new Dictionary<string, int> { ["aluminium"] = 50 } };
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
+        Assert.Equal(2, client.GetFleetCarrierCount);
+        Assert.Equal(50, Assert.Single(viewModel.LinkedFleetCarriers).Cargo["aluminium"]);
+    }
+
+    [Fact]
     public async Task DoesNotReplayQueuedCargoDeltasWhenCapiSeedOverlapsMarketBaseline()
     {
         var carrier = new ColonizationFleetCarrier
@@ -2451,6 +2492,8 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public int ReplaceCargoCount { get; private set; }
 
+        public int GetFleetCarrierCount { get; private set; }
+
         public int PublishCarrierCount { get; private set; }
 
         public int PublishShipCount { get; private set; }
@@ -2722,6 +2765,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             CancellationToken cancellationToken = default
         )
         {
+            GetFleetCarrierCount++;
             EnteredGetFleetCarrier?.Set();
             if (GateGetFleetCarrier is not null)
             {

@@ -2278,6 +2278,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         BeginCargoBaselinePending(dock.MarketId);
+        bool stored = false;
         try
         {
             ColonizationFleetCarrier? serverCarrier = await client.GetFleetCarrierAsync(
@@ -2297,6 +2298,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                     ).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase),
                 }
             );
+            stored = true;
             return $"Loaded Raven Colonial cargo baseline for {GetCarrierName(serverCarrier)}.";
         }
         catch (Exception exception)
@@ -2312,6 +2314,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         finally
         {
             await CompleteCargoBaselineAsync(dock.MarketId);
+            if (!stored)
+            {
+                cargoBaselineReady.Remove(dock.MarketId);
+            }
         }
     }
 

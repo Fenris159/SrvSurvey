@@ -86,7 +86,7 @@ internal static class OverlayEditorPreviewFactories
                         },
                     },
                 ],
-                TotalRemaining = 4820,
+                TotalRemaining = 4675,
                 TripsInCurrentShip = 12,
                 FleetCarrierDeficit = 1240,
                 FleetCarrierDeficitTrips = 4,

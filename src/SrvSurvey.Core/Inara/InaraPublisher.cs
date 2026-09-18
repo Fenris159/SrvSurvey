@@ -262,7 +262,7 @@ public sealed class InaraPublisher : IInaraPublisher
         bool forceFlush = update.AllowPublishing && update.JournalEvents.Any(item => item.EventName == "Shutdown");
         if (forceFlush || IsSendDue())
         {
-            _ = TryStartBackgroundSend(force: forceFlush, out _);
+            _ = TryStartBackgroundSend(force: forceFlush, out _, out _);
         }
     }
 
@@ -369,8 +369,12 @@ public sealed class InaraPublisher : IInaraPublisher
                 return;
             }
 
-            DateTimeOffset due = slot > now ? slot : now + SendInterval;
-            nextSendAt ??= due;
+            DateTimeOffset sendDeadline = now + SendInterval;
+            DateTimeOffset due = slot > sendDeadline ? slot : sendDeadline;
+            if (nextSendAt is null || nextSendAt.Value > due)
+            {
+                nextSendAt = due;
+            }
         }
     }
 
@@ -403,9 +407,16 @@ public sealed class InaraPublisher : IInaraPublisher
 
         if (active is null)
         {
-            if (!TryStartBackgroundSend(force: true, out Task<InaraPublicationResult>? started))
+            Task<InaraPublicationResult>? started;
+            DateTimeOffset? waitUntil;
+            while (!TryStartBackgroundSend(force: true, out started, out waitUntil))
             {
-                return Combine(completed, CreateSendResult(0, []));
+                if (stopping || waitUntil is not { } deadline)
+                {
+                    return Combine(completed, CreateSendResult(0, []));
+                }
+
+                await WaitUntilAsync(deadline, cancellationToken).ConfigureAwait(false);
             }
 
             active = started;
@@ -425,6 +436,12 @@ public sealed class InaraPublisher : IInaraPublisher
         completedCancellation?.Dispose();
 
         return Combine(completed, sent);
+    }
+
+    private Task WaitUntilAsync(DateTimeOffset deadline, CancellationToken cancellationToken)
+    {
+        TimeSpan delay = deadline - timeProvider.GetUtcNow();
+        return delay > TimeSpan.Zero ? Task.Delay(delay, timeProvider, cancellationToken) : Task.CompletedTask;
     }
 
     public Task<InaraPublicationResult> StopAsync(CancellationToken cancellationToken = default)
@@ -659,11 +676,16 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
-    private bool TryStartBackgroundSend(bool force, out Task<InaraPublicationResult> sendTask)
+    private bool TryStartBackgroundSend(
+        bool force,
+        out Task<InaraPublicationResult> sendTask,
+        out DateTimeOffset? rateLimitedUntil
+    )
     {
         lock (sendStateSync)
         {
             sendTask = activeSendTask!;
+            rateLimitedUntil = null;
             if (disposed || activeSendTask is not null)
             {
                 return sendTask is not null;
@@ -676,6 +698,11 @@ public sealed class InaraPublisher : IInaraPublisher
                 if (nextSendAt is null || allowedAt < nextSendAt.Value)
                 {
                     nextSendAt = allowedAt;
+                }
+
+                if (force)
+                {
+                    rateLimitedUntil = allowedAt;
                 }
 
                 return false;
