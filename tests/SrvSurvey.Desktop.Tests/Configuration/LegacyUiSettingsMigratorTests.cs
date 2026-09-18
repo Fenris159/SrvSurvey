@@ -302,7 +302,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.True(colonization.LoadShipCargoPublishingEnabled());
         Assert.True(colonization.LoadFleetCarrierCargoSyncEnabled());
         Assert.Equal(
-            new ColonizationOverlayPreferences(false, false, false, true, true, false, true),
+            new ColonizationOverlayPreferences(false, false, false, true, true, false, true, false),
             colonization.LoadOverlayPreferences()
         );
 

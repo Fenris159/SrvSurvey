@@ -683,7 +683,9 @@ public static class GuideCatalog
                         [],
                         [
                             "Review the system, body, construction market, build type, layout, architect, and notes before confirming publication.",
+                            "Helpers can only link a visible planned Raven site; only the system architect can start a build project without a plan.",
                             "Depot contribution, completion, docking, beacon architect, and market events update the matching project only when the identity is unambiguous.",
+                            "Docking an untracked Raven construction site auto-links the commander only when the active commander name matches the project's architect; otherwise the site loads as untracked for shopping.",
                             "Stale docking, SRV, bootstrap, malformed delta, or missing API-key context cannot publish project mutations.",
                         ]
                     ),
@@ -715,6 +717,7 @@ public static class GuideCatalog
                         [
                             "Acquire the required Raven system-update permission and API key.",
                             "Confirm any body import, review inferred sites and manually edit details as needed.",
+                            "Load system only succeeds when the architect is unassigned or matches the active commander. Anyone else is refused with a not-the-architect warning.",
                             "Refresh to perform a three-way reconciliation. Concurrent edits to the same field become blocking conflicts; unrelated remote fields are preserved.",
                             "Resolve conflicts, review the final patch, then confirm publication separately.",
                         ],
@@ -1079,9 +1082,9 @@ public static class GuideCatalog
                         "Carrier and distance workspaces",
                         "Shared tools are available outside Mining.",
                         [
-                            "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+                            "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
                             "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
-                            "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+                            "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
                             "Travel → Distance follows FC Routes. Calculate distances and save a home system there.",
                         ],
                         []

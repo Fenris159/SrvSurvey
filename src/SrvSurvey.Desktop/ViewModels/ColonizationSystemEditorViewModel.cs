@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -23,10 +24,13 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     private readonly AsyncCommand reviewCommand;
     private readonly AsyncCommand confirmPublishCommand;
     private readonly DelegateCommand cancelPublishCommand;
+    private readonly ColonizationBuildCatalog buildCatalog;
+    private readonly IReadOnlyList<ColonizationSiteBuildTypeChoice> catalogBuildTypes;
     private readonly Queue<JournalEventEnvelope> bufferedJournalEvents = [];
     private ColonizationSystemEditorContext context = ColonizationSystemEditorContext.Unavailable;
     private ColonizationSystemRecord? system;
     private List<ColonizationSystemSite> baseline = [];
+    private List<ColonizationSystemSite> withheldSites = [];
     private ColonizationSystemSiteJournalTracker? journalTracker;
     private EliteStatus? latestStatus;
     private ColonizationSystemSiteReconciliationPlan? pendingPlan;
@@ -46,13 +50,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     public ColonizationSystemEditorViewModel(IRavenColonialClient client, ColonizationBuildCatalog buildCatalog)
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
-        ArgumentNullException.ThrowIfNull(buildCatalog);
-        BuildTypes = buildCatalog
-            .Builds.SelectMany(build => build.Layouts)
-            .Concat(["installation?", "outpost?", "no_truss?", "orbis?", "dodec?", "settlement?", "aphrodite?"])
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        this.buildCatalog = buildCatalog ?? throw new ArgumentNullException(nameof(buildCatalog));
+        catalogBuildTypes = ColonizationSiteBuildTypeChoice.FromCatalog(this.buildCatalog);
         loadCommand = new AsyncCommand(LoadAsync, () => CanLoad);
         requestBodyImportCommand = new DelegateCommand(
             RequestBodyImport,
@@ -106,8 +105,6 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     public ICommand CancelPublishCommand { get; }
 
     public ObservableCollection<ColonizationSystemSiteRowViewModel> Sites { get; } = [];
-
-    public IReadOnlyList<string> BuildTypes { get; }
 
     public IReadOnlyList<ColonizationSystemSiteStatus> SiteStatuses { get; } =
         Enum.GetValues<ColonizationSystemSiteStatus>();
@@ -330,12 +327,12 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        List<ColonizationSystemSite> sites = SnapshotSites();
+        List<ColonizationSystemSite> sites = SnapshotVisibleSites();
         int changed = journalTracker.ApplyJournalEvents(sites, journalEvents);
         RaiseScanProperties();
         if (changed > 0)
         {
-            ReplaceRows(sites);
+            ReplaceVisibleSites(sites);
             MarkLocalChange(
                 $"Journal data enriched {changed:N0} Raven site entr{(changed == 1 ? "y" : "ies")} locally."
             );
@@ -350,10 +347,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        List<ColonizationSystemSite> sites = SnapshotSites();
+        List<ColonizationSystemSite> sites = SnapshotVisibleSites();
         if (journalTracker.ApplyStatusDestination(sites, status, CaptureUnknownSurfaceSites))
         {
-            ReplaceRows(sites);
+            ReplaceVisibleSites(sites);
             MarkLocalChange("The selected Elite destination updated a Raven site locally.");
         }
     }
@@ -372,14 +369,18 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         try
         {
             ColonizationSystemRecord loaded = await client.GetSystemAsync(GetSystemIdentifier());
+            if (!ColonizationSiteVisibility.CanLoadSystem(loaded.Architect, context.CommanderName))
+            {
+                ResetLoadedSystem();
+                StatusMessage =
+                    $"You are not the architect of this system ({loaded.Architect!.Trim()}). The system was not loaded.";
+                return;
+            }
+
             ApplyLoadedSystem(loaded);
-            StatusMessage = CanEdit
-                ? (NeedsBodyImport) switch
-                {
-                    true => "Sites loaded read-only from Raven. Confirm a body import before using body-aware editing.",
-                    false => $"Loaded {Sites.Count:N0} sites. Changes remain local until reviewed and confirmed.",
-                }
-                : "This secured system can only be edited by its architect.";
+            StatusMessage = NeedsBodyImport
+                ? "Sites loaded read-only from Raven. Confirm a body import before using body-aware editing."
+                : $"Loaded {Sites.Count:N0} sites. Changes remain local until reviewed and confirmed.";
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
@@ -461,7 +462,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
                 Name = name,
                 BodyNumber = -1,
                 Status = ColonizationSystemSiteStatus.Plan,
-            }
+            },
+            catalogBuildTypes
         );
         Subscribe(row);
         Sites.Insert(0, row);
@@ -616,8 +618,8 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             journalTracker.ApplyStatusDestination(editableSites, latestStatus, CaptureUnknownSurfaceSites);
         }
 
-        ReplaceRows(editableSites);
-        HasLocalChanges = !SiteListsEqual(baseline, editableSites);
+        SplitSitesForViewer(loaded.Sites, editableSites);
+        HasLocalChanges = !SiteListsEqual(baseline, SnapshotSites());
         IsBodyImportConfirmationPending = false;
         ClearReview();
         OnPropertyChanged(nameof(IsLoaded));
@@ -635,6 +637,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         system = null;
         bodies = [];
         baseline = [];
+        withheldSites = [];
         journalTracker = null;
         CanEdit = false;
         HasLocalChanges = false;
@@ -662,7 +665,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         Sites.Clear();
         foreach (ColonizationSystemSite site in sites)
         {
-            var row = new ColonizationSystemSiteRowViewModel(site);
+            var row = new ColonizationSystemSiteRowViewModel(site, catalogBuildTypes);
             Subscribe(row);
             Sites.Add(row);
         }
@@ -670,9 +673,51 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         SelectedSite = null;
     }
 
-    private List<ColonizationSystemSite> SnapshotSites()
+    private List<ColonizationSystemSite> SnapshotVisibleSites()
     {
         return Sites.Select(row => row.ToSite()).ToList();
+    }
+
+    private List<ColonizationSystemSite> SnapshotSites()
+    {
+        List<ColonizationSystemSite> sites = SnapshotVisibleSites();
+        sites.AddRange(withheldSites.Select(CloneSite));
+        return sites;
+    }
+
+    private void SplitSitesForViewer(
+        IReadOnlyList<ColonizationSystemSite> loadedSites,
+        List<ColonizationSystemSite> editableSites
+    )
+    {
+        bool canManageAllSites = ColonizationSiteVisibility.CanLoadSystem(system?.Architect, context.CommanderName);
+        if (canManageAllSites)
+        {
+            withheldSites = [];
+            ReplaceRows(editableSites);
+            return;
+        }
+
+        withheldSites = loadedSites
+            .Where(site => !ColonizationSiteVisibility.CanViewerSeeSite(site, false, buildCatalog))
+            .Select(CloneSite)
+            .ToList();
+        var withheldIds = withheldSites.Select(site => site.Id).ToHashSet(StringComparer.Ordinal);
+        editableSites.RemoveAll(site =>
+            withheldIds.Contains(site.Id) || !ColonizationSiteVisibility.CanViewerSeeSite(site, false, buildCatalog)
+        );
+        ReplaceRows(editableSites);
+    }
+
+    private void ReplaceVisibleSites(List<ColonizationSystemSite> sites)
+    {
+        bool canManageAllSites = ColonizationSiteVisibility.CanLoadSystem(system?.Architect, context.CommanderName);
+        if (!canManageAllSites)
+        {
+            sites.RemoveAll(site => !ColonizationSiteVisibility.CanViewerSeeSite(site, false, buildCatalog));
+        }
+
+        ReplaceRows(sites);
     }
 
     private bool TryValidateSites(out List<ColonizationSystemSite> sites, out string message)
@@ -723,6 +768,17 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     private void SitePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
+        if (
+            eventArgs.PropertyName
+            is nameof(ColonizationSystemSiteRowViewModel.MarketIdText)
+                or nameof(ColonizationSystemSiteRowViewModel.MarketIdWarning)
+                or nameof(ColonizationSystemSiteRowViewModel.HasMarketIdWarning)
+                or nameof(ColonizationSystemSiteRowViewModel.SelectedBuildType)
+        )
+        {
+            return;
+        }
+
         if (sender is ColonizationSystemSiteRowViewModel row)
         {
             MarkLocalChange($"Edited '{row.Name}' locally.");
@@ -832,9 +888,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 
     private static bool CanCommanderEdit(ColonizationSystemRecord record, string? commanderName)
     {
-        return string.IsNullOrWhiteSpace(record.Architect)
-            || record.IsOpen
-            || string.Equals(record.Architect, commanderName, StringComparison.OrdinalIgnoreCase);
+        return ColonizationSiteVisibility.CanLoadSystem(record.Architect, commanderName);
     }
 
     private static void ValidateLoadedSystem(ColonizationSystemRecord loaded)
@@ -1025,9 +1079,14 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
     private string? buildType;
     private string? buildId;
     private long? marketId;
+    private string marketIdText;
+    private string marketIdWarning = string.Empty;
     private ColonizationSystemSiteStatus status;
 
-    public ColonizationSystemSiteRowViewModel(ColonizationSystemSite site)
+    public ColonizationSystemSiteRowViewModel(
+        ColonizationSystemSite site,
+        IReadOnlyList<ColonizationSiteBuildTypeChoice>? catalogBuildTypes = null
+    )
     {
         ArgumentNullException.ThrowIfNull(site);
         id = site.Id;
@@ -1036,18 +1095,22 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
         buildType = site.BuildType;
         buildId = site.BuildId;
         marketId = site.MarketId;
+        marketIdText = FormatMarketId(site.MarketId);
         status = site.Status;
         extensionData = site.ExtensionData.ToDictionary(
             pair => pair.Key,
             pair => pair.Value.Clone(),
             StringComparer.Ordinal
         );
+        AllowedBuildTypes = CreateAllowedBuildTypes(site.BuildType, catalogBuildTypes ?? []);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public IReadOnlyList<ColonizationSystemSiteStatus> AllowedStatuses { get; } =
         Enum.GetValues<ColonizationSystemSiteStatus>();
+
+    public IReadOnlyList<ColonizationSiteBuildTypeChoice> AllowedBuildTypes { get; }
 
     public string Id
     {
@@ -1070,7 +1133,33 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
     public string? BuildType
     {
         get => buildType;
-        set => SetField(ref buildType, value);
+        set
+        {
+            if (string.Equals(buildType, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            SetField(ref buildType, value);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedBuildType)));
+        }
+    }
+
+    public ColonizationSiteBuildTypeChoice? SelectedBuildType
+    {
+        get =>
+            AllowedBuildTypes.FirstOrDefault(choice =>
+                choice.IsSelectable && string.Equals(choice.Value, buildType, StringComparison.OrdinalIgnoreCase)
+            );
+        set
+        {
+            if (value is not { IsSelectable: true, Value: not null })
+            {
+                return;
+            }
+
+            BuildType = value.Value;
+        }
     }
 
     public string? BuildId
@@ -1082,8 +1171,34 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
     public long? MarketId
     {
         get => marketId;
-        set => SetField(ref marketId, value);
+        set
+        {
+            if (marketId == value)
+            {
+                return;
+            }
+
+            SetField(ref marketId, value);
+            string formatted = FormatMarketId(value);
+            if (!string.Equals(marketIdText, formatted, StringComparison.Ordinal))
+            {
+                marketIdText = formatted;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MarketIdText)));
+            }
+
+            ClearMarketIdWarning();
+        }
     }
+
+    public string MarketIdText
+    {
+        get => marketIdText;
+        set => SetMarketIdText(value);
+    }
+
+    public string MarketIdWarning => marketIdWarning;
+
+    public bool HasMarketIdWarning => marketIdWarning.Length > 0;
 
     public ColonizationSystemSiteStatus Status
     {
@@ -1110,6 +1225,101 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
         };
     }
 
+    private void SetMarketIdText(string? value)
+    {
+        string incoming = value ?? string.Empty;
+        bool hadInvalidCharacters = incoming.Any(character => !char.IsAsciiDigit(character));
+        string digits = new string(incoming.Where(char.IsAsciiDigit).ToArray());
+
+        if (hadInvalidCharacters)
+        {
+            Trace.TraceWarning(
+                $"InvalidCastException => Could not convert '{incoming}' (System.String) to System.Nullable`1[System.Int64]. System editor Market ID rejected non-numeric input."
+            );
+        }
+
+        if (digits.Length == 0)
+        {
+            marketIdText = string.Empty;
+            SetField(ref marketId, null, nameof(MarketId));
+            ClearMarketIdWarning();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MarketIdText)));
+            return;
+        }
+
+        if (!long.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out long parsed) || parsed < 0)
+        {
+            Trace.TraceWarning(
+                $"InvalidCastException => Could not convert '{digits}' (System.String) to System.Nullable`1[System.Int64]. System editor Market ID is outside the Int64 range."
+            );
+            SetMarketIdWarning("That Market ID is too large.");
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MarketIdText)));
+            return;
+        }
+
+        marketIdText = parsed.ToString(CultureInfo.InvariantCulture);
+        SetField(ref marketId, parsed, nameof(MarketId));
+        if (hadInvalidCharacters)
+        {
+            SetMarketIdWarning("Market ID accepts numbers only. Extra characters were removed.");
+        }
+        else
+        {
+            ClearMarketIdWarning();
+        }
+
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MarketIdText)));
+    }
+
+    private void SetMarketIdWarning(string message)
+    {
+        if (string.Equals(marketIdWarning, message, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        marketIdWarning = message;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MarketIdWarning)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasMarketIdWarning)));
+    }
+
+    private void ClearMarketIdWarning()
+    {
+        SetMarketIdWarning(string.Empty);
+    }
+
+    private static string FormatMarketId(long? value)
+    {
+        return value is null ? string.Empty : value.Value.ToString(CultureInfo.InvariantCulture);
+    }
+
+    internal static IReadOnlyList<ColonizationSiteBuildTypeChoice> CreateAllowedBuildTypes(
+        string? original,
+        IReadOnlyList<ColonizationSiteBuildTypeChoice> catalogBuildTypes
+    )
+    {
+        ArgumentNullException.ThrowIfNull(catalogBuildTypes);
+        var options = catalogBuildTypes.ToList();
+        string? loaded = string.IsNullOrWhiteSpace(original) ? null : original.Trim();
+        if (loaded is null)
+        {
+            return options;
+        }
+
+        if (
+            options.Any(choice =>
+                choice.IsSelectable && string.Equals(choice.Value, loaded, StringComparison.OrdinalIgnoreCase)
+            )
+        )
+        {
+            return options;
+        }
+
+        options.Insert(0, ColonizationSiteBuildTypeChoice.Option(loaded, "Original"));
+        options.Insert(0, ColonizationSiteBuildTypeChoice.Category("Original"));
+        return options;
+    }
+
     private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
@@ -1119,6 +1329,85 @@ public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
 
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public sealed record ColonizationSiteBuildTypeChoice(
+    string DisplayName,
+    string SelectionLabel,
+    string? Value,
+    bool IsCategory
+)
+{
+    public bool IsSelectable => !IsCategory && !string.IsNullOrWhiteSpace(Value);
+
+    public bool IsOption => !IsCategory;
+
+    public static ColonizationSiteBuildTypeChoice Category(string displayName)
+    {
+        return new ColonizationSiteBuildTypeChoice(displayName, displayName, null, true);
+    }
+
+    public static ColonizationSiteBuildTypeChoice Option(string value, string? buildDisplayName)
+    {
+        string trimmed = value.Trim();
+        string selection =
+            string.IsNullOrWhiteSpace(buildDisplayName)
+            || string.Equals(trimmed, buildDisplayName, StringComparison.OrdinalIgnoreCase)
+                ? trimmed
+                : trimmed + " — " + buildDisplayName;
+        return new ColonizationSiteBuildTypeChoice(trimmed, selection, trimmed, false);
+    }
+
+    public static IReadOnlyList<ColonizationSiteBuildTypeChoice> FromCatalog(ColonizationBuildCatalog catalog)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        var choices = new List<ColonizationSiteBuildTypeChoice>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (
+            ColonizationBuildLocation location in new[]
+            {
+                ColonizationBuildLocation.Orbital,
+                ColonizationBuildLocation.Surface,
+            }
+        )
+        {
+            foreach (ColonizationBuildCost build in catalog.ForLocation(location))
+            {
+                List<string> layouts =
+                [
+                    .. build
+                        .Layouts.Select(layout => layout.Trim())
+                        .Where(layout => layout.Length > 0)
+                        .Distinct(StringComparer.OrdinalIgnoreCase),
+                ];
+                string buildType = build.BuildType.Trim();
+                if (
+                    buildType.Length > 0
+                    && layouts.TrueForAll(layout =>
+                        !string.Equals(layout, buildType, StringComparison.OrdinalIgnoreCase)
+                    )
+                )
+                {
+                    layouts.Insert(0, buildType);
+                }
+
+                var unused = layouts.Where(seen.Add).ToList();
+                if (unused.Count == 0)
+                {
+                    continue;
+                }
+
+                choices.Add(Category($"{location} · Tier {build.Tier}: {build.DisplayName}"));
+                foreach (string layout in unused)
+                {
+                    choices.Add(Option(layout, build.DisplayName));
+                }
+            }
+        }
+
+        return choices;
     }
 }
 

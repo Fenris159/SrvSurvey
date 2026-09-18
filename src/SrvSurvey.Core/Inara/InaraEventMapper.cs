@@ -59,6 +59,7 @@ internal sealed class InaraEventMapper
     private const string LocationKey = "location";
     private const string SetCommanderShipEvent = "setCommanderShip";
     private const string SetCommanderRankPowerEvent = "setCommanderRankPower";
+    private const string MiningRefinedEvent = "MiningRefined";
     private static readonly string[] materialCategories = ["Raw", "Manufactured", "Encoded"];
     private readonly Dictionary<string, int> cargo = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> materials = new(StringComparer.OrdinalIgnoreCase);
@@ -120,25 +121,47 @@ internal sealed class InaraEventMapper
         var events = new List<InaraEvent>();
         bool sessionStarting =
             !sessionStarted || !string.Equals(sessionCommander, context.Commander, StringComparison.OrdinalIgnoreCase);
+        bool publishInventory = name is not MiningRefinedEvent;
 
         if (sessionStarting)
         {
-            sessionStarted = true;
-            sessionCommander = context.Commander;
-            events.Add(new("getCommanderProfile", timestamp, new JObject(), "profile"));
-
-            JObject? ship = currentShip(context);
-            if (ship != null)
-            {
-                events.Add(new(SetCommanderShipEvent, timestamp, ship, $"ship:{context.ShipId}"));
-            }
-
-            addInventorySnapshots(events, timestamp, true, true);
+            addSessionStartEvents(events, timestamp, context, publishInventory);
         }
 
         mapEvent(name, timestamp, entry, context, events);
-        addInventorySnapshots(events, timestamp, inventoryChanged.cargo, inventoryChanged.materials);
+        addInventorySnapshots(
+            events,
+            timestamp,
+            inventoryChanged.cargo && publishInventory,
+            inventoryChanged.materials && publishInventory
+        );
+        addCreditReport(events, timestamp, name, sessionStarting);
 
+        return events;
+    }
+
+    private void addSessionStartEvents(
+        List<InaraEvent> events,
+        string timestamp,
+        InaraContext context,
+        bool publishInventory
+    )
+    {
+        sessionStarted = true;
+        sessionCommander = context.Commander;
+        events.Add(new("getCommanderProfile", timestamp, new JObject(), "profile"));
+
+        JObject? ship = currentShip(context);
+        if (ship != null)
+        {
+            events.Add(new(SetCommanderShipEvent, timestamp, ship, $"ship:{context.ShipId}"));
+        }
+
+        addInventorySnapshots(events, timestamp, publishInventory, publishInventory);
+    }
+
+    private void addCreditReport(List<InaraEvent> events, string timestamp, string name, bool sessionStarting)
+    {
         // The common Statistics event supplies the authoritative assets value.
         // Otherwise, coalesce transaction deltas to Inara's recommended hourly
         // cadence and flush any remaining change at session shutdown.
@@ -151,8 +174,6 @@ internal sealed class InaraEventMapper
         {
             events.Add(creditReport);
         }
-
-        return events;
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(

@@ -1601,6 +1601,14 @@
       "translation": "alle"
     },
     {
+      "source": "All Fleet Carrier data points ({0})",
+      "translation": "Alle Flottenbetreiber-Datenpunkte ({0})"
+    },
+    {
+      "source": "All Squadron Carrier data points ({0})",
+      "translation": "Alle Geschwaderträger-Datenpunkte ({0})"
+    },
+    {
       "source": "All dates and times use UTC.",
       "translation": "Alle Daten und Uhrzeiten verwenden UTC."
     },
@@ -4517,6 +4525,10 @@
       "translation": "Wählen Sie ein lokales Hintergrundbild aus und passen Sie dessen X-, Y- und Skalierungswerte an, während Sie die Vorschau auf derselben Karte überprüfen."
     },
     {
+      "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
+      "translation": "Wählen Sie eine geplante Raven-Site zum Verlinken aus. Nur der Systemarchitekt kann einen Build ohne Plan starten."
+    },
+    {
       "source": "Choose a preferred Commander when more than one profile appears in the same journal folder.",
       "translation": "Wählen Sie einen bevorzugten Kommandanten, wenn mehr als ein Profil im selben Journalordner erscheint."
     },
@@ -5827,6 +5839,10 @@
     {
       "source": "Construction site",
       "translation": "Baustelle"
+    },
+    {
+      "source": "Consumer items",
+      "translation": "Konsumgüter"
     },
     {
       "source": "Contain",
@@ -7337,6 +7353,10 @@
       "translation": "Docking-Zugang"
     },
     {
+      "source": "Docking an untracked Raven construction site auto-links the commander only when the active commander name matches the project's architect; otherwise the site loads as untracked for shopping.",
+      "translation": "Durch das Andocken einer nicht verfolgten Raven-Baustelle wird der Kommandant nur dann automatisch verknüpft, wenn der Name des aktiven Kommandanten mit dem Architekten des Projekts übereinstimmt. andernfalls wird die Website als nicht verfolgt zum Einkaufen geladen."
+    },
+    {
       "source": "Docking denied",
       "translation": "Andocken verweigert"
     },
@@ -8215,6 +8235,10 @@
     {
       "source": "Estimated",
       "translation": "Geschätzte"
+    },
+    {
+      "source": "Evacuation shelter",
+      "translation": "Evakuierungsunterkunft"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -9225,6 +9249,10 @@
       "translation": "Die Fracht des Flottentransportunternehmens wird mit passenden Market.json-Updates synchronisiert."
     },
     {
+      "source": "Fleet Carrier dock baseline was not loaded: {0}",
+      "translation": "Die Dock-Basislinie des Flottenträgers wurde nicht geladen: {0}"
+    },
+    {
       "source": "Fleet Carrier loading",
       "translation": "Verladung des Flottenträgers"
     },
@@ -9233,8 +9261,8 @@
       "translation": "Fleet Carrier verwendet das vorhandene Profil Frontier wieder. Distance unterstützt zwei Systeme: aktuelle Position, Heimat und das System Ihres Mobilfunkanbieters."
     },
     {
-      "source": "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
-      "translation": "Der Flottenbetreiber befindet sich direkt unter der Übersicht und behält das vollständige Trägerprofil bei. Verknüpfte Frontier Daten werden automatisch geladen, wenn das Commander-Journal erkannt wird, mit dem vorhandenen Cache und der Aktualisierungsabklingzeit."
+      "source": "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+      "translation": "Der Flottenträger befindet sich direkt unter der Übersicht mit Registerkarten für den persönlichen Flottenträger, den Geschwaderträger von Frontier /squadron und die mit RavenColonial verbundenen Träger. Verknüpfte Frontier Daten werden automatisch geladen, wenn das Commander-Journal erkannt wird, mit dem vorhandenen Cache und der Aktualisierungsabklingzeit."
     },
     {
       "source": "Fleet Carrier update warning",
@@ -9453,6 +9481,10 @@
       "translation": "Senden Sie von der wahren Mitte aus .mining center here, um die gespeicherte Mitte- und Ringausrichtung zu korrigieren, ohne Einzahlungsmarkierungen zu verschieben."
     },
     {
+      "source": "Frontier CAPI cargo seed was not applied: {0}",
+      "translation": "Frontier CAPI-Cargo-Seed wurde nicht angewendet: {0}"
+    },
+    {
       "source": "Frontier Developments",
       "translation": "Frontier Entwicklungen"
     },
@@ -9571,6 +9603,10 @@
     {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier Werftdaten konnten nicht gelesen werden: {0}"
+    },
+    {
+      "source": "Frontier squadron data could not be read: {0}",
+      "translation": "Frontier Staffeldaten konnten nicht gelesen werden: {0}"
     },
     {
       "source": "Frontier token request failed ({0}): {1}",
@@ -10603,6 +10639,10 @@
     {
       "source": "Help documentation and overlay icon glossary",
       "translation": "Hilfedokumentation und Overlay-Icon-Glossar"
+    },
+    {
+      "source": "Helpers can only link a visible planned Raven site; only the system architect can start a build project without a plan.",
+      "translation": "Helfer können nur eine sichtbare geplante Raven-Site verlinken; Nur der Systemarchitekt kann ein Build-Projekt ohne Plan starten."
     },
     {
       "source": "Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active",
@@ -12409,6 +12449,10 @@
       "translation": "Kalk"
     },
     {
+      "source": "Linked",
+      "translation": "Verlinkt"
+    },
+    {
       "source": "Linked Raven project {0} into the active list for this construction site.",
       "translation": "Verlinktes Raven-Projekt {0} in die aktive Liste für diese Baustelle aufgenommen."
     },
@@ -12419,6 +12463,10 @@
     {
       "source": "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
       "translation": "Verknüpfte Fracht nutzt das vorhandene RavenColonial-Inventar und folgt seiner Frachtsynchronisierungspräferenz. Frontier bleibt die Quelle für Kapazität, Finanzen und Dienstleistungen."
+    },
+    {
+      "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
+      "translation": "Verbundene Staffelladung von RavenColonial. Kapazität und Finanzen stammen aus der letzten Aktualisierung Frontier."
     },
     {
       "source": "Listening for community observations…",
@@ -12553,6 +12601,10 @@
       "translation": "System laden"
     },
     {
+      "source": "Load system only succeeds when the architect is unassigned or matches the active commander. Anyone else is refused with a not-the-architect warning.",
+      "translation": "Das Laden des Systems ist nur dann erfolgreich, wenn der Architekt nicht zugewiesen ist oder mit dem aktiven Kommandanten übereinstimmt. Alle anderen werden mit einer Nicht-der-Architekt-Warnung abgewiesen."
+    },
+    {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Laden Sie den aktiven Commander, bevor Sie einen Raven-API-Schlüssel validieren."
     },
@@ -12565,8 +12617,12 @@
       "translation": "1 aktives Raven Colonial-Projekt geladen."
     },
     {
-      "source": "Loaded and selected the one planned Raven site.",
-      "translation": "Die geplante Raven-Site geladen und ausgewählt."
+      "source": "Loaded Raven Colonial cargo baseline for {0}.",
+      "translation": "Geladene Raven Colonial Frachtbasislinie für {0}."
+    },
+    {
+      "source": "Loaded and selected the one {0} Raven site.",
+      "translation": "Die eine {0} Raven-Site geladen und ausgewählt."
     },
     {
       "source": "Loaded commander Guardian data with {0} file error(s): {1}",
@@ -12649,12 +12705,16 @@
       "translation": "{0} von {1} Einträgen für {2} geladen."
     },
     {
+      "source": "Loaded {0} orbital planned sites. Choose one to link.",
+      "translation": "Geladene geplante Orbitalstandorte {0}. Wählen Sie eines zum Verlinken aus."
+    },
+    {
       "source": "Loaded {0} personal and {1} Raven system nickname(s).",
       "translation": "{0} persönliche und {1} Raven-System-Spitznamen wurden geladen."
     },
     {
       "source": "Loaded {0} planned sites. Choose one or configure the build manually.",
-      "translation": "{0} geplante Standorte geladen. Wählen Sie einen aus oder konfigurieren Sie den Build manuell."
+      "translation": "Geplante Standorte {0} geladen. Wählen Sie einen aus oder konfigurieren Sie den Build manuell."
     },
     {
       "source": "Loaded {0} route systems from {1}.",
@@ -13239,6 +13299,10 @@
     {
       "source": "Market",
       "translation": "Markt"
+    },
+    {
+      "source": "Market ID accepts numbers only. Extra characters were removed.",
+      "translation": "Market ID akzeptiert nur Nummern. Zusätzliche Zeichen wurden entfernt."
     },
     {
       "source": "Market cargo",
@@ -14481,6 +14545,14 @@
       "translation": "Es ist kein SDL-Gamepad-Eingabestapel aktiv."
     },
     {
+      "source": "No Squadron Carrier",
+      "translation": "Kein Geschwaderträger"
+    },
+    {
+      "source": "No Squadron Carrier is associated with this account.",
+      "translation": "Mit diesem Konto ist kein Geschwaderträger verknüpft."
+    },
+    {
       "source": "No absolute overlay placement conversion was required.",
       "translation": "Es war keine absolute Konvertierung der Overlay-Platzierung erforderlich."
     },
@@ -14831,6 +14903,10 @@
     {
       "source": "No notes",
       "translation": "Keine Notizen"
+    },
+    {
+      "source": "No orbital planned Raven sites are available to link. Only the system architect can start a build without a plan.",
+      "translation": "Es sind keine orbital geplanten Raven-Standorte zum Verknüpfen verfügbar. Nur der Systemarchitekt kann einen Build ohne Plan starten."
     },
     {
       "source": "No organism available",
@@ -15421,6 +15497,10 @@
       "translation": "Es werden nur die überprüften Updates und stabilen Löschungen gesendet. Gleichzeitige und Nur-Remote-Daten bleiben erhalten."
     },
     {
+      "source": "Only the system architect can start a build project without a planned Raven site.",
+      "translation": "Nur der Systemarchitekt kann ein Build-Projekt ohne geplante Raven-Site starten."
+    },
+    {
       "source": "Only this system (rings / markets)",
       "translation": "Nur dieses System (Ringe/Märkte)"
     },
@@ -15891,6 +15971,10 @@
     {
       "source": "Origin coordinates unavailable.",
       "translation": "Ursprungskoordinaten nicht verfügbar."
+    },
+    {
+      "source": "Original",
+      "translation": "Original"
     },
     {
       "source": "Original backup",
@@ -17529,6 +17613,10 @@
       "translation": "In der Warteschlange befindliche(s) Journalereignis(s) {0} EDSM; {1} wartet auf den nächsten Stapel."
     },
     {
+      "source": "Queued {0} Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "In der Warteschlange befindliche(s) {0} Fleet Carrier-Frachtaktualisierung(en) bis zum Abschluss der Dock-Basislinie."
+    },
+    {
       "source": "Queued {0} Inara event(s); {1} waiting for the next batch.",
       "translation": "{0} Inara Ereignis(e) in der Warteschlange; {1} wartet auf den nächsten Stapel."
     },
@@ -17547,6 +17635,10 @@
     {
       "source": "Queued {0} journal events for EDDN.",
       "translation": "In der Warteschlange befindliche {0}-Journalereignisse für EDDN."
+    },
+    {
+      "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "In der Warteschlange stehende(s) {0}-Staffel-Frachtaktualisierung(en) für Flottenträger, bis die Basislinie des Docks abgeschlossen ist."
     },
     {
       "source": "Quick statistics",
@@ -17599,6 +17691,10 @@
     {
       "source": "RB",
       "translation": "RB"
+    },
+    {
+      "source": "RC Linked Carriers",
+      "translation": "RC-verbundene Träger"
     },
     {
       "source": "READ",
@@ -18663,6 +18759,10 @@
     {
       "source": "Refresh image",
       "translation": "Bild aktualisieren"
+    },
+    {
+      "source": "Refresh linked RavenColonial carriers",
+      "translation": "Aktualisieren Sie die verknüpften RavenColonial-Anbieter"
     },
     {
       "source": "Refresh preview",
@@ -19949,6 +20049,10 @@
       "translation": "SPHÄRISCHE GRENZE"
     },
     {
+      "source": "SQUADRON CARRIER",
+      "translation": "Geschwaderträger"
+    },
+    {
       "source": "SRV",
       "translation": "SRV"
     },
@@ -20839,6 +20943,10 @@
     {
       "source": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
       "translation": "Sehen Sie sich Ihren Pfad vom Suchstamm aus an, wechseln Sie zwischen Boxel auf derselben Ebene oder öffnen Sie ein kleineres untergeordnetes Boxel. Dies verschiebt sich nicht zwischen den Systemen in der Tabelle."
+    },
+    {
+      "source": "Seeded linked carrier {0} cargo from Frontier CAPI ({1}).",
+      "translation": "Gesäte verknüpfte Fracht des Frachtführers {0} von Frontier CAPI ({1})."
     },
     {
       "source": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -22225,12 +22333,12 @@
       "translation": "Spoiler"
     },
     {
-      "source": "Squadron Logo",
-      "translation": "Geschwader-Logo"
+      "source": "Squadron Carrier",
+      "translation": "Geschwaderträger"
     },
     {
-      "source": "Squadron carrier",
-      "translation": "Geschwaderträger"
+      "source": "Squadron Logo",
+      "translation": "Geschwader-Logo"
     },
     {
       "source": "SquadronLogo",
@@ -22963,6 +23071,10 @@
     {
       "source": "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.",
       "translation": "Speichern Sie Mineralien, Bewertungen, Hotspot-Namen, durchschnittliche Erträge, letzte Abbaudaten, Überlappungs-/RES-Notizen und Screenshots. Klicken Sie mit der rechten Maustaste, um zu kopieren oder zu löschen. Mit „Rückgängig“ wird der letzte Löschvorgang während dieses Laufs wiederhergestellt."
+    },
+    {
+      "source": "Stored cargo from Frontier squadron data.",
+      "translation": "Gespeicherte Fracht aus Staffeldaten Frontier."
     },
     {
       "source": "Stored cargo from Frontier.",
@@ -23893,6 +24005,10 @@
       "translation": "Aufzeichnungen über Thargoiden, Bürgerkrieg, Technologie, Sprache und Körperschutz"
     },
     {
+      "source": "That Market ID is too large.",
+      "translation": "Diese Markt-ID ist zu groß."
+    },
+    {
       "source": "That name is already saved for this ship. Select it below to edit, or choose a different name.",
       "translation": "Dieser Name ist für dieses Schiff bereits gespeichert. Wählen Sie es unten aus, um es zu bearbeiten, oder wählen Sie einen anderen Namen."
     },
@@ -24095,6 +24211,10 @@
     {
       "source": "The Journey workspace requires a commander profile.",
       "translation": "Für den Arbeitsbereich „Journey“ ist ein Kommandantenprofil erforderlich."
+    },
+    {
+      "source": "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+      "translation": "Auf der Registerkarte „Verknüpft“ werden mit RavenColonial verknüpfte Anbieter mit einer bedarfsgesteuerten Aktualisierung aufgelistet. Beim Andocken an einen mit einer Geschwaderbank verbundenen Träger wird dieser automatisch identifiziert; Andernfalls wählen Sie Ihren Geschwaderträger aus. RavenColonial stellt seine Kapazitäten nicht zur Verfügung."
     },
     {
       "source": "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
@@ -25037,6 +25157,10 @@
       "translation": "Die optionale Erinnerung „Ladung voll“ wartet, bis die Ladung voll ist und die Sammlung eine Minute lang inaktiv ist."
     },
     {
+      "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
+      "translation": "Der orbital geplante Raven-Standort konnte nicht mit dem lokalen Baukatalog abgeglichen werden. Nur der Systemarchitekt kann einen Build ohne Plan starten."
+    },
+    {
       "source": "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
       "translation": "Der Organismus ist eine erste Entdeckung für den derzeitigen Kommandanten. Die gleiche ausgefüllte Flagge in kompakten FSS-Reihen markiert einen unentdeckten Körper."
     },
@@ -25565,10 +25689,6 @@
       "translation": "Die sphärische Grenze ist ungültig."
     },
     {
-      "source": "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
-      "translation": "Die Staffelsektion verwendet verbundene RavenColonial-Träger. Beim Andocken an einen mit einer Geschwaderbank verbundenen Träger wird dieser automatisch identifiziert. Andernfalls wählen Sie Ihren Geschwaderträger aus. RavenColonial stellt seine Kapazitäten nicht zur Verfügung."
-    },
-    {
       "source": "The staged SrvSurvey update helper did not start.",
       "translation": "Der bereitgestellte Update-Helper SrvSurvey wurde nicht gestartet."
     },
@@ -25939,10 +26059,6 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "Dadurch werden die gespeicherte Konfiguration und ihre Gruppen aus SrvSurvey entfernt. Es ändert nichts an Ihrer Steuerung in Elite."
-    },
-    {
-      "source": "This secured system can only be edited by its architect.",
-      "translation": "Dieses gesicherte System kann nur von seinem Architekten bearbeitet werden."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -26989,6 +27105,10 @@
       "translation": "Verwenden Sie Boost für B → C"
     },
     {
+      "source": "Use compact/scrolling commodities list",
+      "translation": "Verwenden Sie die kompakte/scrollende Warenliste"
+    },
+    {
       "source": "Use current",
       "translation": "Strom verwenden"
     },
@@ -27135,6 +27255,10 @@
     {
       "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
       "translation": "Verwenden Sie die quadratischen Empfehlungen auf dem kompakten Surface Mining-Radar, um jedes Bohrgerät auszurichten und zu platzieren. Das Radar zoomt automatisch, wenn Sie sich der Lagerstätte und den vorgeschlagenen Positionen nähern."
+    },
+    {
+      "source": "UseCompactScrollingCommoditiesList",
+      "translation": "Verwenden Sie CompactScrollingCommoditiesList"
     },
     {
       "source": "UseDevelopmentReleases",
@@ -28077,6 +28201,10 @@
       "translation": "Ja, schließen Sie es und fahren Sie fort"
     },
     {
+      "source": "You are not the architect of this system ({0}). The system was not loaded.",
+      "translation": "Sie sind nicht der Architekt dieses Systems ({0}). Das System wurde nicht geladen."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Ihre Daten bleiben unverändert. Überprüfen Sie die Details und erstellen Sie einen GitHub-Bericht oder teilen Sie sie auf Discord."
     },
@@ -28243,10 +28371,6 @@
     {
       "source": "antimony",
       "translation": "Antimon"
-    },
-    {
-      "source": "aphrodite?",
-      "translation": "Aphrodite?"
     },
     {
       "source": "app",
@@ -28821,10 +28945,6 @@
       "translation": "tun"
     },
     {
-      "source": "dodec?",
-      "translation": "Dodek?"
-    },
-    {
       "source": "dolphin",
       "translation": "Delphin"
     },
@@ -29373,6 +29493,10 @@
       "translation": "in"
     },
     {
+      "source": "inara-accepted.txt",
+      "translation": "inara-accepted.txt"
+    },
+    {
       "source": "inara.contributors",
       "translation": "inara.Mitwirkende"
     },
@@ -29395,10 +29519,6 @@
     {
       "source": "input",
       "translation": "Eingang"
-    },
-    {
-      "source": "installation?",
-      "translation": "Installation?"
     },
     {
       "source": "instances",
@@ -29499,6 +29619,10 @@
     {
       "source": "log folder proton profile data source",
       "translation": "Log-Ordner, Protonenprofil-Datenquelle"
+    },
+    {
+      "source": "logs",
+      "translation": "Protokolle"
     },
     {
       "source": "lookup",
@@ -29781,8 +29905,8 @@
       "translation": "Farben der Orb-Sarg-Tablette-Totem-Urne"
     },
     {
-      "source": "orbis?",
-      "translation": "orbis?"
+      "source": "orbital planned",
+      "translation": "Orbital geplant"
     },
     {
       "source": "orca",
@@ -29795,10 +29919,6 @@
     {
       "source": "os",
       "translation": "os"
-    },
-    {
-      "source": "outpost?",
-      "translation": "Außenposten?"
     },
     {
       "source": "overlay",
@@ -29859,6 +29979,10 @@
     {
       "source": "planetaryapproachsuite",
       "translation": "planetaryapproachsuite"
+    },
+    {
+      "source": "planned",
+      "translation": "geplant"
     },
     {
       "source": "platinum",
@@ -29939,6 +30063,10 @@
     {
       "source": "quests",
       "translation": "Quests"
+    },
+    {
+      "source": "queued dock baseline",
+      "translation": "Dock-Basislinie in der Warteschlange"
     },
     {
       "source": "radar",
@@ -30119,10 +30247,6 @@
     {
       "source": "settings-search-highlight",
       "translation": "Einstellungen-Suche-Highlight"
-    },
-    {
-      "source": "settlement?",
-      "translation": "Siedlung?"
     },
     {
       "source": "share",
@@ -31523,6 +31647,10 @@
     {
       "source": "{0} · ACTIVE OBELISK",
       "translation": "{0} · AKTIVER OBELISK"
+    },
+    {
+      "source": "{0} · Tier {1}: {2}",
+      "translation": "{0} · Stufe {1}: {2}"
     },
     {
       "source": "{0} · active",
@@ -33413,6 +33541,14 @@
     {
       "source": "All",
       "translation": "todo"
+    },
+    {
+      "source": "All Fleet Carrier data points ({0})",
+      "translation": "Todos los puntos de datos de Fleet Carrier ({0})"
+    },
+    {
+      "source": "All Squadron Carrier data points ({0})",
+      "translation": "Todos los puntos de datos del Squadron Carrier ({0})"
     },
     {
       "source": "All dates and times use UTC.",
@@ -36331,6 +36467,10 @@
       "translation": "Elija una imagen de fondo local y ajuste sus valores X, Y y escala mientras revisa la vista previa en el mismo mapa."
     },
     {
+      "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
+      "translation": "Elija un sitio Raven planificado para vincularlo. Sólo el arquitecto del sistema puede iniciar una construcción sin un plan."
+    },
+    {
       "source": "Choose a preferred Commander when more than one profile appears in the same journal folder.",
       "translation": "Elija un comandante preferido cuando aparezca más de un perfil en la misma carpeta de diario."
     },
@@ -37641,6 +37781,10 @@
     {
       "source": "Construction site",
       "translation": "Sitio de construcción"
+    },
+    {
+      "source": "Consumer items",
+      "translation": "Artículos de consumo"
     },
     {
       "source": "Contain",
@@ -39151,6 +39295,10 @@
       "translation": "Acceso al muelle"
     },
     {
+      "source": "Docking an untracked Raven construction site auto-links the commander only when the active commander name matches the project's architect; otherwise the site loads as untracked for shopping.",
+      "translation": "Atracar un sitio de construcción Raven sin seguimiento vincula automáticamente al comandante solo cuando el nombre del comandante activo coincide con el arquitecto del proyecto; de lo contrario, el sitio se carga como sin seguimiento para compras."
+    },
+    {
       "source": "Docking denied",
       "translation": "Atraque denegado"
     },
@@ -40029,6 +40177,10 @@
     {
       "source": "Estimated",
       "translation": "Estimado"
+    },
+    {
+      "source": "Evacuation shelter",
+      "translation": "Refugio de evacuación"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -41039,6 +41191,10 @@
       "translation": "La carga de Fleet Carrier se sincronizará a partir de las actualizaciones Market.json coincidentes."
     },
     {
+      "source": "Fleet Carrier dock baseline was not loaded: {0}",
+      "translation": "La línea base del muelle de Fleet Carrier no se cargó: {0}"
+    },
+    {
       "source": "Fleet Carrier loading",
       "translation": "Carga de flotas"
     },
@@ -41047,8 +41203,8 @@
       "translation": "Fleet Carrier reutiliza el perfil existente Frontier. La distancia admite dos sistemas: la posición actual, el hogar y el sistema de su operador."
     },
     {
-      "source": "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
-      "translation": "Fleet Carrier se encuentra directamente debajo de Overview y conserva el perfil completo del transportista. Los datos vinculados Frontier se cargan automáticamente cuando se detecta el diario del comandante, con el caché existente y el tiempo de reutilización de actualización."
+      "source": "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+      "translation": "Fleet Carrier se encuentra directamente debajo de Descripción general con pestañas para Fleet Carrier personal, Squadron Carrier de Frontier /squadron y RavenColonial Linked Carriers. Los datos vinculados Frontier se cargan automáticamente cuando se detecta el diario del comandante, con el caché existente y el tiempo de reutilización de actualización."
     },
     {
       "source": "Fleet Carrier update warning",
@@ -41267,6 +41423,10 @@
       "translation": "Desde el centro verdadero, envíe .mining center here para corregir el centro guardado y la alineación del anillo sin mover ningún marcador de depósito."
     },
     {
+      "source": "Frontier CAPI cargo seed was not applied: {0}",
+      "translation": "Frontier No se aplicó semilla de carga CAPI: {0}"
+    },
+    {
       "source": "Frontier Developments",
       "translation": "Frontier Novedades"
     },
@@ -41385,6 +41545,10 @@
     {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier no se pudieron leer los datos del astillero: {0}"
+    },
+    {
+      "source": "Frontier squadron data could not be read: {0}",
+      "translation": "Frontier No se pudieron leer los datos del escuadrón: {0}"
     },
     {
       "source": "Frontier token request failed ({0}): {1}",
@@ -42417,6 +42581,10 @@
     {
       "source": "Help documentation and overlay icon glossary",
       "translation": "Documentación de ayuda y glosario de iconos superpuestos"
+    },
+    {
+      "source": "Helpers can only link a visible planned Raven site; only the system architect can start a build project without a plan.",
+      "translation": "Los ayudantes sólo pueden vincular un sitio Raven planificado visible; Sólo el arquitecto del sistema puede iniciar un proyecto de construcción sin un plan."
     },
     {
       "source": "Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active",
@@ -44223,6 +44391,10 @@
       "translation": "Cal"
     },
     {
+      "source": "Linked",
+      "translation": "Vinculado"
+    },
+    {
       "source": "Linked Raven project {0} into the active list for this construction site.",
       "translation": "Vinculé el proyecto Raven {0} a la lista activa para este sitio de construcción."
     },
@@ -44233,6 +44405,10 @@
     {
       "source": "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
       "translation": "La carga vinculada utiliza el inventario RavenColonial existente y sigue su preferencia de sincronización de carga. Frontier sigue siendo la fuente de capacidad, finanzas y servicios."
+    },
+    {
+      "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
+      "translation": "Carga del escuadrón vinculado de RavenColonial. La capacidad y las finanzas provienen de la última actualización Frontier."
     },
     {
       "source": "Listening for community observations…",
@@ -44367,6 +44543,10 @@
       "translation": "Sistema de carga"
     },
     {
+      "source": "Load system only succeeds when the architect is unassigned or matches the active commander. Anyone else is refused with a not-the-architect warning.",
+      "translation": "El sistema de carga solo tiene éxito cuando el arquitecto no está asignado o coincide con el comandante activo. Cualquier otra persona es rechazada con una advertencia que no es del arquitecto."
+    },
+    {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Cargue el comandante activo antes de validar una clave API de Raven."
     },
@@ -44379,8 +44559,12 @@
       "translation": "Se cargó 1 proyecto Raven Colonial activo."
     },
     {
-      "source": "Loaded and selected the one planned Raven site.",
-      "translation": "Cargó y seleccionó el sitio Raven planificado."
+      "source": "Loaded Raven Colonial cargo baseline for {0}.",
+      "translation": "Línea base de carga cargada Raven Colonial para {0}."
+    },
+    {
+      "source": "Loaded and selected the one {0} Raven site.",
+      "translation": "Cargó y seleccionó el sitio Raven {0}."
     },
     {
       "source": "Loaded commander Guardian data with {0} file error(s): {1}",
@@ -44463,12 +44647,16 @@
       "translation": "Se cargó {0} de {1} entradas para {2}."
     },
     {
+      "source": "Loaded {0} orbital planned sites. Choose one to link.",
+      "translation": "Sitios planificados orbitales {0} cargados. Elija uno para vincular."
+    },
+    {
       "source": "Loaded {0} personal and {1} Raven system nickname(s).",
       "translation": "Se cargaron {0} apodos personales y {1} del sistema Raven."
     },
     {
       "source": "Loaded {0} planned sites. Choose one or configure the build manually.",
-      "translation": "Se cargaron {0} sitios planificados. Elija uno o configure la compilación manualmente."
+      "translation": "Sitios planificados {0} cargados. Elija uno o configure la compilación manualmente."
     },
     {
       "source": "Loaded {0} route systems from {1}.",
@@ -45053,6 +45241,10 @@
     {
       "source": "Market",
       "translation": "Mercado"
+    },
+    {
+      "source": "Market ID accepts numbers only. Extra characters were removed.",
+      "translation": "Market ID sólo acepta números. Se eliminaron caracteres adicionales."
     },
     {
       "source": "Market cargo",
@@ -46295,6 +46487,14 @@
       "translation": "No hay ningún lote de entrada de gamepad SDL activo."
     },
     {
+      "source": "No Squadron Carrier",
+      "translation": "Sin portaaviones de escuadrón"
+    },
+    {
+      "source": "No Squadron Carrier is associated with this account.",
+      "translation": "Ningún Squadron Carrier está asociado con esta cuenta."
+    },
+    {
       "source": "No absolute overlay placement conversion was required.",
       "translation": "No se requirió ninguna conversión absoluta de ubicación de superposición."
     },
@@ -46645,6 +46845,10 @@
     {
       "source": "No notes",
       "translation": "Sin notas"
+    },
+    {
+      "source": "No orbital planned Raven sites are available to link. Only the system architect can start a build without a plan.",
+      "translation": "No hay sitios Raven planificados orbitales disponibles para vincular. Sólo el arquitecto del sistema puede iniciar una construcción sin un plan."
     },
     {
       "source": "No organism available",
@@ -47235,6 +47439,10 @@
       "translation": "Sólo se enviarán las actualizaciones revisadas y las eliminaciones estables. Se conservan los datos simultáneos y solo remotos."
     },
     {
+      "source": "Only the system architect can start a build project without a planned Raven site.",
+      "translation": "Sólo el arquitecto del sistema puede iniciar un proyecto de construcción sin un sitio Raven planificado."
+    },
+    {
       "source": "Only this system (rings / markets)",
       "translation": "Sólo este sistema (anillos/mercados)"
     },
@@ -47705,6 +47913,10 @@
     {
       "source": "Origin coordinates unavailable.",
       "translation": "Coordenadas de origen no disponibles."
+    },
+    {
+      "source": "Original",
+      "translation": "Original"
     },
     {
       "source": "Original backup",
@@ -49343,6 +49555,10 @@
       "translation": "Eventos de diario {0} EDSM en cola; {1} esperando el próximo lote."
     },
     {
+      "source": "Queued {0} Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "Actualización(es) de carga del transportista de flota {0} en cola hasta que finalice la línea base del muelle."
+    },
+    {
       "source": "Queued {0} Inara event(s); {1} waiting for the next batch.",
       "translation": "Eventos {0} Inara en cola; {1} esperando el siguiente lote."
     },
@@ -49361,6 +49577,10 @@
     {
       "source": "Queued {0} journal events for EDDN.",
       "translation": "Eventos de diario {0} en cola para EDDN."
+    },
+    {
+      "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "Actualización(es) de carga del portaaviones del escuadrón {0} en cola hasta que finalice la línea de base del muelle."
     },
     {
       "source": "Quick statistics",
@@ -49413,6 +49633,10 @@
     {
       "source": "RB",
       "translation": "RB"
+    },
+    {
+      "source": "RC Linked Carriers",
+      "translation": "Transportistas vinculados a RC"
     },
     {
       "source": "READ",
@@ -50477,6 +50701,10 @@
     {
       "source": "Refresh image",
       "translation": "Actualizar imagen"
+    },
+    {
+      "source": "Refresh linked RavenColonial carriers",
+      "translation": "Actualizar los transportistas vinculados de RavenColonial"
     },
     {
       "source": "Refresh preview",
@@ -51763,6 +51991,10 @@
       "translation": "LÍMITE ESFÉRICO"
     },
     {
+      "source": "SQUADRON CARRIER",
+      "translation": "Portaaviones de escuadrón"
+    },
+    {
       "source": "SRV",
       "translation": "SRV"
     },
@@ -52653,6 +52885,10 @@
     {
       "source": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
       "translation": "Vea su ruta desde la raíz de búsqueda, muévase entre cuadros en el mismo nivel o abra un cuadro secundario más pequeño. Esto no se mueve entre sistemas en la tabla."
+    },
+    {
+      "source": "Seeded linked carrier {0} cargo from Frontier CAPI ({1}).",
+      "translation": "Transportador vinculado sembrado {0} carga de Frontier CAPI ({1})."
     },
     {
       "source": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -54039,12 +54275,12 @@
       "translation": "spoiler"
     },
     {
-      "source": "Squadron Logo",
-      "translation": "Logotipo del escuadrón"
+      "source": "Squadron Carrier",
+      "translation": "Portaaviones de escuadrón"
     },
     {
-      "source": "Squadron carrier",
-      "translation": "Portaaviones de escuadrón"
+      "source": "Squadron Logo",
+      "translation": "Logotipo del escuadrón"
     },
     {
       "source": "SquadronLogo",
@@ -54777,6 +55013,10 @@
     {
       "source": "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.",
       "translation": "Almacene minerales, calificaciones, nombres de puntos de acceso, rendimientos promedio, fechas de última extracción, notas de superposición/RES y capturas de pantalla. Haga clic derecho para copiar o eliminar; Deshacer restaura la última eliminación durante esta ejecución."
+    },
+    {
+      "source": "Stored cargo from Frontier squadron data.",
+      "translation": "Carga almacenada de datos del escuadrón Frontier."
     },
     {
       "source": "Stored cargo from Frontier.",
@@ -55707,6 +55947,10 @@
       "translation": "Registros de targoides, guerra civil, tecnología, lenguaje y Protectorado del Cuerpo"
     },
     {
+      "source": "That Market ID is too large.",
+      "translation": "Ese ID de mercado es demasiado grande."
+    },
+    {
       "source": "That name is already saved for this ship. Select it below to edit, or choose a different name.",
       "translation": "Ese nombre ya está guardado para este barco. Selecciónelo a continuación para editarlo o elija un nombre diferente."
     },
@@ -55909,6 +56153,10 @@
     {
       "source": "The Journey workspace requires a commander profile.",
       "translation": "El espacio de trabajo Journey requiere un perfil de comandante."
+    },
+    {
+      "source": "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+      "translation": "La pestaña Vinculado enumera los operadores vinculados a RavenColonial con una actualización a pedido. Atracar en un portaaviones vinculado con un banco de escuadrón lo identifica automáticamente; de lo contrario, selecciona el portaaviones de tu escuadrón. RavenColonial no suministra su capacidad."
     },
     {
       "source": "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
@@ -56851,6 +57099,10 @@
       "translation": "El recordatorio de carga completa opcional espera hasta que la carga esté llena y la recolección esté inactiva durante un minuto."
     },
     {
+      "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
+      "translation": "El sitio orbital planeado por Raven no pudo coincidir con el catálogo de construcción local. Sólo el arquitecto del sistema puede iniciar una construcción sin un plan."
+    },
+    {
       "source": "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
       "translation": "El organismo es un primer descubrimiento para el actual comandante. La misma bandera llena en filas compactas del FSS marca un cuerpo no descubierto."
     },
@@ -57379,10 +57631,6 @@
       "translation": "El límite esférico no es válido."
     },
     {
-      "source": "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
-      "translation": "La sección del escuadrón utiliza portaaviones RavenColonial vinculados. Atracar en un portaaviones vinculado con un banco de escuadrón lo identifica automáticamente; de lo contrario, selecciona el portaaviones de tu escuadrón. RavenColonial no suministra su capacidad."
-    },
-    {
       "source": "The staged SrvSurvey update helper did not start.",
       "translation": "El asistente de actualización provisional SrvSurvey no se inició."
     },
@@ -57753,10 +58001,6 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "Esto elimina la configuración guardada y sus grupos de SrvSurvey. No cambia tus controles en Elite."
-    },
-    {
-      "source": "This secured system can only be edited by its architect.",
-      "translation": "Este sistema seguro sólo puede ser editado por su arquitecto."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -58803,6 +59047,10 @@
       "translation": "Usar impulso en B → C"
     },
     {
+      "source": "Use compact/scrolling commodities list",
+      "translation": "Utilice una lista de productos compacta/desplazable"
+    },
+    {
       "source": "Use current",
       "translation": "Usar actual"
     },
@@ -58949,6 +59197,10 @@
     {
       "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
       "translation": "Utilice las recomendaciones de cuadrados del radar compacto de minería de superficie para alinear y colocar cada equipo. El radar hace zoom automáticamente a medida que se acerca al depósito y sus posiciones sugeridas."
+    },
+    {
+      "source": "UseCompactScrollingCommoditiesList",
+      "translation": "Utilice la lista de productos básicos de desplazamiento compacto"
     },
     {
       "source": "UseDevelopmentReleases",
@@ -59891,6 +60143,10 @@
       "translation": "Sí, ciérralo y continúa."
     },
     {
+      "source": "You are not the architect of this system ({0}). The system was not loaded.",
+      "translation": "Usted no es el arquitecto de este sistema ({0}). El sistema no estaba cargado."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Tus datos no han cambiado. Revise los detalles y prepare un informe de GitHub, o compártalos en Discord."
     },
@@ -60057,10 +60313,6 @@
     {
       "source": "antimony",
       "translation": "antimonio"
-    },
-    {
-      "source": "aphrodite?",
-      "translation": "¿afrodita?"
     },
     {
       "source": "app",
@@ -60635,10 +60887,6 @@
       "translation": "hacer"
     },
     {
-      "source": "dodec?",
-      "translation": "dodec?"
-    },
-    {
       "source": "dolphin",
       "translation": "delfín"
     },
@@ -61187,6 +61435,10 @@
       "translation": "en"
     },
     {
+      "source": "inara-accepted.txt",
+      "translation": "inara-accepted.txt"
+    },
+    {
       "source": "inara.contributors",
       "translation": "inara.colaboradores"
     },
@@ -61209,10 +61461,6 @@
     {
       "source": "input",
       "translation": "aporte"
-    },
-    {
-      "source": "installation?",
-      "translation": "instalación?"
     },
     {
       "source": "instances",
@@ -61313,6 +61561,10 @@
     {
       "source": "log folder proton profile data source",
       "translation": "carpeta de registro fuente de datos del perfil de protones"
+    },
+    {
+      "source": "logs",
+      "translation": "registros"
     },
     {
       "source": "lookup",
@@ -61595,8 +61847,8 @@
       "translation": "orbe ataúd tableta tótem urna colores"
     },
     {
-      "source": "orbis?",
-      "translation": "orbis?"
+      "source": "orbital planned",
+      "translation": "orbital planeado"
     },
     {
       "source": "orca",
@@ -61609,10 +61861,6 @@
     {
       "source": "os",
       "translation": "sistema operativo"
-    },
-    {
-      "source": "outpost?",
-      "translation": "puesto de avanzada?"
     },
     {
       "source": "overlay",
@@ -61673,6 +61921,10 @@
     {
       "source": "planetaryapproachsuite",
       "translation": "suite de enfoque planetario"
+    },
+    {
+      "source": "planned",
+      "translation": "planificado"
     },
     {
       "source": "platinum",
@@ -61753,6 +62005,10 @@
     {
       "source": "quests",
       "translation": "misiones"
+    },
+    {
+      "source": "queued dock baseline",
+      "translation": "línea base del muelle en cola"
     },
     {
       "source": "radar",
@@ -61933,10 +62189,6 @@
     {
       "source": "settings-search-highlight",
       "translation": "configuración-búsqueda-resaltado"
-    },
-    {
-      "source": "settlement?",
-      "translation": "acuerdo?"
     },
     {
       "source": "share",
@@ -63337,6 +63589,10 @@
     {
       "source": "{0} · ACTIVE OBELISK",
       "translation": "{0} · OBELISCO ACTIVO"
+    },
+    {
+      "source": "{0} · Tier {1}: {2}",
+      "translation": "{0} · Nivel {1}: {2}"
     },
     {
       "source": "{0} · active",
@@ -65227,6 +65483,14 @@
     {
       "source": "All",
       "translation": "tous"
+    },
+    {
+      "source": "All Fleet Carrier data points ({0})",
+      "translation": "Tous les points de données Fleet Carrier ({0})"
+    },
+    {
+      "source": "All Squadron Carrier data points ({0})",
+      "translation": "Tous les points de données du Squadron Carrier ({0})"
     },
     {
       "source": "All dates and times use UTC.",
@@ -68145,6 +68409,10 @@
       "translation": "Choisissez une image d'arrière-plan locale et ajustez ses valeurs X, Y et d'échelle tout en examinant l'aperçu sur la même carte."
     },
     {
+      "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
+      "translation": "Choisissez un site Raven prévu à lier. Seul l'architecte système peut démarrer une construction sans plan."
+    },
+    {
       "source": "Choose a preferred Commander when more than one profile appears in the same journal folder.",
       "translation": "Choisissez un commandant préféré lorsque plusieurs profils apparaissent dans le même dossier de journal."
     },
@@ -69455,6 +69723,10 @@
     {
       "source": "Construction site",
       "translation": "Chantier"
+    },
+    {
+      "source": "Consumer items",
+      "translation": "Articles de consommation"
     },
     {
       "source": "Contain",
@@ -70965,6 +71237,10 @@
       "translation": "Accès à la station d'accueil"
     },
     {
+      "source": "Docking an untracked Raven construction site auto-links the commander only when the active commander name matches the project's architect; otherwise the site loads as untracked for shopping.",
+      "translation": "L'amarrage d'un chantier de construction Raven non suivi lie automatiquement le commandant uniquement lorsque le nom du commandant actif correspond à l'architecte du projet ; sinon, le site se charge comme non suivi pour les achats."
+    },
+    {
       "source": "Docking denied",
       "translation": "Amarrage refusé"
     },
@@ -71843,6 +72119,10 @@
     {
       "source": "Estimated",
       "translation": "Estimé"
+    },
+    {
+      "source": "Evacuation shelter",
+      "translation": "Abri d'évacuation"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -72853,6 +73133,10 @@
       "translation": "Le fret Fleet Carrier sera synchronisé à partir des mises à jour correspondantes Market.json."
     },
     {
+      "source": "Fleet Carrier dock baseline was not loaded: {0}",
+      "translation": "La ligne de base du quai Fleet Carrier n’a pas été chargée : {0}"
+    },
+    {
       "source": "Fleet Carrier loading",
       "translation": "Chargement des transporteurs de flotte"
     },
@@ -72861,8 +73145,8 @@
       "translation": "Fleet Carrier réutilise le profil existant Frontier. Distance prend en charge deux systèmes : la position actuelle, le domicile et le système de votre opérateur."
     },
     {
-      "source": "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
-      "translation": "Fleet Carrier se trouve directement sous Aperçu et conserve le profil complet du transporteur. Les données liées Frontier se chargent automatiquement lorsque le journal du commandant est détecté, avec le cache existant et le temps de recharge d'actualisation."
+      "source": "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+      "translation": "Fleet Carrier se trouve directement sous l'aperçu avec des onglets pour le Fleet Carrier personnel, le Squadron Carrier de Frontier /squadron et les transporteurs liés RavenColonial. Les données liées Frontier se chargent automatiquement lorsque le journal du commandant est détecté, avec le cache existant et le temps de recharge d'actualisation."
     },
     {
       "source": "Fleet Carrier update warning",
@@ -73081,6 +73365,10 @@
       "translation": "Depuis le véritable centre, envoyez .mining center here pour corriger l'alignement du centre et de l'anneau enregistré sans déplacer les marqueurs de dépôt."
     },
     {
+      "source": "Frontier CAPI cargo seed was not applied: {0}",
+      "translation": "Frontier Les semences de cargaison CAPI n'ont pas été appliquées : {0}"
+    },
+    {
       "source": "Frontier Developments",
       "translation": "Frontier Développements"
     },
@@ -73199,6 +73487,10 @@
     {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier les données du chantier naval n'ont pas pu être lues : {0}"
+    },
+    {
+      "source": "Frontier squadron data could not be read: {0}",
+      "translation": "Les données de l'escadron Frontier n'ont pas pu être lues : {0}"
     },
     {
       "source": "Frontier token request failed ({0}): {1}",
@@ -74231,6 +74523,10 @@
     {
       "source": "Help documentation and overlay icon glossary",
       "translation": "Documentation d'aide et glossaire des icônes de superposition"
+    },
+    {
+      "source": "Helpers can only link a visible planned Raven site; only the system architect can start a build project without a plan.",
+      "translation": "Les assistants ne peuvent lier qu'un site Raven planifié et visible ; seul l'architecte système peut démarrer un projet de construction sans plan."
     },
     {
       "source": "Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active",
@@ -76037,6 +76333,10 @@
       "translation": "Citron vert"
     },
     {
+      "source": "Linked",
+      "translation": "Lié"
+    },
+    {
       "source": "Linked Raven project {0} into the active list for this construction site.",
       "translation": "Projet Raven lié {0} dans la liste active pour ce chantier de construction."
     },
@@ -76047,6 +76347,10 @@
     {
       "source": "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
       "translation": "Le fret lié utilise l'inventaire RavenColonial existant et suit sa préférence de synchronisation du fret. Frontier reste la source de capacité, de finances et de services."
+    },
+    {
+      "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
+      "translation": "Cargaison d'escadron liée de RavenColonial. La capacité et les finances proviennent de la dernière actualisation Frontier."
     },
     {
       "source": "Listening for community observations…",
@@ -76181,6 +76485,10 @@
       "translation": "Système de chargement"
     },
     {
+      "source": "Load system only succeeds when the architect is unassigned or matches the active commander. Anyone else is refused with a not-the-architect warning.",
+      "translation": "Le système de chargement ne réussit que lorsque l'architecte n'est pas affecté ou correspond au commandant actif. Toute autre personne est refusée avec un avertissement indiquant que ce n'est pas l'architecte."
+    },
+    {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Chargez le commandant actif avant de valider une clé API Raven."
     },
@@ -76193,8 +76501,12 @@
       "translation": "Chargé 1 projet Raven Colonial actif."
     },
     {
-      "source": "Loaded and selected the one planned Raven site.",
-      "translation": "Chargé et sélectionné le site Raven prévu."
+      "source": "Loaded Raven Colonial cargo baseline for {0}.",
+      "translation": "Base de chargement chargée Raven Colonial pour {0}."
+    },
+    {
+      "source": "Loaded and selected the one {0} Raven site.",
+      "translation": "Chargé et sélectionné le site {0} Raven."
     },
     {
       "source": "Loaded commander Guardian data with {0} file error(s): {1}",
@@ -76277,12 +76589,16 @@
       "translation": "{0} entrées {1} chargées pour {2}."
     },
     {
+      "source": "Loaded {0} orbital planned sites. Choose one to link.",
+      "translation": "Sites planifiés orbitaux {0} chargés. Choisissez-en un à lier."
+    },
+    {
       "source": "Loaded {0} personal and {1} Raven system nickname(s).",
       "translation": "Chargement des surnoms personnels {0} et des {1} système Raven."
     },
     {
       "source": "Loaded {0} planned sites. Choose one or configure the build manually.",
-      "translation": "{0} sites planifiés chargés. Choisissez-en un ou configurez la build manuellement."
+      "translation": "Sites planifiés {0} chargés. Choisissez-en un ou configurez la build manuellement."
     },
     {
       "source": "Loaded {0} route systems from {1}.",
@@ -76867,6 +77183,10 @@
     {
       "source": "Market",
       "translation": "Marché"
+    },
+    {
+      "source": "Market ID accepts numbers only. Extra characters were removed.",
+      "translation": "Market ID accepte uniquement les chiffres. Les caractères supplémentaires ont été supprimés."
     },
     {
       "source": "Market cargo",
@@ -78109,6 +78429,14 @@
       "translation": "Aucun lot d'entrée de manette de jeu SDL n'est actif."
     },
     {
+      "source": "No Squadron Carrier",
+      "translation": "Pas de porte-avions d'escadron"
+    },
+    {
+      "source": "No Squadron Carrier is associated with this account.",
+      "translation": "Aucun Squadron Carrier n'est associé à ce compte."
+    },
+    {
       "source": "No absolute overlay placement conversion was required.",
       "translation": "Aucune conversion absolue de placement de superposition n’était requise."
     },
@@ -78459,6 +78787,10 @@
     {
       "source": "No notes",
       "translation": "Aucune note"
+    },
+    {
+      "source": "No orbital planned Raven sites are available to link. Only the system architect can start a build without a plan.",
+      "translation": "Aucun site orbital Raven prévu n’est disponible pour établir un lien. Seul l'architecte système peut démarrer une construction sans plan."
     },
     {
       "source": "No organism available",
@@ -79049,6 +79381,10 @@
       "translation": "Seules les mises à jour examinées et les suppressions stables seront envoyées. Les données simultanées et distantes uniquement sont conservées."
     },
     {
+      "source": "Only the system architect can start a build project without a planned Raven site.",
+      "translation": "Seul l'architecte système peut démarrer un projet de construction sans site Raven planifié."
+    },
+    {
       "source": "Only this system (rings / markets)",
       "translation": "Uniquement ce système (anneaux/marchés)"
     },
@@ -79519,6 +79855,10 @@
     {
       "source": "Origin coordinates unavailable.",
       "translation": "Coordonnées d'origine indisponibles."
+    },
+    {
+      "source": "Original",
+      "translation": "Original"
     },
     {
       "source": "Original backup",
@@ -81157,6 +81497,10 @@
       "translation": "Événement(s) de journal {0} EDSM en file d'attente ; {1} en attente du prochain lot."
     },
     {
+      "source": "Queued {0} Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "Mise en file d'attente des mises à jour du fret {0} Fleet Carrier jusqu'à la fin de la ligne de base du quai."
+    },
+    {
       "source": "Queued {0} Inara event(s); {1} waiting for the next batch.",
       "translation": "{0} Inara événement(s) en file d'attente ; {1} en attente du prochain lot."
     },
@@ -81175,6 +81519,10 @@
     {
       "source": "Queued {0} journal events for EDDN.",
       "translation": "Événements de journal {0} mis en file d'attente pour EDDN."
+    },
+    {
+      "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "Mise en file d'attente des mises à jour du fret du Fleet Carrier de l'escadron {0} jusqu'à la fin de la ligne de base du quai."
     },
     {
       "source": "Quick statistics",
@@ -81227,6 +81575,10 @@
     {
       "source": "RB",
       "translation": "RB"
+    },
+    {
+      "source": "RC Linked Carriers",
+      "translation": "Transporteurs liés RC"
     },
     {
       "source": "READ",
@@ -82291,6 +82643,10 @@
     {
       "source": "Refresh image",
       "translation": "Actualiser l'image"
+    },
+    {
+      "source": "Refresh linked RavenColonial carriers",
+      "translation": "Actualiser les transporteurs RavenColonial liés"
     },
     {
       "source": "Refresh preview",
@@ -83577,6 +83933,10 @@
       "translation": "LIMITE SPHERIQUE"
     },
     {
+      "source": "SQUADRON CARRIER",
+      "translation": "Transporteur d'escadron"
+    },
+    {
       "source": "SRV",
       "translation": "SRV"
     },
@@ -84467,6 +84827,10 @@
     {
       "source": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
       "translation": "Consultez votre chemin à partir de la racine de recherche, déplacez-vous entre les boxels du même niveau ou ouvrez un boxel enfant plus petit. Cela ne se déplace pas entre les systèmes du tableau."
+    },
+    {
+      "source": "Seeded linked carrier {0} cargo from Frontier CAPI ({1}).",
+      "translation": "Transporteur lié ensemencé {0} cargo de Frontier CAPI ({1})."
     },
     {
       "source": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -85853,12 +86217,12 @@
       "translation": "Aileron"
     },
     {
-      "source": "Squadron Logo",
-      "translation": "Logo de l'escadron"
+      "source": "Squadron Carrier",
+      "translation": "Transporteur d'escadron"
     },
     {
-      "source": "Squadron carrier",
-      "translation": "Transporteur d'escadron"
+      "source": "Squadron Logo",
+      "translation": "Logo de l'escadron"
     },
     {
       "source": "SquadronLogo",
@@ -86591,6 +86955,10 @@
     {
       "source": "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.",
       "translation": "Stockez les minéraux, les évaluations, les noms de points chauds, les rendements moyens, les dates de dernière extraction, les notes de chevauchement/RES et les captures d'écran. Cliquez avec le bouton droit pour copier ou supprimer ; Annuler restaure la dernière suppression au cours de cette exécution."
+    },
+    {
+      "source": "Stored cargo from Frontier squadron data.",
+      "translation": "Cargaison stockée à partir des données de l'escadron Frontier."
     },
     {
       "source": "Stored cargo from Frontier.",
@@ -87521,6 +87889,10 @@
       "translation": "Archives des Thargoids, de la guerre civile, de la technologie, de la langue et du Protectorat du Corps"
     },
     {
+      "source": "That Market ID is too large.",
+      "translation": "Cet identifiant de marché est trop grand."
+    },
+    {
       "source": "That name is already saved for this ship. Select it below to edit, or choose a different name.",
       "translation": "Ce nom est déjà enregistré pour ce vaisseau. Sélectionnez-le ci-dessous pour le modifier ou choisissez un autre nom."
     },
@@ -87723,6 +88095,10 @@
     {
       "source": "The Journey workspace requires a commander profile.",
       "translation": "L'espace de travail Journey nécessite un profil de commandant."
+    },
+    {
+      "source": "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+      "translation": "L'onglet Lié répertorie les opérateurs liés à RavenColonial avec une actualisation à la demande. L'amarrage sur un transporteur lié à une banque d'escadron l'identifie automatiquement ; sinon, sélectionnez votre porte-avions d'escadron. RavenColonial ne fournit pas sa capacité."
     },
     {
       "source": "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
@@ -88665,6 +89041,10 @@
       "translation": "Le rappel optionnel de chargement plein attend que le chargement soit plein et que la collecte soit inactive pendant une minute."
     },
     {
+      "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
+      "translation": "Le site orbital Raven prévu ne pouvait pas correspondre au catalogue de construction local. Seul l'architecte système peut démarrer une construction sans plan."
+    },
+    {
       "source": "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
       "translation": "L'organisme est une première découverte pour le commandant actuel. Le même drapeau rempli sur les rangées compactes du FSS marque un corps non découvert."
     },
@@ -89193,10 +89573,6 @@
       "translation": "La limite sphérique n'est pas valide."
     },
     {
-      "source": "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
-      "translation": "La section de l'escadron utilise des transporteurs RavenColonial liés. L'amarrage sur un porte-avions lié à une banque d'escadron l'identifie automatiquement ; sinon, sélectionnez votre porte-avions d'escadron. RavenColonial ne fournit pas sa capacité."
-    },
-    {
       "source": "The staged SrvSurvey update helper did not start.",
       "translation": "L'assistant de mise à jour intermédiaire de SrvSurvey n'a pas démarré."
     },
@@ -89567,10 +89943,6 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "Cela supprime la configuration enregistrée et ses groupes de SrvSurvey. Cela ne change pas vos commandes dans Elite."
-    },
-    {
-      "source": "This secured system can only be edited by its architect.",
-      "translation": "Ce système sécurisé ne peut être édité que par son architecte."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -90617,6 +90989,10 @@
       "translation": "Utiliser boost sur B → C"
     },
     {
+      "source": "Use compact/scrolling commodities list",
+      "translation": "Utiliser une liste de produits compacte/déroulante"
+    },
+    {
       "source": "Use current",
       "translation": "Utiliser le courant"
     },
@@ -90763,6 +91139,10 @@
     {
       "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
       "translation": "Utilisez les recommandations carrées sur le radar compact Surface Mining pour aligner et placer chaque plate-forme. Le radar zoome automatiquement à l'approche du gisement et de ses positions suggérées."
+    },
+    {
+      "source": "UseCompactScrollingCommoditiesList",
+      "translation": "UtiliserCompactScrollingCommoditiesList"
     },
     {
       "source": "UseDevelopmentReleases",
@@ -91705,6 +92085,10 @@
       "translation": "Oui, ferme-le et continue"
     },
     {
+      "source": "You are not the architect of this system ({0}). The system was not loaded.",
+      "translation": "Vous n'êtes pas l'architecte de ce système ({0}). Le système n'a pas été chargé."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Vos données sont inchangées. Examinez les détails et préparez un rapport GitHub, ou partagez-les sur Discord."
     },
@@ -91871,10 +92255,6 @@
     {
       "source": "antimony",
       "translation": "antimoine"
-    },
-    {
-      "source": "aphrodite?",
-      "translation": "Aphrodite ?"
     },
     {
       "source": "app",
@@ -92449,10 +92829,6 @@
       "translation": "faire"
     },
     {
-      "source": "dodec?",
-      "translation": "dodéc ?"
-    },
-    {
       "source": "dolphin",
       "translation": "dauphin"
     },
@@ -93001,6 +93377,10 @@
       "translation": "dans"
     },
     {
+      "source": "inara-accepted.txt",
+      "translation": "inara-accepted.txt"
+    },
+    {
       "source": "inara.contributors",
       "translation": "inara.contributeurs"
     },
@@ -93023,10 +93403,6 @@
     {
       "source": "input",
       "translation": "saisir"
-    },
-    {
-      "source": "installation?",
-      "translation": "installation ?"
     },
     {
       "source": "instances",
@@ -93127,6 +93503,10 @@
     {
       "source": "log folder proton profile data source",
       "translation": "dossier de journal source de données de profil de proton"
+    },
+    {
+      "source": "logs",
+      "translation": "journaux"
     },
     {
       "source": "lookup",
@@ -93409,8 +93789,8 @@
       "translation": "orbe cercueil tablette totem urne couleurs"
     },
     {
-      "source": "orbis?",
-      "translation": "orbis ?"
+      "source": "orbital planned",
+      "translation": "orbitale prévue"
     },
     {
       "source": "orca",
@@ -93423,10 +93803,6 @@
     {
       "source": "os",
       "translation": "système d'exploitation"
-    },
-    {
-      "source": "outpost?",
-      "translation": "avant-poste ?"
     },
     {
       "source": "overlay",
@@ -93487,6 +93863,10 @@
     {
       "source": "planetaryapproachsuite",
       "translation": "suite d'approche planétaire"
+    },
+    {
+      "source": "planned",
+      "translation": "prévu"
     },
     {
       "source": "platinum",
@@ -93567,6 +93947,10 @@
     {
       "source": "quests",
       "translation": "quêtes"
+    },
+    {
+      "source": "queued dock baseline",
+      "translation": "ligne de base du quai en file d'attente"
     },
     {
       "source": "radar",
@@ -93747,10 +94131,6 @@
     {
       "source": "settings-search-highlight",
       "translation": "paramètres-recherche-mise en surbrillance"
-    },
-    {
-      "source": "settlement?",
-      "translation": "règlement ?"
     },
     {
       "source": "share",
@@ -95151,6 +95531,10 @@
     {
       "source": "{0} · ACTIVE OBELISK",
       "translation": "{0} · OBÉLISQUE ACTIF"
+    },
+    {
+      "source": "{0} · Tier {1}: {2}",
+      "translation": "{0} · Niveau {1} : {2}"
     },
     {
       "source": "{0} · active",
@@ -97041,6 +97425,14 @@
     {
       "source": "All",
       "translation": "todos"
+    },
+    {
+      "source": "All Fleet Carrier data points ({0})",
+      "translation": "Todos os pontos de dados do Fleet Carrier ({0})"
+    },
+    {
+      "source": "All Squadron Carrier data points ({0})",
+      "translation": "Todos os pontos de dados do Squadron Carrier ({0})"
     },
     {
       "source": "All dates and times use UTC.",
@@ -99959,6 +100351,10 @@
       "translation": "Escolha uma imagem de plano de fundo local e ajuste seus valores X, Y e escala enquanto revisa a visualização no mesmo mapa."
     },
     {
+      "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
+      "translation": "Escolha um site Raven planejado para vincular. Somente o arquiteto do sistema pode iniciar uma construção sem um plano."
+    },
+    {
       "source": "Choose a preferred Commander when more than one profile appears in the same journal folder.",
       "translation": "Escolha um Comandante preferido quando mais de um perfil aparecer na mesma pasta do diário."
     },
@@ -101269,6 +101665,10 @@
     {
       "source": "Construction site",
       "translation": "Canteiro de obras"
+    },
+    {
+      "source": "Consumer items",
+      "translation": "Itens de consumo"
     },
     {
       "source": "Contain",
@@ -102779,6 +103179,10 @@
       "translation": "Acesso de encaixe"
     },
     {
+      "source": "Docking an untracked Raven construction site auto-links the commander only when the active commander name matches the project's architect; otherwise the site loads as untracked for shopping.",
+      "translation": "Atracar um canteiro de obras Raven não rastreado vincula automaticamente o comandante somente quando o nome do comandante ativo corresponde ao arquiteto do projeto; caso contrário, o site será carregado como não rastreado para compras."
+    },
+    {
       "source": "Docking denied",
       "translation": "Encaixe negado"
     },
@@ -103657,6 +104061,10 @@
     {
       "source": "Estimated",
       "translation": "Estimado"
+    },
+    {
+      "source": "Evacuation shelter",
+      "translation": "Abrigo de evacuação"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -104667,6 +105075,10 @@
       "translation": "A carga do Fleet Carrier será sincronizada com as atualizações Market.json correspondentes."
     },
     {
+      "source": "Fleet Carrier dock baseline was not loaded: {0}",
+      "translation": "A linha de base da doca do Fleet Carrier não foi carregada: {0}"
+    },
+    {
       "source": "Fleet Carrier loading",
       "translation": "Carregamento do transportador de frota"
     },
@@ -104675,8 +105087,8 @@
       "translation": "Fleet Carrier reutiliza o perfil existente Frontier. A distância suporta dois sistemas: posição atual, casa e sistema da sua operadora."
     },
     {
-      "source": "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
-      "translation": "Fleet Carrier fica logo abaixo de Visão geral e mantém o perfil completo da transportadora. Os dados vinculados Frontier são carregados automaticamente quando o diário do comandante é detectado, com o cache existente e o tempo de espera de atualização."
+      "source": "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+      "translation": "Fleet Carrier fica logo abaixo de Visão geral com guias para Fleet Carrier pessoal, Squadron Carrier de Frontier /squadron e RavenColonial Linked Carriers. Os dados vinculados Frontier são carregados automaticamente quando o diário do comandante é detectado, com o cache existente e o tempo de espera de atualização."
     },
     {
       "source": "Fleet Carrier update warning",
@@ -104895,6 +105307,10 @@
       "translation": "A partir do centro verdadeiro, envie .mining center here para corrigir o centro salvo e o alinhamento do anel sem mover nenhum marcador de depósito."
     },
     {
+      "source": "Frontier CAPI cargo seed was not applied: {0}",
+      "translation": "Frontier Semente de carga CAPI não foi aplicada: {0}"
+    },
+    {
       "source": "Frontier Developments",
       "translation": "Frontier Desenvolvimentos"
     },
@@ -105013,6 +105429,10 @@
     {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier dados do estaleiro não puderam ser lidos: {0}"
+    },
+    {
+      "source": "Frontier squadron data could not be read: {0}",
+      "translation": "Frontier os dados do esquadrão não puderam ser lidos: {0}"
     },
     {
       "source": "Frontier token request failed ({0}): {1}",
@@ -106045,6 +106465,10 @@
     {
       "source": "Help documentation and overlay icon glossary",
       "translation": "Documentação de ajuda e glossário de ícones de sobreposição"
+    },
+    {
+      "source": "Helpers can only link a visible planned Raven site; only the system architect can start a build project without a plan.",
+      "translation": "Os ajudantes só podem vincular um site Raven planejado visível; somente o arquiteto do sistema pode iniciar um projeto de construção sem um plano."
     },
     {
       "source": "Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active",
@@ -107851,6 +108275,10 @@
       "translation": "Lima"
     },
     {
+      "source": "Linked",
+      "translation": "Vinculado"
+    },
+    {
       "source": "Linked Raven project {0} into the active list for this construction site.",
       "translation": "Vinculou o projeto Raven {0} à lista ativa deste canteiro de obras."
     },
@@ -107861,6 +108289,10 @@
     {
       "source": "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
       "translation": "A carga vinculada usa o inventário RavenColonial existente e segue sua preferência de sincronização de carga. Frontier continua a ser a fonte de capacidade, finanças e serviços."
+    },
+    {
+      "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
+      "translation": "Carga do esquadrão vinculado da RavenColonial. A capacidade e as finanças são da última atualização Frontier."
     },
     {
       "source": "Listening for community observations…",
@@ -107995,6 +108427,10 @@
       "translation": "Sistema de carga"
     },
     {
+      "source": "Load system only succeeds when the architect is unassigned or matches the active commander. Anyone else is refused with a not-the-architect warning.",
+      "translation": "O carregamento do sistema só é bem-sucedido quando o arquiteto não está designado ou corresponde ao comandante ativo. Qualquer outra pessoa é recusada com um aviso de não ser o arquiteto."
+    },
+    {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Carregue o comandante ativo antes de validar uma chave de API Raven."
     },
@@ -108007,8 +108443,12 @@
       "translation": "Carregado 1 projeto Raven Colonial ativo."
     },
     {
-      "source": "Loaded and selected the one planned Raven site.",
-      "translation": "Carregou e selecionou o site Raven planejado."
+      "source": "Loaded Raven Colonial cargo baseline for {0}.",
+      "translation": "Linha de base de carga carregada Raven Colonial para {0}."
+    },
+    {
+      "source": "Loaded and selected the one {0} Raven site.",
+      "translation": "Carregou e selecionou o site {0} Raven."
     },
     {
       "source": "Loaded commander Guardian data with {0} file error(s): {1}",
@@ -108091,12 +108531,16 @@
       "translation": "Carregado {0} de {1} entradas para {2}."
     },
     {
+      "source": "Loaded {0} orbital planned sites. Choose one to link.",
+      "translation": "Locais planejados orbitais {0} carregados. Escolha um para vincular."
+    },
+    {
       "source": "Loaded {0} personal and {1} Raven system nickname(s).",
       "translation": "Carregado {0} pessoal e {1} apelido(s) do sistema Raven."
     },
     {
       "source": "Loaded {0} planned sites. Choose one or configure the build manually.",
-      "translation": "{0} locais planejados carregados. Escolha um ou configure a compilação manualmente."
+      "translation": "Sites planejados {0} carregados. Escolha um ou configure a compilação manualmente."
     },
     {
       "source": "Loaded {0} route systems from {1}.",
@@ -108681,6 +109125,10 @@
     {
       "source": "Market",
       "translation": "Mercado"
+    },
+    {
+      "source": "Market ID accepts numbers only. Extra characters were removed.",
+      "translation": "O Market ID aceita apenas números. Caracteres extras foram removidos."
     },
     {
       "source": "Market cargo",
@@ -109923,6 +110371,14 @@
       "translation": "Nenhum lote de entrada do gamepad SDL está ativo."
     },
     {
+      "source": "No Squadron Carrier",
+      "translation": "Nenhum porta-aviões de esquadrão"
+    },
+    {
+      "source": "No Squadron Carrier is associated with this account.",
+      "translation": "Nenhum Squadron Carrier está associado a esta conta."
+    },
+    {
       "source": "No absolute overlay placement conversion was required.",
       "translation": "Nenhuma conversão absoluta de posicionamento de sobreposição foi necessária."
     },
@@ -110273,6 +110729,10 @@
     {
       "source": "No notes",
       "translation": "Sem notas"
+    },
+    {
+      "source": "No orbital planned Raven sites are available to link. Only the system architect can start a build without a plan.",
+      "translation": "Nenhum site Raven planejado orbital está disponível para link. Somente o arquiteto do sistema pode iniciar uma construção sem um plano."
     },
     {
       "source": "No organism available",
@@ -110863,6 +111323,10 @@
       "translation": "Somente as atualizações revisadas e exclusões estáveis serão enviadas. Os dados simultâneos e remotos são retidos."
     },
     {
+      "source": "Only the system architect can start a build project without a planned Raven site.",
+      "translation": "Somente o arquiteto do sistema pode iniciar um projeto de construção sem um site Raven planejado."
+    },
+    {
       "source": "Only this system (rings / markets)",
       "translation": "Somente este sistema (anéis/mercados)"
     },
@@ -111333,6 +111797,10 @@
     {
       "source": "Origin coordinates unavailable.",
       "translation": "Coordenadas de origem indisponíveis."
+    },
+    {
+      "source": "Original",
+      "translation": "Original"
     },
     {
       "source": "Original backup",
@@ -112971,6 +113439,10 @@
       "translation": "Eventos de diário {0} EDSM enfileirados; {1} aguardando o próximo lote."
     },
     {
+      "source": "Queued {0} Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "Atualizações de carga do Fleet Carrier {0} na fila até que a linha de base da doca termine."
+    },
+    {
       "source": "Queued {0} Inara event(s); {1} waiting for the next batch.",
       "translation": "{0} Inara evento(s) na fila; {1} aguardando o próximo lote."
     },
@@ -112989,6 +113461,10 @@
     {
       "source": "Queued {0} journal events for EDDN.",
       "translation": "Eventos de diário {0} enfileirados para EDDN."
+    },
+    {
+      "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "Atualizações de carga do Fleet Carrier do esquadrão {0} na fila até que a linha de base da doca termine."
     },
     {
       "source": "Quick statistics",
@@ -113041,6 +113517,10 @@
     {
       "source": "RB",
       "translation": "RB"
+    },
+    {
+      "source": "RC Linked Carriers",
+      "translation": "Operadoras vinculadas a RC"
     },
     {
       "source": "READ",
@@ -114105,6 +114585,10 @@
     {
       "source": "Refresh image",
       "translation": "Atualizar imagem"
+    },
+    {
+      "source": "Refresh linked RavenColonial carriers",
+      "translation": "Atualizar operadoras RavenColonial vinculadas"
     },
     {
       "source": "Refresh preview",
@@ -115391,6 +115875,10 @@
       "translation": "LIMITE ESFÉRICO"
     },
     {
+      "source": "SQUADRON CARRIER",
+      "translation": "Porta-Esquadrão"
+    },
+    {
       "source": "SRV",
       "translation": "SRV"
     },
@@ -116281,6 +116769,10 @@
     {
       "source": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
       "translation": "Veja seu caminho na raiz da pesquisa, mova-se entre boxels no mesmo nível ou abra um boxel filho menor. Isso não se move entre os sistemas da tabela."
+    },
+    {
+      "source": "Seeded linked carrier {0} cargo from Frontier CAPI ({1}).",
+      "translation": "Carga transportadora vinculada semeada {0} de Frontier CAPI ({1})."
     },
     {
       "source": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -117667,12 +118159,12 @@
       "translation": "Spoilers"
     },
     {
-      "source": "Squadron Logo",
-      "translation": "Logotipo do Esquadrão"
+      "source": "Squadron Carrier",
+      "translation": "Porta-Esquadrão"
     },
     {
-      "source": "Squadron carrier",
-      "translation": "Porta-aviões"
+      "source": "Squadron Logo",
+      "translation": "Logotipo do Esquadrão"
     },
     {
       "source": "SquadronLogo",
@@ -118405,6 +118897,10 @@
     {
       "source": "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.",
       "translation": "Armazene minerais, classificações, nomes de pontos de acesso, rendimentos médios, datas da última mineração, notas de sobreposição/RES e capturas de tela. Clique com o botão direito para copiar ou excluir; Desfazer restaura a última exclusão durante esta execução."
+    },
+    {
+      "source": "Stored cargo from Frontier squadron data.",
+      "translation": "Carga armazenada dos dados do esquadrão Frontier."
     },
     {
       "source": "Stored cargo from Frontier.",
@@ -119335,6 +119831,10 @@
       "translation": "Thargoids, guerra civil, tecnologia, linguagem e registros do Protetorado Corporal"
     },
     {
+      "source": "That Market ID is too large.",
+      "translation": "Esse ID de mercado é muito grande."
+    },
+    {
       "source": "That name is already saved for this ship. Select it below to edit, or choose a different name.",
       "translation": "Esse nome já está salvo para este navio. Selecione-o abaixo para editar ou escolha um nome diferente."
     },
@@ -119537,6 +120037,10 @@
     {
       "source": "The Journey workspace requires a commander profile.",
       "translation": "O espaço de trabalho Jornada requer um perfil de comandante."
+    },
+    {
+      "source": "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+      "translation": "A guia Linked lista as operadoras vinculadas ao RavenColonial com uma atualização sob demanda. Atracar em um porta-aviões vinculado a um banco de esquadrão o identifica automaticamente; caso contrário, selecione o porta-aviões do seu esquadrão. RavenColonial não fornece sua capacidade."
     },
     {
       "source": "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
@@ -120479,6 +120983,10 @@
       "translation": "O lembrete opcional de carga cheia aguarda até que a carga esteja cheia e a coleta ociosa por um minuto."
     },
     {
+      "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
+      "translation": "O local orbital planejado de Raven não pôde ser comparado ao catálogo de construção local. Somente o arquiteto do sistema pode iniciar uma construção sem um plano."
+    },
+    {
       "source": "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
       "translation": "O organismo é uma primeira descoberta do atual Comandante. A mesma bandeira preenchida nas linhas compactas do FSS marca um corpo não descoberto."
     },
@@ -121007,10 +121515,6 @@
       "translation": "O limite esférico é inválido."
     },
     {
-      "source": "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
-      "translation": "A seção do esquadrão usa porta-aviões RavenColonial vinculados. Atracar em um porta-aviões vinculado a um banco de esquadrão o identifica automaticamente; caso contrário, selecione o porta-aviões do seu esquadrão. RavenColonial não fornece sua capacidade."
-    },
-    {
       "source": "The staged SrvSurvey update helper did not start.",
       "translation": "O auxiliar de atualização preparado SrvSurvey não foi iniciado."
     },
@@ -121381,10 +121885,6 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "Isso remove a configuração salva e seus grupos de SrvSurvey. Isso não altera seus controles no Elite."
-    },
-    {
-      "source": "This secured system can only be edited by its architect.",
-      "translation": "Este sistema seguro só pode ser editado pelo seu arquiteto."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -122431,6 +122931,10 @@
       "translation": "Use impulso em B → C"
     },
     {
+      "source": "Use compact/scrolling commodities list",
+      "translation": "Use lista de mercadorias compacta/rolagem"
+    },
+    {
       "source": "Use current",
       "translation": "Usar atual"
     },
@@ -122577,6 +123081,10 @@
     {
       "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
       "translation": "Use as recomendações quadradas no radar compacto Surface Mining para alinhar e posicionar cada plataforma. O radar amplia automaticamente conforme você se aproxima do depósito e de suas posições sugeridas."
+    },
+    {
+      "source": "UseCompactScrollingCommoditiesList",
+      "translation": "UseCompactScrollingCommoditiesList"
     },
     {
       "source": "UseDevelopmentReleases",
@@ -123519,6 +124027,10 @@
       "translation": "Sim, feche e continue"
     },
     {
+      "source": "You are not the architect of this system ({0}). The system was not loaded.",
+      "translation": "Você não é o arquiteto deste sistema ({0}). O sistema não foi carregado."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Seus dados permanecem inalterados. Revise os detalhes e prepare um relatório GitHub ou compartilhe-os em Discord."
     },
@@ -123685,10 +124197,6 @@
     {
       "source": "antimony",
       "translation": "antimônio"
-    },
-    {
-      "source": "aphrodite?",
-      "translation": "afrodite?"
     },
     {
       "source": "app",
@@ -124263,10 +124771,6 @@
       "translation": "fazer"
     },
     {
-      "source": "dodec?",
-      "translation": "dodec?"
-    },
-    {
       "source": "dolphin",
       "translation": "golfinho"
     },
@@ -124815,6 +125319,10 @@
       "translation": "em"
     },
     {
+      "source": "inara-accepted.txt",
+      "translation": "inara-accepted.txt"
+    },
+    {
       "source": "inara.contributors",
       "translation": "inara.contribuidores"
     },
@@ -124837,10 +125345,6 @@
     {
       "source": "input",
       "translation": "entrada"
-    },
-    {
-      "source": "installation?",
-      "translation": "instalação?"
     },
     {
       "source": "instances",
@@ -124941,6 +125445,10 @@
     {
       "source": "log folder proton profile data source",
       "translation": "pasta de log fonte de dados do perfil de prótons"
+    },
+    {
+      "source": "logs",
+      "translation": "registros"
     },
     {
       "source": "lookup",
@@ -125223,8 +125731,8 @@
       "translation": "orbe caixão tablet totem urna cores"
     },
     {
-      "source": "orbis?",
-      "translation": "órbita?"
+      "source": "orbital planned",
+      "translation": "orbital planejado"
     },
     {
       "source": "orca",
@@ -125237,10 +125745,6 @@
     {
       "source": "os",
       "translation": "sistema operacional"
-    },
-    {
-      "source": "outpost?",
-      "translation": "posto avançado?"
     },
     {
       "source": "overlay",
@@ -125301,6 +125805,10 @@
     {
       "source": "planetaryapproachsuite",
       "translation": "de abordagem planetáriasuite"
+    },
+    {
+      "source": "planned",
+      "translation": "planejado"
     },
     {
       "source": "platinum",
@@ -125381,6 +125889,10 @@
     {
       "source": "quests",
       "translation": "missões"
+    },
+    {
+      "source": "queued dock baseline",
+      "translation": "linha de base da doca na fila"
     },
     {
       "source": "radar",
@@ -125561,10 +126073,6 @@
     {
       "source": "settings-search-highlight",
       "translation": "configurações-pesquisa-destaque"
-    },
-    {
-      "source": "settlement?",
-      "translation": "liquidação?"
     },
     {
       "source": "share",
@@ -126965,6 +127473,10 @@
     {
       "source": "{0} · ACTIVE OBELISK",
       "translation": "{0} · OBELISCO ATIVO"
+    },
+    {
+      "source": "{0} · Tier {1}: {2}",
+      "translation": "{0} · Camada {1}: {2}"
     },
     {
       "source": "{0} · active",
@@ -128855,6 +129367,14 @@
     {
       "source": "All",
       "translation": "все"
+    },
+    {
+      "source": "All Fleet Carrier data points ({0})",
+      "translation": "Все точки данных Fleet Carrier ({0})"
+    },
+    {
+      "source": "All Squadron Carrier data points ({0})",
+      "translation": "Все точки данных авианосца эскадрильи ({0})"
     },
     {
       "source": "All dates and times use UTC.",
@@ -131773,6 +132293,10 @@
       "translation": "Выберите локальное фоновое изображение и настройте его значения X, Y и масштаб, просматривая предварительный просмотр на той же карте."
     },
     {
+      "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
+      "translation": "Выберите планируемый сайт Raven для создания ссылки. Только системный архитектор может начать сборку без плана."
+    },
+    {
       "source": "Choose a preferred Commander when more than one profile appears in the same journal folder.",
       "translation": "Выберите предпочтительный Commander, если в одной папке журнала отображается более одного профиля."
     },
@@ -133083,6 +133607,10 @@
     {
       "source": "Construction site",
       "translation": "Строительная площадка"
+    },
+    {
+      "source": "Consumer items",
+      "translation": "Товары народного потребления"
     },
     {
       "source": "Contain",
@@ -134593,6 +135121,10 @@
       "translation": "Доступ к док-станции"
     },
     {
+      "source": "Docking an untracked Raven construction site auto-links the commander only when the active commander name matches the project's architect; otherwise the site loads as untracked for shopping.",
+      "translation": "При стыковке неотслеживаемой строительной площадки Raven командир автоматически подключается только в том случае, если имя активного командира совпадает с именем архитектора проекта; в противном случае сайт загружается как неотслеживаемый для покупок."
+    },
+    {
       "source": "Docking denied",
       "translation": "Стыковка запрещена"
     },
@@ -135471,6 +136003,10 @@
     {
       "source": "Estimated",
       "translation": "Предполагаемый"
+    },
+    {
+      "source": "Evacuation shelter",
+      "translation": "Эвакуационное убежище"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -136481,6 +137017,10 @@
       "translation": "Груз Fleet Carrier будет синхронизироваться с соответствующими обновлениями Market.json."
     },
     {
+      "source": "Fleet Carrier dock baseline was not loaded: {0}",
+      "translation": "Базовая линия дока Fleet Carrier не была загружена: {0}"
+    },
+    {
       "source": "Fleet Carrier loading",
       "translation": "Загрузка авианосца"
     },
@@ -136489,8 +137029,8 @@
       "translation": "Fleet Carrier повторно использует существующий профиль Frontier. Расстояние поддерживает две системы: текущее положение, дом и систему вашего оператора связи."
     },
     {
-      "source": "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
-      "translation": "Fleet Carrier находится непосредственно под обзором и сохраняет полный профиль перевозчика. Связанные данные Frontier загружаются автоматически при обнаружении журнала командира с существующим кэшем и временем восстановления обновления."
+      "source": "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+      "translation": "Авианосец флота находится непосредственно под обзором с вкладками для личного авианосца флота, авианосца эскадрильи из Frontier /squadron и авианосцев, связанных с RavenColonial. Связанные данные Frontier загружаются автоматически при обнаружении журнала командира с существующим кэшем и временем восстановления обновления."
     },
     {
       "source": "Fleet Carrier update warning",
@@ -136709,6 +137249,10 @@
       "translation": "Из истинного центра отправьте .mining center here, чтобы исправить сохраненный центр и выравнивание кольца, не перемещая маркеры отложений."
     },
     {
+      "source": "Frontier CAPI cargo seed was not applied: {0}",
+      "translation": "Frontier Начальное значение груза CAPI не применялось: {0}"
+    },
+    {
       "source": "Frontier Developments",
       "translation": "Frontier Разработки"
     },
@@ -136827,6 +137371,10 @@
     {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier данные верфи не удалось прочитать: {0}"
+    },
+    {
+      "source": "Frontier squadron data could not be read: {0}",
+      "translation": "Frontier данные эскадрильи не удалось прочитать: {0}"
     },
     {
       "source": "Frontier token request failed ({0}): {1}",
@@ -137859,6 +138407,10 @@
     {
       "source": "Help documentation and overlay icon glossary",
       "translation": "Справочная документация и словарь наложенных значков"
+    },
+    {
+      "source": "Helpers can only link a visible planned Raven site; only the system architect can start a build project without a plan.",
+      "translation": "Помощники могут ссылаться только на видимый запланированный сайт Raven; только системный архитектор может начать проект сборки без плана."
     },
     {
       "source": "Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active",
@@ -139665,6 +140217,10 @@
       "translation": "Лайм"
     },
     {
+      "source": "Linked",
+      "translation": "Связано"
+    },
+    {
       "source": "Linked Raven project {0} into the active list for this construction site.",
       "translation": "Связанный проект Raven {0} в активный список для этой строительной площадки."
     },
@@ -139675,6 +140231,10 @@
     {
       "source": "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
       "translation": "Связанный груз использует существующий инвентарь RavenColonial и следует своим предпочтениям синхронизации грузов. Frontier остается источником мощности, финансов и услуг."
+    },
+    {
+      "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
+      "translation": "Связанный эскадрильный груз от RavenColonial. Емкость и финансы взяты из последнего Frontier обновления."
     },
     {
       "source": "Listening for community observations…",
@@ -139809,6 +140369,10 @@
       "translation": "Система загрузки"
     },
     {
+      "source": "Load system only succeeds when the architect is unassigned or matches the active commander. Anyone else is refused with a not-the-architect warning.",
+      "translation": "Система загрузки работает успешно только в том случае, если архитектор не назначен или соответствует активному командиру. Всем остальным отказывают с предупреждением «не архитектор»."
+    },
+    {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "Загрузите активный командир перед проверкой ключа API Raven."
     },
@@ -139821,8 +140385,12 @@
       "translation": "Загружен 1 активный проект Raven Colonial."
     },
     {
-      "source": "Loaded and selected the one planned Raven site.",
-      "translation": "Загрузил и выбрал один запланированный сайт Raven."
+      "source": "Loaded Raven Colonial cargo baseline for {0}.",
+      "translation": "Загружена базовая линия груза Raven Colonial для {0}."
+    },
+    {
+      "source": "Loaded and selected the one {0} Raven site.",
+      "translation": "Загрузил и выбрал один сайт Raven {0}."
     },
     {
       "source": "Loaded commander Guardian data with {0} file error(s): {1}",
@@ -139905,12 +140473,16 @@
       "translation": "Загружено {0} из {1} записей для {2}."
     },
     {
+      "source": "Loaded {0} orbital planned sites. Choose one to link.",
+      "translation": "Загружены запланированные орбитальные объекты {0}. Выберите один для ссылки."
+    },
+    {
       "source": "Loaded {0} personal and {1} Raven system nickname(s).",
       "translation": "Загружен персональный {0} и системный псевдоним {1} Raven."
     },
     {
       "source": "Loaded {0} planned sites. Choose one or configure the build manually.",
-      "translation": "Загружено {0} запланированных сайтов. Выберите один или настройте сборку вручную."
+      "translation": "Загружены запланированные сайты {0}. Выберите один или настройте сборку вручную."
     },
     {
       "source": "Loaded {0} route systems from {1}.",
@@ -140495,6 +141067,10 @@
     {
       "source": "Market",
       "translation": "Рынок"
+    },
+    {
+      "source": "Market ID accepts numbers only. Extra characters were removed.",
+      "translation": "Market ID принимает только цифры. Лишние символы были удалены."
     },
     {
       "source": "Market cargo",
@@ -141737,6 +142313,14 @@
       "translation": "Ни один входной пакет SDL-геймпада не активен."
     },
     {
+      "source": "No Squadron Carrier",
+      "translation": "Нет эскадрильи авианосца"
+    },
+    {
+      "source": "No Squadron Carrier is associated with this account.",
+      "translation": "С этой учетной записью не связан ни один авиаперевозчик."
+    },
+    {
       "source": "No absolute overlay placement conversion was required.",
       "translation": "Никакого абсолютного преобразования размещения наложения не требовалось."
     },
@@ -142087,6 +142671,10 @@
     {
       "source": "No notes",
       "translation": "Нет примечаний"
+    },
+    {
+      "source": "No orbital planned Raven sites are available to link. Only the system architect can start a build without a plan.",
+      "translation": "Никакие орбитальные запланированные объекты Ворона не доступны для связи. Только системный архитектор может начать сборку без плана."
     },
     {
       "source": "No organism available",
@@ -142677,6 +143265,10 @@
       "translation": "Будут отправлены только проверенные обновления и стабильные удаления. Сохраняются одновременные и удаленные данные."
     },
     {
+      "source": "Only the system architect can start a build project without a planned Raven site.",
+      "translation": "Только системный архитектор может начать проект сборки без запланированной площадки Raven."
+    },
+    {
       "source": "Only this system (rings / markets)",
       "translation": "Только эта система (кольца/рынки)"
     },
@@ -143147,6 +143739,10 @@
     {
       "source": "Origin coordinates unavailable.",
       "translation": "Координаты происхождения недоступны."
+    },
+    {
+      "source": "Original",
+      "translation": "Оригинал"
     },
     {
       "source": "Original backup",
@@ -144785,6 +145381,10 @@
       "translation": "Поставленные в очередь события журнала {0} EDSM; {1} ждет следующей партии."
     },
     {
+      "source": "Queued {0} Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "Поставлено в очередь обновление груза {0} Fleet Carrier до завершения базовой линии дока."
+    },
+    {
       "source": "Queued {0} Inara event(s); {1} waiting for the next batch.",
       "translation": "В очереди {0} Inara событий; {1} ожидает следующего пакета."
     },
@@ -144803,6 +145403,10 @@
     {
       "source": "Queued {0} journal events for EDDN.",
       "translation": "Поставленные в очередь события журнала {0} для EDDN."
+    },
+    {
+      "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "Поставлено в очередь обновление груза авианосца эскадрильи {0} до завершения базовой линии дока."
     },
     {
       "source": "Quick statistics",
@@ -144855,6 +145459,10 @@
     {
       "source": "RB",
       "translation": "РБ"
+    },
+    {
+      "source": "RC Linked Carriers",
+      "translation": "Связанные операторы RC"
     },
     {
       "source": "READ",
@@ -145919,6 +146527,10 @@
     {
       "source": "Refresh image",
       "translation": "Обновить изображение"
+    },
+    {
+      "source": "Refresh linked RavenColonial carriers",
+      "translation": "Обновить связанных перевозчиков RavenColonial."
     },
     {
       "source": "Refresh preview",
@@ -147205,6 +147817,10 @@
       "translation": "СФЕРИЧЕСКИЙ ПРЕДЕЛ"
     },
     {
+      "source": "SQUADRON CARRIER",
+      "translation": "Эскадрилья авианосца"
+    },
+    {
       "source": "SRV",
       "translation": "СРВ"
     },
@@ -148095,6 +148711,10 @@
     {
       "source": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
       "translation": "Просматривайте свой путь из корня поиска, перемещайтесь между блоками на одном уровне или открывайте дочерний блок меньшего размера. Это не перемещается между системами в таблице."
+    },
+    {
+      "source": "Seeded linked carrier {0} cargo from Frontier CAPI ({1}).",
+      "translation": "Заполнен связанный перевозчик {0} груза из Frontier CAPI ({1})."
     },
     {
       "source": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -149481,12 +150101,12 @@
       "translation": "Спойлер"
     },
     {
-      "source": "Squadron Logo",
-      "translation": "Логотип эскадрильи"
+      "source": "Squadron Carrier",
+      "translation": "Эскадрилья авианосца"
     },
     {
-      "source": "Squadron carrier",
-      "translation": "Эскадрилья авианосца"
+      "source": "Squadron Logo",
+      "translation": "Логотип эскадрильи"
     },
     {
       "source": "SquadronLogo",
@@ -150219,6 +150839,10 @@
     {
       "source": "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.",
       "translation": "Храните минералы, рейтинги, названия горячих точек, среднюю урожайность, даты последней добычи, примечания о перекрытии/RES и снимки экрана. Щелкните правой кнопкой мыши, чтобы скопировать или удалить; Отменить восстанавливает последнее удаление во время этого запуска."
+    },
+    {
+      "source": "Stored cargo from Frontier squadron data.",
+      "translation": "Сохранен груз из данных эскадрильи Frontier."
     },
     {
       "source": "Stored cargo from Frontier.",
@@ -151149,6 +151773,10 @@
       "translation": "Таргоиды, гражданская война, технологии, язык и записи Протектората тел"
     },
     {
+      "source": "That Market ID is too large.",
+      "translation": "Этот идентификатор рынка слишком велик."
+    },
+    {
       "source": "That name is already saved for this ship. Select it below to edit, or choose a different name.",
       "translation": "Это имя уже сохранено для этого корабля. Выберите его ниже, чтобы изменить, или выберите другое имя."
     },
@@ -151351,6 +151979,10 @@
     {
       "source": "The Journey workspace requires a commander profile.",
       "translation": "Для рабочего пространства «Путешествие» требуется профиль командира."
+    },
+    {
+      "source": "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+      "translation": "На вкладке «Связанные» перечислены операторы связи, связанные с RavenColonial, которые обновляются по требованию. Стыковка с авианосцем, связанным с эскадрильей, идентифицирует его автоматически; в противном случае выберите авианосец. RavenColonial не поставляет свои мощности."
     },
     {
       "source": "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
@@ -152293,6 +152925,10 @@
       "translation": "Дополнительное напоминание о заполнении груза ожидает, пока груз не будет заполнен и сбор не будет приостановлен в течение одной минуты."
     },
     {
+      "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
+      "translation": "Планируемая орбитальная площадка Ворона не могла быть сопоставлена ​​с местным каталогом построек. Только системный архитектор может начать сборку без плана."
+    },
+    {
       "source": "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
       "translation": "Этот организм — первое открытие нынешнего Командующего. Один и тот же заполненный флажок на компактных строках ФСС отмечает необнаруженное тело."
     },
@@ -152821,10 +153457,6 @@
       "translation": "Сферический предел недействителен."
     },
     {
-      "source": "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
-      "translation": "В эскадрилье используются связанные авианосцы RavenColonial. Стыковка с авианосцем, связанным с эскадрильей, идентифицирует его автоматически; в противном случае выберите авианосец. RavenColonial не поставляет свои мощности."
-    },
-    {
       "source": "The staged SrvSurvey update helper did not start.",
       "translation": "Помощник по поэтапному обновлению SrvSurvey не запустился."
     },
@@ -153195,10 +153827,6 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "При этом сохраненная конфигурация и ее группы будут удалены из SrvSurvey. Это не меняет ваши элементы управления в Elite."
-    },
-    {
-      "source": "This secured system can only be edited by its architect.",
-      "translation": "Эту защищенную систему может редактировать только ее архитектор."
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -154245,6 +154873,10 @@
       "translation": "Используйте усиление на B → C."
     },
     {
+      "source": "Use compact/scrolling commodities list",
+      "translation": "Использовать компактный/прокручиваемый список товаров"
+    },
+    {
       "source": "Use current",
       "translation": "Использовать текущий"
     },
@@ -154391,6 +155023,10 @@
     {
       "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
       "translation": "Используйте квадратные рекомендации на компактном радаре для наземных горных работ, чтобы выровнять и разместить каждую буровую установку. Радар автоматически масштабирует масштаб по мере приближения к месторождению и предлагаемым позициям."
+    },
+    {
+      "source": "UseCompactScrollingCommoditiesList",
+      "translation": "Усекомпактскроллингтоварный список"
     },
     {
       "source": "UseDevelopmentReleases",
@@ -155333,6 +155969,10 @@
       "translation": "Да, закройте и продолжайте"
     },
     {
+      "source": "You are not the architect of this system ({0}). The system was not loaded.",
+      "translation": "Вы не являетесь архитектором этой системы ({0}). Система не была загружена."
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "Ваши данные не изменяются. Просмотрите подробности и подготовьте отчет на GitHub или поделитесь им на Discord."
     },
@@ -155499,10 +156139,6 @@
     {
       "source": "antimony",
       "translation": "сурьма"
-    },
-    {
-      "source": "aphrodite?",
-      "translation": "Афродита?"
     },
     {
       "source": "app",
@@ -156077,10 +156713,6 @@
       "translation": "делать"
     },
     {
-      "source": "dodec?",
-      "translation": "додек?"
-    },
-    {
       "source": "dolphin",
       "translation": "дельфин"
     },
@@ -156629,6 +157261,10 @@
       "translation": "в"
     },
     {
+      "source": "inara-accepted.txt",
+      "translation": "inara-accepted.txt"
+    },
+    {
       "source": "inara.contributors",
       "translation": "inara.соавторы"
     },
@@ -156651,10 +157287,6 @@
     {
       "source": "input",
       "translation": "вход"
-    },
-    {
-      "source": "installation?",
-      "translation": "установка?"
     },
     {
       "source": "instances",
@@ -156755,6 +157387,10 @@
     {
       "source": "log folder proton profile data source",
       "translation": "папка журнала, источник данных профиля протона"
+    },
+    {
+      "source": "logs",
+      "translation": "журналы"
     },
     {
       "source": "lookup",
@@ -157037,8 +157673,8 @@
       "translation": "шар гроб табличка тотем урна цвета"
     },
     {
-      "source": "orbis?",
-      "translation": "орбис?"
+      "source": "orbital planned",
+      "translation": "орбитальный планируется"
     },
     {
       "source": "orca",
@@ -157051,10 +157687,6 @@
     {
       "source": "os",
       "translation": "ОС"
-    },
-    {
-      "source": "outpost?",
-      "translation": "застава?"
     },
     {
       "source": "overlay",
@@ -157115,6 +157747,10 @@
     {
       "source": "planetaryapproachsuite",
       "translation": "планетарный подходсюита"
+    },
+    {
+      "source": "planned",
+      "translation": "запланировано"
     },
     {
       "source": "platinum",
@@ -157195,6 +157831,10 @@
     {
       "source": "quests",
       "translation": "квесты"
+    },
+    {
+      "source": "queued dock baseline",
+      "translation": "базовая линия закрепления в очереди"
     },
     {
       "source": "radar",
@@ -157375,10 +158015,6 @@
     {
       "source": "settings-search-highlight",
       "translation": "настройки-поиск-выделение"
-    },
-    {
-      "source": "settlement?",
-      "translation": "поселение?"
     },
     {
       "source": "share",
@@ -158779,6 +159415,10 @@
     {
       "source": "{0} · ACTIVE OBELISK",
       "translation": "{0} · АКТИВНЫЙ ОБЕЛИСК"
+    },
+    {
+      "source": "{0} · Tier {1}: {2}",
+      "translation": "{0} · Уровень {1}: {2}"
     },
     {
       "source": "{0} · active",
@@ -160669,6 +161309,14 @@
     {
       "source": "All",
       "translation": "全部"
+    },
+    {
+      "source": "All Fleet Carrier data points ({0})",
+      "translation": "所有舰队承运人数据点 ({0})"
+    },
+    {
+      "source": "All Squadron Carrier data points ({0})",
+      "translation": "所有航空母舰中队数据点 ({0})"
     },
     {
       "source": "All dates and times use UTC.",
@@ -163587,6 +164235,10 @@
       "translation": "选择本地背景图像并调整其 X、Y 和比例值，同时在同一地图上查看预览。"
     },
     {
+      "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
+      "translation": "选择要链接的计划 Raven 站点。只有系统架构师才能在没有计划的情况下开始构建。"
+    },
+    {
       "source": "Choose a preferred Commander when more than one profile appears in the same journal folder.",
       "translation": "当同一日志文件夹中出现多个配置文件时，请选择首选指挥官。"
     },
@@ -164897,6 +165549,10 @@
     {
       "source": "Construction site",
       "translation": "施工现场"
+    },
+    {
+      "source": "Consumer items",
+      "translation": "消费品"
     },
     {
       "source": "Contain",
@@ -166407,6 +167063,10 @@
       "translation": "对接接入"
     },
     {
+      "source": "Docking an untracked Raven construction site auto-links the commander only when the active commander name matches the project's architect; otherwise the site loads as untracked for shopping.",
+      "translation": "仅当活动指挥官名称与项目建筑师匹配时，对接未跟踪的 Raven 建筑工地才会自动链接指挥官；否则，该网站将加载为未跟踪购物。"
+    },
+    {
       "source": "Docking denied",
       "translation": "对接被拒绝"
     },
@@ -167285,6 +167945,10 @@
     {
       "source": "Estimated",
       "translation": "估计"
+    },
+    {
+      "source": "Evacuation shelter",
+      "translation": "避难所"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -168295,6 +168959,10 @@
       "translation": "舰队承运商货物将从匹配的 Market.json 更新中同步。"
     },
     {
+      "source": "Fleet Carrier dock baseline was not loaded: {0}",
+      "translation": "舰队航母码头基线未加载：{0}"
+    },
+    {
       "source": "Fleet Carrier loading",
       "translation": "舰队航母装载"
     },
@@ -168303,8 +168971,8 @@
       "translation": "Fleet Carrier 重复使用现有的 Frontier 配置文件。距离支持两个系统，当前位置、家庭和运营商的系统。"
     },
     {
-      "source": "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
-      "translation": "Fleet Carrier 位于“概览”正下方，并保留完整的承运商资料。当检测到指挥官日志时，链接Frontier数据会自动加载，并具有现有的缓存和刷新冷却时间。"
+      "source": "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+      "translation": "舰队航母位于概览正下方，其中包含个人舰队航母、来自 Frontier/中队的中队航母以及 RavenColonial 链接航母的选项卡。当检测到指挥官日志时，链接Frontier数据会自动加载，并具有现有的缓存和刷新冷却时间。"
     },
     {
       "source": "Fleet Carrier update warning",
@@ -168523,6 +169191,10 @@
       "translation": "从真实中心，发送 .mining center here 以纠正保存的中心和环对齐，而不移动任何存款标记。"
     },
     {
+      "source": "Frontier CAPI cargo seed was not applied: {0}",
+      "translation": "Frontier CAPI 货物种子未应用：{0}"
+    },
+    {
       "source": "Frontier Developments",
       "translation": "Frontier 进展"
     },
@@ -168641,6 +169313,10 @@
     {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "Frontier 无法读取造船厂数据：{0}"
+    },
+    {
+      "source": "Frontier squadron data could not be read: {0}",
+      "translation": "Frontier中队数据无法读取：{0}"
     },
     {
       "source": "Frontier token request failed ({0}): {1}",
@@ -169673,6 +170349,10 @@
     {
       "source": "Help documentation and overlay icon glossary",
       "translation": "帮助文档和叠加图标术语表"
+    },
+    {
+      "source": "Helpers can only link a visible planned Raven site; only the system architect can start a build project without a plan.",
+      "translation": "助手只能链接可见的计划Raven站点；只有系统架构师才能在没有计划的情况下开始构建项目。"
     },
     {
       "source": "Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active",
@@ -171479,6 +172159,10 @@
       "translation": "酸橙"
     },
     {
+      "source": "Linked",
+      "translation": "链接"
+    },
+    {
       "source": "Linked Raven project {0} into the active list for this construction site.",
       "translation": "将 Raven 项目 {0} 链接到该建筑站点的活动列表中。"
     },
@@ -171489,6 +172173,10 @@
     {
       "source": "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
       "translation": "链接的货物使用现有的 RavenColonial 库存并遵循其货物同步偏好。 Frontier 仍然是产能、财务和服务的来源。"
+    },
+    {
+      "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
+      "translation": "来自 RavenColonial 的链接中队货物。产能和财务来自上次 Frontier 刷新。"
     },
     {
       "source": "Listening for community observations…",
@@ -171623,6 +172311,10 @@
       "translation": "负载系统"
     },
     {
+      "source": "Load system only succeeds when the architect is unassigned or matches the active commander. Anyone else is refused with a not-the-architect warning.",
+      "translation": "仅当架构师未分配或与活动指挥官匹配时，加载系统才会成功。其他任何人都会被拒绝，并收到非建筑师警告。"
+    },
+    {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "在验证 Raven API 密钥之前加载活动指挥官。"
     },
@@ -171635,8 +172327,12 @@
       "translation": "已加载 1 个活动的 Raven Colonial 项目。"
     },
     {
-      "source": "Loaded and selected the one planned Raven site.",
-      "translation": "加载并选择一个计划的 Raven 站点。"
+      "source": "Loaded Raven Colonial cargo baseline for {0}.",
+      "translation": "已加载 {0} 的 Raven Colonial 货物基线。"
+    },
+    {
+      "source": "Loaded and selected the one {0} Raven site.",
+      "translation": "加载并选择了一个 {0} Raven 站点。"
     },
     {
       "source": "Loaded commander Guardian data with {0} file error(s): {1}",
@@ -171719,12 +172415,16 @@
       "translation": "已加载 {2} 的 {1} 条目中的 {0}。"
     },
     {
+      "source": "Loaded {0} orbital planned sites. Choose one to link.",
+      "translation": "加载{0}轨道规划站点。选择一个进行链接。"
+    },
+    {
       "source": "Loaded {0} personal and {1} Raven system nickname(s).",
       "translation": "已加载 {0} 个人昵称和 {1} Raven 系统昵称。"
     },
     {
       "source": "Loaded {0} planned sites. Choose one or configure the build manually.",
-      "translation": "已加载 {0} 计划站点。选择其中之一或手动配置构建。"
+      "translation": "已加载 {0} 规划站点。选择其中之一或手动配置构建。"
     },
     {
       "source": "Loaded {0} route systems from {1}.",
@@ -172309,6 +173009,10 @@
     {
       "source": "Market",
       "translation": "市场"
+    },
+    {
+      "source": "Market ID accepts numbers only. Extra characters were removed.",
+      "translation": "市场 ID 仅接受数字。多余的字符被删除。"
     },
     {
       "source": "Market cargo",
@@ -173551,6 +174255,14 @@
       "translation": "没有处于活动状态的 SDL 游戏手柄输入批次。"
     },
     {
+      "source": "No Squadron Carrier",
+      "translation": "无中队航母"
+    },
+    {
+      "source": "No Squadron Carrier is associated with this account.",
+      "translation": "没有中队航母与此帐户关联。"
+    },
+    {
       "source": "No absolute overlay placement conversion was required.",
       "translation": "不需要绝对的叠加放置转换。"
     },
@@ -173901,6 +174613,10 @@
     {
       "source": "No notes",
       "translation": "无注释"
+    },
+    {
+      "source": "No orbital planned Raven sites are available to link. Only the system architect can start a build without a plan.",
+      "translation": "没有可供链接的轨道计划 Raven 站点。只有系统架构师才能在没有计划的情况下开始构建。"
     },
     {
       "source": "No organism available",
@@ -174491,6 +175207,10 @@
       "translation": "仅发送经过审核的更新和稳定删除。保留并发数据和仅限远程数据。"
     },
     {
+      "source": "Only the system architect can start a build project without a planned Raven site.",
+      "translation": "只有系统架构师才能在没有规划 Raven 站点的情况下启动构建项目。"
+    },
+    {
       "source": "Only this system (rings / markets)",
       "translation": "只有这个系统（环/市场）"
     },
@@ -174961,6 +175681,10 @@
     {
       "source": "Origin coordinates unavailable.",
       "translation": "原点坐标不可用。"
+    },
+    {
+      "source": "Original",
+      "translation": "原来的"
     },
     {
       "source": "Original backup",
@@ -176599,6 +177323,10 @@
       "translation": "排队的 {0} EDSM 日志事件； {1} 等待下一批。"
     },
     {
+      "source": "Queued {0} Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "将 {0} 舰队承运商货物更新排队，直到码头基线完成。"
+    },
+    {
       "source": "Queued {0} Inara event(s); {1} waiting for the next batch.",
       "translation": "已排队的 {0} Inara 事件； {1}等待下一批。"
     },
@@ -176617,6 +177345,10 @@
     {
       "source": "Queued {0} journal events for EDDN.",
       "translation": "EDDN 的 {0} 日志事件已排队。"
+    },
+    {
+      "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "将 {0} 中队舰队航母货物更新排队，直到码头基线完成。"
     },
     {
       "source": "Quick statistics",
@@ -176669,6 +177401,10 @@
     {
       "source": "RB",
       "translation": "RB"
+    },
+    {
+      "source": "RC Linked Carriers",
+      "translation": "RC 链接载体"
     },
     {
       "source": "READ",
@@ -177733,6 +178469,10 @@
     {
       "source": "Refresh image",
       "translation": "刷新图片"
+    },
+    {
+      "source": "Refresh linked RavenColonial carriers",
+      "translation": "刷新链接的 RavenColonial 运营商"
     },
     {
       "source": "Refresh preview",
@@ -179019,6 +179759,10 @@
       "translation": "球面极限"
     },
     {
+      "source": "SQUADRON CARRIER",
+      "translation": "中队航母"
+    },
+    {
       "source": "SRV",
       "translation": "SRV"
     },
@@ -179909,6 +180653,10 @@
     {
       "source": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
       "translation": "从搜索根查看您的路径，在同一级别的框格之间移动，或打开较小的子框格。这不会在表中的系统之间移动。"
+    },
+    {
+      "source": "Seeded linked carrier {0} cargo from Frontier CAPI ({1}).",
+      "translation": "来自 Frontier CAPI ({1}) 的种子链接承运人 {0} 货物。"
     },
     {
       "source": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -181295,12 +182043,12 @@
       "translation": "剧透"
     },
     {
-      "source": "Squadron Logo",
-      "translation": "中队标志"
+      "source": "Squadron Carrier",
+      "translation": "中队航母"
     },
     {
-      "source": "Squadron carrier",
-      "translation": "中队航母"
+      "source": "Squadron Logo",
+      "translation": "中队标志"
     },
     {
       "source": "SquadronLogo",
@@ -182033,6 +182781,10 @@
     {
       "source": "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.",
       "translation": "存储矿物、评级、热点名称、平均产量、最后开采日期、重叠/RES 注释和屏幕截图。右键复制或删除；撤消可恢复本次运行期间的最后一次删除。"
+    },
+    {
+      "source": "Stored cargo from Frontier squadron data.",
+      "translation": "存储来自Frontier中队数据的货物。"
     },
     {
       "source": "Stored cargo from Frontier.",
@@ -182963,6 +183715,10 @@
       "translation": "萨尔戈德、内战、技术、语言和护体记录"
     },
     {
+      "source": "That Market ID is too large.",
+      "translation": "该市场 ID 太大。"
+    },
+    {
       "source": "That name is already saved for this ship. Select it below to edit, or choose a different name.",
       "translation": "该名称已为这艘船保存。在下面选择它进行编辑，或选择其他名称。"
     },
@@ -183165,6 +183921,10 @@
     {
       "source": "The Journey workspace requires a commander profile.",
       "translation": "Journey 工作区需要指挥官配置文件。"
+    },
+    {
+      "source": "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+      "translation": "“链接”选项卡列出了 RavenColonial 链接的运营商并按需刷新。停靠在与中队银行相连的航母上会自动识别它；否则选择您的航空母舰中队。 RavenColonial 不提供其容量。"
     },
     {
       "source": "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
@@ -184107,6 +184867,10 @@
       "translation": "可选的货物已满提醒会等待货物已满且收集空闲一分钟。"
     },
     {
+      "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
+      "translation": "轨道计划的 Raven 站点无法与本地构建目录匹配。只有系统架构师才能在没有计划的情况下开始构建。"
+    },
+    {
       "source": "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
       "translation": "该生物体是现任指挥官的首次发现。紧凑 FSS 行上的相同填充标志标记着未发现的主体。"
     },
@@ -184635,10 +185399,6 @@
       "translation": "球面限制无效。"
     },
     {
-      "source": "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
-      "translation": "中队部分使用连接的RavenColonial 航母。停靠在与中队银行相连的航母上会自动识别它；否则选择您的航空母舰中队。 RavenColonial 不提供其容量。"
-    },
-    {
       "source": "The staged SrvSurvey update helper did not start.",
       "translation": "暂存的 SrvSurvey 更新帮助程序未启动。"
     },
@@ -185009,10 +185769,6 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "这将从 SrvSurvey 中删除已保存的配置及其组。它不会改变您在 Elite 中的控制。"
-    },
-    {
-      "source": "This secured system can only be edited by its architect.",
-      "translation": "该安全系统只能由其架构师进行编辑。"
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -186059,6 +186815,10 @@
       "translation": "在 B → C 上使用升压"
     },
     {
+      "source": "Use compact/scrolling commodities list",
+      "translation": "使用紧凑/滚动商品列表"
+    },
+    {
       "source": "Use current",
       "translation": "使用电流"
     },
@@ -186205,6 +186965,10 @@
     {
       "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
       "translation": "使用紧凑型露天采矿雷达上的方形建议来排列和放置每个钻机。当您接近矿床及其建议位置时，雷达会自动缩放。"
+    },
+    {
+      "source": "UseCompactScrollingCommoditiesList",
+      "translation": "使用紧凑滚动商品列表"
     },
     {
       "source": "UseDevelopmentReleases",
@@ -187147,6 +187911,10 @@
       "translation": "是的，关闭它并继续"
     },
     {
+      "source": "You are not the architect of this system ({0}). The system was not loaded.",
+      "translation": "您不是这个系统的架构师（{0}）。系统未加载。"
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "您的数据没有变化。查看详细信息并准备 GitHub 报告，或在 Discord 上分享。"
     },
@@ -187313,10 +188081,6 @@
     {
       "source": "antimony",
       "translation": "锑"
-    },
-    {
-      "source": "aphrodite?",
-      "translation": "阿佛洛狄忒？"
     },
     {
       "source": "app",
@@ -187891,10 +188655,6 @@
       "translation": "做"
     },
     {
-      "source": "dodec?",
-      "translation": "十二德？"
-    },
-    {
       "source": "dolphin",
       "translation": "海豚"
     },
@@ -188443,6 +189203,10 @@
       "translation": "在"
     },
     {
+      "source": "inara-accepted.txt",
+      "translation": "inara-accepted.txt"
+    },
+    {
       "source": "inara.contributors",
       "translation": "inara.贡献者"
     },
@@ -188465,10 +189229,6 @@
     {
       "source": "input",
       "translation": "输入"
-    },
-    {
-      "source": "installation?",
-      "translation": "安装？"
     },
     {
       "source": "instances",
@@ -188569,6 +189329,10 @@
     {
       "source": "log folder proton profile data source",
       "translation": "日志文件夹质子剖面数据源"
+    },
+    {
+      "source": "logs",
+      "translation": "日志"
     },
     {
       "source": "lookup",
@@ -188851,8 +189615,8 @@
       "translation": "球体棺材平板电脑图腾瓮颜色"
     },
     {
-      "source": "orbis?",
-      "translation": "奥比斯？"
+      "source": "orbital planned",
+      "translation": "轨道计划"
     },
     {
       "source": "orca",
@@ -188865,10 +189629,6 @@
     {
       "source": "os",
       "translation": "操作系统"
-    },
-    {
-      "source": "outpost?",
-      "translation": "前哨？"
     },
     {
       "source": "overlay",
@@ -188929,6 +189689,10 @@
     {
       "source": "planetaryapproachsuite",
       "translation": "行星进近套件"
+    },
+    {
+      "source": "planned",
+      "translation": "计划"
     },
     {
       "source": "platinum",
@@ -189009,6 +189773,10 @@
     {
       "source": "quests",
       "translation": "任务"
+    },
+    {
+      "source": "queued dock baseline",
+      "translation": "排队码头基线"
     },
     {
       "source": "radar",
@@ -189189,10 +189957,6 @@
     {
       "source": "settings-search-highlight",
       "translation": "设置-搜索-突出显示"
-    },
-    {
-      "source": "settlement?",
-      "translation": "结算？"
     },
     {
       "source": "share",
@@ -190593,6 +191357,10 @@
     {
       "source": "{0} · ACTIVE OBELISK",
       "translation": "{0} · 活动方尖碑"
+    },
+    {
+      "source": "{0} · Tier {1}: {2}",
+      "translation": "{0} · 层 {1}：{2}"
     },
     {
       "source": "{0} · active",
@@ -192483,6 +193251,14 @@
     {
       "source": "All",
       "translation": "* ALL >>>!"
+    },
+    {
+      "source": "All Fleet Carrier data points ({0})",
+      "translation": "* ALL FLEET CARRIER DATA POINTS ({0}) >>>!"
+    },
+    {
+      "source": "All Squadron Carrier data points ({0})",
+      "translation": "* ALL SQUADRON CARRIER DATA POINTS ({0}) >>>!"
     },
     {
       "source": "All dates and times use UTC.",
@@ -195401,6 +196177,10 @@
       "translation": "* CHOOSE A LOCAL BACKGROUND IMAGE AND ADJUST ITS X, Y, AND SCALE VALUES WHILE REVIEWING THE PREVIEW ON THE SAME MAP. >>>!"
     },
     {
+      "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
+      "translation": "* CHOOSE A PLANNED RAVEN SITE TO LINK. ONLY THE SYSTEM ARCHITECT CAN START A BUILD WITHOUT A PLAN. >>>!"
+    },
+    {
       "source": "Choose a preferred Commander when more than one profile appears in the same journal folder.",
       "translation": "* CHOOSE A PREFERRED COMMANDER WHEN MORE THAN ONE PROFILE APPEARS IN THE SAME JOURNAL FOLDER. >>>!"
     },
@@ -196711,6 +197491,10 @@
     {
       "source": "Construction site",
       "translation": "* CONSTRUCTION SITE >>>!"
+    },
+    {
+      "source": "Consumer items",
+      "translation": "* CONSUMER ITEMS >>>!"
     },
     {
       "source": "Contain",
@@ -198221,6 +199005,10 @@
       "translation": "* DOCKING ACCESS >>>!"
     },
     {
+      "source": "Docking an untracked Raven construction site auto-links the commander only when the active commander name matches the project's architect; otherwise the site loads as untracked for shopping.",
+      "translation": "* DOCKING AN UNTRACKED RAVEN CONSTRUCTION SITE AUTO-LINKS THE COMMANDER ONLY WHEN THE ACTIVE COMMANDER NAME MATCHES THE PROJECT'S ARCHITECT; OTHERWISE THE SITE LOADS AS UNTRACKED FOR SHOPPING. >>>!"
+    },
+    {
       "source": "Docking denied",
       "translation": "* DOCKING DENIED >>>!"
     },
@@ -199099,6 +199887,10 @@
     {
       "source": "Estimated",
       "translation": "* ESTIMATED >>>!"
+    },
+    {
+      "source": "Evacuation shelter",
+      "translation": "* EVACUATION SHELTER >>>!"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -200109,6 +200901,10 @@
       "translation": "* FLEET CARRIER CARGO WILL SYNC FROM MATCHING MARKET.JSON UPDATES. >>>!"
     },
     {
+      "source": "Fleet Carrier dock baseline was not loaded: {0}",
+      "translation": "* FLEET CARRIER DOCK BASELINE WAS NOT LOADED: {0} >>>!"
+    },
+    {
       "source": "Fleet Carrier loading",
       "translation": "* FLEET CARRIER LOADING >>>!"
     },
@@ -200117,8 +200913,8 @@
       "translation": "* FLEET CARRIER REUSES THE EXISTING FRONTIER PROFILE. DISTANCE SUPPORTS TWO SYSTEMS, CURRENT POSITION, HOME AND YOUR CARRIER'S SYSTEM. >>>!"
     },
     {
-      "source": "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
-      "translation": "* FLEET CARRIER SITS DIRECTLY BELOW OVERVIEW AND RETAINS THE FULL CARRIER PROFILE. LINKED FRONTIER DATA LOADS AUTOMATICALLY WHEN THE COMMANDER JOURNAL IS DETECTED, WITH THE EXISTING CACHE AND REFRESH COOLDOWN. >>>!"
+      "source": "Fleet Carrier sits directly below Overview with tabs for personal Fleet Carrier, Squadron Carrier from Frontier /squadron, and RavenColonial Linked carriers. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+      "translation": "* FLEET CARRIER SITS DIRECTLY BELOW OVERVIEW WITH TABS FOR PERSONAL FLEET CARRIER, SQUADRON CARRIER FROM FRONTIER /SQUADRON, AND RAVENCOLONIAL LINKED CARRIERS. LINKED FRONTIER DATA LOADS AUTOMATICALLY WHEN THE COMMANDER JOURNAL IS DETECTED, WITH THE EXISTING CACHE AND REFRESH COOLDOWN. >>>!"
     },
     {
       "source": "Fleet Carrier update warning",
@@ -200337,6 +201133,10 @@
       "translation": "* FROM THE TRUE CENTER, SEND .MINING CENTER HERE TO CORRECT THE SAVED CENTER AND RING ALIGNMENT WITHOUT MOVING ANY DEPOSIT MARKERS. >>>!"
     },
     {
+      "source": "Frontier CAPI cargo seed was not applied: {0}",
+      "translation": "* FRONTIER CAPI CARGO SEED WAS NOT APPLIED: {0} >>>!"
+    },
+    {
       "source": "Frontier Developments",
       "translation": "* FRONTIER DEVELOPMENTS >>>!"
     },
@@ -200455,6 +201255,10 @@
     {
       "source": "Frontier shipyard data could not be read: {0}",
       "translation": "* FRONTIER SHIPYARD DATA COULD NOT BE READ: {0} >>>!"
+    },
+    {
+      "source": "Frontier squadron data could not be read: {0}",
+      "translation": "* FRONTIER SQUADRON DATA COULD NOT BE READ: {0} >>>!"
     },
     {
       "source": "Frontier token request failed ({0}): {1}",
@@ -201487,6 +202291,10 @@
     {
       "source": "Help documentation and overlay icon glossary",
       "translation": "* HELP DOCUMENTATION AND OVERLAY ICON GLOSSARY >>>!"
+    },
+    {
+      "source": "Helpers can only link a visible planned Raven site; only the system architect can start a build project without a plan.",
+      "translation": "* HELPERS CAN ONLY LINK A VISIBLE PLANNED RAVEN SITE; ONLY THE SYSTEM ARCHITECT CAN START A BUILD PROJECT WITHOUT A PLAN. >>>!"
     },
     {
       "source": "Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active",
@@ -203293,6 +204101,10 @@
       "translation": "* LIME >>>!"
     },
     {
+      "source": "Linked",
+      "translation": "* LINKED >>>!"
+    },
+    {
       "source": "Linked Raven project {0} into the active list for this construction site.",
       "translation": "* LINKED RAVEN PROJECT {0} INTO THE ACTIVE LIST FOR THIS CONSTRUCTION SITE. >>>!"
     },
@@ -203303,6 +204115,10 @@
     {
       "source": "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
       "translation": "* LINKED CARGO USES THE EXISTING RAVENCOLONIAL INVENTORY AND FOLLOWS ITS CARGO-SYNC PREFERENCE. FRONTIER REMAINS THE SOURCE FOR CAPACITY, FINANCES AND SERVICES. >>>!"
+    },
+    {
+      "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
+      "translation": "* LINKED SQUADRON CARGO FROM RAVENCOLONIAL. CAPACITY AND FINANCES ARE FROM THE LAST FRONTIER REFRESH. >>>!"
     },
     {
       "source": "Listening for community observations…",
@@ -203437,6 +204253,10 @@
       "translation": "* LOAD SYSTEM >>>!"
     },
     {
+      "source": "Load system only succeeds when the architect is unassigned or matches the active commander. Anyone else is refused with a not-the-architect warning.",
+      "translation": "* LOAD SYSTEM ONLY SUCCEEDS WHEN THE ARCHITECT IS UNASSIGNED OR MATCHES THE ACTIVE COMMANDER. ANYONE ELSE IS REFUSED WITH A NOT-THE-ARCHITECT WARNING. >>>!"
+    },
+    {
       "source": "Load the active commander before validating a Raven API key.",
       "translation": "* LOAD THE ACTIVE COMMANDER BEFORE VALIDATING A RAVEN API KEY. >>>!"
     },
@@ -203449,8 +204269,12 @@
       "translation": "* LOADED 1 ACTIVE RAVEN COLONIAL PROJECT. >>>!"
     },
     {
-      "source": "Loaded and selected the one planned Raven site.",
-      "translation": "* LOADED AND SELECTED THE ONE PLANNED RAVEN SITE. >>>!"
+      "source": "Loaded Raven Colonial cargo baseline for {0}.",
+      "translation": "* LOADED RAVEN COLONIAL CARGO BASELINE FOR {0}. >>>!"
+    },
+    {
+      "source": "Loaded and selected the one {0} Raven site.",
+      "translation": "* LOADED AND SELECTED THE ONE {0} RAVEN SITE. >>>!"
     },
     {
       "source": "Loaded commander Guardian data with {0} file error(s): {1}",
@@ -203531,6 +204355,10 @@
     {
       "source": "Loaded {0} of {1} entries for {2}.",
       "translation": "* LOADED {0} OF {1} ENTRIES FOR {2}. >>>!"
+    },
+    {
+      "source": "Loaded {0} orbital planned sites. Choose one to link.",
+      "translation": "* LOADED {0} ORBITAL PLANNED SITES. CHOOSE ONE TO LINK. >>>!"
     },
     {
       "source": "Loaded {0} personal and {1} Raven system nickname(s).",
@@ -204123,6 +204951,10 @@
     {
       "source": "Market",
       "translation": "* MARKET >>>!"
+    },
+    {
+      "source": "Market ID accepts numbers only. Extra characters were removed.",
+      "translation": "* MARKET ID ACCEPTS NUMBERS ONLY. EXTRA CHARACTERS WERE REMOVED. >>>!"
     },
     {
       "source": "Market cargo",
@@ -205365,6 +206197,14 @@
       "translation": "* NO SDL GAMEPAD INPUT BATCH IS ACTIVE. >>>!"
     },
     {
+      "source": "No Squadron Carrier",
+      "translation": "* NO SQUADRON CARRIER >>>!"
+    },
+    {
+      "source": "No Squadron Carrier is associated with this account.",
+      "translation": "* NO SQUADRON CARRIER IS ASSOCIATED WITH THIS ACCOUNT. >>>!"
+    },
+    {
       "source": "No absolute overlay placement conversion was required.",
       "translation": "* NO ABSOLUTE OVERLAY PLACEMENT CONVERSION WAS REQUIRED. >>>!"
     },
@@ -205715,6 +206555,10 @@
     {
       "source": "No notes",
       "translation": "* NO NOTES >>>!"
+    },
+    {
+      "source": "No orbital planned Raven sites are available to link. Only the system architect can start a build without a plan.",
+      "translation": "* NO ORBITAL PLANNED RAVEN SITES ARE AVAILABLE TO LINK. ONLY THE SYSTEM ARCHITECT CAN START A BUILD WITHOUT A PLAN. >>>!"
     },
     {
       "source": "No organism available",
@@ -206305,6 +207149,10 @@
       "translation": "* ONLY THE REVIEWED UPDATES AND STABLE DELETIONS WILL BE SENT. CONCURRENT AND REMOTE-ONLY DATA IS RETAINED. >>>!"
     },
     {
+      "source": "Only the system architect can start a build project without a planned Raven site.",
+      "translation": "* ONLY THE SYSTEM ARCHITECT CAN START A BUILD PROJECT WITHOUT A PLANNED RAVEN SITE. >>>!"
+    },
+    {
       "source": "Only this system (rings / markets)",
       "translation": "* ONLY THIS SYSTEM (RINGS / MARKETS) >>>!"
     },
@@ -206775,6 +207623,10 @@
     {
       "source": "Origin coordinates unavailable.",
       "translation": "* ORIGIN COORDINATES UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "Original",
+      "translation": "* ORIGINAL >>>!"
     },
     {
       "source": "Original backup",
@@ -208413,6 +209265,10 @@
       "translation": "* QUEUED {0} EDSM JOURNAL EVENT(S); {1} WAITING FOR THE NEXT BATCH. >>>!"
     },
     {
+      "source": "Queued {0} Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "* QUEUED {0} FLEET CARRIER CARGO UPDATE(S) UNTIL DOCK BASELINE FINISHES. >>>!"
+    },
+    {
       "source": "Queued {0} Inara event(s); {1} waiting for the next batch.",
       "translation": "* QUEUED {0} INARA EVENT(S); {1} WAITING FOR THE NEXT BATCH. >>>!"
     },
@@ -208431,6 +209287,10 @@
     {
       "source": "Queued {0} journal events for EDDN.",
       "translation": "* QUEUED {0} JOURNAL EVENTS FOR EDDN. >>>!"
+    },
+    {
+      "source": "Queued {0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.",
+      "translation": "* QUEUED {0} SQUADRON FLEET CARRIER CARGO UPDATE(S) UNTIL DOCK BASELINE FINISHES. >>>!"
     },
     {
       "source": "Quick statistics",
@@ -208483,6 +209343,10 @@
     {
       "source": "RB",
       "translation": "* RB >>>!"
+    },
+    {
+      "source": "RC Linked Carriers",
+      "translation": "* RC LINKED CARRIERS >>>!"
     },
     {
       "source": "READ",
@@ -209547,6 +210411,10 @@
     {
       "source": "Refresh image",
       "translation": "* REFRESH IMAGE >>>!"
+    },
+    {
+      "source": "Refresh linked RavenColonial carriers",
+      "translation": "* REFRESH LINKED RAVENCOLONIAL CARRIERS >>>!"
     },
     {
       "source": "Refresh preview",
@@ -210833,6 +211701,10 @@
       "translation": "* SPHERICAL LIMIT >>>!"
     },
     {
+      "source": "SQUADRON CARRIER",
+      "translation": "* SQUADRON CARRIER >>>!"
+    },
+    {
       "source": "SRV",
       "translation": "* SRV >>>!"
     },
@@ -211723,6 +212595,10 @@
     {
       "source": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
       "translation": "* SEE YOUR PATH FROM THE SEARCH ROOT, MOVE BETWEEN BOXELS AT THE SAME LEVEL, OR OPEN A SMALLER CHILD BOXEL. THIS DOES NOT MOVE BETWEEN SYSTEMS IN THE TABLE. >>>!"
+    },
+    {
+      "source": "Seeded linked carrier {0} cargo from Frontier CAPI ({1}).",
+      "translation": "* SEEDED LINKED CARRIER {0} CARGO FROM FRONTIER CAPI ({1}). >>>!"
     },
     {
       "source": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -213109,12 +213985,12 @@
       "translation": "* SPOILER >>>!"
     },
     {
-      "source": "Squadron Logo",
-      "translation": "* SQUADRON LOGO >>>!"
+      "source": "Squadron Carrier",
+      "translation": "* SQUADRON CARRIER >>>!"
     },
     {
-      "source": "Squadron carrier",
-      "translation": "* SQUADRON CARRIER >>>!"
+      "source": "Squadron Logo",
+      "translation": "* SQUADRON LOGO >>>!"
     },
     {
       "source": "SquadronLogo",
@@ -213847,6 +214723,10 @@
     {
       "source": "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.",
       "translation": "* STORE MINERALS, RATINGS, HOTSPOT NAMES, AVERAGE YIELDS, LAST-MINED DATES, OVERLAP/RES NOTES AND SCREENSHOTS. RIGHT-CLICK TO COPY OR DELETE; UNDO RESTORES THE LAST DELETION DURING THIS RUN. >>>!"
+    },
+    {
+      "source": "Stored cargo from Frontier squadron data.",
+      "translation": "* STORED CARGO FROM FRONTIER SQUADRON DATA. >>>!"
     },
     {
       "source": "Stored cargo from Frontier.",
@@ -214777,6 +215657,10 @@
       "translation": "* THARGOIDS, CIVIL WAR, TECHNOLOGY, LANGUAGE, AND BODY PROTECTORATE RECORDS >>>!"
     },
     {
+      "source": "That Market ID is too large.",
+      "translation": "* THAT MARKET ID IS TOO LARGE. >>>!"
+    },
+    {
       "source": "That name is already saved for this ship. Select it below to edit, or choose a different name.",
       "translation": "* THAT NAME IS ALREADY SAVED FOR THIS SHIP. SELECT IT BELOW TO EDIT, OR CHOOSE A DIFFERENT NAME. >>>!"
     },
@@ -214979,6 +215863,10 @@
     {
       "source": "The Journey workspace requires a commander profile.",
       "translation": "* THE JOURNEY WORKSPACE REQUIRES A COMMANDER PROFILE. >>>!"
+    },
+    {
+      "source": "The Linked tab lists RavenColonial-linked carriers with an on-demand refresh. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+      "translation": "* THE LINKED TAB LISTS RAVENCOLONIAL-LINKED CARRIERS WITH AN ON-DEMAND REFRESH. DOCKING AT A LINKED CARRIER WITH A SQUADRON BANK IDENTIFIES IT AUTOMATICALLY; OTHERWISE SELECT YOUR SQUADRON CARRIER. RAVENCOLONIAL DOES NOT SUPPLY ITS CAPACITY. >>>!"
     },
     {
       "source": "The Mining workspace contains session, search, mission and reporting tools. Rhino guidance continues to use its independent Surface mining overlay.",
@@ -215921,6 +216809,10 @@
       "translation": "* THE OPTIONAL CARGO-FULL REMINDER WAITS UNTIL CARGO HAS BEEN FULL AND COLLECTION IDLE FOR ONE MINUTE. >>>!"
     },
     {
+      "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
+      "translation": "* THE ORBITAL PLANNED RAVEN SITE COULD NOT BE MATCHED TO THE LOCAL BUILD CATALOG. ONLY THE SYSTEM ARCHITECT CAN START A BUILD WITHOUT A PLAN. >>>!"
+    },
+    {
       "source": "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
       "translation": "* THE ORGANISM IS A FIRST DISCOVERY FOR THE CURRENT COMMANDER. THE SAME FILLED FLAG ON COMPACT FSS ROWS MARKS AN UNDISCOVERED BODY. >>>!"
     },
@@ -216449,10 +217341,6 @@
       "translation": "* THE SPHERICAL LIMIT IS INVALID. >>>!"
     },
     {
-      "source": "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
-      "translation": "* THE SQUADRON SECTION USES LINKED RAVENCOLONIAL CARRIERS. DOCKING AT A LINKED CARRIER WITH A SQUADRON BANK IDENTIFIES IT AUTOMATICALLY; OTHERWISE SELECT YOUR SQUADRON CARRIER. RAVENCOLONIAL DOES NOT SUPPLY ITS CAPACITY. >>>!"
-    },
-    {
       "source": "The staged SrvSurvey update helper did not start.",
       "translation": "* THE STAGED SRVSURVEY UPDATE HELPER DID NOT START. >>>!"
     },
@@ -216823,10 +217711,6 @@
     {
       "source": "This removes the saved configuration and its groups from SrvSurvey. It does not change your controls in Elite.",
       "translation": "* THIS REMOVES THE SAVED CONFIGURATION AND ITS GROUPS FROM SRVSURVEY. IT DOES NOT CHANGE YOUR CONTROLS IN ELITE. >>>!"
-    },
-    {
-      "source": "This secured system can only be edited by its architect.",
-      "translation": "* THIS SECURED SYSTEM CAN ONLY BE EDITED BY ITS ARCHITECT. >>>!"
     },
     {
       "source": "This shortcut does not open simulated previews or change which overlays are visible.",
@@ -217873,6 +218757,10 @@
       "translation": "* USE BOOST ON B → C >>>!"
     },
     {
+      "source": "Use compact/scrolling commodities list",
+      "translation": "* USE COMPACT/SCROLLING COMMODITIES LIST >>>!"
+    },
+    {
       "source": "Use current",
       "translation": "* USE CURRENT >>>!"
     },
@@ -218019,6 +218907,10 @@
     {
       "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
       "translation": "* USE THE SQUARE RECOMMENDATIONS ON THE COMPACT SURFACE MINING RADAR TO LINE UP AND PLACE EACH RIG. THE RADAR ZOOMS AUTOMATICALLY AS YOU APPROACH THE DEPOSIT AND ITS SUGGESTED POSITIONS. >>>!"
+    },
+    {
+      "source": "UseCompactScrollingCommoditiesList",
+      "translation": "* USECOMPACTSCROLLINGCOMMODITIESLIST >>>!"
     },
     {
       "source": "UseDevelopmentReleases",
@@ -218961,6 +219853,10 @@
       "translation": "* YES, CLOSE IT AND CONTINUE >>>!"
     },
     {
+      "source": "You are not the architect of this system ({0}). The system was not loaded.",
+      "translation": "* YOU ARE NOT THE ARCHITECT OF THIS SYSTEM ({0}). THE SYSTEM WAS NOT LOADED. >>>!"
+    },
+    {
       "source": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
       "translation": "* YOUR DATA IS UNCHANGED. REVIEW THE DETAILS AND PREPARE A GITHUB REPORT, OR SHARE THEM ON DISCORD. >>>!"
     },
@@ -219127,10 +220023,6 @@
     {
       "source": "antimony",
       "translation": "* ANTIMONY >>>!"
-    },
-    {
-      "source": "aphrodite?",
-      "translation": "* APHRODITE? >>>!"
     },
     {
       "source": "app",
@@ -219705,10 +220597,6 @@
       "translation": "* DO >>>!"
     },
     {
-      "source": "dodec?",
-      "translation": "* DODEC? >>>!"
-    },
-    {
       "source": "dolphin",
       "translation": "* DOLPHIN >>>!"
     },
@@ -220257,6 +221145,10 @@
       "translation": "* IN >>>!"
     },
     {
+      "source": "inara-accepted.txt",
+      "translation": "* INARA-ACCEPTED.TXT >>>!"
+    },
+    {
       "source": "inara.contributors",
       "translation": "* INARA.CONTRIBUTORS >>>!"
     },
@@ -220279,10 +221171,6 @@
     {
       "source": "input",
       "translation": "* INPUT >>>!"
-    },
-    {
-      "source": "installation?",
-      "translation": "* INSTALLATION? >>>!"
     },
     {
       "source": "instances",
@@ -220383,6 +221271,10 @@
     {
       "source": "log folder proton profile data source",
       "translation": "* LOG FOLDER PROTON PROFILE DATA SOURCE >>>!"
+    },
+    {
+      "source": "logs",
+      "translation": "* LOGS >>>!"
     },
     {
       "source": "lookup",
@@ -220665,8 +221557,8 @@
       "translation": "* ORB CASKET TABLET TOTEM URN COLORS >>>!"
     },
     {
-      "source": "orbis?",
-      "translation": "* ORBIS? >>>!"
+      "source": "orbital planned",
+      "translation": "* ORBITAL PLANNED >>>!"
     },
     {
       "source": "orca",
@@ -220679,10 +221571,6 @@
     {
       "source": "os",
       "translation": "* OS >>>!"
-    },
-    {
-      "source": "outpost?",
-      "translation": "* OUTPOST? >>>!"
     },
     {
       "source": "overlay",
@@ -220743,6 +221631,10 @@
     {
       "source": "planetaryapproachsuite",
       "translation": "* PLANETARYAPPROACHSUITE >>>!"
+    },
+    {
+      "source": "planned",
+      "translation": "* PLANNED >>>!"
     },
     {
       "source": "platinum",
@@ -220823,6 +221715,10 @@
     {
       "source": "quests",
       "translation": "* QUESTS >>>!"
+    },
+    {
+      "source": "queued dock baseline",
+      "translation": "* QUEUED DOCK BASELINE >>>!"
     },
     {
       "source": "radar",
@@ -221003,10 +221899,6 @@
     {
       "source": "settings-search-highlight",
       "translation": "* SETTINGS-SEARCH-HIGHLIGHT >>>!"
-    },
-    {
-      "source": "settlement?",
-      "translation": "* SETTLEMENT? >>>!"
     },
     {
       "source": "share",
@@ -222407,6 +223299,10 @@
     {
       "source": "{0} · ACTIVE OBELISK",
       "translation": "* {0} · ACTIVE OBELISK >>>!"
+    },
+    {
+      "source": "{0} · Tier {1}: {2}",
+      "translation": "* {0} · TIER {1}: {2} >>>!"
     },
     {
       "source": "{0} · active",

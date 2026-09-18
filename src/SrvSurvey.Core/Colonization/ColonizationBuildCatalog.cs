@@ -11,9 +11,12 @@ public sealed class ColonizationBuildCatalog
 
     private const string ResourceName = "SrvSurvey.Core.Resources.colonization-costs2.json";
 
+    private static readonly string[] ExtraOrbitalSiteBuildTypes = ["coriolis", "installation", "orbis", "outpost"];
+
     private readonly ColonizationBuildCost[] builds;
     private readonly FrozenDictionary<string, ColonizationBuildCost> byBuildType;
     private readonly FrozenDictionary<string, ColonizationBuildCost[]> byLayout;
+    private readonly FrozenSet<string> orbitalSiteBuildTypeKeys;
 
     public ColonizationBuildCatalog(IEnumerable<ColonizationBuildCost> builds)
     {
@@ -29,15 +32,69 @@ public sealed class ColonizationBuildCatalog
                 group => group.Select(item => item.build).ToArray(),
                 StringComparer.OrdinalIgnoreCase
             );
+        SiteBuildTypes = this
+            .builds.SelectMany(build => build.Layouts.Concat([build.BuildType]))
+            .Select(value => value.Trim())
+            .Where(value => value.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        orbitalSiteBuildTypeKeys = this
+            .builds.Where(build => build.Location == ColonizationBuildLocation.Orbital)
+            .SelectMany(build => build.Layouts.Concat([build.BuildType]))
+            .Select(NormalizeSiteBuildTypeKey)
+            .Concat(ExtraOrbitalSiteBuildTypes)
+            .Where(key => key.Length > 0)
+            .ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     }
 
     public IReadOnlyList<ColonizationBuildCost> Builds => builds;
+
+    public IReadOnlyList<string> SiteBuildTypes { get; }
 
     public int Count => builds.Length;
 
     public ColonizationBuildCost? FindByBuildType(string? buildType)
     {
         return string.IsNullOrWhiteSpace(buildType) ? null : byBuildType.GetValueOrDefault(buildType);
+    }
+
+    public bool IsOrbitalSiteBuildType(string? buildType)
+    {
+        string key = NormalizeSiteBuildTypeKey(buildType);
+        return key.Length > 0 && orbitalSiteBuildTypeKeys.Contains(key);
+    }
+
+    public bool TryResolveSiteBuildType(string? buildType, out ColonizationBuildCost? build)
+    {
+        string key = NormalizeSiteBuildTypeKey(buildType);
+        if (key.Length == 0)
+        {
+            build = null;
+            return false;
+        }
+
+        IReadOnlyList<ColonizationBuildCost> layouts = FindByLayout(key);
+        if (layouts.Count > 0)
+        {
+            build = layouts[0];
+            return true;
+        }
+
+        build = FindByBuildType(key);
+        return build is not null;
+    }
+
+    public static string NormalizeSiteBuildTypeKey(string? buildType)
+    {
+        if (string.IsNullOrWhiteSpace(buildType))
+        {
+            return string.Empty;
+        }
+
+        string key = buildType.Replace(" (primary)", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+        key = key.TrimEnd('?').Trim();
+        return key.Length == 0 ? string.Empty : key.Replace(' ', '_');
     }
 
     public IReadOnlyList<ColonizationBuildCost> FindByLayout(string? layout)

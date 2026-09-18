@@ -561,4 +561,99 @@ public sealed class InaraMapperTests
         InaraEvent report = Assert.Single(shutdown, item => item.Name == "setCommanderCredits");
         Assert.Equal(1250, report.Data.Value<long>("commanderCredits"));
     }
+
+    [Fact]
+    public void MiningRefinedUpdatesCargoWithoutPublishingInventorySnapshots()
+    {
+        var mapper = new InaraEventMapper();
+        mapper.Process(
+            JObject.Parse(
+                """
+                {
+                  "timestamp": "2026-07-28T12:00:00Z",
+                  "event": "Cargo",
+                  "Vessel": "Ship",
+                  "Inventory": [{ "Name": "tea", "Count": 2 }]
+                }
+                """
+            ),
+            Context,
+            true
+        );
+
+        IReadOnlyList<InaraEvent> refined = mapper.Process(
+            JObject.Parse(
+                """
+                {
+                  "timestamp": "2026-07-28T12:01:00Z",
+                  "event": "MiningRefined",
+                  "Type": "platinum"
+                }
+                """
+            ),
+            Context,
+            true
+        );
+        Assert.DoesNotContain(refined, item => item.Name == "setCommanderInventoryCargo");
+
+        IReadOnlyList<InaraEvent> collected = mapper.Process(
+            JObject.Parse(
+                """
+                {
+                  "timestamp": "2026-07-28T12:02:00Z",
+                  "event": "CollectCargo",
+                  "Type": "tea",
+                  "Count": 1
+                }
+                """
+            ),
+            Context,
+            true
+        );
+        InaraEvent snapshot = Assert.Single(collected, item => item.Name == "setCommanderInventoryCargo");
+        JArray items = Assert.IsType<JArray>(snapshot.Data);
+        Assert.Contains(items.OfType<JObject>(), item => item.Value<string>("itemName") == "platinum");
+        Assert.Contains(
+            items.OfType<JObject>(),
+            item => item.Value<string>("itemName") == "tea" && item.Value<int>("itemCount") == 3
+        );
+    }
+
+    [Fact]
+    public void MiningRefinedSessionStartDoesNotPublishInventorySnapshots()
+    {
+        var mapper = new InaraEventMapper();
+        mapper.Process(
+            JObject.Parse(
+                """
+                {
+                  "timestamp": "2026-07-28T12:00:00Z",
+                  "event": "Cargo",
+                  "Vessel": "Ship",
+                  "Inventory": [{ "Name": "tea", "Count": 2 }]
+                }
+                """
+            ),
+            Context,
+            false
+        );
+
+        IReadOnlyList<InaraEvent> refined = mapper.Process(
+            JObject.Parse(
+                """
+                {
+                  "timestamp": "2026-07-28T12:01:00Z",
+                  "event": "MiningRefined",
+                  "Type": "platinum"
+                }
+                """
+            ),
+            Context,
+            true
+        );
+
+        Assert.Contains(refined, item => item.Name == "getCommanderProfile");
+        Assert.DoesNotContain(refined, item => item.Name == "setCommanderInventoryCargo");
+        Assert.DoesNotContain(refined, item => item.Name == "setCommanderInventoryMaterials");
+    }
 }

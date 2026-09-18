@@ -36,6 +36,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
     private ColonizationProjectCreate? pendingProject;
     private string? pendingContextIdentity;
     private ColonizationProject? createdProject;
+    private bool isSystemArchitect;
 
     public ColonizationProjectEditorViewModel(
         IRavenColonialClient client,
@@ -50,7 +51,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         projectPublisher = new ColonizationProjectPublisher(this.client);
         Locations = Enum.GetValues<ColonizationBuildLocation>();
         prepareCommand = new AsyncCommand(PrepareAsync, () => CanPrepare);
-        reviewCommand = new AsyncCommand(ReviewAsync, () => IsPrepared && !IsBusy && !IsConfirmationPending);
+        reviewCommand = new AsyncCommand(ReviewAsync, () => CanReview);
         confirmCommand = new AsyncCommand(ConfirmCreateAsync, () => IsConfirmationPending && !IsBusy);
         cancelReviewCommand = new DelegateCommand(CancelReview, () => IsConfirmationPending && !IsBusy);
         PrepareCommand = prepareCommand;
@@ -195,6 +196,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
                 return;
             }
 
+            if (!isSystemArchitect && value?.Site is null)
+            {
+                return;
+            }
+
             selectedSystemSite = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsPlannedSiteSelected));
@@ -205,7 +211,9 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             }
             else if (!ApplyPlannedSite(value.Site))
             {
-                selectedSystemSite = SystemSites.FirstOrDefault(option => option.Site is null);
+                selectedSystemSite = isSystemArchitect
+                    ? SystemSites.FirstOrDefault(option => option.Site is null)
+                    : null;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsPlannedSiteSelected));
                 OnPropertyChanged(nameof(IsBuildSelectionEnabled));
@@ -213,12 +221,16 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             }
 
             ClearConfirmation();
+            RaiseCommandStates();
         }
     }
 
     public bool IsPlannedSiteSelected => SelectedSystemSite?.Site is not null;
 
-    public bool IsBuildSelectionEnabled => !IsPlannedSiteSelected;
+    public bool IsBuildSelectionEnabled => isSystemArchitect && !IsPlannedSiteSelected;
+
+    private bool CanReview =>
+        IsPrepared && !IsBusy && !IsConfirmationPending && (isSystemArchitect || IsPlannedSiteSelected);
 
     public string ProjectName
     {
@@ -315,6 +327,8 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         if (oldIdentity != GetContextIdentity(updatedContext))
         {
             IsPrepared = false;
+            isSystemArchitect = false;
+            OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             pendingProject = null;
             pendingContextIdentity = null;
             createdProject = null;
@@ -347,18 +361,20 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             Task<IReadOnlyList<ColonizationSystemSite>> sitesTask = client.GetSystemSitesAsync(context.SystemName!);
             Task<string?> architectTask = client.GetSystemArchitectAsync(context.SystemName!);
             await Task.WhenAll(sitesTask, architectTask);
+            string? architect = await architectTask;
+            isSystemArchitect = ColonizationSiteVisibility.CommanderIsArchitect(architect, context.CommanderName);
             ColonizationSystemSiteOptionViewModel[] planned = (await sitesTask)
                 .Where(site => site.Status == ColonizationSystemSiteStatus.Plan)
+                .Where(site => ColonizationSiteVisibility.CanViewerSeeSite(site, isSystemArchitect, buildCatalog))
                 .OrderBy(site => site.Name)
                 .Select(site => new ColonizationSystemSiteOptionViewModel(site))
                 .ToArray();
-            SystemSites = [ColonizationSystemSiteOptionViewModel.None, .. planned];
-            selectedSystemSite = SystemSites[0];
+            SystemSites = isSystemArchitect ? [ColonizationSystemSiteOptionViewModel.None, .. planned] : planned;
+            selectedSystemSite = isSystemArchitect ? SystemSites[0] : null;
             OnPropertyChanged(nameof(SelectedSystemSite));
             OnPropertyChanged(nameof(IsPlannedSiteSelected));
             OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             ProjectName = context.Dock!.DefaultProjectName;
-            string? architect = await architectTask;
             ArchitectName = string.IsNullOrWhiteSpace(architect) ? context.CommanderName! : architect;
             Notes = string.Empty;
             BodyNumberText = "-1";
@@ -379,18 +395,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             bool autoSelectedPlannedSite = false;
             if (planned.Length == 1)
             {
-                SelectedSystemSite = SystemSites[1];
+                SelectedSystemSite = SystemSites[isSystemArchitect ? 1 : 0];
                 autoSelectedPlannedSite = IsPlannedSiteSelected;
             }
 
-            StatusMessage = planned.Length switch
-            {
-                0 => "No planned Raven site is available; choose a build layout manually.",
-                1 when autoSelectedPlannedSite => "Loaded and selected the one planned Raven site.",
-                1 =>
-                    "The planned Raven site could not be matched to the local build catalog; configure the build manually.",
-                _ => $"Loaded {planned.Length:N0} planned sites. Choose one or configure the build manually.",
-            };
+            StatusMessage = PlannedSitesStatus(planned.Length, autoSelectedPlannedSite, isSystemArchitect);
         }
         catch (Exception exception)
             when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
@@ -403,10 +412,46 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         }
     }
 
+    private static string PlannedSitesStatus(int count, bool autoSelectedPlannedSite, bool isArchitect)
+    {
+        string kind = isArchitect ? "planned" : "orbital planned";
+        return count switch
+        {
+            0 => isArchitect
+                ? "No planned Raven site is available; choose a build layout manually."
+                : "No orbital planned Raven sites are available to link. Only the system architect can start a build without a plan.",
+            1 when autoSelectedPlannedSite => $"Loaded and selected the one {kind} Raven site.",
+            1 => isArchitect
+                ? "The planned Raven site could not be matched to the local build catalog; configure the build manually."
+                : "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
+            _ => isArchitect
+                ? $"Loaded {count:N0} planned sites. Choose one or configure the build manually."
+                : $"Loaded {count:N0} orbital planned sites. Choose one to link.",
+        };
+    }
+
+    private string? GetPlannedSiteRequirementError()
+    {
+        if (isSystemArchitect || IsPlannedSiteSelected)
+        {
+            return null;
+        }
+
+        return SystemSites.Any(option => option.Site is not null)
+            ? "Choose a planned Raven site to link. Only the system architect can start a build without a plan."
+            : "Only the system architect can start a build project without a planned Raven site.";
+    }
+
     public Task ReviewAsync()
     {
         if (!IsPrepared || IsBusy)
         {
+            return Task.CompletedTask;
+        }
+
+        if (GetPlannedSiteRequirementError() is { } plannedSiteError)
+        {
+            StatusMessage = plannedSiteError;
             return Task.CompletedTask;
         }
 
@@ -451,6 +496,13 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
     {
         if (pendingProject is null || IsBusy)
         {
+            return;
+        }
+
+        if (GetPlannedSiteRequirementError() is { } plannedSiteError)
+        {
+            ClearConfirmation();
+            StatusMessage = plannedSiteError;
             return;
         }
 
@@ -511,6 +563,8 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             pendingProject = null;
             pendingContextIdentity = null;
             IsPrepared = false;
+            isSystemArchitect = false;
+            OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             OnPropertyChanged(nameof(IsConfirmationPending));
             OnPropertyChanged(nameof(ConfirmationSummary));
             OnPropertyChanged(nameof(HasCreatedProject));
@@ -564,14 +618,13 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             return false;
         }
 
-        IReadOnlyList<ColonizationBuildCost> matchingBuilds = buildCatalog.FindByLayout(site.BuildType);
-        ColonizationBuildCost? build = matchingBuilds.Count > 0 ? matchingBuilds[0] : null;
-        if (build is null)
+        if (!buildCatalog.TryResolveSiteBuildType(site.BuildType, out ColonizationBuildCost? build) || build is null)
         {
             StatusMessage = $"The planned site layout '{site.BuildType}' is not in the local build catalog.";
             return false;
         }
 
+        string resolvedLayout = ColonizationBuildCatalog.NormalizeSiteBuildTypeKey(site.BuildType);
         selectedLocation = build.Location;
         OnPropertyChanged(nameof(SelectedLocation));
         UpdateBuildOptions();
@@ -582,7 +635,18 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         UpdateLayouts();
         selectedLayout = Layouts.FirstOrDefault(layout =>
             string.Equals(layout, site.BuildType, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(layout, resolvedLayout, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(
+                ColonizationBuildCatalog.NormalizeSiteBuildTypeKey(layout),
+                resolvedLayout,
+                StringComparison.OrdinalIgnoreCase
+            )
         );
+        if (selectedLayout is null && Layouts.Count > 0)
+        {
+            selectedLayout = Layouts[0];
+        }
+
         OnPropertyChanged(nameof(SelectedLayout));
         BodyNumberText = site.BodyNumber.ToString(CultureInfo.InvariantCulture);
         if (context.Dock?.IsPrimaryPortShip == true)

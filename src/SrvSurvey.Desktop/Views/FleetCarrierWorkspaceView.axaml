@@ -1,24 +1,98 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.FleetCarrierWorkspaceView" x:Name="FleetRoot" xmlns:colonization="using:SrvSurvey.Core.Colonization" x:DataType="vm:MainWindowViewModel">
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:views="using:SrvSurvey.Desktop.Views"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             xmlns:colonization="using:SrvSurvey.Core.Colonization"
+             x:Class="SrvSurvey.Desktop.Views.FleetCarrierWorkspaceView"
+             x:Name="FleetRoot"
+             x:DataType="vm:MainWindowViewModel">
   <Grid RowDefinitions="Auto,*" Margin="24">
-    <TextBlock Classes="page-title" Text="Fleet Carrier" Margin="0,0,0,16"/>
-    <views:FrontierCarrierTabView Grid.Row="1" DataContext="{Binding FrontierProfile}">
-      <views:FrontierCarrierTabView.SupplementaryContent>
-        <Border Classes="card" DataContext="{Binding #FleetRoot.DataContext.FleetCarrierWorkspace}" x:DataType="vm:FleetCarrierWorkspaceViewModel">
-          <StackPanel Spacing="12">
-            <TextBlock Classes="card-title" Text="Squadron carrier"/>
-            <TextBlock Classes="muted" Text="Uses carriers linked in RavenColonial. Cargo updates follow the existing colonization sync settings." TextWrapping="Wrap"/>
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-              <ComboBox ItemsSource="{Binding SquadronCandidates}" SelectedItem="{Binding SelectedSquadronCarrier}" HorizontalAlignment="Left" MinWidth="0" PlaceholderText="Select your linked squadron carrier" behaviors:ComboBoxFitContentBehavior.Enabled="True">
-                <ComboBox.ItemTemplate><DataTemplate x:DataType="colonization:ColonizationFleetCarrier"><TextBlock TextWrapping="NoWrap" TextTrimming="None"><Run Text="{Binding DisplayName}"/><Run Text=" · "/><Run Text="{Binding Name}"/></TextBlock></DataTemplate></ComboBox.ItemTemplate>
-              </ComboBox>
-            </ScrollViewer>
-            <TextBlock Text="{Binding SquadronCargoSummary}" TextWrapping="Wrap"/>
-            <ItemsControl ItemsSource="{Binding SquadronCargo}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:FrontierInventoryRowViewModel">
-              <Border Classes="dashboard-row"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Name}" TextWrapping="NoWrap"/><TextBlock Grid.Column="1" Text="{Binding Quantity}" TextWrapping="NoWrap"/></Grid></Border>
-            </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-          </StackPanel>
-        </Border>
-      </views:FrontierCarrierTabView.SupplementaryContent>
-    </views:FrontierCarrierTabView>
+    <StackPanel Orientation="Horizontal" Spacing="18" Margin="0,0,0,16">
+      <Button Classes="link workspace-tab"
+              Classes.selected="{Binding FleetCarrierWorkspace.IsPersonalTabSelected}"
+              Padding="0"
+              Command="{Binding FleetCarrierWorkspace.SelectPersonalTabCommand}"
+              Content="Fleet Carrier" />
+      <Button Classes="link workspace-tab"
+              Classes.selected="{Binding FleetCarrierWorkspace.IsSquadronTabSelected}"
+              Padding="0"
+              Command="{Binding FleetCarrierWorkspace.SelectSquadronTabCommand}"
+              Content="Squadron Carrier" />
+      <Button Classes="link workspace-tab"
+              Classes.selected="{Binding FleetCarrierWorkspace.IsLinkedTabSelected}"
+              Padding="0"
+              Command="{Binding FleetCarrierWorkspace.SelectLinkedTabCommand}"
+              Content="Linked" />
+    </StackPanel>
+
+    <Grid Grid.Row="1" IsVisible="{Binding FleetCarrierWorkspace.IsPersonalTabSelected}">
+      <views:FrontierCarrierTabView DataContext="{Binding FrontierProfile}" />
+    </Grid>
+
+    <Grid Grid.Row="1" IsVisible="{Binding FleetCarrierWorkspace.IsSquadronTabSelected}">
+      <views:FrontierCarrierTabView DataContext="{Binding FrontierProfile}" />
+    </Grid>
+
+    <ScrollViewer Grid.Row="1"
+                  IsVisible="{Binding FleetCarrierWorkspace.IsLinkedTabSelected}"
+                  HorizontalScrollBarVisibility="Disabled">
+      <Border Classes="card"
+              HorizontalAlignment="Stretch"
+              DataContext="{Binding FleetCarrierWorkspace}"
+              x:DataType="vm:FleetCarrierWorkspaceViewModel">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="card-title" Text="RC Linked Carriers" />
+          <TextBlock Classes="muted"
+                     Text="Uses carriers linked in RavenColonial. Cargo updates follow the existing colonization sync settings."
+                     TextWrapping="Wrap" />
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <ComboBox ItemsSource="{Binding SquadronCandidates}"
+                      SelectedItem="{Binding SelectedSquadronCarrier}"
+                      MinWidth="0"
+                      HorizontalAlignment="Left"
+                      PlaceholderText="Select your linked squadron carrier"
+                      behaviors:ComboBoxFitContentBehavior.Enabled="True">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="colonization:ColonizationFleetCarrier">
+                  <TextBlock TextWrapping="NoWrap" TextTrimming="None">
+                    <Run Text="{Binding DisplayName}" />
+                    <Run Text=" · " />
+                    <Run Text="{Binding Name}" />
+                  </TextBlock>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Width="40"
+                    Height="32"
+                    Padding="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    ToolTip.Tip="Refresh linked RavenColonial carriers"
+                    Command="{Binding RefreshLinkedCarriersCommand}">
+              <TextBlock FontSize="16" Text="↻" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Button>
+          </Grid>
+          <TextBlock Classes="muted"
+                     Text="Choose a linked squadron carrier, or dock there to identify it automatically."
+                     TextWrapping="Wrap" />
+          <TextBlock Text="{Binding SquadronCargoSummary}" TextWrapping="Wrap" />
+          <ItemsControl ItemsSource="{Binding SquadronCargo}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:FrontierInventoryRowViewModel">
+                <Border Classes="dashboard-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding Name}" TextWrapping="NoWrap" />
+                    <TextBlock Grid.Column="1" Text="{Binding Quantity}" TextWrapping="NoWrap" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+    </ScrollViewer>
   </Grid>
 </UserControl>

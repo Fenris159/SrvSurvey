@@ -427,8 +427,8 @@ public sealed partial class OverlayCoverageInventoryTests
         );
 
         Assert.Contains("MinHeight=\"1\"", markup);
-        Assert.Contains("MaxHeight=\"480\"", markup);
         Assert.Contains("SizeToContent=\"WidthAndHeight\"", markup);
+        Assert.DoesNotContain("MaxHeight=\"480\"", markup);
     }
 
     [Fact]

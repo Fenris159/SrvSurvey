@@ -79,6 +79,44 @@ public sealed class FrontierCapiSnapshotParserTests
     }
 
     [Fact]
+    public void ParsesNestedSquadronCarrierFromSquadronEndpoint()
+    {
+        const string squadron = """
+            {
+              "timestamp":"2026-09-18T12:00:00Z",
+              "name":"Raven Wing",
+              "squadronCarrier":{
+                "name":{"callsign":"SQD-001","vanityName":"526176656E27732052657374"},
+                "currentStarSystem":"Synuefai CX-V c18-6",
+                "fuel":420,
+                "finance":{"bankBalance":1000000},
+                "cargo":[{"commodity":"steel","locName":"Steel","qty":12,"value":0}]
+              }
+            }
+            """;
+
+        FrontierCarrierEndpointSnapshot endpoint = FrontierCapiSnapshotParser.ParseSquadronEndpoint(
+            squadron,
+            DateTimeOffset.UnixEpoch
+        );
+
+        FrontierCarrierSnapshot carrier = Assert.IsType<FrontierCarrierSnapshot>(endpoint.Carrier);
+        Assert.Equal("SQD-001", carrier.Callsign);
+        Assert.Equal("Synuefai CX-V c18-6", carrier.System);
+        Assert.Equal(420, carrier.Tritium);
+        Assert.Equal(12, carrier.Cargo.Single(item => item.Name == "Steel").Quantity);
+        Assert.Contains(endpoint.DataPoints, point => point.Path.StartsWith("squadron.", StringComparison.Ordinal));
+        Assert.Contains(
+            endpoint.DataPoints,
+            point => point.Path == "squadron.squadronCarrier.fuel" && point.Value == "420"
+        );
+        Assert.Equal(
+            endpoint.DataPoints.Count,
+            endpoint.DataPoints.Select(point => point.Path).Distinct(StringComparer.Ordinal).Count()
+        );
+    }
+
+    [Fact]
     public void SupportsIdKeyedShipAndOrderObjects()
     {
         const string profile = """

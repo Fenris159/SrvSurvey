@@ -1079,6 +1079,368 @@ public sealed class InaraPublisherTests
         await WaitForAsync(() => handler.RequestCount == 2);
     }
 
+    [Fact]
+    public async Task MixedEventStormSendsAtMostTwoPostsPerRollingMinuteAndKeepsOverflow()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler), time);
+
+        await ApplyLiveAsync(publisher, LoadGameJson(), FsdJumpJson("Sirius"));
+        InaraPublicationResult first = await publisher.FlushAsync();
+        await ApplyLiveAsync(publisher, CargoJson(), FsdJumpJson("Sol"));
+        InaraPublicationResult second = await publisher.FlushAsync();
+        await ApplyLiveAsync(publisher, CargoJson(), FsdJumpJson("Achenar"), ShutdownJson());
+
+        Assert.True(first.AcceptedEventCount > 0);
+        Assert.True(second.AcceptedEventCount > 0);
+        Assert.Equal(2, handler.RequestCount);
+
+        using var flushCancel = new CancellationTokenSource();
+        Task<InaraPublicationResult> waitingFlush = publisher.FlushAsync(flushCancel.Token);
+        await Task.Delay(50);
+        Assert.False(waitingFlush.IsCompleted);
+        await flushCancel.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waitingFlush);
+
+        time.Advance(InaraPublisher.RateLimitWindow);
+        InaraPublicationResult later = await publisher.FlushAsync();
+
+        Assert.Equal(3, handler.RequestCount);
+        Assert.True(later.AcceptedEventCount > 0);
+        Assert.Contains(
+            handler.LastPayload!["events"]!,
+            eventToken => eventToken.Value<string>("eventName") == "addCommanderTravelFSDJump"
+        );
+    }
+
+    [Fact]
+    public async Task HeaderRateLimitFourHundredRequeuesInsteadOfDroppingTheBatch()
+    {
+        var handler = new InaraResponseHandler
+        {
+            HeaderEventStatus = 400,
+            HeaderEventStatusText = "API key temporarily revoked because of rate limiting (1 hour).",
+        };
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
+        await ApplyLiveAsync(publisher, LoadGameJson());
+        InaraPublicationResult deferred = await publisher.FlushAsync();
+
+        Assert.Equal(0, deferred.AcceptedEventCount);
+        Assert.True(deferred.PendingEventCount > 0);
+        Assert.Contains(
+            deferred.Warnings,
+            warning =>
+                warning.Contains("deferred", StringComparison.OrdinalIgnoreCase)
+                && warning.Contains("rate limiting", StringComparison.OrdinalIgnoreCase)
+        );
+
+        handler.HeaderEventStatus = 200;
+        handler.HeaderEventStatusText = null;
+        InaraPublicationResult retried = await publisher.FlushAsync();
+        Assert.True(retried.AcceptedEventCount > 0);
+        Assert.Equal(0, retried.PendingEventCount);
+    }
+
+    [Fact]
+    public async Task InventoryOnlyCargoWaitsForIdleInterval()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler), time);
+
+        await ApplyLiveAsync(publisher, LoadGameJson());
+        await publisher.FlushAsync();
+        Assert.Equal(1, handler.RequestCount);
+
+        await ApplyLiveAsync(publisher, CargoJson());
+        Assert.Equal(1, handler.RequestCount);
+
+        time.Advance(InaraPublisher.InventoryIdleInterval - TimeSpan.FromSeconds(1));
+        await ApplyLiveAsync(publisher, CargoJson());
+        Assert.Equal(1, handler.RequestCount);
+
+        time.Advance(TimeSpan.FromSeconds(2));
+        await ApplyLiveAsync(publisher, CargoJson());
+        await WaitForAsync(() => handler.Payloads.Count == 2);
+        Assert.Contains(
+            handler.LastPayload!["events"]!,
+            eventToken => eventToken.Value<string>("eventName") == "setCommanderInventoryCargo"
+        );
+    }
+
+    [Fact]
+    public async Task TravelEventDoesNotWaitForInventoryIdleInterval()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler), time);
+
+        await ApplyLiveAsync(publisher, LoadGameJson());
+        await publisher.FlushAsync();
+        await ApplyLiveAsync(publisher, CargoJson());
+        Assert.Equal(1, handler.RequestCount);
+
+        await ApplyLiveAsync(publisher, FsdJumpJson("Sol"));
+        await WaitForAsync(() => handler.Payloads.Count == 2);
+        Assert.Contains(
+            handler.LastPayload!["events"]!,
+            eventToken => eventToken.Value<string>("eventName") == "addCommanderTravelFSDJump"
+        );
+        Assert.Contains(
+            handler.LastPayload["events"]!,
+            eventToken => eventToken.Value<string>("eventName") == "setCommanderInventoryCargo"
+        );
+    }
+
+    [Fact]
+    public async Task TravelEventAdvancesAnOutdatedInventoryDeadline()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler), time);
+
+        await ApplyLiveAsync(publisher, LoadGameJson());
+        await publisher.FlushAsync();
+        await ApplyLiveAsync(publisher, CargoJson());
+        Assert.Equal(1, handler.RequestCount);
+
+        time.Advance(TimeSpan.FromMinutes(1));
+        await ApplyLiveAsync(publisher, FsdJumpJson("Sol"));
+        Assert.Equal(1, handler.RequestCount);
+
+        time.Advance(InaraPublisher.SendInterval);
+        await ApplyLiveAsync(
+            publisher,
+            """
+            {
+              "timestamp": "2026-07-28T12:01:35Z",
+              "event": "Music"
+            }
+            """
+        );
+        await WaitForAsync(() => handler.Payloads.Count == 2);
+        Assert.Contains(
+            handler.LastPayload!["events"]!,
+            eventToken => eventToken.Value<string>("eventName") == "addCommanderTravelFSDJump"
+        );
+    }
+
+    [Fact]
+    public async Task SuccessfulUploadsAreLoggedInFifteenMinuteAggregates()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var handler = new InaraResponseHandler();
+        var logs = new List<string>();
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler), time, logs.Add);
+
+        await ApplyLiveAsync(publisher, LoadGameJson(), FsdJumpJson("Sirius"));
+        InaraPublicationResult first = await publisher.FlushAsync();
+        Assert.Empty(logs);
+
+        time.Advance(TimeSpan.FromMinutes(15));
+        await ApplyLiveAsync(publisher, FsdJumpJson("Sol"));
+        await publisher.FlushAsync();
+
+        string eventLabel = first.AcceptedEventCount == 1 ? "Inara event" : "Inara events";
+        Assert.Equal(
+            [$"Inara uploaded {first.AcceptedEventCount:N0} {eventLabel} in the previous 15-minute activity window."],
+            logs
+        );
+    }
+
+    [Fact]
+    public async Task AcceptedEventLogRecordsTravelWithoutApiKeys()
+    {
+        string logDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-inara-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(logDirectory);
+        try
+        {
+            var handler = new InaraResponseHandler();
+            var accepted = new InaraAcceptedEventLog(Path.Combine(logDirectory, "inara-accepted.txt"));
+            using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler), acceptedEventLog: accepted);
+            await ApplyLiveAsync(publisher, LoadGameJson(), FsdJumpJson("Sirius"));
+            await publisher.FlushAsync();
+
+            IReadOnlyList<string> lines = accepted.ReadLines();
+            Assert.Contains(lines, line => line.Contains("addCommanderTravelFSDJump", StringComparison.Ordinal));
+            Assert.Contains(lines, line => line.Contains("Sirius", StringComparison.Ordinal));
+            Assert.All(lines, line => Assert.DoesNotContain("personal-key", line, StringComparison.Ordinal));
+        }
+        finally
+        {
+            Directory.Delete(logDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task PostsCommanderWritesToTheDocumentedInaraEndpoint()
+    {
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
+        await ApplyLiveAsync(publisher, LoadGameJson());
+        await publisher.FlushAsync();
+
+        Assert.Equal(new Uri(InaraPublisher.Endpoint), handler.LastRequestUri);
+        Assert.Equal(HttpMethod.Post, handler.LastMethod);
+        JObject header = Assert.IsType<JObject>(handler.LastPayload!["header"]);
+        Assert.Equal("SrvSurvey", header.Value<string>("appName"));
+        Assert.Equal("personal-key", header.Value<string>("APIkey"));
+        Assert.Equal("Test Commander", header.Value<string>("commanderName"));
+        Assert.NotEmpty(Assert.IsType<JArray>(handler.LastPayload["events"]));
+    }
+
+    [Fact]
+    public async Task ThrowingLogCallbackDoesNotFailOrDropAnAcceptedUpload()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler),
+            time,
+            _ => throw new InvalidOperationException("log boom")
+        );
+
+        await ApplyLiveAsync(publisher, LoadGameJson());
+        InaraPublicationResult first = await publisher.FlushAsync();
+        Assert.True(first.AcceptedEventCount > 0);
+        Assert.Equal(0, first.PendingEventCount);
+
+        time.Advance(TimeSpan.FromMinutes(15));
+        await ApplyLiveAsync(publisher, FsdJumpJson("Sol"));
+        InaraPublicationResult second = await publisher.FlushAsync();
+        Assert.True(second.AcceptedEventCount > 0);
+        Assert.Equal(0, second.PendingEventCount);
+        Assert.Equal(2, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task UnwritableAcceptedEventLogDoesNotFailOrDropAnAcceptedUpload()
+    {
+        string occupied = Path.Combine(Path.GetTempPath(), $"SrvSurvey-inara-occupied-{Guid.NewGuid():N}");
+        await File.WriteAllTextAsync(occupied, "not-a-directory");
+        try
+        {
+            var handler = new InaraResponseHandler();
+            var accepted = new InaraAcceptedEventLog(Path.Combine(occupied, "inara-accepted.txt"));
+            using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler), acceptedEventLog: accepted);
+
+            await ApplyLiveAsync(publisher, LoadGameJson(), FsdJumpJson("Sirius"));
+            InaraPublicationResult result = await publisher.FlushAsync();
+
+            Assert.True(result.AcceptedEventCount > 0);
+            Assert.Equal(0, result.PendingEventCount);
+            Assert.Equal(1, handler.RequestCount);
+            Assert.Empty(accepted.ReadLines());
+        }
+        finally
+        {
+            File.Delete(occupied);
+        }
+    }
+
+    [Fact]
+    public async Task HttpFourHundredWithoutBodyDefersTheBatchForRetry()
+    {
+        var handler = new InaraResponseHandler(HttpStatusCode.BadRequest);
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
+        await ApplyLiveAsync(publisher, LoadGameJson());
+        InaraPublicationResult deferred = await publisher.FlushAsync();
+
+        Assert.Equal(0, deferred.AcceptedEventCount);
+        Assert.True(deferred.PendingEventCount > 0);
+        Assert.Contains(deferred.Warnings, warning => warning.Contains("deferred", StringComparison.OrdinalIgnoreCase));
+        Assert.All(
+            deferred.Warnings,
+            warning => Assert.DoesNotContain("personal-key", warning, StringComparison.Ordinal)
+        );
+
+        handler.StatusCode = HttpStatusCode.OK;
+        InaraPublicationResult retried = await publisher.FlushAsync();
+        Assert.True(retried.AcceptedEventCount > 0);
+        Assert.Equal(0, retried.PendingEventCount);
+    }
+
+    [Fact]
+    public async Task HeaderFourHundredInvalidApiKeyDropsTheBatchInsteadOfRetryingForever()
+    {
+        var handler = new InaraResponseHandler { HeaderEventStatus = 400, HeaderEventStatusText = "Invalid API key." };
+        using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
+        await ApplyLiveAsync(publisher, LoadGameJson());
+        InaraPublicationResult rejected = await publisher.FlushAsync();
+
+        Assert.Equal(0, rejected.AcceptedEventCount);
+        Assert.Equal(0, rejected.PendingEventCount);
+        Assert.Contains(rejected.Warnings, warning => warning.Contains("rejected", StringComparison.OrdinalIgnoreCase));
+        Assert.All(
+            rejected.Warnings,
+            warning => Assert.DoesNotContain("personal-key", warning, StringComparison.Ordinal)
+        );
+
+        handler.HeaderEventStatus = 200;
+        handler.HeaderEventStatusText = null;
+        InaraPublicationResult empty = await publisher.FlushAsync();
+        Assert.Equal(1, handler.RequestCount);
+        Assert.Equal(0, empty.AcceptedEventCount);
+        Assert.Equal(0, empty.PendingEventCount);
+    }
+
+    private static async Task ApplyLiveAsync(InaraPublisher publisher, params string[] jsonEvents)
+    {
+        await publisher.ApplyAsync(
+            CreateUpdate(jsonEvents.Select(Event).ToArray(), cargo: null, allowPublishing: true, allowSharedData: true)
+        );
+    }
+
+    private static string LoadGameJson() =>
+        """
+            {
+              "timestamp": "2026-07-28T12:00:00Z",
+              "event": "LoadGame",
+              "Credits": 1000,
+              "Loan": 0
+            }
+            """;
+
+    private static string FsdJumpJson(string system) =>
+        $$"""
+            {
+              "timestamp": "2026-07-28T12:00:30Z",
+              "event": "FSDJump",
+              "StarSystem": "{{system}}",
+              "StarPos": [6.25, -1.25, -5.75],
+              "JumpDist": 8.6
+            }
+            """;
+
+    private static string CargoJson() =>
+        """
+            {
+              "timestamp": "2026-07-28T12:00:31Z",
+              "event": "Cargo",
+              "Vessel": "Ship",
+              "Inventory": [{ "Name": "tea", "Count": 2 }]
+            }
+            """;
+
+    private static string ShutdownJson() =>
+        """
+            { "timestamp": "2026-07-28T12:00:32Z", "event": "Shutdown" }
+            """;
+
     private static InaraPublicationUpdate CreateUpdate(
         IReadOnlyList<JournalEventEnvelope> events,
         CargoSnapshot? cargo,
@@ -1132,13 +1494,19 @@ public sealed class InaraPublisherTests
 
         public JToken? LastPayload { get; private set; }
 
+        public Uri? LastRequestUri { get; private set; }
+
+        public HttpMethod? LastMethod { get; private set; }
+
         public List<JToken> Payloads { get; } = [];
 
         public bool ReturnOversizedResponse { get; init; }
 
         public bool ReturnMalformedEventResponse { get; init; }
 
-        public int HeaderEventStatus { get; init; } = 200;
+        public int HeaderEventStatus { get; set; } = 200;
+
+        public string? HeaderEventStatusText { get; set; }
 
         public Func<int, int> EventStatusSelector { get; init; } = _ => 200;
 
@@ -1150,6 +1518,8 @@ public sealed class InaraPublisherTests
         )
         {
             Interlocked.Increment(ref requestCount);
+            LastRequestUri = request.RequestUri;
+            LastMethod = request.Method;
             string body = await request.Content!.ReadAsStringAsync(cancellationToken);
             LastPayload = JToken.Parse(body);
             Payloads.Add(LastPayload);
@@ -1185,7 +1555,11 @@ public sealed class InaraPublisherTests
                 Content = new StringContent(
                     new JObject
                     {
-                        ["header"] = new JObject { ["eventStatus"] = HeaderEventStatus },
+                        ["header"] = new JObject
+                        {
+                            ["eventStatus"] = HeaderEventStatus,
+                            ["eventStatusText"] = HeaderEventStatusText,
+                        },
                         ["events"] = responseEvents,
                     }.ToString(),
                     Encoding.UTF8,
@@ -1254,13 +1628,126 @@ public sealed class InaraPublisherTests
         public override void Post(SendOrPostCallback d, object? state) { }
     }
 
-    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    private sealed class MutableTimeProvider : TimeProvider
     {
-        public override DateTimeOffset GetUtcNow() => utcNow;
+        private DateTimeOffset utcNow;
+        private readonly List<VirtualTimer> timers = [];
+        private readonly Lock sync = new();
+
+        public MutableTimeProvider(DateTimeOffset utcNow)
+        {
+            this.utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            lock (sync)
+            {
+                return utcNow;
+            }
+        }
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            var timer = new VirtualTimer(this, callback, state);
+            lock (sync)
+            {
+                timers.Add(timer);
+            }
+
+            timer.Change(dueTime, period);
+            return timer;
+        }
 
         public void Advance(TimeSpan duration)
         {
-            utcNow += duration;
+            var due = new List<Action>();
+            lock (sync)
+            {
+                utcNow += duration;
+                foreach (VirtualTimer timer in timers.ToArray())
+                {
+                    timer.CollectDue(utcNow, due);
+                }
+            }
+
+            foreach (Action fire in due)
+            {
+                fire();
+            }
+        }
+
+        private sealed class VirtualTimer(MutableTimeProvider owner, TimerCallback callback, object? state) : ITimer
+        {
+            private DateTimeOffset? dueAt;
+            private TimeSpan period = Timeout.InfiniteTimeSpan;
+            private bool disposed;
+
+            public bool Change(TimeSpan dueTime, TimeSpan period)
+            {
+                Action? immediate = null;
+                lock (owner.sync)
+                {
+                    if (disposed)
+                    {
+                        return false;
+                    }
+
+                    this.period = period;
+                    if (dueTime == Timeout.InfiniteTimeSpan)
+                    {
+                        dueAt = null;
+                        return true;
+                    }
+
+                    if (dueTime <= TimeSpan.Zero)
+                    {
+                        dueAt = null;
+                        immediate = () => callback(state);
+                    }
+                    else
+                    {
+                        dueAt = owner.utcNow + dueTime;
+                    }
+                }
+
+                immediate?.Invoke();
+                return true;
+            }
+
+            public void CollectDue(DateTimeOffset now, List<Action> due)
+            {
+                if (disposed || dueAt is not { } scheduled || scheduled > now)
+                {
+                    return;
+                }
+
+                due.Add(() => callback(state));
+                if (period > TimeSpan.Zero && period != Timeout.InfiniteTimeSpan)
+                {
+                    dueAt = now + period;
+                }
+                else
+                {
+                    dueAt = null;
+                }
+            }
+
+            public void Dispose()
+            {
+                lock (owner.sync)
+                {
+                    disposed = true;
+                    dueAt = null;
+                    owner.timers.Remove(this);
+                }
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                Dispose();
+                return ValueTask.CompletedTask;
+            }
         }
     }
 }

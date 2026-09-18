@@ -15,7 +15,7 @@
 
       <Border Classes="card raised" Padding="28" IsVisible="{Binding !HasCarrier}">
         <StackPanel Spacing="8" HorizontalAlignment="Center">
-          <TextBlock FontSize="22" FontWeight="SemiBold" Text="No Fleet Carrier" />
+          <TextBlock FontSize="22" FontWeight="SemiBold" Text="{Binding CarrierEmptyHeading}" />
           <TextBlock Classes="muted" TextAlignment="Center" Text="{Binding CarrierTitle}" />
           <TextBlock Classes="muted" FontSize="11"
                      Text="A no-carrier response is cached normally and does not trigger repeated refreshes." />
@@ -26,7 +26,7 @@
         <Border Classes="card raised">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
             <StackPanel>
-              <TextBlock Classes="eyebrow" Text="FLEET CARRIER" />
+              <TextBlock Classes="eyebrow" Text="{Binding CarrierEyebrow}" />
               <TextBlock FontSize="25" FontWeight="SemiBold" Text="{Binding CarrierTitle}" />
               <TextBlock Classes="muted" Text="{Binding CarrierLocation}" />
             </StackPanel>
@@ -262,7 +262,7 @@
 
         <Expander Classes="profile-section"
                   IsExpanded="{Binding PaneStates.CarrierData.IsExpanded, Mode=TwoWay}">
-          <Expander.Header><TextBlock Text="{Binding CarrierData.Count, StringFormat=All Fleet Carrier data points ({0})}" /></Expander.Header>
+          <Expander.Header><TextBlock Text="{Binding CarrierDataHeading}" /></Expander.Header>
           <ItemsControl ItemsSource="{Binding CarrierData}" Margin="8" MaxHeight="520">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="core:FrontierDataPointSnapshot">

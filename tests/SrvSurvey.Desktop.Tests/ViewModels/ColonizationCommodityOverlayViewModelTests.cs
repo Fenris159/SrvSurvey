@@ -148,6 +148,28 @@ public sealed class ColonizationCommodityOverlayViewModelTests
     }
 
     [Fact]
+    public void CompactScrollingListIsOptInAndUnconstrainedByDefault()
+    {
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+
+        Assert.False(viewModel.UseCompactScrollingCommoditiesList);
+        Assert.Equal(double.PositiveInfinity, viewModel.CommodityListMaxHeight);
+
+        viewModel.ApplyPreferences(
+            ColonizationOverlayPreferences.Default with
+            {
+                UseCompactScrollingCommoditiesList = true,
+            }
+        );
+
+        Assert.True(viewModel.UseCompactScrollingCommoditiesList);
+        Assert.Equal(
+            ColonizationCommodityOverlayViewModel.CompactCommodityListMaxHeight,
+            viewModel.CommodityListMaxHeight
+        );
+    }
+
+    [Fact]
     public void MarketGuidanceDimsUnavailableRowsAndHighlightsCarrierLoads()
     {
         var viewModel = new ColonizationCommodityOverlayViewModel();

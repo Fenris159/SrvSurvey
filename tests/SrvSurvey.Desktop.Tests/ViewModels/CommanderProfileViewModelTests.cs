@@ -432,6 +432,76 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task PersonalJournalJumpDoesNotOverwriteSquadronCurrentJump()
+    {
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-09-12T15:50:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        FrontierAccountSnapshot snapshot = CreateSnapshot(fetchedAt) with
+        {
+            SquadronCarrier = CreateSnapshot(fetchedAt).Carrier! with { CurrentJump = "Achenar", Callsign = "SQD-001" },
+            SquadronCarrierFetchedAt = fetchedAt,
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await viewModel.OpenAsync();
+        viewModel.SetCarrierWorkspaceKind(CarrierWorkspaceKind.Squadron);
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T15:57:43Z","event":"CarrierJumpRequest","CarrierID":3710879232,"SystemName":"Honoto","DepartureTime":"2026-09-12T16:14:10Z"}
+                    """
+                ),
+            ]
+        );
+
+        Assert.Equal("Achenar", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+    }
+
+    [Fact]
+    public async Task JournalJumpAppliesToSquadronWhenCarrierIdMatches()
+    {
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-09-12T15:50:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        FrontierCarrierSnapshot squadron = CreateSnapshot(fetchedAt).Carrier! with
+        {
+            CurrentJump = "Achenar",
+            Callsign = "SQD-001",
+            DataPoints = [new FrontierDataPointSnapshot("squadron.squadronCarrier.market.id", "3710879232")],
+        };
+        FrontierAccountSnapshot snapshot = CreateSnapshot(fetchedAt) with
+        {
+            SquadronCarrier = squadron,
+            SquadronCarrierFetchedAt = fetchedAt,
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await viewModel.OpenAsync();
+        viewModel.SetCarrierWorkspaceKind(CarrierWorkspaceKind.Squadron);
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T15:57:43Z","event":"CarrierJumpRequest","CarrierID":3710879232,"SystemName":"Honoto","DepartureTime":"2026-09-12T16:14:10Z"}
+                    """
+                ),
+            ]
+        );
+
+        Assert.Equal("Honoto", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+    }
+
+    [Fact]
     public async Task JournalAddsPersonalGoalProgressWithoutLosingInaraDetails()
     {
         var fetchedAt = DateTimeOffset.Parse(
@@ -1035,6 +1105,43 @@ public sealed class CommanderProfileViewModelTests
         Assert.Equal(snapshot.Carrier.CapacityFree, profile.Carrier!.CapacityFree);
         profile.UpdateLinkedFleetCarriers(null, []);
         Assert.DoesNotContain(profile.CarrierCargo, c => c.Name == "platinum");
+    }
+
+    [Fact]
+    public async Task SquadronWorkspaceUsesLinkedCargoWhenCallsignMatches()
+    {
+        FrontierCarrierSnapshot squadron = CreateSnapshot(DateTimeOffset.UtcNow).Carrier! with
+        {
+            Callsign = "SQD-001",
+            Cargo = [new FrontierInventorySnapshot("Cargo", "Tritium", 1, 0)],
+        };
+        FrontierAccountSnapshot snapshot = CreateSnapshot(DateTimeOffset.UtcNow) with
+        {
+            SquadronCarrier = squadron,
+            SquadronCarrierFetchedAt = DateTimeOffset.UtcNow,
+        };
+        using var profile = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await profile.OpenAsync();
+        profile.SetCarrierWorkspaceKind(CarrierWorkspaceKind.Squadron);
+        Assert.Contains("Frontier squadron", profile.CarrierCargoSource);
+
+        profile.UpdateLinkedFleetCarriers(
+            snapshot.CommanderName,
+            [
+                new SrvSurvey.Core.Colonization.ColonizationFleetCarrier
+                {
+                    MarketId = 42,
+                    Name = "SQD-001",
+                    Cargo = new() { ["steel"] = 85 },
+                },
+            ]
+        );
+
+        Assert.Equal("85", Assert.Single(profile.CarrierCargo).Quantity);
+        Assert.Equal("steel", Assert.Single(profile.CarrierCargo).Name);
+        Assert.Contains("Linked squadron cargo", profile.CarrierCargoSource);
     }
 
     [Fact]

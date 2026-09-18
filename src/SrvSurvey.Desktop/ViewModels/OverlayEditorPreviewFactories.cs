@@ -65,8 +65,10 @@ internal static class OverlayEditorPreviewFactories
                     Row("power_generators", "Power generators", "Technology", 840, 32, 210),
                     Row("polymers", "Polymers", "Chemicals", 610, 24, 180),
                     Row("water_purifiers", "Water purifiers", "Technology", 420, 16, 120),
-                    Row("cmm_composites", "CMM composites", "Metals", 300, 12, 80),
+                    // Covered FC loads show the shared status column (✓) in both editor and live.
+                    Row("cmm_composites", "CMM composites", "Metals", 80, 0, 80),
                     Row("emergency_power_cells", "Emergency power cells", "Technology", 200, 12, 30),
+                    Row("evacuation_shelter", "Evacuation shelter", "Consumer items", 75, 0, 75),
                 ],
                 FleetCarriers =
                 [
@@ -79,10 +81,12 @@ internal static class OverlayEditorPreviewFactories
                         {
                             ["steel"] = 620,
                             ["polymers"] = 180,
+                            ["cmm_composites"] = 80,
+                            ["evacuation_shelter"] = 75,
                         },
                     },
                 ],
-                TotalRemaining = 4820,
+                TotalRemaining = 4675,
                 TripsInCurrentShip = 12,
                 FleetCarrierDeficit = 1240,
                 FleetCarrierDeficitTrips = 4,

@@ -10,6 +10,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChanged
 {
+    public const double CompactCommodityListMaxHeight = 300;
     private ColonizationCommodityPlan plan = EmptyPlan();
     private EliteStatus? status;
     private string? musicTrack;
@@ -187,6 +188,11 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
 
     public string InputMode => IsClickThrough ? "CLICK-THROUGH" : "PASS-THROUGH UNAVAILABLE";
 
+    public bool UseCompactScrollingCommoditiesList => preferences.UseCompactScrollingCommoditiesList;
+
+    public double CommodityListMaxHeight =>
+        UseCompactScrollingCommoditiesList ? CompactCommodityListMaxHeight : double.PositiveInfinity;
+
     public void Apply(
         ColonizationCommodityPlan updatedPlan,
         EliteStatus? updatedStatus,
@@ -219,6 +225,8 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
         OnPropertyChanged(nameof(CollapseModeText));
         OnPropertyChanged(nameof(FleetCarrierColumnHeader));
         OnPropertyChanged(nameof(ShipColumnHeader));
+        OnPropertyChanged(nameof(UseCompactScrollingCommoditiesList));
+        OnPropertyChanged(nameof(CommodityListMaxHeight));
     }
 
     public void ApplyPendingFleetCarrierCargo(IEnumerable<string>? commodities)

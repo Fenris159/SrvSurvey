@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -618,11 +619,11 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task DockingLoadsUntrackedProjectBySystemAndMarket()
+    public async Task DockingLoadsUntrackedProjectBySystemAndMarketWithoutLinkingNonArchitect()
     {
         var client = new StubRavenColonialClient
         {
-            SiteProjectResponse = Project("other-build", "Other port", 50, 10, 20),
+            SiteProjectResponse = Project("other-build", "Other port", 50, 10, 20, architectName: "Someone Else"),
         };
         ColonizationViewModel viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -641,8 +642,34 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         Assert.Equal(1, client.SiteProjectLoadCount);
         Assert.Equal("other-build", Assert.Single(viewModel.Projects).Project.BuildId);
+        Assert.Empty(client.LinkRequests);
+        Assert.Contains("untracked Raven project", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task DockingAutoLinksOnlyWhenCommanderMatchesArchitect()
+    {
+        var client = new StubRavenColonialClient
+        {
+            SiteProjectResponse = Project("architect-build", "My port", 50, 10, 20, architectName: "Test Cmdr"),
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        JournalEventEnvelope docked = Event(
+            "Docked",
+            """
+            "MarketID":10,"SystemAddress":20,"StarSystem":"Test System",
+            "StationName":"Orbital Construction Site: Hope",
+            "StationServices":["colonisationcontribution"]
+            """
+        );
+        viewModel.ApplyJournalEvents([docked]);
+
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
         LinkCall link = Assert.Single(client.LinkRequests);
-        Assert.Equal("other-build", link.BuildId);
+        Assert.Equal("architect-build", link.BuildId);
         Assert.Equal("Test Cmdr", link.CommanderName);
         Assert.Contains("Linked Raven project", viewModel.StatusMessage);
     }
@@ -1373,6 +1400,345 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task QueuesJournalCargoDeltasUntilMarketBaselineCompletes()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var entered = new ManualResetEventSlim(false);
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
+            FleetCarrierResponse = carrier,
+            GateGetFleetCarrier = gate,
+            EnteredGetFleetCarrier = entered,
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents([
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"ABC-123","StationType":"FleetCarrier",
+                "StationServices":["commodities"]
+                """
+            ),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
+
+        var market = new MarketSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            "Market",
+            42,
+            "ABC-123",
+            "FleetCarrier",
+            "all",
+            "Test",
+            [
+                new MarketItem(
+                    1,
+                    "$Steel_Name;",
+                    "Steel",
+                    "$commodity_metals;",
+                    "Metals",
+                    0,
+                    100,
+                    100,
+                    1,
+                    0,
+                    80,
+                    0,
+                    true,
+                    false,
+                    false
+                ),
+            ]
+        );
+
+        Task marketSync = viewModel.UpdateMarketAsync(market);
+        Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")],
+            allowPublishing: true
+        );
+        Assert.Empty(client.FleetCarrierAdjustments);
+
+        gate.SetResult(true);
+        await marketSync;
+
+        Assert.Equal(1, client.ReplaceCargoCount);
+        FleetCarrierAdjustmentCall queued = Assert.Single(client.FleetCarrierAdjustments);
+        Assert.Equal(-5, queued.Changes["steel"]);
+        Assert.Contains("Updated 1 cargo", viewModel.FleetCarrierSyncStatus);
+    }
+
+    [Fact]
+    public async Task LoadsServerCargoBaselineWhenDockedLinkedCarrierCacheIsEmpty()
+    {
+        var local = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            Cargo = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+        };
+        ColonizationFleetCarrier server = local with { Cargo = new Dictionary<string, int> { ["aluminium"] = 50 } };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([], [], null, [local]),
+            FleetCarrierResponse = server,
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        JournalEventEnvelope docked = Event(
+            "Docked",
+            """
+            "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+            "StationName":"ABC-123","StationType":"FleetCarrier",
+            "StationServices":["commodities"]
+            """
+        );
+        viewModel.ApplyJournalEvents([docked]);
+
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
+        Assert.Equal(50, Assert.Single(viewModel.LinkedFleetCarriers).Cargo["aluminium"]);
+        Assert.Contains("baseline", viewModel.StatusMessage, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task FailedDockBaselineAllowsRetryWhenServerCarrierIsMissing()
+    {
+        var local = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            Cargo = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([], [], null, [local]),
+            FleetCarrierResponse = null,
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        JournalEventEnvelope docked = Event(
+            "Docked",
+            """
+            "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+            "StationName":"ABC-123","StationType":"FleetCarrier",
+            "StationServices":["commodities"]
+            """
+        );
+        viewModel.ApplyJournalEvents([docked]);
+
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
+        Assert.Equal(1, client.GetFleetCarrierCount);
+        Assert.Empty(Assert.Single(viewModel.LinkedFleetCarriers).Cargo);
+
+        client.FleetCarrierResponse = local with { Cargo = new Dictionary<string, int> { ["aluminium"] = 50 } };
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
+        Assert.Equal(2, client.GetFleetCarrierCount);
+        Assert.Equal(50, Assert.Single(viewModel.LinkedFleetCarriers).Cargo["aluminium"]);
+    }
+
+    [Fact]
+    public async Task DoesNotReplayQueuedCargoDeltasWhenCapiSeedOverlapsMarketBaseline()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var entered = new ManualResetEventSlim(false);
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
+            FleetCarrierResponse = carrier,
+            GateGetFleetCarrier = gate,
+            EnteredGetFleetCarrier = entered,
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents([
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"ABC-123","StationType":"FleetCarrier",
+                "StationServices":["commodities"]
+                """
+            ),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
+
+        Task marketSync = viewModel.UpdateMarketAsync(LinkedCarrierMarket(stock: 80));
+        Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")],
+            allowPublishing: true
+        );
+        Assert.Empty(client.FleetCarrierAdjustments);
+
+        await viewModel.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(isDocked: false, steel: 90));
+
+        Assert.Empty(client.FleetCarrierAdjustments);
+
+        gate.SetResult(true);
+        await marketSync;
+        FleetCarrierAdjustmentCall queued = Assert.Single(client.FleetCarrierAdjustments);
+        Assert.Equal(-5, queued.Changes["steel"]);
+    }
+
+    [Fact]
+    public async Task DoesNotSeedStaleCapiManifestWhileJournalDockedAtLinkedCarrier()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents([
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"ABC-123","StationType":"FleetCarrier",
+                "StationServices":["commodities"]
+                """
+            ),
+        ]);
+
+        await viewModel.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(isDocked: false, steel: 90));
+
+        Assert.Equal(0, client.ReplaceCargoCount);
+        Assert.Equal(75, Assert.Single(viewModel.LinkedFleetCarriers).Cargo["steel"]);
+    }
+
+    [Fact]
+    public async Task SeedsCapiManifestOncePerSessionThenIgnoresLaterSnapshots()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+
+        await viewModel.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(isDocked: false, steel: 90));
+        Assert.Equal(1, client.ReplaceCargoCount);
+        Assert.Equal(90, client.LastReplacement?["steel"]);
+
+        await viewModel.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(isDocked: false, steel: 40));
+        Assert.Equal(1, client.ReplaceCargoCount);
+    }
+
+    [Fact]
+    public async Task QueuedSquadronMarketBuyDoesNotAlsoApplyInvertedShipCargoDiff()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "SQD-001",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var entered = new ManualResetEventSlim(false);
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
+            FleetCarrierResponse = carrier,
+            GateGetFleetCarrier = gate,
+            EnteredGetFleetCarrier = entered,
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents([
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"SQD-001","StationType":"FleetCarrier",
+                "StationServices":["commodities","squadronBank"]
+                """
+            ),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
+
+        var cargo = new CargoInventoryState();
+        cargo.Reset(
+            new CargoSnapshot(
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                "Cargo",
+                "Ship",
+                0,
+                []
+            )
+        );
+        cargo.Apply(Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"));
+
+        Task marketSync = viewModel.UpdateMarketAsync(LinkedCarrierMarket(stock: 80, stationName: "SQD-001"));
+        Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")],
+            allowPublishing: true,
+            cargoInventory: cargo,
+            cargoActivity: true
+        );
+        Assert.Empty(client.FleetCarrierAdjustments);
+
+        gate.SetResult(true);
+        await marketSync;
+
+        FleetCarrierAdjustmentCall queued = Assert.Single(client.FleetCarrierAdjustments);
+        Assert.Equal(-5, queued.Changes["steel"]);
+    }
+
+    [Fact]
     public async Task StartupSquadronDetectionSurvivesCommanderActivationAfterJournalReplay()
     {
         var carrier = new ColonizationFleetCarrier
@@ -1993,13 +2359,93 @@ public sealed class ColonizationViewModelTests : IDisposable
         );
     }
 
+    private static MarketSnapshot LinkedCarrierMarket(int stock, string stationName = "ABC-123")
+    {
+        return new MarketSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            "Market",
+            42,
+            stationName,
+            "FleetCarrier",
+            "all",
+            "Test",
+            [
+                new MarketItem(
+                    1,
+                    "$Steel_Name;",
+                    "Steel",
+                    "$commodity_metals;",
+                    "Metals",
+                    0,
+                    100,
+                    100,
+                    1,
+                    0,
+                    stock,
+                    0,
+                    true,
+                    false,
+                    false
+                ),
+            ]
+        );
+    }
+
+    private static FrontierAccountSnapshot LinkedCarrierCapiSnapshot(bool isDocked, int steel)
+    {
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-09-18T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var carrier = new FrontierCarrierSnapshot(
+            "ABC-123",
+            "ABC-123",
+            "Test",
+            "NormalOperation",
+            "All",
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            [],
+            [new FrontierInventorySnapshot("Commodity", "Steel", steel, 0)],
+            [],
+            [],
+            [],
+            [],
+            Market: new FrontierMarketSnapshot(42, "ABC-123", "FleetCarrier", [], [], [], [], [], [], fetchedAt)
+        );
+        return new FrontierAccountSnapshot(
+            "Test Cmdr",
+            0,
+            0,
+            isDocked,
+            true,
+            "Test",
+            "ABC-123",
+            null,
+            [],
+            [],
+            [],
+            carrier,
+            fetchedAt,
+            CarrierFetchedAt: fetchedAt
+        );
+    }
+
     private static ColonizationProject Project(
         string id,
         string name,
         int remaining,
         long marketId = 0,
         long systemAddress = 0,
-        string? factionName = null
+        string? factionName = null,
+        string? architectName = null
     )
     {
         return new ColonizationProject
@@ -2011,6 +2457,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             MarketId = marketId,
             SystemAddress = systemAddress,
             FactionName = factionName,
+            ArchitectName = architectName,
             MaximumRequired = 1_000,
             RemainingRequired = remaining,
             Commodities = new Dictionary<string, int> { ["steel"] = remaining },
@@ -2044,6 +2491,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         public int ValidateApiKeyCount { get; private set; }
 
         public int ReplaceCargoCount { get; private set; }
+
+        public int GetFleetCarrierCount { get; private set; }
 
         public int PublishCarrierCount { get; private set; }
 
@@ -2307,12 +2756,23 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.FromResult<ColonizationProject?>(null);
         }
 
-        public Task<ColonizationFleetCarrier?> GetFleetCarrierAsync(
+        public TaskCompletionSource<bool>? GateGetFleetCarrier { get; set; }
+
+        public ManualResetEventSlim? EnteredGetFleetCarrier { get; set; }
+
+        public async Task<ColonizationFleetCarrier?> GetFleetCarrierAsync(
             long marketId,
             CancellationToken cancellationToken = default
         )
         {
-            return Task.FromResult(FleetCarrierResponse);
+            GetFleetCarrierCount++;
+            EnteredGetFleetCarrier?.Set();
+            if (GateGetFleetCarrier is not null)
+            {
+                await GateGetFleetCarrier.Task.WaitAsync(cancellationToken);
+            }
+
+            return FleetCarrierResponse;
         }
 
         public Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(

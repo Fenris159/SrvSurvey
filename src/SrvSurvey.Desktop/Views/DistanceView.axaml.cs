@@ -30,7 +30,7 @@ public sealed partial class DistanceView : UserControl
     {
         if (Model is { } vm && DataContext is MainWindowViewModel main)
         {
-            vm.Destination = main.FrontierProfile.Carrier?.System ?? "";
+            vm.Destination = main.FrontierProfile.PersonalCarrier?.System ?? "";
         }
     }
 
