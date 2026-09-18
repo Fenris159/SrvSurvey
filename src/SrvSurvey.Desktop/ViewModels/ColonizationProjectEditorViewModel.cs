@@ -563,6 +563,8 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             pendingProject = null;
             pendingContextIdentity = null;
             IsPrepared = false;
+            isSystemArchitect = false;
+            OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             OnPropertyChanged(nameof(IsConfirmationPending));
             OnPropertyChanged(nameof(ConfirmationSummary));
             OnPropertyChanged(nameof(HasCreatedProject));

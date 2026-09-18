@@ -1097,19 +1097,24 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
+        bool isUntracked = !lookup.LinkedCommander && localUntrackedProject?.BuildId == project.BuildId;
+        string? loadMessage = null;
+        if (lookup.LinkedCommander)
+        {
+            loadMessage = $"Linked Raven project {project.BuildName} into the active list for this construction site.";
+        }
+        else if (isUntracked)
+        {
+            loadMessage = $"Loaded untracked Raven project {project.BuildName} for this construction site.";
+        }
+
         if (
-            string.IsNullOrWhiteSpace(dock.FactionName)
+            isUntracked
+            || string.IsNullOrWhiteSpace(dock.FactionName)
             || string.Equals(dock.FactionName, project.FactionName, StringComparison.Ordinal)
         )
         {
-            if (lookup.LinkedCommander)
-            {
-                return $"Linked Raven project {project.BuildName} into the active list for this construction site.";
-            }
-
-            return localUntrackedProject?.BuildId == project.BuildId
-                ? $"Loaded untracked Raven project {project.BuildName} for this construction site."
-                : null;
+            return loadMessage;
         }
 
         ColonizationProject updated = await client.UpdateProjectAsync(
@@ -1118,7 +1123,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         );
         updated = await ClearPhantomCommoditiesAsync(updated);
         UpsertProject(updated);
-        return $"Updated Raven project faction for {updated.BuildName}.";
+        return CombineMessages(loadMessage, $"Updated Raven project faction for {updated.BuildName}.");
     }
 
     private async Task<string?> SynchronizeBuildSiteRepairAsync(JournalEventEnvelope journalEvent)
