@@ -16,6 +16,8 @@ public static class OverlayThemePresetCatalog
     private const string WhiteKey = "white";
     private const string BioConfirmedKey = "bio.confirmed";
     private const string BioConfirmedDimKey = "bio.confirmedDim";
+    private const string BioPotentialKey = "bio.potential";
+    private const string BioConfirmedDimPotentialKey = "bio.confirmedDimPotential";
     private const string BioPredictionKey = "bio.prediction";
     private const string BioGoldKey = "bio.gold";
     private const string BioGoldDarkKey = "bio.goldDark";
@@ -24,6 +26,12 @@ public static class OverlayThemePresetCatalog
     private const string BioGalacticRegionKey = "bio.galacticRegion";
     private const string BioUnknownKey = "bio.unknown";
     private const string BioWhiteKey = "bio.white";
+    private const string BioConfirmedEdgeKey = "bio.confirmedEdge";
+    private const string BioConfirmedDimEdgeKey = "bio.confirmedDimEdge";
+    private const string BioConfirmedSegmentEdgeKey = "bio.confirmedSegmentEdge";
+    private const string BioConfirmedPotentialSegmentEdgeKey = "bio.confirmedPotentialSegmentEdge";
+    private const string BioConfirmedDimSegmentEdgeKey = "bio.confirmedDimSegmentEdge";
+    private const string BioConfirmedDimPotentialSegmentEdgeKey = "bio.confirmedDimPotentialSegmentEdge";
 
     private static readonly string[] PresetIdentityKeys =
     [
@@ -41,8 +49,8 @@ public static class OverlayThemePresetCatalog
     [
         BioConfirmedKey,
         BioConfirmedDimKey,
-        "bio.potential",
-        "bio.confirmedDimPotential",
+        BioPotentialKey,
+        BioConfirmedDimPotentialKey,
         "bio.predictionPotential",
         BioGoldFillKey,
         BioGoldDarkFillKey,
@@ -52,17 +60,17 @@ public static class OverlayThemePresetCatalog
         "bio.galacticRegionPotential",
         "bio.unknownGlyph",
         BioEmptyKey,
-        "bio.confirmedEdge",
-        "bio.confirmedDimEdge",
+        BioConfirmedEdgeKey,
+        BioConfirmedDimEdgeKey,
         "bio.predictionEdge",
         "bio.goldEdge",
         "bio.goldDarkEdge",
         "bio.galacticRegionEdge",
         "bio.unknownEdge",
-        "bio.confirmedSegmentEdge",
-        "bio.confirmedPotentialSegmentEdge",
-        "bio.confirmedDimSegmentEdge",
-        "bio.confirmedDimPotentialSegmentEdge",
+        BioConfirmedSegmentEdgeKey,
+        BioConfirmedPotentialSegmentEdgeKey,
+        BioConfirmedDimSegmentEdgeKey,
+        BioConfirmedDimPotentialSegmentEdgeKey,
         "bio.predictionSegmentEdge",
         "bio.predictionPotentialSegmentEdge",
         "bio.goldSegmentEdge",
@@ -197,7 +205,36 @@ public static class OverlayThemePresetCatalog
         colors["guardian.success"] = colors["green"];
         colors["guardian.danger"] = colors["red"];
         colors[BioEmptyKey] = colors[BlackKey];
+        ApplyMonochromeConfirmedBiology(colors);
         return new OverlayThemePreset("Monochrome Companion", colors);
+    }
+
+    private static void ApplyMonochromeConfirmedBiology(Dictionary<string, Color> colors)
+    {
+        // Keep the muted companion look, but borrow Default's warm confirmed
+        // orange so solid PIPs stay distinct from the white-like galactic-region
+        // candidate and the cooler secondary prediction accent.
+        IReadOnlyDictionary<string, Color> defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        Color mute = colors["grey"];
+        Color confirmed = Blend(defaults[BioConfirmedKey], mute, 0.38);
+        Color confirmedDim = Blend(defaults[BioConfirmedDimKey], mute, 0.28);
+        Color defaultPotential = defaults[BioPotentialKey];
+        Color potential = Blend(
+            Color.FromArgb(255, defaultPotential.R, defaultPotential.G, defaultPotential.B),
+            mute,
+            0.28
+        );
+
+        colors[BioConfirmedKey] = confirmed;
+        colors[BioConfirmedDimKey] = confirmedDim;
+        colors[BioPotentialKey] = WithAlpha(potential, defaultPotential.A);
+        colors[BioConfirmedDimPotentialKey] = WithAlpha(Scale(confirmedDim, 0.33), 140);
+        colors[BioConfirmedEdgeKey] = WithAlpha(confirmed, 96);
+        colors[BioConfirmedDimEdgeKey] = WithAlpha(confirmedDim, 96);
+        colors[BioConfirmedSegmentEdgeKey] = confirmedDim;
+        colors[BioConfirmedPotentialSegmentEdgeKey] = WithAlpha(confirmed, 124);
+        colors[BioConfirmedDimSegmentEdgeKey] = Scale(confirmedDim, 0.33);
+        colors[BioConfirmedDimPotentialSegmentEdgeKey] = WithAlpha(Scale(confirmed, 0.33), 124);
     }
 
     private static OverlayThemePreset CreateExpandedPreset(
@@ -276,14 +313,19 @@ public static class OverlayThemePresetCatalog
 
     private static void ApplyBiology(Dictionary<string, Color> colors, ExpandedPalette palette)
     {
-        Color prediction = Blend(palette.Primary, palette.Secondary, 0.65);
-        Color predictionDark = Scale(prediction, 0.45);
+        // Warm the confirmed PIP toward the values accent and pin prediction to
+        // the secondary accent so solid vs hatched PIPs stay distinguishable
+        // even when a preset's primary/secondary hues are close.
+        Color confirmed = Blend(palette.Primary, palette.Value, 0.30);
+        Color confirmedDim = Scale(confirmed, 0.42);
+        Color prediction = palette.Secondary;
+        Color predictionDark = palette.SecondaryDark;
         Color goldFill = Scale(palette.Value, 0.68);
         Color goldDarkFill = Scale(goldFill, 0.34);
-        colors[BioConfirmedKey] = palette.Primary;
-        colors[BioConfirmedDimKey] = palette.PrimaryDark;
-        colors["bio.potential"] = WithAlpha(palette.PrimaryDark, 140);
-        colors["bio.confirmedDimPotential"] = WithAlpha(Scale(palette.PrimaryDark, 0.33), 140);
+        colors[BioConfirmedKey] = confirmed;
+        colors[BioConfirmedDimKey] = confirmedDim;
+        colors[BioPotentialKey] = WithAlpha(confirmedDim, 140);
+        colors[BioConfirmedDimPotentialKey] = WithAlpha(Scale(confirmedDim, 0.33), 140);
         colors[BioPredictionKey] = prediction;
         colors["bio.predictionPotential"] = WithAlpha(predictionDark, 180);
         colors[BioGoldKey] = palette.Value;
@@ -295,21 +337,21 @@ public static class OverlayThemePresetCatalog
         colors[BioGalacticRegionKey] = palette.Text;
         colors["bio.galacticRegionPotential"] = WithAlpha(Scale(palette.Text, 0.74), 140);
         colors[BioUnknownKey] = palette.Muted;
-        colors["bio.unknownGlyph"] = palette.Muted;
+        colors["bio.unknownGlyph"] = prediction;
         colors["bio.hatch"] = WithAlpha(palette.Muted, 242);
         colors[BioEmptyKey] = colors[BlackKey];
         colors[BioWhiteKey] = palette.Text;
-        colors["bio.confirmedEdge"] = WithAlpha(palette.Primary, 96);
-        colors["bio.confirmedDimEdge"] = WithAlpha(palette.PrimaryDark, 96);
+        colors[BioConfirmedEdgeKey] = WithAlpha(confirmed, 96);
+        colors[BioConfirmedDimEdgeKey] = WithAlpha(confirmedDim, 96);
         colors["bio.predictionEdge"] = WithAlpha(predictionDark, 96);
         colors["bio.goldEdge"] = WithAlpha(palette.Value, 96);
         colors["bio.goldDarkEdge"] = WithAlpha(goldFill, 96);
         colors["bio.galacticRegionEdge"] = WithAlpha(palette.Text, 96);
         colors["bio.unknownEdge"] = WithAlpha(predictionDark, 96);
-        colors["bio.confirmedSegmentEdge"] = palette.PrimaryDark;
-        colors["bio.confirmedPotentialSegmentEdge"] = WithAlpha(palette.Primary, 124);
-        colors["bio.confirmedDimSegmentEdge"] = Scale(palette.PrimaryDark, 0.33);
-        colors["bio.confirmedDimPotentialSegmentEdge"] = WithAlpha(Scale(palette.Primary, 0.33), 124);
+        colors[BioConfirmedSegmentEdgeKey] = confirmedDim;
+        colors[BioConfirmedPotentialSegmentEdgeKey] = WithAlpha(confirmed, 124);
+        colors[BioConfirmedDimSegmentEdgeKey] = Scale(confirmedDim, 0.33);
+        colors[BioConfirmedDimPotentialSegmentEdgeKey] = WithAlpha(Scale(confirmed, 0.33), 124);
         colors["bio.predictionSegmentEdge"] = predictionDark;
         colors["bio.predictionPotentialSegmentEdge"] = predictionDark;
         colors["bio.goldSegmentEdge"] = palette.Value;
@@ -328,7 +370,7 @@ public static class OverlayThemePresetCatalog
         {
             BioGoldFillKey => Scale(Get(BioGoldKey, fallback), 0.68),
             BioGoldDarkFillKey => Scale(Get(BioGoldDarkKey, fallback), 0.34),
-            "bio.confirmedDimPotential" => WithAlpha(
+            BioConfirmedDimPotentialKey => WithAlpha(
                 Scale(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 0.33),
                 140
             ),
@@ -340,18 +382,18 @@ public static class OverlayThemePresetCatalog
                 Scale(Get(BioGalacticRegionKey, Get(BioWhiteKey, Get(WhiteKey, fallback))), 0.74),
                 140
             ),
-            "bio.unknownGlyph" => Get(BioUnknownKey, Get("grey", fallback)),
+            "bio.unknownGlyph" => Get(BioPredictionKey, Get("cyan", fallback)),
             BioEmptyKey => Get(BlackKey, fallback),
-            "bio.confirmedEdge" => WithAlpha(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 96),
-            "bio.confirmedDimEdge" => WithAlpha(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 96),
+            BioConfirmedEdgeKey => WithAlpha(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 96),
+            BioConfirmedDimEdgeKey => WithAlpha(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 96),
             "bio.predictionEdge" or "bio.unknownEdge" => WithAlpha(Get(CyanDarkKey, fallback), 96),
             "bio.goldEdge" => WithAlpha(Get(BioGoldKey, fallback), 96),
             "bio.goldDarkEdge" => WithAlpha(Get(BioGoldFillKey, Get(BioGoldDarkKey, fallback)), 96),
             "bio.galacticRegionEdge" => WithAlpha(Get(BioWhiteKey, Get(WhiteKey, fallback)), 96),
-            "bio.confirmedSegmentEdge" => Get(OrangeDarkKey, Get(BioConfirmedDimKey, fallback)),
-            "bio.confirmedPotentialSegmentEdge" => WithAlpha(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 124),
-            "bio.confirmedDimSegmentEdge" => Scale(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 0.33),
-            "bio.confirmedDimPotentialSegmentEdge" => WithAlpha(
+            BioConfirmedSegmentEdgeKey => Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)),
+            BioConfirmedPotentialSegmentEdgeKey => WithAlpha(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 124),
+            BioConfirmedDimSegmentEdgeKey => Scale(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 0.33),
+            BioConfirmedDimPotentialSegmentEdgeKey => WithAlpha(
                 Scale(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 0.33),
                 124
             ),

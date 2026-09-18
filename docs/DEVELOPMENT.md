@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.48.7**. Its development tag
-is `xp-v2.1.3.0-rc.48.7`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.48.7`. The assembly `FileVersion`
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.49.0**. Its development tag
+is `xp-v2.1.3.0-rc.49.0`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.49.0`. The assembly `FileVersion`
 remains numeric at `2.1.3.0` for Windows compatibility.
 
 ## Build contract
@@ -36,6 +36,17 @@ rules and `tools/SonarCloud.ruleset` profile on changed C# lines. Run
 desktop text or Desktop source files change, regenerate catalogs with
 `./tools/Generate-AvaloniaLocalization.ps1` (add `-TranslateMissing` for new
 strings); the verification gate rejects stale catalogs.
+
+Install the versioned git hook once per clone so those gates also block commit:
+
+```console
+pwsh ./tools/Install-LocalGitHooks.ps1
+```
+
+That sets local `core.hooksPath` to `.githooks`, where `pre-commit` restores
+tools/solution packages and runs `Test-ChangedCodeQuality.ps1`. Use
+`pwsh ./tools/Install-LocalGitHooks.ps1 -Uninstall` to remove the local hook
+path.
 
 `SonarAnalyzer.CSharp` is referenced centrally by `Directory.Build.props`, so
 it runs in editors and every `dotnet build`. Analyzer warnings are treated as

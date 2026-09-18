@@ -312,7 +312,8 @@ dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
 ```
 
 `Test-ChangedCodeQuality.ps1` covers CSharpier, Avalonia localization catalog
-verification, and changed-line Sonar/style gates.
+verification, and changed-line Sonar/style gates. Install the local pre-commit
+hook once per clone with `pwsh ./tools/Install-LocalGitHooks.ps1`.
 The supported stack is intentionally small:
 
 | Area | Technology |

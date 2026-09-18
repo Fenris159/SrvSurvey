@@ -37013,6 +37013,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
     "Text": "Recent notifications",
     "IsFormat": false,
     "SourceKinds": [
@@ -49828,6 +49836,14 @@
   },
   {
     "Text": "The live construction context is incomplete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
+    "Text": "The live construction requirements could not be refreshed.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

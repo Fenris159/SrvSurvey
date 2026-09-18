@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Blocks commits that fail the same pre-build gates CI runs for PRs.
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if ! command -v pwsh >/dev/null 2>&1; then
+  echo "pre-commit: pwsh is required to run tools/Test-ChangedCodeQuality.ps1" >&2
+  exit 1
+fi
+
+if ! command -v dotnet >/dev/null 2>&1; then
+  echo "pre-commit: dotnet SDK is required for local quality checks" >&2
+  exit 1
+fi
+
+echo "pre-commit: restoring tools and solution..."
+dotnet tool restore
+dotnet restore SrvSurvey.slnx --verbosity quiet
+
+base_ref="origin/SrvSurvey-Avalonia"
+if git rev-parse --verify --quiet "$base_ref" >/dev/null; then
+  :
+elif git rev-parse --verify --quiet origin/HEAD >/dev/null; then
+  base_ref="$(git rev-parse --abbrev-ref origin/HEAD)"
+  base_ref="origin/${base_ref#origin/}"
+else
+  base_ref="HEAD~1"
+fi
+
+echo "pre-commit: running Test-ChangedCodeQuality.ps1 -BaseRef $base_ref"
+pwsh -NoProfile -File ./tools/Test-ChangedCodeQuality.ps1 -BaseRef "$base_ref"

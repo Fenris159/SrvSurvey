@@ -591,6 +591,73 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task ContributeToProjectMergesCommodityKeysThatNormalizeTogether()
+    {
+        string? body = null;
+        var handler = new StubHandler(async request =>
+        {
+            Assert.Equal(HttpMethod.Post, request.Method);
+            body = await request.Content!.ReadAsStringAsync();
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        RavenColonialClient client = Create(handler);
+
+        await client.ContributeToProjectAsync(
+            "build-1",
+            "Test Cmdr",
+            new Dictionary<string, int> { ["$Steel_name;"] = 10, ["steel"] = 5 }
+        );
+
+        using var document = JsonDocument.Parse(body!);
+        Assert.Equal(15, document.RootElement.GetProperty("steel").GetInt32());
+        Assert.False(document.RootElement.TryGetProperty("$Steel_name;", out _));
+    }
+
+    [Fact]
+    public async Task ContributeToProjectRejectsEmptyNormalizedKeysWithoutPartialSubmit()
+    {
+        bool sent = false;
+        RavenColonialClient client = Create(
+            new StubHandler(_ =>
+            {
+                sent = true;
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            })
+        );
+
+        ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            client.ContributeToProjectAsync(
+                "build-1",
+                "Test Cmdr",
+                new Dictionary<string, int> { ["steel"] = 5, ["$_name;"] = 3 }
+            )
+        );
+
+        Assert.Equal("contributions", exception.ParamName);
+        Assert.False(sent);
+    }
+
+    [Fact]
+    public async Task ContributeToProjectRejectsEmptyContributionMap()
+    {
+        bool sent = false;
+        RavenColonialClient client = Create(
+            new StubHandler(_ =>
+            {
+                sent = true;
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            })
+        );
+
+        ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            client.ContributeToProjectAsync("build-1", "Test Cmdr", new Dictionary<string, int>())
+        );
+
+        Assert.Equal("contributions", exception.ParamName);
+        Assert.False(sent);
+    }
+
+    [Fact]
     public async Task LinksAndUnlinksCommanderWithLegacyEndpoints()
     {
         var requests = new List<(HttpMethod Method, string Path)>();

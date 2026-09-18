@@ -1371,14 +1371,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
             int current = remaining.GetValueOrDefault(name);
             int next = Math.Max(0, current - contribution.Value);
-            if (next == 0)
-            {
-                remaining.Remove(name);
-            }
-            else
-            {
-                remaining[name] = next;
-            }
+            remaining[name] = next;
         }
 
         return remaining;

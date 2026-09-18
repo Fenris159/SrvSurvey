@@ -336,7 +336,13 @@ public sealed class RavenColonialClient : IRavenColonialClient
         ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
         ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
         ArgumentNullException.ThrowIfNull(contributions);
-        if (contributions.Any(pair => string.IsNullOrWhiteSpace(pair.Key) || pair.Value <= 0))
+        // Reject empty-normalized keys up front so NormalizeNeedMap cannot drop them
+        // and partially submit a mixed map of valid and invalid commodity names.
+        if (
+            contributions.Any(pair =>
+                pair.Value <= 0 || ColonizationConstructionState.NormalizeCommodityName(pair.Key).Length == 0
+            )
+        )
         {
             throw new ArgumentOutOfRangeException(
                 nameof(contributions),
@@ -344,12 +350,8 @@ public sealed class RavenColonialClient : IRavenColonialClient
             );
         }
 
-        var normalized = contributions.ToDictionary(
-            pair => ColonizationConstructionState.NormalizeCommodityName(pair.Key),
-            pair => pair.Value,
-            StringComparer.OrdinalIgnoreCase
-        );
-        if (normalized.Any(pair => pair.Key.Length == 0 || pair.Value <= 0))
+        Dictionary<string, int> normalized = ColonizationCommodityMaps.NormalizeNeedMap(contributions);
+        if (normalized.Count == 0 || normalized.Any(pair => pair.Value <= 0))
         {
             throw new ArgumentOutOfRangeException(
                 nameof(contributions),

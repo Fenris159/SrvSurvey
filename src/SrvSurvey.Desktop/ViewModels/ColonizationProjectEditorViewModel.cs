@@ -463,6 +463,35 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             return;
         }
 
+        ColonizationProjectCreateResult refreshed = projectFactory.Create(
+            new ColonizationProjectDraft(
+                context.CommanderName ?? string.Empty,
+                context.SystemName ?? string.Empty,
+                context.StarPosition,
+                SelectedLayout ?? string.Empty,
+                ProjectName,
+                ArchitectName,
+                Notes,
+                int.TryParse(BodyNumberText, out int bodyNumber) ? bodyNumber : pendingProject.BodyNumber,
+                BodyName,
+                SelectedSystemSite?.Site?.Id
+            ),
+            context.Dock,
+            context.Depot
+        );
+        if (!refreshed.IsValid || refreshed.Project is null)
+        {
+            ClearConfirmation();
+            StatusMessage = string.Join(
+                " ",
+                refreshed.Errors.DefaultIfEmpty("The live construction requirements could not be refreshed.")
+            );
+            return;
+        }
+
+        pendingProject = refreshed.Project;
+        OnPropertyChanged(nameof(ConfirmationSummary));
+
         IsBusy = true;
         StatusMessage = "Publishing the project to Raven Colonial...";
         try

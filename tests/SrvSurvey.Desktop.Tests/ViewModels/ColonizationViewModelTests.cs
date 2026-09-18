@@ -336,6 +336,23 @@ public sealed class ColonizationViewModelTests : IDisposable
         viewModel.ApplyJournalEvents(dockAndDepot);
         await viewModel.SynchronizeLiveProjectsAsync(dockAndDepot, allowPublishing: true);
 
+        // Project already matches remaining after the first PATCH; put stale need back into the
+        // workspace and refresh without undocking so the identical depot payload can hit the
+        // signature guard instead of the "already up to date" short-circuit.
+        client.Workspace = new ColonizationCommanderProjects(
+            [
+                Project("build-1", "Port", remaining: 100, marketId: 10, systemAddress: 20) with
+                {
+                    Commodities = new Dictionary<string, int> { ["steel"] = 100 },
+                    RemainingRequired = 100,
+                },
+            ],
+            [],
+            null,
+            []
+        );
+        await viewModel.RefreshAsync();
+
         JournalEventEnvelope[] repeatDepot =
         [
             Event(

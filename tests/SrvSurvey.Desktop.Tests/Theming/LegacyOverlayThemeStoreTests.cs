@@ -284,7 +284,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.Equal(Color.FromArgb(180, 45, 36, 27), theme.GetColor("bio.predictionPotential"));
         Assert.Equal(Color.FromArgb(255, 200, 180, 160), theme.GetColor("bio.galacticRegion"));
         Assert.Equal(Color.FromArgb(140, 148, 133, 118), theme.GetColor("bio.galacticRegionPotential"));
-        Assert.Equal(Color.FromArgb(255, 70, 60, 50), theme.GetColor("bio.unknownGlyph"));
+        Assert.Equal(Color.FromArgb(255, 100, 80, 60), theme.GetColor("bio.unknownGlyph"));
         Assert.Equal(Color.FromArgb(255, 4, 5, 6), theme.GetColor("bio.empty"));
     }
 

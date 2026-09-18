@@ -40,7 +40,8 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal(Color.FromArgb(140, 184, 134, 11), defaults["bio.goldDarkPotential"]);
         Assert.Equal(Color.Parse("#F4F4F4"), defaults["bio.galacticRegion"]);
         Assert.Equal(Color.FromArgb(140, 184, 184, 184), defaults["bio.galacticRegionPotential"]);
-        Assert.Equal(Color.Parse("#696969"), defaults["bio.unknownGlyph"]);
+        Assert.Equal(Color.Parse("#54DFED"), defaults["bio.unknownGlyph"]);
+        Assert.Equal(defaults["bio.prediction"], defaults["bio.unknownGlyph"]);
         Assert.Equal(Color.FromArgb(242, 64, 64, 64), defaults["bio.hatch"]);
         Assert.Equal(Color.Parse("#000000"), defaults["bio.empty"]);
         Assert.Equal(Color.FromArgb(96, 255, 111, 0), defaults["bio.confirmedEdge"]);
@@ -90,12 +91,13 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal(Color.Parse(values), preset.Colors["header"]);
         Assert.Equal(Color.Parse(primary), preset.Colors["guardian.primary"]);
         Assert.Equal(Color.Parse(values), preset.Colors["colonise.highlight"]);
-        Assert.Equal(Color.Parse(primary), preset.Colors["bio.confirmed"]);
+        Assert.Equal(Color.Parse(secondary), preset.Colors["bio.prediction"]);
         Assert.Equal(Color.Parse(values), preset.Colors["bio.gold"]);
         Assert.Equal(Color.Parse(text), preset.Colors["bio.galacticRegion"]);
-        Assert.Equal(preset.Colors["grey"], preset.Colors["bio.unknownGlyph"]);
+        Assert.Equal(preset.Colors["bio.prediction"], preset.Colors["bio.unknownGlyph"]);
         Assert.Equal(Color.Parse(text), preset.Colors["bio.white"]);
         Assert.NotEqual(preset.Colors["bio.confirmed"], preset.Colors["bio.prediction"]);
+        Assert.NotEqual(preset.Colors["orange"], preset.Colors["bio.confirmed"]);
         Assert.NotEqual(preset.Colors["bio.prediction"], preset.Colors["bio.predictionPotential"]);
         Assert.Equal((byte)242, preset.Colors["bio.hatch"].A);
         Assert.Equal((byte)140, preset.Colors["bio.confirmedDimPotential"].A);
@@ -116,7 +118,7 @@ public sealed class OverlayThemePresetCatalogTests
         AssertSameRgb(preset.Colors["bio.goldFill"], preset.Colors["bio.goldDarkEdge"]);
         AssertSameRgb(preset.Colors["bio.white"], preset.Colors["bio.galacticRegionEdge"]);
         Assert.Equal(preset.Colors["bio.predictionEdge"], preset.Colors["bio.unknownEdge"]);
-        Assert.Equal(preset.Colors["orangeDark"], preset.Colors["bio.confirmedSegmentEdge"]);
+        Assert.Equal(preset.Colors["bio.confirmedDim"], preset.Colors["bio.confirmedSegmentEdge"]);
         Assert.Equal((byte)124, preset.Colors["bio.confirmedPotentialSegmentEdge"].A);
         AssertSameRgb(preset.Colors["bio.predictionPotential"], preset.Colors["bio.predictionSegmentEdge"]);
         Assert.Equal(preset.Colors["bio.predictionSegmentEdge"], preset.Colors["bio.predictionPotentialSegmentEdge"]);
@@ -127,6 +129,24 @@ public sealed class OverlayThemePresetCatalogTests
         Assert.Equal((byte)144, preset.Colors["bio.galacticRegionPotentialSegmentEdge"].A);
         Assert.Equal(required["red"], preset.Colors["red"]);
         Assert.Equal(required["green"], preset.Colors["green"]);
+    }
+
+    [Fact]
+    public void MonochromeCompanionUsesMutedDefaultConfirmedAgainstCoolPrediction()
+    {
+        Assert.True(OverlayThemePresetCatalog.TryGet("Monochrome Companion", out OverlayThemePreset? preset));
+        IReadOnlyDictionary<string, Color> defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+
+        Assert.Equal(Color.Parse("#8DB2BE"), preset.Colors["bio.prediction"]);
+        Assert.Equal(Color.Parse("#D7D4CC"), preset.Colors["bio.galacticRegion"]);
+        Assert.NotEqual(preset.Colors["bio.confirmed"], preset.Colors["bio.galacticRegion"]);
+        Assert.NotEqual(preset.Colors["bio.confirmed"], preset.Colors["bio.prediction"]);
+        Assert.NotEqual(preset.Colors["orange"], preset.Colors["bio.confirmed"]);
+        Assert.NotEqual(defaults["bio.confirmed"], preset.Colors["bio.confirmed"]);
+        Assert.NotEqual(defaults["bio.confirmedDim"], preset.Colors["bio.confirmedDim"]);
+        Assert.True(preset.Colors["bio.confirmed"].R > preset.Colors["bio.confirmed"].B);
+        Assert.Equal(preset.Colors["bio.confirmedDim"], preset.Colors["bio.confirmedSegmentEdge"]);
+        AssertSameRgb(preset.Colors["bio.confirmed"], preset.Colors["bio.confirmedEdge"]);
     }
 
     private static void AssertSameRgb(Color expected, Color actual)

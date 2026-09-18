@@ -29,6 +29,13 @@ Adding or renaming Desktop source files can change localization `FirstSource`
 metadata even when visible strings are unchanged; regenerate with
 `pwsh ./tools/Generate-AvaloniaLocalization.ps1` before committing.
 
+Install the local pre-commit hook once per clone so those gates also block
+`git commit`:
+
+```console
+pwsh ./tools/Install-LocalGitHooks.ps1
+```
+
 Do not suppress or fix unrelated analyzer findings unless the user asks; report
 them separately.
 

@@ -211,14 +211,20 @@ try {
 
         $sonarFindings = @{}
         foreach ($line in Get-Content -LiteralPath $sonarLogPath) {
+            $normalized = $line -replace '\x1B\[[0-9;]*m', ''
             if (
-                $line -notmatch
-                '^(?<Path>[A-Za-z]:\\.+?)\((?<Line>\d+),(?<Column>\d+)\): warning (?<Rule>(?:S|CA|IDE)\d+): (?<Message>.+?) \['
+                $normalized -notmatch
+                '(?<Path>.+?)\((?<Line>\d+),(?<Column>\d+)\): warning (?<Rule>(?:S|CA|IDE)\d+): (?<Message>.+?)(?: \[|$)'
             ) {
                 continue
             }
 
-            $relativePath = [System.IO.Path]::GetRelativePath($repositoryRoot, $Matches.Path).Replace('\', '/')
+            $absolutePath = $Matches.Path
+            if (-not [System.IO.Path]::IsPathRooted($absolutePath)) {
+                $absolutePath = Join-Path $repositoryRoot $absolutePath
+            }
+
+            $relativePath = [System.IO.Path]::GetRelativePath($repositoryRoot, $absolutePath).Replace('\', '/')
             $lineNumber = [int]$Matches.Line
             if (-not $changedRanges.ContainsKey($relativePath)) {
                 continue
@@ -234,7 +240,7 @@ try {
                     Line = $lineNumber
                     Column = [int]$Matches.Column
                     Rule = $Matches.Rule
-                    Message = $Matches.Message
+                    Message = $Matches.Message.Trim()
                 }
             }
         }

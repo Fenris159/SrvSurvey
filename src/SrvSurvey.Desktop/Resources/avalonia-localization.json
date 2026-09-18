@@ -18457,6 +18457,10 @@
       "translation": "Kürzlich aktive Zeitschriften sind von destruktiven historischen Rekonstruktionspfaden ausgeschlossen."
     },
     {
+      "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
+      "translation": "Der aktuelle Verlauf des organischen Scans des Journals konnte für das aktuelle System nicht aufgefüllt werden: {0}"
+    },
+    {
       "source": "Recent notifications",
       "translation": "Aktuelle Benachrichtigungen"
     },
@@ -24851,6 +24855,10 @@
     {
       "source": "The live construction context is incomplete.",
       "translation": "Der Live-Konstruktionskontext ist unvollständig."
+    },
+    {
+      "source": "The live construction requirements could not be refreshed.",
+      "translation": "Die Live-Bauanforderungen konnten nicht aktualisiert werden."
     },
     {
       "source": "The live system changed. Reload before importing bodies.",
@@ -50263,6 +50271,10 @@
       "translation": "Las revistas activas recientes quedan excluidas de los caminos destructivos de reconstrucción histórica."
     },
     {
+      "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
+      "translation": "No se pudo completar el historial reciente de escaneo orgánico de la revista para el sistema actual: {0}"
+    },
+    {
       "source": "Recent notifications",
       "translation": "Notificaciones recientes"
     },
@@ -56657,6 +56669,10 @@
     {
       "source": "The live construction context is incomplete.",
       "translation": "El contexto de construcción en vivo está incompleto."
+    },
+    {
+      "source": "The live construction requirements could not be refreshed.",
+      "translation": "Los requisitos de construcción en vivo no se pudieron actualizar."
     },
     {
       "source": "The live system changed. Reload before importing bodies.",
@@ -82069,6 +82085,10 @@
       "translation": "Les revues actives récentes sont exclues des voies de reconstruction historique destructrices."
     },
     {
+      "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
+      "translation": "L'historique récent de l'analyse organique de la revue n'a pas pu être renseigné pour le système actuel : {0}"
+    },
+    {
       "source": "Recent notifications",
       "translation": "Notifications récentes"
     },
@@ -88463,6 +88483,10 @@
     {
       "source": "The live construction context is incomplete.",
       "translation": "Le contexte de construction en direct est incomplet."
+    },
+    {
+      "source": "The live construction requirements could not be refreshed.",
+      "translation": "Les exigences de construction en direct n'ont pas pu être actualisées."
     },
     {
       "source": "The live system changed. Reload before importing bodies.",
@@ -113875,6 +113899,10 @@
       "translation": "Os periódicos ativos recentes são excluídos dos caminhos destrutivos da reconstrução histórica."
     },
     {
+      "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
+      "translation": "O histórico recente de varredura orgânica do diário não pôde ser preenchido para o sistema atual: {0}"
+    },
+    {
       "source": "Recent notifications",
       "translation": "Notificações recentes"
     },
@@ -120269,6 +120297,10 @@
     {
       "source": "The live construction context is incomplete.",
       "translation": "O contexto de construção ao vivo está incompleto."
+    },
+    {
+      "source": "The live construction requirements could not be refreshed.",
+      "translation": "Os requisitos de construção ativa não puderam ser atualizados."
     },
     {
       "source": "The live system changed. Reload before importing bodies.",
@@ -145681,6 +145713,10 @@
       "translation": "Активные журналы последнего времени исключены из деструктивных путей исторической реконструкции."
     },
     {
+      "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
+      "translation": "Недавнюю историю органического сканирования журнала не удалось заполнить для текущей системы: {0}."
+    },
+    {
       "source": "Recent notifications",
       "translation": "Недавние уведомления"
     },
@@ -152075,6 +152111,10 @@
     {
       "source": "The live construction context is incomplete.",
       "translation": "Контекст живого строительства неполный."
+    },
+    {
+      "source": "The live construction requirements could not be refreshed.",
+      "translation": "Не удалось обновить требования к действующему строительству."
     },
     {
       "source": "The live system changed. Reload before importing bodies.",
@@ -177487,6 +177527,10 @@
       "translation": "最近活跃的期刊被排除在破坏性历史重建路径之外。"
     },
     {
+      "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
+      "translation": "当前系统无法回填最近的期刊有机扫描历史记录：{0}"
+    },
+    {
       "source": "Recent notifications",
       "translation": "最近的通知"
     },
@@ -183881,6 +183925,10 @@
     {
       "source": "The live construction context is incomplete.",
       "translation": "现场施工环境不完整。"
+    },
+    {
+      "source": "The live construction requirements could not be refreshed.",
+      "translation": "现场施工要求无法刷新。"
     },
     {
       "source": "The live system changed. Reload before importing bodies.",
@@ -209293,6 +209341,10 @@
       "translation": "* RECENT ACTIVE JOURNALS ARE EXCLUDED FROM DESTRUCTIVE HISTORICAL RECONSTRUCTION PATHS. >>>!"
     },
     {
+      "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
+      "translation": "* RECENT JOURNAL ORGANIC-SCAN HISTORY COULD NOT BE BACKFILLED FOR THE CURRENT SYSTEM: {0} >>>!"
+    },
+    {
       "source": "Recent notifications",
       "translation": "* RECENT NOTIFICATIONS >>>!"
     },
@@ -215687,6 +215739,10 @@
     {
       "source": "The live construction context is incomplete.",
       "translation": "* THE LIVE CONSTRUCTION CONTEXT IS INCOMPLETE. >>>!"
+    },
+    {
+      "source": "The live construction requirements could not be refreshed.",
+      "translation": "* THE LIVE CONSTRUCTION REQUIREMENTS COULD NOT BE REFRESHED. >>>!"
     },
     {
       "source": "The live system changed. Reload before importing bodies.",
