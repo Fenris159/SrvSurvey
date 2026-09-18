@@ -2426,6 +2426,110 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void BiologySurveyUpgradesCanonnPredictionToCommanderScanOnSameEntry()
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.UseExternalData = true;
+        viewModel.AutoShowPriorScans = true;
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+                ),
+                Parse(PredictableAleoidaScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap }
+        );
+
+        viewModel.UpdateCanonnSystemPoi(
+            new CanonnSystemPoiResult(
+                "Test",
+                [
+                    new CanonnSurfaceBiologySignal(
+                        "1",
+                        "Aleoida Coronamus - Lime",
+                        2310206,
+                        new SurfaceCoordinate(1, 2),
+                        false
+                    ),
+                ]
+            )
+        );
+        Assert.True(Assert.Single(Assert.Single(viewModel.BiologySurvey!.Bodies).RewardBands).IsPrediction);
+
+        viewModel.UpdateCanonnSystemPoi(
+            new CanonnSystemPoiResult(
+                "Test",
+                [
+                    new CanonnSurfaceBiologySignal(
+                        "1",
+                        "Aleoida Coronamus - Lime",
+                        2310206,
+                        new SurfaceCoordinate(1, 2),
+                        true
+                    ),
+                ]
+            )
+        );
+
+        BiologySignalRewardBandViewModel band = Assert.Single(
+            Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands
+        );
+        Assert.False(band.IsPrediction);
+    }
+
+    [Fact]
+    public void BiologySurveyMergesCanonnSignalOntoLocalGenusOnlyOrganism()
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.UseExternalData = true;
+        viewModel.AutoShowPriorScans = true;
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+                ),
+                Parse(PredictableAleoidaScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap }
+        );
+
+        viewModel.UpdateCanonnSystemPoi(
+            new CanonnSystemPoiResult(
+                "Test",
+                [
+                    new CanonnSurfaceBiologySignal(
+                        "1",
+                        "Aleoida Coronamus - Lime",
+                        2310206,
+                        new SurfaceCoordinate(1, 2),
+                        true
+                    ),
+                ]
+            )
+        );
+
+        BiologySignalRewardBandViewModel band = Assert.Single(
+            Assert.Single(viewModel.BiologySurvey!.Bodies).RewardBands
+        );
+        Assert.False(band.IsPrediction);
+        Assert.Equal(6_284_600, band.MinimumReward);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
+        BiologyOrganismRowViewModel organism = Assert.Single(viewModel.BiologySurvey.Organisms);
+        Assert.Equal("Aleoida Coronamus - Lime", organism.DisplayName);
+        Assert.False(organism.IsPrediction);
+    }
+
+    [Fact]
     public void BiologySystemKeepsAlternativePredictionPipsBeyondSignalCount()
     {
         var criteria = new BiologyCriteriaCatalog([

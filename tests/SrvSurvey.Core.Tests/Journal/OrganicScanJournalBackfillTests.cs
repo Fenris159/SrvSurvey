@@ -157,6 +157,181 @@ public sealed class OrganicScanJournalBackfillTests
         Assert.Equal("Aleoida Arcus - Green", organism.VariantLocalized);
     }
 
+    [Fact]
+    public async Task ReturnsEmptyForMissingDirectory()
+    {
+        IReadOnlyList<JournalEventEnvelope> events = await OrganicScanJournalBackfill.ReadAsync(
+            Path.Combine(Path.GetTempPath(), "SrvSurvey-OrganicScan-Missing-" + Guid.NewGuid().ToString("N")),
+            systemAddress: 42
+        );
+
+        Assert.Empty(events);
+    }
+
+    [Fact]
+    public async Task RejectsNonPositiveLookback()
+    {
+        using var temp = new TemporaryDirectory();
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            OrganicScanJournalBackfill.ReadAsync(temp.Path, systemAddress: 42, lookback: TimeSpan.Zero)
+        );
+    }
+
+    [Fact]
+    public async Task ReturnsEmptyWhenDirectoryHasNoJournalFiles()
+    {
+        using var temp = new TemporaryDirectory();
+
+        IReadOnlyList<JournalEventEnvelope> events = await OrganicScanJournalBackfill.ReadAsync(
+            temp.Path,
+            systemAddress: 42
+        );
+
+        Assert.Empty(events);
+    }
+
+    [Fact]
+    public async Task FallsBackToNewestUnparseableJournalNames()
+    {
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.unparseable-a.log"),
+            """
+            {"timestamp":"2026-09-17T19:00:00Z","event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Bacterial_Genus_Name;","Species":"$Codex_Ent_Bacterial_01_Name;","Variant":"$Codex_Ent_Bacterial_01_B_Name;"}
+            """
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.unparseable-b.log"),
+            """
+            {"timestamp":"2026-09-17T18:00:00Z","event":"Music","MusicTrack":"NoTrack"}
+            """
+        );
+
+        IReadOnlyList<JournalEventEnvelope> events = await OrganicScanJournalBackfill.ReadAsync(
+            temp.Path,
+            systemAddress: 42,
+            lookback: TimeSpan.FromHours(12)
+        );
+
+        Assert.Single(events);
+    }
+
+    [Fact]
+    public async Task AcceptsStringSystemAddressAndIgnoresMissingAddress()
+    {
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.2026-09-17T120000.01.log"),
+            """
+            {"timestamp":"2026-09-17T18:50:00Z","event":"ScanOrganic","ScanType":"Log","Body":1,"Genus":"$Codex_Ent_Bacterial_Genus_Name;","Species":"$Codex_Ent_Bacterial_01_Name;","Variant":"$Codex_Ent_Bacterial_01_A_Name;"}
+            {"timestamp":"2026-09-17T19:00:00Z","event":"ScanOrganic","ScanType":"Log","SystemAddress":"42","Body":1,"Genus":"$Codex_Ent_Bacterial_Genus_Name;","Species":"$Codex_Ent_Bacterial_01_Name;","Variant":"$Codex_Ent_Bacterial_01_B_Name;"}
+            {"timestamp":"2026-09-17T20:00:00Z","event":"Music","MusicTrack":"NoTrack"}
+            """
+        );
+
+        IReadOnlyList<JournalEventEnvelope> events = await OrganicScanJournalBackfill.ReadAsync(
+            temp.Path,
+            systemAddress: 42,
+            lookback: TimeSpan.FromHours(12)
+        );
+
+        JournalEventEnvelope match = Assert.Single(events);
+        Assert.Equal(DateTimeOffset.Parse("2026-09-17T19:00:00Z", CultureInfo.InvariantCulture), match.Timestamp);
+    }
+
+    [Fact]
+    public async Task KeepsScanOrganicWithoutTimestampWhenAnchorExists()
+    {
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.2026-09-17T120000.01.log"),
+            """
+            {"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Bacterial_Genus_Name;","Species":"$Codex_Ent_Bacterial_01_Name;","Variant":"$Codex_Ent_Bacterial_01_B_Name;"}
+            {"timestamp":"2026-09-17T20:00:00Z","event":"Music","MusicTrack":"NoTrack"}
+            """
+        );
+
+        IReadOnlyList<JournalEventEnvelope> events = await OrganicScanJournalBackfill.ReadAsync(
+            temp.Path,
+            systemAddress: 42,
+            lookback: TimeSpan.FromHours(12)
+        );
+
+        JournalEventEnvelope match = Assert.Single(events);
+        Assert.Null(match.Timestamp);
+    }
+
+    [Fact]
+    public async Task UsesMatchTimestampsWhenJournalLinesLackTimestampsForAnchor()
+    {
+        using var temp = new TemporaryDirectory();
+        // File stamp is parseable so candidates are selected, but Music/Scan lines that
+        // establish the newest wall time are omitted; FindLatestMatchTimestamp covers
+        // the lookback when ReadFileAsync never saw a timestamped non-match.
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.2026-09-17T120000.01.log"),
+            """
+            {"timestamp":"2026-09-17T19:00:00Z","event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Bacterial_Genus_Name;","Species":"$Codex_Ent_Bacterial_01_Name;","Variant":"$Codex_Ent_Bacterial_01_B_Name;"}
+            """
+        );
+
+        IReadOnlyList<JournalEventEnvelope> events = await OrganicScanJournalBackfill.ReadAsync(
+            temp.Path,
+            systemAddress: 42,
+            lookback: TimeSpan.FromHours(12)
+        );
+
+        Assert.Single(events);
+    }
+
+    [Fact]
+    public async Task UsesMinValueCutoffWhenLookbackExceedsAnchor()
+    {
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.2026-09-17T120000.01.log"),
+            """
+            {"timestamp":"2026-09-17T19:00:00Z","event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Bacterial_Genus_Name;","Species":"$Codex_Ent_Bacterial_01_Name;","Variant":"$Codex_Ent_Bacterial_01_B_Name;"}
+            {"timestamp":"2026-09-17T20:00:00Z","event":"Music","MusicTrack":"NoTrack"}
+            """
+        );
+
+        IReadOnlyList<JournalEventEnvelope> events = await OrganicScanJournalBackfill.ReadAsync(
+            temp.Path,
+            systemAddress: 42,
+            lookback: TimeSpan.FromDays(50_000)
+        );
+
+        Assert.Single(events);
+    }
+
+    [Fact]
+    public async Task IncludesUnparseableNamedFilesInsideCandidateWindow()
+    {
+        using var temp = new TemporaryDirectory();
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.2026-09-17T120000.01.log"),
+            """
+            {"timestamp":"2026-09-17T20:00:00Z","event":"Music","MusicTrack":"NoTrack"}
+            """
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(temp.Path, "Journal.live-shared.log"),
+            """
+            {"timestamp":"2026-09-17T19:00:00Z","event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Bacterial_Genus_Name;","Species":"$Codex_Ent_Bacterial_01_Name;","Variant":"$Codex_Ent_Bacterial_01_B_Name;"}
+            """
+        );
+
+        IReadOnlyList<JournalEventEnvelope> events = await OrganicScanJournalBackfill.ReadAsync(
+            temp.Path,
+            systemAddress: 42,
+            lookback: TimeSpan.FromHours(12)
+        );
+
+        Assert.Single(events);
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()
