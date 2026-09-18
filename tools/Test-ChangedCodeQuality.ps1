@@ -214,7 +214,7 @@ try {
             $normalized = $line -replace '\x1B\[[0-9;]*m', ''
             if (
                 $normalized -notmatch
-                '(?<Path>(?:[A-Za-z]:\\|/)[^:(]+)\((?<Line>\d+),(?<Column>\d+)\): warning (?<Rule>(?:S|CA|IDE)\d+): (?<Message>.+?)(?: \[|$)'
+                '(?<Path>.+?)\((?<Line>\d+),(?<Column>\d+)\): warning (?<Rule>(?:S|CA|IDE)\d+): (?<Message>.+?)(?: \[|$)'
             ) {
                 continue
             }

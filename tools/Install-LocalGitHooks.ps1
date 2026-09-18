@@ -20,10 +20,6 @@ $hooksPath = ".githooks"
 $absoluteHooksPath = Join-Path $repositoryRoot $hooksPath
 $preCommitPath = Join-Path $absoluteHooksPath "pre-commit"
 
-if (-not (Test-Path -LiteralPath $preCommitPath)) {
-    throw "Missing versioned hook at $preCommitPath."
-}
-
 Push-Location $repositoryRoot
 try {
     if ($Uninstall) {
@@ -37,6 +33,10 @@ try {
         }
 
         return
+    }
+
+    if (-not (Test-Path -LiteralPath $preCommitPath)) {
+        throw "Missing versioned hook at $preCommitPath."
     }
 
     if ($IsLinux -or $IsMacOS) {

@@ -614,6 +614,30 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task ContributeToProjectRejectsEmptyNormalizedKeysWithoutPartialSubmit()
+    {
+        bool sent = false;
+        RavenColonialClient client = Create(
+            new StubHandler(_ =>
+            {
+                sent = true;
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            })
+        );
+
+        ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            client.ContributeToProjectAsync(
+                "build-1",
+                "Test Cmdr",
+                new Dictionary<string, int> { ["steel"] = 5, ["$_name;"] = 3 }
+            )
+        );
+
+        Assert.Equal("contributions", exception.ParamName);
+        Assert.False(sent);
+    }
+
+    [Fact]
     public async Task LinksAndUnlinksCommanderWithLegacyEndpoints()
     {
         var requests = new List<(HttpMethod Method, string Path)>();

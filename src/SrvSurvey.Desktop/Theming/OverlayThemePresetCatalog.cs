@@ -390,7 +390,7 @@ public static class OverlayThemePresetCatalog
             "bio.goldEdge" => WithAlpha(Get(BioGoldKey, fallback), 96),
             "bio.goldDarkEdge" => WithAlpha(Get(BioGoldFillKey, Get(BioGoldDarkKey, fallback)), 96),
             "bio.galacticRegionEdge" => WithAlpha(Get(BioWhiteKey, Get(WhiteKey, fallback)), 96),
-            BioConfirmedSegmentEdgeKey => Get(OrangeDarkKey, Get(BioConfirmedDimKey, fallback)),
+            BioConfirmedSegmentEdgeKey => Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)),
             BioConfirmedPotentialSegmentEdgeKey => WithAlpha(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 124),
             BioConfirmedDimSegmentEdgeKey => Scale(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 0.33),
             BioConfirmedDimPotentialSegmentEdgeKey => WithAlpha(

@@ -413,20 +413,23 @@ jobs:
             release_args+=(--prerelease)
           fi
 
-          # Create the release shell first (no assets). Uploading large packages in the
-          # same `gh release create` call has no retries and fails on transient GitHub
-          # HTTP 500 "Error saving asset" responses. Per-file upload below can retry
-          # and is also the repair path when a previous attempt left a release behind.
+          # Create the release shell first as a draft (no assets). Uploading large
+          # packages in the same `gh release create` call has no retries and fails on
+          # transient GitHub HTTP 500 "Error saving asset" responses. Per-file upload
+          # below can retry and is also the repair path when a previous attempt left a
+          # release behind. Publish only after every asset upload succeeds.
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "Release already exists for $RELEASE_TAG."
           elif git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
-            echo "Tag exists but release doesn't. Creating release from tag..."
+            echo "Tag exists but release doesn't. Creating draft release from tag..."
             gh release create "$RELEASE_TAG" \
+              --draft \
               --verify-tag \
               "${release_args[@]}"
           else
-            echo "Creating new release and tag..."
+            echo "Creating new draft release and tag..."
             gh release create "$RELEASE_TAG" \
+              --draft \
               --target "$SOURCE_SHA" \
               "${release_args[@]}"
           fi
@@ -456,8 +459,9 @@ jobs:
             fi
           done
 
-          echo "Updating release metadata..."
+          echo "Updating release metadata and publishing..."
           gh release edit "$RELEASE_TAG" \
+            --draft=false \
             --title "SrvSurvey-XP $RELEASE_VERSION" \
             --prerelease="$IS_PRERELEASE" \
             --latest=false
