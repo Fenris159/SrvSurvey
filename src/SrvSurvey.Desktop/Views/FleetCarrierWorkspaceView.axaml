@@ -7,9 +7,11 @@
           <StackPanel Spacing="12">
             <TextBlock Classes="card-title" Text="Squadron carrier"/>
             <TextBlock Classes="muted" Text="Uses carriers linked in RavenColonial. Cargo updates follow the existing colonization sync settings." TextWrapping="Wrap"/>
-            <ComboBox ItemsSource="{Binding SquadronCandidates}" SelectedItem="{Binding SelectedSquadronCarrier}" HorizontalAlignment="Stretch" MinWidth="0" PlaceholderText="Select your linked squadron carrier" behaviors:ComboBoxFitContentBehavior.Enabled="True">
-              <ComboBox.ItemTemplate><DataTemplate x:DataType="colonization:ColonizationFleetCarrier"><TextBlock TextWrapping="NoWrap" TextTrimming="None"><Run Text="{Binding DisplayName}"/><Run Text=" · "/><Run Text="{Binding Name}"/></TextBlock></DataTemplate></ComboBox.ItemTemplate>
-            </ComboBox>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+              <ComboBox ItemsSource="{Binding SquadronCandidates}" SelectedItem="{Binding SelectedSquadronCarrier}" HorizontalAlignment="Left" MinWidth="0" PlaceholderText="Select your linked squadron carrier" behaviors:ComboBoxFitContentBehavior.Enabled="True">
+                <ComboBox.ItemTemplate><DataTemplate x:DataType="colonization:ColonizationFleetCarrier"><TextBlock TextWrapping="NoWrap" TextTrimming="None"><Run Text="{Binding DisplayName}"/><Run Text=" · "/><Run Text="{Binding Name}"/></TextBlock></DataTemplate></ComboBox.ItemTemplate>
+              </ComboBox>
+            </ScrollViewer>
             <TextBlock Text="{Binding SquadronCargoSummary}" TextWrapping="Wrap"/>
             <ItemsControl ItemsSource="{Binding SquadronCargo}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:FrontierInventoryRowViewModel">
               <Border Classes="dashboard-row"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Name}" TextWrapping="NoWrap"/><TextBlock Grid.Column="1" Text="{Binding Quantity}" TextWrapping="NoWrap"/></Grid></Border>

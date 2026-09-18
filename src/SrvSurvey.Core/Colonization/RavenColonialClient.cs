@@ -344,12 +344,8 @@ public sealed class RavenColonialClient : IRavenColonialClient
             );
         }
 
-        var normalized = contributions.ToDictionary(
-            pair => ColonizationConstructionState.NormalizeCommodityName(pair.Key),
-            pair => pair.Value,
-            StringComparer.OrdinalIgnoreCase
-        );
-        if (normalized.Any(pair => pair.Key.Length == 0 || pair.Value <= 0))
+        Dictionary<string, int> normalized = ColonizationCommodityMaps.NormalizeNeedMap(contributions);
+        if (normalized.Count == 0 || normalized.Any(pair => pair.Value <= 0))
         {
             throw new ArgumentOutOfRangeException(
                 nameof(contributions),

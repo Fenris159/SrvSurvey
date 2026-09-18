@@ -197,7 +197,36 @@ public static class OverlayThemePresetCatalog
         colors["guardian.success"] = colors["green"];
         colors["guardian.danger"] = colors["red"];
         colors[BioEmptyKey] = colors[BlackKey];
+        ApplyMonochromeConfirmedBiology(colors);
         return new OverlayThemePreset("Monochrome Companion", colors);
+    }
+
+    private static void ApplyMonochromeConfirmedBiology(Dictionary<string, Color> colors)
+    {
+        // Keep the muted companion look, but borrow Default's warm confirmed
+        // orange so solid PIPs stay distinct from the white-like galactic-region
+        // candidate and the cooler secondary prediction accent.
+        IReadOnlyDictionary<string, Color> defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        Color mute = colors["grey"];
+        Color confirmed = Blend(defaults[BioConfirmedKey], mute, 0.38);
+        Color confirmedDim = Blend(defaults[BioConfirmedDimKey], mute, 0.28);
+        Color defaultPotential = defaults["bio.potential"];
+        Color potential = Blend(
+            Color.FromArgb(255, defaultPotential.R, defaultPotential.G, defaultPotential.B),
+            mute,
+            0.28
+        );
+
+        colors[BioConfirmedKey] = confirmed;
+        colors[BioConfirmedDimKey] = confirmedDim;
+        colors["bio.potential"] = WithAlpha(potential, defaultPotential.A);
+        colors["bio.confirmedDimPotential"] = WithAlpha(Scale(confirmedDim, 0.33), 140);
+        colors["bio.confirmedEdge"] = WithAlpha(confirmed, 96);
+        colors["bio.confirmedDimEdge"] = WithAlpha(confirmedDim, 96);
+        colors["bio.confirmedSegmentEdge"] = confirmedDim;
+        colors["bio.confirmedPotentialSegmentEdge"] = WithAlpha(confirmed, 124);
+        colors["bio.confirmedDimSegmentEdge"] = Scale(confirmedDim, 0.33);
+        colors["bio.confirmedDimPotentialSegmentEdge"] = WithAlpha(Scale(confirmed, 0.33), 124);
     }
 
     private static OverlayThemePreset CreateExpandedPreset(
@@ -276,14 +305,19 @@ public static class OverlayThemePresetCatalog
 
     private static void ApplyBiology(Dictionary<string, Color> colors, ExpandedPalette palette)
     {
-        Color prediction = Blend(palette.Primary, palette.Secondary, 0.65);
-        Color predictionDark = Scale(prediction, 0.45);
+        // Warm the confirmed PIP toward the values accent and pin prediction to
+        // the secondary accent so solid vs hatched PIPs stay distinguishable
+        // even when a preset's primary/secondary hues are close.
+        Color confirmed = Blend(palette.Primary, palette.Value, 0.30);
+        Color confirmedDim = Scale(confirmed, 0.42);
+        Color prediction = palette.Secondary;
+        Color predictionDark = palette.SecondaryDark;
         Color goldFill = Scale(palette.Value, 0.68);
         Color goldDarkFill = Scale(goldFill, 0.34);
-        colors[BioConfirmedKey] = palette.Primary;
-        colors[BioConfirmedDimKey] = palette.PrimaryDark;
-        colors["bio.potential"] = WithAlpha(palette.PrimaryDark, 140);
-        colors["bio.confirmedDimPotential"] = WithAlpha(Scale(palette.PrimaryDark, 0.33), 140);
+        colors[BioConfirmedKey] = confirmed;
+        colors[BioConfirmedDimKey] = confirmedDim;
+        colors["bio.potential"] = WithAlpha(confirmedDim, 140);
+        colors["bio.confirmedDimPotential"] = WithAlpha(Scale(confirmedDim, 0.33), 140);
         colors[BioPredictionKey] = prediction;
         colors["bio.predictionPotential"] = WithAlpha(predictionDark, 180);
         colors[BioGoldKey] = palette.Value;
@@ -295,21 +329,21 @@ public static class OverlayThemePresetCatalog
         colors[BioGalacticRegionKey] = palette.Text;
         colors["bio.galacticRegionPotential"] = WithAlpha(Scale(palette.Text, 0.74), 140);
         colors[BioUnknownKey] = palette.Muted;
-        colors["bio.unknownGlyph"] = palette.Muted;
+        colors["bio.unknownGlyph"] = prediction;
         colors["bio.hatch"] = WithAlpha(palette.Muted, 242);
         colors[BioEmptyKey] = colors[BlackKey];
         colors[BioWhiteKey] = palette.Text;
-        colors["bio.confirmedEdge"] = WithAlpha(palette.Primary, 96);
-        colors["bio.confirmedDimEdge"] = WithAlpha(palette.PrimaryDark, 96);
+        colors["bio.confirmedEdge"] = WithAlpha(confirmed, 96);
+        colors["bio.confirmedDimEdge"] = WithAlpha(confirmedDim, 96);
         colors["bio.predictionEdge"] = WithAlpha(predictionDark, 96);
         colors["bio.goldEdge"] = WithAlpha(palette.Value, 96);
         colors["bio.goldDarkEdge"] = WithAlpha(goldFill, 96);
         colors["bio.galacticRegionEdge"] = WithAlpha(palette.Text, 96);
         colors["bio.unknownEdge"] = WithAlpha(predictionDark, 96);
-        colors["bio.confirmedSegmentEdge"] = palette.PrimaryDark;
-        colors["bio.confirmedPotentialSegmentEdge"] = WithAlpha(palette.Primary, 124);
-        colors["bio.confirmedDimSegmentEdge"] = Scale(palette.PrimaryDark, 0.33);
-        colors["bio.confirmedDimPotentialSegmentEdge"] = WithAlpha(Scale(palette.Primary, 0.33), 124);
+        colors["bio.confirmedSegmentEdge"] = confirmedDim;
+        colors["bio.confirmedPotentialSegmentEdge"] = WithAlpha(confirmed, 124);
+        colors["bio.confirmedDimSegmentEdge"] = Scale(confirmedDim, 0.33);
+        colors["bio.confirmedDimPotentialSegmentEdge"] = WithAlpha(Scale(confirmed, 0.33), 124);
         colors["bio.predictionSegmentEdge"] = predictionDark;
         colors["bio.predictionPotentialSegmentEdge"] = predictionDark;
         colors["bio.goldSegmentEdge"] = palette.Value;
@@ -340,7 +374,7 @@ public static class OverlayThemePresetCatalog
                 Scale(Get(BioGalacticRegionKey, Get(BioWhiteKey, Get(WhiteKey, fallback))), 0.74),
                 140
             ),
-            "bio.unknownGlyph" => Get(BioUnknownKey, Get("grey", fallback)),
+            "bio.unknownGlyph" => Get(BioPredictionKey, Get("cyan", fallback)),
             BioEmptyKey => Get(BlackKey, fallback),
             "bio.confirmedEdge" => WithAlpha(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 96),
             "bio.confirmedDimEdge" => WithAlpha(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 96),

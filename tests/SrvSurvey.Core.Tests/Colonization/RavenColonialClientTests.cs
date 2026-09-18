@@ -591,6 +591,29 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task ContributeToProjectMergesCommodityKeysThatNormalizeTogether()
+    {
+        string? body = null;
+        var handler = new StubHandler(async request =>
+        {
+            Assert.Equal(HttpMethod.Post, request.Method);
+            body = await request.Content!.ReadAsStringAsync();
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        RavenColonialClient client = Create(handler);
+
+        await client.ContributeToProjectAsync(
+            "build-1",
+            "Test Cmdr",
+            new Dictionary<string, int> { ["$Steel_name;"] = 10, ["steel"] = 5 }
+        );
+
+        using var document = JsonDocument.Parse(body!);
+        Assert.Equal(15, document.RootElement.GetProperty("steel").GetInt32());
+        Assert.False(document.RootElement.TryGetProperty("$Steel_name;", out _));
+    }
+
+    [Fact]
     public async Task LinksAndUnlinksCommanderWithLegacyEndpoints()
     {
         var requests = new List<(HttpMethod Method, string Path)>();

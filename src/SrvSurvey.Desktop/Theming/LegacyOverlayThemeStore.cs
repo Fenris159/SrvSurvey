@@ -46,7 +46,7 @@ public sealed class LegacyOverlayThemeStore
         ["bio.galacticRegion"] = Color.FromArgb(255, 244, 244, 244),
         ["bio.galacticRegionPotential"] = Color.FromArgb(140, 184, 184, 184),
         ["bio.unknown"] = Color.FromArgb(255, 105, 105, 105),
-        ["bio.unknownGlyph"] = Color.FromArgb(255, 105, 105, 105),
+        ["bio.unknownGlyph"] = Color.FromArgb(255, 84, 223, 237),
         ["bio.hatch"] = Color.FromArgb(242, 64, 64, 64),
         ["bio.empty"] = Color.FromArgb(255, 0, 0, 0),
         ["bio.white"] = Color.FromArgb(255, 255, 255, 255),
