@@ -76,7 +76,7 @@
     <SolidColorBrush x:Key="RavenOverlayBioGalacticRegionBrush" Color="#F4F4F4" />
     <SolidColorBrush x:Key="RavenOverlayBioGalacticRegionPotentialBrush" Color="#8CB8B8B8" />
     <SolidColorBrush x:Key="RavenOverlayBioUnknownBrush" Color="#696969" />
-    <SolidColorBrush x:Key="RavenOverlayBioUnknownGlyphBrush" Color="#696969" />
+    <SolidColorBrush x:Key="RavenOverlayBioUnknownGlyphBrush" Color="#54DFED" />
     <SolidColorBrush x:Key="RavenOverlayBioHatchBrush" Color="#F2404040" />
     <SolidColorBrush x:Key="RavenOverlayBioEmptyBrush" Color="#000000" />
     <SolidColorBrush x:Key="RavenOverlayBioWhiteBrush" Color="#FFFFFF" />

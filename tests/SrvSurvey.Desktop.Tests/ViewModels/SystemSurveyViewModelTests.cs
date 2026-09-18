@@ -1951,7 +1951,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         BiologySurveyViewModel overview = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
         BiologySignalRewardBandViewModel band = Assert.Single(Assert.Single(overview.Bodies).RewardBands);
-        Assert.False(band.IsPrediction);
+        Assert.True(band.IsPrediction);
         Assert.False(band.IsHighlighted);
 
         viewModel.HighlightRegionalFirsts = true;
@@ -2208,7 +2208,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         BiologyBodyRowViewModel bodySummary = Assert.Single(systemSurvey.Bodies);
         Assert.True(bodySummary.HasPredictedReward);
         BiologySignalRewardBandViewModel systemBand = Assert.Single(bodySummary.RewardBands);
-        Assert.False(systemBand.IsPrediction);
+        Assert.True(systemBand.IsPrediction);
         Assert.True(systemBand.MinimumReward > 0);
         Assert.True(systemBand.MaximumReward >= systemBand.MinimumReward);
         Assert.StartsWith("Estimated reward:", systemSurvey.RewardSummary);
@@ -2249,7 +2249,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         BiologySignalRewardBandViewModel candidateBand = Assert.Single(
             Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands
         );
-        Assert.False(candidateBand.IsPrediction);
+        Assert.True(candidateBand.IsPrediction);
         Assert.True(candidateBand.IsHighlighted);
         Assert.True(candidateBand.IsGlobalRegionalFirst);
 
@@ -2367,6 +2367,62 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal("Aleoida Coronamus - Lime", organism.DisplayName);
         Assert.False(organism.IsPrediction);
         Assert.Equal(6_284_600, organism.Reward);
+    }
+
+    [Fact]
+    public void BiologySurveyKeepsLocalOrganicScanConfirmedWhenCanonnReportsUnscanned()
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.UseExternalData = true;
+        viewModel.AutoShowPriorScans = true;
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+                ),
+                Parse(PredictableAleoidaScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310206,"Name_Localised":"Aleoida Coronamus - Lime","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+                ),
+                Parse(
+                    """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus","Variant":"$Codex_Ent_Aleoids_02_L_Name;","Variant_Localised":"Aleoida Coronamus - Lime"}"""
+                ),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap }
+        );
+
+        BiologySignalRewardBandViewModel beforeCanonn = Assert.Single(
+            Assert.Single(viewModel.BiologySurvey!.Bodies).RewardBands
+        );
+        Assert.False(beforeCanonn.IsPrediction);
+
+        viewModel.UpdateCanonnSystemPoi(
+            new CanonnSystemPoiResult(
+                "Test",
+                [
+                    new CanonnSurfaceBiologySignal(
+                        "1",
+                        "Aleoida Coronamus - Lime",
+                        2310206,
+                        new SurfaceCoordinate(1, 2),
+                        false
+                    ),
+                ]
+            )
+        );
+
+        BiologySignalRewardBandViewModel afterCanonn = Assert.Single(
+            Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands
+        );
+        Assert.False(afterCanonn.IsPrediction);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
+        BiologyOrganismRowViewModel organism = Assert.Single(viewModel.BiologySurvey.Organisms);
+        Assert.False(organism.IsPrediction);
     }
 
     [Fact]

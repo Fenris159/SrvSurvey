@@ -1,57 +1,60 @@
-# SrvSurvey-XP 2.1.3.0-rc.48.9
+# SrvSurvey-XP 2.1.3.0-rc.49.0
 
-RC48.9 focuses on Avalonia colonization: Raven Colonial depot sync,
-create/link reliability, delivery remaining accuracy, and clearer
-workspace layout. All of this ships in PR
-[#139](https://github.com/Fenris159/SrvSurvey/pull/139).
+RC49.0 continues Avalonia colonization work from PR
+[#139](https://github.com/Fenris159/SrvSurvey/pull/139) and fixes biology
+overlay confirmed-vs-predicted styling, Canonn/journal scan recovery, and
+theme defaults for prediction markers.
 
-## New in RC48.9
+## New in RC49.0
 
-### Raven depot sync and create/link
+### Biology overlay confirmed vs predicted
 
-- Fixes Raven HTTP 400 on depot create/update by including journal
-  `timestamp` and `event` on the nested `colonisationConstructionDepot`
-  payload (legacy forwarded the raw journal entry; Avalonia had omitted
-  those required members).
-- Stops progress-only depot ticks from wiping an in-progress create or
-  review form; the editor still resets when system or site identity
-  changes.
-- Adds commander link/unlink for Raven projects and auto-links when a
-  docked construction site resolves an existing project, so it survives
-  the `/active` refresh instead of vanishing as “untracked.”
-- Refreshes Avalonia localization for the new linked-project status
-  string.
+- System Biology PIPs for DSS genus + species guesses now use predicted
+  styling (`bio.prediction`) to match Identified Bio rows with trailing
+  `?`, instead of solid confirmed PIPs.
+- Canonn merge no longer demotes a locally scanned organism when Canonn
+  reports `scanned=false` for the commander; local `ScanOrganic`
+  confirmation is preserved and Canonn commander-scanned rows can still
+  upgrade unscanned identity.
+- Organic `CodexEntry` alone still does not mark an organism confirmed;
+  confirmation requires `ScanOrganic` or Canonn commander-scanned data.
 
-### Delivery remaining and EDMC-aligned API paths
+### Journal ScanOrganic backfill
 
-- Publishes absolute remaining need immediately after
-  `ColonisationContribution` so Raven delivery history cannot advance
-  without updating what is still required; forces a follow-up depot sync
-  when needed and normalizes contribution commodity keys.
-- Aligns remaining updates with journal-aware clients: create/setup stays
-  `PUT /api/project`, while remaining need and depot snapshots use
-  `PATCH /api/project/{buildId}` (matching RavenColonial EDMC).
-- Ports additional EDMC colonization hardening: clamp outbound need maps
-  to non-negative values, clear phantom template commodity slots
-  (negative/`-1` → `0`), skip duplicate depot PATCH payloads, and
-  invalidate the short-lived project location cache on undock, create,
-  link, and successful remaining sync.
+- When a system loads, recent journals are scanned for matching
+  `ScanOrganic` events so samples taken while the app was off (or before
+  a patch) become confirmed after restart.
+- Lookback is the last 12 hours of **journal event timestamps** (anchored
+  to the newest timestamp in the logs), not wall-clock time. Shorter
+  journal spans simply keep every matching scan.
+- Journals are opened shared read/write (`FileShare.ReadWrite`), same as
+  the live monitor, so Elite can keep appending.
 
-### Colonization workspace UI
+### Overlay theme defaults
 
-- Auto-sizes colonization workspace tables and dropdowns to content so
-  site, project, commodity, and create-form controls no longer clip text.
-- Adds fit-to-longest-item ComboBox behavior with headless coverage, and
-  tightens local quality gates (CSharpier, localization verify, dynamic
-  catalog counts) so those CI failures are caught before push.
+- Default `bio.unknownGlyph` (trailing `?`) now matches `bio.prediction`
+  across all seven overlay presets; the picker remains independently
+  customizable.
+- Expanded presets warm confirmed PIPs toward the values accent and pin
+  prediction to the secondary accent so solid vs hatched PIPs stay
+  distinct.
+- Monochrome Companion uses muted Default orange for confirmed /
+  confirmedDim / potential so confirmed PIPs stay apart from the
+  white-like galactic-region candidate.
+
+### Colonization (continued from RC48.9)
+
+- Raven depot create/update, commander link/unlink, delivery remaining
+  PATCH alignment, phantom need clears, and colonization workspace
+  fit-to-content table/dropdown behavior from PR #139.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.48.9`
-- Tag: `xp-v2.1.3.0-rc.48.9`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.9-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.9-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.9-x86_64.AppImage`
+- Version: `2.1.3.0-rc.49.0`
+- Tag: `xp-v2.1.3.0-rc.49.0`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.49.0-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.49.0-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.49.0-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

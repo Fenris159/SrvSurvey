@@ -778,15 +778,36 @@ public sealed class BiologySurveyViewModel
         foreach (CanonnSurfaceBiologySignal signal in signals)
         {
             SystemOrganismSnapshot? confirmed = CreateConfirmedExternalOrganism(signal, referenceCatalog);
-            if (confirmed is null || organisms.Any(organism => organism.EntryId == confirmed.EntryId))
+            if (confirmed is null)
             {
+                continue;
+            }
+
+            int existingIndex = organisms.FindIndex(organism =>
+                organism.EntryId is > 0 && organism.EntryId == confirmed.EntryId
+            );
+            if (existingIndex >= 0)
+            {
+                SystemOrganismSnapshot existing = organisms[existingIndex];
+                if (confirmed.IsScanned && !existing.IsScanned)
+                {
+                    organisms[existingIndex] = existing with { IsScanned = true };
+                }
+
                 continue;
             }
 
             int genusOnlyIndex = organisms.FindIndex(organism => IsSameUnresolvedGenus(organism, confirmed));
             if (genusOnlyIndex >= 0)
             {
-                organisms[genusOnlyIndex] = confirmed;
+                SystemOrganismSnapshot existing = organisms[genusOnlyIndex];
+                organisms[genusOnlyIndex] = confirmed with
+                {
+                    IsScanned = confirmed.IsScanned || existing.IsScanned,
+                    IsAnalyzed = confirmed.IsAnalyzed || existing.IsAnalyzed,
+                    IsRegionalFirst = confirmed.IsRegionalFirst || existing.IsRegionalFirst,
+                    GenusLocalized = confirmed.GenusLocalized ?? existing.GenusLocalized,
+                };
             }
             else
             {
@@ -999,7 +1020,7 @@ public sealed class BiologySurveyViewModel
             if (predictionsByGenus.TryGetValue(genus, out BiologySignalRewardRange? prediction))
             {
                 bands.Add(
-                    BiologySignalRewardBandViewModel.KnownRange(
+                    BiologySignalRewardBandViewModel.Predicted(
                         prediction.Minimum,
                         prediction.Maximum,
                         isHighlighted || prediction.IsHighlighted,

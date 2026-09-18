@@ -3747,12 +3747,46 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 + result.Error;
             applicationLogService?.Append(message);
             StatusMessage = message;
+            await BackfillOrganicScansFromRecentJournalsAsync(systemAddress);
             return;
         }
 
         if (result.Snapshot is { } history)
         {
             SystemSurvey.MergeKnownSystemData(history);
+        }
+
+        await BackfillOrganicScansFromRecentJournalsAsync(systemAddress);
+    }
+
+    private async Task BackfillOrganicScansFromRecentJournalsAsync(long systemAddress)
+    {
+        string? journalDirectory = ResolvePrimaryJournalPath(folderResolution);
+        if (string.IsNullOrWhiteSpace(journalDirectory) || !Directory.Exists(journalDirectory))
+        {
+            return;
+        }
+
+        try
+        {
+            IReadOnlyList<JournalEventEnvelope> organicScans = await OrganicScanJournalBackfill.ReadAsync(
+                journalDirectory,
+                systemAddress,
+                cancellationToken: CancellationToken.None
+            );
+            if (organicScans.Count == 0)
+            {
+                return;
+            }
+
+            SystemSurvey.ApplyUpdate(organicScans, status: null);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
+        {
+            string message =
+                "Recent journal organic-scan history could not be backfilled for the current system: "
+                + exception.Message;
+            applicationLogService?.Append(message);
         }
     }
 

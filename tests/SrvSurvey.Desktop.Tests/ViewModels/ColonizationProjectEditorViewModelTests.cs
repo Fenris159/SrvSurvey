@@ -262,6 +262,9 @@ public sealed class ColonizationProjectEditorViewModelTests
         Assert.True(editor.IsConfirmationPending);
         await editor.ConfirmCreateAsync();
         Assert.Equal(1, client.CreateCount);
+        Assert.NotNull(client.LastCreated);
+        Assert.Equal(60, client.LastCreated.Commodities["steel"]);
+        Assert.Equal(100, client.LastCreated.MaximumRequired);
     }
 
     private ColonizationProjectEditorViewModel Create(
