@@ -37,6 +37,17 @@ desktop text or Desktop source files change, regenerate catalogs with
 `./tools/Generate-AvaloniaLocalization.ps1` (add `-TranslateMissing` for new
 strings); the verification gate rejects stale catalogs.
 
+Install the versioned git hook once per clone so those gates also block commit:
+
+```console
+pwsh ./tools/Install-LocalGitHooks.ps1
+```
+
+That sets local `core.hooksPath` to `.githooks`, where `pre-commit` restores
+tools/solution packages and runs `Test-ChangedCodeQuality.ps1`. Use
+`pwsh ./tools/Install-LocalGitHooks.ps1 -Uninstall` to remove the local hook
+path.
+
 `SonarAnalyzer.CSharp` is referenced centrally by `Directory.Build.props`, so
 it runs in editors and every `dotnet build`. Analyzer warnings are treated as
 build errors. Rule-specific exceptions belong in `.editorconfig` and require a

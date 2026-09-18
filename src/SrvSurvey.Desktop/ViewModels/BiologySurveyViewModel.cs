@@ -778,44 +778,49 @@ public sealed class BiologySurveyViewModel
         foreach (CanonnSurfaceBiologySignal signal in signals)
         {
             SystemOrganismSnapshot? confirmed = CreateConfirmedExternalOrganism(signal, referenceCatalog);
-            if (confirmed is null)
+            if (confirmed is not null)
             {
-                continue;
-            }
-
-            int existingIndex = organisms.FindIndex(organism =>
-                organism.EntryId is > 0 && organism.EntryId == confirmed.EntryId
-            );
-            if (existingIndex >= 0)
-            {
-                SystemOrganismSnapshot existing = organisms[existingIndex];
-                if (confirmed.IsScanned && !existing.IsScanned)
-                {
-                    organisms[existingIndex] = existing with { IsScanned = true };
-                }
-
-                continue;
-            }
-
-            int genusOnlyIndex = organisms.FindIndex(organism => IsSameUnresolvedGenus(organism, confirmed));
-            if (genusOnlyIndex >= 0)
-            {
-                SystemOrganismSnapshot existing = organisms[genusOnlyIndex];
-                organisms[genusOnlyIndex] = confirmed with
-                {
-                    IsScanned = confirmed.IsScanned || existing.IsScanned,
-                    IsAnalyzed = confirmed.IsAnalyzed || existing.IsAnalyzed,
-                    IsRegionalFirst = confirmed.IsRegionalFirst || existing.IsRegionalFirst,
-                    GenusLocalized = confirmed.GenusLocalized ?? existing.GenusLocalized,
-                };
-            }
-            else
-            {
-                organisms.Add(confirmed);
+                MergeConfirmedExternalOrganism(organisms, confirmed);
             }
         }
 
         return organisms.SequenceEqual(body.Organisms) ? body : body with { Organisms = organisms };
+    }
+
+    private static void MergeConfirmedExternalOrganism(
+        List<SystemOrganismSnapshot> organisms,
+        SystemOrganismSnapshot confirmed
+    )
+    {
+        int existingIndex = organisms.FindIndex(organism =>
+            organism.EntryId is > 0 && organism.EntryId == confirmed.EntryId
+        );
+        if (existingIndex >= 0)
+        {
+            SystemOrganismSnapshot existing = organisms[existingIndex];
+            if (confirmed.IsScanned && !existing.IsScanned)
+            {
+                organisms[existingIndex] = existing with { IsScanned = true };
+            }
+
+            return;
+        }
+
+        int genusOnlyIndex = organisms.FindIndex(organism => IsSameUnresolvedGenus(organism, confirmed));
+        if (genusOnlyIndex < 0)
+        {
+            organisms.Add(confirmed);
+            return;
+        }
+
+        SystemOrganismSnapshot genusExisting = organisms[genusOnlyIndex];
+        organisms[genusOnlyIndex] = confirmed with
+        {
+            IsScanned = confirmed.IsScanned || genusExisting.IsScanned,
+            IsAnalyzed = confirmed.IsAnalyzed || genusExisting.IsAnalyzed,
+            IsRegionalFirst = confirmed.IsRegionalFirst || genusExisting.IsRegionalFirst,
+            GenusLocalized = confirmed.GenusLocalized ?? genusExisting.GenusLocalized,
+        };
     }
 
     private static SystemOrganismSnapshot? CreateConfirmedExternalOrganism(

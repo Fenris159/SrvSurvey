@@ -3779,7 +3779,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 return;
             }
 
-            SystemSurvey.ApplyUpdate(organicScans, status: null);
+            SystemSurvey.ApplyUpdate(organicScans, null);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {

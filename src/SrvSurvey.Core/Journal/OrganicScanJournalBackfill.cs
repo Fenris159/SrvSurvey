@@ -64,6 +64,15 @@ public static class OrganicScanJournalBackfill
                 .ConfigureAwait(false);
         }
 
+        return FilterMatchesByLookback(matches, latestJournalTimestamp, window);
+    }
+
+    private static JournalEventEnvelope[] FilterMatchesByLookback(
+        List<JournalEventEnvelope> matches,
+        DateTimeOffset? latestJournalTimestamp,
+        TimeSpan window
+    )
+    {
         if (matches.Count == 0)
         {
             return [];
@@ -72,18 +81,7 @@ public static class OrganicScanJournalBackfill
         // Anchor the 12h window to the newest timestamp inside the journals we
         // read, not wall-clock/real time. If the available journal span is
         // shorter than the lookback, every in-range ScanOrganic is kept.
-        DateTimeOffset? anchor = latestJournalTimestamp;
-        if (anchor is null)
-        {
-            foreach (JournalEventEnvelope item in matches)
-            {
-                if (item.Timestamp is { } timestamp && (anchor is null || timestamp > anchor))
-                {
-                    anchor = timestamp;
-                }
-            }
-        }
-
+        DateTimeOffset? anchor = latestJournalTimestamp ?? FindLatestMatchTimestamp(matches);
         if (anchor is null)
         {
             return matches.OrderBy(item => item.RawJson, StringComparer.Ordinal).ToArray();
@@ -95,6 +93,20 @@ public static class OrganicScanJournalBackfill
             .OrderBy(item => item.Timestamp ?? DateTimeOffset.MinValue)
             .ThenBy(item => item.RawJson, StringComparer.Ordinal)
             .ToArray();
+    }
+
+    private static DateTimeOffset? FindLatestMatchTimestamp(IReadOnlyList<JournalEventEnvelope> matches)
+    {
+        DateTimeOffset? latest = null;
+        foreach (JournalEventEnvelope item in matches)
+        {
+            if (item.Timestamp is { } timestamp && (latest is null || timestamp > latest))
+            {
+                latest = timestamp;
+            }
+        }
+
+        return latest;
     }
 
     private static string[] SelectCandidateFiles(string journalDirectory)
