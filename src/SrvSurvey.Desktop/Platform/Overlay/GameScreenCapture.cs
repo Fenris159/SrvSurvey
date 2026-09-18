@@ -458,9 +458,7 @@ internal static class CaptureFailureDiagnostics
 
         foreach (StackFrame frame in new StackTrace(root, fNeedFileInfo: true).GetFrames() ?? [])
         {
-            MethodBase? method = frame.GetMethod();
-            Type? declaringType = method?.DeclaringType;
-            if (declaringType is null || method is null)
+            if (frame.GetMethod() is not { } method || method.DeclaringType is not { } declaringType)
             {
                 continue;
             }
