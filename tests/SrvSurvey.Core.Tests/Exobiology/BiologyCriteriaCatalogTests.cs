@@ -41,6 +41,20 @@ public sealed class BiologyCriteriaCatalogTests
     }
 
     [Fact]
+    public void ParserAcceptsLongVolcanismValueLists()
+    {
+        var clause = BiologyCriteriaClause.Parse(
+            "volcanism [None,Major Silicate Vapour Geysers,Metallic Magma,Minor Metallic Magma,Minor Rocky Magma,Minor Silicate Vapour Geysers,Minor Water Magma]"
+        );
+
+        Assert.Equal("volcanism", clause.Property);
+        Assert.Equal(BiologyCriteriaOperator.Is, clause.Operator);
+        Assert.Equal(7, clause.Values.Count);
+        Assert.Contains("None", clause.Values);
+        Assert.Contains("Minor Water Magma", clause.Values);
+    }
+
+    [Fact]
     public void CatalogRejectsChildrenAndCommonChildrenOnSameNode()
     {
         using MemoryStream stream = JsonStream(
