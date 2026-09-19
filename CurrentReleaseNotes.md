@@ -1,83 +1,73 @@
-# SrvSurvey-XP 2.1.3.0-rc.49.2
+# SrvSurvey-XP 2.1.3.0-rc.49.3
 
-RC49.2 is a Linux Wayland screen-capture patch on RC49.1. Surface Mining
-rig detection could finish the desktop share picker and then fail immediately
-when PipeWire took the portal file descriptor.
+RC49.3 makes Linux Wayland screen capture an explicit opt-in for each image-based
+tracker. You can now enable one tracker at a time while testing the ScreenCast
+and PipeWire integration.
 
-## Patch since rc.49.1
+## Wayland tracker controls
 
-### Wayland / Surface Mining rig detection
+Open **Settings → Application → Wayland screen capture** to configure:
 
-- PipeWire portal startup no longer uses `DllImport SetLastError`, which
-  .NET rejects when runtime marshalling is disabled. That exception paused
-  rig detection after a successful monitor or window share.
-- Capture logs now record each portal/PipeWire step, and failures include
-  the full exception chain plus the SrvSurvey/PipeWire throw site. The next
-  capture problem should be visible in `~/.local/share/SrvSurvey/logs`
-  without a screenshot.
-- A failed PipeWire start after a successful picker is retried after
-  backoff instead of sticking until the app is restarted. User cancel and
-  desktop deny still stay terminal.
+- **Enable Wayland screen capture**, the master permission. It remains off by
+  default.
+- **FSS tuning completion**, off by default.
+- **First-footfall detection**, off by default.
+- **Surface Mining Rhino rig tracking**, off by default.
 
-## What's changed since rc.49.0
+The individual permissions are new in RC49.3. On an upgrade from RC49.2 or an
+earlier build, SrvSurvey keeps the existing master preference but treats each
+missing tracker permission as off. No tracker will use the portal until it is
+explicitly selected.
 
-### Colonization architect and helper access
+These controls govern only the Wayland ScreenCast fallback used when normal X11
+capture is unavailable. Windows and native X11 capture behavior is unchanged.
+FSS tuning and Rhino rig tracking must also be enabled in their normal feature
+settings before they will request an image.
 
-- Load system succeeds only when the architect is unassigned or matches the
-  active commander. Anyone else is refused with a not-the-architect warning.
-- Architects see every planned Raven site. Helpers only see orbital planned
-  sites that resolve in the Raven build catalog.
-- Helpers cannot scratch-create a project; they can only work from a visible
-  planned site.
-- Build Type is a categorized Raven catalog dropdown (unmatched original
-  first). Market ID is digits-only, with a friendly warning when extra
-  characters are removed.
+Turning off one tracker closes that tracker's active portal session without
+disabling another permitted tracker. Turning off the master permission closes
+all active Wayland capture sessions. **Choose capture source again** is available
+only when the master permission and at least one tracker are enabled.
 
-### Construction shopping overlay
+## Wayland capture reliability
 
-- The commodities overlay shows the full list on screen by default instead of
-  compacting into a ~15-row scroller.
-- Colonization overlay settings add **Use compact/scrolling commodities list**
-  under **Collapse cargo groups when enough on FCs**. It is off by default;
-  turn it on to restore the previous compact scroller.
+- PipeWire portal startup no longer uses `DllImport SetLastError`, which .NET
+  rejects when runtime marshalling is disabled. This was the immediate failure
+  shown in the supplied RC49.0 logs after a window or monitor was selected.
+- SrvSurvey owns a close-on-exec duplicate of the portal file descriptor and
+  cleans up the PipeWire loop if connection startup fails.
+- ScreenCast portal v6 uses the stable PipeWire serial; portal v5 retains the
+  numeric node-ID path used by the supplied systems.
+- Capture failures include the exception chain and SrvSurvey/PipeWire throw
+  site, then retry with backoff instead of remaining stuck until restart.
+- The selected portal source can be cleared from Settings before restarting and
+  choosing the Elite Dangerous client window again.
 
-### Fleet Carrier cargo and workspace
+## Suggested test sequence
 
-- Seeds RavenColonial Fleet Carrier cargo from Frontier CAPI at most once per
-  carrier per session, and never while docked (market/journal is fresher).
-  Later updates use journal deltas.
-- Queues cargo deltas while a Market.json or server baseline is in flight,
-  then replays them so dock-time transfers are not lost.
-- Fleet Carrier workspace can switch between personal `/fleetcarrier` and
-  nested squadron carrier data from `/squadron`.
+1. Enable the Wayland master permission.
+2. Enable only one tracker permission.
+3. For FSS or Rhino, enable that detector in its normal settings panel.
+4. When the desktop picker opens, select the **Elite Dangerous client window**.
+5. Exercise that feature before enabling another tracker.
 
-### Inara uploads
-
-- Caps commander writes at **2 POSTs per rolling minute** to
-  `https://inara.cz/inapi/v1/`. Overflow waits and batches; Shutdown force
-  flush and payload splits respect the same budget.
-- `MiningRefined` still updates local cargo but no longer emits inventory
-  snapshots. Inventory-only queues wait 10 minutes unless a travel or other
-  non-inventory event is already going out.
-- Header 400 rate-limit / temporary revoke requeues with backoff. Invalid API
-  key still drops the batch. Secrets never appear in warnings or detail logs.
-- Main app log gets EDSM-style 15-minute success aggregates. Accepted events
-  go to `logs/inara-accepted.txt` (event name, timestamp, system/station; 12
-  hour rolling retention). A throwing or unwritable log cannot fail or
-  duplicate an accepted upload.
+If capture fails, attach the current log from
+`~/.local/share/SrvSurvey/logs`. The added portal and PipeWire stages should make
+it clear whether the failure occurred during permission selection, remote
+opening, stream negotiation, frame delivery, or cropping.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.49.2`
-- Tag: `xp-v2.1.3.0-rc.49.2`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.49.2-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.49.2-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.49.2-x86_64.AppImage`
+- Version: `2.1.3.0-rc.49.3`
+- Tag: `xp-v2.1.3.0-rc.49.3`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.49.3-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.49.3-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
-AppImage runtime use versioned, checksum-verified downloads. AppImages are updated
-manually through the selected XP release. Numeric Windows FileVersion remains
-`2.1.3.0`.
+AppImage runtime use versioned, checksum-verified downloads. AppImages are
+updated manually through the selected XP release. Numeric Windows FileVersion
+remains `2.1.3.0`.
 
 ## Testing notice
 
@@ -86,6 +76,6 @@ manually through the selected XP release. Numeric Windows FileVersion remains
 > existing SrvSurvey data and report unexpected behavior through the project
 > issue tracker.
 
-Native overlay behavior should still be exercised with Elite Dangerous on
-clean Windows, X11, and XWayland systems. Pure native Wayland is not yet a
-full-functionality overlay target.
+A compositor-approved Elite Dangerous window capture is still required to
+confirm the full portal path on each target Wayland desktop. Pure native Wayland
+is not yet a full-functionality overlay target.
