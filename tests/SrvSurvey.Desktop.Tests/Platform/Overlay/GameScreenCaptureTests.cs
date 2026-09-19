@@ -184,6 +184,37 @@ public sealed class GameScreenCaptureTests : IDisposable
     }
 
     [Fact]
+    public void DisablingOneFeatureClosesOnlyItsActiveSession()
+    {
+        GameScreenCapture.WaylandPortalFeatures =
+            WaylandCaptureFeatures.FssTuning | WaylandCaptureFeatures.FirstFootfall;
+        GameScreenCapture.WaylandPortalEnabled = true;
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var fssSession = new StubCapture(_ => expected);
+        var footfallSession = new StubCapture(_ => expected);
+        using var fssCapture = new GatedGameScreenCapture(
+            () => fssSession,
+            capturePurpose: "FSS tuning detection",
+            feature: WaylandCaptureFeatures.FssTuning
+        );
+        using var footfallCapture = new GatedGameScreenCapture(
+            () => footfallSession,
+            capturePurpose: "first-footfall inference",
+            feature: WaylandCaptureFeatures.FirstFootfall
+        );
+        Assert.Same(expected, fssCapture.Capture(new PixelRect(0, 0, 1, 1)));
+        Assert.Same(expected, footfallCapture.Capture(new PixelRect(0, 0, 1, 1)));
+
+        GameScreenCapture.WaylandPortalFeatures = WaylandCaptureFeatures.FirstFootfall;
+
+        Assert.True(fssSession.IsDisposed);
+        Assert.False(footfallSession.IsDisposed);
+        Assert.False(fssCapture.IsAvailable);
+        Assert.Contains("FSS tuning detection", fssCapture.UnavailableReason, StringComparison.Ordinal);
+        Assert.True(footfallCapture.IsAvailable);
+    }
+
+    [Fact]
     public void FallbackIsUnavailableWhenPortalDisabledAndX11Unavailable()
     {
         using var capture = new FallbackGameScreenCapture(
@@ -510,6 +541,7 @@ public sealed class GameScreenCaptureTests : IDisposable
     public void Dispose()
     {
         GameScreenCapture.WaylandPortalEnabled = false;
+        GameScreenCapture.WaylandPortalFeatures = WaylandCaptureFeatures.None;
     }
 
     private static CapturedPixelBuffer DecodeX11(byte[] bytes, int bitsPerPixel, int byteOrder, int? stride = null)

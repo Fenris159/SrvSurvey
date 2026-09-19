@@ -14,7 +14,12 @@ public sealed class WaylandCaptureSettingsStore
     public WaylandCapturePreferences Load()
     {
         var settings = documentStore.Load()["WaylandCapture"] as JsonObject;
-        return new WaylandCapturePreferences(GetBoolean(settings, "Enabled", fallback: false));
+        return new WaylandCapturePreferences(
+            GetBoolean(settings, "Enabled", fallback: false),
+            GetBoolean(settings, "FssTuningEnabled", fallback: false),
+            GetBoolean(settings, "FirstFootfallEnabled", fallback: false),
+            GetBoolean(settings, "SurfaceMiningRigEnabled", fallback: false)
+        );
     }
 
     public void Save(WaylandCapturePreferences preferences)
@@ -31,6 +36,9 @@ public sealed class WaylandCaptureSettingsStore
             }
 
             settings["Enabled"] = preferences.Enabled;
+            settings["FssTuningEnabled"] = preferences.FssTuningEnabled;
+            settings["FirstFootfallEnabled"] = preferences.FirstFootfallEnabled;
+            settings["SurfaceMiningRigEnabled"] = preferences.SurfaceMiningRigEnabled;
         });
     }
 
@@ -42,4 +50,9 @@ public sealed class WaylandCaptureSettingsStore
     }
 }
 
-public sealed record WaylandCapturePreferences(bool Enabled);
+public sealed record WaylandCapturePreferences(
+    bool Enabled,
+    bool FssTuningEnabled = false,
+    bool FirstFootfallEnabled = false,
+    bool SurfaceMiningRigEnabled = false
+);

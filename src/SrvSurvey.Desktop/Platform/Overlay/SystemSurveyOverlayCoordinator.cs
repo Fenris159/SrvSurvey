@@ -66,7 +66,12 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.gameScreenCapture =
-            options.GameScreenCapture ?? GameScreenCapture.CreateCurrent(enableWaylandPortalFallback: true);
+            options.GameScreenCapture
+            ?? GameScreenCapture.CreateCurrent(
+                enableWaylandPortalFallback: true,
+                capturePurpose: "FSS tuning detection",
+                waylandFeature: WaylandCaptureFeatures.FssTuning
+            );
         this.fssDiagnosticDirectory = string.IsNullOrWhiteSpace(options.FssDiagnosticDirectory)
             ? null
             : options.FssDiagnosticDirectory;

@@ -26,7 +26,13 @@ public sealed class MiningDetectionCoordinator : IDisposable
     {
         this.mining = mining;
         this.tracker = tracker;
-        this.capture = capture ?? GameScreenCapture.CreateCurrent(enableWaylandPortalFallback: true);
+        this.capture =
+            capture
+            ?? GameScreenCapture.CreateCurrent(
+                enableWaylandPortalFallback: true,
+                capturePurpose: "Surface Mining rig detection",
+                waylandFeature: WaylandCaptureFeatures.SurfaceMiningRig
+            );
         timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(350) };
         timer.Tick += OnTick;
         timer.Start();

@@ -83,6 +83,9 @@ public sealed class SettingsWorkspaceViewModelTests
 
         Assert.Same(panel, wayland.Parent);
         Assert.Equal(panel.Children.IndexOf(language) + 1, panel.Children.IndexOf(wayland));
-        Assert.NotNull(view.FindControl<Control>("WaylandCaptureUsesList"));
+        Assert.NotNull(view.FindControl<Control>("WaylandCaptureTrackerOptions"));
+        Assert.NotNull(view.FindControl<Control>("EnableWaylandFssTuningCheckBox"));
+        Assert.NotNull(view.FindControl<Control>("EnableWaylandFirstFootfallCheckBox"));
+        Assert.NotNull(view.FindControl<Control>("EnableWaylandSurfaceMiningRigCheckBox"));
     }
 }

@@ -121,22 +121,59 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
 
         Assert.False(viewModel.IsEnabled);
+        Assert.False(viewModel.IsFssTuningEnabled);
+        Assert.False(viewModel.IsFirstFootfallEnabled);
+        Assert.False(viewModel.IsSurfaceMiningRigEnabled);
+        Assert.False(viewModel.CanConfigureTrackers);
         Assert.False(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
         Assert.Contains("off", viewModel.StatusMessage, StringComparison.OrdinalIgnoreCase);
         Assert.False(GameScreenCapture.WaylandPortalEnabled);
+        Assert.Equal(WaylandCaptureFeatures.None, GameScreenCapture.WaylandPortalFeatures);
     }
 
     [Fact]
-    public void EnablingPersistsAndAllowsPortalUse()
+    public void EnablingMasterRequiresAtLeastOneTracker()
     {
         var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
 
         viewModel.IsEnabled = true;
 
         Assert.True(viewModel.IsEnabled);
-        Assert.True(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
+        Assert.True(viewModel.CanConfigureTrackers);
+        Assert.False(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
+        Assert.Contains("Select at least one tracker", viewModel.StatusMessage, StringComparison.Ordinal);
         Assert.True(GameScreenCapture.WaylandPortalEnabled);
         Assert.True(new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true).IsEnabled);
+    }
+
+    [Fact]
+    public void TrackerSelectionsPersistAndGateFeaturesIndependently()
+    {
+        var logs = new List<string>();
+        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true, logs.Add);
+        viewModel.IsEnabled = true;
+
+        viewModel.IsFssTuningEnabled = true;
+        viewModel.IsFirstFootfallEnabled = true;
+        viewModel.IsSurfaceMiningRigEnabled = true;
+
+        Assert.True(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
+        Assert.True(GameScreenCapture.IsWaylandPortalAllowed(WaylandCaptureFeatures.FssTuning));
+        Assert.True(GameScreenCapture.IsWaylandPortalAllowed(WaylandCaptureFeatures.FirstFootfall));
+        Assert.True(GameScreenCapture.IsWaylandPortalAllowed(WaylandCaptureFeatures.SurfaceMiningRig));
+        Assert.Contains(logs, message => message.Contains("FSS tuning detection enabled", StringComparison.Ordinal));
+
+        viewModel.IsFirstFootfallEnabled = false;
+
+        var reloaded = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+        Assert.True(reloaded.IsFssTuningEnabled);
+        Assert.False(reloaded.IsFirstFootfallEnabled);
+        Assert.True(reloaded.IsSurfaceMiningRigEnabled);
+
+        reloaded.IsFssTuningEnabled = false;
+
+        Assert.False(GameScreenCapture.IsWaylandPortalAllowed(WaylandCaptureFeatures.FssTuning));
+        Assert.True(GameScreenCapture.IsWaylandPortalAllowed(WaylandCaptureFeatures.SurfaceMiningRig));
     }
 
     [Fact]
@@ -163,6 +200,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
     public void Dispose()
     {
         GameScreenCapture.WaylandPortalEnabled = false;
+        GameScreenCapture.WaylandPortalFeatures = WaylandCaptureFeatures.None;
         if (Directory.Exists(dataDirectory))
         {
             Directory.Delete(dataDirectory, recursive: true);
@@ -176,7 +214,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
     {
         Directory.CreateDirectory(dataDirectory);
         WaylandCaptureSettingsStore store = new(Path.Combine(dataDirectory, "cross-platform-ui.json"));
-        store.Save(new WaylandCapturePreferences(true));
+        store.Save(new WaylandCapturePreferences(Enabled: true, FssTuningEnabled: true));
         return new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true, log, store);
     }
 }

@@ -346,7 +346,8 @@ internal sealed partial class DesktopRuntime
                 enableWaylandPortalFallback: true,
                 confirmWaylandScreenShare: confirmWaylandScreenShare,
                 log: message => applicationLog.Append(message),
-                capturePurpose: "Surface Mining rig detection"
+                capturePurpose: "Surface Mining rig detection",
+                waylandFeature: WaylandCaptureFeatures.SurfaceMiningRig
             )
         );
         groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
@@ -380,7 +381,8 @@ internal sealed partial class DesktopRuntime
                     enableWaylandPortalFallback: true,
                     confirmWaylandScreenShare: confirmWaylandScreenShare,
                     log: message => applicationLog.Append(message),
-                    capturePurpose: "FSS tuning detection"
+                    capturePurpose: "FSS tuning detection",
+                    waylandFeature: WaylandCaptureFeatures.FssTuning
                 ),
                 FssDiagnosticDirectory = Path.Combine(appDataPaths.CacheDirectory, "fss-diagnostics"),
             }

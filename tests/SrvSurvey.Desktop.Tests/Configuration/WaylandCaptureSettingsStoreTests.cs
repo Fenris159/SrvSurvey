@@ -23,9 +23,15 @@ public sealed class WaylandCaptureSettingsStoreTests : IDisposable
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new WaylandCaptureSettingsStore(path);
 
-        store.Save(new WaylandCapturePreferences(true));
+        var enabled = new WaylandCapturePreferences(
+            Enabled: true,
+            FssTuningEnabled: true,
+            FirstFootfallEnabled: false,
+            SurfaceMiningRigEnabled: true
+        );
+        store.Save(enabled);
 
-        Assert.Equal(new WaylandCapturePreferences(true), store.Load());
+        Assert.Equal(enabled, store.Load());
         Assert.Contains("\"Keep\": 42", File.ReadAllText(path), StringComparison.Ordinal);
         store.Save(new WaylandCapturePreferences(false));
         Assert.Equal(new WaylandCapturePreferences(false), store.Load());
