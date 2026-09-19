@@ -187,8 +187,23 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
-    private static bool IsRetryableInitializationFailure(Exception exception) =>
-        exception is not NotSupportedException || exception.InnerException is not null;
+    private static bool IsRetryableInitializationFailure(Exception exception)
+    {
+        if (exception is NotSupportedException && exception.InnerException is null)
+        {
+            return false;
+        }
+
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is InvalidDataException)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private async Task InitializeAsync()
     {

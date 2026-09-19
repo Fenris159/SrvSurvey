@@ -292,9 +292,10 @@ function Invoke-ChangedCoverageCheck {
         }
 
         $covered = @($points.Values | Where-Object { $_ }).Count
-        $percent = [math]::Round(100.0 * $covered / $points.Count, 1)
+        $rawPercent = 100.0 * $covered / $points.Count
+        $percent = [math]::Round($rawPercent, 1)
         Write-Output "New-code coverage on changed production lines: $percent% ($covered/$($points.Count)); minimum is $MinimumPercent%."
-        if ($percent -lt $MinimumPercent) {
+        if ($rawPercent -lt $MinimumPercent) {
             $uncovered = $points.GetEnumerator() |
                 Where-Object { -not $_.Value } |
                 ForEach-Object { $_.Key } |
