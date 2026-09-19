@@ -5,7 +5,7 @@ using PipeWire.NET;
 
 namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 
-public sealed class PipeWirePortalMarshallingTests
+public sealed partial class PipeWirePortalMarshallingTests
 {
     private const int FileDescriptorCloseOnExec = 1;
     private const int GetFileDescriptorFlags = 1;
@@ -92,9 +92,9 @@ public sealed class PipeWirePortalMarshallingTests
         }
     }
 
-    [DllImport("libc", EntryPoint = "fcntl")]
-    private static extern int GetDescriptorFlags(int fileDescriptor, int command);
+    [LibraryImport("libc", EntryPoint = "fcntl")]
+    private static partial int GetDescriptorFlags(int fileDescriptor, int command);
 
-    [DllImport("libc", EntryPoint = "open")]
-    private static extern int OpenFile(nint path, int flags);
+    [LibraryImport("libc", EntryPoint = "open")]
+    private static partial int OpenFile(nint path, int flags);
 }
