@@ -1,3 +1,4 @@
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -19,7 +20,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         await File.WriteAllTextAsync(tokenPath, "saved-source");
         var logs = new List<string>();
         bool restartRequested = false;
-        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true, logs.Add);
+        WaylandCaptureSettingsViewModel viewModel = CreateEnabledViewModel(dataDirectory, logs.Add);
         viewModel.RestartRequested += () =>
         {
             restartRequested = true;
@@ -39,7 +40,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
     public async Task ChooseAgainStillRequestsRestartWhenSavedSourceWasAlreadyConsumed()
     {
         bool restartRequested = false;
-        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+        WaylandCaptureSettingsViewModel viewModel = CreateEnabledViewModel(dataDirectory);
         viewModel.RestartRequested += () =>
         {
             restartRequested = true;
@@ -76,7 +77,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
     [Fact]
     public async Task ChooseAgainWithoutRestartHandlerExplainsManualRestart()
     {
-        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+        WaylandCaptureSettingsViewModel viewModel = CreateEnabledViewModel(dataDirectory);
 
         await viewModel.ChooseCaptureSourceAgainAsync();
 
@@ -87,7 +88,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
     [Fact]
     public async Task ChooseAgainExplainsAutomaticRestartFailure()
     {
-        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+        WaylandCaptureSettingsViewModel viewModel = CreateEnabledViewModel(dataDirectory);
         viewModel.RestartRequested += () => throw new InvalidOperationException("replacement unavailable");
 
         await viewModel.ChooseCaptureSourceAgainAsync();
@@ -100,7 +101,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
     public async Task ChooseAgainCommandRunsTheReselectionWorkflow()
     {
         var restarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+        WaylandCaptureSettingsViewModel viewModel = CreateEnabledViewModel(dataDirectory);
         viewModel.RestartRequested += () =>
         {
             restarted.SetResult();
@@ -113,11 +114,68 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.True(File.Exists(WaylandCaptureSourceSelection.GetReselectionRequestPath(dataDirectory)));
     }
 
+    [Fact]
+    public void CaptureDefaultsOffAndBlocksReselection()
+    {
+        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+
+        Assert.False(viewModel.IsEnabled);
+        Assert.False(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
+        Assert.Contains("off", viewModel.StatusMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.False(GameScreenCapture.WaylandPortalEnabled());
+    }
+
+    [Fact]
+    public void EnablingPersistsAndAllowsPortalUse()
+    {
+        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+
+        viewModel.IsEnabled = true;
+
+        Assert.True(viewModel.IsEnabled);
+        Assert.True(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
+        Assert.True(GameScreenCapture.WaylandPortalEnabled());
+        Assert.True(new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true).IsEnabled);
+    }
+
+    [Fact]
+    public async Task ChooseAgainDoesNotClearSourceWhileDisabled()
+    {
+        Directory.CreateDirectory(dataDirectory);
+        string tokenPath = WaylandCaptureSourceSelection.GetRestoreTokenPath(dataDirectory);
+        await File.WriteAllTextAsync(tokenPath, "saved-source");
+        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+        bool restartRequested = false;
+        viewModel.RestartRequested += () =>
+        {
+            restartRequested = true;
+            return Task.CompletedTask;
+        };
+
+        await viewModel.ChooseCaptureSourceAgainAsync();
+
+        Assert.True(File.Exists(tokenPath));
+        Assert.False(restartRequested);
+        Assert.False(File.Exists(WaylandCaptureSourceSelection.GetReselectionRequestPath(dataDirectory)));
+    }
+
     public void Dispose()
     {
+        GameScreenCapture.WaylandPortalEnabled = static () => false;
         if (Directory.Exists(dataDirectory))
         {
             Directory.Delete(dataDirectory, recursive: true);
         }
+    }
+
+    private static WaylandCaptureSettingsViewModel CreateEnabledViewModel(
+        string dataDirectory,
+        Action<string>? log = null
+    )
+    {
+        Directory.CreateDirectory(dataDirectory);
+        WaylandCaptureSettingsStore store = new(Path.Combine(dataDirectory, "cross-platform-ui.json"));
+        store.Save(new WaylandCapturePreferences(true));
+        return new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true, log, store);
     }
 }

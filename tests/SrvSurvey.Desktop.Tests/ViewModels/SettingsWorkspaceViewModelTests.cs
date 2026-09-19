@@ -31,7 +31,12 @@ public sealed class SettingsWorkspaceViewModelTests
         );
         Assert.Contains(
             viewModel.SearchCatalog,
-            entry => entry.Title == "Wayland screen capture" && entry.CategoryKey == "application"
+            entry =>
+                entry.Title == "Wayland screen capture"
+                && entry.CategoryKey == "application"
+                && entry.SearchText.Contains("fss", StringComparison.Ordinal)
+                && entry.SearchText.Contains("rig", StringComparison.Ordinal)
+                && entry.SearchText.Contains("footfall", StringComparison.Ordinal)
         );
     }
 
@@ -78,5 +83,6 @@ public sealed class SettingsWorkspaceViewModelTests
 
         Assert.Same(panel, wayland.Parent);
         Assert.Equal(panel.Children.IndexOf(language) + 1, panel.Children.IndexOf(wayland));
+        Assert.NotNull(view.FindControl<Control>("WaylandCaptureUsesList"));
     }
 }

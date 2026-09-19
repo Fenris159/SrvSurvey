@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -8,22 +9,32 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
 {
     private readonly string dataDirectory;
+    private readonly WaylandCaptureSettingsStore settingsStore;
     private readonly Action<string>? log;
     private readonly WorkspaceCommand chooseCaptureSourceAgainCommand;
     private string statusMessage;
+    private bool isEnabled;
     private bool isBusy;
 
-    public WaylandCaptureSettingsViewModel(string dataDirectory, bool isApplicable, Action<string>? log = null)
+    public WaylandCaptureSettingsViewModel(
+        string dataDirectory,
+        bool isApplicable,
+        Action<string>? log = null,
+        WaylandCaptureSettingsStore? settingsStore = null
+    )
     {
         this.dataDirectory = Path.GetFullPath(dataDirectory);
+        this.settingsStore =
+            settingsStore
+            ?? new WaylandCaptureSettingsStore(Path.Combine(this.dataDirectory, "cross-platform-ui.json"));
         IsApplicable = isApplicable;
         this.log = log;
-        statusMessage = isApplicable
-            ? "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker."
-            : "This session is not using Linux Wayland screen sharing, so no capture source needs to be reset.";
+        isEnabled = this.settingsStore.Load().Enabled;
+        GameScreenCapture.WaylandPortalEnabled = () => isEnabled;
+        statusMessage = DescribeStatus();
         chooseCaptureSourceAgainCommand = new WorkspaceCommand(
             () => _ = ChooseCaptureSourceAgainAsync(),
-            () => IsApplicable && !isBusy
+            () => IsApplicable && isEnabled && !isBusy
         );
         ChooseCaptureSourceAgainCommand = chooseCaptureSourceAgainCommand;
     }
@@ -33,6 +44,30 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
     public event Func<Task>? RestartRequested;
 
     public bool IsApplicable { get; }
+
+    public bool IsEnabled
+    {
+        get => isEnabled;
+        set
+        {
+            if (isEnabled == value)
+            {
+                return;
+            }
+
+            isEnabled = value;
+            settingsStore.Save(new WaylandCapturePreferences(value));
+            GameScreenCapture.WaylandPortalEnabled = () => isEnabled;
+            StatusMessage = DescribeStatus();
+            log?.Invoke(
+                value
+                    ? "Wayland screen capture enabled in Settings."
+                    : "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal."
+            );
+            OnPropertyChanged();
+            chooseCaptureSourceAgainCommand.Refresh();
+        }
+    }
 
     public string StatusMessage
     {
@@ -57,6 +92,12 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         {
             StatusMessage =
                 "This session is not using Linux Wayland screen sharing, so no capture source needs to be reset.";
+            return;
+        }
+
+        if (!isEnabled)
+        {
+            StatusMessage = DescribeStatus();
             return;
         }
 
@@ -104,6 +145,18 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
             isBusy = false;
             chooseCaptureSourceAgainCommand.Refresh();
         }
+    }
+
+    private string DescribeStatus()
+    {
+        if (!IsApplicable)
+        {
+            return "This session is not using Linux Wayland screen sharing, so no capture source needs to be reset.";
+        }
+
+        return isEnabled
+            ? "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker."
+            : "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.";
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

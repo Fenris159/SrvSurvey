@@ -9445,14 +9445,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "ChooseWaylandCaptureSourceAgainButton",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
-  },
-  {
     "Text": "Circle radius",
     "IsFormat": false,
     "SourceKinds": [
@@ -15955,6 +15947,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Enable Wayland screen capture",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Enable colonization features",
     "IsFormat": false,
     "SourceKinds": [
@@ -16050,6 +16050,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/GuardianOverlaySettingsStore.cs"
+  },
+  {
+    "Text": "EnableWaylandCaptureCheckBox",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
     "Text": "Enabled",
@@ -41528,6 +41536,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
+    "Text": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
     "Text": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -54714,6 +54730,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/JumpInfoSettingsStore.cs"
   },
   {
+    "Text": "Used by:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
     "IsFormat": false,
     "SourceKinds": [
@@ -55910,6 +55934,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
+  },
+  {
+    "Text": "Wayland screen capture enabled in Settings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
+  },
+  {
+    "Text": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
+  },
+  {
+    "Text": "Wayland screen capture is turned off in Settings \u2192 Application.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
     "Text": "Wayland screen sharing could not start: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -55940,6 +55996,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "WaylandCapture",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/WaylandCaptureSettingsStore.cs"
   },
   {
     "Text": "WaylandCaptureCard",
@@ -59407,7 +59471,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
+    "Text": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -63958,6 +64022,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
+  },
+  {
+    "Text": "\u2022 First-footfall inference",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "\u2022 Surface Mining rig detection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "\u2022 System Survey FSS tuning detection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "\u2022 active",

@@ -117,7 +117,7 @@
       <Border x:Name="WaylandCaptureCard"
               Classes="card"
               IsVisible="{Binding SettingsWorkspace.IsApplicationSelected}">
-        <Grid RowDefinitions="Auto,Auto"
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto"
               ColumnDefinitions="*,Auto"
               ColumnSpacing="20">
           <StackPanel Spacing="4">
@@ -132,7 +132,24 @@
                   VerticalAlignment="Center"
                   Command="{Binding WaylandCapture.ChooseCaptureSourceAgainCommand}"
                   Content="Choose capture source again" />
-          <TextBlock Grid.Row="1"
+          <CheckBox x:Name="EnableWaylandCaptureCheckBox"
+                    Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    Margin="0,10,0,0"
+                    IsEnabled="{Binding WaylandCapture.IsApplicable}"
+                    IsChecked="{Binding WaylandCapture.IsEnabled, Mode=TwoWay}"
+                    Content="Enable Wayland screen capture" />
+          <StackPanel x:Name="WaylandCaptureUsesList"
+                      Grid.Row="2"
+                      Grid.ColumnSpan="2"
+                      Margin="0,10,0,0"
+                      Spacing="2">
+            <TextBlock Classes="muted" Text="Used by:" />
+            <TextBlock Classes="muted" Text="• System Survey FSS tuning detection" />
+            <TextBlock Classes="muted" Text="• Surface Mining rig detection" />
+            <TextBlock Classes="muted" Text="• First-footfall inference" />
+          </StackPanel>
+          <TextBlock Grid.Row="3"
                      Grid.ColumnSpan="2"
                      Classes="muted"
                      Margin="0,10,0,0"

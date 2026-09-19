@@ -61,6 +61,11 @@ public sealed class CapturedPixelBuffer : IFssPixelSource
 
 public static class GameScreenCapture
 {
+    internal const string WaylandPortalDisabledReason =
+        "Wayland screen capture is turned off in Settings → Application.";
+
+    internal static Func<bool> WaylandPortalEnabled { get; set; } = static () => false;
+
     public static IGameScreenCapture CreateCurrent(
         bool enableWaylandPortalFallback = false,
         Func<CancellationToken, Task<bool>>? confirmWaylandScreenShare = null,
@@ -86,7 +91,8 @@ public static class GameScreenCapture
                         x11Capture,
                         new WaylandPortalGameScreenCapture(confirmWaylandScreenShare, log, capturePurpose),
                         log,
-                        capturePurpose
+                        capturePurpose,
+                        static () => WaylandPortalEnabled()
                     )
                     : x11Capture;
             return OperatingSystem.IsLinux()
@@ -97,7 +103,11 @@ public static class GameScreenCapture
         if (enableWaylandPortalFallback && OperatingSystem.IsLinux() && IsWaylandSession())
         {
             return new BackoffGameScreenCapture(
-                new WaylandPortalGameScreenCapture(confirmWaylandScreenShare, log, capturePurpose),
+                new GatedGameScreenCapture(
+                    new WaylandPortalGameScreenCapture(confirmWaylandScreenShare, log, capturePurpose),
+                    static () => WaylandPortalEnabled(),
+                    WaylandPortalDisabledReason
+                ),
                 log: log,
                 capturePurpose: capturePurpose
             );
@@ -193,11 +203,42 @@ public sealed class UnavailableGameScreenCapture : IGameScreenCapture
     public void Dispose() { }
 }
 
+internal sealed class GatedGameScreenCapture(IGameScreenCapture inner, Func<bool> isEnabled, string disabledReason)
+    : IGameScreenCapture
+{
+    public bool IsAvailable => isEnabled() && inner.IsAvailable;
+
+    public string? UnavailableReason => isEnabled() ? inner.UnavailableReason : disabledReason;
+
+    public CapturedPixelBuffer Capture(PixelRect bounds)
+    {
+        EnsureEnabled();
+        return inner.Capture(bounds);
+    }
+
+    public CapturedPixelBuffer Capture(PixelRect bounds, PixelRect sourceBounds)
+    {
+        EnsureEnabled();
+        return inner.Capture(bounds, sourceBounds);
+    }
+
+    public void Dispose() => inner.Dispose();
+
+    private void EnsureEnabled()
+    {
+        if (!isEnabled())
+        {
+            throw new NotSupportedException(disabledReason);
+        }
+    }
+}
+
 internal sealed class FallbackGameScreenCapture : IGameScreenCapture
 {
     private readonly Lock gate = new();
     private readonly Action<string>? log;
     private readonly string capturePurpose;
+    private readonly Func<bool>? allowWaylandPortal;
     private IGameScreenCapture? primary;
     private IGameScreenCapture? fallback;
 
@@ -205,7 +246,8 @@ internal sealed class FallbackGameScreenCapture : IGameScreenCapture
         IGameScreenCapture primary,
         IGameScreenCapture fallback,
         Action<string>? log = null,
-        string capturePurpose = "game-screen detection"
+        string capturePurpose = "game-screen detection",
+        Func<bool>? allowWaylandPortal = null
     )
     {
         ArgumentNullException.ThrowIfNull(primary);
@@ -215,6 +257,7 @@ internal sealed class FallbackGameScreenCapture : IGameScreenCapture
         this.fallback = fallback;
         this.log = log;
         this.capturePurpose = capturePurpose;
+        this.allowWaylandPortal = allowWaylandPortal;
     }
 
     public bool IsAvailable
@@ -223,7 +266,7 @@ internal sealed class FallbackGameScreenCapture : IGameScreenCapture
         {
             lock (gate)
             {
-                return primary?.IsAvailable == true || fallback?.IsAvailable == true;
+                return primary?.IsAvailable == true || (PortalIsAllowed && fallback?.IsAvailable == true);
             }
         }
     }
@@ -234,10 +277,22 @@ internal sealed class FallbackGameScreenCapture : IGameScreenCapture
         {
             lock (gate)
             {
-                return primary?.UnavailableReason ?? fallback?.UnavailableReason;
+                if (primary?.IsAvailable == true)
+                {
+                    return primary.UnavailableReason;
+                }
+
+                if (PortalIsAllowed)
+                {
+                    return fallback?.UnavailableReason ?? primary?.UnavailableReason;
+                }
+
+                return GameScreenCapture.WaylandPortalDisabledReason;
             }
         }
     }
+
+    private bool PortalIsAllowed => allowWaylandPortal is null || allowWaylandPortal();
 
     public CapturedPixelBuffer Capture(PixelRect bounds) => CaptureCore(capture => capture.Capture(bounds));
 
@@ -268,6 +323,15 @@ internal sealed class FallbackGameScreenCapture : IGameScreenCapture
                 }
                 catch (Exception exception) when (GameScreenCapture.IsRecoverableFailure(exception))
                 {
+                    if (allowWaylandPortal is not null && !allowWaylandPortal())
+                    {
+                        log?.Invoke(
+                            $"Screen capture ({capturePurpose}): X11 capture failed; Wayland portal is disabled in Settings. "
+                                + CaptureFailureDiagnostics.Describe(exception)
+                        );
+                        throw;
+                    }
+
                     log?.Invoke(
                         $"Screen capture ({capturePurpose}): X11 capture failed; switching to the Wayland portal. "
                             + CaptureFailureDiagnostics.Describe(exception)
@@ -275,6 +339,11 @@ internal sealed class FallbackGameScreenCapture : IGameScreenCapture
                     primary.Dispose();
                     primary = null;
                 }
+            }
+
+            if (allowWaylandPortal is not null && !allowWaylandPortal())
+            {
+                throw new NotSupportedException(GameScreenCapture.WaylandPortalDisabledReason);
             }
 
             return captureFrame(fallback ?? throw new ObjectDisposedException(nameof(FallbackGameScreenCapture)));

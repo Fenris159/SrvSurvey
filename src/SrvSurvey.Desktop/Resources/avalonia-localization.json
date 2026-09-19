@@ -4713,10 +4713,6 @@
       "translation": "Wählen..."
     },
     {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "Wählen Sie WaylandCaptureSourceAgainButton"
-    },
-    {
       "source": "Circle radius",
       "translation": "Kreisradius"
     },
@@ -7957,6 +7953,10 @@
       "translation": "Aktivieren Sie VR-Overlays"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Aktivieren Sie die Wayland-Bildschirmaufnahme"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Kolonisierungsfunktionen aktivieren"
     },
@@ -8003,6 +8003,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "Aktivieren Sie GuardianSites"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "EnableWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -20709,6 +20713,10 @@
       "translation": "Bildschirmaufnahme ({0}) fehlgeschlagen: {1} Nächster Wiederholungsversuch in {2} Sekunden.{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Bildschirmaufnahme ({0}): X11-Aufnahme fehlgeschlagen; Das Wayland-Portal ist in den Einstellungen deaktiviert. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Bildschirmaufnahme ({0}): X11-Aufnahme fehlgeschlagen; Wechsel zum Wayland-Portal. {1}"
     },
@@ -27289,6 +27297,10 @@
       "translation": "Verwenden SieSpanshLastUpdated"
     },
     {
+      "source": "Used by:",
+      "translation": "Verwendet von:"
+    },
+    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Zu den nützlichen Aktionen gehören Overlay-Sichtbarkeit, Live-Interaktion, Kartenzoom, Sprung-/FSS-/Körper-/Stationsfelder, Kolonieeinkauf, Systemnotizen, Boxel-Kopieren/Einfügen, Quest-Kommunikation, VR-Anpassung, Oberflächen-Lesezeichen und Screenshot-Daten."
     },
@@ -27885,6 +27897,22 @@
       "translation": "Wayland-Screenshot"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
+      "translation": "Wayland-Bildschirmaufnahme in den Einstellungen deaktiviert; FSS, First-Footfall und Rig-Erkennung nutzen das Portal nicht."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Wayland-Bildschirmaufnahme in den Einstellungen aktiviert."
+    },
+    {
+      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
+      "translation": "Die Bildschirmaufnahme von Wayland ist deaktiviert. Durch FSS-Tuning, First-Footfall-Inferenz und Surface-Mining-Rig-Erkennung wird die Desktop-Freigabeauswahl nicht geöffnet."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "Die Wayland-Bildschirmaufnahme ist unter Einstellungen → Anwendung deaktiviert."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Wayland-Bildschirmfreigabe konnte nicht gestartet werden: {0}"
     },
@@ -27899,6 +27927,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "Wayland-Screenshot-Quelle geändert"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "WaylandCapture"
     },
     {
       "source": "WaylandCaptureCard",
@@ -29633,8 +29665,8 @@
       "translation": "Lichter"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "Linux Xwayland Portal Pipewire Screencast Source Picker Share Window Monitor Gamescope Reset"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
+      "translation": "Linux Xwayland Portal Pipewire Screencast Quellauswahl Fenster teilen Monitor Gamescope Zurücksetzen Aktivieren Deaktivieren Umschalten FSS Tuning Surface Mining Rig Erster Schritt"
     },
     {
       "source": "linux64",
@@ -31907,6 +31939,18 @@
     {
       "source": "Русский",
       "translation": "Russisch"
+    },
+    {
+      "source": "• First-footfall inference",
+      "translation": "• Inferenz beim ersten Schritt"
+    },
+    {
+      "source": "• Surface Mining rig detection",
+      "translation": "• Erkennung von Surface-Mining-Rigs"
+    },
+    {
+      "source": "• System Survey FSS tuning detection",
+      "translation": "• System Survey FSS-Tuning-Erkennung"
     },
     {
       "source": "• active",
@@ -36691,10 +36735,6 @@
       "translation": "Elegir..."
     },
     {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "Elija WaylandCaptureSourceAgainButton"
-    },
-    {
       "source": "Circle radius",
       "translation": "Radio del círculo"
     },
@@ -39935,6 +39975,10 @@
       "translation": "Habilitar superposiciones de realidad virtual"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Habilitar captura de pantalla de Wayland"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Habilitar funciones de colonización"
     },
@@ -39981,6 +40025,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "Habilitar sitios Guardian"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "HabilitarWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -52687,6 +52735,10 @@
       "translation": "Error en la captura de pantalla ({0}): {1} Siguiente reintento en segundos {2}.{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Captura de pantalla ({0}): Error en la captura de X11; El portal Wayland está deshabilitado en Configuración. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Captura de pantalla ({0}): Error en la captura de X11; cambiando al portal Wayland. {1}"
     },
@@ -59267,6 +59319,10 @@
       "translation": "UseSpanshLastUpdated"
     },
     {
+      "source": "Used by:",
+      "translation": "Utilizado por:"
+    },
+    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Las acciones útiles incluyen visibilidad superpuesta, interacción en vivo, zoom de mapa, paneles de salto/FSS/cuerpo/estación, compras de colonias, notas del sistema, copiar/pegar cuadros, comunicaciones de misiones, ajuste de realidad virtual, marcadores de superficie y datos de captura de pantalla."
     },
@@ -59863,6 +59919,22 @@
       "translation": "Captura de pantalla de Wayland"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
+      "translation": "Captura de pantalla de Wayland deshabilitada en Configuración; FSS, detección de primer paso y detección de plataformas no utilizarán el portal."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Captura de pantalla de Wayland habilitada en Configuración."
+    },
+    {
+      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
+      "translation": "La captura de pantalla de Wayland está desactivada. El ajuste de FSS, la inferencia del primer paso y la detección de plataformas de Surface Mining no abrirán el selector de recursos compartidos de escritorio."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "La captura de pantalla de Wayland está desactivada en Configuración → Aplicación."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "No se pudo iniciar el uso compartido de pantalla de Wayland: {0}"
     },
@@ -59877,6 +59949,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "La fuente de captura de pantalla de Wayland cambió"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "WaylandCaptura"
     },
     {
       "source": "WaylandCaptureCard",
@@ -61611,8 +61687,8 @@
       "translation": "luces"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "linux xwayland portal pipewire screencast selector de fuente compartir ventana monitor gamescope restablecer"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
+      "translation": "linux xwayland portal pipewire screencast selector de fuente compartir ventana monitor gamescope restablecer habilitar desactivar alternar fss sintonización plataforma de minería de superficie primer paso"
     },
     {
       "source": "linux64",
@@ -63885,6 +63961,18 @@
     {
       "source": "Русский",
       "translation": "ruso"
+    },
+    {
+      "source": "• First-footfall inference",
+      "translation": "• Inferencia del primer paso"
+    },
+    {
+      "source": "• Surface Mining rig detection",
+      "translation": "• Detección de plataformas de minería a cielo abierto"
+    },
+    {
+      "source": "• System Survey FSS tuning detection",
+      "translation": "• Detección de sintonización de FSS de System Survey"
     },
     {
       "source": "• active",
@@ -68669,10 +68757,6 @@
       "translation": "Choisir..."
     },
     {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "ChoisirWaylandCaptureSourceAgainButton"
-    },
-    {
       "source": "Circle radius",
       "translation": "Rayon du cercle"
     },
@@ -71913,6 +71997,10 @@
       "translation": "Activer les superpositions VR"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Activer la capture d'écran Wayland"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Activer les fonctionnalités de colonisation"
     },
@@ -71959,6 +72047,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "Activer les sites Guardian"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "ActiverWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -84665,6 +84757,10 @@
       "translation": "Échec de la capture d'écran ({0}) : {1} Prochaine tentative dans {2} secondes.{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Capture d'écran ({0}) : échec de la capture X11 ; Le portail Wayland est désactivé dans les paramètres. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Capture d'écran ({0}) : échec de la capture X11 ; passer au portail Wayland. {1}"
     },
@@ -91245,6 +91341,10 @@
       "translation": "UtiliserSpanshLastUpdated"
     },
     {
+      "source": "Used by:",
+      "translation": "Utilisé par :"
+    },
+    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Les actions utiles incluent la visibilité en superposition, l'interaction en direct, le zoom de la carte, les panneaux de saut/FSS/corps/station, les achats de colonies, les notes système, le copier/coller de boxel, les communications de quête, l'ajustement VR, les signets de surface et les données de capture d'écran."
     },
@@ -91841,6 +91941,22 @@
       "translation": "Capture d'écran de Wayland"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
+      "translation": "Capture d'écran Wayland désactivée dans Paramètres ; La détection FSS, du premier pas et des plates-formes n'utilisera pas le portail."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Capture d'écran Wayland activée dans Paramètres."
+    },
+    {
+      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
+      "translation": "La capture d'écran Wayland est désactivée. Le réglage FSS, l’inférence de premier pas et la détection de plate-forme Surface Mining n’ouvriront pas le sélecteur de partage de bureau."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "La capture d'écran Wayland est désactivée dans Paramètres → Application."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Le partage d'écran Wayland n'a pas pu démarrer : {0}"
     },
@@ -91855,6 +91971,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "La source de capture d'écran de Wayland a été modifiée"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "WaylandCapture"
     },
     {
       "source": "WaylandCaptureCard",
@@ -93589,8 +93709,8 @@
       "translation": "lumières"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "Linux Portail Xwayland Pipewire Screencast Sélecteur de source Partager Fenêtre Moniteur Gamescope Réinitialiser"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
+      "translation": "linux portail xwayland pipewire screencast sélecteur de source partager fenêtre moniteur gamescope réinitialiser activer désactiver bascule réglage fss plate-forme minière de surface première étape"
     },
     {
       "source": "linux64",
@@ -95863,6 +95983,18 @@
     {
       "source": "Русский",
       "translation": "russe"
+    },
+    {
+      "source": "• First-footfall inference",
+      "translation": "• Inférence de première étape"
+    },
+    {
+      "source": "• Surface Mining rig detection",
+      "translation": "• Détection des plates-formes de Surface Mining"
+    },
+    {
+      "source": "• System Survey FSS tuning detection",
+      "translation": "• Détection du réglage du système FSS"
     },
     {
       "source": "• active",
@@ -100647,10 +100779,6 @@
       "translation": "Escolher..."
     },
     {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "EscolhaWaylandCaptureSourceAgainButton"
-    },
-    {
       "source": "Circle radius",
       "translation": "Raio do círculo"
     },
@@ -103891,6 +104019,10 @@
       "translation": "Ativar sobreposições de VR"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Habilitar captura de tela do Wayland"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Habilitar recursos de colonização"
     },
@@ -103937,6 +104069,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "HabilitarGuardianSites"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "HabilitarWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -116643,6 +116779,10 @@
       "translation": "Falha na captura de tela ({0}): {1} Próxima tentativa em {2} segundos.{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Captura de tela ({0}): falha na captura do X11; O portal Wayland está desativado em Configurações. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Captura de tela ({0}): falha na captura do X11; mudando para o portal Wayland. {1}"
     },
@@ -123223,6 +123363,10 @@
       "translation": "UseSpanshLastUpdated"
     },
     {
+      "source": "Used by:",
+      "translation": "Usado por:"
+    },
+    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Ações úteis incluem visibilidade de sobreposição, interação ao vivo, zoom do mapa, painéis de salto/FSS/corpo/estação, compras de colônias, notas do sistema, copiar/colar boxel, comunicações de missões, ajuste de VR, marcadores de superfície e dados de captura de tela."
     },
@@ -123819,6 +123963,22 @@
       "translation": "Captura de tela do Wayland"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
+      "translation": "Captura de tela do Wayland desativada em Configurações; FSS, detecção de primeiro passo e detecção de plataforma não usarão o portal."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Captura de tela do Wayland habilitada em Configurações."
+    },
+    {
+      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
+      "translation": "A captura de tela do Wayland está desativada. O ajuste FSS, a inferência do primeiro passo e a detecção da plataforma de mineração de superfície não abrirão o seletor de compartilhamento da área de trabalho."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "A captura de tela do Wayland está desativada em Configurações → Aplicativo."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "O compartilhamento de tela do Wayland não pôde ser iniciado: {0}"
     },
@@ -123833,6 +123993,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "Fonte de captura de tela do Wayland alterada"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "Wayland Captura"
     },
     {
       "source": "WaylandCaptureCard",
@@ -125567,8 +125731,8 @@
       "translation": "luzes"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "linux xwayland portal pipewire screencast selecionador de fonte compartilhar janela monitor gamescope reset"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
+      "translation": "linux xwayland portal pipewire screencast selecionador de fonte compartilhar monitor de janela gamescope reset habilitar desabilitar alternar fss ajuste equipamento de mineração de superfície primeiro passo"
     },
     {
       "source": "linux64",
@@ -127841,6 +128005,18 @@
     {
       "source": "Русский",
       "translation": "Russo"
+    },
+    {
+      "source": "• First-footfall inference",
+      "translation": "• Inferência do primeiro passo"
+    },
+    {
+      "source": "• Surface Mining rig detection",
+      "translation": "• Detecção de plataforma de mineração de superfície"
+    },
+    {
+      "source": "• System Survey FSS tuning detection",
+      "translation": "• Detecção de ajuste do System Survey FSS"
     },
     {
       "source": "• active",
@@ -132625,10 +132801,6 @@
       "translation": "Выбирать..."
     },
     {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "Выберите WaylandCaptureSourceAgainButton"
-    },
-    {
       "source": "Circle radius",
       "translation": "Радиус окружности"
     },
@@ -135869,6 +136041,10 @@
       "translation": "Включить наложения VR"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Включить захват экрана Wayland"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Включить функции колонизации"
     },
@@ -135915,6 +136091,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "ВключитьGuardianSites"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "ВключитьWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -148621,6 +148801,10 @@
       "translation": "Не удалось сделать снимок экрана ({0}): {1} Следующая повторная попытка через {2} секунд. {3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Снимок экрана ({0}): захват X11 не удался; Портал Wayland отключен в настройках. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Снимок экрана ({0}): захват X11 не удался; переключение на портал Wayland. {1}"
     },
@@ -155201,6 +155385,10 @@
       "translation": "УсеSpanshLastUpdated"
     },
     {
+      "source": "Used by:",
+      "translation": "Используется:"
+    },
+    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Полезные действия включают в себя видимость наложения, взаимодействие в реальном времени, масштабирование карты, панели прыжка/FSS/тела/станции, покупки в колониях, системные заметки, копирование/вставку боксов, общение в квестах, настройку VR, закладки на поверхности и данные скриншотов."
     },
@@ -155797,6 +155985,22 @@
       "translation": "Снимок экрана Вейланда"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
+      "translation": "Захват экрана Wayland отключен в настройках; FSS, обнаружение первых шагов и обнаружение буровых установок не будут использовать портал."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Снимок экрана Wayland включен в настройках."
+    },
+    {
+      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
+      "translation": "Захват экрана Wayland отключен. Настройка FSS, вывод по первым шагам и обнаружение буровой установки Surface Mining не откроют средство выбора общего доступа к рабочему столу."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "Снимок экрана Wayland отключен в «Настройки» → «Приложение»."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Не удалось запустить совместное использование экрана Wayland: {0}"
     },
@@ -155811,6 +156015,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "Изменен источник снимка экрана Wayland"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "ВейландЗахват"
     },
     {
       "source": "WaylandCaptureCard",
@@ -157545,8 +157753,8 @@
       "translation": "огни"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "Linux Портал xwayland Pipewire Screencast Выбор источника Поделиться Окно монитора Сброс Gamescope"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
+      "translation": "Linux xwayland портал Pipewire Screencast Выбор источника Поделиться Окно Монитор Сброс Gamescope Включить Отключить Переключить FSS Настройка Установка для майнинга поверхности Первый шаг"
     },
     {
       "source": "linux64",
@@ -159819,6 +160027,18 @@
     {
       "source": "Русский",
       "translation": "Русский"
+    },
+    {
+      "source": "• First-footfall inference",
+      "translation": "• Вывод по первым шагам"
+    },
+    {
+      "source": "• Surface Mining rig detection",
+      "translation": "• Обнаружение буровых установок для открытых горных работ"
+    },
+    {
+      "source": "• System Survey FSS tuning detection",
+      "translation": "• Обнаружение настройки системы FSS"
     },
     {
       "source": "• active",
@@ -164603,10 +164823,6 @@
       "translation": "选择..."
     },
     {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "选择 WaylandCaptureSourceAgain 按钮"
-    },
-    {
       "source": "Circle radius",
       "translation": "圆半径"
     },
@@ -167847,6 +168063,10 @@
       "translation": "启用 VR 叠加"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "启用 Wayland 屏幕捕获"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "启用殖民功能"
     },
@@ -167893,6 +168113,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "启用Guardian站点"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "启用WaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -180599,6 +180823,10 @@
       "translation": "屏幕捕获 ({0}) 失败：{1} 在 {2} 秒后重试。{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "屏幕捕获（{0}）：X11捕获失败； Wayland 门户在“设置”中被禁用。 {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "屏幕捕获（{0}）：X11捕获失败；切换到 Wayland 门户。 {1}"
     },
@@ -187179,6 +187407,10 @@
       "translation": "使用SpanshLastUpdated"
     },
     {
+      "source": "Used by:",
+      "translation": "使用者："
+    },
+    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "有用的操作包括覆盖可见性、实时交互、地图缩放、跳跃/FSS/主体/站面板、殖民地购物、系统注释、boxel复制/粘贴、任务通信、VR调整、表面书签和屏幕截图数据。"
     },
@@ -187775,6 +188007,22 @@
       "translation": "韦兰屏幕截图"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
+      "translation": "在“设置”中禁用 Wayland 屏幕捕获； FSS、首次脚步声和装备检测将不使用门户。"
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "在“设置”中启用了 Wayland 屏幕捕获。"
+    },
+    {
+      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
+      "translation": "Wayland 屏幕截图已关闭。 FSS 调整、首次脚步推理和 Surface Mining 设备检测不会打开桌面共享选择器。"
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "Wayland 屏幕捕获在“设置”→“应用程序”中关闭。"
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Wayland 屏幕共享无法启动：{0}"
     },
@@ -187789,6 +188037,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "Wayland 屏幕捕获源已更改"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "韦兰捕获"
     },
     {
       "source": "WaylandCaptureCard",
@@ -189523,8 +189775,8 @@
       "translation": "灯"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "linux xwayland 门户 pipelinewire 截屏源选择器 共享窗口 监视器 gamescope 重置"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
+      "translation": "linux xwayland 门户 pipelinewire 截屏 源选择器 共享窗口 监视器 gamescope 重置 启用 禁用 切换 fss 调整 表面采矿设备 第一次脚步"
     },
     {
       "source": "linux64",
@@ -191797,6 +192049,18 @@
     {
       "source": "Русский",
       "translation": "俄罗斯"
+    },
+    {
+      "source": "• First-footfall inference",
+      "translation": "• 首客推断"
+    },
+    {
+      "source": "• Surface Mining rig detection",
+      "translation": "• 露天采矿设备检测"
+    },
+    {
+      "source": "• System Survey FSS tuning detection",
+      "translation": "• 系统调查 FSS 调谐检测"
     },
     {
       "source": "• active",
@@ -196581,10 +196845,6 @@
       "translation": "* CHOOSE... >>>!"
     },
     {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "* CHOOSEWAYLANDCAPTURESOURCEAGAINBUTTON >>>!"
-    },
-    {
       "source": "Circle radius",
       "translation": "* CIRCLE RADIUS >>>!"
     },
@@ -199825,6 +200085,10 @@
       "translation": "* ENABLE VR OVERLAYS >>>!"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "* ENABLE WAYLAND SCREEN CAPTURE >>>!"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "* ENABLE COLONIZATION FEATURES >>>!"
     },
@@ -199871,6 +200135,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "* ENABLEGUARDIANSITES >>>!"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "* ENABLEWAYLANDCAPTURECHECKBOX >>>!"
     },
     {
       "source": "Enabled",
@@ -212577,6 +212845,10 @@
       "translation": "* SCREEN CAPTURE ({0}) FAILED: {1} NEXT RETRY IN {2} SECONDS.{3} >>>!"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "* SCREEN CAPTURE ({0}): X11 CAPTURE FAILED; WAYLAND PORTAL IS DISABLED IN SETTINGS. {1} >>>!"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "* SCREEN CAPTURE ({0}): X11 CAPTURE FAILED; SWITCHING TO THE WAYLAND PORTAL. {1} >>>!"
     },
@@ -219157,6 +219429,10 @@
       "translation": "* USESPANSHLASTUPDATED >>>!"
     },
     {
+      "source": "Used by:",
+      "translation": "* USED BY: >>>!"
+    },
+    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "* USEFUL ACTIONS INCLUDE OVERLAY VISIBILITY, LIVE INTERACTION, MAP ZOOM, JUMP/FSS/BODY/STATION PANELS, COLONY SHOPPING, SYSTEM NOTES, BOXEL COPY/PASTE, QUEST COMMUNICATIONS, VR ADJUSTMENT, SURFACE BOOKMARKS, AND SCREENSHOT DATA. >>>!"
     },
@@ -219753,6 +220029,22 @@
       "translation": "* WAYLAND SCREEN CAPTURE >>>!"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
+      "translation": "* WAYLAND SCREEN CAPTURE DISABLED IN SETTINGS; FSS, FIRST-FOOTFALL, AND RIG DETECTION WILL NOT USE THE PORTAL. >>>!"
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "* WAYLAND SCREEN CAPTURE ENABLED IN SETTINGS. >>>!"
+    },
+    {
+      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
+      "translation": "* WAYLAND SCREEN CAPTURE IS OFF. FSS TUNING, FIRST-FOOTFALL INFERENCE, AND SURFACE MINING RIG DETECTION WILL NOT OPEN THE DESKTOP SHARE PICKER. >>>!"
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "* WAYLAND SCREEN CAPTURE IS TURNED OFF IN SETTINGS → APPLICATION. >>>!"
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "* WAYLAND SCREEN SHARING COULD NOT START: {0} >>>!"
     },
@@ -219767,6 +220059,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "* WAYLAND SCREEN-CAPTURE SOURCE CHANGED >>>!"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "* WAYLANDCAPTURE >>>!"
     },
     {
       "source": "WaylandCaptureCard",
@@ -221501,8 +221797,8 @@
       "translation": "* LIGHTS >>>!"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "* LINUX XWAYLAND PORTAL PIPEWIRE SCREENCAST SOURCE PICKER SHARE WINDOW MONITOR GAMESCOPE RESET >>>!"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
+      "translation": "* LINUX XWAYLAND PORTAL PIPEWIRE SCREENCAST SOURCE PICKER SHARE WINDOW MONITOR GAMESCOPE RESET ENABLE DISABLE TOGGLE FSS TUNING SURFACE MINING RIG FIRST FOOTFALL >>>!"
     },
     {
       "source": "linux64",
@@ -223775,6 +224071,18 @@
     {
       "source": "Русский",
       "translation": "* РУССКИЙ >>>!"
+    },
+    {
+      "source": "• First-footfall inference",
+      "translation": "* • FIRST-FOOTFALL INFERENCE >>>!"
+    },
+    {
+      "source": "• Surface Mining rig detection",
+      "translation": "* • SURFACE MINING RIG DETECTION >>>!"
+    },
+    {
+      "source": "• System Survey FSS tuning detection",
+      "translation": "* • SYSTEM SURVEY FSS TUNING DETECTION >>>!"
     },
     {
       "source": "• active",

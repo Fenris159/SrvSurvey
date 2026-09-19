@@ -222,9 +222,9 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
             new(
                 "Wayland screen capture",
                 ApplicationCategoryKey,
-                "ChooseWaylandCaptureSourceAgainButton",
+                "EnableWaylandCaptureCheckBox",
                 "WaylandCaptureCard",
-                "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset"
+                "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall"
             ),
             new(
                 "Application window and focus",

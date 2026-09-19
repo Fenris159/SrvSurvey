@@ -88,6 +88,112 @@ public sealed class GameScreenCaptureTests
     }
 
     [Fact]
+    public void X11CaptureFailureDoesNotUseWaylandPortalWhenDisabled()
+    {
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var logs = new List<string>();
+        int portalAttempts = 0;
+        using var capture = new FallbackGameScreenCapture(
+            new StubCapture(_ =>
+                throw new InvalidOperationException("X11 could not capture the Elite Dangerous window.")
+            ),
+            new StubCapture(_ =>
+            {
+                portalAttempts++;
+                return expected;
+            }),
+            logs.Add,
+            "test detection",
+            static () => false
+        );
+
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() =>
+            capture.Capture(new PixelRect(0, 0, 1, 1))
+        );
+
+        Assert.Contains("X11 could not capture", error.Message);
+        Assert.Equal(0, portalAttempts);
+        Assert.Contains(logs, message => message.Contains("disabled", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void GatedCaptureDoesNotReachTheInnerCaptureWhileDisabled()
+    {
+        int attempts = 0;
+        using var capture = new GatedGameScreenCapture(
+            new StubCapture(_ =>
+            {
+                attempts++;
+                return new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+            }),
+            static () => false,
+            GameScreenCapture.WaylandPortalDisabledReason
+        );
+
+        NotSupportedException error = Assert.Throws<NotSupportedException>(() =>
+            capture.Capture(new PixelRect(0, 0, 1, 1))
+        );
+
+        Assert.Equal(0, attempts);
+        Assert.Contains("turned off", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.False(capture.IsAvailable);
+        Assert.Equal(GameScreenCapture.WaylandPortalDisabledReason, capture.UnavailableReason);
+    }
+
+    [Fact]
+    public void GatedCaptureForwardsWhenEnabled()
+    {
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        using var capture = new GatedGameScreenCapture(
+            new StubCapture(_ => expected),
+            static () => true,
+            GameScreenCapture.WaylandPortalDisabledReason
+        );
+
+        Assert.True(capture.IsAvailable);
+        Assert.Null(capture.UnavailableReason);
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1), new PixelRect(0, 0, 1, 1)));
+    }
+
+    [Fact]
+    public void FallbackIsUnavailableWhenPortalDisabledAndX11Unavailable()
+    {
+        using var capture = new FallbackGameScreenCapture(
+            new UnavailableGameScreenCapture("X11 screen capture could not connect to the display."),
+            new StubCapture(_ => new CapturedPixelBuffer(1, 1, [51, 34, 17, 255])),
+            capturePurpose: "test detection",
+            allowWaylandPortal: static () => false
+        );
+
+        Assert.False(capture.IsAvailable);
+        Assert.Contains("turned off", capture.UnavailableReason, StringComparison.OrdinalIgnoreCase);
+        Assert.Throws<NotSupportedException>(() => capture.Capture(new PixelRect(0, 0, 1, 1)));
+    }
+
+    [Fact]
+    public void FallbackStopsUsingPortalAfterItIsDisabled()
+    {
+        bool allow = true;
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        using var capture = new FallbackGameScreenCapture(
+            new StubCapture(_ => throw new InvalidOperationException("X11 could not capture.")),
+            new StubCapture(_ => expected),
+            allowWaylandPortal: () => allow
+        );
+
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
+
+        allow = false;
+
+        NotSupportedException error = Assert.Throws<NotSupportedException>(() =>
+            capture.Capture(new PixelRect(0, 0, 1, 1))
+        );
+        Assert.False(capture.IsAvailable);
+        Assert.Contains("turned off", error.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void SuccessfulX11CaptureDoesNotUseWaylandPortalFallback()
     {
         var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
