@@ -23,6 +23,11 @@ $definitions = @(
         runtimeIdentifier = 'linux-x64'
         archive = "SrvSurvey-XP-$Version-linux-x64.tar.gz"
         archiveType = 'tar.gz'
+    },
+    [ordered]@{
+        runtimeIdentifier = 'linux-x64-appimage'
+        archive = "SrvSurvey-XP-$Version-x86_64.AppImage"
+        archiveType = 'appimage'
     }
 )
 
@@ -46,7 +51,7 @@ $packages = @(
 )
 
 $index = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
     product = 'SrvSurvey.XP'
     version = $Version
     packages = $packages

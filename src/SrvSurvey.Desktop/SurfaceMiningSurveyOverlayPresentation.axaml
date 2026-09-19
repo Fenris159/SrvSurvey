@@ -11,19 +11,16 @@
           BorderThickness="1"
           CornerRadius="6">
     <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="3">
-      <TextBlock Classes="overlay-header"
+      <TextBlock Classes="overlay-header type-header"
                  Text="{Binding SurveyGuideTitle}" />
-      <TextBlock Grid.Row="1"
-                 FontSize="12"
+      <TextBlock Classes="type-value" Grid.Row="1"
                  Text="{Binding SurveyGuideInstruction}" />
       <TextBlock Grid.Row="2"
-                 Classes="monospace"
+                 Classes="monospace type-body"
                  Foreground="{DynamicResource RavenAccentBrush}"
-                 FontSize="11"
                  Text="{Binding SurveyGuideCommandHint}" />
       <TextBlock Grid.Row="3"
-                 Classes="muted"
-                 FontSize="11"
+                 Classes="muted type-body"
                  IsVisible="{Binding HasSurveyGuideFooter}"
                  Text="{Binding SurveyGuideFooter}" />
     </Grid>

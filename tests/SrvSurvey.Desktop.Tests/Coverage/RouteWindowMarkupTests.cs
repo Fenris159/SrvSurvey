@@ -252,7 +252,8 @@ public sealed class RouteWindowMarkupTests
         Assert.Equal("{Binding JumpInfo.IsScoopableStarClass}", badge.Attribute("IsVisible")?.Value);
         Assert.Equal("18", badge.Attribute("MinHeight")?.Value);
         Assert.Equal("7,2", badge.Attribute("Padding")?.Value);
-        Assert.Equal("9", label.Attribute("FontSize")?.Value);
+        Assert.Contains("type-detail", label.Attribute("Classes")?.Value.Split(' ') ?? []);
+        Assert.Null(label.Attribute("FontSize"));
         Assert.Equal("{DynamicResource RavenWarningBrush}", label.Attribute("Foreground")?.Value);
         Assert.Equal(starClass.Attribute("Foreground")?.Value, label.Attribute("Foreground")?.Value);
         Assert.DoesNotContain(badge.Descendants(), element => element.Name.LocalName == "Image");

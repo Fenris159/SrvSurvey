@@ -670,7 +670,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.False(viewModel.IsEditing);
         Assert.Equal(0.4, activeLayout.DefaultOpacity);
         Assert.Equal(0.8, activeLayout.Placements["PlotJumpInfo"].Opacity);
-        Assert.Contains("Saved 1 overlay position/opacity override", viewModel.StatusMessage);
+        Assert.Contains("Saved 1 overlay position and appearance override", viewModel.StatusMessage);
         Assert.Contains("\"plotterOpacity\": 40", File.ReadAllText(settingsPath));
         Assert.Contains(", 0.8", File.ReadAllText(plottersPath));
     }
@@ -733,6 +733,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.True(viewModel.Begin());
         viewModel.OpenOverlaySettings("PlotJumpInfo");
         Assert.True(viewModel.IsOverlaySettingsOpen);
+        viewModel.ToggleTypographySettingsCommand.Execute(null);
+        Assert.True(viewModel.IsTypographySettingsOpen);
+        viewModel.ToggleTypographySettingsCommand.Execute(null);
+        Assert.False(viewModel.IsTypographySettingsOpen);
         viewModel.SelectedOverlayOpacityPercent = 34;
         viewModel.UseGlobalOverlayOpacity = false;
         OverlayScaleOption[] scaleOptions = OverlayScaleCatalog
@@ -741,6 +745,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             .ToArray();
         viewModel.SelectedOverlayScaleOrdinal = Array.FindIndex(scaleOptions, option => option.Index == 19);
         viewModel.UseGlobalOverlayScale = false;
+        OverlayTypographyRoleViewModel title = viewModel.TypographyRoles.Single(role =>
+            role.Role == OverlayTypographyRole.Title
+        );
+        title.Percent = 25;
 
         viewModel.SaveCommand.Execute(null);
 
@@ -749,6 +757,39 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.False(host.IsOpen);
         Assert.Equal(0.34, activeLayout.Placements["PlotJumpInfo"].Opacity);
         Assert.Equal(19, activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
+        Assert.Equal(25, activeLayout.GetTypographyScale("PlotJumpInfo").Title);
+        Assert.Equal(1, host.TypographyRefreshCount);
+
+        Assert.True(viewModel.Begin());
+        viewModel.OpenOverlaySettings("PlotJumpInfo");
+        Assert.Equal(25, viewModel.TypographyRoles.Single(role => role.Role == OverlayTypographyRole.Title).Percent);
+        viewModel.Cancel();
+    }
+
+    [Fact]
+    public void TypographyRoleEditorNormalizesStepsAndPublishesChanges()
+    {
+        var updates = new List<(OverlayTypographyRole Role, int Percent)>();
+        var role = new OverlayTypographyRoleViewModel(
+            OverlayTypographyRole.Caption,
+            "Caption",
+            (updatedRole, percent) => updates.Add((updatedRole, percent))
+        );
+        var changed = new List<string?>();
+        role.PropertyChanged += (_, eventArgs) => changed.Add(eventArgs.PropertyName);
+
+        role.Percent = 13;
+        role.Percent = 15;
+        role.Percent = 200;
+
+        Assert.Equal(100, role.Percent);
+        Assert.Equal("+100%", role.Label);
+        Assert.Equal([(OverlayTypographyRole.Caption, 15), (OverlayTypographyRole.Caption, 100)], updates);
+        Assert.Contains(nameof(role.Percent), changed);
+        Assert.Contains(nameof(role.Label), changed);
+        Assert.Throws<ArgumentNullException>(() =>
+            new OverlayTypographyRoleViewModel(role.Role, role.DisplayName, null!)
+        );
     }
 
     public void Dispose()
@@ -841,6 +882,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public int ScaleRefreshCount { get; private set; }
 
+        public int TypographyRefreshCount { get; private set; }
+
         public int LastScaleIndex { get; private set; }
 
         public int PositionRefreshCount { get; private set; }
@@ -891,6 +934,11 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             {
                 LastEffectiveScaleIndex[definition.Name] = session.GetScaleIndex(definition.Name);
             }
+        }
+
+        public void RefreshPreviewTypography(OverlayPositionEditSession session)
+        {
+            TypographyRefreshCount++;
         }
 
         public void RefreshPreviewPositions(OverlayPositionEditSession session)

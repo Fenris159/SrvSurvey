@@ -16,11 +16,10 @@
           CornerRadius="5">
     <StackPanel Spacing="4">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-        <TextBlock Classes="overlay-header"
+        <TextBlock Classes="overlay-header type-header"
                    Text="MASSACRE MISSIONS" />
-        <TextBlock Grid.Column="1"
+        <TextBlock Classes="type-caption" Grid.Column="1"
                    Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="8"
                    FontWeight="SemiBold"
                    Text="{Binding InputMode}" />
       </Grid>
@@ -31,35 +30,31 @@
                   ColumnDefinitions="Auto,Auto,Auto"
                   ColumnSpacing="6"
                   Opacity="{Binding RowOpacity}">
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+              <TextBlock Classes="type-body" Foreground="{DynamicResource RavenAccentBrush}"
                          FontWeight="Bold"
                          Text="&#x25B6;" />
               <StackPanel Grid.Column="1"
                           MaxWidth="260"
                           Spacing="0">
-                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="11"
+                <TextBlock Classes="type-body" Foreground="{DynamicResource RavenAccentBrush}"
                            FontWeight="SemiBold"
                            IsVisible="{Binding !IsComplete}"
                            Text="{Binding TargetFaction}"
                            TextTrimming="CharacterEllipsis" />
-                <TextBlock Classes="muted"
-                           FontSize="11"
+                <TextBlock Classes="muted type-body"
                            FontWeight="SemiBold"
                            IsVisible="{Binding IsComplete}"
                            Text="{Binding TargetFaction}"
                            TextDecorations="Strikethrough"
                            TextTrimming="CharacterEllipsis" />
-                <TextBlock Classes="muted"
-                           FontSize="8"
+                <TextBlock Classes="muted type-caption"
                            Text="{Binding MissionGiver}"
                            TextTrimming="CharacterEllipsis" />
               </StackPanel>
               <TextBlock Grid.Column="2"
-                         Classes="monospace"
+                         Classes="monospace type-body"
                          VerticalAlignment="Center"
                          Foreground="{DynamicResource RavenWarningBrush}"
-                         FontSize="11"
                          FontWeight="Bold"
                          Text="{Binding RemainingText}" />
             </Grid>

@@ -29,17 +29,15 @@
       <Grid ColumnDefinitions="Auto,Auto,*"
             ColumnSpacing="7"
             ClipToBounds="True">
-        <TextBlock Classes="eyebrow"
+        <TextBlock Classes="eyebrow type-header"
                    Foreground="{DynamicResource RavenWarningBrush}"
-                   FontSize="11"
                    FontWeight="SemiBold"
                    Text="{Binding ProgressText}"
                    TextTrimming="CharacterEllipsis" />
         <TextBlock Grid.Column="1"
-                   Classes="muted"
+                   Classes="muted type-body"
                    VerticalAlignment="Center"
                    Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="11"
                    FontWeight="SemiBold"
                    Text="{Binding CompletionPercentText}" />
         <ProgressBar Grid.Column="2"
@@ -58,16 +56,15 @@
             RowDefinitions="Auto,Auto,Auto">
         <TextBlock HorizontalAlignment="Center"
                    VerticalAlignment="Center"
-                   Classes="muted"
+                   Classes="muted type-title"
                    Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="14"
                    FontWeight="SemiBold"
                    IsVisible="{Binding RequiresDss}"
                    Text="DSS required" />
 
         <Grid Grid.Row="1"
               IsVisible="{Binding HasActiveSample}"
-              ColumnDefinitions="92,*"
+              ColumnDefinitions="Auto,*"
               ColumnSpacing="6"
               MinHeight="40">
           <StackPanel Orientation="Horizontal"
@@ -98,8 +95,7 @@
 
           <Grid Grid.Column="1"
                 RowDefinitions="Auto,Auto">
-            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="14"
+            <TextBlock Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                        FontWeight="SemiBold"
                        Text="{Binding ActiveSampleDisplay.DisplayName}"
                        TextWrapping="Wrap"
@@ -113,9 +109,8 @@
                       Width="{Binding ActiveSampleDisplay.SampleScaleBarWidth}"
                       VerticalAlignment="Center"
                       Background="{DynamicResource RavenAccentBrush}" />
-              <TextBlock Classes="muted"
+              <TextBlock Classes="muted type-detail"
                          Foreground="{DynamicResource RavenAccentBrush}"
-                         FontSize="10"
                          Text="{Binding ActiveSampleDisplay.SampleScaleLabel}" />
             </StackPanel>
           </Grid>
@@ -134,14 +129,12 @@
             <DataTemplate x:DataType="vm:BiologyStatusSignalViewModel">
               <Grid Margin="0,0,8,2"
                     Opacity="{Binding RowOpacity}">
-                <TextBlock Classes="muted"
+                <TextBlock Classes="muted type-detail"
                            Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="10"
                            IsVisible="{Binding !IsAnalyzed}"
                            Text="{Binding DisplayText}" />
-                <TextBlock Classes="muted"
+                <TextBlock Classes="muted type-detail"
                            Foreground="{DynamicResource RavenWarningBrush}"
-                           FontSize="10"
                            IsVisible="{Binding IsAnalyzed}"
                            Text="{Binding DisplayText}"
                            TextDecorations="Strikethrough" />
@@ -164,11 +157,10 @@
                   Background="{DynamicResource RavenDangerBrush}"
                   Opacity="0.9" />
           <TextBlock Grid.Column="1"
-                     Classes="muted"
+                     Classes="muted type-detail"
                      HorizontalAlignment="Stretch"
                      VerticalAlignment="Center"
                      Foreground="{DynamicResource RavenDangerBrush}"
-                     FontSize="10"
                      FontWeight="SemiBold"
                      Text="{Binding Warning}"
                      TextWrapping="Wrap"
@@ -187,14 +179,12 @@
                     VerticalAlignment="Center"
                     Spacing="8"
                     IsVisible="{Binding !IsStaleActiveSample}">
-          <TextBlock Classes="muted"
+          <TextBlock Classes="muted type-detail"
                      Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="10"
                      Text="{Binding Footer}"
                      TextWrapping="Wrap"
                      TextAlignment="Center" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="10"
+          <TextBlock Classes="type-detail" Foreground="{DynamicResource RavenAccentBrush}"
                      IsVisible="{Binding ActiveSampleDisplay.HasReward}"
                      Text="{Binding ActiveSampleDisplay.RewardText}" />
           <Panel Width="28"

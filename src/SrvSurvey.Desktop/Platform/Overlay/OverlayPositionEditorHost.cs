@@ -26,6 +26,8 @@ public interface IOverlayPositionEditorHost : IDisposable
 
     void RefreshPreviewScales(OverlayPositionEditSession session);
 
+    void RefreshPreviewTypography(OverlayPositionEditSession session);
+
     void RefreshPreviewPositions(OverlayPositionEditSession session);
 
     int SnapPreviewsToCenter(OverlayPositionEditSession session);
@@ -161,6 +163,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(session.ScaleIndex, session.GetPlacement(definition.Name).ScaleIndex, hostScaling);
+            preview.ConfigureTypography(session.GetTypographyScale(definition.Name));
             PixelSize previewSize = preview.GetExpectedPixelSize(hostScaling);
             preview.Position = session.GetPosition(definition.Name, hostBounds, previewSize);
             preview.ConfigureOpacity(session.DefaultOpacity, session.GetPlacement(definition.Name).Opacity);
@@ -198,6 +201,24 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                     session.GetPlacement(preview.Definition.Name).ScaleIndex,
                     hostScaling
                 );
+                PositionPreview(preview, session);
+            }
+        }
+        finally
+        {
+            updatingPreviewLayout = false;
+        }
+    }
+
+    public void RefreshPreviewTypography(OverlayPositionEditSession session)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        updatingPreviewLayout = true;
+        try
+        {
+            foreach (OverlayPositionPreviewWindow preview in previews)
+            {
+                preview.ConfigureTypography(session.GetTypographyScale(preview.Definition.Name));
                 PositionPreview(preview, session);
             }
         }

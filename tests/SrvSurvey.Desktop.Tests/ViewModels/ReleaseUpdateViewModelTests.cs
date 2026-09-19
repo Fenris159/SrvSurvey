@@ -40,7 +40,7 @@ public sealed class ReleaseUpdateViewModelTests
                     DownloadedBytes = 1_024,
                     TotalBytes = 1_024,
                 },
-                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.ValidatingArchive),
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.ValidatingPackage),
                 new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.PreparingRollback)
                 {
                     StagedFileCount = 12,

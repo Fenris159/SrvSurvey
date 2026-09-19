@@ -423,10 +423,10 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             case ReleaseInstallationWorkflowStage.Downloading:
                 ApplyDownloadProgress(progress);
                 break;
-            case ReleaseInstallationWorkflowStage.ValidatingArchive:
+            case ReleaseInstallationWorkflowStage.ValidatingPackage:
                 InstallProgressPercent = 100;
-                InstallProgressText = "Download hash verified; validating archive files...";
-                StatusMessage = "The package hash is valid. Extracting to an isolated staging directory.";
+                InstallProgressText = "Download hash verified; validating package...";
+                StatusMessage = "The package hash is valid. Preparing an isolated update candidate.";
                 break;
             case ReleaseInstallationWorkflowStage.Staging:
                 break;

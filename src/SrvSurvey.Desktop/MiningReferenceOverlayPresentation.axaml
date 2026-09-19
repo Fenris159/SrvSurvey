@@ -9,16 +9,16 @@
           BorderThickness="1" CornerRadius="6"
           Grid.IsSharedSizeScope="True">
     <StackPanel Spacing="8">
-      <TextBlock Classes="overlay-header" Text="MINING REF" />
+      <TextBlock Classes="overlay-header type-header" Text="MINING REF" />
       <Grid ColumnSpacing="8">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefCommodity" />
           <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefBodies" />
           <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefPrice" />
         </Grid.ColumnDefinitions>
-        <TextBlock Classes="table-heading" Text="COMMODITY" />
-        <TextBlock Grid.Column="1" Classes="table-heading" Text="BODIES" />
-        <TextBlock Grid.Column="2" Classes="table-heading"
+        <TextBlock Classes="table-heading type-body" Text="COMMODITY" />
+        <TextBlock Grid.Column="1" Classes="table-heading type-body" Text="BODIES" />
+        <TextBlock Grid.Column="2" Classes="table-heading type-body"
                    HorizontalAlignment="Right" Text="AVG CR/T" />
       </Grid>
       <ItemsControl ItemsSource="{Binding MiningReferenceRows}">
@@ -31,11 +31,11 @@
                 <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefPrice" />
               </Grid.ColumnDefinitions>
               <StackPanel Orientation="Horizontal" Spacing="6">
-                <TextBlock Foreground="{Binding ColorHex}" Text="●" />
-                <TextBlock Text="{Binding Name}" />
+                <TextBlock Classes="type-body" Foreground="{Binding ColorHex}" Text="●" />
+                <TextBlock Classes="type-body" Text="{Binding Name}" />
               </StackPanel>
-              <TextBlock Grid.Column="1" Classes="muted" Text="{Binding BodyTypes}" />
-              <TextBlock Grid.Column="2" HorizontalAlignment="Right"
+              <TextBlock Grid.Column="1" Classes="muted type-body" Text="{Binding BodyTypes}" />
+              <TextBlock Classes="type-body" Grid.Column="2" HorizontalAlignment="Right"
                          Text="{Binding AverageSellPrice}" />
             </Grid>
           </DataTemplate>

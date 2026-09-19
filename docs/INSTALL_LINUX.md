@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.49.3**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.50**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -32,30 +32,46 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage" \
-    "$HOME/Applications/SrvSurvey/"
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage" \
+    "$HOME/Applications/SrvSurvey/SrvSurvey.AppImage"
 cd "$HOME/Applications/SrvSurvey"
-chmod +x SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage
-./SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage
+chmod +x SrvSurvey.AppImage
+./SrvSurvey.AppImage
 ```
 
 To launch the standalone diagnostic replay controller from the same AppImage,
 pass its explicit dispatcher option:
 
 ```bash
-./SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage --replay-controller
+./SrvSurvey.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.49.3` with the downloaded version. Keep the AppImage in this folder;
-create a launcher or shortcut that points to it instead of moving internal
-files out of the AppImage.
+Replace `2.1.3.0-rc.50` with the downloaded version. Keeping the installed name
+as `SrvSurvey.AppImage` gives launchers and the in-application updater a stable
+path. Keep it in this folder instead of moving internal files out of the
+AppImage.
+
+## Update the AppImage
+
+SrvSurvey can update a running AppImage from its normal update card. The
+AppImage and its containing folder must be writable by the current user. The
+updater downloads the AppImage selected by the configured release channel,
+checks its release-index size and SHA-256 checksum, preserves the current image
+as a rollback copy, and starts the replacement. If the replacement does not
+confirm a healthy startup, SrvSurvey restores the previous AppImage.
+
+The update helper uses AppImage extract-and-run mode, so updating does not add
+a FUSE requirement. Published releases also include embedded AppImage update
+information and a matching `.zsync` asset for compatibility with standard
+AppImage update tools. If the installed file or folder is read-only, the update
+card keeps the manual download instructions available.
 
 If FUSE is unavailable, use AppImage's temporary extract-and-run fallback from
 the same folder:
 
 ```bash
 cd "$HOME/Applications/SrvSurvey"
-./SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage --appimage-extract-and-run
+./SrvSurvey.AppImage --appimage-extract-and-run
 ```
 
 ## Run the portable archive
@@ -64,10 +80,10 @@ The extracted archive directory is the application's container folder. Keep
 all files together and run `SrvSurvey.Desktop` from that directory:
 
 ```bash
-mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.49.3"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.49.3-linux-x64.tar.gz" \
-    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.49.3"
-cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.49.3"
+mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.50"
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.50-linux-x64.tar.gz" \
+    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.50"
+cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.50"
 chmod +x SrvSurvey.Desktop
 ./SrvSurvey.Desktop
 ```

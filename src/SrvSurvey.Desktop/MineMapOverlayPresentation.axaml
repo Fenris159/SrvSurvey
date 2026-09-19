@@ -10,11 +10,11 @@
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="6">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
         <StackPanel Spacing="2">
-          <TextBlock Classes="overlay-header" Text="MINING OVERVIEW MAP" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}" FontSize="16"
+          <TextBlock Classes="overlay-header type-header" Text="MINING OVERVIEW MAP" />
+          <TextBlock Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold" Text="{Binding LiveMapTitle}" TextTrimming="CharacterEllipsis" />
         </StackPanel>
-        <TextBlock Grid.Column="1" Classes="monospace" FontSize="9"
+        <TextBlock Grid.Column="1" Classes="monospace type-detail"
                    VerticalAlignment="Bottom" Text="{Binding ZoomText}" />
       </Grid>
       <controls:MineMapControl Grid.Row="1"
@@ -32,7 +32,7 @@
                                PlayerBrush="{DynamicResource RavenSuccessBrush}"
                                TextBrush="{DynamicResource RavenTextBrush}"
                                ZoneBrush="{DynamicResource RavenWarningBrush}" />
-      <TextBlock Grid.Row="2" Classes="muted" FontSize="9" TextAlignment="Center"
+      <TextBlock Grid.Row="2" Classes="muted type-detail" TextAlignment="Center"
                  Text="{Binding MarkerCountText}" />
     </Grid>
   </Border>

@@ -1,74 +1,48 @@
-# SrvSurvey-XP 2.1.3.0-rc.49.3
+# SrvSurvey-XP 2.1.3.0-rc.50
 
-RC49.3 makes Linux Wayland screen capture an explicit opt-in for each image-based
-tracker. You can now enable one tracker at a time while testing the ScreenCast
-and PipeWire integration.
+RC50 adds per-panel overlay typography controls and brings the normal
+in-application update flow to Linux AppImages.
 
-## Wayland tracker controls
+## Per-panel overlay typography
 
-Open **Settings → Application → Wayland screen capture** to configure:
+- Right-click an overlay in the position editor and select the **Aa** button to
+  adjust Header, Title, Value, Body, Detail, and Caption text for that panel.
+- Each role starts at the existing theme size. Scale it from -50% to +100% in
+  5% steps without changing the overlay's colours, font family, or weight.
+- Each panel stores its own typography profile and updates its preview and live
+  overlay immediately.
+- Overlay layouts now remeasure around scaled text. Compact content wraps,
+  scrolls, or uses intentional ellipsis instead of clipping into nearby text.
 
-- **Enable Wayland screen capture**, the master permission. It remains off by
-  default.
-- **FSS tuning completion**, off by default.
-- **First-footfall detection**, off by default.
-- **Surface Mining Rhino rig tracking**, off by default.
+Existing users keep the current appearance because every new typography scale
+defaults to the 0% baseline.
 
-The individual permissions are new in RC49.3. On an upgrade from RC49.2 or an
-earlier build, SrvSurvey keeps the existing master preference but treats each
-missing tracker permission as off. No tracker will use the portal until it is
-explicitly selected.
+## AppImage updates
 
-These controls govern only the Wayland ScreenCast fallback used when normal X11
-capture is unavailable. Windows and native X11 capture behavior is unchanged.
-FSS tuning and Rhino rig tracking must also be enabled in their normal feature
-settings before they will request an image.
+- A writable Linux AppImage can now install releases from SrvSurvey's update
+  card instead of requiring a manual download and replacement.
+- The updater verifies the indexed AppImage checksum, keeps the previous image
+  for rollback, and restores it if the replacement cannot confirm a healthy
+  startup.
+- Stable file names and symbolic-link launch paths are supported. The update
+  helper uses extract-and-run mode so the update transaction does not depend on
+  FUSE being installed.
+- Release AppImages now embed update-channel metadata and publish a matching
+  `.zsync` asset for standard AppImage tooling.
 
-Turning off one tracker closes that tracker's active portal session without
-disabling another permitted tracker. Turning off the master permission closes
-all active Wayland capture sessions. **Choose capture source again** is available
-only when the master permission and at least one tracker are enabled.
-
-## Wayland capture reliability
-
-- PipeWire portal startup no longer uses `DllImport SetLastError`, which .NET
-  rejects when runtime marshalling is disabled. This was the immediate failure
-  shown in the supplied RC49.0 logs after a window or monitor was selected.
-- SrvSurvey owns a close-on-exec duplicate of the portal file descriptor and
-  cleans up the PipeWire loop if connection startup fails.
-- ScreenCast portal v6 uses the stable PipeWire serial; portal v5 retains the
-  numeric node-ID path used by the supplied systems.
-- Capture failures include the exception chain and SrvSurvey/PipeWire throw
-  site, then retry with backoff instead of remaining stuck until restart.
-- The selected portal source can be cleared from Settings before restarting and
-  choosing the Elite Dangerous client window again.
-- Linux no longer registers overlay windows with the unused desktop global-menu
-  service, avoiding repeated D-Bus cleanup warnings when that service is absent.
-
-## Suggested test sequence
-
-1. Enable the Wayland master permission.
-2. Enable only one tracker permission.
-3. For FSS or Rhino, enable that detector in its normal settings panel.
-4. When the desktop picker opens, select the **Elite Dangerous client window**.
-5. Exercise that feature before enabling another tracker.
-
-If capture fails, attach the current log from
-`~/.local/share/SrvSurvey/logs`. The added portal and PipeWire stages should make
-it clear whether the failure occurred during permission selection, remote
-opening, stream negotiation, frame delivery, or cropping.
+The manual download instructions remain available when the AppImage or its
+containing folder is read-only.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.49.3`
-- Tag: `xp-v2.1.3.0-rc.49.3`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.49.3-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.49.3-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage`
+- Version: `2.1.3.0-rc.50`
+- Tag: `xp-v2.1.3.0-rc.50`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.50-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.50-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage.zsync`
 
-Windows and Linux packages are self-contained. Linux packaging tools and the
-AppImage runtime use versioned, checksum-verified downloads. AppImages are
-updated manually through the selected XP release. Numeric Windows FileVersion
+Windows and Linux packages remain self-contained. Numeric Windows FileVersion
 remains `2.1.3.0`.
 
 ## Testing notice
@@ -77,7 +51,3 @@ remains `2.1.3.0`.
 > This remains a work-in-progress preview for testing. Keep a backup of your
 > existing SrvSurvey data and report unexpected behavior through the project
 > issue tracker.
-
-A compositor-approved Elite Dangerous window capture is still required to
-confirm the full portal path on each target Wayland desktop. Pure native Wayland
-is not yet a full-functionality overlay target.

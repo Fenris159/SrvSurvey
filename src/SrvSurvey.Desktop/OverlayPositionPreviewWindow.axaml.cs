@@ -18,6 +18,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private int? scaleOverride;
     private double scaleRenderScaling = 1d;
     private double scaleFactor = 1d;
+    private OverlayTypographyScale typographyScale = OverlayTypographyScale.Default;
     private readonly bool usesRuntimePresentation;
     private readonly IReadOnlyList<OverlayEditorPreviewStateDefinition> previewStates;
     private Control? runtimePresentation;
@@ -210,6 +211,21 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         // fully readable for panel identification.
         PreviewBody.Opacity = opacity;
         PreviewSurface.Opacity = 1d;
+    }
+
+    public void ConfigureTypography(OverlayTypographyScale scale)
+    {
+        ArgumentNullException.ThrowIfNull(scale);
+        typographyScale = scale;
+        RefreshTypographyBaseline();
+    }
+
+    internal void RefreshTypographyBaseline()
+    {
+        if (runtimePresentation is not null)
+        {
+            OverlayTypographyResources.Apply(runtimePresentation, typographyScale);
+        }
     }
 
     private void ApplyContentSize()

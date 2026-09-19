@@ -123,6 +123,25 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     }
 
     [Fact]
+    public void AppImageHelperUsesSelfContainedExtractAndRunMode()
+    {
+        ProcessStartInfo helper = ApplicationUpdateHandoffService.CreateHelperStartInfo(
+            Path.Combine(temporaryDirectory, "SrvSurvey.AppImage"),
+            Path.Combine(temporaryDirectory, "plans", "plan.json"),
+            extractAppImage: true
+        );
+
+        Assert.Equal("1", helper.Environment["APPIMAGE_EXTRACT_AND_RUN"]);
+        Assert.Equal(
+            [
+                ApplicationUpdateBootstrap.ApplyArgument,
+                Path.GetFullPath(Path.Combine(temporaryDirectory, "plans", "plan.json")),
+            ],
+            helper.ArgumentList
+        );
+    }
+
+    [Fact]
     public void ElevatedHelperValidatesInstalledParentProcess()
     {
         ReleaseInstallationHandoffPlan plan = CreatePlan();
@@ -169,6 +188,36 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
                 plan,
                 plan.Preparation.InstallationDirectory,
                 Path.Combine(temporaryDirectory, "wrong.exe")
+            )
+        );
+    }
+
+    [Fact]
+    public void AppImageHealthConfirmationRequiresInstalledAppImagePath()
+    {
+        ReleaseInstallationHandoffPlan plan = CreatePlan();
+        string installedPath = Path.Combine(plan.Preparation.InstallationDirectory, "SrvSurvey.AppImage");
+        plan = plan with
+        {
+            Preparation = plan.Preparation with
+            {
+                EntryPoint = "SrvSurvey.AppImage",
+                Kind = ReleaseInstallationKind.AppImage,
+            },
+        };
+
+        ApplicationUpdateBootstrap.ValidateConfirmationProcess(
+            plan,
+            Path.Combine(temporaryDirectory, "mount"),
+            Path.Combine(temporaryDirectory, "mount", "SrvSurvey.Desktop"),
+            installedPath
+        );
+        Assert.Throws<InvalidDataException>(() =>
+            ApplicationUpdateBootstrap.ValidateConfirmationProcess(
+                plan,
+                Path.Combine(temporaryDirectory, "mount"),
+                Path.Combine(temporaryDirectory, "mount", "SrvSurvey.Desktop"),
+                Path.Combine(temporaryDirectory, "wrong.AppImage")
             )
         );
     }

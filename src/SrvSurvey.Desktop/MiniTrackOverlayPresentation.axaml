@@ -38,9 +38,8 @@
                         Background="{DynamicResource RavenSurfaceBrush}"
                         CornerRadius="7">
                   <StackPanel HorizontalAlignment="Center" Spacing="2">
-                    <TextBlock HorizontalAlignment="Center"
+                    <TextBlock Classes="type-detail" HorizontalAlignment="Center"
                                Foreground="{DynamicResource RavenAccentBrush}"
-                               FontSize="10"
                                FontWeight="Bold"
                                Text="{Binding Name}" />
                     <controls:DirectionalChevronControl
@@ -52,8 +51,7 @@
                         Stroke="{DynamicResource RavenAccentBrush}"
                         StrokeThickness="2" />
                     <TextBlock HorizontalAlignment="Center"
-                               Classes="monospace"
-                               FontSize="9"
+                               Classes="monospace type-detail"
                                Text="{Binding DistanceText}" />
                   </StackPanel>
                 </Border>

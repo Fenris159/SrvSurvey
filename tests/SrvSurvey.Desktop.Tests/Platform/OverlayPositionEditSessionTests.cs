@@ -193,6 +193,42 @@ public sealed class OverlayPositionEditSessionTests
     }
 
     [Fact]
+    public void PerOverlayTypographyIsAnIsolatedEditorChangeAndZeroRemovesTheOverride()
+    {
+        var active = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
+        var session = new OverlayPositionEditSession(active);
+        var scale = new OverlayTypographyScale(0, 25, 0, -10, 0, 0);
+
+        Assert.True(session.SetTypographyScale("PlotFSSInfo", scale));
+
+        Assert.True(session.HasChanges);
+        Assert.Equal(scale, session.GetTypographyScale("PlotFSSInfo"));
+        Assert.Equal(OverlayTypographyScale.Default, session.GetTypographyScale("PlotJumpInfo"));
+        Assert.Null(active.Placements.GetValueOrDefault("PlotFSSInfo")?.TypographyScale);
+
+        Assert.True(session.SetTypographyScale("PlotFSSInfo", OverlayTypographyScale.Default));
+        Assert.False(session.HasChanges);
+        Assert.Null(session.GetPlacement("PlotFSSInfo").TypographyScale);
+    }
+
+    [Theory]
+    [InlineData(OverlayTypographyRole.Header)]
+    [InlineData(OverlayTypographyRole.Title)]
+    [InlineData(OverlayTypographyRole.Value)]
+    [InlineData(OverlayTypographyRole.Body)]
+    [InlineData(OverlayTypographyRole.Detail)]
+    [InlineData(OverlayTypographyRole.Caption)]
+    public void TypographyRolesNormalizeIndependentPercentages(OverlayTypographyRole role)
+    {
+        OverlayTypographyScale updated = OverlayTypographyScale.Default.WithPercent(role, 13);
+
+        Assert.Equal(15, updated.GetPercent(role));
+        Assert.False(updated.IsDefault);
+        Assert.Equal(-50, OverlayTypographyScale.Normalize(-80));
+        Assert.Equal(0, OverlayTypographyScale.Normalize(double.NaN));
+    }
+
+    [Fact]
     public void GlobalAndPerOverlayOpacityChangesRemainInTheEditSession()
     {
         var active = new LegacyOverlayLayout(

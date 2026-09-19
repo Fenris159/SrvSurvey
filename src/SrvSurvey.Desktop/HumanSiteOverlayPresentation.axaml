@@ -21,20 +21,18 @@
             RowDefinitions="Auto,Auto,Auto,Auto,Auto"
             ColumnSpacing="6"
             RowSpacing="2">
-        <TextBlock Classes="overlay-header" Text="HUMAN SETTLEMENT" />
+        <TextBlock Classes="overlay-header type-header" Text="HUMAN SETTLEMENT" />
         <StackPanel Grid.Row="1"
                     Grid.ColumnSpan="2"
                     Orientation="Horizontal"
                     Spacing="7">
             <Border Classes="badge"
                     IsVisible="{Binding HumanSite.IsQuestTagged}">
-              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                         FontSize="9"
+              <TextBlock Classes="type-detail" Foreground="{DynamicResource RavenWarningBrush}"
                          FontWeight="Bold"
                          Text="Q" />
             </Border>
-            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="14"
+            <TextBlock Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                        FontWeight="SemiBold"
                        Text="{Binding HumanSite.SiteName}"
                        TextTrimming="CharacterEllipsis" />
@@ -43,29 +41,25 @@
                     HorizontalAlignment="Right"
                     Spacing="2">
           <Border Classes="badge" HorizontalAlignment="Right">
-            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="8"
+            <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenAccentBrush}"
                        FontWeight="Bold"
                        Text="{Binding InputMode}" />
           </Border>
         </StackPanel>
         <TextBlock Grid.Row="2"
                    Grid.ColumnSpan="2"
-                   Classes="muted"
-                   FontSize="10"
+                   Classes="muted type-detail"
                    Text="{Binding HumanSite.TemplateText}"
                    TextWrapping="Wrap" />
-        <TextBlock Grid.Row="3"
+        <TextBlock Classes="type-detail" Grid.Row="3"
                    Grid.ColumnSpan="2"
                    Foreground="{DynamicResource RavenWarningBrush}"
-                   FontSize="10"
                    FontWeight="SemiBold"
                    IsVisible="{Binding HumanSite.HasThreatLevel}"
                    Text="{Binding HumanSite.ThreatLevelText}" />
         <TextBlock Grid.Row="4"
                    Grid.ColumnSpan="2"
-                   Classes="monospace"
-                   FontSize="10"
+                   Classes="monospace type-detail"
                    Text="{Binding HumanSite.ZoomText}" />
       </Grid>
 
@@ -111,32 +105,27 @@
                 BorderThickness="2"
                 CornerRadius="8"
                 IsVisible="{Binding HumanSite.ShowShipDismissalWarning}">
-          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
-                     FontSize="11"
+          <TextBlock Classes="type-body" Foreground="{DynamicResource RavenDangerBrush}"
                      FontWeight="Bold"
                      Text="{Binding HumanSite.ShipDismissalWarningText}" />
         </Border>
 
         <StackPanel Spacing="4"
                     IsVisible="{Binding !HumanSite.HasKnownGeometry}">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="12"
+          <TextBlock Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding HumanSite.GeometryStatus}"
                      TextTrimming="CharacterEllipsis" />
-          <TextBlock Classes="muted"
-                     FontSize="9"
+          <TextBlock Classes="muted type-detail"
                      Text="Land near pad centre to align the settlement map."
                      TextWrapping="Wrap" />
-          <TextBlock Classes="monospace"
-                     FontSize="10"
+          <TextBlock Classes="monospace type-detail"
                      Text="{Binding HumanSite.ApproachDistanceText}"
                      TextTrimming="CharacterEllipsis" />
-          <TextBlock FontSize="9"
+          <TextBlock Classes="type-detail"
                      Text="{Binding HumanSite.FactionText}"
                      TextTrimming="CharacterEllipsis" />
-          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                     FontSize="10"
+          <TextBlock Classes="type-detail" Foreground="{DynamicResource RavenWarningBrush}"
                      FontWeight="SemiBold"
                      IsVisible="{Binding HumanSite.HasDockingStatus}"
                      Text="{Binding HumanSite.DockingStatusText}"
@@ -146,17 +135,14 @@
 
       <StackPanel Grid.Row="2" Spacing="2">
         <WrapPanel Orientation="Horizontal">
-          <TextBlock Classes="monospace"
+          <TextBlock Classes="monospace type-detail"
                      Margin="0,0,10,0"
-                     FontSize="9"
                      Text="{Binding HumanSite.CommanderPositionText}" />
-          <TextBlock Classes="monospace"
-                     FontSize="9"
+          <TextBlock Classes="monospace type-detail"
                      Text="{Binding HumanSite.DistanceText}" />
         </WrapPanel>
         <StackPanel Spacing="2">
-          <TextBlock Classes="muted"
-                     FontSize="8"
+          <TextBlock Classes="muted type-caption"
                      Text="{Binding PlatformStatus}"
                      TextWrapping="Wrap" />
         </StackPanel>

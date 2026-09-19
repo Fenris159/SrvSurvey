@@ -43,6 +43,8 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
     private const string PackageNamePrefix = "SrvSurvey-XP";
     private const string ReleaseIndexName = "release-index.json";
     private const string WinX64RuntimeIdentifier = "win-x64";
+    private const string LinuxX64RuntimeIdentifier = "linux-x64";
+    public const string LinuxX64AppImageRuntimeIdentifier = "linux-x64-appimage";
     private static readonly Uri DefaultDevelopmentReleasesApiUri = new(
         "https://api.github.com/repos/Fenris159/SrvSurvey/releases?per_page=100"
     );
@@ -152,7 +154,9 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 
         if (OperatingSystem.IsLinux())
         {
-            return "linux-x64";
+            return string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("APPIMAGE"))
+                ? LinuxX64RuntimeIdentifier
+                : LinuxX64AppImageRuntimeIdentifier;
         }
 
         throw new PlatformNotSupportedException("Automatic updates are available only on Windows and Linux.");
@@ -270,9 +274,14 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         {
             using var document = JsonDocument.Parse(bytes);
             JsonElement root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                throw new InvalidDataException("The cross-platform release index is not an object.");
+            }
+
+            int schemaVersion = ReadRequiredInt32(root, "schemaVersion");
             if (
-                root.ValueKind != JsonValueKind.Object
-                || ReadRequiredInt32(root, "schemaVersion") != 1
+                schemaVersion is not (1 or 2)
                 || !string.Equals(ReadRequiredString(root, "product"), ProductName, StringComparison.Ordinal)
             )
             {
@@ -299,9 +308,12 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             }
 
             JsonElement[] packages = packagesElement.EnumerateArray().ToArray();
-            if (packages.Length != 2)
+            int expectedPackageCount = schemaVersion == 1 ? 2 : 3;
+            if (packages.Length != expectedPackageCount)
             {
-                throw new InvalidDataException("The release index must contain exactly two platform packages.");
+                throw new InvalidDataException(
+                    $"Release-index schema {schemaVersion} must contain exactly {expectedPackageCount} packages."
+                );
             }
 
             CrossPlatformReleasePackage windows = ParseIndexedPackage(
@@ -314,11 +326,30 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             CrossPlatformReleasePackage linux = ParseIndexedPackage(
                 packages,
                 expectedVersion,
-                "linux-x64",
+                LinuxX64RuntimeIdentifier,
                 "tar.gz",
                 assets
             );
-            return runtimeIdentifier == WinX64RuntimeIdentifier ? windows : linux;
+            CrossPlatformReleasePackage? appImage =
+                schemaVersion == 2
+                    ? ParseIndexedPackage(
+                        packages,
+                        expectedVersion,
+                        LinuxX64AppImageRuntimeIdentifier,
+                        "appimage",
+                        assets
+                    )
+                    : null;
+            return runtimeIdentifier switch
+            {
+                WinX64RuntimeIdentifier => windows,
+                LinuxX64RuntimeIdentifier => linux,
+                LinuxX64AppImageRuntimeIdentifier => appImage
+                    ?? throw new InvalidDataException("The release does not contain an indexed AppImage update."),
+                _ => throw new PlatformNotSupportedException(
+                    $"The runtime '{runtimeIdentifier}' has no SrvSurvey update package."
+                ),
+            };
         }
         catch (JsonException exception)
         {
@@ -343,8 +374,13 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
                 )
             )
             .ToArray();
-        string suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
-        string expectedName = $"{PackageNamePrefix}-{version}-{runtimeIdentifier}{suffix}";
+        string expectedName = archiveType switch
+        {
+            "zip" => $"{PackageNamePrefix}-{version}-{runtimeIdentifier}.zip",
+            "tar.gz" => $"{PackageNamePrefix}-{version}-{runtimeIdentifier}.tar.gz",
+            "appimage" => $"{PackageNamePrefix}-{version}-x86_64.AppImage",
+            _ => throw new InvalidDataException($"The release index has an unsupported package type '{archiveType}'."),
+        };
         if (
             matching.Length != 1
             || !string.Equals(ReadRequiredString(matching[0], "archive"), expectedName, StringComparison.Ordinal)
@@ -521,7 +557,10 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 
     private static void ValidateRuntimeIdentifier(string runtimeIdentifier)
     {
-        if (runtimeIdentifier is not (WinX64RuntimeIdentifier or "linux-x64"))
+        if (
+            runtimeIdentifier
+            is not (WinX64RuntimeIdentifier or LinuxX64RuntimeIdentifier or LinuxX64AppImageRuntimeIdentifier)
+        )
         {
             throw new PlatformNotSupportedException(
                 $"The runtime '{runtimeIdentifier}' has no SrvSurvey update package."

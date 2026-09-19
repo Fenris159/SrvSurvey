@@ -32,9 +32,25 @@
               CornerRadius="7"
               IsVisible="{Binding IsOverlaySettingsOpen}">
         <StackPanel Spacing="7">
-          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                     FontWeight="SemiBold"
-                     Text="{Binding SelectedOverlaySettingsTitle}" />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Text="{Binding SelectedOverlaySettingsTitle}" />
+            <Button x:Name="TypographyButton"
+                    Grid.Column="1"
+                    Width="32"
+                    Height="32"
+                    Padding="0"
+                    Command="{Binding ToggleTypographySettingsCommand}"
+                    FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    ToolTip.Tip="Adjust text size by role for this panel"
+                    Content="Aa" />
+          </Grid>
           <TextBlock Classes="muted"
                      FontSize="10"
                      Text="Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor."
@@ -77,6 +93,51 @@
               </Grid>
             </StackPanel>
           </Grid>
+          <Popup PlacementTarget="{Binding #TypographyButton}"
+                 Placement="RightEdgeAlignedTop"
+                 IsLightDismissEnabled="True"
+                 IsOpen="{Binding IsTypographySettingsOpen, Mode=TwoWay}">
+            <Border Width="420"
+                    Padding="12"
+                    Background="{DynamicResource RavenWindowBrush}"
+                    BorderBrush="{DynamicResource RavenAccentBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+              <StackPanel Spacing="8">
+                <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                           FontWeight="SemiBold"
+                           Text="Text scale from baseline" />
+                <TextBlock Classes="muted"
+                           FontSize="10"
+                           Text="Each role grows or shrinks independently. Zero uses the theme's baseline size."
+                           TextWrapping="Wrap" />
+                <ItemsControl ItemsSource="{Binding TypographyRoles}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:OverlayTypographyRoleViewModel">
+                      <Grid Margin="0,2"
+                            ColumnDefinitions="76,*,52"
+                            ColumnSpacing="8">
+                        <TextBlock VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding DisplayName}" />
+                        <Slider Grid.Column="1"
+                                Minimum="-50"
+                                Maximum="100"
+                                TickFrequency="5"
+                                IsSnapToTickEnabled="True"
+                                Value="{Binding Percent, Mode=TwoWay}" />
+                        <TextBlock Grid.Column="2"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding Label}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+          </Popup>
         </StackPanel>
       </Border>
       <Grid x:Name="EditorToolbarPanel"
@@ -110,7 +171,7 @@
                 FontSize="28"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
-                ToolTip.Tip="Save overlay positions, opacity, and scale"
+                ToolTip.Tip="Save overlay positions and appearance"
                 Content="&#x2713;" />
         <Button Grid.Column="4"
                 Width="40"
@@ -120,7 +181,7 @@
                 FontSize="30"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
-                ToolTip.Tip="Cancel overlay position, opacity, and scale changes"
+                ToolTip.Tip="Cancel overlay position and appearance changes"
                 Content="&#x00D7;" />
       </Grid>
       <Grid Grid.Row="2"
@@ -148,7 +209,7 @@
                  HorizontalAlignment="Center"
                  Classes="muted"
                  FontSize="11"
-                 Text="Right Click Panels to edit individual Opacity/Scale" />
+                 Text="Right-click panels to edit opacity, panel scale, and text scale" />
       <TextBlock Grid.Row="4"
                  Classes="muted"
                  FontSize="11"

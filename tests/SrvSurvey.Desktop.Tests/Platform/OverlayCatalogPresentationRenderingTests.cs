@@ -51,9 +51,9 @@ public sealed class OverlayCatalogPresentationRenderingTests
             Assert.Contains(
                 mining.GetVisualDescendants().OfType<Border>(),
                 border =>
-                    Math.Abs(border.Width - 24) < 0.001
-                    && Math.Abs(border.Height - 24) < 0.001
-                    && Math.Abs(border.CornerRadius.TopLeft - 12) < 0.001
+                    Math.Abs(border.MinWidth - 24) < 0.001
+                    && Math.Abs(border.MinHeight - 24) < 0.001
+                    && border.CornerRadius.TopLeft >= 12
                     && border.Background is ISolidColorBrush brush
                     && brush.Color == Color.Parse("#FF4500")
             );
@@ -189,6 +189,92 @@ public sealed class OverlayCatalogPresentationRenderingTests
         }
 
         Assert.Empty(emptyFrames);
+    }
+
+    [AvaloniaFact]
+    public void FssInformationRemeasuresAtMaximumPerRoleTypographyScale()
+    {
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        try
+        {
+            OverlayThemeResources.Apply(preview);
+            preview.ApplyRuntimePresentationTheme();
+            preview.ConfigureTypography(new OverlayTypographyScale(100, 100, 100, 100, 100, 100));
+            preview.Show();
+
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            string? output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                Directory.CreateDirectory(output);
+                using FileStream stream = File.Create(Path.Combine(output, "PlotFSSInfo-typography-max.png"));
+                frame.Save(stream, PngBitmapEncoderOptions.Default);
+            }
+
+            Control presentation = Assert.IsType<Control>(preview.RuntimePresentation, exactMatch: false);
+            Assert.InRange(presentation.Bounds.Width, 270, 540);
+            TextBlock[] visibleText = presentation
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Where(text => text.IsVisible && text.Bounds.Height > 0 && !string.IsNullOrEmpty(text.Text))
+                .ToArray();
+            Assert.NotEmpty(visibleText);
+            Assert.All(visibleText, text => Assert.True(text.Bounds.Height >= text.FontSize, text.Text));
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void EveryPanelRemeasuresVisibleTextAtMaximumTypographyScale()
+    {
+        var failures = new List<string>();
+        var maximum = new OverlayTypographyScale(100, 100, 100, 100, 100, 100);
+        string? output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+        if (!string.IsNullOrWhiteSpace(output))
+        {
+            Directory.CreateDirectory(output);
+        }
+
+        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
+        {
+            var preview = new OverlayPositionPreviewWindow(definition);
+            try
+            {
+                OverlayThemeResources.Apply(preview);
+                preview.ApplyRuntimePresentationTheme();
+                preview.ConfigureTypography(maximum);
+                preview.Show();
+                using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+                if (!string.IsNullOrWhiteSpace(output) && frame is not null)
+                {
+                    using FileStream stream = File.Create(
+                        Path.Combine(output, $"{definition.Name}-typography-max.png")
+                    );
+                    frame.Save(stream, PngBitmapEncoderOptions.Default);
+                }
+
+                Control presentation = Assert.IsType<Control>(preview.RuntimePresentation, exactMatch: false);
+                failures.AddRange(
+                    presentation
+                        .GetVisualDescendants()
+                        .OfType<TextBlock>()
+                        .Where(text => text.IsVisible && text.Bounds.Height > 0 && text.Bounds.Height < text.FontSize)
+                        .Select(text =>
+                            $"{definition.Name}: '{text.Text}' has {text.Bounds.Height:0.#} px for {text.FontSize:0.#} px text"
+                        )
+                );
+            }
+            finally
+            {
+                preview.Close();
+            }
+        }
+
+        Assert.Empty(failures);
     }
 
     [AvaloniaFact]

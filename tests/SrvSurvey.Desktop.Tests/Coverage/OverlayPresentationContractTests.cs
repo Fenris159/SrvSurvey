@@ -704,10 +704,19 @@ public sealed class OverlayPresentationContractTests
 
         if (isContentSized)
         {
-            Assert.Contains($"MaxWidth=\"{expectedWidth}\"", presentation);
+            if (plotterName == "PlotFSSInfo")
+            {
+                Assert.Contains($"MinWidth=\"{expectedWidth}\"", presentation);
+                Assert.Contains("MaxWidth=\"540\"", presentation);
+                Assert.Contains("MaxWidth=\"540\"", window);
+            }
+            else
+            {
+                Assert.Contains($"MaxWidth=\"{expectedWidth}\"", presentation);
+                Assert.Contains($"MaxWidth=\"{expectedWidth}\"", window);
+            }
             Assert.Contains("HorizontalAlignment=\"Left\"", presentation);
             Assert.Contains("MinWidth=\"1\"", window);
-            Assert.Contains($"MaxWidth=\"{expectedWidth}\"", window);
         }
         else
         {
@@ -763,6 +772,24 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("TextBlock.overlay-detail", typography);
         Assert.Contains("TextBlock.overlay-caption", typography);
         Assert.DoesNotContain("TextBlock[FontSize=", typography);
+
+        foreach (string presentationPath in Directory.GetFiles(desktop, "*OverlayPresentation.axaml"))
+        {
+            var document = XDocument.Load(presentationPath);
+            XElement[] textBlocks = document
+                .Descendants()
+                .Where(element => element.Name.LocalName == "TextBlock")
+                .ToArray();
+            Assert.All(
+                textBlocks,
+                textBlock =>
+                    Assert.Contains(
+                        textBlock.Attribute("Classes")?.Value.Split(' ') ?? [],
+                        className => className.StartsWith("type-", StringComparison.Ordinal)
+                    )
+            );
+            Assert.All(textBlocks, textBlock => Assert.Null(textBlock.Attribute("LineHeight")));
+        }
     }
 
     [Fact]
@@ -1253,7 +1280,8 @@ public sealed class OverlayPresentationContractTests
                     && string.Equals(element.Attribute("Text")?.Value, expected.Value, StringComparison.Ordinal)
                 );
 
-            Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
+            Assert.Contains("overlay-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
+            Assert.Contains("type-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
             Assert.Null(header.Attribute("Foreground"));
             Assert.Null(header.Attribute("FontSize"));
         }
@@ -1302,7 +1330,8 @@ public sealed class OverlayPresentationContractTests
                 element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "FLIGHT WARNING"
             );
 
-        Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
+        Assert.Contains("overlay-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
+        Assert.Contains("type-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
         Assert.Equal("{Binding Survey.FlightWarningBrush}", header.Attribute("Foreground")?.Value);
         Assert.Null(header.Attribute("FontSize"));
         Assert.Null(header.Attribute("FontWeight"));
@@ -1334,7 +1363,8 @@ public sealed class OverlayPresentationContractTests
                     )
                 );
 
-            Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
+            Assert.Contains("overlay-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
+            Assert.Contains("type-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
             Assert.Null(header.Attribute("Foreground"));
             Assert.Null(header.Attribute("FontSize"));
         }
@@ -1348,7 +1378,10 @@ public sealed class OverlayPresentationContractTests
             )
             .ToArray();
         Assert.NotEmpty(statusHeaders);
-        Assert.All(statusHeaders, header => Assert.Equal("overlay-header", header.Attribute("Classes")?.Value));
+        Assert.All(
+            statusHeaders,
+            header => Assert.Contains("overlay-header", header.Attribute("Classes")?.Value.Split(' ') ?? [])
+        );
 
         foreach (
             string? fileName in new[]
@@ -1364,8 +1397,8 @@ public sealed class OverlayPresentationContractTests
         }
 
         string guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
-        Assert.Contains("Classes=\"guardian-title\"", guardianSite);
-        Assert.DoesNotContain("Classes=\"overlay-header\"", guardianSite);
+        Assert.Contains("Classes=\"guardian-title type-title\"", guardianSite);
+        Assert.DoesNotContain("overlay-header", guardianSite);
     }
 
     private static string FindRepositoryRoot()
