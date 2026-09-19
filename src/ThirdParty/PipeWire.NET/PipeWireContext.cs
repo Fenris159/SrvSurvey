@@ -111,7 +111,7 @@ public sealed class PipeWireContext : IAsyncDisposable
             return Task.CompletedTask;
         }
 
-        StartNative(remoteFileDescriptor);
+        StartNative(remoteFileDescriptor, transferredHandle: null);
         _started = true;
         return Task.CompletedTask;
     }
@@ -137,9 +137,9 @@ public sealed class PipeWireContext : IAsyncDisposable
                 throw new InvalidOperationException("Could not duplicate the desktop portal PipeWire descriptor.");
 
             using var duplicateHandle = new SafeFileHandle(duplicate, ownsHandle: true);
-            Task start = StartAsync(duplicate, cancellationToken);
-            duplicateHandle.SetHandleAsInvalid();
-            return start;
+            StartNative(duplicate, duplicateHandle);
+            _started = true;
+            return Task.CompletedTask;
         }
         finally
         {
@@ -186,7 +186,7 @@ public sealed class PipeWireContext : IAsyncDisposable
         }
     }
 
-    private unsafe void StartNative(int remoteFileDescriptor)
+    private unsafe void StartNative(int remoteFileDescriptor, SafeFileHandle? transferredHandle)
     {
         if (Native.pw_thread_loop_start(_loop) < 0)
         {
@@ -197,6 +197,7 @@ public sealed class PipeWireContext : IAsyncDisposable
         Native.pw_thread_loop_lock(_loop);
         try
         {
+            transferredHandle?.SetHandleAsInvalid();
             _core = Native.pw_context_connect_fd(
                 _context,
                 remoteFileDescriptor,
