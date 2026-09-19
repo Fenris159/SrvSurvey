@@ -1765,6 +1765,10 @@
       "translation": "Betrag"
     },
     {
+      "source": "An AppImage update requires the APPIMAGE launch path.",
+      "translation": "Für ein AppImage-Update ist der APPIMAGE-Startpfad erforderlich."
+    },
+    {
       "source": "An Inara API key is saved for {0}.",
       "translation": "Für {0} wird ein Inara API-Schlüssel gespeichert."
     },
@@ -7421,8 +7425,8 @@
       "translation": "Runter"
     },
     {
-      "source": "Download hash verified; validating archive files...",
-      "translation": "Download-Hash verifiziert; Archivdateien werden validiert..."
+      "source": "Download hash verified; validating package...",
+      "translation": "Download-Hash verifiziert; Paket validieren..."
     },
     {
       "source": "Download star system, bodies and organic signals data from EDSM, Spansh and Canonn",
@@ -25353,8 +25357,8 @@
       "translation": "Der Inhalt des Overlay-Fensters kann nicht skaliert werden."
     },
     {
-      "source": "The package hash is valid. Extracting to an isolated staging directory.",
-      "translation": "Der Paket-Hash ist gültig. Extrahieren in ein isoliertes Staging-Verzeichnis."
+      "source": "The package hash is valid. Preparing an isolated update candidate.",
+      "translation": "Der Paket-Hash ist gültig. Vorbereiten eines isolierten Update-Kandidaten."
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
@@ -25685,6 +25689,10 @@
       "translation": "Der ausgewählte Bereich wird während des Exports über alle indizierten {0}-Ereignisse hinweg gescannt"
     },
     {
+      "source": "The selected release package is not an AppImage update.",
+      "translation": "Das ausgewählte Release-Paket ist kein AppImage-Update."
+    },
+    {
       "source": "The selected route has no systems and cannot be activated.",
       "translation": "Die ausgewählte Route hat keine Systeme und kann nicht aktiviert werden."
     },
@@ -25931,10 +25939,6 @@
     {
       "source": "The update helper stopped because SrvSurvey did not close. The prepared update was removed and no installation files were changed. Confirm again to retry.",
       "translation": "Der Update-Helfer wurde gestoppt, weil SrvSurvey nicht geschlossen wurde. Das vorbereitete Update wurde entfernt und es wurden keine Installationsdateien geändert. Bestätigen Sie erneut, um es erneut zu versuchen."
-    },
-    {
-      "source": "The update outcome was not opened by its installation directory.",
-      "translation": "Das Update-Ergebnis wurde nicht im Installationsverzeichnis geöffnet."
     },
     {
       "source": "The update stopped, but its prepared files could not be cleaned up safely. Restart SrvSurvey or inspect Update Diagnostics before retrying. {0}",
@@ -26935,6 +26939,10 @@
     {
       "source": "Update candidate cleanup requires attention.",
       "translation": "Die Bereinigung von Update-Kandidaten erfordert Aufmerksamkeit."
+    },
+    {
+      "source": "Update health confirmation did not come from the installed AppImage.",
+      "translation": "Die Bestätigung des Update-Zustands kam nicht vom installierten AppImage."
     },
     {
       "source": "Update health confirmation did not come from the installed replacement.",
@@ -33883,6 +33891,10 @@
       "translation": "Cantidad"
     },
     {
+      "source": "An AppImage update requires the APPIMAGE launch path.",
+      "translation": "Una actualización de AppImage requiere la ruta de inicio de APPIMAGE."
+    },
+    {
       "source": "An Inara API key is saved for {0}.",
       "translation": "Se guarda una clave API Inara para {0}."
     },
@@ -39539,8 +39551,8 @@
       "translation": "abajo"
     },
     {
-      "source": "Download hash verified; validating archive files...",
-      "translation": "Descargar hash verificado; validando archivos comprimidos..."
+      "source": "Download hash verified; validating package...",
+      "translation": "Descargar hash verificado; validando paquete..."
     },
     {
       "source": "Download star system, bodies and organic signals data from EDSM, Spansh and Canonn",
@@ -57471,8 +57483,8 @@
       "translation": "El contenido de la ventana superpuesta no se puede escalar."
     },
     {
-      "source": "The package hash is valid. Extracting to an isolated staging directory.",
-      "translation": "El hash del paquete es válido. Extraer a un directorio provisional aislado."
+      "source": "The package hash is valid. Preparing an isolated update candidate.",
+      "translation": "El hash del paquete es válido. Preparando un candidato de actualización aislado."
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
@@ -57803,6 +57815,10 @@
       "translation": "El rango seleccionado se escaneará durante la exportación en todos los eventos indexados {0}"
     },
     {
+      "source": "The selected release package is not an AppImage update.",
+      "translation": "El paquete de versión seleccionado no es una actualización de AppImage."
+    },
+    {
       "source": "The selected route has no systems and cannot be activated.",
       "translation": "La ruta seleccionada no tiene sistemas y no se puede activar."
     },
@@ -58049,10 +58065,6 @@
     {
       "source": "The update helper stopped because SrvSurvey did not close. The prepared update was removed and no installation files were changed. Confirm again to retry.",
       "translation": "El asistente de actualización se detuvo porque SrvSurvey no se cerró. La actualización preparada se eliminó y no se modificó ningún archivo de instalación. Confirme nuevamente para volver a intentarlo."
-    },
-    {
-      "source": "The update outcome was not opened by its installation directory.",
-      "translation": "El resultado de la actualización no fue abierto por su directorio de instalación."
     },
     {
       "source": "The update stopped, but its prepared files could not be cleaned up safely. Restart SrvSurvey or inspect Update Diagnostics before retrying. {0}",
@@ -59053,6 +59065,10 @@
     {
       "source": "Update candidate cleanup requires attention.",
       "translation": "La limpieza de candidatos de actualización requiere atención."
+    },
+    {
+      "source": "Update health confirmation did not come from the installed AppImage.",
+      "translation": "La confirmación del estado de la actualización no provino de la AppImage instalada."
     },
     {
       "source": "Update health confirmation did not come from the installed replacement.",
@@ -66001,6 +66017,10 @@
       "translation": "Montant"
     },
     {
+      "source": "An AppImage update requires the APPIMAGE launch path.",
+      "translation": "Une mise à jour AppImage nécessite le chemin de lancement APPIMAGE."
+    },
+    {
       "source": "An Inara API key is saved for {0}.",
       "translation": "Une clé API Inara est enregistrée pour {0}."
     },
@@ -71657,8 +71677,8 @@
       "translation": "Vers le bas"
     },
     {
-      "source": "Download hash verified; validating archive files...",
-      "translation": "Hachage de téléchargement vérifié ; validation des fichiers d'archives..."
+      "source": "Download hash verified; validating package...",
+      "translation": "Hachage de téléchargement vérifié ; validation du package..."
     },
     {
       "source": "Download star system, bodies and organic signals data from EDSM, Spansh and Canonn",
@@ -89589,8 +89609,8 @@
       "translation": "Le contenu de la fenêtre de superposition ne peut pas être mis à l'échelle."
     },
     {
-      "source": "The package hash is valid. Extracting to an isolated staging directory.",
-      "translation": "Le hachage du package est valide. Extraction vers un répertoire intermédiaire isolé."
+      "source": "The package hash is valid. Preparing an isolated update candidate.",
+      "translation": "Le hachage du package est valide. Préparation d'une mise à jour candidate isolée."
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
@@ -89921,6 +89941,10 @@
       "translation": "La plage sélectionnée sera analysée lors de l'exportation sur tous les événements indexés {0}."
     },
     {
+      "source": "The selected release package is not an AppImage update.",
+      "translation": "Le package de version sélectionné n’est pas une mise à jour AppImage."
+    },
+    {
       "source": "The selected route has no systems and cannot be activated.",
       "translation": "L'itinéraire sélectionné n'a aucun système et ne peut pas être activé."
     },
@@ -90167,10 +90191,6 @@
     {
       "source": "The update helper stopped because SrvSurvey did not close. The prepared update was removed and no installation files were changed. Confirm again to retry.",
       "translation": "L'assistant de mise à jour s'est arrêté car SrvSurvey ne s'est pas fermé. La mise à jour préparée a été supprimée et aucun fichier d'installation n'a été modifié. Confirmez à nouveau pour réessayer."
-    },
-    {
-      "source": "The update outcome was not opened by its installation directory.",
-      "translation": "Le résultat de la mise à jour n'a pas été ouvert par son répertoire d'installation."
     },
     {
       "source": "The update stopped, but its prepared files could not be cleaned up safely. Restart SrvSurvey or inspect Update Diagnostics before retrying. {0}",
@@ -91171,6 +91191,10 @@
     {
       "source": "Update candidate cleanup requires attention.",
       "translation": "Le nettoyage des candidats à la mise à jour nécessite une certaine attention."
+    },
+    {
+      "source": "Update health confirmation did not come from the installed AppImage.",
+      "translation": "La confirmation de l’état de la mise à jour ne provient pas de l’AppImage installée."
     },
     {
       "source": "Update health confirmation did not come from the installed replacement.",
@@ -98119,6 +98143,10 @@
       "translation": "Quantidade"
     },
     {
+      "source": "An AppImage update requires the APPIMAGE launch path.",
+      "translation": "Uma atualização do AppImage requer o caminho de inicialização do APPIMAGE."
+    },
+    {
       "source": "An Inara API key is saved for {0}.",
       "translation": "Uma chave de API Inara é salva para {0}."
     },
@@ -103775,8 +103803,8 @@
       "translation": "Para baixo"
     },
     {
-      "source": "Download hash verified; validating archive files...",
-      "translation": "Hash de download verificado; validando arquivos compactados..."
+      "source": "Download hash verified; validating package...",
+      "translation": "Hash de download verificado; validando pacote..."
     },
     {
       "source": "Download star system, bodies and organic signals data from EDSM, Spansh and Canonn",
@@ -121707,8 +121735,8 @@
       "translation": "O conteúdo da janela de sobreposição não pode ser dimensionado."
     },
     {
-      "source": "The package hash is valid. Extracting to an isolated staging directory.",
-      "translation": "O hash do pacote é válido. Extraindo para um diretório de teste isolado."
+      "source": "The package hash is valid. Preparing an isolated update candidate.",
+      "translation": "O hash do pacote é válido. Preparando um candidato de atualização isolado."
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
@@ -122039,6 +122067,10 @@
       "translation": "O intervalo selecionado será verificado durante a exportação em todos os eventos indexados {0}"
     },
     {
+      "source": "The selected release package is not an AppImage update.",
+      "translation": "O pacote de lançamento selecionado não é uma atualização do AppImage."
+    },
+    {
       "source": "The selected route has no systems and cannot be activated.",
       "translation": "A rota selecionada não possui sistemas e não pode ser ativada."
     },
@@ -122285,10 +122317,6 @@
     {
       "source": "The update helper stopped because SrvSurvey did not close. The prepared update was removed and no installation files were changed. Confirm again to retry.",
       "translation": "O auxiliar de atualização parou porque SrvSurvey não fechou. A atualização preparada foi removida e nenhum arquivo de instalação foi alterado. Confirme novamente para tentar novamente."
-    },
-    {
-      "source": "The update outcome was not opened by its installation directory.",
-      "translation": "O resultado da atualização não foi aberto pelo diretório de instalação."
     },
     {
       "source": "The update stopped, but its prepared files could not be cleaned up safely. Restart SrvSurvey or inspect Update Diagnostics before retrying. {0}",
@@ -123289,6 +123317,10 @@
     {
       "source": "Update candidate cleanup requires attention.",
       "translation": "A limpeza do candidato à atualização requer atenção."
+    },
+    {
+      "source": "Update health confirmation did not come from the installed AppImage.",
+      "translation": "A confirmação de integridade da atualização não veio do AppImage instalado."
     },
     {
       "source": "Update health confirmation did not come from the installed replacement.",
@@ -130237,6 +130269,10 @@
       "translation": "Сумма"
     },
     {
+      "source": "An AppImage update requires the APPIMAGE launch path.",
+      "translation": "Для обновления AppImage требуется путь запуска APPIMAGE."
+    },
+    {
       "source": "An Inara API key is saved for {0}.",
       "translation": "Ключ API Inara сохранен для {0}."
     },
@@ -135893,8 +135929,8 @@
       "translation": "Вниз"
     },
     {
-      "source": "Download hash verified; validating archive files...",
-      "translation": "Хэш загрузки проверен; проверка архивных файлов..."
+      "source": "Download hash verified; validating package...",
+      "translation": "Хэш загрузки проверен; проверка пакета..."
     },
     {
       "source": "Download star system, bodies and organic signals data from EDSM, Spansh and Canonn",
@@ -153825,8 +153861,8 @@
       "translation": "Содержимое окна наложения нельзя масштабировать."
     },
     {
-      "source": "The package hash is valid. Extracting to an isolated staging directory.",
-      "translation": "Хэш пакета действителен. Извлечение в изолированный промежуточный каталог."
+      "source": "The package hash is valid. Preparing an isolated update candidate.",
+      "translation": "Хэш пакета действителен. Подготовка изолированного кандидата на обновление."
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
@@ -154157,6 +154193,10 @@
       "translation": "Выбранный диапазон будет сканироваться во время экспорта по всем индексированным событиям {0}."
     },
     {
+      "source": "The selected release package is not an AppImage update.",
+      "translation": "Выбранный пакет выпуска не является обновлением AppImage."
+    },
+    {
       "source": "The selected route has no systems and cannot be activated.",
       "translation": "Выбранный маршрут не имеет систем и не может быть активирован."
     },
@@ -154403,10 +154443,6 @@
     {
       "source": "The update helper stopped because SrvSurvey did not close. The prepared update was removed and no installation files were changed. Confirm again to retry.",
       "translation": "Помощник по обновлению остановился, поскольку SrvSurvey не закрылся. Подготовленное обновление было удалено, установочные файлы не были изменены. Подтвердите еще раз, чтобы повторить попытку."
-    },
-    {
-      "source": "The update outcome was not opened by its installation directory.",
-      "translation": "Результат обновления не был открыт в каталоге установки."
     },
     {
       "source": "The update stopped, but its prepared files could not be cleaned up safely. Restart SrvSurvey or inspect Update Diagnostics before retrying. {0}",
@@ -155407,6 +155443,10 @@
     {
       "source": "Update candidate cleanup requires attention.",
       "translation": "Очистка кандидатов на обновление требует внимания."
+    },
+    {
+      "source": "Update health confirmation did not come from the installed AppImage.",
+      "translation": "Подтверждение работоспособности обновления не пришло от установленного AppImage."
     },
     {
       "source": "Update health confirmation did not come from the installed replacement.",
@@ -162355,6 +162395,10 @@
       "translation": "金额"
     },
     {
+      "source": "An AppImage update requires the APPIMAGE launch path.",
+      "translation": "AppImage 更新需要 APPIMAGE 启动路径。"
+    },
+    {
       "source": "An Inara API key is saved for {0}.",
       "translation": "已为 {0} 保存 Inara API 密钥。"
     },
@@ -168011,8 +168055,8 @@
       "translation": "向下"
     },
     {
-      "source": "Download hash verified; validating archive files...",
-      "translation": "下载哈希已验证；正在验证存档文件..."
+      "source": "Download hash verified; validating package...",
+      "translation": "下载哈希已验证；正在验证包..."
     },
     {
       "source": "Download star system, bodies and organic signals data from EDSM, Spansh and Canonn",
@@ -185943,8 +185987,8 @@
       "translation": "覆盖窗口内容无法缩放。"
     },
     {
-      "source": "The package hash is valid. Extracting to an isolated staging directory.",
-      "translation": "包哈希有效。提取到隔离的暂存目录。"
+      "source": "The package hash is valid. Preparing an isolated update candidate.",
+      "translation": "包哈希有效。准备一个孤立的更新候选者。"
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
@@ -186275,6 +186319,10 @@
       "translation": "导出期间将扫描所有 {0} 索引事件的选定范围"
     },
     {
+      "source": "The selected release package is not an AppImage update.",
+      "translation": "所选的发布包不是AppImage更新。"
+    },
+    {
       "source": "The selected route has no systems and cannot be activated.",
       "translation": "所选路线没有系统，无法激活。"
     },
@@ -186521,10 +186569,6 @@
     {
       "source": "The update helper stopped because SrvSurvey did not close. The prepared update was removed and no installation files were changed. Confirm again to retry.",
       "translation": "由于 SrvSurvey 未关闭，更新助手已停止。准备好的更新已被删除，并且安装文件没有更改。再次确认后重试。"
-    },
-    {
-      "source": "The update outcome was not opened by its installation directory.",
-      "translation": "更新结果未由其安装目录打开。"
     },
     {
       "source": "The update stopped, but its prepared files could not be cleaned up safely. Restart SrvSurvey or inspect Update Diagnostics before retrying. {0}",
@@ -187525,6 +187569,10 @@
     {
       "source": "Update candidate cleanup requires attention.",
       "translation": "更新候选清理需要注意。"
+    },
+    {
+      "source": "Update health confirmation did not come from the installed AppImage.",
+      "translation": "更新运行状况确认并非来自已安装的 AppImage。"
     },
     {
       "source": "Update health confirmation did not come from the installed replacement.",
@@ -194473,6 +194521,10 @@
       "translation": "* AMOUNT >>>!"
     },
     {
+      "source": "An AppImage update requires the APPIMAGE launch path.",
+      "translation": "* AN APPIMAGE UPDATE REQUIRES THE APPIMAGE LAUNCH PATH. >>>!"
+    },
+    {
       "source": "An Inara API key is saved for {0}.",
       "translation": "* AN INARA API KEY IS SAVED FOR {0}. >>>!"
     },
@@ -200129,8 +200181,8 @@
       "translation": "* DOWN >>>!"
     },
     {
-      "source": "Download hash verified; validating archive files...",
-      "translation": "* DOWNLOAD HASH VERIFIED; VALIDATING ARCHIVE FILES... >>>!"
+      "source": "Download hash verified; validating package...",
+      "translation": "* DOWNLOAD HASH VERIFIED; VALIDATING PACKAGE... >>>!"
     },
     {
       "source": "Download star system, bodies and organic signals data from EDSM, Spansh and Canonn",
@@ -218061,8 +218113,8 @@
       "translation": "* THE OVERLAY WINDOW CONTENT CANNOT BE SCALED. >>>!"
     },
     {
-      "source": "The package hash is valid. Extracting to an isolated staging directory.",
-      "translation": "* THE PACKAGE HASH IS VALID. EXTRACTING TO AN ISOLATED STAGING DIRECTORY. >>>!"
+      "source": "The package hash is valid. Preparing an isolated update candidate.",
+      "translation": "* THE PACKAGE HASH IS VALID. PREPARING AN ISOLATED UPDATE CANDIDATE. >>>!"
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
@@ -218393,6 +218445,10 @@
       "translation": "* THE SELECTED RANGE WILL BE SCANNED DURING EXPORT ACROSS ALL {0} INDEXED EVENTS >>>!"
     },
     {
+      "source": "The selected release package is not an AppImage update.",
+      "translation": "* THE SELECTED RELEASE PACKAGE IS NOT AN APPIMAGE UPDATE. >>>!"
+    },
+    {
       "source": "The selected route has no systems and cannot be activated.",
       "translation": "* THE SELECTED ROUTE HAS NO SYSTEMS AND CANNOT BE ACTIVATED. >>>!"
     },
@@ -218639,10 +218695,6 @@
     {
       "source": "The update helper stopped because SrvSurvey did not close. The prepared update was removed and no installation files were changed. Confirm again to retry.",
       "translation": "* THE UPDATE HELPER STOPPED BECAUSE SRVSURVEY DID NOT CLOSE. THE PREPARED UPDATE WAS REMOVED AND NO INSTALLATION FILES WERE CHANGED. CONFIRM AGAIN TO RETRY. >>>!"
-    },
-    {
-      "source": "The update outcome was not opened by its installation directory.",
-      "translation": "* THE UPDATE OUTCOME WAS NOT OPENED BY ITS INSTALLATION DIRECTORY. >>>!"
     },
     {
       "source": "The update stopped, but its prepared files could not be cleaned up safely. Restart SrvSurvey or inspect Update Diagnostics before retrying. {0}",
@@ -219643,6 +219695,10 @@
     {
       "source": "Update candidate cleanup requires attention.",
       "translation": "* UPDATE CANDIDATE CLEANUP REQUIRES ATTENTION. >>>!"
+    },
+    {
+      "source": "Update health confirmation did not come from the installed AppImage.",
+      "translation": "* UPDATE HEALTH CONFIRMATION DID NOT COME FROM THE INSTALLED APPIMAGE. >>>!"
     },
     {
       "source": "Update health confirmation did not come from the installed replacement.",

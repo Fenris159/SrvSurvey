@@ -16,12 +16,16 @@ internal sealed record ReleaseInstallationCapability(ReleaseInstallationCapabili
 {
     public bool CanInstall => Status == ReleaseInstallationCapabilityStatus.Supported;
 
-    public static ReleaseInstallationCapability Detect(string installationDirectory, bool isAppImage)
+    public static ReleaseInstallationCapability Detect(string installationDirectory, string? appImagePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(installationDirectory);
-        if (isAppImage)
+        if (!string.IsNullOrWhiteSpace(appImagePath))
         {
-            return new ReleaseInstallationCapability(ReleaseInstallationCapabilityStatus.ReadOnlyAppImage);
+            return new ReleaseInstallationCapability(
+                AppImageReleaseInstallationPreparer.CanReplace(appImagePath)
+                    ? ReleaseInstallationCapabilityStatus.Supported
+                    : ReleaseInstallationCapabilityStatus.ReadOnlyAppImage
+            );
         }
 
         return new ReleaseInstallationCapability(
@@ -45,7 +49,7 @@ internal enum ReleaseInstallationWorkflowStage
     AwaitingInstanceConfirmation,
     ClosingInstances,
     Downloading,
-    ValidatingArchive,
+    ValidatingPackage,
     Staging,
     PreparingRollback,
     StartingHelper,
@@ -163,7 +167,8 @@ internal sealed record ReleaseInstallationWorkflowAdapters(
     IReleaseInstallationPreparer InstallationPreparer,
     IApplicationUpdateHandoff Handoff,
     IApplicationInstanceManager InstanceManager,
-    ConfirmReleaseInstallationInstances ConfirmInstances
+    ConfirmReleaseInstallationInstances ConfirmInstances,
+    IAppImageReleaseInstallationPreparer? AppImagePreparer = null
 );
 
 internal sealed record ReleaseInstallationWorkflowContext(
@@ -171,7 +176,7 @@ internal sealed record ReleaseInstallationWorkflowContext(
     string InstallationDirectory,
     IReadOnlyList<string> StartupArguments,
     RequestReleaseInstallationShutdown RequestShutdown,
-    bool IsAppImage,
+    string? AppImagePath,
     Action<string>? Log = null
 );
 
@@ -189,6 +194,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
     private readonly IReleasePackageDownloadService downloadService;
     private readonly IReleasePackageStagingService stagingService;
     private readonly IReleaseInstallationPreparer installationPreparer;
+    private readonly IAppImageReleaseInstallationPreparer appImagePreparer;
     private readonly IApplicationUpdateHandoff handoff;
     private readonly IApplicationInstanceManager instanceManager;
     private readonly ConfirmReleaseInstallationInstances confirmInstances;
@@ -198,6 +204,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
     private readonly Func<string, bool> pathExists;
     private readonly string dataDirectory;
     private readonly string installationDirectory;
+    private readonly string? appImagePath;
     private readonly IReadOnlyList<string> startupArguments;
     private int executionActive;
     private bool retryBlocked;
@@ -213,7 +220,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 new ReleaseInstallationOutcomeMonitor(log: context.Log),
                 () => true,
                 path => Directory.Exists(path) || File.Exists(path),
-                ReleaseInstallationCapability.Detect(context.InstallationDirectory, context.IsAppImage)
+                ReleaseInstallationCapability.Detect(context.InstallationDirectory, context.AppImagePath)
             )
         ) { }
 
@@ -229,6 +236,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         downloadService = adapters.DownloadService;
         stagingService = adapters.StagingService;
         installationPreparer = adapters.InstallationPreparer;
+        appImagePreparer = adapters.AppImagePreparer ?? new AppImageReleaseInstallationPreparer();
         handoff = adapters.Handoff;
         instanceManager = adapters.InstanceManager;
         confirmInstances = adapters.ConfirmInstances;
@@ -241,10 +249,23 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         ArgumentException.ThrowIfNullOrWhiteSpace(context.InstallationDirectory);
         dataDirectory = Path.GetFullPath(context.DataDirectory);
         installationDirectory = Path.GetFullPath(context.InstallationDirectory);
+        appImagePath = ResolveAppImagePath(context.AppImagePath, Capability.CanInstall);
         startupArguments = context.StartupArguments.ToArray();
     }
 
     public ReleaseInstallationCapability Capability { get; }
+
+    private static string? ResolveAppImagePath(string? path, bool canInstall)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        return canInstall && File.Exists(path)
+            ? AppImageReleaseInstallationPreparer.ResolveInstallationPath(path)
+            : Path.GetFullPath(path);
+    }
 
     public async Task<ReleaseInstallationWorkflowResult> ExecuteAsync(
         ReleaseInstallationRequest request,
@@ -372,10 +393,37 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
             )
             .ConfigureAwait(false);
 
-        state.Stage = ReleaseInstallationWorkflowStage.ValidatingArchive;
+        state.Stage = ReleaseInstallationWorkflowStage.ValidatingPackage;
         progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage));
         state.Stage = ReleaseInstallationWorkflowStage.Staging;
         progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage));
+        if (request.Package.RuntimeIdentifier == CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier)
+        {
+            if (appImagePath is null)
+            {
+                throw new InvalidOperationException("An AppImage update requires the APPIMAGE launch path.");
+            }
+
+            state.Preparation = await appImagePreparer
+                .PrepareAsync(
+                    request.Version,
+                    download.ArchivePath,
+                    request.Package.Sha256,
+                    appImagePath,
+                    startupArguments,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            state.Stage = ReleaseInstallationWorkflowStage.PreparingRollback;
+            progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage) { StagedFileCount = 1 });
+            return new PreparedReleaseInstallation(state.Preparation, state.Preparation.CandidateDirectory);
+        }
+
+        if (appImagePath is not null)
+        {
+            throw new InvalidDataException("The selected release package is not an AppImage update.");
+        }
+
         ReleasePackageStagingResult staged = await stagingService
             .StageAsync(request.Version, request.Package, download.ArchivePath, dataDirectory, cancellationToken)
             .ConfigureAwait(false);
@@ -542,7 +590,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
 
         try
         {
-            await installationPreparer.AbortAsync(preparation, CancellationToken.None).ConfigureAwait(false);
+            await AbortPreparationAsync(preparation).ConfigureAwait(false);
         }
         catch (Exception cleanupError)
         {
@@ -619,7 +667,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
 
         try
         {
-            await installationPreparer.AbortAsync(preparation, CancellationToken.None).ConfigureAwait(false);
+            await AbortPreparationAsync(preparation).ConfigureAwait(false);
             return new ReleaseInstallationWorkflowResult(
                 status,
                 stage,
@@ -641,6 +689,11 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
             );
         }
     }
+
+    private Task AbortPreparationAsync(ReleaseInstallationPreparation preparation) =>
+        preparation.Kind == ReleaseInstallationKind.AppImage
+            ? appImagePreparer.AbortAsync(preparation, CancellationToken.None)
+            : installationPreparer.AbortAsync(preparation, CancellationToken.None);
 
     private static ReleaseInstallationWorkflowResult Rejected(
         ReleaseInstallationRejectionReason reason,

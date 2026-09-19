@@ -34,7 +34,8 @@ public sealed record ReleaseInstallationOutcome(
 
 public sealed class ReleaseInstallationPlanStore
 {
-    private const int SchemaVersion = 2;
+    private const int SchemaVersion = 3;
+    private const int LegacySchemaVersion = 2;
     private const int MaximumPlanBytes = 256 * 1024;
     private const int MaximumArgumentCount = 128;
     private const int MaximumArgumentLength = 4_096;
@@ -98,6 +99,7 @@ public sealed class ReleaseInstallationPlanStore
                 preparation.ManifestSha256,
                 preparation.InstallationFingerprint,
                 preparation.RequiresElevation,
+                installationKind = preparation.Kind.ToString(),
                 startupArguments = preparation.StartupArguments,
             },
         };
@@ -145,7 +147,13 @@ public sealed class ReleaseInstallationPlanStore
         {
             using var document = JsonDocument.Parse(bytes);
             JsonElement root = document.RootElement;
-            if (root.ValueKind != JsonValueKind.Object || ReadInt32(root, "schemaVersion") != SchemaVersion)
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                throw new InvalidDataException("The update handoff plan is not an object.");
+            }
+
+            int schemaVersion = ReadInt32(root, "schemaVersion");
+            if (schemaVersion is not (LegacySchemaVersion or SchemaVersion))
             {
                 throw new InvalidDataException("The update handoff plan schema is incompatible.");
             }
@@ -180,28 +188,7 @@ public sealed class ReleaseInstallationPlanStore
                 throw new InvalidDataException("The update handoff plan has no installation preparation.");
             }
 
-            string versionText = ReadString(preparationElement, "version");
-            if (!ReleaseVersion.TryParse(versionText, out ReleaseVersion version) || version.Build < 0)
-            {
-                throw new InvalidDataException("The update handoff version is invalid.");
-            }
-
-            List<string> arguments = ReadArguments(preparationElement);
-            var preparation = new ReleaseInstallationPreparation(
-                requestId,
-                version,
-                ReadString(preparationElement, "RuntimeIdentifier"),
-                ReadString(preparationElement, "InstallationDirectory"),
-                ReadString(preparationElement, "ReadyDirectory"),
-                ReadString(preparationElement, "CandidateDirectory"),
-                ReadString(preparationElement, "BackupDirectory"),
-                ReadString(preparationElement, "FailedDirectory"),
-                ReadString(preparationElement, "EntryPoint"),
-                ReadHex(preparationElement, "ManifestSha256"),
-                ReadHex(preparationElement, "InstallationFingerprint"),
-                ReadBoolean(preparationElement, "RequiresElevation"),
-                arguments
-            );
+            ReleaseInstallationPreparation preparation = ReadPreparation(preparationElement, requestId, schemaVersion);
             return new ReleaseInstallationHandoffPlan(
                 paths.PlanPath,
                 paths.HelperReadyMarkerPath,
@@ -218,6 +205,49 @@ public sealed class ReleaseInstallationPlanStore
         {
             throw new InvalidDataException("The update handoff plan is not valid JSON.", exception);
         }
+    }
+
+    private static ReleaseInstallationPreparation ReadPreparation(
+        JsonElement element,
+        Guid requestId,
+        int schemaVersion
+    )
+    {
+        string versionText = ReadString(element, "version");
+        if (!ReleaseVersion.TryParse(versionText, out ReleaseVersion version) || version.Build < 0)
+        {
+            throw new InvalidDataException("The update handoff version is invalid.");
+        }
+
+        ReleaseInstallationKind installationKind =
+            schemaVersion == LegacySchemaVersion ? ReleaseInstallationKind.Directory : ReadInstallationKind(element);
+        return new ReleaseInstallationPreparation(
+            requestId,
+            version,
+            ReadString(element, "RuntimeIdentifier"),
+            ReadString(element, "InstallationDirectory"),
+            ReadString(element, "ReadyDirectory"),
+            ReadString(element, "CandidateDirectory"),
+            ReadString(element, "BackupDirectory"),
+            ReadString(element, "FailedDirectory"),
+            ReadString(element, "EntryPoint"),
+            ReadHex(element, "ManifestSha256"),
+            ReadHex(element, "InstallationFingerprint"),
+            ReadBoolean(element, "RequiresElevation"),
+            ReadArguments(element),
+            installationKind
+        );
+    }
+
+    private static ReleaseInstallationKind ReadInstallationKind(JsonElement element)
+    {
+        string value = ReadString(element, "installationKind");
+        if (!Enum.TryParse(value, ignoreCase: false, out ReleaseInstallationKind kind) || !Enum.IsDefined(kind))
+        {
+            throw new InvalidDataException("The update handoff installation kind is invalid.");
+        }
+
+        return kind;
     }
 
     public async Task WriteHealthMarkerAsync(

@@ -52,6 +52,31 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateAndLoadPreservesAppImageInstallationKind()
+    {
+        var store = new ReleaseInstallationPlanStore(new FixedTimeProvider(Now));
+        ReleaseInstallationPreparation preparation = CreatePreparation() with
+        {
+            RuntimeIdentifier = CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier,
+            Kind = ReleaseInstallationKind.AppImage,
+        };
+
+        ReleaseInstallationHandoffPlan created = await store.CreateAsync(
+            temporaryDirectory,
+            preparation,
+            1_234,
+            Now.AddMinutes(-1)
+        );
+        ReleaseInstallationHandoffPlan loaded = await store.LoadAsync(temporaryDirectory, created.PlanPath);
+
+        Assert.Equal(ReleaseInstallationKind.AppImage, loaded.Preparation.Kind);
+        Assert.Equal(
+            CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier,
+            loaded.Preparation.RuntimeIdentifier
+        );
+    }
+
+    [Fact]
     public async Task LoadRejectsValidPlanCopiedOutsideRequestDirectory()
     {
         var store = new ReleaseInstallationPlanStore(new FixedTimeProvider(Now));

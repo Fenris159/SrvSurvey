@@ -3531,6 +3531,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "An AppImage update requires the APPIMAGE launch path.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ReleaseInstallationWorkflow.cs"
+  },
+  {
     "Text": "An Inara API key is saved for {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -14878,7 +14886,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "Download hash verified; validating archive files...",
+    "Text": "Download hash verified; validating package...",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -50836,7 +50844,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
-    "Text": "The package hash is valid. Extracting to an isolated staging directory.",
+    "Text": "The package hash is valid. Preparing an isolated update candidate.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -51500,6 +51508,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalHistoryViewModel.cs"
   },
   {
+    "Text": "The selected release package is not an AppImage update.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ReleaseInstallationWorkflow.cs"
+  },
+  {
     "Text": "The selected route has no systems and cannot be activated.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51994,14 +52010,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
-  },
-  {
-    "Text": "The update outcome was not opened by its installation directory.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
     "Text": "The update stopped, but its prepared files could not be cleaned up safely. Restart SrvSurvey or inspect Update Diagnostics before retrying. {0}",
@@ -54007,6 +54015,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Update health confirmation did not come from the installed AppImage.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
     "Text": "Update health confirmation did not come from the installed replacement.",

@@ -529,7 +529,7 @@ internal sealed partial class DesktopRuntime
                 startupArguments,
                 cancellationToken =>
                     RequestShutdownOnUiThreadAsync(DesktopShutdownReason.UpdateHandoff, cancellationToken),
-                !string.IsNullOrWhiteSpace(appImagePath),
+                appImagePath,
                 message => applicationLog.Append(message)
             )
         );

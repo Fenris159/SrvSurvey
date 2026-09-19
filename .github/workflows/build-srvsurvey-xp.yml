@@ -319,6 +319,11 @@ jobs:
             -background none \
             -resize 256x256 \
             "artifacts/appimage/srvsurvey.png"
+          if [[ "${{ needs.release-metadata.outputs.is_prerelease }}" == "true" ]]; then
+            update_information='gh-releases-zsync|Fenris159|SrvSurvey|latest-pre|SrvSurvey-XP-*-x86_64.AppImage.zsync'
+          else
+            update_information='gh-releases-zsync|Fenris159|SrvSurvey|latest|SrvSurvey-XP-*-x86_64.AppImage.zsync'
+          fi
           bash ./scripts/New-LinuxAppImage.sh \
             "artifacts/${{ matrix.rid }}" \
             "${{ needs.release-metadata.outputs.package_version }}" \
@@ -326,7 +331,8 @@ jobs:
             "$linuxdeploy" \
             "$tool" \
             "$runtime" \
-            "packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-x86_64.AppImage"
+            "packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-x86_64.AppImage" \
+            "$update_information"
 
       - name: Inspect Linux AppImage payload
         if: matrix.archive == 'tar.gz'
@@ -345,6 +351,11 @@ jobs:
           test -f squashfs-root/srvsurvey.png
           test -f squashfs-root/usr/share/metainfo/io.github.fenris159.SrvSurvey.metainfo.xml
           test -f squashfs-root/usr/share/licenses/srvsurvey/LICENSE
+          actual_update_information=$(
+            "$appimage" --appimage-updateinformation
+          )
+          test -n "$actual_update_information"
+          test -s "$appimage.zsync"
 
       - name: Validate AppImage runtime dependencies and XWayland startup
         if: matrix.archive == 'tar.gz'

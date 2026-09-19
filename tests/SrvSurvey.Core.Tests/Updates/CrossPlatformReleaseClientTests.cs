@@ -38,6 +38,28 @@ public sealed class CrossPlatformReleaseClientTests
         Assert.True(handler.FirstRequestDisabledCache);
     }
 
+    [Fact]
+    public async Task GetLatestAsyncSelectsIndexedAppImageForAppImageRuntime()
+    {
+        const string version = "2.1.4.0-rc.3";
+        ReleasePayload payload = CreatePayload(version: version, prerelease: true, includeAppImage: true);
+        var handler = new StubHandler(
+            new Dictionary<Uri, string> { [ReleasesUri] = payload.Releases, [IndexUri] = payload.Index }
+        );
+        var client = new CrossPlatformReleaseClient(new HttpClient(handler), ReleasesUri, ReleasesUri);
+
+        CrossPlatformRelease? result = await client.GetLatestAsync(
+            CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier,
+            ReleaseChannel.Development
+        );
+
+        Assert.NotNull(result);
+        Assert.Equal(CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier, result.Package.RuntimeIdentifier);
+        Assert.Equal($"SrvSurvey-XP-{version}-x86_64.AppImage", result.Package.ArchiveName);
+        Assert.Equal("appimage", result.Package.ArchiveType);
+        Assert.Equal("https://downloads.example.test/linux.AppImage", result.Package.DownloadUri.AbsoluteUri);
+    }
+
     [Theory]
     [InlineData("version")]
     [InlineData("hash")]
@@ -160,35 +182,51 @@ public sealed class CrossPlatformReleaseClientTests
     private static ReleasePayload CreatePayload(
         string? mutation = null,
         string version = "2.0.95.23",
-        bool prerelease = false
+        bool prerelease = false,
+        bool includeAppImage = false
     )
     {
+        var indexedPackages = new List<object>
+        {
+            new
+            {
+                runtimeIdentifier = "win-x64",
+                archive = $"SrvSurvey-XP-{version}-win-x64.zip",
+                archiveType = "zip",
+                size = 12_345L,
+                sha256 = new string('a', 64),
+            },
+            new
+            {
+                runtimeIdentifier = "linux-x64",
+                archive = $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
+                archiveType = "tar.gz",
+                size = 23_456L,
+                sha256 = new string('b', 64),
+            },
+        };
+        if (includeAppImage)
+        {
+            indexedPackages.Add(
+                new
+                {
+                    runtimeIdentifier = CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier,
+                    archive = $"SrvSurvey-XP-{version}-x86_64.AppImage",
+                    archiveType = "appimage",
+                    size = 34_567L,
+                    sha256 = new string('c', 64),
+                }
+            );
+        }
+
         JsonObject indexNode = JsonSerializer
             .SerializeToNode(
                 new
                 {
-                    schemaVersion = 1,
+                    schemaVersion = includeAppImage ? 2 : 1,
                     product = "SrvSurvey.XP",
                     version,
-                    packages = new object[]
-                    {
-                        new
-                        {
-                            runtimeIdentifier = "win-x64",
-                            archive = $"SrvSurvey-XP-{version}-win-x64.zip",
-                            archiveType = "zip",
-                            size = 12_345L,
-                            sha256 = new string('a', 64),
-                        },
-                        new
-                        {
-                            runtimeIdentifier = "linux-x64",
-                            archive = $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
-                            archiveType = "tar.gz",
-                            size = 23_456L,
-                            sha256 = new string('b', 64),
-                        },
-                    },
+                    packages = indexedPackages,
                 }
             )!
             .AsObject();
@@ -210,6 +248,39 @@ public sealed class CrossPlatformReleaseClientTests
         }
 
         string index = indexNode.ToJsonString();
+        var assets = new List<object>
+        {
+            new
+            {
+                name = "release-index.json",
+                size = (long)Encoding.UTF8.GetByteCount(index),
+                browser_download_url = IndexUri.AbsoluteUri,
+            },
+            new
+            {
+                name = $"SrvSurvey-XP-{version}-win-x64.zip",
+                size = 12_345L,
+                browser_download_url = "https://downloads.example.test/windows.zip",
+            },
+            new
+            {
+                name = $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
+                size = 23_456L,
+                browser_download_url = "https://downloads.example.test/linux.tar.gz",
+            },
+        };
+        if (includeAppImage)
+        {
+            assets.Add(
+                new
+                {
+                    name = $"SrvSurvey-XP-{version}-x86_64.AppImage",
+                    size = 34_567L,
+                    browser_download_url = "https://downloads.example.test/linux.AppImage",
+                }
+            );
+        }
+
         string releases = JsonSerializer.Serialize(
             new[]
             {
@@ -232,27 +303,7 @@ public sealed class CrossPlatformReleaseClientTests
 
                     - Package detail that is not shown in the app.
                     """,
-                    assets = new[]
-                    {
-                        new
-                        {
-                            name = "release-index.json",
-                            size = (long)Encoding.UTF8.GetByteCount(index),
-                            browser_download_url = IndexUri.AbsoluteUri,
-                        },
-                        new
-                        {
-                            name = $"SrvSurvey-XP-{version}-win-x64.zip",
-                            size = 12_345L,
-                            browser_download_url = "https://downloads.example.test/windows.zip",
-                        },
-                        new
-                        {
-                            name = $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
-                            size = 23_456L,
-                            browser_download_url = "https://downloads.example.test/linux.tar.gz",
-                        },
-                    },
+                    assets,
                 },
             }
         );

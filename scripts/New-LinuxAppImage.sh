@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 7 ]]; then
-    echo "Usage: $0 PUBLISH_DIRECTORY VERSION ICON_PATH LINUXDEPLOY APPIMAGETOOL RUNTIME_FILE OUTPUT_PATH" >&2
+if [[ $# -ne 8 ]]; then
+    echo "Usage: $0 PUBLISH_DIRECTORY VERSION ICON_PATH LINUXDEPLOY APPIMAGETOOL RUNTIME_FILE OUTPUT_PATH UPDATE_INFORMATION" >&2
     exit 2
 fi
 
@@ -13,11 +13,17 @@ linuxdeploy=$(realpath "$4")
 appimagetool=$(realpath "$5")
 runtime_file=$(realpath "$6")
 output_path=$7
+update_information=$8
 repository_root=$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")
 packaging_root="$repository_root/packaging/linux"
 
 if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?(-rc\.[1-9][0-9]*(\.(0|[1-9][0-9]*))?)?$ ]]; then
     echo "Invalid AppImage version: '$version'." >&2
+    exit 2
+fi
+
+if [[ $update_information != gh-releases-zsync\|*\|*\|*\|*.zsync ]]; then
+    echo "Invalid AppImage update information: '$update_information'." >&2
     exit 2
 fi
 
@@ -99,7 +105,14 @@ pwsh -NoLogo -NoProfile -File \
 mkdir -p "$(dirname "$output_path")"
 ARCH=x86_64 VERSION="$version" \
     "$appimagetool" --appimage-extract-and-run \
-    --runtime-file "$runtime_file" "$app_dir" "$output_path"
+    --runtime-file "$runtime_file" \
+    --updateinformation "$update_information" \
+    "$app_dir" "$output_path"
 chmod 0755 "$output_path"
 
-echo "Created $output_path from the checksum-indexed Linux publish output."
+if [[ ! -s "$output_path.zsync" ]]; then
+    echo "appimagetool did not create the expected zsync update asset." >&2
+    exit 1
+fi
+
+echo "Created $output_path and $output_path.zsync from the checksum-indexed Linux publish output."
