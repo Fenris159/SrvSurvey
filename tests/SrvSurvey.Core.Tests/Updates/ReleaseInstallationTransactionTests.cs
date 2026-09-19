@@ -195,11 +195,6 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     [Fact]
     public async Task AppImagePrepareAndApplyReplacesInstalledImageAndKeepsBackup()
     {
-        if (!OperatingSystem.IsLinux())
-        {
-            return;
-        }
-
         string parent = Path.Combine(temporaryDirectory, "appimage-install");
         Directory.CreateDirectory(parent);
         string installedPath = Path.Combine(parent, "SrvSurvey.AppImage");
@@ -208,7 +203,13 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
         byte[] downloaded = CreateAppImage(0x22);
         await File.WriteAllBytesAsync(installedPath, installed);
         await File.WriteAllBytesAsync(downloadedPath, downloaded);
-        File.SetUnixFileMode(installedPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        if (OperatingSystem.IsLinux())
+        {
+            File.SetUnixFileMode(
+                installedPath,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+            );
+        }
         string sha256 = Convert.ToHexString(SHA256.HashData(downloaded)).ToLowerInvariant();
 
         ReleaseInstallationPreparation preparation = await new AppImageReleaseInstallationPreparer().PrepareAsync(
@@ -236,17 +237,15 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
         Assert.Equal(downloaded, await File.ReadAllBytesAsync(installedPath));
         Assert.Equal(installed, await File.ReadAllBytesAsync(preparation.BackupDirectory));
         Assert.False(File.Exists(preparation.CandidateDirectory));
-        Assert.True((File.GetUnixFileMode(installedPath) & UnixFileMode.UserExecute) != 0);
+        if (OperatingSystem.IsLinux())
+        {
+            Assert.True((File.GetUnixFileMode(installedPath) & UnixFileMode.UserExecute) != 0);
+        }
     }
 
     [Fact]
     public async Task FailedAppImageHealthConfirmationRestoresInstalledImage()
     {
-        if (!OperatingSystem.IsLinux())
-        {
-            return;
-        }
-
         string parent = Path.Combine(temporaryDirectory, "appimage-rollback");
         Directory.CreateDirectory(parent);
         string installedPath = Path.Combine(parent, "SrvSurvey.AppImage");

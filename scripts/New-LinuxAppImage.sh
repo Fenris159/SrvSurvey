@@ -12,7 +12,7 @@ icon_path=$(realpath "$3")
 linuxdeploy=$(realpath "$4")
 appimagetool=$(realpath "$5")
 runtime_file=$(realpath "$6")
-output_path=$7
+output_path=$(realpath -m "$7")
 update_information=$8
 repository_root=$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")
 packaging_root="$repository_root/packaging/linux"
@@ -102,12 +102,17 @@ pwsh -NoLogo -NoProfile -File \
     -Version "$version" \
     -RuntimeIdentifier linux-x64
 
-mkdir -p "$(dirname "$output_path")"
-ARCH=x86_64 VERSION="$version" \
-    "$appimagetool" --appimage-extract-and-run \
-    --runtime-file "$runtime_file" \
-    --updateinformation "$update_information" \
-    "$app_dir" "$output_path"
+output_directory=$(dirname "$output_path")
+output_name=$(basename "$output_path")
+mkdir -p "$output_directory"
+(
+    cd "$output_directory"
+    ARCH=x86_64 VERSION="$version" \
+        "$appimagetool" --appimage-extract-and-run \
+        --runtime-file "$runtime_file" \
+        --updateinformation "$update_information" \
+        "$app_dir" "$output_name"
+)
 chmod 0755 "$output_path"
 
 if [[ ! -s "$output_path.zsync" ]]; then

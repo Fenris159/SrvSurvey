@@ -37,7 +37,6 @@ public sealed class AppImageReleaseInstallationPreparer : IAppImageReleaseInstal
         CancellationToken cancellationToken = default
     )
     {
-        EnsureLinux();
         ArgumentException.ThrowIfNullOrWhiteSpace(readyAppImagePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(expectedSha256);
         ArgumentException.ThrowIfNullOrWhiteSpace(installationPath);
@@ -75,12 +74,11 @@ public sealed class AppImageReleaseInstallationPreparer : IAppImageReleaseInstal
         try
         {
             await CopyFileAsync(readyPath, candidatePath, cancellationToken).ConfigureAwait(false);
-            if (!OperatingSystem.IsLinux())
+            if (OperatingSystem.IsLinux())
             {
-                throw new PlatformNotSupportedException("AppImage updates are only supported on Linux.");
+                File.SetUnixFileMode(candidatePath, ExecutableMode);
             }
 
-            File.SetUnixFileMode(candidatePath, ExecutableMode);
             await VerifyAppImageAsync(candidatePath, expectedSha256, cancellationToken).ConfigureAwait(false);
         }
         catch
@@ -223,7 +221,6 @@ public sealed class AppImageReleaseInstallationPreparer : IAppImageReleaseInstal
 
     internal static async Task<string> ComputeFileFingerprintAsync(string path, CancellationToken cancellationToken)
     {
-        EnsureLinux();
         ValidateRegularFile(path, "The installed AppImage");
         FileSnapshot before = GetSnapshot(path);
         await using FileStream stream = OpenRead(path);
@@ -286,11 +283,6 @@ public sealed class AppImageReleaseInstallationPreparer : IAppImageReleaseInstal
 
     private static FileSnapshot GetSnapshot(string path)
     {
-        if (!OperatingSystem.IsLinux())
-        {
-            throw new PlatformNotSupportedException("AppImage updates are only supported on Linux.");
-        }
-
         var info = new FileInfo(path);
         info.Refresh();
         if (!info.Exists)
@@ -298,7 +290,8 @@ public sealed class AppImageReleaseInstallationPreparer : IAppImageReleaseInstal
             throw new FileNotFoundException("The AppImage disappeared while it was being checked.", path);
         }
 
-        return new FileSnapshot(info.Length, info.LastWriteTimeUtc.Ticks, (int)File.GetUnixFileMode(path));
+        int mode = OperatingSystem.IsLinux() ? (int)File.GetUnixFileMode(path) : 0;
+        return new FileSnapshot(info.Length, info.LastWriteTimeUtc.Ticks, mode);
     }
 
     private static void ValidateRegularFile(string path, string label)
@@ -316,14 +309,6 @@ public sealed class AppImageReleaseInstallationPreparer : IAppImageReleaseInstal
         if (value.Length != 64 || value.Any(character => !Uri.IsHexDigit(character)))
         {
             throw new InvalidDataException("The AppImage release checksum is invalid.");
-        }
-    }
-
-    private static void EnsureLinux()
-    {
-        if (!OperatingSystem.IsLinux())
-        {
-            throw new PlatformNotSupportedException("AppImage updates are only supported on Linux.");
         }
     }
 
