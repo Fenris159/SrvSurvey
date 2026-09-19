@@ -33,7 +33,7 @@ env:
 jobs:
   release-metadata:
     name: Resolve release metadata
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       is_release: ${{ steps.metadata.outputs.is_release }}
       release_tag: ${{ steps.metadata.outputs.release_tag }}
@@ -110,7 +110,7 @@ jobs:
             rid: win-x64
             archive: zip
           - name: Linux x64
-            os: ubuntu-latest
+            os: ubuntu-24.04
             rid: linux-x64
             archive: tar.gz
 
@@ -361,13 +361,51 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  validate-linux-ubuntu-26:
+    name: Validate Linux x64 on Ubuntu 26.04
+    needs:
+      - release-metadata
+      - build-test-publish
+    runs-on: ubuntu-26.04
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          ref: SrvSurvey-Avalonia
+          fetch-depth: 0
+
+      - name: Download Linux package
+        uses: actions/download-artifact@v8
+        with:
+          name: SrvSurvey-package-linux-x64
+          path: packages
+
+      - name: Install AppImage validation tools
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            binutils \
+            file \
+            xauth \
+            xvfb
+
+      - name: Validate AppImage dependency closure and XWayland startup
+        shell: bash
+        run: |
+          appimage="packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-x86_64.AppImage"
+          chmod +x "$appimage"
+          bash ./scripts/Test-LinuxAppImageRuntime.sh "$appimage"
+
   publish-release:
     name: Publish GitHub release assets
     if: needs.release-metadata.outputs.is_release == 'true'
     needs:
       - release-metadata
       - build-test-publish
-    runs-on: ubuntu-latest
+      - validate-linux-ubuntu-26
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
 
@@ -375,7 +413,8 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v7
         with:
-          ref: ${{ needs.release-metadata.outputs.source_sha }}
+          ref: SrvSurvey-Avalonia
+          fetch-depth: 0
 
       - name: Download platform packages
         uses: actions/download-artifact@v8
@@ -392,6 +431,14 @@ jobs:
           -Version "${{ needs.release-metadata.outputs.package_version }}"
           -OutputPath packages/release-index.json
 
+      - name: Read release notes from packaged source
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ needs.release-metadata.outputs.source_sha }}
+        run: |
+          git cat-file --exit-code "$SOURCE_SHA^{commit}"
+          git show "$SOURCE_SHA:CurrentReleaseNotes.md" > "$RUNNER_TEMP/srvsurvey-release-notes.md"
+
       - name: Create or repair release
         shell: bash
         env:
@@ -405,7 +452,7 @@ jobs:
 
           release_args=(
             --generate-notes
-            --notes "$(cat CurrentReleaseNotes.md)"
+            --notes-file "$RUNNER_TEMP/srvsurvey-release-notes.md"
             --title "SrvSurvey-XP $RELEASE_VERSION"
             --latest=false
           )

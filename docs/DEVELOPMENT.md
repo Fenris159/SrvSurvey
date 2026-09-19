@@ -67,7 +67,9 @@ The Docker build runs the same solution build and test before exporting a
 self-contained `linux-x64` publish directory. GitHub Actions additionally
 creates checksum-indexed Windows and Linux archives, SPDX SBOMs, and an AppImage
 validated for metadata, native dependency closure, extraction, and isolated
-XWayland startup.
+XWayland startup. Release AppImages are built on Ubuntu 24.04 to preserve their
+native compatibility baseline, then the exact packaged artifact must pass the
+same dependency and startup validation on Ubuntu 26.04 before publication.
 
 ## Regression contract
 
