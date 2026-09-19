@@ -11,6 +11,8 @@ public sealed class BiologyCriteriaCatalog
 
     private const string EmbeddedResourcePrefix = "SrvSurvey.Core.Resources.bio-criteria.";
 
+    private static readonly Lazy<BiologyCriteriaCatalog> EmbeddedCatalog = new(LoadEmbeddedUncached);
+
     private readonly IReadOnlyList<BiologyCriteriaNode> roots;
     private readonly IReadOnlyList<string> sourceNames;
 
@@ -25,7 +27,9 @@ public sealed class BiologyCriteriaCatalog
 
     public IReadOnlyList<string> SourceNames => sourceNames;
 
-    public static BiologyCriteriaCatalog LoadEmbedded()
+    public static BiologyCriteriaCatalog LoadEmbedded() => EmbeddedCatalog.Value;
+
+    private static BiologyCriteriaCatalog LoadEmbeddedUncached()
     {
         Assembly assembly = typeof(BiologyCriteriaCatalog).Assembly;
         string[] resourceNames = assembly
@@ -219,17 +223,11 @@ public sealed record BiologyCriteriaNode(
 
 public sealed class BiologyCriteriaClause
 {
-    private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
-
-    private static readonly Regex ClausePattern = new(
-        @"^\s*(?<property>\w+)\s*(?<operator>[&!]?)\[(?<value>.*)\]\s*$",
-        RegexOptions.CultureInvariant,
-        RegexTimeout
-    );
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(5);
 
     private static readonly Regex CompositionPattern = new(
         @"^(?<name>[\w\s]+)>=\s*(?<amount>[.\d]+)$",
-        RegexOptions.CultureInvariant,
+        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking,
         RegexTimeout
     );
 
@@ -339,19 +337,15 @@ public sealed class BiologyCriteriaClause
             return new BiologyCriteriaClause(trimmed, string.Empty, BiologyCriteriaOperator.Comment);
         }
 
-        Match match = ClausePattern.Match(trimmed);
-        if (!match.Success)
+        if (!TryReadClause(trimmed, out string property, out string operatorToken, out string valueText))
         {
             throw new InvalidDataException($"Invalid biology criterion: {text}");
         }
 
-        string property = match.Groups["property"].Value;
         if (!SupportedProperties.Contains(property))
         {
             throw new InvalidDataException($"Unsupported biology criteria property: {property}");
         }
-
-        string valueText = match.Groups["value"].Value.Trim();
         if (valueText.Contains('~'))
         {
             return ParseRange(trimmed, property, valueText);
@@ -362,7 +356,7 @@ public sealed class BiologyCriteriaClause
             return ParseComposition(trimmed, property, valueText);
         }
 
-        BiologyCriteriaOperator @operator = match.Groups["operator"].Value switch
+        BiologyCriteriaOperator @operator = operatorToken switch
         {
             "&" => BiologyCriteriaOperator.All,
             "!" => BiologyCriteriaOperator.Not,
@@ -379,6 +373,53 @@ public sealed class BiologyCriteriaClause
         }
 
         return new BiologyCriteriaClause(trimmed, property, @operator, values);
+    }
+
+    internal static bool TryReadClause(
+        string trimmed,
+        out string property,
+        out string operatorToken,
+        out string valueText
+    )
+    {
+        property = string.Empty;
+        operatorToken = string.Empty;
+        valueText = string.Empty;
+        int open = trimmed.IndexOf('[');
+        int close = trimmed.LastIndexOf(']');
+        if (open <= 0 || close != trimmed.Length - 1)
+        {
+            return false;
+        }
+
+        ReadOnlySpan<char> head = trimmed.AsSpan(0, open).Trim();
+        if (head.IsEmpty)
+        {
+            return false;
+        }
+
+        if (head[^1] is '&' or '!')
+        {
+            operatorToken = head[^1].ToString();
+            head = head[..^1].Trim();
+        }
+
+        if (head.IsEmpty)
+        {
+            return false;
+        }
+
+        for (int index = 0; index < head.Length; index++)
+        {
+            if (!char.IsAsciiLetterOrDigit(head[index]) && head[index] != '_')
+            {
+                return false;
+            }
+        }
+
+        property = head.ToString();
+        valueText = trimmed.AsSpan(open + 1, close - open - 1).Trim().ToString();
+        return true;
     }
 
     public override string ToString() => RawText;

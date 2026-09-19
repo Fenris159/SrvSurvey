@@ -115,6 +115,205 @@ function Invoke-CSharpierCheck {
     Write-Output "CSharpier formatting check passed."
 }
 
+function Test-IsCoverableProductionPath {
+    param(
+        [string]$RepositoryRoot,
+        [string]$RelativePath
+    )
+
+    $normalized = $RelativePath.Replace('\', '/')
+    if ($normalized -notmatch '^src/') {
+        return $false
+    }
+
+    if (
+        $normalized -match '^src/ThirdParty/' -or
+        $normalized -match '\.(axaml|Designer|g)\.cs$' -or
+        $normalized -match '/Program\.cs$' -or
+        $normalized -match 'DesktopRuntime\.Composition\.cs$' -or
+        $normalized -match 'ControllerInputBackend\.cs$' -or
+        $normalized -match '/Platform/Overlay/(GameScreenCapture|GameWindowSwitcher|OverlayPlatformService|X11GameWindowTracker|X11Native|X11OverlayPlatformService)\.cs$' -or
+        $normalized -match '/Platform/Overlay/.+Coordinator\.cs$' -or
+        $normalized -match '/Platform/(ApplicationInstanceManager|ApplicationProcessPathResolver|WindowsRestartManagerProcessFinder)\.cs$'
+    ) {
+        return $false
+    }
+
+    $absolutePath = Join-Path $RepositoryRoot $normalized
+    if (Test-Path -LiteralPath $absolutePath) {
+        $source = Get-Content -LiteralPath $absolutePath -Raw
+        if ($source -match '\[ExcludeFromCodeCoverage') {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Get-CoverageTestProjects {
+    param(
+        [string]$RepositoryRoot,
+        [string[]]$RelativePaths
+    )
+
+    $projects = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($relativePath in $RelativePaths) {
+        $normalized = $relativePath.Replace('\', '/')
+        if ($normalized -like 'src/SrvSurvey.Core/*') {
+            [void]$projects.Add((Join-Path $RepositoryRoot "tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj"))
+        }
+        elseif ($normalized -like 'src/SrvSurvey.Desktop/*') {
+            [void]$projects.Add((Join-Path $RepositoryRoot "tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj"))
+        }
+        elseif ($normalized -like 'src/SrvSurvey.ReplayController/*') {
+            [void]$projects.Add(
+                (Join-Path $RepositoryRoot "tests/SrvSurvey.ReplayController.Tests/SrvSurvey.ReplayController.Tests.csproj")
+            )
+        }
+    }
+
+    return @($projects)
+}
+
+function Invoke-ChangedCoverageCheck {
+    param(
+        [string]$RepositoryRoot,
+        [hashtable]$ChangedRanges,
+        [int]$MinimumPercent = 80
+    )
+
+    $coverable = @{}
+    foreach ($relativePath in $ChangedRanges.Keys) {
+        if (Test-IsCoverableProductionPath -RepositoryRoot $RepositoryRoot -RelativePath $relativePath) {
+            $coverable[$relativePath.Replace('\', '/')] = $ChangedRanges[$relativePath]
+        }
+    }
+
+    if ($coverable.Count -eq 0) {
+        Write-Output "No coverable changed production C# to measure against the 80% new-code coverage gate."
+        return
+    }
+
+    $testProjects = Get-CoverageTestProjects -RepositoryRoot $RepositoryRoot -RelativePaths @($coverable.Keys)
+    if ($testProjects.Count -eq 0) {
+        throw "Changed coverable production files have no mapped test project for the new-code coverage gate."
+    }
+
+    $resultsDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("srvsurvey-coverage-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Path $resultsDirectory | Out-Null
+    try {
+        foreach ($project in $testProjects) {
+            & dotnet test $project `
+                --configuration Release `
+                --no-build `
+                --no-restore `
+                --collect:"XPlat Code Coverage" `
+                --results-directory $resultsDirectory `
+                -- `
+                DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+            if ($LASTEXITCODE -ne 0) {
+                throw "Coverage test run failed for $project."
+            }
+        }
+
+        $reports = Get-ChildItem -Path $resultsDirectory -Filter "coverage.opencover.xml" -Recurse
+        if ($reports.Count -eq 0) {
+            throw "Coverlet did not produce an OpenCover report for the new-code coverage gate."
+        }
+
+        $points = @{}
+        foreach ($report in $reports) {
+            [xml]$document = Get-Content -LiteralPath $report.FullName
+            foreach ($file in @($document.SelectNodes("//*[local-name()='File'][@fullPath]"))) {
+                $relativePath = [System.IO.Path]::GetRelativePath($RepositoryRoot, $file.fullPath).Replace('\', '/')
+                if (-not $coverable.ContainsKey($relativePath)) {
+                    continue
+                }
+
+                $uid = $file.uid
+                $methods = @(
+                    $document.SelectNodes(
+                        "//*[local-name()='Method'][*[local-name()='FileRef' and @uid='$uid']]"
+                    )
+                )
+                foreach ($method in $methods) {
+                    foreach ($sequence in @($method.SelectNodes(".//*[local-name()='SequencePoint']"))) {
+                        $lineNumber = [int]$sequence.sl
+                        if ($lineNumber -lt 1) {
+                            continue
+                        }
+
+                        $isChangedLine = $coverable[$relativePath] | Where-Object {
+                            $lineNumber -ge $_.Start -and $lineNumber -le $_.End
+                        }
+                        if (-not $isChangedLine) {
+                            continue
+                        }
+
+                        $key = "$relativePath|line|$lineNumber"
+                        $visited = [int]$sequence.vc -gt 0
+                        if (-not $points.ContainsKey($key)) {
+                            $points[$key] = $visited
+                        }
+                        elseif ($visited) {
+                            $points[$key] = $true
+                        }
+                    }
+
+                    foreach ($branch in @($method.SelectNodes(".//*[local-name()='BranchPoint']"))) {
+                        $lineNumber = [int]$branch.sl
+                        if ($lineNumber -lt 1) {
+                            continue
+                        }
+
+                        $isChangedLine = $coverable[$relativePath] | Where-Object {
+                            $lineNumber -ge $_.Start -and $lineNumber -le $_.End
+                        }
+                        if (-not $isChangedLine) {
+                            continue
+                        }
+
+                        $key = "$relativePath|branch|$lineNumber|$($branch.offset)|$($branch.path)"
+                        $visited = [int]$branch.vc -gt 0
+                        if (-not $points.ContainsKey($key)) {
+                            $points[$key] = $visited
+                        }
+                        elseif ($visited) {
+                            $points[$key] = $true
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($points.Count -eq 0) {
+            Write-Output "Changed coverable lines have no executable coverage points; skipping the numeric gate."
+            return
+        }
+
+        $covered = @($points.Values | Where-Object { $_ }).Count
+        $rawPercent = 100.0 * $covered / $points.Count
+        $percent = [math]::Round($rawPercent, 1)
+        Write-Output "New-code coverage on changed production lines: $percent% ($covered/$($points.Count)); minimum is $MinimumPercent%."
+        if ($rawPercent -lt $MinimumPercent) {
+            $uncovered = $points.GetEnumerator() |
+                Where-Object { -not $_.Value } |
+                ForEach-Object { $_.Key } |
+                Sort-Object
+            foreach ($key in $uncovered) {
+                [Console]::Error.WriteLine("Uncovered new code: $key")
+            }
+
+            throw "New-code coverage $percent% is below the SonarCloud $MinimumPercent% gate."
+        }
+    }
+    finally {
+        if (Test-Path -LiteralPath $resultsDirectory) {
+            Remove-Item -LiteralPath $resultsDirectory -Recurse -Force
+        }
+    }
+}
+
 $repositoryRoot = (Invoke-Git rev-parse --show-toplevel | Select-Object -First 1).Trim()
 $mergeBase = (Invoke-Git merge-base $BaseRef HEAD | Select-Object -First 1).Trim()
 $changedRanges = @{}
@@ -259,6 +458,7 @@ try {
         }
 
         Write-Output "Changed C# lines match the .editorconfig style and local SonarCloud profile."
+        Invoke-ChangedCoverageCheck -RepositoryRoot $repositoryRoot -ChangedRanges $changedRanges
         Invoke-LocalizationCatalogTests -RepositoryRoot $repositoryRoot
     }
     finally {

@@ -1,8 +1,23 @@
-# SrvSurvey-XP 2.1.3.0-rc.49.1
+# SrvSurvey-XP 2.1.3.0-rc.49.2
 
-RC49.1 focuses on colonization architect/helper safety, Fleet Carrier cargo
-accuracy, a full-height construction shopping overlay, and Inara upload
-rate-limit compliance with durable logging.
+RC49.2 is a Linux Wayland screen-capture patch on RC49.1. Surface Mining
+rig detection could finish the desktop share picker and then fail immediately
+when PipeWire took the portal file descriptor.
+
+## Patch since rc.49.1
+
+### Wayland / Surface Mining rig detection
+
+- PipeWire portal startup no longer uses `DllImport SetLastError`, which
+  .NET rejects when runtime marshalling is disabled. That exception paused
+  rig detection after a successful monitor or window share.
+- Capture logs now record each portal/PipeWire step, and failures include
+  the full exception chain plus the SrvSurvey/PipeWire throw site. The next
+  capture problem should be visible in `~/.local/share/SrvSurvey/logs`
+  without a screenshot.
+- A failed PipeWire start after a successful picker is retried after
+  backoff instead of sticking until the app is restarted. User cancel and
+  desktop deny still stay terminal.
 
 ## What's changed since rc.49.0
 
@@ -53,11 +68,11 @@ rate-limit compliance with durable logging.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.49.1`
-- Tag: `xp-v2.1.3.0-rc.49.1`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.49.1-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.49.1-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.49.1-x86_64.AppImage`
+- Version: `2.1.3.0-rc.49.2`
+- Tag: `xp-v2.1.3.0-rc.49.2`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.49.2-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.49.2-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.49.2-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated
