@@ -6,6 +6,11 @@ The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
 are self-contained and do not require a separate .NET installation.
 
+Ubuntu 26.04 users running Elite through Gamescope can follow the dedicated
+[Ubuntu 26.04, Elite Dangerous, and Gamescope guide](UBUNTU_26_GAMESCOPE.md).
+It covers multi-monitor placement, selective mouse confinement, 4K/120 Hz
+configuration, Windows file migration, and the values each user must tailor.
+
 ## Download the package
 
 Download the AppImage or portable archive from the relevant
@@ -299,6 +304,7 @@ Common launch and library problems are listed below. For a fuller set of issues
 
 - [Linux Troubleshooting](Linux_Troubleshooting.md)
 - [Overlay Troubleshooting (KDE Plasma automatic handling and fallback rule)](Overlay_Troubleshooting.md)
+- [Ubuntu 26.04, Elite Dangerous, and patched Gamescope setup](UBUNTU_26_GAMESCOPE.md)
 - [CachyOS, KDE Plasma, and Gamescope setup](CACHYOS_GAMESCOPE.md)
 - [Frontier account linking and local data](FRONTIER.md)
 - [Avalonia Linux platform behavior](https://docs.avaloniaui.net/docs/platform-specific-guides/linux)

@@ -279,6 +279,7 @@ installation is not required for packaged builds.
 - [Install on Linux](docs/INSTALL_LINUX.md)
 - [Linux troubleshooting](docs/Linux_Troubleshooting.md)
 - [Overlay troubleshooting](docs/Overlay_Troubleshooting.md)
+- [Ubuntu 26.04, Elite Dangerous, and Gamescope setup](docs/UBUNTU_26_GAMESCOPE.md)
 - [CachyOS, KDE Plasma, and Gamescope setup](docs/CACHYOS_GAMESCOPE.md)
 
 Linux overlays support native X11 and XWayland. A Wayland desktop must expose an
