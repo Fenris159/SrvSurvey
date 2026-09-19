@@ -1697,6 +1697,10 @@
       "translation": "Erlaubt"
     },
     {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Zulässige Tracker: {0}."
+    },
+    {
       "source": "Alpha",
       "translation": "Alpha"
     },
@@ -4703,6 +4707,10 @@
     {
       "source": "Choose where to export boxel statistics",
       "translation": "Wählen Sie aus, wohin Boxel-Statistiken exportiert werden sollen"
+    },
+    {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Wählen Sie aus, welche Tracker die Wayland-Erfassung verwenden dürfen. Jeder Tracker beginnt damit, dass Sie ihn separat testen können."
     },
     {
       "source": "Choose your pledged Power before searching for this objective.",
@@ -8813,8 +8821,16 @@
       "translation": "FSS-Signale: {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "FSS-Tuning"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "Die FSS-Tuning-Erfassung ist vorübergehend nicht verfügbar: {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Abschluss der FSS-Optimierung"
     },
     {
       "source": "FSS tuning detection",
@@ -9177,6 +9193,10 @@
       "translation": "Erster Start"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Erkennung des ersten Schrittes"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Schätzung des ersten Besuchers: {0}"
     },
@@ -9211,6 +9231,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "First-Footfall-Wert: {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "FirstFootfallEnabled"
     },
     {
       "source": "FirstFootfallInference",
@@ -9639,6 +9663,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDetector"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuningEnabled"
     },
     {
       "source": "Fuel left",
@@ -22653,10 +22681,6 @@
       "translation": "SrvSurvey erzwingt das Schließen eines nicht überprüften Prozesses nicht. Wählen Sie „Nein“ und schließen Sie es manuell, wenn der Austausch nicht fortgesetzt werden kann."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey wird neu gestartet. Wenn die normale X11-Erfassung erneut fehlschlägt, wird beim nächsten Erfassungsversuch die Auswahl geöffnet."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey beginnt mit {0}."
     },
@@ -23237,6 +23261,10 @@
       "translation": "Der CSV-Export von Surface Mining ist fehlgeschlagen: {0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Surface Mining Rhino-Rig-Tracking"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Befehle für Surface Mining-Karten"
     },
@@ -23367,6 +23395,10 @@
     {
       "source": "SurfaceMining",
       "translation": "SurfaceMining"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRigEnabled"
     },
     {
       "source": "SurfaceRadarSize",
@@ -27297,10 +27329,6 @@
       "translation": "Verwenden SieSpanshLastUpdated"
     },
     {
-      "source": "Used by:",
-      "translation": "Verwendet von:"
-    },
-    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Zu den nützlichen Aktionen gehören Overlay-Sichtbarkeit, Live-Interaktion, Kartenzoom, Sprung-/FSS-/Körper-/Stationsfelder, Kolonieeinkauf, Systemnotizen, Boxel-Kopieren/Einfügen, Quest-Kommunikation, VR-Anpassung, Oberflächen-Lesezeichen und Screenshot-Daten."
     },
@@ -27905,16 +27933,28 @@
       "translation": "Wayland-Screenshot"
     },
     {
-      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
-      "translation": "Wayland-Bildschirmaufnahme in den Einstellungen deaktiviert; FSS, First-Footfall und Rig-Erkennung nutzen das Portal nicht."
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Wayland-Bildschirmaufnahme in den Einstellungen deaktiviert; Kein Tracker wird das Portal nutzen."
     },
     {
       "source": "Wayland screen capture enabled in Settings.",
       "translation": "Wayland-Bildschirmaufnahme in den Einstellungen aktiviert."
     },
     {
-      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
-      "translation": "Die Bildschirmaufnahme von Wayland ist deaktiviert. Durch FSS-Tuning, First-Footfall-Inferenz und Surface-Mining-Rig-Erkennung wird die Desktop-Freigabeauswahl nicht geöffnet."
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "Die Wayland-Bildschirmaufnahme für {0} ist unter Einstellungen → Anwendung deaktiviert."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Wayland-Screenshot für {0} {1} in den Einstellungen."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "Die Bildschirmaufnahme von Wayland ist deaktiviert. Kein Tracker öffnet die Desktop-Freigabeauswahl."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "Die Bildschirmaufnahme von Wayland ist aktiviert. Wählen Sie mindestens einen Tracker aus, um die Portalerfassung zu ermöglichen."
     },
     {
       "source": "Wayland screen capture is turned off in Settings → Application.",
@@ -29009,6 +29049,10 @@
       "translation": "diamantbackxl"
     },
     {
+      "source": "disabled",
+      "translation": "deaktiviert"
+    },
+    {
       "source": "do",
       "translation": "tun"
     },
@@ -29079,6 +29123,10 @@
     {
       "source": "en",
       "translation": "de"
+    },
+    {
+      "source": "enabled",
+      "translation": "ermöglicht"
     },
     {
       "source": "end",
@@ -29219,6 +29267,10 @@
     {
       "source": "firegroups",
       "translation": "Feuergruppen"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "erster Schritt"
     },
     {
       "source": "first-footfall inference",
@@ -29673,8 +29725,8 @@
       "translation": "Lichter"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
-      "translation": "Linux Xwayland Portal Pipewire Screencast Quellauswahl Fenster teilen Monitor Gamescope Zurücksetzen Aktivieren Deaktivieren Umschalten FSS Tuning Surface Mining Rig Erster Schritt"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "Linux Xwayland Portal Pipewire Screencast Quellauswahl Fenster teilen Monitor Gamescope Zurücksetzen Aktivieren Deaktivieren Umschalten FSS Tuning Surface Mining Rhino Rig First Footfall Tracker"
     },
     {
       "source": "linux64",
@@ -31949,18 +32001,6 @@
       "translation": "Russisch"
     },
     {
-      "source": "• First-footfall inference",
-      "translation": "• Inferenz beim ersten Schritt"
-    },
-    {
-      "source": "• Surface Mining rig detection",
-      "translation": "• Erkennung von Surface-Mining-Rigs"
-    },
-    {
-      "source": "• System Survey FSS tuning detection",
-      "translation": "• System Survey FSS-Tuning-Erkennung"
-    },
-    {
       "source": "• active",
       "translation": "• aktiv"
     },
@@ -33725,6 +33765,10 @@
     {
       "source": "Allowed",
       "translation": "Permitido"
+    },
+    {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Rastreadores permitidos: {0}."
     },
     {
       "source": "Alpha",
@@ -36733,6 +36777,10 @@
     {
       "source": "Choose where to export boxel statistics",
       "translation": "Elija dónde exportar estadísticas de boxel"
+    },
+    {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Elige qué rastreadores pueden usar la captura de Wayland. Cada rastreador comienza para permitirle probarlos por separado."
     },
     {
       "source": "Choose your pledged Power before searching for this objective.",
@@ -40843,8 +40891,16 @@
       "translation": "Señales FSS: {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "sintonización FSS"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "La captura de sintonización FSS no está disponible temporalmente: {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Finalización del ajuste FSS"
     },
     {
       "source": "FSS tuning detection",
@@ -41207,6 +41263,10 @@
       "translation": "Primer lanzamiento"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Detección del primer paso"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Estimación del primer paso: {0}"
     },
@@ -41241,6 +41301,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "Valor del primer paso: {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "Primer paso habilitado"
     },
     {
       "source": "FirstFootfallInference",
@@ -41669,6 +41733,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDetector"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuningEnabled"
     },
     {
       "source": "Fuel left",
@@ -54683,10 +54751,6 @@
       "translation": "SrvSurvey no forzará el cierre de un proceso no verificado. Elija No y ciérrelo manualmente si el reemplazo no puede continuar."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey se reiniciará. Si la captura normal de X11 vuelve a fallar, el siguiente intento de captura abre el selector."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey comenzará con {0}."
     },
@@ -55267,6 +55331,10 @@
       "translation": "Error al exportar CSV de Surface Mining: {0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Seguimiento de plataformas Rhino para minería a cielo abierto"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Comandos del mapa de minería de superficie"
     },
@@ -55397,6 +55465,10 @@
     {
       "source": "SurfaceMining",
       "translation": "Minería de superficie"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "Plataforma de minería de superficie habilitada"
     },
     {
       "source": "SurfaceRadarSize",
@@ -59327,10 +59399,6 @@
       "translation": "UseSpanshLastUpdated"
     },
     {
-      "source": "Used by:",
-      "translation": "Utilizado por:"
-    },
-    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Las acciones útiles incluyen visibilidad superpuesta, interacción en vivo, zoom de mapa, paneles de salto/FSS/cuerpo/estación, compras de colonias, notas del sistema, copiar/pegar cuadros, comunicaciones de misiones, ajuste de realidad virtual, marcadores de superficie y datos de captura de pantalla."
     },
@@ -59935,16 +60003,28 @@
       "translation": "Captura de pantalla de Wayland"
     },
     {
-      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
-      "translation": "Captura de pantalla de Wayland deshabilitada en Configuración; FSS, detección de primer paso y detección de plataformas no utilizarán el portal."
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Captura de pantalla de Wayland deshabilitada en Configuración; ningún rastreador utilizará el portal."
     },
     {
       "source": "Wayland screen capture enabled in Settings.",
       "translation": "Captura de pantalla de Wayland habilitada en Configuración."
     },
     {
-      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
-      "translation": "La captura de pantalla de Wayland está desactivada. El ajuste de FSS, la inferencia del primer paso y la detección de plataformas de Surface Mining no abrirán el selector de recursos compartidos de escritorio."
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "La captura de pantalla de Wayland para {0} está desactivada en Configuración → Aplicación."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Captura de pantalla de Wayland para {0} {1} en Configuración."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "La captura de pantalla de Wayland está desactivada. Ningún rastreador abrirá el selector de recursos compartidos de escritorio."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "La captura de pantalla de Wayland está activada. Seleccione al menos un rastreador para permitir la captura del portal."
     },
     {
       "source": "Wayland screen capture is turned off in Settings → Application.",
@@ -61039,6 +61119,10 @@
       "translation": "diamantebackxl"
     },
     {
+      "source": "disabled",
+      "translation": "desactivado"
+    },
+    {
       "source": "do",
       "translation": "hacer"
     },
@@ -61109,6 +61193,10 @@
     {
       "source": "en",
       "translation": "es"
+    },
+    {
+      "source": "enabled",
+      "translation": "activado"
     },
     {
       "source": "end",
@@ -61249,6 +61337,10 @@
     {
       "source": "firegroups",
       "translation": "grupos de fuego"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "primer paso"
     },
     {
       "source": "first-footfall inference",
@@ -61703,8 +61795,8 @@
       "translation": "luces"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
-      "translation": "linux xwayland portal pipewire screencast selector de fuente compartir ventana monitor gamescope restablecer habilitar desactivar alternar fss sintonización plataforma de minería de superficie primer paso"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "linux xwayland portal pipewire screencast selector de fuente compartir ventana monitor gamescope restablecer habilitar desactivar alternar fss sintonización minería de superficie plataforma rhino rastreador de primer paso"
     },
     {
       "source": "linux64",
@@ -63979,18 +64071,6 @@
       "translation": "ruso"
     },
     {
-      "source": "• First-footfall inference",
-      "translation": "• Inferencia del primer paso"
-    },
-    {
-      "source": "• Surface Mining rig detection",
-      "translation": "• Detección de plataformas de minería a cielo abierto"
-    },
-    {
-      "source": "• System Survey FSS tuning detection",
-      "translation": "• Detección de sintonización de FSS de System Survey"
-    },
-    {
       "source": "• active",
       "translation": "• activo"
     },
@@ -65755,6 +65835,10 @@
     {
       "source": "Allowed",
       "translation": "Autorisé"
+    },
+    {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Trackers autorisés : {0}."
     },
     {
       "source": "Alpha",
@@ -68763,6 +68847,10 @@
     {
       "source": "Choose where to export boxel statistics",
       "translation": "Choisissez où exporter les statistiques de boxel"
+    },
+    {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Choisissez quels trackers peuvent utiliser la capture Wayland. Chaque tracker démarre pour vous permettre de les tester séparément."
     },
     {
       "source": "Choose your pledged Power before searching for this objective.",
@@ -72873,8 +72961,16 @@
       "translation": "Signaux FSS : {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "Réglage FSS"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "La capture de réglage FSS est temporairement indisponible : {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Achèvement du réglage FSS"
     },
     {
       "source": "FSS tuning detection",
@@ -73237,6 +73333,10 @@
       "translation": "Premier lancement"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Détection du premier pas"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Estimation de première visite : {0}"
     },
@@ -73271,6 +73371,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "Valeur de première visite : {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "FirstFootfallEnabled"
     },
     {
       "source": "FirstFootfallInference",
@@ -73699,6 +73803,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDétecteur"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuningActivé"
     },
     {
       "source": "Fuel left",
@@ -86713,10 +86821,6 @@
       "translation": "SrvSurvey ne forcera pas la fermeture d'un processus non vérifié. Choisissez Non et fermez-le manuellement si le remplacement ne peut pas continuer."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey redémarrera. Si la capture X11 normale échoue à nouveau, la prochaine tentative de capture ouvre le sélecteur."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey commencera par {0}."
     },
@@ -87297,6 +87401,10 @@
       "translation": "Échec de l'exportation CSV Surface Mining : {0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Suivi des plates-formes Rhino pour le Surface Mining"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Commandes de carte Surface Mining"
     },
@@ -87427,6 +87535,10 @@
     {
       "source": "SurfaceMining",
       "translation": "Exploitation minière à ciel ouvert"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRigEnabled"
     },
     {
       "source": "SurfaceRadarSize",
@@ -91357,10 +91469,6 @@
       "translation": "UtiliserSpanshLastUpdated"
     },
     {
-      "source": "Used by:",
-      "translation": "Utilisé par :"
-    },
-    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Les actions utiles incluent la visibilité en superposition, l'interaction en direct, le zoom de la carte, les panneaux de saut/FSS/corps/station, les achats de colonies, les notes système, le copier/coller de boxel, les communications de quête, l'ajustement VR, les signets de surface et les données de capture d'écran."
     },
@@ -91965,16 +92073,28 @@
       "translation": "Capture d'écran de Wayland"
     },
     {
-      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
-      "translation": "Capture d'écran Wayland désactivée dans Paramètres ; La détection FSS, du premier pas et des plates-formes n'utilisera pas le portail."
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Capture d'écran Wayland désactivée dans Paramètres ; aucun tracker n’utilisera le portail."
     },
     {
       "source": "Wayland screen capture enabled in Settings.",
       "translation": "Capture d'écran Wayland activée dans Paramètres."
     },
     {
-      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
-      "translation": "La capture d'écran Wayland est désactivée. Le réglage FSS, l’inférence de premier pas et la détection de plate-forme Surface Mining n’ouvriront pas le sélecteur de partage de bureau."
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "La capture d'écran Wayland pour {0} est désactivée dans Paramètres → Application."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Capture d'écran Wayland pour {0} {1} dans Paramètres."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "La capture d'écran Wayland est désactivée. Aucun tracker n'ouvrira le sélecteur de partage de bureau."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "La capture d'écran Wayland est activée. Sélectionnez au moins un tracker pour autoriser la capture du portail."
     },
     {
       "source": "Wayland screen capture is turned off in Settings → Application.",
@@ -93069,6 +93189,10 @@
       "translation": "diamantbackxl"
     },
     {
+      "source": "disabled",
+      "translation": "désactivé"
+    },
+    {
       "source": "do",
       "translation": "faire"
     },
@@ -93139,6 +93263,10 @@
     {
       "source": "en",
       "translation": "fr"
+    },
+    {
+      "source": "enabled",
+      "translation": "activé"
     },
     {
       "source": "end",
@@ -93279,6 +93407,10 @@
     {
       "source": "firegroups",
       "translation": "groupes de pompiers"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "premier pas"
     },
     {
       "source": "first-footfall inference",
@@ -93733,8 +93865,8 @@
       "translation": "lumières"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
-      "translation": "linux portail xwayland pipewire screencast sélecteur de source partager fenêtre moniteur gamescope réinitialiser activer désactiver bascule réglage fss plate-forme minière de surface première étape"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "linux portail xwayland pipewire screencast sélecteur de source partager fenêtre moniteur gamescope réinitialiser activer désactiver bascule réglage fss surface mining rhino rig premier suivi de fréquentation"
     },
     {
       "source": "linux64",
@@ -96009,18 +96141,6 @@
       "translation": "russe"
     },
     {
-      "source": "• First-footfall inference",
-      "translation": "• Inférence de première étape"
-    },
-    {
-      "source": "• Surface Mining rig detection",
-      "translation": "• Détection des plates-formes de Surface Mining"
-    },
-    {
-      "source": "• System Survey FSS tuning detection",
-      "translation": "• Détection du réglage du système FSS"
-    },
-    {
       "source": "• active",
       "translation": "• actif"
     },
@@ -97785,6 +97905,10 @@
     {
       "source": "Allowed",
       "translation": "Permitido"
+    },
+    {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Rastreadores permitidos: {0}."
     },
     {
       "source": "Alpha",
@@ -100793,6 +100917,10 @@
     {
       "source": "Choose where to export boxel statistics",
       "translation": "Escolha para onde exportar estatísticas do boxel"
+    },
+    {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Escolha quais rastreadores podem usar a captura Wayland. Cada rastreador começa para permitir que você os teste separadamente."
     },
     {
       "source": "Choose your pledged Power before searching for this objective.",
@@ -104903,8 +105031,16 @@
       "translation": "Sinais FSS: {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "Ajuste FSS"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "A captura de ajuste FSS está temporariamente indisponível: {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Conclusão do ajuste FSS"
     },
     {
       "source": "FSS tuning detection",
@@ -105267,6 +105403,10 @@
       "translation": "Primeiro lançamento"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Detecção do primeiro passo"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Estimativa do primeiro passo: {0}"
     },
@@ -105301,6 +105441,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "Valor do primeiro passo: {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "FirstFootfall Habilitado"
     },
     {
       "source": "FirstFootfallInference",
@@ -105729,6 +105873,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDetector"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuning habilitado"
     },
     {
       "source": "Fuel left",
@@ -118743,10 +118891,6 @@
       "translation": "SrvSurvey não forçará o fechamento de um processo não verificado. Escolha Não e feche-o manualmente se a substituição não puder continuar."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey será reiniciado. Se a captura normal do X11 falhar novamente, a próxima tentativa de captura abrirá o seletor."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey começará com {0}."
     },
@@ -119327,6 +119471,10 @@
       "translation": "Falha na exportação de CSV de mineração de superfície: {0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Rastreamento de plataforma Surface Mining Rhino"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Comandos do mapa de mineração de superfície"
     },
@@ -119457,6 +119605,10 @@
     {
       "source": "SurfaceMining",
       "translation": "Mineração de Superfície"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRigEnabled"
     },
     {
       "source": "SurfaceRadarSize",
@@ -123387,10 +123539,6 @@
       "translation": "UseSpanshLastUpdated"
     },
     {
-      "source": "Used by:",
-      "translation": "Usado por:"
-    },
-    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Ações úteis incluem visibilidade de sobreposição, interação ao vivo, zoom do mapa, painéis de salto/FSS/corpo/estação, compras de colônias, notas do sistema, copiar/colar boxel, comunicações de missões, ajuste de VR, marcadores de superfície e dados de captura de tela."
     },
@@ -123995,16 +124143,28 @@
       "translation": "Captura de tela do Wayland"
     },
     {
-      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
-      "translation": "Captura de tela do Wayland desativada em Configurações; FSS, detecção de primeiro passo e detecção de plataforma não usarão o portal."
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Captura de tela do Wayland desativada em Configurações; nenhum rastreador usará o portal."
     },
     {
       "source": "Wayland screen capture enabled in Settings.",
       "translation": "Captura de tela do Wayland habilitada em Configurações."
     },
     {
-      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
-      "translation": "A captura de tela do Wayland está desativada. O ajuste FSS, a inferência do primeiro passo e a detecção da plataforma de mineração de superfície não abrirão o seletor de compartilhamento da área de trabalho."
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "A captura de tela do Wayland para {0} está desativada em Configurações → Aplicativo."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Captura de tela do Wayland para {0} {1} em Configurações."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "A captura de tela do Wayland está desativada. Nenhum rastreador abrirá o seletor de compartilhamento da área de trabalho."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "A captura de tela do Wayland está ativada. Selecione pelo menos um rastreador para permitir a captura do portal."
     },
     {
       "source": "Wayland screen capture is turned off in Settings → Application.",
@@ -125099,6 +125259,10 @@
       "translation": "diamantebackxl"
     },
     {
+      "source": "disabled",
+      "translation": "desabilitado"
+    },
+    {
       "source": "do",
       "translation": "fazer"
     },
@@ -125169,6 +125333,10 @@
     {
       "source": "en",
       "translation": "pt"
+    },
+    {
+      "source": "enabled",
+      "translation": "habilitado"
     },
     {
       "source": "end",
@@ -125309,6 +125477,10 @@
     {
       "source": "firegroups",
       "translation": "grupos de fogo"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "primeiro passo"
     },
     {
       "source": "first-footfall inference",
@@ -125763,8 +125935,8 @@
       "translation": "luzes"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
-      "translation": "linux xwayland portal pipewire screencast selecionador de fonte compartilhar monitor de janela gamescope reset habilitar desabilitar alternar fss ajuste equipamento de mineração de superfície primeiro passo"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "linux xwayland portal pipewire screencast seletor de fonte compartilhar monitor de janela gamescope redefinir habilitar desabilitar alternar ajuste fss mineração de superfície rinoceronte equipamento rastreador de primeiros passos"
     },
     {
       "source": "linux64",
@@ -128039,18 +128211,6 @@
       "translation": "Russo"
     },
     {
-      "source": "• First-footfall inference",
-      "translation": "• Inferência do primeiro passo"
-    },
-    {
-      "source": "• Surface Mining rig detection",
-      "translation": "• Detecção de plataforma de mineração de superfície"
-    },
-    {
-      "source": "• System Survey FSS tuning detection",
-      "translation": "• Detecção de ajuste do System Survey FSS"
-    },
-    {
       "source": "• active",
       "translation": "• ativo"
     },
@@ -129815,6 +129975,10 @@
     {
       "source": "Allowed",
       "translation": "Разрешено"
+    },
+    {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Разрешенные трекеры: {0}."
     },
     {
       "source": "Alpha",
@@ -132823,6 +132987,10 @@
     {
       "source": "Choose where to export boxel statistics",
       "translation": "Выберите, куда экспортировать статистику бокселей"
+    },
+    {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Выберите, какие трекеры могут использовать захват Wayland. Каждый трекер запускается, чтобы вы могли протестировать его отдельно."
     },
     {
       "source": "Choose your pledged Power before searching for this objective.",
@@ -136933,8 +137101,16 @@
       "translation": "Сигналы ФСС: {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "ФСС тюнинг"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "Захват настроек FSS временно недоступен: {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Завершение настройки ФСС"
     },
     {
       "source": "FSS tuning detection",
@@ -137297,6 +137473,10 @@
       "translation": "Первый запуск"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Обнаружение первого шага"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Оценка первого шага: {0}"
     },
@@ -137331,6 +137511,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "Значение первого шага: {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "Первый шаг включен"
     },
     {
       "source": "FirstFootfallInference",
@@ -137759,6 +137943,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDetector"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "Фсстюнингэнаблед"
     },
     {
       "source": "Fuel left",
@@ -150773,10 +150961,6 @@
       "translation": "SrvSurvey не закроет принудительно непроверенный процесс. Выберите «Нет» и закройте его вручную, если замена не может быть продолжена."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey перезагрузится. Если обычный захват X11 снова не удался, следующая попытка захвата откроет сборщик."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey будет начинаться с {0}."
     },
@@ -151357,6 +151541,10 @@
       "translation": "Не удалось экспортировать CSV-файл Surface Mining: {0}."
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Отслеживание буровой установки Surface Mining Rhino"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Команды карты Surface Mining"
     },
@@ -151487,6 +151675,10 @@
     {
       "source": "SurfaceMining",
       "translation": "Поверхностный майнинг"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRigEnabled"
     },
     {
       "source": "SurfaceRadarSize",
@@ -155417,10 +155609,6 @@
       "translation": "УсеSpanshLastUpdated"
     },
     {
-      "source": "Used by:",
-      "translation": "Используется:"
-    },
-    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "Полезные действия включают в себя видимость наложения, взаимодействие в реальном времени, масштабирование карты, панели прыжка/FSS/тела/станции, покупки в колониях, системные заметки, копирование/вставку боксов, общение в квестах, настройку VR, закладки на поверхности и данные скриншотов."
     },
@@ -156025,16 +156213,28 @@
       "translation": "Снимок экрана Вейланда"
     },
     {
-      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
-      "translation": "Захват экрана Wayland отключен в настройках; FSS, обнаружение первых шагов и обнаружение буровых установок не будут использовать портал."
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Захват экрана Wayland отключен в настройках; ни один трекер не будет использовать портал."
     },
     {
       "source": "Wayland screen capture enabled in Settings.",
       "translation": "Снимок экрана Wayland включен в настройках."
     },
     {
-      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
-      "translation": "Захват экрана Wayland отключен. Настройка FSS, вывод по первым шагам и обнаружение буровой установки Surface Mining не откроют средство выбора общего доступа к рабочему столу."
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "Снимок экрана Wayland для {0} отключен в Настройках → Приложение."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Снимок экрана Wayland для {0} {1} в настройках."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "Захват экрана Wayland отключен. Ни один трекер не откроет окно выбора общего доступа к рабочему столу."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "Снимок экрана Wayland включен. Выберите хотя бы один трекер, чтобы разрешить захват портала."
     },
     {
       "source": "Wayland screen capture is turned off in Settings → Application.",
@@ -157129,6 +157329,10 @@
       "translation": "алмазбакксл"
     },
     {
+      "source": "disabled",
+      "translation": "неполноценный"
+    },
+    {
       "source": "do",
       "translation": "делать"
     },
@@ -157199,6 +157403,10 @@
     {
       "source": "en",
       "translation": "ru"
+    },
+    {
+      "source": "enabled",
+      "translation": "включено"
     },
     {
       "source": "end",
@@ -157339,6 +157547,10 @@
     {
       "source": "firegroups",
       "translation": "огневые группы"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "первый шаг"
     },
     {
       "source": "first-footfall inference",
@@ -157793,8 +158005,8 @@
       "translation": "огни"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
-      "translation": "Linux xwayland портал Pipewire Screencast Выбор источника Поделиться Окно Монитор Сброс Gamescope Включить Отключить Переключить FSS Настройка Установка для майнинга поверхности Первый шаг"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "Linux xwayland портал Pipewire Screencast Выбор источника Поделиться Окно монитора Сброс игровой прицела Включить отключить переключить настройку fss Surface Mining Rhino Rig Первый трекер шагов"
     },
     {
       "source": "linux64",
@@ -160069,18 +160281,6 @@
       "translation": "Русский"
     },
     {
-      "source": "• First-footfall inference",
-      "translation": "• Вывод по первым шагам"
-    },
-    {
-      "source": "• Surface Mining rig detection",
-      "translation": "• Обнаружение буровых установок для открытых горных работ"
-    },
-    {
-      "source": "• System Survey FSS tuning detection",
-      "translation": "• Обнаружение настройки системы FSS"
-    },
-    {
       "source": "• active",
       "translation": "• активный"
     },
@@ -161845,6 +162045,10 @@
     {
       "source": "Allowed",
       "translation": "允许"
+    },
+    {
+      "source": "Allowed trackers: {0}.",
+      "translation": "允许的跟踪器：{0}。"
     },
     {
       "source": "Alpha",
@@ -164853,6 +165057,10 @@
     {
       "source": "Choose where to export boxel statistics",
       "translation": "选择导出 boxel 统计数据的位置"
+    },
+    {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "选择哪些跟踪器可以使用 Wayland 捕获。每个跟踪器一开始就让您单独测试它们。"
     },
     {
       "source": "Choose your pledged Power before searching for this objective.",
@@ -168963,8 +169171,16 @@
       "translation": "FSS 信号：{0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "FSS调整"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "FSS 调谐捕获暂时不可用：{0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "FSS调优完成"
     },
     {
       "source": "FSS tuning detection",
@@ -169327,6 +169543,10 @@
       "translation": "首次推出"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "首次脚步检测"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "首次客流量估计：{0}"
     },
@@ -169361,6 +169581,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "首次客流量值：{0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "首次脚步启用"
     },
     {
       "source": "FirstFootfallInference",
@@ -169789,6 +170013,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "Fss调谐检测器"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuning启用"
     },
     {
       "source": "Fuel left",
@@ -182803,10 +183031,6 @@
       "translation": "SrvSurvey不会强制关闭未经验证的进程。如果替换无法继续，请选择“否”并手动关闭它。"
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey将重新启动。如果正常的 X11 捕获再次失败，下一次捕获尝试将打开选取器。"
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey 将以 {0} 开头。"
     },
@@ -183387,6 +183611,10 @@
       "translation": "露天采矿 CSV 导出失败：{0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "露天采矿 Rhino 钻机跟踪"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "露天采矿地图命令"
     },
@@ -183517,6 +183745,10 @@
     {
       "source": "SurfaceMining",
       "translation": "露天采矿"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRig启用"
     },
     {
       "source": "SurfaceRadarSize",
@@ -187447,10 +187679,6 @@
       "translation": "使用SpanshLastUpdated"
     },
     {
-      "source": "Used by:",
-      "translation": "使用者："
-    },
-    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "有用的操作包括覆盖可见性、实时交互、地图缩放、跳跃/FSS/主体/站面板、殖民地购物、系统注释、boxel复制/粘贴、任务通信、VR调整、表面书签和屏幕截图数据。"
     },
@@ -188055,16 +188283,28 @@
       "translation": "韦兰屏幕截图"
     },
     {
-      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
-      "translation": "在“设置”中禁用 Wayland 屏幕捕获； FSS、首次脚步声和装备检测将不使用门户。"
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "在“设置”中禁用 Wayland 屏幕捕获；没有跟踪器会使用该门户。"
     },
     {
       "source": "Wayland screen capture enabled in Settings.",
       "translation": "在“设置”中启用了 Wayland 屏幕捕获。"
     },
     {
-      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
-      "translation": "Wayland 屏幕截图已关闭。 FSS 调整、首次脚步推理和 Surface Mining 设备检测不会打开桌面共享选择器。"
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "{0} 的 Wayland 屏幕捕获在“设置”→“应用程序”中关闭。"
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "设置中 {0} {1} 的 Wayland 屏幕截图。"
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "Wayland 屏幕截图已关闭。没有跟踪器会打开桌面共享选择器。"
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "Wayland 屏幕截图已开启。至少选择一个跟踪器以允许门户捕获。"
     },
     {
       "source": "Wayland screen capture is turned off in Settings → Application.",
@@ -189159,6 +189399,10 @@
       "translation": "菱形背心XL"
     },
     {
+      "source": "disabled",
+      "translation": "残疾人"
+    },
+    {
       "source": "do",
       "translation": "做"
     },
@@ -189229,6 +189473,10 @@
     {
       "source": "en",
       "translation": "zh"
+    },
+    {
+      "source": "enabled",
+      "translation": "已启用"
     },
     {
       "source": "end",
@@ -189369,6 +189617,10 @@
     {
       "source": "firegroups",
       "translation": "火力组"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "第一个脚步声"
     },
     {
       "source": "first-footfall inference",
@@ -189823,8 +190075,8 @@
       "translation": "灯"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
-      "translation": "linux xwayland 门户 pipelinewire 截屏 源选择器 共享窗口 监视器 gamescope 重置 启用 禁用 切换 fss 调整 表面采矿设备 第一次脚步"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "linux xwayland 门户 pipelinewire 截屏 源选择器 共享窗口监视器 gamescope 重置 启用 禁用 切换 fss 调整 表面采矿 rhino 钻机 第一个脚步跟踪器"
     },
     {
       "source": "linux64",
@@ -192099,18 +192351,6 @@
       "translation": "俄罗斯"
     },
     {
-      "source": "• First-footfall inference",
-      "translation": "• 首客推断"
-    },
-    {
-      "source": "• Surface Mining rig detection",
-      "translation": "• 露天采矿设备检测"
-    },
-    {
-      "source": "• System Survey FSS tuning detection",
-      "translation": "• 系统调查 FSS 调谐检测"
-    },
-    {
       "source": "• active",
       "translation": "• 活跃"
     },
@@ -193875,6 +194115,10 @@
     {
       "source": "Allowed",
       "translation": "* ALLOWED >>>!"
+    },
+    {
+      "source": "Allowed trackers: {0}.",
+      "translation": "* ALLOWED TRACKERS: {0}. >>>!"
     },
     {
       "source": "Alpha",
@@ -196883,6 +197127,10 @@
     {
       "source": "Choose where to export boxel statistics",
       "translation": "* CHOOSE WHERE TO EXPORT BOXEL STATISTICS >>>!"
+    },
+    {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "* CHOOSE WHICH TRACKERS MAY USE WAYLAND CAPTURE. EACH TRACKER STARTS OFF TO LET YOU TEST THEM SEPARATELY. >>>!"
     },
     {
       "source": "Choose your pledged Power before searching for this objective.",
@@ -200993,8 +201241,16 @@
       "translation": "* FSS SIGNALS: {0} >>>!"
     },
     {
+      "source": "FSS tuning",
+      "translation": "* FSS TUNING >>>!"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "* FSS TUNING CAPTURE IS TEMPORARILY UNAVAILABLE: {0} >>>!"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "* FSS TUNING COMPLETION >>>!"
     },
     {
       "source": "FSS tuning detection",
@@ -201357,6 +201613,10 @@
       "translation": "* FIRST LAUNCH >>>!"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "* FIRST-FOOTFALL DETECTION >>>!"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "* FIRST-FOOTFALL ESTIMATE: {0} >>>!"
     },
@@ -201391,6 +201651,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "* FIRST-FOOTFALL VALUE: {0} >>>!"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "* FIRSTFOOTFALLENABLED >>>!"
     },
     {
       "source": "FirstFootfallInference",
@@ -201819,6 +202083,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "* FSSTUNINGDETECTOR >>>!"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "* FSSTUNINGENABLED >>>!"
     },
     {
       "source": "Fuel left",
@@ -214833,10 +215101,6 @@
       "translation": "* SRVSURVEY WILL NOT FORCE-CLOSE AN UNVERIFIED PROCESS. CHOOSE NO AND CLOSE IT MANUALLY IF REPLACEMENT CANNOT CONTINUE. >>>!"
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "* SRVSURVEY WILL RESTART. IF NORMAL X11 CAPTURE FAILS AGAIN, THE NEXT CAPTURE ATTEMPT OPENS THE PICKER. >>>!"
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "* SRVSURVEY WILL START WITH {0}. >>>!"
     },
@@ -215417,6 +215681,10 @@
       "translation": "* SURFACE MINING CSV EXPORT FAILED: {0} >>>!"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "* SURFACE MINING RHINO RIG TRACKING >>>!"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "* SURFACE MINING MAP COMMANDS >>>!"
     },
@@ -215547,6 +215815,10 @@
     {
       "source": "SurfaceMining",
       "translation": "* SURFACEMINING >>>!"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "* SURFACEMININGRIGENABLED >>>!"
     },
     {
       "source": "SurfaceRadarSize",
@@ -219477,10 +219749,6 @@
       "translation": "* USESPANSHLASTUPDATED >>>!"
     },
     {
-      "source": "Used by:",
-      "translation": "* USED BY: >>>!"
-    },
-    {
       "source": "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
       "translation": "* USEFUL ACTIONS INCLUDE OVERLAY VISIBILITY, LIVE INTERACTION, MAP ZOOM, JUMP/FSS/BODY/STATION PANELS, COLONY SHOPPING, SYSTEM NOTES, BOXEL COPY/PASTE, QUEST COMMUNICATIONS, VR ADJUSTMENT, SURFACE BOOKMARKS, AND SCREENSHOT DATA. >>>!"
     },
@@ -220085,16 +220353,28 @@
       "translation": "* WAYLAND SCREEN CAPTURE >>>!"
     },
     {
-      "source": "Wayland screen capture disabled in Settings; FSS, first-footfall, and rig detection will not use the portal.",
-      "translation": "* WAYLAND SCREEN CAPTURE DISABLED IN SETTINGS; FSS, FIRST-FOOTFALL, AND RIG DETECTION WILL NOT USE THE PORTAL. >>>!"
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "* WAYLAND SCREEN CAPTURE DISABLED IN SETTINGS; NO TRACKER WILL USE THE PORTAL. >>>!"
     },
     {
       "source": "Wayland screen capture enabled in Settings.",
       "translation": "* WAYLAND SCREEN CAPTURE ENABLED IN SETTINGS. >>>!"
     },
     {
-      "source": "Wayland screen capture is off. FSS tuning, first-footfall inference, and Surface Mining rig detection will not open the desktop share picker.",
-      "translation": "* WAYLAND SCREEN CAPTURE IS OFF. FSS TUNING, FIRST-FOOTFALL INFERENCE, AND SURFACE MINING RIG DETECTION WILL NOT OPEN THE DESKTOP SHARE PICKER. >>>!"
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "* WAYLAND SCREEN CAPTURE FOR {0} IS TURNED OFF IN SETTINGS → APPLICATION. >>>!"
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "* WAYLAND SCREEN CAPTURE FOR {0} {1} IN SETTINGS. >>>!"
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "* WAYLAND SCREEN CAPTURE IS OFF. NO TRACKER WILL OPEN THE DESKTOP SHARE PICKER. >>>!"
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "* WAYLAND SCREEN CAPTURE IS ON. SELECT AT LEAST ONE TRACKER TO ALLOW PORTAL CAPTURE. >>>!"
     },
     {
       "source": "Wayland screen capture is turned off in Settings → Application.",
@@ -221189,6 +221469,10 @@
       "translation": "* DIAMONDBACKXL >>>!"
     },
     {
+      "source": "disabled",
+      "translation": "* DISABLED >>>!"
+    },
+    {
       "source": "do",
       "translation": "* DO >>>!"
     },
@@ -221259,6 +221543,10 @@
     {
       "source": "en",
       "translation": "* EN >>>!"
+    },
+    {
+      "source": "enabled",
+      "translation": "* ENABLED >>>!"
     },
     {
       "source": "end",
@@ -221399,6 +221687,10 @@
     {
       "source": "firegroups",
       "translation": "* FIREGROUPS >>>!"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "* FIRST-FOOTFALL >>>!"
     },
     {
       "source": "first-footfall inference",
@@ -221853,8 +222145,8 @@
       "translation": "* LIGHTS >>>!"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rig first footfall",
-      "translation": "* LINUX XWAYLAND PORTAL PIPEWIRE SCREENCAST SOURCE PICKER SHARE WINDOW MONITOR GAMESCOPE RESET ENABLE DISABLE TOGGLE FSS TUNING SURFACE MINING RIG FIRST FOOTFALL >>>!"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "* LINUX XWAYLAND PORTAL PIPEWIRE SCREENCAST SOURCE PICKER SHARE WINDOW MONITOR GAMESCOPE RESET ENABLE DISABLE TOGGLE FSS TUNING SURFACE MINING RHINO RIG FIRST FOOTFALL TRACKER >>>!"
     },
     {
       "source": "linux64",
@@ -224127,18 +224419,6 @@
     {
       "source": "Русский",
       "translation": "* РУССКИЙ >>>!"
-    },
-    {
-      "source": "• First-footfall inference",
-      "translation": "* • FIRST-FOOTFALL INFERENCE >>>!"
-    },
-    {
-      "source": "• Surface Mining rig detection",
-      "translation": "* • SURFACE MINING RIG DETECTION >>>!"
-    },
-    {
-      "source": "• System Survey FSS tuning detection",
-      "translation": "* • SYSTEM SURVEY FSS TUNING DETECTION >>>!"
     },
     {
       "source": "• active",
