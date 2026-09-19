@@ -239,7 +239,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
         Assert.False(File.Exists(preparation.CandidateDirectory));
         if (OperatingSystem.IsLinux())
         {
-            Assert.True((File.GetUnixFileMode(installedPath) & UnixFileMode.UserExecute) != 0);
+            Assert.NotEqual(UnixFileMode.None, File.GetUnixFileMode(installedPath) & UnixFileMode.UserExecute);
         }
     }
 
