@@ -20,11 +20,10 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:NotificationMessageViewModel">
             <Grid Margin="0,3" ColumnDefinitions="Auto,*" ColumnSpacing="9">
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+              <TextBlock Classes="type-body" Foreground="{DynamicResource RavenAccentBrush}"
                          FontWeight="Bold"
                          Text="&#x203A;" />
-              <TextBlock Grid.Column="1"
-                         FontSize="13"
+              <TextBlock Classes="type-title" Grid.Column="1"
                          FontWeight="SemiBold"
                          TextWrapping="Wrap"
                          Text="{Binding Text}" />

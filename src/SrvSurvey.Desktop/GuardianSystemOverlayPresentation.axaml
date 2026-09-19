@@ -13,7 +13,7 @@
   </UserControl.Styles>
   <Border Classes="guardian-panel" MinHeight="60">
     <StackPanel Spacing="3">
-      <TextBlock Classes="overlay-header"
+      <TextBlock Classes="overlay-header type-header"
                  Text="{Binding Guardian.CurrentSystemGuardianTitle}"
                  TextWrapping="Wrap" />
       <Border Classes="guardian-header-rule general-header-rule" />
@@ -21,23 +21,23 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
             <StackPanel Margin="0,2,0,2" Spacing="1">
-              <TextBlock Classes="guardian-legacy-middle guardian-system-line"
+              <TextBlock Classes="guardian-legacy-middle guardian-system-line type-body"
                          Classes.destination="{Binding IsDestination}"
                          Text="{Binding LegacyDisplayText}"
                          TextWrapping="Wrap" />
-              <TextBlock Classes="guardian-legacy-small guardian-system-line"
+              <TextBlock Classes="guardian-legacy-small guardian-system-line type-detail"
                          Classes.destination="{Binding IsDestination}"
                          Margin="10,0,0,0"
                          IsVisible="{Binding HasBlueprint}"
                          Text="{Binding LegacyBlueprintLine}"
                          TextWrapping="Wrap" />
-              <TextBlock Classes="guardian-legacy-small guardian-system-line"
+              <TextBlock Classes="guardian-legacy-small guardian-system-line type-detail"
                          Classes.destination="{Binding IsDestination}"
                          Margin="10,0,0,0"
                          IsVisible="{Binding HasLegacySurveyLine}"
                          Text="{Binding LegacySurveyLine}"
                          TextWrapping="Wrap" />
-              <TextBlock Classes="guardian-legacy-small guardian-system-line"
+              <TextBlock Classes="guardian-legacy-small guardian-system-line type-detail"
                          Classes.destination="{Binding IsDestination}"
                          Margin="10,0,0,0"
                          IsVisible="{Binding HasRamTahLogs}"

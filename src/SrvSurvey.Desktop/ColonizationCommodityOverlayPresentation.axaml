@@ -35,25 +35,23 @@
           Grid.IsSharedSizeScope="True">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="0">
-          <TextBlock Classes="overlay-header"
+          <TextBlock Classes="overlay-header type-header"
                      Text="{Binding HeaderTitle}"
                      TextTrimming="CharacterEllipsis" />
           <ItemsControl IsVisible="{Binding HasMultipleProjects}"
                         ItemsSource="{Binding ProjectNames}">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <TextBlock Classes="muted"
-                           FontSize="9"
+                <TextBlock Classes="muted type-detail"
                            Text="{Binding StringFormat='&#x203A; {0}'}"
                            TextTrimming="CharacterEllipsis" />
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
         </StackPanel>
-        <TextBlock Grid.Column="1"
+        <TextBlock Classes="type-caption" Grid.Column="1"
                    VerticalAlignment="Top"
                    Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="8"
                    FontWeight="SemiBold"
                    Text="{Binding InputMode}" />
       </Grid>
@@ -63,14 +61,12 @@
                 CornerRadius="3"
                 IsVisible="{Binding HasWarning}"
                 Padding="6,3">
-          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                     FontSize="9"
+          <TextBlock Classes="type-detail" Foreground="{DynamicResource RavenWarningBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding WarningText}"
                      TextTrimming="CharacterEllipsis" />
         </Border>
-        <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
-                   FontSize="11"
+        <TextBlock Classes="type-body" Foreground="{DynamicResource RavenSuccessBrush}"
                    FontWeight="Bold"
                    IsVisible="{Binding IsConstructionComplete}"
                    Text="Construction complete" />
@@ -93,25 +89,21 @@
                               MinWidth="12"
                               SharedSizeGroup="ColoniseStatus" />
           </Grid.ColumnDefinitions>
-          <TextBlock Classes="muted" FontSize="8" Text="COMMODITY" />
+          <TextBlock Classes="muted type-caption" Text="COMMODITY" />
           <TextBlock Grid.Column="1"
-                     Classes="muted"
-                     FontSize="8"
+                     Classes="muted type-caption"
                      HorizontalAlignment="Right"
                      Text="NEED" />
           <TextBlock Grid.Column="2"
-                     Classes="muted"
-                     FontSize="8"
+                     Classes="muted type-caption"
                      HorizontalAlignment="Right"
                      Text="{Binding FleetCarrierColumnHeader}" />
           <TextBlock Grid.Column="3"
-                     Classes="muted"
-                     FontSize="8"
+                     Classes="muted type-caption"
                      HorizontalAlignment="Right"
                      Text="{Binding ShipColumnHeader}" />
           <TextBlock Grid.Column="4"
-                     Classes="muted"
-                     FontSize="8"
+                     Classes="muted type-caption"
                      HorizontalAlignment="Center"
                      Text="&#x2713;"
                      Opacity="0.55" />
@@ -129,12 +121,10 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:ColonizationCommodityGroupViewModel">
               <StackPanel Margin="0,0,0,3" Spacing="0" HorizontalAlignment="Left">
-                <TextBlock Foreground="{DynamicResource RavenColoniseItemBrush}"
-                           FontSize="9"
+                <TextBlock Classes="type-detail" Foreground="{DynamicResource RavenColoniseItemBrush}"
                            FontWeight="Bold"
                            Text="{Binding Name}" />
-                <TextBlock Classes="muted"
-                           FontSize="8"
+                <TextBlock Classes="muted type-caption"
                            IsVisible="{Binding IsCollapsed}"
                            Text="{Binding CollapsedSummary}" />
                 <ItemsControl ItemsSource="{Binding Rows}"
@@ -166,74 +156,62 @@
                                               SharedSizeGroup="ColoniseStatus" />
                           </Grid.ColumnDefinitions>
                           <StackPanel Orientation="Horizontal" Spacing="3">
-                            <TextBlock VerticalAlignment="Center"
-                                       FontSize="10"
+                            <TextBlock Classes="type-detail" VerticalAlignment="Center"
                                        Foreground="{DynamicResource RavenColoniseItemBrush}"
                                        IsVisible="{Binding IsActiveItem}"
                                        Text="{Binding DisplayName}" />
-                            <TextBlock VerticalAlignment="Center"
-                                       FontSize="10"
+                            <TextBlock Classes="type-detail" VerticalAlignment="Center"
                                        Foreground="{DynamicResource RavenColoniseItemDimBrush}"
                                        IsVisible="{Binding IsDimmedItem}"
                                        Text="{Binding DisplayName}" />
-                            <TextBlock Foreground="{DynamicResource RavenColoniseHighlightBrush}"
-                                       FontSize="8"
+                            <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenColoniseHighlightBrush}"
                                        FontWeight="Bold"
                                        VerticalAlignment="Center"
                                        IsVisible="{Binding HasAssignment}"
                                        Text="{Binding AssignmentText}" />
-                            <TextBlock Foreground="{DynamicResource RavenColoniseHighlightBrush}"
-                                       FontSize="8"
+                            <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenColoniseHighlightBrush}"
                                        FontWeight="Bold"
                                        VerticalAlignment="Center"
                                        IsVisible="{Binding HasMarketBadge}"
                                        Text="{Binding MarketBadgeText}" />
                           </StackPanel>
-                          <TextBlock Grid.Column="1"
-                                     FontSize="10"
+                          <TextBlock Classes="type-detail" Grid.Column="1"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseDeficitBrush}"
                                      IsVisible="{Binding IsActiveDeficit}"
                                      Text="{Binding NeededText}" />
-                          <TextBlock Grid.Column="1"
-                                     FontSize="10"
+                          <TextBlock Classes="type-detail" Grid.Column="1"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseDeficitDimBrush}"
                                      IsVisible="{Binding IsDimmedDeficit}"
                                      Text="{Binding NeededText}" />
-                          <TextBlock Grid.Column="1"
-                                     FontSize="10"
+                          <TextBlock Classes="type-detail" Grid.Column="1"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseSurplusBrush}"
                                      IsVisible="{Binding IsActiveSurplus}"
                                      Text="{Binding NeededText}" />
-                          <TextBlock Grid.Column="1"
-                                     FontSize="10"
+                          <TextBlock Classes="type-detail" Grid.Column="1"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseSurplusDimBrush}"
                                      IsVisible="{Binding IsDimmedSurplus}"
                                      Text="{Binding NeededText}" />
-                          <TextBlock Grid.Column="2"
-                                     FontSize="10"
+                          <TextBlock Classes="type-detail" Grid.Column="2"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseItemBrush}"
                                      IsVisible="{Binding IsFleetCarrierValueNormal}"
                                      Text="{Binding OnFleetCarriersText}" />
-                          <TextBlock Grid.Column="2"
-                                     FontSize="10"
+                          <TextBlock Classes="type-detail" Grid.Column="2"
                                      FontWeight="Bold"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseHighlightBrush}"
                                      IsVisible="{Binding IsFleetCarrierLoadHighlighted}"
                                      Text="{Binding OnFleetCarriersText}" />
-                          <TextBlock Grid.Column="3"
-                                     FontSize="10"
+                          <TextBlock Classes="type-detail" Grid.Column="3"
                                      FontWeight="SemiBold"
                                      HorizontalAlignment="Right"
                                      Foreground="{DynamicResource RavenColoniseSurplusBrush}"
                                      Text="{Binding InShipText}" />
-                          <TextBlock Grid.Column="4"
-                                     FontSize="10"
+                          <TextBlock Classes="type-detail" Grid.Column="4"
                                      FontWeight="Bold"
                                      HorizontalAlignment="Center"
                                      Foreground="{DynamicResource RavenColoniseSurplusBrush}"
@@ -251,11 +229,10 @@
       </ScrollViewer>
 
       <StackPanel Grid.Row="3" Spacing="2" HorizontalAlignment="Left">
-        <TextBlock FontSize="10"
+        <TextBlock Classes="type-detail"
                    FontWeight="SemiBold"
                    Text="{Binding RemainingSummary}" />
-        <TextBlock Classes="muted"
-                   FontSize="8"
+        <TextBlock Classes="muted type-caption"
                    IsVisible="{Binding HasFleetCarriers}"
                    Text="{Binding FleetCarrierSummary}" />
       </StackPanel>

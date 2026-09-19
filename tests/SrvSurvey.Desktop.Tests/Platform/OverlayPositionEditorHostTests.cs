@@ -91,6 +91,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         var session = new OverlayPositionEditSession(activeLayout);
         host.RefreshPreviewOpacities(session);
         host.RefreshPreviewScales(session);
+        Assert.True(session.SetTypographyScale("PlotFSSInfo", new OverlayTypographyScale(0, 25, 0, 0, 0, 0)));
+        host.RefreshPreviewTypography(session);
         host.RefreshPreviewPositions(session);
         Assert.Equal(
             OverlayLayoutCatalog.ForCategory(OverlayLayoutCategory.ExplorationAndNavigation).Count,

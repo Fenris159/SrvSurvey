@@ -234,6 +234,86 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     }
 
     [Fact]
+    public void PerOverlayTypographyIsStoredSeparatelyAndDefaultsToBaseline()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var typography = new OverlayTypographyScale(10, 25, 0, -10, 15, 0);
+
+        LegacyOverlayLayoutSaveResult result = store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotFSSInfo"] = new(
+                    LegacyHorizontalAnchor.Left,
+                    8,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null,
+                    TypographyScale: typography
+                ),
+            }
+        );
+        LegacyOverlayLayout layout = store.Load();
+
+        Assert.Equal(1, result.UpdatedTypographyOverrideCount);
+        Assert.Equal(typography, layout.GetTypographyScale("PlotFSSInfo"));
+        Assert.Equal(OverlayTypographyScale.Default, layout.GetTypographyScale("PlotJumpInfo"));
+        Assert.DoesNotContain("title", File.ReadAllText(Path.Combine(temporaryDirectory, "plotters.json")));
+        Assert.Contains(
+            "\"title\": 25",
+            File.ReadAllText(Path.Combine(temporaryDirectory, "overlay-typography-overrides.json"))
+        );
+    }
+
+    [Fact]
+    public void ResettingPerOverlayTypographyRemovesTheSavedOverride()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayPlacement placement = OverlayLayoutCatalog.GetRequired("PlotFSSInfo").DefaultPlacement with
+        {
+            TypographyScale = new OverlayTypographyScale(0, 25, 0, 0, 0, 0),
+        };
+        store.Save(new Dictionary<string, LegacyOverlayPlacement> { ["PlotFSSInfo"] = placement });
+
+        LegacyOverlayLayoutSaveResult unchanged = store.Save(
+            new Dictionary<string, LegacyOverlayPlacement> { ["PlotFSSInfo"] = placement }
+        );
+        LegacyOverlayLayoutSaveResult reset = store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotFSSInfo"] = placement with { TypographyScale = OverlayTypographyScale.Default },
+            }
+        );
+
+        Assert.Equal(0, unchanged.UpdatedTypographyOverrideCount);
+        Assert.Equal(1, reset.UpdatedTypographyOverrideCount);
+        Assert.NotNull(reset.TypographyOverridesBackupPath);
+        Assert.DoesNotContain(
+            "PlotFSSInfo",
+            File.ReadAllText(Path.Combine(temporaryDirectory, "overlay-typography-overrides.json"))
+        );
+        Assert.Equal(OverlayTypographyScale.Default, store.Load().GetTypographyScale("PlotFSSInfo"));
+    }
+
+    [Theory]
+    [InlineData("{\"PlotFSSInfo\":12}", "must be an object")]
+    [InlineData(
+        "{\"PlotFSSInfo\":{\"header\":0,\"title\":12,\"value\":0,\"body\":0,\"detail\":0,\"caption\":0}}",
+        "5% increments"
+    )]
+    [InlineData("{\"PlotFSSInfo\":{\"header\":0,\"title\":0,\"value\":0,\"body\":0,\"detail\":0}}", "caption")]
+    public void InvalidTypographyOverridesReportALayoutError(string json, string expectedError)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), "{\"PlotFSSInfo\":\"left:8, top:8\"}");
+        File.WriteAllText(Path.Combine(temporaryDirectory, "overlay-typography-overrides.json"), json);
+
+        LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
+
+        Assert.Contains(expectedError, layout.Error, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(OverlayTypographyScale.Default, layout.GetTypographyScale("PlotFSSInfo"));
+    }
+
+    [Fact]
     public void ReplacingPositionsPreservesIndependentGlobalScale()
     {
         var active = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);

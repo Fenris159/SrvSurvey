@@ -6,7 +6,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SurfaceMiningOverlayViewModel"
              mc:Ignorable="d"
-             ClipToBounds="True">
+             ClipToBounds="False">
   <Border Margin="0"
           Padding="4"
           Background="#4CFF4500"
@@ -20,15 +20,15 @@
             RowDefinitions="Auto,Auto"
             ColumnSpacing="6"
             RowSpacing="2">
-        <Border Width="24"
-                Height="24"
+        <Border MinWidth="24"
+                MinHeight="24"
+                Padding="4,1"
                 Background="#FF4500"
-                CornerRadius="12">
+                CornerRadius="999">
           <Grid>
-            <TextBlock HorizontalAlignment="Center"
+            <TextBlock Classes="type-title" HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                      Foreground="White"
-                     FontSize="13"
                      FontWeight="Bold"
                      Text="!" />
           </Grid>
@@ -36,11 +36,10 @@
         <StackPanel Grid.Column="1"
                     VerticalAlignment="Center"
                     Spacing="1">
-          <TextBlock Classes="overlay-header"
+          <TextBlock Classes="overlay-header type-header"
                      Foreground="#FF4500"
                      Text="WARNING" />
-          <TextBlock Foreground="#FF4500"
-                     FontSize="13"
+          <TextBlock Classes="type-title" Foreground="#FF4500"
                      FontWeight="Bold"
                      Text="TOO FAR FROM RIGS"
                      TextTrimming="CharacterEllipsis" />
@@ -48,17 +47,15 @@
         <Border Grid.Column="2"
                 Classes="badge"
                 VerticalAlignment="Center">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="8"
+          <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding InputMode}" />
         </Border>
-        <TextBlock Grid.Row="1"
+        <TextBlock Classes="type-detail" Grid.Row="1"
                    Grid.ColumnSpan="3"
                    HorizontalAlignment="Center"
                    Foreground="#A8B0B8"
                    FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani"
-                   FontSize="9"
                    Text="Moving beyond 4.5Km will Destroy Rigs"
                    TextAlignment="Center" />
       </Grid>

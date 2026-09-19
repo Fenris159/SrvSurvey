@@ -110,13 +110,13 @@ public sealed class OverlayThemeResourcesTests
     public void EveryOverlayUsesBundledRoleBasedTypography()
     {
         var primary = new TextBlock { Text = "Primary" };
-        var header = new TextBlock { Text = "Header", Classes = { "overlay-header" } };
-        var eyebrow = new TextBlock { Text = "Eyebrow", Classes = { "eyebrow" } };
+        var header = new TextBlock { Text = "Header", Classes = { "overlay-header", "type-header" } };
+        var eyebrow = new TextBlock { Text = "Eyebrow", Classes = { "eyebrow", "type-header" } };
         var muted = new TextBlock { Text = "Muted", Classes = { "muted" } };
-        var value = new TextBlock { Text = "Value", Classes = { "monospace", "overlay-value" } };
+        var value = new TextBlock { Text = "Value", Classes = { "monospace", "overlay-value", "type-value" } };
         var compactBySize = new TextBlock { Text = "Size alone remains primary", FontSize = 9 };
-        var detail = new TextBlock { Text = "Longer detail", Classes = { "overlay-detail" } };
-        var caption = new TextBlock { Text = "Caption", Classes = { "overlay-caption" } };
+        var detail = new TextBlock { Text = "Longer detail", Classes = { "overlay-detail", "type-detail" } };
+        var caption = new TextBlock { Text = "Caption", Classes = { "overlay-caption", "type-caption" } };
         var guardianPrimary = new TextBlock { Text = "Guardian primary", Classes = { "guardian-legacy-middle" } };
         var guardianCompact = new TextBlock { Text = "Guardian compact", Classes = { "guardian-legacy-small" } };
         var window = new Window
@@ -287,10 +287,22 @@ public sealed class OverlayThemeResourcesTests
         // Shared *Presentation hosts own their title/chrome; legacy header
         // injection is skipped so the original surface content stays intact.
         Assert.Same(originalContent, surface.Child);
+        window.Content = new Border();
 
-        Assert.True(layout.SetPlacement(definition.Name, placement with { Opacity = 0.75, ScaleIndex = 1 }));
+        Assert.True(
+            layout.SetPlacement(
+                definition.Name,
+                placement with
+                {
+                    Opacity = 0.75,
+                    ScaleIndex = 1,
+                    TypographyScale = new OverlayTypographyScale(0, 20, 0, 0, 0, 0),
+                }
+            )
+        );
         Assert.Equal(0.75, window.Opacity);
         Assert.Equal(definition.PreviewSize.Width, window.Width, 5);
+        Assert.Equal(18d, surface.Resources["RavenOverlayTitleFontSize"]);
 
         OverlayThemeResources.SetBaseSize(window, layout, 250, 125);
         OverlayThemeResources.SetBaseSize(window, layout, 250, 125);

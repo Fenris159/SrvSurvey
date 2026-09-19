@@ -198,7 +198,7 @@
               <TextBlock Classes="muted"
                          FontSize="11"
                          TextWrapping="Wrap"
-                         Text="Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied." />
+                         Text="These sizes define the shared baseline for each text role. Use the overlay position editor to scale roles independently for each panel." />
             </StackPanel>
             <ItemsControl x:Name="OverlayTypographyEditorList"
                           ItemsSource="{Binding OverlayTheme.Typography}">

@@ -16,26 +16,22 @@
     <StackPanel Spacing="5">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="overlay-header" Text="CANONN PRIOR SCANS" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="14"
+          <TextBlock Classes="overlay-header type-header" Text="CANONN PRIOR SCANS" />
+          <TextBlock Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding BodyName}"
                      TextTrimming="CharacterEllipsis" />
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="monospace"
-                       FontSize="10"
+            <TextBlock Classes="monospace type-detail"
                        Text="{Binding HeadingText}" />
-            <TextBlock Classes="muted"
-                       FontSize="10"
+            <TextBlock Classes="muted type-detail"
                        Text="{Binding SpeciesCountText}" />
           </StackPanel>
         </StackPanel>
           <Border Grid.Column="1"
                  Classes="badge overlay-state-pill"
                  VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="9"
+          <TextBlock Classes="type-detail" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding InputMode}" />
         </Border>
@@ -75,21 +71,19 @@
                 <StackPanel Spacing="7">
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
                     <StackPanel Orientation="Horizontal" Spacing="7">
-                      <TextBlock FontWeight="SemiBold"
+                      <TextBlock Classes="type-body" FontWeight="SemiBold"
                                  Text="{Binding DisplayName}"
                                  TextTrimming="CharacterEllipsis" />
                        <Border Classes="badge overlay-state-pill"
                                IsVisible="{Binding IsActive}">
-                        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                                   FontSize="8"
+                        <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenAccentBrush}"
                                    FontWeight="Bold"
                                    HorizontalAlignment="Center"
                                    Text="ACTIVE" />
                       </Border>
                        <Border Classes="badge overlay-state-pill"
                                IsVisible="{Binding IsAnalyzed}">
-                        <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
-                                   FontSize="8"
+                        <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenSuccessBrush}"
                                    FontWeight="Bold"
                                    HorizontalAlignment="Center"
                                    Text="ANALYZED" />
@@ -98,32 +92,27 @@
                     <StackPanel Grid.Column="1"
                                 HorizontalAlignment="Right"
                                 Spacing="2">
-                      <TextBlock Classes="monospace"
+                      <TextBlock Classes="monospace type-detail"
                                  Foreground="{DynamicResource RavenAccentBrush}"
-                                 FontSize="10"
                                  FontWeight="SemiBold"
                                  Text="{Binding RewardText}" />
-                      <TextBlock Classes="monospace"
+                      <TextBlock Classes="monospace type-detail"
                                  Foreground="{DynamicResource RavenWarningBrush}"
-                                 FontSize="9"
                                  HorizontalAlignment="Right"
                                  IsVisible="{Binding HasShallowApproach}"
                                  Text="{Binding ApproachText}" />
-                      <TextBlock Classes="monospace"
+                      <TextBlock Classes="monospace type-detail"
                                  Foreground="{DynamicResource RavenAccentBrush}"
-                                 FontSize="9"
                                  HorizontalAlignment="Right"
                                  IsVisible="{Binding HasIdealApproach}"
                                  Text="{Binding ApproachText}" />
-                      <TextBlock Classes="monospace"
+                      <TextBlock Classes="monospace type-detail"
                                  Foreground="{DynamicResource RavenDangerBrush}"
-                                 FontSize="9"
                                  HorizontalAlignment="Right"
                                  IsVisible="{Binding HasSteepApproach}"
                                  Text="{Binding ApproachText}" />
-                      <TextBlock Classes="monospace"
+                      <TextBlock Classes="monospace type-detail"
                                  Foreground="{DynamicResource RavenMutedTextBrush}"
-                                 FontSize="9"
                                  HorizontalAlignment="Right"
                                  IsVisible="{Binding HasTooSteepApproach}"
                                  Text="{Binding ApproachText}" />
@@ -152,19 +141,15 @@
                                 IsFar="{Binding IsFar}"
                                 Stroke="{DynamicResource RavenAccentBrush}"
                                 StrokeThickness="1.8" />
-                            <TextBlock Classes="monospace"
-                                       FontSize="10"
+                            <TextBlock Classes="monospace type-detail"
                                        Text="{Binding BearingText}" />
-                            <TextBlock Classes="monospace"
-                                       FontSize="10"
+                            <TextBlock Classes="monospace type-detail"
                                        Text="{Binding DistanceText}" />
-                            <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
-                                       FontSize="8"
+                            <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenSuccessBrush}"
                                        FontWeight="Bold"
                                        IsVisible="{Binding IsClose}"
                                        Text="NEAR" />
-                            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                                       FontSize="8"
+                            <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenWarningBrush}"
                                        FontWeight="Bold"
                                        IsVisible="{Binding IsFar}"
                                        Text="DISTANT" />
@@ -182,18 +167,15 @@
 
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
         <StackPanel Spacing="2">
-          <TextBlock Classes="muted"
-                     FontSize="9"
+          <TextBlock Classes="muted type-detail"
                      Text="{Binding FilterText}" />
-          <TextBlock Classes="muted"
-                     FontSize="9"
+          <TextBlock Classes="muted type-detail"
                      Text="{Binding StatusText}"
                      TextWrapping="Wrap" />
         </StackPanel>
         <TextBlock Grid.Column="1"
-                   Classes="monospace"
+                   Classes="monospace type-detail"
                    Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="9"
                    IsVisible="{Binding IsLoading}"
                    Text="SYNC" />
       </Grid>

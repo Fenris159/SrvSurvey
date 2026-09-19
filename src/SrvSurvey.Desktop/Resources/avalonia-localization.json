@@ -1229,6 +1229,10 @@
       "translation": "AW"
     },
     {
+      "source": "Aa",
+      "translation": "Aa"
+    },
+    {
       "source": "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
       "translation": "An Bord der Rhino erscheint die Bergbauwarnung weiter als 4 km von der am weitesten entfernten gespeicherten Bohrinsel entfernt und verschwindet, wenn alle Bohrinseln wieder in Reichweite sind."
     },
@@ -1531,6 +1535,10 @@
     {
       "source": "Adjust overlays",
       "translation": "Überlagerungen anpassen"
+    },
+    {
+      "source": "Adjust text size by role for this panel",
+      "translation": "Passen Sie die Textgröße für dieses Panel je nach Rolle an"
     },
     {
       "source": "Adjust the existing shared map. Its background, alignment, master points, and group labels are copied into this draft.",
@@ -3997,8 +4005,8 @@
       "translation": "Mit „Prüfung abbrechen“ werden die bereits angewendeten Teilarbeiten sicher beibehalten. Der Fortschritt der verknüpften Bibliothek und ihr Änderungsdatum werden automatisch aktualisiert, wenn Prüfergebnisse angewendet werden."
     },
     {
-      "source": "Cancel overlay position, opacity, and scale changes",
-      "translation": "Brechen Sie Änderungen an Überlagerungsposition, Deckkraft und Skalierung ab"
+      "source": "Cancel overlay position and appearance changes",
+      "translation": "Stornieren Sie die Positions- und Darstellungsänderungen der Überlagerung"
     },
     {
       "source": "Cancel polygon",
@@ -6197,6 +6205,10 @@
       "translation": "Overlay-Designstatus „{0}“ konnte nicht gelesen werden: {1}"
     },
     {
+      "source": "Could not read overlay typography overrides '{0}': {1}",
+      "translation": "Overlay-Typografie-Überschreibungen „{0}“ konnten nicht gelesen werden: {1}"
+    },
+    {
       "source": "Could not refresh boxel statistics: {0}",
       "translation": "Boxel-Statistiken konnten nicht aktualisiert werden: {0}"
     },
@@ -7695,6 +7707,10 @@
     {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Jedes Overlay verfügt über einen bestimmten Spielstatusauslöser und kann auch über eine manuelle Verknüpfung verfügen."
+    },
+    {
+      "source": "Each role grows or shrinks independently. Zero uses the theme's baseline size.",
+      "translation": "Jede Rolle wächst oder schrumpft unabhängig voneinander. Zero verwendet die Grundgröße des Themes."
     },
     {
       "source": "Eagle",
@@ -9399,10 +9415,6 @@
     {
       "source": "Font Size:",
       "translation": "Schriftgröße:"
-    },
-    {
-      "source": "Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied.",
-      "translation": "Schriftgrößen gelten für gemeinsam genutzte Overlay-Textrollen. Die Werte verwenden Halbpunktschritte und aktualisieren offene Überlagerungen, wenn sie in der Vorschau angezeigt oder angewendet werden."
     },
     {
       "source": "Fonticulua Campestris",
@@ -16081,6 +16093,10 @@
       "translation": "Overlay-Einstellungen"
     },
     {
+      "source": "Overlay appearance",
+      "translation": "Overlay-Erscheinungsbild"
+    },
+    {
       "source": "Overlay appearance and saved states",
       "translation": "Overlay-Erscheinungsbild und gespeicherte Zustände"
     },
@@ -16153,10 +16169,6 @@
       "translation": "Overlay-Mausinteraktion aktiviert"
     },
     {
-      "source": "Overlay opacity and scale",
-      "translation": "Deckkraft und Skalierung der Überlagerung"
-    },
-    {
       "source": "Overlay opacity must be from 0 to 1.",
       "translation": "Die Deckkraft der Überlagerung muss zwischen 0 und 1 liegen."
     },
@@ -16193,6 +16205,10 @@
       "translation": "Änderungen an Überlagerungsposition, Deckkraft und Maßstab wurden abgebrochen."
     },
     {
+      "source": "Overlay positions and appearance were not saved: {0}",
+      "translation": "Overlay-Positionen und Aussehen wurden nicht gespeichert: {0}"
+    },
+    {
       "source": "Overlay positions cannot be edited",
       "translation": "Overlay-Positionen können nicht bearbeitet werden"
     },
@@ -16203,10 +16219,6 @@
     {
       "source": "Overlay positions cannot be edited until the existing layout error is corrected: {0}",
       "translation": "Overlay-Positionen können erst bearbeitet werden, wenn der bestehende Layoutfehler behoben ist: {0}"
-    },
-    {
-      "source": "Overlay positions, opacity, and scale were not saved: {0}",
-      "translation": "Überlagerungspositionen, Deckkraft und Skalierung wurden nicht gespeichert: {0}"
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -16283,6 +16295,26 @@
     {
       "source": "Overlay theme state '{0}' was not found.",
       "translation": "Der Status des Overlay-Designs „{0}“ wurde nicht gefunden."
+    },
+    {
+      "source": "Overlay typography override '{0}' contains a value outside the supported range.",
+      "translation": "Die Overlay-Typografie-Überschreibung „{0}“ enthält einen Wert außerhalb des unterstützten Bereichs."
+    },
+    {
+      "source": "Overlay typography override '{0}' could not be verified before saving.",
+      "translation": "Die Overlay-Typografie-Überschreibung „{0}“ konnte vor dem Speichern nicht überprüft werden."
+    },
+    {
+      "source": "Overlay typography override '{0}' must be an object.",
+      "translation": "Overlay-Typografie-Überschreibung „{0}“ muss ein Objekt sein."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be an integer.",
+      "translation": "Overlay-Typografie-Überschreibung „{0}.{1}“ muss eine Ganzzahl sein."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be from {2}% to {3}% in {4}% increments.",
+      "translation": "Die Overlay-Typografie-Überschreibung „{0}.{1}“ muss in Schritten von {4} % von {2} % bis {3} % reichen."
     },
     {
       "source": "OverlayBehavior",
@@ -19601,16 +19633,16 @@
       "translation": "Standort des Rigs {0} gespeichert."
     },
     {
-      "source": "Right Click Panels to edit individual Opacity/Scale",
-      "translation": "Klicken Sie mit der rechten Maustaste auf Panels, um einzelne Deckkraft/Skalierung zu bearbeiten"
-    },
-    {
       "source": "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.",
       "translation": "Klicken Sie mit der rechten Maustaste auf einen Ring, um ihn zu einem Lesezeichen zu machen, die Online-Beobachtung lokal zu speichern, das System zu kopieren oder eine Referenzseite zu öffnen. Beim Import historischer Tagebücher werden die Ringe und Missionen dieses Kommandanten hinzugefügt, ohne dass Sitzungen gestartet werden müssen."
     },
     {
       "source": "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
       "translation": "Klicken Sie mit der rechten Maustaste auf eine andere Vorschau, um diesen Bereich zu bearbeiten. Das Häkchen in der Symbolleiste speichert jede Änderung und schließt den Editor."
+    },
+    {
+      "source": "Right-click panels to edit opacity, panel scale, and text scale",
+      "translation": "Klicken Sie mit der rechten Maustaste auf die Bedienfelder, um die Deckkraft, die Bedienfeldgröße und die Textskalierung zu bearbeiten"
     },
     {
       "source": "Ring",
@@ -20429,8 +20461,8 @@
       "translation": "Speichern oder machen Sie die aktuelle Route-Workspace-Definition rückgängig und notieren Sie sich die Änderungen, bevor Sie sie deaktivieren."
     },
     {
-      "source": "Save overlay positions, opacity, and scale",
-      "translation": "Speichern Sie Überlagerungspositionen, Deckkraft und Skalierung"
+      "source": "Save overlay positions and appearance",
+      "translation": "Speichern Sie Overlay-Positionen und -Erscheinungsbild"
     },
     {
       "source": "Save preset",
@@ -20589,8 +20621,8 @@
       "translation": "{0} Live-Overlay-Position(en) gespeichert und Click-through-Modus wiederhergestellt.{1}"
     },
     {
-      "source": "Saved {0} overlay position/opacity override(s), including scale settings{1}{2}{3}",
-      "translation": "Gespeicherte {0} Overlay-Positions-/Deckkraftüberschreibung(en), einschließlich Skalierungseinstellungen{1}{2}{3}"
+      "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
+      "translation": "Gespeichert: {0} Overlay-Position und Erscheinungsbild-Override(s){1}{2}{3}"
     },
     {
       "source": "Saved {0} overlay setting(s). Visible overlays update immediately.{1}",
@@ -24037,6 +24069,10 @@
       "translation": "Textdateien"
     },
     {
+      "source": "Text scale from baseline",
+      "translation": "Textskalierung von der Grundlinie"
+    },
+    {
       "source": "Thargoid",
       "translation": "Thargoid"
     },
@@ -26007,6 +26043,10 @@
     {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Diese Verknüpfungen zeichnen Standorte auf oder löschen sie. Sie setzen im Spiel keine Rigs ein und sammeln diese auch nicht."
+    },
+    {
+      "source": "These sizes define the shared baseline for each text role. Use the overlay position editor to scale roles independently for each panel.",
+      "translation": "Diese Größen definieren die gemeinsame Grundlinie für jede Textrolle. Verwenden Sie den Overlay-Positionseditor, um die Rollen für jedes Panel unabhängig zu skalieren."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -30065,6 +30105,10 @@
       "translation": "Overlay-Themen"
     },
     {
+      "source": "overlay-typography-overrides",
+      "translation": "Overlay-Typografie-Überschreibungen"
+    },
+    {
       "source": "overlays",
       "translation": "Überlagerungen"
     },
@@ -31209,6 +31253,10 @@
       "translation": "{0} aktiv • {1} ungelesen"
     },
     {
+      "source": "{0} appearance",
+      "translation": "{0} Aussehen"
+    },
+    {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} wie gescannt · {1} falls zugeordnet"
     },
@@ -31573,10 +31621,6 @@
       "translation": "{0} von {1} · {2}"
     },
     {
-      "source": "{0} opacity and scale",
-      "translation": "{0} Deckkraft und Skalierung"
-    },
-    {
       "source": "{0} opacity set to {1}%. Use the top ✓ to save and close.",
       "translation": "Die Deckkraft von {0} ist auf {1} % eingestellt. Mit dem oberen ✓ speichern und schließen."
     },
@@ -31763,6 +31807,10 @@
     {
       "source": "{0} {1} signals",
       "translation": "{0} {1} Signale"
+    },
+    {
+      "source": "{0} {1} text set to {2}% from baseline. Use the top ✓ to save and close.",
+      "translation": "{0} {1} Text auf {2} % der Grundlinie gesetzt. Mit dem oberen ✓ speichern und schließen."
     },
     {
       "source": "{0} {1} verified Guardian templates.",
@@ -33299,6 +33347,10 @@
       "translation": "AW"
     },
     {
+      "source": "Aa",
+      "translation": "Automóvil club británico"
+    },
+    {
       "source": "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
       "translation": "A bordo del Rhino, la advertencia de minería aparece más allá de los 4 km de la plataforma guardada más alejada y desaparece cuando cada plataforma vuelve a estar dentro del alcance."
     },
@@ -33601,6 +33653,10 @@
     {
       "source": "Adjust overlays",
       "translation": "Ajustar superposiciones"
+    },
+    {
+      "source": "Adjust text size by role for this panel",
+      "translation": "Ajustar el tamaño del texto por función para este panel"
     },
     {
       "source": "Adjust the existing shared map. Its background, alignment, master points, and group labels are copied into this draft.",
@@ -36067,8 +36123,8 @@
       "translation": "Cancelar auditoría conserva de forma segura el trabajo parcial ya aplicado. El progreso de la biblioteca vinculada y su fecha de modificación se actualizan automáticamente a medida que se aplican los resultados de la auditoría."
     },
     {
-      "source": "Cancel overlay position, opacity, and scale changes",
-      "translation": "Cancelar cambios de posición, opacidad y escala de superposición"
+      "source": "Cancel overlay position and appearance changes",
+      "translation": "Cancelar cambios de posición y apariencia de superposición"
     },
     {
       "source": "Cancel polygon",
@@ -38267,6 +38323,10 @@
       "translation": "No se pudieron leer los estados del tema superpuesto '{0}': {1}"
     },
     {
+      "source": "Could not read overlay typography overrides '{0}': {1}",
+      "translation": "No se pudieron leer las anulaciones de tipografía superpuesta '{0}': {1}"
+    },
+    {
       "source": "Could not refresh boxel statistics: {0}",
       "translation": "No se pudieron actualizar las estadísticas del cuadro: {0}"
     },
@@ -39765,6 +39825,10 @@
     {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Cada superposición tiene un activador de estado de juego específico y también puede tener un acceso directo manual."
+    },
+    {
+      "source": "Each role grows or shrinks independently. Zero uses the theme's baseline size.",
+      "translation": "Cada rol crece o se reduce de forma independiente. Zero utiliza el tamaño de referencia del tema."
     },
     {
       "source": "Eagle",
@@ -41469,10 +41533,6 @@
     {
       "source": "Font Size:",
       "translation": "Tamaño de fuente:"
-    },
-    {
-      "source": "Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied.",
-      "translation": "Los tamaños de fuente se aplican a las funciones de texto superpuesto compartido. Los valores utilizan incrementos de medio punto y actualizan las superposiciones abiertas cuando se obtienen una vista previa o se aplican."
     },
     {
       "source": "Fonticulua Campestris",
@@ -48151,6 +48211,10 @@
       "translation": "Configuración de superposición"
     },
     {
+      "source": "Overlay appearance",
+      "translation": "Apariencia superpuesta"
+    },
+    {
       "source": "Overlay appearance and saved states",
       "translation": "Apariencia superpuesta y estados guardados"
     },
@@ -48223,10 +48287,6 @@
       "translation": "Interacción de mouse superpuesta habilitada"
     },
     {
-      "source": "Overlay opacity and scale",
-      "translation": "Opacidad y escala de superposición"
-    },
-    {
       "source": "Overlay opacity must be from 0 to 1.",
       "translation": "La opacidad de superposición debe ser de 0 a 1."
     },
@@ -48263,6 +48323,10 @@
       "translation": "Se cancelaron los cambios de posición, opacidad y escala de superposición."
     },
     {
+      "source": "Overlay positions and appearance were not saved: {0}",
+      "translation": "Las posiciones de superposición y la apariencia no se guardaron: {0}"
+    },
+    {
       "source": "Overlay positions cannot be edited",
       "translation": "Las posiciones de superposición no se pueden editar"
     },
@@ -48273,10 +48337,6 @@
     {
       "source": "Overlay positions cannot be edited until the existing layout error is corrected: {0}",
       "translation": "Las posiciones de superposición no se pueden editar hasta que se corrija el error de diseño existente: {0}"
-    },
-    {
-      "source": "Overlay positions, opacity, and scale were not saved: {0}",
-      "translation": "Las posiciones de superposición, la opacidad y la escala no se guardaron: {0}"
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -48353,6 +48413,26 @@
     {
       "source": "Overlay theme state '{0}' was not found.",
       "translation": "No se encontró el estado del tema de superposición '{0}'."
+    },
+    {
+      "source": "Overlay typography override '{0}' contains a value outside the supported range.",
+      "translation": "La anulación de tipografía de superposición '{0}' contiene un valor fuera del rango admitido."
+    },
+    {
+      "source": "Overlay typography override '{0}' could not be verified before saving.",
+      "translation": "No se pudo verificar la anulación de tipografía de superposición '{0}' antes de guardar."
+    },
+    {
+      "source": "Overlay typography override '{0}' must be an object.",
+      "translation": "La anulación de tipografía superpuesta '{0}' debe ser un objeto."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be an integer.",
+      "translation": "La anulación de tipografía de superposición '{0}.{1}' debe ser un número entero."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be from {2}% to {3}% in {4}% increments.",
+      "translation": "La anulación de tipografía de superposición '{0}.{1}' debe ser de {2}% a {3}% en incrementos de {4}%."
     },
     {
       "source": "OverlayBehavior",
@@ -51671,16 +51751,16 @@
       "translation": "Ubicación del equipo {0} guardada."
     },
     {
-      "source": "Right Click Panels to edit individual Opacity/Scale",
-      "translation": "Paneles de clic derecho para editar opacidad/escala individuales"
-    },
-    {
       "source": "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.",
       "translation": "Haga clic derecho en un anillo para marcarlo, guarde la observación en línea localmente, copie el sistema o abra un sitio de referencia. La importación del diario histórico agrega los anillos y las misiones de este comandante sin iniciar sesiones."
     },
     {
       "source": "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
       "translation": "Haga clic derecho en otra vista previa para editar ese panel. La marca de verificación de la barra de herramientas guarda todos los cambios y cierra el editor."
+    },
+    {
+      "source": "Right-click panels to edit opacity, panel scale, and text scale",
+      "translation": "Haga clic derecho en los paneles para editar la opacidad, la escala del panel y la escala del texto."
     },
     {
       "source": "Ring",
@@ -52499,8 +52579,8 @@
       "translation": "Guarde o deshaga la definición actual del espacio de trabajo de ruta y anote los cambios antes de desactivarla."
     },
     {
-      "source": "Save overlay positions, opacity, and scale",
-      "translation": "Guarde posiciones de superposición, opacidad y escala"
+      "source": "Save overlay positions and appearance",
+      "translation": "Guardar posiciones y apariencia de superposición"
     },
     {
       "source": "Save preset",
@@ -52659,8 +52739,8 @@
       "translation": "{0} posiciones de superposición en vivo guardadas y modo de clic restaurado.{1}"
     },
     {
-      "source": "Saved {0} overlay position/opacity override(s), including scale settings{1}{2}{3}",
-      "translation": "Se guardaron las anulaciones de posición/opacidad de superposición {0}, incluidas las configuraciones de escala{1}{2}{3}"
+      "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
+      "translation": "Posición de superposición guardada de {0} y anulación(es) de apariencia{1}{2}{3}"
     },
     {
       "source": "Saved {0} overlay setting(s). Visible overlays update immediately.{1}",
@@ -56107,6 +56187,10 @@
       "translation": "Archivos de texto"
     },
     {
+      "source": "Text scale from baseline",
+      "translation": "Escala de texto desde la línea base"
+    },
+    {
       "source": "Thargoid",
       "translation": "targoide"
     },
@@ -58077,6 +58161,10 @@
     {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Estos atajos registran o borran ubicaciones; no despliegan ni recolectan plataformas en el juego."
+    },
+    {
+      "source": "These sizes define the shared baseline for each text role. Use the overlay position editor to scale roles independently for each panel.",
+      "translation": "Estos tamaños definen la línea base compartida para cada función de texto. Utilice el editor de posiciones de superposición para escalar roles de forma independiente para cada panel."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -62135,6 +62223,10 @@
       "translation": "temas-superpuestos"
     },
     {
+      "source": "overlay-typography-overrides",
+      "translation": "superposición-tipografía-anulaciones"
+    },
+    {
       "source": "overlays",
       "translation": "superposiciones"
     },
@@ -63279,6 +63371,10 @@
       "translation": "{0} activo • {1} no leído"
     },
     {
+      "source": "{0} appearance",
+      "translation": "Apariencia {0}"
+    },
+    {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} como escaneado · {1} si está asignado"
     },
@@ -63643,10 +63739,6 @@
       "translation": "{0} de {1} · {2}"
     },
     {
-      "source": "{0} opacity and scale",
-      "translation": "{0} opacidad y escala"
-    },
-    {
       "source": "{0} opacity set to {1}%. Use the top ✓ to save and close.",
       "translation": "Opacidad {0} establecida en {1}%. Utilice la parte superior ✓ para guardar y cerrar."
     },
@@ -63833,6 +63925,10 @@
     {
       "source": "{0} {1} signals",
       "translation": "{0} {1} señales"
+    },
+    {
+      "source": "{0} {1} text set to {2}% from baseline. Use the top ✓ to save and close.",
+      "translation": "Texto {0} {1} establecido en {2}% desde la línea base. Utilice la parte superior ✓ para guardar y cerrar."
     },
     {
       "source": "{0} {1} verified Guardian templates.",
@@ -65369,6 +65465,10 @@
       "translation": "AW"
     },
     {
+      "source": "Aa",
+      "translation": "Aa"
+    },
+    {
       "source": "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
       "translation": "À bord du Rhino, l'avertissement minier apparaît au-delà de 4 km de la plate-forme sauvegardée la plus éloignée et disparaît lorsque chaque plate-forme est de nouveau à portée."
     },
@@ -65671,6 +65771,10 @@
     {
       "source": "Adjust overlays",
       "translation": "Ajuster les superpositions"
+    },
+    {
+      "source": "Adjust text size by role for this panel",
+      "translation": "Ajuster la taille du texte par rôle pour ce panneau"
     },
     {
       "source": "Adjust the existing shared map. Its background, alignment, master points, and group labels are copied into this draft.",
@@ -68137,8 +68241,8 @@
       "translation": "Annuler l'audit conserve en toute sécurité le travail partiel déjà appliqué. La progression de la bibliothèque liée et sa date de modification sont automatiquement mises à jour à mesure que les résultats de l'audit sont appliqués."
     },
     {
-      "source": "Cancel overlay position, opacity, and scale changes",
-      "translation": "Annuler les modifications de position de superposition, d'opacité et d'échelle"
+      "source": "Cancel overlay position and appearance changes",
+      "translation": "Annuler les modifications de position et d'apparence de la superposition"
     },
     {
       "source": "Cancel polygon",
@@ -70337,6 +70441,10 @@
       "translation": "Impossible de lire les états du thème de superposition '{0}' : {1}"
     },
     {
+      "source": "Could not read overlay typography overrides '{0}': {1}",
+      "translation": "Impossible de lire les remplacements de typographie de superposition « {0} » : {1}"
+    },
+    {
       "source": "Could not refresh boxel statistics: {0}",
       "translation": "Impossible d'actualiser les statistiques du boxel : {0}"
     },
@@ -71835,6 +71943,10 @@
     {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Chaque superposition possède un déclencheur d'état de jeu spécifique et peut également avoir un raccourci manuel."
+    },
+    {
+      "source": "Each role grows or shrinks independently. Zero uses the theme's baseline size.",
+      "translation": "Chaque rôle grandit ou diminue indépendamment. Zero utilise la taille de base du thème."
     },
     {
       "source": "Eagle",
@@ -73539,10 +73651,6 @@
     {
       "source": "Font Size:",
       "translation": "Taille de la police :"
-    },
-    {
-      "source": "Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied.",
-      "translation": "Les tailles de police s'appliquent aux rôles de texte de superposition partagés. Les valeurs utilisent des incréments d’un demi-point et mettent à jour les superpositions ouvertes lorsqu’elles sont prévisualisées ou appliquées."
     },
     {
       "source": "Fonticulua Campestris",
@@ -80221,6 +80329,10 @@
       "translation": "Paramètres de superposition"
     },
     {
+      "source": "Overlay appearance",
+      "translation": "Apparence de superposition"
+    },
+    {
       "source": "Overlay appearance and saved states",
       "translation": "Apparence de superposition et états enregistrés"
     },
@@ -80293,10 +80405,6 @@
       "translation": "Interaction de superposition de la souris activée"
     },
     {
-      "source": "Overlay opacity and scale",
-      "translation": "Opacité et échelle de superposition"
-    },
-    {
       "source": "Overlay opacity must be from 0 to 1.",
       "translation": "L'opacité de la superposition doit être comprise entre 0 et 1."
     },
@@ -80333,6 +80441,10 @@
       "translation": "Les changements de position de superposition, d’opacité et d’échelle ont été annulés."
     },
     {
+      "source": "Overlay positions and appearance were not saved: {0}",
+      "translation": "Les positions et l'apparence de la superposition n'ont pas été enregistrées : {0}"
+    },
+    {
       "source": "Overlay positions cannot be edited",
       "translation": "Les positions de superposition ne peuvent pas être modifiées"
     },
@@ -80343,10 +80455,6 @@
     {
       "source": "Overlay positions cannot be edited until the existing layout error is corrected: {0}",
       "translation": "Les positions de superposition ne peuvent pas être modifiées tant que l'erreur de mise en page existante n'est pas corrigée : {0}"
-    },
-    {
-      "source": "Overlay positions, opacity, and scale were not saved: {0}",
-      "translation": "Les positions de superposition, l'opacité et l'échelle n'ont pas été enregistrées : {0}"
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -80423,6 +80531,26 @@
     {
       "source": "Overlay theme state '{0}' was not found.",
       "translation": "L'état du thème de superposition '{0}' est introuvable."
+    },
+    {
+      "source": "Overlay typography override '{0}' contains a value outside the supported range.",
+      "translation": "Le remplacement de typographie de superposition « {0} » contient une valeur en dehors de la plage prise en charge."
+    },
+    {
+      "source": "Overlay typography override '{0}' could not be verified before saving.",
+      "translation": "Le remplacement de la typographie de superposition « {0} » n'a pas pu être vérifié avant l'enregistrement."
+    },
+    {
+      "source": "Overlay typography override '{0}' must be an object.",
+      "translation": "Le remplacement de la typographie de superposition « {0} » doit être un objet."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be an integer.",
+      "translation": "Le remplacement de la typographie de superposition « {0}.{1} » doit être un nombre entier."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be from {2}% to {3}% in {4}% increments.",
+      "translation": "Le remplacement de la typographie de superposition « {0}.{1} » doit être compris entre {2}% et {3}% par incréments de {4}%."
     },
     {
       "source": "OverlayBehavior",
@@ -83741,16 +83869,16 @@
       "translation": "Emplacement de l'installation {0} enregistré."
     },
     {
-      "source": "Right Click Panels to edit individual Opacity/Scale",
-      "translation": "Cliquez avec le bouton droit sur les panneaux pour modifier l'opacité/l'échelle individuelles."
-    },
-    {
       "source": "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.",
       "translation": "Cliquez avec le bouton droit sur un anneau pour le mettre en signet, enregistrer localement l'observation en ligne, copier le système ou ouvrir un site de référence. L'importation du journal historique ajoute les anneaux et les missions de ce commandant sans démarrer de sessions."
     },
     {
       "source": "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
       "translation": "Cliquez avec le bouton droit sur un autre aperçu pour modifier ce volet. La coche de la barre d'outils enregistre chaque modification et ferme l'éditeur."
+    },
+    {
+      "source": "Right-click panels to edit opacity, panel scale, and text scale",
+      "translation": "Cliquez avec le bouton droit sur les panneaux pour modifier l'opacité, l'échelle du panneau et l'échelle du texte."
     },
     {
       "source": "Ring",
@@ -84569,8 +84697,8 @@
       "translation": "Enregistrez ou annulez la définition actuelle de l'espace de travail de route et notez les modifications avant de la désactiver."
     },
     {
-      "source": "Save overlay positions, opacity, and scale",
-      "translation": "Enregistrez les positions de superposition, l'opacité et l'échelle"
+      "source": "Save overlay positions and appearance",
+      "translation": "Enregistrer les positions et l'apparence de la superposition"
     },
     {
       "source": "Save preset",
@@ -84729,8 +84857,8 @@
       "translation": "{0} position(s) de superposition en direct enregistrée et mode de clic restauré.{1}"
     },
     {
-      "source": "Saved {0} overlay position/opacity override(s), including scale settings{1}{2}{3}",
-      "translation": "Position de superposition {0}/remplacement(s) d'opacité enregistrés, y compris les paramètres d'échelle{1}{2}{3}"
+      "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
+      "translation": "Position de superposition {0} enregistrée et remplacement(s) de l'apparence{1}{2}{3}"
     },
     {
       "source": "Saved {0} overlay setting(s). Visible overlays update immediately.{1}",
@@ -88177,6 +88305,10 @@
       "translation": "Fichiers texte"
     },
     {
+      "source": "Text scale from baseline",
+      "translation": "Échelle du texte à partir de la ligne de base"
+    },
+    {
       "source": "Thargoid",
       "translation": "Thargoïde"
     },
@@ -90147,6 +90279,10 @@
     {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Ces raccourcis enregistrent ou effacent des emplacements ; ils ne déploient ni ne collectent de plates-formes dans le jeu."
+    },
+    {
+      "source": "These sizes define the shared baseline for each text role. Use the overlay position editor to scale roles independently for each panel.",
+      "translation": "Ces tailles définissent la ligne de base partagée pour chaque rôle de texte. Utilisez l'éditeur de position de superposition pour redimensionner les rôles indépendamment pour chaque panneau."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -94205,6 +94341,10 @@
       "translation": "thèmes de superposition"
     },
     {
+      "source": "overlay-typography-overrides",
+      "translation": "overlay-typography-overrides"
+    },
+    {
       "source": "overlays",
       "translation": "superpositions"
     },
@@ -95349,6 +95489,10 @@
       "translation": "{0} actif • {1} non lu"
     },
     {
+      "source": "{0} appearance",
+      "translation": "Apparition de {0}"
+    },
+    {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} tel qu'analysé · {1} si mappé"
     },
@@ -95713,10 +95857,6 @@
       "translation": "{0} sur {1} · {2}"
     },
     {
-      "source": "{0} opacity and scale",
-      "translation": "Opacité et échelle {0}"
-    },
-    {
       "source": "{0} opacity set to {1}%. Use the top ✓ to save and close.",
       "translation": "Opacité {0} définie sur {1}%. Utilisez le haut ✓ pour enregistrer et fermer."
     },
@@ -95903,6 +96043,10 @@
     {
       "source": "{0} {1} signals",
       "translation": "{0} {1} signaux"
+    },
+    {
+      "source": "{0} {1} text set to {2}% from baseline. Use the top ✓ to save and close.",
+      "translation": "Texte {0} {1} défini sur {2}% par rapport à la ligne de base. Utilisez le haut ✓ pour enregistrer et fermer."
     },
     {
       "source": "{0} {1} verified Guardian templates.",
@@ -97439,6 +97583,10 @@
       "translation": "AW"
     },
     {
+      "source": "Aa",
+      "translation": "Ah"
+    },
+    {
       "source": "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
       "translation": "A bordo do Rhino, o aviso de mineração aparece a mais de 4 km da plataforma salva mais distante e desaparece quando todas as plataformas estão de volta ao alcance."
     },
@@ -97741,6 +97889,10 @@
     {
       "source": "Adjust overlays",
       "translation": "Ajustar sobreposições"
+    },
+    {
+      "source": "Adjust text size by role for this panel",
+      "translation": "Ajuste o tamanho do texto por função neste painel"
     },
     {
       "source": "Adjust the existing shared map. Its background, alignment, master points, and group labels are copied into this draft.",
@@ -100207,8 +100359,8 @@
       "translation": "Cancelar auditoria retém com segurança o trabalho parcial já aplicado. O progresso da biblioteca vinculada e sua data de modificação são atualizados automaticamente à medida que os resultados da auditoria são aplicados."
     },
     {
-      "source": "Cancel overlay position, opacity, and scale changes",
-      "translation": "Cancelar alterações de posição, opacidade e escala da sobreposição"
+      "source": "Cancel overlay position and appearance changes",
+      "translation": "Cancelar alterações de posição e aparência da sobreposição"
     },
     {
       "source": "Cancel polygon",
@@ -102407,6 +102559,10 @@
       "translation": "Não foi possível ler os estados do tema de sobreposição '{0}': {1}"
     },
     {
+      "source": "Could not read overlay typography overrides '{0}': {1}",
+      "translation": "Não foi possível ler as substituições de tipografia de sobreposição '{0}': {1}"
+    },
+    {
       "source": "Could not refresh boxel statistics: {0}",
       "translation": "Não foi possível atualizar as estatísticas do boxel: {0}"
     },
@@ -103905,6 +104061,10 @@
     {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Cada sobreposição possui um gatilho de estado de jogo específico e também pode ter um atalho manual."
+    },
+    {
+      "source": "Each role grows or shrinks independently. Zero uses the theme's baseline size.",
+      "translation": "Cada função cresce ou diminui de forma independente. Zero usa o tamanho da linha de base do tema."
     },
     {
       "source": "Eagle",
@@ -105609,10 +105769,6 @@
     {
       "source": "Font Size:",
       "translation": "Tamanho da fonte:"
-    },
-    {
-      "source": "Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied.",
-      "translation": "Os tamanhos de fonte se aplicam a funções de texto de sobreposição compartilhadas. Os valores usam incrementos de meio ponto e atualizam sobreposições abertas quando visualizados ou aplicados."
     },
     {
       "source": "Fonticulua Campestris",
@@ -112291,6 +112447,10 @@
       "translation": "Configurações de sobreposição"
     },
     {
+      "source": "Overlay appearance",
+      "translation": "Aparência de sobreposição"
+    },
+    {
       "source": "Overlay appearance and saved states",
       "translation": "Aparência de sobreposição e estados salvos"
     },
@@ -112363,10 +112523,6 @@
       "translation": "Interação de sobreposição do mouse ativada"
     },
     {
-      "source": "Overlay opacity and scale",
-      "translation": "Sobreposição de opacidade e escala"
-    },
-    {
       "source": "Overlay opacity must be from 0 to 1.",
       "translation": "A opacidade da sobreposição deve ser de 0 a 1."
     },
@@ -112403,6 +112559,10 @@
       "translation": "A posição da sobreposição, a opacidade e as alterações de escala foram canceladas."
     },
     {
+      "source": "Overlay positions and appearance were not saved: {0}",
+      "translation": "As posições e a aparência da sobreposição não foram salvas: {0}"
+    },
+    {
       "source": "Overlay positions cannot be edited",
       "translation": "As posições de sobreposição não podem ser editadas"
     },
@@ -112413,10 +112573,6 @@
     {
       "source": "Overlay positions cannot be edited until the existing layout error is corrected: {0}",
       "translation": "As posições de sobreposição não podem ser editadas até que o erro de layout existente seja corrigido: {0}"
-    },
-    {
-      "source": "Overlay positions, opacity, and scale were not saved: {0}",
-      "translation": "As posições de sobreposição, a opacidade e a escala não foram salvas: {0}"
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -112493,6 +112649,26 @@
     {
       "source": "Overlay theme state '{0}' was not found.",
       "translation": "O estado do tema de sobreposição '{0}' não foi encontrado."
+    },
+    {
+      "source": "Overlay typography override '{0}' contains a value outside the supported range.",
+      "translation": "A substituição de tipografia de sobreposição '{0}' contém um valor fora do intervalo compatível."
+    },
+    {
+      "source": "Overlay typography override '{0}' could not be verified before saving.",
+      "translation": "A substituição de tipografia de sobreposição '{0}' não pôde ser verificada antes de salvar."
+    },
+    {
+      "source": "Overlay typography override '{0}' must be an object.",
+      "translation": "A substituição de tipografia de sobreposição '{0}' deve ser um objeto."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be an integer.",
+      "translation": "A substituição de tipografia de sobreposição '{0}.{1}' deve ser um número inteiro."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be from {2}% to {3}% in {4}% increments.",
+      "translation": "A substituição de tipografia de sobreposição '{0}.{1}' deve ser de {2}% a {3}% em incrementos de {4}%."
     },
     {
       "source": "OverlayBehavior",
@@ -115811,16 +115987,16 @@
       "translation": "Localização da plataforma {0} salva."
     },
     {
-      "source": "Right Click Panels to edit individual Opacity/Scale",
-      "translation": "Clique com o botão direito nos painéis para editar a opacidade/escala individual"
-    },
-    {
       "source": "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.",
       "translation": "Clique com o botão direito em um anel para marcá-lo, salve a observação online localmente, copie o sistema ou abra um site de referência. A importação de diário histórico adiciona os anéis e missões deste comandante sem iniciar sessões."
     },
     {
       "source": "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
       "translation": "Clique com o botão direito em outra visualização para editar esse painel. A marca de seleção da barra de ferramentas salva todas as alterações e fecha o editor."
+    },
+    {
+      "source": "Right-click panels to edit opacity, panel scale, and text scale",
+      "translation": "Clique com o botão direito nos painéis para editar a opacidade, a escala do painel e a escala do texto"
     },
     {
       "source": "Ring",
@@ -116639,8 +116815,8 @@
       "translation": "Salve ou desfaça a definição atual do Route Workspace e anote as alterações antes de desativá-lo."
     },
     {
-      "source": "Save overlay positions, opacity, and scale",
-      "translation": "Salve posições de sobreposição, opacidade e escala"
+      "source": "Save overlay positions and appearance",
+      "translation": "Salvar posições e aparência de sobreposição"
     },
     {
       "source": "Save preset",
@@ -116799,8 +116975,8 @@
       "translation": "{0} posições de sobreposição ao vivo salvas e modo de clique restaurado.{1}"
     },
     {
-      "source": "Saved {0} overlay position/opacity override(s), including scale settings{1}{2}{3}",
-      "translation": "Substituição(ões) de posição/opacidade da sobreposição {0} salvas, incluindo configurações de escala{1}{2}{3}"
+      "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
+      "translation": "Posição de sobreposição {0} salva e substituição(ões) de aparência {1}{2}{3}"
     },
     {
       "source": "Saved {0} overlay setting(s). Visible overlays update immediately.{1}",
@@ -120247,6 +120423,10 @@
       "translation": "Arquivos de texto"
     },
     {
+      "source": "Text scale from baseline",
+      "translation": "Escala de texto da linha de base"
+    },
+    {
       "source": "Thargoid",
       "translation": "Thargoide"
     },
@@ -122217,6 +122397,10 @@
     {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Esses atalhos registram ou limpam locais; eles não implantam ou coletam plataformas no jogo."
+    },
+    {
+      "source": "These sizes define the shared baseline for each text role. Use the overlay position editor to scale roles independently for each panel.",
+      "translation": "Esses tamanhos definem a linha de base compartilhada para cada função de texto. Use o editor de posição de sobreposição para dimensionar funções de forma independente para cada painel."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -126275,6 +126459,10 @@
       "translation": "temas de sobreposição"
     },
     {
+      "source": "overlay-typography-overrides",
+      "translation": "substituições de tipografia de sobreposição"
+    },
+    {
       "source": "overlays",
       "translation": "sobreposições"
     },
@@ -127419,6 +127607,10 @@
       "translation": "{0} ativo • {1} não lido"
     },
     {
+      "source": "{0} appearance",
+      "translation": "Aparência de {0}"
+    },
+    {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} conforme verificado · {1} se mapeado"
     },
@@ -127783,10 +127975,6 @@
       "translation": "{0} de {1} · {2}"
     },
     {
-      "source": "{0} opacity and scale",
-      "translation": "Opacidade e escala {0}"
-    },
-    {
       "source": "{0} opacity set to {1}%. Use the top ✓ to save and close.",
       "translation": "Opacidade {0} definida como {1}%. Use o ✓ superior para salvar e fechar."
     },
@@ -127973,6 +128161,10 @@
     {
       "source": "{0} {1} signals",
       "translation": "{0} {1} sinais"
+    },
+    {
+      "source": "{0} {1} text set to {2}% from baseline. Use the top ✓ to save and close.",
+      "translation": "Texto {0} {1} definido como {2}% da linha de base. Use o ✓ superior para salvar e fechar."
     },
     {
       "source": "{0} {1} verified Guardian templates.",
@@ -129509,6 +129701,10 @@
       "translation": "АВ"
     },
     {
+      "source": "Aa",
+      "translation": "Аа"
+    },
+    {
       "source": "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
       "translation": "На борту Rhino предупреждение о добыче появляется за пределами 4 км от самой дальней сохраненной установки и исчезает, когда каждая установка возвращается в зону действия."
     },
@@ -129811,6 +130007,10 @@
     {
       "source": "Adjust overlays",
       "translation": "Настройка наложений"
+    },
+    {
+      "source": "Adjust text size by role for this panel",
+      "translation": "Настройте размер текста по роли для этой панели"
     },
     {
       "source": "Adjust the existing shared map. Its background, alignment, master points, and group labels are copied into this draft.",
@@ -132277,8 +132477,8 @@
       "translation": "Отмена аудита безопасно сохраняет уже выполненную частичную работу. Ход работы связанной библиотеки и дата ее изменения обновляются автоматически по мере применения результатов аудита."
     },
     {
-      "source": "Cancel overlay position, opacity, and scale changes",
-      "translation": "Отменить положение наложения, непрозрачность и изменения масштаба"
+      "source": "Cancel overlay position and appearance changes",
+      "translation": "Отменить положение наложения и изменения внешнего вида"
     },
     {
       "source": "Cancel polygon",
@@ -134477,6 +134677,10 @@
       "translation": "Не удалось прочитать состояния темы наложения '{0}': {1}"
     },
     {
+      "source": "Could not read overlay typography overrides '{0}': {1}",
+      "translation": "Не удалось прочитать переопределения наложенной типографики «{0}»: {1}."
+    },
+    {
       "source": "Could not refresh boxel statistics: {0}",
       "translation": "Не удалось обновить статистику бокселя: {0}"
     },
@@ -135975,6 +136179,10 @@
     {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Каждое наложение имеет определенный триггер игрового состояния, а также может иметь ручной ярлык."
+    },
+    {
+      "source": "Each role grows or shrinks independently. Zero uses the theme's baseline size.",
+      "translation": "Каждая роль увеличивается или уменьшается независимо. Zero использует базовый размер темы."
     },
     {
       "source": "Eagle",
@@ -137679,10 +137887,6 @@
     {
       "source": "Font Size:",
       "translation": "Размер шрифта:"
-    },
-    {
-      "source": "Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied.",
-      "translation": "Размеры шрифтов применяются к ролям общего наложения текста. Значения используют приращение в полпункта и обновляют открытые наложения при предварительном просмотре или применении."
     },
     {
       "source": "Fonticulua Campestris",
@@ -144361,6 +144565,10 @@
       "translation": "Настройки наложения"
     },
     {
+      "source": "Overlay appearance",
+      "translation": "Внешний вид наложения"
+    },
+    {
       "source": "Overlay appearance and saved states",
       "translation": "Внешний вид наложения и сохраненные состояния"
     },
@@ -144433,10 +144641,6 @@
       "translation": "Наложение взаимодействия с мышью включено"
     },
     {
-      "source": "Overlay opacity and scale",
-      "translation": "Наложение непрозрачности и масштаба"
-    },
-    {
       "source": "Overlay opacity must be from 0 to 1.",
       "translation": "Непрозрачность наложения должна быть от 0 до 1."
     },
@@ -144473,6 +144677,10 @@
       "translation": "Изменения положения наложения, непрозрачности и масштаба были отменены."
     },
     {
+      "source": "Overlay positions and appearance were not saved: {0}",
+      "translation": "Позиции и внешний вид наложения не были сохранены: {0}."
+    },
+    {
       "source": "Overlay positions cannot be edited",
       "translation": "Позиции наложения нельзя редактировать"
     },
@@ -144483,10 +144691,6 @@
     {
       "source": "Overlay positions cannot be edited until the existing layout error is corrected: {0}",
       "translation": "Позиции наложения нельзя редактировать, пока не будет исправлена существующая ошибка макета: {0}"
-    },
-    {
-      "source": "Overlay positions, opacity, and scale were not saved: {0}",
-      "translation": "Позиции наложения, непрозрачность и масштаб не были сохранены: {0}."
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -144563,6 +144767,26 @@
     {
       "source": "Overlay theme state '{0}' was not found.",
       "translation": "Состояние темы наложения «{0}» не найдено."
+    },
+    {
+      "source": "Overlay typography override '{0}' contains a value outside the supported range.",
+      "translation": "Переопределение типографики наложения «{0}» содержит значение, выходящее за пределы поддерживаемого диапазона."
+    },
+    {
+      "source": "Overlay typography override '{0}' could not be verified before saving.",
+      "translation": "Переопределение типографики наложения «{0}» не удалось проверить перед сохранением."
+    },
+    {
+      "source": "Overlay typography override '{0}' must be an object.",
+      "translation": "Переопределение типографики наложения «{0}» должно быть объектом."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be an integer.",
+      "translation": "Переопределение типографики наложения «{0}.{1}» должно быть целым числом."
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be from {2}% to {3}% in {4}% increments.",
+      "translation": "Переопределение типографики наложения «{0}.{1}» должно иметь значение от {2}% до {3}% с шагом {4}%."
     },
     {
       "source": "OverlayBehavior",
@@ -147881,16 +148105,16 @@
       "translation": "Местоположение буровой установки {0} сохранено."
     },
     {
-      "source": "Right Click Panels to edit individual Opacity/Scale",
-      "translation": "Щелкните правой кнопкой мыши панели, чтобы изменить индивидуальную непрозрачность/масштаб."
-    },
-    {
       "source": "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.",
       "translation": "Щелкните кольцо правой кнопкой мыши, чтобы добавить его в закладки, сохранить онлайн-наблюдение локально, скопировать систему или открыть справочный сайт. Импорт исторического журнала добавляет кольца и миссии этого командира без запуска сеансов."
     },
     {
       "source": "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
       "translation": "Щелкните правой кнопкой мыши другой предварительный просмотр, чтобы отредактировать эту панель. Галочка на панели инструментов сохраняет все изменения и закрывает редактор."
+    },
+    {
+      "source": "Right-click panels to edit opacity, panel scale, and text scale",
+      "translation": "Щелкните панели правой кнопкой мыши, чтобы изменить непрозрачность, масштаб панели и масштаб текста."
     },
     {
       "source": "Ring",
@@ -148709,8 +148933,8 @@
       "translation": "Сохраните или отмените текущее определение рабочей области маршрута и запишите изменения, прежде чем деактивировать его."
     },
     {
-      "source": "Save overlay positions, opacity, and scale",
-      "translation": "Сохраняйте позиции наложения, непрозрачность и масштаб."
+      "source": "Save overlay positions and appearance",
+      "translation": "Сохранение положения и внешнего вида наложения"
     },
     {
       "source": "Save preset",
@@ -148869,8 +149093,8 @@
       "translation": "Сохранены {0} позиции наложения в реальном времени и восстановлен режим перехода по клику.{1}"
     },
     {
-      "source": "Saved {0} overlay position/opacity override(s), including scale settings{1}{2}{3}",
-      "translation": "Сохранено {0} переопределение положения/непрозрачности наложения, включая настройки масштаба. {1}{2}{3}"
+      "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
+      "translation": "Сохранено положение наложения {0} и переопределение внешнего вида {1}{2}{3}"
     },
     {
       "source": "Saved {0} overlay setting(s). Visible overlays update immediately.{1}",
@@ -152317,6 +152541,10 @@
       "translation": "Текстовые файлы"
     },
     {
+      "source": "Text scale from baseline",
+      "translation": "Масштаб текста от базовой линии"
+    },
+    {
       "source": "Thargoid",
       "translation": "Таргоид"
     },
@@ -154287,6 +154515,10 @@
     {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "Эти ярлыки записывают или удаляют местоположения; они не развертывают и не собирают буровые установки в игре."
+    },
+    {
+      "source": "These sizes define the shared baseline for each text role. Use the overlay position editor to scale roles independently for each panel.",
+      "translation": "Эти размеры определяют общую базовую линию для каждой текстовой роли. Используйте редактор положения наложения, чтобы масштабировать роли независимо для каждой панели."
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -158345,6 +158577,10 @@
       "translation": "оверлей-темы"
     },
     {
+      "source": "overlay-typography-overrides",
+      "translation": "наложение-типографика-переопределения"
+    },
+    {
       "source": "overlays",
       "translation": "наложения"
     },
@@ -159489,6 +159725,10 @@
       "translation": "{0} активен • {1} не прочитан"
     },
     {
+      "source": "{0} appearance",
+      "translation": "Внешний вид {0}"
+    },
+    {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} при сканировании · {1} при сопоставлении"
     },
@@ -159853,10 +160093,6 @@
       "translation": "{0} из {1} · {2}"
     },
     {
-      "source": "{0} opacity and scale",
-      "translation": "{0} непрозрачность и масштаб"
-    },
-    {
       "source": "{0} opacity set to {1}%. Use the top ✓ to save and close.",
       "translation": "Для {0} непрозрачность установлена ​​на {1}%. Используйте верхний ✓, чтобы сохранить и закрыть."
     },
@@ -160043,6 +160279,10 @@
     {
       "source": "{0} {1} signals",
       "translation": "Сигналы {0} {1}"
+    },
+    {
+      "source": "{0} {1} text set to {2}% from baseline. Use the top ✓ to save and close.",
+      "translation": "{0} {1} Текст установлен на {2}% от базового уровня. Используйте верхний ✓, чтобы сохранить и закрыть."
     },
     {
       "source": "{0} {1} verified Guardian templates.",
@@ -161579,6 +161819,10 @@
       "translation": "爱华"
     },
     {
+      "source": "Aa",
+      "translation": "氨基酸"
+    },
+    {
       "source": "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
       "translation": "在 Rhino 上，采矿警告会出现在距最远保存的钻机 4 公里之外，并在每个钻机回到范围内时清除。"
     },
@@ -161881,6 +162125,10 @@
     {
       "source": "Adjust overlays",
       "translation": "调整叠加"
+    },
+    {
+      "source": "Adjust text size by role for this panel",
+      "translation": "按角色调整此面板的文本大小"
     },
     {
       "source": "Adjust the existing shared map. Its background, alignment, master points, and group labels are copied into this draft.",
@@ -164347,8 +164595,8 @@
       "translation": "取消审核可以安全地保留已应用的部分工作。应用审核结果时，链接库进度及其修改日期会自动更新。"
     },
     {
-      "source": "Cancel overlay position, opacity, and scale changes",
-      "translation": "取消叠加位置、不透明度和比例更改"
+      "source": "Cancel overlay position and appearance changes",
+      "translation": "取消叠加位置和外观更改"
     },
     {
       "source": "Cancel polygon",
@@ -166547,6 +166795,10 @@
       "translation": "无法读取覆盖主题状态“{0}”：{1}"
     },
     {
+      "source": "Could not read overlay typography overrides '{0}': {1}",
+      "translation": "无法读取覆盖排版覆盖“{0}”：{1}"
+    },
+    {
       "source": "Could not refresh boxel statistics: {0}",
       "translation": "无法刷新 boxel 统计信息：{0}"
     },
@@ -168045,6 +168297,10 @@
     {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "每个叠加层都有一个特定的游戏状态触发器，也可以有一个手动快捷方式。"
+    },
+    {
+      "source": "Each role grows or shrinks independently. Zero uses the theme's baseline size.",
+      "translation": "每个角色独立地增长或缩小。零使用主题的基线大小。"
     },
     {
       "source": "Eagle",
@@ -169749,10 +170005,6 @@
     {
       "source": "Font Size:",
       "translation": "字体大小："
-    },
-    {
-      "source": "Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied.",
-      "translation": "字体大小适用于共享覆盖文本角色。值使用半点增量并在预览或应用时更新打开的叠加层。"
     },
     {
       "source": "Fonticulua Campestris",
@@ -176431,6 +176683,10 @@
       "translation": "叠加设置"
     },
     {
+      "source": "Overlay appearance",
+      "translation": "叠加外观"
+    },
+    {
       "source": "Overlay appearance and saved states",
       "translation": "叠加外观和保存的状态"
     },
@@ -176503,10 +176759,6 @@
       "translation": "启用覆盖鼠标交互"
     },
     {
-      "source": "Overlay opacity and scale",
-      "translation": "叠加不透明度和比例"
-    },
-    {
       "source": "Overlay opacity must be from 0 to 1.",
       "translation": "叠加不透明度必须为 0 到 1。"
     },
@@ -176543,6 +176795,10 @@
       "translation": "覆盖位置、不透明度和比例更改已取消。"
     },
     {
+      "source": "Overlay positions and appearance were not saved: {0}",
+      "translation": "未保存叠加位置和外观：{0}"
+    },
+    {
       "source": "Overlay positions cannot be edited",
       "translation": "无法编辑叠加位置"
     },
@@ -176553,10 +176809,6 @@
     {
       "source": "Overlay positions cannot be edited until the existing layout error is corrected: {0}",
       "translation": "在纠正现有布局错误之前，无法编辑叠加位置：{0}"
-    },
-    {
-      "source": "Overlay positions, opacity, and scale were not saved: {0}",
-      "translation": "未保存叠加位置、不透明度和比例：{0}"
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -176633,6 +176885,26 @@
     {
       "source": "Overlay theme state '{0}' was not found.",
       "translation": "未找到覆盖主题状态“{0}”。"
+    },
+    {
+      "source": "Overlay typography override '{0}' contains a value outside the supported range.",
+      "translation": "覆盖排版覆盖“{0}”包含超出支持范围的值。"
+    },
+    {
+      "source": "Overlay typography override '{0}' could not be verified before saving.",
+      "translation": "保存前无法验证覆盖排版覆盖“{0}”。"
+    },
+    {
+      "source": "Overlay typography override '{0}' must be an object.",
+      "translation": "覆盖排版覆盖“{0}”必须是一个对象。"
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be an integer.",
+      "translation": "覆盖排版覆盖“{0}.{1}”必须是整数。"
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be from {2}% to {3}% in {4}% increments.",
+      "translation": "覆盖排版覆盖“{0}.{1}”必须从 {2}% 到 {3}%，增量为 {4}%。"
     },
     {
       "source": "OverlayBehavior",
@@ -179951,16 +180223,16 @@
       "translation": "已保存装备 {0} 位置。"
     },
     {
-      "source": "Right Click Panels to edit individual Opacity/Scale",
-      "translation": "右键单击面板可编辑单独的不透明度/比例"
-    },
-    {
       "source": "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.",
       "translation": "右键单击环将其添加为书签、将在线观察保存到本地、复制系统或打开参考站点。历史日志导入会添加该指挥官的戒指和任务，而无需启动会话。"
     },
     {
       "source": "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
       "translation": "右键单击另一个预览以编辑该窗格。工具栏复选标记会保存所有更改并关闭编辑器。"
+    },
+    {
+      "source": "Right-click panels to edit opacity, panel scale, and text scale",
+      "translation": "右键单击面板可编辑不透明度、面板比例和文本比例"
     },
     {
       "source": "Ring",
@@ -180779,8 +181051,8 @@
       "translation": "保存或撤消当前的路径工作空间定义并在停用之前记下更改。"
     },
     {
-      "source": "Save overlay positions, opacity, and scale",
-      "translation": "保存叠加位置、不透明度和比例"
+      "source": "Save overlay positions and appearance",
+      "translation": "保存叠加位置和外观"
     },
     {
       "source": "Save preset",
@@ -180939,8 +181211,8 @@
       "translation": "已保存 {0} 实时叠加位置并恢复点击模式。{1}"
     },
     {
-      "source": "Saved {0} overlay position/opacity override(s), including scale settings{1}{2}{3}",
-      "translation": "保存的 {0} 叠加位置/不透明度覆盖，包括比例设置{1}{2}{3}"
+      "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
+      "translation": "保存的 {0} 叠加位置和外观覆盖 {1}{2}{3}"
     },
     {
       "source": "Saved {0} overlay setting(s). Visible overlays update immediately.{1}",
@@ -184387,6 +184659,10 @@
       "translation": "文本文件"
     },
     {
+      "source": "Text scale from baseline",
+      "translation": "文本相对于基线的比例"
+    },
+    {
       "source": "Thargoid",
       "translation": "塔尔戈德"
     },
@@ -186357,6 +186633,10 @@
     {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "这些快捷方式记录或清除位置；他们不会在游戏中部署或收集装备。"
+    },
+    {
+      "source": "These sizes define the shared baseline for each text role. Use the overlay position editor to scale roles independently for each panel.",
+      "translation": "这些大小定义了每个文本角色的共享基线。使用叠加位置编辑器为每个面板独立缩放角色。"
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -190415,6 +190695,10 @@
       "translation": "覆盖主题"
     },
     {
+      "source": "overlay-typography-overrides",
+      "translation": "覆盖排版覆盖"
+    },
+    {
       "source": "overlays",
       "translation": "覆盖层"
     },
@@ -191559,6 +191843,10 @@
       "translation": "{0} 已激活 • {1} 未读"
     },
     {
+      "source": "{0} appearance",
+      "translation": "{0}外观"
+    },
+    {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "{0} 扫描 · {1} 如果映射"
     },
@@ -191923,10 +192211,6 @@
       "translation": "{1} 的 {0} · {2}"
     },
     {
-      "source": "{0} opacity and scale",
-      "translation": "{0} 不透明度和比例"
-    },
-    {
       "source": "{0} opacity set to {1}%. Use the top ✓ to save and close.",
       "translation": "{0} 不透明度设置为 {1}%。使用顶部 ✓ 保存并关闭。"
     },
@@ -192113,6 +192397,10 @@
     {
       "source": "{0} {1} signals",
       "translation": "{0} {1} 信号"
+    },
+    {
+      "source": "{0} {1} text set to {2}% from baseline. Use the top ✓ to save and close.",
+      "translation": "{0} {1} 文本设置为基线的 {2}%。使用顶部 ✓ 保存并关闭。"
     },
     {
       "source": "{0} {1} verified Guardian templates.",
@@ -193649,6 +193937,10 @@
       "translation": "* AW >>>!"
     },
     {
+      "source": "Aa",
+      "translation": "* AA >>>!"
+    },
+    {
       "source": "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
       "translation": "* ABOARD THE RHINO, THE MINING WARNING APPEARS BEYOND 4 KM FROM THE FARTHEST SAVED RIG AND CLEARS WHEN EVERY RIG IS BACK WITHIN RANGE. >>>!"
     },
@@ -193951,6 +194243,10 @@
     {
       "source": "Adjust overlays",
       "translation": "* ADJUST OVERLAYS >>>!"
+    },
+    {
+      "source": "Adjust text size by role for this panel",
+      "translation": "* ADJUST TEXT SIZE BY ROLE FOR THIS PANEL >>>!"
     },
     {
       "source": "Adjust the existing shared map. Its background, alignment, master points, and group labels are copied into this draft.",
@@ -196417,8 +196713,8 @@
       "translation": "* CANCEL AUDIT SAFELY RETAINS THE PARTIAL WORK ALREADY APPLIED. LINKED LIBRARY PROGRESS AND ITS MODIFIED DATE UPDATE AUTOMATICALLY AS AUDIT RESULTS ARE APPLIED. >>>!"
     },
     {
-      "source": "Cancel overlay position, opacity, and scale changes",
-      "translation": "* CANCEL OVERLAY POSITION, OPACITY, AND SCALE CHANGES >>>!"
+      "source": "Cancel overlay position and appearance changes",
+      "translation": "* CANCEL OVERLAY POSITION AND APPEARANCE CHANGES >>>!"
     },
     {
       "source": "Cancel polygon",
@@ -198617,6 +198913,10 @@
       "translation": "* COULD NOT READ OVERLAY THEME STATES '{0}': {1} >>>!"
     },
     {
+      "source": "Could not read overlay typography overrides '{0}': {1}",
+      "translation": "* COULD NOT READ OVERLAY TYPOGRAPHY OVERRIDES '{0}': {1} >>>!"
+    },
+    {
       "source": "Could not refresh boxel statistics: {0}",
       "translation": "* COULD NOT REFRESH BOXEL STATISTICS: {0} >>>!"
     },
@@ -200115,6 +200415,10 @@
     {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "* EACH OVERLAY HAS A SPECIFIC GAME-STATE TRIGGER AND CAN ALSO HAVE A MANUAL SHORTCUT. >>>!"
+    },
+    {
+      "source": "Each role grows or shrinks independently. Zero uses the theme's baseline size.",
+      "translation": "* EACH ROLE GROWS OR SHRINKS INDEPENDENTLY. ZERO USES THE THEME'S BASELINE SIZE. >>>!"
     },
     {
       "source": "Eagle",
@@ -201819,10 +202123,6 @@
     {
       "source": "Font Size:",
       "translation": "* FONT SIZE: >>>!"
-    },
-    {
-      "source": "Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied.",
-      "translation": "* FONT SIZES APPLY TO SHARED OVERLAY TEXT ROLES. VALUES USE HALF-POINT INCREMENTS AND UPDATE OPEN OVERLAYS WHEN PREVIEWED OR APPLIED. >>>!"
     },
     {
       "source": "Fonticulua Campestris",
@@ -208501,6 +208801,10 @@
       "translation": "* OVERLAY SETTINGS >>>!"
     },
     {
+      "source": "Overlay appearance",
+      "translation": "* OVERLAY APPEARANCE >>>!"
+    },
+    {
       "source": "Overlay appearance and saved states",
       "translation": "* OVERLAY APPEARANCE AND SAVED STATES >>>!"
     },
@@ -208573,10 +208877,6 @@
       "translation": "* OVERLAY MOUSE INTERACTION ENABLED >>>!"
     },
     {
-      "source": "Overlay opacity and scale",
-      "translation": "* OVERLAY OPACITY AND SCALE >>>!"
-    },
-    {
       "source": "Overlay opacity must be from 0 to 1.",
       "translation": "* OVERLAY OPACITY MUST BE FROM 0 TO 1. >>>!"
     },
@@ -208613,6 +208913,10 @@
       "translation": "* OVERLAY POSITION, OPACITY, AND SCALE CHANGES WERE CANCELLED. >>>!"
     },
     {
+      "source": "Overlay positions and appearance were not saved: {0}",
+      "translation": "* OVERLAY POSITIONS AND APPEARANCE WERE NOT SAVED: {0} >>>!"
+    },
+    {
       "source": "Overlay positions cannot be edited",
       "translation": "* OVERLAY POSITIONS CANNOT BE EDITED >>>!"
     },
@@ -208623,10 +208927,6 @@
     {
       "source": "Overlay positions cannot be edited until the existing layout error is corrected: {0}",
       "translation": "* OVERLAY POSITIONS CANNOT BE EDITED UNTIL THE EXISTING LAYOUT ERROR IS CORRECTED: {0} >>>!"
-    },
-    {
-      "source": "Overlay positions, opacity, and scale were not saved: {0}",
-      "translation": "* OVERLAY POSITIONS, OPACITY, AND SCALE WERE NOT SAVED: {0} >>>!"
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -208703,6 +209003,26 @@
     {
       "source": "Overlay theme state '{0}' was not found.",
       "translation": "* OVERLAY THEME STATE '{0}' WAS NOT FOUND. >>>!"
+    },
+    {
+      "source": "Overlay typography override '{0}' contains a value outside the supported range.",
+      "translation": "* OVERLAY TYPOGRAPHY OVERRIDE '{0}' CONTAINS A VALUE OUTSIDE THE SUPPORTED RANGE. >>>!"
+    },
+    {
+      "source": "Overlay typography override '{0}' could not be verified before saving.",
+      "translation": "* OVERLAY TYPOGRAPHY OVERRIDE '{0}' COULD NOT BE VERIFIED BEFORE SAVING. >>>!"
+    },
+    {
+      "source": "Overlay typography override '{0}' must be an object.",
+      "translation": "* OVERLAY TYPOGRAPHY OVERRIDE '{0}' MUST BE AN OBJECT. >>>!"
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be an integer.",
+      "translation": "* OVERLAY TYPOGRAPHY OVERRIDE '{0}.{1}' MUST BE AN INTEGER. >>>!"
+    },
+    {
+      "source": "Overlay typography override '{0}.{1}' must be from {2}% to {3}% in {4}% increments.",
+      "translation": "* OVERLAY TYPOGRAPHY OVERRIDE '{0}.{1}' MUST BE FROM {2}% TO {3}% IN {4}% INCREMENTS. >>>!"
     },
     {
       "source": "OverlayBehavior",
@@ -212021,16 +212341,16 @@
       "translation": "* RIG {0} LOCATION SAVED. >>>!"
     },
     {
-      "source": "Right Click Panels to edit individual Opacity/Scale",
-      "translation": "* RIGHT CLICK PANELS TO EDIT INDIVIDUAL OPACITY/SCALE >>>!"
-    },
-    {
       "source": "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.",
       "translation": "* RIGHT-CLICK A RING TO BOOKMARK IT, SAVE THE ONLINE OBSERVATION LOCALLY, COPY THE SYSTEM OR OPEN A REFERENCE SITE. HISTORICAL JOURNAL IMPORT ADDS THIS COMMANDER'S RINGS AND MISSIONS WITHOUT STARTING SESSIONS. >>>!"
     },
     {
       "source": "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
       "translation": "* RIGHT-CLICK ANOTHER PREVIEW TO EDIT THAT PANE. THE TOOLBAR CHECKMARK SAVES EVERY CHANGE AND CLOSES THE EDITOR. >>>!"
+    },
+    {
+      "source": "Right-click panels to edit opacity, panel scale, and text scale",
+      "translation": "* RIGHT-CLICK PANELS TO EDIT OPACITY, PANEL SCALE, AND TEXT SCALE >>>!"
     },
     {
       "source": "Ring",
@@ -212849,8 +213169,8 @@
       "translation": "* SAVE OR UNDO THE CURRENT ROUTE WORKSPACE DEFINITION AND NOTE CHANGES BEFORE DEACTIVATING IT. >>>!"
     },
     {
-      "source": "Save overlay positions, opacity, and scale",
-      "translation": "* SAVE OVERLAY POSITIONS, OPACITY, AND SCALE >>>!"
+      "source": "Save overlay positions and appearance",
+      "translation": "* SAVE OVERLAY POSITIONS AND APPEARANCE >>>!"
     },
     {
       "source": "Save preset",
@@ -213009,8 +213329,8 @@
       "translation": "* SAVED {0} LIVE OVERLAY POSITION(S) AND RESTORED CLICK-THROUGH MODE.{1} >>>!"
     },
     {
-      "source": "Saved {0} overlay position/opacity override(s), including scale settings{1}{2}{3}",
-      "translation": "* SAVED {0} OVERLAY POSITION/OPACITY OVERRIDE(S), INCLUDING SCALE SETTINGS{1}{2}{3} >>>!"
+      "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
+      "translation": "* SAVED {0} OVERLAY POSITION AND APPEARANCE OVERRIDE(S){1}{2}{3} >>>!"
     },
     {
       "source": "Saved {0} overlay setting(s). Visible overlays update immediately.{1}",
@@ -216457,6 +216777,10 @@
       "translation": "* TEXT FILES >>>!"
     },
     {
+      "source": "Text scale from baseline",
+      "translation": "* TEXT SCALE FROM BASELINE >>>!"
+    },
+    {
       "source": "Thargoid",
       "translation": "* THARGOID >>>!"
     },
@@ -218427,6 +218751,10 @@
     {
       "source": "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
       "translation": "* THESE SHORTCUTS RECORD OR CLEAR LOCATIONS; THEY DO NOT DEPLOY OR COLLECT RIGS IN THE GAME. >>>!"
+    },
+    {
+      "source": "These sizes define the shared baseline for each text role. Use the overlay position editor to scale roles independently for each panel.",
+      "translation": "* THESE SIZES DEFINE THE SHARED BASELINE FOR EACH TEXT ROLE. USE THE OVERLAY POSITION EDITOR TO SCALE ROLES INDEPENDENTLY FOR EACH PANEL. >>>!"
     },
     {
       "source": "These values belong only to the selected site: its type, origin, headings, notes, observed states, and local raw points. Save this survey separately from shared map changes.",
@@ -222485,6 +222813,10 @@
       "translation": "* OVERLAY-THEMES >>>!"
     },
     {
+      "source": "overlay-typography-overrides",
+      "translation": "* OVERLAY-TYPOGRAPHY-OVERRIDES >>>!"
+    },
+    {
       "source": "overlays",
       "translation": "* OVERLAYS >>>!"
     },
@@ -223629,6 +223961,10 @@
       "translation": "* {0} ACTIVE • {1} UNREAD >>>!"
     },
     {
+      "source": "{0} appearance",
+      "translation": "* {0} APPEARANCE >>>!"
+    },
+    {
       "source": "{0} as scanned · {1} if mapped",
       "translation": "* {0} AS SCANNED · {1} IF MAPPED >>>!"
     },
@@ -223993,10 +224329,6 @@
       "translation": "* {0} OF {1} · {2} >>>!"
     },
     {
-      "source": "{0} opacity and scale",
-      "translation": "* {0} OPACITY AND SCALE >>>!"
-    },
-    {
       "source": "{0} opacity set to {1}%. Use the top ✓ to save and close.",
       "translation": "* {0} OPACITY SET TO {1}%. USE THE TOP ✓ TO SAVE AND CLOSE. >>>!"
     },
@@ -224183,6 +224515,10 @@
     {
       "source": "{0} {1} signals",
       "translation": "* {0} {1} SIGNALS >>>!"
+    },
+    {
+      "source": "{0} {1} text set to {2}% from baseline. Use the top ✓ to save and close.",
+      "translation": "* {0} {1} TEXT SET TO {2}% FROM BASELINE. USE THE TOP ✓ TO SAVE AND CLOSE. >>>!"
     },
     {
       "source": "{0} {1} verified Guardian templates.",

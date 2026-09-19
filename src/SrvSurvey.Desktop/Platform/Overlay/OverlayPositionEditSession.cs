@@ -65,6 +65,9 @@ public sealed class OverlayPositionEditSession
 
     public int GetScaleIndex(string plotterName) => GetPlacement(plotterName).ScaleIndex ?? ScaleIndex;
 
+    public OverlayTypographyScale GetTypographyScale(string plotterName) =>
+        GetPlacement(plotterName).TypographyScale ?? OverlayTypographyScale.Default;
+
     public bool SetDefaultOpacity(double opacity)
     {
         ValidateOpacity(opacity, nameof(opacity));
@@ -100,6 +103,20 @@ public sealed class OverlayPositionEditSession
 
         LegacyOverlayPlacement placement = GetPlacement(plotterName);
         return workingLayout.SetPlacement(plotterName, placement with { ScaleIndex = scaleIndex });
+    }
+
+    public bool SetTypographyScale(string plotterName, OverlayTypographyScale scale)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        ArgumentNullException.ThrowIfNull(scale);
+        LegacyOverlayPlacement placement = GetPlacement(plotterName);
+        return workingLayout.SetPlacement(
+            plotterName,
+            placement with
+            {
+                TypographyScale = scale.IsDefault ? null : scale,
+            }
+        );
     }
 
     public bool SetPlacement(string plotterName, LegacyOverlayPlacement placement)

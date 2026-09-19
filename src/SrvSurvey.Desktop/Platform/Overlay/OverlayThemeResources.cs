@@ -138,6 +138,7 @@ public static class OverlayThemeResources
         Apply(window);
         ApplyLegacyFormFactor(window, plotterName);
         ApplyLegacyPresentation(window, plotterName);
+        ApplyTypography(window, layout, plotterName);
         ApplyScale(window, layout, plotterName);
         ApplyOpacity(window, layout, plotterName);
         registry.Register(window, plotterName);
@@ -160,6 +161,14 @@ public static class OverlayThemeResources
         foreach (Window window in windows)
         {
             ApplyThemeResources(window);
+            if (LayoutSettingsRegistrations.TryGetValue(window, out LayoutSettingsRegistration? registration))
+            {
+                registration.RefreshTypography();
+            }
+            else if (window is OverlayPositionPreviewWindow preview)
+            {
+                preview.RefreshTypographyBaseline();
+            }
         }
     }
 
@@ -268,7 +277,11 @@ public static class OverlayThemeResources
             return;
         }
 
-        LayoutSettingsRegistrations.Add(window, new LayoutSettingsRegistration(window, layout, plotterName));
+        Control? typographyRoot = GetTypographyRoot(window);
+        LayoutSettingsRegistrations.Add(
+            window,
+            new LayoutSettingsRegistration(window, layout, plotterName, typographyRoot)
+        );
     }
 
     internal static void ApplyLegacyPresentation(Window window, string plotterName)
@@ -462,6 +475,25 @@ public static class OverlayThemeResources
             window.Opacity = opacity;
         }
     }
+
+    public static void ApplyTypography(Window window, LegacyOverlayLayout layout, string plotterName)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        if (GetTypographyRoot(window) is { } content)
+        {
+            OverlayTypographyResources.Apply(content, layout.GetTypographyScale(plotterName));
+        }
+    }
+
+    private static Control? GetTypographyRoot(Window window) =>
+        window.Content switch
+        {
+            LayoutTransformControl { Child: Control child } => child,
+            Control content => content,
+            _ => null,
+        };
 
     public static void ApplyScale(Window window, LegacyOverlayLayout layout)
     {
@@ -777,15 +809,30 @@ public static class OverlayThemeResources
         private readonly Window window;
         private readonly LegacyOverlayLayout layout;
         private readonly string plotterName;
+        private readonly Control? typographyRoot;
         private bool closed;
 
-        public LayoutSettingsRegistration(Window window, LegacyOverlayLayout layout, string plotterName)
+        public LayoutSettingsRegistration(
+            Window window,
+            LegacyOverlayLayout layout,
+            string plotterName,
+            Control? typographyRoot
+        )
         {
             this.window = window;
             this.layout = layout;
             this.plotterName = plotterName;
+            this.typographyRoot = typographyRoot;
             layout.Changed += OnLayoutChanged;
             window.Closed += OnWindowClosed;
+        }
+
+        public void RefreshTypography()
+        {
+            if (!closed && typographyRoot is not null)
+            {
+                OverlayTypographyResources.Apply(typographyRoot, layout.GetTypographyScale(plotterName));
+            }
         }
 
         public void Validate(LegacyOverlayLayout expectedLayout, string expectedPlotterName)
@@ -827,6 +874,7 @@ public static class OverlayThemeResources
 
             ApplyScale(window, layout, plotterName);
             ApplyOpacity(window, layout, plotterName);
+            RefreshTypography();
         }
 
         private void OnWindowClosed(object? sender, EventArgs eventArgs)

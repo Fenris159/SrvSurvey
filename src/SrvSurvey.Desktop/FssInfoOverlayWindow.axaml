@@ -10,7 +10,7 @@
         d:DesignWidth="270"
         d:DesignHeight="700"
         MinWidth="1"
-        MaxWidth="270"
+        MaxWidth="540"
         MinHeight="180"
         MaxHeight="760"
         SizeToContent="WidthAndHeight"
