@@ -24,7 +24,10 @@ pwsh ./tools/Test-ChangedCodeQuality.ps1
 
 That script now mirrors the CI pre-build gates: CSharpier formatting, Avalonia
 localization catalog freshness (`tools/Generate-AvaloniaLocalization.ps1 -Verify`),
-and the `.editorconfig` / SonarCloud-profile checks scoped to changed C# lines.
+the `.editorconfig` / SonarCloud-profile checks scoped to changed C# lines, and
+SonarCloud's **80% new-code coverage** gate on changed production C# (line and
+branch points from Coverlet OpenCover). Analyzer-only Sonar builds do not
+measure coverage; do not treat a green style check as a coverage pass.
 Adding or renaming Desktop source files can change localization `FirstSource`
 metadata even when visible strings are unchanged; regenerate with
 `pwsh ./tools/Generate-AvaloniaLocalization.ps1` before committing.

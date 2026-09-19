@@ -54,6 +54,23 @@ public sealed class BiologyCriteriaCatalogTests
         Assert.Contains("Minor Water Magma", clause.Values);
     }
 
+    [Theory]
+    [InlineData("volcanism None")]
+    [InlineData("[None]")]
+    [InlineData("volcanism [None] trailing")]
+    [InlineData("&[Iron]")]
+    [InlineData("body-type [Rocky]")]
+    public void ParserRejectsMalformedClauses(string text)
+    {
+        Assert.Throws<InvalidDataException>(() => BiologyCriteriaClause.Parse(text));
+    }
+
+    [Fact]
+    public void TryReadClauseRejectsWhitespaceOnlyProperty()
+    {
+        Assert.False(BiologyCriteriaClause.TryReadClause("   [None]", out _, out _, out _));
+    }
+
     [Fact]
     public void CatalogRejectsChildrenAndCommonChildrenOnSameNode()
     {

@@ -30,8 +30,10 @@ dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
 ```
 
 `Test-ChangedCodeQuality.ps1` runs the same pre-build gates as CI: CSharpier,
-Avalonia localization catalog verification, then the `.editorconfig` type-style
-rules and `tools/SonarCloud.ruleset` profile on changed C# lines. Run
+Avalonia localization catalog verification, the `.editorconfig` type-style
+rules and `tools/SonarCloud.ruleset` profile on changed C# lines, then
+Coverlet OpenCover against the mapped test projects so changed production
+lines/branches stay at SonarCloud's 80% new-code coverage minimum. Run
 `dotnet csharpier format .` to format C# before committing. When user-facing
 desktop text or Desktop source files change, regenerate catalogs with
 `./tools/Generate-AvaloniaLocalization.ps1` (add `-TranslateMissing` for new

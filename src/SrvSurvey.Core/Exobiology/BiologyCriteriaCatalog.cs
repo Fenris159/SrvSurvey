@@ -375,7 +375,7 @@ public sealed class BiologyCriteriaClause
         return new BiologyCriteriaClause(trimmed, property, @operator, values);
     }
 
-    private static bool TryReadClause(
+    internal static bool TryReadClause(
         string trimmed,
         out string property,
         out string operatorToken,
