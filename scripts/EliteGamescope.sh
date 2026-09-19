@@ -44,10 +44,12 @@ stop_scope() {
     if [[ -n "$scope_pid" ]] && kill -0 "$scope_pid" 2>/dev/null; then
         kill -TERM "$scope_pid" 2>/dev/null || true
     fi
+    return 0
 }
 
 find_scope_window() {
     wmctrl -lp 2>/dev/null | awk -v pid="$scope_pid" '$3 == pid { print $1; exit }'
+    return $?
 }
 
 find_scope_display() {
