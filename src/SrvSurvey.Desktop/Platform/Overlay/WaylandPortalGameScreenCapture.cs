@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -323,8 +324,9 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         pipeWireCapture = videoCapture;
         videoCapture.FrameReady += OnFrameReady;
         videoCapture.Connect(
-            streamInfo.NodeId,
-            [PixelFormat.Bgra, PixelFormat.Bgrx, PixelFormat.Rgba, PixelFormat.Rgbx]
+            streamInfo.TargetNodeId,
+            [PixelFormat.Bgra, PixelFormat.Bgrx, PixelFormat.Rgba, PixelFormat.Rgbx],
+            targetObjectName: streamInfo.TargetObjectName
         );
         log?.Invoke(
             $"Wayland capture ({capturePurpose}): PipeWire video stream connected; waiting for the first frame."
@@ -591,8 +593,18 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     private sealed record PortalResponse(uint ResponseCode, IDictionary<string, object> Results);
 }
 
-internal readonly record struct PortalStreamInfo(uint NodeId, uint SourceType, PixelPoint? Position, PixelSize? Size)
+internal readonly record struct PortalStreamInfo(
+    uint NodeId,
+    uint SourceType,
+    PixelPoint? Position,
+    PixelSize? Size,
+    ulong? PipeWireSerial = null
+)
 {
+    public uint TargetNodeId => PipeWireSerial.HasValue ? uint.MaxValue : NodeId;
+
+    public string? TargetObjectName => PipeWireSerial?.ToString(CultureInfo.InvariantCulture);
+
     public string DescribeSource()
     {
         string source = SourceType switch
@@ -628,7 +640,8 @@ internal readonly record struct PortalStreamInfo(uint NodeId, uint SourceType, P
             nodeId,
             sourceType,
             ReadPoint(properties, "position"),
-            ReadSize(properties, "size")
+            ReadSize(properties, "size"),
+            ReadUnsignedLong(properties, PipeWirePortalMetadata.SerialPropertyName)
         );
     }
 
@@ -641,6 +654,9 @@ internal readonly record struct PortalStreamInfo(uint NodeId, uint SourceType, P
         properties.TryGetValue(key, out object? value) && value is ValueTuple<int, int> size
             ? new PixelSize(size.Item1, size.Item2)
             : null;
+
+    private static ulong? ReadUnsignedLong(IDictionary<string, object> properties, string key) =>
+        properties.TryGetValue(key, out object? value) && value is ulong number ? number : null;
 }
 
 internal static class PortalFrameCropper

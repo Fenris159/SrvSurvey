@@ -406,6 +406,7 @@ public sealed class GameScreenCaptureTests : IDisposable
             ["source_type"] = 1U,
             ["position"] = (100, 200),
             ["size"] = (1920, 1080),
+            ["pipewire-serial"] = 1234UL,
         };
         var results = new Dictionary<string, object>(StringComparer.Ordinal)
         {
@@ -418,6 +419,9 @@ public sealed class GameScreenCaptureTests : IDisposable
         Assert.Equal(1U, stream.SourceType);
         Assert.Equal(new PixelPoint(100, 200), stream.Position);
         Assert.Equal(new PixelSize(1920, 1080), stream.Size);
+        Assert.Equal(1234UL, stream.PipeWireSerial);
+        Assert.Equal(uint.MaxValue, stream.TargetNodeId);
+        Assert.Equal("1234", stream.TargetObjectName);
         Assert.Equal("a monitor at (100,200) sized 1920x1080", stream.DescribeSource());
 
         properties.Clear();
@@ -425,6 +429,9 @@ public sealed class GameScreenCaptureTests : IDisposable
         Assert.Equal(0U, stream.SourceType);
         Assert.Null(stream.Position);
         Assert.Null(stream.Size);
+        Assert.Null(stream.PipeWireSerial);
+        Assert.Equal(42U, stream.TargetNodeId);
+        Assert.Null(stream.TargetObjectName);
         Assert.Equal("an unspecified source", stream.DescribeSource());
         Assert.Equal("a window", new PortalStreamInfo(42, SourceType: 2, Position: null, Size: null).DescribeSource());
     }

@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: InternalsVisibleTo("PipeWire.NET.Tests")]
+[assembly: InternalsVisibleTo("SrvSurvey.Desktop.Tests")]
 
 // Note: [DisableRuntimeMarshalling] is emitted by ClangSharpPInvokeGenerator into
 // generated/DisableRuntimeMarshalling.g.cs (controlled by generate-disable-runtime-marshalling).
