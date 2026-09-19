@@ -11,6 +11,10 @@ This page collects common problems and fixes for the Linux AppImage / portable b
 For CachyOS, Gamescope mouse confinement, and the same-session SrvSurvey
 launcher, use the dedicated **[CachyOS and Gamescope guide](CACHYOS_GAMESCOPE.md)**.
 
+For Ubuntu 26.04, multi-monitor placement, and selective mouse confinement that
+leaves Frontier's launcher usable, see the dedicated
+**[Ubuntu 26.04 and Gamescope guide](UBUNTU_26_GAMESCOPE.md)**.
+
 ## Permission denied when launching the AppImage or binary
 
 ```bash
