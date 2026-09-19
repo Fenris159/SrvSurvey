@@ -228,16 +228,22 @@ internal static class Program
         {
             builder = builder.With(new Win32PlatformOptions { RenderingMode = [Win32RenderingMode.Software] });
         }
-        else if (useSoftwareRendering && OperatingSystem.IsLinux())
+        else if (OperatingSystem.IsLinux())
         {
-            builder = builder.With(CreateX11SoftwareRenderingOptions());
+            builder = builder.With(CreateX11Options(useSoftwareRendering));
         }
 
         return builder.WithInterFont().With(SrvSurveyFontConfiguration.CreateOptions()).LogToTrace();
     }
 
-    internal static X11PlatformOptions CreateX11SoftwareRenderingOptions()
+    internal static X11PlatformOptions CreateX11Options(bool useSoftwareRendering)
     {
-        return new X11PlatformOptions { RenderingMode = [X11RenderingMode.Software] };
+        var options = new X11PlatformOptions { UseDBusMenu = false };
+        if (useSoftwareRendering)
+        {
+            options.RenderingMode = [X11RenderingMode.Software];
+        }
+
+        return options;
     }
 }

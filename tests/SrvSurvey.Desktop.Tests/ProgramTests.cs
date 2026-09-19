@@ -28,8 +28,17 @@ public sealed class ProgramTests
     [Fact]
     public void LinuxSoftwareRenderingUsesTheX11FramebufferRenderer()
     {
-        X11PlatformOptions options = Program.CreateX11SoftwareRenderingOptions();
+        X11PlatformOptions options = Program.CreateX11Options(useSoftwareRendering: true);
 
         Assert.Equal([X11RenderingMode.Software], options.RenderingMode);
+    }
+
+    [Fact]
+    public void LinuxX11OptionsDisableTheUnusedGlobalMenuExporter()
+    {
+        X11PlatformOptions options = Program.CreateX11Options(useSoftwareRendering: false);
+
+        Assert.False(options.UseDBusMenu);
+        Assert.Equal([X11RenderingMode.Glx, X11RenderingMode.Software], options.RenderingMode);
     }
 }

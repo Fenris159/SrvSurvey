@@ -42,6 +42,8 @@ only when the master permission and at least one tracker are enabled.
   site, then retry with backoff instead of remaining stuck until restart.
 - The selected portal source can be cleared from Settings before restarting and
   choosing the Elite Dangerous client window again.
+- Linux no longer registers overlay windows with the unused desktop global-menu
+  service, avoiding repeated D-Bus cleanup warnings when that service is absent.
 
 ## Suggested test sequence
 
