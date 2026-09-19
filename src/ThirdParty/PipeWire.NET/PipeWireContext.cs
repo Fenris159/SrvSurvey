@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
+using Microsoft.Win32.SafeHandles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PipeWire.NET.Generated;
@@ -26,10 +27,13 @@ namespace PipeWire.NET;
 [SupportedOSPlatform("linux")]
 public sealed class PipeWireContext : IAsyncDisposable
 {
+    private const int DuplicateFileDescriptorCloseOnExec = 1030;
+
     private unsafe pw_thread_loop* _loop;
     private unsafe pw_context*     _context;
     private unsafe pw_core*        _core;
     private volatile bool          _started;
+    private volatile bool          _loopStarted;
     private volatile bool          _disposed;
 
     /// <summary>
@@ -107,7 +111,7 @@ public sealed class PipeWireContext : IAsyncDisposable
             return Task.CompletedTask;
         }
 
-        StartNative(remoteFileDescriptor);
+        StartNative(remoteFileDescriptor, transferredHandle: null);
         _started = true;
         return Task.CompletedTask;
     }
@@ -132,15 +136,10 @@ public sealed class PipeWireContext : IAsyncDisposable
             if (duplicate < 0)
                 throw new InvalidOperationException("Could not duplicate the desktop portal PipeWire descriptor.");
 
-            try
-            {
-                return StartAsync(duplicate, cancellationToken);
-            }
-            catch
-            {
-                _ = CloseFileDescriptor(duplicate);
-                throw;
-            }
+            using var duplicateHandle = new SafeFileHandle(duplicate, ownsHandle: true);
+            StartNative(duplicate, duplicateHandle);
+            _started = true;
+            return Task.CompletedTask;
         }
         finally
         {
@@ -149,16 +148,23 @@ public sealed class PipeWireContext : IAsyncDisposable
         }
     }
 
-    [DllImport("libc", EntryPoint = "dup")]
-    private static extern int DuplicateFileDescriptor(int fileDescriptor);
+    internal static int DuplicateFileDescriptor(int fileDescriptor) =>
+        DuplicateFileDescriptorWithCloseOnExec(fileDescriptor, DuplicateFileDescriptorCloseOnExec, 0);
 
-    [DllImport("libc", EntryPoint = "close")]
-    private static extern int CloseFileDescriptor(int fileDescriptor);
+    internal bool IsLoopStarted => _loopStarted;
+
+    [DllImport("libc", EntryPoint = "fcntl")]
+    private static extern int DuplicateFileDescriptorWithCloseOnExec(
+        int fileDescriptor,
+        int command,
+        int minimumFileDescriptor
+    );
 
     private unsafe void StartNative()
     {
         if (Native.pw_thread_loop_start(_loop) < 0)
             throw new InvalidOperationException("pw_thread_loop_start failed.");
+        _loopStarted = true;
 
         // Connecting touches the loop's objects -> must hold the loop lock.
         Native.pw_thread_loop_lock(_loop);
@@ -172,21 +178,26 @@ public sealed class PipeWireContext : IAsyncDisposable
         }
 
         if (_core is null)
+        {
+            StopLoopAfterConnectionFailure();
             throw new InvalidOperationException(
                 "pw_context_connect failed. Ensure the PipeWire daemon is running " +
                 "(pipewire.service / wireplumber.service).");
+        }
     }
 
-    private unsafe void StartNative(int remoteFileDescriptor)
+    private unsafe void StartNative(int remoteFileDescriptor, SafeFileHandle? transferredHandle)
     {
         if (Native.pw_thread_loop_start(_loop) < 0)
         {
             throw new InvalidOperationException("pw_thread_loop_start failed.");
         }
+        _loopStarted = true;
 
         Native.pw_thread_loop_lock(_loop);
         try
         {
+            transferredHandle?.SetHandleAsInvalid();
             _core = Native.pw_context_connect_fd(
                 _context,
                 remoteFileDescriptor,
@@ -201,8 +212,15 @@ public sealed class PipeWireContext : IAsyncDisposable
 
         if (_core is null)
         {
+            StopLoopAfterConnectionFailure();
             throw new InvalidOperationException("pw_context_connect_fd failed for the desktop portal stream.");
         }
+    }
+
+    private unsafe void StopLoopAfterConnectionFailure()
+    {
+        Native.pw_thread_loop_stop(_loop);
+        _loopStarted = false;
     }
 
     /// <summary>
@@ -240,8 +258,11 @@ public sealed class PipeWireContext : IAsyncDisposable
     private unsafe void DisposeNative()
     {
         // Stopping the loop joins its thread, so no callback can be in flight afterwards.
-        if (_loop is not null && _started)
+        if (_loop is not null && _loopStarted)
+        {
             Native.pw_thread_loop_stop(_loop);
+            _loopStarted = false;
+        }
 
         if (_core is not null)
         {

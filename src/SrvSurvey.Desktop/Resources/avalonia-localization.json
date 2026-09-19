@@ -1697,6 +1697,10 @@
       "translation": "Erlaubt"
     },
     {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Zulässige Tracker: {0}."
+    },
+    {
       "source": "Alpha",
       "translation": "Alpha"
     },
@@ -4705,16 +4709,16 @@
       "translation": "Wählen Sie aus, wohin Boxel-Statistiken exportiert werden sollen"
     },
     {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Wählen Sie aus, welche Tracker die Wayland-Erfassung verwenden dürfen. Jeder Tracker beginnt damit, dass Sie ihn separat testen können."
+    },
+    {
       "source": "Choose your pledged Power before searching for this objective.",
       "translation": "Wählen Sie Ihre versprochene Kraft, bevor Sie nach diesem Ziel suchen."
     },
     {
       "source": "Choose...",
       "translation": "Wählen..."
-    },
-    {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "Wählen Sie WaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -7957,6 +7961,10 @@
       "translation": "Aktivieren Sie VR-Overlays"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Aktivieren Sie die Wayland-Bildschirmaufnahme"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Kolonisierungsfunktionen aktivieren"
     },
@@ -8003,6 +8011,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "Aktivieren Sie GuardianSites"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "EnableWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -8809,8 +8821,16 @@
       "translation": "FSS-Signale: {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "FSS-Tuning"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "Die FSS-Tuning-Erfassung ist vorübergehend nicht verfügbar: {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Abschluss der FSS-Optimierung"
     },
     {
       "source": "FSS tuning detection",
@@ -9173,6 +9193,10 @@
       "translation": "Erster Start"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Erkennung des ersten Schrittes"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Schätzung des ersten Besuchers: {0}"
     },
@@ -9207,6 +9231,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "First-Footfall-Wert: {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "FirstFootfallEnabled"
     },
     {
       "source": "FirstFootfallInference",
@@ -9635,6 +9663,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDetector"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuningEnabled"
     },
     {
       "source": "Fuel left",
@@ -20709,6 +20741,10 @@
       "translation": "Bildschirmaufnahme ({0}) fehlgeschlagen: {1} Nächster Wiederholungsversuch in {2} Sekunden.{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Bildschirmaufnahme ({0}): X11-Aufnahme fehlgeschlagen; Das Wayland-Portal ist in den Einstellungen deaktiviert. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Bildschirmaufnahme ({0}): X11-Aufnahme fehlgeschlagen; Wechsel zum Wayland-Portal. {1}"
     },
@@ -22645,10 +22681,6 @@
       "translation": "SrvSurvey erzwingt das Schließen eines nicht überprüften Prozesses nicht. Wählen Sie „Nein“ und schließen Sie es manuell, wenn der Austausch nicht fortgesetzt werden kann."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey wird neu gestartet. Wenn die normale X11-Erfassung erneut fehlschlägt, wird beim nächsten Erfassungsversuch die Auswahl geöffnet."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey beginnt mit {0}."
     },
@@ -23229,6 +23261,10 @@
       "translation": "Der CSV-Export von Surface Mining ist fehlgeschlagen: {0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Surface Mining Rhino-Rig-Tracking"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Befehle für Surface Mining-Karten"
     },
@@ -23359,6 +23395,10 @@
     {
       "source": "SurfaceMining",
       "translation": "SurfaceMining"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRigEnabled"
     },
     {
       "source": "SurfaceRadarSize",
@@ -27829,6 +27869,14 @@
       "translation": "Wayland-Erfassung ({0}): Die Einstellungen erforderten eine neue Quellenauswahl."
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Wayland-Erfassung ({0}): geschlossen, da die Erfassung in den Einstellungen deaktiviert wurde."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Wayland-Erfassung ({0}): konnte nicht geschlossen werden, nachdem die Erfassung in den Einstellungen deaktiviert wurde. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Wayland-Erfassung ({0}): erster PipeWire-Frame {1}x{2}, Schrittweite {3}, Format {4}; Angeforderte {5} von der Spielequelle {6}."
     },
@@ -27885,6 +27933,34 @@
       "translation": "Wayland-Screenshot"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Wayland-Bildschirmaufnahme in den Einstellungen deaktiviert; Kein Tracker wird das Portal nutzen."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Wayland-Bildschirmaufnahme in den Einstellungen aktiviert."
+    },
+    {
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "Die Wayland-Bildschirmaufnahme für {0} ist unter Einstellungen → Anwendung deaktiviert."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Wayland-Screenshot für {0} {1} in den Einstellungen."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "Die Bildschirmaufnahme von Wayland ist deaktiviert. Kein Tracker öffnet die Desktop-Freigabeauswahl."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "Die Bildschirmaufnahme von Wayland ist aktiviert. Wählen Sie mindestens einen Tracker aus, um die Portalerfassung zu ermöglichen."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "Die Wayland-Bildschirmaufnahme ist unter Einstellungen → Anwendung deaktiviert."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Wayland-Bildschirmfreigabe konnte nicht gestartet werden: {0}"
     },
@@ -27899,6 +27975,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "Wayland-Screenshot-Quelle geändert"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "WaylandCapture"
     },
     {
       "source": "WaylandCaptureCard",
@@ -28969,6 +29049,10 @@
       "translation": "diamantbackxl"
     },
     {
+      "source": "disabled",
+      "translation": "deaktiviert"
+    },
+    {
       "source": "do",
       "translation": "tun"
     },
@@ -29039,6 +29123,10 @@
     {
       "source": "en",
       "translation": "de"
+    },
+    {
+      "source": "enabled",
+      "translation": "ermöglicht"
     },
     {
       "source": "end",
@@ -29179,6 +29267,10 @@
     {
       "source": "firegroups",
       "translation": "Feuergruppen"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "erster Schritt"
     },
     {
       "source": "first-footfall inference",
@@ -29633,8 +29725,8 @@
       "translation": "Lichter"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "Linux Xwayland Portal Pipewire Screencast Source Picker Share Window Monitor Gamescope Reset"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "Linux Xwayland Portal Pipewire Screencast Quellauswahl Fenster teilen Monitor Gamescope Zurücksetzen Aktivieren Deaktivieren Umschalten FSS Tuning Surface Mining Rhino Rig First Footfall Tracker"
     },
     {
       "source": "linux64",
@@ -33675,6 +33767,10 @@
       "translation": "Permitido"
     },
     {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Rastreadores permitidos: {0}."
+    },
+    {
       "source": "Alpha",
       "translation": "Alfa"
     },
@@ -36683,16 +36779,16 @@
       "translation": "Elija dónde exportar estadísticas de boxel"
     },
     {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Elige qué rastreadores pueden usar la captura de Wayland. Cada rastreador comienza para permitirle probarlos por separado."
+    },
+    {
       "source": "Choose your pledged Power before searching for this objective.",
       "translation": "Elige tu Poder prometido antes de buscar este objetivo."
     },
     {
       "source": "Choose...",
       "translation": "Elegir..."
-    },
-    {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "Elija WaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -39935,6 +40031,10 @@
       "translation": "Habilitar superposiciones de realidad virtual"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Habilitar captura de pantalla de Wayland"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Habilitar funciones de colonización"
     },
@@ -39981,6 +40081,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "Habilitar sitios Guardian"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "HabilitarWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -40787,8 +40891,16 @@
       "translation": "Señales FSS: {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "sintonización FSS"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "La captura de sintonización FSS no está disponible temporalmente: {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Finalización del ajuste FSS"
     },
     {
       "source": "FSS tuning detection",
@@ -41151,6 +41263,10 @@
       "translation": "Primer lanzamiento"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Detección del primer paso"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Estimación del primer paso: {0}"
     },
@@ -41185,6 +41301,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "Valor del primer paso: {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "Primer paso habilitado"
     },
     {
       "source": "FirstFootfallInference",
@@ -41613,6 +41733,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDetector"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuningEnabled"
     },
     {
       "source": "Fuel left",
@@ -52687,6 +52811,10 @@
       "translation": "Error en la captura de pantalla ({0}): {1} Siguiente reintento en segundos {2}.{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Captura de pantalla ({0}): Error en la captura de X11; El portal Wayland está deshabilitado en Configuración. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Captura de pantalla ({0}): Error en la captura de X11; cambiando al portal Wayland. {1}"
     },
@@ -54623,10 +54751,6 @@
       "translation": "SrvSurvey no forzará el cierre de un proceso no verificado. Elija No y ciérrelo manualmente si el reemplazo no puede continuar."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey se reiniciará. Si la captura normal de X11 vuelve a fallar, el siguiente intento de captura abre el selector."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey comenzará con {0}."
     },
@@ -55207,6 +55331,10 @@
       "translation": "Error al exportar CSV de Surface Mining: {0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Seguimiento de plataformas Rhino para minería a cielo abierto"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Comandos del mapa de minería de superficie"
     },
@@ -55337,6 +55465,10 @@
     {
       "source": "SurfaceMining",
       "translation": "Minería de superficie"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "Plataforma de minería de superficie habilitada"
     },
     {
       "source": "SurfaceRadarSize",
@@ -59807,6 +59939,14 @@
       "translation": "Captura de Wayland ({0}): la configuración solicitó una nueva selección de fuente."
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Captura de Wayland ({0}): cerrada porque la captura estaba deshabilitada en Configuración."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Captura de Wayland ({0}): no se pudo cerrar después de que se deshabilitó la captura en Configuración. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Captura de Wayland ({0}): primer cuadro PipeWire {1}x{2}, zancada {3}, formato {4}; solicitó {5} de la fuente del juego {6}."
     },
@@ -59863,6 +60003,34 @@
       "translation": "Captura de pantalla de Wayland"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Captura de pantalla de Wayland deshabilitada en Configuración; ningún rastreador utilizará el portal."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Captura de pantalla de Wayland habilitada en Configuración."
+    },
+    {
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "La captura de pantalla de Wayland para {0} está desactivada en Configuración → Aplicación."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Captura de pantalla de Wayland para {0} {1} en Configuración."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "La captura de pantalla de Wayland está desactivada. Ningún rastreador abrirá el selector de recursos compartidos de escritorio."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "La captura de pantalla de Wayland está activada. Seleccione al menos un rastreador para permitir la captura del portal."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "La captura de pantalla de Wayland está desactivada en Configuración → Aplicación."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "No se pudo iniciar el uso compartido de pantalla de Wayland: {0}"
     },
@@ -59877,6 +60045,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "La fuente de captura de pantalla de Wayland cambió"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "WaylandCaptura"
     },
     {
       "source": "WaylandCaptureCard",
@@ -60947,6 +61119,10 @@
       "translation": "diamantebackxl"
     },
     {
+      "source": "disabled",
+      "translation": "desactivado"
+    },
+    {
       "source": "do",
       "translation": "hacer"
     },
@@ -61017,6 +61193,10 @@
     {
       "source": "en",
       "translation": "es"
+    },
+    {
+      "source": "enabled",
+      "translation": "activado"
     },
     {
       "source": "end",
@@ -61157,6 +61337,10 @@
     {
       "source": "firegroups",
       "translation": "grupos de fuego"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "primer paso"
     },
     {
       "source": "first-footfall inference",
@@ -61611,8 +61795,8 @@
       "translation": "luces"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "linux xwayland portal pipewire screencast selector de fuente compartir ventana monitor gamescope restablecer"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "linux xwayland portal pipewire screencast selector de fuente compartir ventana monitor gamescope restablecer habilitar desactivar alternar fss sintonización minería de superficie plataforma rhino rastreador de primer paso"
     },
     {
       "source": "linux64",
@@ -65653,6 +65837,10 @@
       "translation": "Autorisé"
     },
     {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Trackers autorisés : {0}."
+    },
+    {
       "source": "Alpha",
       "translation": "Alpha"
     },
@@ -68661,16 +68849,16 @@
       "translation": "Choisissez où exporter les statistiques de boxel"
     },
     {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Choisissez quels trackers peuvent utiliser la capture Wayland. Chaque tracker démarre pour vous permettre de les tester séparément."
+    },
+    {
       "source": "Choose your pledged Power before searching for this objective.",
       "translation": "Choisissez votre puissance promise avant de rechercher cet objectif."
     },
     {
       "source": "Choose...",
       "translation": "Choisir..."
-    },
-    {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "ChoisirWaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -71913,6 +72101,10 @@
       "translation": "Activer les superpositions VR"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Activer la capture d'écran Wayland"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Activer les fonctionnalités de colonisation"
     },
@@ -71959,6 +72151,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "Activer les sites Guardian"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "ActiverWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -72765,8 +72961,16 @@
       "translation": "Signaux FSS : {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "Réglage FSS"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "La capture de réglage FSS est temporairement indisponible : {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Achèvement du réglage FSS"
     },
     {
       "source": "FSS tuning detection",
@@ -73129,6 +73333,10 @@
       "translation": "Premier lancement"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Détection du premier pas"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Estimation de première visite : {0}"
     },
@@ -73163,6 +73371,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "Valeur de première visite : {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "FirstFootfallEnabled"
     },
     {
       "source": "FirstFootfallInference",
@@ -73591,6 +73803,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDétecteur"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuningActivé"
     },
     {
       "source": "Fuel left",
@@ -84665,6 +84881,10 @@
       "translation": "Échec de la capture d'écran ({0}) : {1} Prochaine tentative dans {2} secondes.{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Capture d'écran ({0}) : échec de la capture X11 ; Le portail Wayland est désactivé dans les paramètres. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Capture d'écran ({0}) : échec de la capture X11 ; passer au portail Wayland. {1}"
     },
@@ -86601,10 +86821,6 @@
       "translation": "SrvSurvey ne forcera pas la fermeture d'un processus non vérifié. Choisissez Non et fermez-le manuellement si le remplacement ne peut pas continuer."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey redémarrera. Si la capture X11 normale échoue à nouveau, la prochaine tentative de capture ouvre le sélecteur."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey commencera par {0}."
     },
@@ -87185,6 +87401,10 @@
       "translation": "Échec de l'exportation CSV Surface Mining : {0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Suivi des plates-formes Rhino pour le Surface Mining"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Commandes de carte Surface Mining"
     },
@@ -87315,6 +87535,10 @@
     {
       "source": "SurfaceMining",
       "translation": "Exploitation minière à ciel ouvert"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRigEnabled"
     },
     {
       "source": "SurfaceRadarSize",
@@ -91785,6 +92009,14 @@
       "translation": "Capture Wayland ({0}) : les paramètres ont demandé une nouvelle sélection de source."
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Capture Wayland ({0}) : fermée car la capture a été désactivée dans les paramètres."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Capture Wayland ({0}) : échec de fermeture après la désactivation de la capture dans Paramètres. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Capture Wayland ({0}) : première trame PipeWire {1}x{2}, foulée {3}, format {4} ; » a demandé {5} à partir de la source du jeu {6}."
     },
@@ -91841,6 +92073,34 @@
       "translation": "Capture d'écran de Wayland"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Capture d'écran Wayland désactivée dans Paramètres ; aucun tracker n’utilisera le portail."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Capture d'écran Wayland activée dans Paramètres."
+    },
+    {
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "La capture d'écran Wayland pour {0} est désactivée dans Paramètres → Application."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Capture d'écran Wayland pour {0} {1} dans Paramètres."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "La capture d'écran Wayland est désactivée. Aucun tracker n'ouvrira le sélecteur de partage de bureau."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "La capture d'écran Wayland est activée. Sélectionnez au moins un tracker pour autoriser la capture du portail."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "La capture d'écran Wayland est désactivée dans Paramètres → Application."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Le partage d'écran Wayland n'a pas pu démarrer : {0}"
     },
@@ -91855,6 +92115,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "La source de capture d'écran de Wayland a été modifiée"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "WaylandCapture"
     },
     {
       "source": "WaylandCaptureCard",
@@ -92925,6 +93189,10 @@
       "translation": "diamantbackxl"
     },
     {
+      "source": "disabled",
+      "translation": "désactivé"
+    },
+    {
       "source": "do",
       "translation": "faire"
     },
@@ -92995,6 +93263,10 @@
     {
       "source": "en",
       "translation": "fr"
+    },
+    {
+      "source": "enabled",
+      "translation": "activé"
     },
     {
       "source": "end",
@@ -93135,6 +93407,10 @@
     {
       "source": "firegroups",
       "translation": "groupes de pompiers"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "premier pas"
     },
     {
       "source": "first-footfall inference",
@@ -93589,8 +93865,8 @@
       "translation": "lumières"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "Linux Portail Xwayland Pipewire Screencast Sélecteur de source Partager Fenêtre Moniteur Gamescope Réinitialiser"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "linux portail xwayland pipewire screencast sélecteur de source partager fenêtre moniteur gamescope réinitialiser activer désactiver bascule réglage fss surface mining rhino rig premier suivi de fréquentation"
     },
     {
       "source": "linux64",
@@ -97631,6 +97907,10 @@
       "translation": "Permitido"
     },
     {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Rastreadores permitidos: {0}."
+    },
+    {
       "source": "Alpha",
       "translation": "Alfa"
     },
@@ -100639,16 +100919,16 @@
       "translation": "Escolha para onde exportar estatísticas do boxel"
     },
     {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Escolha quais rastreadores podem usar a captura Wayland. Cada rastreador começa para permitir que você os teste separadamente."
+    },
+    {
       "source": "Choose your pledged Power before searching for this objective.",
       "translation": "Escolha o seu Poder prometido antes de buscar esse objetivo."
     },
     {
       "source": "Choose...",
       "translation": "Escolher..."
-    },
-    {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "EscolhaWaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -103891,6 +104171,10 @@
       "translation": "Ativar sobreposições de VR"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Habilitar captura de tela do Wayland"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Habilitar recursos de colonização"
     },
@@ -103937,6 +104221,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "HabilitarGuardianSites"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "HabilitarWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -104743,8 +105031,16 @@
       "translation": "Sinais FSS: {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "Ajuste FSS"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "A captura de ajuste FSS está temporariamente indisponível: {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Conclusão do ajuste FSS"
     },
     {
       "source": "FSS tuning detection",
@@ -105107,6 +105403,10 @@
       "translation": "Primeiro lançamento"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Detecção do primeiro passo"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Estimativa do primeiro passo: {0}"
     },
@@ -105141,6 +105441,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "Valor do primeiro passo: {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "FirstFootfall Habilitado"
     },
     {
       "source": "FirstFootfallInference",
@@ -105569,6 +105873,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDetector"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuning habilitado"
     },
     {
       "source": "Fuel left",
@@ -116643,6 +116951,10 @@
       "translation": "Falha na captura de tela ({0}): {1} Próxima tentativa em {2} segundos.{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Captura de tela ({0}): falha na captura do X11; O portal Wayland está desativado em Configurações. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Captura de tela ({0}): falha na captura do X11; mudando para o portal Wayland. {1}"
     },
@@ -118579,10 +118891,6 @@
       "translation": "SrvSurvey não forçará o fechamento de um processo não verificado. Escolha Não e feche-o manualmente se a substituição não puder continuar."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey será reiniciado. Se a captura normal do X11 falhar novamente, a próxima tentativa de captura abrirá o seletor."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey começará com {0}."
     },
@@ -119163,6 +119471,10 @@
       "translation": "Falha na exportação de CSV de mineração de superfície: {0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Rastreamento de plataforma Surface Mining Rhino"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Comandos do mapa de mineração de superfície"
     },
@@ -119293,6 +119605,10 @@
     {
       "source": "SurfaceMining",
       "translation": "Mineração de Superfície"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRigEnabled"
     },
     {
       "source": "SurfaceRadarSize",
@@ -123763,6 +124079,14 @@
       "translation": "Captura Wayland ({0}): As configurações solicitaram uma nova seleção de fonte."
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Captura Wayland ({0}): fechada porque a captura foi desabilitada em Configurações."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Captura de Wayland ({0}): falha ao fechar depois que a captura foi desativada em Configurações. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Captura Wayland ({0}): primeiro quadro PipeWire {1}x{2}, passada {3}, formato {4}; solicitou {5} da fonte do jogo {6}."
     },
@@ -123819,6 +124143,34 @@
       "translation": "Captura de tela do Wayland"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Captura de tela do Wayland desativada em Configurações; nenhum rastreador usará o portal."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Captura de tela do Wayland habilitada em Configurações."
+    },
+    {
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "A captura de tela do Wayland para {0} está desativada em Configurações → Aplicativo."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Captura de tela do Wayland para {0} {1} em Configurações."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "A captura de tela do Wayland está desativada. Nenhum rastreador abrirá o seletor de compartilhamento da área de trabalho."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "A captura de tela do Wayland está ativada. Selecione pelo menos um rastreador para permitir a captura do portal."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "A captura de tela do Wayland está desativada em Configurações → Aplicativo."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "O compartilhamento de tela do Wayland não pôde ser iniciado: {0}"
     },
@@ -123833,6 +124185,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "Fonte de captura de tela do Wayland alterada"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "Wayland Captura"
     },
     {
       "source": "WaylandCaptureCard",
@@ -124903,6 +125259,10 @@
       "translation": "diamantebackxl"
     },
     {
+      "source": "disabled",
+      "translation": "desabilitado"
+    },
+    {
       "source": "do",
       "translation": "fazer"
     },
@@ -124973,6 +125333,10 @@
     {
       "source": "en",
       "translation": "pt"
+    },
+    {
+      "source": "enabled",
+      "translation": "habilitado"
     },
     {
       "source": "end",
@@ -125113,6 +125477,10 @@
     {
       "source": "firegroups",
       "translation": "grupos de fogo"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "primeiro passo"
     },
     {
       "source": "first-footfall inference",
@@ -125567,8 +125935,8 @@
       "translation": "luzes"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "linux xwayland portal pipewire screencast selecionador de fonte compartilhar janela monitor gamescope reset"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "linux xwayland portal pipewire screencast seletor de fonte compartilhar monitor de janela gamescope redefinir habilitar desabilitar alternar ajuste fss mineração de superfície rinoceronte equipamento rastreador de primeiros passos"
     },
     {
       "source": "linux64",
@@ -129609,6 +129977,10 @@
       "translation": "Разрешено"
     },
     {
+      "source": "Allowed trackers: {0}.",
+      "translation": "Разрешенные трекеры: {0}."
+    },
+    {
       "source": "Alpha",
       "translation": "Альфа"
     },
@@ -132617,16 +132989,16 @@
       "translation": "Выберите, куда экспортировать статистику бокселей"
     },
     {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "Выберите, какие трекеры могут использовать захват Wayland. Каждый трекер запускается, чтобы вы могли протестировать его отдельно."
+    },
+    {
       "source": "Choose your pledged Power before searching for this objective.",
       "translation": "Прежде чем искать эту цель, выберите обещанную Силу."
     },
     {
       "source": "Choose...",
       "translation": "Выбирать..."
-    },
-    {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "Выберите WaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -135869,6 +136241,10 @@
       "translation": "Включить наложения VR"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "Включить захват экрана Wayland"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Включить функции колонизации"
     },
@@ -135915,6 +136291,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "ВключитьGuardianSites"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "ВключитьWaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -136721,8 +137101,16 @@
       "translation": "Сигналы ФСС: {0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "ФСС тюнинг"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "Захват настроек FSS временно недоступен: {0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "Завершение настройки ФСС"
     },
     {
       "source": "FSS tuning detection",
@@ -137085,6 +137473,10 @@
       "translation": "Первый запуск"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "Обнаружение первого шага"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "Оценка первого шага: {0}"
     },
@@ -137119,6 +137511,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "Значение первого шага: {0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "Первый шаг включен"
     },
     {
       "source": "FirstFootfallInference",
@@ -137547,6 +137943,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "FssTuningDetector"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "Фсстюнингэнаблед"
     },
     {
       "source": "Fuel left",
@@ -148621,6 +149021,10 @@
       "translation": "Не удалось сделать снимок экрана ({0}): {1} Следующая повторная попытка через {2} секунд. {3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "Снимок экрана ({0}): захват X11 не удался; Портал Wayland отключен в настройках. {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "Снимок экрана ({0}): захват X11 не удался; переключение на портал Wayland. {1}"
     },
@@ -150557,10 +150961,6 @@
       "translation": "SrvSurvey не закроет принудительно непроверенный процесс. Выберите «Нет» и закройте его вручную, если замена не может быть продолжена."
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey перезагрузится. Если обычный захват X11 снова не удался, следующая попытка захвата откроет сборщик."
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey будет начинаться с {0}."
     },
@@ -151141,6 +151541,10 @@
       "translation": "Не удалось экспортировать CSV-файл Surface Mining: {0}."
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "Отслеживание буровой установки Surface Mining Rhino"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Команды карты Surface Mining"
     },
@@ -151271,6 +151675,10 @@
     {
       "source": "SurfaceMining",
       "translation": "Поверхностный майнинг"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRigEnabled"
     },
     {
       "source": "SurfaceRadarSize",
@@ -155741,6 +156149,14 @@
       "translation": "Захват Wayland ({0}): настройки запросили новый выбор источника."
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Захват Wayland ({0}): закрыт, поскольку захват отключен в настройках."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Захват Wayland ({0}): не удалось закрыть после отключения захвата в настройках. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Захват Wayland ({0}): первый кадр PipeWire {1}x{2}, шаг {3}, формат {4}; запросил {5} из источника игры {6}."
     },
@@ -155797,6 +156213,34 @@
       "translation": "Снимок экрана Вейланда"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "Захват экрана Wayland отключен в настройках; ни один трекер не будет использовать портал."
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "Снимок экрана Wayland включен в настройках."
+    },
+    {
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "Снимок экрана Wayland для {0} отключен в Настройках → Приложение."
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "Снимок экрана Wayland для {0} {1} в настройках."
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "Захват экрана Wayland отключен. Ни один трекер не откроет окно выбора общего доступа к рабочему столу."
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "Снимок экрана Wayland включен. Выберите хотя бы один трекер, чтобы разрешить захват портала."
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "Снимок экрана Wayland отключен в «Настройки» → «Приложение»."
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Не удалось запустить совместное использование экрана Wayland: {0}"
     },
@@ -155811,6 +156255,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "Изменен источник снимка экрана Wayland"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "ВейландЗахват"
     },
     {
       "source": "WaylandCaptureCard",
@@ -156881,6 +157329,10 @@
       "translation": "алмазбакксл"
     },
     {
+      "source": "disabled",
+      "translation": "неполноценный"
+    },
+    {
       "source": "do",
       "translation": "делать"
     },
@@ -156951,6 +157403,10 @@
     {
       "source": "en",
       "translation": "ru"
+    },
+    {
+      "source": "enabled",
+      "translation": "включено"
     },
     {
       "source": "end",
@@ -157091,6 +157547,10 @@
     {
       "source": "firegroups",
       "translation": "огневые группы"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "первый шаг"
     },
     {
       "source": "first-footfall inference",
@@ -157545,8 +158005,8 @@
       "translation": "огни"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "Linux Портал xwayland Pipewire Screencast Выбор источника Поделиться Окно монитора Сброс Gamescope"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "Linux xwayland портал Pipewire Screencast Выбор источника Поделиться Окно монитора Сброс игровой прицела Включить отключить переключить настройку fss Surface Mining Rhino Rig Первый трекер шагов"
     },
     {
       "source": "linux64",
@@ -161587,6 +162047,10 @@
       "translation": "允许"
     },
     {
+      "source": "Allowed trackers: {0}.",
+      "translation": "允许的跟踪器：{0}。"
+    },
+    {
       "source": "Alpha",
       "translation": "阿尔法"
     },
@@ -164595,16 +165059,16 @@
       "translation": "选择导出 boxel 统计数据的位置"
     },
     {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "选择哪些跟踪器可以使用 Wayland 捕获。每个跟踪器一开始就让您单独测试它们。"
+    },
+    {
       "source": "Choose your pledged Power before searching for this objective.",
       "translation": "在寻找这个目标之前选择你承诺的力量。"
     },
     {
       "source": "Choose...",
       "translation": "选择..."
-    },
-    {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "选择 WaylandCaptureSourceAgain 按钮"
     },
     {
       "source": "Circle radius",
@@ -167847,6 +168311,10 @@
       "translation": "启用 VR 叠加"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "启用 Wayland 屏幕捕获"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "启用殖民功能"
     },
@@ -167893,6 +168361,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "启用Guardian站点"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "启用WaylandCaptureCheckBox"
     },
     {
       "source": "Enabled",
@@ -168699,8 +169171,16 @@
       "translation": "FSS 信号：{0}"
     },
     {
+      "source": "FSS tuning",
+      "translation": "FSS调整"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "FSS 调谐捕获暂时不可用：{0}"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "FSS调优完成"
     },
     {
       "source": "FSS tuning detection",
@@ -169063,6 +169543,10 @@
       "translation": "首次推出"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "首次脚步检测"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "首次客流量估计：{0}"
     },
@@ -169097,6 +169581,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "首次客流量值：{0}"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "首次脚步启用"
     },
     {
       "source": "FirstFootfallInference",
@@ -169525,6 +170013,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "Fss调谐检测器"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "FssTuning启用"
     },
     {
       "source": "Fuel left",
@@ -180599,6 +181091,10 @@
       "translation": "屏幕捕获 ({0}) 失败：{1} 在 {2} 秒后重试。{3}"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "屏幕捕获（{0}）：X11捕获失败； Wayland 门户在“设置”中被禁用。 {1}"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "屏幕捕获（{0}）：X11捕获失败；切换到 Wayland 门户。 {1}"
     },
@@ -182535,10 +183031,6 @@
       "translation": "SrvSurvey不会强制关闭未经验证的进程。如果替换无法继续，请选择“否”并手动关闭它。"
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "SrvSurvey将重新启动。如果正常的 X11 捕获再次失败，下一次捕获尝试将打开选取器。"
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey 将以 {0} 开头。"
     },
@@ -183119,6 +183611,10 @@
       "translation": "露天采矿 CSV 导出失败：{0}"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "露天采矿 Rhino 钻机跟踪"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "露天采矿地图命令"
     },
@@ -183249,6 +183745,10 @@
     {
       "source": "SurfaceMining",
       "translation": "露天采矿"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "SurfaceMiningRig启用"
     },
     {
       "source": "SurfaceRadarSize",
@@ -187719,6 +188219,14 @@
       "translation": "Wayland 捕获 ({0})：设置请求新的源选择。"
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Wayland 捕获 ({0})：已关闭，因为在“设置”中禁用了捕获。"
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Wayland 捕获 ({0})：在“设置”中禁用捕获后无法关闭。 {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Wayland捕获（{0}）：第一个PipeWire框架{1}x{2}，步长{3}，格式{4}；从游戏源 {6} 请求 {5}。"
     },
@@ -187775,6 +188283,34 @@
       "translation": "韦兰屏幕截图"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "在“设置”中禁用 Wayland 屏幕捕获；没有跟踪器会使用该门户。"
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "在“设置”中启用了 Wayland 屏幕捕获。"
+    },
+    {
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "{0} 的 Wayland 屏幕捕获在“设置”→“应用程序”中关闭。"
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "设置中 {0} {1} 的 Wayland 屏幕截图。"
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "Wayland 屏幕截图已关闭。没有跟踪器会打开桌面共享选择器。"
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "Wayland 屏幕截图已开启。至少选择一个跟踪器以允许门户捕获。"
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "Wayland 屏幕捕获在“设置”→“应用程序”中关闭。"
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "Wayland 屏幕共享无法启动：{0}"
     },
@@ -187789,6 +188325,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "Wayland 屏幕捕获源已更改"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "韦兰捕获"
     },
     {
       "source": "WaylandCaptureCard",
@@ -188859,6 +189399,10 @@
       "translation": "菱形背心XL"
     },
     {
+      "source": "disabled",
+      "translation": "残疾人"
+    },
+    {
       "source": "do",
       "translation": "做"
     },
@@ -188929,6 +189473,10 @@
     {
       "source": "en",
       "translation": "zh"
+    },
+    {
+      "source": "enabled",
+      "translation": "已启用"
     },
     {
       "source": "end",
@@ -189069,6 +189617,10 @@
     {
       "source": "firegroups",
       "translation": "火力组"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "第一个脚步声"
     },
     {
       "source": "first-footfall inference",
@@ -189523,8 +190075,8 @@
       "translation": "灯"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "linux xwayland 门户 pipelinewire 截屏源选择器 共享窗口 监视器 gamescope 重置"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "linux xwayland 门户 pipelinewire 截屏 源选择器 共享窗口监视器 gamescope 重置 启用 禁用 切换 fss 调整 表面采矿 rhino 钻机 第一个脚步跟踪器"
     },
     {
       "source": "linux64",
@@ -193565,6 +194117,10 @@
       "translation": "* ALLOWED >>>!"
     },
     {
+      "source": "Allowed trackers: {0}.",
+      "translation": "* ALLOWED TRACKERS: {0}. >>>!"
+    },
+    {
       "source": "Alpha",
       "translation": "* ALPHA >>>!"
     },
@@ -196573,16 +197129,16 @@
       "translation": "* CHOOSE WHERE TO EXPORT BOXEL STATISTICS >>>!"
     },
     {
+      "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
+      "translation": "* CHOOSE WHICH TRACKERS MAY USE WAYLAND CAPTURE. EACH TRACKER STARTS OFF TO LET YOU TEST THEM SEPARATELY. >>>!"
+    },
+    {
       "source": "Choose your pledged Power before searching for this objective.",
       "translation": "* CHOOSE YOUR PLEDGED POWER BEFORE SEARCHING FOR THIS OBJECTIVE. >>>!"
     },
     {
       "source": "Choose...",
       "translation": "* CHOOSE... >>>!"
-    },
-    {
-      "source": "ChooseWaylandCaptureSourceAgainButton",
-      "translation": "* CHOOSEWAYLANDCAPTURESOURCEAGAINBUTTON >>>!"
     },
     {
       "source": "Circle radius",
@@ -199825,6 +200381,10 @@
       "translation": "* ENABLE VR OVERLAYS >>>!"
     },
     {
+      "source": "Enable Wayland screen capture",
+      "translation": "* ENABLE WAYLAND SCREEN CAPTURE >>>!"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "* ENABLE COLONIZATION FEATURES >>>!"
     },
@@ -199871,6 +200431,10 @@
     {
       "source": "EnableGuardianSites",
       "translation": "* ENABLEGUARDIANSITES >>>!"
+    },
+    {
+      "source": "EnableWaylandCaptureCheckBox",
+      "translation": "* ENABLEWAYLANDCAPTURECHECKBOX >>>!"
     },
     {
       "source": "Enabled",
@@ -200677,8 +201241,16 @@
       "translation": "* FSS SIGNALS: {0} >>>!"
     },
     {
+      "source": "FSS tuning",
+      "translation": "* FSS TUNING >>>!"
+    },
+    {
       "source": "FSS tuning capture is temporarily unavailable: {0}",
       "translation": "* FSS TUNING CAPTURE IS TEMPORARILY UNAVAILABLE: {0} >>>!"
+    },
+    {
+      "source": "FSS tuning completion",
+      "translation": "* FSS TUNING COMPLETION >>>!"
     },
     {
       "source": "FSS tuning detection",
@@ -201041,6 +201613,10 @@
       "translation": "* FIRST LAUNCH >>>!"
     },
     {
+      "source": "First-footfall detection",
+      "translation": "* FIRST-FOOTFALL DETECTION >>>!"
+    },
+    {
       "source": "First-footfall estimate: {0}",
       "translation": "* FIRST-FOOTFALL ESTIMATE: {0} >>>!"
     },
@@ -201075,6 +201651,10 @@
     {
       "source": "First-footfall value: {0}",
       "translation": "* FIRST-FOOTFALL VALUE: {0} >>>!"
+    },
+    {
+      "source": "FirstFootfallEnabled",
+      "translation": "* FIRSTFOOTFALLENABLED >>>!"
     },
     {
       "source": "FirstFootfallInference",
@@ -201503,6 +202083,10 @@
     {
       "source": "FssTuningDetector",
       "translation": "* FSSTUNINGDETECTOR >>>!"
+    },
+    {
+      "source": "FssTuningEnabled",
+      "translation": "* FSSTUNINGENABLED >>>!"
     },
     {
       "source": "Fuel left",
@@ -212577,6 +213161,10 @@
       "translation": "* SCREEN CAPTURE ({0}) FAILED: {1} NEXT RETRY IN {2} SECONDS.{3} >>>!"
     },
     {
+      "source": "Screen capture ({0}): X11 capture failed; Wayland portal is disabled in Settings. {1}",
+      "translation": "* SCREEN CAPTURE ({0}): X11 CAPTURE FAILED; WAYLAND PORTAL IS DISABLED IN SETTINGS. {1} >>>!"
+    },
+    {
       "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
       "translation": "* SCREEN CAPTURE ({0}): X11 CAPTURE FAILED; SWITCHING TO THE WAYLAND PORTAL. {1} >>>!"
     },
@@ -214513,10 +215101,6 @@
       "translation": "* SRVSURVEY WILL NOT FORCE-CLOSE AN UNVERIFIED PROCESS. CHOOSE NO AND CLOSE IT MANUALLY IF REPLACEMENT CANNOT CONTINUE. >>>!"
     },
     {
-      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
-      "translation": "* SRVSURVEY WILL RESTART. IF NORMAL X11 CAPTURE FAILS AGAIN, THE NEXT CAPTURE ATTEMPT OPENS THE PICKER. >>>!"
-    },
-    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "* SRVSURVEY WILL START WITH {0}. >>>!"
     },
@@ -215097,6 +215681,10 @@
       "translation": "* SURFACE MINING CSV EXPORT FAILED: {0} >>>!"
     },
     {
+      "source": "Surface Mining Rhino rig tracking",
+      "translation": "* SURFACE MINING RHINO RIG TRACKING >>>!"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "* SURFACE MINING MAP COMMANDS >>>!"
     },
@@ -215227,6 +215815,10 @@
     {
       "source": "SurfaceMining",
       "translation": "* SURFACEMINING >>>!"
+    },
+    {
+      "source": "SurfaceMiningRigEnabled",
+      "translation": "* SURFACEMININGRIGENABLED >>>!"
     },
     {
       "source": "SurfaceRadarSize",
@@ -219697,6 +220289,14 @@
       "translation": "* WAYLAND CAPTURE ({0}): SETTINGS REQUESTED A FRESH SOURCE SELECTION. >>>!"
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "* WAYLAND CAPTURE ({0}): CLOSED BECAUSE CAPTURE WAS DISABLED IN SETTINGS. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "* WAYLAND CAPTURE ({0}): FAILED TO CLOSE AFTER CAPTURE WAS DISABLED IN SETTINGS. {1} >>>!"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "* WAYLAND CAPTURE ({0}): FIRST PIPEWIRE FRAME {1}X{2}, STRIDE {3}, FORMAT {4}; REQUESTED {5} FROM GAME SOURCE {6}. >>>!"
     },
@@ -219753,6 +220353,34 @@
       "translation": "* WAYLAND SCREEN CAPTURE >>>!"
     },
     {
+      "source": "Wayland screen capture disabled in Settings; no tracker will use the portal.",
+      "translation": "* WAYLAND SCREEN CAPTURE DISABLED IN SETTINGS; NO TRACKER WILL USE THE PORTAL. >>>!"
+    },
+    {
+      "source": "Wayland screen capture enabled in Settings.",
+      "translation": "* WAYLAND SCREEN CAPTURE ENABLED IN SETTINGS. >>>!"
+    },
+    {
+      "source": "Wayland screen capture for {0} is turned off in Settings → Application.",
+      "translation": "* WAYLAND SCREEN CAPTURE FOR {0} IS TURNED OFF IN SETTINGS → APPLICATION. >>>!"
+    },
+    {
+      "source": "Wayland screen capture for {0} {1} in Settings.",
+      "translation": "* WAYLAND SCREEN CAPTURE FOR {0} {1} IN SETTINGS. >>>!"
+    },
+    {
+      "source": "Wayland screen capture is off. No tracker will open the desktop share picker.",
+      "translation": "* WAYLAND SCREEN CAPTURE IS OFF. NO TRACKER WILL OPEN THE DESKTOP SHARE PICKER. >>>!"
+    },
+    {
+      "source": "Wayland screen capture is on. Select at least one tracker to allow portal capture.",
+      "translation": "* WAYLAND SCREEN CAPTURE IS ON. SELECT AT LEAST ONE TRACKER TO ALLOW PORTAL CAPTURE. >>>!"
+    },
+    {
+      "source": "Wayland screen capture is turned off in Settings → Application.",
+      "translation": "* WAYLAND SCREEN CAPTURE IS TURNED OFF IN SETTINGS → APPLICATION. >>>!"
+    },
+    {
       "source": "Wayland screen sharing could not start: {0}",
       "translation": "* WAYLAND SCREEN SHARING COULD NOT START: {0} >>>!"
     },
@@ -219767,6 +220395,10 @@
     {
       "source": "Wayland screen-capture source changed",
       "translation": "* WAYLAND SCREEN-CAPTURE SOURCE CHANGED >>>!"
+    },
+    {
+      "source": "WaylandCapture",
+      "translation": "* WAYLANDCAPTURE >>>!"
     },
     {
       "source": "WaylandCaptureCard",
@@ -220837,6 +221469,10 @@
       "translation": "* DIAMONDBACKXL >>>!"
     },
     {
+      "source": "disabled",
+      "translation": "* DISABLED >>>!"
+    },
+    {
       "source": "do",
       "translation": "* DO >>>!"
     },
@@ -220907,6 +221543,10 @@
     {
       "source": "en",
       "translation": "* EN >>>!"
+    },
+    {
+      "source": "enabled",
+      "translation": "* ENABLED >>>!"
     },
     {
       "source": "end",
@@ -221047,6 +221687,10 @@
     {
       "source": "firegroups",
       "translation": "* FIREGROUPS >>>!"
+    },
+    {
+      "source": "first-footfall",
+      "translation": "* FIRST-FOOTFALL >>>!"
     },
     {
       "source": "first-footfall inference",
@@ -221501,8 +222145,8 @@
       "translation": "* LIGHTS >>>!"
     },
     {
-      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
-      "translation": "* LINUX XWAYLAND PORTAL PIPEWIRE SCREENCAST SOURCE PICKER SHARE WINDOW MONITOR GAMESCOPE RESET >>>!"
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset enable disable toggle fss tuning surface mining rhino rig first footfall tracker",
+      "translation": "* LINUX XWAYLAND PORTAL PIPEWIRE SCREENCAST SOURCE PICKER SHARE WINDOW MONITOR GAMESCOPE RESET ENABLE DISABLE TOGGLE FSS TUNING SURFACE MINING RHINO RIG FIRST FOOTFALL TRACKER >>>!"
     },
     {
       "source": "linux64",

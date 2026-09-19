@@ -5,7 +5,8 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 
-public sealed class GameScreenCaptureTests
+[Collection(AvaloniaHeadlessTestCollection.Name)]
+public sealed class GameScreenCaptureTests : IDisposable
 {
     [Fact]
     public void CapturedBufferReadsBgraPixelsAsRgb()
@@ -85,6 +86,169 @@ public sealed class GameScreenCaptureTests
         Assert.Contains("test detection", message);
         Assert.Contains("switching to the Wayland portal", message);
         Assert.Contains("X11 could not capture", message);
+    }
+
+    [Fact]
+    public void X11CaptureFailureDoesNotUseWaylandPortalWhenDisabled()
+    {
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var logs = new List<string>();
+        int portalAttempts = 0;
+        using var capture = new FallbackGameScreenCapture(
+            new StubCapture(_ =>
+                throw new InvalidOperationException("X11 could not capture the Elite Dangerous window.")
+            ),
+            new StubCapture(_ =>
+            {
+                portalAttempts++;
+                return expected;
+            }),
+            logs.Add,
+            "test detection",
+            static () => false
+        );
+
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() =>
+            capture.Capture(new PixelRect(0, 0, 1, 1))
+        );
+
+        Assert.Contains("X11 could not capture", error.Message);
+        Assert.Equal(0, portalAttempts);
+        Assert.Contains(logs, message => message.Contains("disabled", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void GatedCaptureDoesNotReachTheInnerCaptureWhileDisabled()
+    {
+        GameScreenCapture.WaylandPortalEnabled = false;
+        int attempts = 0;
+        using var capture = new GatedGameScreenCapture(() =>
+            new StubCapture(_ =>
+            {
+                attempts++;
+                return new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+            })
+        );
+
+        NotSupportedException error = Assert.Throws<NotSupportedException>(() =>
+            capture.Capture(new PixelRect(0, 0, 1, 1))
+        );
+
+        Assert.Equal(0, attempts);
+        Assert.Contains("turned off", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.False(capture.IsAvailable);
+        Assert.Equal(GameScreenCapture.WaylandPortalDisabledReason, capture.UnavailableReason);
+    }
+
+    [Fact]
+    public void GatedCaptureForwardsWhenEnabled()
+    {
+        GameScreenCapture.WaylandPortalEnabled = true;
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        using var capture = new GatedGameScreenCapture(() => new StubCapture(_ => expected));
+
+        Assert.True(capture.IsAvailable);
+        Assert.Null(capture.UnavailableReason);
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1), new PixelRect(0, 0, 1, 1)));
+        GameScreenCapture.WaylandPortalEnabled = false;
+    }
+
+    [Fact]
+    public void DisablingGatedCaptureClosesTheActiveSessionAndEnablingCreatesANewOne()
+    {
+        GameScreenCapture.WaylandPortalEnabled = true;
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var sessions = new List<StubCapture>();
+        using var capture = new GatedGameScreenCapture(() =>
+        {
+            var session = new StubCapture(_ => expected);
+            sessions.Add(session);
+            return session;
+        });
+
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
+        StubCapture firstSession = Assert.Single(sessions);
+
+        GameScreenCapture.WaylandPortalEnabled = false;
+
+        Assert.True(firstSession.IsDisposed);
+        Assert.False(capture.IsAvailable);
+
+        GameScreenCapture.WaylandPortalEnabled = true;
+
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
+        Assert.Equal(2, sessions.Count);
+        Assert.NotSame(firstSession, sessions[1]);
+        GameScreenCapture.WaylandPortalEnabled = false;
+    }
+
+    [Fact]
+    public void DisablingOneFeatureClosesOnlyItsActiveSession()
+    {
+        GameScreenCapture.WaylandPortalFeatures =
+            WaylandCaptureFeatures.FssTuning | WaylandCaptureFeatures.FirstFootfall;
+        GameScreenCapture.WaylandPortalEnabled = true;
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var fssSession = new StubCapture(_ => expected);
+        var footfallSession = new StubCapture(_ => expected);
+        using var fssCapture = new GatedGameScreenCapture(
+            () => fssSession,
+            capturePurpose: "FSS tuning detection",
+            feature: WaylandCaptureFeatures.FssTuning
+        );
+        using var footfallCapture = new GatedGameScreenCapture(
+            () => footfallSession,
+            capturePurpose: "first-footfall inference",
+            feature: WaylandCaptureFeatures.FirstFootfall
+        );
+        Assert.Same(expected, fssCapture.Capture(new PixelRect(0, 0, 1, 1)));
+        Assert.Same(expected, footfallCapture.Capture(new PixelRect(0, 0, 1, 1)));
+
+        GameScreenCapture.WaylandPortalFeatures = WaylandCaptureFeatures.FirstFootfall;
+
+        Assert.True(fssSession.IsDisposed);
+        Assert.False(footfallSession.IsDisposed);
+        Assert.False(fssCapture.IsAvailable);
+        Assert.Contains("FSS tuning detection", fssCapture.UnavailableReason, StringComparison.Ordinal);
+        Assert.True(footfallCapture.IsAvailable);
+    }
+
+    [Fact]
+    public void FallbackIsUnavailableWhenPortalDisabledAndX11Unavailable()
+    {
+        using var capture = new FallbackGameScreenCapture(
+            new UnavailableGameScreenCapture("X11 screen capture could not connect to the display."),
+            new StubCapture(_ => new CapturedPixelBuffer(1, 1, [51, 34, 17, 255])),
+            capturePurpose: "test detection",
+            allowWaylandPortal: static () => false
+        );
+
+        Assert.False(capture.IsAvailable);
+        Assert.Contains("turned off", capture.UnavailableReason, StringComparison.OrdinalIgnoreCase);
+        Assert.Throws<NotSupportedException>(() => capture.Capture(new PixelRect(0, 0, 1, 1)));
+    }
+
+    [Fact]
+    public void FallbackStopsUsingPortalAfterItIsDisabled()
+    {
+        bool allow = true;
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        using var capture = new FallbackGameScreenCapture(
+            new StubCapture(_ => throw new InvalidOperationException("X11 could not capture.")),
+            new StubCapture(_ => expected),
+            allowWaylandPortal: () => allow
+        );
+
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
+
+        allow = false;
+
+        NotSupportedException error = Assert.Throws<NotSupportedException>(() =>
+            capture.Capture(new PixelRect(0, 0, 1, 1))
+        );
+        Assert.False(capture.IsAvailable);
+        Assert.Contains("turned off", error.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -273,6 +437,7 @@ public sealed class GameScreenCaptureTests
             ["source_type"] = 1U,
             ["position"] = (100, 200),
             ["size"] = (1920, 1080),
+            ["pipewire-serial"] = 1234UL,
         };
         var results = new Dictionary<string, object>(StringComparer.Ordinal)
         {
@@ -285,6 +450,9 @@ public sealed class GameScreenCaptureTests
         Assert.Equal(1U, stream.SourceType);
         Assert.Equal(new PixelPoint(100, 200), stream.Position);
         Assert.Equal(new PixelSize(1920, 1080), stream.Size);
+        Assert.Equal(1234UL, stream.PipeWireSerial);
+        Assert.Equal(uint.MaxValue, stream.TargetNodeId);
+        Assert.Equal("1234", stream.TargetObjectName);
         Assert.Equal("a monitor at (100,200) sized 1920x1080", stream.DescribeSource());
 
         properties.Clear();
@@ -292,6 +460,9 @@ public sealed class GameScreenCaptureTests
         Assert.Equal(0U, stream.SourceType);
         Assert.Null(stream.Position);
         Assert.Null(stream.Size);
+        Assert.Null(stream.PipeWireSerial);
+        Assert.Equal(42U, stream.TargetNodeId);
+        Assert.Null(stream.TargetObjectName);
         Assert.Equal("an unspecified source", stream.DescribeSource());
         Assert.Equal("a window", new PortalStreamInfo(42, SourceType: 2, Position: null, Size: null).DescribeSource());
     }
@@ -367,6 +538,12 @@ public sealed class GameScreenCaptureTests
         }
     }
 
+    public void Dispose()
+    {
+        GameScreenCapture.WaylandPortalEnabled = false;
+        GameScreenCapture.WaylandPortalFeatures = WaylandCaptureFeatures.None;
+    }
+
     private static CapturedPixelBuffer DecodeX11(byte[] bytes, int bitsPerPixel, int byteOrder, int? stride = null)
     {
         nint pointer = Marshal.AllocHGlobal(bytes.Length);
@@ -396,13 +573,15 @@ public sealed class GameScreenCaptureTests
 
     private sealed class StubCapture(Func<PixelRect, CapturedPixelBuffer> capture) : IGameScreenCapture
     {
-        public bool IsAvailable => true;
+        public bool IsAvailable => !IsDisposed;
 
-        public string? UnavailableReason => null;
+        public bool IsDisposed { get; private set; }
+
+        public string? UnavailableReason => IsDisposed ? "The capture is disposed." : null;
 
         public CapturedPixelBuffer Capture(PixelRect bounds) => capture(bounds);
 
-        public void Dispose() { }
+        public void Dispose() => IsDisposed = true;
     }
 
     private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider

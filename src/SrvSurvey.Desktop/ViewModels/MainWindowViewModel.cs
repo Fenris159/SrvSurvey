@@ -308,7 +308,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             WaylandCapture = new WaylandCaptureSettingsViewModel(
                 AppDataPaths.DataDirectory,
                 !IsDiagnosticReplay && OperatingSystem.IsLinux() && GameScreenCapture.IsWaylandSession(),
-                message => resolvedApplicationLogService?.Append(message)
+                message => resolvedApplicationLogService?.Append(message),
+                new WaylandCaptureSettingsStore(AppDataPaths.UiSettingsPath)
             );
 
             Uri? ravenServiceUri = new RavenServiceSettingsStore(AppDataPaths.UiSettingsPath).LoadServiceUri();

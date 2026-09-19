@@ -87,6 +87,7 @@ dotnet_diagnostic.CA1863.severity = warning
 dotnet_diagnostic.CA1869.severity = warning
 dotnet_diagnostic.CA2201.severity = warning
 dotnet_diagnostic.CA2263.severity = warning
+dotnet_diagnostic.SYSLIB1054.severity = warning
 
 # Existing repository naming conventions
 dotnet_naming_rule.interface_should_begin_with_i.severity = suggestion

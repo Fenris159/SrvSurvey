@@ -106,7 +106,8 @@ public sealed class FirstFootfallInferenceService : IFirstFootfallInferenceServi
                 enableWaylandPortalFallback: true,
                 confirmWaylandScreenShare: confirmWaylandScreenShare,
                 log: log,
-                capturePurpose: "first-footfall inference"
+                capturePurpose: "first-footfall inference",
+                waylandFeature: WaylandCaptureFeatures.FirstFootfall
             )
         );
     }
