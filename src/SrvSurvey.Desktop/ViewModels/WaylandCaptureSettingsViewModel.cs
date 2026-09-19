@@ -30,7 +30,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         IsApplicable = isApplicable;
         this.log = log;
         isEnabled = this.settingsStore.Load().Enabled;
-        GameScreenCapture.WaylandPortalEnabled = () => isEnabled;
+        GameScreenCapture.WaylandPortalEnabled = isEnabled;
         statusMessage = DescribeStatus();
         chooseCaptureSourceAgainCommand = new WorkspaceCommand(
             () => _ = ChooseCaptureSourceAgainAsync(),
@@ -55,9 +55,9 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
                 return;
             }
 
-            isEnabled = value;
             settingsStore.Save(new WaylandCapturePreferences(value));
-            GameScreenCapture.WaylandPortalEnabled = () => isEnabled;
+            isEnabled = value;
+            GameScreenCapture.WaylandPortalEnabled = value;
             StatusMessage = DescribeStatus();
             log?.Invoke(
                 value

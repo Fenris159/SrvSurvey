@@ -27841,6 +27841,14 @@
       "translation": "Wayland-Erfassung ({0}): Die Einstellungen erforderten eine neue Quellenauswahl."
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Wayland-Erfassung ({0}): geschlossen, da die Erfassung in den Einstellungen deaktiviert wurde."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Wayland-Erfassung ({0}): konnte nicht geschlossen werden, nachdem die Erfassung in den Einstellungen deaktiviert wurde. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Wayland-Erfassung ({0}): erster PipeWire-Frame {1}x{2}, Schrittweite {3}, Format {4}; Angeforderte {5} von der Spielequelle {6}."
     },
@@ -59861,6 +59869,14 @@
     {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "Captura de Wayland ({0}): la configuración solicitó una nueva selección de fuente."
+    },
+    {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Captura de Wayland ({0}): cerrada porque la captura estaba deshabilitada en Configuración."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Captura de Wayland ({0}): no se pudo cerrar después de que se deshabilitó la captura en Configuración. {1}"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
@@ -91885,6 +91901,14 @@
       "translation": "Capture Wayland ({0}) : les paramètres ont demandé une nouvelle sélection de source."
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Capture Wayland ({0}) : fermée car la capture a été désactivée dans les paramètres."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Capture Wayland ({0}) : échec de fermeture après la désactivation de la capture dans Paramètres. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Capture Wayland ({0}) : première trame PipeWire {1}x{2}, foulée {3}, format {4} ; » a demandé {5} à partir de la source du jeu {6}."
     },
@@ -123905,6 +123929,14 @@
     {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "Captura Wayland ({0}): As configurações solicitaram uma nova seleção de fonte."
+    },
+    {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Captura Wayland ({0}): fechada porque a captura foi desabilitada em Configurações."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Captura de Wayland ({0}): falha ao fechar depois que a captura foi desativada em Configurações. {1}"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
@@ -155929,6 +155961,14 @@
       "translation": "Захват Wayland ({0}): настройки запросили новый выбор источника."
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Захват Wayland ({0}): закрыт, поскольку захват отключен в настройках."
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Захват Wayland ({0}): не удалось закрыть после отключения захвата в настройках. {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Захват Wayland ({0}): первый кадр PipeWire {1}x{2}, шаг {3}, формат {4}; запросил {5} из источника игры {6}."
     },
@@ -187951,6 +187991,14 @@
       "translation": "Wayland 捕获 ({0})：设置请求新的源选择。"
     },
     {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "Wayland 捕获 ({0})：已关闭，因为在“设置”中禁用了捕获。"
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "Wayland 捕获 ({0})：在“设置”中禁用捕获后无法关闭。 {1}"
+    },
+    {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
       "translation": "Wayland捕获（{0}）：第一个PipeWire框架{1}x{2}，步长{3}，格式{4}；从游戏源 {6} 请求 {5}。"
     },
@@ -219971,6 +220019,14 @@
     {
       "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
       "translation": "* WAYLAND CAPTURE ({0}): SETTINGS REQUESTED A FRESH SOURCE SELECTION. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+      "translation": "* WAYLAND CAPTURE ({0}): CLOSED BECAUSE CAPTURE WAS DISABLED IN SETTINGS. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+      "translation": "* WAYLAND CAPTURE ({0}): FAILED TO CLOSE AFTER CAPTURE WAS DISABLED IN SETTINGS. {1} >>>!"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",

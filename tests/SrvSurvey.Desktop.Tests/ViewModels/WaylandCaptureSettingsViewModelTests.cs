@@ -4,6 +4,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
 {
     private readonly string dataDirectory = Path.Combine(
@@ -122,7 +123,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.False(viewModel.IsEnabled);
         Assert.False(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
         Assert.Contains("off", viewModel.StatusMessage, StringComparison.OrdinalIgnoreCase);
-        Assert.False(GameScreenCapture.WaylandPortalEnabled());
+        Assert.False(GameScreenCapture.WaylandPortalEnabled);
     }
 
     [Fact]
@@ -134,7 +135,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
 
         Assert.True(viewModel.IsEnabled);
         Assert.True(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
-        Assert.True(GameScreenCapture.WaylandPortalEnabled());
+        Assert.True(GameScreenCapture.WaylandPortalEnabled);
         Assert.True(new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true).IsEnabled);
     }
 
@@ -161,7 +162,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
 
     public void Dispose()
     {
-        GameScreenCapture.WaylandPortalEnabled = static () => false;
+        GameScreenCapture.WaylandPortalEnabled = false;
         if (Directory.Exists(dataDirectory))
         {
             Directory.Delete(dataDirectory, recursive: true);

@@ -55821,6 +55821,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
+    "Text": "Wayland capture ({0}): closed because capture was disabled in Settings.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
     "Text": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
     "IsFormat": true,
     "SourceKinds": [

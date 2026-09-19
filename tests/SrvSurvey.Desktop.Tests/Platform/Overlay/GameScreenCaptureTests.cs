@@ -5,7 +5,8 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 
-public sealed class GameScreenCaptureTests
+[Collection(AvaloniaHeadlessTestCollection.Name)]
+public sealed class GameScreenCaptureTests : IDisposable
 {
     [Fact]
     public void CapturedBufferReadsBgraPixelsAsRgb()
@@ -119,15 +120,14 @@ public sealed class GameScreenCaptureTests
     [Fact]
     public void GatedCaptureDoesNotReachTheInnerCaptureWhileDisabled()
     {
+        GameScreenCapture.WaylandPortalEnabled = false;
         int attempts = 0;
-        using var capture = new GatedGameScreenCapture(
+        using var capture = new GatedGameScreenCapture(() =>
             new StubCapture(_ =>
             {
                 attempts++;
                 return new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
-            }),
-            static () => false,
-            GameScreenCapture.WaylandPortalDisabledReason
+            })
         );
 
         NotSupportedException error = Assert.Throws<NotSupportedException>(() =>
@@ -143,17 +143,44 @@ public sealed class GameScreenCaptureTests
     [Fact]
     public void GatedCaptureForwardsWhenEnabled()
     {
+        GameScreenCapture.WaylandPortalEnabled = true;
         var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
-        using var capture = new GatedGameScreenCapture(
-            new StubCapture(_ => expected),
-            static () => true,
-            GameScreenCapture.WaylandPortalDisabledReason
-        );
+        using var capture = new GatedGameScreenCapture(() => new StubCapture(_ => expected));
 
         Assert.True(capture.IsAvailable);
         Assert.Null(capture.UnavailableReason);
         Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
         Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1), new PixelRect(0, 0, 1, 1)));
+        GameScreenCapture.WaylandPortalEnabled = false;
+    }
+
+    [Fact]
+    public void DisablingGatedCaptureClosesTheActiveSessionAndEnablingCreatesANewOne()
+    {
+        GameScreenCapture.WaylandPortalEnabled = true;
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var sessions = new List<StubCapture>();
+        using var capture = new GatedGameScreenCapture(() =>
+        {
+            var session = new StubCapture(_ => expected);
+            sessions.Add(session);
+            return session;
+        });
+
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
+        StubCapture firstSession = Assert.Single(sessions);
+
+        GameScreenCapture.WaylandPortalEnabled = false;
+
+        Assert.True(firstSession.IsDisposed);
+        Assert.False(capture.IsAvailable);
+
+        GameScreenCapture.WaylandPortalEnabled = true;
+
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
+        Assert.Equal(2, sessions.Count);
+        Assert.NotSame(firstSession, sessions[1]);
+        GameScreenCapture.WaylandPortalEnabled = false;
     }
 
     [Fact]
@@ -473,6 +500,11 @@ public sealed class GameScreenCaptureTests
         }
     }
 
+    public void Dispose()
+    {
+        GameScreenCapture.WaylandPortalEnabled = false;
+    }
+
     private static CapturedPixelBuffer DecodeX11(byte[] bytes, int bitsPerPixel, int byteOrder, int? stride = null)
     {
         nint pointer = Marshal.AllocHGlobal(bytes.Length);
@@ -502,13 +534,15 @@ public sealed class GameScreenCaptureTests
 
     private sealed class StubCapture(Func<PixelRect, CapturedPixelBuffer> capture) : IGameScreenCapture
     {
-        public bool IsAvailable => true;
+        public bool IsAvailable => !IsDisposed;
 
-        public string? UnavailableReason => null;
+        public bool IsDisposed { get; private set; }
+
+        public string? UnavailableReason => IsDisposed ? "The capture is disposed." : null;
 
         public CapturedPixelBuffer Capture(PixelRect bounds) => capture(bounds);
 
-        public void Dispose() { }
+        public void Dispose() => IsDisposed = true;
     }
 
     private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
