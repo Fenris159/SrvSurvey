@@ -37,6 +37,7 @@ public sealed class ReleaseVersionTests
     [InlineData("2.1.4.0-rc.01")]
     [InlineData("2.1.4.0-")]
     [InlineData("xp-v2.1.4.0-rc.1")]
+    [InlineData("xp2-v2.1.4.0-rc.1")]
     public void TryParseRejectsInvalidReleaseVersions(string value)
     {
         Assert.False(ReleaseVersion.TryParse(value, out _));

@@ -190,6 +190,46 @@ public sealed class CrossPlatformReleaseClientTests
     }
 
     [Fact]
+    public async Task BridgeClientSelectsNewestReleaseFromMixedNamespaceFeed()
+    {
+        MixedReleasePayload payload = CreateMixedNamespacePayload();
+        var handler = new StubHandler(
+            new Dictionary<Uri, string>
+            {
+                [ReleasesUri] = payload.Releases,
+                [payload.BridgeIndexUri] = payload.BridgeIndex,
+                [payload.CurrentIndexUri] = payload.CurrentIndex,
+            }
+        );
+        var client = new CrossPlatformReleaseClient(new HttpClient(handler), ReleasesUri, ReleasesUri);
+
+        CrossPlatformRelease? result = await client.GetLatestAsync("win-x64", ReleaseChannel.Development);
+
+        Assert.NotNull(result);
+        Assert.Equal(ReleaseVersion.Parse("2.1.3.0-rc.56"), result.Version);
+        Assert.Equal([ReleasesUri, payload.CurrentIndexUri], handler.RequestUris);
+    }
+
+    [Fact]
+    public void LegacyNamespaceViewRemainsAnchoredOnBridgeInMixedFeed()
+    {
+        MixedReleasePayload payload = CreateMixedNamespacePayload();
+        using var document = JsonDocument.Parse(payload.Releases);
+
+        string[] legacyTags = document
+            .RootElement.EnumerateArray()
+            .Select(release => release.GetProperty("tag_name").GetString()!)
+            .Where(tag => tag.StartsWith("xp-v", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        Assert.Equal(["xp-v2.1.3.0-rc.50", "xp-v2.1.3.0-rc.51"], legacyTags);
+        Assert.Equal("xp-v2.1.3.0-rc.51", legacyTags.MaxBy(tag => ReleaseVersion.Parse(tag["xp-v".Length..])));
+        using var bridgeIndex = JsonDocument.Parse(payload.BridgeIndex);
+        Assert.Equal(1, bridgeIndex.RootElement.GetProperty("schemaVersion").GetInt32());
+        Assert.Equal(2, bridgeIndex.RootElement.GetProperty("packages").GetArrayLength());
+    }
+
+    [Fact]
     public async Task StableChannelDoesNotSelectXpReleaseCandidate()
     {
         ReleasePayload payload = CreatePayload(version: "2.1.4.0-rc.3", prerelease: true);
@@ -346,6 +386,130 @@ public sealed class CrossPlatformReleaseClientTests
         return new ReleasePayload(releases, index);
     }
 
+    private static MixedReleasePayload CreateMixedNamespacePayload()
+    {
+        const string bridgeVersion = "2.1.3.0-rc.51";
+        const string currentVersion = "2.1.3.0-rc.56";
+        const string previousVersion = "2.1.3.0-rc.50";
+        var bridgeIndexUri = new Uri("https://downloads.example.test/rc.51/release-index.json");
+        var currentIndexUri = new Uri("https://downloads.example.test/rc.56/release-index.json");
+        string bridgeIndex = CreateIndex(bridgeVersion, includeAppImage: false);
+        string currentIndex = CreateIndex(currentVersion, includeAppImage: true);
+        string releases = JsonSerializer.Serialize(
+            new[]
+            {
+                CreateRelease("xp2-v", currentVersion, currentIndexUri, currentIndex, includeAppImage: true),
+                CreateRelease(
+                    "xp-v",
+                    previousVersion,
+                    new Uri("https://downloads.example.test/rc.50/index.json"),
+                    CreateIndex(previousVersion, includeAppImage: true),
+                    includeAppImage: true
+                ),
+                CreateRelease("xp-v", bridgeVersion, bridgeIndexUri, bridgeIndex, includeAppImage: false),
+            }
+        );
+        return new MixedReleasePayload(releases, bridgeIndexUri, bridgeIndex, currentIndexUri, currentIndex);
+    }
+
+    private static string CreateIndex(string version, bool includeAppImage)
+    {
+        var packages = new List<object>
+        {
+            new
+            {
+                runtimeIdentifier = "win-x64",
+                archive = $"SrvSurvey-XP-{version}-win-x64.zip",
+                archiveType = "zip",
+                size = 12_345L,
+                sha256 = new string('a', 64),
+            },
+            new
+            {
+                runtimeIdentifier = "linux-x64",
+                archive = $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
+                archiveType = "tar.gz",
+                size = 23_456L,
+                sha256 = new string('b', 64),
+            },
+        };
+        if (includeAppImage)
+        {
+            packages.Add(
+                new
+                {
+                    runtimeIdentifier = CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier,
+                    archive = $"SrvSurvey-XP-{version}-x86_64.AppImage",
+                    archiveType = "appimage",
+                    size = 34_567L,
+                    sha256 = new string('c', 64),
+                }
+            );
+        }
+
+        return JsonSerializer.Serialize(
+            new
+            {
+                schemaVersion = includeAppImage ? 2 : 1,
+                product = "SrvSurvey.XP",
+                version,
+                packages,
+            }
+        );
+    }
+
+    private static object CreateRelease(
+        string tagPrefix,
+        string version,
+        Uri indexUri,
+        string index,
+        bool includeAppImage
+    )
+    {
+        var assets = new List<object>
+        {
+            new
+            {
+                name = "release-index.json",
+                size = (long)Encoding.UTF8.GetByteCount(index),
+                browser_download_url = indexUri.AbsoluteUri,
+            },
+            new
+            {
+                name = $"SrvSurvey-XP-{version}-win-x64.zip",
+                size = 12_345L,
+                browser_download_url = $"https://downloads.example.test/{version}/windows.zip",
+            },
+            new
+            {
+                name = $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
+                size = 23_456L,
+                browser_download_url = $"https://downloads.example.test/{version}/linux.tar.gz",
+            },
+        };
+        if (includeAppImage)
+        {
+            assets.Add(
+                new
+                {
+                    name = $"SrvSurvey-XP-{version}-x86_64.AppImage",
+                    size = 34_567L,
+                    browser_download_url = $"https://downloads.example.test/{version}/linux.AppImage",
+                }
+            );
+        }
+
+        return new
+        {
+            tag_name = $"{tagPrefix}{version}",
+            draft = false,
+            prerelease = true,
+            html_url = $"https://example.test/releases/{tagPrefix}{version}",
+            body = "## What's changed\n\n- Update.",
+            assets,
+        };
+    }
+
     private static byte[] CreateAppImage()
     {
         byte[] bytes = new byte[64];
@@ -363,6 +527,14 @@ public sealed class CrossPlatformReleaseClientTests
     }
 
     private sealed record ReleasePayload(string Releases, string Index);
+
+    private sealed record MixedReleasePayload(
+        string Releases,
+        Uri BridgeIndexUri,
+        string BridgeIndex,
+        Uri CurrentIndexUri,
+        string CurrentIndex
+    );
 
     private sealed class StubHandler(IReadOnlyDictionary<Uri, string> responses) : HttpMessageHandler
     {
