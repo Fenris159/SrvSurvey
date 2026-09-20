@@ -1956,11 +1956,22 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             logWriteSuspension = applicationLogService?.SuspendFileWrites();
             await PrepareForProfileImportAsync();
             Volatile.Write(ref acceptsProfileImportProgress, true);
+            var finalProgressDispatch = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var progress = new Progress<ProfileImportProgress>(progress =>
             {
-                if (Volatile.Read(ref acceptsProfileImportProgress))
+                try
                 {
-                    ReportProfileImportProgress(progress);
+                    if (Volatile.Read(ref acceptsProfileImportProgress))
+                    {
+                        ReportProfileImportProgress(progress);
+                    }
+                }
+                finally
+                {
+                    if (progress.Stage == ProfileImportStage.ActivatingProfile)
+                    {
+                        finalProgressDispatch.TrySetResult();
+                    }
                 }
             });
             ProfileImportSource selectedSource = profileImportSource;
@@ -1971,6 +1982,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 progress,
                 CancellationToken.None
             );
+            await finalProgressDispatch.Task;
             Volatile.Write(ref acceptsProfileImportProgress, false);
             if (selectedSource.Kind == ProfileImportSourceKind.CrossPlatform)
             {
