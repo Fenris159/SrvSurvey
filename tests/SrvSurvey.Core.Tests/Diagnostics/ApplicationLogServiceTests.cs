@@ -56,6 +56,27 @@ public sealed class ApplicationLogServiceTests : IDisposable
     }
 
     [Fact]
+    public void SuspendedFileWritesRemainVisibleInMemoryAndFlushInOrderWhenResumed()
+    {
+        var service = new ApplicationLogService(temporaryDirectory, timeProvider);
+        service.Append("Before suspension");
+
+        using (service.SuspendFileWrites())
+        {
+            service.Append("During suspension one");
+            service.Append("During suspension two");
+
+            Assert.Equal(3, service.Entries.Count);
+            Assert.Single(File.ReadAllLines(service.CurrentLogPath));
+        }
+
+        Assert.Equal(
+            ["13:14:15: Before suspension", "13:14:15: During suspension one", "13:14:15: During suspension two"],
+            File.ReadAllLines(service.CurrentLogPath)
+        );
+    }
+
+    [Fact]
     public void NewSessionRetainsNewestTenLogFiles()
     {
         string logDirectory = Path.Combine(temporaryDirectory, "logs");

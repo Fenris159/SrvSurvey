@@ -9,6 +9,11 @@ public interface IInaraCommunityGoalClient
     Task<InaraCommunityGoalsResult> GetRecentAsync(CancellationToken cancellationToken = default);
 }
 
+public interface IInaraCommunityGoalApiKeySink
+{
+    void SetPersonalApiKey(string? apiKey);
+}
+
 public sealed record InaraCommunityGoalSnapshot(
     string Title,
     string Description,
@@ -38,7 +43,7 @@ public sealed record InaraCommunityGoalsResult(
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The injected client is application-scoped and its gate may have in-flight waiters."
 )]
-public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
+public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient, IInaraCommunityGoalApiKeySink
 {
     public const string Endpoint = "https://inara.cz/inapi/v1/";
     public static readonly TimeSpan DefaultCacheAge = TimeSpan.FromMinutes(15);
@@ -50,7 +55,8 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
     };
 
     private readonly HttpClient httpClient;
-    private readonly string apiKey;
+    private readonly string applicationApiKey;
+    private string apiKey;
     private readonly string appVersion;
     private readonly string cachePath;
     private readonly Func<DateTimeOffset> utcNow;
@@ -70,11 +76,18 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
         ArgumentException.ThrowIfNullOrWhiteSpace(appVersion);
         ArgumentException.ThrowIfNullOrWhiteSpace(cachePath);
-        this.apiKey = apiKey.Trim();
+        applicationApiKey = apiKey.Trim();
+        this.apiKey = applicationApiKey;
         this.appVersion = appVersion.Trim();
         this.cachePath = Path.GetFullPath(cachePath);
         this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         this.cacheAge = cacheAge ?? DefaultCacheAge;
+    }
+
+    public void SetPersonalApiKey(string? apiKey)
+    {
+        string selected = string.IsNullOrWhiteSpace(apiKey) ? applicationApiKey : apiKey.Trim();
+        Volatile.Write(ref this.apiKey, selected);
     }
 
     public async Task<InaraCommunityGoalsResult> GetRecentAsync(CancellationToken cancellationToken = default)
@@ -121,6 +134,7 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         CancellationToken cancellationToken
     )
     {
+        string selectedApiKey = Volatile.Read(ref apiKey);
         byte[] payload = JsonSerializer.SerializeToUtf8Bytes(
             new
             {
@@ -129,7 +143,7 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
                     appName = "SrvSurvey",
                     appVersion,
                     isBeingDeveloped = true,
-                    APIkey = apiKey,
+                    APIkey = selectedApiKey,
                 },
                 events = new[]
                 {
@@ -170,9 +184,7 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         int? headerStatus = GetInt32(GetProperty(root, "header"), "eventStatus");
         if (headerStatus is null or < 200 or >= 300)
         {
-            throw new InvalidDataException(
-                $"Inara returned API status {headerStatus?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}."
-            );
+            throw new InvalidDataException(FormatStatus("API", GetProperty(root, "header"), headerStatus));
         }
 
         JsonElement? events = GetProperty(root, "events");
@@ -185,9 +197,7 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         int? eventStatus = GetInt32(responseEvent, "eventStatus");
         if (eventStatus is null or < 200 or >= 300)
         {
-            throw new InvalidDataException(
-                $"Inara returned Community Goal status {eventStatus?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}."
-            );
+            throw new InvalidDataException(FormatStatus("Community Goal", responseEvent, eventStatus));
         }
 
         JsonElement? eventData = GetProperty(responseEvent, "eventData");
@@ -376,6 +386,15 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
     {
         JsonElement? value = GetProperty(owner, name);
         return value is { ValueKind: JsonValueKind.Number } && value.Value.TryGetInt32(out int number) ? number : null;
+    }
+
+    private static string FormatStatus(string scope, JsonElement? owner, int? status)
+    {
+        string code = status?.ToString(CultureInfo.InvariantCulture) ?? "unknown";
+        string explanation = owner is { } value ? GetString(value, "eventStatusText") : string.Empty;
+        return string.IsNullOrWhiteSpace(explanation)
+            ? $"Inara returned {scope} status {code}."
+            : $"Inara returned {scope} status {code}: {explanation}";
     }
 
     private static long? GetInt64(JsonElement owner, string name)

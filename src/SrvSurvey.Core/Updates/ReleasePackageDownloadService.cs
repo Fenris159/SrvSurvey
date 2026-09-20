@@ -194,12 +194,18 @@ public sealed class ReleasePackageDownloadService : IReleasePackageDownloadServi
         {
             "win-x64" => "zip",
             "linux-x64" => "tar.gz",
+            CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier => "appimage",
             _ => throw new PlatformNotSupportedException(
                 $"The runtime '{package.RuntimeIdentifier}' has no update package."
             ),
         };
-        string suffix = expectedArchiveType == "zip" ? ".zip" : ".tar.gz";
-        string expectedName = $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}{suffix}";
+        string expectedName = expectedArchiveType switch
+        {
+            "zip" => $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}.zip",
+            "tar.gz" => $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}.tar.gz",
+            "appimage" => $"SrvSurvey-XP-{version}-x86_64.AppImage",
+            _ => throw new InvalidDataException("The update package type is invalid."),
+        };
         if (
             !string.Equals(package.ArchiveType, expectedArchiveType, StringComparison.Ordinal)
             || !string.Equals(package.ArchiveName, expectedName, StringComparison.Ordinal)

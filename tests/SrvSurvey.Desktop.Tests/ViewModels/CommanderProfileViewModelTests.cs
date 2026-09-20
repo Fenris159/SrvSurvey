@@ -65,6 +65,21 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task JournalCommanderUpdatesAutomaticSelectionWhenLinkedAccountDiscoveryFails()
+    {
+        var account = new StubAccountService(new FrontierAccountState(false, null, null))
+        {
+            LinkedCommandersRequested = _ => throw new InvalidOperationException("Secure storage unavailable"),
+        };
+        using var viewModel = new CommanderProfileViewModel(account);
+
+        await viewModel.SetCommanderContextAsync("F472567", "Fenris Nihilus", refreshIfOpen: false);
+
+        Assert.Equal("Automatic · Fenris Nihilus (F472567)", viewModel.SelectedCommanderOption?.DisplayName);
+        Assert.Equal("F472567", viewModel.SelectedCommanderOption?.FrontierId);
+    }
+
+    [Fact]
     public void AuthorizationCallbackIsForwardedForWindowActivation()
     {
         var account = new StubAccountService(new FrontierAccountState(false, null, null));
@@ -1513,6 +1528,7 @@ public sealed class CommanderProfileViewModelTests
         public bool LastForceCarrierRefresh { get; private set; }
         public Task<FrontierAccountSnapshot>? PendingRefresh { get; set; }
         public Action<CancellationToken>? StateRequested { get; set; }
+        public Func<CancellationToken, IReadOnlyList<FrontierLinkedCommander>>? LinkedCommandersRequested { get; set; }
 
         public event EventHandler? AuthorizationCallbackReceived;
 
@@ -1540,6 +1556,11 @@ public sealed class CommanderProfileViewModelTests
             CancellationToken cancellationToken = default
         )
         {
+            if (LinkedCommandersRequested is not null)
+            {
+                return Task.FromResult(LinkedCommandersRequested(cancellationToken));
+            }
+
             IReadOnlyList<FrontierLinkedCommander> linked = commanderStates
                 .Where(pair => pair.Value.IsLinked)
                 .Select(pair => new FrontierLinkedCommander(pair.Key, pair.Value.Snapshot?.CommanderName ?? pair.Key))

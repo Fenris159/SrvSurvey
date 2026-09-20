@@ -193,6 +193,283 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
     }
 
     [Fact]
+    public async Task AppImagePrepareAndApplyReplacesInstalledImageAndKeepsBackup()
+    {
+        string parent = Path.Combine(temporaryDirectory, "appimage-install");
+        Directory.CreateDirectory(parent);
+        string installedPath = Path.Combine(parent, "SrvSurvey.AppImage");
+        string downloadedPath = Path.Combine(temporaryDirectory, "downloaded.AppImage");
+        byte[] installed = CreateAppImage(0x11);
+        byte[] downloaded = CreateAppImage(0x22);
+        await File.WriteAllBytesAsync(installedPath, installed);
+        await File.WriteAllBytesAsync(downloadedPath, downloaded);
+        if (OperatingSystem.IsLinux())
+        {
+            File.SetUnixFileMode(
+                installedPath,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+            );
+        }
+        string sha256 = Convert.ToHexString(SHA256.HashData(downloaded)).ToLowerInvariant();
+
+        ReleaseInstallationPreparation preparation = await new AppImageReleaseInstallationPreparer().PrepareAsync(
+            Version,
+            downloadedPath,
+            sha256,
+            installedPath,
+            ["--journal-directory", "/home/cmdr/journals"]
+        );
+        Assert.Equal(ReleaseInstallationKind.AppImage, preparation.Kind);
+        Assert.True(File.Exists(preparation.CandidateDirectory));
+
+        ReleaseInstallationResult result = await new ReleaseInstallationTransaction().ApplyAsync(
+            preparation,
+            async (entryPoint, arguments, cancellationToken) =>
+            {
+                Assert.Equal(installedPath, entryPoint);
+                Assert.Equal(["--journal-directory", "/home/cmdr/journals"], arguments);
+                Assert.Equal(downloaded, await File.ReadAllBytesAsync(entryPoint, cancellationToken));
+                return true;
+            }
+        );
+
+        Assert.Equal(ReleaseInstallationStatus.Installed, result.Status);
+        Assert.Equal(downloaded, await File.ReadAllBytesAsync(installedPath));
+        Assert.Equal(installed, await File.ReadAllBytesAsync(preparation.BackupDirectory));
+        Assert.False(File.Exists(preparation.CandidateDirectory));
+        if (OperatingSystem.IsLinux())
+        {
+            Assert.NotEqual(UnixFileMode.None, File.GetUnixFileMode(installedPath) & UnixFileMode.UserExecute);
+        }
+    }
+
+    [Fact]
+    public async Task FailedAppImageHealthConfirmationRestoresInstalledImage()
+    {
+        string parent = Path.Combine(temporaryDirectory, "appimage-rollback");
+        Directory.CreateDirectory(parent);
+        string installedPath = Path.Combine(parent, "SrvSurvey.AppImage");
+        string downloadedPath = Path.Combine(temporaryDirectory, "rollback.AppImage");
+        byte[] installed = CreateAppImage(0x33);
+        byte[] downloaded = CreateAppImage(0x44);
+        await File.WriteAllBytesAsync(installedPath, installed);
+        await File.WriteAllBytesAsync(downloadedPath, downloaded);
+        string sha256 = Convert.ToHexString(SHA256.HashData(downloaded)).ToLowerInvariant();
+        ReleaseInstallationPreparation preparation = await new AppImageReleaseInstallationPreparer().PrepareAsync(
+            Version,
+            downloadedPath,
+            sha256,
+            installedPath,
+            []
+        );
+
+        ReleaseInstallationResult result = await new ReleaseInstallationTransaction().ApplyAsync(
+            preparation,
+            (_, _, _) => Task.FromResult(false)
+        );
+
+        Assert.Equal(ReleaseInstallationStatus.RolledBack, result.Status);
+        Assert.Equal(installed, await File.ReadAllBytesAsync(installedPath));
+        Assert.Equal(downloaded, await File.ReadAllBytesAsync(preparation.FailedDirectory));
+        Assert.False(File.Exists(preparation.BackupDirectory));
+    }
+
+    [Fact]
+    public async Task AppImageLaunchFailureRestoresInstalledImageAndReportsError()
+    {
+        string parent = Path.Combine(temporaryDirectory, "appimage-launch-failure");
+        Directory.CreateDirectory(parent);
+        string installedPath = Path.Combine(parent, "SrvSurvey.AppImage");
+        string downloadedPath = Path.Combine(temporaryDirectory, "launch-failure.AppImage");
+        byte[] installed = CreateAppImage(0x45);
+        byte[] downloaded = CreateAppImage(0x46);
+        await File.WriteAllBytesAsync(installedPath, installed);
+        await File.WriteAllBytesAsync(downloadedPath, downloaded);
+        ReleaseInstallationPreparation preparation = await new AppImageReleaseInstallationPreparer().PrepareAsync(
+            Version,
+            downloadedPath,
+            Convert.ToHexString(SHA256.HashData(downloaded)).ToLowerInvariant(),
+            installedPath,
+            []
+        );
+
+        ReleaseInstallationResult result = await new ReleaseInstallationTransaction().ApplyAsync(
+            preparation,
+            (_, _, _) => throw new InvalidOperationException("replacement launch failed")
+        );
+
+        Assert.Equal(ReleaseInstallationStatus.RolledBack, result.Status);
+        Assert.Equal("replacement launch failed", result.Error);
+        Assert.Equal(installed, await File.ReadAllBytesAsync(installedPath));
+        Assert.Equal(downloaded, await File.ReadAllBytesAsync(preparation.FailedDirectory));
+        Assert.False(File.Exists(preparation.BackupDirectory));
+    }
+
+    [Fact]
+    public async Task AppImageAbortRemovesCandidateWithoutChangingInstalledImage()
+    {
+        string parent = Path.Combine(temporaryDirectory, "appimage-abort");
+        Directory.CreateDirectory(parent);
+        string installedPath = Path.Combine(parent, "SrvSurvey.AppImage");
+        string downloadedPath = Path.Combine(temporaryDirectory, "abort.AppImage");
+        byte[] installed = CreateAppImage(0x51);
+        byte[] downloaded = CreateAppImage(0x52);
+        await File.WriteAllBytesAsync(installedPath, installed);
+        await File.WriteAllBytesAsync(downloadedPath, downloaded);
+        string sha256 = Convert.ToHexString(SHA256.HashData(downloaded)).ToLowerInvariant();
+        var preparer = new AppImageReleaseInstallationPreparer();
+        ReleaseInstallationPreparation preparation = await preparer.PrepareAsync(
+            Version,
+            downloadedPath,
+            sha256,
+            installedPath,
+            []
+        );
+
+        await preparer.AbortAsync(preparation);
+
+        Assert.False(File.Exists(preparation.CandidateDirectory));
+        Assert.Equal(installed, await File.ReadAllBytesAsync(installedPath));
+    }
+
+    [Fact]
+    public async Task AppImagePreparationRejectsInvalidImageAndWrongChecksum()
+    {
+        string parent = Path.Combine(temporaryDirectory, "appimage-invalid");
+        Directory.CreateDirectory(parent);
+        string installedPath = Path.Combine(parent, "SrvSurvey.AppImage");
+        string downloadedPath = Path.Combine(temporaryDirectory, "invalid.AppImage");
+        await File.WriteAllBytesAsync(installedPath, CreateAppImage(0x61));
+        byte[] invalid = Enumerable.Repeat((byte)0x62, 128).ToArray();
+        await File.WriteAllBytesAsync(downloadedPath, invalid);
+        var preparer = new AppImageReleaseInstallationPreparer();
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            preparer.PrepareAsync(
+                Version,
+                downloadedPath,
+                Convert.ToHexString(SHA256.HashData(invalid)).ToLowerInvariant(),
+                installedPath,
+                []
+            )
+        );
+
+        byte[] valid = CreateAppImage(0x63);
+        await File.WriteAllBytesAsync(downloadedPath, valid);
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            preparer.PrepareAsync(Version, downloadedPath, new string('0', 64), installedPath, [])
+        );
+    }
+
+    [Fact]
+    public async Task InstalledAppImageDriftStopsReplacementBeforeMove()
+    {
+        string parent = Path.Combine(temporaryDirectory, "appimage-drift");
+        Directory.CreateDirectory(parent);
+        string installedPath = Path.Combine(parent, "SrvSurvey.AppImage");
+        string downloadedPath = Path.Combine(temporaryDirectory, "drift.AppImage");
+        byte[] downloaded = CreateAppImage(0x72);
+        await File.WriteAllBytesAsync(installedPath, CreateAppImage(0x71));
+        await File.WriteAllBytesAsync(downloadedPath, downloaded);
+        ReleaseInstallationPreparation preparation = await new AppImageReleaseInstallationPreparer().PrepareAsync(
+            Version,
+            downloadedPath,
+            Convert.ToHexString(SHA256.HashData(downloaded)).ToLowerInvariant(),
+            installedPath,
+            []
+        );
+        await File.WriteAllBytesAsync(installedPath, CreateAppImage(0x73));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new ReleaseInstallationTransaction().ApplyAsync(preparation, (_, _, _) => Task.FromResult(true))
+        );
+
+        Assert.True(File.Exists(preparation.CandidateDirectory));
+        Assert.False(File.Exists(preparation.BackupDirectory));
+    }
+
+    [Fact]
+    public async Task InterruptedAppImageReplacementKeepsTheLaunchPathAvailable()
+    {
+        string parent = Path.Combine(temporaryDirectory, "appimage-activation-failure");
+        Directory.CreateDirectory(parent);
+        string installedPath = Path.Combine(parent, "SrvSurvey.AppImage");
+        string downloadedPath = Path.Combine(temporaryDirectory, "activation-failure.AppImage");
+        byte[] installed = CreateAppImage(0x81);
+        byte[] downloaded = CreateAppImage(0x82);
+        await File.WriteAllBytesAsync(installedPath, installed);
+        await File.WriteAllBytesAsync(downloadedPath, downloaded);
+        ReleaseInstallationPreparation preparation = await new AppImageReleaseInstallationPreparer().PrepareAsync(
+            Version,
+            downloadedPath,
+            Convert.ToHexString(SHA256.HashData(downloaded)).ToLowerInvariant(),
+            installedPath,
+            []
+        );
+        bool launchAttempted = false;
+        var transaction = new ReleaseInstallationTransaction(
+            stagingService: null,
+            checkpoint: checkpoint =>
+            {
+                if (checkpoint == ReleaseInstallationCheckpoint.CandidateActivated)
+                {
+                    throw new IOException("simulated termination after AppImage replacement");
+                }
+            }
+        );
+
+        await Assert.ThrowsAsync<IOException>(() =>
+            transaction.ApplyAsync(
+                preparation,
+                (_, _, _) =>
+                {
+                    launchAttempted = true;
+                    return Task.FromResult(true);
+                }
+            )
+        );
+
+        Assert.False(launchAttempted);
+        Assert.Equal(downloaded, await File.ReadAllBytesAsync(installedPath));
+        Assert.Equal(installed, await File.ReadAllBytesAsync(preparation.BackupDirectory));
+        Assert.False(File.Exists(preparation.FailedDirectory));
+    }
+
+    [Fact]
+    public async Task AppImagePreparationResolvesStableSymbolicLinkToItsFile()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        string parent = Path.Combine(temporaryDirectory, "appimage-link");
+        Directory.CreateDirectory(parent);
+        string targetPath = Path.Combine(parent, "SrvSurvey-XP-current.AppImage");
+        string linkPath = Path.Combine(parent, "SrvSurvey.AppImage");
+        string downloadedPath = Path.Combine(temporaryDirectory, "linked-update.AppImage");
+        byte[] installed = CreateAppImage(0x55);
+        byte[] downloaded = CreateAppImage(0x66);
+        await File.WriteAllBytesAsync(targetPath, installed);
+        File.CreateSymbolicLink(linkPath, targetPath);
+        await File.WriteAllBytesAsync(downloadedPath, downloaded);
+        string sha256 = Convert.ToHexString(SHA256.HashData(downloaded)).ToLowerInvariant();
+
+        ReleaseInstallationPreparation preparation = await new AppImageReleaseInstallationPreparer().PrepareAsync(
+            Version,
+            downloadedPath,
+            sha256,
+            linkPath,
+            []
+        );
+
+        Assert.Equal(parent, preparation.InstallationDirectory);
+        Assert.Equal(Path.GetFileName(targetPath), preparation.EntryPoint);
+        Assert.True(AppImageReleaseInstallationPreparer.CanReplace(linkPath));
+        await new AppImageReleaseInstallationPreparer().AbortAsync(preparation);
+    }
+
+    [Fact]
     public async Task ProtectedWindowsInstallDefersCandidateCopyToHelper()
     {
         if (!OperatingSystem.IsWindows())
@@ -286,6 +563,23 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
             oldEntryPoint,
             newEntryPoint
         );
+    }
+
+    private static byte[] CreateAppImage(byte payload)
+    {
+        byte[] bytes = Enumerable.Repeat(payload, 128).ToArray();
+        bytes[0] = 0x7f;
+        bytes[1] = (byte)'E';
+        bytes[2] = (byte)'L';
+        bytes[3] = (byte)'F';
+        bytes[4] = 2;
+        bytes[5] = 1;
+        bytes[8] = (byte)'A';
+        bytes[9] = (byte)'I';
+        bytes[10] = 2;
+        bytes[18] = 62;
+        bytes[19] = 0;
+        return bytes;
     }
 
     private static async Task<IReadOnlyDictionary<string, byte[]>> SnapshotAsync(string directory)

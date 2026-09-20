@@ -238,7 +238,17 @@ internal static class Program
 
     internal static X11PlatformOptions CreateX11Options(bool useSoftwareRendering)
     {
-        var options = new X11PlatformOptions { UseDBusMenu = false };
+        var options = new X11PlatformOptions
+        {
+            UseDBusMenu = false,
+            // Keep tooltips, combo-box drop-downs, and flyouts in the owning
+            // window. Separate X11 popup windows can briefly intercept pointer
+            // input and race the overlay window scanner while they close.
+            OverlayPopups = true,
+#pragma warning disable AVALONIA_X11_FORCE_CSD // Force reserved Raven-themed chrome on X11 and XWayland.
+            ForceDrawnDecorations = true,
+#pragma warning restore AVALONIA_X11_FORCE_CSD
+        };
         if (useSoftwareRendering)
         {
             options.RenderingMode = [X11RenderingMode.Software];

@@ -196,8 +196,8 @@ internal sealed class WindowsFrontierCredentialStore(string path) : IFrontierCre
 
 internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath) : IFrontierCredentialStore
 {
-    private const string UnavailableMessage =
-        "Secure Frontier token storage is unavailable. Install the 'secret-tool' utility and unlock a Secret Service compatible keyring, then try again.";
+    internal const string UnavailableMessage =
+        "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.";
     private static readonly string[] SecretToolPaths =
     [
         "/usr/bin/secret-tool",

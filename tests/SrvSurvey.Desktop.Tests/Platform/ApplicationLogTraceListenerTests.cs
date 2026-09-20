@@ -102,6 +102,71 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
         );
     }
 
+    [Fact]
+    public void ListenerOmitsMissingLegacyX11SessionManagerNoise()
+    {
+        var log = new ApplicationLogService(temporaryDirectory);
+        var listener = new ApplicationLogTraceListener(log);
+
+        listener.WriteLine(
+            "[X11Platform] SMLib/ICELib reported a new error: SESSION_MANAGER environment variable not defined\0\0"
+        );
+
+        Assert.Empty(log.Entries);
+    }
+
+    [Fact]
+    public void ListenerOmitsKnownIbusDestroyCompatibilityNoise()
+    {
+        var log = new ApplicationLogService(temporaryDirectory);
+        var listener = new ApplicationLogTraceListener(log);
+        const string failure =
+            "[IME] Error while destroying the context: 'Tmds.DBus.Protocol.DBusErrorReplyException: "
+            + "org.freedesktop.DBus.Error.UnknownMethod: Method Destroy is not implemented on interface "
+            + "org.freedesktop.IBus.Service\n"
+            + "   at Tmds.DBus.Protocol.InnerConnection.CallMethodAsync(MessageBuffer message)\n"
+            + "   at Avalonia.FreeDesktop.DBusIme.DBusTextInputMethodBase.Dispose()'";
+
+        listener.WriteLine(failure);
+
+        Assert.Empty(log.Entries);
+    }
+
+    [Theory]
+    [InlineData(
+        "org.freedesktop.DBus.Error.UnknownMethod: Object does not exist at path /org/freedesktop/IBus/InputContext_234"
+    )]
+    [InlineData(
+        "org.freedesktop.DBus.Error.UnknownMethod: No such interface org.freedesktop.IBus.InputContext on object at path /org/freedesktop/IBus/InputContext_347"
+    )]
+    public void ListenerOmitsKnownMultilineIbusDisposedContextNoise(string error)
+    {
+        var log = new ApplicationLogService(temporaryDirectory);
+        var listener = new ApplicationLogTraceListener(log);
+
+        listener.WriteLine("[IME] Error:");
+        listener.WriteLine("Tmds.DBus.Protocol.DBusErrorReplyException: " + error);
+        listener.WriteLine("   at Avalonia.FreeDesktop.DBusIme.IBus.IBusX11TextInputMethod.SetCapabilitiesCore()");
+        listener.WriteLine("   at Avalonia.FreeDesktop.DBusCallQueue.Process() (IBusX11TextInputMethod #16674329)");
+
+        Assert.Empty(log.Entries);
+    }
+
+    [Fact]
+    public void ListenerPreservesUnexpectedMultilineImeFailures()
+    {
+        var log = new ApplicationLogService(temporaryDirectory);
+        var listener = new ApplicationLogTraceListener(log);
+
+        listener.WriteLine("[IME] Error:");
+        listener.WriteLine("System.InvalidOperationException: unexpected failure");
+        listener.WriteLine("   at Avalonia.FreeDesktop.DBusIme.IBus.IBusX11TextInputMethod.Start()");
+        listener.WriteLine("   at Avalonia.FreeDesktop.DBusCallQueue.Process() (IBusX11TextInputMethod #1)");
+
+        Assert.Equal(4, log.Entries.Count);
+        Assert.Contains(log.Entries, line => line.EndsWith(": [IME] Error:", StringComparison.Ordinal));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

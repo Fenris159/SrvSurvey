@@ -899,7 +899,7 @@
         <TextBlock Classes="page-title" Text="Data sources and migration" />
         <TextBlock Classes="muted"
                    TextWrapping="Wrap"
-                   Text="Bring settings, commander state, surveys, routes, journeys, caches, and every other legacy profile file into the cross-platform application." />
+                   Text="Bring settings, commander state, surveys, routes, journeys, caches, and other profile data from current-format or legacy SrvSurvey installations." />
       </StackPanel>
 
       <Border x:Name="JournalSourceCard"
@@ -959,7 +959,7 @@
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                 <TextBox x:Name="LegacyProfilePathTextBox"
                          Text="{Binding LegacyProfileSourcePath, Mode=TwoWay}"
-                         PlaceholderText="Path to the original SrvSurvey profile" />
+                         PlaceholderText="Path to an SrvSurvey profile or application-data folder" />
                 <Button Grid.Column="1"
                         Classes="secondary"
                         Click="ChooseLegacyProfileFolder_Click"
@@ -968,7 +968,7 @@
               <TextBlock Classes="muted"
                          FontSize="11"
                          TextWrapping="Wrap"
-                         Text="Automatic detection is available on Windows. Use Choose folder for copied profiles, older installs, or migration on Linux." />
+                         Text="Choose the SrvSurvey application-data folder, its cross-platform folder, or a legacy version folder. Current-format UI settings are imported when cross-platform-ui.json is beside the selected profile." />
             </StackPanel>
             <Button Grid.Column="1"
                     Classes="primary"
@@ -997,7 +997,7 @@
           <TextBlock Classes="muted"
                      FontSize="11"
                      TextWrapping="Wrap"
-                     Text="A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data." />
+                     Text="Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data." />
         </StackPanel>
       </Border>
           </StackPanel>

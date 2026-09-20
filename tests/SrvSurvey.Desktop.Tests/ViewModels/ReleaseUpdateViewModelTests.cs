@@ -40,7 +40,7 @@ public sealed class ReleaseUpdateViewModelTests
                     DownloadedBytes = 1_024,
                     TotalBytes = 1_024,
                 },
-                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.ValidatingArchive),
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.ValidatingPackage),
                 new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.PreparingRollback)
                 {
                     StagedFileCount = 12,
@@ -459,7 +459,7 @@ public sealed class ReleaseUpdateViewModelTests
                 new Version(2, 1, 3, 9),
                 null,
                 false,
-                new Uri("https://github.com/njthomson/SrvSurvey/releases"),
+                ReleaseUpdateService.StableReleaseUri,
                 null,
                 ReleaseChannel.Stable
             )
@@ -472,7 +472,7 @@ public sealed class ReleaseUpdateViewModelTests
         Assert.Equal("N/A", viewModel.LatestVersion);
         Assert.False(viewModel.IsUpdateAvailable);
         Assert.Contains("no stable SrvSurvey-XP release", viewModel.StatusMessage);
-        Assert.Contains("njthomson/SrvSurvey", viewModel.StatusMessage);
+        Assert.Contains("Fenris159/SrvSurvey", viewModel.StatusMessage);
     }
 
     [Fact]
@@ -496,7 +496,7 @@ public sealed class ReleaseUpdateViewModelTests
             await WaitUntilAsync(() => service.Channels.Contains(ReleaseChannel.Stable));
 
             Assert.False(settings.LoadUseDevelopmentReleases());
-            Assert.Contains("njthomson/SrvSurvey", viewModel.ReleaseSourceDescription);
+            Assert.Contains("Fenris159/SrvSurvey", viewModel.ReleaseSourceDescription);
             Assert.Contains(ReleaseChannel.Stable, service.Channels);
         }
         finally

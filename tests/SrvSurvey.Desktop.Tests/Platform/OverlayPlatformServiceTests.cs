@@ -206,6 +206,39 @@ public sealed class OverlayPlatformServiceTests
     }
 
     [Fact]
+    public void X11ErrorHandlerOnlyLogsRequestsFromDisplaysOwnedBySrvSurveyServices()
+    {
+        nint ownedDisplay = (nint)42;
+        X11OverlayPlatformService.RegisterErrorHandledDisplay(ownedDisplay);
+        try
+        {
+            Assert.True(X11OverlayPlatformService.ShouldLogXError(ownedDisplay));
+            Assert.False(X11OverlayPlatformService.ShouldLogXError((nint)43));
+        }
+        finally
+        {
+            X11OverlayPlatformService.UnregisterErrorHandledDisplay(ownedDisplay);
+        }
+    }
+
+    [Fact]
+    public void X11ErrorHandlerOnlyReportsExpectedRacesWhenCaptureFallsBack()
+    {
+        Assert.False(
+            X11OverlayPlatformService.ShouldReportXError(suppressExpectedLifecycleRace: true, requestCode: 20)
+        );
+        Assert.True(
+            X11OverlayPlatformService.ShouldReportXError(
+                suppressExpectedLifecycleRace: true,
+                requestCode: X11Native.GetImageRequest
+            )
+        );
+        Assert.True(
+            X11OverlayPlatformService.ShouldReportXError(suppressExpectedLifecycleRace: false, requestCode: 20)
+        );
+    }
+
+    [Fact]
     public void X11ExpectedErrorLoggingReportsFirstFailureAndPeriodicAggregate()
     {
         var limiter = new X11ExpectedErrorLogLimiter(TimeSpan.FromSeconds(30));

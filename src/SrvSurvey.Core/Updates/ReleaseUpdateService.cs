@@ -27,8 +27,12 @@ public sealed record ReleaseUpdateResult(
 
 public sealed class ReleaseUpdateService : IReleaseUpdateService
 {
-    public static readonly Uri DevelopmentReleaseUri = new("https://github.com/Fenris159/SrvSurvey/releases");
-    public static readonly Uri StableReleaseUri = new("https://github.com/njthomson/SrvSurvey/releases");
+    public static readonly Uri DevelopmentReleaseUri = new(
+        $"https://github.com/{CrossPlatformReleaseClient.ReleaseRepository}/releases"
+    );
+    public static readonly Uri StableReleaseUri = new(
+        $"https://github.com/{CrossPlatformReleaseClient.ReleaseRepository}/releases"
+    );
 
     private readonly ICrossPlatformReleaseClient releaseClient;
     private readonly string? runtimeIdentifier;

@@ -43,6 +43,13 @@ public sealed class RavenThemeServiceTests : IDisposable
             ["RavenInteractiveHoverBrush"] = "#3A3A3A",
             ["RavenFocusRingBrush"] = "#CCE6D59A",
             ["RavenModalScrimBrush"] = "#8C000000",
+            ["TitleBarBackgroundBrush"] = "#262626",
+            ["SystemControlBackgroundChromeMediumLowBrush"] = "#262626",
+            ["SystemControlForegroundBaseMediumBrush"] = "#3A3A3A",
+            ["CaptionButtonForeground"] = "#EDEDED",
+            ["SrvSurveyWindowChromeTextBrush"] = "#EDEDED",
+            ["CaptionButtonBackground"] = "#663A3A3A",
+            ["CaptionButtonBorderBrush"] = "#993A3A3A",
         };
 
         foreach (KeyValuePair<string, string> entry in expected)

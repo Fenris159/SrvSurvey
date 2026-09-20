@@ -30,6 +30,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     private readonly nuint atomType;
     private readonly nuint windowTypeAtom;
     private readonly nuint kdeOnScreenDisplayAtom;
+    private readonly nuint notificationWindowAtom;
     private readonly nuint normalWindowAtom;
 
     private X11OverlayPlatformService(X11OverlayPlatformContext context)
@@ -40,6 +41,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
         atomType = context.AtomType;
         windowTypeAtom = context.WindowTypeAtom;
         kdeOnScreenDisplayAtom = context.KdeOnScreenDisplayAtom;
+        notificationWindowAtom = context.NotificationWindowAtom;
         normalWindowAtom = context.NormalWindowAtom;
         Capabilities = OverlayPlatformCapabilities.ForHost(context.Host) with
         {
@@ -63,6 +65,8 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
         public nuint WindowTypeAtom { get; init; }
 
         public nuint KdeOnScreenDisplayAtom { get; init; }
+
+        public nuint NotificationWindowAtom { get; init; }
 
         public nuint NormalWindowAtom { get; init; }
     }
@@ -109,6 +113,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
         nuint atomType = 0;
         nuint windowTypeAtom = 0;
         nuint kdeOnScreenDisplayAtom = 0;
+        nuint notificationWindowAtom = 0;
         nuint normalWindowAtom = 0;
         X11OverlayStackingMode stackingMode = X11OverlayStackingMode.StandardTopmost;
         try
@@ -123,6 +128,11 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                 display,
                 X11OverlayWindowManagerPolicy.KdeOnScreenDisplayAtomName,
                 onlyIfExists: 1
+            );
+            notificationWindowAtom = X11Native.XInternAtom(
+                display,
+                X11OverlayWindowManagerPolicy.NotificationWindowAtomName,
+                onlyIfExists: 0
             );
             normalWindowAtom = X11Native.XInternAtom(
                 display,
@@ -160,6 +170,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                 AtomType = atomType,
                 WindowTypeAtom = windowTypeAtom,
                 KdeOnScreenDisplayAtom = kdeOnScreenDisplayAtom,
+                NotificationWindowAtom = notificationWindowAtom,
                 NormalWindowAtom = normalWindowAtom,
             }
         );
@@ -551,7 +562,13 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
         try
         {
-            LogXError(errorDisplay, errorEvent, suppressExpectedLifecycleRace);
+            if (
+                ShouldLogXError(errorDisplay)
+                && ShouldReportXError(suppressExpectedLifecycleRace, errorEvent.RequestCode)
+            )
+            {
+                LogXError(errorDisplay, errorEvent, suppressExpectedLifecycleRace);
+            }
         }
         catch (Exception)
         {
@@ -584,12 +601,16 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
             $"error {errorEvent.ErrorCode}, request "
             + $"{errorEvent.RequestCode}.{errorEvent.MinorCode}, resource "
             + $"{errorEvent.ResourceId}, display {errorDisplay}.";
+        nuint signatureResource =
+            suppressExpectedLifecycleRace && errorEvent.RequestCode != X11Native.GetImageRequest
+                ? 0
+                : errorEvent.ResourceId;
         var signature = new X11ExpectedErrorSignature(
             errorDisplay,
             errorEvent.ErrorCode,
             errorEvent.RequestCode,
             errorEvent.MinorCode,
-            errorEvent.ResourceId
+            signatureResource
         );
         X11ExpectedErrorLogDecision decision = (
             suppressExpectedLifecycleRace ? ExpectedErrorLogLimiter : UnexpectedErrorLogLimiter
@@ -601,10 +622,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
 
         if (suppressExpectedLifecycleRace)
         {
-            string category =
-                errorEvent.RequestCode == X11Native.GetImageRequest
-                    ? "X11 screen capture failed and was handed to the managed capture fallback"
-                    : "Ignoring an expected X11 window lifecycle race";
+            const string category = "X11 screen capture failed and was handed to the managed capture fallback";
             Trace.TraceInformation(
                 decision.SuppressedCount > 0
                     ? $"Suppressed {decision.SuppressedCount} repeated {category.ToLowerInvariant()} events; latest: {detail}"
@@ -634,6 +652,11 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
         ExpectedErrorLogLimiter.RemoveDisplay(errorDisplay);
         UnexpectedErrorLogLimiter.RemoveDisplay(errorDisplay);
     }
+
+    internal static bool ShouldLogXError(nint errorDisplay) => ErrorHandledDisplays.ContainsKey(errorDisplay);
+
+    internal static bool ShouldReportXError(bool suppressExpectedLifecycleRace, byte requestCode) =>
+        !suppressExpectedLifecycleRace || requestCode == X11Native.GetImageRequest;
 
     internal static bool ShouldSuppressXError(nint errorDisplay, byte errorCode, byte requestCode = 0)
     {
@@ -893,6 +916,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
         nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             stackingMode,
             kdeOnScreenDisplayAtom,
+            notificationWindowAtom,
             normalWindowAtom
         );
         if (windowTypes.Length == 0)

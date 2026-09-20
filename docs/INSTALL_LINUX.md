@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.49.3**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.50**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -37,48 +37,84 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage" \
-    "$HOME/Applications/SrvSurvey/"
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage" \
+    "$HOME/Applications/SrvSurvey/SrvSurvey.AppImage"
 cd "$HOME/Applications/SrvSurvey"
-chmod +x SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage
-./SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage
+chmod +x SrvSurvey.AppImage
+./SrvSurvey.AppImage
 ```
 
 To launch the standalone diagnostic replay controller from the same AppImage,
 pass its explicit dispatcher option:
 
 ```bash
-./SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage --replay-controller
+./SrvSurvey.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.49.3` with the downloaded version. Keep the AppImage in this folder;
-create a launcher or shortcut that points to it instead of moving internal
-files out of the AppImage.
+Replace `2.1.3.0-rc.50` with the downloaded version. Keeping the installed name
+as `SrvSurvey.AppImage` gives launchers and the in-application updater a stable
+path. Keep it in this folder instead of moving internal files out of the
+AppImage.
+
+## Update the AppImage
+
+SrvSurvey can update a running AppImage from its normal update card. The
+AppImage and its containing folder must be writable by the current user. The
+updater downloads the AppImage selected by the configured release channel,
+checks its release-index size and SHA-256 checksum, preserves the current image
+as a rollback copy, and starts the replacement. If the replacement does not
+confirm a healthy startup, SrvSurvey restores the previous AppImage.
+
+The update helper uses AppImage extract-and-run mode, so updating does not add
+a FUSE requirement. Published releases also include embedded AppImage update
+information and a matching `.zsync` asset for compatibility with standard
+AppImage update tools. If the installed file or folder is read-only, the update
+card keeps the manual download instructions available.
 
 If FUSE is unavailable, use AppImage's temporary extract-and-run fallback from
 the same folder:
 
 ```bash
 cd "$HOME/Applications/SrvSurvey"
-./SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage --appimage-extract-and-run
+./SrvSurvey.AppImage --appimage-extract-and-run
 ```
 
 ## Run the portable archive
 
-The extracted archive directory is the application's container folder. Keep
-all files together and run `SrvSurvey.Desktop` from that directory:
+The extracted archive directory is the application's container folder. Install
+it at a stable path so launchers and the in-application updater continue to
+point to the same location. Keep all files together and run
+`SrvSurvey.Desktop` from that directory:
 
 ```bash
-mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.49.3"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.49.3-linux-x64.tar.gz" \
-    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.49.3"
-cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.49.3"
+mkdir -p "$HOME/Applications/SrvSurvey/portable"
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.50-linux-x64.tar.gz" \
+    -C "$HOME/Applications/SrvSurvey/portable"
+cd "$HOME/Applications/SrvSurvey/portable"
 chmod +x SrvSurvey.Desktop
 ./SrvSurvey.Desktop
 ```
 
 Do not copy `SrvSurvey.Desktop` out by itself. It needs the managed assemblies,
 native libraries, and self-contained .NET runtime beside it.
+
+## Update the portable archive
+
+SrvSurvey can update an installation extracted from the portable archive using
+its normal update card. Keep the complete extracted package, including
+`release-package.json`, in one directory. The installation directory and its
+parent must be writable by the current user because the updater stages the new
+package beside the current directory, swaps the complete installation, and
+keeps the previous version temporarily for rollback. Allow enough free space
+for the download, staged package, current installation, and rollback copy.
+
+The updater downloads the `linux-x64` archive for the configured release
+channel, verifies its release-index size and SHA-256 checksum, validates the
+package manifest, and relaunches from the same stable path. If the replacement
+does not confirm a healthy startup, SrvSurvey restores the previous directory.
+No privilege-elevation prompt is provided on Linux. Install under your home
+directory for automatic updates; a root-owned or otherwise protected location
+such as `/opt` must be replaced manually by its administrator.
 
 ## Display-server modes
 
@@ -268,7 +304,7 @@ that supplies `secret-tool` if it is missing:
 # Ubuntu and Debian derivatives
 sudo apt install libsecret-tools
 
-# Arch Linux and Manjaro
+# Arch Linux, Manjaro, and CachyOS
 sudo pacman -S --needed libsecret
 ```
 
@@ -297,8 +333,10 @@ Common launch and library problems are listed below. For a fuller set of issues
 - `DISPLAY` is empty in a Wayland session: enable XWayland or log into an Xorg
   session; native Wayland is not the backend used by this package.
 - Frontier linking reports that secure token storage is unavailable: install
-  `secret-tool`, make sure the desktop keyring is unlocked, and restart
-  SrvSurvey. See [Frontier account linking](FRONTIER.md).
+  `libsecret-tools` on Debian/Ubuntu or `libsecret` on
+  Arch/Manjaro/CachyOS, make sure the desktop keyring is unlocked, and restart
+  SrvSurvey. These packages provide the required `secret-tool` executable. See
+  [Frontier account linking](FRONTIER.md).
 
 ## Reference documentation
 

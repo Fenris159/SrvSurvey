@@ -29,6 +29,35 @@ public sealed class ReleaseInstallationWorkflowTests
     }
 
     [Fact]
+    public async Task AppImagePackageSkipsArchiveStagingAndUsesImageAsHelper()
+    {
+        var fixture = new WorkflowFixture();
+        var request = new ReleaseInstallationRequest(
+            fixture.Request.Version,
+            fixture.Request.Package with
+            {
+                RuntimeIdentifier = CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier,
+                ArchiveName = "SrvSurvey-XP-2.1.3.1-x86_64.AppImage",
+                ArchiveType = "appimage",
+            }
+        );
+
+        ReleaseInstallationWorkflowResult result = await fixture.CreateAppImageWorkflow().ExecuteAsync(request);
+
+        Assert.Equal(ReleaseInstallationWorkflowStatus.HandoffStarted, result.Status);
+        Assert.Equal(
+            ["scan:BeforeDownload", "download", "prepare-appimage", "scan:BeforeHandoff", "handoff", "shutdown"],
+            fixture.Calls
+        );
+        Assert.DoesNotContain("stage", fixture.Calls);
+        Assert.DoesNotContain("prepare", fixture.Calls);
+        Assert.Equal(
+            Path.Combine(Path.GetFullPath("C:\\data"), request.Package.ArchiveName),
+            fixture.HandoffStagedEntryPoint
+        );
+    }
+
+    [Fact]
     public async Task DecliningInitialInstanceConfirmationStopsBeforeDownload()
     {
         var fixture = new WorkflowFixture
@@ -514,6 +543,8 @@ public sealed class ReleaseInstallationWorkflowTests
 
         public ApplicationUpdateHandoffResult HandoffResult { get; set; }
 
+        public string? HandoffStagedEntryPoint { get; set; }
+
         public ReleaseInstallationCapability Capability { get; init; } =
             new(ReleaseInstallationCapabilityStatus.Supported);
 
@@ -561,6 +592,15 @@ public sealed class ReleaseInstallationWorkflowTests
             );
         }
 
+        public ReleaseInstallationWorkflow CreateAppImageWorkflow()
+        {
+            return new ReleaseInstallationWorkflow(
+                CreateAdapters(),
+                CreateContext("C:\\SrvSurvey", isAppImage: true),
+                new ReleaseInstallationWorkflowSeams(new OutcomeMonitor(this), () => false, _ => false, Capability)
+            );
+        }
+
         public ReleaseInstallationWorkflow CreateWorkflowWithDetectedCapability(
             string installationDirectory,
             bool isAppImage
@@ -577,7 +617,8 @@ public sealed class ReleaseInstallationWorkflowTests
                 new Preparer(this),
                 new Handoff(this),
                 new InstanceManager(this),
-                ConfirmAsync
+                ConfirmAsync,
+                new AppImagePreparer(this)
             );
         }
 
@@ -588,7 +629,7 @@ public sealed class ReleaseInstallationWorkflowTests
                 installationDirectory,
                 Preparation.StartupArguments,
                 ShutdownAsync,
-                isAppImage
+                isAppImage ? Path.Combine(installationDirectory, "missing.AppImage") : null
             );
         }
 
@@ -605,6 +646,7 @@ public sealed class ReleaseInstallationWorkflowTests
 
         private Task ShutdownAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Calls.Add("shutdown");
             return ShutdownFailure is null ? Task.CompletedTask : Task.FromException(ShutdownFailure);
         }
@@ -662,7 +704,12 @@ public sealed class ReleaseInstallationWorkflowTests
                 }
 
                 progress?.Report(new ReleasePackageDownloadProgress(1_024, 1_024));
-                return new ReleasePackageDownloadResult("C:\\data\\SrvSurvey.zip", true, 1_024, package.Sha256);
+                return new ReleasePackageDownloadResult(
+                    Path.Combine(dataDirectory, package.ArchiveName),
+                    true,
+                    1_024,
+                    package.Sha256
+                );
             }
         }
 
@@ -729,6 +776,42 @@ public sealed class ReleaseInstallationWorkflowTests
             }
         }
 
+        private sealed class AppImagePreparer(WorkflowFixture owner) : IAppImageReleaseInstallationPreparer
+        {
+            public Task<ReleaseInstallationPreparation> PrepareAsync(
+                ReleaseVersion version,
+                string readyAppImagePath,
+                string expectedSha256,
+                string installationPath,
+                IReadOnlyList<string> startupArguments,
+                CancellationToken cancellationToken = default
+            )
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                owner.Calls.Add("prepare-appimage");
+                return Task.FromResult(
+                    owner.Preparation with
+                    {
+                        RuntimeIdentifier = CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier,
+                        InstallationDirectory = Path.GetDirectoryName(installationPath)!,
+                        CandidateDirectory = readyAppImagePath,
+                        EntryPoint = Path.GetFileName(installationPath),
+                        Kind = ReleaseInstallationKind.AppImage,
+                    }
+                );
+            }
+
+            public Task AbortAsync(
+                ReleaseInstallationPreparation preparation,
+                CancellationToken cancellationToken = default
+            )
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                owner.Calls.Add("abort-appimage");
+                return Task.CompletedTask;
+            }
+        }
+
         private sealed class Handoff(WorkflowFixture owner) : IApplicationUpdateHandoff
         {
             public Task<ApplicationUpdateHandoffResult> StartHelperAttemptAsync(
@@ -740,7 +823,18 @@ public sealed class ReleaseInstallationWorkflowTests
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 owner.Calls.Add("handoff");
-                return Task.FromResult(owner.HandoffResult);
+                owner.HandoffStagedEntryPoint = stagedEntryPoint;
+                return Task.FromResult(
+                    owner.HandoffResult with
+                    {
+                        Plan = owner.HandoffResult.Plan is null
+                            ? null
+                            : owner.HandoffResult.Plan with
+                            {
+                                Preparation = preparation,
+                            },
+                    }
+                );
             }
         }
 

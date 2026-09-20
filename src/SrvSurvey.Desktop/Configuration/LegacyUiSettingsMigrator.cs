@@ -51,6 +51,16 @@ public sealed class LegacyUiSettingsMigrator
                 return MigrateNewPreferencesIfMissing(legacy, existing, store);
             }
 
+            string expectedBackupPath = Path.Combine(manifest.BackupDirectory, BackupFileName);
+            if (File.Exists(expectedBackupPath))
+            {
+                // Current-profile imports activate a complete Avalonia UI
+                // document after creating this verified backup. Preserve that
+                // imported document and only fill preferences introduced
+                // since it was written.
+                return MigrateNewPreferencesIfMissing(legacy, existing, store, manifest, expectedBackupPath);
+            }
+
             string? backupPath = BackupExistingSettings(paths.UiSettingsPath, manifest);
             int mappedCount = 0;
             store.Update(root =>
@@ -289,13 +299,7 @@ public sealed class LegacyUiSettingsMigrator
                 mappedCount += MapCodexImages(legacy, root, manifest);
                 mappedCount += MapSection(legacy, root, "Travel", [("logDockToDockTimes", "LogDockToDockTimes")]);
                 mappedCount += MapInput(legacy, root);
-                root["LegacyImport"] = new JsonObject
-                {
-                    ["ManifestVersion"] = manifest.Version,
-                    ["ImportedAtUtc"] = manifest.ImportedAtUtc,
-                    ["SourceDirectory"] = manifest.SourceDirectory,
-                    ["MappedPreferenceCount"] = mappedCount,
-                };
+                WriteMigrationMarker(root, manifest, mappedCount);
             });
 
             return new LegacyUiSettingsMigrationResult(true, mappedCount, backupPath, null);
@@ -334,7 +338,9 @@ public sealed class LegacyUiSettingsMigrator
     private static LegacyUiSettingsMigrationResult MigrateNewPreferencesIfMissing(
         JsonObject legacy,
         JsonObject existing,
-        UiSettingsDocumentStore store
+        UiSettingsDocumentStore store,
+        ProfileImportManifest? manifest = null,
+        string? backupPath = null
     )
     {
         var mappings = new (string Section, string Legacy, string Current)[]
@@ -360,7 +366,7 @@ public sealed class LegacyUiSettingsMigrator
         bool shouldMapOverlayScale =
             legacy["plotterScale"] is not null
             && (existing["OverlayScale"] is not JsonObject overlayScale || !overlayScale.ContainsKey("Index"));
-        if (pending.Length == 0 && !shouldMapColor && !shouldMapOverlayScale)
+        if (pending.Length == 0 && !shouldMapColor && !shouldMapOverlayScale && manifest is null)
         {
             return LegacyUiSettingsMigrationResult.NotRequired;
         }
@@ -382,10 +388,26 @@ public sealed class LegacyUiSettingsMigrator
             {
                 mappedCount += MapOverlayScale(legacy, root);
             }
+
+            if (manifest is not null)
+            {
+                WriteMigrationMarker(root, manifest, mappedCount);
+            }
         });
-        return mappedCount == 0
+        return mappedCount == 0 && manifest is null
             ? LegacyUiSettingsMigrationResult.NotRequired
-            : new LegacyUiSettingsMigrationResult(true, mappedCount, null, null);
+            : new LegacyUiSettingsMigrationResult(true, mappedCount, backupPath, null);
+    }
+
+    private static void WriteMigrationMarker(JsonObject root, ProfileImportManifest manifest, int mappedCount)
+    {
+        root["LegacyImport"] = new JsonObject
+        {
+            ["ManifestVersion"] = manifest.Version,
+            ["ImportedAtUtc"] = manifest.ImportedAtUtc,
+            ["SourceDirectory"] = manifest.SourceDirectory,
+            ["MappedPreferenceCount"] = mappedCount,
+        };
     }
 
     private static int MapFirstFootfallInference(JsonObject legacy, JsonObject target)
@@ -772,10 +794,7 @@ public sealed class LegacyUiSettingsMigrator
 
         Directory.CreateDirectory(manifest.BackupDirectory);
         string backupPath = Path.Combine(manifest.BackupDirectory, BackupFileName);
-        if (!File.Exists(backupPath))
-        {
-            File.Copy(settingsPath, backupPath, false);
-        }
+        File.Copy(settingsPath, backupPath, false);
 
         string sourceHash = ComputeSha256(settingsPath);
         string backupHash = ComputeSha256(backupPath);

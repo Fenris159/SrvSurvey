@@ -39,6 +39,7 @@
     <BoxShadows x:Key="RavenWarningInsetShadow">inset 0 0 10 2 #99F7C948</BoxShadows>
     <BoxShadows x:Key="RavenFloatingPanelShadow">0 8 24 0 #66000000</BoxShadows>
     <SolidColorBrush x:Key="RavenDangerBrush" Color="#FF7B72" />
+    <SolidColorBrush x:Key="SrvSurveyWindowChromeTextBrush" Color="#E5E5E5" />
     <!-- Stable legacy-overlay fallbacks. RavenThemeService replaces these
          from theme.json before normal runtime overlays are opened. -->
     <SolidColorBrush x:Key="RavenOverlayWindowBrush" Color="#000000" />
@@ -169,6 +170,9 @@
     <Style Selector="Window">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
       <Setter Property="Icon" Value="/Assets/logo.ico" />
+    </Style>
+    <Style Selector="WindowDrawnDecorations TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource SrvSurveyWindowChromeTextBrush}" />
     </Style>
     <Style Selector="ScrollViewer">
       <Setter Property="IsScrollChainingEnabled" Value="False" />

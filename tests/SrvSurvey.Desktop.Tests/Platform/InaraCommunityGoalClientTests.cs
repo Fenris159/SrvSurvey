@@ -97,6 +97,55 @@ public sealed class InaraCommunityGoalClientTests
     }
 
     [Fact]
+    public void ApiHeaderFailureIncludesInaraExplanation()
+    {
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
+            InaraCommunityGoalClient.ParseResponse(
+                "{\"header\":{\"eventStatus\":400,\"eventStatusText\":\"Invalid API key.\"}}",
+                DateTimeOffset.Parse("2026-09-19T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+            )
+        );
+
+        Assert.Contains("Invalid API key.", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PersonalApiKeyReplacesRejectedApplicationKeyForSubsequentReads()
+    {
+        string root = CreateTemporaryDirectory();
+        try
+        {
+            var now = DateTimeOffset.Parse(
+                "2026-09-19T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
+            var handler = new RecordingHandler(_ => Json(HttpStatusCode.OK, SuccessfulResponse));
+            var client = new InaraCommunityGoalClient(
+                new HttpClient(handler),
+                "application-key",
+                "2.1.3",
+                Path.Combine(root, "community-goals.json"),
+                () => now,
+                TimeSpan.Zero
+            );
+
+            _ = await client.GetRecentAsync();
+            client.SetPersonalApiKey("commander-key");
+            _ = await client.GetRecentAsync();
+
+            Assert.Equal(2, handler.Bodies.Count);
+            using var first = JsonDocument.Parse(handler.Bodies[0]);
+            using var second = JsonDocument.Parse(handler.Bodies[1]);
+            Assert.Equal("application-key", first.RootElement.GetProperty("header").GetProperty("APIkey").GetString());
+            Assert.Equal("commander-key", second.RootElement.GetProperty("header").GetProperty("APIkey").GetString());
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public void TemporaryCacheCleanupDoesNotMaskPrimaryFailure()
     {
         var primaryFailure = new InvalidOperationException("primary save failure");

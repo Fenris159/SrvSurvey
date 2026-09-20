@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -53,11 +54,20 @@ public sealed partial class MainWindow : Window
         }
         Activated += (_, _) => InputContext.SetActive(true);
         Deactivated += (_, _) => InputContext.SetActive(false);
+        AddHandler(PointerPressedEvent, OnWindowPointerPressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(GotFocusEvent, OnElementGotFocus, RoutingStrategies.Bubble, handledEventsToo: true);
         trayIcon = CreateTrayIcon();
     }
 
     public ApplicationInputContext InputContext { get; }
+
+    private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
+    {
+        if (!IsActive)
+        {
+            Activate();
+        }
+    }
 
     private void ToggleSidebar_Click(object? sender, RoutedEventArgs eventArgs)
     {
@@ -126,6 +136,7 @@ public sealed partial class MainWindow : Window
     private void OnOpened(object? sender, EventArgs eventArgs)
     {
         Opened -= OnOpened;
+        MigrateLegacyOverlayScales();
         if (WindowState == WindowState.Normal)
         {
             lastNormalPosition = Position;
@@ -140,6 +151,24 @@ public sealed partial class MainWindow : Window
             RunMonitorAsync,
             exception => Program.ApplicationLog?.Append("Journal monitor stopped unexpectedly: " + exception)
         );
+    }
+
+    private void MigrateLegacyOverlayScales()
+    {
+        double renderScaling = Screens.ScreenFromWindow(this)?.Scaling ?? RenderScaling;
+        try
+        {
+            string status = viewModel.MigrateLegacyOverlayScales(renderScaling);
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                Program.ApplicationLog?.Append(status);
+            }
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            Program.ApplicationLog?.Append("Legacy overlay scales were not migrated: " + exception.Message);
+        }
     }
 
     internal void NavigateToReleaseUpdates()

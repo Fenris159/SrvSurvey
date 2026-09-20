@@ -69,6 +69,56 @@ public sealed class LegacyProfileLocatorTests : IDisposable
         Assert.Equal(Path.GetFullPath(populatedProfile), Assert.Single(result).Path);
     }
 
+    [Fact]
+    public void ManualSelectionResolvesTheLegacyProfileInsideAWindowsApplicationDataRoot()
+    {
+        string selectedRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
+        string legacyProfile = Path.Combine(selectedRoot, "SrvSurvey", "1.1.0.0");
+        Directory.CreateDirectory(legacyProfile);
+        File.WriteAllText(Path.Combine(legacyProfile, "settings.json"), "{}");
+        Directory.CreateDirectory(Path.Combine(selectedRoot, "cross-platform"));
+        Directory.CreateDirectory(Path.Combine(selectedRoot, "legacy-backups"));
+
+        string result = LegacyProfileLocator.ResolveManualSelection(selectedRoot);
+
+        Assert.Equal(Path.GetFullPath(legacyProfile), result);
+    }
+
+    [Fact]
+    public void ManualSelectionPrefersAPopulatedCrossPlatformProfileAndFindsItsUiSettings()
+    {
+        string selectedRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
+        string currentProfile = Path.Combine(selectedRoot, "cross-platform");
+        string legacyProfile = Path.Combine(selectedRoot, "SrvSurvey", "1.1.0.0");
+        Directory.CreateDirectory(currentProfile);
+        Directory.CreateDirectory(legacyProfile);
+        File.WriteAllText(Path.Combine(currentProfile, "F123-live.json"), "{}");
+        File.WriteAllText(Path.Combine(legacyProfile, "settings.json"), "{}");
+        string uiSettings = Path.Combine(selectedRoot, "cross-platform-ui.json");
+        File.WriteAllText(uiSettings, "{}");
+
+        ProfileImportSource result = LegacyProfileLocator.ResolveManualSelectionSource(selectedRoot);
+
+        Assert.Equal(Path.GetFullPath(currentProfile), result.DataDirectory);
+        Assert.Equal(ProfileImportSourceKind.CrossPlatform, result.Kind);
+        Assert.Equal(Path.GetFullPath(uiSettings), result.UiSettingsPath);
+    }
+
+    [Fact]
+    public void ManualSelectionRecognizesTheCrossPlatformDirectoryItself()
+    {
+        string selectedRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
+        string currentProfile = Path.Combine(selectedRoot, "cross-platform");
+        Directory.CreateDirectory(currentProfile);
+        File.WriteAllText(Path.Combine(currentProfile, "F123-live.json"), "{}");
+
+        ProfileImportSource result = LegacyProfileLocator.ResolveManualSelectionSource(currentProfile);
+
+        Assert.Equal(Path.GetFullPath(currentProfile), result.DataDirectory);
+        Assert.Equal(ProfileImportSourceKind.CrossPlatform, result.Kind);
+        Assert.Null(result.UiSettingsPath);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

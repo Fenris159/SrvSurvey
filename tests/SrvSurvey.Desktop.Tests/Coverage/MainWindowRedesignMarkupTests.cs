@@ -73,6 +73,37 @@ public sealed class MainWindowRedesignMarkupTests
     }
 
     [Fact]
+    public void NavigationGroupHeadingsDoNotOpenRedundantPopupTooltips()
+    {
+        XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
+        XElement[] headings = mainWindow
+            .Descendants()
+            .Where(element =>
+                element.Name.LocalName == "Button" && element.Attribute("Classes")?.Value == "nav-group-heading"
+            )
+            .ToArray();
+
+        Assert.Equal(3, headings.Length);
+        Assert.All(headings, heading => Assert.Null(heading.Attribute("ToolTip.Tip")));
+    }
+
+    [Fact]
+    public void MainWindowControlsKeepContextualTooltips()
+    {
+        XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
+
+        string[] tooltips = mainWindow
+            .Descendants()
+            .Attributes("ToolTip.Tip")
+            .Select(attribute => attribute.Value)
+            .ToArray();
+
+        Assert.Contains("{Binding Description}", tooltips);
+        Assert.Contains("Open category overlay settings", tooltips);
+        Assert.Contains("{Binding SidebarToggleLabel}", tooltips);
+    }
+
+    [Fact]
     public void NavigationGroupsAnimateHeightAndOpacityUnlessMotionIsReduced()
     {
         XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
