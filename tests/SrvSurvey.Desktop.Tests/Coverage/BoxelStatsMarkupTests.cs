@@ -5,7 +5,7 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 public sealed class BoxelStatsMarkupTests
 {
     [Fact]
-    public void BrowserRowsKeepPrefixAndMetricsOnSeparateReadableLines()
+    public void BrowserRowsUseTheSameWrappingStackAsRecentRows()
     {
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "BoxelStatsWindow.axaml")
@@ -13,20 +13,18 @@ public sealed class BoxelStatsMarkupTests
         XElement row = document
             .Descendants()
             .Single(element =>
-                element.Name.LocalName == "Grid" && element.Attribute("Classes")?.Value == "boxel-stats-browser-row"
+                element.Name.LocalName == "StackPanel"
+                && element.Attribute("Classes")?.Value == "boxel-stats-browser-row"
             );
         XElement prefix = row.Elements()
             .Single(element =>
                 element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "{Binding Prefix}"
             );
 
-        Assert.Equal("Auto,Auto", row.Attribute("RowDefinitions")?.Value);
-        Assert.Null(row.Attribute("ColumnDefinitions"));
-        Assert.Equal("NoWrap", prefix.Attribute("TextWrapping")?.Value);
-        Assert.Equal("CharacterEllipsis", prefix.Attribute("TextTrimming")?.Value);
+        Assert.Equal("Wrap", prefix.Attribute("TextWrapping")?.Value);
         Assert.Contains(
             row.Elements(),
-            element => element.Name.LocalName == "Grid" && element.Attribute("Grid.Row")?.Value == "1"
+            element => element.Name.LocalName == "Grid" && element.Attribute("ColumnDefinitions")?.Value == "*,Auto"
         );
     }
 

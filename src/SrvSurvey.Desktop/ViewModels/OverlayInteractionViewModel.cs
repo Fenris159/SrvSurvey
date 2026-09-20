@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Avalonia;
@@ -12,10 +11,6 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDisposable
 {
-    private static readonly OverlayScaleOption[] IndividualScaleOptions = OverlayScaleCatalog
-        .Options.Where(option => option.AbsoluteScale is not null)
-        .OrderBy(option => option.AbsoluteScale)
-        .ToArray();
     private readonly IOverlayPlatformService? platform;
     private readonly IGameWindowTracker? gameWindowTracker;
     private readonly LegacyOverlayLayoutStore? layoutStore;
@@ -28,6 +23,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private readonly DelegateCommand snapToCenterCommand;
     private readonly DelegateCommand saveCommand;
     private readonly DelegateCommand cancelCommand;
+    private readonly DelegateCommand toggleCategoryMenuCommand;
+    private readonly DelegateCommand selectCategoryCommand;
+    private readonly DelegateCommand toggleTypographySettingsCommand;
+    private readonly DelegateCommand resetTypographyCommand;
+    private readonly DelegateCommand resetOverlaySizeCommand;
     private OverlayPositionEditSession? editSession;
     private OverlayPositionEditSession? liveEditSession;
     private IDisposable? cursorVisibilitySession;
@@ -43,7 +43,9 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private bool useGlobalOverlayOpacity = true;
     private double selectedOverlayOpacityPercent = 100d;
     private bool useGlobalOverlayScale = true;
-    private double selectedOverlayScaleOrdinal;
+    private double selectedOverlayScalePercent;
+    private bool isCategoryMenuOpen;
+    private bool isTypographySettingsOpen;
 
     public OverlayInteractionViewModel(OverlayPlatformCapabilities capabilities)
     {
@@ -54,10 +56,21 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         snapToCenterCommand = new DelegateCommand(SnapCurrentCategoryToCenter, () => IsEditing);
         saveCommand = new DelegateCommand(Save, () => IsEditing);
         cancelCommand = new DelegateCommand(Cancel, () => IsEditing);
+        toggleCategoryMenuCommand = new DelegateCommand(ToggleCategoryMenu, () => IsEditing);
+        selectCategoryCommand = new DelegateCommand(SelectCategory, () => IsEditing);
+        toggleTypographySettingsCommand = new DelegateCommand(ToggleTypographySettings, () => IsOverlaySettingsOpen);
+        resetTypographyCommand = new DelegateCommand(ResetTypography, () => IsOverlaySettingsOpen);
+        resetOverlaySizeCommand = new DelegateCommand(ResetOverlaySize, () => IsOverlaySettingsOpen);
         ToggleCommand = toggleCommand;
         SnapToCenterCommand = snapToCenterCommand;
         SaveCommand = saveCommand;
         CancelCommand = cancelCommand;
+        ToggleCategoryMenuCommand = toggleCategoryMenuCommand;
+        SelectCategoryCommand = selectCategoryCommand;
+        ToggleTypographySettingsCommand = toggleTypographySettingsCommand;
+        ResetTypographyCommand = resetTypographyCommand;
+        ResetOverlaySizeCommand = resetOverlaySizeCommand;
+        TypographyRoles = CreateTypographyRoles();
         statusMessage = IsAvailable
             ? "Overlay position previews use an isolated simulated game state."
             : Capabilities.StatusText;
@@ -85,14 +98,26 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         snapToCenterCommand = new DelegateCommand(SnapCurrentCategoryToCenter, () => IsEditing);
         saveCommand = new DelegateCommand(Save, () => IsEditing);
         cancelCommand = new DelegateCommand(Cancel, () => IsEditing);
+        toggleCategoryMenuCommand = new DelegateCommand(ToggleCategoryMenu, () => IsEditing);
+        selectCategoryCommand = new DelegateCommand(SelectCategory, () => IsEditing);
+        toggleTypographySettingsCommand = new DelegateCommand(ToggleTypographySettings, () => IsOverlaySettingsOpen);
+        resetTypographyCommand = new DelegateCommand(ResetTypography, () => IsOverlaySettingsOpen);
+        resetOverlaySizeCommand = new DelegateCommand(ResetOverlaySize, () => IsOverlaySettingsOpen);
         ToggleCommand = toggleCommand;
         SnapToCenterCommand = snapToCenterCommand;
         SaveCommand = saveCommand;
         CancelCommand = cancelCommand;
+        ToggleCategoryMenuCommand = toggleCategoryMenuCommand;
+        SelectCategoryCommand = selectCategoryCommand;
+        ToggleTypographySettingsCommand = toggleTypographySettingsCommand;
+        ResetTypographyCommand = resetTypographyCommand;
+        ResetOverlaySizeCommand = resetOverlaySizeCommand;
+        TypographyRoles = CreateTypographyRoles();
         statusMessage = IsAvailable
             ? "Choose Edit Overlay Positions to load categorized previews from an isolated simulated game state. Elite does not need to be running."
             : Capabilities.StatusText;
         this.editorHost.PreviewMoved += OnPreviewMoved;
+        this.editorHost.PreviewSizeChanged += OnPreviewSizeChanged;
         this.editorHost.Closed += OnEditorClosed;
         this.activeLayout.ScaleIndexChanged += OnOverlayScaleIndexChanged;
     }
@@ -110,6 +135,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         set
         {
             ArgumentNullException.ThrowIfNull(value);
+            IsCategoryMenuOpen = false;
             if (!SetField(ref selectedCategory, value))
             {
                 return;
@@ -148,6 +174,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             snapToCenterCommand.RaiseCanExecuteChanged();
             saveCommand.RaiseCanExecuteChanged();
             cancelCommand.RaiseCanExecuteChanged();
+            toggleCategoryMenuCommand.RaiseCanExecuteChanged();
+            selectCategoryCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -222,19 +250,33 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     public bool IsOverlaySettingsOpen => selectedOverlaySettingsPlotterName is not null;
 
+    public bool IsCategoryMenuOpen
+    {
+        get => isCategoryMenuOpen;
+        private set => SetField(ref isCategoryMenuOpen, value);
+    }
+
+    public bool IsTypographySettingsOpen
+    {
+        get => isTypographySettingsOpen;
+        set => SetField(ref isTypographySettingsOpen, value);
+    }
+
+    public IReadOnlyList<OverlayTypographyRoleViewModel> TypographyRoles { get; }
+
     public string SelectedOverlaySettingsTitle
     {
         get
         {
             if (selectedOverlaySettingsPlotterName is null)
             {
-                return "Overlay opacity and scale";
+                return "Overlay appearance";
             }
 
             OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.First(candidate =>
                 candidate.Name == selectedOverlaySettingsPlotterName
             );
-            return $"{definition.DisplayName} opacity and scale";
+            return $"{definition.DisplayName} appearance";
         }
     }
 
@@ -283,17 +325,19 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 return;
             }
 
-            SetSelectedOverlayScale(value ? null : GetScaleOption((int)Math.Round(SelectedOverlayScaleOrdinal)).Index);
+            SetSelectedOverlayScale(
+                value ? null : OverlayScaleCatalog.GetIndex((int)Math.Round(SelectedOverlayScalePercent))
+            );
         }
     }
 
-    public double SelectedOverlayScaleOrdinal
+    public double SelectedOverlayScalePercent
     {
-        get => selectedOverlayScaleOrdinal;
+        get => selectedOverlayScalePercent;
         set
         {
-            double normalized = Math.Clamp(Math.Round(value), 0, SelectedOverlayScaleMaximum);
-            if (!SetField(ref selectedOverlayScaleOrdinal, normalized))
+            int normalized = OverlayScaleCatalog.NormalizePercent(value);
+            if (!SetField(ref selectedOverlayScalePercent, normalized))
             {
                 return;
             }
@@ -301,22 +345,20 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             OnPropertyChanged(nameof(SelectedOverlayScaleLabel));
             if (!updatingSelectedOverlaySettings && !UseGlobalOverlayScale)
             {
-                SetSelectedOverlayScale(GetScaleOption((int)normalized).Index);
+                SetSelectedOverlayScale(OverlayScaleCatalog.GetIndex(normalized));
             }
         }
     }
-
-    public double SelectedOverlayScaleMaximum { get; } = IndividualScaleOptions.Length - 1;
 
     public string SelectedOverlayScaleLabel
     {
         get
         {
-            OverlayScaleOption option =
+            int percent =
                 UseGlobalOverlayScale && editSession is not null
-                    ? OverlayScaleCatalog.Options.Single(candidate => candidate.Index == editSession.ScaleIndex)
-                    : GetScaleOption((int)Math.Round(SelectedOverlayScaleOrdinal));
-            return option.AbsoluteScale is { } scale ? scale.ToString("0%", CultureInfo.CurrentCulture) : "OS";
+                    ? OverlayScaleCatalog.GetPercent(editSession.ScaleIndex)
+                    : (int)SelectedOverlayScalePercent;
+            return OverlayScaleCatalog.FormatPercent(percent);
         }
     }
 
@@ -328,6 +370,16 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     public ICommand CancelCommand { get; }
 
+    public ICommand ToggleCategoryMenuCommand { get; }
+
+    public ICommand SelectCategoryCommand { get; }
+
+    public ICommand ToggleTypographySettingsCommand { get; }
+
+    public ICommand ResetTypographyCommand { get; }
+
+    public ICommand ResetOverlaySizeCommand { get; }
+
     public void OpenOverlaySettings(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
@@ -335,6 +387,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         {
             return;
         }
+
+        IsCategoryMenuOpen = false;
 
         OverlayLayoutDefinition? definition =
             OverlayLayoutCatalog.Supported.FirstOrDefault(candidate =>
@@ -351,9 +405,12 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         useGlobalOverlayOpacity = placement.Opacity is null;
         selectedOverlayOpacityPercent = editSession.GetOpacity(plotterName) * 100d;
         useGlobalOverlayScale = placement.ScaleIndex is null;
-        selectedOverlayScaleOrdinal = GetScaleOptionOrdinal(
-            placement.ScaleIndex ?? GetIndividualFallback(editSession.ScaleIndex).Index
-        );
+        selectedOverlayScalePercent = OverlayScaleCatalog.GetPercent(placement.ScaleIndex ?? editSession.ScaleIndex);
+        OverlayTypographyScale typographyScale = editSession.GetTypographyScale(plotterName);
+        foreach (OverlayTypographyRoleViewModel role in TypographyRoles)
+        {
+            role.Load(typographyScale.GetPercent(role.Role));
+        }
         updatingSelectedOverlaySettings = false;
         OnPropertyChanged(nameof(IsOverlaySettingsOpen));
         OnPropertyChanged(nameof(SelectedOverlaySettingsTitle));
@@ -361,8 +418,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         OnPropertyChanged(nameof(SelectedOverlayOpacityPercent));
         OnPropertyChanged(nameof(SelectedOverlayOpacityLabel));
         OnPropertyChanged(nameof(UseGlobalOverlayScale));
-        OnPropertyChanged(nameof(SelectedOverlayScaleOrdinal));
+        OnPropertyChanged(nameof(SelectedOverlayScalePercent));
         OnPropertyChanged(nameof(SelectedOverlayScaleLabel));
+        toggleTypographySettingsCommand.RaiseCanExecuteChanged();
+        resetTypographyCommand.RaiseCanExecuteChanged();
+        resetOverlaySizeCommand.RaiseCanExecuteChanged();
         StatusMessage = $"Editing {definition.DisplayName}. Use the top ✓ to save all changes and close the editor.";
     }
 
@@ -510,7 +570,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
             EndSession(closeHost: true, restoreRuntimeWindows: true);
             StatusMessage =
-                $"Saved {result.UpdatedPlacementCount:N0} overlay position/opacity override(s), including scale settings"
+                $"Saved {result.UpdatedPlacementCount:N0} overlay position and appearance override(s)"
                 + (saveDefaultOpacity ? " and the global opacity." : ".")
                 + (saveMiningCalibration ? " Saved mining HUD calibration." : string.Empty)
                 + (result.BackupPath is null ? string.Empty : $" Previous layout backup: {result.BackupPath}");
@@ -524,7 +584,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                         or ArgumentException
             )
         {
-            StatusMessage = "Overlay positions, opacity, and scale were not saved: " + exception.Message;
+            StatusMessage = "Overlay positions and appearance were not saved: " + exception.Message;
         }
     }
 
@@ -994,6 +1054,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         if (editorHost is not null)
         {
             editorHost.PreviewMoved -= OnPreviewMoved;
+            editorHost.PreviewSizeChanged -= OnPreviewSizeChanged;
             editorHost.Closed -= OnEditorClosed;
             editorHost.Close(restoreRuntimeWindows: false);
             editorHost.Dispose();
@@ -1029,7 +1090,12 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             LegacyVerticalAnchor.Bottom => gameBounds.Bottom - overlaySize.Height - position.Y,
             _ => position.Y,
         };
-        return original with { HorizontalOffset = horizontalOffset, VerticalOffset = verticalOffset };
+        return original with
+        {
+            HorizontalOffset = horizontalOffset,
+            VerticalOffset = verticalOffset,
+            PositionReference = new OverlayPositionReference(gameBounds.Width, gameBounds.Height),
+        };
     }
 
     private void OnPreviewMoved(object? sender, OverlayPreviewMovedEventArgs eventArgs)
@@ -1051,6 +1117,19 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             )
             .DisplayName;
         StatusMessage = $"Moved {displayName}. Use ✓ to save all changes or ✕ to cancel them.";
+    }
+
+    private void OnPreviewSizeChanged(object? sender, OverlayPreviewSizeChangedEventArgs eventArgs)
+    {
+        if (!IsEditing || editSession is null || !editSession.SetSizeOverride(eventArgs.PlotterName, eventArgs.Size))
+        {
+            return;
+        }
+
+        SynchronizeLiveOverlayFromPreview(eventArgs.PlotterName);
+        string displayName = OverlayLayoutCatalog.GetRequired(eventArgs.PlotterName).DisplayName;
+        StatusMessage =
+            $"Resized {displayName} to {eventArgs.Size.Width:N0} × {eventArgs.Size.Height:N0}. Use ✓ to save all changes or ✕ to cancel them.";
     }
 
     private void SynchronizeLiveOverlayFromPreview(string plotterName)
@@ -1102,8 +1181,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         editorHost?.RefreshPreviewScales(editSession);
         if (IsOverlaySettingsOpen && UseGlobalOverlayScale)
         {
-            selectedOverlayScaleOrdinal = GetScaleOptionOrdinal(GetIndividualFallback(editSession.ScaleIndex).Index);
-            OnPropertyChanged(nameof(SelectedOverlayScaleOrdinal));
+            selectedOverlayScalePercent = OverlayScaleCatalog.GetPercent(editSession.ScaleIndex);
+            OnPropertyChanged(nameof(SelectedOverlayScalePercent));
             OnPropertyChanged(nameof(SelectedOverlayScaleLabel));
         }
 
@@ -1126,6 +1205,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private void EndSession(bool closeHost, bool restoreRuntimeWindows)
     {
         MiningDetection?.EndEdit();
+        IsCategoryMenuOpen = false;
         CloseOverlaySettings();
         editSession = null;
         IsEditing = false;
@@ -1183,6 +1263,105 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             : $"{displayName} now uses its own scale. Use the top ✓ to save and close.";
     }
 
+    private IReadOnlyList<OverlayTypographyRoleViewModel> CreateTypographyRoles() =>
+        [
+            new(OverlayTypographyRole.Header, "Header", SetTypographyPercent),
+            new(OverlayTypographyRole.Title, "Title", SetTypographyPercent),
+            new(OverlayTypographyRole.Value, "Value", SetTypographyPercent),
+            new(OverlayTypographyRole.Body, "Body", SetTypographyPercent),
+            new(OverlayTypographyRole.Detail, "Detail", SetTypographyPercent),
+            new(OverlayTypographyRole.Caption, "Caption", SetTypographyPercent),
+            new(OverlayTypographyRole.Icons, "Icons", SetTypographyPercent),
+        ];
+
+    private void ToggleCategoryMenu()
+    {
+        if (!IsEditing)
+        {
+            return;
+        }
+
+        bool open = !IsCategoryMenuOpen;
+        CloseOverlaySettings();
+        IsCategoryMenuOpen = open;
+    }
+
+    private void SelectCategory(object? parameter)
+    {
+        if (parameter is OverlayLayoutCategoryDefinition category)
+        {
+            SelectedCategory = category;
+        }
+    }
+
+    private void ToggleTypographySettings()
+    {
+        if (IsOverlaySettingsOpen)
+        {
+            IsTypographySettingsOpen = !IsTypographySettingsOpen;
+        }
+    }
+
+    private void ResetTypography()
+    {
+        if (!IsEditing || editSession is null || selectedOverlaySettingsPlotterName is not { } plotterName)
+        {
+            return;
+        }
+
+        updatingSelectedOverlaySettings = true;
+        foreach (OverlayTypographyRoleViewModel role in TypographyRoles)
+        {
+            role.Load(0);
+        }
+        updatingSelectedOverlaySettings = false;
+        if (!editSession.SetTypographyScale(plotterName, OverlayTypographyScale.Default))
+        {
+            return;
+        }
+
+        editorHost?.RefreshPreviewTypography(editSession);
+        string displayName = OverlayLayoutCatalog.GetRequired(plotterName).DisplayName;
+        StatusMessage = $"Reset {displayName} text and icon scales to 0%. Use the top ✓ to save and close.";
+    }
+
+    private void ResetOverlaySize()
+    {
+        if (!IsEditing || editSession is null || selectedOverlaySettingsPlotterName is not { } plotterName)
+        {
+            return;
+        }
+
+        if (!editSession.SetSizeOverride(plotterName, null))
+        {
+            return;
+        }
+
+        editorHost?.RefreshPreviewSizes(editSession);
+        SynchronizeLiveOverlayFromPreview(plotterName);
+        string displayName = OverlayLayoutCatalog.GetRequired(plotterName).DisplayName;
+        StatusMessage = $"Restored {displayName} to its original measured size. Use the top ✓ to save and close.";
+    }
+
+    private void SetTypographyPercent(OverlayTypographyRole role, int percent)
+    {
+        if (!IsEditing || editSession is null || selectedOverlaySettingsPlotterName is not { } plotterName)
+        {
+            return;
+        }
+
+        OverlayTypographyScale updated = editSession.GetTypographyScale(plotterName).WithPercent(role, percent);
+        if (!editSession.SetTypographyScale(plotterName, updated))
+        {
+            return;
+        }
+
+        editorHost?.RefreshPreviewTypography(editSession);
+        string displayName = OverlayLayoutCatalog.GetRequired(plotterName).DisplayName;
+        StatusMessage =
+            $"{displayName} {role.ToString().ToLowerInvariant()} text set to {percent:+0;-0;0}% from baseline. Use the top ✓ to save and close.";
+    }
+
     private void CloseOverlaySettings()
     {
         if (selectedOverlaySettingsPlotterName is null)
@@ -1191,36 +1370,12 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         selectedOverlaySettingsPlotterName = null;
+        IsTypographySettingsOpen = false;
         OnPropertyChanged(nameof(IsOverlaySettingsOpen));
         OnPropertyChanged(nameof(SelectedOverlaySettingsTitle));
-    }
-
-    private static OverlayScaleOption GetScaleOption(int ordinal)
-    {
-        return IndividualScaleOptions[Math.Clamp(ordinal, 0, IndividualScaleOptions.Length - 1)];
-    }
-
-    private static int GetScaleOptionOrdinal(int scaleIndex)
-    {
-        for (int index = 0; index < IndividualScaleOptions.Length; index++)
-        {
-            if (IndividualScaleOptions[index].Index == scaleIndex)
-            {
-                return index;
-            }
-        }
-
-        double scale =
-            OverlayScaleCatalog.Options.FirstOrDefault(option => option.Index == scaleIndex)?.AbsoluteScale ?? 1d;
-        return IndividualScaleOptions
-            .Select((option, index) => new { index, distance = Math.Abs(option.AbsoluteScale!.Value - scale) })
-            .MinBy(entry => entry.distance)!
-            .index;
-    }
-
-    private static OverlayScaleOption GetIndividualFallback(int scaleIndex)
-    {
-        return GetScaleOption(GetScaleOptionOrdinal(scaleIndex));
+        toggleTypographySettingsCommand.RaiseCanExecuteChanged();
+        resetTypographyCommand.RaiseCanExecuteChanged();
+        resetOverlaySizeCommand.RaiseCanExecuteChanged();
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
@@ -1240,13 +1395,25 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class DelegateCommand(Action execute, Func<bool> canExecute) : ICommand
+    private sealed class DelegateCommand : ICommand
     {
+        private readonly Action<object?> execute;
+        private readonly Func<bool> canExecute;
+
+        public DelegateCommand(Action execute, Func<bool> canExecute)
+            : this(_ => execute(), canExecute) { }
+
+        public DelegateCommand(Action<object?> execute, Func<bool> canExecute)
+        {
+            this.execute = execute;
+            this.canExecute = canExecute;
+        }
+
         public event EventHandler? CanExecuteChanged;
 
         public bool CanExecute(object? parameter) => canExecute();
 
-        public void Execute(object? parameter) => execute();
+        public void Execute(object? parameter) => execute(parameter);
 
         public void RaiseCanExecuteChanged()
         {
@@ -1261,4 +1428,60 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         EventHandler<PixelPointEventArgs> PositionChanged,
         EventHandler Closed
     );
+}
+
+public sealed class OverlayTypographyRoleViewModel : INotifyPropertyChanged
+{
+    private readonly Action<OverlayTypographyRole, int> changed;
+    private int percent;
+
+    public OverlayTypographyRoleViewModel(
+        OverlayTypographyRole role,
+        string displayName,
+        Action<OverlayTypographyRole, int> changed
+    )
+    {
+        Role = role;
+        DisplayName = displayName;
+        this.changed = changed ?? throw new ArgumentNullException(nameof(changed));
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public OverlayTypographyRole Role { get; }
+
+    public string DisplayName { get; }
+
+    public int Percent
+    {
+        get => percent;
+        set
+        {
+            int normalized = OverlayTypographyScale.Normalize(value);
+            if (percent == normalized)
+            {
+                return;
+            }
+
+            percent = normalized;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Percent)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Label)));
+            changed(Role, normalized);
+        }
+    }
+
+    public string Label => $"{Percent:+0;-0;0}%";
+
+    internal void Load(int value)
+    {
+        int normalized = OverlayTypographyScale.Normalize(value);
+        if (percent == normalized)
+        {
+            return;
+        }
+
+        percent = normalized;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Percent)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Label)));
+    }
 }

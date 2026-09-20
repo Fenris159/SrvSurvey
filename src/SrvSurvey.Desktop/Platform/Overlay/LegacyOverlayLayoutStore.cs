@@ -11,6 +11,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class LegacyOverlayLayoutStore
 {
+    private const string WidthProperty = "width";
+    private const string HeightProperty = "height";
     private static readonly ConcurrentDictionary<string, object> FileLocks = new(
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
     );
@@ -18,6 +20,9 @@ public sealed class LegacyOverlayLayoutStore
     private readonly string plottersPath;
     private readonly string settingsPath;
     private readonly string scaleOverridesPath;
+    private readonly string typographyOverridesPath;
+    private readonly string sizeOverridesPath;
+    private readonly string positionReferencesPath;
     private readonly object fileLock;
 
     public LegacyOverlayLayoutStore(string dataDirectory)
@@ -27,6 +32,9 @@ public sealed class LegacyOverlayLayoutStore
         plottersPath = Path.Combine(this.dataDirectory, "plotters.json");
         settingsPath = Path.Combine(this.dataDirectory, "settings.json");
         scaleOverridesPath = Path.Combine(this.dataDirectory, "overlay-scale-overrides.json");
+        typographyOverridesPath = Path.Combine(this.dataDirectory, "overlay-typography-overrides.json");
+        sizeOverridesPath = Path.Combine(this.dataDirectory, "overlay-size-overrides.json");
+        positionReferencesPath = Path.Combine(this.dataDirectory, "overlay-position-references.json");
         fileLock = FileLocks.GetOrAdd(plottersPath, _ => new object());
     }
 
@@ -35,6 +43,34 @@ public sealed class LegacyOverlayLayoutStore
         lock (fileLock)
         {
             return LoadCore();
+        }
+    }
+
+    public LegacyOverlayScaleMigrationResult MigrateLegacyScaleOverrides(double renderScaling)
+    {
+        lock (fileLock)
+        {
+            var errors = new List<string>();
+            Dictionary<string, int> overrides = LoadScaleOverrides(errors);
+            if (errors.Count > 0)
+            {
+                throw new InvalidDataException(string.Join(" ", errors));
+            }
+
+            var migrations = overrides
+                .Where(entry => OverlayScaleCatalog.IsLegacyIndex(entry.Value))
+                .ToDictionary(
+                    entry => entry.Key,
+                    entry => (int?)OverlayScaleCatalog.ConvertToRelativeIndex(entry.Value, renderScaling),
+                    StringComparer.Ordinal
+                );
+            if (migrations.Count == 0)
+            {
+                return LegacyOverlayScaleMigrationResult.NotRequired;
+            }
+
+            (string? backupPath, int updatedCount) = SaveScaleIndexesCore(migrations);
+            return new LegacyOverlayScaleMigrationResult(updatedCount, backupPath);
         }
     }
 
@@ -70,9 +106,15 @@ public sealed class LegacyOverlayLayoutStore
         {
             bool settingsExisted = File.Exists(settingsPath);
             bool scaleOverridesExisted = File.Exists(scaleOverridesPath);
+            bool typographyOverridesExisted = File.Exists(typographyOverridesPath);
+            bool sizeOverridesExisted = File.Exists(sizeOverridesPath);
             string? settingsBackupPath = null;
             string? scaleOverridesBackupPath = null;
+            string? typographyOverridesBackupPath = null;
+            string? sizeOverridesBackupPath = null;
             int updatedScaleOverrideCount = 0;
+            int updatedTypographyOverrideCount = 0;
+            int updatedSizeOverrideCount = 0;
             try
             {
                 if (updateDefaultOpacity)
@@ -81,6 +123,10 @@ public sealed class LegacyOverlayLayoutStore
                 }
 
                 (scaleOverridesBackupPath, updatedScaleOverrideCount) = SaveScaleOverridesCore(placements);
+                (typographyOverridesBackupPath, updatedTypographyOverrideCount) = SaveTypographyOverridesCore(
+                    placements
+                );
+                (sizeOverridesBackupPath, updatedSizeOverrideCount) = SaveSizeOverridesCore(placements);
                 LegacyOverlayLayoutSaveResult result =
                     placements.Count > 0
                         ? SaveCore(placements)
@@ -91,21 +137,35 @@ public sealed class LegacyOverlayLayoutStore
                     UpdatedDefaultOpacity = updateDefaultOpacity,
                     ScaleOverridesBackupPath = scaleOverridesBackupPath,
                     UpdatedScaleOverrideCount = updatedScaleOverrideCount,
+                    TypographyOverridesBackupPath = typographyOverridesBackupPath,
+                    UpdatedTypographyOverrideCount = updatedTypographyOverrideCount,
+                    SizeOverridesBackupPath = sizeOverridesBackupPath,
+                    UpdatedSizeOverrideCount = updatedSizeOverrideCount,
                 };
             }
             catch (Exception saveException)
             {
                 try
                 {
-                    if (updateDefaultOpacity)
-                    {
-                        RestoreFile(settingsPath, settingsBackupPath, settingsExisted);
-                    }
-
-                    if (updatedScaleOverrideCount > 0)
-                    {
-                        RestoreFile(scaleOverridesPath, scaleOverridesBackupPath, scaleOverridesExisted);
-                    }
+                    RestoreFileIfChanged(updateDefaultOpacity, settingsPath, settingsBackupPath, settingsExisted);
+                    RestoreFileIfChanged(
+                        updatedScaleOverrideCount > 0,
+                        scaleOverridesPath,
+                        scaleOverridesBackupPath,
+                        scaleOverridesExisted
+                    );
+                    RestoreFileIfChanged(
+                        updatedTypographyOverrideCount > 0,
+                        typographyOverridesPath,
+                        typographyOverridesBackupPath,
+                        typographyOverridesExisted
+                    );
+                    RestoreFileIfChanged(
+                        updatedSizeOverrideCount > 0,
+                        sizeOverridesPath,
+                        sizeOverridesBackupPath,
+                        sizeOverridesExisted
+                    );
                 }
                 catch (Exception rollbackException)
                 {
@@ -120,6 +180,14 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
+    private static void RestoreFileIfChanged(bool changed, string path, string? backupPath, bool existed)
+    {
+        if (changed)
+        {
+            RestoreFile(path, backupPath, existed);
+        }
+    }
+
     private static void ApplyScaleOverrides(
         Dictionary<string, LegacyOverlayPlacement> positions,
         IReadOnlyDictionary<string, int> scaleOverrides
@@ -129,7 +197,35 @@ public sealed class LegacyOverlayLayoutStore
         {
             if (positions.TryGetValue(entry.Key, out LegacyOverlayPlacement? placement))
             {
-                positions[entry.Key] = placement with { ScaleIndex = entry.Value };
+                positions[entry.Key] = placement with { ScaleIndex = OverlayScaleCatalog.NormalizeIndex(entry.Value) };
+            }
+        }
+    }
+
+    private static void ApplyTypographyOverrides(
+        Dictionary<string, LegacyOverlayPlacement> positions,
+        IReadOnlyDictionary<string, OverlayTypographyScale> typographyOverrides
+    )
+    {
+        foreach (KeyValuePair<string, OverlayTypographyScale> entry in typographyOverrides)
+        {
+            if (positions.TryGetValue(entry.Key, out LegacyOverlayPlacement? placement))
+            {
+                positions[entry.Key] = placement with { TypographyScale = entry.Value };
+            }
+        }
+    }
+
+    private static void ApplySizeOverrides(
+        Dictionary<string, LegacyOverlayPlacement> positions,
+        IReadOnlyDictionary<string, OverlayPanelSize> sizeOverrides
+    )
+    {
+        foreach (KeyValuePair<string, OverlayPanelSize> entry in sizeOverrides)
+        {
+            if (positions.TryGetValue(entry.Key, out LegacyOverlayPlacement? placement))
+            {
+                positions[entry.Key] = placement with { SizeOverride = entry.Value };
             }
         }
     }
@@ -171,6 +267,10 @@ public sealed class LegacyOverlayLayoutStore
         double? defaultOpacity = LoadDefaultOpacity(errors);
         Dictionary<string, int> scaleOverrides = LoadScaleOverrides(errors);
         ApplyScaleOverrides(positions, scaleOverrides);
+        Dictionary<string, OverlayTypographyScale> typographyOverrides = LoadTypographyOverrides(errors);
+        ApplyTypographyOverrides(positions, typographyOverrides);
+        ApplySizeOverrides(positions, LoadSizeOverrides(errors));
+        ApplyPositionReferences(positions, LoadPositionReferences(errors));
 
         // New mining warnings start at the player's flight-warning placement.
         // Once saved independently, never overwrite their position or scale.
@@ -233,6 +333,7 @@ public sealed class LegacyOverlayLayoutStore
             }
 
             File.Move(temporaryPath, plottersPath, true);
+            SavePositionReferencesCore(placements);
         }
         finally
         {
@@ -243,6 +344,166 @@ public sealed class LegacyOverlayLayoutStore
         }
 
         return new LegacyOverlayLayoutSaveResult(plottersPath, backupPath, placements.Count);
+    }
+
+    public int SaveImportedPositionReferences(OverlayPositionReference reference)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        ValidatePositionReference(reference, nameof(reference));
+        lock (fileLock)
+        {
+            if (!File.Exists(plottersPath))
+            {
+                return 0;
+            }
+
+            JsonObject plotters = ParseObject(plottersPath);
+            var placements = plotters.ToDictionary(
+                entry => entry.Key,
+                _ => new LegacyOverlayPlacement(
+                    LegacyHorizontalAnchor.Left,
+                    0,
+                    LegacyVerticalAnchor.Top,
+                    0,
+                    null,
+                    PositionReference: reference
+                ),
+                StringComparer.Ordinal
+            );
+            SavePositionReferencesCore(placements);
+            return placements.Count;
+        }
+    }
+
+    private static void ApplyPositionReferences(
+        Dictionary<string, LegacyOverlayPlacement> positions,
+        IReadOnlyDictionary<string, OverlayPositionReference> references
+    )
+    {
+        foreach (KeyValuePair<string, OverlayPositionReference> entry in references)
+        {
+            if (positions.TryGetValue(entry.Key, out LegacyOverlayPlacement? placement))
+            {
+                positions[entry.Key] = placement with { PositionReference = entry.Value };
+            }
+        }
+    }
+
+    private Dictionary<string, OverlayPositionReference> LoadPositionReferences(List<string> errors)
+    {
+        var references = new Dictionary<string, OverlayPositionReference>(StringComparer.Ordinal);
+        if (!File.Exists(positionReferencesPath))
+        {
+            return references;
+        }
+
+        try
+        {
+            JsonObject root = ParseObject(positionReferencesPath);
+            foreach (KeyValuePair<string, JsonNode?> entry in root)
+            {
+                if (entry.Value is not JsonObject value)
+                {
+                    throw new InvalidDataException($"Overlay position reference '{entry.Key}' must be an object.");
+                }
+
+                int width = ReadPositiveInt(value, WidthProperty, entry.Key);
+                int height = ReadPositiveInt(value, HeightProperty, entry.Key);
+                references[entry.Key] = new OverlayPositionReference(width, height);
+            }
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidDataException)
+        {
+            references.Clear();
+            errors.Add($"Could not read overlay position references '{positionReferencesPath}': {exception.Message}");
+        }
+
+        return references;
+    }
+
+    private void SavePositionReferencesCore(IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+    {
+        JsonObject root = File.Exists(positionReferencesPath) ? ParseObject(positionReferencesPath) : [];
+        foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
+        {
+            if (entry.Value.PositionReference is not { } reference)
+            {
+                root.Remove(entry.Key);
+                continue;
+            }
+
+            ValidatePositionReference(reference, entry.Key);
+            root[entry.Key] = new JsonObject { [WidthProperty] = reference.Width, [HeightProperty] = reference.Height };
+        }
+
+        Directory.CreateDirectory(dataDirectory);
+        string temporaryPath = $"{positionReferencesPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (
+                var writer = new Utf8JsonWriter(
+                    stream,
+                    new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, Indented = true }
+                )
+            )
+            {
+                root.WriteTo(writer);
+            }
+
+            JsonObject verified = ParseObject(temporaryPath);
+            foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
+            {
+                OverlayPositionReference? actual = null;
+                if (verified[entry.Key] is JsonObject value)
+                {
+                    actual = new OverlayPositionReference(
+                        ReadPositiveInt(value, WidthProperty, entry.Key),
+                        ReadPositiveInt(value, HeightProperty, entry.Key)
+                    );
+                }
+
+                if (actual != entry.Value.PositionReference)
+                {
+                    throw new InvalidDataException(
+                        $"Overlay position reference '{entry.Key}' could not be verified before saving."
+                    );
+                }
+            }
+
+            File.Move(temporaryPath, positionReferencesPath, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+    }
+
+    private static int ReadPositiveInt(JsonObject value, string propertyName, string plotterName)
+    {
+        if (value[propertyName] is not JsonValue property || !property.TryGetValue<int>(out int result) || result <= 0)
+        {
+            throw new InvalidDataException(
+                $"Overlay position reference '{plotterName}' requires a positive {propertyName}."
+            );
+        }
+
+        return result;
+    }
+
+    private static void ValidatePositionReference(OverlayPositionReference reference, string parameterName)
+    {
+        if (reference.Width <= 0 || reference.Height <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                parameterName,
+                "Overlay position reference dimensions must be positive."
+            );
+        }
     }
 
     private string? SaveDefaultOpacityCore(double defaultOpacity)
@@ -294,25 +555,34 @@ public sealed class LegacyOverlayLayoutStore
         IReadOnlyDictionary<string, LegacyOverlayPlacement> placements
     )
     {
-        if (placements.Count == 0)
+        var scaleUpdates = placements.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.ScaleIndex,
+            StringComparer.Ordinal
+        );
+        return SaveScaleIndexesCore(scaleUpdates);
+    }
+
+    private (string? BackupPath, int UpdatedCount) SaveScaleIndexesCore(Dictionary<string, int?> scaleUpdates)
+    {
+        if (scaleUpdates.Count == 0)
         {
             return (null, 0);
         }
 
         JsonObject root = File.Exists(scaleOverridesPath) ? ParseObject(scaleOverridesPath) : [];
         int updatedCount = 0;
-        foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
+        foreach (KeyValuePair<string, int?> entry in scaleUpdates)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
-            ArgumentNullException.ThrowIfNull(entry.Value);
             int? previous = ReadScaleOverride(root[entry.Key], entry.Key);
-            if (previous == entry.Value.ScaleIndex)
+            if (previous == entry.Value)
             {
                 continue;
             }
 
             updatedCount++;
-            if (entry.Value.ScaleIndex is { } scaleIndex)
+            if (entry.Value is { } scaleIndex)
             {
                 ValidateScaleIndex(entry.Key, scaleIndex);
                 root[entry.Key] = scaleIndex;
@@ -347,10 +617,10 @@ public sealed class LegacyOverlayLayoutStore
             }
 
             JsonObject verified = ParseObject(temporaryPath);
-            foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
+            foreach (KeyValuePair<string, int?> entry in scaleUpdates)
             {
                 int? actual = ReadScaleOverride(verified[entry.Key], entry.Key);
-                if (actual != entry.Value.ScaleIndex)
+                if (actual != entry.Value)
                 {
                     throw new InvalidDataException(
                         $"Overlay scale override '{entry.Key}' could not be verified before saving."
@@ -359,6 +629,167 @@ public sealed class LegacyOverlayLayoutStore
             }
 
             File.Move(temporaryPath, scaleOverridesPath, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+
+        return (backupPath, updatedCount);
+    }
+
+    private (string? BackupPath, int UpdatedCount) SaveTypographyOverridesCore(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements
+    )
+    {
+        if (placements.Count == 0)
+        {
+            return (null, 0);
+        }
+
+        JsonObject root = File.Exists(typographyOverridesPath) ? ParseObject(typographyOverridesPath) : [];
+        int updatedCount = 0;
+        foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
+            ArgumentNullException.ThrowIfNull(entry.Value);
+            OverlayTypographyScale? next = NormalizeTypographyScale(entry.Value.TypographyScale);
+            OverlayTypographyScale? previous = ReadTypographyOverride(root[entry.Key], entry.Key);
+            if (previous == next)
+            {
+                continue;
+            }
+
+            updatedCount++;
+            if (next is null)
+            {
+                root.Remove(entry.Key);
+            }
+            else
+            {
+                root[entry.Key] = WriteTypographyOverride(next);
+            }
+        }
+
+        if (updatedCount == 0)
+        {
+            return (null, 0);
+        }
+
+        Directory.CreateDirectory(dataDirectory);
+        string? backupPath = File.Exists(typographyOverridesPath)
+            ? CreateVerifiedBackup(typographyOverridesPath, "overlay-typography-overrides")
+            : null;
+        string temporaryPath = $"{typographyOverridesPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (
+                var writer = new Utf8JsonWriter(
+                    stream,
+                    new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, Indented = true }
+                )
+            )
+            {
+                root.WriteTo(writer);
+            }
+
+            JsonObject verified = ParseObject(temporaryPath);
+            foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
+            {
+                OverlayTypographyScale? actual = ReadTypographyOverride(verified[entry.Key], entry.Key);
+                if (actual != NormalizeTypographyScale(entry.Value.TypographyScale))
+                {
+                    throw new InvalidDataException(
+                        $"Overlay typography override '{entry.Key}' could not be verified before saving."
+                    );
+                }
+            }
+
+            File.Move(temporaryPath, typographyOverridesPath, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+
+        return (backupPath, updatedCount);
+    }
+
+    private (string? BackupPath, int UpdatedCount) SaveSizeOverridesCore(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements
+    )
+    {
+        if (placements.Count == 0)
+        {
+            return (null, 0);
+        }
+
+        JsonObject root = File.Exists(sizeOverridesPath) ? ParseObject(sizeOverridesPath) : [];
+        int updatedCount = 0;
+        foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
+            OverlayPanelSize? previous = ReadSizeOverride(root[entry.Key], entry.Key);
+            OverlayPanelSize? next = entry.Value.SizeOverride;
+            if (previous == next)
+            {
+                continue;
+            }
+
+            updatedCount++;
+            if (next is null)
+            {
+                root.Remove(entry.Key);
+            }
+            else
+            {
+                ValidateSizeOverride(next, entry.Key);
+                root[entry.Key] = new JsonObject { [WidthProperty] = next.Width, [HeightProperty] = next.Height };
+            }
+        }
+
+        if (updatedCount == 0)
+        {
+            return (null, 0);
+        }
+
+        Directory.CreateDirectory(dataDirectory);
+        string? backupPath = File.Exists(sizeOverridesPath)
+            ? CreateVerifiedBackup(sizeOverridesPath, "overlay-size-overrides")
+            : null;
+        string temporaryPath = $"{sizeOverridesPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (
+                var writer = new Utf8JsonWriter(
+                    stream,
+                    new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, Indented = true }
+                )
+            )
+            {
+                root.WriteTo(writer);
+            }
+
+            JsonObject verified = ParseObject(temporaryPath);
+            foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
+            {
+                if (ReadSizeOverride(verified[entry.Key], entry.Key) != entry.Value.SizeOverride)
+                {
+                    throw new InvalidDataException(
+                        $"Overlay size override '{entry.Key}' could not be verified before saving."
+                    );
+                }
+            }
+
+            File.Move(temporaryPath, sizeOverridesPath, true);
         }
         finally
         {
@@ -494,6 +925,23 @@ public sealed class LegacyOverlayLayoutStore
         {
             ValidateScaleIndex(name, scaleIndex);
         }
+
+        if (
+            placement.TypographyScale is { } typographyScale
+            && Enum.GetValues<OverlayTypographyRole>()
+                .Any(role => !OverlayTypographyScale.IsValid(typographyScale.GetPercent(role)))
+        )
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(placement),
+                $"Overlay typography override '{name}' contains a value outside the supported range."
+            );
+        }
+
+        if (placement.SizeOverride is { } sizeOverride)
+        {
+            ValidateSizeOverride(sizeOverride, name);
+        }
     }
 
     private Dictionary<string, int> LoadScaleOverrides(List<string> errors)
@@ -531,6 +979,188 @@ public sealed class LegacyOverlayLayoutStore
             return new Dictionary<string, int>(StringComparer.Ordinal);
         }
     }
+
+    private Dictionary<string, OverlayTypographyScale> LoadTypographyOverrides(List<string> errors)
+    {
+        if (!File.Exists(typographyOverridesPath))
+        {
+            return new Dictionary<string, OverlayTypographyScale>(StringComparer.Ordinal);
+        }
+
+        try
+        {
+            JsonObject root = ParseObject(typographyOverridesPath);
+            var result = new Dictionary<string, OverlayTypographyScale>(StringComparer.Ordinal);
+            foreach (KeyValuePair<string, JsonNode?> entry in root)
+            {
+                OverlayTypographyScale? scale = ReadTypographyOverride(entry.Value, entry.Key);
+                if (scale is not null)
+                {
+                    result[entry.Key] = scale;
+                }
+            }
+
+            return result;
+        }
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or JsonException
+                        or InvalidDataException
+                        or ArgumentException
+            )
+        {
+            errors.Add(
+                $"Could not read overlay typography overrides '{typographyOverridesPath}': " + exception.Message
+            );
+            return new Dictionary<string, OverlayTypographyScale>(StringComparer.Ordinal);
+        }
+    }
+
+    private Dictionary<string, OverlayPanelSize> LoadSizeOverrides(List<string> errors)
+    {
+        if (!File.Exists(sizeOverridesPath))
+        {
+            return new Dictionary<string, OverlayPanelSize>(StringComparer.Ordinal);
+        }
+
+        try
+        {
+            JsonObject root = ParseObject(sizeOverridesPath);
+            var result = new Dictionary<string, OverlayPanelSize>(StringComparer.Ordinal);
+            foreach (KeyValuePair<string, JsonNode?> entry in root)
+            {
+                OverlayPanelSize? size = ReadSizeOverride(entry.Value, entry.Key);
+                if (size is not null)
+                {
+                    result[entry.Key] = size;
+                }
+            }
+
+            return result;
+        }
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or JsonException
+                        or InvalidDataException
+                        or ArgumentException
+            )
+        {
+            errors.Add($"Could not read overlay size overrides '{sizeOverridesPath}': " + exception.Message);
+            return new Dictionary<string, OverlayPanelSize>(StringComparer.Ordinal);
+        }
+    }
+
+    private static OverlayPanelSize? ReadSizeOverride(JsonNode? node, string name)
+    {
+        if (node is null)
+        {
+            return null;
+        }
+
+        if (node is not JsonObject value)
+        {
+            throw new InvalidDataException($"Overlay size override '{name}' must be an object.");
+        }
+
+        var size = new OverlayPanelSize(
+            ReadPositiveDouble(value, WidthProperty, name),
+            ReadPositiveDouble(value, HeightProperty, name)
+        );
+        ValidateSizeOverride(size, name);
+        return size;
+    }
+
+    private static double ReadPositiveDouble(JsonObject value, string propertyName, string plotterName)
+    {
+        if (
+            value[propertyName] is not JsonValue property
+            || !property.TryGetValue<double>(out double result)
+            || !double.IsFinite(result)
+            || result <= 0
+        )
+        {
+            throw new InvalidDataException(
+                $"Overlay size override '{plotterName}' requires a positive {propertyName}."
+            );
+        }
+
+        return result;
+    }
+
+    private static void ValidateSizeOverride(OverlayPanelSize size, string parameterName)
+    {
+        if (!double.IsFinite(size.Width) || !double.IsFinite(size.Height) || size.Width <= 0 || size.Height <= 0)
+        {
+            throw new ArgumentOutOfRangeException(parameterName, "Overlay size override dimensions must be positive.");
+        }
+    }
+
+    private static JsonObject WriteTypographyOverride(OverlayTypographyScale scale) =>
+        new()
+        {
+            ["header"] = scale.Header,
+            ["title"] = scale.Title,
+            ["value"] = scale.Value,
+            ["body"] = scale.Body,
+            ["detail"] = scale.Detail,
+            ["caption"] = scale.Caption,
+            ["icons"] = scale.Icons,
+        };
+
+    private static OverlayTypographyScale? ReadTypographyOverride(JsonNode? node, string name)
+    {
+        if (node is null)
+        {
+            return null;
+        }
+
+        if (node is not JsonObject value)
+        {
+            throw new InvalidDataException($"Overlay typography override '{name}' must be an object.");
+        }
+
+        var scale = new OverlayTypographyScale(
+            ReadTypographyPercent(value, "header", name),
+            ReadTypographyPercent(value, "title", name),
+            ReadTypographyPercent(value, "value", name),
+            ReadTypographyPercent(value, "body", name),
+            ReadTypographyPercent(value, "detail", name),
+            ReadTypographyPercent(value, "caption", name),
+            ReadTypographyPercent(value, "icons", name, defaultValue: 0)
+        );
+        return NormalizeTypographyScale(scale);
+    }
+
+    private static int ReadTypographyPercent(JsonObject value, string role, string name, int? defaultValue = null)
+    {
+        if (value[role] is null && defaultValue is not null)
+        {
+            return defaultValue.Value;
+        }
+
+        if (value[role] is not JsonValue node || !node.TryGetValue<int>(out int percent))
+        {
+            throw new InvalidDataException($"Overlay typography override '{name}.{role}' must be an integer.");
+        }
+
+        if (!OverlayTypographyScale.IsValid(percent))
+        {
+            throw new InvalidDataException(
+                $"Overlay typography override '{name}.{role}' must be from "
+                    + $"{OverlayTypographyScale.MinimumPercent}% to {OverlayTypographyScale.MaximumPercent}% "
+                    + $"in {OverlayTypographyScale.IncrementPercent}% increments."
+            );
+        }
+
+        return percent;
+    }
+
+    private static OverlayTypographyScale? NormalizeTypographyScale(OverlayTypographyScale? scale) =>
+        scale is null || scale.IsDefault ? null : scale;
 
     private static int? ReadScaleOverride(JsonNode? node, string name)
     {
@@ -710,12 +1340,13 @@ public sealed class LegacyOverlayLayout
             throw new ArgumentOutOfRangeException(nameof(index), $"Overlay scale index {index} is not supported.");
         }
 
-        if (Volatile.Read(ref scaleIndex) == index)
+        int normalized = OverlayScaleCatalog.NormalizeIndex(index);
+        if (Volatile.Read(ref scaleIndex) == normalized)
         {
             return;
         }
 
-        Volatile.Write(ref scaleIndex, index);
+        Volatile.Write(ref scaleIndex, normalized);
         ScaleIndexChanged?.Invoke(this, EventArgs.Empty);
         Changed?.Invoke(this, EventArgs.Empty);
     }
@@ -782,26 +1413,37 @@ public sealed class LegacyOverlayLayout
             return null;
         }
 
+        double horizontalScale = placement.PositionReference is { } reference
+            ? gameBounds.Width / (double)reference.Width
+            : 1d;
+        double verticalScale = placement.PositionReference is { } verticalReference
+            ? gameBounds.Height / (double)verticalReference.Height
+            : 1d;
+        int horizontalOffset = ScaleOffset(placement.HorizontalOffset, horizontalScale);
+        int verticalOffset = ScaleOffset(placement.VerticalOffset, verticalScale);
         int x = placement.Horizontal switch
         {
-            LegacyHorizontalAnchor.Left => gameBounds.X + placement.HorizontalOffset,
+            LegacyHorizontalAnchor.Left => gameBounds.X + horizontalOffset,
             LegacyHorizontalAnchor.Center => gameBounds.X
                 + ((gameBounds.Width - overlaySize.Width) / 2)
-                + placement.HorizontalOffset,
-            LegacyHorizontalAnchor.Right => gameBounds.Right - overlaySize.Width - placement.HorizontalOffset,
-            _ => placement.HorizontalOffset,
+                + horizontalOffset,
+            LegacyHorizontalAnchor.Right => gameBounds.Right - overlaySize.Width - horizontalOffset,
+            _ => horizontalOffset,
         };
         int y = placement.Vertical switch
         {
-            LegacyVerticalAnchor.Top => gameBounds.Y + placement.VerticalOffset,
+            LegacyVerticalAnchor.Top => gameBounds.Y + verticalOffset,
             LegacyVerticalAnchor.Middle => gameBounds.Y
                 + ((gameBounds.Height - overlaySize.Height) / 2)
-                + placement.VerticalOffset,
-            LegacyVerticalAnchor.Bottom => gameBounds.Bottom - overlaySize.Height - placement.VerticalOffset,
-            _ => placement.VerticalOffset,
+                + verticalOffset,
+            LegacyVerticalAnchor.Bottom => gameBounds.Bottom - overlaySize.Height - verticalOffset,
+            _ => verticalOffset,
         };
         return new PixelPoint(x, y);
     }
+
+    private static int ScaleOffset(int offset, double scale) =>
+        (int)Math.Round(offset * scale, MidpointRounding.AwayFromZero);
 
     public double? GetOpacity(string plotterName)
     {
@@ -825,11 +1467,34 @@ public sealed class LegacyOverlayLayout
             : ScaleIndex;
     }
 
+    public OverlayTypographyScale GetTypographyScale(string plotterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        LayoutState snapshot = Volatile.Read(ref state);
+        return snapshot.Placements.TryGetValue(plotterName, out LegacyOverlayPlacement? placement)
+            ? placement.TypographyScale ?? OverlayTypographyScale.Default
+            : OverlayTypographyScale.Default;
+    }
+
+    public OverlayPanelSize? GetSizeOverride(string plotterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        LayoutState snapshot = Volatile.Read(ref state);
+        return snapshot.Placements.TryGetValue(plotterName, out LegacyOverlayPlacement? placement)
+            ? placement.SizeOverride
+            : null;
+    }
+
     private sealed record LayoutState(
         IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements,
         double? DefaultOpacity,
         string? Error
     );
+}
+
+public sealed record LegacyOverlayScaleMigrationResult(int MigratedCount, string? BackupPath)
+{
+    public static LegacyOverlayScaleMigrationResult NotRequired { get; } = new(0, null);
 }
 
 public sealed record LegacyOverlayPlacement(
@@ -838,8 +1503,15 @@ public sealed record LegacyOverlayPlacement(
     LegacyVerticalAnchor Vertical,
     int VerticalOffset,
     double? Opacity,
-    int? ScaleIndex = null
+    int? ScaleIndex = null,
+    OverlayTypographyScale? TypographyScale = null,
+    OverlayPositionReference? PositionReference = null,
+    OverlayPanelSize? SizeOverride = null
 );
+
+public sealed record OverlayPositionReference(int Width, int Height);
+
+public sealed record OverlayPanelSize(double Width, double Height);
 
 public sealed record LegacyOverlayLayoutSaveResult(string Path, string? BackupPath, int UpdatedPlacementCount)
 {
@@ -850,6 +1522,14 @@ public sealed record LegacyOverlayLayoutSaveResult(string Path, string? BackupPa
     public string? ScaleOverridesBackupPath { get; init; }
 
     public int UpdatedScaleOverrideCount { get; init; }
+
+    public string? TypographyOverridesBackupPath { get; init; }
+
+    public int UpdatedTypographyOverrideCount { get; init; }
+
+    public string? SizeOverridesBackupPath { get; init; }
+
+    public int UpdatedSizeOverrideCount { get; init; }
 }
 
 public enum LegacyHorizontalAnchor

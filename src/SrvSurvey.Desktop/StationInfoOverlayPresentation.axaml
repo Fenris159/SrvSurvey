@@ -19,34 +19,33 @@
             RowDefinitions="Auto,Auto,Auto"
             ColumnSpacing="6"
             RowSpacing="2">
-        <TextBlock Classes="overlay-header" Text="STATION INFORMATION" />
+        <TextBlock Classes="overlay-header type-header" Text="STATION INFORMATION" />
         <StackPanel Grid.Row="1"
                     Grid.ColumnSpan="2"
                     Orientation="Horizontal"
                     Spacing="7">
-            <Border Classes="badge"
-                    IsVisible="{Binding StationInfo.IsQuestTagged}">
-              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                         FontSize="9"
-                         FontWeight="Bold"
-                         Text="Q" />
-            </Border>
-            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="17"
+            <LayoutTransformControl Classes="type-icon" IsVisible="{Binding StationInfo.IsQuestTagged}">
+              <Border Classes="badge">
+                <TextBlock FontSize="9" Foreground="{DynamicResource RavenWarningBrush}"
+                           FontWeight="Bold"
+                           Text="Q" />
+              </Border>
+            </LayoutTransformControl>
+            <TextBlock FontSize="17" Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                        FontWeight="SemiBold"
                        Text="{Binding StationInfo.StationName}"
                        TextWrapping="Wrap" />
         </StackPanel>
-        <Border Grid.Column="1" Classes="badge" VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="8"
-                     FontWeight="Bold"
-                     Text="{Binding InputMode}" />
-        </Border>
-        <TextBlock Grid.Row="2"
+        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
+          <Border Classes="badge">
+            <TextBlock FontSize="8" Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="Bold"
+                       Text="{Binding InputMode}" />
+          </Border>
+        </LayoutTransformControl>
+        <TextBlock FontSize="10" Grid.Row="2"
                    Grid.ColumnSpan="2"
-                   Classes="muted"
-                   FontSize="10"
+                   Classes="muted type-detail"
                    Text="{Binding StationInfo.StationType}" />
       </Grid>
 
@@ -54,32 +53,31 @@
         <Border Padding="9,7"
                 Background="{DynamicResource RavenSurfaceBrush}"
                 CornerRadius="7">
-          <TextBlock FontSize="10"
+          <TextBlock FontSize="10" Classes="type-value"
                      Text="{Binding StationInfo.LargestPadText}"
                      TextWrapping="Wrap" />
         </Border>
         <Border Padding="9,7"
                 Background="{DynamicResource RavenSurfaceBrush}"
                 CornerRadius="7">
-          <TextBlock FontSize="10"
+          <TextBlock FontSize="10" Classes="type-detail"
                      Text="{Binding StationInfo.PrimaryEconomyText}"
                      TextWrapping="Wrap" />
         </Border>
       </StackPanel>
 
       <StackPanel Spacing="4">
-        <TextBlock Classes="eyebrow" Text="ECONOMIES" />
+        <TextBlock Classes="eyebrow type-header" Text="ECONOMIES" />
         <ItemsControl ItemsSource="{Binding StationInfo.EconomyLines}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:StationInfoLineViewModel">
               <Grid ColumnDefinitions="Auto,Auto"
                     ColumnSpacing="8"
                     HorizontalAlignment="Left">
-                <TextBlock FontSize="10" Text="{Binding Label}" />
-                <TextBlock Grid.Column="1"
-                           Classes="monospace"
+                <TextBlock FontSize="10" Classes="type-body" Text="{Binding Label}" />
+                <TextBlock FontSize="10" Grid.Column="1"
+                           Classes="monospace type-value"
                            Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="10"
                            Text="{Binding Value}" />
               </Grid>
             </DataTemplate>
@@ -88,21 +86,20 @@
       </StackPanel>
 
       <StackPanel Spacing="3">
-        <TextBlock Classes="eyebrow" Text="CONTROLLING FACTION" />
-        <TextBlock FontSize="10"
+        <TextBlock Classes="eyebrow type-header" Text="CONTROLLING FACTION" />
+        <TextBlock FontSize="10" Classes="type-body"
                    Text="{Binding StationInfo.FactionText}"
                    TextWrapping="Wrap" />
       </StackPanel>
 
       <StackPanel Spacing="4"
                   IsVisible="{Binding StationInfo.HasRelevantServices}">
-        <TextBlock Classes="eyebrow" Text="RELEVANT SERVICES" />
+        <TextBlock Classes="eyebrow type-header" Text="RELEVANT SERVICES" />
         <ItemsControl ItemsSource="{Binding StationInfo.RelevantServices}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <TextBlock Margin="2,1"
+              <TextBlock FontSize="10" Classes="type-body" Margin="2,1"
                          Foreground="{DynamicResource RavenAccentBrush}"
-                         FontSize="10"
                          Text="{Binding}" />
             </DataTemplate>
           </ItemsControl.ItemTemplate>
@@ -111,21 +108,19 @@
 
       <StackPanel Spacing="4"
                   IsVisible="{Binding StationInfo.HasProhibitedCommodities}">
-        <TextBlock Classes="eyebrow" Text="PROHIBITED" />
+        <TextBlock Classes="eyebrow type-header" Text="PROHIBITED" />
         <ItemsControl ItemsSource="{Binding StationInfo.ProhibitedCommodities}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <TextBlock Margin="2,1"
+              <TextBlock FontSize="10" Classes="type-body" Margin="2,1"
                          Foreground="{DynamicResource RavenWarningBrush}"
-                         FontSize="10"
                          Text="{Binding}" />
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
       </StackPanel>
 
-      <TextBlock Classes="muted"
-                 FontSize="9"
+      <TextBlock FontSize="9" Classes="muted type-detail"
                  Text="{Binding StationInfo.UpdatedText}" />
     </StackPanel>
   </Border>

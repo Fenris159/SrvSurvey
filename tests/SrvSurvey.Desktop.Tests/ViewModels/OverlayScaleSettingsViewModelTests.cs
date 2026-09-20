@@ -20,11 +20,12 @@ public sealed class OverlayScaleSettingsViewModelTests : IDisposable
         var layout = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
         var viewModel = new OverlayScaleSettingsViewModel(store, layout, new OverlayWindowRegistry());
 
-        viewModel.SelectedOption = viewModel.Options.Single(option => option.Index == 19);
+        viewModel.ScalePercent = 200;
 
-        Assert.Equal(19, layout.ScaleIndex);
-        Assert.Equal(new OverlayScalePreferences(19), store.Load());
-        Assert.Contains("250%", viewModel.SettingsStatus);
+        int expectedIndex = OverlayScaleCatalog.GetIndex(200);
+        Assert.Equal(expectedIndex, layout.ScaleIndex);
+        Assert.Equal(new OverlayScalePreferences(expectedIndex), store.Load());
+        Assert.Contains("+200%", viewModel.SettingsStatus);
         Assert.True(viewModel.HasSettingsStatus);
     }
 
@@ -34,13 +35,14 @@ public sealed class OverlayScaleSettingsViewModelTests : IDisposable
         Directory.CreateDirectory(directory);
         string path = Path.Combine(directory, "ui-settings.json");
         var store = new OverlayScaleSettingsStore(path);
-        store.Save(new OverlayScalePreferences(24));
+        int expectedIndex = OverlayScaleCatalog.GetIndex(-40);
+        store.Save(new OverlayScalePreferences(expectedIndex));
         var layout = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
 
         var viewModel = new OverlayScaleSettingsViewModel(store, layout, new OverlayWindowRegistry());
 
-        Assert.Equal(24, viewModel.SelectedOption.Index);
-        Assert.Equal(24, layout.ScaleIndex);
+        Assert.Equal(-40, viewModel.ScalePercent);
+        Assert.Equal(expectedIndex, layout.ScaleIndex);
     }
 
     public void Dispose()

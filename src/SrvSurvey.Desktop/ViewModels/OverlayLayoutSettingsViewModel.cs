@@ -65,6 +65,25 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
 
     public ICommand ReloadCommand { get; }
 
+    public LegacyOverlayScaleMigrationResult MigrateLegacyScaleOverrides(double renderScaling)
+    {
+        LegacyOverlayScaleMigrationResult result = store.MigrateLegacyScaleOverrides(renderScaling);
+        if (result.MigratedCount == 0)
+        {
+            return result;
+        }
+
+        LegacyOverlayLayout migrated = store.Load();
+        if (migrated.Error is not null)
+        {
+            throw new InvalidDataException(migrated.Error);
+        }
+
+        activeLayout.ReplaceWith(migrated);
+        Reload();
+        return result;
+    }
+
     private void Reload()
     {
         LegacyOverlayLayout layout = store.Load();

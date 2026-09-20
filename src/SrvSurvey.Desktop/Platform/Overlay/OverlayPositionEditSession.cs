@@ -65,6 +65,11 @@ public sealed class OverlayPositionEditSession
 
     public int GetScaleIndex(string plotterName) => GetPlacement(plotterName).ScaleIndex ?? ScaleIndex;
 
+    public OverlayTypographyScale GetTypographyScale(string plotterName) =>
+        GetPlacement(plotterName).TypographyScale ?? OverlayTypographyScale.Default;
+
+    public OverlayPanelSize? GetSizeOverride(string plotterName) => GetPlacement(plotterName).SizeOverride;
+
     public bool SetDefaultOpacity(double opacity)
     {
         ValidateOpacity(opacity, nameof(opacity));
@@ -99,7 +104,39 @@ public sealed class OverlayPositionEditSession
         }
 
         LegacyOverlayPlacement placement = GetPlacement(plotterName);
-        return workingLayout.SetPlacement(plotterName, placement with { ScaleIndex = scaleIndex });
+        int? normalized = scaleIndex is { } requestedIndex ? OverlayScaleCatalog.NormalizeIndex(requestedIndex) : null;
+        return workingLayout.SetPlacement(plotterName, placement with { ScaleIndex = normalized });
+    }
+
+    public bool SetTypographyScale(string plotterName, OverlayTypographyScale scale)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        ArgumentNullException.ThrowIfNull(scale);
+        LegacyOverlayPlacement placement = GetPlacement(plotterName);
+        return workingLayout.SetPlacement(
+            plotterName,
+            placement with
+            {
+                TypographyScale = scale.IsDefault ? null : scale,
+            }
+        );
+    }
+
+    public bool SetSizeOverride(string plotterName, OverlayPanelSize? size)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        if (
+            size is { } value
+            && (
+                !double.IsFinite(value.Width) || !double.IsFinite(value.Height) || value.Width <= 0 || value.Height <= 0
+            )
+        )
+        {
+            throw new ArgumentOutOfRangeException(nameof(size), "Overlay size dimensions must be positive.");
+        }
+
+        LegacyOverlayPlacement placement = GetPlacement(plotterName);
+        return workingLayout.SetPlacement(plotterName, placement with { SizeOverride = size });
     }
 
     public bool SetPlacement(string plotterName, LegacyOverlayPlacement placement)

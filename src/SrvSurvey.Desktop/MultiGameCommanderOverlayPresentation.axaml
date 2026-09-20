@@ -14,13 +14,12 @@
           BorderThickness="1"
           CornerRadius="5">
     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="10">
-      <TextBlock FontSize="12"
+      <TextBlock FontSize="12" Classes="type-title"
                  FontWeight="Bold"
                  Foreground="{DynamicResource RavenTextBrush}"
                  Text="{Binding MultiGameOverlayLabel}" />
-      <TextBlock Grid.Column="1"
+      <TextBlock FontSize="9" Classes="type-caption" Grid.Column="1"
                  VerticalAlignment="Center"
-                 FontSize="9"
                  Foreground="{DynamicResource RavenMutedTextBrush}"
                  Text="CTRL+ALT+W: NEXT" />
     </Grid>

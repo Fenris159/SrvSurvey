@@ -16,25 +16,23 @@
     <StackPanel Spacing="5">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="overlay-header" Text="SURFACE TARGET" />
-          <TextBlock Classes="muted"
-                     FontSize="10"
+          <TextBlock Classes="overlay-header type-header" Text="SURFACE TARGET" />
+          <TextBlock FontSize="10" Classes="muted type-detail"
                      Text="Live bearing and descent guidance" />
         </StackPanel>
-        <Border Grid.Column="1"
-                Classes="badge"
-                VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="9"
-                     FontWeight="SemiBold"
-                     Text="{Binding InputMode}" />
-        </Border>
+        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
+          <Border Classes="badge">
+            <TextBlock FontSize="9" Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="SemiBold"
+                       Text="{Binding InputMode}" />
+          </Border>
+        </LayoutTransformControl>
       </Grid>
 
       <Border Classes="overlay-divider"
               Background="{DynamicResource RavenBorderBrush}" />
 
-      <Grid ColumnDefinitions="104,*" ColumnSpacing="8">
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
         <controls:GroundTargetGuidanceControl
             Width="104"
             Height="116"
@@ -50,65 +48,53 @@
 
         <StackPanel Grid.Column="1" Spacing="8">
           <StackPanel Spacing="1">
-            <TextBlock Classes="muted"
-                       FontSize="9"
+            <TextBlock FontSize="9" Classes="muted type-caption"
                        Text="DISTANCE" />
-            <TextBlock Classes="monospace"
+            <TextBlock FontSize="16" Classes="monospace type-title"
                        Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="16"
                        FontWeight="SemiBold"
                        Text="{Binding GroundTarget.DistanceToTarget}" />
           </StackPanel>
 
           <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
             <StackPanel Spacing="1">
-              <TextBlock Classes="muted"
-                         FontSize="9"
+              <TextBlock FontSize="9" Classes="muted type-caption"
                          Text="BEARING" />
-              <TextBlock Classes="monospace"
-                         FontSize="12"
+              <TextBlock FontSize="12" Classes="monospace type-value"
                          FontWeight="SemiBold"
                          Text="{Binding GroundTarget.TargetBearing}" />
-              <TextBlock Classes="muted"
-                         FontSize="9"
+              <TextBlock FontSize="9" Classes="muted type-detail"
                          Text="{Binding GroundTarget.RelativeHeading}" />
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="1">
-              <TextBlock Classes="muted"
-                         FontSize="9"
+              <TextBlock FontSize="9" Classes="muted type-caption"
                          Text="DESCENT" />
-              <TextBlock Classes="monospace"
+              <TextBlock FontSize="12" Classes="monospace type-value"
                          Foreground="{DynamicResource RavenMutedTextBrush}"
-                         FontSize="12"
                          FontWeight="SemiBold"
                          IsVisible="{Binding GroundTarget.HasLevelApproach}"
                          Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="monospace"
+              <TextBlock FontSize="12" Classes="monospace type-value"
                          Foreground="{DynamicResource RavenWarningBrush}"
-                         FontSize="12"
                          FontWeight="SemiBold"
                          IsVisible="{Binding GroundTarget.HasShallowApproach}"
                          Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="monospace"
+              <TextBlock FontSize="12" Classes="monospace type-value"
                          Foreground="{DynamicResource RavenAccentBrush}"
-                         FontSize="12"
                          FontWeight="SemiBold"
                          IsVisible="{Binding GroundTarget.HasIdealApproach}"
                          Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="monospace"
+              <TextBlock FontSize="12" Classes="monospace type-value"
                          Foreground="{DynamicResource RavenDangerBrush}"
-                         FontSize="12"
                          FontWeight="SemiBold"
                          IsVisible="{Binding GroundTarget.HasSteepApproach}"
                          Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="monospace"
+              <TextBlock FontSize="12" Classes="monospace type-value"
                          Foreground="{DynamicResource RavenDangerBrush}"
-                         FontSize="12"
                          FontWeight="SemiBold"
                          IsVisible="{Binding GroundTarget.HasTooSteepApproach}"
                          Text="{Binding GroundTarget.DescentAngle}" />
-              <TextBlock Classes="muted"
-                         FontSize="9"
+              <TextBlock FontSize="9" Classes="muted type-detail"
                          Text="{Binding GroundTarget.ApproachStatus}" />
             </StackPanel>
           </Grid>
@@ -116,13 +102,11 @@
       </Grid>
 
       <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-        <TextBlock Classes="muted"
-                   FontSize="9"
+        <TextBlock FontSize="9" Classes="muted type-caption"
                    Text="TARGET" />
-        <TextBlock Grid.Column="1"
-                   Classes="monospace"
+        <TextBlock FontSize="9" Grid.Column="1"
+                   Classes="monospace type-value"
                    Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="9"
                    Text="{Binding GroundTarget.TargetCoordinates}"
                    TextTrimming="CharacterEllipsis" />
       </Grid>

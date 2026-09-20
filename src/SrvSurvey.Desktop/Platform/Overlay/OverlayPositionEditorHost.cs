@@ -11,6 +11,8 @@ public interface IOverlayPositionEditorHost : IDisposable
 {
     event EventHandler<OverlayPreviewMovedEventArgs>? PreviewMoved;
 
+    event EventHandler<OverlayPreviewSizeChangedEventArgs>? PreviewSizeChanged;
+
     event EventHandler? Closed;
 
     bool Open(
@@ -25,6 +27,10 @@ public interface IOverlayPositionEditorHost : IDisposable
     void RefreshPreviewOpacities(OverlayPositionEditSession session);
 
     void RefreshPreviewScales(OverlayPositionEditSession session);
+
+    void RefreshPreviewTypography(OverlayPositionEditSession session);
+
+    void RefreshPreviewSizes(OverlayPositionEditSession session);
 
     void RefreshPreviewPositions(OverlayPositionEditSession session);
 
@@ -56,6 +62,13 @@ public sealed class OverlayPreviewSettingsRequestedEventArgs(string plotterName)
     public string PlotterName { get; } = plotterName;
 }
 
+public sealed class OverlayPreviewSizeChangedEventArgs(string plotterName, OverlayPanelSize size) : EventArgs
+{
+    public string PlotterName { get; } = plotterName;
+
+    public OverlayPanelSize Size { get; } = size;
+}
+
 public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHost
 {
     private readonly IOverlayPlatformService platform;
@@ -81,6 +94,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     }
 
     public event EventHandler<OverlayPreviewMovedEventArgs>? PreviewMoved;
+
+    public event EventHandler<OverlayPreviewSizeChangedEventArgs>? PreviewSizeChanged;
 
     public event EventHandler? Closed;
 
@@ -161,11 +176,14 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(session.ScaleIndex, session.GetPlacement(definition.Name).ScaleIndex, hostScaling);
+            preview.ConfigureTypography(session.GetTypographyScale(definition.Name));
+            preview.ConfigureSize(session.GetSizeOverride(definition.Name));
             PixelSize previewSize = preview.GetExpectedPixelSize(hostScaling);
             preview.Position = session.GetPosition(definition.Name, hostBounds, previewSize);
             preview.ConfigureOpacity(session.DefaultOpacity, session.GetPlacement(definition.Name).Opacity);
             preview.PointerPressed += OnPreviewPointerPressed;
             preview.SettingsRequested += OnPreviewSettingsRequested;
+            preview.PanelSizeChanged += OnPreviewSizeChanged;
             preview.Opened += OnPreviewOpened;
             previews.Add(preview);
             preview.Show();
@@ -198,6 +216,42 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                     session.GetPlacement(preview.Definition.Name).ScaleIndex,
                     hostScaling
                 );
+                PositionPreview(preview, session);
+            }
+        }
+        finally
+        {
+            updatingPreviewLayout = false;
+        }
+    }
+
+    public void RefreshPreviewTypography(OverlayPositionEditSession session)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        updatingPreviewLayout = true;
+        try
+        {
+            foreach (OverlayPositionPreviewWindow preview in previews)
+            {
+                preview.ConfigureTypography(session.GetTypographyScale(preview.Definition.Name));
+                PositionPreview(preview, session);
+            }
+        }
+        finally
+        {
+            updatingPreviewLayout = false;
+        }
+    }
+
+    public void RefreshPreviewSizes(OverlayPositionEditSession session)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        updatingPreviewLayout = true;
+        try
+        {
+            foreach (OverlayPositionPreviewWindow preview in previews)
+            {
+                preview.ConfigureSize(session.GetSizeOverride(preview.Definition.Name));
                 PositionPreview(preview, session);
             }
         }
@@ -386,6 +440,11 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    private void OnPreviewSizeChanged(object? sender, OverlayPreviewSizeChangedEventArgs eventArgs)
+    {
+        PreviewSizeChanged?.Invoke(this, eventArgs);
+    }
+
     private void OnPreviewOpened(object? sender, EventArgs eventArgs)
     {
         if (sender is not OverlayPositionPreviewWindow preview)
@@ -410,6 +469,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.PointerPressed -= OnPreviewPointerPressed;
             preview.PositionChanged -= OnPreviewPositionChanged;
             preview.SettingsRequested -= OnPreviewSettingsRequested;
+            preview.PanelSizeChanged -= OnPreviewSizeChanged;
             preview.Opened -= OnPreviewOpened;
             preview.Close();
         }
@@ -475,7 +535,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     {
         if (sender is Window toolbar)
         {
-            PositionEditorToolbar(toolbar);
+            // SizeChanged can arrive before Bounds reflects the new
+            // SizeToContent measurement. Use the event size so the toolbar
+            // stays fixed while settings rows expand upward above it.
+            PositionEditorToolbar(toolbar, eventArgs.NewSize);
         }
     }
 
@@ -487,7 +550,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
-    private void PositionEditorToolbar(Window toolbar)
+    private void PositionEditorToolbar(Window toolbar, Size? measuredSize = null)
     {
         if (hostBounds.Width <= 0 || hostBounds.Height <= 0)
         {
@@ -501,8 +564,9 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
 
         PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, screen.WorkingArea);
-        double logicalWidth = toolbar.Bounds.Width > 0 ? toolbar.Bounds.Width : toolbar.Width;
-        double logicalHeight = toolbar.Bounds.Height > 0 ? toolbar.Bounds.Height : toolbar.MinHeight;
+        double logicalWidth = measuredSize?.Width ?? (toolbar.Bounds.Width > 0 ? toolbar.Bounds.Width : toolbar.Width);
+        double logicalHeight =
+            measuredSize?.Height ?? (toolbar.Bounds.Height > 0 ? toolbar.Bounds.Height : toolbar.MinHeight);
         var toolbarSize = new PixelSize(
             Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling)),
             Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling))

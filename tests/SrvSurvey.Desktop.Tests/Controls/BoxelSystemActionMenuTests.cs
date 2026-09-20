@@ -1,10 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -32,8 +35,14 @@ public sealed class BoxelSystemActionMenuTests
         Assert.Equal(1_500, BoxelSystemActionMenu.RevealDelayMilliseconds);
         Assert.True(control.TryRevealMenu(launcherIsPointerOver: false));
         Assert.True(popup?.IsOpen);
+        Assert.Same(control.FindControl<Button>("Launcher"), popup?.PlacementTarget);
+        Assert.Equal(PopupAnchor.None, popup?.PlacementAnchor);
+        Assert.Equal(PopupGravity.None, popup?.PlacementGravity);
+        Assert.Equal(PopupPositionerConstraintAdjustment.None, popup?.PlacementConstraintAdjustment);
+        Assert.Null(popup?.PlacementRect);
         Assert.True(control.FindControl<Canvas>("MenuSurface")!.IsVisible);
         Assert.DoesNotContain("open", control.FindControl<Canvas>("MenuSurface")!.Classes);
+        using WriteableBitmap? frame = window.CaptureRenderedFrame();
         control.AdvanceCommittedReveal();
         Assert.Contains("open", control.FindControl<Canvas>("MenuSurface")!.Classes);
         Assert.True(control.FindControl<Canvas>("MenuHitSurface")!.IsVisible);
@@ -75,15 +84,21 @@ public sealed class BoxelSystemActionMenuTests
         Button reopen = control.FindControl<Button>("ReopenActionButton")!;
         Button defer = control.FindControl<Button>("DeferActionButton")!;
         Button startHere = control.FindControl<Button>("StartHereActionButton")!;
+        Canvas hitSurface = control.FindControl<Canvas>("MenuHitSurface")!;
+        Canvas menuSurface = control.FindControl<Canvas>("MenuSurface")!;
 
-        Assert.Equal(106, complete.GetValue(Canvas.LeftProperty));
-        Assert.Equal(12, complete.GetValue(Canvas.TopProperty));
-        Assert.Equal(84, reopen.GetValue(Canvas.LeftProperty));
-        Assert.Equal(34, reopen.GetValue(Canvas.TopProperty));
-        Assert.Equal(184, defer.GetValue(Canvas.LeftProperty));
-        Assert.Equal(34, defer.GetValue(Canvas.TopProperty));
-        Assert.Equal(106, startHere.GetValue(Canvas.LeftProperty));
-        Assert.Equal(108, startHere.GetValue(Canvas.TopProperty));
+        Assert.Equal(170, hitSurface.Width);
+        Assert.Equal(178, hitSurface.Height);
+        Assert.Equal(hitSurface.Width, menuSurface.Width);
+        Assert.Equal(hitSurface.Height, menuSurface.Height);
+        Assert.Equal(26, complete.GetValue(Canvas.LeftProperty));
+        Assert.Equal(8, complete.GetValue(Canvas.TopProperty));
+        Assert.Equal(4, reopen.GetValue(Canvas.LeftProperty));
+        Assert.Equal(30, reopen.GetValue(Canvas.TopProperty));
+        Assert.Equal(104, defer.GetValue(Canvas.LeftProperty));
+        Assert.Equal(30, defer.GetValue(Canvas.TopProperty));
+        Assert.Equal(26, startHere.GetValue(Canvas.LeftProperty));
+        Assert.Equal(104, startHere.GetValue(Canvas.TopProperty));
 
         Assert.Equal(118, complete.Width);
         Assert.Equal(66, complete.Height);
@@ -105,6 +120,94 @@ public sealed class BoxelSystemActionMenuTests
         AssertDirectionalClip(startHere, new Point(59, 31), new Point(59, 2));
         AssertMirroredSideGeometry(reopen, defer);
         AssertSideButtonsFitTopWedgeRadius(complete, reopen, defer);
+        AssertRadialMenuIsCenteredInPopup(hitSurface, complete, startHere);
+
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void HoverRevealUsesTheLauncherBoundsAsItsCenterAnchor()
+    {
+        var control = new BoxelSystemActionMenu { DataContext = CreateRow() };
+        var window = new Window { Content = control };
+        window.Show();
+        control.BeginOpenIntent(explicitRequest: false);
+
+        Assert.True(control.TryRevealMenu(launcherIsPointerOver: true));
+        Assert.Null(control.FindControl<Popup>("MenuPopup")!.PlacementRect);
+
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void RadialHoleCenterMatchesLauncherCenterOnScreen()
+    {
+        var control = new BoxelSystemActionMenu { DataContext = CreateRow() };
+        var window = new Window
+        {
+            Width = 600,
+            Height = 400,
+            Content = new Border
+            {
+                Width = 110,
+                Height = 52,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = control,
+            },
+        };
+        window.Show();
+
+        control.BeginOpenIntent(explicitRequest: true);
+        Assert.True(control.TryRevealMenu(launcherIsPointerOver: false));
+        using WriteableBitmap? frame = window.CaptureRenderedFrame();
+
+        Button launcher = control.FindControl<Button>("Launcher")!;
+        Canvas menuSurface = control.FindControl<Canvas>("MenuSurface")!;
+        PixelPoint launcherCenter = launcher.PointToScreen(
+            new Point(launcher.Bounds.Width / 2, launcher.Bounds.Height / 2)
+        );
+        PixelPoint radialCenter = menuSurface.PointToScreen(
+            new Point(menuSurface.Bounds.Width / 2, menuSurface.Bounds.Height / 2)
+        );
+
+        Assert.Equal(launcherCenter, radialCenter);
+
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void RevealCorrectsAHostPlacementOffsetBeforeShowingTheMenu()
+    {
+        var control = new BoxelSystemActionMenu { DataContext = CreateRow() };
+        var window = new Window
+        {
+            Width = 600,
+            Height = 400,
+            Content = control,
+        };
+        window.Show();
+
+        control.BeginOpenIntent(explicitRequest: true);
+        Assert.True(control.TryRevealMenu(launcherIsPointerOver: false));
+        Popup popup = control.FindControl<Popup>("MenuPopup")!;
+        popup.HorizontalOffset = 12;
+        popup.VerticalOffset = 58;
+        using WriteableBitmap? displacedFrame = window.CaptureRenderedFrame();
+
+        control.AdvanceCommittedReveal();
+        using WriteableBitmap? correctedFrame = window.CaptureRenderedFrame();
+
+        Button launcher = control.FindControl<Button>("Launcher")!;
+        Canvas menuSurface = control.FindControl<Canvas>("MenuSurface")!;
+        PixelPoint launcherCenter = launcher.PointToScreen(
+            new Point(launcher.Bounds.Width / 2, launcher.Bounds.Height / 2)
+        );
+        PixelPoint radialCenter = menuSurface.PointToScreen(
+            new Point(menuSurface.Bounds.Width / 2, menuSurface.Bounds.Height / 2)
+        );
+        Assert.Equal(launcherCenter, radialCenter);
+        Assert.Contains("open", menuSurface.Classes);
 
         window.Close();
     }
@@ -239,8 +342,8 @@ public sealed class BoxelSystemActionMenuTests
         Assert.IsType<Avalonia.Media.Geometry>(top.Clip, exactMatch: false);
         Geometry leftClip = Assert.IsType<Avalonia.Media.Geometry>(left.Clip, exactMatch: false);
         Geometry rightClip = Assert.IsType<Avalonia.Media.Geometry>(right.Clip, exactMatch: false);
-        const double centerX = 165;
-        const double centerY = 93;
+        const double centerX = 85;
+        const double centerY = 89;
         double topOuterX = top.GetValue(Canvas.LeftProperty) + 4;
         double topOuterY = top.GetValue(Canvas.TopProperty) + 22;
         double guideRadius = Math.Sqrt(Math.Pow(centerX - topOuterX, 2) + Math.Pow(centerY - topOuterY, 2));
@@ -249,5 +352,15 @@ public sealed class BoxelSystemActionMenuTests
 
         Assert.InRange(leftReach, guideRadius - 1, guideRadius);
         Assert.InRange(rightReach, guideRadius - 1, guideRadius);
+    }
+
+    private static void AssertRadialMenuIsCenteredInPopup(Canvas surface, Button top, Button bottom)
+    {
+        double radialCenterX = top.GetValue(Canvas.LeftProperty) + (top.Width / 2);
+        double radialCenterY =
+            (top.GetValue(Canvas.TopProperty) + top.Height + bottom.GetValue(Canvas.TopProperty)) / 2;
+
+        Assert.Equal(surface.Width / 2, radialCenterX);
+        Assert.Equal(surface.Height / 2, radialCenterY);
     }
 }

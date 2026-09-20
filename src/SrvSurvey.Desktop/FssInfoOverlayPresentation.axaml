@@ -6,53 +6,66 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SystemSurveyOverlayViewModel"
              mc:Ignorable="d"
-             MaxWidth="270"
+             MinWidth="270"
+             MaxWidth="380"
              HorizontalAlignment="Left"
-             ClipToBounds="True">
+             ClipToBounds="False">
+  <UserControl.Styles>
+    <Style Selector="ScrollViewer.panel-height-scroll">
+      <Setter Property="MaxHeight" Value="{Binding Survey.FssBodyListMaxHeight}" />
+    </Style>
+  </UserControl.Styles>
   <Border Margin="0"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderThickness="0"
           CornerRadius="5">
-    <StackPanel Spacing="5">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto"
+          RowSpacing="5">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="overlay-header" Text="FSS SURVEY" />
-          <TextBlock Classes="overlay-title"
+          <TextBlock Classes="overlay-header type-header" Text="FSS SURVEY" />
+          <TextBlock Classes="overlay-title type-title"
                      Foreground="{DynamicResource RavenAccentBrush}"
                      Text="{Binding Survey.SystemTitle}"
                      TextTrimming="CharacterEllipsis" />
         </StackPanel>
-        <Border Grid.Column="1" Classes="badge" VerticalAlignment="Top">
-          <TextBlock Classes="overlay-detail"
-                     Foreground="{DynamicResource RavenAccentBrush}"
-                     FontWeight="SemiBold"
-                     Text="{Binding InputMode}" />
-        </Border>
+        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
+          <Border Classes="badge">
+            <TextBlock Classes="overlay-detail"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="SemiBold"
+                       Text="{Binding InputMode}" />
+          </Border>
+        </LayoutTransformControl>
       </Grid>
 
-      <StackPanel Spacing="3">
-        <TextBlock Classes="monospace overlay-body"
+      <StackPanel Grid.Row="1" Spacing="3">
+        <TextBlock Classes="monospace overlay-body type-body"
                    FontWeight="SemiBold"
-                   Text="{Binding Survey.ScanSummary}" />
-        <TextBlock Classes="muted overlay-detail"
-                   MaxWidth="220"
+                   Text="{Binding Survey.ScanSummary}"
+                   TextWrapping="Wrap" />
+        <TextBlock Classes="muted overlay-detail type-detail"
                    HorizontalAlignment="Left"
                    Text="{Binding Survey.FssFilterDescription}"
                    TextWrapping="Wrap" />
       </StackPanel>
 
-      <Border Classes="overlay-divider"
+      <Border Grid.Row="2"
+              Classes="overlay-divider"
               Background="{DynamicResource RavenBorderBrush}" />
 
-      <TextBlock Classes="muted overlay-detail"
+      <TextBlock Grid.Row="3"
+                 Classes="muted overlay-detail type-detail"
                  IsVisible="{Binding !Survey.HasFssBodies}"
                  Text="{Binding Survey.FssEmptyText}"
                  TextWrapping="Wrap" />
 
-      <StackPanel IsVisible="{Binding Survey.HasFssBodies}"
-                  Spacing="0">
-        <ScrollViewer MaxHeight="{Binding Survey.FssBodyListMaxHeight}"
+      <Grid Grid.Row="4"
+            RowDefinitions="*,Auto"
+            IsVisible="{Binding Survey.HasFssBodies}">
+        <ScrollViewer x:Name="FssBodyScroller"
+                      Classes="panel-height-scroll"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto">
           <ItemsControl ItemsSource="{Binding Survey.FssBodies}">
@@ -67,13 +80,11 @@
               <Grid RowDefinitions="Auto,Auto" RowSpacing="0">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="4">
                   <Grid>
-                    <TextBlock Classes="overlay-body"
-                               LineHeight="14"
+                    <TextBlock Classes="overlay-body type-body"
                                IsVisible="{Binding !IsHighlighted}"
                                FontWeight="SemiBold"
                                Text="{Binding Name}" />
-                    <TextBlock Classes="overlay-body"
-                               LineHeight="14"
+                    <TextBlock Classes="overlay-body type-body"
                                IsVisible="{Binding IsHighlighted}"
                                Foreground="{DynamicResource RavenAccentBrush}"
                                FontWeight="SemiBold"
@@ -82,85 +93,76 @@
                   <StackPanel Grid.Column="1"
                               Orientation="Horizontal"
                               Spacing="4">
-                    <TextBlock Classes="muted overlay-detail"
-                               LineHeight="14"
+                    <TextBlock Classes="muted overlay-detail type-detail"
                                Text="{Binding BodyClass}"
                                TextTrimming="CharacterEllipsis" />
-                    <TextBlock Classes="overlay-caption"
+                    <TextBlock Classes="overlay-caption type-icon"
                                Foreground="{DynamicResource RavenWarningBrush}"
-                               LineHeight="14"
                                FontWeight="SemiBold"
                                IsVisible="{Binding IsLandable}"
                                Text="LANDABLE" />
                   </StackPanel>
                   <TextBlock Grid.Column="2"
-                             Classes="monospace overlay-body"
-                             LineHeight="14"
+                             Classes="monospace overlay-body type-value"
                              HorizontalAlignment="Right"
                              Text="{Binding ScanValue}" />
                 </Grid>
 
                 <Grid Grid.Row="1"
+                      RowDefinitions="Auto,Auto"
                       ColumnDefinitions="*,Auto"
                       ColumnSpacing="4">
-                  <StackPanel Orientation="Horizontal" Spacing="4">
+                  <WrapPanel Orientation="Horizontal">
                     <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                               Classes="overlay-caption"
-                               LineHeight="12"
+                               Classes="overlay-caption type-icon"
                                FontWeight="SemiBold"
                                IsVisible="{Binding HasMarkers}"
                                Text="{Binding Markers}" />
-                    <TextBlock Classes="muted overlay-caption"
-                               LineHeight="12"
+                    <TextBlock Classes="muted overlay-caption type-icon"
                                IsVisible="{Binding ShowSeparatorBeforeGeologicalSignals}"
                                Text="&#x2022;" />
                     <Grid IsVisible="{Binding HasGeologicalSignals}">
                       <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                                 Classes="overlay-detail"
-                                 LineHeight="12"
+                                 Classes="overlay-detail type-detail"
                                  IsVisible="{Binding !AreGeologicalSignalsComplete}"
                                  Text="{Binding GeologicalSignalsText}" />
-                      <TextBlock Classes="muted overlay-detail"
-                                 LineHeight="12"
+                      <TextBlock Classes="muted overlay-detail type-detail"
                                  IsVisible="{Binding AreGeologicalSignalsComplete}"
                                  Text="{Binding GeologicalSignalsText}"
                                  TextDecorations="Strikethrough" />
                     </Grid>
-                    <TextBlock Classes="muted overlay-caption"
-                               LineHeight="12"
+                    <TextBlock Classes="muted overlay-caption type-icon"
                                IsVisible="{Binding ShowSeparatorBeforeBiologicalSignals}"
                                Text="&#x2022;" />
                     <Grid IsVisible="{Binding HasBiologicalSignals}">
                       <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                                 Classes="overlay-detail"
-                                 LineHeight="12"
+                                 Classes="overlay-detail type-detail"
                                  FontWeight="SemiBold"
                                  IsVisible="{Binding !AreBiologicalSignalsComplete}"
                                  Text="{Binding BiologicalSignalsText}" />
-                      <TextBlock Classes="muted overlay-detail"
-                                 LineHeight="12"
+                      <TextBlock Classes="muted overlay-detail type-detail"
                                  FontWeight="SemiBold"
                                  IsVisible="{Binding AreBiologicalSignalsComplete}"
                                  Text="{Binding BiologicalSignalsText}"
                                  TextDecorations="Strikethrough" />
                     </Grid>
-                  </StackPanel>
+                  </WrapPanel>
 
-                  <StackPanel Grid.Column="1"
+                  <StackPanel Grid.Row="1"
+                              Grid.Column="0"
+                              Grid.ColumnSpan="2"
                               Orientation="Horizontal"
                               HorizontalAlignment="Right"
                               Spacing="4">
-                    <Border Classes="badge"
-                            Padding="4,0"
-                            IsVisible="{Binding IsSurfaceScanned}">
-                      <TextBlock Classes="overlay-caption"
-                                 LineHeight="12"
-                                 Foreground="{DynamicResource RavenAccentBrush}"
-                                 FontWeight="SemiBold"
-                                 Text="SCANNED" />
-                    </Border>
-                    <TextBlock Classes="monospace overlay-detail"
-                               LineHeight="12"
+                    <LayoutTransformControl Classes="type-icon" IsVisible="{Binding IsSurfaceScanned}">
+                      <Border Classes="badge" Padding="4,0">
+                        <TextBlock Classes="overlay-caption"
+                                   Foreground="{DynamicResource RavenAccentBrush}"
+                                   FontWeight="SemiBold"
+                                   Text="SCANNED" />
+                      </Border>
+                    </LayoutTransformControl>
+                    <TextBlock Classes="monospace overlay-value type-value"
                                Foreground="{DynamicResource RavenAccentBrush}"
                                IsVisible="{Binding HasDssValue}"
                                Text="{Binding DssValue, StringFormat=DSS {0}}" />
@@ -173,17 +175,18 @@
           </ItemsControl>
         </ScrollViewer>
 
-        <Border Classes="overlay-divider"
+        <Border Grid.Row="1"
+                Classes="overlay-divider"
                 Background="{DynamicResource RavenBorderBrush}" />
-      </StackPanel>
+      </Grid>
 
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-        <TextBlock Classes="muted overlay-caption"
+      <Grid Grid.Row="5" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+        <TextBlock Classes="muted overlay-caption type-caption"
                    Text="SCAN VALUE &#x00B7; DSS VALUE" />
         <TextBlock Grid.Column="1"
-                   Classes="muted overlay-caption"
+                   Classes="muted overlay-caption type-caption"
                    Text="0% UNDISCOVERED" />
       </Grid>
-    </StackPanel>
+    </Grid>
   </Border>
 </UserControl>

@@ -9,6 +9,7 @@ using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -198,14 +199,13 @@ public sealed class SurfaceMiningOverlaySizingTests
     }
 
     [AvaloniaTheory]
+    [InlineData(-50, 1.25)]
     [InlineData(0, 1)]
-    [InlineData(1, 1)]
-    [InlineData(10, 1)]
-    [InlineData(10, 1.5)]
-    [InlineData(19, 2)]
-    [InlineData(25, 1.25)]
-    public void LiveMiningPresentationMatchesEditorAtTheSameScale(int scaleIndex, double renderScaling)
+    [InlineData(50, 1)]
+    [InlineData(75, 1.5)]
+    public void LiveMiningPresentationMatchesEditorAtTheSameScale(int scalePercent, double renderScaling)
     {
+        int scaleIndex = OverlayScaleCatalog.GetIndex(scalePercent);
         var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotSurfaceMining"));
         SurfaceMiningOverlayPresentation presentation = Assert.IsType<SurfaceMiningOverlayPresentation>(
             preview.RuntimePresentation
@@ -278,7 +278,13 @@ public sealed class SurfaceMiningOverlaySizingTests
         Rect liveBounds = new Rect(livePresentation.Bounds.Size).TransformToAABB(
             livePresentation.TransformToVisual(live)!.Value
         );
-        Assert.InRange(Math.Abs(previewBounds.Width - liveBounds.Width), 0, 1);
-        Assert.InRange(Math.Abs(previewBounds.Height - liveBounds.Height), 0, 1);
+        Assert.True(
+            Math.Abs(previewBounds.Width - liveBounds.Width) <= 1,
+            $"Preview width {previewBounds.Width} did not match live width {liveBounds.Width}."
+        );
+        Assert.True(
+            Math.Abs(previewBounds.Height - liveBounds.Height) <= 1,
+            $"Preview height {previewBounds.Height} did not match live height {liveBounds.Height}."
+        );
     }
 }

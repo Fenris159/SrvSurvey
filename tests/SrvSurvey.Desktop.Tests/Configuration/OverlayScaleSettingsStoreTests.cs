@@ -11,44 +11,31 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
     );
 
     [Fact]
-    public void CatalogMatchesEveryLegacyScaleIndex()
+    public void CatalogUsesOperatingSystemScaleAsSignedPercentageBaseline()
     {
-        double?[] expected = new double?[]
-        {
-            null,
-            1,
-            1.1,
-            1.2,
-            1.25,
-            1.3,
-            1.4,
-            1.5,
-            1.6,
-            1.7,
-            1.75,
-            1.8,
-            1.9,
-            2,
-            2.1,
-            2.2,
-            2.25,
-            2.3,
-            2.4,
-            2.5,
-            0.9,
-            0.8,
-            0.75,
-            0.7,
-            0.6,
-            0.5,
-        };
+        Assert.Equal(61, OverlayScaleCatalog.Options.Count);
+        Assert.Equal(-100, OverlayScaleCatalog.Options[0].Percent);
+        Assert.Equal(0, OverlayScaleCatalog.Options[20].Percent);
+        Assert.Equal(200, OverlayScaleCatalog.Options[^1].Percent);
+        Assert.All(
+            OverlayScaleCatalog.Options.Zip(OverlayScaleCatalog.Options.Skip(1)),
+            pair => Assert.Equal(5, pair.Second.Percent - pair.First.Percent)
+        );
+        Assert.Equal(0d, OverlayScaleCatalog.GetRelativeScale(OverlayScaleCatalog.GetIndex(-100), 1.5));
+        Assert.Equal(1d, OverlayScaleCatalog.GetRelativeScale(OverlayScaleCatalog.GetIndex(0), 1.5));
+        Assert.Equal(3d, OverlayScaleCatalog.GetRelativeScale(OverlayScaleCatalog.GetIndex(200), 1.5));
+    }
 
-        Assert.Equal(expected.Length, OverlayScaleCatalog.Options.Count);
-        for (int index = 0; index < expected.Length; index++)
-        {
-            Assert.Equal(index, OverlayScaleCatalog.Options[index].Index);
-            Assert.Equal(expected[index], OverlayScaleCatalog.Options[index].AbsoluteScale);
-        }
+    [Fact]
+    public void LegacyAbsoluteScaleIndexesConvertRelativeToTheDisplayBaseline()
+    {
+        Assert.Equal(0, OverlayScaleCatalog.GetPercent(0, 1.5));
+        Assert.Equal(0, OverlayScaleCatalog.GetPercent(7, 1.5));
+        Assert.Equal(25, OverlayScaleCatalog.GetPercent(12, 1.5));
+        Assert.Equal(35, OverlayScaleCatalog.GetPercent(13, 1.5));
+        Assert.Equal(45, OverlayScaleCatalog.GetPercent(15, 1.5));
+        Assert.Equal(50, OverlayScaleCatalog.GetPercent(16, 1.5));
+        Assert.Equal(-65, OverlayScaleCatalog.GetPercent(25, 1.5));
     }
 
     [Fact]
@@ -57,6 +44,7 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
         Assert.Equal(1, OverlayScaleCatalog.GetRelativeScale(0, 1.5));
         Assert.Equal(1.5, OverlayScaleCatalog.GetRelativeScale(16, 1.5));
         Assert.Equal(0.4, OverlayScaleCatalog.GetRelativeScale(25, 1.25), 10);
+        Assert.Equal(2.25, OverlayScaleCatalog.GetRelativeScale(OverlayScaleCatalog.GetIndex(125), 1.5));
     }
 
     [Fact]
@@ -81,12 +69,13 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
 
         Assert.Equal(new OverlayScalePreferences(22), store.Load());
 
-        store.Save(new OverlayScalePreferences(7));
+        int updatedIndex = OverlayScaleCatalog.GetIndex(50);
+        store.Save(new OverlayScalePreferences(updatedIndex));
 
         JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["FutureRoot"]!.GetValue<bool>());
         Assert.Equal("keep", root["OverlayScale"]!["FutureScale"]!.GetValue<string>());
-        Assert.Equal(7, root["OverlayScale"]!["Index"]!.GetValue<int>());
+        Assert.Equal(updatedIndex, root["OverlayScale"]!["Index"]!.GetValue<int>());
     }
 
     [Fact]
@@ -101,6 +90,28 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
 
         Assert.Equal(OverlayScalePreferences.Default, loaded);
         Assert.Equal(content, await File.ReadAllTextAsync(path));
+    }
+
+    [Fact]
+    public async Task LegacyScaleMigrationIsBackedUpPersistedAndIdempotent()
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "ui-settings.json");
+        const string original = "{\"Version\":1,\"FutureRoot\":true,\"OverlayScale\":{\"Index\":15}}";
+        await File.WriteAllTextAsync(path, original);
+        var store = new OverlayScaleSettingsStore(path);
+
+        OverlayScaleMigrationResult first = store.MigrateLegacyScale(1.5);
+        OverlayScaleMigrationResult second = store.MigrateLegacyScale(1.5);
+
+        Assert.True(first.Migrated);
+        Assert.Equal(15, first.PreviousIndex);
+        Assert.Equal(OverlayScaleCatalog.GetIndex(45), first.MigratedIndex);
+        Assert.NotNull(first.BackupPath);
+        Assert.Equal(original, await File.ReadAllTextAsync(first.BackupPath));
+        Assert.Equal(new OverlayScalePreferences(OverlayScaleCatalog.GetIndex(45)), store.Load());
+        Assert.True(store.Load().Index >= 1000);
+        Assert.False(second.Migrated);
     }
 
     public void Dispose()

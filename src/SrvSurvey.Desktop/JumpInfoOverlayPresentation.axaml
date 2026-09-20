@@ -17,31 +17,29 @@
     <StackPanel Spacing="6">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="overlay-header" Text="NEXT JUMP" />
-          <TextBlock Classes="muted"
-                     FontSize="11"
+          <TextBlock Classes="overlay-header type-header" Text="NEXT JUMP" />
+          <TextBlock FontSize="11" Classes="muted type-detail"
                      Text="Route and destination intelligence" />
         </StackPanel>
-        <Border Grid.Column="1"
-                Classes="badge"
-                VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="10"
-                     FontWeight="SemiBold"
-                     Text="{Binding InputMode}" />
-        </Border>
+        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
+          <Border Classes="badge">
+            <TextBlock FontSize="10" Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="SemiBold"
+                       Text="{Binding InputMode}" />
+          </Border>
+        </LayoutTransformControl>
       </Grid>
 
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
         <StackPanel Orientation="Horizontal" Spacing="8">
-          <Border Classes="badge" IsVisible="{Binding JumpInfo.IsQuestTagged}">
-            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                       FontSize="9"
-                       FontWeight="Bold"
-                       Text="Q" />
-          </Border>
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="16"
+          <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.IsQuestTagged}">
+            <Border Classes="badge">
+              <TextBlock FontSize="9" Foreground="{DynamicResource RavenWarningBrush}"
+                         FontWeight="Bold"
+                         Text="Q" />
+            </Border>
+          </LayoutTransformControl>
+          <TextBlock FontSize="16" Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding TargetName}"
                      TextTrimming="CharacterEllipsis" />
@@ -50,19 +48,18 @@
                     Orientation="Horizontal"
                     Spacing="6"
                     VerticalAlignment="Center">
-          <Border Classes="badge"
-                  Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
-                  IsVisible="{Binding JumpInfo.IsScoopableStarClass}"
-                  MinHeight="18"
-                  Padding="7,2">
-            <TextBlock VerticalAlignment="Center"
-                       FontSize="9"
-                       Foreground="{DynamicResource RavenWarningBrush}"
-                       Text="SCOOPABLE" />
-          </Border>
-          <TextBlock Classes="monospace"
+          <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.IsScoopableStarClass}">
+            <Border Classes="badge"
+                    Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
+                    MinHeight="18"
+                    Padding="7,2">
+              <TextBlock FontSize="9" VerticalAlignment="Center"
+                         Foreground="{DynamicResource RavenWarningBrush}"
+                         Text="SCOOPABLE" />
+            </Border>
+          </LayoutTransformControl>
+          <TextBlock FontSize="12" Classes="monospace type-value"
                      Foreground="{DynamicResource RavenWarningBrush}"
-                     FontSize="12"
                      FontWeight="SemiBold"
                      VerticalAlignment="Center"
                      Text="{Binding JumpInfo.StarClass}" />
@@ -70,8 +67,7 @@
       </Grid>
 
       <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-        <TextBlock Classes="monospace"
-                   FontSize="11"
+        <TextBlock FontSize="11" Classes="monospace type-value"
                    FontWeight="SemiBold"
                    VerticalAlignment="Center"
                    Text="{Binding JumpInfo.JumpProgress}" />
@@ -86,9 +82,8 @@
                                            TargetBrush="{DynamicResource RavenSuccessBrush}"
                                            BoostBrush="{DynamicResource RavenWarningBrush}"
                                            BackgroundLineBrush="{DynamicResource RavenBorderBrush}" />
-        <TextBlock Grid.Column="2"
-                   Classes="monospace"
-                   FontSize="11"
+        <TextBlock FontSize="11" Grid.Column="2"
+                   Classes="monospace type-value"
                    FontWeight="SemiBold"
                    VerticalAlignment="Center"
                    Text="{Binding JumpInfo.TotalDistance}" />
@@ -100,7 +95,7 @@
         <Grid IsVisible="{Binding JumpInfo.HasDiscoveryOrRouteGuidance}"
               ColumnDefinitions="*,Auto"
               ColumnSpacing="8">
-          <TextBlock IsVisible="{Binding JumpInfo.HasDiscoveryText}"
+          <TextBlock Classes="type-body" IsVisible="{Binding JumpInfo.HasDiscoveryText}"
                      Text="{Binding JumpInfo.DiscoveryText}"
                      TextWrapping="Wrap" />
           <StackPanel Grid.Column="1"
@@ -108,42 +103,42 @@
                       HorizontalAlignment="Right"
                       Spacing="6"
                       IsVisible="{Binding JumpInfo.HasRouteGuidanceBadges}">
-            <Border Classes="badge"
-                    Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
-                    IsVisible="{Binding JumpInfo.HasRefuelGuidance}"
-                    Padding="7,2">
-              <StackPanel Orientation="Horizontal" Spacing="4">
-                <Image Width="14"
-                       Height="14"
-                       Source="avares://SrvSurvey.Desktop/Assets/Routes/refuel-star.png"
-                       Stretch="Uniform" />
-                <TextBlock VerticalAlignment="Center"
-                           FontSize="9"
-                           Foreground="#FF8A00"
-                           Text="REFUEL" />
-              </StackPanel>
-            </Border>
-            <Border Classes="badge"
-                    Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
-                    IsVisible="{Binding JumpInfo.HasNeutronGuidance}"
-                    Padding="7,2">
-              <StackPanel Orientation="Horizontal" Spacing="4">
-                <Image Width="14"
-                       Height="14"
-                       Source="avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png"
-                       Stretch="Uniform" />
-                <TextBlock VerticalAlignment="Center"
-                           FontSize="9"
-                           Foreground="#4A9EE8"
-                           Text="NEUTRON" />
-              </StackPanel>
-            </Border>
+            <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.HasRefuelGuidance}">
+              <Border Classes="badge"
+                      Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
+                      Padding="7,2">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <Image Width="14"
+                         Height="14"
+                         Source="avares://SrvSurvey.Desktop/Assets/Routes/refuel-star.png"
+                         Stretch="Uniform" />
+                  <TextBlock FontSize="9" VerticalAlignment="Center"
+                             Foreground="#FF8A00"
+                             Text="REFUEL" />
+                </StackPanel>
+              </Border>
+            </LayoutTransformControl>
+            <LayoutTransformControl Classes="type-icon" IsVisible="{Binding JumpInfo.HasNeutronGuidance}">
+              <Border Classes="badge"
+                      Background="{DynamicResource RavenRouteGuidanceBadgeBrush}"
+                      Padding="7,2">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <Image Width="14"
+                         Height="14"
+                         Source="avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png"
+                         Stretch="Uniform" />
+                  <TextBlock FontSize="9" VerticalAlignment="Center"
+                             Foreground="#4A9EE8"
+                             Text="NEUTRON" />
+                </StackPanel>
+              </Border>
+            </LayoutTransformControl>
           </StackPanel>
         </Grid>
-        <TextBlock IsVisible="{Binding JumpInfo.HasTraffic}"
+        <TextBlock Classes="type-body" IsVisible="{Binding JumpInfo.HasTraffic}"
                    Text="{Binding JumpInfo.TrafficText}"
                    TextWrapping="Wrap" />
-        <TextBlock IsVisible="{Binding JumpInfo.HasPointsOfInterest}"
+        <TextBlock Classes="type-body" IsVisible="{Binding JumpInfo.HasPointsOfInterest}"
                    Text="{Binding JumpInfo.PointsOfInterestText}"
                    TextWrapping="Wrap" />
         <ItemsControl IsVisible="{Binding JumpInfo.HasDetailLines}"
@@ -151,18 +146,17 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:JumpInfoDetailLineViewModel">
               <Grid Margin="0,2" ColumnDefinitions="Auto,*" ColumnSpacing="7">
-                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                <TextBlock Classes="type-caption" Foreground="{DynamicResource RavenAccentBrush}"
                            FontWeight="SemiBold"
                            Text="{Binding Label, StringFormat={}{0}:}" />
-                <TextBlock Grid.Column="1"
+                <TextBlock Classes="type-value" Grid.Column="1"
                            Text="{Binding Value}"
                            TextWrapping="Wrap" />
               </Grid>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <TextBlock Classes="muted"
-                   FontSize="10"
+        <TextBlock FontSize="10" Classes="muted type-detail"
                    IsVisible="{Binding JumpInfo.HasDataStatus}"
                    Text="{Binding JumpInfo.DataStatus}"
                    TextWrapping="Wrap" />

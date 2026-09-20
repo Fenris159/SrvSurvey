@@ -18,15 +18,13 @@
           BorderThickness="0"
           CornerRadius="5">
     <StackPanel Spacing="3">
-      <TextBlock Foreground="{DynamicResource RavenTextBrush}"
-                 FontSize="10"
+      <TextBlock FontSize="10" Classes="type-body" Foreground="{DynamicResource RavenTextBrush}"
                  FontWeight="SemiBold"
                  Text="{Binding Survey.SystemStatusText}"
                  TextWrapping="Wrap" />
 
       <StackPanel IsVisible="{Binding Survey.HasDssBodies}" Spacing="2">
-        <TextBlock Classes="muted"
-                   FontSize="9"
+        <TextBlock FontSize="9" Classes="muted type-header"
                    Text="{Binding Survey.DssHeading}"
                    TextWrapping="Wrap" />
         <ItemsControl ItemsSource="{Binding Survey.DssBodies}">
@@ -42,12 +40,12 @@
                       Background="{DynamicResource RavenAccentMutedBrush}"
                       CornerRadius="3">
                 <Grid>
-                  <TextBlock FontSize="9"
+                  <TextBlock FontSize="9" Classes="type-body"
                              FontWeight="SemiBold"
                              Foreground="{DynamicResource RavenSecondaryBrush}"
                              IsVisible="{Binding !IsDestination}"
                              Text="{Binding Name}" />
-                  <TextBlock FontSize="9"
+                  <TextBlock FontSize="9" Classes="type-body"
                              FontWeight="Bold"
                              Foreground="{DynamicResource RavenWarningBrush}"
                              IsVisible="{Binding IsDestination}"
@@ -60,8 +58,7 @@
       </StackPanel>
 
       <StackPanel IsVisible="{Binding Survey.HasBiologicalBodies}" Spacing="2">
-        <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
-                   FontSize="9"
+        <TextBlock FontSize="9" Classes="type-header" Foreground="{DynamicResource RavenBioGoldBrush}"
                    FontWeight="SemiBold"
                    Text="{Binding Survey.BiologicalHeading}"
                    TextWrapping="Wrap" />
@@ -73,9 +70,8 @@
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:SurveyBodyReferenceViewModel">
-              <TextBlock Margin="0,0,8,2"
+              <TextBlock FontSize="9" Classes="type-body" Margin="0,0,8,2"
                          Foreground="{DynamicResource RavenPrimaryBrush}"
-                         FontSize="9"
                          FontWeight="SemiBold"
                          Text="{Binding Name}" />
             </DataTemplate>
@@ -83,8 +79,7 @@
         </ItemsControl>
       </StackPanel>
 
-      <TextBlock Classes="muted"
-                 FontSize="9"
+      <TextBlock FontSize="9" Classes="muted type-body"
                  IsVisible="{Binding Survey.HasNonBodySignals}"
                  Text="{Binding Survey.NonBodySignalsText}"
                  TextWrapping="Wrap" />

@@ -638,14 +638,18 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task ActiveMineMapSplatIsProjectedOntoTheCompactRadarWithoutBecomingRigMarkers()
+    public async Task ActiveMineMapShowsTheFourNearestSavedDepositsAndItsSplatGeometry()
     {
         using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
         var center = new SurfaceCoordinate(0, 0);
-        var marker = new MineMapMarker
+        MineMapMarker Marker(string material, double bearing, double distance) =>
+            new()
+            {
+                Material = material,
+                Location = MineMapService.GetDestination(center, bearing, distance, 1_000_000),
+            };
+        MineMapMarker marker = Marker("Ruby", 0, 50) with
         {
-            Material = "Ruby",
-            Location = center,
             SplatBoundary =
             [
                 MineMapService.GetDestination(center, 0, 100, 1_000_000),
@@ -661,23 +665,35 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             PlanetRadiusMeters = 1_000_000,
             Center = center,
             LocationRadiusMeters = 1_000,
-            Markers = [marker],
+            Markers =
+            [
+                Marker("Sixth", 300, 600),
+                Marker("Fourth", 180, 400),
+                marker,
+                Marker("Third", 120, 300),
+                Marker("Fifth", 240, 500),
+                Marker("Second", 60, 200),
+            ],
         };
 
-        await mining.ApplyUpdateAsync(
-            Session,
-            Snapshot(),
-            Status(),
-            "mev_rhino",
-            mapPresentation: new SurfaceMiningMapPresentation(ActiveSurvey: map)
-        );
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        Assert.Empty(mining.Resources);
+
+        await mining.ApplyMineMapSurveyAsync(map);
 
         SurfaceRadarPathViewModel boundary = Assert.Single(mining.SplatBoundaries);
         Assert.True(boundary.IsClosed);
         Assert.Equal(3, boundary.Points.Count);
         Assert.Single(mining.SuggestedRigLocations);
         Assert.Equal(4, mining.RadarScale);
-        Assert.DoesNotContain(mining.RadarMarkers, candidate => candidate.Name == "Ruby");
+        Assert.Equal(["Ruby", "Second", "Third", "Fourth"], mining.Resources.Select(resource => resource.Name));
+        Assert.Equal(4, mining.Resources.Count);
+        Assert.True(
+            mining
+                .Resources.Select(resource => resource.Marker.DistanceMeters)
+                .SequenceEqual(mining.Resources.Select(resource => resource.Marker.DistanceMeters).Order())
+        );
+        Assert.Contains(mining.RadarMarkers, candidate => candidate.Name == "Ruby");
     }
 
     [Fact]

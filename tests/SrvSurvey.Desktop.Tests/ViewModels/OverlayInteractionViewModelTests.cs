@@ -46,6 +46,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             Assert.Equal(original.Horizontal, placement.Horizontal);
             Assert.Equal(original.Vertical, placement.Vertical);
             Assert.Equal(original.Opacity, placement.Opacity);
+            Assert.Equal(
+                new OverlayPositionReference(gameBounds.Width, gameBounds.Height),
+                placement.PositionReference
+            );
             Assert.Equal(desiredPosition, layout.GetPosition("overlay", gameBounds, overlaySize));
         }
     }
@@ -186,6 +190,35 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.False(viewModel.IsEditing);
         Assert.False(host.IsOpen);
         Assert.Contains("cancelled", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public void CategoryMenuOpensBeforeAnyPanelEditAndClosesAfterSelection()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host
+        );
+        Assert.True(viewModel.Begin());
+
+        viewModel.ToggleCategoryMenuCommand.Execute(null);
+
+        Assert.True(viewModel.IsCategoryMenuOpen);
+        OverlayLayoutCategoryDefinition mining = viewModel.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.Mining
+        );
+
+        viewModel.SelectCategoryCommand.Execute(mining);
+
+        Assert.False(viewModel.IsCategoryMenuOpen);
+        Assert.Same(mining, viewModel.SelectedCategory);
+        Assert.Equal(OverlayLayoutCategory.Mining, host.ShownCategories[^1]);
     }
 
     [Fact]
@@ -620,10 +653,11 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         Assert.True(viewModel.Begin());
 
-        activeLayout.SetScaleIndex(19);
+        int scaleIndex = OverlayScaleCatalog.GetIndex(150);
+        activeLayout.SetScaleIndex(scaleIndex);
 
         Assert.Equal(1, host.ScaleRefreshCount);
-        Assert.Equal(19, host.LastScaleIndex);
+        Assert.Equal(scaleIndex, host.LastScaleIndex);
         Assert.Contains("selected scale", viewModel.StatusMessage);
     }
 
@@ -670,7 +704,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.False(viewModel.IsEditing);
         Assert.Equal(0.4, activeLayout.DefaultOpacity);
         Assert.Equal(0.8, activeLayout.Placements["PlotJumpInfo"].Opacity);
-        Assert.Contains("Saved 1 overlay position/opacity override", viewModel.StatusMessage);
+        Assert.Contains("Saved 1 overlay position and appearance override", viewModel.StatusMessage);
         Assert.Contains("\"plotterOpacity\": 40", File.ReadAllText(settingsPath));
         Assert.Contains(", 0.8", File.ReadAllText(plottersPath));
     }
@@ -694,21 +728,22 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         );
 
         Assert.True(viewModel.Begin());
-        host.ChangeScale("PlotJumpInfo", 19);
+        int customScaleIndex = OverlayScaleCatalog.GetIndex(150);
+        host.ChangeScale("PlotJumpInfo", customScaleIndex);
 
-        Assert.Equal(19, host.LastEffectiveScaleIndex["PlotJumpInfo"]);
+        Assert.Equal(customScaleIndex, host.LastEffectiveScaleIndex["PlotJumpInfo"]);
         Assert.False(File.Exists(Path.Combine(temporaryDirectory, "overlay-scale-overrides.json")));
 
         viewModel.Cancel();
         Assert.Null(activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
 
         Assert.True(viewModel.Begin());
-        host.ChangeScale("PlotJumpInfo", 19);
+        host.ChangeScale("PlotJumpInfo", customScaleIndex);
         viewModel.Save();
 
-        Assert.Equal(19, activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
+        Assert.Equal(customScaleIndex, activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
         Assert.Contains(
-            "\"PlotJumpInfo\": 19",
+            $"\"PlotJumpInfo\": {customScaleIndex}",
             File.ReadAllText(Path.Combine(temporaryDirectory, "overlay-scale-overrides.json"))
         );
     }
@@ -733,14 +768,18 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.True(viewModel.Begin());
         viewModel.OpenOverlaySettings("PlotJumpInfo");
         Assert.True(viewModel.IsOverlaySettingsOpen);
+        viewModel.ToggleTypographySettingsCommand.Execute(null);
+        Assert.True(viewModel.IsTypographySettingsOpen);
+        viewModel.ToggleTypographySettingsCommand.Execute(null);
+        Assert.False(viewModel.IsTypographySettingsOpen);
         viewModel.SelectedOverlayOpacityPercent = 34;
         viewModel.UseGlobalOverlayOpacity = false;
-        OverlayScaleOption[] scaleOptions = OverlayScaleCatalog
-            .Options.Where(option => option.AbsoluteScale is not null)
-            .OrderBy(option => option.AbsoluteScale)
-            .ToArray();
-        viewModel.SelectedOverlayScaleOrdinal = Array.FindIndex(scaleOptions, option => option.Index == 19);
+        viewModel.SelectedOverlayScalePercent = 150;
         viewModel.UseGlobalOverlayScale = false;
+        OverlayTypographyRoleViewModel title = viewModel.TypographyRoles.Single(role =>
+            role.Role == OverlayTypographyRole.Title
+        );
+        title.Percent = 25;
 
         viewModel.SaveCommand.Execute(null);
 
@@ -748,7 +787,81 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.False(viewModel.IsOverlaySettingsOpen);
         Assert.False(host.IsOpen);
         Assert.Equal(0.34, activeLayout.Placements["PlotJumpInfo"].Opacity);
-        Assert.Equal(19, activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
+        Assert.Equal(OverlayScaleCatalog.GetIndex(150), activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
+        Assert.Equal(25, activeLayout.GetTypographyScale("PlotJumpInfo").Title);
+        Assert.Equal(1, host.TypographyRefreshCount);
+
+        Assert.True(viewModel.Begin());
+        viewModel.OpenOverlaySettings("PlotJumpInfo");
+        Assert.Equal(25, viewModel.TypographyRoles.Single(role => role.Role == OverlayTypographyRole.Title).Percent);
+        viewModel.Cancel();
+    }
+
+    [Fact]
+    public void TypographyRoleEditorNormalizesStepsAndPublishesChanges()
+    {
+        var updates = new List<(OverlayTypographyRole Role, int Percent)>();
+        var role = new OverlayTypographyRoleViewModel(
+            OverlayTypographyRole.Caption,
+            "Caption",
+            (updatedRole, percent) => updates.Add((updatedRole, percent))
+        );
+        var changed = new List<string?>();
+        role.PropertyChanged += (_, eventArgs) => changed.Add(eventArgs.PropertyName);
+
+        role.Percent = 13;
+        role.Percent = 15;
+        role.Percent = 200;
+
+        Assert.Equal(100, role.Percent);
+        Assert.Equal("+100%", role.Label);
+        Assert.Equal([(OverlayTypographyRole.Caption, 15), (OverlayTypographyRole.Caption, 100)], updates);
+        Assert.Contains(nameof(role.Percent), changed);
+        Assert.Contains(nameof(role.Label), changed);
+        Assert.Throws<ArgumentNullException>(() =>
+            new OverlayTypographyRoleViewModel(role.Role, role.DisplayName, null!)
+        );
+    }
+
+    [Fact]
+    public void PanelResizeAndResetCommandsAreSavedWithTheSelectedOverlay()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), "{\"PlotJumpInfo\":\"center:0, top:8\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayPlacement initial = store.Load().Placements["PlotJumpInfo"] with
+        {
+            TypographyScale = new OverlayTypographyScale(0, 20, 0, 0, 0, 0, 15),
+            SizeOverride = new OverlayPanelSize(480, 260),
+        };
+        store.Save(new Dictionary<string, LegacyOverlayPlacement> { ["PlotJumpInfo"] = initial });
+        LegacyOverlayLayout activeLayout = store.Load();
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            activeLayout,
+            new OverlayWindowRegistry(),
+            host
+        );
+
+        Assert.True(viewModel.Begin());
+        viewModel.OpenOverlaySettings("PlotJumpInfo");
+        viewModel.ResetTypographyCommand.Execute(null);
+        viewModel.ResetOverlaySizeCommand.Execute(null);
+        viewModel.Save();
+
+        Assert.Equal(OverlayTypographyScale.Default, activeLayout.GetTypographyScale("PlotJumpInfo"));
+        Assert.Null(activeLayout.GetSizeOverride("PlotJumpInfo"));
+        Assert.Equal(1, host.TypographyRefreshCount);
+        Assert.Equal(1, host.SizeRefreshCount);
+
+        Assert.True(viewModel.Begin());
+        host.Resize("PlotJumpInfo", new OverlayPanelSize(360, 210));
+        viewModel.Save();
+
+        Assert.Equal(new OverlayPanelSize(360, 210), activeLayout.GetSizeOverride("PlotJumpInfo"));
     }
 
     public void Dispose()
@@ -821,6 +934,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     {
         public event EventHandler<OverlayPreviewMovedEventArgs>? PreviewMoved;
 
+        public event EventHandler<OverlayPreviewSizeChangedEventArgs>? PreviewSizeChanged;
+
         public event EventHandler? Closed
         {
             add => _ = value;
@@ -840,6 +955,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         public Dictionary<string, double> LastEffectiveOpacityPercent { get; } = new(StringComparer.Ordinal);
 
         public int ScaleRefreshCount { get; private set; }
+
+        public int TypographyRefreshCount { get; private set; }
+
+        public int SizeRefreshCount { get; private set; }
 
         public int LastScaleIndex { get; private set; }
 
@@ -893,6 +1012,16 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             }
         }
 
+        public void RefreshPreviewTypography(OverlayPositionEditSession session)
+        {
+            TypographyRefreshCount++;
+        }
+
+        public void RefreshPreviewSizes(OverlayPositionEditSession session)
+        {
+            SizeRefreshCount++;
+        }
+
         public void RefreshPreviewPositions(OverlayPositionEditSession session)
         {
             PositionRefreshCount++;
@@ -940,6 +1069,11 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             );
         }
 
+        public void Resize(string plotterName, OverlayPanelSize size)
+        {
+            PreviewSizeChanged?.Invoke(this, new OverlayPreviewSizeChangedEventArgs(plotterName, size));
+        }
+
         public void ChangeOpacity(string plotterName, double? opacityOverride)
         {
             ViewModel!.OpenOverlaySettings(plotterName);
@@ -962,14 +1096,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
                 return;
             }
 
-            OverlayScaleOption[] options = OverlayScaleCatalog
-                .Options.Where(option => option.AbsoluteScale is not null)
-                .OrderBy(option => option.AbsoluteScale)
-                .ToArray();
-            ViewModel.SelectedOverlayScaleOrdinal = Array.FindIndex(
-                options,
-                option => option.Index == scaleOverride.Value
-            );
+            ViewModel.SelectedOverlayScalePercent = OverlayScaleCatalog.GetPercent(scaleOverride.Value);
             ViewModel.UseGlobalOverlayScale = false;
         }
 

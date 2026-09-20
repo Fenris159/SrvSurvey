@@ -17,36 +17,31 @@
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="5">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
         <StackPanel Spacing="2">
-          <TextBlock Classes="overlay-header" Text="SURFACE SURVEY" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="17"
+          <TextBlock Classes="overlay-header type-header" Text="SURFACE SURVEY" />
+          <TextBlock FontSize="17" Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding SurfaceSurvey.BodyName}"
                      TextTrimming="CharacterEllipsis" />
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="7">
-            <TextBlock Classes="monospace"
-                       FontSize="9"
+            <TextBlock FontSize="9" Classes="monospace type-detail"
                        Text="{Binding SurfaceSurvey.HeadingText}" />
-            <TextBlock Grid.Column="1"
-                       Classes="muted"
-                       FontSize="9"
+            <TextBlock FontSize="9" Grid.Column="1"
+                       Classes="muted type-detail"
                        Text="{Binding SurfaceSurvey.HistoryText}"
                        TextTrimming="CharacterEllipsis" />
-            <TextBlock Grid.Column="2"
-                       Classes="monospace"
-                       FontSize="9"
+            <TextBlock FontSize="9" Grid.Column="2"
+                       Classes="monospace type-detail"
                        IsVisible="{Binding SurfaceSurvey.ShouldShowRadar}"
                        Text="{Binding SurfaceSurvey.RadarScaleText}" />
           </Grid>
         </StackPanel>
-        <Border Grid.Column="1"
-                Classes="badge"
-                VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="8"
-                     FontWeight="SemiBold"
-                     Text="{Binding InputMode}" />
-        </Border>
+        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
+          <Border Classes="badge">
+            <TextBlock FontSize="8" Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="SemiBold"
+                       Text="{Binding InputMode}" />
+          </Border>
+        </LayoutTransformControl>
       </Grid>
 
       <Grid Grid.Row="1"
@@ -85,8 +80,7 @@
                         CornerRadius="7"
                         Opacity="{Binding RowOpacity}">
                   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="7">
-                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                               FontSize="10"
+                    <TextBlock FontSize="10" Classes="type-body" Foreground="{DynamicResource RavenAccentBrush}"
                                FontWeight="SemiBold"
                                Text="{Binding Name}"
                                TextTrimming="CharacterEllipsis" />
@@ -105,15 +99,16 @@
                                   Background="{DynamicResource RavenRaisedSurfaceBrush}"
                                   CornerRadius="5">
                             <StackPanel Orientation="Horizontal" Spacing="3">
-                              <controls:DirectionalChevronControl
-                                  Width="12"
-                                  Height="12"
-                                  BearingDegrees="{Binding RelativeBearingDegrees}"
-                                  IsFar="{Binding IsFarTarget}"
-                                  Stroke="{DynamicResource RavenAccentBrush}"
-                                  StrokeThickness="1.5" />
-                              <TextBlock Classes="monospace"
-                                         FontSize="8"
+                              <LayoutTransformControl Classes="type-icon">
+                                <controls:DirectionalChevronControl
+                                    Width="12"
+                                    Height="12"
+                                    BearingDegrees="{Binding RelativeBearingDegrees}"
+                                    IsFar="{Binding IsFarTarget}"
+                                    Stroke="{DynamicResource RavenAccentBrush}"
+                                    StrokeThickness="1.5" />
+                              </LayoutTransformControl>
+                              <TextBlock FontSize="8" Classes="monospace type-value"
                                          Text="{Binding DistanceText}" />
                             </StackPanel>
                           </Border>
@@ -145,30 +140,28 @@
                       BorderThickness="1"
                       CornerRadius="6">
                 <StackPanel Orientation="Horizontal" Spacing="4">
-                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                             FontSize="10"
+                  <TextBlock FontSize="10" Classes="type-body" Foreground="{DynamicResource RavenAccentBrush}"
                              FontWeight="SemiBold"
                              Text="{Binding Name}" />
-                  <controls:DirectionalChevronControl
-                      Width="14"
-                      Height="14"
-                      BearingDegrees="{Binding RelativeBearingDegrees}"
-                      IsFar="{Binding IsFarTarget}"
-                      Stroke="{DynamicResource RavenAccentBrush}"
-                      StrokeThickness="1.6" />
-                  <TextBlock Classes="monospace"
-                             FontSize="8"
+                  <LayoutTransformControl Classes="type-icon">
+                    <controls:DirectionalChevronControl
+                        Width="14"
+                        Height="14"
+                        BearingDegrees="{Binding RelativeBearingDegrees}"
+                        IsFar="{Binding IsFarTarget}"
+                        Stroke="{DynamicResource RavenAccentBrush}"
+                        StrokeThickness="1.6" />
+                  </LayoutTransformControl>
+                  <TextBlock FontSize="8" Classes="monospace type-value"
                              Text="{Binding BearingText}" />
-                  <TextBlock Classes="monospace"
-                             FontSize="8"
+                  <TextBlock FontSize="8" Classes="monospace type-value"
                              Text="{Binding DistanceText}" />
                 </StackPanel>
               </Border>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <TextBlock Classes="muted"
-                   FontSize="8"
+        <TextBlock FontSize="8" Classes="muted type-detail"
                    MaxHeight="32"
                    Text="{Binding SurfaceSurvey.StatusText}"
                    TextTrimming="CharacterEllipsis"

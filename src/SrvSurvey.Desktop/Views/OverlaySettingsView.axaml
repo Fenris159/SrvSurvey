@@ -48,11 +48,21 @@
             <TextBlock FontWeight="SemiBold" Text="Overlay scale" />
             <TextBlock Classes="muted"
                        FontSize="11"
-                       Text="Match desktop scaling or force the original 50-250% overlay sizes." />
+                       Text="Scale from the operating-system baseline in 5% steps." />
           </StackPanel>
-          <ComboBox Grid.Column="1"
-                    ItemsSource="{Binding OverlayScale.Options}"
-                    SelectedItem="{Binding OverlayScale.SelectedOption, Mode=TwoWay}" />
+          <Grid Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Slider Minimum="-100"
+                    Maximum="200"
+                    TickFrequency="5"
+                    IsSnapToTickEnabled="True"
+                    Value="{Binding OverlayScale.ScalePercent, Mode=TwoWay}" />
+            <TextBlock Grid.Column="1"
+                       MinWidth="48"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       FontWeight="SemiBold"
+                       Text="{Binding OverlayScale.ScaleLabel}" />
+          </Grid>
         </Grid>
         <Border Background="{DynamicResource RavenSurfaceBrush}"
                 BorderBrush="{DynamicResource RavenBorderBrush}"

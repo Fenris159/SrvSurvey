@@ -199,6 +199,20 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
+    public async Task ApplyMineMapSurveyAsync(MineMapSurvey? survey)
+    {
+        await updateLock.WaitAsync().ConfigureAwait(true);
+        try
+        {
+            mineMapSurvey = survey;
+            Recalculate();
+        }
+        finally
+        {
+            updateLock.Release();
+        }
+    }
+
     private void UpdateDetectionMotion()
     {
         if (!CanDetectRigs || !TryGetPosition(out SurfaceCoordinate position))
@@ -633,7 +647,56 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         };
     }
 
-    private SurfaceRadarMarkerViewModel[] CreateResourceMarkers() =>
+    private SurfaceRadarMarkerViewModel[] CreateResourceMarkers()
+    {
+        SurfaceRadarMarkerViewModel[] savedDeposits = CreateMineMapResourceMarkers();
+        return savedDeposits.Length > 0 ? savedDeposits : CreateLegacyResourceMarkers();
+    }
+
+    private SurfaceRadarMarkerViewModel[] CreateMineMapResourceMarkers()
+    {
+        if (
+            mineMapSurvey is null
+            || context is null
+            || status is null
+            || mineMapSurvey.SystemAddress != context.SystemAddress
+            || mineMapSurvey.BodyId != context.BodyId
+            || !TryGetPosition(out SurfaceCoordinate cockpit)
+        )
+        {
+            return [];
+        }
+
+        SurfaceCoordinate current = status.InSrv
+            ? SurfaceMiningGeometry.VehicleCenter(cockpit, status.NormalizedHeading, context.RadiusMeters)
+            : cockpit;
+        return mineMapSurvey
+            .Markers.Where(marker => !string.IsNullOrWhiteSpace(marker.Material))
+            .Select(marker => CreateMineMapResourceMarker(marker, current))
+            .OrderBy(marker => marker.DistanceMeters)
+            .ThenBy(marker => marker.Name, StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+    }
+
+    private SurfaceRadarMarkerViewModel CreateMineMapResourceMarker(MineMapMarker marker, SurfaceCoordinate current)
+    {
+        double distance = SurfaceNavigation.GetDistance(current, marker.Location, context!.RadiusMeters);
+        double bearing = SurfaceNavigation.GetBearing(current, marker.Location);
+        return new SurfaceRadarMarkerViewModel
+        {
+            Name = marker.Material,
+            Kind = SurfaceRadarMarkerKind.Bookmark,
+            Location = marker.Location,
+            DistanceMeters = distance,
+            BearingDegrees = bearing,
+            RelativeBearingDegrees = SurfaceNavigation.NormalizeDegrees(bearing - status!.NormalizedHeading),
+            RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
+            IsInsideRadius = distance < SurfaceMiningGeometry.ResourceRadiusMeters,
+        };
+    }
+
+    private SurfaceRadarMarkerViewModel[] CreateLegacyResourceMarkers() =>
         navigation
             .Where(marker =>
                 marker.IsBookmark

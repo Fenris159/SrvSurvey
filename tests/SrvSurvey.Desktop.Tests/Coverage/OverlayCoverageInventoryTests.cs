@@ -543,7 +543,8 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("Edit Overlay Positions", interaction);
         Assert.Contains("OverlayInteraction.ToggleCommand", overlaySettings);
         Assert.Contains("ItemsSource=\"{Binding Categories}\"", editor);
-        Assert.Contains("SelectedItem=\"{Binding SelectedCategory, Mode=TwoWay}\"", editor);
+        Assert.Contains("Text=\"{Binding SelectedCategory.DisplayName}\"", editor);
+        Assert.Contains("Command=\"{Binding ToggleCategoryMenuCommand}\"", editor);
         Assert.Contains("Command=\"{Binding SnapToCenterCommand}\"", editor);
         Assert.Contains("Content=\"&#x25CE;\"", editor);
         Assert.Contains("Snap every overlay in this category to the center", editor);
@@ -593,7 +594,28 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("UseGlobalOverlayOpacity", editor);
         Assert.Contains("SelectedOverlayOpacityPercent", editor);
         Assert.Contains("UseGlobalOverlayScale", editor);
-        Assert.Contains("SelectedOverlayScaleOrdinal", editor);
+        Assert.Contains("SelectedOverlayScalePercent", editor);
+        Assert.Contains("ToggleTypographySettingsCommand", editor);
+        Assert.Contains("ResetTypographyCommand", editor);
+        Assert.Contains("ResetOverlaySizeCommand", editor);
+        Assert.Contains("TypographyRoles", editor);
+        Assert.Contains("x:Name=\"TypographySettingsPanel\"", editor);
+        Assert.Contains("x:Name=\"PanelResizeThumb\"", preview);
+        Assert.DoesNotContain("<Popup PlacementTarget=\"{Binding #TypographyButton}\"", editor);
+        Assert.True(
+            editor.IndexOf("x:Name=\"TypographySettingsPanel\"", StringComparison.Ordinal)
+                < editor.IndexOf("x:Name=\"OverlaySettingsPanel\"", StringComparison.Ordinal)
+        );
+        Assert.Contains("overlay-category", editor);
+        Assert.Contains("x:Name=\"OverlayCategoryMenu\"", editor);
+        Assert.Contains("ToggleCategoryMenuCommand", editor);
+        Assert.Contains("SelectCategoryCommand", editor);
+        Assert.DoesNotContain("UpwardComboBox", editor);
+        Assert.DoesNotContain("<Popup", editor);
+        Assert.True(
+            editor.IndexOf("x:Name=\"OverlayCategoryMenu\"", StringComparison.Ordinal)
+                < editor.IndexOf("x:Name=\"EditorToolbarPanel\"", StringComparison.Ordinal)
+        );
         Assert.DoesNotContain("VisiblePreviewOverlays", editor);
         Assert.DoesNotContain("SelectedPreviewOverlay", editor);
         Assert.DoesNotContain("Text=\"Overlay panel\"", editor);
@@ -601,7 +623,7 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("OverlayWindowPlacement.BottomCenter", editorHost);
         Assert.Contains("screen.WorkingArea", editorHost);
         Assert.Contains("ManagedOverlayWindowDragSession.Begin(preview, eventArgs)", editorHost);
-        Assert.Contains("Right Click Panels to edit individual Opacity/Scale", editor);
+        Assert.Contains("Right-click panels to edit opacity, panel scale, and text scale", editor);
         Assert.DoesNotContain("BringPreviewToFront", editorHost);
         Assert.DoesNotContain("ClampToHost", editorHost);
         Assert.True(
@@ -657,7 +679,7 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("RouteBioTargetList", routeOverlayPresentation);
         Assert.Contains("Width=\"260\"", routeOverlay);
         Assert.Contains("Text=\"ROUTE BODIES\"", routeOverlayPresentation);
-        Assert.Contains("Classes=\"overlay-header\"", routeOverlayPresentation);
+        Assert.Contains("Classes=\"overlay-header type-header\"", routeOverlayPresentation);
         Assert.Contains("Background=\"{DynamicResource RavenHeaderBrush}\"", routeOverlayPresentation);
         Assert.DoesNotContain("RavenWarningBrush", routeOverlayPresentation);
         Assert.DoesNotContain("BorderBrush=\"{DynamicResource RavenWarningBrush}\"", routeOverlayPresentation);
@@ -671,7 +693,7 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("Width=\"240\"", biologyOverlay);
         Assert.Contains("BiologySurveyOverlayPresentation", biologyOverlay);
         Assert.Contains("Text=\"{Binding Survey.BiologySurveyDisplay.Title}\"", biologyPresentation);
-        Assert.Contains("Classes=\"overlay-header\"", biologyPresentation);
+        Assert.Contains("Classes=\"overlay-header type-header\"", biologyPresentation);
         Assert.Contains("Background=\"{DynamicResource RavenHeaderBrush}\"", biologyPresentation);
         Assert.DoesNotContain("RavenWarningBrush", biologyPresentation);
         Assert.Contains("Padding=\"4\"", biologyPresentation);

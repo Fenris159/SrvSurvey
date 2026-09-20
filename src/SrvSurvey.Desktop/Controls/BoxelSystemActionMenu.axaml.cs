@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -102,8 +103,29 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         revealAnimationTimer.Stop();
         if (MenuPopup.IsOpen && MenuSurface.IsVisible && !MenuSurface.Classes.Contains("open"))
         {
+            AlignPopupCenters();
             MenuSurface.Classes.Add("open");
         }
+    }
+
+    private void AlignPopupCenters()
+    {
+        PixelPoint launcherCenter = Launcher.PointToScreen(
+            new Point(Launcher.Bounds.Width / 2, Launcher.Bounds.Height / 2)
+        );
+        PixelPoint menuCenter = MenuSurface.PointToScreen(
+            new Point(MenuSurface.Bounds.Width / 2, MenuSurface.Bounds.Height / 2)
+        );
+        int horizontalDelta = launcherCenter.X - menuCenter.X;
+        int verticalDelta = launcherCenter.Y - menuCenter.Y;
+        if (horizontalDelta == 0 && verticalDelta == 0)
+        {
+            return;
+        }
+
+        double renderScaling = TopLevel.GetTopLevel(Launcher)?.RenderScaling ?? 1d;
+        MenuPopup.HorizontalOffset += horizontalDelta / renderScaling;
+        MenuPopup.VerticalOffset += verticalDelta / renderScaling;
     }
 
     internal void BeginOpenIntent(bool explicitRequest)
@@ -200,6 +222,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         MenuSurface.Classes.Remove("open");
         MenuSurface.IsVisible = false;
         MenuPopup.IsOpen = false;
+        MenuPopup.PlacementRect = null;
         ReleaseActiveMenu(this);
     }
 

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
@@ -31,7 +32,7 @@ public sealed class OverlayWindowMetricsTests
     }
 
     [AvaloniaFact]
-    public void AbsoluteOverlayScaleKeepsFallbackIndependentOfMonitorScaling()
+    public void RelativeOverlayScaleUsesOperatingSystemScaleAsItsBaseline()
     {
         var window = new Window
         {
@@ -41,11 +42,11 @@ public sealed class OverlayWindowMetricsTests
             Content = new Border(),
         };
         var layout = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
-        layout.SetScaleIndex(1);
+        layout.SetScaleIndex(OverlayScaleCatalog.GetIndex(100));
 
         PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, layout, "PlotSysStatus", 1.5d);
 
-        Assert.Equal(new PixelSize(140, 140), size);
+        Assert.Equal(new PixelSize(420, 420), size);
     }
 
     [AvaloniaFact]

@@ -21,21 +21,21 @@
             ColumnSpacing="6"
             RowSpacing="3"
             HorizontalAlignment="Left">
-        <TextBlock Classes="overlay-header" Text="BODY INFORMATION" />
-        <Border Grid.Column="1"
-                Classes="badge overlay-state-pill"
-                Padding="7,1"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center">
-          <TextBlock Classes="overlay-caption"
-                     Foreground="{DynamicResource RavenAccentBrush}"
-                     FontWeight="SemiBold"
-                     LineHeight="12"
-                     Text="{Binding InputMode}" />
-        </Border>
+        <TextBlock Classes="overlay-header type-header" Text="BODY INFORMATION" />
+        <LayoutTransformControl Grid.Column="1"
+                                Classes="type-icon"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
+          <Border Classes="badge overlay-state-pill" Padding="7,1">
+            <TextBlock Classes="overlay-caption"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="SemiBold"
+                       Text="{Binding InputMode}" />
+          </Border>
+        </LayoutTransformControl>
         <TextBlock Grid.Row="1"
                    Grid.ColumnSpan="2"
-                   Classes="overlay-title"
+                   Classes="overlay-title type-title"
                    Foreground="{DynamicResource RavenAccentBrush}"
                    Text="{Binding Survey.BodyInformationDisplay.Name}"
                    TextTrimming="CharacterEllipsis" />
@@ -43,10 +43,10 @@
 
       <WrapPanel Orientation="Horizontal">
         <TextBlock Margin="0,0,6,0"
-                   Classes="muted overlay-detail"
+                   Classes="muted overlay-detail type-detail"
                    Text="{Binding Survey.BodyInformationDisplay.BodyClass}"
                    TextWrapping="Wrap" />
-        <TextBlock Classes="overlay-detail"
+        <TextBlock Classes="overlay-detail type-detail"
                    Text="{Binding Survey.BodyInformationDisplay.Distance}" />
       </WrapPanel>
 
@@ -54,7 +54,7 @@
               Background="{DynamicResource RavenAccentMutedBrush}"
               CornerRadius="8"
               IsVisible="{Binding Survey.BodyInformationDisplay.IsScanRequired}">
-        <TextBlock Classes="overlay-body"
+        <TextBlock Classes="overlay-body type-body"
                    Foreground="{DynamicResource RavenAccentBrush}"
                    FontWeight="SemiBold"
                    Text="Detailed scan required" />
@@ -63,7 +63,7 @@
       <StackPanel IsVisible="{Binding !Survey.BodyInformationDisplay.IsScanRequired}"
                   Spacing="5">
         <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                   Classes="overlay-caption"
+                   Classes="overlay-caption type-icon"
                    FontWeight="SemiBold"
                    IsVisible="{Binding Survey.BodyInformationDisplay.HasMarkers}"
                    Text="{Binding Survey.BodyInformationDisplay.Markers}" />
@@ -75,11 +75,11 @@
                   Background="{DynamicResource RavenSurfaceBrush}"
                   CornerRadius="8">
             <StackPanel Spacing="2">
-              <TextBlock Classes="eyebrow overlay-caption" Text="SCAN VALUE" />
-              <TextBlock Classes="monospace overlay-value"
+              <TextBlock Classes="eyebrow overlay-caption type-caption" Text="SCAN VALUE" />
+              <TextBlock Classes="monospace overlay-value type-value"
                          IsVisible="{Binding !Survey.BodyInformationDisplay.IsHighValue}"
                          Text="{Binding Survey.BodyInformationDisplay.ScanValue}" />
-              <TextBlock Classes="monospace overlay-value"
+              <TextBlock Classes="monospace overlay-value type-value"
                          Foreground="{DynamicResource RavenAccentBrush}"
                          IsVisible="{Binding Survey.BodyInformationDisplay.IsHighValue}"
                          Text="{Binding Survey.BodyInformationDisplay.ScanValue}" />
@@ -91,8 +91,8 @@
                   CornerRadius="8"
                   IsVisible="{Binding Survey.BodyInformationDisplay.HasMappedValue}">
             <StackPanel Spacing="2">
-              <TextBlock Classes="eyebrow overlay-caption" Text="WITH SURFACE SCAN" />
-              <TextBlock Classes="monospace overlay-value"
+              <TextBlock Classes="eyebrow overlay-caption type-caption" Text="WITH SURFACE SCAN" />
+              <TextBlock Classes="monospace overlay-value type-value"
                          Foreground="{DynamicResource RavenAccentBrush}"
                          Text="{Binding Survey.BodyInformationDisplay.MappedValue}" />
             </StackPanel>
@@ -103,18 +103,18 @@
               ColumnSpacing="12"
               HorizontalAlignment="Left">
           <StackPanel Spacing="2">
-            <TextBlock Classes="eyebrow overlay-caption" Text="TEMPERATURE" />
-            <TextBlock Classes="monospace overlay-body"
+            <TextBlock Classes="eyebrow overlay-caption type-caption" Text="TEMPERATURE" />
+            <TextBlock Classes="monospace overlay-body type-value"
                        Text="{Binding Survey.BodyInformationDisplay.Temperature}" />
           </StackPanel>
           <StackPanel Grid.Column="1"
                       IsVisible="{Binding Survey.BodyInformationDisplay.IsPlanet}"
                       Spacing="2">
-            <TextBlock Classes="eyebrow overlay-caption" Text="GRAVITY" />
-            <TextBlock Classes="monospace overlay-body"
+            <TextBlock Classes="eyebrow overlay-caption type-caption" Text="GRAVITY" />
+            <TextBlock Classes="monospace overlay-body type-value"
                        IsVisible="{Binding !Survey.BodyInformationDisplay.IsHighGravity}"
                        Text="{Binding Survey.BodyInformationDisplay.Gravity}" />
-            <TextBlock Classes="monospace overlay-body"
+            <TextBlock Classes="monospace overlay-body type-value"
                        Foreground="{DynamicResource RavenDangerBrush}"
                        FontWeight="Bold"
                        IsVisible="{Binding Survey.BodyInformationDisplay.IsHighGravity}"
@@ -123,8 +123,8 @@
           <StackPanel Grid.Column="2"
                       IsVisible="{Binding Survey.BodyInformationDisplay.IsPlanet}"
                       Spacing="2">
-            <TextBlock Classes="eyebrow overlay-caption" Text="PRESSURE" />
-            <TextBlock Classes="monospace overlay-body"
+            <TextBlock Classes="eyebrow overlay-caption type-caption" Text="PRESSURE" />
+            <TextBlock Classes="monospace overlay-body type-value"
                        Text="{Binding Survey.BodyInformationDisplay.Pressure}" />
           </StackPanel>
         </Grid>
@@ -134,38 +134,38 @@
                       IsVisible="{Binding Survey.BodyInformationDisplay.HasBiologicalSignals}"
                       Spacing="2">
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                       Classes="overlay-detail"
+                       Classes="overlay-detail type-body"
                        FontWeight="SemiBold"
                        Text="{Binding Survey.BodyInformationDisplay.BiologicalSignals}" />
-            <TextBlock Classes="overlay-caption"
+            <TextBlock Classes="overlay-caption type-value"
                        IsVisible="{Binding Survey.BodyInformationDisplay.HasBiologicalReward}"
                        Text="{Binding Survey.BodyInformationDisplay.BiologicalReward}" />
           </StackPanel>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                     Classes="overlay-detail"
+                     Classes="overlay-detail type-body"
                      FontWeight="SemiBold"
                      IsVisible="{Binding Survey.BodyInformationDisplay.HasGeologicalSignals}"
                      Text="{Binding Survey.BodyInformationDisplay.GeologicalSignals}" />
         </WrapPanel>
 
         <Grid RowDefinitions="Auto,Auto"
-              ColumnDefinitions="72,*"
+              ColumnDefinitions="Auto,*"
               RowSpacing="4">
-          <TextBlock Classes="muted overlay-detail"
+          <TextBlock Classes="muted overlay-detail type-caption"
                      IsVisible="{Binding Survey.BodyInformationDisplay.HasVolcanism}"
                      Text="VOLCANISM" />
           <TextBlock Grid.Column="1"
-                     Classes="overlay-detail"
+                     Classes="overlay-detail type-body"
                      IsVisible="{Binding Survey.BodyInformationDisplay.HasVolcanism}"
                      Text="{Binding Survey.BodyInformationDisplay.Volcanism}"
                      TextWrapping="Wrap" />
           <TextBlock Grid.Row="1"
-                     Classes="muted overlay-detail"
+                     Classes="muted overlay-detail type-caption"
                      IsVisible="{Binding Survey.BodyInformationDisplay.IsPlanet}"
                      Text="ATMOSPHERE" />
           <TextBlock Grid.Row="1"
                      Grid.Column="1"
-                     Classes="overlay-detail"
+                     Classes="overlay-detail type-body"
                      IsVisible="{Binding Survey.BodyInformationDisplay.IsPlanet}"
                      Text="{Binding Survey.BodyInformationDisplay.Atmosphere}"
                      TextWrapping="Wrap" />
@@ -173,7 +173,7 @@
 
         <StackPanel IsVisible="{Binding Survey.BodyInformationDisplay.HasAtmosphereComposition}"
                     Spacing="5">
-          <TextBlock Classes="eyebrow overlay-caption"
+          <TextBlock Classes="eyebrow overlay-caption type-caption"
                      Text="ATMOSPHERE COMPOSITION" />
           <ItemsControl MaxWidth="210"
                         HorizontalAlignment="Left"
@@ -188,11 +188,11 @@
                 <Grid Margin="0,0,10,3"
                       ColumnDefinitions="Auto,Auto"
                       ColumnSpacing="5">
-                  <TextBlock Classes="muted overlay-caption"
+                  <TextBlock Classes="muted overlay-caption type-caption"
                              Text="{Binding Name}"
                              TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Column="1"
-                             Classes="overlay-caption"
+                             Classes="overlay-caption type-value"
                              Text="{Binding Value}" />
                 </Grid>
               </DataTemplate>
@@ -202,7 +202,7 @@
 
         <StackPanel IsVisible="{Binding Survey.BodyInformationDisplay.HasMaterials}"
                     Spacing="5">
-          <TextBlock Classes="eyebrow overlay-caption" Text="MATERIALS" />
+          <TextBlock Classes="eyebrow overlay-caption type-caption" Text="MATERIALS" />
           <ItemsControl MaxWidth="210"
                         HorizontalAlignment="Left"
                         ItemsSource="{Binding Survey.BodyInformationDisplay.Materials}">
@@ -218,18 +218,18 @@
                         Background="{DynamicResource RavenSurfaceBrush}"
                         CornerRadius="6">
                   <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="5">
-                    <TextBlock Classes="muted overlay-caption"
+                    <TextBlock Classes="muted overlay-body type-body"
                                IsVisible="{Binding !IsRare}"
                                Text="{Binding Name}"
                                TextTrimming="CharacterEllipsis" />
                     <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                               Classes="overlay-caption"
+                               Classes="overlay-body type-body"
                                FontWeight="SemiBold"
                                IsVisible="{Binding IsRare}"
                                Text="{Binding Name}"
                                TextTrimming="CharacterEllipsis" />
                     <TextBlock Grid.Column="1"
-                               Classes="overlay-caption"
+                               Classes="overlay-caption type-value"
                                FontWeight="SemiBold"
                                Text="{Binding Value}" />
                   </Grid>
@@ -241,7 +241,7 @@
 
         <StackPanel IsVisible="{Binding Survey.BodyInformationDisplay.HasRings}"
                     Spacing="5">
-          <TextBlock Classes="eyebrow overlay-caption" Text="RINGS" />
+          <TextBlock Classes="eyebrow overlay-caption type-caption" Text="RINGS" />
           <ItemsControl ItemsSource="{Binding Survey.BodyInformationDisplay.Rings}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
@@ -254,7 +254,7 @@
                         Padding="7,3"
                         Background="{DynamicResource RavenAccentMutedBrush}"
                         CornerRadius="999">
-                  <TextBlock Classes="overlay-caption"
+                  <TextBlock Classes="overlay-body type-body"
                              Text="{Binding DisplayText}" />
                 </Border>
               </DataTemplate>

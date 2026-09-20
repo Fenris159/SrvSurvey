@@ -40,24 +40,26 @@
     <Grid ColumnDefinitions="Auto,Auto,*"
           ColumnSpacing="7"
           VerticalAlignment="Top">
-      <CheckBox x:Name="CompletionCheckBox"
-                Classes="route-body-check"
-                Margin="0,1,0,0"
-                VerticalAlignment="Top"
-                IsChecked="{Binding IsCompleted, Mode=OneWay}"
-                Click="CompletionCheckBox_Click" />
-      <Border Grid.Column="1"
-              Width="22"
-              Height="22"
-              Padding="2"
-              Margin="0,1,0,0"
-              VerticalAlignment="Top"
-              Background="Transparent"
-              CornerRadius="11"
-              ToolTip.Tip="{Binding BodyIconAccessibleName}">
-        <Image Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
-               Stretch="Uniform" />
-      </Border>
+      <LayoutTransformControl Classes="type-icon" Margin="0,1,0,0" VerticalAlignment="Top">
+        <CheckBox x:Name="CompletionCheckBox"
+                  Classes="route-body-check"
+                  IsChecked="{Binding IsCompleted, Mode=OneWay}"
+                  Click="CompletionCheckBox_Click" />
+      </LayoutTransformControl>
+      <LayoutTransformControl Grid.Column="1"
+                              Classes="type-icon"
+                              Margin="0,1,0,0"
+                              VerticalAlignment="Top">
+        <Border Width="22"
+                Height="22"
+                Padding="2"
+                Background="Transparent"
+                CornerRadius="11"
+                ToolTip.Tip="{Binding BodyIconAccessibleName}">
+          <Image Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
+                 Stretch="Uniform" />
+        </Border>
+      </LayoutTransformControl>
       <ItemsControl Grid.Column="2"
                     ItemsSource="{Binding InlineSegments}">
         <ItemsControl.ItemsPanel>
@@ -68,17 +70,17 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:RouteBioDetailSegmentViewModel">
             <StackPanel Margin="0,0,4,1" Orientation="Horizontal">
-              <TextBlock Classes="overlay-detail"
+              <TextBlock Classes="overlay-detail type-body"
                          Foreground="{DynamicResource RavenPrimaryBrush}"
                          FontWeight="SemiBold"
                          IsVisible="{Binding IsBodyName}"
                          Text="{Binding Text}" />
-              <TextBlock Classes="overlay-detail"
+              <TextBlock Classes="overlay-detail type-detail"
                          Foreground="{DynamicResource RavenPrimaryBrush}"
                          IsVisible="{Binding IsDetail}"
                          Text="{Binding Text}" />
               <TextBlock Margin="3,0,0,0"
-                         Classes="overlay-detail"
+                         Classes="overlay-detail type-icon"
                          Foreground="{DynamicResource RavenPrimaryBrush}"
                          IsVisible="{Binding HasSeparator}"
                          Text="|" />
@@ -93,7 +95,7 @@
                   ItemsSource="{Binding Species}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <TextBlock Classes="overlay-caption"
+          <TextBlock Classes="overlay-detail type-detail"
                      Foreground="{DynamicResource RavenPrimaryDimBrush}"
                      Text="{Binding StringFormat=• {0}}"
                      TextWrapping="Wrap" />
@@ -102,7 +104,7 @@
     </ItemsControl>
 
     <TextBlock Margin="58,0,0,0"
-               Classes="overlay-caption"
+               Classes="overlay-detail type-detail"
                Foreground="{DynamicResource RavenPrimaryDimBrush}"
                FontStyle="Italic"
                IsVisible="{Binding NeedsScan}"

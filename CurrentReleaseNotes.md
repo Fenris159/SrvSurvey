@@ -1,74 +1,87 @@
-# SrvSurvey-XP 2.1.3.0-rc.49.3
+# SrvSurvey-XP 2.1.3.0-rc.50
 
-RC49.3 makes Linux Wayland screen capture an explicit opt-in for each image-based
-tracker. You can now enable one tracker at a time while testing the ScreenCast
-and PipeWire integration.
+RC50 completes the overlay editor with independent per-panel typography, icon,
+scale, and shape controls. It also improves overlay layouts, the Surface Mining
+tracker, Colonization workspace, and Boxel Statistics.
 
-## Wayland tracker controls
+## Per-panel overlay typography
 
-Open **Settings → Application → Wayland screen capture** to configure:
+- Right-click an overlay in the position editor and select the **Aa** button to
+  adjust Header, Title, Value, Body, Detail, Caption, and Icons for that panel.
+- Every overlay string is classified by meaning. Each role scales from that
+  string's original size, preserving the existing layout, colours, font family,
+  and weight at the 0% baseline.
+- Icons independently scale badges, PIPs, biology sample circles, direction
+  markers, body symbols, Codex-image indicators, pulse indicators, and other
+  panel glyphs without changing Caption text.
+- Fleet Carrier Route, Route Bodies, FSS, biology, surface navigation, and the
+  remaining panel templates classify their full content consistently. Larger
+  text and icons receive layout space instead of drawing over nearby content.
+- Each panel stores its own seven-role typography profile. Profiles saved before
+  icon scaling load with Icons at the unchanged 0% baseline.
+- The text-scale card has a one-click reset for all seven roles. The card and the
+  overlay-category selector expand upward inside the editor from their first
+  opening so Linux popup bounds cannot send them below the window.
 
-- **Enable Wayland screen capture**, the master permission. It remains off by
-  default.
-- **FSS tuning completion**, off by default.
-- **First-footfall detection**, off by default.
-- **Surface Mining Rhino rig tracking**, off by default.
+## Overlay scale and panel size
 
-The individual permissions are new in RC49.3. On an upgrade from RC49.2 or an
-earlier build, SrvSurvey keeps the existing master preference but treats each
-missing tracker permission as off. No tracker will use the portal until it is
-explicitly selected.
+- Global overlay scale is a slider from -100% through +200% in 5% steps. Zero
+  uses the operating system display scale as its baseline.
+- Per-panel scale overrides use the same signed slider. Existing absolute scale
+  values are backed up and converted once to preserve their physical size; the
+  migration marker prevents later startups from converting them again.
+- Overlay previews have a lower-right resize grip. Custom width and height
+  replace the presentation's default caps while flexible columns, wrapped text,
+  and scroll regions use the available space. Fixed diagrams and semantic
+  groups retain their familiar internal arrangement.
+- The four-arrow button beside **Aa** restores the panel's measured default
+  shape. FSS Information, Prior Scans, and Route Bodies give added panel height
+  to their scrolling lists and restore their compact list caps on reset.
+- FSS Information constrains and wraps its summary and filter explanation,
+  reducing excess width between body names and right-aligned values.
+- Prior Scans uses matching geometry for ACTIVE and ANALYZED pills.
 
-These controls govern only the Wayland ScreenCast fallback used when normal X11
-capture is unavailable. Windows and native X11 capture behavior is unchanged.
-FSS tuning and Rhino rig tracking must also be enabled in their normal feature
-settings before they will request an image.
+Existing users keep their familiar overlay appearance because new typography
+and icon roles default to 0%, and saved panel shapes remain unchanged until the
+user resizes them.
 
-Turning off one tracker closes that tracker's active portal session without
-disabling another permitted tracker. Turning off the master permission closes
-all active Wayland capture sessions. **Choose capture source again** is available
-only when the master permission and at least one tracker are enabled.
+## Surface Mining tracker
 
-## Wayland capture reliability
+- Surface Mining lists the nearest four saved deposits from the active Mining
+  Overview map, ordered by live distance from the player or Rhino.
+- Adding, editing, or removing a map marker refreshes the compact tracker
+  immediately. Existing named mining bookmarks remain as a fallback for older
+  data.
 
-- PipeWire portal startup no longer uses `DllImport SetLastError`, which .NET
-  rejects when runtime marshalling is disabled. This was the immediate failure
-  shown in the supplied RC49.0 logs after a window or monitor was selected.
-- SrvSurvey owns a close-on-exec duplicate of the portal file descriptor and
-  cleans up the PipeWire loop if connection startup fails.
-- ScreenCast portal v6 uses the stable PipeWire serial; portal v5 retains the
-  numeric node-ID path used by the supplied systems.
-- Capture failures include the exception chain and SrvSurvey/PipeWire throw
-  site, then retry with backoff instead of remaining stuck until restart.
-- The selected portal source can be cleared from Settings before restarting and
-  choosing the Elite Dangerous client window again.
-- Linux no longer registers overlay windows with the unused desktop global-menu
-  service, avoiding repeated D-Bus cleanup warnings when that service is absent.
+## Workspace usability
 
-## Suggested test sequence
-
-1. Enable the Wayland master permission.
-2. Enable only one tracker permission.
-3. For FSS or Rhino, enable that detector in its normal settings panel.
-4. When the desktop picker opens, select the **Elite Dangerous client window**.
-5. Exercise that feature before enabling another tracker.
-
-If capture fails, attach the current log from
-`~/.local/share/SrvSurvey/logs`. The added portal and PipeWire stages should make
-it clear whether the failure occurred during permission selection, remote
-opening, stream negotiation, frame delivery, or cropping.
+- The experimental global Typography card is removed from Theme. Per-panel text
+  and icon scaling is the supported control, while saved theme baseline values
+  remain readable for compatibility.
+- Colonization fits the application viewport without a horizontal workspace
+  scrollbar. Site, project, and depot sections share available width, wrap their
+  controls, and keep Clear primary and Make primary labels visible.
+- Boxel Statistics uses accordion sections so Recently Recorded and the full
+  Boxel browser share one viewport. Opening either section closes the other.
+- Recently Recorded is capped at the latest eight matching boxels. Both sections
+  use the same bordered, separated row format and keep large result sets inside
+  a scrolling frame.
+- Mass-code buttons are immediate multi-select filters with a theme-safe accent
+  border. Selecting a letter keeps it highlighted and clicking it again clears
+  that filter without hiding the label.
+- Boxel row radial actions align their center hole with the launcher on Linux
+  after popup layout and display scaling are known. Window edges no longer push
+  Complete, Reopen, Defer, or Start Here away from the selected row.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.49.3`
-- Tag: `xp-v2.1.3.0-rc.49.3`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.49.3-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.49.3-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.49.3-x86_64.AppImage`
+- Version: `2.1.3.0-rc.50`
+- Tag: `xp-v2.1.3.0-rc.50`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.50-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.50-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage`
 
-Windows and Linux packages are self-contained. Linux packaging tools and the
-AppImage runtime use versioned, checksum-verified downloads. AppImages are
-updated manually through the selected XP release. Numeric Windows FileVersion
+Windows and Linux packages remain self-contained. Numeric Windows FileVersion
 remains `2.1.3.0`.
 
 ## Testing notice
@@ -77,7 +90,3 @@ remains `2.1.3.0`.
 > This remains a work-in-progress preview for testing. Keep a backup of your
 > existing SrvSurvey data and report unexpected behavior through the project
 > issue tracker.
-
-A compositor-approved Elite Dangerous window capture is still required to
-confirm the full portal path on each target Wayland desktop. Pure native Wayland
-is not yet a full-functionality overlay target.
