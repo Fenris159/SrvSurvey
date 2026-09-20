@@ -245,6 +245,57 @@ These are user reports in the upstream tracker, not claims that every system
 will fail. A public guide should preserve a plain non-Gamescope launch path,
 pin the exact tested tag, and tell users how to revert the Steam launch option.
 
+## AMD DCC top-edge artifact investigation
+
+The tested Strix Halo system later developed black stair-step/tiled artifacts
+along the top edge of both the Frontier launcher and Elite when nested through
+Gamescope. The corruption was present in desktop screenshots and in
+Gamescope's internal screenshot output, so it was in the rendered image rather
+than being a cable, panel, or physical scanout problem.
+
+The relevant tested stack was:
+
+| Item | Verified value |
+|---|---|
+| GPU | AMD Radeon 8060S/8050S, PCI ID `1002:1586` |
+| RADV family | `STRIX_HALO` |
+| Mesa | `26.0.8-1ubuntu0.3` |
+| Gamescope | Locally built `3.16.29` |
+| Desktop | GNOME Shell 50.1, Wayland, XWayland native scaling enabled |
+| Gamescope path | SDL/X11, 2560x1440 output with 3840x2160 game resolution |
+
+Scoping `RADV_DEBUG=nodcc` to Gamescope removed the corruption:
+
+```text
+RADV_DEBUG=nodcc gamescope [Gamescope options] \
+  -- env -u RADV_DEBUG -- [game command]
+```
+
+The `env -u RADV_DEBUG` boundary is deliberate. It disables DCC for the
+compositor while allowing Elite and the launcher to use their normal RADV
+configuration. Applying `nodcc` to the whole Steam/game process tree is broader
+than the verified fix and may unnecessarily affect game performance.
+
+Verification after relaunch found no qualifying black top-edge component in
+either an external desktop capture or Gamescope's internal screenshot, and no
+new AMD GPU errors. The user also reported more responsive pointer movement;
+that secondary observation is machine-specific and should not be presented as
+a general performance claim.
+
+This closely matches an independent September 2026 investigation of black
+Gamescope output on Radeon/RADV while scaling 1080p to 4K. That report traced
+the failure to an AMD DCC DMA-BUF modifier/import mismatch and verified the
+same compositor-only pattern:
+`RADV_DEBUG=nodcc gamescope ... -- env -u RADV_DEBUG ...`.
+See the
+[Gamescope/RADV DCC and DMA-BUF modifier investigation](https://www.atty303.ninja/notes/Gamescope%E3%81%AEfilter%E3%81%A7%E9%BB%92%E7%94%BB%E9%9D%A2%E3%81%AB%E3%81%AA%E3%82%8B%E5%8E%9F%E5%9B%A0%E3%82%92DMA-BUF-modifier%E3%81%BE%E3%81%A7%E8%BF%BD%E3%81%A3%E3%81%9F).
+Mesa's `RADV_DEBUG` help also defines `nodcc` as disabling DCC for color
+images on the supported GFX generations.
+
+The workaround should remain opt-in and be removed for a retest after Mesa or
+Gamescope updates. It was verified on the stack above, not established as a
+universal fix for every black-frame or flicker symptom.
+
 ## Documentation guidance
 
 - Present the upstream 3.16.29 build and the local patch as separate steps.
