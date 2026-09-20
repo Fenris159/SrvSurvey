@@ -622,7 +622,7 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("toolbar.Activate()", editorHost);
         Assert.Contains("OverlayWindowPlacement.BottomCenter", editorHost);
         Assert.Contains("screen.WorkingArea", editorHost);
-        Assert.Contains("platform.BeginMoveDrag(preview, eventArgs)", editorHost);
+        Assert.Contains("ManagedOverlayWindowDragSession.Begin(preview, eventArgs)", editorHost);
         Assert.Contains("Right-click panels to edit opacity, panel scale, and text scale", editor);
         Assert.DoesNotContain("BringPreviewToFront", editorHost);
         Assert.DoesNotContain("ClampToHost", editorHost);

@@ -378,7 +378,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         Close(restoreRuntimeWindows: false);
     }
 
-    private void OnPreviewPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
+    private static void OnPreviewPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
         if (
             sender is not OverlayPositionPreviewWindow preview
@@ -388,7 +388,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        platform.BeginMoveDrag(preview, eventArgs);
+        // GNOME can ignore native move requests for the notification-style X11
+        // windows used by editor previews. Track the pointer directly so every
+        // desktop can reposition previews and cross display edges consistently.
+        ManagedOverlayWindowDragSession.Begin(preview, eventArgs);
         eventArgs.Handled = true;
     }
 
