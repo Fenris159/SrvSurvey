@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
@@ -110,6 +112,10 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         Assert.False(runtimeWindow.IsVisible);
         Assert.NotEmpty(platform.InteractiveWindows);
+        OverlayPositionPreviewWindow preview = host.PreviewWindows[0];
+        preview.MouseDown(new Point(12, 12), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+        preview.MouseUp(new Point(12, 12), MouseButton.Left, RawInputModifiers.None);
+        Assert.Equal(1, platform.BeginMoveDragCount);
         var session = new OverlayPositionEditSession(activeLayout);
         host.RefreshPreviewOpacities(session);
         host.RefreshPreviewScales(session);
@@ -655,6 +661,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         public List<Window> InteractiveWindows { get; } = [];
 
+        public int BeginMoveDragCount { get; private set; }
+
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {
             return new OverlayPreparationResult(true, true, "Prepared");
@@ -668,6 +676,11 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             }
 
             return new OverlayInteractionResult(true, interactive, "Prepared");
+        }
+
+        public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs)
+        {
+            BeginMoveDragCount++;
         }
 
         public void Dispose() { }
