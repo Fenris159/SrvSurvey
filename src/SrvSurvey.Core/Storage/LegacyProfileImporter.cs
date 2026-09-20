@@ -91,8 +91,7 @@ public sealed class LegacyProfileImporter
                     backupProfileStage,
                     sourceInventory,
                     overwrite: false,
-                    progress,
-                    ProfileImportStage.BackingUpLegacyProfile,
+                    new ProfileCopyProgress(progress, ProfileImportStage.BackingUpLegacyProfile),
                     cancellationToken
                 )
                 .ConfigureAwait(false);
@@ -107,8 +106,7 @@ public sealed class LegacyProfileImporter
                         previousDestinationStage,
                         destinationInventory,
                         overwrite: false,
-                        progress,
-                        ProfileImportStage.BackingUpCurrentProfile,
+                        new ProfileCopyProgress(progress, ProfileImportStage.BackingUpCurrentProfile),
                         cancellationToken
                     )
                     .ConfigureAwait(false);
@@ -143,11 +141,13 @@ public sealed class LegacyProfileImporter
                         destinationStage,
                         destinationInventory,
                         overwrite: false,
-                        progress,
-                        ProfileImportStage.BuildingMergedProfile,
-                        cancellationToken,
-                        totalFileCount: mergedFileCount,
-                        totalByteCount: mergedByteCount
+                        new ProfileCopyProgress(
+                            progress,
+                            ProfileImportStage.BuildingMergedProfile,
+                            TotalFileCount: mergedFileCount,
+                            TotalByteCount: mergedByteCount
+                        ),
+                        cancellationToken
                     )
                     .ConfigureAwait(false);
             }
@@ -157,13 +157,15 @@ public sealed class LegacyProfileImporter
                     destinationStage,
                     sourceInventory,
                     overwrite: true,
-                    progress,
-                    ProfileImportStage.BuildingMergedProfile,
-                    cancellationToken,
-                    completedFileOffset: destinationInventory.Entries.Count,
-                    totalFileCount: mergedFileCount,
-                    completedByteOffset: GetTotalBytes(destinationInventory),
-                    totalByteCount: mergedByteCount
+                    new ProfileCopyProgress(
+                        progress,
+                        ProfileImportStage.BuildingMergedProfile,
+                        CompletedFileOffset: destinationInventory.Entries.Count,
+                        TotalFileCount: mergedFileCount,
+                        CompletedByteOffset: GetTotalBytes(destinationInventory),
+                        TotalByteCount: mergedByteCount
+                    ),
+                    cancellationToken
                 )
                 .ConfigureAwait(false);
             await VerifyMergedProfileExactAsync(
@@ -266,13 +268,8 @@ public sealed class LegacyProfileImporter
         string destinationRoot,
         ProfileInventory inventory,
         bool overwrite,
-        IProgress<ProfileImportProgress>? progress,
-        ProfileImportStage stage,
-        CancellationToken cancellationToken,
-        int completedFileOffset = 0,
-        int? totalFileCount = null,
-        long completedByteOffset = 0,
-        long? totalByteCount = null
+        ProfileCopyProgress progress,
+        CancellationToken cancellationToken
     )
     {
         foreach (string relativeDirectory in inventory.RelativeDirectories)
@@ -281,10 +278,10 @@ public sealed class LegacyProfileImporter
             Directory.CreateDirectory(ProfileInventory.ResolveEntryPath(destinationRoot, relativeDirectory));
         }
 
-        int completedFiles = completedFileOffset;
-        long completedBytes = completedByteOffset;
-        int expectedFileCount = totalFileCount ?? completedFileOffset + inventory.Entries.Count;
-        long expectedByteCount = totalByteCount ?? completedByteOffset + GetTotalBytes(inventory);
+        int completedFiles = progress.CompletedFileOffset;
+        long completedBytes = progress.CompletedByteOffset;
+        int expectedFileCount = progress.TotalFileCount ?? progress.CompletedFileOffset + inventory.Entries.Count;
+        long expectedByteCount = progress.TotalByteCount ?? progress.CompletedByteOffset + GetTotalBytes(inventory);
         foreach (ProfileInventoryEntry entry in inventory.Entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -324,13 +321,28 @@ public sealed class LegacyProfileImporter
             File.SetLastWriteTimeUtc(destinationPath, entry.LastWriteTimeUtc);
             completedFiles++;
             completedBytes += entry.Length;
-            progress?.Report(
-                new ProfileImportProgress(stage, completedFiles, expectedFileCount, completedBytes, expectedByteCount)
+            progress.Reporter?.Report(
+                new ProfileImportProgress(
+                    progress.Stage,
+                    completedFiles,
+                    expectedFileCount,
+                    completedBytes,
+                    expectedByteCount
+                )
             );
         }
     }
 
     private static long GetTotalBytes(ProfileInventory inventory) => inventory.Entries.Sum(entry => entry.Length);
+
+    private sealed record ProfileCopyProgress(
+        IProgress<ProfileImportProgress>? Reporter,
+        ProfileImportStage Stage,
+        int CompletedFileOffset = 0,
+        int? TotalFileCount = null,
+        long CompletedByteOffset = 0,
+        long? TotalByteCount = null
+    );
 
     private static async Task VerifyMergedProfileExactAsync(
         string destinationRoot,

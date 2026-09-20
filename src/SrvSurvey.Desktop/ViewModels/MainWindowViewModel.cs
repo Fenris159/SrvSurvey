@@ -5314,7 +5314,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             return;
         }
 
-        disposed = true;
+        Volatile.Write(ref disposed, true);
         List<Exception> failures = [];
 
         void TryDispose(Action cleanup)
@@ -5486,7 +5486,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     private async void OnMineMapPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (disposed || eventArgs.PropertyName != nameof(MineMapViewModel.ActiveLiveSurvey))
+        if (Volatile.Read(ref disposed) || eventArgs.PropertyName != nameof(MineMapViewModel.ActiveLiveSurvey))
         {
             return;
         }
@@ -5495,7 +5495,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         {
             await Mining.ApplyMineMapSurveyAsync(MineMap.ActiveLiveSurvey).ConfigureAwait(true);
         }
-        catch (ObjectDisposedException) when (disposed)
+        catch (ObjectDisposedException) when (Volatile.Read(ref disposed))
         {
             // Shutdown can dispose the mining model after a final map notification was queued.
         }
