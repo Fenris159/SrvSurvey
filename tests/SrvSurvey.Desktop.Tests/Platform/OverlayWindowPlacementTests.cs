@@ -40,6 +40,40 @@ public sealed class OverlayWindowPlacementTests
     }
 
     [Fact]
+    public void CorrectsDesktopWideBottomReservationProjectedFromShorterMonitor()
+    {
+        var shortScreen = new OverlayScreenGeometry(new PixelRect(0, 0, 3840, 2160), new PixelRect(0, 0, 3840, 2076));
+        var tallScreen = new OverlayScreenGeometry(
+            new PixelRect(3840, 0, 5120, 2880),
+            new PixelRect(3840, 0, 5120, 2076)
+        );
+
+        PixelRect workingArea = OverlayWindowPlacement.GetReliableBottomWorkingArea(
+            tallScreen,
+            [shortScreen, tallScreen]
+        );
+
+        Assert.Equal(new PixelRect(3840, 0, 5120, 2796), workingArea);
+    }
+
+    [Fact]
+    public void PreservesOrdinaryPerMonitorWorkingArea()
+    {
+        var leftScreen = new OverlayScreenGeometry(new PixelRect(0, 0, 1920, 1080), new PixelRect(0, 0, 1920, 1040));
+        var rightScreen = new OverlayScreenGeometry(
+            new PixelRect(1920, 0, 2560, 1440),
+            new PixelRect(1920, 0, 2560, 1400)
+        );
+
+        PixelRect workingArea = OverlayWindowPlacement.GetReliableBottomWorkingArea(
+            rightScreen,
+            [leftScreen, rightScreen]
+        );
+
+        Assert.Equal(rightScreen.WorkingArea, workingArea);
+    }
+
+    [Fact]
     public void PlacesOverlayInsideTopCenterOfGameClient()
     {
         PixelPoint position = OverlayWindowPlacement.TopCenter(

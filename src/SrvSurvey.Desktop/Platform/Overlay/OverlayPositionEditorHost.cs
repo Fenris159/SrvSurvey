@@ -559,7 +559,14 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, screen.WorkingArea);
+        OverlayScreenGeometry[] screens = toolbar
+            .Screens.All.Select(current => new OverlayScreenGeometry(current.Bounds, current.WorkingArea))
+            .ToArray();
+        PixelRect workingArea = OverlayWindowPlacement.GetReliableBottomWorkingArea(
+            new OverlayScreenGeometry(screen.Bounds, screen.WorkingArea),
+            screens
+        );
+        PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, workingArea);
         double logicalWidth = measuredSize?.Width ?? (toolbar.Bounds.Width > 0 ? toolbar.Bounds.Width : toolbar.Width);
         double logicalHeight =
             measuredSize?.Height ?? (toolbar.Bounds.Height > 0 ? toolbar.Bounds.Height : toolbar.MinHeight);
