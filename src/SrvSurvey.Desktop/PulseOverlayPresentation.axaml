@@ -7,7 +7,8 @@
              x:DataType="vm:PulseOverlayViewModel"
              mc:Ignorable="d"
              ClipToBounds="True">
-  <Border Width="32"
+  <LayoutTransformControl Classes="type-icon">
+    <Border Width="32"
           Height="32"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
@@ -46,5 +47,6 @@
                  Fill="{DynamicResource RavenSuccessBrush}" />
       </Canvas>
     </Grid>
-  </Border>
+    </Border>
+  </LayoutTransformControl>
 </UserControl>

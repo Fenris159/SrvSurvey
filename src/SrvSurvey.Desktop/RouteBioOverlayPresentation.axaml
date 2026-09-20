@@ -15,17 +15,17 @@
           BorderThickness="0"
           CornerRadius="5">
     <Grid Margin="3"
-          RowDefinitions="Auto,Auto,Auto,Auto"
+          RowDefinitions="Auto,Auto,*,Auto"
           RowSpacing="3">
       <StackPanel>
-        <TextBlock Classes="overlay-header"
+        <TextBlock Classes="overlay-header type-header"
                    Text="ROUTE BODIES" />
         <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
-                   Classes="overlay-body"
+                   Classes="overlay-body type-title"
                    FontWeight="SemiBold"
                    Text="{Binding SystemName}"
                    TextTrimming="CharacterEllipsis" />
-        <TextBlock Classes="muted overlay-caption"
+        <TextBlock Classes="muted overlay-detail type-detail"
                    Text="Route body destinations" />
       </StackPanel>
 
@@ -41,7 +41,7 @@
 
       <TextBlock Grid.Row="3"
                  HorizontalAlignment="Center"
-                 Classes="overlay-caption"
+                 Classes="overlay-caption type-value"
                  Foreground="{DynamicResource RavenMutedTextBrush}"
                  Text="{Binding Progress}"
                  TextTrimming="CharacterEllipsis" />

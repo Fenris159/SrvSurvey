@@ -55,18 +55,20 @@
               IsHitTestVisible="False"
               IsVisible="{Binding Guardian.IsShipNavigationVisible}">
         <StackPanel Orientation="Horizontal" Spacing="4">
-          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
+          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan type-caption"
                      VerticalAlignment="Center"
                      FontWeight="SemiBold"
                      Text="SHIP" />
-          <controls:DirectionalChevronControl
-              Width="14"
-              Height="14"
-              BearingDegrees="{Binding Guardian.ShipRelativeBearingDegrees}"
-              IsFar="{Binding Guardian.IsShipNavigationFar}"
-              Stroke="{DynamicResource RavenGuardianSecondaryBrush}"
-              StrokeThickness="1.6" />
-          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
+          <LayoutTransformControl Classes="type-icon">
+            <controls:DirectionalChevronControl
+                Width="14"
+                Height="14"
+                BearingDegrees="{Binding Guardian.ShipRelativeBearingDegrees}"
+                IsFar="{Binding Guardian.IsShipNavigationFar}"
+                Stroke="{DynamicResource RavenGuardianSecondaryBrush}"
+                StrokeThickness="1.6" />
+          </LayoutTransformControl>
+          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan type-value"
                      VerticalAlignment="Center"
                      Text="{Binding Guardian.ShipNavigationDistanceText}" />
         </StackPanel>
@@ -76,11 +78,11 @@
             RowDefinitions="Auto,*,Auto"
             IsHitTestVisible="False">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-          <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
+          <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan type-body"
                      Text="{Binding Guardian.ActiveMapSummary}"
                      TextWrapping="Wrap" />
           <TextBlock Grid.Column="1"
-                     Classes="guardian-legacy-small"
+                     Classes="guardian-legacy-small type-detail"
                      VerticalAlignment="Center"
                      Text="{Binding Guardian.ActiveMapScaleText}" />
         </Grid>
@@ -91,11 +93,11 @@
                     VerticalAlignment="Center"
                     Spacing="6"
                     IsVisible="{Binding Guardian.HasLiveMapPrompt}">
-          <TextBlock Classes="guardian-title"
+          <TextBlock Classes="guardian-title type-title"
                      HorizontalAlignment="Center"
                      Text="{Binding Guardian.LiveMapPromptTitle}"
                      TextWrapping="Wrap" />
-          <TextBlock Classes="guardian-legacy-middle"
+          <TextBlock Classes="guardian-legacy-middle type-body"
                      MaxWidth="430"
                      TextAlignment="Center"
                      TextWrapping="Wrap"
@@ -105,14 +107,14 @@
                  Stretch="Uniform"
                  IsVisible="{Binding Guardian.HasHeadingGuide}"
                  Source="{Binding Guardian.HeadingGuideAssetPath, Converter={StaticResource BundledAssetImageConverter}}" />
-          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
+          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan type-detail"
                      HorizontalAlignment="Center"
                      IsVisible="{Binding Guardian.IsAlignmentVisible}"
                      Text="{Binding Guardian.AlignmentStatusText}" />
         </StackPanel>
 
         <TextBlock Grid.Row="2"
-                   Classes="guardian-legacy-small guardian-legacy-cyan"
+                   Classes="guardian-legacy-small guardian-legacy-cyan type-detail"
                    HorizontalAlignment="Stretch"
                    TextAlignment="Center"
                    Text="{Binding Guardian.TargetObeliskText}"

@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              MaxWidth="220"
              HorizontalAlignment="Left"
-             ClipToBounds="True">
+             ClipToBounds="False">
   <Border Margin="0"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
@@ -19,28 +19,26 @@
             RowDefinitions="Auto,Auto"
             ColumnSpacing="6"
             RowSpacing="1">
-        <Border Width="18"
-                Height="18"
+        <Border MinWidth="18"
+                MinHeight="18"
+                Padding="2,0"
                 Background="{DynamicResource RavenAccentBrush}"
                 CornerRadius="4">
-          <TextBlock HorizontalAlignment="Center"
+          <TextBlock FontSize="10" Classes="type-icon" HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                      Foreground="{DynamicResource RavenAccentForegroundBrush}"
-                     FontSize="10"
                      FontWeight="Bold"
                      Text="Q" />
         </Border>
-        <TextBlock Grid.Column="1"
+        <TextBlock FontSize="12" Classes="type-title" Grid.Column="1"
                    VerticalAlignment="Center"
-                   FontSize="12"
                    FontWeight="SemiBold"
                    TextTrimming="CharacterEllipsis"
                    Text="{Binding QuestTitle}" />
-        <TextBlock Grid.Row="1"
+        <TextBlock FontSize="9" Classes="type-detail" Grid.Row="1"
                    Grid.Column="1"
                    IsVisible="{Binding HasUnreadMessages}"
                    Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="9"
                    FontWeight="Bold"
                    Text="{Binding UnreadMessageText}"
                    TextTrimming="CharacterEllipsis" />
@@ -50,16 +48,14 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:QuestObjectiveRowViewModel">
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6" Margin="0,1">
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+              <TextBlock Classes="type-icon" Foreground="{DynamicResource RavenAccentBrush}"
                          FontWeight="Bold"
                          Text="&#x203A;" />
-              <TextBlock Grid.Column="1"
-                         FontSize="11"
+              <TextBlock FontSize="11" Classes="type-body" Grid.Column="1"
                          Text="{Binding Label}"
                          TextTrimming="CharacterEllipsis" />
-              <TextBlock Grid.Column="2"
-                         Classes="monospace"
-                         FontSize="10"
+              <TextBlock FontSize="10" Grid.Column="2"
+                         Classes="monospace type-detail"
                          Text="{Binding Progress}" />
             </Grid>
           </DataTemplate>
@@ -70,23 +66,21 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:QuestIndicatorLocationViewModel">
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6" Margin="0,1">
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+              <TextBlock Classes="type-icon" Foreground="{DynamicResource RavenAccentBrush}"
                          FontWeight="Bold"
                          Text="{Binding StateGlyph}" />
               <StackPanel Grid.Column="1" Spacing="0">
-                <TextBlock FontSize="11"
+                <TextBlock FontSize="11" Classes="type-body"
                            FontWeight="SemiBold"
                            Text="{Binding Label}"
                            TextTrimming="CharacterEllipsis" />
-                <TextBlock Classes="muted"
-                           FontSize="9"
+                <TextBlock FontSize="9" Classes="muted type-value"
                            Text="{Binding Bearing}"
                            TextTrimming="CharacterEllipsis" />
               </StackPanel>
-              <TextBlock Grid.Column="2"
-                         Classes="monospace"
+              <TextBlock FontSize="10" Grid.Column="2"
+                         Classes="monospace type-value"
                          VerticalAlignment="Center"
-                         FontSize="10"
                          Text="{Binding Distance}"
                          TextTrimming="CharacterEllipsis" />
             </Grid>

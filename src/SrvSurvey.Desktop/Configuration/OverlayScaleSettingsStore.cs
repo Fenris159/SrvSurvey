@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Configuration;
@@ -43,6 +44,102 @@ public sealed class OverlayScaleSettingsStore
         });
     }
 
+    public OverlayScaleMigrationResult MigrateLegacyScale(double renderScaling)
+    {
+        OverlayScalePreferences current = Load();
+        if (!OverlayScaleCatalog.IsLegacyIndex(current.Index))
+        {
+            return OverlayScaleMigrationResult.NotRequired;
+        }
+
+        int migratedIndex = OverlayScaleCatalog.ConvertToRelativeIndex(current.Index, renderScaling);
+        string backupPath = CreateVerifiedBackup();
+        try
+        {
+            Save(new OverlayScalePreferences(migratedIndex));
+            if (Load().Index != migratedIndex)
+            {
+                throw new InvalidDataException("The migrated global overlay scale could not be verified.");
+            }
+
+            return new OverlayScaleMigrationResult(true, current.Index, migratedIndex, backupPath);
+        }
+        catch (Exception migrationException)
+            when (migrationException is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            try
+            {
+                RestoreBackup(backupPath);
+            }
+            catch (Exception rollbackException) when (rollbackException is IOException or UnauthorizedAccessException)
+            {
+                throw new IOException(
+                    "The global overlay scale migration failed and its settings rollback also failed.",
+                    new AggregateException(migrationException, rollbackException)
+                );
+            }
+
+            throw new IOException(
+                "The global overlay scale migration failed; the original settings were restored.",
+                migrationException
+            );
+        }
+    }
+
+    private string CreateVerifiedBackup()
+    {
+        string sourcePath = documentStore.Path;
+        if (!File.Exists(sourcePath))
+        {
+            throw new InvalidDataException("The legacy global overlay scale has no settings file to back up.");
+        }
+
+        string directory = Path.Combine(
+            Path.GetDirectoryName(sourcePath)
+                ?? throw new InvalidOperationException("The UI settings path has no directory."),
+            "overlay-scale-backups"
+        );
+        Directory.CreateDirectory(directory);
+        string backupPath = Path.Combine(
+            directory,
+            $"cross-platform-ui-{DateTime.UtcNow:yyyyMMddTHHmmssfffffffZ}-{Guid.NewGuid():N}.json"
+        );
+        File.Copy(sourcePath, backupPath, overwrite: false);
+        if (
+            !CryptographicOperations.FixedTimeEquals(
+                SHA256.HashData(File.ReadAllBytes(sourcePath)),
+                SHA256.HashData(File.ReadAllBytes(backupPath))
+            )
+        )
+        {
+            throw new InvalidDataException("The global overlay scale settings backup could not be verified.");
+        }
+
+        return backupPath;
+    }
+
+    private void RestoreBackup(string backupPath)
+    {
+        string temporaryPath = string.Concat(
+            documentStore.Path,
+            ".",
+            Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
+            ".rollback"
+        );
+        try
+        {
+            File.Copy(backupPath, temporaryPath, overwrite: false);
+            File.Move(temporaryPath, documentStore.Path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+    }
+
     private static int? GetIndex(JsonNode? node)
     {
         if (node is not JsonValue value)
@@ -71,12 +168,27 @@ public sealed class OverlayScaleSettingsStore
 
 public sealed record OverlayScalePreferences(int Index)
 {
-    public static OverlayScalePreferences Default { get; } = new(0);
+    public static OverlayScalePreferences Default { get; } = new(OverlayScaleCatalog.BaselineIndex);
+}
+
+public sealed record OverlayScaleMigrationResult(
+    bool Migrated,
+    int PreviousIndex,
+    int MigratedIndex,
+    string? BackupPath
+)
+{
+    public static OverlayScaleMigrationResult NotRequired { get; } = new(false, 0, 0, null);
 }
 
 public static class OverlayScaleCatalog
 {
-    private static readonly double?[] AbsoluteScales =
+    public const int MinimumPercent = -100;
+    public const int MaximumPercent = 200;
+    public const int PercentStep = 5;
+
+    private const int RelativeIndexBase = 1000;
+    private static readonly double?[] LegacyAbsoluteScales =
     [
         null,
         1d,
@@ -106,45 +218,102 @@ public static class OverlayScaleCatalog
         0.5d,
     ];
 
+    public static int BaselineIndex => GetIndex(0);
+
     public static IReadOnlyList<OverlayScaleOption> Options { get; } =
-        AbsoluteScales
-            .Select(
-                (scale, index) =>
-                    new OverlayScaleOption(
-                        index,
-                        scale is null
-                            ? "Match operating-system scale"
-                            : scale.Value.ToString("0.##%", CultureInfo.InvariantCulture),
-                        scale
-                    )
-            )
+        Enumerable
+            .Range(0, ((MaximumPercent - MinimumPercent) / PercentStep) + 1)
+            .Select(ordinal => MinimumPercent + (ordinal * PercentStep))
+            .Select(percent => new OverlayScaleOption(
+                GetIndex(percent),
+                percent,
+                FormatPercent(percent),
+                1d + (percent / 100d)
+            ))
             .ToArray();
 
     public static bool IsSupported(int index)
     {
-        return index >= 0 && index < AbsoluteScales.Length;
+        return IsRelativeIndex(index) || IsLegacyIndex(index);
     }
 
     public static int NormalizeIndex(int? index)
     {
-        return index is { } value && IsSupported(value) ? value : 0;
+        if (index is not { } value)
+        {
+            return BaselineIndex;
+        }
+
+        return IsSupported(value) ? value : BaselineIndex;
+    }
+
+    public static int GetIndex(int percent)
+    {
+        int normalized = NormalizePercent(percent);
+        return RelativeIndexBase + ((normalized - MinimumPercent) / PercentStep);
+    }
+
+    public static int GetPercent(int index) => GetPercent(index, 1d);
+
+    public static int GetPercent(int index, double renderScaling)
+    {
+        int relativeIndex = ConvertToRelativeIndex(index, renderScaling);
+        return MinimumPercent + ((relativeIndex - RelativeIndexBase) * PercentStep);
+    }
+
+    public static int ConvertToRelativeIndex(int index, double renderScaling)
+    {
+        int normalized = NormalizeIndex(index);
+        if (IsRelativeIndex(normalized))
+        {
+            return normalized;
+        }
+
+        double? absoluteScale = LegacyAbsoluteScales[normalized];
+        if (absoluteScale is null)
+        {
+            return BaselineIndex;
+        }
+
+        double safeRenderScaling = NormalizeRenderScaling(renderScaling);
+        return GetIndex(NormalizePercent(((absoluteScale.Value / safeRenderScaling) - 1d) * 100d));
+    }
+
+    public static int NormalizePercent(double percent)
+    {
+        if (!double.IsFinite(percent))
+        {
+            return 0;
+        }
+
+        double clamped = Math.Clamp(percent, MinimumPercent, MaximumPercent);
+        return (int)(Math.Round(clamped / PercentStep, MidpointRounding.AwayFromZero) * PercentStep);
     }
 
     public static double GetRelativeScale(int index, double renderScaling)
     {
         int normalized = NormalizeIndex(index);
-        double? absolute = AbsoluteScales[normalized];
-        if (absolute is null)
+        if (IsRelativeIndex(normalized))
         {
-            return 1d;
+            return 1d + (GetPercent(normalized) / 100d);
         }
 
-        double safeRenderScaling = double.IsFinite(renderScaling) && renderScaling > 0 ? renderScaling : 1d;
-        return absolute.Value / safeRenderScaling;
+        double? absoluteScale = LegacyAbsoluteScales[normalized];
+        return absoluteScale is null ? 1d : absoluteScale.Value / NormalizeRenderScaling(renderScaling);
     }
+
+    public static string FormatPercent(int percent) => percent.ToString("+0;-0;0", CultureInfo.CurrentCulture) + "%";
+
+    private static bool IsRelativeIndex(int index) =>
+        index >= RelativeIndexBase && index < RelativeIndexBase + Options.Count;
+
+    public static bool IsLegacyIndex(int index) => index >= 0 && index < LegacyAbsoluteScales.Length;
+
+    private static double NormalizeRenderScaling(double renderScaling) =>
+        double.IsFinite(renderScaling) && renderScaling > 0 ? renderScaling : 1d;
 }
 
-public sealed record OverlayScaleOption(int Index, string DisplayName, double? AbsoluteScale)
+public sealed record OverlayScaleOption(int Index, int Percent, string DisplayName, double RelativeScale)
 {
     public override string ToString() => DisplayName;
 }

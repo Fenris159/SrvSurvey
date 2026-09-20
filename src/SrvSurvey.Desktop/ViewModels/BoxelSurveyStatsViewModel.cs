@@ -42,10 +42,13 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     private readonly string? journalDirectory;
     private readonly Func<string?>? currentJournalPath;
     private readonly List<string> focusedPrefixes = [];
+    private readonly HashSet<char> selectedMassCodes = [];
     private BoxelSurveyStatsPreferences preferences;
     private char selectedMassCode = 'c';
     private string? selectedPrefix;
     private bool isDetailVisible;
+    private bool isRecentSectionExpanded = true;
+    private bool isBrowserSectionExpanded;
     private bool showSearchRollup;
     private bool isBusy;
     private string statusMessage = string.Empty;
@@ -56,8 +59,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     private string highestRecordedSuffixText = BoxelSurveyAverageFormatter.Placeholder;
     private string completenessText = BoxelSurveyAverageFormatter.Placeholder;
     private string valueText = BoxelSurveyAverageFormatter.Placeholder;
-    private string browserTitle = "BOXELS · MASS CODE C";
-    private string browserDescription = "No statistics recorded at mass code C.";
+    private string browserTitle = "BOXELS · ALL MASS CODES";
+    private string browserDescription = "No boxel statistics are recorded yet.";
     private string? browserParentPrefix;
     private IReadOnlyList<BoxelSurveyBrowserRowViewModel> browserRows = [];
     private IReadOnlyList<BoxelSurveyClassRowViewModel> classRows = [];
@@ -90,11 +93,11 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         {
             if (parameter is char massCode)
             {
-                SelectedMassCode = massCode;
+                ToggleMassCode(massCode);
             }
             else if (parameter is string text && text.Length == 1)
             {
-                SelectedMassCode = text[0];
+                ToggleMassCode(text[0]);
             }
         });
         BackCommand = new RelayCommand(_ =>
@@ -108,6 +111,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             browserParentPrefix = null;
             RefreshBrowser();
         });
+        ShowRecentSectionCommand = new RelayCommand(_ => ShowListSection(showRecent: true));
+        ShowBrowserSectionCommand = new RelayCommand(_ => ShowListSection(showRecent: false));
         RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy, ReportCommandFailure);
         RebuildCommand = new AsyncCommand(RebuildAsync, () => !IsBusy, ReportCommandFailure);
         ExportCommand = new AsyncCommand(() => ExportAsync(), () => !IsBusy, ReportCommandFailure);
@@ -129,6 +134,10 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
 
     public ICommand ShowAllMassCodeCommand { get; }
 
+    public ICommand ShowRecentSectionCommand { get; }
+
+    public ICommand ShowBrowserSectionCommand { get; }
+
     public ICommand RefreshCommand { get; }
 
     public ICommand RebuildCommand { get; }
@@ -144,6 +153,18 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     public IReadOnlyList<BoxelSurveyIndexEntry> RecentEntries => recentEntries;
 
     public bool HasRecentEntries => RecentEntries.Count > 0;
+
+    public bool IsRecentSectionExpanded
+    {
+        get => isRecentSectionExpanded;
+        private set => SetField(ref isRecentSectionExpanded, value);
+    }
+
+    public bool IsBrowserSectionExpanded
+    {
+        get => isBrowserSectionExpanded;
+        private set => SetField(ref isBrowserSectionExpanded, value);
+    }
 
     public string BrowserTitle
     {
@@ -177,6 +198,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             }
 
             ClearFocusedPrefixes();
+            selectedMassCodes.Clear();
+            selectedMassCodes.Add(massCode);
             RefreshMassCodes();
             RefreshBrowser();
         }
@@ -470,6 +493,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
+        selectedMassCodes.Clear();
+        RefreshMassCodes();
         IsDetailVisible = false;
         RefreshBrowser();
     }
@@ -499,6 +524,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         if (massCode is { } code && BoxelAddress.IsValidMassCode(code))
         {
             selectedMassCode = char.ToLowerInvariant(code);
+            selectedMassCodes.Clear();
+            selectedMassCodes.Add(selectedMassCode);
             OnPropertyChanged(nameof(SelectedMassCode));
             RefreshMassCodes();
         }
@@ -986,6 +1013,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         ClearFocusedPrefixes();
         browserParentPrefix = parent.Prefix;
         selectedMassCode = (char)(parent.MassCode - 1);
+        selectedMassCodes.Clear();
+        selectedMassCodes.Add(selectedMassCode);
         OnPropertyChanged(nameof(SelectedMassCode));
         IsDetailVisible = false;
         RefreshMassCodes();
@@ -1028,19 +1057,25 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         }
         else
         {
+            char[] activeMassCodes = selectedMassCodes.Order().ToArray();
             roots = index
-                .Values.Where(entry => entry.MassCode == selectedMassCode)
+                .Values.Where(entry => activeMassCodes.Length == 0 || selectedMassCodes.Contains(entry.MassCode))
                 .Select(entry => entry.Prefix)
                 .Order(StringComparer.Ordinal)
                 .ToArray();
-            char massCode = char.ToUpperInvariant(selectedMassCode);
-            BrowserTitle = $"BOXELS · MASS CODE {massCode}";
+            string massCodes = string.Join(", ", activeMassCodes.Select(char.ToUpperInvariant));
+            BrowserTitle = activeMassCodes.Length switch
+            {
+                0 => "BOXELS · ALL MASS CODES",
+                1 => $"BOXELS · MASS CODE {massCodes}",
+                _ => $"BOXELS · MASS CODES {massCodes}",
+            };
             BrowserDescription =
                 roots.Length == 0
-                    ? $"No statistics recorded at mass code {massCode}."
+                    ? "No statistics are recorded for the selected mass codes."
                     : string.Create(
                         CultureInfo.CurrentCulture,
-                        $"{roots.Length:N0} recorded boxels at mass code {massCode}."
+                        $"{roots.Length:N0} recorded boxels match the mass-code filters."
                     );
         }
 
@@ -1049,7 +1084,19 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             roots.Select(prefix => CreateRow(prefix, index, indent: 0)).ToArray(),
             nameof(BrowserRows)
         );
-        IReadOnlyList<BoxelSurveyIndexEntry> nextRecentEntries = coordinator.RecentEntries();
+        RefreshRecentEntries();
+
+        OnPropertyChanged(nameof(IsBrowsingChildren));
+        OnPropertyChanged(nameof(ShowAllMassCodeText));
+    }
+
+    private void RefreshRecentEntries()
+    {
+        IReadOnlyList<BoxelSurveyIndexEntry> nextRecentEntries = coordinator
+            .RecentEntries()
+            .Where(entry => selectedMassCodes.Count == 0 || selectedMassCodes.Contains(entry.MassCode))
+            .Take(8)
+            .ToArray();
         bool hadRecentEntries = recentEntries.Count > 0;
         if (
             SetSequenceField(ref recentEntries, nextRecentEntries, nameof(RecentEntries))
@@ -1059,8 +1106,21 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             OnPropertyChanged(nameof(HasRecentEntries));
         }
 
-        OnPropertyChanged(nameof(IsBrowsingChildren));
-        OnPropertyChanged(nameof(ShowAllMassCodeText));
+        if (recentEntries.Count == 0 && IsRecentSectionExpanded)
+        {
+            ShowListSection(showRecent: false);
+        }
+    }
+
+    private void ShowListSection(bool showRecent)
+    {
+        if (showRecent && !HasRecentEntries)
+        {
+            return;
+        }
+
+        IsRecentSectionExpanded = showRecent;
+        IsBrowserSectionExpanded = !showRecent;
     }
 
     private BoxelSurveyBrowserRowViewModel CreateRow(
@@ -1143,16 +1203,36 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
     {
         foreach (BoxelSurveyMassCodeOption option in MassCodes)
         {
-            option.IsSelected = option.MassCode == selectedMassCode;
+            option.IsSelected = selectedMassCodes.Contains(option.MassCode);
         }
     }
 
-    private ObservableCollection<BoxelSurveyMassCodeOption> CreateMassCodes()
+    private void ToggleMassCode(char value)
+    {
+        char massCode = char.ToLowerInvariant(value);
+        if (!BoxelAddress.IsValidMassCode(massCode))
+        {
+            return;
+        }
+
+        if (!selectedMassCodes.Remove(massCode))
+        {
+            selectedMassCodes.Add(massCode);
+            selectedMassCode = massCode;
+            OnPropertyChanged(nameof(SelectedMassCode));
+        }
+
+        ClearFocusedPrefixes();
+        RefreshMassCodes();
+        RefreshBrowser();
+    }
+
+    private static ObservableCollection<BoxelSurveyMassCodeOption> CreateMassCodes()
     {
         var options = new ObservableCollection<BoxelSurveyMassCodeOption>();
         for (char massCode = BoxelAddress.MinimumMassCode; massCode <= BoxelAddress.MaximumMassCode; massCode++)
         {
-            options.Add(new BoxelSurveyMassCodeOption(massCode, massCode == selectedMassCode));
+            options.Add(new BoxelSurveyMassCodeOption(massCode, isSelected: false));
         }
 
         return options;

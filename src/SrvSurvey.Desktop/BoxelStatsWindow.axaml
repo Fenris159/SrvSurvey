@@ -19,6 +19,28 @@
   <Window.Resources>
     <pres:BoxelSurveyIndentMarginConverter x:Key="IndentMarginConverter" />
   </Window.Resources>
+  <Window.Styles>
+    <Style Selector="Button.mass-code">
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="Button.mass-code.selected">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenControlAccentBrush}" />
+    </Style>
+    <Style Selector="Button.mass-code.selected:pointerover">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenControlAccentBrush}" />
+    </Style>
+    <Style Selector="Button.boxel-section-header">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="Padding" Value="0,9" />
+    </Style>
+    <Style Selector="Button.boxel-section-header.selected">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenControlAccentBrush}" />
+    </Style>
+  </Window.Styles>
   <Grid RowDefinitions="Auto,*,Auto">
     <Border Background="{DynamicResource RavenSidebarBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
@@ -50,7 +72,7 @@
 
     <Grid Grid.Row="1" Margin="20" ColumnDefinitions="320,*" ColumnSpacing="16">
       <Border Classes="card" Padding="14">
-        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
+        <Grid RowDefinitions="Auto,Auto,*">
           <TextBlock Classes="muted" Text="MASS CODE" />
           <ItemsControl Grid.Row="1" Margin="0,8,0,12" ItemsSource="{Binding MassCodes}">
             <ItemsControl.ItemsPanel>
@@ -60,7 +82,8 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BoxelSurveyMassCodeOption">
-                <Button Classes="secondary"
+                <Button Classes="secondary mass-code"
+                        Classes.selected="{Binding IsSelected}"
                         MinWidth="42"
                         MinHeight="42"
                         Margin="0,0,6,6"
@@ -75,79 +98,120 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <TextBlock Grid.Row="2"
-                     Classes="muted"
-                     Margin="0,4,0,6"
-                     IsVisible="{Binding HasRecentEntries}"
-                     Text="RECENTLY RECORDED" />
-          <ItemsControl Grid.Row="3"
-                        Margin="0,0,0,10"
-                        IsVisible="{Binding HasRecentEntries}"
-                        ItemsSource="{Binding RecentEntries}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="search:BoxelSurveyIndexEntry">
+          <Grid Grid.Row="2" RowDefinitions="Auto,Auto,*">
+            <Button Grid.Row="0"
+                    Classes="boxel-section-header"
+                    Classes.selected="{Binding IsRecentSectionExpanded}"
+                    IsVisible="{Binding HasRecentEntries}"
+                    Command="{Binding ShowRecentSectionCommand}">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="muted" Text="RECENTLY RECORDED" />
+                <TextBlock Grid.Column="1"
+                           Classes="muted"
+                           Text="▼"
+                           IsVisible="{Binding IsRecentSectionExpanded}" />
+                <TextBlock Grid.Column="1"
+                           Classes="muted"
+                           Text="▶"
+                           IsVisible="{Binding !IsRecentSectionExpanded}" />
+              </Grid>
+            </Button>
+            <Button Grid.Row="1"
+                    Classes="boxel-section-header"
+                    Classes.selected="{Binding IsBrowserSectionExpanded}"
+                    Command="{Binding ShowBrowserSectionCommand}">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="muted" Text="{Binding BrowserTitle}" TextWrapping="Wrap" />
+                <TextBlock Grid.Column="1"
+                           Classes="muted"
+                           Text="▼"
+                           IsVisible="{Binding IsBrowserSectionExpanded}" />
+                <TextBlock Grid.Column="1"
+                           Classes="muted"
+                           Text="▶"
+                           IsVisible="{Binding !IsBrowserSectionExpanded}" />
+              </Grid>
+            </Button>
+
+            <ScrollViewer x:Name="RecentEntriesScroller"
+                          Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          IsVisible="{Binding IsRecentSectionExpanded}">
+              <ItemsControl ItemsSource="{Binding RecentEntries}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="search:BoxelSurveyIndexEntry">
+                    <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Padding="0,5">
+                      <Button Classes="link"
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Left"
+                              Click="RecentRow_Click">
+                        <StackPanel Spacing="2">
+                          <TextBlock Text="{Binding Prefix}" TextWrapping="Wrap" />
+                          <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap">
+                            <Run Text="Recorded systems: " />
+                            <Run Text="{Binding VisitedSystemCount}" />
+                            <Run Text=" · highest suffix " />
+                            <Run Text="{Binding HighestRecordedSuffix}" />
+                          </TextBlock>
+                        </StackPanel>
+                      </Button>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+
+            <Grid Grid.Row="2"
+                  RowDefinitions="Auto,*"
+                  IsVisible="{Binding IsBrowserSectionExpanded}">
+              <StackPanel Margin="0,8" Spacing="4">
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           Text="{Binding BrowserDescription}"
+                           TextWrapping="Wrap" />
                 <Button Classes="link"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Click="RecentRow_Click">
-                  <StackPanel Spacing="2">
-                    <TextBlock Text="{Binding Prefix}" TextWrapping="Wrap" />
-                    <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap">
-                      <Run Text="Recorded systems: " />
-                      <Run Text="{Binding VisitedSystemCount}" />
-                      <Run Text=" · highest suffix " />
-                      <Run Text="{Binding HighestRecordedSuffix}" />
-                    </TextBlock>
-                  </StackPanel>
-                </Button>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-          <Separator Grid.Row="4" Margin="0,2,0,10" />
-          <StackPanel Grid.Row="5" Margin="0,0,0,8" Spacing="4">
-            <TextBlock Classes="muted" Text="{Binding BrowserTitle}" />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       Text="{Binding BrowserDescription}"
-                       TextWrapping="Wrap" />
-            <Button Classes="link"
-                    HorizontalAlignment="Left"
-                    IsVisible="{Binding IsBrowsingChildren}"
-                    Command="{Binding ShowAllMassCodeCommand}"
-                    Content="{Binding ShowAllMassCodeText}" />
-          </StackPanel>
-          <ListBox Grid.Row="6"
-                   ItemsSource="{Binding BrowserRows}"
-                   DoubleTapped="BrowserRow_DoubleTapped">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:BoxelSurveyBrowserRowViewModel">
-                <Button Classes="link"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Stretch"
-                        Margin="{Binding Indent, Converter={StaticResource IndentMarginConverter}}"
-                        Click="BrowserRow_Click">
-                  <Grid Classes="boxel-stats-browser-row"
-                        RowDefinitions="Auto,Auto"
-                        RowSpacing="3">
-                    <TextBlock FontWeight="SemiBold"
-                               TextWrapping="NoWrap"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding Prefix}" />
-                    <Grid Grid.Row="1"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="10">
-                      <TextBlock Classes="muted"
-                                 TextTrimming="CharacterEllipsis"
-                                 Text="{Binding Glance}" />
-                      <TextBlock Grid.Column="1"
-                                 Classes="muted"
-                                 Text="{Binding Helium}" />
-                    </Grid>
-                  </Grid>
-                </Button>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
+                        HorizontalAlignment="Left"
+                        IsVisible="{Binding IsBrowsingChildren}"
+                        Command="{Binding ShowAllMassCodeCommand}"
+                        Content="{Binding ShowAllMassCodeText}" />
+              </StackPanel>
+              <ListBox x:Name="BrowserRowsList"
+                       Grid.Row="1"
+                       ItemsSource="{Binding BrowserRows}"
+                       DoubleTapped="BrowserRow_DoubleTapped">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:BoxelSurveyBrowserRowViewModel">
+                    <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Padding="0,5">
+                      <Button Classes="link"
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Stretch"
+                              Margin="{Binding Indent, Converter={StaticResource IndentMarginConverter}}"
+                              Click="BrowserRow_Click">
+                        <StackPanel Classes="boxel-stats-browser-row" Spacing="2">
+                          <TextBlock Text="{Binding Prefix}" TextWrapping="Wrap" />
+                          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                            <TextBlock Classes="muted"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding Glance}" />
+                            <TextBlock Grid.Column="1"
+                                       Classes="muted"
+                                       FontSize="11"
+                                       Text="{Binding Helium}" />
+                          </Grid>
+                        </StackPanel>
+                      </Button>
+                    </Border>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Grid>
+          </Grid>
         </Grid>
       </Border>
 

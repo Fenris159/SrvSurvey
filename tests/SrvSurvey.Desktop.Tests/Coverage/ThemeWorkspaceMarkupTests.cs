@@ -38,7 +38,7 @@ public sealed class ThemeWorkspaceMarkupTests
     }
 
     [Fact]
-    public void OverlayColorGroupsAreSingleOpenAccordionsAndTypographyIsExperimental()
+    public void OverlayColorGroupsAreSingleOpenAccordionsAndPerPanelScalingReplacesTheGlobalTypographyEditor()
     {
         XDocument theme = LoadDesktopFile("Views", "ThemeView.axaml");
         XElement categoryExpander = theme
@@ -50,9 +50,15 @@ public sealed class ThemeWorkspaceMarkupTests
             );
 
         Assert.Equal("{Binding IsExpanded, Mode=TwoWay}", categoryExpander.Attribute("IsExpanded")?.Value);
-        Assert.Contains(
-            theme.Root!.DescendantsAndSelf().Attributes(),
-            attribute => attribute.Value.Contains("Experimental", StringComparison.OrdinalIgnoreCase)
+        Assert.DoesNotContain(theme.Descendants(), element => element.Attribute("Text")?.Value == "Typography");
+        Assert.DoesNotContain(
+            theme.Descendants(),
+            element =>
+                element
+                    .Attributes()
+                    .Any(attribute =>
+                        attribute.Name.LocalName == "Name" && attribute.Value == "OverlayTypographyEditorList"
+                    )
         );
     }
 

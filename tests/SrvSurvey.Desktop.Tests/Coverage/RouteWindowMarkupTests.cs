@@ -240,23 +240,31 @@ public sealed class RouteWindowMarkupTests
                 element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "SCOOPABLE"
             );
         XElement badge = label.Parent ?? throw new InvalidDataException("The scoopable label has no badge parent.");
+        XElement iconScaleHost =
+            badge.Parent ?? throw new InvalidDataException("The scoopable badge has no icon scale host.");
         XElement starClass =
-            badge
+            iconScaleHost
                 .Parent?.Elements()
                 .SingleOrDefault(element => element.Attribute("Text")?.Value == "{Binding JumpInfo.StarClass}")
             ?? throw new InvalidDataException("The scoopable badge has no adjacent star-class label.");
 
         Assert.Equal("Border", badge.Name.LocalName);
         Assert.Equal("badge", badge.Attribute("Classes")?.Value);
+        Assert.Equal("LayoutTransformControl", iconScaleHost.Name.LocalName);
+        Assert.Contains("type-icon", iconScaleHost.Attribute("Classes")?.Value.Split(' ') ?? []);
         Assert.Equal("{DynamicResource RavenRouteGuidanceBadgeBrush}", badge.Attribute("Background")?.Value);
-        Assert.Equal("{Binding JumpInfo.IsScoopableStarClass}", badge.Attribute("IsVisible")?.Value);
+        Assert.Equal("{Binding JumpInfo.IsScoopableStarClass}", iconScaleHost.Attribute("IsVisible")?.Value);
         Assert.Equal("18", badge.Attribute("MinHeight")?.Value);
         Assert.Equal("7,2", badge.Attribute("Padding")?.Value);
+        Assert.DoesNotContain(
+            label.Attribute("Classes")?.Value.Split(' ') ?? [],
+            className => className.StartsWith("type-", StringComparison.Ordinal)
+        );
         Assert.Equal("9", label.Attribute("FontSize")?.Value);
         Assert.Equal("{DynamicResource RavenWarningBrush}", label.Attribute("Foreground")?.Value);
         Assert.Equal(starClass.Attribute("Foreground")?.Value, label.Attribute("Foreground")?.Value);
         Assert.DoesNotContain(badge.Descendants(), element => element.Name.LocalName == "Image");
-        Assert.Same(starClass, badge.ElementsAfterSelf().FirstOrDefault());
+        Assert.Same(starClass, iconScaleHost.ElementsAfterSelf().FirstOrDefault());
     }
 
     [Fact]

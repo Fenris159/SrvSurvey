@@ -23,7 +23,7 @@
   </UserControl.Styles>
   <Border Classes="guardian-panel" MinHeight="60">
     <StackPanel Spacing="3">
-      <TextBlock Classes="overlay-header"
+      <TextBlock Classes="overlay-header type-header"
                  Text="{Binding Guardian.CurrentRamTahTitle}"
                  TextWrapping="Wrap" />
       <Border Classes="guardian-header-rule general-header-rule" />
@@ -31,7 +31,7 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:GuardianRamTahLogViewModel">
             <StackPanel Margin="0,3,0,3" Spacing="1">
-              <TextBlock Classes="guardian-legacy-middle ram-tah-affiliation ram-tah-log"
+              <TextBlock Classes="guardian-legacy-middle ram-tah-affiliation ram-tah-log type-body"
                          Classes.current="{Binding IsCurrentOrTargetObelisk}"
                          Classes.remote="{Binding IsRemoteTargetObelisk}"
                          Classes.missing="{Binding IsMissingArtifacts}"
@@ -50,22 +50,24 @@
                     <StackPanel Margin="0,0,4,0"
                                 Orientation="Horizontal"
                                 Spacing="2">
-                      <controls:GuardianArtifactGlyphControl
-                          Width="16"
-                          Height="14"
-                          ArtifactCode="{Binding Code}" />
-                      <TextBlock Classes="guardian-legacy-small guardian-artifact"
+                      <LayoutTransformControl Classes="type-icon">
+                        <controls:GuardianArtifactGlyphControl
+                            Width="16"
+                            Height="14"
+                            ArtifactCode="{Binding Code}" />
+                      </LayoutTransformControl>
+                      <TextBlock Classes="guardian-legacy-small guardian-artifact type-body"
                                  Classes.missing="{Binding !IsMet}"
                                  VerticalAlignment="Center"
                                  Text="{Binding DisplayName}" />
-                      <TextBlock Classes="guardian-legacy-small"
+                      <TextBlock Classes="guardian-legacy-small type-icon"
                                  VerticalAlignment="Center"
                                  Text="{Binding SeparatorText}" />
                     </StackPanel>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
-              <TextBlock Classes="guardian-legacy-small ram-tah-affiliation"
+              <TextBlock Classes="guardian-legacy-small ram-tah-affiliation type-detail"
                          Classes.current="{Binding IsCurrentOrTargetObelisk}"
                          Classes.remote="{Binding IsRemoteTargetObelisk}"
                          Margin="16,0,0,0"
@@ -75,12 +77,12 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-      <TextBlock Classes="guardian-legacy-middle"
+      <TextBlock Classes="guardian-legacy-middle type-body"
                  Margin="8,4,0,0"
                  IsVisible="{Binding !Guardian.HasCurrentRamTahLogs}"
                  Text="No new logs available"
                  TextWrapping="Wrap" />
-      <TextBlock Classes="guardian-legacy-small"
+      <TextBlock Classes="guardian-legacy-small type-detail"
                  Margin="0,4,0,0"
                  HorizontalAlignment="Stretch"
                  IsVisible="{Binding Guardian.HasCurrentRamTahLogs}"

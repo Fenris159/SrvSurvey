@@ -41,17 +41,19 @@
     <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
         <StackPanel Spacing="2">
-          <TextBlock Classes="overlay-header" Text="SURFACE MINING" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}" FontSize="17"
+          <TextBlock Classes="overlay-header type-header" Text="SURFACE MINING" />
+          <TextBlock FontSize="17" Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold" Text="{Binding SurfaceMining.BodyName}" TextTrimming="CharacterEllipsis" />
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Classes="monospace" FontSize="9" Text="{Binding SurfaceMining.HeadingText}" />
-            <TextBlock Classes="muted" FontSize="9" Text="{Binding SurfaceMining.HistoryText}" />
+            <TextBlock FontSize="9" Classes="monospace type-detail" Text="{Binding SurfaceMining.HeadingText}" />
+            <TextBlock FontSize="9" Classes="muted type-detail" Text="{Binding SurfaceMining.HistoryText}" />
           </StackPanel>
         </StackPanel>
-        <Border Grid.Column="1" Classes="badge" VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}" FontSize="8" Text="{Binding InputMode}" />
-        </Border>
+        <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Top">
+          <Border Classes="badge">
+            <TextBlock FontSize="8" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding InputMode}" />
+          </Border>
+        </LayoutTransformControl>
       </Grid>
       <controls:SurfaceSurveyRadarControl Grid.Row="1" MinHeight="140"
           Markers="{Binding SurfaceMining.RadarMarkers}" ScaleMultiplier="{Binding SurfaceMining.RadarScale}"
@@ -66,25 +68,29 @@
         <Border Padding="7,5" CornerRadius="7" BorderThickness="1"
                 BorderBrush="{DynamicResource RavenBorderBrush}" Background="{DynamicResource RavenSurfaceBrush}">
           <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="5">
-            <TextBlock Text="Ship" Foreground="{DynamicResource RavenAccentBrush}" FontSize="10" />
-            <controls:DirectionalChevronControl Grid.Column="1" Width="12" Height="12"
-                IsVisible="{Binding SurfaceMining.HasShipTracker}"
-                BearingDegrees="{Binding SurfaceMining.ShipBearing}" Stroke="{DynamicResource RavenAccentBrush}" />
-            <TextBlock Grid.Column="1" Text="X" FontSize="10" IsVisible="{Binding !SurfaceMining.HasShipTracker}"
+            <TextBlock FontSize="10" Classes="type-caption" Text="Ship" Foreground="{DynamicResource RavenAccentBrush}" />
+            <LayoutTransformControl Grid.Column="1" Classes="type-icon"
+                                    IsVisible="{Binding SurfaceMining.HasShipTracker}">
+              <controls:DirectionalChevronControl Width="12" Height="12"
+                  BearingDegrees="{Binding SurfaceMining.ShipBearing}" Stroke="{DynamicResource RavenAccentBrush}" />
+            </LayoutTransformControl>
+            <TextBlock FontSize="10" Classes="type-icon" Grid.Column="1" Text="X" IsVisible="{Binding !SurfaceMining.HasShipTracker}"
                        Foreground="{DynamicResource RavenMutedTextBrush}" />
-            <TextBlock Grid.Column="2" Text="{Binding SurfaceMining.ShipDistanceText}" FontSize="9" />
+            <TextBlock FontSize="9" Classes="type-value" Grid.Column="2" Text="{Binding SurfaceMining.ShipDistanceText}" />
           </Grid>
         </Border>
         <Border Grid.Column="1" Padding="7,5" CornerRadius="7" BorderThickness="1"
                 BorderBrush="{DynamicResource RavenBorderBrush}" Background="{DynamicResource RavenSurfaceBrush}">
           <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="5">
-            <TextBlock Text="Rhino" Foreground="{DynamicResource RavenAccentBrush}" FontSize="10" />
-            <controls:DirectionalChevronControl Grid.Column="1" Width="12" Height="12"
-                IsVisible="{Binding SurfaceMining.HasRhinoTracker}"
-                BearingDegrees="{Binding SurfaceMining.RhinoBearing}" Stroke="{DynamicResource RavenAccentBrush}" />
-            <TextBlock Grid.Column="1" Text="X" FontSize="10" IsVisible="{Binding !SurfaceMining.HasRhinoTracker}"
+            <TextBlock FontSize="10" Classes="type-caption" Text="Rhino" Foreground="{DynamicResource RavenAccentBrush}" />
+            <LayoutTransformControl Grid.Column="1" Classes="type-icon"
+                                    IsVisible="{Binding SurfaceMining.HasRhinoTracker}">
+              <controls:DirectionalChevronControl Width="12" Height="12"
+                  BearingDegrees="{Binding SurfaceMining.RhinoBearing}" Stroke="{DynamicResource RavenAccentBrush}" />
+            </LayoutTransformControl>
+            <TextBlock FontSize="10" Classes="type-icon" Grid.Column="1" Text="X" IsVisible="{Binding !SurfaceMining.HasRhinoTracker}"
                        Foreground="{DynamicResource RavenMutedTextBrush}" />
-            <TextBlock Grid.Column="2" Text="{Binding SurfaceMining.RhinoDistanceText}" FontSize="9" />
+            <TextBlock FontSize="9" Classes="type-value" Grid.Column="2" Text="{Binding SurfaceMining.RhinoDistanceText}" />
           </Grid>
         </Border>
       </Grid>
@@ -97,21 +103,23 @@
             <Border Classes="rig" Classes.collect="{Binding CanCollect}" Classes.close="{Binding IsTooClose}"
                     Margin="1" Padding="2,4" BorderThickness="1" CornerRadius="5">
               <StackPanel Spacing="4" HorizontalAlignment="Center">
-                <TextBlock Text="{Binding Name}" FontSize="9" HorizontalAlignment="Center" />
-                <Grid Width="18" Height="18">
-                  <controls:DirectionalChevronControl Width="18" Height="18" BearingDegrees="{Binding Bearing}"
-                      IsVisible="{Binding IsSet}" StrokeThickness="1.5" />
-                  <Ellipse Width="14" Height="14" IsVisible="{Binding !IsSet}"
-                      Stroke="{DynamicResource RavenMutedTextBrush}" StrokeThickness="1" />
-                </Grid>
-                <TextBlock Text="{Binding DistanceText}" FontSize="8" HorizontalAlignment="Center" />
-                <TextBlock Text="{Binding Status}" FontSize="6" HorizontalAlignment="Center" />
+                <TextBlock FontSize="9" Classes="type-body" Text="{Binding Name}" HorizontalAlignment="Center" />
+                <LayoutTransformControl Classes="type-icon">
+                  <Grid Width="18" Height="18">
+                    <controls:DirectionalChevronControl Width="18" Height="18" BearingDegrees="{Binding Bearing}"
+                        IsVisible="{Binding IsSet}" StrokeThickness="1.5" />
+                    <Ellipse Width="14" Height="14" IsVisible="{Binding !IsSet}"
+                        Stroke="{DynamicResource RavenMutedTextBrush}" StrokeThickness="1" />
+                  </Grid>
+                </LayoutTransformControl>
+                <TextBlock FontSize="8" Classes="type-value" Text="{Binding DistanceText}" HorizontalAlignment="Center" />
+                <TextBlock FontSize="6" Classes="type-detail" Text="{Binding Status}" HorizontalAlignment="Center" />
               </StackPanel>
             </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-      <TextBlock Grid.Row="4" FontSize="8" Text="{Binding SurfaceMining.Detection.SlotsText}"
+      <TextBlock FontSize="8" Classes="type-detail" Grid.Row="4" Text="{Binding SurfaceMining.Detection.SlotsText}"
                  IsVisible="{Binding SurfaceMining.Detection.Enabled}" TextWrapping="Wrap" />
       <ScrollViewer Grid.Row="5" MaxHeight="180" IsVisible="{Binding SurfaceMining.HasResources}"
                     HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -125,12 +133,13 @@
                       Margin="1,2" Padding="5,5" CornerRadius="7" BorderThickness="1"
                       Background="{DynamicResource RavenSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}">
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
-                  <TextBlock Text="{Binding Name}" FontSize="10" TextTrimming="CharacterEllipsis"
+                  <TextBlock FontSize="10" Classes="type-body" Text="{Binding Name}" TextTrimming="CharacterEllipsis"
                              ToolTip.Tip="{Binding Name}" VerticalAlignment="Center" />
-                  <controls:DirectionalChevronControl Grid.Column="1" Width="12" Height="12"
-                      BearingDegrees="{Binding Bearing}" IsFar="{Binding !IsNear}" StrokeThickness="1.5"
-                      VerticalAlignment="Center" />
-                  <TextBlock Grid.Column="2" Text="{Binding DistanceText}" FontSize="9" VerticalAlignment="Center" />
+                  <LayoutTransformControl Grid.Column="1" Classes="type-icon" VerticalAlignment="Center">
+                    <controls:DirectionalChevronControl Width="12" Height="12"
+                        BearingDegrees="{Binding Bearing}" IsFar="{Binding !IsNear}" StrokeThickness="1.5" />
+                  </LayoutTransformControl>
+                  <TextBlock FontSize="9" Classes="type-value" Grid.Column="2" Text="{Binding DistanceText}" VerticalAlignment="Center" />
                 </Grid>
               </Border>
             </DataTemplate>
@@ -138,10 +147,10 @@
         </ItemsControl>
       </ScrollViewer>
       <StackPanel Grid.Row="6" Spacing="4">
-        <TextBlock FontSize="9" Text="{Binding SurfaceMining.CargoText}" />
+        <TextBlock FontSize="9" Classes="type-value" Text="{Binding SurfaceMining.CargoText}" />
         <ProgressBar Minimum="0" Maximum="72" Value="{Binding SurfaceMining.CargoUsed}" Height="5"
                      Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenBorderBrush}" />
-        <TextBlock Classes="muted" FontSize="8" Text="{Binding SurfaceMining.StatusText}"
+        <TextBlock FontSize="8" Classes="muted type-detail" Text="{Binding SurfaceMining.StatusText}"
                    TextTrimming="CharacterEllipsis" />
       </StackPanel>
     </Grid>

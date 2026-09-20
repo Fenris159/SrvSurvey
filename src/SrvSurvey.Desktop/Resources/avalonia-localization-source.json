@@ -2457,6 +2457,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "Aa",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
     "Text": "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
     "IsFormat": false,
     "SourceKinds": [
@@ -3064,6 +3072,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Adjust text size by role for this panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
     "Text": "Adjust the existing shared map. Its background, alignment, master points, and group labels are copied into this draft.",
@@ -4075,7 +4091,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/DesktopBehaviorSettingsStore.cs"
   },
   {
-    "Text": "Applied overlay colours and typography to theme.json and all open overlays.{0}",
+    "Text": "Applied overlay colours to theme.json and all open overlays.{0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -5596,7 +5612,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
-    "Text": "BOXELS \u00B7 MASS CODE C",
+    "Text": "BOXELS \u00B7 ALL MASS CODES",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -5605,6 +5621,14 @@
   },
   {
     "Text": "BOXELS \u00B7 MASS CODE {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "BOXELS \u00B7 MASS CODES {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -5794,6 +5818,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "BaselineFontSize",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
   },
   {
     "Text": "Battery",
@@ -8007,7 +8039,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Cancel overlay position, opacity, and scale changes",
+    "Text": "Cancel overlay position and appearance changes",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -8248,7 +8280,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Capture bounds must have a positive size.",
@@ -12404,7 +12436,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
   },
   {
+    "Text": "Could not read overlay position references \u0027{0}\u0027: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
     "Text": "Could not read overlay scale overrides \u0027{0}\u0027: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Could not read overlay size overrides \u0027{0}\u0027: {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -12418,6 +12466,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemeStateStore.cs"
+  },
+  {
+    "Text": "Could not read overlay typography overrides \u0027{0}\u0027: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "Could not refresh boxel statistics: {0}",
@@ -13943,7 +13999,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Detailed scan required",
@@ -14966,6 +15022,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Drag to resize this overlay panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
+  },
+  {
     "Text": "DrawBodyBiosOnlyWhenNear",
     "IsFormat": false,
     "SourceKinds": [
@@ -15368,14 +15432,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "EXPERIMENTAL",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "EXPLORATION",
     "IsFormat": false,
     "SourceKinds": [
@@ -15431,6 +15487,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Each role grows or shrinks independently. Zero uses the theme\u0027s baseline size.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
     "Text": "Eagle",
@@ -18843,22 +18907,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
-    "Text": "Font Size:",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
-    "Text": "Font sizes apply to shared overlay text roles. Values use half-point increments and update open overlays when previewed or applied.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
     "Text": "Fonticulua Campestris",
     "IsFormat": false,
     "SourceKinds": [
@@ -22239,6 +22287,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuidesViewModel.cs"
+  },
+  {
+    "Text": "Icons",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Icy",
@@ -26885,22 +26941,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Match desktop scaling or force the original 50-250% overlay sizes.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Match operating-system scale",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
-  },
-  {
     "Text": "Matches upstream polarity: leave unchecked to keep the heading grid and aerial origin guides available at ruins.",
     "IsFormat": false,
     "SourceKinds": [
@@ -29454,6 +29494,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "No boxel statistics are recorded yet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
     "Text": "No child boxel statistics are recorded inside {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -30271,16 +30319,8 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
-    "Text": "No statistics recorded at mass code C.",
+    "Text": "No statistics are recorded for the selected mass codes.",
     "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
-  },
-  {
-    "Text": "No statistics recorded at mass code {0}.",
-    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -30790,14 +30830,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
-  },
-  {
-    "Text": "OS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "OTHER",
@@ -32253,6 +32285,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
+    "Text": "Overlay appearance",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "Overlay appearance and saved states",
     "IsFormat": false,
     "SourceKinds": [
@@ -32317,7 +32357,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
-    "Text": "Overlay colours and typography are independent from the application theme. Imported theme.json appearance settings are active until you apply changes here.",
+    "Text": "Overlay colours are independent from the application theme. Imported theme.json appearance settings are active until you apply changes here.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -32397,14 +32437,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
-    "Text": "Overlay opacity and scale",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
-  },
-  {
     "Text": "Overlay opacity must be from 0 to 1.",
     "IsFormat": false,
     "SourceKinds": [
@@ -32469,8 +32501,48 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Overlay position reference \u0027{0}\u0027 could not be verified before saving.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay position reference \u0027{0}\u0027 must be an object.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay position reference \u0027{0}\u0027 requires a positive {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay position reference dimensions must be positive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
     "Text": "Overlay position, opacity, and scale changes were cancelled.",
     "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Overlay positions and appearance were not saved: {0}",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -32494,14 +32566,6 @@
   },
   {
     "Text": "Overlay positions cannot be edited until the existing layout error is corrected: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
-  },
-  {
-    "Text": "Overlay positions, opacity, and scale were not saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -32541,7 +32605,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Overlay scale changed to {0}.",
+    "Text": "Overlay scale changed to {0} from the operating-system baseline.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -32589,12 +32653,52 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayScaleSettingsViewModel.cs"
   },
   {
+    "Text": "Overlay size dimensions must be positive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditSession.cs"
+  },
+  {
     "Text": "Overlay size must have a positive size.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowPlacement.cs"
+  },
+  {
+    "Text": "Overlay size override \u0027{0}\u0027 could not be verified before saving.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay size override \u0027{0}\u0027 must be an object.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay size override \u0027{0}\u0027 requires a positive {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay size override dimensions must be positive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "Overlay theme",
@@ -32659,6 +32763,46 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemeStateStore.cs"
+  },
+  {
+    "Text": "Overlay typography override \u0027{0}\u0027 contains a value outside the supported range.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay typography override \u0027{0}\u0027 could not be verified before saving.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay typography override \u0027{0}\u0027 must be an object.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay typography override \u0027{0}.{1}\u0027 must be an integer.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "Overlay typography override \u0027{0}.{1}\u0027 must be from {2}% to {3}% in {4}% increments.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "OverlayBehavior",
@@ -35742,6 +35886,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
+    "Text": "RESTOCK REQUIRED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"
+  },
+  {
     "Text": "RESTOCK?",
     "IsFormat": false,
     "SourceKinds": [
@@ -37975,7 +38127,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
   },
   {
-    "Text": "Reloaded the active theme.json colours and typography, discarded editor changes, and refreshed open overlays.",
+    "Text": "Reloaded the active theme.json colours, discarded editor changes, and refreshed open overlays.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -38615,6 +38767,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Reset every text and icon scale in this panel to 0%",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
     "Text": "Reset selected",
     "IsFormat": false,
     "SourceKinds": [
@@ -38637,6 +38797,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Reset {0} text and icon scales to 0%. Use the top \u2713 to save and close.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Resized {0} to {1} \u00D7 {2}. Use \u2713 to save all changes or \u2715 to cancel them.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Resolve bodies in FSS; undiscovered bodies carry a flag and completed system scans carry a completion check.",
@@ -38807,6 +38983,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
   },
   {
+    "Text": "Restore this panel\u0027s original measured size",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
     "Text": "Restored the last saved surface coordinates.",
     "IsFormat": false,
     "SourceKinds": [
@@ -38821,6 +39005,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Restored {0} to its original measured size. Use the top \u2713 to save and close.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
@@ -39304,14 +39496,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningViewModel.cs"
   },
   {
-    "Text": "Right Click Panels to edit individual Opacity/Scale",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
-  },
-  {
     "Text": "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander\u0027s rings and missions without starting sessions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39321,6 +39505,14 @@
   },
   {
     "Text": "Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
+    "Text": "Right-click panels to edit opacity, panel scale, and text scale",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -40967,7 +41159,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "Save overlay positions, opacity, and scale",
+    "Text": "Save overlay positions and appearance",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -41288,7 +41480,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
-    "Text": "Saved {0} overlay position/opacity override(s), including scale settings{1}{2}{3}",
+    "Text": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -41358,6 +41550,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
+  },
+  {
+    "Text": "Scale",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
+  },
+  {
+    "Text": "Scale from the operating-system baseline in 5% steps.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Scales the complete application interface. Oversized choices are reduced only as needed to fit the active monitor.",
@@ -48203,6 +48411,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml.cs"
   },
   {
+    "Text": "Text scale from baseline",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
     "Text": "Thargoid",
     "IsFormat": false,
     "SourceKinds": [
@@ -48793,7 +49009,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/UiSettingsDocumentStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
   },
   {
     "Text": "The VR calibration backup did not match its source.",
@@ -49812,6 +50028,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "The global overlay scale migration failed and its settings rollback also failed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
+  },
+  {
+    "Text": "The global overlay scale migration failed; the original settings were restored.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
+  },
+  {
+    "Text": "The global overlay scale settings backup could not be verified.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
+  },
+  {
     "Text": "The ground target is invalid.",
     "IsFormat": false,
     "SourceKinds": [
@@ -50092,6 +50332,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "The legacy global overlay scale has no settings file to back up.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
+  },
+  {
     "Text": "The legacy import manifest is empty.",
     "IsFormat": false,
     "SourceKinds": [
@@ -50314,6 +50562,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The migrated global overlay scale could not be verified.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
   },
   {
     "Text": "The narrow dark-cyan, three-sided legacy glyph identifies an inactive obelisk and rotates with the template geometry. A dotted lime ring identifies the nearest or targeted point.",
@@ -52466,7 +52722,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "To",
@@ -53262,14 +53518,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
-  },
-  {
-    "Text": "Typography",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
     "Text": "U\u002B1F4E1,U\u002B1F680",
@@ -55032,7 +55280,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Variant",
@@ -57540,7 +57788,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayTypographySettings.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "body name",
@@ -57740,7 +57988,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayTypographySettings.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "cargo",
@@ -58196,7 +58444,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayTypographySettings.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "development",
@@ -59167,6 +59415,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "height",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
     "Text": "helium",
     "IsFormat": false,
     "SourceKinds": [
@@ -59268,7 +59524,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "icy",
@@ -60247,7 +60503,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
+    "Text": "overlay-scale-backups",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayScaleSettingsStore.cs"
+  },
+  {
     "Text": "overlay-scale-overrides",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "overlay-size-overrides",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -60269,6 +60541,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
+  },
+  {
+    "Text": "overlay-typography-overrides",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "overlays",
@@ -61548,7 +61828,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayTypographySettings.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "title:{0}",
@@ -61749,6 +62029,62 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
+  },
+  {
+    "Text": "type-body",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
+  },
+  {
+    "Text": "type-caption",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
+  },
+  {
+    "Text": "type-detail",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
+  },
+  {
+    "Text": "type-header",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
+  },
+  {
+    "Text": "type-icon",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
+  },
+  {
+    "Text": "type-title",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
+  },
+  {
+    "Text": "type-value",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
   },
   {
     "Text": "type6",
@@ -61956,7 +62292,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "version",
@@ -62158,6 +62494,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
+  },
+  {
+    "Text": "width",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "win-x64",
@@ -62558,6 +62902,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0} appearance",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "{0} as scanned \u00B7 {1} if mapped",
@@ -63288,14 +63640,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
-    "Text": "{0} opacity and scale",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
-  },
-  {
     "Text": "{0} opacity set to {1}%. Use the top \u2713 to save and close.",
     "IsFormat": true,
     "SourceKinds": [
@@ -63344,7 +63688,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "{0} recorded boxels at mass code {1}.",
+    "Text": "{0} recorded boxels match the mass-code filters.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -63670,6 +64014,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+  },
+  {
+    "Text": "{0} {1} text set to {2}% from baseline. Use the top \u2713 to save and close.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "{0} {1} verified Guardian templates.",
@@ -64230,14 +64582,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "\u26A0 RESTOCK REQUIRED",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"
   },
   {
     "Text": "\u26FD Refuel",

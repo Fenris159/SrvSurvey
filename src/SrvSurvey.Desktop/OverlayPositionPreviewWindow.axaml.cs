@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using SrvSurvey.Desktop.Configuration;
@@ -18,11 +19,15 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private int? scaleOverride;
     private double scaleRenderScaling = 1d;
     private double scaleFactor = 1d;
+    private OverlayTypographyScale typographyScale = OverlayTypographyScale.Default;
     private readonly bool usesRuntimePresentation;
     private readonly IReadOnlyList<OverlayEditorPreviewStateDefinition> previewStates;
     private Control? runtimePresentation;
     private int previewStateIndex;
     private Point? pendingPanelTopCenter;
+    private OverlayPanelSize? sizeOverride;
+    private double resizeWidth;
+    private double resizeHeight;
 
     public OverlayPositionPreviewWindow()
     {
@@ -100,6 +105,8 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     internal Border PreviewBodyControl => PreviewBody;
 
     public event EventHandler<OverlayPreviewSettingsRequestedEventArgs>? SettingsRequested;
+
+    public event EventHandler<OverlayPreviewSizeChangedEventArgs>? PanelSizeChanged;
 
     public PixelSize GetExpectedPixelSize(double scaling)
     {
@@ -210,6 +217,35 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         // fully readable for panel identification.
         PreviewBody.Opacity = opacity;
         PreviewSurface.Opacity = 1d;
+    }
+
+    public void ConfigureTypography(OverlayTypographyScale scale)
+    {
+        ArgumentNullException.ThrowIfNull(scale);
+        typographyScale = scale;
+        RefreshTypographyBaseline();
+    }
+
+    public void ConfigureSize(OverlayPanelSize? size)
+    {
+        if (runtimePresentation is null)
+        {
+            PanelResizeThumb.IsVisible = false;
+            return;
+        }
+
+        sizeOverride = size;
+        OverlayThemeResources.ApplyPanelSize(runtimePresentation, size);
+        PreviewSurface.InvalidateMeasure();
+        InvalidateMeasure();
+    }
+
+    internal void RefreshTypographyBaseline()
+    {
+        if (runtimePresentation is not null)
+        {
+            OverlayTypographyResources.Apply(runtimePresentation, typographyScale);
+        }
     }
 
     private void ApplyContentSize()
@@ -388,6 +424,39 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
 
         SettingsRequested?.Invoke(this, new OverlayPreviewSettingsRequestedEventArgs(Definition.Name));
+        eventArgs.Handled = true;
+    }
+
+    private void OnPanelResizeStarted(object? sender, VectorEventArgs eventArgs)
+    {
+        if (runtimePresentation is null)
+        {
+            return;
+        }
+
+        resizeWidth = sizeOverride?.Width ?? Math.Max(1d, runtimePresentation.Bounds.Width);
+        resizeHeight = sizeOverride?.Height ?? Math.Max(1d, runtimePresentation.Bounds.Height);
+        eventArgs.Handled = true;
+    }
+
+    private void OnPanelResizeDelta(object? sender, VectorEventArgs eventArgs)
+    {
+        if (runtimePresentation is null)
+        {
+            return;
+        }
+
+        double safeScale = double.IsFinite(scaleFactor) && scaleFactor > 0 ? scaleFactor : 1d;
+        resizeWidth = Math.Max(120d, resizeWidth + (eventArgs.Vector.X / safeScale));
+        resizeHeight = Math.Max(48d, resizeHeight + (eventArgs.Vector.Y / safeScale));
+        var updated = new OverlayPanelSize(Math.Round(resizeWidth), Math.Round(resizeHeight));
+        ConfigureSize(updated);
+        PanelSizeChanged?.Invoke(this, new OverlayPreviewSizeChangedEventArgs(Definition.Name, updated));
+        eventArgs.Handled = true;
+    }
+
+    private static void OnPanelResizeCompleted(object? sender, VectorEventArgs eventArgs)
+    {
         eventArgs.Handled = true;
     }
 

@@ -1,4 +1,5 @@
 using Avalonia;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
@@ -161,15 +162,17 @@ public sealed class OverlayPositionEditSessionTests
     public void ScaleTracksTheActiveSettingWithoutBecomingAnEditorChange()
     {
         var active = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
-        active.SetScaleIndex(7);
+        int originalIndex = OverlayScaleCatalog.GetIndex(50);
+        int updatedIndex = OverlayScaleCatalog.GetIndex(150);
+        active.SetScaleIndex(originalIndex);
         var session = new OverlayPositionEditSession(active);
 
-        Assert.Equal(7, session.ScaleIndex);
+        Assert.Equal(originalIndex, session.ScaleIndex);
 
-        session.SetScaleIndex(19);
+        session.SetScaleIndex(updatedIndex);
 
-        Assert.Equal(19, session.ScaleIndex);
-        Assert.Equal(7, active.ScaleIndex);
+        Assert.Equal(updatedIndex, session.ScaleIndex);
+        Assert.Equal(originalIndex, active.ScaleIndex);
         Assert.False(session.HasChanges);
     }
 
@@ -177,19 +180,57 @@ public sealed class OverlayPositionEditSessionTests
     public void PerOverlayScaleOverrideIsAnIsolatedEditorChange()
     {
         var active = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
-        active.SetScaleIndex(7);
+        int globalIndex = OverlayScaleCatalog.GetIndex(50);
+        int customIndex = OverlayScaleCatalog.GetIndex(150);
+        active.SetScaleIndex(globalIndex);
         var session = new OverlayPositionEditSession(active);
 
-        Assert.True(session.SetScaleOverride("PlotRouteBio", 19));
+        Assert.True(session.SetScaleOverride("PlotRouteBio", customIndex));
 
         Assert.True(session.HasChanges);
-        Assert.Equal(19, session.GetScaleIndex("PlotRouteBio"));
-        Assert.Equal(7, session.GetScaleIndex("PlotJumpInfo"));
+        Assert.Equal(customIndex, session.GetScaleIndex("PlotRouteBio"));
+        Assert.Equal(globalIndex, session.GetScaleIndex("PlotJumpInfo"));
         Assert.Null(active.Placements.GetValueOrDefault("PlotRouteBio")?.ScaleIndex);
 
         Assert.True(session.SetScaleOverride("PlotRouteBio", null));
         Assert.False(session.HasChanges);
-        Assert.Equal(7, session.GetScaleIndex("PlotRouteBio"));
+        Assert.Equal(globalIndex, session.GetScaleIndex("PlotRouteBio"));
+    }
+
+    [Fact]
+    public void PerOverlayTypographyIsAnIsolatedEditorChangeAndZeroRemovesTheOverride()
+    {
+        var active = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
+        var session = new OverlayPositionEditSession(active);
+        var scale = new OverlayTypographyScale(0, 25, 0, -10, 0, 0);
+
+        Assert.True(session.SetTypographyScale("PlotFSSInfo", scale));
+
+        Assert.True(session.HasChanges);
+        Assert.Equal(scale, session.GetTypographyScale("PlotFSSInfo"));
+        Assert.Equal(OverlayTypographyScale.Default, session.GetTypographyScale("PlotJumpInfo"));
+        Assert.Null(active.Placements.GetValueOrDefault("PlotFSSInfo")?.TypographyScale);
+
+        Assert.True(session.SetTypographyScale("PlotFSSInfo", OverlayTypographyScale.Default));
+        Assert.False(session.HasChanges);
+        Assert.Null(session.GetPlacement("PlotFSSInfo").TypographyScale);
+    }
+
+    [Theory]
+    [InlineData(OverlayTypographyRole.Header)]
+    [InlineData(OverlayTypographyRole.Title)]
+    [InlineData(OverlayTypographyRole.Value)]
+    [InlineData(OverlayTypographyRole.Body)]
+    [InlineData(OverlayTypographyRole.Detail)]
+    [InlineData(OverlayTypographyRole.Caption)]
+    public void TypographyRolesNormalizeIndependentPercentages(OverlayTypographyRole role)
+    {
+        OverlayTypographyScale updated = OverlayTypographyScale.Default.WithPercent(role, 13);
+
+        Assert.Equal(15, updated.GetPercent(role));
+        Assert.False(updated.IsDefault);
+        Assert.Equal(-50, OverlayTypographyScale.Normalize(-80));
+        Assert.Equal(0, OverlayTypographyScale.Normalize(double.NaN));
     }
 
     [Fact]

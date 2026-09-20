@@ -16,71 +16,76 @@
           CornerRadius="5">
     <StackPanel Spacing="5">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-        <TextBlock Classes="overlay-header"
+        <TextBlock Classes="overlay-header type-header"
                    Text="FLEET CARRIER ROUTE" />
         <TextBlock Grid.Column="1"
-                   Classes="eyebrow"
+                   Classes="eyebrow type-header"
                    Text="{Binding HopProgress}" />
       </Grid>
 
-      <TextBlock Classes="overlay-title"
+      <TextBlock Classes="overlay-title type-title"
                  Foreground="{DynamicResource RavenAccentBrush}"
                  Text="{Binding SystemName}"
                  TextWrapping="Wrap" />
-      <TextBlock Classes="overlay-value"
+      <TextBlock Classes="overlay-body type-body"
                  Text="{Binding JumpSummary}"
                  TextWrapping="Wrap" />
-      <TextBlock Classes="muted overlay-detail"
+      <TextBlock Classes="muted overlay-detail type-detail"
                  Text="{Binding JumpsLeft}" />
 
       <Border Classes="overlay-divider"
               Background="{DynamicResource RavenBorderBrush}" />
 
-      <TextBlock Classes="eyebrow" Text="TRITIUM" />
+      <TextBlock Classes="eyebrow type-header" Text="TRITIUM" />
       <Grid ColumnDefinitions="Auto,Auto"
             ColumnSpacing="24"
             HorizontalAlignment="Left"
             RowDefinitions="Auto,Auto,Auto">
-        <TextBlock Classes="muted overlay-detail" Text="Fuel left" />
+        <TextBlock Classes="muted overlay-detail type-caption" Text="Fuel left" />
         <TextBlock Grid.Column="1"
-                   Classes="overlay-body"
+                   Classes="overlay-body type-value"
                    Text="{Binding FuelLeft}" />
         <TextBlock Grid.Row="1"
-                   Classes="muted overlay-detail"
+                   Classes="muted overlay-detail type-caption"
                    Text="In market" />
         <TextBlock Grid.Row="1"
                    Grid.Column="1"
-                   Classes="overlay-body"
+                   Classes="overlay-body type-value"
                    Text="{Binding TritiumInMarket}" />
         <TextBlock Grid.Row="2"
-                   Classes="muted overlay-detail"
+                   Classes="muted overlay-detail type-caption"
                    Text="Jump fuel" />
         <TextBlock Grid.Row="2"
                    Grid.Column="1"
-                   Classes="overlay-body"
+                   Classes="overlay-body type-value"
                    Text="{Binding JumpFuel}" />
       </Grid>
 
-      <Border Classes="badge"
-              HorizontalAlignment="Left"
-              IsVisible="{Binding HasIcyRing}">
-        <TextBlock Classes="overlay-detail"
-                   Foreground="{DynamicResource RavenAccentBrush}"
-                   FontWeight="SemiBold"
-                   Text="{Binding IcyRingLabel, StringFormat='[ {0} ]'}" />
-      </Border>
+      <LayoutTransformControl Classes="type-icon"
+                              HorizontalAlignment="Left"
+                              IsVisible="{Binding HasIcyRing}">
+        <Border Classes="badge">
+          <TextBlock Classes="overlay-detail"
+                     Foreground="{DynamicResource RavenAccentBrush}"
+                     FontWeight="SemiBold"
+                     Text="{Binding IcyRingLabel, StringFormat='[ {0} ]'}" />
+        </Border>
+      </LayoutTransformControl>
 
       <Grid ColumnDefinitions="Auto,Auto"
             ColumnSpacing="24"
             HorizontalAlignment="Left"
             IsVisible="{Binding HasRestockWarning}">
-        <TextBlock Foreground="#FFFFB347"
-                   Classes="overlay-body"
-                   FontWeight="Bold"
-                   Text="&#x26A0; RESTOCK REQUIRED" />
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <TextBlock Foreground="#FFFFB347" Classes="type-icon" FontWeight="Bold" Text="&#x26A0;" />
+          <TextBlock Foreground="#FFFFB347"
+                     Classes="overlay-body type-title"
+                     FontWeight="Bold"
+                     Text="RESTOCK REQUIRED" />
+        </StackPanel>
         <TextBlock Grid.Column="1"
                    Foreground="#FFFFB347"
-                   Classes="overlay-body"
+                   Classes="overlay-body type-value"
                    FontWeight="Bold"
                    Text="{Binding RestockAmount}" />
       </Grid>
@@ -91,11 +96,11 @@
         <Grid ColumnDefinitions="Auto,Auto"
               ColumnSpacing="12"
               HorizontalAlignment="Left">
-          <TextBlock Classes="eyebrow"
+          <TextBlock Classes="eyebrow type-header"
                      Text="{Binding CountdownTitle}"
                      TextTrimming="CharacterEllipsis" />
           <TextBlock Grid.Column="1"
-                     Classes="overlay-value"
+                     Classes="overlay-value type-value"
                      Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="Bold"
                      Text="{Binding Countdown}" />
@@ -103,11 +108,11 @@
         <Grid ColumnDefinitions="Auto,Auto"
               ColumnSpacing="12"
               HorizontalAlignment="Left">
-          <TextBlock Classes="muted overlay-detail"
+          <TextBlock Classes="muted overlay-detail type-detail"
                      FontWeight="SemiBold"
                      Text="{Binding CountdownPhase}" />
           <TextBlock Grid.Column="1"
-                     Classes="muted overlay-detail"
+                     Classes="muted overlay-detail type-detail"
                      FontWeight="SemiBold"
                      IsVisible="{Binding HasCountdownPhaseTime}"
                      Text="{Binding CountdownPhaseTime}" />

@@ -19,6 +19,28 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
     );
 
     [AvaloniaFact]
+    public void CategorySelectorExpandsAnEditorOwnedPanelAboveTheToolbar()
+    {
+        var window = new OverlayPositionEditorWindow();
+        try
+        {
+            window.Show();
+            Button? selector = window.FindControl<Button>("OverlayCategorySelector");
+            Border? menu = window.FindControl<Border>("OverlayCategoryMenu");
+            Grid? toolbar = window.FindControl<Grid>("EditorToolbarPanel");
+
+            Assert.NotNull(selector);
+            Assert.NotNull(menu);
+            Assert.NotNull(toolbar);
+            Assert.True(Grid.GetRow(menu) < Grid.GetRow(toolbar));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void PerOverlaySettingsAreLaidOutAboveTheToolbar()
     {
         var window = new OverlayPositionEditorWindow();
@@ -91,6 +113,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         var session = new OverlayPositionEditSession(activeLayout);
         host.RefreshPreviewOpacities(session);
         host.RefreshPreviewScales(session);
+        Assert.True(session.SetTypographyScale("PlotFSSInfo", new OverlayTypographyScale(0, 25, 0, 0, 0, 0)));
+        host.RefreshPreviewTypography(session);
         host.RefreshPreviewPositions(session);
         Assert.Equal(
             OverlayLayoutCatalog.ForCategory(OverlayLayoutCategory.ExplorationAndNavigation).Count,
@@ -426,12 +450,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             using WriteableBitmap? previewFrame = preview.CaptureRenderedFrame();
             Assert.Equal(runtimeWindow.Position, preview.GetPanelScreenOrigin(preview.RenderScaling));
             viewModel.OpenOverlaySettings("PlotSurfaceMining");
-            viewModel.SelectedOverlayScaleOrdinal = OverlayScaleCatalog
-                .Options.Where(option => option.AbsoluteScale is not null)
-                .OrderBy(option => option.AbsoluteScale)
-                .Select((option, index) => (option, index))
-                .Single(pair => pair.option.Index == 13)
-                .index;
+            viewModel.SelectedOverlayScalePercent = 100;
             using WriteableBitmap? scaledFrame = preview.CaptureRenderedFrame();
             OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
             var placedTopLeft = new PixelPoint(510, 430);

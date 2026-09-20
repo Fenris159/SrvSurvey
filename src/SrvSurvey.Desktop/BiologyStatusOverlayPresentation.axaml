@@ -29,17 +29,15 @@
       <Grid ColumnDefinitions="Auto,Auto,*"
             ColumnSpacing="7"
             ClipToBounds="True">
-        <TextBlock Classes="eyebrow"
+        <TextBlock FontSize="11" Classes="eyebrow type-header"
                    Foreground="{DynamicResource RavenWarningBrush}"
-                   FontSize="11"
                    FontWeight="SemiBold"
                    Text="{Binding ProgressText}"
                    TextTrimming="CharacterEllipsis" />
-        <TextBlock Grid.Column="1"
-                   Classes="muted"
+        <TextBlock FontSize="11" Grid.Column="1"
+                   Classes="muted type-value"
                    VerticalAlignment="Center"
                    Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="11"
                    FontWeight="SemiBold"
                    Text="{Binding CompletionPercentText}" />
         <ProgressBar Grid.Column="2"
@@ -56,50 +54,48 @@
       <Grid Grid.Row="1"
             Margin="0,6,0,4"
             RowDefinitions="Auto,Auto,Auto">
-        <TextBlock HorizontalAlignment="Center"
+        <TextBlock FontSize="14" HorizontalAlignment="Center"
                    VerticalAlignment="Center"
-                   Classes="muted"
+                   Classes="muted type-title"
                    Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="14"
                    FontWeight="SemiBold"
                    IsVisible="{Binding RequiresDss}"
                    Text="DSS required" />
 
         <Grid Grid.Row="1"
               IsVisible="{Binding HasActiveSample}"
-              ColumnDefinitions="92,*"
+              ColumnDefinitions="Auto,*"
               ColumnSpacing="6"
               MinHeight="40">
-          <StackPanel Orientation="Horizontal"
-                      VerticalAlignment="Center"
-                      Spacing="6">
-            <!-- Stage 1: always filled once an active sample exists -->
-            <Grid Width="24" Height="24">
-              <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
-                       StrokeThickness="2"
-                       Fill="{DynamicResource RavenPrimaryDimBrush}" />
-            </Grid>
-            <!-- Stage 2: filled after the second sample -->
-            <Grid Width="24" Height="24">
-              <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
-                       StrokeThickness="2"
-                       Fill="{DynamicResource RavenPrimaryDimBrush}"
-                       IsVisible="{Binding ActiveSampleDisplay.IsSecondSampleComplete}" />
-              <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
-                       StrokeThickness="2"
-                       IsVisible="{Binding !ActiveSampleDisplay.IsSecondSampleComplete}" />
-            </Grid>
-            <!-- Stage 3: always empty outline -->
-            <Grid Width="24" Height="24">
-              <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
-                       StrokeThickness="2" />
-            </Grid>
-          </StackPanel>
+          <LayoutTransformControl Classes="type-icon" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <!-- Stage 1: always filled once an active sample exists -->
+              <Grid Width="24" Height="24">
+                <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
+                         StrokeThickness="2"
+                         Fill="{DynamicResource RavenPrimaryDimBrush}" />
+              </Grid>
+              <!-- Stage 2: filled after the second sample -->
+              <Grid Width="24" Height="24">
+                <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
+                         StrokeThickness="2"
+                         Fill="{DynamicResource RavenPrimaryDimBrush}"
+                         IsVisible="{Binding ActiveSampleDisplay.IsSecondSampleComplete}" />
+                <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
+                         StrokeThickness="2"
+                         IsVisible="{Binding !ActiveSampleDisplay.IsSecondSampleComplete}" />
+              </Grid>
+              <!-- Stage 3: always empty outline -->
+              <Grid Width="24" Height="24">
+                <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
+                         StrokeThickness="2" />
+              </Grid>
+            </StackPanel>
+          </LayoutTransformControl>
 
           <Grid Grid.Column="1"
                 RowDefinitions="Auto,Auto">
-            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="14"
+            <TextBlock FontSize="14" Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                        FontWeight="SemiBold"
                        Text="{Binding ActiveSampleDisplay.DisplayName}"
                        TextWrapping="Wrap"
@@ -113,9 +109,8 @@
                       Width="{Binding ActiveSampleDisplay.SampleScaleBarWidth}"
                       VerticalAlignment="Center"
                       Background="{DynamicResource RavenAccentBrush}" />
-              <TextBlock Classes="muted"
+              <TextBlock FontSize="10" Classes="muted type-detail"
                          Foreground="{DynamicResource RavenAccentBrush}"
-                         FontSize="10"
                          Text="{Binding ActiveSampleDisplay.SampleScaleLabel}" />
             </StackPanel>
           </Grid>
@@ -134,14 +129,12 @@
             <DataTemplate x:DataType="vm:BiologyStatusSignalViewModel">
               <Grid Margin="0,0,8,2"
                     Opacity="{Binding RowOpacity}">
-                <TextBlock Classes="muted"
+                <TextBlock FontSize="10" Classes="muted type-body"
                            Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="10"
                            IsVisible="{Binding !IsAnalyzed}"
                            Text="{Binding DisplayText}" />
-                <TextBlock Classes="muted"
+                <TextBlock FontSize="10" Classes="muted type-body"
                            Foreground="{DynamicResource RavenWarningBrush}"
-                           FontSize="10"
                            IsVisible="{Binding IsAnalyzed}"
                            Text="{Binding DisplayText}"
                            TextDecorations="Strikethrough" />
@@ -163,12 +156,11 @@
                   VerticalAlignment="Center"
                   Background="{DynamicResource RavenDangerBrush}"
                   Opacity="0.9" />
-          <TextBlock Grid.Column="1"
-                     Classes="muted"
+          <TextBlock FontSize="10" Grid.Column="1"
+                     Classes="muted type-body"
                      HorizontalAlignment="Stretch"
                      VerticalAlignment="Center"
                      Foreground="{DynamicResource RavenDangerBrush}"
-                     FontSize="10"
                      FontWeight="SemiBold"
                      Text="{Binding Warning}"
                      TextWrapping="Wrap"
@@ -187,43 +179,41 @@
                     VerticalAlignment="Center"
                     Spacing="8"
                     IsVisible="{Binding !IsStaleActiveSample}">
-          <TextBlock Classes="muted"
+          <TextBlock FontSize="10" Classes="muted type-detail"
                      Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="10"
                      Text="{Binding Footer}"
                      TextWrapping="Wrap"
                      TextAlignment="Center" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="10"
+          <TextBlock FontSize="10" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}"
                      IsVisible="{Binding ActiveSampleDisplay.HasReward}"
                      Text="{Binding ActiveSampleDisplay.RewardText}" />
-          <Panel Width="28"
-                 Height="28"
-                 IsVisible="{Binding ShowCodexImageIndicator}">
-            <Border Width="22"
-                    Height="18"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    BorderBrush="{DynamicResource RavenAccentBrush}"
-                    BorderThickness="1.5"
-                    CornerRadius="2"
-                    Background="Transparent" />
-            <Border Width="10"
-                    Height="10"
-                    Margin="0,0,0,2"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    BorderBrush="{DynamicResource RavenAccentBrush}"
-                    BorderThickness="1"
-                    CornerRadius="5" />
-            <Path IsVisible="{Binding !HasCodexImage}"
-                  Stroke="{DynamicResource RavenDangerBrush}"
-                  StrokeThickness="2"
-                  Data="M 4,4 L 24,24 M 24,4 L 4,24"
-                  Width="28"
-                  Height="28"
-                  Stretch="None" />
-          </Panel>
+          <LayoutTransformControl Classes="type-icon" IsVisible="{Binding ShowCodexImageIndicator}">
+            <Panel Width="28" Height="28">
+              <Border Width="22"
+                      Height="18"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      BorderBrush="{DynamicResource RavenAccentBrush}"
+                      BorderThickness="1.5"
+                      CornerRadius="2"
+                      Background="Transparent" />
+              <Border Width="10"
+                      Height="10"
+                      Margin="0,0,0,2"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      BorderBrush="{DynamicResource RavenAccentBrush}"
+                      BorderThickness="1"
+                      CornerRadius="5" />
+              <Path IsVisible="{Binding !HasCodexImage}"
+                    Stroke="{DynamicResource RavenDangerBrush}"
+                    StrokeThickness="2"
+                    Data="M 4,4 L 24,24 M 24,4 L 4,24"
+                    Width="28"
+                    Height="28"
+                    Stretch="None" />
+            </Panel>
+          </LayoutTransformControl>
         </StackPanel>
       </Grid>
           </Grid>

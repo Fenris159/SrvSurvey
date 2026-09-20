@@ -19,13 +19,43 @@ public sealed class ReplayPresentationSnapshotStoreTests
         string[] names = OverlayLayoutCatalog.Supported.Take(4).Select(definition => definition.Name).ToArray();
         var sourcePlacements = new Dictionary<string, LegacyOverlayPlacement>
         {
-            [names[0]] = new(LegacyHorizontalAnchor.Left, 1, LegacyVerticalAnchor.Top, 2, 0.6, 1),
-            [names[1]] = new(LegacyHorizontalAnchor.Center, 3, LegacyVerticalAnchor.Middle, 4, 0.7, 2),
-            [names[2]] = new(LegacyHorizontalAnchor.Right, 5, LegacyVerticalAnchor.Bottom, 6, 0.8, 3),
-            [names[3]] = new(LegacyHorizontalAnchor.Screen, 7, LegacyVerticalAnchor.Screen, 8, null, 4),
+            [names[0]] = new(
+                LegacyHorizontalAnchor.Left,
+                1,
+                LegacyVerticalAnchor.Top,
+                2,
+                0.6,
+                OverlayScaleCatalog.GetIndex(0)
+            ),
+            [names[1]] = new(
+                LegacyHorizontalAnchor.Center,
+                3,
+                LegacyVerticalAnchor.Middle,
+                4,
+                0.7,
+                OverlayScaleCatalog.GetIndex(10)
+            ),
+            [names[2]] = new(
+                LegacyHorizontalAnchor.Right,
+                5,
+                LegacyVerticalAnchor.Bottom,
+                6,
+                0.8,
+                OverlayScaleCatalog.GetIndex(20)
+            ),
+            [names[3]] = new(
+                LegacyHorizontalAnchor.Screen,
+                7,
+                LegacyVerticalAnchor.Screen,
+                8,
+                null,
+                OverlayScaleCatalog.GetIndex(25)
+            ),
         };
         _ = new LegacyOverlayLayoutStore(paths.DataDirectory).Save(sourcePlacements, 0.55, updateDefaultOpacity: true);
-        new OverlayScaleSettingsStore(paths.UiSettingsPath).Save(new OverlayScalePreferences(3));
+        new OverlayScaleSettingsStore(paths.UiSettingsPath).Save(
+            new OverlayScalePreferences(OverlayScaleCatalog.GetIndex(20))
+        );
         var visibility = new OverlayPanelVisibilitySettingsStore(paths.UiSettingsPath).Load().ToDictionary();
         visibility[names[0]] = false;
         new OverlayPanelVisibilitySettingsStore(paths.UiSettingsPath).Save(visibility);
@@ -46,7 +76,7 @@ public sealed class ReplayPresentationSnapshotStoreTests
         Assert.Equal(1440, snapshot.ViewportHeight);
         Assert.Equal(1920, defaultViewport.ViewportWidth);
         Assert.Equal(1080, defaultViewport.ViewportHeight);
-        Assert.Equal(3, snapshot.GlobalScaleIndex);
+        Assert.Equal(OverlayScaleCatalog.GetIndex(20), snapshot.GlobalScaleIndex);
         Assert.Equal(0.55, snapshot.DefaultOpacity);
         Assert.False(snapshot.OverlayEnablement[names[0]]);
         Assert.Equal(

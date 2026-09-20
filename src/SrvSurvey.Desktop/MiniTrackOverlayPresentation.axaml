@@ -38,22 +38,21 @@
                         Background="{DynamicResource RavenSurfaceBrush}"
                         CornerRadius="7">
                   <StackPanel HorizontalAlignment="Center" Spacing="2">
-                    <TextBlock HorizontalAlignment="Center"
+                    <TextBlock FontSize="10" Classes="type-body" HorizontalAlignment="Center"
                                Foreground="{DynamicResource RavenAccentBrush}"
-                               FontSize="10"
                                FontWeight="Bold"
                                Text="{Binding Name}" />
-                    <controls:DirectionalChevronControl
-                        Width="18"
-                        Height="18"
-                        HorizontalAlignment="Center"
-                        BearingDegrees="{Binding RelativeBearingDegrees}"
-                        IsFar="{Binding IsFarTarget}"
-                        Stroke="{DynamicResource RavenAccentBrush}"
-                        StrokeThickness="2" />
-                    <TextBlock HorizontalAlignment="Center"
-                               Classes="monospace"
-                               FontSize="9"
+                    <LayoutTransformControl Classes="type-icon" HorizontalAlignment="Center">
+                      <controls:DirectionalChevronControl
+                          Width="18"
+                          Height="18"
+                          BearingDegrees="{Binding RelativeBearingDegrees}"
+                          IsFar="{Binding IsFarTarget}"
+                          Stroke="{DynamicResource RavenAccentBrush}"
+                          StrokeThickness="2" />
+                    </LayoutTransformControl>
+                    <TextBlock FontSize="9" HorizontalAlignment="Center"
+                               Classes="monospace type-value"
                                Text="{Binding DistanceText}" />
                   </StackPanel>
                 </Border>

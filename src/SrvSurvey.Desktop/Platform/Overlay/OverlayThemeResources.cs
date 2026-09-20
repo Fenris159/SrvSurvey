@@ -10,6 +10,11 @@ using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
+internal interface IOverlayPanelSizeAware
+{
+    void SetPanelSizeOverrideActive(bool active);
+}
+
 public static class OverlayThemeResources
 {
     internal const string OverlayTypographyClass = "srv-overlay";
@@ -18,6 +23,7 @@ public static class OverlayThemeResources
     private static readonly Lock ThemeWindowsLock = new();
     private static readonly List<WeakReference<Window>> ThemeWindows = [];
     private static readonly ConditionalWeakTable<Window, ScaleRegistration> ScaleRegistrations = [];
+    private static readonly ConditionalWeakTable<Control, PanelSizeRegistration> PanelSizeRegistrations = [];
     private static readonly ConditionalWeakTable<
         Window,
         LegacyPresentationRegistration
@@ -138,6 +144,8 @@ public static class OverlayThemeResources
         Apply(window);
         ApplyLegacyFormFactor(window, plotterName);
         ApplyLegacyPresentation(window, plotterName);
+        ApplyPanelSize(window, layout, plotterName);
+        ApplyTypography(window, layout, plotterName);
         ApplyScale(window, layout, plotterName);
         ApplyOpacity(window, layout, plotterName);
         registry.Register(window, plotterName);
@@ -160,6 +168,14 @@ public static class OverlayThemeResources
         foreach (Window window in windows)
         {
             ApplyThemeResources(window);
+            if (LayoutSettingsRegistrations.TryGetValue(window, out LayoutSettingsRegistration? registration))
+            {
+                registration.RefreshTypography();
+            }
+            else if (window is OverlayPositionPreviewWindow preview)
+            {
+                preview.RefreshTypographyBaseline();
+            }
         }
     }
 
@@ -268,7 +284,11 @@ public static class OverlayThemeResources
             return;
         }
 
-        LayoutSettingsRegistrations.Add(window, new LayoutSettingsRegistration(window, layout, plotterName));
+        Control? typographyRoot = GetTypographyRoot(window);
+        LayoutSettingsRegistrations.Add(
+            window,
+            new LayoutSettingsRegistration(window, layout, plotterName, typographyRoot)
+        );
     }
 
     internal static void ApplyLegacyPresentation(Window window, string plotterName)
@@ -462,6 +482,44 @@ public static class OverlayThemeResources
             window.Opacity = opacity;
         }
     }
+
+    public static void ApplyTypography(Window window, LegacyOverlayLayout layout, string plotterName)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        if (GetTypographyRoot(window) is { } content)
+        {
+            OverlayTypographyResources.Apply(content, layout.GetTypographyScale(plotterName));
+        }
+    }
+
+    public static void ApplyPanelSize(Window window, LegacyOverlayLayout layout, string plotterName)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        if (GetTypographyRoot(window) is not { } content)
+        {
+            return;
+        }
+
+        ApplyPanelSize(content, layout.GetSizeOverride(plotterName));
+    }
+
+    internal static void ApplyPanelSize(Control content, OverlayPanelSize? size)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        PanelSizeRegistrations.GetValue(content, control => new PanelSizeRegistration(control)).ApplySize(size);
+    }
+
+    private static Control? GetTypographyRoot(Window window) =>
+        window.Content switch
+        {
+            LayoutTransformControl { Child: Control child } => child,
+            Control content => content,
+            _ => null,
+        };
 
     public static void ApplyScale(Window window, LegacyOverlayLayout layout)
     {
@@ -777,15 +835,30 @@ public static class OverlayThemeResources
         private readonly Window window;
         private readonly LegacyOverlayLayout layout;
         private readonly string plotterName;
+        private readonly Control? typographyRoot;
         private bool closed;
 
-        public LayoutSettingsRegistration(Window window, LegacyOverlayLayout layout, string plotterName)
+        public LayoutSettingsRegistration(
+            Window window,
+            LegacyOverlayLayout layout,
+            string plotterName,
+            Control? typographyRoot
+        )
         {
             this.window = window;
             this.layout = layout;
             this.plotterName = plotterName;
+            this.typographyRoot = typographyRoot;
             layout.Changed += OnLayoutChanged;
             window.Closed += OnWindowClosed;
+        }
+
+        public void RefreshTypography()
+        {
+            if (!closed && typographyRoot is not null)
+            {
+                OverlayTypographyResources.Apply(typographyRoot, layout.GetTypographyScale(plotterName));
+            }
         }
 
         public void Validate(LegacyOverlayLayout expectedLayout, string expectedPlotterName)
@@ -825,8 +898,10 @@ public static class OverlayThemeResources
                 return;
             }
 
+            ApplyPanelSize(window, layout, plotterName);
             ApplyScale(window, layout, plotterName);
             ApplyOpacity(window, layout, plotterName);
+            RefreshTypography();
         }
 
         private void OnWindowClosed(object? sender, EventArgs eventArgs)
@@ -834,6 +909,60 @@ public static class OverlayThemeResources
             closed = true;
             layout.Changed -= OnLayoutChanged;
             window.Closed -= OnWindowClosed;
+        }
+    }
+
+    private sealed class PanelSizeRegistration(Control content)
+    {
+        private readonly double originalWidth = content.Width;
+        private readonly double originalHeight = content.Height;
+        private readonly double originalMinWidth = content.MinWidth;
+        private readonly double originalMinHeight = content.MinHeight;
+        private readonly double originalMaxWidth = content.MaxWidth;
+        private readonly double originalMaxHeight = content.MaxHeight;
+        private readonly Avalonia.Layout.HorizontalAlignment originalHorizontalAlignment = content.HorizontalAlignment;
+        private readonly Avalonia.Layout.VerticalAlignment originalVerticalAlignment = content.VerticalAlignment;
+        private readonly Avalonia.Layout.HorizontalAlignment originalHorizontalContentAlignment =
+            (content as ContentControl)?.HorizontalContentAlignment ?? Avalonia.Layout.HorizontalAlignment.Stretch;
+        private readonly Avalonia.Layout.VerticalAlignment originalVerticalContentAlignment =
+            (content as ContentControl)?.VerticalContentAlignment ?? Avalonia.Layout.VerticalAlignment.Stretch;
+
+        public void ApplySize(OverlayPanelSize? size)
+        {
+            if (size is null)
+            {
+                (content as IOverlayPanelSizeAware)?.SetPanelSizeOverrideActive(false);
+                content.Width = originalWidth;
+                content.Height = originalHeight;
+                content.MinWidth = originalMinWidth;
+                content.MinHeight = originalMinHeight;
+                content.MaxWidth = originalMaxWidth;
+                content.MaxHeight = originalMaxHeight;
+                content.HorizontalAlignment = originalHorizontalAlignment;
+                content.VerticalAlignment = originalVerticalAlignment;
+                if (content is ContentControl contentControl)
+                {
+                    contentControl.HorizontalContentAlignment = originalHorizontalContentAlignment;
+                    contentControl.VerticalContentAlignment = originalVerticalContentAlignment;
+                }
+                return;
+            }
+
+            (content as IOverlayPanelSizeAware)?.SetPanelSizeOverrideActive(true);
+            content.MinWidth = 1;
+            content.MinHeight = 1;
+            content.MaxWidth = double.PositiveInfinity;
+            content.MaxHeight = double.PositiveInfinity;
+            content.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+            content.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
+            if (content is ContentControl sizedContentControl)
+            {
+                sizedContentControl.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+                sizedContentControl.VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
+            }
+            content.Width = size.Width;
+            content.Height = size.Height;
+            content.InvalidateMeasure();
         }
     }
 }

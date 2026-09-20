@@ -110,13 +110,13 @@ public sealed class OverlayThemeResourcesTests
     public void EveryOverlayUsesBundledRoleBasedTypography()
     {
         var primary = new TextBlock { Text = "Primary" };
-        var header = new TextBlock { Text = "Header", Classes = { "overlay-header" } };
-        var eyebrow = new TextBlock { Text = "Eyebrow", Classes = { "eyebrow" } };
+        var header = new TextBlock { Text = "Header", Classes = { "overlay-header", "type-header" } };
+        var eyebrow = new TextBlock { Text = "Eyebrow", Classes = { "eyebrow", "type-header" } };
         var muted = new TextBlock { Text = "Muted", Classes = { "muted" } };
-        var value = new TextBlock { Text = "Value", Classes = { "monospace", "overlay-value" } };
+        var value = new TextBlock { Text = "Value", Classes = { "monospace", "overlay-value", "type-value" } };
         var compactBySize = new TextBlock { Text = "Size alone remains primary", FontSize = 9 };
-        var detail = new TextBlock { Text = "Longer detail", Classes = { "overlay-detail" } };
-        var caption = new TextBlock { Text = "Caption", Classes = { "overlay-caption" } };
+        var detail = new TextBlock { Text = "Longer detail", Classes = { "overlay-detail", "type-detail" } };
+        var caption = new TextBlock { Text = "Caption", Classes = { "overlay-caption", "type-caption" } };
         var guardianPrimary = new TextBlock { Text = "Guardian primary", Classes = { "guardian-legacy-middle" } };
         var guardianCompact = new TextBlock { Text = "Guardian compact", Classes = { "guardian-legacy-small" } };
         var window = new Window
@@ -159,6 +159,61 @@ public sealed class OverlayThemeResourcesTests
         Assert.Contains("Rajdhani", guardianCompact.FontFamily.Name);
 
         window.Close();
+    }
+
+    [AvaloniaFact]
+    public void PerPanelTypographyScalesEachRoleFromItsOwnBaseline()
+    {
+        var body = new TextBlock
+        {
+            Text = "Body",
+            FontSize = 10,
+            Classes = { "type-body" },
+        };
+        var detail = new TextBlock
+        {
+            Text = "Detail",
+            FontSize = 8,
+            Classes = { "type-detail" },
+        };
+        var content = new StackPanel { Children = { body, detail } };
+
+        OverlayTypographyResources.Apply(content, new OverlayTypographyScale(0, 0, 0, 50, 0, 0));
+
+        Assert.Equal(15, body.FontSize);
+        Assert.Equal(8, detail.FontSize);
+
+        OverlayTypographyResources.Apply(content, OverlayTypographyScale.Default);
+
+        Assert.Equal(10, body.FontSize);
+        Assert.Equal(8, detail.FontSize);
+    }
+
+    [AvaloniaFact]
+    public void IconTypographyUsesLayoutScalingWithoutChangingTextRoles()
+    {
+        var badge = new Border { Width = 20, Height = 10 };
+        var glyph = new TextBlock
+        {
+            Text = "›",
+            FontSize = 8,
+            Classes = { "type-icon" },
+        };
+        var icon = new LayoutTransformControl { Classes = { "type-icon" }, Child = badge };
+        var content = new StackPanel { Children = { icon, glyph } };
+
+        OverlayTypographyResources.Apply(content, new OverlayTypographyScale(0, 0, 0, 0, 0, 0, 50));
+
+        ScaleTransform transform = Assert.IsType<ScaleTransform>(icon.LayoutTransform);
+        Assert.Equal(1.5, transform.ScaleX);
+        Assert.Equal(1.5, transform.ScaleY);
+        Assert.Equal(12, glyph.FontSize);
+
+        OverlayTypographyResources.Apply(content, OverlayTypographyScale.Default);
+
+        Assert.Null(icon.LayoutTransform);
+        Assert.Equal(8, glyph.FontSize);
+        Assert.Same(badge, icon.Child);
     }
 
     [Fact]
@@ -254,6 +309,12 @@ public sealed class OverlayThemeResourcesTests
             error: null
         );
         layout.SetScaleIndex(2);
+        var detailText = new TextBlock
+        {
+            Text = "Details",
+            FontSize = 18,
+            Classes = { "type-title" },
+        };
         var originalContent = new StackPanel
         {
             Children =
@@ -263,7 +324,7 @@ public sealed class OverlayThemeResourcesTests
                 {
                     Padding = new Thickness(10),
                     CornerRadius = new CornerRadius(8),
-                    Child = new TextBlock { Text = "Details", FontSize = 18 },
+                    Child = detailText,
                 },
             },
         };
@@ -287,10 +348,22 @@ public sealed class OverlayThemeResourcesTests
         // Shared *Presentation hosts own their title/chrome; legacy header
         // injection is skipped so the original surface content stays intact.
         Assert.Same(originalContent, surface.Child);
+        window.Content = new Border();
 
-        Assert.True(layout.SetPlacement(definition.Name, placement with { Opacity = 0.75, ScaleIndex = 1 }));
+        Assert.True(
+            layout.SetPlacement(
+                definition.Name,
+                placement with
+                {
+                    Opacity = 0.75,
+                    ScaleIndex = 1,
+                    TypographyScale = new OverlayTypographyScale(0, 20, 0, 0, 0, 0),
+                }
+            )
+        );
         Assert.Equal(0.75, window.Opacity);
         Assert.Equal(definition.PreviewSize.Width, window.Width, 5);
+        Assert.Equal(21.6d, detailText.FontSize, 5);
 
         OverlayThemeResources.SetBaseSize(window, layout, 250, 125);
         OverlayThemeResources.SetBaseSize(window, layout, 250, 125);

@@ -704,10 +704,19 @@ public sealed class OverlayPresentationContractTests
 
         if (isContentSized)
         {
-            Assert.Contains($"MaxWidth=\"{expectedWidth}\"", presentation);
+            if (plotterName == "PlotFSSInfo")
+            {
+                Assert.Contains($"MinWidth=\"{expectedWidth}\"", presentation);
+                Assert.Contains("MaxWidth=\"380\"", presentation);
+                Assert.Contains("MaxWidth=\"380\"", window);
+            }
+            else
+            {
+                Assert.Contains($"MaxWidth=\"{expectedWidth}\"", presentation);
+                Assert.Contains($"MaxWidth=\"{expectedWidth}\"", window);
+            }
             Assert.Contains("HorizontalAlignment=\"Left\"", presentation);
             Assert.Contains("MinWidth=\"1\"", window);
-            Assert.Contains($"MaxWidth=\"{expectedWidth}\"", window);
         }
         else
         {
@@ -724,22 +733,36 @@ public sealed class OverlayPresentationContractTests
         string desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
         string fss = File.ReadAllText(Path.Combine(desktop, "FssInfoOverlayPresentation.axaml"));
         string routeRow = File.ReadAllText(Path.Combine(desktop, "Controls", "RouteBioTargetRow.axaml"));
+        var fssDocument = XDocument.Parse(fss);
 
         Assert.Contains("FssFilterDescription", fss);
         Assert.Contains("TextWrapping=\"Wrap\"", fss);
-        Assert.Contains("MaxHeight=\"{Binding Survey.FssBodyListMaxHeight}\"", fss);
+        XElement fssScroller = fssDocument
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ScrollViewer" && element.Attribute("Classes")?.Value == "panel-height-scroll"
+            );
+        XElement fssScrollerStyle = fssDocument
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Style"
+                && element.Attribute("Selector")?.Value == "ScrollViewer.panel-height-scroll"
+            );
+        XElement maxHeightSetter = Assert.Single(fssScrollerStyle.Elements());
+        Assert.Equal("MaxHeight", maxHeightSetter.Attribute("Property")?.Value);
+        Assert.Equal("{Binding Survey.FssBodyListMaxHeight}", maxHeightSetter.Attribute("Value")?.Value);
         Assert.Contains("Padding=\"3\"", fss);
         Assert.Contains("RowSpacing=\"0\"", fss);
         Assert.Equal(2, fss.Split("Classes=\"overlay-divider\"", StringSplitOptions.None).Length - 1);
-        XElement lowerDivider = XDocument
-            .Parse(fss)
+        XElement lowerDivider = fssDocument
             .Descendants()
             .Last(element =>
                 element.Name.LocalName == "Border" && element.Attribute("Classes")?.Value == "overlay-divider"
             );
-        Assert.Equal("StackPanel", lowerDivider.Parent?.Name.LocalName);
-        Assert.Equal("0", lowerDivider.Parent?.Attribute("Spacing")?.Value);
-        Assert.Equal("ScrollViewer", lowerDivider.Parent?.Elements().First().Name.LocalName);
+        Assert.Equal("Grid", lowerDivider.Parent?.Name.LocalName);
+        Assert.Equal("*,Auto", lowerDivider.Parent?.Attribute("RowDefinitions")?.Value);
+        Assert.Equal("1", lowerDivider.Attribute("Grid.Row")?.Value);
+        Assert.Same(fssScroller, lowerDivider.Parent?.Elements().First());
         Assert.DoesNotContain("<Border Height=\"48\"", fss);
         Assert.Contains("ItemsSource=\"{Binding InlineSegments}\"", routeRow);
         Assert.Contains("<WrapPanel Orientation=\"Horizontal\"", routeRow);
@@ -763,6 +786,49 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("TextBlock.overlay-detail", typography);
         Assert.Contains("TextBlock.overlay-caption", typography);
         Assert.DoesNotContain("TextBlock[FontSize=", typography);
+
+        foreach (string presentationPath in GetTypographyPresentationPaths(desktop))
+        {
+            var document = XDocument.Load(presentationPath);
+            XElement[] textBlocks = document
+                .Descendants()
+                .Where(element => element.Name.LocalName == "TextBlock")
+                .ToArray();
+            Assert.All(
+                textBlocks,
+                textBlock =>
+                {
+                    bool isInsideIconHost = textBlock
+                        .Ancestors()
+                        .Any(candidate =>
+                            candidate.Name.LocalName == "LayoutTransformControl"
+                            && (candidate.Attribute("Classes")?.Value.Split(' ') ?? []).Contains("type-icon")
+                        );
+                    if (!isInsideIconHost)
+                    {
+                        Assert.Contains(
+                            textBlock.Attribute("Classes")?.Value.Split(' ') ?? [],
+                            className => className.StartsWith("type-", StringComparison.Ordinal)
+                        );
+                    }
+                }
+            );
+            Assert.All(textBlocks, textBlock => Assert.Null(textBlock.Attribute("LineHeight")));
+        }
+    }
+
+    [Fact]
+    public void FssDescriptionUsesThePanelWidthAndWraps()
+    {
+        string root = FindRepositoryRoot();
+        string presentation = File.ReadAllText(
+            Path.Combine(root, Native("src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml"))
+        );
+
+        Assert.Contains("Text=\"{Binding Survey.FssFilterDescription}\"", presentation);
+        Assert.Contains("MaxWidth=\"380\"", presentation);
+        Assert.DoesNotContain("MaxWidth=\"320\"", presentation);
+        Assert.Contains("TextWrapping=\"Wrap\"", presentation);
     }
 
     [Fact]
@@ -869,6 +935,25 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("Border.badge.overlay-state-pill", ravenStyles);
         Assert.Contains("Property=\"Width\" Value=\"66\"", ravenStyles);
         Assert.Contains("Property=\"Padding\" Value=\"8,3\"", ravenStyles);
+        Assert.Equal(
+            2,
+            priorScans.Split("Classes=\"badge overlay-state-pill\" Height=\"24\" Padding=\"0\"").Length - 1
+        );
+    }
+
+    [Fact]
+    public void BiologySampleAndCodexIndicatorsParticipateInIconScaling()
+    {
+        string root = FindRepositoryRoot();
+        string biologyStatus = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "BiologyStatusOverlayPresentation.axaml")
+        );
+
+        Assert.Contains("<LayoutTransformControl Classes=\"type-icon\" VerticalAlignment=\"Center\">", biologyStatus);
+        Assert.Contains(
+            "<LayoutTransformControl Classes=\"type-icon\" IsVisible=\"{Binding ShowCodexImageIndicator}\">",
+            biologyStatus
+        );
     }
 
     [Fact]
@@ -1253,10 +1338,122 @@ public sealed class OverlayPresentationContractTests
                     && string.Equals(element.Attribute("Text")?.Value, expected.Value, StringComparison.Ordinal)
                 );
 
-            Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
+            Assert.Contains("overlay-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
+            Assert.Contains("type-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
             Assert.Null(header.Attribute("Foreground"));
             Assert.Null(header.Attribute("FontSize"));
         }
+    }
+
+    [Fact]
+    public void EveryOverlayTextHasOneIndependentTypographyRole()
+    {
+        string desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        string[] roles =
+        [
+            "type-header",
+            "type-title",
+            "type-value",
+            "type-body",
+            "type-detail",
+            "type-caption",
+            "type-icon",
+        ];
+
+        foreach (string path in GetTypographyPresentationPaths(desktop))
+        {
+            var document = XDocument.Load(path);
+            foreach (XElement text in document.Descendants().Where(element => element.Name.LocalName == "TextBlock"))
+            {
+                bool isInsideIconHost = text.Ancestors()
+                    .Any(candidate =>
+                        candidate.Name.LocalName == "LayoutTransformControl"
+                        && (candidate.Attribute("Classes")?.Value.Split(' ') ?? []).Contains("type-icon")
+                    );
+                string[] classes =
+                    text.Attribute("Classes")?.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? [];
+                Assert.Equal(isInsideIconHost ? 0 : 1, classes.Count(roles.Contains));
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("FssInfoOverlayPresentation.axaml", "{Binding ScanValue}", "type-value")]
+    [InlineData("SurfaceMiningOverlayPresentation.axaml", "{Binding DistanceText}", "type-value")]
+    [InlineData("SurfaceSurveyOverlayPresentation.axaml", "{Binding Name}", "type-body")]
+    [InlineData("SystemStatusOverlayPresentation.axaml", "{Binding Survey.DssHeading}", "type-header")]
+    [InlineData("SphericalSearchOverlayPresentation.axaml", "DISTANCE", "type-caption")]
+    [InlineData("FleetCarrierRouteOverlayPresentation.axaml", "{Binding JumpSummary}", "type-body")]
+    [InlineData("FleetCarrierRouteOverlayPresentation.axaml", "{Binding JumpsLeft}", "type-detail")]
+    [InlineData("FssInfoOverlayPresentation.axaml", "{Binding DssValue, StringFormat=DSS {0}}", "type-value")]
+    [InlineData("FssInfoOverlayPresentation.axaml", "LANDABLE", "type-icon")]
+    [InlineData("LastFssBodyOverlayPresentation.axaml", "{Binding Survey.LastFssBiologyRewardText}", "type-value")]
+    [InlineData("RouteBioOverlayPresentation.axaml", "Route body destinations", "type-detail")]
+    [InlineData("SurfaceMiningOverlayPresentation.axaml", "{Binding Status}", "type-detail")]
+    public void RepresentativeOverlayTextUsesItsSemanticRole(string fileName, string textValue, string role)
+    {
+        string path = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", fileName);
+        var document = XDocument.Load(path);
+        XElement[] matches = document
+            .Descendants()
+            .Where(element => element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == textValue)
+            .ToArray();
+
+        Assert.NotEmpty(matches);
+        Assert.All(matches, text => Assert.Contains(role, text.Attribute("Classes")?.Value.Split(' ') ?? []));
+    }
+
+    [Fact]
+    public void OverlayBadgesAndDrawnGlyphsParticipateInIconScaling()
+    {
+        string desktop = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        string[] customIconControls =
+        [
+            "BiologyRewardBandControl",
+            "CanonnLogoControl",
+            "DirectionalChevronControl",
+            "GuardianArtifactGlyphControl",
+        ];
+
+        foreach (string path in GetTypographyPresentationPaths(desktop))
+        {
+            var document = XDocument.Load(path);
+            XElement[] badges = document
+                .Descendants()
+                .Where(element =>
+                    element.Name.LocalName == "Border"
+                    && (element.Attribute("Classes")?.Value.Split(' ') ?? []).Contains("badge")
+                )
+                .ToArray();
+            Assert.All(badges, AssertOwnedByIconScaleHost);
+
+            XElement[] customIcons = document
+                .Descendants()
+                .Where(element => customIconControls.Contains(element.Name.LocalName, StringComparer.Ordinal))
+                .ToArray();
+            Assert.All(customIcons, AssertOwnedByIconScaleHost);
+        }
+    }
+
+    private static void AssertOwnedByIconScaleHost(XElement element)
+    {
+        XElement? host = element
+            .AncestorsAndSelf()
+            .FirstOrDefault(candidate =>
+                candidate.Name.LocalName == "LayoutTransformControl"
+                && (candidate.Attribute("Classes")?.Value.Split(' ') ?? []).Contains("type-icon")
+            );
+        Assert.NotNull(host);
+    }
+
+    private static IEnumerable<string> GetTypographyPresentationPaths(string desktop)
+    {
+        foreach (string path in Directory.GetFiles(desktop, "*OverlayPresentation.axaml"))
+        {
+            yield return path;
+        }
+
+        yield return Path.Combine(desktop, "Controls", "RouteBioTargetRow.axaml");
     }
 
     [Fact]
@@ -1302,7 +1499,8 @@ public sealed class OverlayPresentationContractTests
                 element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "FLIGHT WARNING"
             );
 
-        Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
+        Assert.Contains("overlay-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
+        Assert.Contains("type-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
         Assert.Equal("{Binding Survey.FlightWarningBrush}", header.Attribute("Foreground")?.Value);
         Assert.Null(header.Attribute("FontSize"));
         Assert.Null(header.Attribute("FontWeight"));
@@ -1334,7 +1532,8 @@ public sealed class OverlayPresentationContractTests
                     )
                 );
 
-            Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
+            Assert.Contains("overlay-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
+            Assert.Contains("type-header", header.Attribute("Classes")?.Value.Split(' ') ?? []);
             Assert.Null(header.Attribute("Foreground"));
             Assert.Null(header.Attribute("FontSize"));
         }
@@ -1348,7 +1547,10 @@ public sealed class OverlayPresentationContractTests
             )
             .ToArray();
         Assert.NotEmpty(statusHeaders);
-        Assert.All(statusHeaders, header => Assert.Equal("overlay-header", header.Attribute("Classes")?.Value));
+        Assert.All(
+            statusHeaders,
+            header => Assert.Contains("overlay-header", header.Attribute("Classes")?.Value.Split(' ') ?? [])
+        );
 
         foreach (
             string? fileName in new[]
@@ -1364,8 +1566,8 @@ public sealed class OverlayPresentationContractTests
         }
 
         string guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
-        Assert.Contains("Classes=\"guardian-title\"", guardianSite);
-        Assert.DoesNotContain("Classes=\"overlay-header\"", guardianSite);
+        Assert.Contains("Classes=\"guardian-title type-title\"", guardianSite);
+        Assert.DoesNotContain("overlay-header", guardianSite);
     }
 
     private static string FindRepositoryRoot()

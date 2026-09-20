@@ -17,13 +17,13 @@
     <StackPanel Spacing="6">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="overlay-header" Text="GALAXY MAP" />
-          <TextBlock Classes="muted overlay-detail"
+          <TextBlock Classes="overlay-header type-header" Text="GALAXY MAP" />
+          <TextBlock Classes="muted overlay-detail type-detail"
                      Text="Selected system and route intelligence" />
         </StackPanel>
         <TextBlock Grid.Column="1"
                    IsVisible="{Binding IsLoading}"
-                   Classes="muted overlay-detail"
+                   Classes="muted overlay-detail type-detail"
                    Text="Loading&#x2026;" />
       </Grid>
 
@@ -34,34 +34,35 @@
               BorderThickness="1"
               CornerRadius="8">
         <StackPanel Spacing="5">
-          <TextBlock Classes="eyebrow"
+          <TextBlock Classes="eyebrow type-header"
                      Text="{Binding PrimarySystemDisplay.Label}" />
           <StackPanel Orientation="Horizontal" Spacing="7">
-            <Border Classes="badge"
-                    IsVisible="{Binding PrimarySystemDisplay.IsQuestTagged}">
-              <TextBlock Classes="overlay-caption"
-                         Foreground="{DynamicResource RavenWarningBrush}"
-                         FontWeight="Bold"
-                         Text="Q" />
-            </Border>
-            <TextBlock Classes="overlay-title"
+            <LayoutTransformControl Classes="type-icon" IsVisible="{Binding PrimarySystemDisplay.IsQuestTagged}">
+              <Border Classes="badge">
+                <TextBlock Classes="overlay-caption"
+                           Foreground="{DynamicResource RavenWarningBrush}"
+                           FontWeight="Bold"
+                           Text="Q" />
+              </Border>
+            </LayoutTransformControl>
+            <TextBlock Classes="overlay-title type-title"
                        Foreground="{DynamicResource RavenAccentBrush}"
                        Text="{Binding PrimarySystemDisplay.Name}"
                        TextTrimming="CharacterEllipsis" />
           </StackPanel>
-          <TextBlock Classes="overlay-body"
+          <TextBlock Classes="overlay-body type-body"
                      Text="{Binding PrimarySystemDisplay.DiscoveryText}"
                      TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding PrimarySystemDisplay.HasDiscoveredBy}"
-                     Classes="muted overlay-detail"
+                     Classes="muted overlay-detail type-detail"
                      Text="{Binding PrimarySystemDisplay.DiscoveredByText}"
                      TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding PrimarySystemDisplay.HasUpdated}"
-                     Classes="muted overlay-detail"
+                     Classes="muted overlay-detail type-detail"
                      Text="{Binding PrimarySystemDisplay.UpdatedText}"
                      TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding PrimarySystemDisplay.HasDetails}"
-                     Classes="overlay-body"
+                     Classes="overlay-body type-body"
                      Foreground="{DynamicResource RavenSuccessBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding PrimarySystemDisplay.DetailsText}" />
@@ -75,40 +76,41 @@
               BorderThickness="1"
               CornerRadius="8">
         <StackPanel Spacing="4">
-          <TextBlock Classes="eyebrow"
+          <TextBlock Classes="eyebrow type-header"
                      Text="{Binding SecondarySystemDisplay.Label}" />
           <StackPanel Orientation="Horizontal" Spacing="7">
-            <Border Classes="badge"
-                    IsVisible="{Binding SecondarySystemDisplay.IsQuestTagged}">
-              <TextBlock Classes="overlay-caption"
-                         Foreground="{DynamicResource RavenWarningBrush}"
-                         FontWeight="Bold"
-                         Text="Q" />
-            </Border>
-            <TextBlock Classes="overlay-value"
+            <LayoutTransformControl Classes="type-icon" IsVisible="{Binding SecondarySystemDisplay.IsQuestTagged}">
+              <Border Classes="badge">
+                <TextBlock Classes="overlay-caption"
+                           Foreground="{DynamicResource RavenWarningBrush}"
+                           FontWeight="Bold"
+                           Text="Q" />
+              </Border>
+            </LayoutTransformControl>
+            <TextBlock Classes="overlay-value type-title"
                        Foreground="{DynamicResource RavenAccentBrush}"
                        Text="{Binding SecondarySystemDisplay.Name}" />
           </StackPanel>
-          <TextBlock Classes="overlay-body"
+          <TextBlock Classes="overlay-body type-body"
                      Text="{Binding SecondarySystemDisplay.DiscoveryText}"
                      TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasDiscoveredBy}"
-                     Classes="muted overlay-detail"
+                     Classes="muted overlay-detail type-detail"
                      Text="{Binding SecondarySystemDisplay.DiscoveredByText}"
                      TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasUpdated}"
-                     Classes="muted overlay-detail"
+                     Classes="muted overlay-detail type-detail"
                      Text="{Binding SecondarySystemDisplay.UpdatedText}"
                      TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasDetails}"
-                     Classes="overlay-body"
+                     Classes="overlay-body type-body"
                      Foreground="{DynamicResource RavenSuccessBrush}"
                      Text="{Binding SecondarySystemDisplay.DetailsText}" />
         </StackPanel>
       </Border>
 
       <TextBlock IsVisible="{Binding HasRouteFooter}"
-                 Classes="monospace overlay-body"
+                 Classes="monospace overlay-body type-detail"
                  Foreground="{DynamicResource RavenWarningBrush}"
                  FontWeight="SemiBold"
                  Text="{Binding RouteFooter}" />
@@ -116,20 +118,20 @@
       <StackPanel IsVisible="{Binding HasFactions}" Spacing="6">
         <Border Classes="overlay-divider"
                 Background="{DynamicResource RavenBorderBrush}" />
-        <TextBlock Classes="eyebrow" Text="FACTIONS" />
+        <TextBlock Classes="eyebrow type-header" Text="FACTIONS" />
         <ItemsControl ItemsSource="{Binding Factions}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:GalaxyMapFactionViewModel">
               <Grid Margin="0,2" ColumnDefinitions="*,Auto" ColumnSpacing="6">
                 <StackPanel Orientation="Horizontal" Spacing="7">
-                  <TextBlock Classes="overlay-body"
+                  <TextBlock Classes="overlay-body type-body"
                              Text="{Binding Name}" />
                   <TextBlock IsVisible="{Binding HasState}"
-                             Classes="muted overlay-detail"
+                             Classes="muted overlay-detail type-detail"
                              Text="{Binding State}" />
                 </StackPanel>
                 <TextBlock Grid.Column="1"
-                           Classes="monospace overlay-body"
+                           Classes="monospace overlay-body type-value"
                            Foreground="{DynamicResource RavenAccentBrush}"
                            Text="{Binding Influence}" />
               </Grid>
@@ -138,7 +140,7 @@
         </ItemsControl>
       </StackPanel>
 
-      <TextBlock Classes="muted overlay-detail"
+      <TextBlock Classes="muted overlay-detail type-detail"
                  Text="{Binding DataStatus}"
                  TextWrapping="Wrap" />
     </StackPanel>

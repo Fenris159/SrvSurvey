@@ -18,19 +18,83 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     );
 
     [AvaloniaFact]
-    public async Task MassCodeFilterListsOnlyRecordedPrefixesAtThatExactCode()
+    public async Task MassCodeButtonsToggleMultipleFiltersForBrowserAndRecentRows()
     {
         using BoxelSurveyStatsCoordinator coordinator = await CreateCoordinatorWithSystemAsync();
+        await coordinator.ApplyJournalEventsAsync([
+            Parse(
+                """{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"Wregoe BU-Y b2-0","SystemAddress":3001}"""
+            ),
+        ]);
+        await coordinator.FlushAsync();
         using BoxelSurveyStatsViewModel viewModel = CreateViewModel(coordinator);
-        viewModel.SelectedMassCode = 'c';
         await viewModel.RefreshAsync();
+
+        Assert.Equal(2, viewModel.RecentEntries.Count);
+        Assert.All(viewModel.MassCodes, option => Assert.False(option.IsSelected));
+
+        viewModel.SelectMassCodeCommand.Execute('c');
 
         BoxelSurveyBrowserRowViewModel row = Assert.Single(viewModel.BrowserRows);
         Assert.Equal("Praea Euq IL-P c5-", row.Prefix);
-        Assert.Equal(0, row.Indent);
-        Assert.DoesNotContain("0 / 0", row.Glance, StringComparison.Ordinal);
-        Assert.Contains("1 recorded", row.Glance, StringComparison.Ordinal);
-        Assert.Contains("MASS CODE C", viewModel.BrowserTitle, StringComparison.Ordinal);
+        Assert.Single(viewModel.RecentEntries);
+        Assert.True(viewModel.MassCodes.Single(option => option.MassCode == 'c').IsSelected);
+
+        viewModel.SelectMassCodeCommand.Execute('b');
+
+        Assert.Equal(2, viewModel.BrowserRows.Count);
+        Assert.Equal(2, viewModel.RecentEntries.Count);
+        Assert.Contains("B, C", viewModel.BrowserTitle, StringComparison.Ordinal);
+
+        viewModel.SelectMassCodeCommand.Execute('c');
+
+        row = Assert.Single(viewModel.BrowserRows);
+        Assert.Equal("Wregoe BU-Y b2-", row.Prefix);
+        Assert.Single(viewModel.RecentEntries);
+        Assert.False(viewModel.MassCodes.Single(option => option.MassCode == 'c').IsSelected);
+        Assert.True(viewModel.MassCodes.Single(option => option.MassCode == 'b').IsSelected);
+    }
+
+    [AvaloniaFact]
+    public async Task ListSectionCommandsKeepExactlyOneBoxelListExpanded()
+    {
+        using BoxelSurveyStatsCoordinator coordinator = await CreateCoordinatorWithSystemAsync();
+        using BoxelSurveyStatsViewModel viewModel = CreateViewModel(coordinator);
+        await viewModel.RefreshAsync();
+
+        Assert.True(viewModel.IsRecentSectionExpanded);
+        Assert.False(viewModel.IsBrowserSectionExpanded);
+
+        viewModel.ShowBrowserSectionCommand.Execute(null);
+
+        Assert.False(viewModel.IsRecentSectionExpanded);
+        Assert.True(viewModel.IsBrowserSectionExpanded);
+
+        viewModel.ShowRecentSectionCommand.Execute(null);
+
+        Assert.True(viewModel.IsRecentSectionExpanded);
+        Assert.False(viewModel.IsBrowserSectionExpanded);
+    }
+
+    [AvaloniaFact]
+    public async Task RecentEntriesAreLimitedToEight()
+    {
+        using BoxelSurveyStatsCoordinator coordinator = await CreateCoordinatorWithSystemAsync();
+        JournalEventEnvelope[] jumps = Enumerable
+            .Range(6, 9)
+            .Select(index =>
+                Parse(
+                    $$"""{"timestamp":"2026-07-10T13:{{index}}:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c{{index}}-0","SystemAddress":{{3000 + index}}}"""
+                )
+            )
+            .ToArray();
+        await coordinator.ApplyJournalEventsAsync(jumps);
+        await coordinator.FlushAsync();
+        using BoxelSurveyStatsViewModel viewModel = CreateViewModel(coordinator);
+
+        await viewModel.RefreshAsync();
+
+        Assert.Equal(8, viewModel.RecentEntries.Count);
     }
 
     [AvaloniaFact]
@@ -273,6 +337,35 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         Assert.False(viewModel.CanShowSearchRollup);
         Assert.False(viewModel.ShowSearchRollup);
         Assert.DoesNotContain("saved search", viewModel.DetailTitle, StringComparison.Ordinal);
+    }
+
+    [AvaloniaFact]
+    public async Task UnscopedMainEntryClearsEarlierMassCodeFilters()
+    {
+        using BoxelSurveyStatsCoordinator coordinator = await CreateCoordinatorWithSystemAsync();
+        await coordinator.ApplyJournalEventsAsync([
+            Parse(
+                """{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"Wregoe BU-Y b2-0","SystemAddress":3001}"""
+            ),
+        ]);
+        await coordinator.FlushAsync();
+        await coordinator.SwitchCommanderAsync(null);
+        await coordinator.SwitchCommanderAsync("F123");
+        Assert.Null(coordinator.Current);
+        using BoxelSurveyStatsViewModel viewModel = CreateViewModel(coordinator);
+        await viewModel.RefreshAsync();
+        Assert.Equal(2, viewModel.BrowserRows.Count);
+        Assert.Equal(2, viewModel.RecentEntries.Count);
+
+        viewModel.SelectMassCodeCommand.Execute('c');
+        Assert.Single(viewModel.BrowserRows);
+        Assert.Single(viewModel.RecentEntries);
+
+        await viewModel.InitializeAsync();
+
+        Assert.All(viewModel.MassCodes, option => Assert.False(option.IsSelected));
+        Assert.Equal(2, viewModel.BrowserRows.Count);
+        Assert.Equal(2, viewModel.RecentEntries.Count);
     }
 
     [AvaloniaFact]

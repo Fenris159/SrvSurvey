@@ -16,6 +16,83 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class OverlayEditorFolderTabTests
 {
     [AvaloniaFact]
+    public void CustomPanelSizeOverridesFixedWidthsAndRestoresThePresentationDefaults()
+    {
+        var cappedPreview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        var fixedPreview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotBioStatus"));
+        try
+        {
+            cappedPreview.ConfigureSize(new OverlayPanelSize(620, 420));
+            fixedPreview.ConfigureSize(new OverlayPanelSize(520, 240));
+            cappedPreview.Show();
+            fixedPreview.Show();
+
+            Control cappedPresentation = Assert.IsType<Control>(cappedPreview.RuntimePresentation, exactMatch: false);
+            Control fixedPresentation = Assert.IsType<Control>(fixedPreview.RuntimePresentation, exactMatch: false);
+            Assert.Equal(620, cappedPresentation.Width);
+            Assert.Equal(420, cappedPresentation.Height);
+            Assert.Equal(double.PositiveInfinity, cappedPresentation.MaxWidth);
+            Assert.Equal(Avalonia.Layout.HorizontalAlignment.Stretch, cappedPresentation.HorizontalAlignment);
+            Assert.InRange(cappedPresentation.Bounds.Width, 619, 621);
+            Assert.Equal(520, fixedPresentation.Width);
+            Assert.InRange(fixedPresentation.Bounds.Width, 519, 521);
+
+            cappedPreview.ConfigureSize(null);
+            fixedPreview.ConfigureSize(null);
+
+            Assert.True(double.IsNaN(cappedPresentation.Width));
+            Assert.Equal(380, cappedPresentation.MaxWidth);
+            Assert.Equal(Avalonia.Layout.HorizontalAlignment.Left, cappedPresentation.HorizontalAlignment);
+            Assert.Equal(260, fixedPresentation.Width);
+            Assert.True(double.IsNaN(fixedPresentation.Height));
+        }
+        finally
+        {
+            fixedPreview.Close();
+            cappedPreview.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PlotFSSInfo")]
+    [InlineData("PlotPriorScans")]
+    [InlineData("PlotRouteBio")]
+    public void TallerPanelsGiveTheirScrollableContentTheAdditionalHeight(string plotterName)
+    {
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(plotterName));
+        try
+        {
+            preview.ConfigureSize(new OverlayPanelSize(520, 420));
+            preview.Show();
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? compactFrame = preview.CaptureRenderedFrame();
+
+            Control presentation = Assert.IsType<Control>(preview.RuntimePresentation, exactMatch: false);
+            ScrollViewer scroller = Assert.Single(presentation.GetVisualDescendants().OfType<ScrollViewer>());
+            double compactHeight = scroller.Bounds.Height;
+
+            preview.ConfigureSize(new OverlayPanelSize(520, 700));
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? expandedFrame = preview.CaptureRenderedFrame();
+
+            Assert.True(
+                scroller.Bounds.Height >= compactHeight + 250,
+                $"Expected {plotterName} scroll region to grow with the panel; it changed from {compactHeight} to {scroller.Bounds.Height}."
+            );
+
+            preview.ConfigureSize(null);
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? resetFrame = preview.CaptureRenderedFrame();
+
+            Assert.True(double.IsFinite(scroller.MaxHeight));
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void PreviewRendersAVisibleFolderTabAttachedAboveTheBody()
     {
         OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired("PlotFSSInfo");

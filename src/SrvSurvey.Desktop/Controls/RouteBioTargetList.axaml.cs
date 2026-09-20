@@ -21,11 +21,19 @@ public sealed partial class RouteBioTargetList : UserControl
         bool
     >(nameof(IsInteractive));
 
+    public static readonly StyledProperty<bool> ExpandToAvailableHeightProperty = AvaloniaProperty.Register<
+        RouteBioTargetList,
+        bool
+    >(nameof(ExpandToAvailableHeight));
+
     static RouteBioTargetList()
     {
         ItemsSourceProperty.Changed.AddClassHandler<RouteBioTargetList>(
             static (control, eventArgs) =>
                 control.ApplyItemsSource(eventArgs.NewValue as IReadOnlyList<RouteBioTargetItemViewModel>)
+        );
+        ExpandToAvailableHeightProperty.Changed.AddClassHandler<RouteBioTargetList>(
+            static (control, _) => control.ScheduleViewportUpdate()
         );
     }
 
@@ -49,6 +57,12 @@ public sealed partial class RouteBioTargetList : UserControl
     {
         get => GetValue(IsInteractiveProperty);
         set => SetValue(IsInteractiveProperty, value);
+    }
+
+    public bool ExpandToAvailableHeight
+    {
+        get => GetValue(ExpandToAvailableHeightProperty);
+        set => SetValue(ExpandToAvailableHeightProperty, value);
     }
 
     private void ApplyItemsSource(IReadOnlyList<RouteBioTargetItemViewModel>? items)
@@ -79,7 +93,7 @@ public sealed partial class RouteBioTargetList : UserControl
     private void UpdateViewport()
     {
         int count = ItemsSource?.Count ?? 0;
-        if (count <= MaxVisibleItemCount)
+        if (ExpandToAvailableHeight || count <= MaxVisibleItemCount)
         {
             BodyScroller.MaxHeight = double.PositiveInfinity;
             UpdateScrollIndicator();

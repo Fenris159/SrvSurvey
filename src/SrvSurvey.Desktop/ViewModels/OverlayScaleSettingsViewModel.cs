@@ -10,7 +10,7 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
     private readonly OverlayScaleSettingsStore settingsStore;
     private readonly LegacyOverlayLayout activeLayout;
     private readonly OverlayWindowRegistry windowRegistry;
-    private OverlayScaleOption selectedOption;
+    private double scalePercent;
     private string settingsStatus = string.Empty;
 
     public OverlayScaleSettingsViewModel(
@@ -22,40 +22,39 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.activeLayout = activeLayout ?? throw new ArgumentNullException(nameof(activeLayout));
         this.windowRegistry = windowRegistry ?? OverlayWindowRegistry.Shared;
-        Options = OverlayScaleCatalog.Options;
         OverlayScalePreferences preferences = settingsStore.Load();
-        selectedOption = Options.Single(option => option.Index == preferences.Index);
+        scalePercent = OverlayScaleCatalog.GetPercent(preferences.Index);
         activeLayout.SetScaleIndex(preferences.Index);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public IReadOnlyList<OverlayScaleOption> Options { get; }
-
-    public OverlayScaleOption SelectedOption
+    public double ScalePercent
     {
-        get => selectedOption;
+        get => scalePercent;
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
-            if (selectedOption.Index == value.Index)
+            int normalized = OverlayScaleCatalog.NormalizePercent(value);
+            if (Math.Abs(scalePercent - normalized) <= 0.0001d)
             {
                 return;
             }
 
-            OverlayScaleOption previous = selectedOption;
+            double previous = scalePercent;
+            int index = OverlayScaleCatalog.GetIndex(normalized);
             try
             {
-                settingsStore.Save(new OverlayScalePreferences(value.Index));
-                selectedOption = value;
-                activeLayout.SetScaleIndex(value.Index);
+                settingsStore.Save(new OverlayScalePreferences(index));
+                scalePercent = normalized;
+                activeLayout.SetScaleIndex(index);
                 foreach (RegisteredOverlayWindow registered in windowRegistry.Snapshot())
                 {
                     OverlayThemeResources.ApplyScale(registered.Window, activeLayout, registered.PlotterName);
                 }
 
-                SettingsStatus = $"Overlay scale changed to {value.DisplayName}.";
+                SettingsStatus = $"Overlay scale changed to {ScaleLabel} from the operating-system baseline.";
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ScaleLabel));
             }
             catch (Exception exception)
                 when (exception
@@ -65,12 +64,15 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
                             or ArgumentException
                 )
             {
-                selectedOption = previous;
+                scalePercent = previous;
                 SettingsStatus = "Overlay scale was not changed: " + exception.Message;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ScaleLabel));
             }
         }
     }
+
+    public string ScaleLabel => OverlayScaleCatalog.FormatPercent((int)ScalePercent);
 
     public string SettingsStatus
     {
@@ -89,6 +91,21 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
     }
 
     public bool HasSettingsStatus => !string.IsNullOrWhiteSpace(SettingsStatus);
+
+    public OverlayScaleMigrationResult MigrateLegacyScale(double renderScaling)
+    {
+        OverlayScaleMigrationResult result = settingsStore.MigrateLegacyScale(renderScaling);
+        if (!result.Migrated)
+        {
+            return result;
+        }
+
+        scalePercent = OverlayScaleCatalog.GetPercent(result.MigratedIndex);
+        activeLayout.SetScaleIndex(result.MigratedIndex);
+        OnPropertyChanged(nameof(ScalePercent));
+        OnPropertyChanged(nameof(ScaleLabel));
+        return result;
+    }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

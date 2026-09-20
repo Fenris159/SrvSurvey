@@ -148,7 +148,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         RefreshSavedStates(OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
         StatusMessage =
             theme.Error
-            ?? "Overlay colours and typography are independent from the application theme."
+            ?? "Overlay colours are independent from the application theme."
                 + " Imported theme.json appearance settings are active until you apply changes here.";
     }
 
@@ -281,7 +281,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
             }
 
             StatusMessage =
-                "Applied overlay colours and typography to theme.json and all open overlays."
+                "Applied overlay colours to theme.json and all open overlays."
                 + (result.BackupPath is null ? string.Empty : $" Previous theme backup: {result.BackupPath}");
             OnEditorsChanged();
         }
@@ -304,7 +304,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         {
             themeService?.ApplyOverlayTheme(CreateDraftTheme());
             StatusMessage =
-                "Refreshed all open overlays and position previews with unsaved colours and typography. Apply to keep them, or discard changes to restore theme.json.";
+                "Refreshed all open overlays and position previews with unsaved colours. Apply to keep them, or discard changes to restore theme.json.";
         }
         catch (Exception exception)
             when (exception is InvalidDataException or InvalidOperationException or ArgumentException)
@@ -424,7 +424,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         themeService?.ApplyOverlayTheme(theme);
         StatusMessage =
             theme.Error
-            ?? "Reloaded the active theme.json colours and typography, discarded editor changes, and refreshed open overlays.";
+            ?? "Reloaded the active theme.json colours, discarded editor changes, and refreshed open overlays.";
     }
 
     private LegacyOverlayTheme CreateDraftTheme()
