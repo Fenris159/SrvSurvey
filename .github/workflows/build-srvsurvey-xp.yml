@@ -450,7 +450,7 @@ jobs:
         env:
           SOURCE_SHA: ${{ needs.release-metadata.outputs.source_sha }}
         run: |
-          git cat-file --exit-code "$SOURCE_SHA^{commit}"
+          git cat-file -e "$SOURCE_SHA^{commit}"
           git show "$SOURCE_SHA:CurrentReleaseNotes.md" > "$RUNNER_TEMP/srvsurvey-release-notes.md"
 
       - name: Create or repair release
