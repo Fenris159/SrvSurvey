@@ -599,6 +599,45 @@ Remove any separate grab/barrier/warp helper and restart Steam. The final
 wrapper relies only on Gamescope's own relative input mode. If the problem
 persists, clear Elite's launch option and confirm the plain Proton baseline.
 
+### Black tiles or flickering appear along the top edge
+
+On the tested Strix Halo/RADV system, the launcher and Elite could show black,
+stair-step-shaped tiles flickering along the top of the Gamescope window. The
+artifacts were easiest to see in the launcher, system map, and other static
+menus. They also appeared in screenshots, which distinguished the problem from
+a monitor, cable, or physical scanout fault.
+
+This was resolved by disabling AMD Delta Color Compression (DCC) for the
+**Gamescope process only**. Make these two changes to the wrapper's Gamescope
+launch stanza while leaving its other options unchanged:
+
+```diff
+-SDL_VIDEODRIVER=x11 "$gamescope_bin" \
++SDL_VIDEODRIVER=x11 RADV_DEBUG=nodcc "$gamescope_bin" \
+     --backend sdl \
+     ...
+-    -- "$@" &
++    -- env -u RADV_DEBUG -- "$@" &
+```
+
+The `env -u RADV_DEBUG` after `--` is important: it prevents the workaround
+from propagating into Elite and the Frontier launcher, so the game keeps its
+normal RADV/DCC path. Do not set `RADV_DEBUG=nodcc` globally or add it directly
+to Steam's launch option without this child-process boundary.
+
+Treat this as an AMD-specific troubleshooting workaround, not a required part
+of the default setup. It was verified with a Radeon 8060S/8050S Strix Halo GPU,
+Mesa 26.0.8, and Gamescope 3.16.29; the exact affected hardware and driver
+range may differ. On that machine the artifacts disappeared in both internal
+and desktop screenshots, no new GPU errors appeared, and pointer response also
+improved. The pointer improvement is an observation from that system, not a
+guaranteed effect.
+
+After a Mesa or Gamescope update, retest without the workaround. To remove it,
+reverse the two changed lines shown above. This symptom is consistent with
+an independently documented Gamescope/RADV DMA-BUF modifier mismatch involving
+DCC, but the workaround should still be validated on each affected machine.
+
 ### Gamescope or Steam closes unexpectedly
 
 Reduce the setup to the plain baseline, then test the private binary directly:
@@ -656,6 +695,7 @@ These commands do not touch Ubuntu's `/usr/games/gamescope` package install.
 - [Valve `gamescopectl` implementation](https://github.com/ValveSoftware/gamescope/blob/3.16.29/src/Apps/gamescopectl.cpp)
 - [Valve convar registry](https://github.com/ValveSoftware/gamescope/blob/3.16.29/src/convar.cpp)
 - [Ubuntu 26.04 Gamescope source package](https://packages.ubuntu.com/source/resolute/gamescope)
+- [Gamescope/RADV DCC and DMA-BUF modifier investigation](https://www.atty303.ninja/notes/Gamescope%E3%81%AEfilter%E3%81%A7%E9%BB%92%E7%94%BB%E9%9D%A2%E3%81%AB%E3%81%AA%E3%82%8B%E5%8E%9F%E5%9B%A0%E3%82%92DMA-BUF-modifier%E3%81%BE%E3%81%A7%E8%BF%BD%E3%81%A3%E3%81%9F)
 - [Detailed source-verification notes](research/ubuntu-26-gamescope-elite-setup-sources.md)
 - [SrvSurvey Linux installation](INSTALL_LINUX.md)
 - [SrvSurvey overlay troubleshooting](Overlay_Troubleshooting.md)
