@@ -25,22 +25,34 @@ public static class OverlayWindowPlacement
         }
 
         int targetInset = GetBottomInset(targetScreen);
-        int smallestPositiveInset = targetInset;
+        int? smallestMatchingInset = null;
         foreach (OverlayScreenGeometry screen in screens)
         {
+            if (
+                screen.Bounds == targetScreen.Bounds
+                || Math.Abs((long)screen.WorkingArea.Bottom - targetScreen.WorkingArea.Bottom)
+                    > CrossMonitorInsetTolerance
+            )
+            {
+                continue;
+            }
+
             int inset = GetBottomInset(screen);
             if (inset > 0)
             {
-                smallestPositiveInset = Math.Min(smallestPositiveInset, inset);
+                smallestMatchingInset = smallestMatchingInset is { } current ? Math.Min(current, inset) : inset;
             }
         }
 
-        if (targetInset <= ((smallestPositiveInset * 2L) + CrossMonitorInsetTolerance))
+        if (
+            smallestMatchingInset is not { } correctionInset
+            || targetInset <= ((correctionInset * 2L) + CrossMonitorInsetTolerance)
+        )
         {
             return targetScreen.WorkingArea;
         }
 
-        int correctedBottom = targetScreen.Bounds.Bottom - smallestPositiveInset;
+        int correctedBottom = targetScreen.Bounds.Bottom - correctionInset;
         int correctedHeight = correctedBottom - targetScreen.WorkingArea.Y;
         return correctedHeight > 0
             ? new PixelRect(
