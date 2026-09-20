@@ -1084,6 +1084,14 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             roots.Select(prefix => CreateRow(prefix, index, indent: 0)).ToArray(),
             nameof(BrowserRows)
         );
+        RefreshRecentEntries();
+
+        OnPropertyChanged(nameof(IsBrowsingChildren));
+        OnPropertyChanged(nameof(ShowAllMassCodeText));
+    }
+
+    private void RefreshRecentEntries()
+    {
         IReadOnlyList<BoxelSurveyIndexEntry> nextRecentEntries = coordinator
             .RecentEntries()
             .Where(entry => selectedMassCodes.Count == 0 || selectedMassCodes.Contains(entry.MassCode))
@@ -1102,9 +1110,6 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
         {
             ShowListSection(showRecent: false);
         }
-
-        OnPropertyChanged(nameof(IsBrowsingChildren));
-        OnPropertyChanged(nameof(ShowAllMassCodeText));
     }
 
     private void ShowListSection(bool showRecent)

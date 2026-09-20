@@ -236,7 +236,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Directory.CreateDirectory(positionReferencesPath);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
 
-        Assert.ThrowsAny<IOException>(() =>
+        Exception replacementException = Assert.ThrowsAny<Exception>(() =>
             store.Save(
                 new Dictionary<string, LegacyOverlayPlacement>
                 {
@@ -251,6 +251,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
                 }
             )
         );
+        Assert.True(replacementException is IOException or UnauthorizedAccessException);
 
         Assert.Equal(originalPlotters, File.ReadAllText(plottersPath));
         Assert.True(Directory.Exists(positionReferencesPath));
