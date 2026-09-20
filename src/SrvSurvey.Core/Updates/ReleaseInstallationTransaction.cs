@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -512,6 +513,7 @@ public sealed class ReleaseInstallationTransaction
                     is IOException
                         or UnauthorizedAccessException
                         or InvalidOperationException
+                        or Win32Exception
                         or TaskCanceledException
             )
         {
@@ -576,6 +578,7 @@ public sealed class ReleaseInstallationTransaction
                     is IOException
                         or UnauthorizedAccessException
                         or InvalidOperationException
+                        or Win32Exception
                         or TaskCanceledException
             )
         {

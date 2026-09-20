@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -295,7 +296,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
 
         ReleaseInstallationResult result = await new ReleaseInstallationTransaction().ApplyAsync(
             preparation,
-            (_, _, _) => throw new InvalidOperationException("replacement launch failed")
+            (_, _, _) => throw new Win32Exception("replacement launch failed")
         );
 
         Assert.Equal(ReleaseInstallationStatus.RolledBack, result.Status);

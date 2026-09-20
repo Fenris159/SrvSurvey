@@ -53,20 +53,27 @@ public sealed class ApplicationLogTraceListener : TraceListener
 
     public override void Flush()
     {
-        string? line = null;
+        List<string> linesToAppend = [];
         lock (syncRoot)
         {
             if (pending.Length > 0)
             {
-                line = pending.ToString();
+                linesToAppend.AddRange(FilterPlatformNoiseLine(pending.ToString().TrimEnd('\r')));
                 pending.Clear();
+            }
+
+            if (pendingImeBlock.Count > 0)
+            {
+                List<string> incompleteImeBlock = [.. pendingImeBlock];
+                pendingImeBlock.Clear();
+                if (!IsExpectedPlatformNoise(string.Join(Environment.NewLine, incompleteImeBlock)))
+                {
+                    linesToAppend.AddRange(incompleteImeBlock);
+                }
             }
         }
 
-        if (line is not null)
-        {
-            AppendLine(line.TrimEnd('\r'));
-        }
+        AppendFilteredLines(linesToAppend);
     }
 
     private void WriteCore(string? message, bool terminateLine)
@@ -113,7 +120,12 @@ public sealed class ApplicationLogTraceListener : TraceListener
             linesToAppend = FilterPlatformNoiseLine(line);
         }
 
-        foreach (string filteredLine in linesToAppend.Where(line => !IsExpectedClosedPresentationSourceWarning(line)))
+        AppendFilteredLines(linesToAppend);
+    }
+
+    private void AppendFilteredLines(IEnumerable<string> lines)
+    {
+        foreach (string filteredLine in lines.Where(line => !IsExpectedClosedPresentationSourceWarning(line)))
         {
             applicationLog.Append(filteredLine);
         }

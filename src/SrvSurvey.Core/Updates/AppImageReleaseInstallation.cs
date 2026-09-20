@@ -19,6 +19,8 @@ public interface IAppImageReleaseInstallationPreparer
 
 public sealed class AppImageReleaseInstallationPreparer : IAppImageReleaseInstallationPreparer
 {
+    internal const int AppImageHeaderLength = 20;
+
     private const UnixFileMode ExecutableMode =
         UnixFileMode.UserRead
         | UnixFileMode.UserWrite
@@ -188,23 +190,11 @@ public sealed class AppImageReleaseInstallationPreparer : IAppImageReleaseInstal
         ValidateRegularFile(path, "The AppImage update candidate");
         ValidateSha256(expectedSha256);
         await using FileStream stream = OpenRead(path);
-        byte[] header = new byte[20];
+        byte[] header = new byte[AppImageHeaderLength];
         int headerBytes = await stream
             .ReadAtLeastAsync(header, header.Length, throwOnEndOfStream: false, cancellationToken)
             .ConfigureAwait(false);
-        if (
-            headerBytes != header.Length
-            || header[0] != 0x7f
-            || header[1] != (byte)'E'
-            || header[2] != (byte)'L'
-            || header[3] != (byte)'F'
-            || header[4] != 2
-            || header[5] != 1
-            || header[8] != (byte)'A'
-            || header[9] != (byte)'I'
-            || header[10] != 2
-            || BinaryPrimitives.ReadUInt16LittleEndian(header.AsSpan(18, 2)) != 62
-        )
+        if (!HasSupportedAppImageHeader(header.AsSpan(0, headerBytes)))
         {
             throw new InvalidDataException("The update candidate is not a 64-bit x86 type-2 AppImage.");
         }
@@ -218,6 +208,19 @@ public sealed class AppImageReleaseInstallationPreparer : IAppImageReleaseInstal
             throw new InvalidDataException("The AppImage update candidate does not match its release checksum.");
         }
     }
+
+    internal static bool HasSupportedAppImageHeader(ReadOnlySpan<byte> header) =>
+        header.Length == AppImageHeaderLength
+        && header[0] == 0x7f
+        && header[1] == (byte)'E'
+        && header[2] == (byte)'L'
+        && header[3] == (byte)'F'
+        && header[4] == 2
+        && header[5] == 1
+        && header[8] == (byte)'A'
+        && header[9] == (byte)'I'
+        && header[10] == 2
+        && BinaryPrimitives.ReadUInt16LittleEndian(header[18..20]) == 62;
 
     internal static async Task<string> ComputeFileFingerprintAsync(string path, CancellationToken cancellationToken)
     {

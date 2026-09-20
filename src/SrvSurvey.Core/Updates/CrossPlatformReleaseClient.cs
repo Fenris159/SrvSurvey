@@ -155,7 +155,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 
         if (OperatingSystem.IsLinux())
         {
-            return string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("APPIMAGE"))
+            return AppImageRuntimeResolver.ResolveCurrentPath() is null
                 ? LinuxX64RuntimeIdentifier
                 : LinuxX64AppImageRuntimeIdentifier;
         }

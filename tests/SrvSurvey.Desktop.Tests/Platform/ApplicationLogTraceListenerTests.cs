@@ -167,6 +167,37 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
         Assert.Contains(log.Entries, line => line.EndsWith(": [IME] Error:", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void FlushPreservesAnIncompleteUnexpectedImeFailure()
+    {
+        var log = new ApplicationLogService(temporaryDirectory);
+        var listener = new ApplicationLogTraceListener(log);
+        listener.WriteLine("[IME] Error:");
+        listener.WriteLine("System.InvalidOperationException: unexpected failure");
+
+        listener.Flush();
+
+        Assert.Equal(2, log.Entries.Count);
+        Assert.Contains(log.Entries, line => line.EndsWith(": [IME] Error:", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void FlushStillOmitsAnIncompleteExpectedImeFailure()
+    {
+        var log = new ApplicationLogService(temporaryDirectory);
+        var listener = new ApplicationLogTraceListener(log);
+        listener.WriteLine("[IME] Error:");
+        listener.WriteLine(
+            "Tmds.DBus.Protocol.DBusErrorReplyException: Object does not exist at path "
+                + "/org/freedesktop/IBus/InputContext_234"
+        );
+        listener.WriteLine("   at Avalonia.FreeDesktop.DBusIme.IBus.IBusX11TextInputMethod.Start()");
+
+        listener.Flush();
+
+        Assert.Empty(log.Entries);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

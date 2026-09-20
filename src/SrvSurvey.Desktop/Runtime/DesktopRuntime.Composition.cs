@@ -507,7 +507,7 @@ internal sealed partial class DesktopRuntime
         string[] startupArguments
     )
     {
-        string? appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
+        string? appImagePath = AppImageRuntimeResolver.ResolveCurrentPath();
         applicationInstanceManager = new ApplicationInstanceManager(
             appDataPaths.DataDirectory,
             () => RequestShutdownOnUiThreadAsync(DesktopShutdownReason.RemoteInstanceRequest, CancellationToken.None),

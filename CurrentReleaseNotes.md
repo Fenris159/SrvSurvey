@@ -106,8 +106,13 @@ defaults to the 0% baseline.
   card instead of requiring a manual download and replacement.
 - The updater verifies the indexed AppImage checksum, keeps the previous image
   for rollback, and restores it if the replacement cannot confirm a healthy
-  startup. Activation uses one same-filesystem atomic replacement so interruption
-  cannot leave the normal AppImage launch path missing.
+  startup, including when the operating system cannot launch the replacement.
+  Activation uses one same-filesystem atomic replacement so interruption cannot
+  leave the normal AppImage launch path missing.
+- AppImage update mode now requires a matching `APPIMAGE` and `APPDIR`
+  environment, verifies that SrvSurvey is running inside that mounted AppDir,
+  and confirms the canonical launch file is a real x64 AppImage before offering
+  self-update installation.
 - Stable file names and symbolic-link launch paths are supported. The update
   helper uses extract-and-run mode so the update transaction does not depend on
   FUSE being installed.
@@ -139,7 +144,8 @@ tarball updates.
   Arch/Manjaro/CachyOS.
 - Expected X11 session-manager, disposed IBus context, window-lifecycle races,
   and unrelated Avalonia rendering events no longer fill the application log;
-  SrvSurvey's own X11 failures remain visible.
+  SrvSurvey's own X11 failures and incomplete unexpected IME diagnostics remain
+  visible through shutdown.
 - Tooltips, drop-downs, and flyouts remain available while using Avalonia's
   in-window popup layer on Linux. This avoids the transient X11 windows that
   caused hover flicker, missed button input, and unreliable focus activation.
@@ -155,6 +161,9 @@ tarball updates.
   SrvSurvey pauses its own log-file writes during the transaction so an active
   local log cannot invalidate the staged profile. Network imports report each
   phase plus live file and byte progress and warn that large shares can take time.
+- Current-profile UI imports record completion separately from their verified
+  backup. An interrupted migration resumes safely, reuses only a hash-matching
+  backup, and cannot mistake a backup file alone for a completed import.
 - Imported overlay offsets retain their source game-display dimensions and are
   scaled proportionally against the current Elite Dangerous window. Left,
   centre, right, top, middle, and bottom anchors keep their original orientation

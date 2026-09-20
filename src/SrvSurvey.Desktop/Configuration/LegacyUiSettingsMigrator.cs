@@ -52,13 +52,18 @@ public sealed class LegacyUiSettingsMigrator
             }
 
             string expectedBackupPath = Path.Combine(manifest.BackupDirectory, BackupFileName);
-            if (File.Exists(expectedBackupPath))
+            string completionSignalPath = Path.Combine(
+                manifest.BackupDirectory,
+                CrossPlatformUiSettingsImporter.CompletionSignalFileName
+            );
+            if (File.Exists(completionSignalPath))
             {
                 // Current-profile imports activate a complete Avalonia UI
                 // document after creating this verified backup. Preserve that
                 // imported document and only fill preferences introduced
                 // since it was written.
-                return MigrateNewPreferencesIfMissing(legacy, existing, store, manifest, expectedBackupPath);
+                string? completedImportBackupPath = File.Exists(expectedBackupPath) ? expectedBackupPath : null;
+                return MigrateNewPreferencesIfMissing(legacy, existing, store, manifest, completedImportBackupPath);
             }
 
             string? backupPath = BackupExistingSettings(paths.UiSettingsPath, manifest);
@@ -373,30 +378,44 @@ public sealed class LegacyUiSettingsMigrator
 
         int mappedCount = 0;
         store.Update(root =>
-        {
-            foreach ((string Section, string Legacy, string Current) mapping in pending)
-            {
-                mappedCount += Copy(legacy, mapping.Legacy, GetOrCreateObject(root, mapping.Section), mapping.Current);
-            }
-
-            if (shouldMapColor)
-            {
-                mappedCount += MapFirstFootfallColor(legacy, root);
-            }
-
-            if (shouldMapOverlayScale)
-            {
-                mappedCount += MapOverlayScale(legacy, root);
-            }
-
-            if (manifest is not null)
-            {
-                WriteMigrationMarker(root, manifest, mappedCount);
-            }
-        });
+            mappedCount = MapNewPreferences(legacy, root, pending, shouldMapColor, shouldMapOverlayScale, manifest)
+        );
         return mappedCount == 0 && manifest is null
             ? LegacyUiSettingsMigrationResult.NotRequired
             : new LegacyUiSettingsMigrationResult(true, mappedCount, backupPath, null);
+    }
+
+    private static int MapNewPreferences(
+        JsonObject legacy,
+        JsonObject root,
+        IReadOnlyList<(string Section, string Legacy, string Current)> pending,
+        bool shouldMapColor,
+        bool shouldMapOverlayScale,
+        ProfileImportManifest? manifest
+    )
+    {
+        int mappedCount = 0;
+        foreach ((string Section, string Legacy, string Current) mapping in pending)
+        {
+            mappedCount += Copy(legacy, mapping.Legacy, GetOrCreateObject(root, mapping.Section), mapping.Current);
+        }
+
+        if (shouldMapColor)
+        {
+            mappedCount += MapFirstFootfallColor(legacy, root);
+        }
+
+        if (shouldMapOverlayScale)
+        {
+            mappedCount += MapOverlayScale(legacy, root);
+        }
+
+        if (manifest is not null)
+        {
+            WriteMigrationMarker(root, manifest, mappedCount);
+        }
+
+        return mappedCount;
     }
 
     private static void WriteMigrationMarker(JsonObject root, ProfileImportManifest manifest, int mappedCount)
@@ -794,9 +813,19 @@ public sealed class LegacyUiSettingsMigrator
 
         Directory.CreateDirectory(manifest.BackupDirectory);
         string backupPath = Path.Combine(manifest.BackupDirectory, BackupFileName);
-        File.Copy(settingsPath, backupPath, false);
-
         string sourceHash = ComputeSha256(settingsPath);
+        if (File.Exists(backupPath))
+        {
+            string existingBackupHash = ComputeSha256(backupPath);
+            if (!string.Equals(sourceHash, existingBackupHash, StringComparison.Ordinal))
+            {
+                throw new IOException("The current Avalonia settings backup did not match its source.");
+            }
+
+            return backupPath;
+        }
+
+        File.Copy(settingsPath, backupPath, false);
         string backupHash = ComputeSha256(backupPath);
         if (!string.Equals(sourceHash, backupHash, StringComparison.Ordinal))
         {

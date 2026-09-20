@@ -34,6 +34,7 @@ public sealed class CrossPlatformUiSettingsImporterTests : IDisposable
             "{\"Version\":1,\"Theme\":\"blue-dark\"}",
             await File.ReadAllTextAsync(Path.Combine(backup, LegacyUiSettingsMigrator.BackupFileName))
         );
+        Assert.True(File.Exists(Path.Combine(backup, CrossPlatformUiSettingsImporter.CompletionSignalFileName)));
     }
 
     [Fact]

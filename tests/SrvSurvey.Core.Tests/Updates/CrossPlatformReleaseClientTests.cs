@@ -12,6 +12,42 @@ public sealed class CrossPlatformReleaseClientTests
     private static readonly Uri IndexUri = new("https://downloads.example.test/release-index.json");
 
     [Fact]
+    public void AppImageRuntimeResolverRequiresAConsistentAppImageEnvironment()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-appimage-runtime-{Guid.NewGuid():N}");
+        string appDir = Path.Combine(root, "mount");
+        string baseDirectory = Path.Combine(appDir, "usr", "bin");
+        string appImageDirectory = Path.Combine(root, "applications");
+        string appImagePath = Path.Combine(appImageDirectory, "SrvSurvey.AppImage");
+        string invalidPath = Path.Combine(appImageDirectory, "not-an-appimage");
+        try
+        {
+            Directory.CreateDirectory(baseDirectory);
+            Directory.CreateDirectory(appImageDirectory);
+            File.WriteAllBytes(appImagePath, CreateAppImage());
+            File.WriteAllText(invalidPath, "not an AppImage");
+
+            string? resolved = AppImageRuntimeResolver.Resolve(
+                Path.Combine(appImageDirectory, "..", "applications", "SrvSurvey.AppImage"),
+                Path.Combine(appDir, "."),
+                baseDirectory
+            );
+
+            Assert.Equal(Path.GetFullPath(appImagePath), resolved);
+            Assert.Null(AppImageRuntimeResolver.Resolve(appImagePath, null, baseDirectory));
+            Assert.Null(AppImageRuntimeResolver.Resolve(appImagePath, appDir, root));
+            Assert.Null(AppImageRuntimeResolver.Resolve(invalidPath, appDir, baseDirectory));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task GetLatestAsyncSelectsChecksumIndexedPackageForRuntime()
     {
         ReleasePayload payload = CreatePayload();
@@ -308,6 +344,22 @@ public sealed class CrossPlatformReleaseClientTests
             }
         );
         return new ReleasePayload(releases, index);
+    }
+
+    private static byte[] CreateAppImage()
+    {
+        byte[] bytes = new byte[64];
+        bytes[0] = 0x7f;
+        bytes[1] = (byte)'E';
+        bytes[2] = (byte)'L';
+        bytes[3] = (byte)'F';
+        bytes[4] = 2;
+        bytes[5] = 1;
+        bytes[8] = (byte)'A';
+        bytes[9] = (byte)'I';
+        bytes[10] = 2;
+        bytes[18] = 62;
+        return bytes;
     }
 
     private sealed record ReleasePayload(string Releases, string Index);

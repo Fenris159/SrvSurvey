@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using SrvSurvey.Desktop.Platform.Overlay;
 
@@ -6,6 +7,8 @@ namespace SrvSurvey.Desktop.Configuration;
 
 public static class CrossPlatformUiSettingsImporter
 {
+    internal const string CompletionSignalFileName = "current-profile-ui-import-completed.lock";
+
     public static async Task<CrossPlatformUiSettingsImportResult> ImportAsync(
         string sourcePath,
         string destinationPath,
@@ -60,6 +63,8 @@ public static class CrossPlatformUiSettingsImporter
                     overlayDataDirectory
                 ).SaveImportedPositionReferences(reference);
             }
+
+            await WriteCompletionSignalAsync(backupDirectory, importedBytes, cancellationToken).ConfigureAwait(false);
 
             return new CrossPlatformUiSettingsImportResult(true, backupPath, referencedOverlayCount);
         }
@@ -143,6 +148,44 @@ public static class CrossPlatformUiSettingsImporter
         if (!CryptographicOperations.FixedTimeEquals(SHA256.HashData(expected), SHA256.HashData(actual)))
         {
             throw new IOException("A copied UI settings file did not match its source.");
+        }
+    }
+
+    private static async Task WriteCompletionSignalAsync(
+        string backupDirectory,
+        byte[] importedBytes,
+        CancellationToken cancellationToken
+    )
+    {
+        string completionPath = Path.Combine(backupDirectory, CompletionSignalFileName);
+        string stagedPath = Path.Combine(backupDirectory, Path.GetRandomFileName());
+        byte[] content = Encoding.ASCII.GetBytes(Convert.ToHexStringLower(SHA256.HashData(importedBytes)));
+        try
+        {
+            await using (
+                var stream = new FileStream(
+                    stagedPath,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    4_096,
+                    FileOptions.Asynchronous | FileOptions.WriteThrough
+                )
+            )
+            {
+                await stream.WriteAsync(content, cancellationToken).ConfigureAwait(false);
+                await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                stream.Flush(flushToDisk: true);
+            }
+
+            File.Move(stagedPath, completionPath, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(stagedPath))
+            {
+                File.Delete(stagedPath);
+            }
         }
     }
 }
