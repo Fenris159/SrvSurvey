@@ -151,7 +151,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     public string ReleaseSourceDescription =>
         UseDevelopmentReleases
             ? "Development releases are read from Fenris159/SrvSurvey, including RC builds."
-            : "Stable SrvSurvey-XP releases are read from njthomson/SrvSurvey.";
+            : "Stable SrvSurvey-XP releases are read from Fenris159/SrvSurvey.";
 
     public string OpenReleaseButtonText => UseDevelopmentReleases ? "Open development release" : "Open stable release";
 
@@ -423,10 +423,10 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             case ReleaseInstallationWorkflowStage.Downloading:
                 ApplyDownloadProgress(progress);
                 break;
-            case ReleaseInstallationWorkflowStage.ValidatingArchive:
+            case ReleaseInstallationWorkflowStage.ValidatingPackage:
                 InstallProgressPercent = 100;
-                InstallProgressText = "Download hash verified; validating archive files...";
-                StatusMessage = "The package hash is valid. Extracting to an isolated staging directory.";
+                InstallProgressText = "Download hash verified; validating package...";
+                StatusMessage = "The package hash is valid. Preparing an isolated update candidate.";
                 break;
             case ReleaseInstallationWorkflowStage.Staging:
                 break;
@@ -628,7 +628,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         if (result.LatestVersion is null)
         {
             return result.Channel == ReleaseChannel.Stable
-                ? "N/A: no stable SrvSurvey-XP release is published in njthomson/SrvSurvey yet."
+                ? "N/A: no stable SrvSurvey-XP release is published in Fenris159/SrvSurvey yet."
                 : "N/A: no SrvSurvey-XP development release is published in Fenris159/SrvSurvey yet.";
         }
 

@@ -333,6 +333,84 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
     }
 
     [Fact]
+    public async Task ExistingVerifiedCurrentProfileBackupDoesNotBlockMissingPreferenceMigration()
+    {
+        AppDataPaths paths = CreatePaths();
+        string source = Path.Combine(temporaryDirectory, "current-profile");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(paths.ConfigDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "{\"darkTheme\":true,\"hideMultiFloatie\":true}"
+        );
+        ProfileImportResult import = await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "current-profile-backups")
+        );
+        const string previousSettings = "{\"Version\":1,\"Theme\":\"orange-dark\"}";
+        const string importedSettings = "{\"Version\":1,\"Theme\":\"green-light\"}";
+        await File.WriteAllTextAsync(
+            Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName),
+            previousSettings
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(import.BackupDirectory, CrossPlatformUiSettingsImporter.CompletionSignalFileName),
+            "completed"
+        );
+        await File.WriteAllTextAsync(paths.UiSettingsPath, importedSettings);
+
+        LegacyUiSettingsMigrationResult result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.Null(result.Error);
+        Assert.Equal(
+            previousSettings,
+            await File.ReadAllTextAsync(Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName))
+        );
+        Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.True(new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().HideMultiGameCommanderOverlay);
+        JsonObject migrated = Assert.IsType<JsonObject>(
+            JsonNode.Parse(await File.ReadAllTextAsync(paths.UiSettingsPath))
+        );
+        Assert.Equal(
+            import.Manifest.ImportedAtUtc,
+            migrated["LegacyImport"]?["ImportedAtUtc"]?.GetValue<DateTimeOffset>()
+        );
+    }
+
+    [Fact]
+    public async Task ExistingBackupWithoutCurrentProfileCompletionResumesFullMigration()
+    {
+        AppDataPaths paths = CreatePaths();
+        string source = Path.Combine(temporaryDirectory, "incomplete-current-profile");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(paths.ConfigDirectory);
+        await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), "{\"darkTheme\":true}");
+        ProfileImportResult import = await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "incomplete-current-profile-backups")
+        );
+        const string currentSettings = "{\"Version\":1,\"Theme\":\"green-light\"}";
+        await File.WriteAllTextAsync(paths.UiSettingsPath, currentSettings);
+        await File.WriteAllTextAsync(
+            Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName),
+            currentSettings
+        );
+
+        LegacyUiSettingsMigrationResult result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.Null(result.Error);
+        Assert.Equal(
+            Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName),
+            result.PreviousSettingsBackupPath
+        );
+        Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+    }
+
+    [Fact]
     public async Task ExplicitlyDisabledLegacyFssDetectorRemainsDisabled()
     {
         AppDataPaths paths = CreatePaths();

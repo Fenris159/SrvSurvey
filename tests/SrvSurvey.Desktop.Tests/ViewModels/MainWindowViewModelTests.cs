@@ -1126,9 +1126,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
             );
+            var applicationLog = new ApplicationLogService(data);
             MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder.WithAppDataPaths(paths)
+                builder => builder.WithAppDataPaths(paths).WithApplicationLogService(applicationLog)
             );
 
             Assert.Equal(source, viewModel.LegacyProfileSourcePath);
@@ -1136,6 +1137,8 @@ public sealed class MainWindowViewModelTests
 
             Assert.True(File.Exists(Path.Combine(data, "settings.json")));
             Assert.True(File.Exists(Path.Combine(data, "logs", "startup.txt")));
+            Assert.True(File.Exists(applicationLog.CurrentLogPath));
+            Assert.Contains("Profile import:", await File.ReadAllTextAsync(applicationLog.CurrentLogPath));
             Assert.Contains("Imported 1 legacy files", viewModel.ProfileStatusMessage);
             Assert.Contains("current-only files", viewModel.ProfileStatusMessage);
             Assert.Contains("Translated 2 legacy UI preferences", viewModel.ProfileStatusMessage);
@@ -1385,6 +1388,92 @@ public sealed class MainWindowViewModelTests
                 await File.ReadAllTextAsync(Path.Combine(data, "F123-live.json"))
             );
             Assert.True(viewModel.HasCompletedLegacyImport);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void SelectingAWindowsApplicationDataRootFindsItsVersionedLegacyProfile()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-manual-root-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            string selectedRoot = Path.Combine(root, "SrvSurvey");
+            string legacyProfile = Path.Combine(selectedRoot, "SrvSurvey", "1.1.0.0");
+            Directory.CreateDirectory(legacyProfile);
+            File.WriteAllText(Path.Combine(legacyProfile, "settings.json"), "{}");
+            Directory.CreateDirectory(Path.Combine(selectedRoot, "cross-platform"));
+            Directory.CreateDirectory(Path.Combine(selectedRoot, "legacy-backups"));
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "current"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+
+            viewModel.LegacyProfileSourcePath = selectedRoot;
+
+            Assert.Equal(Path.GetFullPath(legacyProfile), viewModel.LegacyProfileSourcePath);
+            Assert.True(viewModel.ImportLegacyProfileCommand.CanExecute(null));
+            Assert.Contains("ready for verified import", viewModel.ProfileStatusMessage);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task CurrentWindowsProfileAndUiSettingsCanBeImportedFromApplicationDataRoot()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-current-profile-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            string selectedRoot = Path.Combine(root, "windows", "SrvSurvey");
+            string source = Path.Combine(selectedRoot, "cross-platform");
+            string sourceUiSettings = Path.Combine(selectedRoot, "cross-platform-ui.json");
+            string data = Path.Combine(root, "linux", "data");
+            string config = Path.Combine(root, "linux", "config");
+            Directory.CreateDirectory(source);
+            Directory.CreateDirectory(data);
+            Directory.CreateDirectory(config);
+            await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "{\"fid\":\"F123\"}");
+            await File.WriteAllTextAsync(sourceUiSettings, "{\"Version\":1,\"Theme\":\"orange-dark\"}");
+            await File.WriteAllTextAsync(Path.Combine(data, "local-only.json"), "{}");
+            var paths = new AppDataPaths(config, data, Path.Combine(root, "cache"), []);
+            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(root, "missing-journals"),
+                builder => builder.WithAppDataPaths(paths)
+            );
+
+            viewModel.LegacyProfileSourcePath = selectedRoot;
+
+            Assert.Equal(Path.GetFullPath(source), viewModel.LegacyProfileSourcePath);
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.Equal("{\"fid\":\"F123\"}", await File.ReadAllTextAsync(Path.Combine(data, "F123-live.json")));
+            Assert.True(File.Exists(Path.Combine(data, "local-only.json")));
+            Assert.Equal(
+                await File.ReadAllBytesAsync(sourceUiSettings),
+                await File.ReadAllBytesAsync(paths.UiSettingsPath)
+            );
+            Assert.Contains("current-format files", viewModel.ProfileStatusMessage);
+            Assert.Contains("Imported the current-format UI settings", viewModel.ProfileStatusMessage);
+            string importBackup = Assert.Single(Directory.GetDirectories(viewModel.ProfileBackupDirectory));
+            Assert.True(File.Exists(Path.Combine(importBackup, LegacyUiSettingsMigrator.BackupFileName)));
         }
         finally
         {

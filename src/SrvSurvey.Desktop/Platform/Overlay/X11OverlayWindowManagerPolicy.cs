@@ -25,6 +25,7 @@ internal static class X11OverlayWindowManagerPolicy
     internal const string SupportedAtomName = "_NET_SUPPORTED";
     internal const string WindowTypeAtomName = "_NET_WM_WINDOW_TYPE";
     internal const string KdeOnScreenDisplayAtomName = "_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY";
+    internal const string NotificationWindowAtomName = "_NET_WM_WINDOW_TYPE_NOTIFICATION";
     internal const string NormalWindowAtomName = "_NET_WM_WINDOW_TYPE_NORMAL";
 
     internal static X11OverlayStackingMode Select(nuint kdeOnScreenDisplayAtom, ReadOnlySpan<nuint> supportedAtoms)
@@ -48,11 +49,28 @@ internal static class X11OverlayWindowManagerPolicy
     internal static nuint[] CreateWindowTypes(
         X11OverlayStackingMode mode,
         nuint kdeOnScreenDisplayAtom,
+        nuint notificationWindowAtom,
         nuint normalWindowAtom
     )
     {
-        return mode == X11OverlayStackingMode.KdeOnScreenDisplay && kdeOnScreenDisplayAtom != 0 && normalWindowAtom != 0
-            ? [kdeOnScreenDisplayAtom, normalWindowAtom]
-            : [];
+        if (normalWindowAtom == 0)
+        {
+            return [];
+        }
+
+        return mode switch
+        {
+            X11OverlayStackingMode.KdeOnScreenDisplay when kdeOnScreenDisplayAtom != 0 =>
+            [
+                kdeOnScreenDisplayAtom,
+                normalWindowAtom,
+            ],
+            X11OverlayStackingMode.StandardTopmost when notificationWindowAtom != 0 =>
+            [
+                notificationWindowAtom,
+                normalWindowAtom,
+            ],
+            _ => [],
+        };
     }
 }

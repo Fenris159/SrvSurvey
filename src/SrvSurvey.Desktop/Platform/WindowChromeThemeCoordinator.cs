@@ -38,6 +38,8 @@ internal readonly record struct WindowChromeThemePalette(Color Caption, Color Bo
 
 internal interface IWindowChromeThemePlatform
 {
+    void Prepare(Window window);
+
     void Apply(Window window, WindowChromeThemePalette palette);
 }
 
@@ -50,7 +52,7 @@ internal sealed class WindowChromeThemeCoordinator : IDisposable
     private bool disposed;
 
     public WindowChromeThemeCoordinator(Window window, RavenThemeService themeService)
-        : this(window, themeService, WindowsWindowChromeThemePlatform.Instance) { }
+        : this(window, themeService, CreateCurrentPlatform()) { }
 
     internal WindowChromeThemeCoordinator(
         Window window,
@@ -61,6 +63,7 @@ internal sealed class WindowChromeThemeCoordinator : IDisposable
         this.window = window ?? throw new ArgumentNullException(nameof(window));
         this.themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        platform.Prepare(window);
         window.Opened += HandleOpened;
         window.Activated += HandleActivated;
         window.Deactivated += HandleDeactivated;
@@ -117,6 +120,53 @@ internal sealed class WindowChromeThemeCoordinator : IDisposable
             Apply(window.IsActive);
         }
     }
+
+    private static IWindowChromeThemePlatform CreateCurrentPlatform() =>
+        OperatingSystem.IsLinux() ? LinuxWindowChromeThemePlatform.Instance : WindowsWindowChromeThemePlatform.Instance;
+}
+
+internal sealed class LinuxWindowChromeThemePlatform : IWindowChromeThemePlatform
+{
+    internal const string ChromeTextBrushKey = nameof(ChromeResourceKey.SrvSurveyWindowChromeTextBrush);
+    private const string CaptionBackgroundBrushKey = nameof(ChromeResourceKey.TitleBarBackgroundBrush);
+    private const string CaptionButtonBackgroundBrushKey = nameof(ChromeResourceKey.CaptionButtonBackground);
+    private const string CaptionButtonBorderBrushKey = nameof(ChromeResourceKey.CaptionButtonBorderBrush);
+    private const string CaptionButtonForegroundBrushKey = nameof(ChromeResourceKey.CaptionButtonForeground);
+    private const string FullscreenCaptionBackgroundBrushKey = nameof(
+        ChromeResourceKey.SystemControlBackgroundChromeMediumLowBrush
+    );
+    private const string FrameBrushKey = nameof(ChromeResourceKey.SystemControlForegroundBaseMediumBrush);
+
+    public static LinuxWindowChromeThemePlatform Instance { get; } = new();
+
+    private LinuxWindowChromeThemePlatform() { }
+
+    public void Prepare(Window window) { }
+
+    public void Apply(Window window, WindowChromeThemePalette palette)
+    {
+        window.Resources[CaptionBackgroundBrushKey] = new SolidColorBrush(palette.Caption);
+        window.Resources[FullscreenCaptionBackgroundBrushKey] = new SolidColorBrush(palette.Caption);
+        window.Resources[FrameBrushKey] = new SolidColorBrush(palette.Border);
+        window.Resources[CaptionButtonForegroundBrushKey] = new SolidColorBrush(palette.Text);
+        window.Resources[ChromeTextBrushKey] = new SolidColorBrush(palette.Text);
+        window.Resources[CaptionButtonBackgroundBrushKey] = CreateTranslucentBrush(palette.Border, 0x66);
+        window.Resources[CaptionButtonBorderBrushKey] = CreateTranslucentBrush(palette.Border, 0x99);
+    }
+
+    private static SolidColorBrush CreateTranslucentBrush(Color color, byte alpha) =>
+        new(Color.FromArgb(alpha, color.R, color.G, color.B));
+
+    private enum ChromeResourceKey
+    {
+        CaptionButtonBackground,
+        CaptionButtonBorderBrush,
+        CaptionButtonForeground,
+        SrvSurveyWindowChromeTextBrush,
+        SystemControlBackgroundChromeMediumLowBrush,
+        SystemControlForegroundBaseMediumBrush,
+        TitleBarBackgroundBrush,
+    }
 }
 
 internal sealed partial class WindowsWindowChromeThemePlatform : IWindowChromeThemePlatform
@@ -128,6 +178,8 @@ internal sealed partial class WindowsWindowChromeThemePlatform : IWindowChromeTh
     public static WindowsWindowChromeThemePlatform Instance { get; } = new();
 
     private WindowsWindowChromeThemePlatform() { }
+
+    public void Prepare(Window window) { }
 
     public void Apply(Window window, WindowChromeThemePalette palette)
     {

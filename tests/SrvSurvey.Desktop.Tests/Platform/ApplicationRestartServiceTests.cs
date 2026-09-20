@@ -56,6 +56,32 @@ public sealed class ApplicationRestartServiceTests
     }
 
     [Fact]
+    public void RestartHelperEscapesTheOwningSystemdService()
+    {
+        ProcessStartInfo? capturedStartInfo = null;
+        var service = new ApplicationRestartService(
+            Path.Combine("app", "SrvSurvey.Desktop"),
+            Path.Combine("app", "SrvSurvey.Desktop.dll"),
+            [],
+            () => (42, 638934912000000000),
+            startInfo =>
+            {
+                capturedStartInfo = startInfo;
+                return true;
+            },
+            isolateFromSystemdUnit: true
+        );
+
+        service.StartRestartHelper();
+
+        Assert.NotNull(capturedStartInfo);
+        Assert.Equal("/usr/bin/systemd-run", capturedStartInfo.FileName);
+        Assert.Contains("--unit=srvsurvey-restart-42", capturedStartInfo.ArgumentList);
+        Assert.Contains("--property=ExitType=cgroup", capturedStartInfo.ArgumentList);
+        Assert.Contains(ApplicationRestartService.RestartAfterProcessArgument, capturedStartInfo.ArgumentList);
+    }
+
+    [Fact]
     public void FrameworkDependentLaunchPreservesAssemblyAndArguments()
     {
         ProcessStartInfo startInfo = ApplicationRestartService.CreateStartInfo(

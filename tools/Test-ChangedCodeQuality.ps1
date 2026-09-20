@@ -77,6 +77,106 @@ function Find-NullConditionalEventFindings {
     }
 }
 
+function Test-ChangedRangeOverlap {
+    param(
+        [object[]]$Ranges,
+        [int]$StartLine,
+        [int]$EndLine
+    )
+
+    return [bool](
+        $Ranges |
+            Where-Object { $_.Start -le $EndLine -and $_.End -ge $StartLine } |
+            Select-Object -First 1
+    )
+}
+
+function Get-SonarFindingEndLine {
+    param(
+        [string]$Path,
+        [int]$StartLine,
+        [string]$Rule
+    )
+
+    if ($Rule -ne 'S107') {
+        return $StartLine
+    }
+
+    $lines = Get-Content -LiteralPath $Path
+    $parenthesisDepth = 0
+    $foundParameterList = $false
+    for ($lineIndex = $StartLine - 1; $lineIndex -lt $lines.Count; $lineIndex++) {
+        foreach ($character in $lines[$lineIndex].ToCharArray()) {
+            if ($character -eq '(') {
+                $parenthesisDepth++
+                $foundParameterList = $true
+            }
+            elseif ($character -eq ')' -and $foundParameterList) {
+                $parenthesisDepth--
+                if ($parenthesisDepth -eq 0) {
+                    return $lineIndex + 1
+                }
+            }
+        }
+    }
+
+    return $StartLine
+}
+
+function Find-AwaitedMutableFieldCatchFilterFindings {
+    param(
+        [string]$RepositoryRoot,
+        [hashtable]$ChangedRanges
+    )
+
+    $filterPattern = [regex]::new(
+        'catch\s*\([^\r\n)]*\)\s*when\s*\(\s*(?:this\.)?(?<field>[A-Za-z_][A-Za-z0-9_]*)\s*\)',
+        [System.Text.RegularExpressions.RegexOptions]::CultureInvariant
+    )
+
+    foreach ($relativePath in $ChangedRanges.Keys) {
+        if ($relativePath -notmatch '^src/.+\.cs$') {
+            continue
+        }
+
+        $absolutePath = Join-Path $RepositoryRoot $relativePath
+        if (-not (Test-Path -LiteralPath $absolutePath)) {
+            continue
+        }
+
+        $content = Get-Content -LiteralPath $absolutePath -Raw
+        foreach ($match in $filterPattern.Matches($content)) {
+            $lineNumber = 1 + ([regex]::Matches($content.Substring(0, $match.Index), "\n")).Count
+            if (-not (Test-ChangedRangeOverlap $ChangedRanges[$relativePath] $lineNumber $lineNumber)) {
+                continue
+            }
+
+            $field = $match.Groups['field'].Value
+            $fieldPattern = [regex]::new(
+                "(?m)^\s*private\s+bool\s+$([regex]::Escape($field))\s*(?:[;=])",
+                [System.Text.RegularExpressions.RegexOptions]::CultureInvariant
+            )
+            if (-not $fieldPattern.IsMatch($content)) {
+                continue
+            }
+
+            $lookBehindStart = [Math]::Max(0, $match.Index - 2000)
+            $lookBehind = $content.Substring($lookBehindStart, $match.Index - $lookBehindStart)
+            if ($lookBehind -notmatch '\bawait\b') {
+                continue
+            }
+
+            [pscustomobject]@{
+                File = $relativePath
+                Line = $lineNumber
+                Column = 1
+                Rule = 'S2589'
+                Message = "Read mutable field '$field' explicitly in this post-await catch filter; a bare field is analyzed as invariant."
+            }
+        }
+    }
+}
+
 function Invoke-LocalizationCatalogVerify {
     param([string]$RepositoryRoot)
 
@@ -429,9 +529,8 @@ try {
                 continue
             }
 
-            $isChangedLine = $changedRanges[$relativePath] | Where-Object {
-                $lineNumber -ge $_.Start -and $lineNumber -le $_.End
-            }
+            $findingEndLine = Get-SonarFindingEndLine $absolutePath $lineNumber $Matches.Rule
+            $isChangedLine = Test-ChangedRangeOverlap $changedRanges[$relativePath] $lineNumber $findingEndLine
             if ($isChangedLine) {
                 $key = "$relativePath|$lineNumber|$($Matches.Column)|$($Matches.Rule)"
                 $sonarFindings[$key] = [pscustomobject]@{
@@ -445,8 +544,13 @@ try {
         }
 
         $nullConditionalEventFindings = Find-NullConditionalEventFindings $repositoryRoot $changedRanges
+        $awaitedMutableFieldCatchFilterFindings =
+            Find-AwaitedMutableFieldCatchFilterFindings $repositoryRoot $changedRanges
         $findings =
-            @($formatFindings) + @($sonarFindings.Values) + @($nullConditionalEventFindings)
+            @($formatFindings) +
+            @($sonarFindings.Values) +
+            @($nullConditionalEventFindings) +
+            @($awaitedMutableFieldCatchFilterFindings)
         if ($findings.Count -gt 0) {
             $findings |
                 Sort-Object File, Line, Column |

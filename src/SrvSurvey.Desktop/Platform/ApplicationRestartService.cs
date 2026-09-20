@@ -23,12 +23,20 @@ public sealed class ApplicationRestartService
     private readonly IReadOnlyList<string> arguments;
     private readonly Func<(int ProcessId, long StartTimeUtcTicks)> currentProcessIdentity;
     private readonly Func<ProcessStartInfo, bool> processStarter;
+    private readonly bool isolateFromSystemdUnit;
 
     public ApplicationRestartService()
         : this(ResolveLauncherPath(), ResolveEntryAssemblyPath(), Program.StartupArguments) { }
 
     internal ApplicationRestartService(string processPath, string entryAssemblyPath, IReadOnlyList<string> arguments)
-        : this(processPath, entryAssemblyPath, arguments, GetCurrentProcessIdentity, StartProcess) { }
+        : this(
+            processPath,
+            entryAssemblyPath,
+            arguments,
+            GetCurrentProcessIdentity,
+            StartProcess,
+            ShouldIsolateFromSystemdUnit()
+        ) { }
 
     internal ApplicationRestartService(
         string processPath,
@@ -37,6 +45,16 @@ public sealed class ApplicationRestartService
         Func<(int ProcessId, long StartTimeUtcTicks)> currentProcessIdentity,
         Func<ProcessStartInfo, bool> processStarter
     )
+        : this(processPath, entryAssemblyPath, arguments, currentProcessIdentity, processStarter, false) { }
+
+    internal ApplicationRestartService(
+        string processPath,
+        string entryAssemblyPath,
+        IReadOnlyList<string> arguments,
+        Func<(int ProcessId, long StartTimeUtcTicks)> currentProcessIdentity,
+        Func<ProcessStartInfo, bool> processStarter,
+        bool isolateFromSystemdUnit
+    )
     {
         this.processPath = Path.GetFullPath(processPath);
         this.entryAssemblyPath = Path.GetFullPath(entryAssemblyPath);
@@ -44,6 +62,7 @@ public sealed class ApplicationRestartService
         this.currentProcessIdentity =
             currentProcessIdentity ?? throw new ArgumentNullException(nameof(currentProcessIdentity));
         this.processStarter = processStarter ?? throw new ArgumentNullException(nameof(processStarter));
+        this.isolateFromSystemdUnit = isolateFromSystemdUnit;
     }
 
     public void StartRestartHelper()
@@ -57,6 +76,10 @@ public sealed class ApplicationRestartService
             processId,
             startTimeUtcTicks
         );
+        if (isolateFromSystemdUnit)
+        {
+            startInfo = CreateSystemdRestartHelperStartInfo(startInfo, processId);
+        }
         if (!processStarter(startInfo))
         {
             throw new InvalidOperationException("The SrvSurvey restart helper did not start.");
@@ -220,6 +243,36 @@ public sealed class ApplicationRestartService
         return startInfo;
     }
 
+    internal static ProcessStartInfo CreateSystemdRestartHelperStartInfo(
+        ProcessStartInfo helperStartInfo,
+        int parentProcessId
+    )
+    {
+        ArgumentNullException.ThrowIfNull(helperStartInfo);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(parentProcessId);
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "/usr/bin/systemd-run",
+            WorkingDirectory = helperStartInfo.WorkingDirectory,
+            UseShellExecute = false,
+        };
+        startInfo.ArgumentList.Add("--user");
+        startInfo.ArgumentList.Add("--collect");
+        startInfo.ArgumentList.Add("--quiet");
+        startInfo.ArgumentList.Add("--no-block");
+        startInfo.ArgumentList.Add($"--unit=srvsurvey-restart-{parentProcessId}");
+        startInfo.ArgumentList.Add("--property=Type=exec");
+        startInfo.ArgumentList.Add("--property=ExitType=cgroup");
+        startInfo.ArgumentList.Add("--");
+        startInfo.ArgumentList.Add(helperStartInfo.FileName);
+        foreach (string argument in helperStartInfo.ArgumentList)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        return startInfo;
+    }
+
     private static bool WaitForParentExit(int parentProcessId, long parentProcessStartTimeUtcTicks)
     {
         return WaitForParentExit(parentProcessId, parentProcessStartTimeUtcTicks, ParentExitTimeout);
@@ -262,6 +315,11 @@ public sealed class ApplicationRestartService
         using var process = Process.Start(startInfo);
         return process is not null;
     }
+
+    private static bool ShouldIsolateFromSystemdUnit() =>
+        OperatingSystem.IsLinux()
+        && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("INVOCATION_ID"))
+        && File.Exists("/usr/bin/systemd-run");
 
     private static string ResolveLauncherPath()
     {

@@ -140,6 +140,42 @@ public sealed class LegacyProfileImporterTests : IDisposable
     }
 
     [Fact]
+    public async Task ImportReportsEachLongRunningStage()
+    {
+        string source = Path.Combine(temporaryDirectory, "progress-legacy");
+        string destination = Path.Combine(temporaryDirectory, "progress-current");
+        string backups = Path.Combine(temporaryDirectory, "progress-backups");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(destination);
+        await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), "legacy");
+        await File.WriteAllTextAsync(Path.Combine(destination, "current.json"), "current");
+        var progress = new SynchronousProgress<ProfileImportProgress>();
+
+        await new LegacyProfileImporter().ImportAsync(source, destination, backups, progress);
+
+        Assert.Equal(
+            [
+                ProfileImportStage.ScanningLegacyProfile,
+                ProfileImportStage.ScanningCurrentProfile,
+                ProfileImportStage.BackingUpLegacyProfile,
+                ProfileImportStage.BackingUpCurrentProfile,
+                ProfileImportStage.BuildingMergedProfile,
+                ProfileImportStage.VerifyingMergedProfile,
+                ProfileImportStage.ActivatingProfile,
+            ],
+            progress.Values.Select(value => value.Stage).Distinct()
+        );
+        Assert.Contains(
+            progress.Values,
+            value =>
+                value.Stage == ProfileImportStage.BackingUpLegacyProfile
+                && value.CompletedFiles == 1
+                && value.TotalFiles == 1
+                && value.CompletedBytes > 0
+        );
+    }
+
+    [Fact]
     public async Task ImportPreservesMalformedJsonForLaterRecovery()
     {
         string source = Path.Combine(temporaryDirectory, "legacy");
@@ -409,7 +445,7 @@ public sealed class LegacyProfileImporterTests : IDisposable
             new LegacyProfileImporter().ImportAsync(source, destination, backups)
         );
 
-        Assert.Contains("outside the legacy profile", exception.Message);
+        Assert.Contains("outside the selected profile", exception.Message);
     }
 
     [Fact]
@@ -446,5 +482,15 @@ public sealed class LegacyProfileImporterTests : IDisposable
     private sealed class FixedTimeProvider(DateTimeOffset value) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => value;
+    }
+
+    private sealed class SynchronousProgress<T> : IProgress<T>
+    {
+        public List<T> Values { get; } = [];
+
+        public void Report(T value)
+        {
+            Values.Add(value);
+        }
     }
 }

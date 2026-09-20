@@ -1,8 +1,15 @@
 using System.Buffers.Binary;
+using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace SrvSurvey.Core.Updates;
+
+public enum ReleaseInstallationKind
+{
+    Directory,
+    AppImage,
+}
 
 public sealed record ReleaseInstallationPreparation(
     Guid RequestId,
@@ -17,7 +24,8 @@ public sealed record ReleaseInstallationPreparation(
     string ManifestSha256,
     string InstallationFingerprint,
     bool RequiresElevation,
-    IReadOnlyList<string> StartupArguments
+    IReadOnlyList<string> StartupArguments,
+    ReleaseInstallationKind Kind = ReleaseInstallationKind.Directory
 );
 
 public enum ReleaseInstallationStatus
@@ -456,6 +464,11 @@ public sealed class ReleaseInstallationTransaction
     {
         ArgumentNullException.ThrowIfNull(preparation);
         ArgumentNullException.ThrowIfNull(launchAndConfirm);
+        if (preparation.Kind == ReleaseInstallationKind.AppImage)
+        {
+            return await ApplyAppImageAsync(preparation, launchAndConfirm, cancellationToken).ConfigureAwait(false);
+        }
+
         ValidatePreparationPaths(preparation);
         await EnsureCandidateReadyAsync(preparation, cancellationToken).ConfigureAwait(false);
         string fingerprint = await ReleaseInstallationPreparer
@@ -500,6 +513,7 @@ public sealed class ReleaseInstallationTransaction
                     is IOException
                         or UnauthorizedAccessException
                         or InvalidOperationException
+                        or Win32Exception
                         or TaskCanceledException
             )
         {
@@ -524,6 +538,71 @@ public sealed class ReleaseInstallationTransaction
             null,
             preparation.FailedDirectory,
             launchError ?? "The replacement process did not confirm healthy startup."
+        );
+    }
+
+    private async Task<ReleaseInstallationResult> ApplyAppImageAsync(
+        ReleaseInstallationPreparation preparation,
+        Func<string, IReadOnlyList<string>, CancellationToken, Task<bool>> launchAndConfirm,
+        CancellationToken cancellationToken
+    )
+    {
+        ValidateAppImagePreparationPaths(preparation);
+        await AppImageReleaseInstallationPreparer
+            .VerifyAppImageAsync(preparation.CandidateDirectory, preparation.ManifestSha256, cancellationToken)
+            .ConfigureAwait(false);
+        string installationPath = Path.Combine(preparation.InstallationDirectory, preparation.EntryPoint);
+        string fingerprint = await AppImageReleaseInstallationPreparer
+            .ComputeFileFingerprintAsync(installationPath, cancellationToken)
+            .ConfigureAwait(false);
+        if (!string.Equals(fingerprint, preparation.InstallationFingerprint, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                "The installed AppImage changed after update preparation; no files were replaced."
+            );
+        }
+
+        checkpoint?.Invoke(ReleaseInstallationCheckpoint.BeforeBackup);
+        File.Replace(preparation.CandidateDirectory, installationPath, preparation.BackupDirectory);
+        checkpoint?.Invoke(ReleaseInstallationCheckpoint.CandidateActivated);
+
+        string? launchError = null;
+        bool healthy = false;
+        try
+        {
+            healthy = await launchAndConfirm(installationPath, preparation.StartupArguments, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidOperationException
+                        or Win32Exception
+                        or TaskCanceledException
+            )
+        {
+            launchError = exception.Message;
+        }
+
+        if (healthy)
+        {
+            return new ReleaseInstallationResult(
+                ReleaseInstallationStatus.Installed,
+                preparation.InstallationDirectory,
+                preparation.BackupDirectory,
+                null,
+                null
+            );
+        }
+
+        RestoreAppImageBackup(preparation, candidateActivated: true);
+        return new ReleaseInstallationResult(
+            ReleaseInstallationStatus.RolledBack,
+            preparation.InstallationDirectory,
+            null,
+            preparation.FailedDirectory,
+            launchError ?? "The replacement AppImage did not confirm healthy startup."
         );
     }
 
@@ -585,12 +664,43 @@ public sealed class ReleaseInstallationTransaction
         }
     }
 
+    private static void RestoreAppImageBackup(ReleaseInstallationPreparation preparation, bool candidateActivated)
+    {
+        string installationPath = Path.Combine(preparation.InstallationDirectory, preparation.EntryPoint);
+        if (candidateActivated && File.Exists(installationPath) && File.Exists(preparation.BackupDirectory))
+        {
+            if (File.Exists(preparation.FailedDirectory) || Directory.Exists(preparation.FailedDirectory))
+            {
+                throw new IOException("The failed-AppImage preservation path already exists.");
+            }
+
+            File.Replace(preparation.BackupDirectory, installationPath, preparation.FailedDirectory);
+            return;
+        }
+
+        if (candidateActivated && File.Exists(installationPath))
+        {
+            if (File.Exists(preparation.FailedDirectory) || Directory.Exists(preparation.FailedDirectory))
+            {
+                throw new IOException("The failed-AppImage preservation path already exists.");
+            }
+
+            File.Move(installationPath, preparation.FailedDirectory);
+        }
+
+        if (!File.Exists(installationPath) && File.Exists(preparation.BackupDirectory))
+        {
+            File.Move(preparation.BackupDirectory, installationPath);
+        }
+    }
+
     private static void ValidatePreparationPaths(ReleaseInstallationPreparation preparation)
     {
         string expectedEntryPoint =
             preparation.RuntimeIdentifier == "win-x64" ? "SrvSurvey.Desktop.exe" : "SrvSurvey.Desktop";
         if (
-            preparation.RequestId == Guid.Empty
+            preparation.Kind != ReleaseInstallationKind.Directory
+            || preparation.RequestId == Guid.Empty
             || preparation.Version.Build < 0
             || preparation.RuntimeIdentifier is not ("win-x64" or "linux-x64")
             || (preparation.RequiresElevation && preparation.RuntimeIdentifier != "win-x64")
@@ -633,6 +743,56 @@ public sealed class ReleaseInstallationTransaction
         )
         {
             throw new InvalidDataException("The update transaction paths are invalid or already occupied.");
+        }
+    }
+
+    private static void ValidateAppImagePreparationPaths(ReleaseInstallationPreparation preparation)
+    {
+        if (
+            preparation.Kind != ReleaseInstallationKind.AppImage
+            || preparation.RequestId == Guid.Empty
+            || preparation.Version.Build < 0
+            || preparation.RuntimeIdentifier != CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier
+            || preparation.RequiresElevation
+            || preparation.ManifestSha256.Length != 64
+            || preparation.ManifestSha256.Any(character => !Uri.IsHexDigit(character))
+            || preparation.InstallationFingerprint.Length != 64
+            || preparation.InstallationFingerprint.Any(character => !Uri.IsHexDigit(character))
+            || string.IsNullOrWhiteSpace(preparation.EntryPoint)
+            || !string.Equals(
+                Path.GetFileName(preparation.EntryPoint),
+                preparation.EntryPoint,
+                StringComparison.Ordinal
+            )
+        )
+        {
+            throw new InvalidDataException("The AppImage update preparation is invalid.");
+        }
+
+        string parent = Path.TrimEndingDirectorySeparator(Path.GetFullPath(preparation.InstallationDirectory));
+        string installationPath = Path.Combine(parent, preparation.EntryPoint);
+        string id = preparation.RequestId.ToString("N");
+        string expectedCandidate = Path.Combine(parent, $".{preparation.EntryPoint}-update-{id}");
+        string expectedBackup = Path.Combine(parent, $".{preparation.EntryPoint}-backup-{id}");
+        string expectedFailed = Path.Combine(parent, $".{preparation.EntryPoint}-failed-{id}");
+        if (
+            !Directory.Exists(parent)
+            || !File.Exists(installationPath)
+            || !string.Equals(
+                Path.GetFullPath(preparation.CandidateDirectory),
+                expectedCandidate,
+                StringComparison.Ordinal
+            )
+            || !string.Equals(Path.GetFullPath(preparation.BackupDirectory), expectedBackup, StringComparison.Ordinal)
+            || !string.Equals(Path.GetFullPath(preparation.FailedDirectory), expectedFailed, StringComparison.Ordinal)
+            || !File.Exists(expectedCandidate)
+            || File.Exists(expectedBackup)
+            || Directory.Exists(expectedBackup)
+            || File.Exists(expectedFailed)
+            || Directory.Exists(expectedFailed)
+        )
+        {
+            throw new InvalidDataException("The AppImage update transaction paths are invalid or already occupied.");
         }
     }
 }

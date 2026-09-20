@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- SonarCloud C# Sonar way profile snapshot, refreshed 2026-09-13 for local changed-line checks. -->
+<!-- SonarCloud C# Sonar way profile snapshot, refreshed 2026-09-20 for local changed-line checks. -->
 <RuleSet Name="SonarCloud changed-code checks" Description="Mirrors the SonarCloud C# quality profile" ToolsVersion="16.0">
   <Rules AnalyzerId="SonarAnalyzer.CSharp" RuleNamespace="SonarAnalyzer.CSharp">
     <Rule Id="S1006" Action="Warning" />

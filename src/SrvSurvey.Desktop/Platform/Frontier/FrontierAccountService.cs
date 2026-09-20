@@ -15,6 +15,8 @@ public interface IFrontierAccountService : IDisposable
 
     void SetActiveCommander(string? frontierId, string? commanderName);
 
+    void SetInaraApiKey(string? apiKey) { }
+
     Task<IReadOnlyList<FrontierLinkedCommander>> GetLinkedCommandersAsync(
         CancellationToken cancellationToken = default
     );
@@ -180,6 +182,14 @@ public sealed class FrontierAccountService : IFrontierAccountService
     {
         ThrowIfDisposed();
         activeCommander = FrontierCommanderIdentity.Create(frontierId, commanderName);
+    }
+
+    public void SetInaraApiKey(string? apiKey)
+    {
+        if (inaraCommunityGoals is IInaraCommunityGoalApiKeySink sink)
+        {
+            sink.SetPersonalApiKey(apiKey);
+        }
     }
 
     public async Task<IReadOnlyList<FrontierLinkedCommander>> GetLinkedCommandersAsync(

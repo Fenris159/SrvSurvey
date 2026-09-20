@@ -122,6 +122,29 @@ public sealed partial class ReleaseWorkflowContractTests
         Assert.Contains("kill -KILL -- \"-$process_group_id\"", script, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void LinuxAppImagePublishesEmbeddedUpdateInformationAndZsyncAsset()
+    {
+        string root = FindRepositoryRoot();
+        string workflow = File.ReadAllText(Path.Combine(root, ".github", "workflows", "build-srvsurvey-xp.yml"));
+        string appImageScript = File.ReadAllText(Path.Combine(root, "scripts", "New-LinuxAppImage.sh"));
+        string indexScript = File.ReadAllText(Path.Combine(root, "scripts", "New-CrossPlatformReleaseIndex.ps1"));
+
+        Assert.Contains("RELEASE_REPOSITORY: \"Fenris159/SrvSurvey\"", workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "gh-releases-zsync|$release_owner|$release_name|latest-pre",
+            workflow,
+            StringComparison.Ordinal
+        );
+        Assert.Contains("gh-releases-zsync|$release_owner|$release_name|latest|", workflow, StringComparison.Ordinal);
+        Assert.Contains("GH_REPO: ${{ env.RELEASE_REPOSITORY }}", workflow, StringComparison.Ordinal);
+        Assert.Contains("--appimage-updateinformation", workflow, StringComparison.Ordinal);
+        Assert.Contains("--updateinformation \"$update_information\"", appImageScript, StringComparison.Ordinal);
+        Assert.Contains("$output_path.zsync", appImageScript, StringComparison.Ordinal);
+        Assert.Contains("runtimeIdentifier = 'linux-x64-appimage'", indexScript, StringComparison.Ordinal);
+        Assert.Contains("schemaVersion = 2", indexScript, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

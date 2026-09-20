@@ -9,12 +9,23 @@ public sealed class ApplicationLogTraceListener : TraceListener
     private const string ClosedPresentationSourceWarning =
         "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #";
     private const string RenderLoopFailurePrefix = "[Visual]Exception in render loop:";
+    private const string MissingSessionManagerPrefix =
+        "[X11Platform] SMLib/ICELib reported a new error: SESSION_MANAGER environment variable not defined";
+    private const string IbusDestroyUnknownMethod =
+        "org.freedesktop.DBus.Error.UnknownMethod: Method Destroy is not implemented on interface org.freedesktop.IBus.Service";
+    private const string IbusDisposedContext = "Object does not exist at path";
+    private const string IbusMissingContextInterface = "No such interface";
+    private const string IbusContextInterface = "org.freedesktop.IBus.InputContext";
+    private const string AvaloniaIbusDisposeFrame = "Avalonia.FreeDesktop.DBusIme.DBusTextInputMethodBase.Dispose()";
+    private const string AvaloniaIbusFrame = "Avalonia.FreeDesktop.DBusIme";
+    private const string AvaloniaIbusInstance = "(IBusX11TextInputMethod #";
 
     private readonly ApplicationLogService applicationLog;
     private readonly Func<DateTimeOffset> getCurrentTime;
     private readonly RepeatedTraceMessageLimiter renderLoopFailureLimiter = new(TimeSpan.FromMinutes(1));
     private readonly Lock syncRoot = new();
     private readonly StringBuilder pending = new();
+    private readonly List<string> pendingImeBlock = [];
 
     public ApplicationLogTraceListener(ApplicationLogService applicationLog)
         : this(applicationLog, () => DateTimeOffset.UtcNow) { }
@@ -32,7 +43,7 @@ public sealed class ApplicationLogTraceListener : TraceListener
 
     public override void WriteLine(string? message)
     {
-        if (TryHandleRepeatedRenderLoopFailure(message))
+        if (IsExpectedPlatformNoise(message) || TryHandleRepeatedRenderLoopFailure(message))
         {
             return;
         }
@@ -42,20 +53,27 @@ public sealed class ApplicationLogTraceListener : TraceListener
 
     public override void Flush()
     {
-        string? line = null;
+        List<string> linesToAppend = [];
         lock (syncRoot)
         {
             if (pending.Length > 0)
             {
-                line = pending.ToString();
+                linesToAppend.AddRange(FilterPlatformNoiseLine(pending.ToString().TrimEnd('\r')));
                 pending.Clear();
+            }
+
+            if (pendingImeBlock.Count > 0)
+            {
+                List<string> incompleteImeBlock = [.. pendingImeBlock];
+                pendingImeBlock.Clear();
+                if (!IsExpectedPlatformNoise(string.Join(Environment.NewLine, incompleteImeBlock)))
+                {
+                    linesToAppend.AddRange(incompleteImeBlock);
+                }
             }
         }
 
-        if (line is not null)
-        {
-            AppendLine(line.TrimEnd('\r'));
-        }
+        AppendFilteredLines(linesToAppend);
     }
 
     private void WriteCore(string? message, bool terminateLine)
@@ -96,14 +114,88 @@ public sealed class ApplicationLogTraceListener : TraceListener
 
     private void AppendLine(string line)
     {
-        if (!IsExpectedClosedPresentationSourceWarning(line))
+        List<string> linesToAppend;
+        lock (syncRoot)
         {
-            applicationLog.Append(line);
+            linesToAppend = FilterPlatformNoiseLine(line);
         }
+
+        AppendFilteredLines(linesToAppend);
+    }
+
+    private void AppendFilteredLines(IEnumerable<string> lines)
+    {
+        foreach (string filteredLine in lines.Where(line => !IsExpectedClosedPresentationSourceWarning(line)))
+        {
+            applicationLog.Append(filteredLine);
+        }
+    }
+
+    private List<string> FilterPlatformNoiseLine(string line)
+    {
+        var linesToAppend = new List<string>();
+        bool startsImeBlock = line.StartsWith("[IME] Error", StringComparison.Ordinal);
+        if (pendingImeBlock.Count > 0 && line.Length > 0 && line[0] == '[' && !startsImeBlock)
+        {
+            linesToAppend.AddRange(pendingImeBlock);
+            pendingImeBlock.Clear();
+        }
+
+        if (startsImeBlock)
+        {
+            if (pendingImeBlock.Count > 0)
+            {
+                linesToAppend.AddRange(pendingImeBlock);
+                pendingImeBlock.Clear();
+            }
+
+            pendingImeBlock.Add(line);
+            return linesToAppend;
+        }
+
+        if (pendingImeBlock.Count == 0)
+        {
+            linesToAppend.Add(line);
+            return linesToAppend;
+        }
+
+        pendingImeBlock.Add(line);
+        if (
+            !line.Contains(AvaloniaIbusInstance, StringComparison.Ordinal)
+            && !line.Contains(AvaloniaIbusDisposeFrame, StringComparison.Ordinal)
+        )
+        {
+            return linesToAppend;
+        }
+
+        string block = string.Join(Environment.NewLine, pendingImeBlock);
+        if (!IsExpectedPlatformNoise(block))
+        {
+            linesToAppend.AddRange(pendingImeBlock);
+        }
+
+        pendingImeBlock.Clear();
+        return linesToAppend;
     }
 
     private static bool IsExpectedClosedPresentationSourceWarning(string line) =>
         line.StartsWith(ClosedPresentationSourceWarning, StringComparison.Ordinal) && line.EndsWith(')');
+
+    private static bool IsExpectedPlatformNoise(string? message) =>
+        message?.StartsWith(MissingSessionManagerPrefix, StringComparison.Ordinal) == true
+        || (
+            message?.StartsWith("[IME] Error", StringComparison.Ordinal) == true
+            && (
+                message.Contains(IbusDestroyUnknownMethod, StringComparison.Ordinal)
+                || message.Contains(IbusDisposedContext, StringComparison.Ordinal)
+                || message.Contains(IbusMissingContextInterface, StringComparison.Ordinal)
+                    && message.Contains(IbusContextInterface, StringComparison.Ordinal)
+            )
+            && (
+                message.Contains(AvaloniaIbusFrame, StringComparison.Ordinal)
+                || message.Contains(AvaloniaIbusInstance, StringComparison.Ordinal)
+            )
+        );
 
     private bool TryHandleRepeatedRenderLoopFailure(string? message)
     {

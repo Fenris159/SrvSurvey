@@ -39,6 +39,30 @@ public sealed class WindowChromeThemeCoordinatorTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void LinuxPlatformUsesDrawnDecorationsAndAppliesTheChromePalette()
+    {
+        var window = new Window();
+        var palette = WindowChromeThemePalette.Create(RavenThemeCatalog.Get("orange-dark"), isActive: true);
+
+        LinuxWindowChromeThemePlatform.Instance.Prepare(window);
+        LinuxWindowChromeThemePlatform.Instance.Apply(window, palette);
+
+        Assert.False(window.ExtendClientAreaToDecorationsHint);
+        Assert.Equal(
+            palette.Caption,
+            Assert.IsType<SolidColorBrush>(window.Resources["TitleBarBackgroundBrush"]).Color
+        );
+        Assert.Equal(
+            palette.Border,
+            Assert.IsType<SolidColorBrush>(window.Resources["SystemControlForegroundBaseMediumBrush"]).Color
+        );
+        Assert.Equal(
+            palette.Text,
+            Assert.IsType<SolidColorBrush>(window.Resources[LinuxWindowChromeThemePlatform.ChromeTextBrushKey]).Color
+        );
+    }
+
+    [AvaloniaFact]
     public void CoordinatorTracksActivationAndLiveThemeChanges()
     {
         var application = new Application();
@@ -85,6 +109,8 @@ public sealed class WindowChromeThemeCoordinatorTests : IDisposable
     private sealed class RecordingWindowChromeThemePlatform : IWindowChromeThemePlatform
     {
         public List<WindowChromeThemePalette> Palettes { get; } = [];
+
+        public void Prepare(Window window) { }
 
         public void Apply(Window window, WindowChromeThemePalette palette)
         {

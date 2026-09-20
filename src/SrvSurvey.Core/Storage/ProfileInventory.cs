@@ -18,11 +18,42 @@ public sealed record ProfileInventory(
         string root = Path.GetFullPath(rootPath);
         if (!Directory.Exists(root))
         {
-            throw new DirectoryNotFoundException($"The legacy profile directory does not exist: {root}");
+            throw new DirectoryNotFoundException($"The selected profile directory does not exist: {root}");
         }
 
         RejectReparsePoint(new DirectoryInfo(root));
 
+        (List<string> directories, List<string> files) = await Task.Run(
+                () => EnumerateProfile(root, cancellationToken),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        var entries = new List<ProfileInventoryEntry>(files.Count);
+        foreach (string file in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var fileInfo = new FileInfo(file);
+            string hash = await ComputeSha256Async(file, cancellationToken).ConfigureAwait(false);
+            fileInfo.Refresh();
+            entries.Add(
+                new ProfileInventoryEntry(
+                    NormalizeRelativePath(root, file),
+                    fileInfo.Length,
+                    fileInfo.LastWriteTimeUtc,
+                    hash
+                )
+            );
+        }
+
+        return new ProfileInventory(root, directories, entries);
+    }
+
+    private static (List<string> Directories, List<string> Files) EnumerateProfile(
+        string root,
+        CancellationToken cancellationToken
+    )
+    {
         var directories = new List<string>();
         var files = new List<string>();
         var pendingDirectories = new Stack<string>();
@@ -52,24 +83,7 @@ public sealed record ProfileInventory(
         directories.Sort(StringComparer.Ordinal);
         files.Sort(StringComparer.Ordinal);
 
-        var entries = new List<ProfileInventoryEntry>(files.Count);
-        foreach (string file in files)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var fileInfo = new FileInfo(file);
-            string hash = await ComputeSha256Async(file, cancellationToken).ConfigureAwait(false);
-            fileInfo.Refresh();
-            entries.Add(
-                new ProfileInventoryEntry(
-                    NormalizeRelativePath(root, file),
-                    fileInfo.Length,
-                    fileInfo.LastWriteTimeUtc,
-                    hash
-                )
-            );
-        }
-
-        return new ProfileInventory(root, directories, entries);
+        return (directories, files);
     }
 
     internal static async Task<string> ComputeSha256Async(string path, CancellationToken cancellationToken)

@@ -192,6 +192,7 @@ public sealed class RavenThemeService
         SetBrush("RavenSuccessBrush", theme.SuccessColor);
         SetBrush("RavenWarningBrush", theme.WarningColor);
         SetBrush("RavenDangerBrush", theme.DangerColor);
+        ApplyWindowChromeResources(theme);
         ApplyFluentCheckBoxResources(theme);
         ApplyDepthResources(theme);
     }
@@ -257,6 +258,18 @@ public sealed class RavenThemeService
         {
             SetBrush(resourceKey, theme.AccentForegroundColor);
         }
+    }
+
+    private void ApplyWindowChromeResources(RavenThemeDefinition theme)
+    {
+        var border = Color.Parse(theme.StrongBorderColor);
+        SetBrush("TitleBarBackgroundBrush", theme.AccentMutedColor);
+        SetBrush("SystemControlBackgroundChromeMediumLowBrush", theme.AccentMutedColor);
+        SetBrush("SystemControlForegroundBaseMediumBrush", border);
+        SetBrush("CaptionButtonForeground", theme.TextColor);
+        SetBrush("SrvSurveyWindowChromeTextBrush", theme.TextColor);
+        SetBrush("CaptionButtonBackground", Color.FromArgb(0x66, border.R, border.G, border.B));
+        SetBrush("CaptionButtonBorderBrush", Color.FromArgb(0x99, border.R, border.G, border.B));
     }
 
     private static Color Mix(Color source, Color target, double amount)

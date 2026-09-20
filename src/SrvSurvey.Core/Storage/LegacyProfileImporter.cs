@@ -21,10 +21,18 @@ public sealed class LegacyProfileImporter
         this.checkpoint = checkpoint;
     }
 
+    public Task<ProfileImportResult> ImportAsync(
+        string sourceDirectory,
+        string destinationDirectory,
+        string backupDirectory,
+        CancellationToken cancellationToken = default
+    ) => ImportAsync(sourceDirectory, destinationDirectory, backupDirectory, progress: null, cancellationToken);
+
     public async Task<ProfileImportResult> ImportAsync(
         string sourceDirectory,
         string destinationDirectory,
         string backupDirectory,
+        IProgress<ProfileImportProgress>? progress,
         CancellationToken cancellationToken = default
     )
     {
@@ -41,26 +49,28 @@ public sealed class LegacyProfileImporter
         if (File.Exists(Path.Combine(destination, ManifestFileName)))
         {
             throw new InvalidOperationException(
-                $"The cross-platform profile has already imported legacy data: {destination}"
+                $"The cross-platform profile has already imported profile data: {destination}"
             );
         }
 
+        progress?.Report(new ProfileImportProgress(ProfileImportStage.ScanningLegacyProfile));
         ProfileInventory sourceInventory = await ProfileInventory
             .CreateAsync(source, cancellationToken)
             .ConfigureAwait(false);
         if (sourceInventory.Entries.Count == 0)
         {
-            throw new InvalidDataException($"The selected legacy profile does not contain any files: {source}");
+            throw new InvalidDataException($"The selected profile does not contain any files: {source}");
         }
 
         bool destinationExisted = Directory.Exists(destination);
+        progress?.Report(new ProfileImportProgress(ProfileImportStage.ScanningCurrentProfile));
         ProfileInventory destinationInventory = destinationExisted
             ? await ProfileInventory.CreateAsync(destination, cancellationToken).ConfigureAwait(false)
             : EmptyInventory(destination);
         ProfileImportConflict[] conflicts = FindConflicts(sourceInventory, destinationInventory);
         string operationId = Guid.NewGuid().ToString("N");
         DateTimeOffset timestamp = timeProvider.GetUtcNow();
-        string backupName = $"legacy-profile-{timestamp:yyyyMMddTHHmmssZ}-{operationId}";
+        string backupName = $"profile-import-{timestamp:yyyyMMddTHHmmssZ}-{operationId}";
         string finalBackup = Path.Combine(backupParent, backupName);
         string backupStage = $"{finalBackup}.importing";
         string destinationStage = $"{destination}.importing-{operationId}";
@@ -74,19 +84,29 @@ public sealed class LegacyProfileImporter
 
         try
         {
+            progress?.Report(new ProfileImportProgress(ProfileImportStage.BackingUpLegacyProfile));
             Directory.CreateDirectory(backupProfileStage);
-            await CopyAndVerifyAsync(source, backupProfileStage, sourceInventory, overwrite: false, cancellationToken)
+            await CopyAndVerifyAsync(
+                    source,
+                    backupProfileStage,
+                    sourceInventory,
+                    overwrite: false,
+                    new ProfileCopyProgress(progress, ProfileImportStage.BackingUpLegacyProfile),
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
             await VerifyExactProfileAsync(backupProfileStage, sourceInventory, cancellationToken).ConfigureAwait(false);
 
             if (destinationInventory.Entries.Count > 0 || destinationInventory.RelativeDirectories.Count > 0)
             {
+                progress?.Report(new ProfileImportProgress(ProfileImportStage.BackingUpCurrentProfile));
                 Directory.CreateDirectory(previousDestinationStage);
                 await CopyAndVerifyAsync(
                         destination,
                         previousDestinationStage,
                         destinationInventory,
                         overwrite: false,
+                        new ProfileCopyProgress(progress, ProfileImportStage.BackingUpCurrentProfile),
                         cancellationToken
                     )
                     .ConfigureAwait(false);
@@ -110,7 +130,10 @@ public sealed class LegacyProfileImporter
                 .ConfigureAwait(false);
             Directory.Move(backupStage, finalBackup);
 
+            progress?.Report(new ProfileImportProgress(ProfileImportStage.BuildingMergedProfile));
             Directory.CreateDirectory(destinationStage);
+            int mergedFileCount = destinationInventory.Entries.Count + sourceInventory.Entries.Count;
+            long mergedByteCount = GetTotalBytes(destinationInventory) + GetTotalBytes(sourceInventory);
             if (destinationInventory.Entries.Count > 0 || destinationInventory.RelativeDirectories.Count > 0)
             {
                 await CopyAndVerifyAsync(
@@ -118,6 +141,12 @@ public sealed class LegacyProfileImporter
                         destinationStage,
                         destinationInventory,
                         overwrite: false,
+                        new ProfileCopyProgress(
+                            progress,
+                            ProfileImportStage.BuildingMergedProfile,
+                            TotalFileCount: mergedFileCount,
+                            TotalByteCount: mergedByteCount
+                        ),
                         cancellationToken
                     )
                     .ConfigureAwait(false);
@@ -128,6 +157,14 @@ public sealed class LegacyProfileImporter
                     destinationStage,
                     sourceInventory,
                     overwrite: true,
+                    new ProfileCopyProgress(
+                        progress,
+                        ProfileImportStage.BuildingMergedProfile,
+                        CompletedFileOffset: destinationInventory.Entries.Count,
+                        TotalFileCount: mergedFileCount,
+                        CompletedByteOffset: GetTotalBytes(destinationInventory),
+                        TotalByteCount: mergedByteCount
+                    ),
                     cancellationToken
                 )
                 .ConfigureAwait(false);
@@ -143,6 +180,7 @@ public sealed class LegacyProfileImporter
                 .ConfigureAwait(false);
 
             checkpoint?.Invoke(ProfileImportCheckpoint.BeforeActivationValidation);
+            progress?.Report(new ProfileImportProgress(ProfileImportStage.VerifyingMergedProfile));
             await VerifyMergedProfileExactAsync(
                     destinationStage,
                     sourceInventory,
@@ -161,7 +199,7 @@ public sealed class LegacyProfileImporter
                     source,
                     sourceInventory,
                     expectedToExist: true,
-                    "The legacy profile changed while it was being imported",
+                    "The selected profile changed while it was being imported",
                     cancellationToken
                 )
                 .ConfigureAwait(false);
@@ -174,6 +212,7 @@ public sealed class LegacyProfileImporter
                 )
                 .ConfigureAwait(false);
 
+            progress?.Report(new ProfileImportProgress(ProfileImportStage.ActivatingProfile));
             ActivateStagedProfile(destination, destinationStage, rollbackDirectory);
             profileActivated = true;
             checkpoint?.Invoke(ProfileImportCheckpoint.AfterProfileActivation);
@@ -229,6 +268,7 @@ public sealed class LegacyProfileImporter
         string destinationRoot,
         ProfileInventory inventory,
         bool overwrite,
+        ProfileCopyProgress progress,
         CancellationToken cancellationToken
     )
     {
@@ -238,6 +278,10 @@ public sealed class LegacyProfileImporter
             Directory.CreateDirectory(ProfileInventory.ResolveEntryPath(destinationRoot, relativeDirectory));
         }
 
+        int completedFiles = progress.CompletedFileOffset;
+        long completedBytes = progress.CompletedByteOffset;
+        int expectedFileCount = progress.TotalFileCount ?? progress.CompletedFileOffset + inventory.Entries.Count;
+        long expectedByteCount = progress.TotalByteCount ?? progress.CompletedByteOffset + GetTotalBytes(inventory);
         foreach (ProfileInventoryEntry entry in inventory.Entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -275,8 +319,30 @@ public sealed class LegacyProfileImporter
 
             await VerifyEntryAsync(destinationPath, entry, cancellationToken).ConfigureAwait(false);
             File.SetLastWriteTimeUtc(destinationPath, entry.LastWriteTimeUtc);
+            completedFiles++;
+            completedBytes += entry.Length;
+            progress.Reporter?.Report(
+                new ProfileImportProgress(
+                    progress.Stage,
+                    completedFiles,
+                    expectedFileCount,
+                    completedBytes,
+                    expectedByteCount
+                )
+            );
         }
     }
+
+    private static long GetTotalBytes(ProfileInventory inventory) => inventory.Entries.Sum(entry => entry.Length);
+
+    private sealed record ProfileCopyProgress(
+        IProgress<ProfileImportProgress>? Reporter,
+        ProfileImportStage Stage,
+        int CompletedFileOffset = 0,
+        int? TotalFileCount = null,
+        long CompletedByteOffset = 0,
+        long? TotalByteCount = null
+    );
 
     private static async Task VerifyMergedProfileExactAsync(
         string destinationRoot,
@@ -546,13 +612,13 @@ public sealed class LegacyProfileImporter
     {
         if (!Directory.Exists(source))
         {
-            throw new DirectoryNotFoundException($"The legacy profile directory does not exist: {source}");
+            throw new DirectoryNotFoundException($"The selected profile directory does not exist: {source}");
         }
 
         if (PathsOverlap(source, destination) || PathsOverlap(source, backupParent))
         {
             throw new InvalidOperationException(
-                "The import destination and backup directory must be outside the legacy profile."
+                "The import destination and backup directory must be outside the selected profile."
             );
         }
 
@@ -609,6 +675,25 @@ public sealed class LegacyProfileImporter
         }
     }
 }
+
+public enum ProfileImportStage
+{
+    ScanningLegacyProfile,
+    ScanningCurrentProfile,
+    BackingUpLegacyProfile,
+    BackingUpCurrentProfile,
+    BuildingMergedProfile,
+    VerifyingMergedProfile,
+    ActivatingProfile,
+}
+
+public readonly record struct ProfileImportProgress(
+    ProfileImportStage Stage,
+    int CompletedFiles = 0,
+    int TotalFiles = 0,
+    long CompletedBytes = 0,
+    long TotalBytes = 0
+);
 
 internal enum ProfileImportCheckpoint
 {

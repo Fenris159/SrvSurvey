@@ -144,7 +144,7 @@ public sealed partial class SettingsView : UserControl
         IReadOnlyList<IStorageFolder> folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
             new FolderPickerOpenOptions
             {
-                Title = "Choose the original SrvSurvey profile folder",
+                Title = "Choose an SrvSurvey profile or application-data folder",
                 AllowMultiple = false,
             }
         );

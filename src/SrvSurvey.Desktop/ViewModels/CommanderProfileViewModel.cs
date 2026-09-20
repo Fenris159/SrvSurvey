@@ -806,6 +806,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         RaiseCarrierPresentationProperties();
     }
 
+    public void SetInaraApiKey(string? apiKey)
+    {
+        accountService.SetInaraApiKey(apiKey);
+    }
+
     public bool HasCarrier => Carrier is not null;
 
     public string CarrierEyebrow =>
@@ -1587,12 +1592,33 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private async Task TryRefreshCommanderSelectionOptionsAsync(CancellationToken cancellationToken = default)
     {
+        var automatic = FrontierCommanderSelectionOption.Automatic(detectedFrontierId, detectedCommanderName);
+        if (manuallySelectedFrontierId is null)
+        {
+            CommanderSelectionOptions =
+            [
+                automatic,
+                .. commanderSelectionOptions.Where(option =>
+                    !option.IsAutomatic
+                    && !string.Equals(option.FrontierId, detectedFrontierId, StringComparison.OrdinalIgnoreCase)
+                ),
+            ];
+            isUpdatingCommanderSelection = true;
+            try
+            {
+                SelectedCommanderOption = automatic;
+            }
+            finally
+            {
+                isUpdatingCommanderSelection = false;
+            }
+        }
+
         try
         {
             IReadOnlyList<FrontierLinkedCommander> linkedCommanders = await accountService.GetLinkedCommandersAsync(
                 cancellationToken
             );
-            var automatic = FrontierCommanderSelectionOption.Automatic(detectedFrontierId, detectedCommanderName);
             FrontierCommanderSelectionOption[] allLinkedOptions = linkedCommanders
                 .Select(FrontierCommanderSelectionOption.Linked)
                 .ToArray();

@@ -43,6 +43,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
         nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             X11OverlayStackingMode.KdeOnScreenDisplay,
             kdeOnScreenDisplayAtom: 42,
+            notificationWindowAtom: 23,
             normalWindowAtom: 17
         );
 
@@ -50,15 +51,16 @@ public sealed class X11OverlayWindowManagerPolicyTests
     }
 
     [Fact]
-    public void StandardPolicyDoesNotReplaceAvaloniaWindowType()
+    public void StandardPolicyUsesNotificationTypeWithNormalFallback()
     {
         nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             X11OverlayStackingMode.StandardTopmost,
             kdeOnScreenDisplayAtom: 42,
+            notificationWindowAtom: 23,
             normalWindowAtom: 17
         );
 
-        Assert.Empty(windowTypes);
+        Assert.Equal([(nuint)23, (nuint)17], windowTypes);
     }
 
     [Theory]
@@ -72,6 +74,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
         nuint[] windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             X11OverlayStackingMode.KdeOnScreenDisplay,
             kdeOnScreenDisplayAtom,
+            notificationWindowAtom: 23,
             normalWindowAtom
         );
 

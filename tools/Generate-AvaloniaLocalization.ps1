@@ -16,11 +16,13 @@ $script:SurfaceMiningCommandPattern =
 $script:TechnicalTokenPattern = [regex]::new(
     '(?:' + $script:SurfaceMiningCommandPattern +
     '|\b(?:Alt|Ctrl|Shift)(?:\s*\+\s*[A-Z0-9]+)+' +
+    '|\bsudo\s+(?:apt\s+install\s+libsecret-tools|pacman\s+-S\s+--needed\s+libsecret)\b' +
     '|(?<!\w)\.[A-Za-z][A-Za-z0-9_-]*' +
     '|(?<!\w)\+[A-Za-z][A-Za-z0-9_-]*' +
     '|(?<!-)---(?!-)' +
     '|\b[A-Za-z0-9_{}-]+\.(?:json|zip|txt|csv|png|jpe?g|gif|exe|dll|axaml|xml|lock|log|tmp|bak|db|toml|md|html?|svg)\b' +
-    '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|Discord|VoxStellar|EDMC|EDDN|HMAC-SHA256|GPL-3\.0)\b)',
+    '|(?<!\w)--needed\b' +
+    '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|Discord|VoxStellar|EDMC|EDDN|HMAC-SHA256|GPL-3\.0|secret-tool|libsecret-tools|libsecret|sudo|apt|pacman|Debian|Ubuntu|Arch|Manjaro|CachyOS)\b)',
     [Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
         [Text.RegularExpressions.RegexOptions]::CultureInvariant)
 

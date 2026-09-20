@@ -10,6 +10,8 @@ public sealed class ApplicationLogService
     private readonly List<string> entries = [];
     private readonly TimeProvider timeProvider;
     private readonly int retainedFileCount;
+    private readonly List<string> deferredFileWrites = [];
+    private int fileWriteSuspensionCount;
     private string? lastWriteError;
 
     public ApplicationLogService(
@@ -72,11 +74,28 @@ public sealed class ApplicationLogService
         lock (syncRoot)
         {
             entries.Add(line);
-            WriteLineWithRetry(line);
+            if (fileWriteSuspensionCount > 0)
+            {
+                deferredFileWrites.Add(line);
+            }
+            else
+            {
+                WriteLineWithRetry(line);
+            }
         }
 
         Changed?.Invoke(this, EventArgs.Empty);
         return line;
+    }
+
+    public IDisposable SuspendFileWrites()
+    {
+        lock (syncRoot)
+        {
+            fileWriteSuspensionCount++;
+        }
+
+        return new FileWriteSuspension(this);
     }
 
     public void Clear()
@@ -135,6 +154,30 @@ public sealed class ApplicationLogService
         lastWriteError = lastException!.Message;
     }
 
+    private void ResumeFileWrites()
+    {
+        lock (syncRoot)
+        {
+            if (fileWriteSuspensionCount == 0)
+            {
+                return;
+            }
+
+            fileWriteSuspensionCount--;
+            if (fileWriteSuspensionCount > 0)
+            {
+                return;
+            }
+
+            foreach (string line in deferredFileWrites)
+            {
+                WriteLineWithRetry(line);
+            }
+
+            deferredFileWrites.Clear();
+        }
+    }
+
     private void PruneOldFiles()
     {
         try
@@ -160,5 +203,15 @@ public sealed class ApplicationLogService
     private static bool IsFileSystemException(Exception exception)
     {
         return exception is IOException or UnauthorizedAccessException or NotSupportedException;
+    }
+
+    private sealed class FileWriteSuspension(ApplicationLogService owner) : IDisposable
+    {
+        private ApplicationLogService? owner = owner;
+
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref owner, null)?.ResumeFileWrites();
+        }
     }
 }

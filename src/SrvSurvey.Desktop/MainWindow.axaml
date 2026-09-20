@@ -26,7 +26,8 @@
                   HorizontalContentAlignment="Left"
                   CommandParameter="{Binding}"
                   Click="SelectNavigationItem_Click"
-                  ToolTip.Tip="{Binding Description}">
+                  ToolTip.Tip="{Binding Description}"
+                  AutomationProperties.HelpText="{Binding Description}">
             <TextBlock VerticalAlignment="Center"
                        FontWeight="SemiBold"
                        Text="{Binding Label}"
@@ -37,7 +38,8 @@
                   IsVisible="{Binding HasOverlaySettings}"
                   CommandParameter="{Binding Key}"
                   Click="OpenCategoryOverlaySettings_Click"
-                  ToolTip.Tip="Open category overlay settings">
+                  ToolTip.Tip="Open category overlay settings"
+                  AutomationProperties.Name="Open category overlay settings">
             <PathIcon Width="18"
                       Height="18"
                       Data="{StaticResource window_multiple_regular}" />
@@ -86,7 +88,8 @@
                 Classes="commander-card"
                 Classes.selected="{Binding IsProfileSelected}"
                 Command="{Binding ShowProfileCommand}"
-                ToolTip.Tip="Open Frontier commander profile">
+                ToolTip.Tip="Open Frontier commander profile"
+                AutomationProperties.HelpText="Open Frontier commander profile">
           <StackPanel Spacing="3">
             <TextBlock Classes="muted" FontSize="10" Text="ACTIVE COMMANDER" />
             <TextBlock FontWeight="SemiBold"
@@ -115,8 +118,7 @@
                     Classes.expanded="{Binding IsSurveyNavigationExpanded}"
                     CommandParameter="survey"
                     Click="ToggleNavigationGroup_Click"
-                    Content="Survey"
-                    ToolTip.Tip="Show exploration, exobiology, and Boxel workspaces" />
+                    Content="Survey" />
             <Border Classes="nav-group-container"
                     Classes.expanded="{Binding IsSurveyNavigationExpanded}"
                     Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
@@ -129,8 +131,7 @@
                     Classes.expanded="{Binding IsNavigationNavigationExpanded}"
                     CommandParameter="navigation"
                     Click="ToggleNavigationGroup_Click"
-                    Content="Navigation"
-                    ToolTip.Tip="Show travel and search workspaces" />
+                    Content="Navigation" />
             <Border Classes="nav-group-container"
                     Classes.expanded="{Binding IsNavigationNavigationExpanded}"
                     Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
@@ -143,8 +144,7 @@
                     Classes.expanded="{Binding IsActivitiesNavigationExpanded}"
                     CommandParameter="activities"
                     Click="ToggleNavigationGroup_Click"
-                    Content="Activities"
-                    ToolTip.Tip="Show mining, Guardian, quest, and colonization workspaces" />
+                    Content="Activities" />
             <Border Classes="nav-group-container"
                     Classes.expanded="{Binding IsActivitiesNavigationExpanded}"
                     Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
@@ -169,6 +169,7 @@
             <Button Classes="link footer-link"
                     Click="OpenDiscord_Click"
                     ToolTip.Tip="Open Guardian Science Corps on Discord"
+                    AutomationProperties.HelpText="Open Guardian Science Corps on Discord"
                     Content="Guardian Science Corps" />
             <TextBlock Classes="muted"
                        Margin="4,0,0,0"
@@ -261,6 +262,7 @@
                 Padding="8,5"
                 Command="{Binding ReleaseUpdates.DismissNotificationCommand}"
                 ToolTip.Tip="Dismiss this release notification"
+                AutomationProperties.Name="Dismiss this release notification"
                 Content="&#x00D7;" />
       </Grid>
     </Border>

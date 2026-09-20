@@ -64,6 +64,30 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task DownloadAsyncAcceptsIndexedAppImagePackage()
+    {
+        byte[] bytes = [0x7f, (byte)'E', (byte)'L', (byte)'F'];
+        var package = new CrossPlatformReleasePackage(
+            CrossPlatformReleaseClient.LinuxX64AppImageRuntimeIdentifier,
+            "SrvSurvey-XP-2.0.95.23-x86_64.AppImage",
+            "appimage",
+            bytes.LongLength,
+            Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant(),
+            new Uri("https://downloads.example.test/SrvSurvey.AppImage")
+        );
+        var service = new ReleasePackageDownloadService(new HttpClient(new StubHandler(_ => Response(bytes))));
+
+        ReleasePackageDownloadResult result = await service.DownloadAsync(
+            new Version(2, 0, 95, 23),
+            package,
+            temporaryDirectory
+        );
+
+        Assert.Equal(bytes, await File.ReadAllBytesAsync(result.ArchivePath));
+        Assert.EndsWith(package.ArchiveName, result.ArchivePath, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task FailedReplacementPreservesExistingCacheByteForByte()
     {
         byte[] expected = new byte[] { 1, 2, 3, 4 };

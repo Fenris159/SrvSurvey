@@ -83,7 +83,8 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
             ProcessStartInfo startInfo = CreateHelperStartInfo(
                 helperPath,
                 plan.PlanPath,
-                preparation.RequiresElevation
+                preparation.RequiresElevation,
+                preparation.Kind == ReleaseInstallationKind.AppImage
             );
             helper = startProcess(startInfo);
             if (helper is null)
@@ -122,13 +123,14 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
     internal static ProcessStartInfo CreateHelperStartInfo(
         string stagedEntryPoint,
         string planPath,
-        bool requiresElevation = false
+        bool requiresElevation = false,
+        bool extractAppImage = false
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(stagedEntryPoint);
         ArgumentException.ThrowIfNullOrWhiteSpace(planPath);
         string fullEntryPoint = Path.GetFullPath(stagedEntryPoint);
-        return new ProcessStartInfo
+        var startInfo = new ProcessStartInfo
         {
             FileName = fullEntryPoint,
             WorkingDirectory = Path.GetDirectoryName(fullEntryPoint)!,
@@ -136,6 +138,12 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
             Verb = requiresElevation && OperatingSystem.IsWindows() ? "runas" : string.Empty,
             ArgumentList = { ApplicationUpdateBootstrap.ApplyArgument, Path.GetFullPath(planPath) },
         };
+        if (extractAppImage)
+        {
+            startInfo.Environment["APPIMAGE_EXTRACT_AND_RUN"] = "1";
+        }
+
+        return startInfo;
     }
 
     private async Task WaitForHelperReadyAsync(
@@ -338,19 +346,12 @@ internal static class ApplicationUpdateBootstrap
         ReleaseInstallationHandoffPlan plan = await store
             .LoadAsync(paths.DataDirectory, planPath, cancellationToken)
             .ConfigureAwait(false);
-        StringComparison comparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
-        if (
-            !string.Equals(
-                Path.TrimEndingDirectorySeparator(Path.GetFullPath(plan.Preparation.InstallationDirectory)),
-                Path.TrimEndingDirectorySeparator(Path.GetFullPath(AppContext.BaseDirectory)),
-                comparison
-            )
-        )
-        {
-            throw new InvalidDataException("The update outcome was not opened by its installation directory.");
-        }
+        ValidateConfirmationProcess(
+            plan,
+            AppContext.BaseDirectory,
+            Environment.ProcessPath,
+            Environment.GetEnvironmentVariable("APPIMAGE")
+        );
 
         ReleaseInstallationOutcome outcome = await store
             .ReadOutcomeAsync(plan, cancellationToken)
@@ -375,7 +376,12 @@ internal static class ApplicationUpdateBootstrap
         ReleaseInstallationHandoffPlan plan = await store
             .LoadAsync(paths.DataDirectory, planPath, cancellationToken)
             .ConfigureAwait(false);
-        ValidateConfirmationProcess(plan, AppContext.BaseDirectory, Environment.ProcessPath);
+        ValidateConfirmationProcess(
+            plan,
+            AppContext.BaseDirectory,
+            Environment.ProcessPath,
+            Environment.GetEnvironmentVariable("APPIMAGE")
+        );
         await store.WriteHealthMarkerAsync(plan, cancellationToken).ConfigureAwait(false);
         pendingConfirmationPlanPath = null;
         return plan;
@@ -461,6 +467,19 @@ internal static class ApplicationUpdateBootstrap
             result.Status == ReleaseInstallationStatus.Installed
                 ? ReleaseInstallationOutcomeStatus.Installed
                 : ReleaseInstallationOutcomeStatus.RolledBack;
+        if (
+            result.Status == ReleaseInstallationStatus.Installed
+            && plan.Preparation.Kind == ReleaseInstallationKind.AppImage
+            && result.BackupDirectory is not null
+        )
+        {
+            TryDeleteFile(result.BackupDirectory);
+            if (!File.Exists(result.BackupDirectory))
+            {
+                result = result with { BackupDirectory = null };
+            }
+        }
+
         await store
             .WriteOutcomeAsync(
                 plan,
@@ -520,8 +539,8 @@ internal static class ApplicationUpdateBootstrap
                         plan.Preparation.RequestId,
                         plan.Preparation.Version,
                         DateTimeOffset.UtcNow,
-                        Directory.Exists(plan.Preparation.BackupDirectory) ? plan.Preparation.BackupDirectory : null,
-                        Directory.Exists(plan.Preparation.FailedDirectory) ? plan.Preparation.FailedDirectory : null,
+                        PathExists(plan.Preparation.BackupDirectory) ? plan.Preparation.BackupDirectory : null,
+                        PathExists(plan.Preparation.FailedDirectory) ? plan.Preparation.FailedDirectory : null,
                         error
                     ),
                     CancellationToken.None
@@ -541,9 +560,18 @@ internal static class ApplicationUpdateBootstrap
     {
         try
         {
-            await new ReleaseInstallationPreparer()
-                .AbortAsync(preparation, CancellationToken.None)
-                .ConfigureAwait(false);
+            if (preparation.Kind == ReleaseInstallationKind.AppImage)
+            {
+                await new AppImageReleaseInstallationPreparer()
+                    .AbortAsync(preparation, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await new ReleaseInstallationPreparer()
+                    .AbortAsync(preparation, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
             if (Directory.Exists(preparation.CandidateDirectory) || File.Exists(preparation.CandidateDirectory))
             {
                 return new IOException("The prepared update candidate could not be removed.");
@@ -618,7 +646,8 @@ internal static class ApplicationUpdateBootstrap
     internal static void ValidateConfirmationProcess(
         ReleaseInstallationHandoffPlan plan,
         string baseDirectory,
-        string? processPath
+        string? processPath,
+        string? appImagePath = null
     )
     {
         ArgumentNullException.ThrowIfNull(plan);
@@ -630,6 +659,19 @@ internal static class ApplicationUpdateBootstrap
         );
         string currentDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(baseDirectory));
         string expectedProcess = Path.Combine(expectedDirectory, plan.Preparation.EntryPoint);
+        if (plan.Preparation.Kind == ReleaseInstallationKind.AppImage)
+        {
+            if (
+                string.IsNullOrWhiteSpace(appImagePath)
+                || !string.Equals(Path.GetFullPath(appImagePath), expectedProcess, StringComparison.Ordinal)
+            )
+            {
+                throw new InvalidDataException("Update health confirmation did not come from the installed AppImage.");
+            }
+
+            return;
+        }
+
         if (
             !string.Equals(expectedDirectory, currentDirectory, comparison)
             || processPath is null
@@ -637,6 +679,20 @@ internal static class ApplicationUpdateBootstrap
         )
         {
             throw new InvalidDataException("Update health confirmation did not come from the installed replacement.");
+        }
+    }
+
+    private static bool PathExists(string path) => File.Exists(path) || Directory.Exists(path);
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // Retain the verified rollback image when the file system refuses cleanup.
         }
     }
 

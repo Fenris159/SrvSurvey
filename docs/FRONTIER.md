@@ -71,9 +71,20 @@ dashboard also does not request the remote `/journal` endpoint.
 ## Storage and request policy
 
 Access and refresh tokens are protected by Windows Data Protection on Windows
-and a Secret Service-compatible keyring on Linux. Linux linking requires
-`secret-tool`; the application will not save tokens in plaintext when a secure
-store is unavailable.
+and a Secret Service-compatible keyring on Linux. The required executable is
+named `secret-tool`; it is supplied by the `libsecret-tools` package on Debian
+and Ubuntu, and by the `libsecret` package on Arch Linux, Manjaro, and CachyOS:
+
+```bash
+# Debian and Ubuntu
+sudo apt install libsecret-tools
+
+# Arch Linux, Manjaro, and CachyOS
+sudo pacman -S --needed libsecret
+```
+
+The application will not save tokens in plaintext when a secure store is
+unavailable. The desktop keyring must also be unlocked before linking.
 
 Authorizations and cached snapshots are isolated by the stable Frontier ID
 from the active journal. Switching Elite accounts selects that commander's
