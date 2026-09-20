@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Avalonia;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -190,6 +191,69 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
             new LegacyOverlayPlacement(LegacyHorizontalAnchor.Screen, -120, LegacyVerticalAnchor.Middle, 45, 0),
             layout.Placements["PlotBodyInfo"]
         );
+    }
+
+    [Fact]
+    public void SavePreservesBothLayoutFilesWhenPositionReferencePreparationFails()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
+        string positionReferencesPath = Path.Combine(temporaryDirectory, "overlay-position-references.json");
+        const string originalPlotters = "{\"PlotBodyInfo\":\"left:8,top:12\"}";
+        const string originalPositionReferences = "{not-json";
+        File.WriteAllText(plottersPath, originalPlotters);
+        File.WriteAllText(positionReferencesPath, originalPositionReferences);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+
+        Assert.ThrowsAny<JsonException>(() =>
+            store.Save(
+                new Dictionary<string, LegacyOverlayPlacement>
+                {
+                    ["PlotBodyInfo"] = new(
+                        LegacyHorizontalAnchor.Right,
+                        24,
+                        LegacyVerticalAnchor.Bottom,
+                        36,
+                        null,
+                        PositionReference: new OverlayPositionReference(2560, 1440)
+                    ),
+                }
+            )
+        );
+
+        Assert.Equal(originalPlotters, File.ReadAllText(plottersPath));
+        Assert.Equal(originalPositionReferences, File.ReadAllText(positionReferencesPath));
+    }
+
+    [Fact]
+    public void SaveRestoresPlottersWhenPositionReferenceReplacementFails()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
+        string positionReferencesPath = Path.Combine(temporaryDirectory, "overlay-position-references.json");
+        const string originalPlotters = "{\"PlotBodyInfo\":\"left:8,top:12\"}";
+        File.WriteAllText(plottersPath, originalPlotters);
+        Directory.CreateDirectory(positionReferencesPath);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+
+        Assert.ThrowsAny<IOException>(() =>
+            store.Save(
+                new Dictionary<string, LegacyOverlayPlacement>
+                {
+                    ["PlotBodyInfo"] = new(
+                        LegacyHorizontalAnchor.Right,
+                        24,
+                        LegacyVerticalAnchor.Bottom,
+                        36,
+                        null,
+                        PositionReference: new OverlayPositionReference(2560, 1440)
+                    ),
+                }
+            )
+        );
+
+        Assert.Equal(originalPlotters, File.ReadAllText(plottersPath));
+        Assert.True(Directory.Exists(positionReferencesPath));
     }
 
     [Fact]

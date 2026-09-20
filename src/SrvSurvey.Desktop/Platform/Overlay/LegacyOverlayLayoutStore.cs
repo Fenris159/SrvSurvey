@@ -287,7 +287,8 @@ public sealed class LegacyOverlayLayoutStore
 
     private LegacyOverlayLayoutSaveResult SaveCore(IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
     {
-        JsonObject root = File.Exists(plottersPath) ? ParseObject(plottersPath) : [];
+        bool plottersExisted = File.Exists(plottersPath);
+        JsonObject root = plottersExisted ? ParseObject(plottersPath) : [];
 
         ValidateExistingPlacements(root);
         foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
@@ -301,8 +302,10 @@ public sealed class LegacyOverlayLayoutStore
         }
 
         Directory.CreateDirectory(dataDirectory);
-        string? backupPath = File.Exists(plottersPath) ? CreateVerifiedBackup() : null;
+        string? backupPath = null;
         string temporaryPath = $"{plottersPath}.{Guid.NewGuid():N}.tmp";
+        string? positionReferencesTemporaryPath = null;
+        string? positionReferencesRollbackPath = null;
         try
         {
             using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
@@ -332,15 +335,44 @@ public sealed class LegacyOverlayLayoutStore
                 }
             }
 
-            File.Move(temporaryPath, plottersPath, true);
-            SavePositionReferencesCore(placements);
+            positionReferencesTemporaryPath = PreparePositionReferences(placements);
+            bool positionReferencesExisted = File.Exists(positionReferencesPath);
+            backupPath = plottersExisted ? CreateVerifiedBackup() : null;
+            positionReferencesRollbackPath = positionReferencesExisted
+                ? CreateVerifiedRollbackCopy(positionReferencesPath)
+                : null;
+            try
+            {
+                File.Move(temporaryPath, plottersPath, true);
+                File.Move(positionReferencesTemporaryPath, positionReferencesPath, true);
+            }
+            catch (Exception replacementException)
+            {
+                try
+                {
+                    RestoreLayoutFiles(
+                        plottersExisted,
+                        backupPath,
+                        positionReferencesExisted,
+                        positionReferencesRollbackPath
+                    );
+                }
+                catch (Exception rollbackException)
+                {
+                    throw new IOException(
+                        "The overlay layout save failed and its settings rollback also failed.",
+                        new AggregateException(replacementException, rollbackException)
+                    );
+                }
+
+                throw;
+            }
         }
         finally
         {
-            if (File.Exists(temporaryPath))
-            {
-                File.Delete(temporaryPath);
-            }
+            DeleteFileIfPresent(temporaryPath);
+            DeleteFileIfPresent(positionReferencesTemporaryPath);
+            DeleteFileIfPresent(positionReferencesRollbackPath);
         }
 
         return new LegacyOverlayLayoutSaveResult(plottersPath, backupPath, placements.Count);
@@ -424,6 +456,19 @@ public sealed class LegacyOverlayLayoutStore
 
     private void SavePositionReferencesCore(IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
     {
+        string temporaryPath = PreparePositionReferences(placements);
+        try
+        {
+            File.Move(temporaryPath, positionReferencesPath, true);
+        }
+        finally
+        {
+            DeleteFileIfPresent(temporaryPath);
+        }
+    }
+
+    private string PreparePositionReferences(IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+    {
         JsonObject root = File.Exists(positionReferencesPath) ? ParseObject(positionReferencesPath) : [];
         foreach (KeyValuePair<string, LegacyOverlayPlacement> entry in placements)
         {
@@ -472,14 +517,48 @@ public sealed class LegacyOverlayLayoutStore
                 }
             }
 
-            File.Move(temporaryPath, positionReferencesPath, true);
+            return temporaryPath;
         }
-        finally
+        catch
         {
-            if (File.Exists(temporaryPath))
-            {
-                File.Delete(temporaryPath);
-            }
+            DeleteFileIfPresent(temporaryPath);
+            throw;
+        }
+    }
+
+    private void RestoreLayoutFiles(
+        bool plottersExisted,
+        string? plottersBackupPath,
+        bool positionReferencesExisted,
+        string? positionReferencesBackupPath
+    )
+    {
+        var rollbackErrors = new List<Exception>();
+        TryRestoreFile(positionReferencesPath, positionReferencesBackupPath, positionReferencesExisted, rollbackErrors);
+        TryRestoreFile(plottersPath, plottersBackupPath, plottersExisted, rollbackErrors);
+        if (rollbackErrors.Count > 0)
+        {
+            throw new AggregateException(rollbackErrors);
+        }
+    }
+
+    private static void TryRestoreFile(string path, string? backupPath, bool existed, List<Exception> errors)
+    {
+        try
+        {
+            RestoreFile(path, backupPath, existed);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            errors.Add(exception);
+        }
+    }
+
+    private static void DeleteFileIfPresent(string? path)
+    {
+        if (path is not null && File.Exists(path))
+        {
+            File.Delete(path);
         }
     }
 
@@ -829,6 +908,24 @@ public sealed class LegacyOverlayLayoutStore
         }
 
         return backupPath;
+    }
+
+    private static string CreateVerifiedRollbackCopy(string sourcePath)
+    {
+        string rollbackPath = Path.Combine(Path.GetDirectoryName(sourcePath)!, Path.GetRandomFileName());
+        File.Copy(sourcePath, rollbackPath, false);
+        if (
+            !CryptographicOperations.FixedTimeEquals(
+                SHA256.HashData(File.ReadAllBytes(sourcePath)),
+                SHA256.HashData(File.ReadAllBytes(rollbackPath))
+            )
+        )
+        {
+            File.Delete(rollbackPath);
+            throw new IOException("The overlay layout backup did not match its source.");
+        }
+
+        return rollbackPath;
     }
 
     private static void RestoreFile(string path, string? backupPath, bool existed)

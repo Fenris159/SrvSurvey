@@ -340,6 +340,35 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task UnscopedMainEntryClearsEarlierMassCodeFilters()
+    {
+        using BoxelSurveyStatsCoordinator coordinator = await CreateCoordinatorWithSystemAsync();
+        await coordinator.ApplyJournalEventsAsync([
+            Parse(
+                """{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"Wregoe BU-Y b2-0","SystemAddress":3001}"""
+            ),
+        ]);
+        await coordinator.FlushAsync();
+        await coordinator.SwitchCommanderAsync(null);
+        await coordinator.SwitchCommanderAsync("F123");
+        Assert.Null(coordinator.Current);
+        using BoxelSurveyStatsViewModel viewModel = CreateViewModel(coordinator);
+        await viewModel.RefreshAsync();
+        Assert.Equal(2, viewModel.BrowserRows.Count);
+        Assert.Equal(2, viewModel.RecentEntries.Count);
+
+        viewModel.SelectMassCodeCommand.Execute('c');
+        Assert.Single(viewModel.BrowserRows);
+        Assert.Single(viewModel.RecentEntries);
+
+        await viewModel.InitializeAsync();
+
+        Assert.All(viewModel.MassCodes, option => Assert.False(option.IsSelected));
+        Assert.Equal(2, viewModel.BrowserRows.Count);
+        Assert.Equal(2, viewModel.RecentEntries.Count);
+    }
+
+    [AvaloniaFact]
     public async Task ExportSkipsBelowMinimumAndWritesWhenLowered()
     {
         using BoxelSurveyStatsCoordinator coordinator = await CreateCoordinatorWithSystemAsync();

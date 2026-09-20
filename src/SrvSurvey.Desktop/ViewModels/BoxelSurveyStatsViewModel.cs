@@ -493,6 +493,8 @@ public sealed class BoxelSurveyStatsViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
+        selectedMassCodes.Clear();
+        RefreshMassCodes();
         IsDetailVisible = false;
         RefreshBrowser();
     }

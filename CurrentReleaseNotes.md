@@ -40,6 +40,8 @@ tracker, Colonization workspace, and Boxel Statistics.
 - FSS Information constrains and wraps its summary and filter explanation,
   reducing excess width between body names and right-aligned values.
 - Prior Scans uses matching geometry for ACTIVE and ANALYZED pills.
+- Position and source-display reference files now save as one transaction. If
+  either write fails, both original layout files are restored together.
 
 Existing users keep their familiar overlay appearance because new typography
 and icon roles default to 0%, and saved panel shapes remain unchanged until the
@@ -68,7 +70,8 @@ user resizes them.
   a scrolling frame.
 - Mass-code buttons are immediate multi-select filters with a theme-safe accent
   border. Selecting a letter keeps it highlighted and clicking it again clears
-  that filter without hiding the label.
+  that filter without hiding the label. Returning to the unscoped top-level
+  view clears previous mass-code filters from recent and browser results.
 - Boxel row radial actions align their center hole with the launcher on Linux
   after popup layout and display scaling are known. Window edges no longer push
   Complete, Reopen, Defer, or Start Here away from the selected row.
