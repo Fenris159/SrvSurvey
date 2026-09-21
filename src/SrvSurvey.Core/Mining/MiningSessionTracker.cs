@@ -257,23 +257,22 @@ public sealed class MiningSessionTracker
         // Depletion reports do not include an asteroid id. Match the newest
         // compatible active result instead of assuming the last launched
         // prospector is the asteroid being mined.
-        if (remaining < 100 && FindMatchingActiveProspect(session, prospect) is int activeIndex)
+        if (remaining < 100 && FindMatchingActiveProspect(session, prospect) is { } match)
         {
-            MiningProspect original = session.ActiveProspects[activeIndex];
+            MiningProspect original = session.ActiveProspects[match.ActiveIndex];
             prospect = prospect with { Time = original.Time };
-            int historyIndex = session.Prospects.FindLastIndex(item => item.Time == original.Time);
-            if (historyIndex >= 0)
+            if (match.HistoryIndex >= 0)
             {
-                session.Prospects[historyIndex] = prospect;
+                session.Prospects[match.HistoryIndex] = prospect;
             }
 
             if (remaining > 0)
             {
-                session.ActiveProspects[activeIndex] = prospect;
+                session.ActiveProspects[match.ActiveIndex] = prospect;
             }
             else
             {
-                session.ActiveProspects.RemoveAt(activeIndex);
+                session.ActiveProspects.RemoveAt(match.ActiveIndex);
             }
         }
         else
@@ -289,19 +288,47 @@ public sealed class MiningSessionTracker
         return true;
     }
 
-    private static int? FindMatchingActiveProspect(MiningSession session, MiningProspect update)
+    private readonly record struct ActiveProspectMatch(int ActiveIndex, int HistoryIndex);
+
+    private static ActiveProspectMatch? FindMatchingActiveProspect(MiningSession session, MiningProspect update)
     {
         for (int index = session.ActiveProspects.Count - 1; index >= 0; index--)
         {
             MiningProspect candidate = session.ActiveProspects[index];
             if (candidate.Remaining >= update.Remaining && SameAsteroidReport(candidate, update))
             {
-                return index;
+                return new ActiveProspectMatch(index, FindHistoryIndex(session, index));
             }
         }
 
         return null;
     }
+
+    private static int FindHistoryIndex(MiningSession session, int activeIndex)
+    {
+        MiningProspect active = session.ActiveProspects[activeIndex];
+        int referenceIndex = session.Prospects.FindIndex(item => ReferenceEquals(item, active));
+        if (referenceIndex >= 0)
+        {
+            return referenceIndex;
+        }
+
+        int occurrence = session
+            .ActiveProspects.Take(activeIndex + 1)
+            .Count(item => SameProspectSnapshot(item, active));
+        for (int index = 0; index < session.Prospects.Count; index++)
+        {
+            if (SameProspectSnapshot(session.Prospects[index], active) && --occurrence == 0)
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    private static bool SameProspectSnapshot(MiningProspect left, MiningProspect right) =>
+        left.Time == right.Time && Math.Abs(left.Remaining - right.Remaining) < 0.05 && SameAsteroidReport(left, right);
 
     private static bool SameAsteroidReport(MiningProspect left, MiningProspect right)
     {

@@ -124,6 +124,19 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.Contains(nameof(MiningCargoOverlayViewModel.HasItems), changed);
 
             changed.Clear();
+            vm.TargetMaterial = "Bertrandite";
+            vm.ThresholdText = "10";
+            vm.SetThreshold(false);
+            Assert.True(Assert.Single(overlay.Items).IsTarget);
+            Assert.Contains(nameof(MiningCargoOverlayViewModel.Items), changed);
+
+            changed.Clear();
+            vm.SelectedThreshold = Assert.Single(vm.Thresholds);
+            vm.DeleteSelectedThreshold();
+            Assert.False(Assert.Single(overlay.Items).IsTarget);
+            Assert.Contains(nameof(MiningCargoOverlayViewModel.Items), changed);
+
+            changed.Clear();
             vm.Status = "Unrelated";
             Assert.Empty(changed);
 
@@ -171,6 +184,11 @@ public sealed class MiningWorkspaceViewModelTests
             vm.SaveAnnouncementPreset();
             Assert.Single(vm.AnnouncementPresets);
             Assert.Equal("High yield", vm.AnnouncementPresets[0].Name);
+            vm.PresetName = "HIGH YIELD";
+            vm.SaveAnnouncementPreset();
+            Assert.Single(vm.Settings.AnnouncementPresets);
+            Assert.True(vm.Settings.AnnouncementPresets.ContainsKey("HIGH YIELD"));
+            Assert.False(vm.Settings.AnnouncementPresets.ContainsKey("High yield"));
             vm.DeleteAnnouncementPreset();
             Assert.Empty(vm.AnnouncementPresets);
             Assert.Contains("deleted", vm.Status);

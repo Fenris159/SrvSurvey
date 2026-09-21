@@ -144,7 +144,16 @@ public sealed class OverlayPresentationContractTests
                 "src/SrvSurvey.Desktop/MiningCargoOverlayWindow.axaml",
                 "src/SrvSurvey.Desktop/MiningCargoOverlayPresentation.axaml",
             ],
-            ["CARGO HOLD", "Items", "FillPercentage", "RavenSuccessBrush", "RavenWindowBrush"]
+            [
+                "CARGO HOLD",
+                "Items",
+                "FillPercentage",
+                "RavenSuccessBrush",
+                "RavenWindowBrush",
+                "MaxHeight=\"200\"",
+                "VerticalScrollBarVisibility=\"Auto\"",
+                "HorizontalScrollBarVisibility=\"Disabled\"",
+            ]
         ),
         Contract(
             "PlotMiningReference",

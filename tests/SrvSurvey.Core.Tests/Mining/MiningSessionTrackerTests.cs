@@ -180,6 +180,36 @@ public sealed class MiningSessionTrackerTests
     }
 
     [Fact]
+    public void DepletionUpdatesTheMatchingHistoryEntryWhenActiveProspectsShareATimestamp()
+    {
+        var time = DateTimeOffset.Parse(
+            "2026-09-06T12:01:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        static MiningProspect Prospect(DateTimeOffset timestamp) =>
+            new(timestamp, [new MiningMaterial("Platinum", 35)], "", "High");
+        var session = new MiningSession
+        {
+            Started = time.AddMinutes(-1),
+            Prospects = [Prospect(time), Prospect(time)],
+            ActiveProspects = [Prospect(time), Prospect(time)],
+            ActiveProspect = Prospect(time),
+        };
+        var tracker = new MiningSessionTracker();
+        tracker.Restore(session);
+
+        tracker.Apply(
+            Parse(
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:02:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Content":"High","Remaining":0}"""
+            )
+        );
+
+        Assert.Equal(100, tracker.Current!.Prospects[0].Remaining);
+        Assert.Equal(0, tracker.Current.Prospects[1].Remaining);
+        Assert.Single(tracker.Current.ActiveProspects);
+    }
+
+    [Fact]
     public void RestoreMigratesLegacyCurrentProspectIntoTheActiveCollection()
     {
         MiningProspect prospect = new(

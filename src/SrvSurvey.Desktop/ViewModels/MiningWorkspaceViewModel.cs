@@ -724,10 +724,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
 
         string name = PresetName.Trim();
-        if (
-            SelectedAnnouncementPreset is { } selected
-            && !selected.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
-        )
+        if (SelectedAnnouncementPreset is { } selected && !selected.Name.Equals(name, StringComparison.Ordinal))
         {
             Settings.AnnouncementPresets.Remove(selected.Name);
         }
@@ -829,6 +826,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             }
             Settings.Thresholds[name] = threshold;
         }
+        Changed(nameof(Settings));
         SaveSettings();
         RefreshAnnouncementEditors();
         SelectedThreshold = Thresholds.FirstOrDefault(row => row.Name.Equals(name, StringComparison.OrdinalIgnoreCase));

@@ -12,17 +12,19 @@
     <TextBlock Grid.Column="1" Classes="type-detail" Foreground="{DynamicResource RavenSuccessBrush}" Text="{Binding Remaining}" VerticalAlignment="Center" />
    </Grid>
    <ProgressBar Minimum="0" Maximum="100" Value="{Binding FillPercentage}" Height="5" />
-   <ItemsControl ItemsSource="{Binding Items}" IsVisible="{Binding HasItems}">
-    <ItemsControl.ItemTemplate>
-     <DataTemplate x:DataType="vm:MiningCargoOverlayItemViewModel">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="0,2">
-       <TextBlock IsVisible="{Binding IsTarget}" Classes="type-value" Foreground="{DynamicResource RavenSuccessBrush}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-       <TextBlock IsVisible="{Binding !IsTarget}" Classes="type-body" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-       <TextBlock Grid.Column="1" Classes="type-value" Text="{Binding CountLabel}" />
-      </Grid>
-     </DataTemplate>
-    </ItemsControl.ItemTemplate>
-   </ItemsControl>
+   <ScrollViewer MaxHeight="200" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <ItemsControl ItemsSource="{Binding Items}" IsVisible="{Binding HasItems}">
+     <ItemsControl.ItemTemplate>
+      <DataTemplate x:DataType="vm:MiningCargoOverlayItemViewModel">
+       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="0,2">
+        <TextBlock IsVisible="{Binding IsTarget}" Classes="type-value" Foreground="{DynamicResource RavenSuccessBrush}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+        <TextBlock IsVisible="{Binding !IsTarget}" Classes="type-body" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1" Classes="type-value" Text="{Binding CountLabel}" />
+       </Grid>
+      </DataTemplate>
+     </ItemsControl.ItemTemplate>
+    </ItemsControl>
+   </ScrollViewer>
    <TextBlock IsVisible="{Binding !HasItems}" Classes="muted type-detail" Text="Cargo hold is empty." />
   </StackPanel>
  </Border>
