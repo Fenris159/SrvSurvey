@@ -210,6 +210,80 @@ public sealed class MiningSessionTrackerTests
     }
 
     [Fact]
+    public void DepletionOfRestoredOrphanUpdatesOnlyTheActiveProspect()
+    {
+        var time = DateTimeOffset.Parse(
+            "2026-09-06T12:01:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        static MiningProspect Prospect(DateTimeOffset timestamp, double remaining = 100, string content = "High") =>
+            new(timestamp, [new MiningMaterial("Platinum", 35)], "", content) { Remaining = remaining };
+        MiningProspect orphan = Prospect(time);
+        var session = new MiningSession
+        {
+            Started = time.AddMinutes(-1),
+            Prospects = [Prospect(time.AddSeconds(-1)), Prospect(time, 90), Prospect(time, content: "Low")],
+            ActiveProspects = [orphan],
+            ActiveProspect = orphan,
+        };
+        var tracker = new MiningSessionTracker();
+        tracker.Restore(session);
+
+        tracker.Apply(
+            Parse(
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:02:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Content":"High","Remaining":50}"""
+            )
+        );
+
+        Assert.Equal([100, 90, 100], tracker.Current!.Prospects.Select(prospect => prospect.Remaining));
+        Assert.Equal(50, Assert.Single(tracker.Current.ActiveProspects).Remaining);
+    }
+
+    [Fact]
+    public void UnmatchedDepletedReportIsRecordedWithoutBecomingActive()
+    {
+        var tracker = new MiningSessionTracker();
+        tracker.Start(
+            DateTimeOffset.Parse("2026-09-06T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            "Sol",
+            "Earth A Ring",
+            "Python"
+        );
+
+        tracker.Apply(
+            Parse(
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:01:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Remaining":0}"""
+            )
+        );
+
+        Assert.Equal(0, Assert.Single(tracker.Current!.Prospects).Remaining);
+        Assert.Empty(tracker.Current.ActiveProspects);
+        Assert.Null(tracker.Current.ActiveProspect);
+    }
+
+    [Fact]
+    public void TravelClearsRestoredActiveCollectionWithoutLegacyPointer()
+    {
+        var time = DateTimeOffset.Parse(
+            "2026-09-06T12:01:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var active = new MiningProspect(time, [new MiningMaterial("Platinum", 35)], "", "High");
+        var tracker = new MiningSessionTracker();
+        tracker.Restore(
+            new MiningSession
+            {
+                Started = time.AddMinutes(-1),
+                Prospects = [active],
+                ActiveProspects = [active],
+            }
+        );
+
+        Assert.True(tracker.Apply(Parse("""{"event":"SupercruiseEntry","timestamp":"2026-09-06T12:02:00Z"}""")));
+        Assert.Empty(tracker.Current!.ActiveProspects);
+    }
+
+    [Fact]
     public void RestoreMigratesLegacyCurrentProspectIntoTheActiveCollection()
     {
         MiningProspect prospect = new(

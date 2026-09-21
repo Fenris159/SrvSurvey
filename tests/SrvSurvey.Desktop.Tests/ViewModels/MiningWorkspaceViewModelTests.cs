@@ -44,7 +44,7 @@ public sealed class MiningWorkspaceViewModelTests
                 """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:01:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Remaining":100}"""
             );
             Feed(
-                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:02:00Z","Materials":[{"Name":"Osmium","Proportion":32}],"Remaining":100}"""
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:02:00Z","MotherlodeMaterial":"Monazite","Materials":[{"Name":"Osmium","Proportion":32}],"Remaining":100}"""
             );
             CargoSnapshot cargo = new(
                 DateTimeOffset.UtcNow,
@@ -61,6 +61,7 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.Equal(2, vm.PersistentProspects.Count);
             Assert.DoesNotContain(vm.PersistentProspects, result => result.Summary.Contains("Platinum"));
             Assert.Contains(vm.PersistentProspects, result => result.Qualifies && result.Summary.Contains("Osmium"));
+            Assert.Contains(vm.PersistentProspects, result => result.Summary.Contains("Core: Monazite"));
             Assert.Equal(2, chime.PlayedVolumes.Count);
             Assert.Equal(2, speech.Messages.Count);
             Assert.True(vm.ShouldShowCargo);
@@ -117,6 +118,7 @@ public sealed class MiningWorkspaceViewModelTests
 
             Assert.Equal("3 T / UNKNOWN", overlay.Capacity);
             Assert.Equal("0 T REMAINING", overlay.Remaining);
+            Assert.Equal(0, overlay.FillPercentage);
             Assert.Single(overlay.Items);
             Assert.Equal("Bertrandite", overlay.Items[0].Name);
             Assert.False(overlay.Items[0].IsTarget);
