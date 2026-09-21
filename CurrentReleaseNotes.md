@@ -1,9 +1,34 @@
-# SrvSurvey-XP 2.1.3.0-rc.50
+# SrvSurvey-XP 2.1.3.0-rc.52
 
-RC50 completes the per-panel overlay typography editor with independent icon
-scaling, corrects text-role coverage across every overlay, and improves overlay
-placement on Linux. It also includes the AppImage updater, profile migration,
-window chrome, tooltip, pointer-input, and XWayland fixes from this release cycle.
+RC52 is the first release delivered through the new SrvSurvey-XP update
+channel. RC51 established the permanent bridge from the original `xp-v`
+channel to the new `xp2-v` channel used by this and later releases. RC52 also
+includes the per-panel overlay typography editor, AppImage updater, profile
+migration, window chrome, tooltip, pointer-input, and XWayland fixes from this
+release cycle.
+
+> [!IMPORTANT]
+> RC51 users should receive RC52 through the normal updater. If you are still
+> on an earlier release, install the RC51 bridge first so SrvSurvey can follow
+> the new automatic-update channel. If an update is not offered, reports an
+> error, or cannot complete, download and install the newest SrvSurvey-XP build
+> manually from the
+> [GitHub releases page](https://github.com/Fenris159/SrvSurvey/releases).
+> Follow the [Windows installation guide](docs/INSTALL_WINDOWS.md) for the ZIP
+> package or the [Linux installation guide](docs/INSTALL_LINUX.md) for the
+> AppImage and portable archive.
+
+## Automatic-update channel transition
+
+- RC51 remains published as `xp-v2.1.3.0-rc.51` with a legacy schema-1
+  `release-index.json` containing only the `win-x64` and `linux-x64` packages.
+  Older Windows and portable-Linux clients continue to discover that bridge.
+- RC52 publishes as `xp2-v2.1.3.0-rc.52` with a schema-2 index containing the
+  `win-x64`, `linux-x64`, and `linux-x64-appimage` packages.
+- RC51 and later applications accept both schema versions and scan both tag
+  namespaces, so a client on RC51 can move directly to RC52 and future builds.
+- No tag above RC51 may ever be published under `xp-v`, because it would shadow
+  the permanent bridge for legacy clients.
 
 ## Per-panel overlay typography
 
@@ -175,12 +200,14 @@ tarball updates.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.50`
-- Tag: `xp-v2.1.3.0-rc.50`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.50-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.50-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.52`
+- Tag: `xp2-v2.1.3.0-rc.52`
+- Release-index schema: `2` (`win-x64`, `linux-x64`, and
+  `linux-x64-appimage`)
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.52-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.52-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.52-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.52-x86_64.AppImage.zsync`
 
 Windows and Linux packages remain self-contained. Numeric Windows FileVersion
 remains `2.1.3.0`.

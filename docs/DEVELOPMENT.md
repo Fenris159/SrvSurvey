@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-09-16
+Last updated: 2026-09-20
 
 ## Branch purpose
 
@@ -11,10 +11,18 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.50**. Its development tag
-is `xp-v2.1.3.0-rc.50`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.50`. The assembly `FileVersion`
-remains numeric at `2.1.3.0` for Windows compatibility.
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.52**. Its development tag
+is `xp2-v2.1.3.0-rc.52`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.52`. The assembly
+`FileVersion` remains numeric at `2.1.3.0` for Windows compatibility.
+
+RC51 is the permanent legacy update anchor. Its release index is schema 1 and
+contains only `win-x64` and `linux-x64`, even though the workflow also publishes
+the AppImage and `.zsync` assets. The application in RC51 reads both schema 1
+and schema 2 and scans both `xp-v` and `xp2-v` tags. RC52 and every later build
+must use `xp2-v` and schema 2. Never publish a tag above RC51 with the `xp-v`
+prefix: pre-RC51 clients choose the highest `xp-v` version before parsing the
+index, so such a tag would permanently shadow the bridge.
 
 ## Build contract
 
@@ -70,6 +78,51 @@ validated for metadata, native dependency closure, extraction, and isolated
 XWayland startup. Release AppImages are built on Ubuntu 24.04 to preserve their
 native compatibility baseline, then the exact packaged artifact must pass the
 same dependency and startup validation on Ubuntu 26.04 before publication.
+
+## RC52 release sequence
+
+RC51 has been published and verified as the permanent legacy bridge. Do not
+dispatch RC52 until its pull request has merged into
+`SrvSurvey-Avalonia` and the external publishing step has been explicitly
+approved. Then update the local branch and verify the checked-in release
+contract before starting the workflow:
+
+```console
+git switch SrvSurvey-Avalonia
+git pull --ff-only origin SrvSurvey-Avalonia
+pwsh ./scripts/Resolve-CrossPlatformReleaseContract.ps1 -Version 2.1.3.0-rc.52
+gh workflow run build-srvsurvey-xp.yml \
+  --repo Fenris159/SrvSurvey \
+  --ref SrvSurvey-Avalonia \
+  -f source_ref=SrvSurvey-Avalonia \
+  -f release_channel=development
+run_id=$(gh run list \
+  --repo Fenris159/SrvSurvey \
+  --workflow build-srvsurvey-xp.yml \
+  --event workflow_dispatch \
+  --limit 1 \
+  --json databaseId \
+  --jq '.[0].databaseId')
+gh run watch "$run_id" --repo Fenris159/SrvSurvey --exit-status
+```
+
+The resolver output must report `xp2-v2.1.3.0-rc.52` and schema 2. After the
+workflow succeeds, verify rather than replace its published assets:
+
+```console
+gh release view xp2-v2.1.3.0-rc.52 \
+  --repo Fenris159/SrvSurvey \
+  --json tagName,isDraft,isPrerelease,targetCommitish,assets
+gh release download xp2-v2.1.3.0-rc.52 \
+  --repo Fenris159/SrvSurvey \
+  --pattern release-index.json \
+  --dir artifacts/verify-rc52
+pwsh -Command '$index = Get-Content artifacts/verify-rc52/release-index.json -Raw | ConvertFrom-Json; if ($index.schemaVersion -ne 2 -or $index.packages.Count -ne 3) { throw "RC52 release index contract failed." }'
+```
+
+Confirm that legacy clients still select `xp-v2.1.3.0-rc.51` and an RC51 client
+selects `xp2-v2.1.3.0-rc.52`. Continue sequential RC version increments in the
+`xp2-v` namespace; do not create any additional `xp-v` tag.
 
 ## Regression contract
 

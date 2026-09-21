@@ -1,6 +1,6 @@
 # SrvSurvey-XP
 
-[![Current release](https://img.shields.io/github/v/release/Fenris159/SrvSurvey?include_prereleases&sort=date&filter=xp-v*&display_name=tag&label=release)](https://github.com/Fenris159/SrvSurvey/releases)
+[![Current release](https://img.shields.io/github/v/release/Fenris159/SrvSurvey?include_prereleases&sort=date&filter=xp*-v*&display_name=tag&label=release)](https://github.com/Fenris159/SrvSurvey/releases)
 [![Windows and Linux build](https://github.com/Fenris159/SrvSurvey/actions/workflows/build-srvsurvey-xp.yml/badge.svg?branch=SrvSurvey-Avalonia)](https://github.com/Fenris159/SrvSurvey/actions/workflows/build-srvsurvey-xp.yml)
 [![SonarCloud quality gate](https://sonarcloud.io/api/project_badges/measure?project=Fenris159_SrvSurvey&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Fenris159_SrvSurvey)
 [![SonarCloud coverage](https://sonarcloud.io/api/project_badges/measure?project=Fenris159_SrvSurvey&metric=coverage)](https://sonarcloud.io/component_measures?id=Fenris159_SrvSurvey&metric=coverage)

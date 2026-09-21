@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.50**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.52**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -23,10 +23,17 @@ Repository maintainers can build and publish a new release as follows:
 2. Select **Run workflow**, choose the source branch/tag/commit and release
    channel. The workflow reads the complete version, including any RC suffix,
    from the desktop project.
-3. After all builds and tests pass, the workflow creates an `xp-v<version>`
-   release. Development builds append `-rc.<number>` and are GitHub
+3. After all builds and tests pass, the workflow creates the RC51 compatibility
+   bridge as `xp-v2.1.3.0-rc.51`; RC52 and later releases use `xp2-v<version>`.
+   Development builds append `-rc.<number>` and are GitHub
    pre-releases; stable builds use the base version and are explicitly not
    assigned GitHub's **Latest** badge.
+
+The RC51 `xp-v` tag is a permanent legacy anchor and must never be superseded
+by a higher `xp-v` release. Existing RC50 AppImage users need one manual or
+AppImageUpdate-based move to RC51 because the bridge's schema-1 index cannot
+advertise the AppImage. Once RC51 is running, its in-application updater follows
+the new schema-2 `xp2-v` releases.
 
 ## Run the AppImage
 
@@ -37,7 +44,7 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.52-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/SrvSurvey.AppImage"
 cd "$HOME/Applications/SrvSurvey"
 chmod +x SrvSurvey.AppImage
@@ -51,7 +58,7 @@ pass its explicit dispatcher option:
 ./SrvSurvey.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.50` with the downloaded version. Keeping the installed name
+Replace `2.1.3.0-rc.52` with the downloaded version. Keeping the installed name
 as `SrvSurvey.AppImage` gives launchers and the in-application updater a stable
 path. Keep it in this folder instead of moving internal files out of the
 AppImage.
@@ -88,7 +95,7 @@ point to the same location. Keep all files together and run
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey/portable"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.50-linux-x64.tar.gz" \
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.52-linux-x64.tar.gz" \
     -C "$HOME/Applications/SrvSurvey/portable"
 cd "$HOME/Applications/SrvSurvey/portable"
 chmod +x SrvSurvey.Desktop

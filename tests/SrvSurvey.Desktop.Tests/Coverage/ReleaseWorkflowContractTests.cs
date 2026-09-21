@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
@@ -29,7 +31,14 @@ public sealed partial class ReleaseWorkflowContractTests
         Match workflowPattern = WorkflowVersionPattern().Match(workflow);
         Assert.True(workflowPattern.Success);
         Assert.Equal(expected, System.Text.RegularExpressions.Regex.IsMatch(version, workflowPattern.Groups[1].Value));
-        foreach (string? file in new[] { "New-CrossPlatformPackageManifest.ps1", "New-CrossPlatformReleaseIndex.ps1" })
+        foreach (
+            string? file in new[]
+            {
+                "New-CrossPlatformPackageManifest.ps1",
+                "New-CrossPlatformReleaseIndex.ps1",
+                "Resolve-CrossPlatformReleaseContract.ps1",
+            }
+        )
         {
             string script = File.ReadAllText(Path.Combine(root, "scripts", file));
             Match pattern = PackageVersionPattern().Match(script);
@@ -70,6 +79,8 @@ public sealed partial class ReleaseWorkflowContractTests
             workflow,
             StringComparison.Ordinal
         );
+        Assert.Contains("./scripts/Resolve-CrossPlatformReleaseContract.ps1", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("$releaseTag = \"xp-v$packageVersion\"", workflow, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -142,7 +153,105 @@ public sealed partial class ReleaseWorkflowContractTests
         Assert.Contains("--updateinformation \"$update_information\"", appImageScript, StringComparison.Ordinal);
         Assert.Contains("$output_path.zsync", appImageScript, StringComparison.Ordinal);
         Assert.Contains("runtimeIdentifier = 'linux-x64-appimage'", indexScript, StringComparison.Ordinal);
-        Assert.Contains("schemaVersion = 2", indexScript, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("2.1.3.0-rc.51", "xp-v2.1.3.0-rc.51", 1)]
+    [InlineData("2.1.3.0-rc.52", "xp2-v2.1.3.0-rc.52", 2)]
+    [InlineData("2.1.4.0", "xp2-v2.1.4.0", 2)]
+    public void ReleaseContractUsesPermanentBridgeAndCurrentNamespace(
+        string version,
+        string expectedTag,
+        int expectedSchema
+    )
+    {
+        string root = FindRepositoryRoot();
+        string output = RunPowerShell(root, "scripts/Resolve-CrossPlatformReleaseContract.ps1", "-Version", version);
+        using var contract = JsonDocument.Parse(output);
+
+        Assert.Equal(expectedTag, contract.RootElement.GetProperty("releaseTag").GetString());
+        Assert.Equal(expectedSchema, contract.RootElement.GetProperty("indexSchemaVersion").GetInt32());
+    }
+
+    [Theory]
+    [InlineData("2.1.3.0-rc.51", 1, 2)]
+    [InlineData("2.1.3.0-rc.52", 2, 3)]
+    public void GeneratedReleaseIndexMatchesReleaseCompatibilityContract(
+        string version,
+        int expectedSchema,
+        int expectedPackageCount
+    )
+    {
+        string root = FindRepositoryRoot();
+        string temporaryDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-release-contract-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(temporaryDirectory);
+            foreach (
+                string fileName in new[]
+                {
+                    $"SrvSurvey-XP-{version}-win-x64.zip",
+                    $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
+                    $"SrvSurvey-XP-{version}-x86_64.AppImage",
+                }
+            )
+            {
+                File.WriteAllText(Path.Combine(temporaryDirectory, fileName), fileName);
+            }
+
+            string indexPath = Path.Combine(temporaryDirectory, "release-index.json");
+            RunPowerShell(
+                root,
+                "scripts/New-CrossPlatformReleaseIndex.ps1",
+                "-PackageDirectory",
+                temporaryDirectory,
+                "-Version",
+                version,
+                "-OutputPath",
+                indexPath
+            );
+
+            using var index = JsonDocument.Parse(File.ReadAllText(indexPath));
+            JsonElement packages = index.RootElement.GetProperty("packages");
+            Assert.Equal(expectedSchema, index.RootElement.GetProperty("schemaVersion").GetInt32());
+            Assert.Equal(expectedPackageCount, packages.GetArrayLength());
+            Assert.Equal(
+                expectedSchema == 2,
+                packages
+                    .EnumerateArray()
+                    .Any(package => package.GetProperty("runtimeIdentifier").GetString() == "linux-x64-appimage")
+            );
+        }
+        finally
+        {
+            if (Directory.Exists(temporaryDirectory))
+            {
+                Directory.Delete(temporaryDirectory, recursive: true);
+            }
+        }
+    }
+
+    private static string RunPowerShell(string workingDirectory, params string[] arguments)
+    {
+        var startInfo = new ProcessStartInfo("pwsh")
+        {
+            WorkingDirectory = workingDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
+        foreach (string argument in arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using Process process =
+            Process.Start(startInfo) ?? throw new InvalidOperationException("Could not start pwsh.");
+        string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+        Assert.True(process.ExitCode == 0, $"PowerShell exited with code {process.ExitCode}: {error}\n{output}");
+        return output.Trim();
     }
 
     private static string FindRepositoryRoot()
