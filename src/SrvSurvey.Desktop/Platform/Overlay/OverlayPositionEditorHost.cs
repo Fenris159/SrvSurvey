@@ -388,10 +388,9 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        // Native window-manager dragging keeps the top edge/title area on
-        // screen. Editor previews are intentionally allowed to cross any
-        // screen edge, so track the pointer and assign pixel positions
-        // directly instead.
+        // GNOME can ignore native move requests for the notification-style X11
+        // windows used by editor previews. Track the pointer directly so every
+        // desktop can reposition previews and cross display edges consistently.
         ManagedOverlayWindowDragSession.Begin(preview, eventArgs);
         eventArgs.Handled = true;
     }
@@ -563,7 +562,14 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, screen.WorkingArea);
+        OverlayScreenGeometry[] screens = toolbar
+            .Screens.All.Select(current => new OverlayScreenGeometry(current.Bounds, current.WorkingArea))
+            .ToArray();
+        PixelRect workingArea = OverlayWindowPlacement.GetReliableBottomWorkingArea(
+            new OverlayScreenGeometry(screen.Bounds, screen.WorkingArea),
+            screens
+        );
+        PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, workingArea);
         double logicalWidth = measuredSize?.Width ?? (toolbar.Bounds.Width > 0 ? toolbar.Bounds.Width : toolbar.Width);
         double logicalHeight =
             measuredSize?.Height ?? (toolbar.Bounds.Height > 0 ? toolbar.Bounds.Height : toolbar.MinHeight);

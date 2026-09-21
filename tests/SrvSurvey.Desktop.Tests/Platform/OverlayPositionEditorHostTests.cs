@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
@@ -110,6 +112,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         Assert.False(runtimeWindow.IsVisible);
         Assert.NotEmpty(platform.InteractiveWindows);
+        OverlayPositionPreviewWindow preview = host.PreviewWindows[0];
+        preview.MouseDown(new Point(12, 12), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+        preview.MouseUp(new Point(12, 12), MouseButton.Left, RawInputModifiers.None);
         var session = new OverlayPositionEditSession(activeLayout);
         host.RefreshPreviewOpacities(session);
         host.RefreshPreviewScales(session);
@@ -130,6 +135,45 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         Assert.True(runtimeWindow.IsVisible);
         runtimeWindow.Close();
+    }
+
+    [AvaloniaFact]
+    public void EditorPreviewTracksPointerDragWhenNativeWindowMoveIsIgnored()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout activeLayout = store.Load();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(
+                new GameWindowSnapshot(
+                    (nint)1,
+                    42,
+                    new PixelRect(100, 200, 1200, 800),
+                    IsVisible: true,
+                    IsForeground: true
+                )
+            ),
+            store,
+            activeLayout,
+            registry,
+            host
+        );
+
+        Assert.True(viewModel.Begin());
+
+        OverlayPositionPreviewWindow preview = host.PreviewWindows[0];
+        PixelPoint initialPosition = preview.Position;
+        preview.MouseMove(new Point(12, 12), RawInputModifiers.None);
+        preview.MouseDown(new Point(12, 12), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+        preview.MouseMove(new Point(42, 57), RawInputModifiers.LeftMouseButton);
+        preview.MouseUp(new Point(42, 57), MouseButton.Left, RawInputModifiers.None);
+
+        Assert.Equal(new PixelPoint(initialPosition.X + 30, initialPosition.Y + 45), preview.Position);
+
+        viewModel.Cancel();
     }
 
     [AvaloniaFact]
@@ -669,6 +713,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
             return new OverlayInteractionResult(true, interactive, "Prepared");
         }
+
+        public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs) { }
 
         public void Dispose() { }
     }

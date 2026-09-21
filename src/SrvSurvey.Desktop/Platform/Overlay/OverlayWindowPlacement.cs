@@ -2,8 +2,68 @@ using Avalonia;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
+internal readonly record struct OverlayScreenGeometry(PixelRect Bounds, PixelRect WorkingArea);
+
 public static class OverlayWindowPlacement
 {
+    private const int CrossMonitorInsetTolerance = 32;
+
+    internal static PixelRect GetReliableBottomWorkingArea(
+        OverlayScreenGeometry targetScreen,
+        IReadOnlyList<OverlayScreenGeometry> screens
+    )
+    {
+        ArgumentNullException.ThrowIfNull(screens);
+        ValidateBounds(targetScreen.Bounds, nameof(targetScreen));
+        ValidateBounds(targetScreen.WorkingArea, nameof(targetScreen));
+        ArgumentOutOfRangeException.ThrowIfZero(screens.Count);
+
+        foreach (OverlayScreenGeometry screen in screens)
+        {
+            ValidateBounds(screen.Bounds, nameof(screens));
+            ValidateBounds(screen.WorkingArea, nameof(screens));
+        }
+
+        int targetInset = GetBottomInset(targetScreen);
+        int? smallestMatchingInset = null;
+        foreach (OverlayScreenGeometry screen in screens)
+        {
+            if (
+                screen.Bounds == targetScreen.Bounds
+                || Math.Abs((long)screen.WorkingArea.Bottom - targetScreen.WorkingArea.Bottom)
+                    > CrossMonitorInsetTolerance
+            )
+            {
+                continue;
+            }
+
+            int inset = GetBottomInset(screen);
+            if (inset > 0)
+            {
+                smallestMatchingInset = smallestMatchingInset is { } current ? Math.Min(current, inset) : inset;
+            }
+        }
+
+        if (
+            smallestMatchingInset is not { } correctionInset
+            || targetInset <= ((correctionInset * 2L) + CrossMonitorInsetTolerance)
+        )
+        {
+            return targetScreen.WorkingArea;
+        }
+
+        int correctedBottom = targetScreen.Bounds.Bottom - correctionInset;
+        int correctedHeight = correctedBottom - targetScreen.WorkingArea.Y;
+        return correctedHeight > 0
+            ? new PixelRect(
+                targetScreen.WorkingArea.X,
+                targetScreen.WorkingArea.Y,
+                targetScreen.WorkingArea.Width,
+                correctedHeight
+            )
+            : targetScreen.WorkingArea;
+    }
+
     public static PixelRect GetUsableBounds(PixelRect hostBounds, PixelRect workingArea)
     {
         ValidateBounds(hostBounds, nameof(hostBounds));
@@ -106,4 +166,7 @@ public static class OverlayWindowPlacement
             throw new ArgumentOutOfRangeException(parameterName, "Bounds must have a positive size.");
         }
     }
+
+    private static int GetBottomInset(OverlayScreenGeometry screen) =>
+        Math.Max(0, screen.Bounds.Bottom - screen.WorkingArea.Bottom);
 }

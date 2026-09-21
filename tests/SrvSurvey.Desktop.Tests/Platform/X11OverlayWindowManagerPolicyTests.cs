@@ -1,8 +1,14 @@
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class X11OverlayWindowManagerPolicyTests
 {
     [Fact]
@@ -103,5 +109,116 @@ public sealed class X11OverlayWindowManagerPolicyTests
         );
 
         Assert.Equal(new PixelPoint(140, -55), position);
+    }
+
+    [Fact]
+    public void ManagedDragAppliesOnlyTheLatestMoveInEachScheduledUpdate()
+    {
+        var appliedPositions = new List<PixelPoint>();
+        var scheduledUpdates = new List<Action>();
+        var pendingMove = new PendingWindowMove(
+            appliedPositions.Add,
+            update =>
+            {
+                scheduledUpdates.Add(update);
+                return new CallbackDisposable();
+            }
+        );
+
+        pendingMove.Update(new PixelPoint(110, 210));
+        pendingMove.Update(new PixelPoint(120, 220));
+        pendingMove.Update(new PixelPoint(130, 230));
+
+        Action scheduledUpdate = Assert.Single(scheduledUpdates);
+        Assert.Empty(appliedPositions);
+
+        scheduledUpdate();
+
+        Assert.Equal([new PixelPoint(130, 230)], appliedPositions);
+    }
+
+    [Fact]
+    public void ManagedDragAppliesTheLatestPendingMoveWhenReleased()
+    {
+        var appliedPositions = new List<PixelPoint>();
+        Action? scheduledUpdate = null;
+        CallbackDisposable? scheduledUpdateCancellation = null;
+        var pendingMove = new PendingWindowMove(
+            appliedPositions.Add,
+            update =>
+            {
+                scheduledUpdate = update;
+                scheduledUpdateCancellation = new CallbackDisposable();
+                return scheduledUpdateCancellation;
+            }
+        );
+
+        pendingMove.Update(new PixelPoint(110, 210));
+        pendingMove.Update(new PixelPoint(150, 250));
+        pendingMove.Complete(applyPendingPosition: true);
+
+        Assert.Equal([new PixelPoint(150, 250)], appliedPositions);
+        Assert.NotNull(scheduledUpdate);
+        Assert.NotNull(scheduledUpdateCancellation);
+        Assert.True(scheduledUpdateCancellation.IsDisposed);
+        scheduledUpdate();
+        Assert.Equal([new PixelPoint(150, 250)], appliedPositions);
+    }
+
+    [Fact]
+    public void ManagedDragDiscardsPendingMoveWhenWindowCloses()
+    {
+        var appliedPositions = new List<PixelPoint>();
+        Action? scheduledUpdate = null;
+        var pendingMove = new PendingWindowMove(
+            appliedPositions.Add,
+            update =>
+            {
+                scheduledUpdate = update;
+                return new CallbackDisposable();
+            }
+        );
+
+        pendingMove.Update(new PixelPoint(110, 210));
+        pendingMove.Complete(applyPendingPosition: false);
+        pendingMove.Update(new PixelPoint(150, 250));
+        pendingMove.Complete(applyPendingPosition: true);
+
+        Assert.NotNull(scheduledUpdate);
+        scheduledUpdate();
+        Assert.Empty(appliedPositions);
+    }
+
+    [AvaloniaFact]
+    public void ManagedDragFlushesTheLatestPointerPositionOnRelease()
+    {
+        var window = new Window { Width = 200, Height = 120 };
+        window.PointerPressed += (_, eventArgs) => ManagedOverlayWindowDragSession.Begin(window, eventArgs);
+        try
+        {
+            window.Show();
+            window.Position = new PixelPoint(100, 200);
+            window.MouseMove(new Point(20, 25), RawInputModifiers.None);
+            window.MouseDown(new Point(20, 25), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+
+            window.MouseMove(new Point(55, 70), RawInputModifiers.LeftMouseButton);
+            window.MouseUp(new Point(55, 70), MouseButton.Left, RawInputModifiers.None);
+
+            Assert.Equal(new PixelPoint(135, 245), window.Position);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private sealed class CallbackDisposable : IDisposable
+    {
+        internal bool IsDisposed { get; private set; }
+
+        public void Dispose()
+        {
+            IsDisposed = true;
+        }
     }
 }

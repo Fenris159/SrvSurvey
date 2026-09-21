@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -12,6 +13,7 @@ internal sealed class ManagedOverlayWindowDragSession
     private readonly IPointer pointer;
     private readonly PixelPoint initialWindowPosition;
     private readonly PixelPoint initialPointerPosition;
+    private readonly PendingWindowMove pendingMove;
     private bool stopped;
 
     private ManagedOverlayWindowDragSession(Window window, PointerPressedEventArgs eventArgs)
@@ -20,6 +22,16 @@ internal sealed class ManagedOverlayWindowDragSession
         pointer = eventArgs.Pointer;
         initialWindowPosition = window.Position;
         initialPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
+        pendingMove = new PendingWindowMove(
+            position =>
+            {
+                if (window.Position != position)
+                {
+                    window.Position = position;
+                }
+            },
+            callback => DispatcherTimer.RunOnce(callback, TimeSpan.FromMilliseconds(16), DispatcherPriority.Input)
+        );
     }
 
     internal static void Begin(Window window, PointerPressedEventArgs eventArgs)
@@ -61,7 +73,7 @@ internal sealed class ManagedOverlayWindowDragSession
         }
 
         PixelPoint currentPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
-        window.Position = CalculatePosition(initialWindowPosition, initialPointerPosition, currentPointerPosition);
+        pendingMove.Update(CalculatePosition(initialWindowPosition, initialPointerPosition, currentPointerPosition));
         eventArgs.Handled = true;
     }
 
@@ -80,10 +92,10 @@ internal sealed class ManagedOverlayWindowDragSession
 
     private void OnWindowClosed(object? sender, EventArgs eventArgs)
     {
-        Stop(releasePointer: true);
+        Stop(releasePointer: true, applyPendingMove: false);
     }
 
-    private void Stop(bool releasePointer)
+    private void Stop(bool releasePointer, bool applyPendingMove = true)
     {
         if (stopped)
         {
@@ -91,6 +103,7 @@ internal sealed class ManagedOverlayWindowDragSession
         }
 
         stopped = true;
+        pendingMove.Complete(applyPendingMove);
         ActiveSessions.Remove(window);
         window.PointerMoved -= OnPointerMoved;
         window.PointerReleased -= OnPointerReleased;
@@ -100,5 +113,65 @@ internal sealed class ManagedOverlayWindowDragSession
         {
             pointer.Capture(null);
         }
+    }
+}
+
+internal sealed class PendingWindowMove(Action<PixelPoint> apply, Func<Action, IDisposable> schedule)
+{
+    private IDisposable? scheduledUpdate;
+    private PixelPoint latestPosition;
+    private bool hasPendingPosition;
+    private bool completed;
+
+    internal void Update(PixelPoint position)
+    {
+        if (completed)
+        {
+            return;
+        }
+
+        latestPosition = position;
+        hasPendingPosition = true;
+        scheduledUpdate ??= schedule(ApplyScheduled);
+    }
+
+    internal void Complete(bool applyPendingPosition)
+    {
+        if (completed)
+        {
+            return;
+        }
+
+        completed = true;
+        scheduledUpdate?.Dispose();
+        scheduledUpdate = null;
+        if (applyPendingPosition)
+        {
+            ApplyLatest();
+        }
+        else
+        {
+            hasPendingPosition = false;
+        }
+    }
+
+    private void ApplyScheduled()
+    {
+        scheduledUpdate = null;
+        if (!completed)
+        {
+            ApplyLatest();
+        }
+    }
+
+    private void ApplyLatest()
+    {
+        if (!hasPendingPosition)
+        {
+            return;
+        }
+
+        hasPendingPosition = false;
+        apply(latestPosition);
     }
 }
