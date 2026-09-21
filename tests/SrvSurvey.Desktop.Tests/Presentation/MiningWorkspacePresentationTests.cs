@@ -492,6 +492,60 @@ public sealed class MiningWorkspacePresentationTests
     }
 
     [AvaloniaFact]
+    public void AnnouncementEditorsUseBoundedStandardControlsAtNarrowWidths()
+    {
+        using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        model.MiningWorkspace.SelectedTab = 6;
+        model.MiningWorkspace.Settings.Thresholds["platinum"] = 30;
+        model.MiningWorkspace.Settings.AnnouncementPresets["Laser mining"] = new MiningAnnouncementPreset(
+            new Dictionary<string, double> { ["platinum"] = 30 },
+            true,
+            true
+        );
+        var mining = new Views.MiningView { DataContext = model };
+        var window = new Window
+        {
+            Content = mining,
+            Width = 660,
+            Height = 760,
+        };
+        try
+        {
+            window.Show();
+            TabControl settings = mining.FindControl<TabControl>("MiningSettingsTabs")!;
+            settings.SelectedIndex = 1;
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+
+            NumericUpDown slots = mining.FindControl<NumericUpDown>("PersistentProspectSlotsInput")!;
+            ListBox thresholds = mining.FindControl<ListBox>("ThresholdRows")!;
+            ListBox presets = mining.FindControl<ListBox>("AnnouncementPresetRows")!;
+            ComboBox voices = mining.FindControl<ComboBox>("LocalVoiceSelector")!;
+            Assert.True(slots.IsEffectivelyVisible);
+            Assert.True(thresholds.IsEffectivelyVisible);
+            Assert.True(presets.IsEffectivelyVisible);
+            Assert.True(voices.IsEffectivelyVisible);
+            Assert.Equal(1, thresholds.ItemCount);
+            Assert.Equal(1, presets.ItemCount);
+            Assert.Equal(
+                ScrollBarVisibility.Disabled,
+                Assert.Single(thresholds.GetVisualDescendants().OfType<ScrollViewer>()).HorizontalScrollBarVisibility
+            );
+            Assert.Equal(
+                ScrollBarVisibility.Disabled,
+                Assert.Single(presets.GetVisualDescendants().OfType<ScrollViewer>()).HorizontalScrollBarVisibility
+            );
+
+            voices.IsDropDownOpen = true;
+            using WriteableBitmap? openPopup = window.CaptureRenderedFrame();
+            Assert.True(voices.IsDropDownOpen);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void WorkspaceTabsRenderAcrossApplicationThemesAndBookmarksUseSharedModel()
     {
         string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

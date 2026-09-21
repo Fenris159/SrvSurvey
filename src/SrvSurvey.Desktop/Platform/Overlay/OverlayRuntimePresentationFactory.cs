@@ -24,6 +24,7 @@ internal static class OverlayRuntimePresentationFactory
                 or "PlotFSSInfo"
                 or "PlotGalMap"
                 or "PlotMiningNotifications"
+                or "PlotMiningCargo"
                 or "PlotMiningReference"
                 or "PlotMiningFiregroups"
                 or "PlotMiningWarning"
@@ -116,6 +117,7 @@ internal static class OverlayRuntimePresentationFactory
             "PlotFSSInfo" => new FssInfoOverlayPresentation(),
             "PlotGalMap" => new GalaxyMapOverlayPresentation(),
             "PlotMiningNotifications" or "PlotMiningFiregroups" => new MiningActivityOverlayPresentation(),
+            "PlotMiningCargo" => new MiningCargoOverlayPresentation(),
             "PlotMiningReference" => new MiningReferenceOverlayPresentation(),
             "PlotMiningWarning" => new MiningWarningOverlayPresentation(),
             "PlotSurfaceMining" => new SurfaceMiningOverlayPresentation(),

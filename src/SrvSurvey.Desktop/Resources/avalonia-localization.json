@@ -485,6 +485,10 @@
       "translation": "420 Bedarf | 120 FC | 16 Schiff"
     },
     {
+      "source": "431 / 960 T",
+      "translation": "431 / 960 T"
+    },
+    {
       "source": "44 JUMPS LEFT",
       "translation": "Noch 44 Sprünge übrig"
     },
@@ -495,6 +499,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 LY | 21.502,09 LY verbleibend"
+    },
+    {
+      "source": "529 T REMAINING",
+      "translation": "529 T VERBLEIBEND"
     },
     {
       "source": "6 BODIES REMAIN | EST. VALUE 18.4 M CR",
@@ -999,6 +1007,10 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "AKTIVE OBELISKEN"
+    },
+    {
+      "source": "ACTIVE PROSPECTORS",
+      "translation": "AKTIVE PROSPEKTOREN"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -1961,6 +1973,22 @@
       "translation": "Gamma der antiken Ruinen | abgeschlossen"
     },
     {
+      "source": "Announcement events",
+      "translation": "Ankündigungsveranstaltungen"
+    },
+    {
+      "source": "Announcement preset '{0}' applied.",
+      "translation": "Ankündigungsvoreinstellung „{0}“ angewendet."
+    },
+    {
+      "source": "Announcement preset '{0}' deleted.",
+      "translation": "Ankündigungsvoreinstellung „{0}“ gelöscht."
+    },
+    {
+      "source": "Announcement preset saved.",
+      "translation": "Ansagevoreinstellung gespeichert."
+    },
+    {
       "source": "Announcement presets",
       "translation": "Ankündigungsvoreinstellungen"
     },
@@ -2107,6 +2135,10 @@
     {
       "source": "Apply point edit",
       "translation": "Punktbearbeitung anwenden"
+    },
+    {
+      "source": "Apply selected",
+      "translation": "Anwenden ausgewählt"
     },
     {
       "source": "Apply the original focus and Odyssey suit rules consistently to every passive overlay.",
@@ -2315,6 +2347,10 @@
     {
       "source": "Attach session screenshots",
       "translation": "Fügen Sie Sitzungs-Screenshots bei"
+    },
+    {
+      "source": "Audio announcements",
+      "translation": "Audioansagen"
     },
     {
       "source": "Audit all boxels",
@@ -3745,6 +3781,10 @@
       "translation": "LADUNG"
     },
     {
+      "source": "CARGO HOLD",
+      "translation": "FRACHTRAUM"
+    },
+    {
       "source": "CARRIER ARRIVED",
       "translation": "TRÄGER ANGEKOMMEN"
     },
@@ -4293,6 +4333,10 @@
       "translation": "Erinnerung an volle Ladung nach einer Minute Leerlauf"
     },
     {
+      "source": "Cargo hold is empty.",
+      "translation": "Der Frachtraum ist leer."
+    },
+    {
       "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
       "translation": "Die Fracht wird in der Annahmereihenfolge den aktiven Missionen zugewiesen. Die gelieferten Zählungen sind kumulativ. Abschluss, Scheitern und Abbruch folgen den Tagebuchereignissen."
     },
@@ -4331,10 +4375,6 @@
     {
       "source": "Cargo: {0} / {1} t · Limpets: {2}",
       "translation": "Fracht: {0} / {1} t · Napfschnecken: {2}"
-    },
-    {
-      "source": "CargoCapacity",
-      "translation": "Frachtkapazität"
     },
     {
       "source": "CargoDepot",
@@ -4563,6 +4603,14 @@
     {
       "source": "Chemicals",
       "translation": "Chemikalien"
+    },
+    {
+      "source": "Child",
+      "translation": "Kind"
+    },
+    {
+      "source": "Chime volume",
+      "translation": "Lautstärke des Glockenspiels"
     },
     {
       "source": "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
@@ -6721,6 +6769,10 @@
       "translation": "ABFAHRT NACH {0}"
     },
     {
+      "source": "DEPLETED",
+      "translation": "Erschöpft"
+    },
+    {
       "source": "DESCENT",
       "translation": "ABSTIEG"
     },
@@ -7949,6 +8001,10 @@
       "translation": "Jede Rolle wächst oder schrumpft unabhängig voneinander. Zero verwendet die Grundgröße des Themes."
     },
     {
+      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
+      "translation": "Jede Zeile ist ein unabhängiges Ziel. Ein Interessent ist qualifiziert, wenn mindestens ein gelistetes Mineral sein Minimum erreicht. Eine leere Liste kündigt jedes Mineral an."
+    },
+    {
       "source": "Eagle",
       "translation": "Adler"
     },
@@ -8361,6 +8417,10 @@
       "translation": "Geben Sie ein Mineral und 0–16 ausstehende Tonnen ein."
     },
     {
+      "source": "Enter a mineral and minimum percentage.",
+      "translation": "Geben Sie einen Mineralstoff- und Mindestprozentsatz ein."
+    },
+    {
       "source": "Enter a mineral name.",
       "translation": "Geben Sie einen Mineralnamen ein."
     },
@@ -8375,6 +8435,10 @@
     {
       "source": "Enter a percentage from 0 to 100.",
       "translation": "Geben Sie einen Prozentsatz zwischen 0 und 100 ein."
+    },
+    {
+      "source": "Enter a preset name, then save the current announcement filters.",
+      "translation": "Geben Sie einen voreingestellten Namen ein und speichern Sie dann die aktuellen Ankündigungsfilter."
     },
     {
       "source": "Enter a star-system name to set a custom origin.",
@@ -9263,6 +9327,18 @@
     {
       "source": "Felicia Winters",
       "translation": "Felicia Winters"
+    },
+    {
+      "source": "Female 1",
+      "translation": "weiblich 1"
+    },
+    {
+      "source": "Female 2",
+      "translation": "weiblich 2"
+    },
+    {
+      "source": "Female 3",
+      "translation": "weiblich 3"
     },
     {
       "source": "Fenris",
@@ -10807,6 +10883,10 @@
     {
       "source": "HGG",
       "translation": "HGG"
+    },
+    {
+      "source": "HH:mm:ss",
+      "translation": "HH:mm:ss"
     },
     {
       "source": "HIGH",
@@ -12821,6 +12901,10 @@
       "translation": "Kalk"
     },
     {
+      "source": "Limpets",
+      "translation": "Napfschnecken"
+    },
+    {
       "source": "Linked",
       "translation": "Verlinkt"
     },
@@ -12969,16 +13053,8 @@
       "translation": "Laden Sie ein Live-System, um seine Raven Colonial-Sites zu überprüfen."
     },
     {
-      "source": "Load installed voices",
-      "translation": "Installierte Stimmen laden"
-    },
-    {
       "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
       "translation": "Das Laden ist schreibgeschützt. Änderungen bleiben lokal, bis ein neuer Raven-Vergleich erfolgreich ist und Sie die Veröffentlichung ausdrücklich bestätigen."
-    },
-    {
-      "source": "Load preset",
-      "translation": "Voreinstellung laden"
     },
     {
       "source": "Load system",
@@ -13217,16 +13293,12 @@
       "translation": "Referenzbild der lokalen Flora"
     },
     {
-      "source": "Local mining speech currently uses Windows voices.",
-      "translation": "Local Mining Speech verwendet derzeit Windows-Stimmen."
-    },
-    {
       "source": "Local ring discoveries",
       "translation": "Lokale Ringentdeckungen"
     },
     {
-      "source": "Local voices loaded.",
-      "translation": "Lokale Stimmen geladen."
+      "source": "Local voices loaded from {0}.",
+      "translation": "Lokale Stimmen geladen von {0}."
     },
     {
       "source": "LocalFloraDirectory",
@@ -13503,6 +13575,18 @@
     {
       "source": "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
       "translation": "Vornahme primärer Änderungen an einem Projekt. Planungsschwerpunkt des Kommandanten; Die für das System gespeicherten Sites werden nicht neu angeordnet."
+    },
+    {
+      "source": "Male 1",
+      "translation": "männlich 1"
+    },
+    {
+      "source": "Male 2",
+      "translation": "männlich 2"
+    },
+    {
+      "source": "Male 3",
+      "translation": "männlich 3"
     },
     {
       "source": "Malformed or unknown journal fields are logged without requiring SrvSurvey to rewrite the source file.",
@@ -14005,6 +14089,10 @@
       "translation": "Die Mineralverfügbarkeit richtet sich nach der Ringzusammensetzung. Die Preise variieren; Überprüfen Sie vor dem Verkauf aktuelle Marktbeobachtungen."
     },
     {
+      "source": "Mineral thresholds",
+      "translation": "Mineralschwellen"
+    },
+    {
       "source": "Minerals",
       "translation": "Mineralien"
     },
@@ -14093,6 +14181,10 @@
       "translation": "Kontrollen der Bergbaukalibrierung"
     },
     {
+      "source": "Mining cargo hold",
+      "translation": "Bergbau-Frachtraum"
+    },
+    {
       "source": "Mining data could not be loaded: {0}",
       "translation": "Mining-Daten konnten nicht geladen werden: {0}"
     },
@@ -14127,10 +14219,6 @@
     {
       "source": "Mining notifications",
       "translation": "Bergbaubenachrichtigungen"
-    },
-    {
-      "source": "Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "Bergbaubenachrichtigungen werden nur an Bord Ihres Hauptschiffs angezeigt. Verwenden Sie die Steuerelemente für die Sichtbarkeit des Panels unten, um jede Überlagerung anzuzeigen oder auszublenden."
     },
     {
       "source": "Mining overview map",
@@ -14175,6 +14263,10 @@
     {
       "source": "MiningReferenceCommodities",
       "translation": "MiningReferenceCommodities"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowCargo",
+      "translation": "MiningWorkspace.ShouldShowCargo"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -14761,6 +14853,10 @@
       "translation": "Neuer Protokollpfad: {0}"
     },
     {
+      "source": "New preset",
+      "translation": "Neue Voreinstellung"
+    },
+    {
       "source": "New profile",
       "translation": "Neues Profil"
     },
@@ -14779,6 +14875,10 @@
     {
       "source": "New site name",
       "translation": "Neuer Site-Name"
+    },
+    {
+      "source": "New threshold",
+      "translation": "Neue Schwelle"
     },
     {
       "source": "New to this Commander according to Commander Codex history",
@@ -15271,6 +15371,10 @@
     {
       "source": "No live system",
       "translation": "Kein Live-System"
+    },
+    {
+      "source": "No local speech service was found. Install Speech Dispatcher or eSpeak NG on Linux.",
+      "translation": "Es wurde kein lokaler Sprachdienst gefunden. Installieren Sie Speech Dispatcher oder eSpeak NG unter Linux."
     },
     {
       "source": "No local voices are available.",
@@ -16445,6 +16549,10 @@
       "translation": "Orrery"
     },
     {
+      "source": "Osmium",
+      "translation": "Osmium"
+    },
+    {
       "source": "Osseus Discus",
       "translation": "Osseus Discus"
     },
@@ -16857,6 +16965,10 @@
       "translation": "PASSIV"
     },
     {
+      "source": "PATH",
+      "translation": "WEG"
+    },
+    {
       "source": "PEAK SELL SNAPSHOT",
       "translation": "SPITZENVERKAUFS-SCHNAPPSCHUSS"
     },
@@ -16957,10 +17069,6 @@
       "translation": "Projektname"
     },
     {
-      "source": "PROSPECTOR",
-      "translation": "Prospektor"
-    },
-    {
       "source": "Pad 02 | 164 m",
       "translation": "Pad 02 | 164 m"
     },
@@ -17053,6 +17161,14 @@
       "translation": "Pfirsich"
     },
     {
+      "source": "Persistent prospector results",
+      "translation": "Beständige Prospektionsergebnisse"
+    },
+    {
+      "source": "Persistent prospector results shown in the overlay",
+      "translation": "Permanente Prospektor-Ergebnisse werden im Overlay angezeigt"
+    },
+    {
       "source": "Personal EDSM API key",
       "translation": "Persönlicher EDSM API-Schlüssel"
     },
@@ -17105,16 +17221,24 @@
       "translation": "Platin"
     },
     {
+      "source": "Platinum 22.1% · Bertrandite 8.5%",
+      "translation": "Platin 22,1 % · Bertrandit 8,5 %"
+    },
+    {
       "source": "Platinum 34.8%",
       "translation": "Platin 34,8 %"
     },
     {
-      "source": "Platinum 34.8% · Painite 12.4% · Remaining 73%",
-      "translation": "Platin 34,8 % · Painit 12,4 % · Rest 73 %"
+      "source": "Platinum 34.8% · Osmium 12.4%",
+      "translation": "Platin 34,8 % · Osmium 12,4 %"
     },
     {
       "source": "Platinum ×1",
       "translation": "Platin ×1"
+    },
+    {
+      "source": "Play a chime for qualifying prospects",
+      "translation": "Spielen Sie einen Glockenton für qualifizierte Interessenten ab"
     },
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
@@ -17207,6 +17331,10 @@
     {
       "source": "PlotMiniTrack",
       "translation": "PlotMiniTrack"
+    },
+    {
+      "source": "PlotMiningCargo",
+      "translation": "PlotMiningCargo"
     },
     {
       "source": "PlotMiningFiregroups",
@@ -17869,6 +17997,10 @@
       "translation": "Propaganda"
     },
     {
+      "source": "Prospected",
+      "translation": "Voraussichtlich"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Prospektive Ergebnisse"
     },
@@ -17883,6 +18015,10 @@
     {
       "source": "Prospector",
       "translation": "Prospektor"
+    },
+    {
+      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
+      "translation": "Prospektorbenachrichtigungen und der Frachtraum-Tracker werden nur an Bord Ihres Hauptschiffs angezeigt. Verwenden Sie die Steuerelemente für die Sichtbarkeit des Bedienfelds unten, um jede Überlagerung anzuzeigen oder auszublenden."
     },
     {
       "source": "Provider page (0 first)",
@@ -19313,6 +19449,10 @@
       "translation": "Aktualisieren Sie die verknüpften RavenColonial-Anbieter"
     },
     {
+      "source": "Refresh local voices",
+      "translation": "Lokale Stimmen aktualisieren"
+    },
+    {
       "source": "Refresh preview",
       "translation": "Vorschau aktualisieren"
     },
@@ -19475,10 +19615,6 @@
     {
       "source": "Remove development quest",
       "translation": "Entwicklungsquest entfernen"
-    },
-    {
-      "source": "Remove filter",
-      "translation": "Filter entfernen"
     },
     {
       "source": "Remove group",
@@ -21017,6 +21153,14 @@
       "translation": "Speichern Sie Systeme und Mining-Ringe in Ihren eigenen Kategorien."
     },
     {
+      "source": "Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it.",
+      "translation": "Speichern Sie die vollständige Schwellenwert- und Asteroidentyp-Konfiguration und wählen Sie dann eine Voreinstellung aus, um sie anzuwenden, umzubenennen oder zu löschen."
+    },
+    {
+      "source": "Save threshold",
+      "translation": "Schwellenwert speichern"
+    },
+    {
       "source": "Save to Library",
       "translation": "In der Bibliothek speichern"
     },
@@ -21653,6 +21797,10 @@
       "translation": "Wählen Sie ein passendes System"
     },
     {
+      "source": "Select a mineral threshold to delete.",
+      "translation": "Wählen Sie einen zu löschenden Mineralschwellenwert aus."
+    },
+    {
       "source": "Select a recorded boxel",
       "translation": "Wählen Sie ein aufgenommenes Boxel aus"
     },
@@ -21675,6 +21823,10 @@
     {
       "source": "Select a system from the search results.",
       "translation": "Wählen Sie ein System aus den Suchergebnissen aus."
+    },
+    {
+      "source": "Select an announcement preset to delete.",
+      "translation": "Wählen Sie eine Ansagevoreinstellung zum Löschen aus."
     },
     {
       "source": "Select an equipped module",
@@ -21869,10 +22021,6 @@
       "translation": "Legen Sie ein Ziel fest, um mit der Führung zu beginnen"
     },
     {
-      "source": "Set filter",
-      "translation": "Filter einstellen"
-    },
-    {
       "source": "Set focus on Elite Dangerous after each FSD jump.",
       "translation": "Setzen Sie den Fokus nach jedem FSD-Sprung auf Elite Dangerous."
     },
@@ -21887,10 +22035,6 @@
     {
       "source": "Set group label",
       "translation": "Gruppenbezeichnung festlegen"
-    },
-    {
-      "source": "Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals.",
-      "translation": "Legen Sie Mineralienschwellenwerte für Prospektionsankündigungen fest. Entfernen Sie alle Filter, um alle Mineralien anzuzeigen."
     },
     {
       "source": "Set obelisk group label {0}.",
@@ -22893,6 +23037,10 @@
       "translation": "Zusammenfassung der Arten und Atmosphäre"
     },
     {
+      "source": "Speech Dispatcher",
+      "translation": "Sprachdisponent"
+    },
+    {
       "source": "Speech rate",
       "translation": "Sprechgeschwindigkeit"
     },
@@ -23103,6 +23251,10 @@
     {
       "source": "SrvSurvey mining activity overlay",
       "translation": "SrvSurvey Mining-Aktivitäts-Overlay"
+    },
+    {
+      "source": "SrvSurvey mining cargo overlay",
+      "translation": "SrvSurvey Bergbau-Fracht-Overlay"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -24201,6 +24353,10 @@
       "translation": "Systemdaten nicht verfügbar."
     },
     {
+      "source": "System default",
+      "translation": "Systemstandard"
+    },
+    {
       "source": "System details could not be loaded: {0}",
       "translation": "Systemdetails konnten nicht geladen werden: {0}"
     },
@@ -24459,6 +24615,10 @@
     {
       "source": "TARGET A01",
       "translation": "ZIEL A01"
+    },
+    {
+      "source": "TARGET FOUND",
+      "translation": "ZIEL GEFUNDEN"
     },
     {
       "source": "TARGET PNG FOLDER",
@@ -26857,6 +27017,14 @@
       "translation": "Schwelle"
     },
     {
+      "source": "Threshold for {0} removed.",
+      "translation": "Schwellenwert für {0} entfernt."
+    },
+    {
+      "source": "Threshold for {0} saved.",
+      "translation": "Schwellenwert für {0} gespeichert."
+    },
+    {
       "source": "Thrusters",
       "translation": "Triebwerke"
     },
@@ -28977,6 +29145,10 @@
       "translation": "Die Windows Restart Manager-Sitzung ist mit dem Fehler {0} fehlgeschlagen."
     },
     {
+      "source": "Windows Speech API",
+      "translation": "Windows-Sprach-API"
+    },
+    {
       "source": "Windows administrator approval is required to update this protected installation. The player profile remains untouched.",
       "translation": "Zum Aktualisieren dieser geschützten Installation ist die Genehmigung eines Windows-Administrators erforderlich. Das Spielerprofil bleibt unangetastet."
     },
@@ -29011,6 +29183,10 @@
     {
       "source": "Windows topmost transparency, native click-through, game-window tracking, and global keyboard input are available.",
       "translation": "Höchste Windows-Transparenz, natives Durchklicken, Spielfensterverfolgung und globale Tastatureingabe sind verfügbar."
+    },
+    {
+      "source": "Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available.",
+      "translation": "Windows verwendet installierte SAPI-Stimmen. Linux verwendet Speech Dispatcher oder eSpeak NG, sofern verfügbar."
     },
     {
       "source": "Windows: the OpenVR client library is included with SrvSurvey.",
@@ -29255,6 +29431,10 @@
     {
       "source": "all",
       "translation": "alle"
+    },
+    {
+      "source": "all minerals",
+      "translation": "alle Mineralien"
     },
     {
       "source": "allcsv",
@@ -29673,6 +29853,10 @@
       "translation": "Chat-Befehle"
     },
     {
+      "source": "child",
+      "translation": "Kind"
+    },
+    {
       "source": "clear",
       "translation": "klar"
     },
@@ -29813,6 +29997,14 @@
       "translation": "Kühlung"
     },
     {
+      "source": "core + laser",
+      "translation": "Kern + Laser"
+    },
+    {
+      "source": "core only",
+      "translation": "Nur Kern"
+    },
+    {
       "source": "corsair",
       "translation": "Korsar"
     },
@@ -29937,6 +30129,10 @@
       "translation": "z.B. Platin ×2"
     },
     {
+      "source": "eSpeak NG",
+      "translation": "eSpeak NG"
+    },
+    {
       "source": "eagle",
       "translation": "Adler"
     },
@@ -30025,6 +30221,14 @@
       "translation": "es"
     },
     {
+      "source": "espeak",
+      "translation": "espeak"
+    },
+    {
+      "source": "espeak-ng",
+      "translation": "espeak-ng"
+    },
+    {
       "source": "event",
       "translation": "Ereignis"
     },
@@ -30095,6 +30299,30 @@
     {
       "source": "federation",
       "translation": "Föderation"
+    },
+    {
+      "source": "female 1",
+      "translation": "weiblich 1"
+    },
+    {
+      "source": "female 2",
+      "translation": "weiblich 2"
+    },
+    {
+      "source": "female 3",
+      "translation": "weiblich 3"
+    },
+    {
+      "source": "female1",
+      "translation": "weiblich1"
+    },
+    {
+      "source": "female2",
+      "translation": "weiblich2"
+    },
+    {
+      "source": "female3",
+      "translation": "weiblich3"
     },
     {
       "source": "ferdelance",
@@ -30557,6 +30785,10 @@
       "translation": "Laser"
     },
     {
+      "source": "laser only",
+      "translation": "Nur Laser"
+    },
+    {
       "source": "last visit",
       "translation": "letzter Besuch"
     },
@@ -30605,6 +30837,10 @@
       "translation": "lokal"
     },
     {
+      "source": "local speech",
+      "translation": "lokale Rede"
+    },
+    {
       "source": "log folder proton profile data source",
       "translation": "Log-Ordner, Protonenprofil-Datenquelle"
     },
@@ -30627,6 +30863,30 @@
     {
       "source": "mainengines",
       "translation": "Hauptmotoren"
+    },
+    {
+      "source": "male 1",
+      "translation": "männlich 1"
+    },
+    {
+      "source": "male 2",
+      "translation": "männlich 2"
+    },
+    {
+      "source": "male 3",
+      "translation": "männlich 3"
+    },
+    {
+      "source": "male1",
+      "translation": "männlich1"
+    },
+    {
+      "source": "male2",
+      "translation": "männlich2"
+    },
+    {
+      "source": "male3",
+      "translation": "männlich3"
     },
     {
       "source": "mamba",
@@ -30755,6 +31015,10 @@
     {
       "source": "multiple",
       "translation": "mehrfach"
+    },
+    {
+      "source": "muted",
+      "translation": "gedämpft"
     },
     {
       "source": "n/a",
@@ -31363,6 +31627,10 @@
     {
       "source": "spansh.co.uk",
       "translation": "spansh.co.uk"
+    },
+    {
+      "source": "spd-say",
+      "translation": "SPD-sagen"
     },
     {
       "source": "spherical",
@@ -32049,6 +32317,10 @@
       "translation": "{0} / {1} KÖRPER VOLLSTÄNDIG"
     },
     {
+      "source": "{0} / {1} T",
+      "translation": "{0} / {1} T"
+    },
+    {
       "source": "{0} B 3",
       "translation": "{0} B 3"
     },
@@ -32139,6 +32411,14 @@
     {
       "source": "{0} SrvSurvey instances are currently running.",
       "translation": "{0} SrvSurvey Instanzen werden derzeit ausgeführt."
+    },
+    {
+      "source": "{0} T / UNKNOWN",
+      "translation": "{0} T / UNBEKANNT"
+    },
+    {
+      "source": "{0} T REMAINING",
+      "translation": "{0} T RESTLICH"
     },
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
@@ -32737,6 +33017,10 @@
       "translation": "{0} · AKTIVER OBELISK"
     },
     {
+      "source": "{0} · Remaining {1}%",
+      "translation": "{0} · Verbleibende {1}%"
+    },
+    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Stufe {1}: {2}"
     },
@@ -32813,6 +33097,10 @@
       "translation": "{0} % von {1}"
     },
     {
+      "source": "{0}% remaining",
+      "translation": "{0}% verbleibend"
+    },
+    {
       "source": "{0}: {1} of {2}{3}",
       "translation": "{0}: {1} von {2}{3}"
     },
@@ -32831,6 +33119,10 @@
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
       "translation": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}"
+    },
+    {
+      "source": "{0}Core: {1}",
+      "translation": "{0}Kern: {1}"
     },
     {
       "source": "{0}None needed; already current.",
@@ -33511,6 +33803,10 @@
       "translation": "420 necesidad | 120 FC | 16 barco"
     },
     {
+      "source": "431 / 960 T",
+      "translation": "431 / 960T"
+    },
+    {
       "source": "44 JUMPS LEFT",
       "translation": "44 SALTOS IZQUIERDOS"
     },
@@ -33521,6 +33817,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 años anuales | 21.502,09 años anuales restantes"
+    },
+    {
+      "source": "529 T REMAINING",
+      "translation": "529 T RESTANTE"
     },
     {
       "source": "6 BODIES REMAIN | EST. VALUE 18.4 M CR",
@@ -34025,6 +34325,10 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "OBELISCOS ACTIVOS"
+    },
+    {
+      "source": "ACTIVE PROSPECTORS",
+      "translation": "PROSPECTORES ACTIVOS"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -34987,6 +35291,22 @@
       "translation": "Gama de ruinas antiguas | completo"
     },
     {
+      "source": "Announcement events",
+      "translation": "Eventos de anuncio"
+    },
+    {
+      "source": "Announcement preset '{0}' applied.",
+      "translation": "Se aplicó el ajuste preestablecido de anuncio '{0}'."
+    },
+    {
+      "source": "Announcement preset '{0}' deleted.",
+      "translation": "Anuncio preestablecido '{0}' eliminado."
+    },
+    {
+      "source": "Announcement preset saved.",
+      "translation": "Preajuste de anuncio guardado."
+    },
+    {
       "source": "Announcement presets",
       "translation": "Ajustes preestablecidos de anuncios"
     },
@@ -35133,6 +35453,10 @@
     {
       "source": "Apply point edit",
       "translation": "Aplicar edición de puntos"
+    },
+    {
+      "source": "Apply selected",
+      "translation": "Aplicar seleccionado"
     },
     {
       "source": "Apply the original focus and Odyssey suit rules consistently to every passive overlay.",
@@ -35341,6 +35665,10 @@
     {
       "source": "Attach session screenshots",
       "translation": "Adjuntar capturas de pantalla de la sesión"
+    },
+    {
+      "source": "Audio announcements",
+      "translation": "Anuncios de audio"
     },
     {
       "source": "Audit all boxels",
@@ -36771,6 +37099,10 @@
       "translation": "CARGA"
     },
     {
+      "source": "CARGO HOLD",
+      "translation": "BODEGA DE CARGA"
+    },
+    {
       "source": "CARRIER ARRIVED",
       "translation": "EL TRANSPORTISTA LLEGÓ"
     },
@@ -37319,6 +37651,10 @@
       "translation": "Recordatorio de carga completa después de un minuto de inactividad"
     },
     {
+      "source": "Cargo hold is empty.",
+      "translation": "La bodega de carga está vacía."
+    },
+    {
       "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
       "translation": "La carga se asigna a misiones activas en orden de aceptación. Los recuentos entregados son acumulativos. La culminación, el fracaso y el abandono siguen a los acontecimientos del diario."
     },
@@ -37357,10 +37693,6 @@
     {
       "source": "Cargo: {0} / {1} t · Limpets: {2}",
       "translation": "Carga: {0} / {1} t · Lapas: {2}"
-    },
-    {
-      "source": "CargoCapacity",
-      "translation": "Capacidad de carga"
     },
     {
       "source": "CargoDepot",
@@ -37589,6 +37921,14 @@
     {
       "source": "Chemicals",
       "translation": "quimicos"
+    },
+    {
+      "source": "Child",
+      "translation": "niño"
+    },
+    {
+      "source": "Chime volume",
+      "translation": "Volumen del timbre"
     },
     {
       "source": "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
@@ -39747,6 +40087,10 @@
       "translation": "SALIDA HACIA {0}"
     },
     {
+      "source": "DEPLETED",
+      "translation": "AGOTADO"
+    },
+    {
       "source": "DESCENT",
       "translation": "DESCENSO"
     },
@@ -40975,6 +41319,10 @@
       "translation": "Cada rol crece o se reduce de forma independiente. Zero utiliza el tamaño de referencia del tema."
     },
     {
+      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
+      "translation": "Cada fila es un objetivo independiente. Un prospecto califica cuando al menos un mineral listado alcanza su mínimo. Una lista vacía anuncia cada mineral."
+    },
+    {
       "source": "Eagle",
       "translation": "águila"
     },
@@ -41387,6 +41735,10 @@
       "translation": "Introduzca un mineral y entre 0 y 16 toneladas pendientes."
     },
     {
+      "source": "Enter a mineral and minimum percentage.",
+      "translation": "Introduce un mineral y un porcentaje mínimo."
+    },
+    {
       "source": "Enter a mineral name.",
       "translation": "Introduzca un nombre de mineral."
     },
@@ -41401,6 +41753,10 @@
     {
       "source": "Enter a percentage from 0 to 100.",
       "translation": "Introduzca un porcentaje de 0 a 100."
+    },
+    {
+      "source": "Enter a preset name, then save the current announcement filters.",
+      "translation": "Ingrese un nombre preestablecido, luego guarde los filtros de anuncios actuales."
     },
     {
       "source": "Enter a star-system name to set a custom origin.",
@@ -42289,6 +42645,18 @@
     {
       "source": "Felicia Winters",
       "translation": "Felicia inviernos"
+    },
+    {
+      "source": "Female 1",
+      "translation": "hembra 1"
+    },
+    {
+      "source": "Female 2",
+      "translation": "hembra 2"
+    },
+    {
+      "source": "Female 3",
+      "translation": "hembra 3"
     },
     {
       "source": "Fenris",
@@ -43833,6 +44201,10 @@
     {
       "source": "HGG",
       "translation": "HGG"
+    },
+    {
+      "source": "HH:mm:ss",
+      "translation": "HH:mm:ss"
     },
     {
       "source": "HIGH",
@@ -45847,6 +46219,10 @@
       "translation": "Cal"
     },
     {
+      "source": "Limpets",
+      "translation": "lapas"
+    },
+    {
       "source": "Linked",
       "translation": "Vinculado"
     },
@@ -45995,16 +46371,8 @@
       "translation": "Cargue un sistema en vivo para revisar sus sitios Raven Colonial."
     },
     {
-      "source": "Load installed voices",
-      "translation": "Cargar voces instaladas"
-    },
-    {
       "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
       "translation": "La carga es de sólo lectura. Las ediciones permanecen locales hasta que se realiza una nueva comparación de Raven y usted confirma explícitamente la publicación."
-    },
-    {
-      "source": "Load preset",
-      "translation": "Cargar preajuste"
     },
     {
       "source": "Load system",
@@ -46243,16 +46611,12 @@
       "translation": "Imagen de referencia de la flora local."
     },
     {
-      "source": "Local mining speech currently uses Windows voices.",
-      "translation": "El discurso minero local actualmente utiliza voces de Windows."
-    },
-    {
       "source": "Local ring discoveries",
       "translation": "Descubrimientos de anillos locales"
     },
     {
-      "source": "Local voices loaded.",
-      "translation": "Voces locales cargadas."
+      "source": "Local voices loaded from {0}.",
+      "translation": "Voces locales cargadas desde {0}."
     },
     {
       "source": "LocalFloraDirectory",
@@ -46529,6 +46893,18 @@
     {
       "source": "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
       "translation": "Realizar un proyecto con cambios primarios en el enfoque de planificación del comandante; no reordena los sitios almacenados para el sistema."
+    },
+    {
+      "source": "Male 1",
+      "translation": "macho 1"
+    },
+    {
+      "source": "Male 2",
+      "translation": "macho 2"
+    },
+    {
+      "source": "Male 3",
+      "translation": "macho 3"
     },
     {
       "source": "Malformed or unknown journal fields are logged without requiring SrvSurvey to rewrite the source file.",
@@ -47031,6 +47407,10 @@
       "translation": "La disponibilidad de minerales sigue la composición del anillo. Los precios varían; Verifique las observaciones actuales del mercado antes de vender."
     },
     {
+      "source": "Mineral thresholds",
+      "translation": "Umbrales minerales"
+    },
+    {
       "source": "Minerals",
       "translation": "Minerales"
     },
@@ -47119,6 +47499,10 @@
       "translation": "Controles de calibración minera"
     },
     {
+      "source": "Mining cargo hold",
+      "translation": "Bodega de carga minera"
+    },
+    {
       "source": "Mining data could not be loaded: {0}",
       "translation": "No se pudieron cargar los datos de minería: {0}"
     },
@@ -47153,10 +47537,6 @@
     {
       "source": "Mining notifications",
       "translation": "Notificaciones mineras"
-    },
-    {
-      "source": "Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "Las notificaciones de minería aparecen solo a bordo de tu barco principal. Utilice los controles de visibilidad del panel a continuación para mostrar u ocultar cada superposición."
     },
     {
       "source": "Mining overview map",
@@ -47201,6 +47581,10 @@
     {
       "source": "MiningReferenceCommodities",
       "translation": "MineríaReferenciaCommodities"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowCargo",
+      "translation": "MiningWorkspace.ShouldShowCargo"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -47787,6 +48171,10 @@
       "translation": "Nueva ruta de registro: {0}"
     },
     {
+      "source": "New preset",
+      "translation": "Nuevo preajuste"
+    },
+    {
       "source": "New profile",
       "translation": "Nuevo perfil"
     },
@@ -47805,6 +48193,10 @@
     {
       "source": "New site name",
       "translation": "Nuevo nombre del sitio"
+    },
+    {
+      "source": "New threshold",
+      "translation": "Nuevo umbral"
     },
     {
       "source": "New to this Commander according to Commander Codex history",
@@ -48297,6 +48689,10 @@
     {
       "source": "No live system",
       "translation": "Sin sistema en vivo"
+    },
+    {
+      "source": "No local speech service was found. Install Speech Dispatcher or eSpeak NG on Linux.",
+      "translation": "No se encontró ningún servicio de voz local. Instale Speech Dispatcher o eSpeak NG en Linux."
     },
     {
       "source": "No local voices are available.",
@@ -49471,6 +49867,10 @@
       "translation": "planetario"
     },
     {
+      "source": "Osmium",
+      "translation": "Osmio"
+    },
+    {
       "source": "Osseus Discus",
       "translation": "Disco óseo"
     },
@@ -49883,6 +50283,10 @@
       "translation": "PASIVO"
     },
     {
+      "source": "PATH",
+      "translation": "CAMINO"
+    },
+    {
       "source": "PEAK SELL SNAPSHOT",
       "translation": "INSTANTÁNEA DEL PICO DE VENTA"
     },
@@ -49983,10 +50387,6 @@
       "translation": "Nombre del proyecto"
     },
     {
-      "source": "PROSPECTOR",
-      "translation": "Prospector"
-    },
-    {
       "source": "Pad 02 | 164 m",
       "translation": "Almohadilla 02 | 164 metros"
     },
@@ -50079,6 +50479,14 @@
       "translation": "Durazno"
     },
     {
+      "source": "Persistent prospector results",
+      "translation": "Resultados persistentes del buscador"
+    },
+    {
+      "source": "Persistent prospector results shown in the overlay",
+      "translation": "Resultados persistentes del prospector mostrados en la superposición"
+    },
+    {
       "source": "Personal EDSM API key",
       "translation": "Clave API personal EDSM"
     },
@@ -50131,16 +50539,24 @@
       "translation": "platino"
     },
     {
+      "source": "Platinum 22.1% · Bertrandite 8.5%",
+      "translation": "Platino 22,1% · Bertrandita 8,5%"
+    },
+    {
       "source": "Platinum 34.8%",
       "translation": "Platino 34,8%"
     },
     {
-      "source": "Platinum 34.8% · Painite 12.4% · Remaining 73%",
-      "translation": "Platino 34,8% · Painita 12,4% · Restante 73%"
+      "source": "Platinum 34.8% · Osmium 12.4%",
+      "translation": "Platino 34,8% · Osmio 12,4%"
     },
     {
       "source": "Platinum ×1",
       "translation": "Platino ×1"
+    },
+    {
+      "source": "Play a chime for qualifying prospects",
+      "translation": "Toque un timbre para los prospectos calificados"
     },
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
@@ -50233,6 +50649,10 @@
     {
       "source": "PlotMiniTrack",
       "translation": "TramaMiniPista"
+    },
+    {
+      "source": "PlotMiningCargo",
+      "translation": "TramaMineríaCarga"
     },
     {
       "source": "PlotMiningFiregroups",
@@ -50895,6 +51315,10 @@
       "translation": "propaganda"
     },
     {
+      "source": "Prospected",
+      "translation": "Prospectado"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Resultados de prospección"
     },
@@ -50909,6 +51333,10 @@
     {
       "source": "Prospector",
       "translation": "Prospector"
+    },
+    {
+      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
+      "translation": "Las notificaciones del prospector y el rastreador de bodegas de carga aparecen solo a bordo de su barco principal. Utilice los controles de visibilidad del panel a continuación para mostrar u ocultar cada superposición."
     },
     {
       "source": "Provider page (0 first)",
@@ -52339,6 +52767,10 @@
       "translation": "Actualizar los transportistas vinculados de RavenColonial"
     },
     {
+      "source": "Refresh local voices",
+      "translation": "Actualizar las voces locales"
+    },
+    {
       "source": "Refresh preview",
       "translation": "Actualizar vista previa"
     },
@@ -52501,10 +52933,6 @@
     {
       "source": "Remove development quest",
       "translation": "Eliminar misión de desarrollo"
-    },
-    {
-      "source": "Remove filter",
-      "translation": "Quitar filtro"
     },
     {
       "source": "Remove group",
@@ -54043,6 +54471,14 @@
       "translation": "Guarde sistemas y anillos de minería en sus propias categorías."
     },
     {
+      "source": "Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it.",
+      "translation": "Guarde el umbral completo y la configuración del tipo de asteroide, luego seleccione un ajuste preestablecido para aplicarlo, cambiarle el nombre o eliminarlo."
+    },
+    {
+      "source": "Save threshold",
+      "translation": "Guardar umbral"
+    },
+    {
       "source": "Save to Library",
       "translation": "Guardar en la biblioteca"
     },
@@ -54679,6 +55115,10 @@
       "translation": "Seleccione un sistema coincidente"
     },
     {
+      "source": "Select a mineral threshold to delete.",
+      "translation": "Seleccione un umbral de minerales para eliminar."
+    },
+    {
       "source": "Select a recorded boxel",
       "translation": "Seleccione un cuadro grabado"
     },
@@ -54701,6 +55141,10 @@
     {
       "source": "Select a system from the search results.",
       "translation": "Seleccione un sistema de los resultados de la búsqueda."
+    },
+    {
+      "source": "Select an announcement preset to delete.",
+      "translation": "Seleccione un anuncio preestablecido para eliminar."
     },
     {
       "source": "Select an equipped module",
@@ -54895,10 +55339,6 @@
       "translation": "Establecer un objetivo para comenzar la orientación"
     },
     {
-      "source": "Set filter",
-      "translation": "Establecer filtro"
-    },
-    {
       "source": "Set focus on Elite Dangerous after each FSD jump.",
       "translation": "Establece el foco en Elite Dangerous después de cada salto FSD."
     },
@@ -54913,10 +55353,6 @@
     {
       "source": "Set group label",
       "translation": "Establecer etiqueta de grupo"
-    },
-    {
-      "source": "Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals.",
-      "translation": "Establecer umbrales de minerales para los anuncios de prospección. Elimine todos los filtros para anunciar todos los minerales."
     },
     {
       "source": "Set obelisk group label {0}.",
@@ -55919,6 +56355,10 @@
       "translation": "Resumen de especies y atmósfera."
     },
     {
+      "source": "Speech Dispatcher",
+      "translation": "Despachador de discursos"
+    },
+    {
       "source": "Speech rate",
       "translation": "Velocidad del habla"
     },
@@ -56129,6 +56569,10 @@
     {
       "source": "SrvSurvey mining activity overlay",
       "translation": "SrvSurvey superposición de actividad minera"
+    },
+    {
+      "source": "SrvSurvey mining cargo overlay",
+      "translation": "SrvSurvey superposición de carga minera"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -57227,6 +57671,10 @@
       "translation": "Datos del sistema no disponibles."
     },
     {
+      "source": "System default",
+      "translation": "Valor predeterminado del sistema"
+    },
+    {
       "source": "System details could not be loaded: {0}",
       "translation": "No se pudieron cargar los detalles del sistema: {0}"
     },
@@ -57485,6 +57933,10 @@
     {
       "source": "TARGET A01",
       "translation": "OBJETIVO A01"
+    },
+    {
+      "source": "TARGET FOUND",
+      "translation": "OBJETIVO ENCONTRADO"
     },
     {
       "source": "TARGET PNG FOLDER",
@@ -59883,6 +60335,14 @@
       "translation": "umbral"
     },
     {
+      "source": "Threshold for {0} removed.",
+      "translation": "Se eliminó el umbral para {0}."
+    },
+    {
+      "source": "Threshold for {0} saved.",
+      "translation": "Umbral para {0} guardado."
+    },
+    {
       "source": "Thrusters",
       "translation": "Propulsores"
     },
@@ -62003,6 +62463,10 @@
       "translation": "La sesión del Administrador de reinicio de Windows falló con el error {0}."
     },
     {
+      "source": "Windows Speech API",
+      "translation": "API de voz de Windows"
+    },
+    {
       "source": "Windows administrator approval is required to update this protected installation. The player profile remains untouched.",
       "translation": "Se requiere la aprobación del administrador de Windows para actualizar esta instalación protegida. El perfil del jugador permanece intacto."
     },
@@ -62037,6 +62501,10 @@
     {
       "source": "Windows topmost transparency, native click-through, game-window tracking, and global keyboard input are available.",
       "translation": "Están disponibles la transparencia superior de Windows, el clic nativo, el seguimiento de la ventana del juego y la entrada de teclado global."
+    },
+    {
+      "source": "Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available.",
+      "translation": "Windows utiliza voces SAPI instaladas. Linux utiliza Speech Dispatcher o eSpeak NG cuando esté disponible."
     },
     {
       "source": "Windows: the OpenVR client library is included with SrvSurvey.",
@@ -62281,6 +62749,10 @@
     {
       "source": "all",
       "translation": "todo"
+    },
+    {
+      "source": "all minerals",
+      "translation": "todos los minerales"
     },
     {
       "source": "allcsv",
@@ -62699,6 +63171,10 @@
       "translation": "comandos de chat"
     },
     {
+      "source": "child",
+      "translation": "niño"
+    },
+    {
       "source": "clear",
       "translation": "claro"
     },
@@ -62839,6 +63315,14 @@
       "translation": "enfriamiento"
     },
     {
+      "source": "core + laser",
+      "translation": "núcleo + láser"
+    },
+    {
+      "source": "core only",
+      "translation": "solo núcleo"
+    },
+    {
       "source": "corsair",
       "translation": "corsario"
     },
@@ -62963,6 +63447,10 @@
       "translation": "p.ej. Platino ×2"
     },
     {
+      "source": "eSpeak NG",
+      "translation": "eSpeak NG"
+    },
+    {
       "source": "eagle",
       "translation": "águila"
     },
@@ -63051,6 +63539,14 @@
       "translation": "es"
     },
     {
+      "source": "espeak",
+      "translation": "hablar"
+    },
+    {
+      "source": "espeak-ng",
+      "translation": "hablando-ng"
+    },
+    {
       "source": "event",
       "translation": "evento"
     },
@@ -63121,6 +63617,30 @@
     {
       "source": "federation",
       "translation": "federación"
+    },
+    {
+      "source": "female 1",
+      "translation": "hembra 1"
+    },
+    {
+      "source": "female 2",
+      "translation": "hembra 2"
+    },
+    {
+      "source": "female 3",
+      "translation": "hembra 3"
+    },
+    {
+      "source": "female1",
+      "translation": "hembra1"
+    },
+    {
+      "source": "female2",
+      "translation": "hembra2"
+    },
+    {
+      "source": "female3",
+      "translation": "hembra3"
     },
     {
       "source": "ferdelance",
@@ -63583,6 +64103,10 @@
       "translation": "láser"
     },
     {
+      "source": "laser only",
+      "translation": "solo láser"
+    },
+    {
       "source": "last visit",
       "translation": "última visita"
     },
@@ -63631,6 +64155,10 @@
       "translation": "locales"
     },
     {
+      "source": "local speech",
+      "translation": "discurso local"
+    },
+    {
       "source": "log folder proton profile data source",
       "translation": "carpeta de registro fuente de datos del perfil de protones"
     },
@@ -63653,6 +64181,30 @@
     {
       "source": "mainengines",
       "translation": "motores principales"
+    },
+    {
+      "source": "male 1",
+      "translation": "macho 1"
+    },
+    {
+      "source": "male 2",
+      "translation": "macho 2"
+    },
+    {
+      "source": "male 3",
+      "translation": "macho 3"
+    },
+    {
+      "source": "male1",
+      "translation": "hombre1"
+    },
+    {
+      "source": "male2",
+      "translation": "macho2"
+    },
+    {
+      "source": "male3",
+      "translation": "hombre3"
     },
     {
       "source": "mamba",
@@ -63781,6 +64333,10 @@
     {
       "source": "multiple",
       "translation": "múltiple"
+    },
+    {
+      "source": "muted",
+      "translation": "apagado"
     },
     {
       "source": "n/a",
@@ -64389,6 +64945,10 @@
     {
       "source": "spansh.co.uk",
       "translation": "spansh.es"
+    },
+    {
+      "source": "spd-say",
+      "translation": "spd-decir"
     },
     {
       "source": "spherical",
@@ -65075,6 +65635,10 @@
       "translation": "{0} / {1} CUERPOS COMPLETOS"
     },
     {
+      "source": "{0} / {1} T",
+      "translation": "{0} / {1} T"
+    },
+    {
       "source": "{0} B 3",
       "translation": "{0}B 3"
     },
@@ -65165,6 +65729,14 @@
     {
       "source": "{0} SrvSurvey instances are currently running.",
       "translation": "{0} SrvSurvey instancias se están ejecutando actualmente."
+    },
+    {
+      "source": "{0} T / UNKNOWN",
+      "translation": "{0} T / DESCONOCIDO"
+    },
+    {
+      "source": "{0} T REMAINING",
+      "translation": "{0} T RESTANTE"
     },
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
@@ -65763,6 +66335,10 @@
       "translation": "{0} · OBELISCO ACTIVO"
     },
     {
+      "source": "{0} · Remaining {1}%",
+      "translation": "{0} · Restante {1}%"
+    },
+    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Nivel {1}: {2}"
     },
@@ -65839,6 +66415,10 @@
       "translation": "{0}% de {1}"
     },
     {
+      "source": "{0}% remaining",
+      "translation": "{0}% restante"
+    },
+    {
       "source": "{0}: {1} of {2}{3}",
       "translation": "{0}: {1} de {2}{3}"
     },
@@ -65857,6 +66437,10 @@
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
       "translation": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}"
+    },
+    {
+      "source": "{0}Core: {1}",
+      "translation": "{0}Núcleo: {1}"
     },
     {
       "source": "{0}None needed; already current.",
@@ -66537,6 +67121,10 @@
       "translation": "420 besoin | 120 FC | 16 navire"
     },
     {
+      "source": "431 / 960 T",
+      "translation": "431 / 960 tonnes"
+    },
+    {
       "source": "44 JUMPS LEFT",
       "translation": "44 SAUTS À GAUCHE"
     },
@@ -66547,6 +67135,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 AL | 21 502,09 LY restants"
+    },
+    {
+      "source": "529 T REMAINING",
+      "translation": "529 T RESTANT"
     },
     {
       "source": "6 BODIES REMAIN | EST. VALUE 18.4 M CR",
@@ -67051,6 +67643,10 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "OBÉLISQUES ACTIFS"
+    },
+    {
+      "source": "ACTIVE PROSPECTORS",
+      "translation": "PROSPECTEURS ACTIFS"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -68013,6 +68609,22 @@
       "translation": "Gamma des ruines antiques | complet"
     },
     {
+      "source": "Announcement events",
+      "translation": "Événements d’annonce"
+    },
+    {
+      "source": "Announcement preset '{0}' applied.",
+      "translation": "Le préréglage d'annonce « {0} » est appliqué."
+    },
+    {
+      "source": "Announcement preset '{0}' deleted.",
+      "translation": "Le préréglage d'annonce '{0}' a été supprimé."
+    },
+    {
+      "source": "Announcement preset saved.",
+      "translation": "Préréglage d'annonce enregistré."
+    },
+    {
       "source": "Announcement presets",
       "translation": "Préréglages d'annonces"
     },
@@ -68159,6 +68771,10 @@
     {
       "source": "Apply point edit",
       "translation": "Appliquer la modification de point"
+    },
+    {
+      "source": "Apply selected",
+      "translation": "Appliquer la sélection"
     },
     {
       "source": "Apply the original focus and Odyssey suit rules consistently to every passive overlay.",
@@ -68367,6 +68983,10 @@
     {
       "source": "Attach session screenshots",
       "translation": "Joindre des captures d'écran de la session"
+    },
+    {
+      "source": "Audio announcements",
+      "translation": "Annonces audio"
     },
     {
       "source": "Audit all boxels",
@@ -69797,6 +70417,10 @@
       "translation": "CARGAISON"
     },
     {
+      "source": "CARGO HOLD",
+      "translation": "SOUTENUE"
+    },
+    {
       "source": "CARRIER ARRIVED",
       "translation": "TRANSPORTEUR ARRIVÉ"
     },
@@ -70345,6 +70969,10 @@
       "translation": "Rappel de chargement plein après une minute d'inactivité"
     },
     {
+      "source": "Cargo hold is empty.",
+      "translation": "La soute est vide."
+    },
+    {
       "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
       "translation": "Le fret est affecté aux missions actives dans l'ordre d'acceptation. Les décomptes livrés sont cumulatifs. L'achèvement, l'échec et l'abandon suivent les événements du journal."
     },
@@ -70383,10 +71011,6 @@
     {
       "source": "Cargo: {0} / {1} t · Limpets: {2}",
       "translation": "Cargaison : {0} / {1} t · Patelles : {2}"
-    },
-    {
-      "source": "CargoCapacity",
-      "translation": "Capacité de chargement"
     },
     {
       "source": "CargoDepot",
@@ -70615,6 +71239,14 @@
     {
       "source": "Chemicals",
       "translation": "Produits chimiques"
+    },
+    {
+      "source": "Child",
+      "translation": "enfant"
+    },
+    {
+      "source": "Chime volume",
+      "translation": "Volume du carillon"
     },
     {
       "source": "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
@@ -72773,6 +73405,10 @@
       "translation": "DÉPART VERS {0}"
     },
     {
+      "source": "DEPLETED",
+      "translation": "ÉPUISÉ"
+    },
+    {
       "source": "DESCENT",
       "translation": "DESCENTE"
     },
@@ -74001,6 +74637,10 @@
       "translation": "Chaque rôle grandit ou diminue indépendamment. Zero utilise la taille de base du thème."
     },
     {
+      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
+      "translation": "Chaque ligne est une cible indépendante. Un prospect est admissible lorsqu’au moins un minéral répertorié atteint son minimum. Une liste vide annonce chaque minéral."
+    },
+    {
       "source": "Eagle",
       "translation": "aigle"
     },
@@ -74413,6 +75053,10 @@
       "translation": "Entrez un minéral et 0 à 16 tonnes en attente."
     },
     {
+      "source": "Enter a mineral and minimum percentage.",
+      "translation": "Entrez un minéral et un pourcentage minimum."
+    },
+    {
       "source": "Enter a mineral name.",
       "translation": "Entrez un nom de minéral."
     },
@@ -74427,6 +75071,10 @@
     {
       "source": "Enter a percentage from 0 to 100.",
       "translation": "Entrez un pourcentage de 0 à 100."
+    },
+    {
+      "source": "Enter a preset name, then save the current announcement filters.",
+      "translation": "Saisissez un nom prédéfini, puis enregistrez les filtres d'annonces actuels."
     },
     {
       "source": "Enter a star-system name to set a custom origin.",
@@ -75315,6 +75963,18 @@
     {
       "source": "Felicia Winters",
       "translation": "Félicia Winters"
+    },
+    {
+      "source": "Female 1",
+      "translation": "femelle 1"
+    },
+    {
+      "source": "Female 2",
+      "translation": "femelle 2"
+    },
+    {
+      "source": "Female 3",
+      "translation": "femelle 3"
     },
     {
       "source": "Fenris",
@@ -76859,6 +77519,10 @@
     {
       "source": "HGG",
       "translation": "HGG"
+    },
+    {
+      "source": "HH:mm:ss",
+      "translation": "HH : mm : ss"
     },
     {
       "source": "HIGH",
@@ -78873,6 +79537,10 @@
       "translation": "Citron vert"
     },
     {
+      "source": "Limpets",
+      "translation": "Patelles"
+    },
+    {
       "source": "Linked",
       "translation": "Lié"
     },
@@ -79021,16 +79689,8 @@
       "translation": "Chargez un système en direct pour examiner ses sites Raven Colonial."
     },
     {
-      "source": "Load installed voices",
-      "translation": "Charger les voix installées"
-    },
-    {
       "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
       "translation": "La charge est en lecture seule. Les modifications restent locales jusqu'à ce qu'une nouvelle comparaison Raven soit effectuée et que vous confirmiez explicitement la publication."
-    },
-    {
-      "source": "Load preset",
-      "translation": "Charger le préréglage"
     },
     {
       "source": "Load system",
@@ -79269,16 +79929,12 @@
       "translation": "Image de référence de la flore locale"
     },
     {
-      "source": "Local mining speech currently uses Windows voices.",
-      "translation": "Le discours minier local utilise actuellement les voix Windows."
-    },
-    {
       "source": "Local ring discoveries",
       "translation": "Découvertes d'anneaux locaux"
     },
     {
-      "source": "Local voices loaded.",
-      "translation": "Voix locales chargées."
+      "source": "Local voices loaded from {0}.",
+      "translation": "Voix locales chargées depuis {0}."
     },
     {
       "source": "LocalFloraDirectory",
@@ -79555,6 +80211,18 @@
     {
       "source": "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
       "translation": "Apporter les principaux changements à un projet Objectif de planification du commandant ; il ne réorganise pas les sites stockés pour le système."
+    },
+    {
+      "source": "Male 1",
+      "translation": "mâle 1"
+    },
+    {
+      "source": "Male 2",
+      "translation": "mâle 2"
+    },
+    {
+      "source": "Male 3",
+      "translation": "mâle 3"
     },
     {
       "source": "Malformed or unknown journal fields are logged without requiring SrvSurvey to rewrite the source file.",
@@ -80057,6 +80725,10 @@
       "translation": "La disponibilité des minéraux suit la composition des anneaux. Les prix varient ; vérifiez les observations actuelles du marché avant de vendre."
     },
     {
+      "source": "Mineral thresholds",
+      "translation": "Seuils minéraux"
+    },
+    {
       "source": "Minerals",
       "translation": "Minéraux"
     },
@@ -80145,6 +80817,10 @@
       "translation": "Contrôles d'étalonnage minier"
     },
     {
+      "source": "Mining cargo hold",
+      "translation": "Cale à marchandises minières"
+    },
+    {
       "source": "Mining data could not be loaded: {0}",
       "translation": "Les données d'exploration de données n'ont pas pu être chargées : {0}"
     },
@@ -80179,10 +80855,6 @@
     {
       "source": "Mining notifications",
       "translation": "Notifications minières"
-    },
-    {
-      "source": "Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "Les notifications minières n'apparaissent qu'à bord de votre navire principal. Utilisez les commandes de visibilité du panneau ci-dessous pour afficher ou masquer chaque superposition."
     },
     {
       "source": "Mining overview map",
@@ -80227,6 +80899,10 @@
     {
       "source": "MiningReferenceCommodities",
       "translation": "MiningReferenceCommodities"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowCargo",
+      "translation": "MiningWorkspace.ShouldShowCargo"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -80813,6 +81489,10 @@
       "translation": "Nouveau chemin de journal : {0}"
     },
     {
+      "source": "New preset",
+      "translation": "Nouveau préréglage"
+    },
+    {
       "source": "New profile",
       "translation": "Nouveau profil"
     },
@@ -80831,6 +81511,10 @@
     {
       "source": "New site name",
       "translation": "Nouveau nom du site"
+    },
+    {
+      "source": "New threshold",
+      "translation": "Nouveau seuil"
     },
     {
       "source": "New to this Commander according to Commander Codex history",
@@ -81323,6 +82007,10 @@
     {
       "source": "No live system",
       "translation": "Pas de système en direct"
+    },
+    {
+      "source": "No local speech service was found. Install Speech Dispatcher or eSpeak NG on Linux.",
+      "translation": "Aucun service vocal local n'a été trouvé. Installez Speech Dispatcher ou eSpeak NG sous Linux."
     },
     {
       "source": "No local voices are available.",
@@ -82497,6 +83185,10 @@
       "translation": "Planétaire"
     },
     {
+      "source": "Osmium",
+      "translation": "Osmium"
+    },
+    {
       "source": "Osseus Discus",
       "translation": "Discus d'Osseus"
     },
@@ -82909,6 +83601,10 @@
       "translation": "PASSIF"
     },
     {
+      "source": "PATH",
+      "translation": "CHEMIN"
+    },
+    {
       "source": "PEAK SELL SNAPSHOT",
       "translation": "APERÇU DES VENTES DE POINTE"
     },
@@ -83009,10 +83705,6 @@
       "translation": "Nom du projet"
     },
     {
-      "source": "PROSPECTOR",
-      "translation": "Prospecteur"
-    },
-    {
       "source": "Pad 02 | 164 m",
       "translation": "Bloc 02 | 164 m"
     },
@@ -83105,6 +83797,14 @@
       "translation": "Pêche"
     },
     {
+      "source": "Persistent prospector results",
+      "translation": "Résultats de prospection persistants"
+    },
+    {
+      "source": "Persistent prospector results shown in the overlay",
+      "translation": "Résultats du prospecteur persistant affichés en superposition"
+    },
+    {
       "source": "Personal EDSM API key",
       "translation": "Clé API personnelle EDSM"
     },
@@ -83157,16 +83857,24 @@
       "translation": "platine"
     },
     {
+      "source": "Platinum 22.1% · Bertrandite 8.5%",
+      "translation": "Platine 22,1% · Bertrandite 8,5%"
+    },
+    {
       "source": "Platinum 34.8%",
       "translation": "Platine 34,8%"
     },
     {
-      "source": "Platinum 34.8% · Painite 12.4% · Remaining 73%",
-      "translation": "Platine 34,8% · Painite 12,4% · 73% restants"
+      "source": "Platinum 34.8% · Osmium 12.4%",
+      "translation": "Platine 34,8% · Osmium 12,4%"
     },
     {
       "source": "Platinum ×1",
       "translation": "Platine ×1"
+    },
+    {
+      "source": "Play a chime for qualifying prospects",
+      "translation": "Jouez un carillon pour les prospects qualifiés"
     },
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
@@ -83259,6 +83967,10 @@
     {
       "source": "PlotMiniTrack",
       "translation": "PlotMiniTrack"
+    },
+    {
+      "source": "PlotMiningCargo",
+      "translation": "TerrainExploitation minièreCargo"
     },
     {
       "source": "PlotMiningFiregroups",
@@ -83921,6 +84633,10 @@
       "translation": "Propagande"
     },
     {
+      "source": "Prospected",
+      "translation": "Prospecté"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Résultats de prospection"
     },
@@ -83935,6 +84651,10 @@
     {
       "source": "Prospector",
       "translation": "Prospecteur"
+    },
+    {
+      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
+      "translation": "Les notifications des prospecteurs et le suivi des soutes n'apparaissent qu'à bord de votre navire principal. Utilisez les commandes de visibilité du panneau ci-dessous pour afficher ou masquer chaque superposition."
     },
     {
       "source": "Provider page (0 first)",
@@ -85365,6 +86085,10 @@
       "translation": "Actualiser les transporteurs RavenColonial liés"
     },
     {
+      "source": "Refresh local voices",
+      "translation": "Actualiser les voix locales"
+    },
+    {
       "source": "Refresh preview",
       "translation": "Actualiser l'aperçu"
     },
@@ -85527,10 +86251,6 @@
     {
       "source": "Remove development quest",
       "translation": "Supprimer la quête de développement"
-    },
-    {
-      "source": "Remove filter",
-      "translation": "Supprimer le filtre"
     },
     {
       "source": "Remove group",
@@ -87069,6 +87789,14 @@
       "translation": "Enregistrez les systèmes et les anneaux miniers dans vos propres catégories."
     },
     {
+      "source": "Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it.",
+      "translation": "Enregistrez la configuration complète du seuil et du type d'astéroïde, puis sélectionnez un préréglage pour l'appliquer, le renommer ou le supprimer."
+    },
+    {
+      "source": "Save threshold",
+      "translation": "Seuil de sauvegarde"
+    },
+    {
       "source": "Save to Library",
       "translation": "Enregistrer dans la bibliothèque"
     },
@@ -87705,6 +88433,10 @@
       "translation": "Sélectionnez un système correspondant"
     },
     {
+      "source": "Select a mineral threshold to delete.",
+      "translation": "Sélectionnez un seuil minéral à supprimer."
+    },
+    {
       "source": "Select a recorded boxel",
       "translation": "Sélectionnez un boxel enregistré"
     },
@@ -87727,6 +88459,10 @@
     {
       "source": "Select a system from the search results.",
       "translation": "Sélectionnez un système dans les résultats de la recherche."
+    },
+    {
+      "source": "Select an announcement preset to delete.",
+      "translation": "Sélectionnez un préréglage d'annonce à supprimer."
     },
     {
       "source": "Select an equipped module",
@@ -87921,10 +88657,6 @@
       "translation": "Fixer un objectif pour commencer le guidage"
     },
     {
-      "source": "Set filter",
-      "translation": "Définir le filtre"
-    },
-    {
       "source": "Set focus on Elite Dangerous after each FSD jump.",
       "translation": "Définissez le focus sur Elite Dangerous après chaque saut FSD."
     },
@@ -87939,10 +88671,6 @@
     {
       "source": "Set group label",
       "translation": "Définir l'étiquette du groupe"
-    },
-    {
-      "source": "Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals.",
-      "translation": "Fixez des seuils minéraux pour les annonces de prospection. Supprimez tous les filtres pour annoncer tous les minéraux."
     },
     {
       "source": "Set obelisk group label {0}.",
@@ -88945,6 +89673,10 @@
       "translation": "Résumé des espèces et de l'atmosphère"
     },
     {
+      "source": "Speech Dispatcher",
+      "translation": "Répartiteur de parole"
+    },
+    {
       "source": "Speech rate",
       "translation": "Taux de parole"
     },
@@ -89155,6 +89887,10 @@
     {
       "source": "SrvSurvey mining activity overlay",
       "translation": "SrvSurvey superposition d'activité minière"
+    },
+    {
+      "source": "SrvSurvey mining cargo overlay",
+      "translation": "SrvSurvey superposition de cargaison minière"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -90253,6 +90989,10 @@
       "translation": "Données système indisponibles."
     },
     {
+      "source": "System default",
+      "translation": "Valeur par défaut du système"
+    },
+    {
       "source": "System details could not be loaded: {0}",
       "translation": "Les détails du système n'ont pas pu être chargés : {0}"
     },
@@ -90511,6 +91251,10 @@
     {
       "source": "TARGET A01",
       "translation": "CIBLE A01"
+    },
+    {
+      "source": "TARGET FOUND",
+      "translation": "CIBLE TROUVÉE"
     },
     {
       "source": "TARGET PNG FOLDER",
@@ -92909,6 +93653,14 @@
       "translation": "Seuil"
     },
     {
+      "source": "Threshold for {0} removed.",
+      "translation": "Le seuil pour {0} a été supprimé."
+    },
+    {
+      "source": "Threshold for {0} saved.",
+      "translation": "Seuil pour {0} enregistré."
+    },
+    {
       "source": "Thrusters",
       "translation": "Propulseurs"
     },
@@ -95029,6 +95781,10 @@
       "translation": "La session Windows Restart Manager a échoué avec l'erreur {0}."
     },
     {
+      "source": "Windows Speech API",
+      "translation": "API vocale Windows"
+    },
+    {
       "source": "Windows administrator approval is required to update this protected installation. The player profile remains untouched.",
       "translation": "L'approbation de l'administrateur Windows est requise pour mettre à jour cette installation protégée. Le profil du joueur reste inchangé."
     },
@@ -95063,6 +95819,10 @@
     {
       "source": "Windows topmost transparency, native click-through, game-window tracking, and global keyboard input are available.",
       "translation": "La transparence maximale de Windows, le clic natif, le suivi de la fenêtre de jeu et la saisie globale au clavier sont disponibles."
+    },
+    {
+      "source": "Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available.",
+      "translation": "Windows utilise les voix SAPI installées. Linux utilise Speech Dispatcher ou eSpeak NG lorsqu'ils sont disponibles."
     },
     {
       "source": "Windows: the OpenVR client library is included with SrvSurvey.",
@@ -95307,6 +96067,10 @@
     {
       "source": "all",
       "translation": "tous"
+    },
+    {
+      "source": "all minerals",
+      "translation": "tous les minéraux"
     },
     {
       "source": "allcsv",
@@ -95725,6 +96489,10 @@
       "translation": "commandes de chat"
     },
     {
+      "source": "child",
+      "translation": "enfant"
+    },
+    {
       "source": "clear",
       "translation": "clair"
     },
@@ -95865,6 +96633,14 @@
       "translation": "refroidissement"
     },
     {
+      "source": "core + laser",
+      "translation": "noyau + laser"
+    },
+    {
+      "source": "core only",
+      "translation": "noyau seulement"
+    },
+    {
       "source": "corsair",
       "translation": "corsaire"
     },
@@ -95989,6 +96765,10 @@
       "translation": "par ex. Platine ×2"
     },
     {
+      "source": "eSpeak NG",
+      "translation": "eSpeakNG"
+    },
+    {
       "source": "eagle",
       "translation": "aigle"
     },
@@ -96077,6 +96857,14 @@
       "translation": "es"
     },
     {
+      "source": "espeak",
+      "translation": "parler"
+    },
+    {
+      "source": "espeak-ng",
+      "translation": "parler-ng"
+    },
+    {
       "source": "event",
       "translation": "événement"
     },
@@ -96147,6 +96935,30 @@
     {
       "source": "federation",
       "translation": "fédération"
+    },
+    {
+      "source": "female 1",
+      "translation": "femelle 1"
+    },
+    {
+      "source": "female 2",
+      "translation": "femelle 2"
+    },
+    {
+      "source": "female 3",
+      "translation": "femelle 3"
+    },
+    {
+      "source": "female1",
+      "translation": "femelle1"
+    },
+    {
+      "source": "female2",
+      "translation": "femelle2"
+    },
+    {
+      "source": "female3",
+      "translation": "femelle3"
     },
     {
       "source": "ferdelance",
@@ -96609,6 +97421,10 @@
       "translation": "laser"
     },
     {
+      "source": "laser only",
+      "translation": "laser uniquement"
+    },
+    {
       "source": "last visit",
       "translation": "dernière visite"
     },
@@ -96657,6 +97473,10 @@
       "translation": "locale"
     },
     {
+      "source": "local speech",
+      "translation": "discours local"
+    },
+    {
       "source": "log folder proton profile data source",
       "translation": "dossier de journal source de données de profil de proton"
     },
@@ -96679,6 +97499,30 @@
     {
       "source": "mainengines",
       "translation": "moteurs principaux"
+    },
+    {
+      "source": "male 1",
+      "translation": "mâle 1"
+    },
+    {
+      "source": "male 2",
+      "translation": "mâle 2"
+    },
+    {
+      "source": "male 3",
+      "translation": "mâle 3"
+    },
+    {
+      "source": "male1",
+      "translation": "mâle1"
+    },
+    {
+      "source": "male2",
+      "translation": "mâle2"
+    },
+    {
+      "source": "male3",
+      "translation": "mâle3"
     },
     {
       "source": "mamba",
@@ -96807,6 +97651,10 @@
     {
       "source": "multiple",
       "translation": "plusieurs"
+    },
+    {
+      "source": "muted",
+      "translation": "en sourdine"
     },
     {
       "source": "n/a",
@@ -97415,6 +98263,10 @@
     {
       "source": "spansh.co.uk",
       "translation": "spansh.co.uk"
+    },
+    {
+      "source": "spd-say",
+      "translation": "spd-dire"
     },
     {
       "source": "spherical",
@@ -98101,6 +98953,10 @@
       "translation": "{0} / {1} CORPS COMPLETS"
     },
     {
+      "source": "{0} / {1} T",
+      "translation": "{0} / {1} T"
+    },
+    {
       "source": "{0} B 3",
       "translation": "{0} B 3"
     },
@@ -98191,6 +99047,14 @@
     {
       "source": "{0} SrvSurvey instances are currently running.",
       "translation": "{0} SrvSurvey instances sont actuellement en cours d'exécution."
+    },
+    {
+      "source": "{0} T / UNKNOWN",
+      "translation": "{0} T / INCONNU"
+    },
+    {
+      "source": "{0} T REMAINING",
+      "translation": "{0} T RESTANT"
     },
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
@@ -98789,6 +99653,10 @@
       "translation": "{0} · OBÉLISQUE ACTIF"
     },
     {
+      "source": "{0} · Remaining {1}%",
+      "translation": "{0} · {1}% restant"
+    },
+    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Niveau {1} : {2}"
     },
@@ -98865,6 +99733,10 @@
       "translation": "{0}% de {1}"
     },
     {
+      "source": "{0}% remaining",
+      "translation": "{0}% restant"
+    },
+    {
       "source": "{0}: {1} of {2}{3}",
       "translation": "{0} : {1} sur {2}{3}"
     },
@@ -98883,6 +99755,10 @@
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
       "translation": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}"
+    },
+    {
+      "source": "{0}Core: {1}",
+      "translation": "{0}Noyau : {1}"
     },
     {
       "source": "{0}None needed; already current.",
@@ -99563,6 +100439,10 @@
       "translation": "420 necessidade | 120 FC | 16 navio"
     },
     {
+      "source": "431 / 960 T",
+      "translation": "431/960T"
+    },
+    {
       "source": "44 JUMPS LEFT",
       "translation": "44 SALTOS PARA A ESQUERDA"
     },
@@ -99573,6 +100453,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 AL | 21.502,09 anos restantes"
+    },
+    {
+      "source": "529 T REMAINING",
+      "translation": "529 T RESTANTE"
     },
     {
       "source": "6 BODIES REMAIN | EST. VALUE 18.4 M CR",
@@ -100077,6 +100961,10 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "OBELISCOS ATIVOS"
+    },
+    {
+      "source": "ACTIVE PROSPECTORS",
+      "translation": "PROSPECTORES ATIVOS"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -101039,6 +101927,22 @@
       "translation": "Gama de Ruínas Antigas | completo"
     },
     {
+      "source": "Announcement events",
+      "translation": "Eventos de anúncio"
+    },
+    {
+      "source": "Announcement preset '{0}' applied.",
+      "translation": "Predefinição de anúncio '{0}' aplicada."
+    },
+    {
+      "source": "Announcement preset '{0}' deleted.",
+      "translation": "Predefinição de anúncio '{0}' excluída."
+    },
+    {
+      "source": "Announcement preset saved.",
+      "translation": "Predefinição de anúncio salva."
+    },
+    {
       "source": "Announcement presets",
       "translation": "Predefinições de anúncios"
     },
@@ -101185,6 +102089,10 @@
     {
       "source": "Apply point edit",
       "translation": "Aplicar edição de ponto"
+    },
+    {
+      "source": "Apply selected",
+      "translation": "Aplicar selecionado"
     },
     {
       "source": "Apply the original focus and Odyssey suit rules consistently to every passive overlay.",
@@ -101393,6 +102301,10 @@
     {
       "source": "Attach session screenshots",
       "translation": "Anexe capturas de tela da sessão"
+    },
+    {
+      "source": "Audio announcements",
+      "translation": "Anúncios de áudio"
     },
     {
       "source": "Audit all boxels",
@@ -102823,6 +103735,10 @@
       "translation": "CARGA"
     },
     {
+      "source": "CARGO HOLD",
+      "translation": "PORÃO DE CARGA"
+    },
+    {
       "source": "CARRIER ARRIVED",
       "translation": "TRANSPORTADOR CHEGOU"
     },
@@ -103371,6 +104287,10 @@
       "translation": "Lembrete de carga cheia após um minuto de inatividade"
     },
     {
+      "source": "Cargo hold is empty.",
+      "translation": "O porão de carga está vazio."
+    },
+    {
       "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
       "translation": "A carga é alocada para missões ativas em ordem de aceitação. As contagens entregues são cumulativas. Conclusão, fracasso e abandono seguem os eventos do diário."
     },
@@ -103409,10 +104329,6 @@
     {
       "source": "Cargo: {0} / {1} t · Limpets: {2}",
       "translation": "Carga: {0} / {1} · Lapas: {2}"
-    },
-    {
-      "source": "CargoCapacity",
-      "translation": "Capacidade de carga"
     },
     {
       "source": "CargoDepot",
@@ -103641,6 +104557,14 @@
     {
       "source": "Chemicals",
       "translation": "Produtos Químicos"
+    },
+    {
+      "source": "Child",
+      "translation": "criança"
+    },
+    {
+      "source": "Chime volume",
+      "translation": "Volume da campainha"
     },
     {
       "source": "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
@@ -105799,6 +106723,10 @@
       "translation": "PARTIDA PARA {0}"
     },
     {
+      "source": "DEPLETED",
+      "translation": "ESGOTADO"
+    },
+    {
       "source": "DESCENT",
       "translation": "DESCIDA"
     },
@@ -107027,6 +107955,10 @@
       "translation": "Cada função cresce ou diminui de forma independente. Zero usa o tamanho da linha de base do tema."
     },
     {
+      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
+      "translation": "Cada linha é um destino independente. Um prospecto se qualifica quando pelo menos um mineral listado atinge seu mínimo. Uma lista vazia anuncia cada mineral."
+    },
+    {
       "source": "Eagle",
       "translation": "águia"
     },
@@ -107439,6 +108371,10 @@
       "translation": "Insira um mineral e 0–16 toneladas pendentes."
     },
     {
+      "source": "Enter a mineral and minimum percentage.",
+      "translation": "Insira um mineral e uma porcentagem mínima."
+    },
+    {
       "source": "Enter a mineral name.",
       "translation": "Insira um nome mineral."
     },
@@ -107453,6 +108389,10 @@
     {
       "source": "Enter a percentage from 0 to 100.",
       "translation": "Insira uma porcentagem de 0 a 100."
+    },
+    {
+      "source": "Enter a preset name, then save the current announcement filters.",
+      "translation": "Insira um nome predefinido e salve os filtros de anúncio atuais."
     },
     {
       "source": "Enter a star-system name to set a custom origin.",
@@ -108341,6 +109281,18 @@
     {
       "source": "Felicia Winters",
       "translation": "Felícia Winters"
+    },
+    {
+      "source": "Female 1",
+      "translation": "feminino 1"
+    },
+    {
+      "source": "Female 2",
+      "translation": "feminino 2"
+    },
+    {
+      "source": "Female 3",
+      "translation": "feminino 3"
     },
     {
       "source": "Fenris",
@@ -109885,6 +110837,10 @@
     {
       "source": "HGG",
       "translation": "HGG"
+    },
+    {
+      "source": "HH:mm:ss",
+      "translation": "HH:mm:ss"
     },
     {
       "source": "HIGH",
@@ -111899,6 +112855,10 @@
       "translation": "Lima"
     },
     {
+      "source": "Limpets",
+      "translation": "Lapas"
+    },
+    {
       "source": "Linked",
       "translation": "Vinculado"
     },
@@ -112047,16 +113007,8 @@
       "translation": "Carregue um sistema ativo para revisar seus sites Raven Colonial."
     },
     {
-      "source": "Load installed voices",
-      "translation": "Carregar vozes instaladas"
-    },
-    {
       "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
       "translation": "A carga é somente leitura. As edições permanecem locais até que uma nova comparação do Raven seja aprovada e você confirme explicitamente a publicação."
-    },
-    {
-      "source": "Load preset",
-      "translation": "Carregar predefinição"
     },
     {
       "source": "Load system",
@@ -112295,16 +113247,12 @@
       "translation": "Imagem de referência da flora local"
     },
     {
-      "source": "Local mining speech currently uses Windows voices.",
-      "translation": "A fala de mineração local atualmente usa vozes do Windows."
-    },
-    {
       "source": "Local ring discoveries",
       "translation": "Descobertas de anéis locais"
     },
     {
-      "source": "Local voices loaded.",
-      "translation": "Vozes locais carregadas."
+      "source": "Local voices loaded from {0}.",
+      "translation": "Vozes locais carregadas de {0}."
     },
     {
       "source": "LocalFloraDirectory",
@@ -112581,6 +113529,18 @@
     {
       "source": "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
       "translation": "Fazendo mudanças primárias no projeto Foco de planejamento do comandante; ele não reordena os sites armazenados no sistema."
+    },
+    {
+      "source": "Male 1",
+      "translation": "masculino 1"
+    },
+    {
+      "source": "Male 2",
+      "translation": "masculino 2"
+    },
+    {
+      "source": "Male 3",
+      "translation": "masculino 3"
     },
     {
       "source": "Malformed or unknown journal fields are logged without requiring SrvSurvey to rewrite the source file.",
@@ -113083,6 +114043,10 @@
       "translation": "A disponibilidade mineral segue a composição do anel. Os preços variam; verifique as observações atuais do mercado antes de vender."
     },
     {
+      "source": "Mineral thresholds",
+      "translation": "Limiares minerais"
+    },
+    {
       "source": "Minerals",
       "translation": "Minerais"
     },
@@ -113171,6 +114135,10 @@
       "translation": "Controles de calibração de mineração"
     },
     {
+      "source": "Mining cargo hold",
+      "translation": "Porão de carga de mineração"
+    },
+    {
       "source": "Mining data could not be loaded: {0}",
       "translation": "Não foi possível carregar os dados de mineração: {0}"
     },
@@ -113205,10 +114173,6 @@
     {
       "source": "Mining notifications",
       "translation": "Notificações de mineração"
-    },
-    {
-      "source": "Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "As notificações de mineração aparecem apenas a bordo do seu navio principal. Use os controles de visibilidade do painel abaixo para mostrar ou ocultar cada sobreposição."
     },
     {
       "source": "Mining overview map",
@@ -113253,6 +114217,10 @@
     {
       "source": "MiningReferenceCommodities",
       "translation": "MineraçãoReferênciaCommodities"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowCargo",
+      "translation": "MiningWorkspace.ShouldShowCargo"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -113839,6 +114807,10 @@
       "translation": "Novo caminho de log: {0}"
     },
     {
+      "source": "New preset",
+      "translation": "Nova predefinição"
+    },
+    {
       "source": "New profile",
       "translation": "Novo perfil"
     },
@@ -113857,6 +114829,10 @@
     {
       "source": "New site name",
       "translation": "Novo nome do site"
+    },
+    {
+      "source": "New threshold",
+      "translation": "Novo limite"
     },
     {
       "source": "New to this Commander according to Commander Codex history",
@@ -114349,6 +115325,10 @@
     {
       "source": "No live system",
       "translation": "Nenhum sistema ativo"
+    },
+    {
+      "source": "No local speech service was found. Install Speech Dispatcher or eSpeak NG on Linux.",
+      "translation": "Nenhum serviço de fala local foi encontrado. Instale o Speech Dispatcher ou eSpeak NG no Linux."
     },
     {
       "source": "No local voices are available.",
@@ -115523,6 +116503,10 @@
       "translation": "Orrery"
     },
     {
+      "source": "Osmium",
+      "translation": "Ósmio"
+    },
+    {
       "source": "Osseus Discus",
       "translation": "Disco Osseus"
     },
@@ -115935,6 +116919,10 @@
       "translation": "PASSIVO"
     },
     {
+      "source": "PATH",
+      "translation": "CAMINHO"
+    },
+    {
       "source": "PEAK SELL SNAPSHOT",
       "translation": "INSTANTÂNEO DE VENDA DE PICO"
     },
@@ -116035,10 +117023,6 @@
       "translation": "Nome do projeto"
     },
     {
-      "source": "PROSPECTOR",
-      "translation": "Prospector"
-    },
-    {
       "source": "Pad 02 | 164 m",
       "translation": "Bloco 02 | 164 metros"
     },
@@ -116131,6 +117115,14 @@
       "translation": "Pêssego"
     },
     {
+      "source": "Persistent prospector results",
+      "translation": "Resultados persistentes do prospector"
+    },
+    {
+      "source": "Persistent prospector results shown in the overlay",
+      "translation": "Resultados persistentes do prospector mostrados na sobreposição"
+    },
+    {
       "source": "Personal EDSM API key",
       "translation": "Chave de API pessoal EDSM"
     },
@@ -116183,16 +117175,24 @@
       "translation": "platina"
     },
     {
+      "source": "Platinum 22.1% · Bertrandite 8.5%",
+      "translation": "Platina 22,1% · Bertrandita 8,5%"
+    },
+    {
       "source": "Platinum 34.8%",
       "translation": "Platina 34,8%"
     },
     {
-      "source": "Platinum 34.8% · Painite 12.4% · Remaining 73%",
-      "translation": "Platina 34,8% · Painite 12,4% · Restantes 73%"
+      "source": "Platinum 34.8% · Osmium 12.4%",
+      "translation": "Platina 34,8% · Ósmio 12,4%"
     },
     {
       "source": "Platinum ×1",
       "translation": "Platina ×1"
+    },
+    {
+      "source": "Play a chime for qualifying prospects",
+      "translation": "Toque um sinal sonoro para clientes em potencial qualificados"
     },
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
@@ -116285,6 +117285,10 @@
     {
       "source": "PlotMiniTrack",
       "translation": "PlotMiniTrack"
+    },
+    {
+      "source": "PlotMiningCargo",
+      "translation": "PlotMineraçãoCarga"
     },
     {
       "source": "PlotMiningFiregroups",
@@ -116947,6 +117951,10 @@
       "translation": "Propagito"
     },
     {
+      "source": "Prospected",
+      "translation": "Prospectado"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Prospecção de resultados"
     },
@@ -116961,6 +117969,10 @@
     {
       "source": "Prospector",
       "translation": "Prospector"
+    },
+    {
+      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
+      "translation": "As notificações do prospector e o rastreador do porão de carga aparecem apenas a bordo do seu navio principal. Use os controles de visibilidade do painel abaixo para mostrar ou ocultar cada sobreposição."
     },
     {
       "source": "Provider page (0 first)",
@@ -118391,6 +119403,10 @@
       "translation": "Atualizar operadoras RavenColonial vinculadas"
     },
     {
+      "source": "Refresh local voices",
+      "translation": "Atualizar vozes locais"
+    },
+    {
       "source": "Refresh preview",
       "translation": "Atualizar visualização"
     },
@@ -118553,10 +119569,6 @@
     {
       "source": "Remove development quest",
       "translation": "Remover missão de desenvolvimento"
-    },
-    {
-      "source": "Remove filter",
-      "translation": "Remover filtro"
     },
     {
       "source": "Remove group",
@@ -120095,6 +121107,14 @@
       "translation": "Salve sistemas e anéis de mineração em suas próprias categorias."
     },
     {
+      "source": "Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it.",
+      "translation": "Salve o limite completo e a configuração do tipo de asteróide e selecione uma predefinição para aplicá-la, renomeá-la ou excluí-la."
+    },
+    {
+      "source": "Save threshold",
+      "translation": "Salvar limite"
+    },
+    {
       "source": "Save to Library",
       "translation": "Salvar na biblioteca"
     },
@@ -120731,6 +121751,10 @@
       "translation": "Selecione um sistema correspondente"
     },
     {
+      "source": "Select a mineral threshold to delete.",
+      "translation": "Selecione um limite mineral para excluir."
+    },
+    {
       "source": "Select a recorded boxel",
       "translation": "Selecione um boxel gravado"
     },
@@ -120753,6 +121777,10 @@
     {
       "source": "Select a system from the search results.",
       "translation": "Selecione um sistema nos resultados da pesquisa."
+    },
+    {
+      "source": "Select an announcement preset to delete.",
+      "translation": "Selecione uma predefinição de anúncio para excluir."
     },
     {
       "source": "Select an equipped module",
@@ -120947,10 +121975,6 @@
       "translation": "Defina uma meta para iniciar a orientação"
     },
     {
-      "source": "Set filter",
-      "translation": "Definir filtro"
-    },
-    {
       "source": "Set focus on Elite Dangerous after each FSD jump.",
       "translation": "Defina o foco em Elite Dangerous após cada salto FSD."
     },
@@ -120965,10 +121989,6 @@
     {
       "source": "Set group label",
       "translation": "Definir rótulo do grupo"
-    },
-    {
-      "source": "Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals.",
-      "translation": "Defina limites minerais para anúncios de prospecção. Remova todos os filtros para anunciar todos os minerais."
     },
     {
       "source": "Set obelisk group label {0}.",
@@ -121971,6 +122991,10 @@
       "translation": "Resumo de espécies e atmosfera"
     },
     {
+      "source": "Speech Dispatcher",
+      "translation": "Despachante de fala"
+    },
+    {
       "source": "Speech rate",
       "translation": "Taxa de fala"
     },
@@ -122181,6 +123205,10 @@
     {
       "source": "SrvSurvey mining activity overlay",
       "translation": "SrvSurvey sobreposição de atividade de mineração"
+    },
+    {
+      "source": "SrvSurvey mining cargo overlay",
+      "translation": "SrvSurvey sobreposição de carga de mineração"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -123279,6 +124307,10 @@
       "translation": "Dados do sistema indisponíveis."
     },
     {
+      "source": "System default",
+      "translation": "Padrão do sistema"
+    },
+    {
       "source": "System details could not be loaded: {0}",
       "translation": "Não foi possível carregar os detalhes do sistema: {0}"
     },
@@ -123537,6 +124569,10 @@
     {
       "source": "TARGET A01",
       "translation": "ALVO A01"
+    },
+    {
+      "source": "TARGET FOUND",
+      "translation": "ALVO ENCONTRADO"
     },
     {
       "source": "TARGET PNG FOLDER",
@@ -125935,6 +126971,14 @@
       "translation": "Limite"
     },
     {
+      "source": "Threshold for {0} removed.",
+      "translation": "Limite para {0} removido."
+    },
+    {
+      "source": "Threshold for {0} saved.",
+      "translation": "Limite para {0} salvo."
+    },
+    {
       "source": "Thrusters",
       "translation": "Propulsores"
     },
@@ -128055,6 +129099,10 @@
       "translation": "A sessão do Gerenciador de reinicialização do Windows falhou com o erro {0}."
     },
     {
+      "source": "Windows Speech API",
+      "translation": "API de fala do Windows"
+    },
+    {
       "source": "Windows administrator approval is required to update this protected installation. The player profile remains untouched.",
       "translation": "A aprovação do administrador do Windows é necessária para atualizar esta instalação protegida. O perfil do jogador permanece intacto."
     },
@@ -128089,6 +129137,10 @@
     {
       "source": "Windows topmost transparency, native click-through, game-window tracking, and global keyboard input are available.",
       "translation": "Transparência superior do Windows, clique nativo, rastreamento de janela de jogo e entrada global de teclado estão disponíveis."
+    },
+    {
+      "source": "Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available.",
+      "translation": "O Windows usa vozes SAPI instaladas. Linux usa Speech Dispatcher ou eSpeak NG quando disponível."
     },
     {
       "source": "Windows: the OpenVR client library is included with SrvSurvey.",
@@ -128333,6 +129385,10 @@
     {
       "source": "all",
       "translation": "todos"
+    },
+    {
+      "source": "all minerals",
+      "translation": "todos os minerais"
     },
     {
       "source": "allcsv",
@@ -128751,6 +129807,10 @@
       "translation": "comandos de bate-papo"
     },
     {
+      "source": "child",
+      "translation": "criança"
+    },
+    {
       "source": "clear",
       "translation": "claro"
     },
@@ -128891,6 +129951,14 @@
       "translation": "resfriamento"
     },
     {
+      "source": "core + laser",
+      "translation": "núcleo + laser"
+    },
+    {
+      "source": "core only",
+      "translation": "apenas núcleo"
+    },
+    {
       "source": "corsair",
       "translation": "corsário"
     },
@@ -129015,6 +130083,10 @@
       "translation": "por exemplo Platina ×2"
     },
     {
+      "source": "eSpeak NG",
+      "translation": "eSpeak NG"
+    },
+    {
       "source": "eagle",
       "translation": "águia"
     },
@@ -129103,6 +130175,14 @@
       "translation": "é"
     },
     {
+      "source": "espeak",
+      "translation": "falar"
+    },
+    {
+      "source": "espeak-ng",
+      "translation": "falando-ng"
+    },
+    {
       "source": "event",
       "translation": "evento"
     },
@@ -129173,6 +130253,30 @@
     {
       "source": "federation",
       "translation": "federação"
+    },
+    {
+      "source": "female 1",
+      "translation": "feminino 1"
+    },
+    {
+      "source": "female 2",
+      "translation": "feminino 2"
+    },
+    {
+      "source": "female 3",
+      "translation": "feminino 3"
+    },
+    {
+      "source": "female1",
+      "translation": "feminino1"
+    },
+    {
+      "source": "female2",
+      "translation": "feminino2"
+    },
+    {
+      "source": "female3",
+      "translation": "feminino3"
     },
     {
       "source": "ferdelance",
@@ -129635,6 +130739,10 @@
       "translation": "laser"
     },
     {
+      "source": "laser only",
+      "translation": "somente laser"
+    },
+    {
       "source": "last visit",
       "translation": "última visita"
     },
@@ -129683,6 +130791,10 @@
       "translation": "locais"
     },
     {
+      "source": "local speech",
+      "translation": "discurso local"
+    },
+    {
       "source": "log folder proton profile data source",
       "translation": "fonte de dados do perfil da pasta de log proton"
     },
@@ -129705,6 +130817,30 @@
     {
       "source": "mainengines",
       "translation": "motores principais"
+    },
+    {
+      "source": "male 1",
+      "translation": "masculino 1"
+    },
+    {
+      "source": "male 2",
+      "translation": "masculino 2"
+    },
+    {
+      "source": "male 3",
+      "translation": "masculino 3"
+    },
+    {
+      "source": "male1",
+      "translation": "masculino1"
+    },
+    {
+      "source": "male2",
+      "translation": "masculino2"
+    },
+    {
+      "source": "male3",
+      "translation": "masculino3"
     },
     {
       "source": "mamba",
@@ -129833,6 +130969,10 @@
     {
       "source": "multiple",
       "translation": "múltiplo"
+    },
+    {
+      "source": "muted",
+      "translation": "silenciado"
     },
     {
       "source": "n/a",
@@ -130441,6 +131581,10 @@
     {
       "source": "spansh.co.uk",
       "translation": "spansh.co.uk"
+    },
+    {
+      "source": "spd-say",
+      "translation": "spd-dizer"
     },
     {
       "source": "spherical",
@@ -131127,6 +132271,10 @@
       "translation": "{0} / {1} CORPOS COMPLETOS"
     },
     {
+      "source": "{0} / {1} T",
+      "translation": "{0} / {1} T"
+    },
+    {
       "source": "{0} B 3",
       "translation": "{0}B 3"
     },
@@ -131217,6 +132365,14 @@
     {
       "source": "{0} SrvSurvey instances are currently running.",
       "translation": "{0} SrvSurvey instâncias estão em execução no momento."
+    },
+    {
+      "source": "{0} T / UNKNOWN",
+      "translation": "{0} T / DESCONHECIDO"
+    },
+    {
+      "source": "{0} T REMAINING",
+      "translation": "{0} T RESTANTE"
     },
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
@@ -131815,6 +132971,10 @@
       "translation": "{0} · OBELISCO ATIVO"
     },
     {
+      "source": "{0} · Remaining {1}%",
+      "translation": "{0} · {1}% restante"
+    },
+    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Camada {1}: {2}"
     },
@@ -131891,6 +133051,10 @@
       "translation": "{0}% de {1}"
     },
     {
+      "source": "{0}% remaining",
+      "translation": "{0}% restante"
+    },
+    {
       "source": "{0}: {1} of {2}{3}",
       "translation": "{0}: {1} de {2}{3}"
     },
@@ -131909,6 +133073,10 @@
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
       "translation": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}"
+    },
+    {
+      "source": "{0}Core: {1}",
+      "translation": "{0}Núcleo: {1}"
     },
     {
       "source": "{0}None needed; already current.",
@@ -132589,6 +133757,10 @@
       "translation": "420 нужно | 120 ФК | 16 корабль"
     },
     {
+      "source": "431 / 960 T",
+      "translation": "431/960 Т"
+    },
+    {
       "source": "44 JUMPS LEFT",
       "translation": "44 ПРЫЖКА ВЛЕВО"
     },
@@ -132599,6 +133771,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 св. лет | осталось 21 502,09 LY"
+    },
+    {
+      "source": "529 T REMAINING",
+      "translation": "ОСТАЛОСЬ 529 Т"
     },
     {
       "source": "6 BODIES REMAIN | EST. VALUE 18.4 M CR",
@@ -133103,6 +134279,10 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "АКТИВНЫЕ ОБЕЛИСКИ"
+    },
+    {
+      "source": "ACTIVE PROSPECTORS",
+      "translation": "АКТИВНЫЕ РАЗВЕДЧИКИ"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -134065,6 +135245,22 @@
       "translation": "Древние руины гамма | полный"
     },
     {
+      "source": "Announcement events",
+      "translation": "Анонсирование событий"
+    },
+    {
+      "source": "Announcement preset '{0}' applied.",
+      "translation": "Применена предустановка объявлений «{0}»."
+    },
+    {
+      "source": "Announcement preset '{0}' deleted.",
+      "translation": "Настройки объявлений «{0}» удалены."
+    },
+    {
+      "source": "Announcement preset saved.",
+      "translation": "Настройки объявлений сохранены."
+    },
+    {
       "source": "Announcement presets",
       "translation": "Пресеты объявлений"
     },
@@ -134211,6 +135407,10 @@
     {
       "source": "Apply point edit",
       "translation": "Применить редактирование точки"
+    },
+    {
+      "source": "Apply selected",
+      "translation": "Применить выбранное"
     },
     {
       "source": "Apply the original focus and Odyssey suit rules consistently to every passive overlay.",
@@ -134419,6 +135619,10 @@
     {
       "source": "Attach session screenshots",
       "translation": "Прикрепите скриншоты сеанса"
+    },
+    {
+      "source": "Audio announcements",
+      "translation": "Аудио анонсы"
     },
     {
       "source": "Audit all boxels",
@@ -135849,6 +137053,10 @@
       "translation": "ГРУЗ"
     },
     {
+      "source": "CARGO HOLD",
+      "translation": "ГРУЗОВОЙ ТРЮМ"
+    },
+    {
       "source": "CARRIER ARRIVED",
       "translation": "ПЕРЕВОЗЧИК ПРИБЫЛ"
     },
@@ -136397,6 +137605,10 @@
       "translation": "Напоминание о заполнении груза после одной минуты простоя"
     },
     {
+      "source": "Cargo hold is empty.",
+      "translation": "Грузовой отсек пуст."
+    },
+    {
       "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
       "translation": "Груз распределяется по активным миссиям в порядке поступления. Количество доставленных товаров суммируется. Завершение, неудача и отказ следуют за событиями в журнале."
     },
@@ -136435,10 +137647,6 @@
     {
       "source": "Cargo: {0} / {1} t · Limpets: {2}",
       "translation": "Груз: {0} / {1} t · Блюдечки: {2}"
-    },
-    {
-      "source": "CargoCapacity",
-      "translation": "Грузоемкость"
     },
     {
       "source": "CargoDepot",
@@ -136667,6 +137875,14 @@
     {
       "source": "Chemicals",
       "translation": "Химикаты"
+    },
+    {
+      "source": "Child",
+      "translation": "ребенок"
+    },
+    {
+      "source": "Chime volume",
+      "translation": "Громкость звонка"
     },
     {
       "source": "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
@@ -138825,6 +140041,10 @@
       "translation": "ОТПРАВЛЕНИЕ В {0}"
     },
     {
+      "source": "DEPLETED",
+      "translation": "Истощенный"
+    },
+    {
       "source": "DESCENT",
       "translation": "Спуск"
     },
@@ -140053,6 +141273,10 @@
       "translation": "Каждая роль увеличивается или уменьшается независимо. Zero использует базовый размер темы."
     },
     {
+      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
+      "translation": "Каждая строка является независимой целью. Перспективный объект считается квалифицируемым, когда хотя бы один внесенный в список минерал достигает минимума. Пустой список объявляет каждый минерал."
+    },
+    {
       "source": "Eagle",
       "translation": "орел"
     },
@@ -140465,6 +141689,10 @@
       "translation": "Введите минерал и 0–16 ожидаемых тонн."
     },
     {
+      "source": "Enter a mineral and minimum percentage.",
+      "translation": "Введите минерал и минимальный процент."
+    },
+    {
       "source": "Enter a mineral name.",
       "translation": "Введите название минерала."
     },
@@ -140479,6 +141707,10 @@
     {
       "source": "Enter a percentage from 0 to 100.",
       "translation": "Введите процент от 0 до 100."
+    },
+    {
+      "source": "Enter a preset name, then save the current announcement filters.",
+      "translation": "Введите заданное имя, затем сохраните текущие фильтры объявлений."
     },
     {
       "source": "Enter a star-system name to set a custom origin.",
@@ -141367,6 +142599,18 @@
     {
       "source": "Felicia Winters",
       "translation": "Фелиция Уинтерс"
+    },
+    {
+      "source": "Female 1",
+      "translation": "женщина 1"
+    },
+    {
+      "source": "Female 2",
+      "translation": "женщина 2"
+    },
+    {
+      "source": "Female 3",
+      "translation": "женщина 3"
     },
     {
       "source": "Fenris",
@@ -142911,6 +144155,10 @@
     {
       "source": "HGG",
       "translation": "ХГГ"
+    },
+    {
+      "source": "HH:mm:ss",
+      "translation": "ЧЧ:мм:сс"
     },
     {
       "source": "HIGH",
@@ -144925,6 +146173,10 @@
       "translation": "Лайм"
     },
     {
+      "source": "Limpets",
+      "translation": "Блюдечки"
+    },
+    {
       "source": "Linked",
       "translation": "Связано"
     },
@@ -145073,16 +146325,8 @@
       "translation": "Загрузите действующую систему, чтобы просмотреть ее сайты Raven Colonial."
     },
     {
-      "source": "Load installed voices",
-      "translation": "Загрузить установленные голоса"
-    },
-    {
       "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
       "translation": "Загрузка доступна только для чтения. Изменения остаются локальными до тех пор, пока не будет проведено новое сравнение Raven и вы явно не подтвердите публикацию."
-    },
-    {
-      "source": "Load preset",
-      "translation": "Загрузить пресет"
     },
     {
       "source": "Load system",
@@ -145321,16 +146565,12 @@
       "translation": "Справочное изображение местной флоры"
     },
     {
-      "source": "Local mining speech currently uses Windows voices.",
-      "translation": "В настоящее время локальная речь майнинга использует голоса Windows."
-    },
-    {
       "source": "Local ring discoveries",
       "translation": "Открытие локальных колец"
     },
     {
-      "source": "Local voices loaded.",
-      "translation": "Местные голоса загружены."
+      "source": "Local voices loaded from {0}.",
+      "translation": "Местные голоса загружены из {0}."
     },
     {
       "source": "LocalFloraDirectory",
@@ -145607,6 +146847,18 @@
     {
       "source": "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
       "translation": "Внесение первичных изменений в проект Фокус планирования командира; он не меняет порядок сайтов, хранящихся в системе."
+    },
+    {
+      "source": "Male 1",
+      "translation": "мужчина 1"
+    },
+    {
+      "source": "Male 2",
+      "translation": "мужчина 2"
+    },
+    {
+      "source": "Male 3",
+      "translation": "мужчина 3"
     },
     {
       "source": "Malformed or unknown journal fields are logged without requiring SrvSurvey to rewrite the source file.",
@@ -146109,6 +147361,10 @@
       "translation": "Наличие минералов зависит от кольцевого состава. Цены варьируются; перед продажей проверьте текущие рыночные наблюдения."
     },
     {
+      "source": "Mineral thresholds",
+      "translation": "Минеральные пороги"
+    },
+    {
       "source": "Minerals",
       "translation": "Минералы"
     },
@@ -146197,6 +147453,10 @@
       "translation": "Средства управления калибровкой для горнодобывающей промышленности"
     },
     {
+      "source": "Mining cargo hold",
+      "translation": "Грузовой трюм для горнодобывающей промышленности"
+    },
+    {
       "source": "Mining data could not be loaded: {0}",
       "translation": "Не удалось загрузить данные майнинга: {0}."
     },
@@ -146231,10 +147491,6 @@
     {
       "source": "Mining notifications",
       "translation": "Уведомления о майнинге"
-    },
-    {
-      "source": "Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "Уведомления о добыче появляются только на борту вашего основного корабля. Используйте элементы управления видимостью панели ниже, чтобы показать или скрыть каждое наложение."
     },
     {
       "source": "Mining overview map",
@@ -146279,6 +147535,10 @@
     {
       "source": "MiningReferenceCommodities",
       "translation": "Горное делоСправочникСырьевые товары"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowCargo",
+      "translation": "MiningWorkspace.ShouldShowCargo"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -146865,6 +148125,10 @@
       "translation": "Новый путь к журналу: {0}"
     },
     {
+      "source": "New preset",
+      "translation": "Новый пресет"
+    },
+    {
       "source": "New profile",
       "translation": "Новый профиль"
     },
@@ -146883,6 +148147,10 @@
     {
       "source": "New site name",
       "translation": "Новое название сайта"
+    },
+    {
+      "source": "New threshold",
+      "translation": "Новый порог"
     },
     {
       "source": "New to this Commander according to Commander Codex history",
@@ -147375,6 +148643,10 @@
     {
       "source": "No live system",
       "translation": "Нет живой системы"
+    },
+    {
+      "source": "No local speech service was found. Install Speech Dispatcher or eSpeak NG on Linux.",
+      "translation": "Локальная речевая служба не найдена. Установите Speech Dispatcher или eSpeak NG в Linux."
     },
     {
       "source": "No local voices are available.",
@@ -148549,6 +149821,10 @@
       "translation": "Оррери"
     },
     {
+      "source": "Osmium",
+      "translation": "Осмий"
+    },
+    {
       "source": "Osseus Discus",
       "translation": "Оссей Дискус"
     },
@@ -148961,6 +150237,10 @@
       "translation": "ПАССИВНЫЙ"
     },
     {
+      "source": "PATH",
+      "translation": "ПУТЬ"
+    },
+    {
       "source": "PEAK SELL SNAPSHOT",
       "translation": "Пик продаж"
     },
@@ -149061,10 +150341,6 @@
       "translation": "Название проекта"
     },
     {
-      "source": "PROSPECTOR",
-      "translation": "Старатель"
-    },
-    {
       "source": "Pad 02 | 164 m",
       "translation": "Подушка 02 | 164 м"
     },
@@ -149157,6 +150433,14 @@
       "translation": "Персик"
     },
     {
+      "source": "Persistent prospector results",
+      "translation": "Стойкие результаты поиска"
+    },
+    {
+      "source": "Persistent prospector results shown in the overlay",
+      "translation": "Постоянные результаты поиска, показанные на наложении"
+    },
+    {
       "source": "Personal EDSM API key",
       "translation": "Персональный EDSM API-ключ"
     },
@@ -149209,16 +150493,24 @@
       "translation": "платина"
     },
     {
+      "source": "Platinum 22.1% · Bertrandite 8.5%",
+      "translation": "Платина 22,1% · Бертрандит 8,5%"
+    },
+    {
       "source": "Platinum 34.8%",
       "translation": "Платина 34,8%"
     },
     {
-      "source": "Platinum 34.8% · Painite 12.4% · Remaining 73%",
-      "translation": "Платина 34,8% · Пейнит 12,4% · Остальные 73%"
+      "source": "Platinum 34.8% · Osmium 12.4%",
+      "translation": "Платина 34,8% · Осмий 12,4%"
     },
     {
       "source": "Platinum ×1",
       "translation": "Платина ×1"
+    },
+    {
+      "source": "Play a chime for qualifying prospects",
+      "translation": "Позвоните потенциальным клиентам"
     },
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
@@ -149311,6 +150603,10 @@
     {
       "source": "PlotMiniTrack",
       "translation": "СюжетМиниТрек"
+    },
+    {
+      "source": "PlotMiningCargo",
+      "translation": "УчастокГорное делоГруз"
     },
     {
       "source": "PlotMiningFiregroups",
@@ -149973,6 +151269,10 @@
       "translation": "Пропагито"
     },
     {
+      "source": "Prospected",
+      "translation": "Разведанный"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Результаты поиска"
     },
@@ -149987,6 +151287,10 @@
     {
       "source": "Prospector",
       "translation": "Старатель"
+    },
+    {
+      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
+      "translation": "Уведомления геологоразведчика и трекер грузового трюма появляются только на борту вашего основного корабля. Используйте элементы управления видимостью панели ниже, чтобы показать или скрыть каждое наложение."
     },
     {
       "source": "Provider page (0 first)",
@@ -151417,6 +152721,10 @@
       "translation": "Обновить связанных перевозчиков RavenColonial."
     },
     {
+      "source": "Refresh local voices",
+      "translation": "Обновите местные голоса"
+    },
+    {
       "source": "Refresh preview",
       "translation": "Обновить предварительный просмотр"
     },
@@ -151579,10 +152887,6 @@
     {
       "source": "Remove development quest",
       "translation": "Удалить квест на разработку"
-    },
-    {
-      "source": "Remove filter",
-      "translation": "Удалить фильтр"
     },
     {
       "source": "Remove group",
@@ -153121,6 +154425,14 @@
       "translation": "Сохраняйте системы и кольца добычи полезных ископаемых в своих категориях."
     },
     {
+      "source": "Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it.",
+      "translation": "Сохраните полную конфигурацию порога и типа астероида, затем выберите набор настроек, чтобы применить, переименовать или удалить его."
+    },
+    {
+      "source": "Save threshold",
+      "translation": "Сохранить порог"
+    },
+    {
       "source": "Save to Library",
       "translation": "Сохранить в библиотеку"
     },
@@ -153757,6 +155069,10 @@
       "translation": "Выберите подходящую систему"
     },
     {
+      "source": "Select a mineral threshold to delete.",
+      "translation": "Выберите минеральный порог, который нужно удалить."
+    },
+    {
       "source": "Select a recorded boxel",
       "translation": "Выберите записанный боксель"
     },
@@ -153779,6 +155095,10 @@
     {
       "source": "Select a system from the search results.",
       "translation": "Выберите систему из результатов поиска."
+    },
+    {
+      "source": "Select an announcement preset to delete.",
+      "translation": "Выберите набор настроек объявлений, который нужно удалить."
     },
     {
       "source": "Select an equipped module",
@@ -153973,10 +155293,6 @@
       "translation": "Установите цель, чтобы начать руководство"
     },
     {
-      "source": "Set filter",
-      "translation": "Установить фильтр"
-    },
-    {
       "source": "Set focus on Elite Dangerous after each FSD jump.",
       "translation": "Устанавливайте фокус на Elite Dangerous после каждого прыжка FSD."
     },
@@ -153991,10 +155307,6 @@
     {
       "source": "Set group label",
       "translation": "Установить ярлык группы"
-    },
-    {
-      "source": "Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals.",
-      "translation": "Установите пороговые значения полезных ископаемых для объявлений о разведке. Удалите все фильтры, чтобы объявить все минералы."
     },
     {
       "source": "Set obelisk group label {0}.",
@@ -154997,6 +156309,10 @@
       "translation": "Краткое описание видов и атмосферы"
     },
     {
+      "source": "Speech Dispatcher",
+      "translation": "Речевой диспетчер"
+    },
+    {
       "source": "Speech rate",
       "translation": "Скорость речи"
     },
@@ -155207,6 +156523,10 @@
     {
       "source": "SrvSurvey mining activity overlay",
       "translation": "SrvSurvey наложение активности майнинга"
+    },
+    {
+      "source": "SrvSurvey mining cargo overlay",
+      "translation": "SrvSurvey наложение горнодобывающего груза"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -156305,6 +157625,10 @@
       "translation": "Системные данные недоступны."
     },
     {
+      "source": "System default",
+      "translation": "Система по умолчанию"
+    },
+    {
       "source": "System details could not be loaded: {0}",
       "translation": "Не удалось загрузить сведения о системе: {0}"
     },
@@ -156563,6 +157887,10 @@
     {
       "source": "TARGET A01",
       "translation": "ЦЕЛЬ A01"
+    },
+    {
+      "source": "TARGET FOUND",
+      "translation": "ЦЕЛЬ НАЙДЕНА"
     },
     {
       "source": "TARGET PNG FOLDER",
@@ -158961,6 +160289,14 @@
       "translation": "Порог"
     },
     {
+      "source": "Threshold for {0} removed.",
+      "translation": "Порог для {0} удален."
+    },
+    {
+      "source": "Threshold for {0} saved.",
+      "translation": "Порог для {0} сохранен."
+    },
+    {
       "source": "Thrusters",
       "translation": "Подруливающие устройства"
     },
@@ -161081,6 +162417,10 @@
       "translation": "Сеанс диспетчера перезапуска Windows завершился с ошибкой {0}."
     },
     {
+      "source": "Windows Speech API",
+      "translation": "Речевой API Windows"
+    },
+    {
       "source": "Windows administrator approval is required to update this protected installation. The player profile remains untouched.",
       "translation": "Для обновления этой защищенной установки требуется одобрение администратора Windows. Профиль игрока остается нетронутым."
     },
@@ -161115,6 +162455,10 @@
     {
       "source": "Windows topmost transparency, native click-through, game-window tracking, and global keyboard input are available.",
       "translation": "Доступны высочайшая прозрачность Windows, встроенный интерфейс кликов, отслеживание игровых окон и глобальный ввод с клавиатуры."
+    },
+    {
+      "source": "Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available.",
+      "translation": "Windows использует установленные голоса SAPI. Linux использует Speech Dispatcher или eSpeak NG, если они доступны."
     },
     {
       "source": "Windows: the OpenVR client library is included with SrvSurvey.",
@@ -161359,6 +162703,10 @@
     {
       "source": "all",
       "translation": "все"
+    },
+    {
+      "source": "all minerals",
+      "translation": "все минералы"
     },
     {
       "source": "allcsv",
@@ -161777,6 +163125,10 @@
       "translation": "чат-команды"
     },
     {
+      "source": "child",
+      "translation": "ребенок"
+    },
+    {
       "source": "clear",
       "translation": "ясно"
     },
@@ -161917,6 +163269,14 @@
       "translation": "охлаждение"
     },
     {
+      "source": "core + laser",
+      "translation": "ядро + лазер"
+    },
+    {
+      "source": "core only",
+      "translation": "только ядро"
+    },
+    {
       "source": "corsair",
       "translation": "корсар"
     },
@@ -162041,6 +163401,10 @@
       "translation": "например Платина ×2"
     },
     {
+      "source": "eSpeak NG",
+      "translation": "eSpeak НГ"
+    },
+    {
       "source": "eagle",
       "translation": "орел"
     },
@@ -162129,6 +163493,14 @@
       "translation": "эс"
     },
     {
+      "source": "espeak",
+      "translation": "говорить"
+    },
+    {
+      "source": "espeak-ng",
+      "translation": "говорить-нг"
+    },
+    {
       "source": "event",
       "translation": "событие"
     },
@@ -162199,6 +163571,30 @@
     {
       "source": "federation",
       "translation": "федерация"
+    },
+    {
+      "source": "female 1",
+      "translation": "женщина 1"
+    },
+    {
+      "source": "female 2",
+      "translation": "женщина 2"
+    },
+    {
+      "source": "female 3",
+      "translation": "женщина 3"
+    },
+    {
+      "source": "female1",
+      "translation": "женщина1"
+    },
+    {
+      "source": "female2",
+      "translation": "женщина2"
+    },
+    {
+      "source": "female3",
+      "translation": "женщина3"
     },
     {
       "source": "ferdelance",
@@ -162661,6 +164057,10 @@
       "translation": "лазер"
     },
     {
+      "source": "laser only",
+      "translation": "только лазер"
+    },
+    {
       "source": "last visit",
       "translation": "последний визит"
     },
@@ -162709,6 +164109,10 @@
       "translation": "местный"
     },
     {
+      "source": "local speech",
+      "translation": "местная речь"
+    },
+    {
       "source": "log folder proton profile data source",
       "translation": "папка журнала proton источник данных профиля"
     },
@@ -162731,6 +164135,30 @@
     {
       "source": "mainengines",
       "translation": "главные двигатели"
+    },
+    {
+      "source": "male 1",
+      "translation": "мужчина 1"
+    },
+    {
+      "source": "male 2",
+      "translation": "мужчина 2"
+    },
+    {
+      "source": "male 3",
+      "translation": "мужчина 3"
+    },
+    {
+      "source": "male1",
+      "translation": "мужчина1"
+    },
+    {
+      "source": "male2",
+      "translation": "мужчина2"
+    },
+    {
+      "source": "male3",
+      "translation": "мужчина3"
     },
     {
       "source": "mamba",
@@ -162859,6 +164287,10 @@
     {
       "source": "multiple",
       "translation": "множественный"
+    },
+    {
+      "source": "muted",
+      "translation": "приглушенный"
     },
     {
       "source": "n/a",
@@ -163467,6 +164899,10 @@
     {
       "source": "spansh.co.uk",
       "translation": "spansh.co.uk"
+    },
+    {
+      "source": "spd-say",
+      "translation": "spd-скажи"
     },
     {
       "source": "spherical",
@@ -164153,6 +165589,10 @@
       "translation": "{0} / {1} КУЗОВА ЗАВЕРШЕНЫ"
     },
     {
+      "source": "{0} / {1} T",
+      "translation": "{0} / {1} Т"
+    },
+    {
       "source": "{0} B 3",
       "translation": "{0} Б 3"
     },
@@ -164243,6 +165683,14 @@
     {
       "source": "{0} SrvSurvey instances are currently running.",
       "translation": "{0} Экземпляры SrvSurvey в данный момент запущены."
+    },
+    {
+      "source": "{0} T / UNKNOWN",
+      "translation": "{0} T / НЕИЗВЕСТНО"
+    },
+    {
+      "source": "{0} T REMAINING",
+      "translation": "{0} T ОСТАЛОСЬ"
     },
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
@@ -164841,6 +166289,10 @@
       "translation": "{0} · АКТИВНЫЙ ОБЕЛИСК"
     },
     {
+      "source": "{0} · Remaining {1}%",
+      "translation": "{0} · Осталось {1}%"
+    },
+    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · Уровень {1}: {2}"
     },
@@ -164917,6 +166369,10 @@
       "translation": "{0}% от {1}"
     },
     {
+      "source": "{0}% remaining",
+      "translation": "Осталось {0}%"
+    },
+    {
       "source": "{0}: {1} of {2}{3}",
       "translation": "{0}: {1} из {2}{3}"
     },
@@ -164935,6 +166391,10 @@
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
       "translation": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}"
+    },
+    {
+      "source": "{0}Core: {1}",
+      "translation": "{0}Ядро: {1}"
     },
     {
       "source": "{0}None needed; already current.",
@@ -165615,6 +167075,10 @@
       "translation": "第420章 需要120 足球俱乐部 | 16艘"
     },
     {
+      "source": "431 / 960 T",
+      "translation": "431 / 960 吨"
+    },
+    {
       "source": "44 JUMPS LEFT",
       "translation": "44 向左跳"
     },
@@ -165625,6 +167089,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499.76 LY |剩余 21,502.09 LY"
+    },
+    {
+      "source": "529 T REMAINING",
+      "translation": "剩余 529 吨"
     },
     {
       "source": "6 BODIES REMAIN | EST. VALUE 18.4 M CR",
@@ -166129,6 +167597,10 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "活动方尖碑"
+    },
+    {
+      "source": "ACTIVE PROSPECTORS",
+      "translation": "活跃的探矿者"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -167091,6 +168563,22 @@
       "translation": "伽马古迹 |完成"
     },
     {
+      "source": "Announcement events",
+      "translation": "公告活动"
+    },
+    {
+      "source": "Announcement preset '{0}' applied.",
+      "translation": "应用了公告预设“{0}”。"
+    },
+    {
+      "source": "Announcement preset '{0}' deleted.",
+      "translation": "公告预设“{0}”已删除。"
+    },
+    {
+      "source": "Announcement preset saved.",
+      "translation": "已保存公告预设。"
+    },
+    {
       "source": "Announcement presets",
       "translation": "公告预设"
     },
@@ -167237,6 +168725,10 @@
     {
       "source": "Apply point edit",
       "translation": "应用点编辑"
+    },
+    {
+      "source": "Apply selected",
+      "translation": "应用选定的"
     },
     {
       "source": "Apply the original focus and Odyssey suit rules consistently to every passive overlay.",
@@ -167445,6 +168937,10 @@
     {
       "source": "Attach session screenshots",
       "translation": "附上会话截图"
+    },
+    {
+      "source": "Audio announcements",
+      "translation": "音频公告"
     },
     {
       "source": "Audit all boxels",
@@ -168875,6 +170371,10 @@
       "translation": "货物"
     },
     {
+      "source": "CARGO HOLD",
+      "translation": "货舱"
+    },
+    {
       "source": "CARRIER ARRIVED",
       "translation": "承运人已抵达"
     },
@@ -169423,6 +170923,10 @@
       "translation": "闲置一分钟货物已满提醒"
     },
     {
+      "source": "Cargo hold is empty.",
+      "translation": "货舱已空。"
+    },
+    {
       "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
       "translation": "货物按照验收顺序分配给现役特派团。交付的数量是累积的。完成、失败和放弃遵循日记事件。"
     },
@@ -169461,10 +170965,6 @@
     {
       "source": "Cargo: {0} / {1} t · Limpets: {2}",
       "translation": "货物：{0} / {1} t·帽盖：{2}"
-    },
-    {
-      "source": "CargoCapacity",
-      "translation": "载货量"
     },
     {
       "source": "CargoDepot",
@@ -169693,6 +171193,14 @@
     {
       "source": "Chemicals",
       "translation": "化学品"
+    },
+    {
+      "source": "Child",
+      "translation": "孩子"
+    },
+    {
+      "source": "Chime volume",
+      "translation": "铃声音量"
     },
     {
       "source": "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
@@ -171851,6 +173359,10 @@
       "translation": "出发前往 {0}"
     },
     {
+      "source": "DEPLETED",
+      "translation": "耗尽"
+    },
+    {
       "source": "DESCENT",
       "translation": "下降"
     },
@@ -173079,6 +174591,10 @@
       "translation": "每个角色独立地增长或缩小。零使用主题的基线大小。"
     },
     {
+      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
+      "translation": "每一行都是一个独立的目标。当至少一种列出的矿物达到最低值时，潜在客户就符合资格。一张空清单公布了每种矿物。"
+    },
+    {
       "source": "Eagle",
       "translation": "鹰"
     },
@@ -173491,6 +175007,10 @@
       "translation": "输入一种矿物和 0–16 待定吨。"
     },
     {
+      "source": "Enter a mineral and minimum percentage.",
+      "translation": "输入矿物质和最小百分比。"
+    },
+    {
       "source": "Enter a mineral name.",
       "translation": "输入矿物名称。"
     },
@@ -173505,6 +175025,10 @@
     {
       "source": "Enter a percentage from 0 to 100.",
       "translation": "输入 0 到 100 之间的百分比。"
+    },
+    {
+      "source": "Enter a preset name, then save the current announcement filters.",
+      "translation": "输入预设名称，然后保存当前的公告过滤器。"
     },
     {
       "source": "Enter a star-system name to set a custom origin.",
@@ -174393,6 +175917,18 @@
     {
       "source": "Felicia Winters",
       "translation": "费利西亚·温特斯"
+    },
+    {
+      "source": "Female 1",
+      "translation": "女 1"
+    },
+    {
+      "source": "Female 2",
+      "translation": "女2"
+    },
+    {
+      "source": "Female 3",
+      "translation": "女3"
     },
     {
       "source": "Fenris",
@@ -175937,6 +177473,10 @@
     {
       "source": "HGG",
       "translation": "人类基因组"
+    },
+    {
+      "source": "HH:mm:ss",
+      "translation": "时:分:秒"
     },
     {
       "source": "HIGH",
@@ -177951,6 +179491,10 @@
       "translation": "酸橙"
     },
     {
+      "source": "Limpets",
+      "translation": "帽贝"
+    },
+    {
       "source": "Linked",
       "translation": "链接"
     },
@@ -178099,16 +179643,8 @@
       "translation": "加载实时系统以查看其 Raven Colonial 站点。"
     },
     {
-      "source": "Load installed voices",
-      "translation": "加载已安装的声音"
-    },
-    {
       "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
       "translation": "加载是只读的。编辑将保留在本地，直到新的 Raven 比较通过且您明确确认发布为止。"
-    },
-    {
-      "source": "Load preset",
-      "translation": "加载预设"
     },
     {
       "source": "Load system",
@@ -178347,16 +179883,12 @@
       "translation": "当地植物区系参考图像"
     },
     {
-      "source": "Local mining speech currently uses Windows voices.",
-      "translation": "本地挖矿语音目前使用Windows语音。"
-    },
-    {
       "source": "Local ring discoveries",
       "translation": "本地环发现"
     },
     {
-      "source": "Local voices loaded.",
-      "translation": "本地语音已加载。"
+      "source": "Local voices loaded from {0}.",
+      "translation": "从 {0} 加载本地语音。"
     },
     {
       "source": "LocalFloraDirectory",
@@ -178633,6 +180165,18 @@
     {
       "source": "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
       "translation": "使项目发生主要变化指挥官规划重点；它不会对系统存储的站点进行重新排序。"
+    },
+    {
+      "source": "Male 1",
+      "translation": "男 1"
+    },
+    {
+      "source": "Male 2",
+      "translation": "男2"
+    },
+    {
+      "source": "Male 3",
+      "translation": "男3"
     },
     {
       "source": "Malformed or unknown journal fields are logged without requiring SrvSurvey to rewrite the source file.",
@@ -179135,6 +180679,10 @@
       "translation": "矿物的可用性取决于环的组成。价格各异；出售前检查当前的市场观察。"
     },
     {
+      "source": "Mineral thresholds",
+      "translation": "矿物质阈值"
+    },
+    {
       "source": "Minerals",
       "translation": "矿物质"
     },
@@ -179223,6 +180771,10 @@
       "translation": "采矿校准控制"
     },
     {
+      "source": "Mining cargo hold",
+      "translation": "采矿货舱"
+    },
+    {
       "source": "Mining data could not be loaded: {0}",
       "translation": "无法加载挖矿数据：{0}"
     },
@@ -179257,10 +180809,6 @@
     {
       "source": "Mining notifications",
       "translation": "挖矿通知"
-    },
-    {
-      "source": "Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "采矿通知仅出现在您的主船上。使用下面的面板可见性控件来显示或隐藏每个叠加层。"
     },
     {
       "source": "Mining overview map",
@@ -179305,6 +180853,10 @@
     {
       "source": "MiningReferenceCommodities",
       "translation": "矿业参考商品"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowCargo",
+      "translation": "MiningWorkspace.ShouldShowCargo"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -179891,6 +181443,10 @@
       "translation": "新日志路径：{0}"
     },
     {
+      "source": "New preset",
+      "translation": "新预设"
+    },
+    {
       "source": "New profile",
       "translation": "新的个人资料"
     },
@@ -179909,6 +181465,10 @@
     {
       "source": "New site name",
       "translation": "新站点名称"
+    },
+    {
+      "source": "New threshold",
+      "translation": "新门槛"
     },
     {
       "source": "New to this Commander according to Commander Codex history",
@@ -180401,6 +181961,10 @@
     {
       "source": "No live system",
       "translation": "无直播系统"
+    },
+    {
+      "source": "No local speech service was found. Install Speech Dispatcher or eSpeak NG on Linux.",
+      "translation": "未找到本地语音服务。在 Linux 上安装 Speech Dispatcher 或 eSpeak NG。"
     },
     {
       "source": "No local voices are available.",
@@ -181575,6 +183139,10 @@
       "translation": "太阳系仪"
     },
     {
+      "source": "Osmium",
+      "translation": "锇"
+    },
+    {
       "source": "Osseus Discus",
       "translation": "铁饼"
     },
@@ -181987,6 +183555,10 @@
       "translation": "被动"
     },
     {
+      "source": "PATH",
+      "translation": "小路"
+    },
+    {
       "source": "PEAK SELL SNAPSHOT",
       "translation": "高峰销售快照"
     },
@@ -182087,10 +183659,6 @@
       "translation": "项目名称"
     },
     {
-      "source": "PROSPECTOR",
-      "translation": "探矿者"
-    },
-    {
       "source": "Pad 02 | 164 m",
       "translation": "垫 02 | 164 米"
     },
@@ -182183,6 +183751,14 @@
       "translation": "桃"
     },
     {
+      "source": "Persistent prospector results",
+      "translation": "持续探矿结果"
+    },
+    {
+      "source": "Persistent prospector results shown in the overlay",
+      "translation": "叠加层显示持久探矿者结果"
+    },
+    {
       "source": "Personal EDSM API key",
       "translation": "个人 EDSM API 密钥"
     },
@@ -182235,16 +183811,24 @@
       "translation": "铂"
     },
     {
+      "source": "Platinum 22.1% · Bertrandite 8.5%",
+      "translation": "铂 22.1%·伯特兰石 8.5%"
+    },
+    {
       "source": "Platinum 34.8%",
       "translation": "白金 34.8%"
     },
     {
-      "source": "Platinum 34.8% · Painite 12.4% · Remaining 73%",
-      "translation": "铂 34.8% · 磷灰石 12.4% · 剩余 73%"
+      "source": "Platinum 34.8% · Osmium 12.4%",
+      "translation": "铂 34.8% · 锇 12.4%"
     },
     {
       "source": "Platinum ×1",
       "translation": "白金×1"
+    },
+    {
+      "source": "Play a chime for qualifying prospects",
+      "translation": "为符合条件的潜在客户敲响钟声"
     },
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
@@ -182337,6 +183921,10 @@
     {
       "source": "PlotMiniTrack",
       "translation": "绘图迷你轨迹"
+    },
+    {
+      "source": "PlotMiningCargo",
+      "translation": "情节采矿货物"
     },
     {
       "source": "PlotMiningFiregroups",
@@ -182999,6 +184587,10 @@
       "translation": "普罗帕吉托"
     },
     {
+      "source": "Prospected",
+      "translation": "展望"
+    },
+    {
       "source": "Prospecting results",
       "translation": "勘探结果"
     },
@@ -183013,6 +184605,10 @@
     {
       "source": "Prospector",
       "translation": "探矿者"
+    },
+    {
+      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
+      "translation": "探矿者通知和货舱跟踪器仅出现在您的主船上。使用下面的面板可见性控件来显示或隐藏每个叠加层。"
     },
     {
       "source": "Provider page (0 first)",
@@ -184443,6 +186039,10 @@
       "translation": "刷新链接的 RavenColonial 运营商"
     },
     {
+      "source": "Refresh local voices",
+      "translation": "刷新本地语音"
+    },
+    {
       "source": "Refresh preview",
       "translation": "刷新预览"
     },
@@ -184605,10 +186205,6 @@
     {
       "source": "Remove development quest",
       "translation": "删除开发任务"
-    },
-    {
-      "source": "Remove filter",
-      "translation": "移除过滤器"
     },
     {
       "source": "Remove group",
@@ -186147,6 +187743,14 @@
       "translation": "将系统和矿环保存在您自己的类别中。"
     },
     {
+      "source": "Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it.",
+      "translation": "保存完整的阈值和小行星类型配置，然后选择一个预设来应用、重命名或删除它。"
+    },
+    {
+      "source": "Save threshold",
+      "translation": "保存阈值"
+    },
+    {
       "source": "Save to Library",
       "translation": "保存到库"
     },
@@ -186783,6 +188387,10 @@
       "translation": "选择匹配系统"
     },
     {
+      "source": "Select a mineral threshold to delete.",
+      "translation": "选择要删除的矿物质阈值。"
+    },
+    {
       "source": "Select a recorded boxel",
       "translation": "选择录制的 boxel"
     },
@@ -186805,6 +188413,10 @@
     {
       "source": "Select a system from the search results.",
       "translation": "从搜索结果中选择一个系统。"
+    },
+    {
+      "source": "Select an announcement preset to delete.",
+      "translation": "选择要删除的公告预设。"
     },
     {
       "source": "Select an equipped module",
@@ -186999,10 +188611,6 @@
       "translation": "设定目标以开始指导"
     },
     {
-      "source": "Set filter",
-      "translation": "设置过滤器"
-    },
-    {
       "source": "Set focus on Elite Dangerous after each FSD jump.",
       "translation": "每次 FSD 跳转后将焦点设置在 Elite Dangerous 上。"
     },
@@ -187017,10 +188625,6 @@
     {
       "source": "Set group label",
       "translation": "设置组标签"
-    },
-    {
-      "source": "Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals.",
-      "translation": "设定勘探公告的矿产门槛。拆下所有过滤器以公布所有矿物质。"
     },
     {
       "source": "Set obelisk group label {0}.",
@@ -188023,6 +189627,10 @@
       "translation": "物种和大气摘要"
     },
     {
+      "source": "Speech Dispatcher",
+      "translation": "语音调度员"
+    },
+    {
       "source": "Speech rate",
       "translation": "语速"
     },
@@ -188233,6 +189841,10 @@
     {
       "source": "SrvSurvey mining activity overlay",
       "translation": "SrvSurvey 挖矿活动叠加"
+    },
+    {
+      "source": "SrvSurvey mining cargo overlay",
+      "translation": "SrvSurvey采矿货物叠加"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -189331,6 +190943,10 @@
       "translation": "系统数据不可用。"
     },
     {
+      "source": "System default",
+      "translation": "系统默认"
+    },
+    {
       "source": "System details could not be loaded: {0}",
       "translation": "无法加载系统详细信息：{0}"
     },
@@ -189589,6 +191205,10 @@
     {
       "source": "TARGET A01",
       "translation": "目标A01"
+    },
+    {
+      "source": "TARGET FOUND",
+      "translation": "找到目标"
     },
     {
       "source": "TARGET PNG FOLDER",
@@ -191987,6 +193607,14 @@
       "translation": "阈值"
     },
     {
+      "source": "Threshold for {0} removed.",
+      "translation": "删除了 {0} 的阈值。"
+    },
+    {
+      "source": "Threshold for {0} saved.",
+      "translation": "已保存 {0} 的阈值。"
+    },
+    {
       "source": "Thrusters",
       "translation": "推进器"
     },
@@ -194107,6 +195735,10 @@
       "translation": "Windows 重新启动管理器会话失败，错误为 {0}。"
     },
     {
+      "source": "Windows Speech API",
+      "translation": "Windows 语音 API"
+    },
+    {
       "source": "Windows administrator approval is required to update this protected installation. The player profile remains untouched.",
       "translation": "更新此受保护的安装需要 Windows 管理员批准。玩家资料保持不变。"
     },
@@ -194141,6 +195773,10 @@
     {
       "source": "Windows topmost transparency, native click-through, game-window tracking, and global keyboard input are available.",
       "translation": "可以使用 Windows 最顶层透明度、本机点击、游戏窗口跟踪和全局键盘输入。"
+    },
+    {
+      "source": "Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available.",
+      "translation": "Windows 使用已安装的 SAPI 语音。 Linux 使用 Speech Dispatcher 或 eSpeak NG（如果可用）。"
     },
     {
       "source": "Windows: the OpenVR client library is included with SrvSurvey.",
@@ -194385,6 +196021,10 @@
     {
       "source": "all",
       "translation": "全部"
+    },
+    {
+      "source": "all minerals",
+      "translation": "所有矿物质"
     },
     {
       "source": "allcsv",
@@ -194803,6 +196443,10 @@
       "translation": "聊天命令"
     },
     {
+      "source": "child",
+      "translation": "孩子"
+    },
+    {
       "source": "clear",
       "translation": "清晰"
     },
@@ -194943,6 +196587,14 @@
       "translation": "冷却"
     },
     {
+      "source": "core + laser",
+      "translation": "核心+激光"
+    },
+    {
+      "source": "core only",
+      "translation": "仅核心"
+    },
+    {
       "source": "corsair",
       "translation": "海盗"
     },
@@ -195067,6 +196719,10 @@
       "translation": "例如白金×2"
     },
     {
+      "source": "eSpeak NG",
+      "translation": "易语NG"
+    },
+    {
       "source": "eagle",
       "translation": "鹰"
     },
@@ -195155,6 +196811,14 @@
       "translation": "英语"
     },
     {
+      "source": "espeak",
+      "translation": "埃斯皮克"
+    },
+    {
+      "source": "espeak-ng",
+      "translation": "espeak-ng"
+    },
+    {
       "source": "event",
       "translation": "事件"
     },
@@ -195225,6 +196889,30 @@
     {
       "source": "federation",
       "translation": "联邦"
+    },
+    {
+      "source": "female 1",
+      "translation": "女 1"
+    },
+    {
+      "source": "female 2",
+      "translation": "女2"
+    },
+    {
+      "source": "female 3",
+      "translation": "女3"
+    },
+    {
+      "source": "female1",
+      "translation": "女1"
+    },
+    {
+      "source": "female2",
+      "translation": "女2"
+    },
+    {
+      "source": "female3",
+      "translation": "女3"
     },
     {
       "source": "ferdelance",
@@ -195687,6 +197375,10 @@
       "translation": "激光"
     },
     {
+      "source": "laser only",
+      "translation": "仅激光"
+    },
+    {
       "source": "last visit",
       "translation": "上次访问"
     },
@@ -195735,6 +197427,10 @@
       "translation": "本地的"
     },
     {
+      "source": "local speech",
+      "translation": "当地语言"
+    },
+    {
       "source": "log folder proton profile data source",
       "translation": "日志文件夹proton配置文件数据源"
     },
@@ -195757,6 +197453,30 @@
     {
       "source": "mainengines",
       "translation": "主机"
+    },
+    {
+      "source": "male 1",
+      "translation": "男 1"
+    },
+    {
+      "source": "male 2",
+      "translation": "男2"
+    },
+    {
+      "source": "male 3",
+      "translation": "男3"
+    },
+    {
+      "source": "male1",
+      "translation": "男1"
+    },
+    {
+      "source": "male2",
+      "translation": "男2"
+    },
+    {
+      "source": "male3",
+      "translation": "男3"
     },
     {
       "source": "mamba",
@@ -195885,6 +197605,10 @@
     {
       "source": "multiple",
       "translation": "多个"
+    },
+    {
+      "source": "muted",
+      "translation": "静音"
     },
     {
       "source": "n/a",
@@ -196493,6 +198217,10 @@
     {
       "source": "spansh.co.uk",
       "translation": "spansh.co.uk"
+    },
+    {
+      "source": "spd-say",
+      "translation": "SPD-说"
     },
     {
       "source": "spherical",
@@ -197179,6 +198907,10 @@
       "translation": "{0} / {1} 尸体完整"
     },
     {
+      "source": "{0} / {1} T",
+      "translation": "{0} / {1} T"
+    },
+    {
       "source": "{0} B 3",
       "translation": "{0} B 3"
     },
@@ -197269,6 +199001,14 @@
     {
       "source": "{0} SrvSurvey instances are currently running.",
       "translation": "{0} SrvSurvey 实例当前正在运行。"
+    },
+    {
+      "source": "{0} T / UNKNOWN",
+      "translation": "{0} T / 未知"
+    },
+    {
+      "source": "{0} T REMAINING",
+      "translation": "{0} 剩余"
     },
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
@@ -197867,6 +199607,10 @@
       "translation": "{0} · 活动方尖碑"
     },
     {
+      "source": "{0} · Remaining {1}%",
+      "translation": "{0} · 剩余 {1}%"
+    },
+    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "{0} · 层 {1}：{2}"
     },
@@ -197943,6 +199687,10 @@
       "translation": "{0}% 的 {1}"
     },
     {
+      "source": "{0}% remaining",
+      "translation": "{0} 剩余%"
+    },
+    {
       "source": "{0}: {1} of {2}{3}",
       "translation": "{0}：{2}{3}的{1}"
     },
@@ -197961,6 +199709,10 @@
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
       "translation": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}"
+    },
+    {
+      "source": "{0}Core: {1}",
+      "translation": "{0}核心：{1}"
     },
     {
       "source": "{0}None needed; already current.",
@@ -198641,6 +200393,10 @@
       "translation": "* 420 NEED | 120 FC | 16 SHIP >>>!"
     },
     {
+      "source": "431 / 960 T",
+      "translation": "* 431 / 960 T >>>!"
+    },
+    {
       "source": "44 JUMPS LEFT",
       "translation": "* 44 JUMPS LEFT >>>!"
     },
@@ -198651,6 +200407,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "* 499.76 LY | 21,502.09 LY REMAINING >>>!"
+    },
+    {
+      "source": "529 T REMAINING",
+      "translation": "* 529 T REMAINING >>>!"
     },
     {
       "source": "6 BODIES REMAIN | EST. VALUE 18.4 M CR",
@@ -199155,6 +200915,10 @@
     {
       "source": "ACTIVE OBELISKS",
       "translation": "* ACTIVE OBELISKS >>>!"
+    },
+    {
+      "source": "ACTIVE PROSPECTORS",
+      "translation": "* ACTIVE PROSPECTORS >>>!"
     },
     {
       "source": "ACTIVE SAMPLE",
@@ -200117,6 +201881,22 @@
       "translation": "* ANCIENT RUINS GAMMA | COMPLETE >>>!"
     },
     {
+      "source": "Announcement events",
+      "translation": "* ANNOUNCEMENT EVENTS >>>!"
+    },
+    {
+      "source": "Announcement preset '{0}' applied.",
+      "translation": "* ANNOUNCEMENT PRESET '{0}' APPLIED. >>>!"
+    },
+    {
+      "source": "Announcement preset '{0}' deleted.",
+      "translation": "* ANNOUNCEMENT PRESET '{0}' DELETED. >>>!"
+    },
+    {
+      "source": "Announcement preset saved.",
+      "translation": "* ANNOUNCEMENT PRESET SAVED. >>>!"
+    },
+    {
       "source": "Announcement presets",
       "translation": "* ANNOUNCEMENT PRESETS >>>!"
     },
@@ -200263,6 +202043,10 @@
     {
       "source": "Apply point edit",
       "translation": "* APPLY POINT EDIT >>>!"
+    },
+    {
+      "source": "Apply selected",
+      "translation": "* APPLY SELECTED >>>!"
     },
     {
       "source": "Apply the original focus and Odyssey suit rules consistently to every passive overlay.",
@@ -200471,6 +202255,10 @@
     {
       "source": "Attach session screenshots",
       "translation": "* ATTACH SESSION SCREENSHOTS >>>!"
+    },
+    {
+      "source": "Audio announcements",
+      "translation": "* AUDIO ANNOUNCEMENTS >>>!"
     },
     {
       "source": "Audit all boxels",
@@ -201901,6 +203689,10 @@
       "translation": "* CARGO >>>!"
     },
     {
+      "source": "CARGO HOLD",
+      "translation": "* CARGO HOLD >>>!"
+    },
+    {
       "source": "CARRIER ARRIVED",
       "translation": "* CARRIER ARRIVED >>>!"
     },
@@ -202449,6 +204241,10 @@
       "translation": "* CARGO FULL REMINDER AFTER ONE MINUTE IDLE >>>!"
     },
     {
+      "source": "Cargo hold is empty.",
+      "translation": "* CARGO HOLD IS EMPTY. >>>!"
+    },
+    {
       "source": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
       "translation": "* CARGO IS ALLOCATED TO ACTIVE MISSIONS IN ACCEPTANCE ORDER. DELIVERED COUNTS ARE CUMULATIVE. COMPLETION, FAILURE AND ABANDONMENT FOLLOW JOURNAL EVENTS. >>>!"
     },
@@ -202487,10 +204283,6 @@
     {
       "source": "Cargo: {0} / {1} t · Limpets: {2}",
       "translation": "* CARGO: {0} / {1} T · LIMPETS: {2} >>>!"
-    },
-    {
-      "source": "CargoCapacity",
-      "translation": "* CARGOCAPACITY >>>!"
     },
     {
       "source": "CargoDepot",
@@ -202719,6 +204511,14 @@
     {
       "source": "Chemicals",
       "translation": "* CHEMICALS >>>!"
+    },
+    {
+      "source": "Child",
+      "translation": "* CHILD >>>!"
+    },
+    {
+      "source": "Chime volume",
+      "translation": "* CHIME VOLUME >>>!"
     },
     {
       "source": "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
@@ -204877,6 +206677,10 @@
       "translation": "* DEPARTURE TO {0} >>>!"
     },
     {
+      "source": "DEPLETED",
+      "translation": "* DEPLETED >>>!"
+    },
+    {
       "source": "DESCENT",
       "translation": "* DESCENT >>>!"
     },
@@ -206105,6 +207909,10 @@
       "translation": "* EACH ROLE GROWS OR SHRINKS INDEPENDENTLY. ZERO USES THE THEME'S BASELINE SIZE. >>>!"
     },
     {
+      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
+      "translation": "* EACH ROW IS AN INDEPENDENT TARGET. A PROSPECT QUALIFIES WHEN AT LEAST ONE LISTED MINERAL REACHES ITS MINIMUM. AN EMPTY LIST ANNOUNCES EVERY MINERAL. >>>!"
+    },
+    {
       "source": "Eagle",
       "translation": "* EAGLE >>>!"
     },
@@ -206517,6 +208325,10 @@
       "translation": "* ENTER A MINERAL AND 0–16 PENDING TONS. >>>!"
     },
     {
+      "source": "Enter a mineral and minimum percentage.",
+      "translation": "* ENTER A MINERAL AND MINIMUM PERCENTAGE. >>>!"
+    },
+    {
       "source": "Enter a mineral name.",
       "translation": "* ENTER A MINERAL NAME. >>>!"
     },
@@ -206531,6 +208343,10 @@
     {
       "source": "Enter a percentage from 0 to 100.",
       "translation": "* ENTER A PERCENTAGE FROM 0 TO 100. >>>!"
+    },
+    {
+      "source": "Enter a preset name, then save the current announcement filters.",
+      "translation": "* ENTER A PRESET NAME, THEN SAVE THE CURRENT ANNOUNCEMENT FILTERS. >>>!"
     },
     {
       "source": "Enter a star-system name to set a custom origin.",
@@ -207419,6 +209235,18 @@
     {
       "source": "Felicia Winters",
       "translation": "* FELICIA WINTERS >>>!"
+    },
+    {
+      "source": "Female 1",
+      "translation": "* FEMALE 1 >>>!"
+    },
+    {
+      "source": "Female 2",
+      "translation": "* FEMALE 2 >>>!"
+    },
+    {
+      "source": "Female 3",
+      "translation": "* FEMALE 3 >>>!"
     },
     {
       "source": "Fenris",
@@ -208963,6 +210791,10 @@
     {
       "source": "HGG",
       "translation": "* HGG >>>!"
+    },
+    {
+      "source": "HH:mm:ss",
+      "translation": "* HH:MM:SS >>>!"
     },
     {
       "source": "HIGH",
@@ -210977,6 +212809,10 @@
       "translation": "* LIME >>>!"
     },
     {
+      "source": "Limpets",
+      "translation": "* LIMPETS >>>!"
+    },
+    {
       "source": "Linked",
       "translation": "* LINKED >>>!"
     },
@@ -211125,16 +212961,8 @@
       "translation": "* LOAD A LIVE SYSTEM TO REVIEW ITS RAVEN COLONIAL SITES. >>>!"
     },
     {
-      "source": "Load installed voices",
-      "translation": "* LOAD INSTALLED VOICES >>>!"
-    },
-    {
       "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
       "translation": "* LOAD IS READ-ONLY. EDITS REMAIN LOCAL UNTIL A FRESH RAVEN COMPARISON PASSES AND YOU EXPLICITLY CONFIRM THE PUBLISH. >>>!"
-    },
-    {
-      "source": "Load preset",
-      "translation": "* LOAD PRESET >>>!"
     },
     {
       "source": "Load system",
@@ -211373,16 +213201,12 @@
       "translation": "* LOCAL FLORA REFERENCE IMAGE >>>!"
     },
     {
-      "source": "Local mining speech currently uses Windows voices.",
-      "translation": "* LOCAL MINING SPEECH CURRENTLY USES WINDOWS VOICES. >>>!"
-    },
-    {
       "source": "Local ring discoveries",
       "translation": "* LOCAL RING DISCOVERIES >>>!"
     },
     {
-      "source": "Local voices loaded.",
-      "translation": "* LOCAL VOICES LOADED. >>>!"
+      "source": "Local voices loaded from {0}.",
+      "translation": "* LOCAL VOICES LOADED FROM {0}. >>>!"
     },
     {
       "source": "LocalFloraDirectory",
@@ -211659,6 +213483,18 @@
     {
       "source": "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
       "translation": "* MAKING A PROJECT PRIMARY CHANGES COMMANDER PLANNING FOCUS; IT DOES NOT REORDER THE SITES STORED FOR THE SYSTEM. >>>!"
+    },
+    {
+      "source": "Male 1",
+      "translation": "* MALE 1 >>>!"
+    },
+    {
+      "source": "Male 2",
+      "translation": "* MALE 2 >>>!"
+    },
+    {
+      "source": "Male 3",
+      "translation": "* MALE 3 >>>!"
     },
     {
       "source": "Malformed or unknown journal fields are logged without requiring SrvSurvey to rewrite the source file.",
@@ -212161,6 +213997,10 @@
       "translation": "* MINERAL AVAILABILITY FOLLOWS RING COMPOSITION. PRICES VARY; CHECK CURRENT MARKET OBSERVATIONS BEFORE SELLING. >>>!"
     },
     {
+      "source": "Mineral thresholds",
+      "translation": "* MINERAL THRESHOLDS >>>!"
+    },
+    {
       "source": "Minerals",
       "translation": "* MINERALS >>>!"
     },
@@ -212249,6 +214089,10 @@
       "translation": "* MINING CALIBRATION CONTROLS >>>!"
     },
     {
+      "source": "Mining cargo hold",
+      "translation": "* MINING CARGO HOLD >>>!"
+    },
+    {
       "source": "Mining data could not be loaded: {0}",
       "translation": "* MINING DATA COULD NOT BE LOADED: {0} >>>!"
     },
@@ -212283,10 +214127,6 @@
     {
       "source": "Mining notifications",
       "translation": "* MINING NOTIFICATIONS >>>!"
-    },
-    {
-      "source": "Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-      "translation": "* MINING NOTIFICATIONS APPEAR ONLY ABOARD YOUR MAIN SHIP. USE THE PANEL VISIBILITY CONTROLS BELOW TO SHOW OR HIDE EACH OVERLAY. >>>!"
     },
     {
       "source": "Mining overview map",
@@ -212331,6 +214171,10 @@
     {
       "source": "MiningReferenceCommodities",
       "translation": "* MININGREFERENCECOMMODITIES >>>!"
+    },
+    {
+      "source": "MiningWorkspace.ShouldShowCargo",
+      "translation": "* MININGWORKSPACE.SHOULDSHOWCARGO >>>!"
     },
     {
       "source": "MiningWorkspace.ShouldShowNotifications",
@@ -212917,6 +214761,10 @@
       "translation": "* NEW LOG PATH: {0} >>>!"
     },
     {
+      "source": "New preset",
+      "translation": "* NEW PRESET >>>!"
+    },
+    {
       "source": "New profile",
       "translation": "* NEW PROFILE >>>!"
     },
@@ -212935,6 +214783,10 @@
     {
       "source": "New site name",
       "translation": "* NEW SITE NAME >>>!"
+    },
+    {
+      "source": "New threshold",
+      "translation": "* NEW THRESHOLD >>>!"
     },
     {
       "source": "New to this Commander according to Commander Codex history",
@@ -213427,6 +215279,10 @@
     {
       "source": "No live system",
       "translation": "* NO LIVE SYSTEM >>>!"
+    },
+    {
+      "source": "No local speech service was found. Install Speech Dispatcher or eSpeak NG on Linux.",
+      "translation": "* NO LOCAL SPEECH SERVICE WAS FOUND. INSTALL SPEECH DISPATCHER OR ESPEAK NG ON LINUX. >>>!"
     },
     {
       "source": "No local voices are available.",
@@ -214601,6 +216457,10 @@
       "translation": "* ORRERY >>>!"
     },
     {
+      "source": "Osmium",
+      "translation": "* OSMIUM >>>!"
+    },
+    {
       "source": "Osseus Discus",
       "translation": "* OSSEUS DISCUS >>>!"
     },
@@ -215013,6 +216873,10 @@
       "translation": "* PASSIVE >>>!"
     },
     {
+      "source": "PATH",
+      "translation": "* PATH >>>!"
+    },
+    {
       "source": "PEAK SELL SNAPSHOT",
       "translation": "* PEAK SELL SNAPSHOT >>>!"
     },
@@ -215113,10 +216977,6 @@
       "translation": "* PROJECT NAME >>>!"
     },
     {
-      "source": "PROSPECTOR",
-      "translation": "* PROSPECTOR >>>!"
-    },
-    {
       "source": "Pad 02 | 164 m",
       "translation": "* PAD 02 | 164 M >>>!"
     },
@@ -215209,6 +217069,14 @@
       "translation": "* PEACH >>>!"
     },
     {
+      "source": "Persistent prospector results",
+      "translation": "* PERSISTENT PROSPECTOR RESULTS >>>!"
+    },
+    {
+      "source": "Persistent prospector results shown in the overlay",
+      "translation": "* PERSISTENT PROSPECTOR RESULTS SHOWN IN THE OVERLAY >>>!"
+    },
+    {
       "source": "Personal EDSM API key",
       "translation": "* PERSONAL EDSM API KEY >>>!"
     },
@@ -215261,16 +217129,24 @@
       "translation": "* PLATINUM >>>!"
     },
     {
+      "source": "Platinum 22.1% · Bertrandite 8.5%",
+      "translation": "* PLATINUM 22.1% · BERTRANDITE 8.5% >>>!"
+    },
+    {
       "source": "Platinum 34.8%",
       "translation": "* PLATINUM 34.8% >>>!"
     },
     {
-      "source": "Platinum 34.8% · Painite 12.4% · Remaining 73%",
-      "translation": "* PLATINUM 34.8% · PAINITE 12.4% · REMAINING 73% >>>!"
+      "source": "Platinum 34.8% · Osmium 12.4%",
+      "translation": "* PLATINUM 34.8% · OSMIUM 12.4% >>>!"
     },
     {
       "source": "Platinum ×1",
       "translation": "* PLATINUM ×1 >>>!"
+    },
+    {
+      "source": "Play a chime for qualifying prospects",
+      "translation": "* PLAY A CHIME FOR QUALIFYING PROSPECTS >>>!"
     },
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
@@ -215363,6 +217239,10 @@
     {
       "source": "PlotMiniTrack",
       "translation": "* PLOTMINITRACK >>>!"
+    },
+    {
+      "source": "PlotMiningCargo",
+      "translation": "* PLOTMININGCARGO >>>!"
     },
     {
       "source": "PlotMiningFiregroups",
@@ -216025,6 +217905,10 @@
       "translation": "* PROPAGITO >>>!"
     },
     {
+      "source": "Prospected",
+      "translation": "* PROSPECTED >>>!"
+    },
+    {
       "source": "Prospecting results",
       "translation": "* PROSPECTING RESULTS >>>!"
     },
@@ -216039,6 +217923,10 @@
     {
       "source": "Prospector",
       "translation": "* PROSPECTOR >>>!"
+    },
+    {
+      "source": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
+      "translation": "* PROSPECTOR NOTIFICATIONS AND THE CARGO HOLD TRACKER APPEAR ONLY ABOARD YOUR MAIN SHIP. USE THE PANEL VISIBILITY CONTROLS BELOW TO SHOW OR HIDE EACH OVERLAY. >>>!"
     },
     {
       "source": "Provider page (0 first)",
@@ -217469,6 +219357,10 @@
       "translation": "* REFRESH LINKED RAVENCOLONIAL CARRIERS >>>!"
     },
     {
+      "source": "Refresh local voices",
+      "translation": "* REFRESH LOCAL VOICES >>>!"
+    },
+    {
       "source": "Refresh preview",
       "translation": "* REFRESH PREVIEW >>>!"
     },
@@ -217631,10 +219523,6 @@
     {
       "source": "Remove development quest",
       "translation": "* REMOVE DEVELOPMENT QUEST >>>!"
-    },
-    {
-      "source": "Remove filter",
-      "translation": "* REMOVE FILTER >>>!"
     },
     {
       "source": "Remove group",
@@ -219173,6 +221061,14 @@
       "translation": "* SAVE SYSTEMS AND MINING RINGS IN YOUR OWN CATEGORIES. >>>!"
     },
     {
+      "source": "Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it.",
+      "translation": "* SAVE THE COMPLETE THRESHOLD AND ASTEROID-TYPE CONFIGURATION, THEN SELECT A PRESET TO APPLY, RENAME, OR DELETE IT. >>>!"
+    },
+    {
+      "source": "Save threshold",
+      "translation": "* SAVE THRESHOLD >>>!"
+    },
+    {
       "source": "Save to Library",
       "translation": "* SAVE TO LIBRARY >>>!"
     },
@@ -219809,6 +221705,10 @@
       "translation": "* SELECT A MATCHING SYSTEM >>>!"
     },
     {
+      "source": "Select a mineral threshold to delete.",
+      "translation": "* SELECT A MINERAL THRESHOLD TO DELETE. >>>!"
+    },
+    {
       "source": "Select a recorded boxel",
       "translation": "* SELECT A RECORDED BOXEL >>>!"
     },
@@ -219831,6 +221731,10 @@
     {
       "source": "Select a system from the search results.",
       "translation": "* SELECT A SYSTEM FROM THE SEARCH RESULTS. >>>!"
+    },
+    {
+      "source": "Select an announcement preset to delete.",
+      "translation": "* SELECT AN ANNOUNCEMENT PRESET TO DELETE. >>>!"
     },
     {
       "source": "Select an equipped module",
@@ -220025,10 +221929,6 @@
       "translation": "* SET A TARGET TO BEGIN GUIDANCE >>>!"
     },
     {
-      "source": "Set filter",
-      "translation": "* SET FILTER >>>!"
-    },
-    {
       "source": "Set focus on Elite Dangerous after each FSD jump.",
       "translation": "* SET FOCUS ON ELITE DANGEROUS AFTER EACH FSD JUMP. >>>!"
     },
@@ -220043,10 +221943,6 @@
     {
       "source": "Set group label",
       "translation": "* SET GROUP LABEL >>>!"
-    },
-    {
-      "source": "Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals.",
-      "translation": "* SET MINERAL THRESHOLDS FOR PROSPECTING ANNOUNCEMENTS. REMOVE ALL FILTERS TO ANNOUNCE ALL MINERALS. >>>!"
     },
     {
       "source": "Set obelisk group label {0}.",
@@ -221049,6 +222945,10 @@
       "translation": "* SPECIES AND ATMOSPHERE SUMMARY >>>!"
     },
     {
+      "source": "Speech Dispatcher",
+      "translation": "* SPEECH DISPATCHER >>>!"
+    },
+    {
       "source": "Speech rate",
       "translation": "* SPEECH RATE >>>!"
     },
@@ -221259,6 +223159,10 @@
     {
       "source": "SrvSurvey mining activity overlay",
       "translation": "* SRVSURVEY MINING ACTIVITY OVERLAY >>>!"
+    },
+    {
+      "source": "SrvSurvey mining cargo overlay",
+      "translation": "* SRVSURVEY MINING CARGO OVERLAY >>>!"
     },
     {
       "source": "SrvSurvey mining notifications overlay",
@@ -222357,6 +224261,10 @@
       "translation": "* SYSTEM DATA UNAVAILABLE. >>>!"
     },
     {
+      "source": "System default",
+      "translation": "* SYSTEM DEFAULT >>>!"
+    },
+    {
       "source": "System details could not be loaded: {0}",
       "translation": "* SYSTEM DETAILS COULD NOT BE LOADED: {0} >>>!"
     },
@@ -222615,6 +224523,10 @@
     {
       "source": "TARGET A01",
       "translation": "* TARGET A01 >>>!"
+    },
+    {
+      "source": "TARGET FOUND",
+      "translation": "* TARGET FOUND >>>!"
     },
     {
       "source": "TARGET PNG FOLDER",
@@ -225013,6 +226925,14 @@
       "translation": "* THRESHOLD >>>!"
     },
     {
+      "source": "Threshold for {0} removed.",
+      "translation": "* THRESHOLD FOR {0} REMOVED. >>>!"
+    },
+    {
+      "source": "Threshold for {0} saved.",
+      "translation": "* THRESHOLD FOR {0} SAVED. >>>!"
+    },
+    {
       "source": "Thrusters",
       "translation": "* THRUSTERS >>>!"
     },
@@ -227133,6 +229053,10 @@
       "translation": "* WINDOWS RESTART MANAGER SESSION FAILED WITH ERROR {0}. >>>!"
     },
     {
+      "source": "Windows Speech API",
+      "translation": "* WINDOWS SPEECH API >>>!"
+    },
+    {
       "source": "Windows administrator approval is required to update this protected installation. The player profile remains untouched.",
       "translation": "* WINDOWS ADMINISTRATOR APPROVAL IS REQUIRED TO UPDATE THIS PROTECTED INSTALLATION. THE PLAYER PROFILE REMAINS UNTOUCHED. >>>!"
     },
@@ -227167,6 +229091,10 @@
     {
       "source": "Windows topmost transparency, native click-through, game-window tracking, and global keyboard input are available.",
       "translation": "* WINDOWS TOPMOST TRANSPARENCY, NATIVE CLICK-THROUGH, GAME-WINDOW TRACKING, AND GLOBAL KEYBOARD INPUT ARE AVAILABLE. >>>!"
+    },
+    {
+      "source": "Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available.",
+      "translation": "* WINDOWS USES INSTALLED SAPI VOICES. LINUX USES SPEECH DISPATCHER OR ESPEAK NG WHEN AVAILABLE. >>>!"
     },
     {
       "source": "Windows: the OpenVR client library is included with SrvSurvey.",
@@ -227411,6 +229339,10 @@
     {
       "source": "all",
       "translation": "* ALL >>>!"
+    },
+    {
+      "source": "all minerals",
+      "translation": "* ALL MINERALS >>>!"
     },
     {
       "source": "allcsv",
@@ -227829,6 +229761,10 @@
       "translation": "* CHAT-COMMANDS >>>!"
     },
     {
+      "source": "child",
+      "translation": "* CHILD >>>!"
+    },
+    {
       "source": "clear",
       "translation": "* CLEAR >>>!"
     },
@@ -227969,6 +229905,14 @@
       "translation": "* COOLING >>>!"
     },
     {
+      "source": "core + laser",
+      "translation": "* CORE + LASER >>>!"
+    },
+    {
+      "source": "core only",
+      "translation": "* CORE ONLY >>>!"
+    },
+    {
       "source": "corsair",
       "translation": "* CORSAIR >>>!"
     },
@@ -228093,6 +230037,10 @@
       "translation": "* E.G. PLATINUM ×2 >>>!"
     },
     {
+      "source": "eSpeak NG",
+      "translation": "* ESPEAK NG >>>!"
+    },
+    {
       "source": "eagle",
       "translation": "* EAGLE >>>!"
     },
@@ -228181,6 +230129,14 @@
       "translation": "* ES >>>!"
     },
     {
+      "source": "espeak",
+      "translation": "* ESPEAK >>>!"
+    },
+    {
+      "source": "espeak-ng",
+      "translation": "* ESPEAK-NG >>>!"
+    },
+    {
       "source": "event",
       "translation": "* EVENT >>>!"
     },
@@ -228251,6 +230207,30 @@
     {
       "source": "federation",
       "translation": "* FEDERATION >>>!"
+    },
+    {
+      "source": "female 1",
+      "translation": "* FEMALE 1 >>>!"
+    },
+    {
+      "source": "female 2",
+      "translation": "* FEMALE 2 >>>!"
+    },
+    {
+      "source": "female 3",
+      "translation": "* FEMALE 3 >>>!"
+    },
+    {
+      "source": "female1",
+      "translation": "* FEMALE1 >>>!"
+    },
+    {
+      "source": "female2",
+      "translation": "* FEMALE2 >>>!"
+    },
+    {
+      "source": "female3",
+      "translation": "* FEMALE3 >>>!"
     },
     {
       "source": "ferdelance",
@@ -228713,6 +230693,10 @@
       "translation": "* LASER >>>!"
     },
     {
+      "source": "laser only",
+      "translation": "* LASER ONLY >>>!"
+    },
+    {
       "source": "last visit",
       "translation": "* LAST VISIT >>>!"
     },
@@ -228761,6 +230745,10 @@
       "translation": "* LOCAL >>>!"
     },
     {
+      "source": "local speech",
+      "translation": "* LOCAL SPEECH >>>!"
+    },
+    {
       "source": "log folder proton profile data source",
       "translation": "* LOG FOLDER PROTON PROFILE DATA SOURCE >>>!"
     },
@@ -228783,6 +230771,30 @@
     {
       "source": "mainengines",
       "translation": "* MAINENGINES >>>!"
+    },
+    {
+      "source": "male 1",
+      "translation": "* MALE 1 >>>!"
+    },
+    {
+      "source": "male 2",
+      "translation": "* MALE 2 >>>!"
+    },
+    {
+      "source": "male 3",
+      "translation": "* MALE 3 >>>!"
+    },
+    {
+      "source": "male1",
+      "translation": "* MALE1 >>>!"
+    },
+    {
+      "source": "male2",
+      "translation": "* MALE2 >>>!"
+    },
+    {
+      "source": "male3",
+      "translation": "* MALE3 >>>!"
     },
     {
       "source": "mamba",
@@ -228911,6 +230923,10 @@
     {
       "source": "multiple",
       "translation": "* MULTIPLE >>>!"
+    },
+    {
+      "source": "muted",
+      "translation": "* MUTED >>>!"
     },
     {
       "source": "n/a",
@@ -229519,6 +231535,10 @@
     {
       "source": "spansh.co.uk",
       "translation": "* SPANSH.CO.UK >>>!"
+    },
+    {
+      "source": "spd-say",
+      "translation": "* SPD-SAY >>>!"
     },
     {
       "source": "spherical",
@@ -230205,6 +232225,10 @@
       "translation": "* {0} / {1} BODIES COMPLETE >>>!"
     },
     {
+      "source": "{0} / {1} T",
+      "translation": "* {0} / {1} T >>>!"
+    },
+    {
       "source": "{0} B 3",
       "translation": "* {0} B 3 >>>!"
     },
@@ -230295,6 +232319,14 @@
     {
       "source": "{0} SrvSurvey instances are currently running.",
       "translation": "* {0} SRVSURVEY INSTANCES ARE CURRENTLY RUNNING. >>>!"
+    },
+    {
+      "source": "{0} T / UNKNOWN",
+      "translation": "* {0} T / UNKNOWN >>>!"
+    },
+    {
+      "source": "{0} T REMAINING",
+      "translation": "* {0} T REMAINING >>>!"
     },
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
@@ -230893,6 +232925,10 @@
       "translation": "* {0} · ACTIVE OBELISK >>>!"
     },
     {
+      "source": "{0} · Remaining {1}%",
+      "translation": "* {0} · REMAINING {1}% >>>!"
+    },
+    {
       "source": "{0} · Tier {1}: {2}",
       "translation": "* {0} · TIER {1}: {2} >>>!"
     },
@@ -230969,6 +233005,10 @@
       "translation": "* {0}% OF {1} >>>!"
     },
     {
+      "source": "{0}% remaining",
+      "translation": "* {0}% REMAINING >>>!"
+    },
+    {
       "source": "{0}: {1} of {2}{3}",
       "translation": "* {0}: {1} OF {2}{3} >>>!"
     },
@@ -230987,6 +233027,10 @@
     {
       "source": "{0}?entry.987977054={1}&entry.1282362439={2}&entry.468337930={3}",
       "translation": "* {0}?ENTRY.987977054={1}&ENTRY.1282362439={2}&ENTRY.468337930={3} >>>!"
+    },
+    {
+      "source": "{0}Core: {1}",
+      "translation": "* {0}CORE: {1} >>>!"
     },
     {
       "source": "{0}None needed; already current.",

@@ -405,7 +405,7 @@
         </TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
-            <TabControl>
+            <TabControl x:Name="MiningSettingsTabs">
               <TabItem Header="Session">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                   <StackPanel Spacing="14" Margin="4,20,4,16">
@@ -423,37 +423,85 @@
               <TabItem Header="Announcements">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                   <StackPanel Spacing="14" Margin="4,20,4,16">
-                    <CheckBox Content="Core asteroid announcements" IsChecked="{Binding Settings.AnnounceCores}"/>
-                    <CheckBox Content="Non-core asteroid announcements" IsChecked="{Binding Settings.AnnounceNonCores}"/>
-                    <CheckBox Content="Prospecting results" IsChecked="{Binding Settings.NotifyProspecting}"/>
-                    <CheckBox Content="Refined commodities" IsChecked="{Binding Settings.NotifyRefined}"/>
-                    <CheckBox Content="Collected engineering materials" IsChecked="{Binding Settings.NotifyMaterials}"/>
-                    <CheckBox Content="Cargo full reminder after one minute idle" IsChecked="{Binding Settings.NotifyCargoFull}"/>
-                    <TextBlock Text="Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals." TextWrapping="Wrap"/>
-                    <TextBlock Text="Mineral" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding TargetMaterial}"/>
-                    <TextBlock Text="Minimum percentage" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding ThresholdText}"/>
-                    <WrapPanel>
-                      <Button Content="Set filter" Click="Threshold_Click" Margin="0,0,8,8"/>
-                      <Button Content="Remove filter" Click="RemoveThreshold_Click" Margin="0,0,8,8"/>
-                    </WrapPanel>
-                    <TextBlock Text="{Binding ThresholdSummary}" TextWrapping="Wrap"/>
-                    <TextBlock Text="Announcement presets" TextWrapping="Wrap"/>
-                    <ComboBox ItemsSource="{Binding PresetNames}" SelectedItem="{Binding PresetName}" HorizontalAlignment="Stretch"/>
-                    <TextBlock Text="Preset name" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding PresetName}"/>
-                    <WrapPanel>
-                      <Button Content="Save preset" Click="SavePreset_Click" Margin="0,0,8,8"/>
-                      <Button Content="Load preset" Click="LoadPreset_Click" Margin="0,0,8,8"/>
-                    </WrapPanel>
-                    <CheckBox Content="Speak announcements using local Windows voices" IsChecked="{Binding Settings.SpeakAnnouncements}"/>
-                    <Button Content="Load installed voices" Click="LoadVoices_Click" Margin="0,0,8,8"/>
-                    <ComboBox ItemsSource="{Binding Voices}" SelectedItem="{Binding Settings.Voice}" HorizontalAlignment="Stretch"/>
-                    <TextBlock Text="Speech volume" TextWrapping="Wrap"/>
-                    <Slider Minimum="0" Maximum="100" Value="{Binding Settings.SpeechVolume}"/>
-                    <TextBlock Text="Speech rate" TextWrapping="Wrap"/>
-                    <Slider Minimum="-10" Maximum="10" Value="{Binding Settings.SpeechRate}"/>
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="card-title" Text="Announcement events"/>
+                        <CheckBox Content="Core asteroid announcements" IsChecked="{Binding Settings.AnnounceCores}"/>
+                        <CheckBox Content="Non-core asteroid announcements" IsChecked="{Binding Settings.AnnounceNonCores}"/>
+                        <CheckBox Content="Prospecting results" IsChecked="{Binding Settings.NotifyProspecting}"/>
+                        <CheckBox Content="Refined commodities" IsChecked="{Binding Settings.NotifyRefined}"/>
+                        <CheckBox Content="Collected engineering materials" IsChecked="{Binding Settings.NotifyMaterials}"/>
+                        <CheckBox Content="Cargo full reminder after one minute idle" IsChecked="{Binding Settings.NotifyCargoFull}"/>
+                        <TextBlock Text="Persistent prospector results shown in the overlay"/>
+                        <NumericUpDown x:Name="PersistentProspectSlotsInput" Minimum="1" Maximum="8" Value="{Binding Settings.PersistentProspectSlots}" FormatString="0" HorizontalAlignment="Left" Width="100"/>
+                      </StackPanel>
+                    </Border>
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="card-title" Text="Mineral thresholds"/>
+                        <TextBlock Classes="muted" Text="Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral." TextWrapping="Wrap"/>
+                        <ListBox x:Name="ThresholdRows" ItemsSource="{Binding Thresholds}" SelectedItem="{Binding SelectedThreshold}" MinHeight="70" MaxHeight="210" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                          <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MiningThresholdRowViewModel">
+                              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="8,5">
+                                <TextBlock Text="{Binding DisplayName}"/>
+                                <TextBlock Grid.Column="1" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding MinimumLabel}"/>
+                              </Grid>
+                            </DataTemplate>
+                          </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Grid ColumnDefinitions="2*,*" ColumnSpacing="12">
+                          <StackPanel Spacing="4"><TextBlock Text="Mineral"/><TextBox Text="{Binding TargetMaterial}"/></StackPanel>
+                          <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Minimum percentage"/><TextBox Text="{Binding ThresholdText}"/></StackPanel>
+                        </Grid>
+                        <WrapPanel>
+                          <Button Content="New threshold" Click="NewThreshold_Click" Margin="0,0,8,8"/>
+                          <Button Content="Save threshold" Click="Threshold_Click" Margin="0,0,8,8"/>
+                          <Button Content="Delete selected" Click="DeleteThreshold_Click" Margin="0,0,8,8"/>
+                        </WrapPanel>
+                        <TextBlock Classes="muted" Text="{Binding ThresholdSummary}" TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </Border>
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="card-title" Text="Announcement presets"/>
+                        <TextBlock Classes="muted" Text="Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it." TextWrapping="Wrap"/>
+                        <ListBox x:Name="AnnouncementPresetRows" ItemsSource="{Binding AnnouncementPresets}" SelectedItem="{Binding SelectedAnnouncementPreset}" MinHeight="70" MaxHeight="210" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                          <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MiningAnnouncementPresetRowViewModel">
+                              <Grid ColumnDefinitions="160,*" ColumnSpacing="12" Margin="8,5">
+                                <TextBlock Classes="type-value" Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Summary}" TextTrimming="CharacterEllipsis"/>
+                              </Grid>
+                            </DataTemplate>
+                          </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock Text="Preset name"/>
+                        <TextBox Text="{Binding PresetName}"/>
+                        <WrapPanel>
+                          <Button Content="New preset" Click="NewPreset_Click" Margin="0,0,8,8"/>
+                          <Button Content="Save preset" Click="SavePreset_Click" Margin="0,0,8,8"/>
+                          <Button Content="Apply selected" Click="LoadPreset_Click" Margin="0,0,8,8"/>
+                          <Button Content="Delete selected" Click="DeletePreset_Click" Margin="0,0,8,8"/>
+                        </WrapPanel>
+                      </StackPanel>
+                    </Border>
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="card-title" Text="Audio announcements"/>
+                        <CheckBox Content="Play a chime for qualifying prospects" IsChecked="{Binding Settings.PlayProspectChime}"/>
+                        <TextBlock Text="Chime volume"/>
+                        <Slider Minimum="0" Maximum="100" Value="{Binding Settings.ChimeVolume}"/>
+                        <CheckBox Content="Speak announcements using a local voice" IsChecked="{Binding Settings.SpeakAnnouncements}"/>
+                        <Button Content="Refresh local voices" Click="LoadVoices_Click" Margin="0,0,8,8" HorizontalAlignment="Left"/>
+                        <ComboBox x:Name="LocalVoiceSelector" ItemsSource="{Binding Voices}" SelectedItem="{Binding Settings.Voice}" HorizontalAlignment="Stretch"/>
+                        <TextBlock Classes="muted" Text="Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available." TextWrapping="Wrap"/>
+                        <TextBlock Text="Speech volume" TextWrapping="Wrap"/>
+                        <Slider Minimum="0" Maximum="100" Value="{Binding Settings.SpeechVolume}"/>
+                        <TextBlock Text="Speech rate" TextWrapping="Wrap"/>
+                        <Slider Minimum="-10" Maximum="10" Value="{Binding Settings.SpeechRate}"/>
+                      </StackPanel>
+                    </Border>
                     <Button Content="Save announcements" Command="{Binding SaveSettingsCommand}" Margin="0,0,8,8"/>
                   </StackPanel>
                 </ScrollViewer>

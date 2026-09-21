@@ -53,7 +53,9 @@ public sealed partial class MiningView : UserControl
 
     private void Threshold_Click(object? sender, RoutedEventArgs e) => Model?.SetThreshold(false);
 
-    private void RemoveThreshold_Click(object? sender, RoutedEventArgs e) => Model?.SetThreshold(true);
+    private void NewThreshold_Click(object? sender, RoutedEventArgs e) => Model?.NewThreshold();
+
+    private void DeleteThreshold_Click(object? sender, RoutedEventArgs e) => Model?.DeleteSelectedThreshold();
 
     private void AdjustQuality_Click(object? sender, RoutedEventArgs e) =>
         Model?.AdjustQuality((sender as Control)?.Tag as string == "minus" ? -1 : 1);
@@ -63,6 +65,10 @@ public sealed partial class MiningView : UserControl
     private void SavePreset_Click(object? sender, RoutedEventArgs e) => Model?.SaveAnnouncementPreset();
 
     private void LoadPreset_Click(object? sender, RoutedEventArgs e) => Model?.LoadAnnouncementPreset();
+
+    private void NewPreset_Click(object? sender, RoutedEventArgs e) => Model?.NewAnnouncementPreset();
+
+    private void DeletePreset_Click(object? sender, RoutedEventArgs e) => Model?.DeleteAnnouncementPreset();
 
     private async void LoadVoices_Click(object? sender, RoutedEventArgs e)
     {

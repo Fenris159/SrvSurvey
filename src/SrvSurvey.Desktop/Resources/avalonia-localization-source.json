@@ -968,6 +968,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "431 / 960 T",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
+  },
+  {
     "Text": "44 JUMPS LEFT",
     "IsFormat": false,
     "SourceKinds": [
@@ -990,6 +998,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "529 T REMAINING",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
   },
   {
     "Text": "6 BODIES REMAIN | EST. VALUE 18.4 M CR",
@@ -1999,6 +2015,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "ACTIVE PROSPECTORS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"
   },
   {
     "Text": "ACTIVE SAMPLE",
@@ -3923,6 +3947,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Announcement events",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Announcement preset \u0027{0}\u0027 applied.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Announcement preset \u0027{0}\u0027 deleted.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Announcement preset saved.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Announcement presets",
     "IsFormat": false,
     "SourceKinds": [
@@ -4217,6 +4273,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Apply selected",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Apply the original focus and Odyssey suit rules consistently to every passive overlay.",
@@ -4633,6 +4697,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
+  },
+  {
+    "Text": "Audio announcements",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Audit all boxels",
@@ -7497,6 +7569,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "CARGO HOLD",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningCargoOverlayPresentation.axaml"
+  },
+  {
     "Text": "CARRIER ARRIVED",
     "IsFormat": false,
     "SourceKinds": [
@@ -8603,6 +8684,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Cargo hold is empty.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningCargoOverlayPresentation.axaml"
+  },
+  {
     "Text": "Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events.",
     "IsFormat": false,
     "SourceKinds": [
@@ -8677,14 +8766,6 @@
   {
     "Text": "Cargo: {0} / {1} t \u00B7 Limpets: {2}",
     "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "CargoCapacity",
-    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -9146,6 +9227,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "Child",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "Chime volume",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
@@ -13470,6 +13567,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
   },
   {
+    "Text": "DEPLETED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "DESCENT",
     "IsFormat": false,
     "SourceKinds": [
@@ -15937,6 +16042,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
+    "Text": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Eagle",
     "IsFormat": false,
     "SourceKinds": [
@@ -16764,6 +16877,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Enter a mineral and minimum percentage.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Enter a mineral name.",
     "IsFormat": false,
     "SourceKinds": [
@@ -16789,6 +16910,14 @@
   },
   {
     "Text": "Enter a percentage from 0 to 100.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Enter a preset name, then save the current announcement filters.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -18574,6 +18703,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Female 1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "Female 2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "Female 3",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
   },
   {
     "Text": "Fenris",
@@ -21672,6 +21825,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "HH:mm:ss",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "HIGH",
@@ -25714,6 +25875,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "Limpets",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
+  },
+  {
     "Text": "Linked",
     "IsFormat": false,
     "SourceKinds": [
@@ -26010,28 +26179,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
-    "Text": "Load installed voices",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
-    "Text": "Load preset",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Load system",
@@ -26506,14 +26659,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml.cs"
   },
   {
-    "Text": "Local mining speech currently uses Windows voices.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
-  },
-  {
     "Text": "Local ring discoveries",
     "IsFormat": false,
     "SourceKinds": [
@@ -26522,8 +26667,8 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
-    "Text": "Local voices loaded.",
-    "IsFormat": false,
+    "Text": "Local voices loaded from {0}.",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -27082,6 +27227,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Male 1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "Male 2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "Male 3",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
   },
   {
     "Text": "Malformed or unknown journal fields are logged without requiring SrvSurvey to rewrite the source file.",
@@ -28087,6 +28256,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Mineral thresholds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Minerals",
     "IsFormat": false,
     "SourceKinds": [
@@ -28264,6 +28441,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MiningCalibrationWindow.cs"
   },
   {
+    "Text": "Mining cargo hold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Mining data could not be loaded: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -28334,14 +28519,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
-  },
-  {
-    "Text": "Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Mining overview map",
@@ -28430,6 +28607,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/MineMapSettingsStore.cs"
+  },
+  {
+    "Text": "MiningWorkspace.ShouldShowCargo",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
     "Text": "MiningWorkspace.ShouldShowNotifications",
@@ -29605,6 +29790,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
   },
   {
+    "Text": "New preset",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "New profile",
     "IsFormat": false,
     "SourceKinds": [
@@ -29643,6 +29836,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "New threshold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "New to this Commander according to Commander Codex history",
@@ -30628,6 +30829,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
+    "Text": "No local speech service was found. Install Speech Dispatcher or eSpeak NG on Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "No local voices are available.",
@@ -32980,6 +33189,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Osmium",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
+  },
+  {
     "Text": "Osseus Discus",
     "IsFormat": false,
     "SourceKinds": [
@@ -33806,6 +34023,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatOverlayViewModel.cs"
   },
   {
+    "Text": "PATH",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
     "Text": "PEAK SELL SNAPSHOT",
     "IsFormat": false,
     "SourceKinds": [
@@ -34007,14 +34232,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "PROSPECTOR",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"
-  },
-  {
     "Text": "Pad 02 | 164 m",
     "IsFormat": false,
     "SourceKinds": [
@@ -34199,6 +34416,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "Persistent prospector results",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Persistent prospector results shown in the overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Personal EDSM API key",
     "IsFormat": false,
     "SourceKinds": [
@@ -34300,7 +34533,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
+  },
+  {
+    "Text": "Platinum 22.1% \u00B7 Bertrandite 8.5%",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
   },
   {
     "Text": "Platinum 34.8%",
@@ -34311,7 +34552,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "Platinum 34.8% \u00B7 Painite 12.4% \u00B7 Remaining 73%",
+    "Text": "Platinum 34.8% \u00B7 Osmium 12.4%",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -34325,6 +34566,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
+  },
+  {
+    "Text": "Play a chime for qualifying prospects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
@@ -34504,6 +34753,14 @@
   },
   {
     "Text": "PlotMiniTrack",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "PlotMiningCargo",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -35836,6 +36093,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Prospected",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Prospecting results",
     "IsFormat": false,
     "SourceKinds": [
@@ -35866,6 +36131,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Prospector notifications and the cargo hold tracker appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Provider page (0 first)",
@@ -38727,6 +39000,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FleetCarrierWorkspaceView.axaml"
   },
   {
+    "Text": "Refresh local voices",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Refresh preview",
     "IsFormat": false,
     "SourceKinds": [
@@ -39053,14 +39334,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
-  },
-  {
-    "Text": "Remove filter",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Remove group",
@@ -42143,6 +42416,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BookmarksViewModel.cs"
   },
   {
+    "Text": "Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Save threshold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Save to Library",
     "IsFormat": false,
     "SourceKinds": [
@@ -43420,6 +43709,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
+    "Text": "Select a mineral threshold to delete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Select a recorded boxel",
     "IsFormat": false,
     "SourceKinds": [
@@ -43466,6 +43763,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Select an announcement preset to delete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "Select an equipped module",
@@ -43854,14 +44159,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GroundTargetViewModel.cs"
   },
   {
-    "Text": "Set filter",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "Set focus on Elite Dangerous after each FSD jump.",
     "IsFormat": false,
     "SourceKinds": [
@@ -43892,14 +44189,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
-  },
-  {
-    "Text": "Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Set obelisk group label {0}.",
@@ -45907,6 +46196,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Speech Dispatcher",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
     "Text": "Speech rate",
     "IsFormat": false,
     "SourceKinds": [
@@ -46329,6 +46626,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey mining cargo overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningCargoOverlayWindow.axaml"
   },
   {
     "Text": "SrvSurvey mining notifications overlay",
@@ -48527,6 +48832,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "System default",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
     "Text": "System details could not be loaded: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -49046,6 +49359,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianOverlayPreviewState.cs"
+  },
+  {
+    "Text": "TARGET FOUND",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"
   },
   {
     "Text": "TARGET PNG FOLDER",
@@ -53845,6 +54166,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/FirstFootfallInferenceSettingsStore.cs"
   },
   {
+    "Text": "Threshold for {0} removed.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Threshold for {0} saved.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Thrusters",
     "IsFormat": false,
     "SourceKinds": [
@@ -58096,6 +58433,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/WindowsRestartManagerProcessFinder.cs"
   },
   {
+    "Text": "Windows Speech API",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
     "Text": "Windows administrator approval is required to update this protected installation. The player profile remains untouched.",
     "IsFormat": false,
     "SourceKinds": [
@@ -58166,6 +58511,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+  },
+  {
+    "Text": "Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Windows: the OpenVR client library is included with SrvSurvey.",
@@ -58654,6 +59007,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
+  },
+  {
+    "Text": "all minerals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "allcsv",
@@ -59488,6 +59849,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "child",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
     "Text": "clear",
     "IsFormat": false,
     "SourceKinds": [
@@ -59768,6 +60137,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "core \u002B laser",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "core only",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "corsair",
     "IsFormat": false,
     "SourceKinds": [
@@ -59989,7 +60374,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
   },
   {
     "Text": "dss-required",
@@ -60014,6 +60399,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+  },
+  {
+    "Text": "eSpeak NG",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
   },
   {
     "Text": "eagle",
@@ -60192,6 +60585,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
   },
   {
+    "Text": "espeak",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "espeak-ng",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
     "Text": "event",
     "IsFormat": false,
     "SourceKinds": [
@@ -60334,6 +60743,54 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "female 1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "female 2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "female 3",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "female1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "female2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "female3",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
   },
   {
     "Text": "ferdelance",
@@ -61256,6 +61713,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "laser only",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "last visit",
     "IsFormat": false,
     "SourceKinds": [
@@ -61352,6 +61817,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "local speech",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
     "Text": "log folder proton profile data source",
     "IsFormat": false,
     "SourceKinds": [
@@ -61398,6 +61871,54 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "male 1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "male 2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "male 3",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "male1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "male2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "male3",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
   },
   {
     "Text": "mamba",
@@ -61654,6 +62175,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
+  },
+  {
+    "Text": "muted",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "n/a",
@@ -62870,6 +63399,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml.cs"
+  },
+  {
+    "Text": "spd-say",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
   },
   {
     "Text": "spherical",
@@ -64241,6 +64778,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteBioOverlayViewModel.cs"
   },
   {
+    "Text": "{0} / {1} T",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
+  },
+  {
     "Text": "{0} B 3",
     "IsFormat": true,
     "SourceKinds": [
@@ -64423,6 +64968,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
+    "Text": "{0} T / UNKNOWN",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
+  },
+  {
+    "Text": "{0} T REMAINING",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
   },
   {
     "Text": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
@@ -65617,6 +66178,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "{0} \u00B7 Remaining {1}%",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
+  },
+  {
     "Text": "{0} \u00B7 Tier {1}: {2}",
     "IsFormat": true,
     "SourceKinds": [
@@ -65769,6 +66338,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "{0}% remaining",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "{0}: {1} of {2}{3}",
     "IsFormat": true,
     "SourceKinds": [
@@ -65807,6 +66384,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
+  },
+  {
+    "Text": "{0}Core: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "{0}None needed; already current.",

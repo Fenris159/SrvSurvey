@@ -21,6 +21,7 @@ public sealed partial class OverlayCoverageInventoryTests
         ["PlotFSSInfo"] = "FssInfoOverlayWindow.axaml",
         ["PlotGalMap"] = "GalaxyMapOverlayWindow.axaml",
         ["PlotMiningNotifications"] = "MiningActivityOverlayWindow.axaml",
+        ["PlotMiningCargo"] = "MiningCargoOverlayWindow.axaml",
         ["PlotMiningReference"] = "MiningReferenceOverlayWindow.axaml",
         ["PlotMiningFiregroups"] = "MiningActivityOverlayWindow.axaml",
         ["PlotMiningWarning"] = "MiningWarningOverlayWindow.axaml",
@@ -212,6 +213,14 @@ public sealed partial class OverlayCoverageInventoryTests
             ["tests/SrvSurvey.Desktop.Tests/ViewModels/MiningWorkspaceViewModelTests.cs"]
         ),
         Map(
+            "PlotMiningCargo",
+            [
+                "src/SrvSurvey.Desktop/MiningCargoOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/MiningCargoOverlayPresentation.axaml",
+            ],
+            ["tests/SrvSurvey.Desktop.Tests/ViewModels/MiningWorkspaceViewModelTests.cs"]
+        ),
+        Map(
             "PlotMiningFiregroups",
             [
                 "src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml",
@@ -331,7 +340,7 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(38, Mappings.Length);
+        Assert.Equal(39, Mappings.Length);
         Assert.Equal(Mappings.Length, Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
     }
 

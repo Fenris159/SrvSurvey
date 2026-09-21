@@ -10,7 +10,28 @@
     <TextBlock Classes="type-body" Text="{Binding SecondaryLabel}" TextWrapping="Wrap"/>
    </StackPanel>
    <StackPanel IsVisible="{Binding IsNotifications}" Spacing="8">
-    <StackPanel IsVisible="{Binding HasProspectReport}" Spacing="3"><TextBlock Classes="overlay-header type-header" Text="PROSPECTOR" /><TextBlock Classes="type-body" Text="{Binding ProspectReport}" TextWrapping="Wrap" /></StackPanel>
+    <Border IsVisible="{Binding HasQualifyingProspect}" BorderBrush="{DynamicResource RavenSuccessBrush}" BorderThickness="2" CornerRadius="4" Padding="8,5">
+     <TextBlock Classes="type-title" Foreground="{DynamicResource RavenSuccessBrush}" Text="TARGET FOUND" HorizontalAlignment="Center" />
+    </Border>
+    <StackPanel IsVisible="{Binding HasProspectReport}" Spacing="4">
+     <TextBlock Classes="overlay-header type-header" Text="ACTIVE PROSPECTORS" />
+     <ItemsControl ItemsSource="{Binding Prospects}">
+      <ItemsControl.ItemTemplate>
+       <DataTemplate x:DataType="vm:MiningProspectOverlayRowViewModel">
+        <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,4">
+         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+          <TextBlock Classes="muted type-detail" Text="{Binding Time}" />
+          <StackPanel Grid.Column="1" Spacing="1">
+           <TextBlock IsVisible="{Binding Qualifies}" Classes="type-value" Foreground="{DynamicResource RavenSuccessBrush}" Text="{Binding Summary}" TextWrapping="Wrap" />
+           <TextBlock IsVisible="{Binding !Qualifies}" Classes="type-body" Text="{Binding Summary}" TextWrapping="Wrap" />
+           <TextBlock Classes="muted type-detail" Text="{Binding RemainingLabel}" />
+          </StackPanel>
+         </Grid>
+        </Border>
+       </DataTemplate>
+      </ItemsControl.ItemTemplate>
+     </ItemsControl>
+    </StackPanel>
     <StackPanel IsVisible="{Binding HasRefined}" Spacing="3"><TextBlock Classes="overlay-header type-header" Text="REFINED" /><ItemsControl ItemsSource="{Binding Refined}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="mining:MiningNotice"><TextBlock Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Text}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel>
     <StackPanel IsVisible="{Binding HasCollected}" Spacing="3"><TextBlock Classes="overlay-header type-header" Text="COLLECTED" /><ItemsControl ItemsSource="{Binding Collected}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="mining:MiningNotice"><TextBlock Classes="type-value" Text="{Binding Text}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel>
     <TextBlock Classes="muted type-value" Text="{Binding Cargo}" TextWrapping="Wrap" />

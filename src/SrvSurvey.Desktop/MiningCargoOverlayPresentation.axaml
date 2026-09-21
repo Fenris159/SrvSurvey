@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+ x:Class="SrvSurvey.Desktop.MiningCargoOverlayPresentation"
+ x:DataType="vm:MiningCargoOverlayViewModel"
+ Width="300">
+ <Border Classes="overlay-panel" Padding="10" Background="{DynamicResource RavenWindowBrush}" CornerRadius="6">
+  <StackPanel Spacing="8">
+   <TextBlock Classes="overlay-header type-header" Text="CARGO HOLD" />
+   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+    <TextBlock Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Capacity}" />
+    <TextBlock Grid.Column="1" Classes="type-detail" Foreground="{DynamicResource RavenSuccessBrush}" Text="{Binding Remaining}" VerticalAlignment="Center" />
+   </Grid>
+   <ProgressBar Minimum="0" Maximum="100" Value="{Binding FillPercentage}" Height="5" />
+   <ItemsControl ItemsSource="{Binding Items}" IsVisible="{Binding HasItems}">
+    <ItemsControl.ItemTemplate>
+     <DataTemplate x:DataType="vm:MiningCargoOverlayItemViewModel">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="0,2">
+       <TextBlock IsVisible="{Binding IsTarget}" Classes="type-value" Foreground="{DynamicResource RavenSuccessBrush}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+       <TextBlock IsVisible="{Binding !IsTarget}" Classes="type-body" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+       <TextBlock Grid.Column="1" Classes="type-value" Text="{Binding CountLabel}" />
+      </Grid>
+     </DataTemplate>
+    </ItemsControl.ItemTemplate>
+   </ItemsControl>
+   <TextBlock IsVisible="{Binding !HasItems}" Classes="muted type-detail" Text="Cargo hold is empty." />
+  </StackPanel>
+ </Border>
+</UserControl>
