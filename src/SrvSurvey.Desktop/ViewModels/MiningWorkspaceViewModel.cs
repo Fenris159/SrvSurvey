@@ -178,11 +178,34 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private string[] ReadPresetNames() => Settings.AnnouncementPresets.Keys.Order().ToArray();
 
     public IReadOnlyList<MiningThresholdRowViewModel> Thresholds => cachedThresholdRows ??= ReadThresholds();
+    public IReadOnlyList<MiningThresholdGroupViewModel> ThresholdGroups => thresholdGroups ??= ReadThresholdGroups();
+    private MiningThresholdGroupViewModel[]? thresholdGroups;
+    public MiningChipBoxViewModel ThresholdMinerals { get; } =
+        new("Mineral / metal", MiningReferenceData.Commodities.GetValueOrDefault("Mining") ?? [], "");
+    private MiningThresholdGroupViewModel? selectedThresholdGroup;
+    public MiningThresholdGroupViewModel? SelectedThresholdGroup
+    {
+        get => selectedThresholdGroup;
+        set => Set(ref selectedThresholdGroup, value);
+    }
 
     private MiningThresholdRowViewModel[] ReadThresholds() =>
         Settings
             .Thresholds.OrderBy(pair => pair.Key, StringComparer.CurrentCultureIgnoreCase)
             .Select(pair => new MiningThresholdRowViewModel(pair.Key, pair.Value))
+            .ToArray();
+
+    private MiningThresholdGroupViewModel[] ReadThresholdGroups() =>
+        Settings
+            .Thresholds.GroupBy(pair => pair.Value)
+            .OrderBy(group => group.Key)
+            .Select(group => new MiningThresholdGroupViewModel(
+                group
+                    .OrderBy(pair => pair.Key, StringComparer.CurrentCultureIgnoreCase)
+                    .Select(pair => pair.Key)
+                    .ToArray(),
+                group.Key
+            ))
             .ToArray();
 
     public MiningThresholdRowViewModel? SelectedThreshold
@@ -594,12 +617,13 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
         if (entry.EventName is "Powerplay" or "PowerplayJoin")
         {
-            Search.PledgedPower = Text(entry.Payload, "Power");
+            string power = Text(entry.Payload, "Power");
+            Search.PledgedPower = MiningSearchViewModel.Powers.Contains(power) ? power : "Any";
         }
 
         if (entry.EventName == "PowerplayLeave")
         {
-            Search.PledgedPower = "";
+            Search.PledgedPower = "Any";
         }
     }
 
@@ -780,9 +804,11 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         cachedAnnouncementPresets = null;
         cachedThresholdRows = null;
         cachedPersistentProspects = null;
+        thresholdGroups = null;
         Changed(nameof(PresetNames));
         Changed(nameof(AnnouncementPresets));
         Changed(nameof(Thresholds));
+        Changed(nameof(ThresholdGroups));
         Changed(nameof(ThresholdSummary));
         Changed(nameof(PersistentProspects));
     }
@@ -848,6 +874,56 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         RefreshAnnouncementEditors();
         SelectedThreshold = Thresholds.FirstOrDefault(row => row.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         Status = remove ? $"Threshold for {name} removed." : $"Threshold for {name} saved.";
+    }
+
+    public void AddThresholdGroup()
+    {
+        if (ThresholdMinerals.Selected.Count == 0)
+        {
+            Status = "Choose one or more minerals.";
+            return;
+        }
+
+        if (
+            !double.TryParse(ThresholdText, NumberStyles.Number, CultureInfo.CurrentCulture, out double threshold)
+            || !double.IsFinite(threshold)
+            || threshold is < 0 or > 100
+        )
+        {
+            Status = "Enter a percentage from 0 to 100.";
+            return;
+        }
+
+        foreach (string mineral in ThresholdMinerals.Selected.ToArray())
+        {
+            Settings.Thresholds[mineral.Trim().ToLowerInvariant()] = threshold;
+            ThresholdMinerals.Remove(mineral);
+        }
+
+        Changed(nameof(Settings));
+        SaveSettings();
+        RefreshAnnouncementEditors();
+        Status = "Threshold group saved at " + threshold.ToString("0.#", CultureInfo.CurrentCulture) + "%.";
+    }
+
+    public void DeleteThresholdGroup()
+    {
+        if (SelectedThresholdGroup is not { } group)
+        {
+            Status = "Select a threshold group to delete.";
+            return;
+        }
+
+        foreach (string name in group.Names)
+        {
+            Settings.Thresholds.Remove(name);
+        }
+
+        SelectedThresholdGroup = null;
+        Changed(nameof(Settings));
+        SaveSettings();
+        RefreshAnnouncementEditors();
+        Status = "Threshold group removed.";
     }
 
     public void NewThreshold()
@@ -1415,6 +1491,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
                 nameof(Rings),
                 nameof(ThresholdSummary),
                 nameof(Thresholds),
+                nameof(ThresholdGroups),
                 nameof(AnnouncementPresets),
                 nameof(ShouldShowNotifications),
                 nameof(ShouldShowCargo),
@@ -1444,6 +1521,13 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 public sealed record MiningThresholdRowViewModel(string Name, double MinimumPercentage)
 {
     public string DisplayName => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Name);
+    public string MinimumLabel => $"≥ {MinimumPercentage:0.0}%";
+}
+
+public sealed record MiningThresholdGroupViewModel(IReadOnlyList<string> Names, double MinimumPercentage)
+{
+    public string Minerals =>
+        string.Join(" · ", Names.Select(name => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name)));
     public string MinimumLabel => $"≥ {MinimumPercentage:0.0}%";
 }
 

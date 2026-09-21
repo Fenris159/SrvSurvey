@@ -32,6 +32,12 @@ public sealed record MiningSearchPreferences
     public string Power { get; init; } = "";
     public string OpposingPower { get; init; } = "";
     public string PowerState { get; init; } = "";
+    public string MiningType { get; init; } = "All";
+    public string AlsoMineral { get; init; } = "Any";
+    public string PadSize { get; init; } = "Any";
+    public bool LimitMarketAge { get; init; } = true;
+    public int MarketAge { get; init; } = 48;
+    public string MarketAgeUnit { get; init; } = "Hours";
     public long MinimumPopulation { get; init; }
     public string TraderType { get; init; } = "Raw";
 }

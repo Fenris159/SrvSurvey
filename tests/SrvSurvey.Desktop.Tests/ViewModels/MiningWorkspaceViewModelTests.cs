@@ -14,6 +14,7 @@ public sealed class MiningWorkspaceViewModelTests
         try
         {
             using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory));
+            Assert.Equal("Any", vm.Search.PledgedPower);
             var context = new JournalSessionState();
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             JournalEventEnvelope[] entries =
@@ -912,6 +913,43 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.True(vm.Restore(backup));
             Assert.Single(vm.History);
             Assert.Single(vm.Rings);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ThresholdGroupsShareOnePercentageAndDeleteTogether()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory));
+            vm.ThresholdText = "30";
+            vm.ThresholdMinerals.Add("Platinum");
+            vm.ThresholdMinerals.Add("Osmium");
+            vm.AddThresholdGroup();
+
+            Assert.Equal(30, vm.Settings.Thresholds["platinum"]);
+            Assert.Equal(30, vm.Settings.Thresholds["osmium"]);
+            Assert.Single(vm.ThresholdGroups);
+            Assert.Empty(vm.ThresholdMinerals.Selected);
+
+            vm.ThresholdText = "10";
+            vm.ThresholdMinerals.Add("Painite");
+            vm.AddThresholdGroup();
+            Assert.Equal(2, vm.ThresholdGroups.Count);
+
+            vm.SelectedThresholdGroup = vm.ThresholdGroups.First(group => group.Names.Contains("platinum"));
+            vm.DeleteThresholdGroup();
+            Assert.False(vm.Settings.Thresholds.ContainsKey("platinum"));
+            Assert.False(vm.Settings.Thresholds.ContainsKey("osmium"));
+            Assert.Equal(10, Assert.Single(vm.Settings.Thresholds).Value);
         }
         finally
         {

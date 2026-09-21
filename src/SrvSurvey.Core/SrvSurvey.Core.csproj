@@ -17,6 +17,7 @@
     <EmbeddedResource Include="Resources\ReferenceData\firegroup-modules.json" LogicalName="SrvSurvey.Core.Resources.firegroup-modules.json" />
     <EmbeddedResource Include="Resources\ReferenceData\mining-commodities.json" LogicalName="SrvSurvey.Core.Resources.mining-commodities.json" />
     <EmbeddedResource Include="Resources\ReferenceData\mining-rings.json.gz" LogicalName="SrvSurvey.Core.Resources.mining-rings.json.gz" />
+    <EmbeddedResource Include="Resources\ReferenceData\edtools-mining-spots.json" LogicalName="SrvSurvey.Core.Resources.edtools-mining-spots.json" />
     <EmbeddedResource Include="Resources\ReferenceData\codexRef.json"
                       LogicalName="SrvSurvey.Core.Resources.codexRef.json" />
     <EmbeddedResource Include="Resources\ReferenceData\nebulae.json"

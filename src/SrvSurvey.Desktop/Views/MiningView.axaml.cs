@@ -57,6 +57,10 @@ public sealed partial class MiningView : UserControl
 
     private void DeleteThreshold_Click(object? sender, RoutedEventArgs e) => Model?.DeleteSelectedThreshold();
 
+    private void AddThresholdGroup_Click(object? sender, RoutedEventArgs e) => Model?.AddThresholdGroup();
+
+    private void DeleteThresholdGroup_Click(object? sender, RoutedEventArgs e) => Model?.DeleteThresholdGroup();
+
     private void AdjustQuality_Click(object? sender, RoutedEventArgs e) =>
         Model?.AdjustQuality((sender as Control)?.Tag as string == "minus" ? -1 : 1);
 

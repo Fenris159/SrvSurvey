@@ -475,24 +475,23 @@
                       <StackPanel Spacing="10">
                         <TextBlock Classes="card-title" Text="Mineral thresholds"/>
                         <TextBlock Classes="muted" Text="Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect." TextWrapping="Wrap"/>
-                        <ListBox x:Name="ThresholdRows" ItemsSource="{Binding Thresholds}" SelectedItem="{Binding SelectedThreshold}" MinHeight="70" MaxHeight="210" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox x:Name="ThresholdRows" ItemsSource="{Binding ThresholdGroups}" SelectedItem="{Binding SelectedThresholdGroup}" MinHeight="70" MaxHeight="210" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                           <ListBox.ItemTemplate>
-                            <DataTemplate x:DataType="vm:MiningThresholdRowViewModel">
+                            <DataTemplate x:DataType="vm:MiningThresholdGroupViewModel">
                               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="8,5">
-                                <TextBlock Text="{Binding DisplayName}"/>
+                                <TextBlock Text="{Binding Minerals}" TextWrapping="Wrap"/>
                                 <TextBlock Grid.Column="1" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding MinimumLabel}"/>
                               </Grid>
                             </DataTemplate>
                           </ListBox.ItemTemplate>
                         </ListBox>
                         <Grid ColumnDefinitions="2*,*" ColumnSpacing="12">
-                          <StackPanel Spacing="4"><TextBlock Text="Mineral"/><TextBox Text="{Binding TargetMaterial}"/></StackPanel>
+                          <views:MiningChipBox DataContext="{Binding ThresholdMinerals}"/>
                           <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Minimum percentage"/><TextBox Text="{Binding ThresholdText}"/></StackPanel>
                         </Grid>
                         <WrapPanel>
-                          <Button Content="New threshold" Click="NewThreshold_Click" Margin="0,0,8,8"/>
-                          <Button Content="Save threshold" Click="Threshold_Click" Margin="0,0,8,8"/>
-                          <Button Content="Delete selected" Click="DeleteThreshold_Click" Margin="0,0,8,8"/>
+                          <Button Content="Add threshold group" Click="AddThresholdGroup_Click" Margin="0,0,8,8"/>
+                          <Button Content="Delete selected group" Click="DeleteThresholdGroup_Click" Margin="0,0,8,8"/>
                         </WrapPanel>
                         <TextBlock Classes="muted" Text="{Binding ThresholdSummary}" TextWrapping="Wrap"/>
                       </StackPanel>

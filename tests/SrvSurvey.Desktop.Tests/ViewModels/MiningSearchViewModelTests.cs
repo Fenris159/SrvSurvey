@@ -245,7 +245,9 @@ public sealed class MiningSearchViewModelTests
             Objective = "Reinforce",
         };
         await model.SearchSystemsAsync();
-        Assert.Contains("Choose your pledged Power", model.Status);
+        Assert.Equal("Any", model.PledgedPower);
+        Assert.DoesNotContain("Choose your pledged Power", model.Status);
+        Assert.Equal(2, model.Systems.Count);
         model.PledgedPower = "Aisling Duval";
         await model.SearchSystemsAsync();
         Assert.Equal("Own", Assert.Single(model.Systems).System);
@@ -260,7 +262,8 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("Other", Assert.Single(model.Systems).System);
         model.Objective = "Acquire";
         await model.SearchSystemsAsync();
-        Assert.Equal("Open", Assert.Single(model.Systems).System);
+        Assert.Empty(model.Systems);
+        Assert.Contains("Fortified or Stronghold", model.Status);
     }
 
     [Fact]
@@ -275,6 +278,7 @@ public sealed class MiningSearchViewModelTests
             new Resolver()
         )
         {
+            PledgedPower = "Archon Delaine",
             Objective = "Acquire",
             SelectedSystem = new("Acquisition target", 1, "", "", "", "", "", "", "Unoccupied", 0),
         };
@@ -288,6 +292,56 @@ public sealed class MiningSearchViewModelTests
         Assert.Contains("Acquire destination: Acquisition target", model.PlanningContext);
         model.ClearPlan();
         Assert.Empty(model.PlanningContext);
+    }
+
+    [Fact]
+    public void AnyPowerLocksTheGoalOnReinforceAndOpposingPowerOnAny()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        );
+        model.PledgedPower = "Archon Delaine";
+        model.Objective = "Acquire";
+        model.OpposingPower = "Yuri Grom";
+        Assert.True(model.CanChoosePowerGoal);
+
+        model.PledgedPower = "Any";
+
+        Assert.False(model.CanChoosePowerGoal);
+        Assert.Equal("Reinforce", model.Objective);
+        Assert.Equal("Any", model.OpposingPower);
+        model.Objective = "Acquire";
+        Assert.Equal("Reinforce", model.Objective);
+    }
+
+    [Fact]
+    public async Task AcquireKeepsUnownedSystemsInsideFortifiedOrStrongholdRange()
+    {
+        using var http = new HttpClient(new AcquisitionRangeHandler());
+        using var model = new MiningSearchViewModel(
+            new(http),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Radius = 100,
+        };
+
+        await model.SearchSystemsAsync();
+
+        MiningSystemResult claim = Assert.Single(model.Systems);
+        Assert.Equal("Claim", claim.System);
+        Assert.Equal("Unoccupied", claim.PowerState);
+        Assert.Contains("20 ly", model.Status);
     }
 
     [Fact]
@@ -322,8 +376,8 @@ public sealed class MiningSearchViewModelTests
         Assert.Empty(model.Systems);
         model.Objective = "Acquire";
         await model.SearchSystemsAsync();
-        Assert.Equal("Wille", Assert.Single(model.Systems).System);
-        Assert.Contains("Local Powerplay observations", model.Status);
+        Assert.Empty(model.Systems);
+        Assert.Contains("Fortified or Stronghold", model.Status);
         model.Security = "High";
         await model.SearchSystemsAsync();
         Assert.Empty(model.Systems); // The journal cannot certify security.
@@ -349,6 +403,40 @@ public sealed class MiningSearchViewModelTests
             return Task.FromResult(
                 new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) }
             );
+        }
+    }
+
+    private sealed class AcquisitionRangeHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request.Content is null)
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("[]") };
+            }
+
+            using var body = System.Text.Json.JsonDocument.Parse(
+                await request.Content.ReadAsStringAsync(cancellationToken)
+            );
+            string reference = body.RootElement.GetProperty("reference_system").GetString() ?? "";
+            string state = body
+                .RootElement.GetProperty("filters")
+                .TryGetProperty("power_state", out System.Text.Json.JsonElement powerState)
+                ? powerState.GetProperty("value")[0].GetString() ?? ""
+                : "";
+            string payload = (reference, state) switch
+            {
+                (_, "Fortified") =>
+                    """{"results":[{"name":"Anchor","distance":0,"x":0,"y":0,"z":0,"controlling_power":"Archon Delaine","power_state":"Fortified"}]}""",
+                (_, "Stronghold") => """{"results":[]}""",
+                ("Anchor", _) =>
+                    """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Owned","distance":5,"x":5,"y":0,"z":0,"controlling_power":"Yuri Grom","power_state":"Exploited"}]}""",
+                _ => """{"results":[]}""",
+            };
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) };
         }
     }
 

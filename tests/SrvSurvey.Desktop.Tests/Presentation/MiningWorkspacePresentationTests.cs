@@ -424,7 +424,7 @@ public sealed class MiningWorkspacePresentationTests
             );
             Assert.Equal("Harma", powerplay.FindControl<TextBox>("PowerplayReference")!.Text);
             Assert.Equal("Archon Delaine", powerplay.FindControl<ComboBox>("PowerplayPledgedPower")!.SelectedItem);
-            Assert.Equal(260, powerplay.FindControl<ListBox>("PowerplaySystems")!.MaxHeight);
+            Assert.NotNull(powerplay.FindControl<ItemsControl>("PowerplayResults"));
             model.MiningWorkspace.SelectedTab = 4;
             using WriteableBitmap? findFrame = window.CaptureRenderedFrame();
             MiningSearchView search = view.FindControl<MiningSearchView>("SearchPane")!;

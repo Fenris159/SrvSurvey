@@ -1,0 +1,618 @@
+[
+  {
+    "System": "HR 8514",
+    "Ring": "5 A Ring",
+    "Note": "5 A Ring: 20.86%",
+    "YieldPercent": 20.86,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "GCRV 1568",
+    "Ring": "AB 1 A Ring",
+    "Note": "AB 1 A Ring: 22.26%",
+    "YieldPercent": 22.26,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Hyades Sector DB-X d1-112",
+    "Ring": "1 A Ring",
+    "Note": "1 A Ring: 19.04%",
+    "YieldPercent": 19.04,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Wargis",
+    "Ring": "13 A Ring",
+    "Note": "13 A Ring: 22.61%",
+    "YieldPercent": 22.61,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HIP 20441",
+    "Ring": "A 3 A Ring",
+    "Note": "A 3 A Ring: 22.87%",
+    "YieldPercent": 22.87,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Omicron Capricorni B",
+    "Ring": "B 1 A Ring ovr Ring",
+    "Note": "B 1 A Ring ovr: 19.26%",
+    "YieldPercent": 19.26,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HIP 52780",
+    "Ring": "3 A Ring",
+    "Note": "3 A Ring: 21.77%",
+    "YieldPercent": 21.77,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HIP 52780",
+    "Ring": "5 A Ring",
+    "Note": "5 A Ring: 20.59%",
+    "YieldPercent": 20.59,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HR 7297",
+    "Ring": "6 A Ring",
+    "Note": "6 A Ring: 21.53%",
+    "YieldPercent": 21.53,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Alkes",
+    "Ring": "4 A Ring",
+    "Note": "4 A Ring: 20.58%",
+    "YieldPercent": 20.58,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Wolf 1458",
+    "Ring": "3 A Ring",
+    "Note": "3 A Ring: 22.75%",
+    "YieldPercent": 22.75,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Zeta Octantis",
+    "Ring": "3 A Ring",
+    "Note": "3 A Ring: 20.43%",
+    "YieldPercent": 20.43,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Zeta Octantis",
+    "Ring": "4 A Ring",
+    "Note": "4 A Ring: 19.47%",
+    "YieldPercent": 19.47,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Salikians",
+    "Ring": "1 A Ring",
+    "Note": "1 A Ring: 22.90%",
+    "YieldPercent": 22.9,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Macua",
+    "Ring": "2 A Ring",
+    "Note": "2 A Ring: 20.76%",
+    "YieldPercent": 20.76,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Paesia",
+    "Ring": "2 A Ring",
+    "Note": "2 A Ring: 22.19%",
+    "YieldPercent": 22.19,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HIP 59357",
+    "Ring": "1 A Ring",
+    "Note": "1 A Ring: 20.82%",
+    "YieldPercent": 20.82,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HIP 75813",
+    "Ring": "3 A Ring",
+    "Note": "3 A Ring: 22.67%",
+    "YieldPercent": 22.67,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Yan Musu",
+    "Ring": "8 A Ring",
+    "Note": "8 A Ring: 20.62%",
+    "YieldPercent": 20.62,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Col 285 Sector KM-V d2-106",
+    "Ring": "5 A Ring ovr Ring",
+    "Note": "5 A Ring ovr: 20.04%",
+    "YieldPercent": 20.04,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HR 5252",
+    "Ring": "A 5 A Ring",
+    "Note": "A 5 A Ring: 22.16%",
+    "YieldPercent": 22.16,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "14 i Orionis",
+    "Ring": "1 A Ring",
+    "Note": "1 A Ring: 22.18%",
+    "YieldPercent": 22.18,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Col 285 Sector WP-E c12-17",
+    "Ring": "3 A Ring",
+    "Note": "3 A Ring: 19.46%",
+    "YieldPercent": 19.46,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HIP 32709",
+    "Ring": "7 A Ring",
+    "Note": "7 A Ring: 19.69%",
+    "YieldPercent": 19.69,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Col 285 Sector KD-R c5-12",
+    "Ring": "1 A Ring",
+    "Note": "1 A Ring: 21.48%",
+    "YieldPercent": 21.48,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HIP 1290",
+    "Ring": "11 A ring",
+    "Note": "11 A ring: 19.88%",
+    "YieldPercent": 19.88,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Parrot's Head Sector EL-Y d83",
+    "Ring": "1 A Ring ovr x3 Ring",
+    "Note": "1 A Ring ovr x3: 26.09%",
+    "YieldPercent": 26.09,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "HIP 1550",
+    "Ring": "4B A ring",
+    "Note": "4B A ring: 27.79%",
+    "YieldPercent": 27.79,
+    "Kind": "HighYield"
+  },
+  {
+    "System": "Col 285 Sector FM-M d7-89",
+    "Ring": "B 2 A Ring",
+    "Note": "B 2 A: High @~30% [36588 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "G Scorpii",
+    "Ring": "B 4 A Ring",
+    "Note": "B 4 A: High @ 80% [19665 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Paesia",
+    "Ring": "2 A Ring",
+    "Note": "2 A: Haz @75% [821 ls] 22.19% Pt",
+    "YieldPercent": 22.19,
+    "Kind": "Res"
+  },
+  {
+    "System": "Macua",
+    "Ring": "2 A Ring",
+    "Note": "2 A: Haz @60% [1346 ls] 20.76% Pt",
+    "YieldPercent": 20.76,
+    "Kind": "Res"
+  },
+  {
+    "System": "Bhagui",
+    "Ring": "3 A Ring",
+    "Note": "3 A: Reg @75% [2858 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "20 Ophiuchi",
+    "Ring": "6 A Ring",
+    "Note": "6 A: Low @ center [5602 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HR 6489",
+    "Ring": "4 A Ring",
+    "Note": "4 A: Reg @85% [4894 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HR 8671",
+    "Ring": "1 A Ring",
+    "Note": "1 A: Haz @90% [726 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 115736",
+    "Ring": "10 A Ring",
+    "Note": "10 A: Haz @60% [2896 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "LHS 3388",
+    "Ring": "2 A Ring",
+    "Note": "2 A: Haz @ center [2319 ls] 16.45% Pt",
+    "YieldPercent": 16.45,
+    "Kind": "Res"
+  },
+  {
+    "System": "Atins",
+    "Ring": "2 A Ring",
+    "Note": "2 A: High @70% [1166 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "60 Herculis",
+    "Ring": "3 A Ring",
+    "Note": "3 A: High; Reg @ periphery [519 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Delkar",
+    "Ring": "7 A Ring",
+    "Note": "7 A: High @20% [2803 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 62118",
+    "Ring": "A 2 A Ring",
+    "Note": "A 2 A: high @60% [1862 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 111173",
+    "Ring": "CD 7 A Ring",
+    "Note": "CD 7 A: High @75% [17288 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 115505",
+    "Ring": "6 A Ring",
+    "Note": "6 A: High @75% [1316 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Toluku",
+    "Ring": "AB 4 A Ring",
+    "Note": "AB 4 A: Haz @30% [1288 ls] 13.93% Pt",
+    "YieldPercent": 13.93,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 71572",
+    "Ring": "A 2 A Ring",
+    "Note": "A 2 A: Haz @60% [2809 ls] 14.73% Pt",
+    "YieldPercent": 14.73,
+    "Kind": "Res"
+  },
+  {
+    "System": "HR 5473",
+    "Ring": "B 1 A Ring",
+    "Note": "B 1 A: Low @90%; bad markers [48549 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "58 Epsilon Herculis",
+    "Ring": "3 A Ring",
+    "Note": "3 A: High @70% [1963 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 113894",
+    "Ring": "A 3 A Ring",
+    "Note": "A 3 A: High @50% High @75% [372 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Koboga",
+    "Ring": "2 A Ring",
+    "Note": "2 A: Haz @80%; reg 80% [554 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 1290",
+    "Ring": "11 A Ring",
+    "Note": "11 A: Haz @65% [4410 ls] 19.88% Pt",
+    "YieldPercent": 19.88,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 49285",
+    "Ring": "C 4 A Ring",
+    "Note": "C 4 A: High @75% [60161 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 60953",
+    "Ring": "ABC 8 A Ring",
+    "Note": "ABC 8 A: Haz @35%; reg 35% [2470 ls] 16.35% Pt",
+    "YieldPercent": 16.35,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 52780",
+    "Ring": "5 A Ring",
+    "Note": "5 A: Haz @85% [1400 ls] 15.09% Pt",
+    "YieldPercent": 15.09,
+    "Kind": "Res"
+  },
+  {
+    "System": "Lemayak",
+    "Ring": "1 A Ring",
+    "Note": "1 A: reg @25% [1581 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Wargis",
+    "Ring": "13 A Ring",
+    "Note": "13 A: Painite Haz @70% [682 ls] 22.61% Pt",
+    "YieldPercent": 22.61,
+    "Kind": "Res"
+  },
+  {
+    "System": "Palliyan",
+    "Ring": "2 A Ring",
+    "Note": "2 A: High @65% [566 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Gurus",
+    "Ring": "CD 4 A Ring",
+    "Note": "CD 4 A: High @55% [108225 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 109310",
+    "Ring": "A 2 A Ring",
+    "Note": "A 2 A: Painite Low @25% [1728 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 7799",
+    "Ring": "A 3 A Ring",
+    "Note": "A 3 A: Haz @550 km [3191 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HR 6421",
+    "Ring": "4 A Ring",
+    "Note": "4 A: Haz x2 @50% [1746 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HR 2265",
+    "Ring": "2 A Ring",
+    "Note": "2 A: Haz @65%; reg 45% [2835 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 43054",
+    "Ring": "AB 4 A Ring",
+    "Note": "AB 4 A: Haz @80% [3575 ls] 15.21% Pt",
+    "YieldPercent": 15.21,
+    "Kind": "Res"
+  },
+  {
+    "System": "Col 285 Sector SL-Z b15-3",
+    "Ring": "11 A Ring",
+    "Note": "11 A: Painite Haz @60% [1011 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 49846",
+    "Ring": "3 A Ring",
+    "Note": "3 A: reg @85% [3116 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Lalande 34968",
+    "Ring": "AB 8 A Ring",
+    "Note": "AB 8 A: Haz @20% [2088 ls] 13.4% Pt",
+    "YieldPercent": 13.4,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 4005",
+    "Ring": "5 A Ring",
+    "Note": "5 A: Haz @80%; reg center [1812 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 61632",
+    "Ring": "3 A Ring",
+    "Note": "3 A: Haz @90%; reg 60% [856 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 28122",
+    "Ring": "ABC 1 A Ring",
+    "Note": "ABC 1 A: Haz on the edge [1857 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Wolf 1458",
+    "Ring": "3 A Ring",
+    "Note": "3 A: High @75%; haz @85% [830 ls] 22.75% Pt",
+    "YieldPercent": 22.75,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 7245",
+    "Ring": "4 A Ring",
+    "Note": "4 A: low @80% [2122 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "60 Tauri",
+    "Ring": "CD 7 A Ring",
+    "Note": "CD 7 A: Haz @80% [77857 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 94582",
+    "Ring": "AB 2 A Ring",
+    "Note": "AB 2 A: Painite @65% [2799 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Nuitu",
+    "Ring": "5 A Ring",
+    "Note": "5 A: Haz @70% (bad markers) [204 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 51652",
+    "Ring": "4 A Ring",
+    "Note": "4 A: Haz @35% [5917 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 14134",
+    "Ring": "2 A Ring",
+    "Note": "2 A: High on the edge [1549 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Maidareldi",
+    "Ring": "1 A Ring",
+    "Note": "1 A: Reg @70% [233 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HR 1385",
+    "Ring": "10 A Ring",
+    "Note": "10 A: high Pain @65% [2978 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HR 1385",
+    "Ring": "10 A Ring",
+    "Note": "10 A: low @50% [2978 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 35185",
+    "Ring": "A 3 A Ring",
+    "Note": "A 3 A: Haz @85% [1726 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 19934",
+    "Ring": "1 A Ring",
+    "Note": "1 A: Haz @70% [384 ls] 20.32% Pt",
+    "YieldPercent": 20.32,
+    "Kind": "Res"
+  },
+  {
+    "System": "71 Omicron Geminorum",
+    "Ring": "6 A Ring",
+    "Note": "6 A: Reg @80% [1259 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "14 i Orionis",
+    "Ring": "1 A Ring",
+    "Note": "1 A: High @500km (no markers) [234 ls] 22.18% Pt",
+    "YieldPercent": 22.18,
+    "Kind": "Res"
+  },
+  {
+    "System": "14 i Orionis",
+    "Ring": "7 A Ring",
+    "Note": "7 A: High 75% [2835 ls] 22.18% Pt",
+    "YieldPercent": 22.18,
+    "Kind": "Res"
+  },
+  {
+    "System": "HIP 45794",
+    "Ring": "8 A Ring",
+    "Note": "8 A: Painite Reg @55% [2721 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Sang Wana",
+    "Ring": "4 A Ring",
+    "Note": "4 A: Painite Reg @50% [1108 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Pleiades Sector KC-V c2-4",
+    "Ring": "6 A Ring",
+    "Note": "6 A: High @the edge [1191 ls]",
+    "YieldPercent": null,
+    "Kind": "Res"
+  },
+  {
+    "System": "Rodentia",
+    "Ring": "11 A Ring",
+    "Note": "11 A: Reg @40%",
+    "YieldPercent": null,
+    "Kind": "Res"
+  }
+]

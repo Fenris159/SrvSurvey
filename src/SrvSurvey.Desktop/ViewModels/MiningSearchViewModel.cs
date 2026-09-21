@@ -20,6 +20,11 @@ public sealed class MiningSearchViewModel(
     private const string UndermineObjective = "Undermine";
     private const string AcquireObjective = "Acquire";
     private const string ExpansionState = "Expansion";
+    private const string AnyPower = "Any";
+    private const string NoPower = "None";
+    private const string SpanshSource = "Spansh";
+    private const string HotspotRing = "Hotspots";
+    private const string WithoutHotspotsRing = "Without Hotspots";
     private CancellationTokenSource? pending;
     private string status = "Choose a reference system to search.";
     private MiningSearchPreferences options = new();
@@ -213,8 +218,53 @@ public sealed class MiningSearchViewModel(
     }
     public string OpposingPower
     {
-        get => options.OpposingPower;
-        set { Set(ref options, options with { OpposingPower = value ?? "" }); }
+        get => options.OpposingPower.Length == 0 ? AnyPower : options.OpposingPower;
+        set { Set(ref options, options with { OpposingPower = NormalizeAny(value) }); }
+    }
+    public string MiningType
+    {
+        get => options.MiningType;
+        set { Set(ref options, options with { MiningType = value ?? "All" }); }
+    }
+    public string AlsoMineral
+    {
+        get => options.AlsoMineral;
+        set { Set(ref options, options with { AlsoMineral = value ?? AnyPower }); }
+    }
+    public string PadSize
+    {
+        get => options.PadSize;
+        set { Set(ref options, options with { PadSize = value ?? AnyPower }); }
+    }
+    public bool LimitMarketAge
+    {
+        get => options.LimitMarketAge;
+        set { Set(ref options, options with { LimitMarketAge = value }); }
+    }
+    public int MarketAge
+    {
+        get => options.MarketAge;
+        set { Set(ref options, options with { MarketAge = Math.Clamp(value, 1, 9999) }); }
+    }
+    public string MarketAgeUnit
+    {
+        get => options.MarketAgeUnit;
+        set { Set(ref options, options with { MarketAgeUnit = value ?? "Hours" }); }
+    }
+    private TimeSpan? MarketFreshness =>
+        LimitMarketAge
+            ? MarketAgeUnit switch
+            {
+                "Days" => TimeSpan.FromDays(MarketAge),
+                "Months" => TimeSpan.FromDays(30d * MarketAge),
+                "Years" => TimeSpan.FromDays(365d * MarketAge),
+                _ => TimeSpan.FromHours(MarketAge),
+            }
+            : null;
+    public string SystemState
+    {
+        get => options.State.Length == 0 ? AnyPower : options.State;
+        set { Set(ref options, options with { State = NormalizeAny(value) }); }
     }
     public string PowerState
     {
@@ -235,7 +285,7 @@ public sealed class MiningSearchViewModel(
     private int page;
     private bool systemOnly;
     private string objective = AllSystems;
-    private string pledgedPower = "";
+    private string pledgedPower = AnyPower;
     private string planningTarget = "";
     private string planningObjective = "";
     private string miningOrigin = "";
@@ -317,28 +367,41 @@ public sealed class MiningSearchViewModel(
         get => objective;
         set
         {
-            if (Set(ref objective, value))
+            string chosen = !CanChoosePowerGoal && value == AcquireObjective ? ReinforceObjective : value;
+            if (Set(ref objective, chosen))
             {
                 Changed(nameof(PowerplaySummary));
             }
         }
     }
+    public bool CanChoosePowerGoal => IsChosenPower(PledgedPower);
     public string PledgedPower
     {
         get => pledgedPower;
         set
         {
-            if (Set(ref pledgedPower, value ?? ""))
+            if (!Set(ref pledgedPower, string.IsNullOrWhiteSpace(value) ? AnyPower : value))
             {
-                Changed(nameof(PowerplaySummary));
+                return;
             }
+
+            if (!CanChoosePowerGoal)
+            {
+                objective = ReinforceObjective;
+                options = options with { OpposingPower = "" };
+                Changed(nameof(Objective));
+                Changed(nameof(OpposingPower));
+            }
+
+            Changed(nameof(CanChoosePowerGoal));
+            Changed(nameof(PowerplaySummary));
         }
     }
     public static IReadOnlyList<string> Objectives { get; } =
     [AllSystems, ReinforceObjective, UndermineObjective, AcquireObjective];
     public static IReadOnlyList<string> Powers { get; } =
     [
-        "",
+        AnyPower,
         "Aisling Duval",
         "Archon Delaine",
         "Arissa Lavigny-Duval",
@@ -351,6 +414,7 @@ public sealed class MiningSearchViewModel(
         "Yuri Grom",
         "Jerome Archer",
         "Zemina Torval",
+        NoPower,
     ];
     public static IReadOnlyList<string> PowerStates { get; } =
     ["", "Exploited", "Fortified", "Stronghold", "Unoccupied", ExpansionState, "Contested"];
@@ -374,9 +438,56 @@ public sealed class MiningSearchViewModel(
         }
     }
     public static IReadOnlyList<string> TradeModes { get; } = ["Sell mined cargo", "Buy supplies"];
-    public static IReadOnlyList<string> Sources { get; } = ["Both", "Local", "Spansh"];
-    public static IReadOnlyList<string> RingTypes { get; } = ["All", "Icy", "Metallic", "Metal Rich", "Rocky"];
-    public static IReadOnlyList<string> Reserves { get; } = ["All", "Pristine", "Major", "Common", "Low", "Depleted"];
+    public static IReadOnlyList<string> Sources { get; } = ["Both", "Local", SpanshSource];
+    public static IReadOnlyList<string> RingTypes { get; } =
+    ["All", HotspotRing, WithoutHotspotsRing, "Icy", "Metallic", "Metal Rich", "Rocky"];
+    public static IReadOnlyList<string> Reserves { get; } =
+    ["All", "Pristine", "Major", "Common", "Low", "Depleted", "Unknown"];
+    public static IReadOnlyList<string> MiningTypes { get; } =
+    ["All", "Core", "Laser Surface", "Surface Deposit", "Sub Surface Deposit"];
+    public static IReadOnlyList<string> PadSizes { get; } = ["Any", "S", "M", "L"];
+    public static IReadOnlyList<string> MarketAgeUnits { get; } = ["Hours", "Days", "Months", "Years"];
+    public static IReadOnlyList<string> FactionStates { get; } =
+    [
+        "Any",
+        "Blight",
+        "Boom",
+        "Bust",
+        "Civil liberty",
+        "Civil unrest",
+        "Civil war",
+        "Drought",
+        "Election",
+        "Expansion",
+        "Famine",
+        "Infrastructure Failure",
+        "Investment",
+        "Lockdown",
+        "Natural Disaster",
+        "None",
+        "Outbreak",
+        "Pirate attack",
+        "Public Holiday",
+        "Retreat",
+        "Terrorist Attack",
+        "War",
+    ];
+    public IReadOnlyList<string> PowerplayMinerals { get; } =
+        new[] { AnyPower }.Concat(MiningReferenceData.Commodities.GetValueOrDefault("Mining") ?? []).ToArray();
+    public MiningChipBoxViewModel MineralChips { get; } =
+        new(
+            "Mineral / metal",
+            new[] { AnyPower }.Concat(MiningReferenceData.Commodities.GetValueOrDefault("Mining") ?? []).ToArray(),
+            PlatinumMineral
+        );
+    public MiningChipBoxViewModel MiningTypeChips { get; } = new("Mining type", MiningTypes, "All");
+    public MiningChipBoxViewModel StateChips { get; } = new("System state", FactionStates, "Any");
+    private IReadOnlyList<MeritSystemRowViewModel> meritRows = [];
+    public IReadOnlyList<MeritSystemRowViewModel> MeritRows
+    {
+        get => meritRows;
+        private set => Set(ref meritRows, value);
+    }
     public static IReadOnlyList<string> PlatinumModes { get; } = ["Spots++", "RES mapped", "Overlaps", "All platinum"];
     public static IReadOnlyList<string> TraderTypes { get; } = ["Raw", "Manufactured", "Encoded"];
     public string Status
@@ -466,10 +577,10 @@ public sealed class MiningSearchViewModel(
                         await client.FindRingsAsync(
                             new MiningRingQuery(
                                 Reference,
-                                Mineral.Trim(),
-                                RingType,
+                                OnlineMineral,
+                                OnlineRingType,
                                 Radius,
-                                MinimumHotspots,
+                                OnlineMinimumHotspots,
                                 Page,
                                 SystemOnly
                             ),
@@ -482,15 +593,15 @@ public sealed class MiningSearchViewModel(
                     offline = true;
                 }
             }
-            if (Source != "Spansh")
+            if (Source != SpanshSource)
             {
-                await AddLocalRingsAsync(candidates, Mineral, RingType, MinimumHotspots, Reserve, token);
+                await AddLocalRingsAsync(candidates, Mineral, RingType, MinimumHotspots, Reserve, token, true);
             }
 
             MiningRing[] annotated = candidates
                 .Select(AnnotateRing)
                 .Where(r =>
-                    MatchesRing(r, Mineral, RingType, MinimumHotspots, Reserve)
+                    MatchesRing(r, Mineral, RingType, MinimumHotspots, Reserve, true)
                     && (!OnlyOverlaps || r.Overlaps.Length > 0)
                     && (!OnlyRes || r.ResourceExtractionSites.Length > 0)
                 )
@@ -531,7 +642,7 @@ public sealed class MiningSearchViewModel(
                 }
             }
 
-            if (Source != "Spansh")
+            if (Source != SpanshSource)
             {
                 await AddLocalRingsAsync(candidates, mineral, ringType, MinimumHotspots, Reserve, token);
             }
@@ -607,7 +718,8 @@ public sealed class MiningSearchViewModel(
         string ringType,
         int minimumHotspots,
         string reserve,
-        CancellationToken token
+        CancellationToken token,
+        bool applyPlannerFilters = false
     )
     {
         GalacticCoordinate? origin = await ResolveOriginAsync(token);
@@ -617,7 +729,7 @@ public sealed class MiningSearchViewModel(
             if (
                 distance is null
                 || distance > Radius
-                || !MatchesRing(ring, mineral, ringType, minimumHotspots, reserve)
+                || !MatchesRing(ring, mineral, ringType, minimumHotspots, reserve, applyPlannerFilters)
             )
             {
                 continue;
@@ -668,21 +780,83 @@ public sealed class MiningSearchViewModel(
         return ring.Position is { } location && origin is { } point ? location.DistanceTo(point) : null;
     }
 
-    private static bool MatchesRing(
+    private string OnlineMineral => Mineral is AnyPower || RingType == WithoutHotspotsRing ? "" : Mineral.Trim();
+
+    private string OnlineRingType => RingType is HotspotRing or WithoutHotspotsRing ? "All" : RingType;
+
+    private int OnlineMinimumHotspots => RingType == WithoutHotspotsRing ? 0 : MinimumHotspots;
+
+    private static bool IsAny(string value) =>
+        value.Length == 0 || value.Equals(AnyPower, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsChosenPower(string power) =>
+        !IsAny(power) && !power.Equals(NoPower, StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeAny(string? value) => IsAny(value ?? "") ? "" : value!.Trim();
+
+    private bool MatchesRing(
         MiningRing ring,
         string mineral,
         string ringType,
         int minimumHotspots,
-        string reserve
-    ) =>
-        (ringType == "All" || Same(ring.RingType.Replace(" ", ""), ringType.Replace(" ", "")))
-        && (reserve == "All" || Same(ring.Reserve, reserve))
-        && (
-            mineral.Length == 0
-            || ring.Hotspots.Any(h =>
-                Same(h.Key.Replace(" ", ""), mineral.Replace(" ", "")) && h.Value >= minimumHotspots
-            )
+        string reserve,
+        bool applyPlannerFilters = false
+    )
+    {
+        string wanted = mineral is AnyPower ? "" : mineral;
+        bool typeMatches =
+            ringType is "All" or HotspotRing or WithoutHotspotsRing
+            || Same(ring.RingType.Replace(" ", ""), ringType.Replace(" ", ""));
+        bool reserveMatches =
+            reserve == "All"
+            || (reserve == "Unknown" && (ring.Reserve.Length == 0 || Same(ring.Reserve, "Unknown")))
+            || Same(ring.Reserve, reserve);
+        bool hasMineral = wanted.Length > 0 && HasHotspot(ring, wanted, minimumHotspots);
+        bool hotspotMatches = ringType switch
+        {
+            WithoutHotspotsRing => wanted.Length == 0 ? ring.Hotspots.Count == 0 : !HasHotspot(ring, wanted, 1),
+            HotspotRing when wanted.Length == 0 => ring.Hotspots.Count > 0,
+            _ => wanted.Length == 0 || hasMineral,
+        };
+        bool alsoMatches = !applyPlannerFilters || IsAny(AlsoMineral) || HasHotspot(ring, AlsoMineral, 1);
+        bool methodMatches = !applyPlannerFilters || MatchesMiningType(ring, wanted);
+        return typeMatches && reserveMatches && hotspotMatches && alsoMatches && methodMatches;
+    }
+
+    private static bool HasHotspot(MiningRing ring, string mineral, int minimum) =>
+        ring.Hotspots.Any(hotspot =>
+            Same(hotspot.Key.Replace(" ", ""), mineral.Replace(" ", "")) && hotspot.Value >= minimum
         );
+
+    private bool MatchesMiningType(MiningRing ring, string mineral)
+    {
+        if (MiningType is "All" or "")
+        {
+            return true;
+        }
+
+        bool core = MiningType == "Core";
+        if (mineral.Length > 0)
+        {
+            return core ? CoreMinerals.Contains(mineral) : !CoreMinerals.Contains(mineral);
+        }
+
+        return ring.Hotspots.Keys.Any(name => CoreMinerals.Contains(name) == core);
+    }
+
+    private static readonly HashSet<string> CoreMinerals = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Alexandrite",
+        "Benitoite",
+        "Bromellite",
+        "Grandidierite",
+        "Monazite",
+        "Musgravite",
+        "Rhodplumsite",
+        "Serendibite",
+        "Void Opal",
+        "Void Opals",
+    };
 
     private static void MergeRing(List<MiningRing> candidates, MiningRing ring, double distance)
     {
@@ -746,10 +920,12 @@ public sealed class MiningSearchViewModel(
                 Page,
                 SystemOnly,
                 MinimumDemand,
-                MaximumDemand
+                MaximumDemand,
+                MarketFreshness,
+                PadSize
             );
             IReadOnlyList<MiningMarketResult> result;
-            string source = query.SystemOnly && !query.GalaxyWide ? "Spansh" : "Ardent";
+            string source = query.SystemOnly && !query.GalaxyWide ? SpanshSource : "Ardent";
             try
             {
                 result = await client.FindMarketsAsync(query, token);
@@ -778,43 +954,124 @@ public sealed class MiningSearchViewModel(
             Status = $"{result.Count} markets · {source}. Prices and quantities are observations, not guarantees.";
         });
 
+    private async Task SearchAcquisitionTargetsAsync(CancellationToken token)
+    {
+        MiningSystemResult[] supporters = (await CollectPowerSystemsAsync("Fortified", token))
+            .Concat(await CollectPowerSystemsAsync("Stronghold", token))
+            .Where(system => system.Position is not null)
+            .DistinctBy(system => system.System, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (supporters.Length == 0)
+        {
+            Systems = [];
+            Status =
+                $"No Fortified or Stronghold systems for {PledgedPower} within {Radius:0} ly. Acquire needs one of those in range.";
+            return;
+        }
+
+        var found = new Dictionary<string, MiningSystemResult>(StringComparer.OrdinalIgnoreCase);
+        foreach (MiningSystemResult supporter in supporters)
+        {
+            token.ThrowIfCancellationRequested();
+            double reach = Same(supporter.PowerState, "Stronghold") ? 30 : 20;
+            IReadOnlyList<MiningSystemResult> bubble = await client.FindSystemsAsync(
+                new MiningSystemQuery(
+                    supporter.System,
+                    reach,
+                    Security.Trim(),
+                    Allegiance.Trim(),
+                    Government.Trim(),
+                    IsAny(State) ? "" : State.Trim(),
+                    Economy.Trim(),
+                    "",
+                    "",
+                    MinimumPopulation,
+                    0,
+                    OpenAcquisition: true
+                ),
+                token
+            );
+            foreach (MiningSystemResult candidate in bubble.Where(KeepAcquisitionCandidate))
+            {
+                found.TryAdd(candidate.System, candidate);
+            }
+        }
+
+        MiningSystemResult[] result = found
+            .Values.OrderBy(system => system.Distance ?? double.MaxValue)
+            .Take(ResultLimit)
+            .ToArray();
+        token.ThrowIfCancellationRequested();
+        Systems = result;
+        await PublishMeritRowsAsync(token);
+        Status =
+            MeritRows.Count
+            + " acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. "
+            + Status;
+    }
+
+    private bool KeepAcquisitionCandidate(MiningSystemResult candidate) =>
+        candidate.Power.Length == 0
+        && PowerplayStanding.IsAcquisitionState(candidate.PowerState)
+        && (IsAny(PowerState) || Same(candidate.PowerState, PowerState));
+
+    private async Task<IReadOnlyList<MiningSystemResult>> CollectPowerSystemsAsync(
+        string state,
+        CancellationToken token
+    )
+    {
+        var all = new List<MiningSystemResult>();
+        for (int pageIndex = 0; pageIndex < 3; pageIndex++)
+        {
+            IReadOnlyList<MiningSystemResult> rows = await client.FindSystemsAsync(
+                new MiningSystemQuery(Reference, Radius, Power: PledgedPower, PowerState: state, Page: pageIndex),
+                token
+            );
+            all.AddRange(rows.Where(system => Same(system.Power, PledgedPower) && Same(system.PowerState, state)));
+            if (rows.Count < 100)
+            {
+                break;
+            }
+        }
+
+        return all;
+    }
+
     public Task SearchSystemsAsync() =>
         Run(async token =>
         {
-            if (Objective is ReinforceObjective or UndermineObjective && string.IsNullOrWhiteSpace(PledgedPower))
-            {
-                throw new ArgumentException("Choose your pledged Power before searching for this objective.");
-            }
-
             string powerFilter = Objective switch
             {
-                ReinforceObjective => PledgedPower,
-                UndermineObjective when OpposingPower.Length > 0 => OpposingPower,
-                _ => Power.Trim(),
+                ReinforceObjective when IsChosenPower(PledgedPower) => PledgedPower,
+                UndermineObjective when IsChosenPower(OpposingPower) => OpposingPower,
+                _ => "",
             };
+            if (Objective == AcquireObjective && IsChosenPower(PledgedPower))
+            {
+                await SearchAcquisitionTargetsAsync(token);
+                return;
+            }
+
+            bool openAcquisition = Objective == AcquireObjective && IsAny(PowerState);
             var query = new MiningSystemQuery(
                 Reference,
                 Radius,
                 Security.Trim(),
                 Allegiance.Trim(),
                 Government.Trim(),
-                State.Trim(),
+                IsAny(State) ? "" : State.Trim(),
                 Economy.Trim(),
                 powerFilter,
                 PowerState.Trim(),
                 MinimumPopulation,
-                Page
+                Page,
+                openAcquisition
             );
-            IReadOnlyList<MiningSystemResult> online = [];
-            string source = "Spansh + local Powerplay observations";
-            if (PowerState is ExpansionState or "Contested")
-            {
-                source = "Local Powerplay observations; this state is not indexed by Spansh";
-            }
-            else
-            {
-                online = await client.FindSystemsAsync(query, token);
-            }
+            IReadOnlyList<MiningSystemResult> online = await client.FindSystemsAsync(query, token);
+            string source =
+                openAcquisition || PowerState is ExpansionState or "Contested" or "Unoccupied"
+                    ? "Spansh conflict progress + local Powerplay observations"
+                    : "Spansh + local Powerplay observations";
 
             IReadOnlyList<MiningSystemResult> local = community?.FindSystems(query, DateTimeOffset.UtcNow) ?? [];
             MiningSystemResult[] result = local
@@ -826,9 +1083,58 @@ public sealed class MiningSearchViewModel(
                 .ToArray();
             token.ThrowIfCancellationRequested();
             Systems = result;
-            Status =
-                $"{Systems.Count} matching systems · {source} · {Objective}. Unknown Powerplay data is not treated as eligible.";
+            await PublishMeritRowsAsync(token);
+            Status = MeritRows.Count + " locations, best sell price first. " + source + ". " + Status;
         });
+
+    private async Task PublishMeritRowsAsync(CancellationToken token)
+    {
+        if (Systems.Count == 0)
+        {
+            MeritRows = [];
+            Status = "No systems matched.";
+            return;
+        }
+
+        string commodity = MineralChips.Selected.FirstOrDefault(item => !IsAny(item)) ?? PlatinumMineral;
+        try
+        {
+            IReadOnlyList<MiningRing> foundRings = await client.FindRingsAsync(
+                new MiningRingQuery(Reference, commodity, OnlineRingType, Radius, OnlineMinimumHotspots, 0, false),
+                token
+            );
+            IReadOnlyList<MiningMarketResult> foundMarkets = await client.FindMarketsAsync(
+                new MiningMarketQuery(
+                    Reference,
+                    commodity,
+                    false,
+                    Radius,
+                    false,
+                    false,
+                    PadSize == "L",
+                    MaximumAgeDays,
+                    "",
+                    0,
+                    false,
+                    MinimumDemand,
+                    MaximumDemand,
+                    MarketFreshness,
+                    PadSize
+                ),
+                token
+            );
+            MeritRows = PowerplayMeritRank
+                .Compose(Systems, foundRings, foundMarkets, ResultLimit)
+                .Select(MeritSystemRowViewModel.From)
+                .ToArray();
+            Status = $"Prices are for {commodity}.";
+        }
+        catch (Exception ex) when (IsProviderFailure(ex))
+        {
+            MeritRows = [];
+            Status = "Station prices are unavailable: " + ex.Message;
+        }
+    }
 
     public Task SearchTradersAsync() =>
         Run(async token =>
@@ -921,7 +1227,7 @@ public sealed class MiningSearchViewModel(
         SystemOnly = hasPlan;
         Changed(nameof(PlanningContext));
         Changed(nameof(HasPlan));
-        if (Mineral.Length > 0)
+        if (Mineral.Length > 0 && !IsAny(Mineral))
         {
             Commodity = Mineral;
         }
@@ -938,23 +1244,37 @@ public sealed class MiningSearchViewModel(
         Objective switch
         {
             ReinforceObjective => !Same(system.PowerState, ExpansionState)
-                && system.Power.Length > 0
-                && Same(system.Power, PledgedPower),
+                && (
+                    PledgedPower == NoPower
+                        ? system.Power.Length == 0
+                        : system.Power.Length > 0 && (IsAny(PledgedPower) || Same(system.Power, PledgedPower))
+                ),
             UndermineObjective => !Same(system.PowerState, ExpansionState)
-                && system.Power.Length > 0
-                && !Same(system.Power, PledgedPower)
-                && (OpposingPower.Length == 0 || Same(system.Power, OpposingPower)),
-            AcquireObjective => system.PowerState is "Unoccupied" or ExpansionState,
+                && (
+                    OpposingPower == NoPower
+                        ? system.Power.Length == 0
+                        : system.Power.Length > 0
+                            && (IsAny(OpposingPower) || Same(system.Power, OpposingPower))
+                            && (IsAny(PledgedPower) || !Same(system.Power, PledgedPower))
+                ),
+            AcquireObjective => PowerplayStanding.IsAcquisitionState(system.PowerState),
             _ => true,
         };
 
     public string PowerplaySummary =>
-        $"{Objective} · {(PledgedPower.Length == 0 ? "No pledge detected" : PledgedPower)} · {Mineral} · {RingType} · {Reserve} reserve · within {Radius:0} ly";
+        $"{Objective} · {(IsAny(PledgedPower) ? "Any Power" : PledgedPower)} · {Mineral} · {RingType} · {Reserve} reserve · within {Radius:0} ly";
 
     public void ResetPowerplay()
     {
         Objective = ReinforceObjective;
-        OpposingPower = "";
+        OpposingPower = AnyPower;
+        MiningType = "All";
+        AlsoMineral = AnyPower;
+        PadSize = AnyPower;
+        LimitMarketAge = true;
+        MarketAge = 48;
+        MarketAgeUnit = "Hours";
+        SystemState = AnyPower;
         Power = "";
         PowerState = "";
         Security = "";
@@ -1033,6 +1353,12 @@ public sealed class MiningSearchViewModel(
         State = values.State;
         Power = values.Power;
         OpposingPower = values.OpposingPower;
+        MiningType = values.MiningType;
+        AlsoMineral = values.AlsoMineral;
+        PadSize = values.PadSize;
+        LimitMarketAge = values.LimitMarketAge;
+        MarketAge = values.MarketAge;
+        MarketAgeUnit = values.MarketAgeUnit;
         PowerState = values.PowerState;
         MinimumPopulation = values.MinimumPopulation;
         TraderType = values.TraderType;
