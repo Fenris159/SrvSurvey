@@ -1,9 +1,21 @@
-# SrvSurvey-XP 2.1.3.0-rc.53
+# SrvSurvey-XP 2.1.3.0-rc.54
 
-RC53 modernizes SrvSurvey's SteamVR overlays for Windows and Linux. It adds a
+RC54 modernizes SrvSurvey's SteamVR overlays for Windows and Linux. It adds a
 guided headset connection workflow, clearer runtime status, per-platform setup
 profiles, controller-pointer interaction, safer runtime recovery, and a new VR
-guide inside the application.
+guide inside the application. This release also includes Linux update and UI
+placement fixes found during RC53 testing.
+
+## Bug fixes in RC54
+
+- Linux AppImage updates now launch their handoff helper in an isolated systemd
+  user service when needed, so closing the old instance does not also terminate
+  the helper before it can install and start the replacement.
+- Resized overlay panels now retain their saved top-left position when the
+  overlay editor is closed and reopened on Windows and Linux.
+- Linux dropdowns now open against their controls in every workspace, including
+  Guardian, while keeping embedded popups enabled for reliable hover, input,
+  and focus behavior.
 
 > [!IMPORTANT]
 > SrvSurvey VR panels use the SteamVR/OpenVR overlay compositor. OpenXR-only
@@ -98,21 +110,21 @@ The new **VR & headset overlays** category under **Guides** covers:
 
 - RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge for older
   clients.
-- RC53 publishes as `xp2-v2.1.3.0-rc.53` with the schema-2 Windows, Linux
+- RC54 publishes as `xp2-v2.1.3.0-rc.54` with the schema-2 Windows, Linux
   portable, and Linux AppImage package index.
 - RC51 and later clients scan the `xp2-v` namespace and can move directly to
-  RC53. No release above RC51 may use the legacy `xp-v` namespace.
+  RC54. No release above RC51 may use the legacy `xp-v` namespace.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.53`
-- Tag: `xp2-v2.1.3.0-rc.53`
+- Version: `2.1.3.0-rc.54`
+- Tag: `xp2-v2.1.3.0-rc.54`
 - Release-index schema: `2` (`win-x64`, `linux-x64`, and
   `linux-x64-appimage`)
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.53-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.53-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.53-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.53-x86_64.AppImage.zsync`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.54-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.54-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.54-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.54-x86_64.AppImage.zsync`
 
 Windows and Linux packages remain self-contained. The numeric Windows
 `FileVersion` remains `2.1.3.0`.
