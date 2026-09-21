@@ -1272,8 +1272,9 @@ internal static class ReplayPresentationSnapshotValidator
     }
 
     private static bool IsSupportedScaleIndex(int scaleIndex) =>
-        scaleIndex is >= 0 and <= MaximumLegacyScaleIndex
-        || scaleIndex is >= MinimumRelativeScaleIndex and <= MaximumRelativeScaleIndex;
+        scaleIndex
+            is (>= 0 and <= MaximumLegacyScaleIndex)
+                or (>= MinimumRelativeScaleIndex and <= MaximumRelativeScaleIndex);
 
     private static void ValidateName(string name)
     {
