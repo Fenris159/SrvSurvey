@@ -4,6 +4,7 @@ using SrvSurvey.Desktop.Views;
 
 namespace SrvSurvey.Desktop.Tests.Presentation;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MiningIconTests
 {
     [AvaloniaFact]
@@ -42,9 +43,15 @@ public sealed class MiningIconTests
                 Width = 40,
                 Height = 40,
             };
-            window.Show();
-            Assert.True(icon.Bounds.Width > 0);
-            window.Close();
+            try
+            {
+                window.Show();
+                Assert.True(icon.Bounds.Width > 0);
+            }
+            finally
+            {
+                window.Close();
+            }
         }
     }
 }
