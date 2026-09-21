@@ -83,6 +83,33 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         Assert.Contains("not installed", viewModel.ConnectionDetail);
     }
 
+    [Fact]
+    public void ConnectionRequestsSynchronizeOnceWhileDisablingStillShutsDown()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        var runtime = new StubOpenVrRuntime();
+        using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => true);
+
+        Assert.Equal(1, runtime.ShutdownCount);
+
+        viewModel.Enabled = true;
+        Assert.Equal(1, runtime.ProbeCount);
+
+        viewModel.SelectedPlatformProfile = viewModel.PlatformProfiles.Single(profile =>
+            profile.Id == VrPlatformProfileCatalog.MetaAlvrProfileId
+        );
+        Assert.Equal(2, runtime.ProbeCount);
+
+        viewModel.RuntimeProcessName = "custom-runtime";
+        Assert.Equal(3, runtime.ProbeCount);
+
+        viewModel.Scale = 12;
+        Assert.Equal(4, runtime.ProbeCount);
+
+        viewModel.Enabled = false;
+        Assert.Equal(2, runtime.ShutdownCount);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -115,6 +142,8 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         public int ResetCount { get; private set; }
 
         public int ProbeCount { get; private set; }
+
+        public int ShutdownCount { get; private set; }
 
         public VrRuntimeProbe ProbeResult { get; init; } = VrRuntimeProbe.Ready();
 
@@ -150,6 +179,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public void Shutdown()
         {
+            ShutdownCount++;
             IsInitialized = false;
         }
 

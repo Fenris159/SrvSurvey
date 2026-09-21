@@ -93,17 +93,15 @@ public sealed class VrOverlayCoordinator : IDisposable
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (
-            eventArgs.PropertyName
-            is nameof(VrOverlayViewModel.Enabled)
-                or nameof(VrOverlayViewModel.RuntimeProcessName)
-                or nameof(VrOverlayViewModel.SelectedPlatformProfile)
-                or nameof(VrOverlayViewModel.Scale)
-                or nameof(VrOverlayViewModel.PositionX)
-                or nameof(VrOverlayViewModel.PositionY)
-                or nameof(VrOverlayViewModel.PositionZ)
-                or nameof(VrOverlayViewModel.RotationPitch)
-                or nameof(VrOverlayViewModel.RotationYaw)
-                or nameof(VrOverlayViewModel.RotationRoll)
+            (eventArgs.PropertyName == nameof(VrOverlayViewModel.Enabled) && !viewModel.Enabled)
+            || eventArgs.PropertyName
+                is nameof(VrOverlayViewModel.Scale)
+                    or nameof(VrOverlayViewModel.PositionX)
+                    or nameof(VrOverlayViewModel.PositionY)
+                    or nameof(VrOverlayViewModel.PositionZ)
+                    or nameof(VrOverlayViewModel.RotationPitch)
+                    or nameof(VrOverlayViewModel.RotationYaw)
+                    or nameof(VrOverlayViewModel.RotationRoll)
         )
         {
             Synchronize();
