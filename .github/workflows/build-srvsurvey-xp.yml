@@ -390,7 +390,7 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v7
         with:
-          ref: ${{ needs.release-metadata.outputs.source_sha }}
+          ref: SrvSurvey-Avalonia
           fetch-depth: 0
 
       - name: Download Linux package
@@ -431,7 +431,7 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v7
         with:
-          ref: ${{ needs.release-metadata.outputs.source_sha }}
+          ref: SrvSurvey-Avalonia
           fetch-depth: 0
 
       - name: Download platform packages
