@@ -189,6 +189,17 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         return new PixelPoint(Position.X + offset.X, Position.Y + offset.Y);
     }
 
+    internal PixelSize GetConfiguredPanelPixelSize(OverlayPanelSize size, double scaling)
+    {
+        ArgumentNullException.ThrowIfNull(size);
+        double safeScaling = double.IsFinite(scaling) && scaling > 0 ? scaling : 1d;
+        double effectiveScale = safeScaling * scaleFactor;
+        return new PixelSize(
+            Math.Max(1, (int)Math.Ceiling(size.Width * effectiveScale)),
+            Math.Max(1, (int)Math.Ceiling(size.Height * effectiveScale))
+        );
+    }
+
     public void ConfigureScale(int globalIndex, int? overlayOverride, double renderScaling)
     {
         if (overlayOverride is { } value && !OverlayScaleCatalog.IsSupported(value))

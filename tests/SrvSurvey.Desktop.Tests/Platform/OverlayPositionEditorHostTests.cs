@@ -1,10 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -172,6 +174,63 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         preview.MouseUp(new Point(42, 57), MouseButton.Left, RawInputModifiers.None);
 
         Assert.Equal(new PixelPoint(initialPosition.X + 30, initialPosition.Y + 45), preview.Position);
+
+        viewModel.Cancel();
+    }
+
+    [AvaloniaFact]
+    public void ResizedPanelReopensAtItsSavedTopLeft()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), "{\"PlotJumpInfo\":\"center:0, top:8\"}");
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var hostBounds = new PixelRect(100, 200, 1200, 800);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout activeLayout = store.Load();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, hostBounds, true, true)),
+            store,
+            activeLayout,
+            registry,
+            host
+        );
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.ExplorationAndNavigation
+        );
+
+        Assert.True(viewModel.Begin());
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotJumpInfo"
+        );
+        Dispatcher.UIThread.RunJobs();
+        PixelPoint savedTopLeft = preview.GetPanelScreenOrigin(preview.RenderScaling);
+        Thumb resizeThumb = Assert.IsType<Thumb>(preview.FindControl<Thumb>("PanelResizeThumb"));
+        Point resizePoint = Assert.IsType<Point>(resizeThumb.TranslatePoint(new Point(11, 11), preview));
+
+        preview.MouseMove(resizePoint, RawInputModifiers.None);
+        preview.MouseDown(resizePoint, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+        preview.MouseMove(resizePoint + new Vector(120, 40), RawInputModifiers.LeftMouseButton);
+        preview.MouseUp(resizePoint + new Vector(120, 40), MouseButton.Left, RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+        OverlayPreviewPanelMetrics resizedMetrics = preview.GetPanelMetrics(preview.RenderScaling);
+        Assert.Equal(savedTopLeft, preview.GetPanelScreenOrigin(preview.RenderScaling));
+        viewModel.Save();
+
+        LegacyOverlayLayout savedLayout = store.Load();
+        OverlayPanelSize? savedSize = savedLayout.GetSizeOverride("PlotJumpInfo");
+        int expectedHorizontalOffset =
+            savedTopLeft.X - (hostBounds.X + ((hostBounds.Width - resizedMetrics.PanelSize.Width) / 2));
+        Assert.Equal(expectedHorizontalOffset, savedLayout.Placements["PlotJumpInfo"].HorizontalOffset);
+        Assert.NotNull(savedSize);
+        Assert.True(viewModel.Begin());
+        preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == "PlotJumpInfo");
+        Dispatcher.UIThread.RunJobs();
+        PixelPoint reopenedTopLeft = preview.GetPanelScreenOrigin(preview.RenderScaling);
+
+        Assert.Equal(savedTopLeft, reopenedTopLeft);
 
         viewModel.Cancel();
     }

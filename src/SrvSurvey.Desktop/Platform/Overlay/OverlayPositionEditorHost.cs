@@ -189,6 +189,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.Show();
             PositionPreview(preview, session);
             preview.PositionChanged += OnPreviewPositionChanged;
+            if (session.GetSizeOverride(definition.Name) is not null)
+            {
+                Dispatcher.UIThread.Post(() => PositionPreviewAfterOpening(preview, session));
+            }
         }
 
         editor.Activate();
@@ -441,6 +445,19 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
     private void OnPreviewSizeChanged(object? sender, OverlayPreviewSizeChangedEventArgs eventArgs)
     {
+        if (sender is OverlayPositionPreviewWindow preview)
+        {
+            PreviewMoved?.Invoke(
+                this,
+                new OverlayPreviewMovedEventArgs(
+                    eventArgs.PlotterName,
+                    preview.GetPanelScreenOrigin(preview.RenderScaling),
+                    preview.GetConfiguredPanelPixelSize(eventArgs.Size, preview.RenderScaling),
+                    hostBounds
+                )
+            );
+        }
+
         PreviewSizeChanged?.Invoke(this, eventArgs);
     }
 
@@ -617,6 +634,24 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             panelPosition.X - metrics.OriginOffset.X,
             panelPosition.Y - metrics.OriginOffset.Y
         );
+    }
+
+    private void PositionPreviewAfterOpening(OverlayPositionPreviewWindow preview, OverlayPositionEditSession session)
+    {
+        if (disposed || !previews.Contains(preview) || !ReferenceEquals(editSession, session))
+        {
+            return;
+        }
+
+        updatingPreviewLayout = true;
+        try
+        {
+            PositionPreview(preview, session);
+        }
+        finally
+        {
+            updatingPreviewLayout = false;
+        }
     }
 
     private static void NormalizeStatefulPanelAnchor(
