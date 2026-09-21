@@ -536,6 +536,7 @@
     <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
   </Style>
   <Style Selector="ToolTip">
+    <Setter Property="IsHitTestVisible" Value="False" />
     <Setter Property="Background" Value="{DynamicResource RavenHighestSurfaceBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RavenStrongBorderBrush}" />

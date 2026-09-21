@@ -26,7 +26,6 @@
                   HorizontalContentAlignment="Left"
                   CommandParameter="{Binding}"
                   Click="SelectNavigationItem_Click"
-                  ToolTip.Tip="{Binding Description}"
                   AutomationProperties.HelpText="{Binding Description}">
             <TextBlock VerticalAlignment="Center"
                        FontWeight="SemiBold"

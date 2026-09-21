@@ -16,6 +16,9 @@ placement fixes found during RC53 testing.
 - Linux dropdowns now open against their controls in every workspace, including
   Guardian, while keeping embedded popups enabled for reliable hover, input,
   and focus behavior.
+- Left-navigation destinations no longer show redundant category tooltips.
+  Tooltips retained for contextual controls are mouse-transparent and no longer
+  block clicks on controls behind them.
 
 > [!IMPORTANT]
 > SrvSurvey VR panels use the SteamVR/OpenVR overlay compositor. OpenXR-only
