@@ -519,11 +519,14 @@ public sealed class MiningWorkspacePresentationTests
             NumericUpDown slots = mining.FindControl<NumericUpDown>("PersistentProspectSlotsInput")!;
             ListBox thresholds = mining.FindControl<ListBox>("ThresholdRows")!;
             ListBox presets = mining.FindControl<ListBox>("AnnouncementPresetRows")!;
+            ComboBox chimes = mining.FindControl<ComboBox>("ChimeSelector")!;
             ComboBox voices = mining.FindControl<ComboBox>("LocalVoiceSelector")!;
             Assert.True(slots.IsEffectivelyVisible);
             Assert.True(thresholds.IsEffectivelyVisible);
             Assert.True(presets.IsEffectivelyVisible);
+            Assert.True(chimes.IsEffectivelyVisible);
             Assert.True(voices.IsEffectivelyVisible);
+            Assert.Equal(3, chimes.ItemCount);
             Assert.Equal(1, thresholds.ItemCount);
             Assert.Equal(1, presets.ItemCount);
             Assert.Equal(

@@ -41,6 +41,12 @@ public sealed class MiningWorkspaceViewModelTests
             vm.Settings.Thresholds["osmium"] = 30;
 
             Feed(
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:00:30Z","Materials":[{"Name":"Bertrandite","Proportion":25}],"Remaining":100}"""
+            );
+            Assert.False(vm.HasPersistentProspects);
+            Assert.False(vm.ShouldShowNotifications);
+
+            Feed(
                 """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:01:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Remaining":100}"""
             );
             Feed(
@@ -62,7 +68,11 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.DoesNotContain(vm.PersistentProspects, result => result.Summary.Contains("Platinum"));
             Assert.Contains(vm.PersistentProspects, result => result.Qualifies && result.Summary.Contains("Osmium"));
             Assert.Contains(vm.PersistentProspects, result => result.Summary.Contains("Core: Monazite"));
-            Assert.Equal(2, chime.PlayedVolumes.Count);
+            using var activityOverlay = new MiningActivityOverlayViewModel(vm, false);
+            MiningProspectOverlayRowViewModel visibleProspect = Assert.Single(activityOverlay.Prospects);
+            Assert.Contains("Core: Monazite", visibleProspect.Summary);
+            Assert.DoesNotContain(activityOverlay.Prospects, result => result.Summary.Contains("Bertrandite"));
+            Assert.Equal(2, chime.PlayedVolumes.Length);
             Assert.Equal(2, speech.Messages.Count);
             Assert.True(vm.ShouldShowCargo);
             using var cargoOverlay = new MiningCargoOverlayViewModel(vm);
@@ -70,6 +80,82 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.Equal("550 T REMAINING", cargoOverlay.Remaining);
             Assert.Equal("Limpets", cargoOverlay.Items[0].Name);
             Assert.True(cargoOverlay.Items.Single(item => item.Name == "Platinum").IsTarget);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ChimePreviewUsesSelectedPortableCueAndVolume()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var chime = new ChimeRecorder();
+        try
+        {
+            using var vm = new MiningWorkspaceViewModel(
+                directory,
+                new Resolver(),
+                new BookmarksViewModel(directory),
+                announcementOutputs: new MiningAnnouncementOutputs(new SpeechRecorder(), chime)
+            );
+            Assert.Equal(["Two-tone", "High-low", "Crystal"], vm.ChimeOptions);
+            vm.Settings.Chime = "Crystal";
+            vm.Settings.ChimeVolume = 42;
+
+            vm.PreviewChime();
+
+            Assert.Equal(("Crystal", 42), Assert.Single(chime.Played));
+            Assert.Contains("Crystal", vm.Status);
+            Assert.Contains("42%", vm.Status);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void RingReferenceProvidesLaserAndCorePricesForEveryRingType()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory));
+
+            Assert.Equal(
+                ["Icy rings", "Metallic rings", "Metal-rich rings", "Rocky rings"],
+                vm.RingReferences.Select(ring => ring.Name)
+            );
+            Assert.All(
+                vm.RingReferences,
+                ring =>
+                {
+                    Assert.NotEmpty(ring.Laser);
+                    Assert.NotEmpty(ring.Core);
+                    Assert.All(
+                        ring.Laser.Concat(ring.Core),
+                        commodity =>
+                        {
+                            Assert.True(commodity.AverageSellPrice > 0);
+                            Assert.EndsWith(" CR/t", commodity.AverageSellPriceLabel);
+                        }
+                    );
+                }
+            );
+            Assert.Equal(
+                70136,
+                vm.RingReferences.Single(ring => ring.Name == "Metallic rings")
+                    .Laser.Single(item => item.Name == "Platinum")
+                    .AverageSellPrice
+            );
         }
         finally
         {
@@ -820,9 +906,10 @@ public sealed class MiningWorkspaceViewModelTests
 
     private sealed class ChimeRecorder : SrvSurvey.Desktop.Platform.IMiningChimeOutput
     {
-        public List<int> PlayedVolumes { get; } = [];
+        public List<(string Chime, int Volume)> Played { get; } = [];
+        public int[] PlayedVolumes => Played.Select(entry => entry.Volume).ToArray();
 
-        public void Play(int volume) => PlayedVolumes.Add(volume);
+        public void Play(string chime, int volume) => Played.Add((chime, volume));
 
         public void Dispose() { }
     }

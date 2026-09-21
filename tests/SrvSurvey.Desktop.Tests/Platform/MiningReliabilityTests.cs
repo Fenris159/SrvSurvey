@@ -138,22 +138,29 @@ public sealed class MiningReliabilityTests
     }
 
     [Fact]
-    public void MiningChimeSamplesHonorVolumeAndContainTwoToneAudio()
+    public void MiningChimeSamplesHonorVolumeAndOfferDistinctPortableCues()
     {
-        byte[] muted = MiningChimeOutput.CreateSamples(0);
-        byte[] audible = MiningChimeOutput.CreateSamples(100);
+        byte[] muted = MiningChimeOutput.CreateSamples(MiningChimeOutput.DefaultChime, 0);
+        byte[] twoTone = MiningChimeOutput.CreateSamples(MiningChimeOutput.DefaultChime, 100);
+        byte[] highLow = MiningChimeOutput.CreateSamples("High-low", 100);
+        byte[] crystal = MiningChimeOutput.CreateSamples("Crystal", 100);
+        byte[] fallback = MiningChimeOutput.CreateSamples("Unknown", 100);
 
-        Assert.Equal(muted.Length, audible.Length);
+        Assert.Equal(["Two-tone", "High-low", "Crystal"], MiningChimeOutput.Chimes);
+        Assert.Equal(muted.Length, twoTone.Length);
         for (int index = 0; index < muted.Length; index += sizeof(float))
         {
             Assert.Equal(0, BitConverter.ToSingle(muted, index));
         }
-        Assert.Contains(audible, value => value != 0);
+        Assert.Contains(twoTone, value => value != 0);
+        Assert.NotEqual(twoTone, highLow);
+        Assert.NotEqual(twoTone, crystal);
+        Assert.Equal(twoTone, fallback);
 
         var output = new MiningChimeOutput();
-        output.Play(40);
+        output.Play("Crystal", 40);
         output.Dispose();
-        output.Play(40);
+        output.Play("High-low", 40);
         output.Dispose();
     }
 }

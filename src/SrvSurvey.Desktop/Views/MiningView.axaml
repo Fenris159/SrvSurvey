@@ -370,27 +370,49 @@
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <TextBlock Text="Ring mining reference" TextWrapping="Wrap" Classes="card-title"/>
-            <TextBlock Text="Mineral availability follows ring composition. Prices vary; check current market observations before selling." TextWrapping="Wrap" Classes="muted"/>
-            <Expander Header="Icy rings">
-              <StackPanel Spacing="8">
-                <TextBlock Text="Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite." TextWrapping="Wrap"/>
-              </StackPanel>
-            </Expander>
-            <Expander Header="Metallic rings">
-              <StackPanel Spacing="8">
-                <TextBlock Text="Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum." TextWrapping="Wrap"/>
-              </StackPanel>
-            </Expander>
-            <Expander Header="Metal-rich rings">
-              <StackPanel Spacing="8">
-                <TextBlock Text="Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum." TextWrapping="Wrap"/>
-              </StackPanel>
-            </Expander>
-            <Expander Header="Rocky rings">
-              <StackPanel Spacing="8">
-                <TextBlock Text="Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite." TextWrapping="Wrap"/>
-              </StackPanel>
-            </Expander>
+            <TextBlock Text="Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling." TextWrapping="Wrap" Classes="muted"/>
+            <ItemsControl x:Name="RingReferenceRows" ItemsSource="{Binding RingReferences}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:MiningRingReferenceViewModel">
+                  <Expander Header="{Binding Name}" Margin="0,0,0,8">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="16" Margin="8">
+                      <StackPanel Spacing="4">
+                        <Grid Classes="table-header" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                          <TextBlock Classes="table-heading" Text="LASER"/>
+                          <TextBlock Grid.Column="1" Classes="table-heading" Text="AVG SELL"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Laser}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MiningReferenceCommodityRowViewModel">
+                              <Grid Classes="table-row" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Column="1" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding AverageSellPriceLabel}"/>
+                              </Grid>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Spacing="4">
+                        <Grid Classes="table-header" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                          <TextBlock Classes="table-heading" Text="CORE"/>
+                          <TextBlock Grid.Column="1" Classes="table-heading" Text="AVG SELL"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Core}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MiningReferenceCommodityRowViewModel">
+                              <Grid Classes="table-row" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Column="1" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding AverageSellPriceLabel}"/>
+                              </Grid>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                    </Grid>
+                  </Expander>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <Expander Header="Resource Extraction Sites (RES)">
               <StackPanel Spacing="8">
                 <TextBlock Text="Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap." TextWrapping="Wrap"/>
@@ -439,7 +461,7 @@
                     <Border Classes="card raised">
                       <StackPanel Spacing="10">
                         <TextBlock Classes="card-title" Text="Mineral thresholds"/>
-                        <TextBlock Classes="muted" Text="Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral." TextWrapping="Wrap"/>
+                        <TextBlock Classes="muted" Text="Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect." TextWrapping="Wrap"/>
                         <ListBox x:Name="ThresholdRows" ItemsSource="{Binding Thresholds}" SelectedItem="{Binding SelectedThreshold}" MinHeight="70" MaxHeight="210" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                           <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:MiningThresholdRowViewModel">
@@ -490,8 +512,11 @@
                       <StackPanel Spacing="10">
                         <TextBlock Classes="card-title" Text="Audio announcements"/>
                         <CheckBox Content="Play a chime for qualifying prospects" IsChecked="{Binding Settings.PlayProspectChime}"/>
+                        <TextBlock Text="Chime sound"/>
+                        <ComboBox x:Name="ChimeSelector" ItemsSource="{Binding ChimeOptions}" SelectedItem="{Binding Settings.Chime}" HorizontalAlignment="Stretch"/>
                         <TextBlock Text="Chime volume"/>
                         <Slider Minimum="0" Maximum="100" Value="{Binding Settings.ChimeVolume}"/>
+                        <Button Content="Preview chime" Click="PreviewChime_Click" Margin="0,0,8,8" HorizontalAlignment="Left"/>
                         <CheckBox Content="Speak announcements using a local voice" IsChecked="{Binding Settings.SpeakAnnouncements}"/>
                         <Button Content="Refresh local voices" Click="LoadVoices_Click" Margin="0,0,8,8" HorizontalAlignment="Left"/>
                         <ComboBox x:Name="LocalVoiceSelector" ItemsSource="{Binding Voices}" SelectedItem="{Binding Settings.Voice}" HorizontalAlignment="Stretch"/>

@@ -11,6 +11,7 @@ public sealed record MiningPreferences
     public bool AutoStart { get; set; } = true;
     public bool SpeakAnnouncements { get; set; }
     public bool PlayProspectChime { get; set; }
+    public string Chime { get; set; } = "Two-tone";
     public int ChimeVolume { get; set; } = 70;
     public string Voice { get; set; } = "";
     public int SpeechVolume { get; set; } = 70;

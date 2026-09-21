@@ -78,6 +78,8 @@ public sealed partial class MiningView : UserControl
         }
     }
 
+    private void PreviewChime_Click(object? sender, RoutedEventArgs e) => Model?.PreviewChime();
+
     private void OpenScreenshot_Click(object? sender, RoutedEventArgs e)
     {
         if (Model is { } vm && sender is Control { Tag: string path })

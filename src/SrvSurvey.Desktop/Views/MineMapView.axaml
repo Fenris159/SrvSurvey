@@ -102,6 +102,7 @@
                     <ListBox Grid.Row="1" x:Name="SurfaceMapsResults" Classes="table-rows" Height="390"
                          ItemsSource="{Binding FilteredSurveys}"
                          SelectedItem="{Binding SelectedSurveyRow, Mode=TwoWay}"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.KeyBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding ActivateSelectedSurveyCommand}" />

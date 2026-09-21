@@ -20,6 +20,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private readonly string attachmentDirectory;
     private readonly Platform.IMiningSpeechOutput speech;
     private readonly Platform.IMiningChimeOutput chime;
+    private readonly IReadOnlyList<string> chimeOptions = Platform.MiningChimeOutput.Chimes;
     private IReadOnlyList<string> voices = [];
     private IReadOnlyList<MiningAnnouncementPresetRowViewModel>? cachedAnnouncementPresets;
     private IReadOnlyList<MiningThresholdRowViewModel>? cachedThresholdRows;
@@ -143,6 +144,8 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         get => voices;
         private set => Set(ref voices, value);
     }
+    public IReadOnlyList<string> ChimeOptions => chimeOptions;
+    public IReadOnlyList<MiningRingReferenceViewModel> RingReferences { get; } = MiningRingReferenceViewModel.All;
     public string PresetName
     {
         get => presetName;
@@ -442,7 +445,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public string CurrentProspectText => state.CurrentProspectText ?? "";
     public bool HasCurrentProspect => CurrentProspectText.Length > 0;
-    public bool HasPersistentProspects => PersistentProspects.Count > 0;
+    public bool HasPersistentProspects => PersistentProspects.Any(prospect => prospect.Qualifies);
     public bool ShouldShowNotifications => CanShowShipOverlays && (HasPersistentProspects || VisibleNotices.Count > 0);
     public bool ShouldShowCargo => CanShowShipOverlays && cargo is not null;
     private bool CanShowShipOverlays =>
@@ -652,9 +655,15 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             }
             if (Settings.PlayProspectChime && notice.Kind == "Prospected")
             {
-                chime.Play(Settings.ChimeVolume);
+                chime.Play(Settings.Chime, Settings.ChimeVolume);
             }
         }
+    }
+
+    public void PreviewChime()
+    {
+        chime.Play(Settings.Chime, Settings.ChimeVolume);
+        Status = $"Played the {Settings.Chime} chime at {Settings.ChimeVolume}% volume.";
     }
 
     public void Tick()
@@ -1440,4 +1449,116 @@ public sealed record MiningAnnouncementPresetRowViewModel(string Name, string Su
 public sealed record MiningProspectOverlayRowViewModel(string Time, string Summary, double Remaining, bool Qualifies)
 {
     public string RemainingLabel => Remaining <= 0 ? "DEPLETED" : $"{Remaining:0.#}% remaining";
+}
+
+public sealed record MiningReferenceCommodityRowViewModel(string Name, int AverageSellPrice)
+{
+    public string AverageSellPriceLabel => $"{AverageSellPrice:N0} CR/t";
+}
+
+public sealed record MiningRingReferenceViewModel(
+    string Name,
+    IReadOnlyList<MiningReferenceCommodityRowViewModel> Laser,
+    IReadOnlyList<MiningReferenceCommodityRowViewModel> Core
+)
+{
+    public static IReadOnlyList<MiningRingReferenceViewModel> All { get; } =
+    [
+        Ring(
+            "Icy rings",
+            [
+                Item("Low Temperature Diamonds", 131607),
+                Item("Bromellite", 33414),
+                Item("Hydrogen Peroxide", 3119),
+                Item("Liquid Oxygen", 1639),
+                Item("Lithium Hydroxide", 5655),
+                Item("Methane Clathrate", 1597),
+                Item("Methanol Monohydrate Crystals", 2522),
+                Item("Tritium", 53425),
+                Item("Water", 496),
+            ],
+            [
+                Item("Alexandrite", 227771),
+                Item("Grandidierite", 211582),
+                Item("Low Temperature Diamonds", 131607),
+                Item("Void Opals", 150964),
+                Item("Bromellite", 33414),
+            ]
+        ),
+        Ring(
+            "Metallic rings",
+            [
+                Item("Osmium", 55698),
+                Item("Painite", 57890),
+                Item("Platinum", 70136),
+                Item("Bertrandite", 18476),
+                Item("Gold", 47900),
+                Item("Indite", 11268),
+                Item("Palladium", 52064),
+                Item("Praseodymium", 8636),
+                Item("Samarium", 28658),
+                Item("Silver", 37628),
+            ],
+            [
+                Item("Monazite", 273262),
+                Item("Rhodplumsite", 186345),
+                Item("Serendibite", 186953),
+                Item("Painite", 57890),
+                Item("Platinum", 70136),
+            ]
+        ),
+        Ring(
+            "Metal-rich rings",
+            [
+                Item("Osmium", 55698),
+                Item("Bertrandite", 18476),
+                Item("Coltan", 6144),
+                Item("Gallite", 12235),
+                Item("Gold", 47900),
+                Item("Indite", 11268),
+                Item("Lepidolite", 1796),
+                Item("Praseodymium", 8636),
+                Item("Samarium", 28658),
+                Item("Silver", 37628),
+                Item("Uraninite", 3004),
+            ],
+            [
+                Item("Alexandrite", 227771),
+                Item("Benitoite", 164647),
+                Item("Monazite", 273262),
+                Item("Rhodplumsite", 186345),
+                Item("Serendibite", 186953),
+                Item("Painite", 57890),
+                Item("Platinum", 70136),
+            ]
+        ),
+        Ring(
+            "Rocky rings",
+            [
+                Item("Bertrandite", 18476),
+                Item("Bauxite", 2092),
+                Item("Coltan", 6144),
+                Item("Gallite", 12235),
+                Item("Indite", 11268),
+                Item("Lepidolite", 1796),
+                Item("Rutile", 3084),
+            ],
+            [
+                Item("Alexandrite", 227771),
+                Item("Benitoite", 164647),
+                Item("Monazite", 273262),
+                Item("Musgravite", 220251),
+                Item("Serendibite", 186953),
+            ]
+        ),
+    ];
+
+    private static MiningRingReferenceViewModel Ring(
+        string name,
+        IReadOnlyList<MiningReferenceCommodityRowViewModel> laser,
+        IReadOnlyList<MiningReferenceCommodityRowViewModel> core
+    ) => new(name, laser, core);
+
+    private static MiningReferenceCommodityRowViewModel Item(string name, int averageSellPrice) =>
+        new(name, averageSellPrice);
 }

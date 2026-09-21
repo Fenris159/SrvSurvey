@@ -1269,6 +1269,10 @@
       "translation": "DURCHSCHNITTLICHER GALAKTISCHER PREIS"
     },
     {
+      "source": "AVG SELL",
+      "translation": "AVG VERKAUF"
+    },
+    {
       "source": "AW",
       "translation": "AW"
     },
@@ -1639,6 +1643,10 @@
     {
       "source": "Alarm",
       "translation": "Alarm"
+    },
+    {
+      "source": "Alexandrite",
+      "translation": "Alexandrit"
     },
     {
       "source": "Align with the squares and place the rigs.",
@@ -3013,6 +3021,10 @@
       "translation": "Batterie, Medkit, Alarm, Strom..."
     },
     {
+      "source": "Bauxite",
+      "translation": "Bauxit"
+    },
+    {
       "source": "Beacon",
       "translation": "Leuchtfeuer"
     },
@@ -3043,6 +3055,14 @@
     {
       "source": "Beluga Liner",
       "translation": "Beluga Liner"
+    },
+    {
+      "source": "Benitoite",
+      "translation": "Benitoit"
+    },
+    {
+      "source": "Bertrandite",
+      "translation": "Bertrandit"
     },
     {
       "source": "Beta",
@@ -3651,6 +3671,10 @@
     {
       "source": "Broken obelisk",
       "translation": "Zerbrochener Obelisk"
+    },
+    {
+      "source": "Bromellite",
+      "translation": "Bromellit"
     },
     {
       "source": "Browse Codex",
@@ -4609,6 +4633,10 @@
       "translation": "Kind"
     },
     {
+      "source": "Chime sound",
+      "translation": "Glockenspiel"
+    },
+    {
       "source": "Chime volume",
       "translation": "Lautstärke des Glockenspiels"
     },
@@ -5331,6 +5359,10 @@
     {
       "source": "Colour '{0}' must contain three RGB or four ARGB values.",
       "translation": "Die Farbe „{0}“ muss drei RGB- oder vier ARGB-Werte enthalten."
+    },
+    {
+      "source": "Coltan",
+      "translation": "Coltan"
     },
     {
       "source": "Combat",
@@ -6583,6 +6615,10 @@
     {
       "source": "Criteria can include body type, atmosphere and composition, gravity, temperature, pressure, volcanism, materials, parent star, galactic region, nebula proximity, and Guardian proximity.",
       "translation": "Zu den Kriterien können Körpertyp, Atmosphäre und Zusammensetzung, Schwerkraft, Temperatur, Druck, Vulkanismus, Materialien, Mutterstern, galaktische Region, Nebelnähe und Wächternähe gehören."
+    },
+    {
+      "source": "Crystal",
+      "translation": "Kristall"
     },
     {
       "source": "Crystals",
@@ -8001,8 +8037,8 @@
       "translation": "Jede Rolle wächst oder schrumpft unabhängig voneinander. Zero verwendet die Grundgröße des Themes."
     },
     {
-      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
-      "translation": "Jede Zeile ist ein unabhängiges Ziel. Ein Interessent ist qualifiziert, wenn mindestens ein gelistetes Mineral sein Minimum erreicht. Eine leere Liste kündigt jedes Mineral an."
+      "source": "Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect.",
+      "translation": "Jede Zeile ist ein unabhängiges Ziel. Wenn Schwellenwerte aufgeführt sind, ignorieren die Bergbaubenachrichtigungen, der Signalton und die Sprachausgabe nicht zum Kern gehörende Mineralien, es sei denn, mindestens ein aufgelistetes Mineral erreicht seinen Mindestwert. Aktivierte Kern-Asteroiden sind weiterhin qualifiziert. Eine leere Liste lässt jeden aktivierten Interessenten zu."
     },
     {
       "source": "Eagle",
@@ -10269,6 +10305,10 @@
       "translation": "GalaxyMap.AutoShow"
     },
     {
+      "source": "Gallite",
+      "translation": "Gallit"
+    },
+    {
       "source": "Game",
       "translation": "Spiel"
     },
@@ -10443,6 +10483,10 @@
     {
       "source": "Gradient wedges mark active obelisks: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
       "translation": "Verlaufskeile markieren aktive Obelisken: Grau wird nicht gescannt, Orange wird gescannt und Cyan wird für Ram Tah weiterhin benötigt."
+    },
+    {
+      "source": "Grandidierite",
+      "translation": "Grandidierit"
     },
     {
       "source": "Gravity",
@@ -11161,6 +11205,10 @@
       "translation": "Konfliktgebiet mit hoher Intensität"
     },
     {
+      "source": "High-low",
+      "translation": "Hoch-tief"
+    },
+    {
       "source": "HighGravityWarningLevel",
       "translation": "HighGravityWarningLevel"
     },
@@ -11351,6 +11399,10 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.AutoShow"
+    },
+    {
+      "source": "Hydrogen Peroxide",
+      "translation": "Wasserstoffperoxid"
     },
     {
       "source": "Hyperspace",
@@ -11945,6 +11997,10 @@
       "translation": "Indigo"
     },
     {
+      "source": "Indite",
+      "translation": "Indite"
+    },
+    {
       "source": "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
       "translation": "Individuelle Sichtbarkeitseinstellungen unterdrücken nur diese Überlagerung. Überlagerungen umschalten blendet die getrennte Überlagerungsgruppe aus oder stellt sie wieder her."
     },
@@ -12489,6 +12545,10 @@
       "translation": "Landepads gesperrt"
     },
     {
+      "source": "LASER",
+      "translation": "LASER"
+    },
+    {
       "source": "LAST DOCKED MARKET",
       "translation": "Letzter angedockter Markt"
     },
@@ -12663,22 +12723,6 @@
     {
       "source": "Laser mining",
       "translation": "Laser-Mining"
-    },
-    {
-      "source": "Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite.",
-      "translation": "Laser: Bertrandit, Bauxit, Coltan, Gallit, Indit, Lepidolit, Rutil. Kern: Alexandrit, Benitoit, Monazit, Musgravit, Serendibit."
-    },
-    {
-      "source": "Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite.",
-      "translation": "Laser: Niedertemperaturdiamanten, Bromellit, Wasserstoffperoxid, flüssiger Sauerstoff, Lithiumhydroxid, Methanclathrat, Methanolmonohydratkristalle, Tritium, Wasser. Kern: Alexandrit, Grandidierit, Tieftemperaturdiamanten, Hohlraumopale, Bromellit."
-    },
-    {
-      "source": "Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Laser: Osmium, Bertrandit, Coltan, Gallit, Gold, Indit, Lepidolit, Praseodym, Samarium, Silber, Uraninit. Kern: Alexandrit, Benitoit, Monazit, Rhodplumsit, Serendibit, Painit, Platin."
-    },
-    {
-      "source": "Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Laser: Osmium, Painit, Platin, Bertrandit, Gold, Indit, Palladium, Praseodym, Samarium, Silber. Kern: Monazit, Rhodplumsit, Serendibit, Painit, Platin."
     },
     {
       "source": "Last approach {0}",
@@ -12881,6 +12925,10 @@
       "translation": "Legende"
     },
     {
+      "source": "Lepidolite",
+      "translation": "Lepidolith"
+    },
+    {
       "source": "Level with target",
       "translation": "Auf gleicher Höhe mit dem Ziel"
     },
@@ -12937,8 +12985,16 @@
       "translation": "Linux: Paketunterstützung OpenVR ist nicht verfügbar. Installieren Sie SrvSurvey neu oder überprüfen Sie, ob das Paket zu Ihrer Systemarchitektur passt."
     },
     {
+      "source": "Liquid Oxygen",
+      "translation": "Flüssiger Sauerstoff"
+    },
+    {
       "source": "Listening for community observations…",
       "translation": "Auf Community-Beobachtungen achten …"
+    },
+    {
+      "source": "Lithium Hydroxide",
+      "translation": "Lithiumhydroxid"
     },
     {
       "source": "Live / destination",
@@ -13375,6 +13431,10 @@
     {
       "source": "Lost surface scans were not marked: {0}",
       "translation": "Verlorene Oberflächenscans wurden nicht markiert: {0}"
+    },
+    {
+      "source": "Low Temperature Diamonds",
+      "translation": "Diamanten mit niedriger Temperatur"
     },
     {
       "source": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
@@ -14005,6 +14065,14 @@
       "translation": "Metalle"
     },
     {
+      "source": "Methane Clathrate",
+      "translation": "Methanclathrat"
+    },
+    {
+      "source": "Methanol Monohydrate Crystals",
+      "translation": "Methanol-Monohydrat-Kristalle"
+    },
+    {
       "source": "Microsoft Store profile ({0} files)",
       "translation": "Microsoft Store-Profil ({0} Dateien)"
     },
@@ -14085,8 +14153,8 @@
       "translation": "Mineralmenge und -dichte beschreiben jede Lagerstätte und akzeptieren l, m oder h als Abkürzung für niedrig, mittel oder hoch. Lagerstättennamen müssen mit einem Rohstoff in Aktivitäten > Tagebau > Hotspot-Liste übereinstimmen; Abgelehnte Befehle erklären das Problem in den Statusbenachrichtigungen."
     },
     {
-      "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
-      "translation": "Die Mineralverfügbarkeit richtet sich nach der Ringzusammensetzung. Die Preise variieren; Überprüfen Sie vor dem Verkauf aktuelle Marktbeobachtungen."
+      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
+      "translation": "Die Mineralverfügbarkeit richtet sich nach der Ringzusammensetzung. Die durchschnittlichen Verkaufspreise sind Richtwerte und die Marktpreise variieren. Überprüfen Sie daher vor dem Verkauf die aktuellen Beobachtungen."
     },
     {
       "source": "Mineral thresholds",
@@ -14491,6 +14559,10 @@
     {
       "source": "Multiply",
       "translation": "Multiplizieren"
+    },
+    {
+      "source": "Musgravite",
+      "translation": "Musgravit"
     },
     {
       "source": "Music",
@@ -17085,6 +17157,10 @@
       "translation": "Bezahlt"
     },
     {
+      "source": "Painite",
+      "translation": "Painit"
+    },
+    {
       "source": "Paint job",
       "translation": "Lackierung"
     },
@@ -17099,6 +17175,10 @@
     {
       "source": "Paleas",
       "translation": "Paleas"
+    },
+    {
+      "source": "Palladium",
+      "translation": "Palladium"
     },
     {
       "source": "Panel / top",
@@ -17243,6 +17323,10 @@
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
       "translation": "Spielen Sie normal; Durch das Betreten des FSS, die Annäherung an einen Körper, die Landung, das Öffnen der Galaxy Map oder das Andocken kann das entsprechende Overlay aktiviert werden."
+    },
+    {
+      "source": "Played the {0} chime at {1}% volume.",
+      "translation": "Das Glockenspiel {0} wurde mit der Lautstärke {1} % abgespielt."
     },
     {
       "source": "Player data is byte-verified, but legacy UI preferences could not be translated; the current Avalonia settings were left unchanged. {0}",
@@ -17573,6 +17657,10 @@
       "translation": "Pranav Antal"
     },
     {
+      "source": "Praseodymium",
+      "translation": "Praseodym"
+    },
+    {
       "source": "Pre-download all available biology images",
       "translation": "Laden Sie alle verfügbaren Biologiebilder vorab herunter"
     },
@@ -17747,6 +17835,10 @@
     {
       "source": "Press the shortcut again to restore passive click-through behavior.",
       "translation": "Drücken Sie die Tastenkombination erneut, um das passive Klickverhalten wiederherzustellen."
+    },
+    {
+      "source": "Preview chime",
+      "translation": "Vorschau des Glockenspiels"
     },
     {
       "source": "Preview state index must be from 0 to {0}.",
@@ -20189,6 +20281,10 @@
       "translation": "Liste der Rhino-Oberflächen-Hotspots"
     },
     {
+      "source": "Rhodplumsite",
+      "translation": "Rhodplumsite"
+    },
+    {
       "source": "Rig 1",
       "translation": "Anlage 1"
     },
@@ -20503,6 +20599,10 @@
     {
       "source": "RuntimeProfileId",
       "translation": "RuntimeProfileId"
+    },
+    {
+      "source": "Rutile",
+      "translation": "Rutil"
     },
     {
       "source": "R−",
@@ -20939,6 +21039,10 @@
     {
       "source": "Salvage operation",
       "translation": "Bergungsaktion"
+    },
+    {
+      "source": "Samarium",
+      "translation": "Samarium"
     },
     {
       "source": "Sample 1 of 3 recorded",
@@ -21969,6 +22073,10 @@
       "translation": "Trennzeichen"
     },
     {
+      "source": "Serendibite",
+      "translation": "Serendibit"
+    },
+    {
       "source": "Service terms",
       "translation": "Servicebedingungen"
     },
@@ -22819,6 +22927,10 @@
     {
       "source": "Signed up · no contribution recorded",
       "translation": "Angemeldet · kein Beitrag erfasst"
+    },
+    {
+      "source": "Silver",
+      "translation": "Silber"
     },
     {
       "source": "Silver Legal Group",
@@ -27409,6 +27521,10 @@
       "translation": "Über den Rigg-Chevrons sitzen zwei Fahrzeugsäulen, darunter befindet sich Laderaum."
     },
     {
+      "source": "Two-tone",
+      "translation": "Zweifarbig"
+    },
+    {
       "source": "Type",
       "translation": "Typ"
     },
@@ -27951,6 +28067,10 @@
     {
       "source": "Upper floor",
       "translation": "Obergeschoss"
+    },
+    {
+      "source": "Uraninite",
+      "translation": "Uraninit"
     },
     {
       "source": "Urn",
@@ -28531,6 +28651,10 @@
     {
       "source": "Void Amethyst",
       "translation": "Leerer Amethyst"
+    },
+    {
+      "source": "Void Opals",
+      "translation": "Leere Opale"
     },
     {
       "source": "VoxStellar",
@@ -34587,6 +34711,10 @@
       "translation": "PRECIO PROMEDIO GALÁCTICO"
     },
     {
+      "source": "AVG SELL",
+      "translation": "VENTA PROMEDIO"
+    },
+    {
       "source": "AW",
       "translation": "AW"
     },
@@ -34957,6 +35085,10 @@
     {
       "source": "Alarm",
       "translation": "alarma"
+    },
+    {
+      "source": "Alexandrite",
+      "translation": "Alejandrita"
     },
     {
       "source": "Align with the squares and place the rigs.",
@@ -36331,6 +36463,10 @@
       "translation": "Batería, botiquín, alarma, alimentación..."
     },
     {
+      "source": "Bauxite",
+      "translation": "Bauxita"
+    },
+    {
       "source": "Beacon",
       "translation": "baliza"
     },
@@ -36361,6 +36497,14 @@
     {
       "source": "Beluga Liner",
       "translation": "Revestimiento Beluga"
+    },
+    {
+      "source": "Benitoite",
+      "translation": "benitoita"
+    },
+    {
+      "source": "Bertrandite",
+      "translation": "bertrandita"
     },
     {
       "source": "Beta",
@@ -36969,6 +37113,10 @@
     {
       "source": "Broken obelisk",
       "translation": "Obelisco roto"
+    },
+    {
+      "source": "Bromellite",
+      "translation": "Bromelita"
     },
     {
       "source": "Browse Codex",
@@ -37927,6 +38075,10 @@
       "translation": "niño"
     },
     {
+      "source": "Chime sound",
+      "translation": "sonido de timbre"
+    },
+    {
       "source": "Chime volume",
       "translation": "Volumen del timbre"
     },
@@ -38649,6 +38801,10 @@
     {
       "source": "Colour '{0}' must contain three RGB or four ARGB values.",
       "translation": "El color '{0}' debe contener tres valores RGB o cuatro ARGB."
+    },
+    {
+      "source": "Coltan",
+      "translation": "coltán"
     },
     {
       "source": "Combat",
@@ -39901,6 +40057,10 @@
     {
       "source": "Criteria can include body type, atmosphere and composition, gravity, temperature, pressure, volcanism, materials, parent star, galactic region, nebula proximity, and Guardian proximity.",
       "translation": "Los criterios pueden incluir tipo de cuerpo, atmósfera y composición, gravedad, temperatura, presión, vulcanismo, materiales, estrella madre, región galáctica, proximidad a la nebulosa y proximidad al Guardián."
+    },
+    {
+      "source": "Crystal",
+      "translation": "Cristal"
     },
     {
       "source": "Crystals",
@@ -41319,8 +41479,8 @@
       "translation": "Cada rol crece o se reduce de forma independiente. Zero utiliza el tamaño de referencia del tema."
     },
     {
-      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
-      "translation": "Cada fila es un objetivo independiente. Un prospecto califica cuando al menos un mineral listado alcanza su mínimo. Una lista vacía anuncia cada mineral."
+      "source": "Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect.",
+      "translation": "Cada fila es un objetivo independiente. Cuando se enumeran los umbrales, las notificaciones de minería superpuestas, el timbre y el discurso ignoran los prospectos no esenciales a menos que al menos un mineral listado alcance su mínimo. Los asteroides centrales habilitados aún califican. Una lista vacía permite a todos los prospectos habilitados."
     },
     {
       "source": "Eagle",
@@ -43587,6 +43747,10 @@
       "translation": "GalaxyMap.AutoShow"
     },
     {
+      "source": "Gallite",
+      "translation": "galita"
+    },
+    {
       "source": "Game",
       "translation": "juego"
     },
@@ -43761,6 +43925,10 @@
     {
       "source": "Gradient wedges mark active obelisks: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
       "translation": "Las cuñas de degradado marcan obeliscos activos: el gris no está escaneado, el naranja está escaneado y el cian aún es necesario para Ram Tah."
+    },
+    {
+      "source": "Grandidierite",
+      "translation": "Grandidierita"
     },
     {
       "source": "Gravity",
@@ -44479,6 +44647,10 @@
       "translation": "Zona de conflicto de alta intensidad"
     },
     {
+      "source": "High-low",
+      "translation": "alto-bajo"
+    },
+    {
       "source": "HighGravityWarningLevel",
       "translation": "Nivel de advertencia de alta gravedad"
     },
@@ -44669,6 +44841,10 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.AutoShow"
+    },
+    {
+      "source": "Hydrogen Peroxide",
+      "translation": "Peróxido de hidrógeno"
     },
     {
       "source": "Hyperspace",
@@ -45263,6 +45439,10 @@
       "translation": "Índigo"
     },
     {
+      "source": "Indite",
+      "translation": "Endilgar"
+    },
+    {
       "source": "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
       "translation": "Las configuraciones de visibilidad individuales suprimen solo esa superposición. Alternar superposiciones oculta o restaura el grupo de superposiciones desconectado."
     },
@@ -45807,6 +45987,10 @@
       "translation": "PISTAS DE ATERRIZAJE BLOQUEADAS"
     },
     {
+      "source": "LASER",
+      "translation": "LÁSER"
+    },
+    {
       "source": "LAST DOCKED MARKET",
       "translation": "Último mercado atracado"
     },
@@ -45981,22 +46165,6 @@
     {
       "source": "Laser mining",
       "translation": "Minería láser"
-    },
-    {
-      "source": "Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite.",
-      "translation": "Láser: Bertrandita, Bauxita, Coltán, Gallita, Indita, Lepidolita, Rutilo. Núcleo: Alejandrita, Benitoita, Monacita, Musgravita, Serendibita."
-    },
-    {
-      "source": "Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite.",
-      "translation": "Láser: Diamantes de baja temperatura, bromelita, peróxido de hidrógeno, oxígeno líquido, hidróxido de litio, clatrato de metano, cristales de monohidrato de metanol, tritio, agua. Núcleo: Alejandrita, Grandidierita, Diamantes de baja temperatura, Ópalos vacíos, Bromelita."
-    },
-    {
-      "source": "Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Láser: Osmio, Bertrandita, Coltán, Gallita, Oro, Indita, Lepidolita, Praseodimio, Samario, Plata, Uraninita. Núcleo: Alejandrita, Benitoita, Monacita, Rodplumsita, Serendibita, Painita, Platino."
-    },
-    {
-      "source": "Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Láser: Osmio, Painita, Platino, Bertrandita, Oro, Indita, Paladio, Praseodimio, Samario, Plata. Núcleo: Monacita, Rodplumsita, Serendibita, Painita, Platino."
     },
     {
       "source": "Last approach {0}",
@@ -46199,6 +46367,10 @@
       "translation": "Leyenda"
     },
     {
+      "source": "Lepidolite",
+      "translation": "Lepidolita"
+    },
+    {
       "source": "Level with target",
       "translation": "Nivel con objetivo"
     },
@@ -46255,8 +46427,16 @@
       "translation": "Linux: la compatibilidad con paquetes OpenVR no está disponible. Reinstale SrvSurvey o verifique que el paquete coincida con la arquitectura de su sistema."
     },
     {
+      "source": "Liquid Oxygen",
+      "translation": "Oxígeno líquido"
+    },
+    {
       "source": "Listening for community observations…",
       "translation": "Escuchando las observaciones de la comunidad..."
+    },
+    {
+      "source": "Lithium Hydroxide",
+      "translation": "hidróxido de litio"
     },
     {
       "source": "Live / destination",
@@ -46693,6 +46873,10 @@
     {
       "source": "Lost surface scans were not marked: {0}",
       "translation": "Los escaneos de superficie perdidos no fueron marcados: {0}"
+    },
+    {
+      "source": "Low Temperature Diamonds",
+      "translation": "Diamantes de baja temperatura"
     },
     {
       "source": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
@@ -47323,6 +47507,14 @@
       "translation": "Rieles"
     },
     {
+      "source": "Methane Clathrate",
+      "translation": "Clatrato de metano"
+    },
+    {
+      "source": "Methanol Monohydrate Crystals",
+      "translation": "Cristales de monohidrato de metanol"
+    },
+    {
       "source": "Microsoft Store profile ({0} files)",
       "translation": "Perfil de Microsoft Store ({0} archivos)"
     },
@@ -47403,8 +47595,8 @@
       "translation": "La cantidad y densidad del mineral describen cada depósito y aceptan l, m o h como abreviatura de bajo, medio o alto. Los nombres de los depósitos deben coincidir con un producto en Actividades > Minería a cielo abierto > Lista de puntos críticos; Los comandos rechazados explican el problema en Notificaciones de estado."
     },
     {
-      "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
-      "translation": "La disponibilidad de minerales sigue la composición del anillo. Los precios varían; Verifique las observaciones actuales del mercado antes de vender."
+      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
+      "translation": "La disponibilidad de minerales sigue la composición del anillo. Los precios de venta promedio son valores de referencia y los precios de mercado varían, así que verifique las observaciones actuales antes de vender."
     },
     {
       "source": "Mineral thresholds",
@@ -47809,6 +48001,10 @@
     {
       "source": "Multiply",
       "translation": "multiplicar"
+    },
+    {
+      "source": "Musgravite",
+      "translation": "musgravita"
     },
     {
       "source": "Music",
@@ -50403,6 +50599,10 @@
       "translation": "Pagado"
     },
     {
+      "source": "Painite",
+      "translation": "Painita"
+    },
+    {
       "source": "Paint job",
       "translation": "Trabajo de pintura"
     },
@@ -50417,6 +50617,10 @@
     {
       "source": "Paleas",
       "translation": "paleas"
+    },
+    {
+      "source": "Palladium",
+      "translation": "Paladio"
     },
     {
       "source": "Panel / top",
@@ -50561,6 +50765,10 @@
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
       "translation": "Juega normalmente; ingresar al FSS, acercarse a un cuerpo, aterrizar, abrir el mapa de la galaxia o acoplarse puede activar la superposición correspondiente."
+    },
+    {
+      "source": "Played the {0} chime at {1}% volume.",
+      "translation": "Tocó el timbre {0} al % de volumen {1}."
     },
     {
       "source": "Player data is byte-verified, but legacy UI preferences could not be translated; the current Avalonia settings were left unchanged. {0}",
@@ -50891,6 +51099,10 @@
       "translation": "Pranav Antal"
     },
     {
+      "source": "Praseodymium",
+      "translation": "Praseodimio"
+    },
+    {
       "source": "Pre-download all available biology images",
       "translation": "Descarga previa de todas las imágenes de biología disponibles"
     },
@@ -51065,6 +51277,10 @@
     {
       "source": "Press the shortcut again to restore passive click-through behavior.",
       "translation": "Presione el acceso directo nuevamente para restaurar el comportamiento de clic pasivo."
+    },
+    {
+      "source": "Preview chime",
+      "translation": "Campanilla de vista previa"
     },
     {
       "source": "Preview state index must be from 0 to {0}.",
@@ -53507,6 +53723,10 @@
       "translation": "Lista de puntos de acceso de superficie de Rhino"
     },
     {
+      "source": "Rhodplumsite",
+      "translation": "rodplumsita"
+    },
+    {
       "source": "Rig 1",
       "translation": "Plataforma 1"
     },
@@ -53821,6 +54041,10 @@
     {
       "source": "RuntimeProfileId",
       "translation": "ID de perfil de tiempo de ejecución"
+    },
+    {
+      "source": "Rutile",
+      "translation": "Rutilo"
     },
     {
       "source": "R−",
@@ -54257,6 +54481,10 @@
     {
       "source": "Salvage operation",
       "translation": "Operación de salvamento"
+    },
+    {
+      "source": "Samarium",
+      "translation": "Samario"
     },
     {
       "source": "Sample 1 of 3 recorded",
@@ -55287,6 +55515,10 @@
       "translation": "Separador"
     },
     {
+      "source": "Serendibite",
+      "translation": "serendibita"
+    },
+    {
       "source": "Service terms",
       "translation": "Términos de servicio"
     },
@@ -56137,6 +56369,10 @@
     {
       "source": "Signed up · no contribution recorded",
       "translation": "Registrado · no se registra ninguna contribución"
+    },
+    {
+      "source": "Silver",
+      "translation": "Plata"
     },
     {
       "source": "Silver Legal Group",
@@ -60727,6 +60963,10 @@
       "translation": "Dos columnas de vehículos se encuentran encima de los galones de la plataforma, con capacidad de carga debajo de ellas."
     },
     {
+      "source": "Two-tone",
+      "translation": "bicolor"
+    },
+    {
       "source": "Type",
       "translation": "Tipo"
     },
@@ -61269,6 +61509,10 @@
     {
       "source": "Upper floor",
       "translation": "Planta superior"
+    },
+    {
+      "source": "Uraninite",
+      "translation": "Uraninita"
     },
     {
       "source": "Urn",
@@ -61849,6 +62093,10 @@
     {
       "source": "Void Amethyst",
       "translation": "Amatista vacía"
+    },
+    {
+      "source": "Void Opals",
+      "translation": "Ópalos vacíos"
     },
     {
       "source": "VoxStellar",
@@ -67905,6 +68153,10 @@
       "translation": "PRIX GALACTIQUE MOYEN"
     },
     {
+      "source": "AVG SELL",
+      "translation": "VENTE MOYENNE"
+    },
+    {
       "source": "AW",
       "translation": "AW"
     },
@@ -68275,6 +68527,10 @@
     {
       "source": "Alarm",
       "translation": "Alarme"
+    },
+    {
+      "source": "Alexandrite",
+      "translation": "Alexandrite"
     },
     {
       "source": "Align with the squares and place the rigs.",
@@ -69649,6 +69905,10 @@
       "translation": "Batterie, Medkit, Alarme, Alimentation..."
     },
     {
+      "source": "Bauxite",
+      "translation": "Bauxite"
+    },
+    {
       "source": "Beacon",
       "translation": "Balise"
     },
@@ -69679,6 +69939,14 @@
     {
       "source": "Beluga Liner",
       "translation": "Doublure Béluga"
+    },
+    {
+      "source": "Benitoite",
+      "translation": "Benitoïte"
+    },
+    {
+      "source": "Bertrandite",
+      "translation": "Bertrandite"
     },
     {
       "source": "Beta",
@@ -70287,6 +70555,10 @@
     {
       "source": "Broken obelisk",
       "translation": "Obélisque brisé"
+    },
+    {
+      "source": "Bromellite",
+      "translation": "Bromellite"
     },
     {
       "source": "Browse Codex",
@@ -71245,6 +71517,10 @@
       "translation": "enfant"
     },
     {
+      "source": "Chime sound",
+      "translation": "Son du carillon"
+    },
+    {
       "source": "Chime volume",
       "translation": "Volume du carillon"
     },
@@ -71967,6 +72243,10 @@
     {
       "source": "Colour '{0}' must contain three RGB or four ARGB values.",
       "translation": "La couleur '{0}' doit contenir trois valeurs RVB ou quatre valeurs ARVB."
+    },
+    {
+      "source": "Coltan",
+      "translation": "Coltan"
     },
     {
       "source": "Combat",
@@ -73219,6 +73499,10 @@
     {
       "source": "Criteria can include body type, atmosphere and composition, gravity, temperature, pressure, volcanism, materials, parent star, galactic region, nebula proximity, and Guardian proximity.",
       "translation": "Les critères peuvent inclure le type de corps, l'atmosphère et la composition, la gravité, la température, la pression, le volcanisme, les matériaux, l'étoile mère, la région galactique, la proximité de la nébuleuse et la proximité du Gardien."
+    },
+    {
+      "source": "Crystal",
+      "translation": "Cristal"
     },
     {
       "source": "Crystals",
@@ -74637,8 +74921,8 @@
       "translation": "Chaque rôle grandit ou diminue indépendamment. Zero utilise la taille de base du thème."
     },
     {
-      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
-      "translation": "Chaque ligne est une cible indépendante. Un prospect est admissible lorsqu’au moins un minéral répertorié atteint son minimum. Une liste vide annonce chaque minéral."
+      "source": "Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect.",
+      "translation": "Chaque ligne est une cible indépendante. Lorsque des seuils sont répertoriés, la superposition, le carillon et la parole des notifications minières ignorent les prospects non essentiels à moins qu'au moins un minéral répertorié n'atteigne son minimum. Les astéroïdes principaux activés sont toujours admissibles. Une liste vide autorise tous les prospects activés."
     },
     {
       "source": "Eagle",
@@ -76905,6 +77189,10 @@
       "translation": "GalaxyMap.AutoShow"
     },
     {
+      "source": "Gallite",
+      "translation": "Gallite"
+    },
+    {
       "source": "Game",
       "translation": "Jeu"
     },
@@ -77079,6 +77367,10 @@
     {
       "source": "Gradient wedges mark active obelisks: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
       "translation": "Les coins de dégradé marquent les obélisques actifs : le gris n'est pas numérisé, l'orange est numérisé et le cyan est toujours nécessaire pour Ram Tah."
+    },
+    {
+      "source": "Grandidierite",
+      "translation": "Grandidiérite"
     },
     {
       "source": "Gravity",
@@ -77797,6 +78089,10 @@
       "translation": "Zone de conflit de haute intensité"
     },
     {
+      "source": "High-low",
+      "translation": "Haut-bas"
+    },
+    {
       "source": "HighGravityWarningLevel",
       "translation": "Niveau d'avertissement de gravité élevée"
     },
@@ -77987,6 +78283,10 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.AutoShow"
+    },
+    {
+      "source": "Hydrogen Peroxide",
+      "translation": "Peroxyde d'hydrogène"
     },
     {
       "source": "Hyperspace",
@@ -78581,6 +78881,10 @@
       "translation": "Indigo"
     },
     {
+      "source": "Indite",
+      "translation": "Composer"
+    },
+    {
       "source": "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
       "translation": "Les paramètres de visibilité individuels suppriment uniquement cette superposition. Basculer les superpositions masque ou restaure le groupe de superpositions détaché."
     },
@@ -79125,6 +79429,10 @@
       "translation": "PISTES D'ATTERRISSAGE VERROUILLÉES"
     },
     {
+      "source": "LASER",
+      "translation": "LASER"
+    },
+    {
       "source": "LAST DOCKED MARKET",
       "translation": "Dernier marché à quai"
     },
@@ -79299,22 +79607,6 @@
     {
       "source": "Laser mining",
       "translation": "Exploitation minière au laser"
-    },
-    {
-      "source": "Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite.",
-      "translation": "Laser : Bertrandite, Bauxite, Coltan, Gallite, Indite, Lépidolite, Rutile. Noyau : Alexandrite, Benitoite, Monazite, Musgravite, Serendibite."
-    },
-    {
-      "source": "Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite.",
-      "translation": "Laser : diamants à basse température, bromellite, peroxyde d'hydrogène, oxygène liquide, hydroxyde de lithium, clathrate de méthane, cristaux de monohydrate de méthanol, tritium, eau. Noyau : Alexandrite, Grandidiérite, Diamants à basse température, Opales vides, Bromellite."
-    },
-    {
-      "source": "Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Laser : Osmium, Bertrandite, Coltan, Gallite, Or, Indite, Lépidolite, Praséodyme, Samarium, Argent, Uraninite. Noyau : Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platine."
-    },
-    {
-      "source": "Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Laser : Osmium, Painite, Platine, Bertrandite, Or, Indite, Palladium, Praséodyme, Samarium, Argent. Noyau : Monazite, Rhodplumsite, Serendibite, Painite, Platine."
     },
     {
       "source": "Last approach {0}",
@@ -79517,6 +79809,10 @@
       "translation": "Légende"
     },
     {
+      "source": "Lepidolite",
+      "translation": "Lépidolite"
+    },
+    {
       "source": "Level with target",
       "translation": "Niveau avec la cible"
     },
@@ -79573,8 +79869,16 @@
       "translation": "Linux : la prise en charge packagée OpenVR n'est pas disponible. Réinstallez SrvSurvey ou vérifiez que le package correspond à l'architecture de votre système."
     },
     {
+      "source": "Liquid Oxygen",
+      "translation": "Oxygène liquide"
+    },
+    {
       "source": "Listening for community observations…",
       "translation": "À l’écoute des observations de la communauté…"
+    },
+    {
+      "source": "Lithium Hydroxide",
+      "translation": "Hydroxyde de lithium"
     },
     {
       "source": "Live / destination",
@@ -80011,6 +80315,10 @@
     {
       "source": "Lost surface scans were not marked: {0}",
       "translation": "Les scans de surface perdus n'étaient pas marqués : {0}"
+    },
+    {
+      "source": "Low Temperature Diamonds",
+      "translation": "Diamants basse température"
     },
     {
       "source": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
@@ -80641,6 +80949,14 @@
       "translation": "Métaux"
     },
     {
+      "source": "Methane Clathrate",
+      "translation": "Clathrate de méthane"
+    },
+    {
+      "source": "Methanol Monohydrate Crystals",
+      "translation": "Cristaux de monohydrate de méthanol"
+    },
+    {
       "source": "Microsoft Store profile ({0} files)",
       "translation": "Profil Microsoft Store (fichiers {0})"
     },
@@ -80721,8 +81037,8 @@
       "translation": "La quantité et la densité minérales décrivent chaque gisement et acceptent l, m ou h comme raccourci pour faible, moyen ou élevé. Les noms de gisements doivent correspondre à une matière première dans Activités > Surface Mining > Hotspot List ; les commandes rejetées expliquent le problème dans les notifications d'état."
     },
     {
-      "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
-      "translation": "La disponibilité des minéraux suit la composition des anneaux. Les prix varient ; vérifiez les observations actuelles du marché avant de vendre."
+      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
+      "translation": "La disponibilité des minéraux suit la composition des anneaux. Les prix de vente moyens sont des valeurs de référence et les prix du marché varient, alors vérifiez les observations actuelles avant de vendre."
     },
     {
       "source": "Mineral thresholds",
@@ -81127,6 +81443,10 @@
     {
       "source": "Multiply",
       "translation": "Multiplier"
+    },
+    {
+      "source": "Musgravite",
+      "translation": "Musgravite"
     },
     {
       "source": "Music",
@@ -83721,6 +84041,10 @@
       "translation": "Payé"
     },
     {
+      "source": "Painite",
+      "translation": "Painite"
+    },
+    {
       "source": "Paint job",
       "translation": "Travaux de peinture"
     },
@@ -83735,6 +84059,10 @@
     {
       "source": "Paleas",
       "translation": "Paléas"
+    },
+    {
+      "source": "Palladium",
+      "translation": "Palladium"
     },
     {
       "source": "Panel / top",
@@ -83879,6 +84207,10 @@
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
       "translation": "Jouez normalement ; entrer dans le FSS, s'approcher d'un corps, atterrir, ouvrir la Galaxy Map ou s'amarrer peut activer la superposition correspondante."
+    },
+    {
+      "source": "Played the {0} chime at {1}% volume.",
+      "translation": "J'ai joué le carillon {0} au volume {1}%."
     },
     {
       "source": "Player data is byte-verified, but legacy UI preferences could not be translated; the current Avalonia settings were left unchanged. {0}",
@@ -84209,6 +84541,10 @@
       "translation": "Pranav Antal"
     },
     {
+      "source": "Praseodymium",
+      "translation": "Praséodyme"
+    },
+    {
       "source": "Pre-download all available biology images",
       "translation": "Pré-télécharger toutes les images de biologie disponibles"
     },
@@ -84383,6 +84719,10 @@
     {
       "source": "Press the shortcut again to restore passive click-through behavior.",
       "translation": "Appuyez à nouveau sur le raccourci pour restaurer le comportement de clic passif."
+    },
+    {
+      "source": "Preview chime",
+      "translation": "Aperçu du carillon"
     },
     {
       "source": "Preview state index must be from 0 to {0}.",
@@ -86825,6 +87165,10 @@
       "translation": "Liste des points chauds de la surface de Rhino"
     },
     {
+      "source": "Rhodplumsite",
+      "translation": "Rhodplumsite"
+    },
+    {
       "source": "Rig 1",
       "translation": "Plate-forme 1"
     },
@@ -87139,6 +87483,10 @@
     {
       "source": "RuntimeProfileId",
       "translation": "ID de profil d'exécution"
+    },
+    {
+      "source": "Rutile",
+      "translation": "Rutile"
     },
     {
       "source": "R−",
@@ -87575,6 +87923,10 @@
     {
       "source": "Salvage operation",
       "translation": "Opération de sauvetage"
+    },
+    {
+      "source": "Samarium",
+      "translation": "Samarium"
     },
     {
       "source": "Sample 1 of 3 recorded",
@@ -88605,6 +88957,10 @@
       "translation": "Séparateur"
     },
     {
+      "source": "Serendibite",
+      "translation": "Sérendibite"
+    },
+    {
       "source": "Service terms",
       "translation": "Conditions de service"
     },
@@ -89455,6 +89811,10 @@
     {
       "source": "Signed up · no contribution recorded",
       "translation": "Inscrit · aucune contribution enregistrée"
+    },
+    {
+      "source": "Silver",
+      "translation": "Argent"
     },
     {
       "source": "Silver Legal Group",
@@ -94045,6 +94405,10 @@
       "translation": "Deux colonnes de véhicules se trouvent au-dessus des chevrons de la plate-forme, avec une capacité de chargement en dessous."
     },
     {
+      "source": "Two-tone",
+      "translation": "Bicolore"
+    },
+    {
       "source": "Type",
       "translation": "Tapez"
     },
@@ -94587,6 +94951,10 @@
     {
       "source": "Upper floor",
       "translation": "Étage supérieur"
+    },
+    {
+      "source": "Uraninite",
+      "translation": "Uraninite"
     },
     {
       "source": "Urn",
@@ -95167,6 +95535,10 @@
     {
       "source": "Void Amethyst",
       "translation": "Améthyste du Vide"
+    },
+    {
+      "source": "Void Opals",
+      "translation": "Opales du Vide"
     },
     {
       "source": "VoxStellar",
@@ -101223,6 +101595,10 @@
       "translation": "PREÇO GALÁCTICO AVG"
     },
     {
+      "source": "AVG SELL",
+      "translation": "VENDA MÉDIA"
+    },
+    {
       "source": "AW",
       "translation": "AW"
     },
@@ -101593,6 +101969,10 @@
     {
       "source": "Alarm",
       "translation": "Alarme"
+    },
+    {
+      "source": "Alexandrite",
+      "translation": "Alexandrite"
     },
     {
       "source": "Align with the squares and place the rigs.",
@@ -102967,6 +103347,10 @@
       "translation": "Bateria, Medkit, Alarme, Energia..."
     },
     {
+      "source": "Bauxite",
+      "translation": "Bauxita"
+    },
+    {
       "source": "Beacon",
       "translation": "Farol"
     },
@@ -102997,6 +103381,14 @@
     {
       "source": "Beluga Liner",
       "translation": "Forro Beluga"
+    },
+    {
+      "source": "Benitoite",
+      "translation": "Benitoita"
+    },
+    {
+      "source": "Bertrandite",
+      "translation": "Bertrandite"
     },
     {
       "source": "Beta",
@@ -103605,6 +103997,10 @@
     {
       "source": "Broken obelisk",
       "translation": "Obelisco quebrado"
+    },
+    {
+      "source": "Bromellite",
+      "translation": "Bromelita"
     },
     {
       "source": "Browse Codex",
@@ -104563,6 +104959,10 @@
       "translation": "criança"
     },
     {
+      "source": "Chime sound",
+      "translation": "Som de campainha"
+    },
+    {
       "source": "Chime volume",
       "translation": "Volume da campainha"
     },
@@ -105285,6 +105685,10 @@
     {
       "source": "Colour '{0}' must contain three RGB or four ARGB values.",
       "translation": "A cor '{0}' deve conter três valores RGB ou quatro valores ARGB."
+    },
+    {
+      "source": "Coltan",
+      "translation": "Coltán"
     },
     {
       "source": "Combat",
@@ -106537,6 +106941,10 @@
     {
       "source": "Criteria can include body type, atmosphere and composition, gravity, temperature, pressure, volcanism, materials, parent star, galactic region, nebula proximity, and Guardian proximity.",
       "translation": "Os critérios podem incluir tipo de corpo, atmosfera e composição, gravidade, temperatura, pressão, vulcanismo, materiais, estrela-mãe, região galáctica, proximidade da nebulosa e proximidade do Guardião."
+    },
+    {
+      "source": "Crystal",
+      "translation": "Cristal"
     },
     {
       "source": "Crystals",
@@ -107955,8 +108363,8 @@
       "translation": "Cada função cresce ou diminui de forma independente. Zero usa o tamanho da linha de base do tema."
     },
     {
-      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
-      "translation": "Cada linha é um destino independente. Um prospecto se qualifica quando pelo menos um mineral listado atinge seu mínimo. Uma lista vazia anuncia cada mineral."
+      "source": "Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect.",
+      "translation": "Cada linha é um destino independente. Quando os limites são listados, a sobreposição, o sinal sonoro e a fala das Notificações de Mineração ignoram os prospectos não essenciais, a menos que pelo menos um mineral listado atinja seu mínimo. Os asteróides centrais habilitados ainda se qualificam. Uma lista vazia permite todos os clientes potenciais habilitados."
     },
     {
       "source": "Eagle",
@@ -110223,6 +110631,10 @@
       "translation": "GalaxyMap.AutoShow"
     },
     {
+      "source": "Gallite",
+      "translation": "Galita"
+    },
+    {
       "source": "Game",
       "translation": "Jogo"
     },
@@ -110397,6 +110809,10 @@
     {
       "source": "Gradient wedges mark active obelisks: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
       "translation": "As fatias de gradiente marcam os obeliscos ativos: o cinza não é digitalizado, o laranja é digitalizado e o ciano ainda é necessário para Ram Tah."
+    },
+    {
+      "source": "Grandidierite",
+      "translation": "Grandidierita"
     },
     {
       "source": "Gravity",
@@ -111115,6 +111531,10 @@
       "translation": "Zona de conflito de alta intensidade"
     },
     {
+      "source": "High-low",
+      "translation": "Alto-baixo"
+    },
+    {
       "source": "HighGravityWarningLevel",
       "translation": "Nível de aviso de alta gravidade"
     },
@@ -111305,6 +111725,10 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.AutoShow"
+    },
+    {
+      "source": "Hydrogen Peroxide",
+      "translation": "Peróxido de Hidrogênio"
     },
     {
       "source": "Hyperspace",
@@ -111899,6 +112323,10 @@
       "translation": "Índigo"
     },
     {
+      "source": "Indite",
+      "translation": "Indito"
+    },
+    {
       "source": "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
       "translation": "As configurações de visibilidade individuais suprimem apenas essa sobreposição. Alternar sobreposições oculta ou restaura o grupo de sobreposições desanexado."
     },
@@ -112443,6 +112871,10 @@
       "translation": "PASTAS DE ATERRAGEM BLOQUEADAS"
     },
     {
+      "source": "LASER",
+      "translation": "LASER"
+    },
+    {
       "source": "LAST DOCKED MARKET",
       "translation": "Último mercado ancorado"
     },
@@ -112617,22 +113049,6 @@
     {
       "source": "Laser mining",
       "translation": "Mineração a laser"
-    },
-    {
-      "source": "Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite.",
-      "translation": "Laser: Bertrandita, Bauxita, Coltan, Galita, Indita, Lepidolita, Rutilo. Núcleo: Alexandrita, Benitoita, Monazita, Musgravita, Serendibita."
-    },
-    {
-      "source": "Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite.",
-      "translation": "Laser: Diamantes de Baixa Temperatura, Bromelita, Peróxido de Hidrogênio, Oxigênio Líquido, Hidróxido de Lítio, Clatrato de Metano, Cristais de Monohidrato de Metanol, Trítio, Água. Núcleo: Alexandrita, Grandidierita, Diamantes de Baixa Temperatura, Opalas Void, Bromelita."
-    },
-    {
-      "source": "Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Laser: Ósmio, Bertrandita, Coltan, Galita, Ouro, Indita, Lepidolita, Praseodímio, Samário, Prata, Uraninita. Núcleo: Alexandrita, Benitoita, Monazita, Rodplumsita, Serendibita, Painita, Platina."
-    },
-    {
-      "source": "Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Laser: Ósmio, Painita, Platina, Bertrandita, Ouro, Indita, Paládio, Praseodímio, Samário, Prata. Núcleo: Monazita, Rodplumsita, Serendibita, Painita, Platina."
     },
     {
       "source": "Last approach {0}",
@@ -112835,6 +113251,10 @@
       "translation": "Lenda"
     },
     {
+      "source": "Lepidolite",
+      "translation": "Lepidolita"
+    },
+    {
       "source": "Level with target",
       "translation": "Nível com alvo"
     },
@@ -112891,8 +113311,16 @@
       "translation": "Linux: o suporte empacotado OpenVR não está disponível. Reinstale SrvSurvey ou verifique se o pacote corresponde à arquitetura do seu sistema."
     },
     {
+      "source": "Liquid Oxygen",
+      "translation": "Oxigênio Líquido"
+    },
+    {
       "source": "Listening for community observations…",
       "translation": "Ouvindo as observações da comunidade…"
+    },
+    {
+      "source": "Lithium Hydroxide",
+      "translation": "Hidróxido de Lítio"
     },
     {
       "source": "Live / destination",
@@ -113329,6 +113757,10 @@
     {
       "source": "Lost surface scans were not marked: {0}",
       "translation": "As varreduras de superfície perdida não foram marcadas: {0}"
+    },
+    {
+      "source": "Low Temperature Diamonds",
+      "translation": "Diamantes de baixa temperatura"
     },
     {
       "source": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
@@ -113959,6 +114391,14 @@
       "translation": "Metais"
     },
     {
+      "source": "Methane Clathrate",
+      "translation": "Clatrato de metano"
+    },
+    {
+      "source": "Methanol Monohydrate Crystals",
+      "translation": "Cristais de monohidrato de metanol"
+    },
+    {
       "source": "Microsoft Store profile ({0} files)",
       "translation": "Perfil da Microsoft Store ({0} arquivos)"
     },
@@ -114039,8 +114479,8 @@
       "translation": "A quantidade e densidade mineral descrevem cada depósito e aceitam l, m ou h como abreviatura para baixo, médio ou alto. Os nomes dos depósitos devem corresponder a uma mercadoria em Atividades > Mineração de Superfície > Lista de Pontos de Acesso; comandos rejeitados explicam o problema nas notificações de status."
     },
     {
-      "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
-      "translation": "A disponibilidade mineral segue a composição do anel. Os preços variam; verifique as observações atuais do mercado antes de vender."
+      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
+      "translation": "A disponibilidade mineral segue a composição do anel. Os preços médios de venda são valores de referência e os preços de mercado variam, portanto verifique as observações atuais antes de vender."
     },
     {
       "source": "Mineral thresholds",
@@ -114445,6 +114885,10 @@
     {
       "source": "Multiply",
       "translation": "Multiplicar"
+    },
+    {
+      "source": "Musgravite",
+      "translation": "Musgravita"
     },
     {
       "source": "Music",
@@ -117039,6 +117483,10 @@
       "translation": "Pago"
     },
     {
+      "source": "Painite",
+      "translation": "Painita"
+    },
+    {
       "source": "Paint job",
       "translation": "Trabalho de pintura"
     },
@@ -117053,6 +117501,10 @@
     {
       "source": "Paleas",
       "translation": "Paleas"
+    },
+    {
+      "source": "Palladium",
+      "translation": "Paládio"
     },
     {
       "source": "Panel / top",
@@ -117197,6 +117649,10 @@
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
       "translation": "Jogue normalmente; entrar no FSS, aproximar-se de um corpo, pousar, abrir o Mapa da Galáxia ou atracar pode ativar a sobreposição relevante."
+    },
+    {
+      "source": "Played the {0} chime at {1}% volume.",
+      "translation": "Tocou o sinal sonoro {0} no volume {1}%."
     },
     {
       "source": "Player data is byte-verified, but legacy UI preferences could not be translated; the current Avalonia settings were left unchanged. {0}",
@@ -117527,6 +117983,10 @@
       "translation": "Pranav Antal"
     },
     {
+      "source": "Praseodymium",
+      "translation": "Praseodímio"
+    },
+    {
       "source": "Pre-download all available biology images",
       "translation": "Faça o pré-download de todas as imagens de biologia disponíveis"
     },
@@ -117701,6 +118161,10 @@
     {
       "source": "Press the shortcut again to restore passive click-through behavior.",
       "translation": "Pressione o atalho novamente para restaurar o comportamento de clique passivo."
+    },
+    {
+      "source": "Preview chime",
+      "translation": "Pré-visualização do sinal sonoro"
     },
     {
       "source": "Preview state index must be from 0 to {0}.",
@@ -120143,6 +120607,10 @@
       "translation": "Lista de hotspots de superfície do rinoceronte"
     },
     {
+      "source": "Rhodplumsite",
+      "translation": "Rhodplumsita"
+    },
+    {
       "source": "Rig 1",
       "translation": "Plataforma 1"
     },
@@ -120457,6 +120925,10 @@
     {
       "source": "RuntimeProfileId",
       "translation": "ID do perfil de tempo de execução"
+    },
+    {
+      "source": "Rutile",
+      "translation": "Rutilo"
     },
     {
       "source": "R−",
@@ -120893,6 +121365,10 @@
     {
       "source": "Salvage operation",
       "translation": "Operação de salvamento"
+    },
+    {
+      "source": "Samarium",
+      "translation": "Samário"
     },
     {
       "source": "Sample 1 of 3 recorded",
@@ -121923,6 +122399,10 @@
       "translation": "Separador"
     },
     {
+      "source": "Serendibite",
+      "translation": "Serendibita"
+    },
+    {
       "source": "Service terms",
       "translation": "Termos de serviço"
     },
@@ -122773,6 +123253,10 @@
     {
       "source": "Signed up · no contribution recorded",
       "translation": "Inscrito · nenhuma contribuição registrada"
+    },
+    {
+      "source": "Silver",
+      "translation": "Prata"
     },
     {
       "source": "Silver Legal Group",
@@ -127363,6 +127847,10 @@
       "translation": "Duas colunas de veículos ficam acima das divisas da plataforma, com capacidade de carga abaixo delas."
     },
     {
+      "source": "Two-tone",
+      "translation": "Dois tons"
+    },
+    {
       "source": "Type",
       "translation": "Tipo"
     },
@@ -127905,6 +128393,10 @@
     {
       "source": "Upper floor",
       "translation": "Andar superior"
+    },
+    {
+      "source": "Uraninite",
+      "translation": "Uraninita"
     },
     {
       "source": "Urn",
@@ -128485,6 +128977,10 @@
     {
       "source": "Void Amethyst",
       "translation": "Ametista Vazia"
+    },
+    {
+      "source": "Void Opals",
+      "translation": "Opalas do Vazio"
     },
     {
       "source": "VoxStellar",
@@ -134541,6 +135037,10 @@
       "translation": "СРЕДНЯЯ ГАЛАКТИЧЕСКАЯ ЦЕНА"
     },
     {
+      "source": "AVG SELL",
+      "translation": "СРЕДНЯЯ ПРОДАЖА"
+    },
+    {
       "source": "AW",
       "translation": "АВ"
     },
@@ -134911,6 +135411,10 @@
     {
       "source": "Alarm",
       "translation": "Сигнализация"
+    },
+    {
+      "source": "Alexandrite",
+      "translation": "Александрит"
     },
     {
       "source": "Align with the squares and place the rigs.",
@@ -136285,6 +136789,10 @@
       "translation": "Батарея, аптечка, сигнализация, питание..."
     },
     {
+      "source": "Bauxite",
+      "translation": "Боксит"
+    },
+    {
       "source": "Beacon",
       "translation": "Маяк"
     },
@@ -136315,6 +136823,14 @@
     {
       "source": "Beluga Liner",
       "translation": "Белуга Лайнер"
+    },
+    {
+      "source": "Benitoite",
+      "translation": "Бенитоит"
+    },
+    {
+      "source": "Bertrandite",
+      "translation": "Бертрандит"
     },
     {
       "source": "Beta",
@@ -136923,6 +137439,10 @@
     {
       "source": "Broken obelisk",
       "translation": "Сломанный обелиск"
+    },
+    {
+      "source": "Bromellite",
+      "translation": "Бромеллит"
     },
     {
       "source": "Browse Codex",
@@ -137881,6 +138401,10 @@
       "translation": "ребенок"
     },
     {
+      "source": "Chime sound",
+      "translation": "Звук колокольчика"
+    },
+    {
       "source": "Chime volume",
       "translation": "Громкость звонка"
     },
@@ -138603,6 +139127,10 @@
     {
       "source": "Colour '{0}' must contain three RGB or four ARGB values.",
       "translation": "Цвет '{0}' должен содержать три значения RGB или четыре значения ARGB."
+    },
+    {
+      "source": "Coltan",
+      "translation": "Колтан"
     },
     {
       "source": "Combat",
@@ -139855,6 +140383,10 @@
     {
       "source": "Criteria can include body type, atmosphere and composition, gravity, temperature, pressure, volcanism, materials, parent star, galactic region, nebula proximity, and Guardian proximity.",
       "translation": "Критерии могут включать тип тела, атмосферу и состав, гравитацию, температуру, давление, вулканизм, материалы, родительскую звезду, галактический регион, близость туманности и близость Стража."
+    },
+    {
+      "source": "Crystal",
+      "translation": "Кристалл"
     },
     {
       "source": "Crystals",
@@ -141273,8 +141805,8 @@
       "translation": "Каждая роль увеличивается или уменьшается независимо. Zero использует базовый размер темы."
     },
     {
-      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
-      "translation": "Каждая строка является независимой целью. Перспективный объект считается квалифицируемым, когда хотя бы один внесенный в список минерал достигает минимума. Пустой список объявляет каждый минерал."
+      "source": "Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect.",
+      "translation": "Каждая строка является независимой целью. Когда указаны пороговые значения, наложение, звуковой сигнал и голосовая связь «Уведомления о добыче» игнорируют непрофильные месторождения, если хотя бы один из перечисленных полезных ископаемых не достигнет своего минимума. Астероиды с активированным ядром по-прежнему соответствуют критериям. Пустой список позволяет использовать каждую включенную перспективу."
     },
     {
       "source": "Eagle",
@@ -143541,6 +144073,10 @@
       "translation": "GalaxyMap.Автошоу"
     },
     {
+      "source": "Gallite",
+      "translation": "Галлит"
+    },
+    {
       "source": "Game",
       "translation": "Игра"
     },
@@ -143715,6 +144251,10 @@
     {
       "source": "Gradient wedges mark active obelisks: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
       "translation": "Градиентные клинья отмечают активные обелиски: серый — несканируемый, оранжевый — сканируемый, а голубой по-прежнему необходим для Рам Таха."
+    },
+    {
+      "source": "Grandidierite",
+      "translation": "Грандидьерит"
     },
     {
       "source": "Gravity",
@@ -144433,6 +144973,10 @@
       "translation": "Зона конфликта высокой интенсивности"
     },
     {
+      "source": "High-low",
+      "translation": "Высокий-низкий"
+    },
+    {
       "source": "HighGravityWarningLevel",
       "translation": "Высокая гравитацияПредупреждениеУровень"
     },
@@ -144623,6 +145167,10 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "HumanSite.Автошоу"
+    },
+    {
+      "source": "Hydrogen Peroxide",
+      "translation": "Перекись водорода"
     },
     {
       "source": "Hyperspace",
@@ -145217,6 +145765,10 @@
       "translation": "Индиго"
     },
     {
+      "source": "Indite",
+      "translation": "Индит"
+    },
+    {
       "source": "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
       "translation": "Отдельные настройки видимости подавляют только это наложение. Переключить наложения скрывает или восстанавливает отсоединенную группу наложений."
     },
@@ -145761,6 +146313,10 @@
       "translation": "ПОСАДОЧНЫЕ ПАРКОВКИ ЗАБЛОКИРОВАНЫ"
     },
     {
+      "source": "LASER",
+      "translation": "ЛАЗЕР"
+    },
+    {
       "source": "LAST DOCKED MARKET",
       "translation": "Последний пристыкованный рынок"
     },
@@ -145935,22 +146491,6 @@
     {
       "source": "Laser mining",
       "translation": "Лазерная добыча"
-    },
-    {
-      "source": "Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite.",
-      "translation": "Лазер: Бертрандит, Боксит, Колтан, Галлит, Индит, Лепидолит, Рутил. Ядро: Александрит, Бенитоит, Монацит, Мусгравит, Серендибит."
-    },
-    {
-      "source": "Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite.",
-      "translation": "Лазер: низкотемпературные алмазы, бромеллит, перекись водорода, жидкий кислород, гидроксид лития, клатрат метана, кристаллы моногидрата метанола, тритий, вода. Ядро: Александрит, Грандидьерит, низкотемпературные алмазы, пустотные опалы, бромеллит."
-    },
-    {
-      "source": "Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Лазер: Осмий, Бертрандит, Колтан, Галлит, Золото, Индит, Лепидолит, Празеодим, Самарий, Серебро, Уранинит. Ядро: Александрит, Бенитоит, Монацит, Родплюмсит, Серендибит, Пейнит, Платина."
-    },
-    {
-      "source": "Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "Лазер: Осмий, Пейнит, Платина, Бертрандит, Золото, Индит, Палладий, Празеодим, Самарий, Серебро. Ядро: Монацит, Родплюмсит, Серендибит, Пейнит, Платина."
     },
     {
       "source": "Last approach {0}",
@@ -146153,6 +146693,10 @@
       "translation": "Легенда"
     },
     {
+      "source": "Lepidolite",
+      "translation": "Лепидолит"
+    },
+    {
       "source": "Level with target",
       "translation": "Уровень с целью"
     },
@@ -146209,8 +146753,16 @@
       "translation": "Linux: пакетная поддержка OpenVR недоступна. Переустановите SrvSurvey или убедитесь, что пакет соответствует архитектуре вашей системы."
     },
     {
+      "source": "Liquid Oxygen",
+      "translation": "Жидкий кислород"
+    },
+    {
       "source": "Listening for community observations…",
       "translation": "Прислушиваемся к замечаниям сообщества…"
+    },
+    {
+      "source": "Lithium Hydroxide",
+      "translation": "гидроксид лития"
     },
     {
       "source": "Live / destination",
@@ -146647,6 +147199,10 @@
     {
       "source": "Lost surface scans were not marked: {0}",
       "translation": "Потерянные сканы поверхности не были отмечены: {0}"
+    },
+    {
+      "source": "Low Temperature Diamonds",
+      "translation": "Низкотемпературные алмазы"
     },
     {
       "source": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
@@ -147277,6 +147833,14 @@
       "translation": "Металлы"
     },
     {
+      "source": "Methane Clathrate",
+      "translation": "Клатрат метана"
+    },
+    {
+      "source": "Methanol Monohydrate Crystals",
+      "translation": "Кристаллы моногидрата метанола"
+    },
+    {
       "source": "Microsoft Store profile ({0} files)",
       "translation": "Профиль Microsoft Store (файлы {0})"
     },
@@ -147357,8 +147921,8 @@
       "translation": "Количество и плотность минералов описывают каждое месторождение и принимают l, m или h как сокращение для низких, средних или высоких значений. Названия месторождений должны соответствовать товару в разделе «Действия» > «Поверхностная добыча» > «Список горячих точек»; отклоненные команды объясняют проблему в уведомлениях о состоянии."
     },
     {
-      "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
-      "translation": "Наличие минералов зависит от кольцевого состава. Цены варьируются; перед продажей проверьте текущие рыночные наблюдения."
+      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
+      "translation": "Доступность минералов зависит от кольцевого состава. Средние цены продажи являются справочными значениями, а рыночные цены варьируются, поэтому перед продажей проверяйте текущие наблюдения."
     },
     {
       "source": "Mineral thresholds",
@@ -147763,6 +148327,10 @@
     {
       "source": "Multiply",
       "translation": "Умножить"
+    },
+    {
+      "source": "Musgravite",
+      "translation": "Мусгравит"
     },
     {
       "source": "Music",
@@ -150357,6 +150925,10 @@
       "translation": "Платный"
     },
     {
+      "source": "Painite",
+      "translation": "Пейнит"
+    },
+    {
       "source": "Paint job",
       "translation": "Покраска"
     },
@@ -150371,6 +150943,10 @@
     {
       "source": "Paleas",
       "translation": "Палеас"
+    },
+    {
+      "source": "Palladium",
+      "translation": "Палладий"
     },
     {
       "source": "Panel / top",
@@ -150515,6 +151091,10 @@
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
       "translation": "Играйте нормально; вход в FSS, приближение к телу, приземление, открытие карты Галактики или стыковка могут активировать соответствующее наложение."
+    },
+    {
+      "source": "Played the {0} chime at {1}% volume.",
+      "translation": "Проиграл сигнал {0} на громкости {1}%."
     },
     {
       "source": "Player data is byte-verified, but legacy UI preferences could not be translated; the current Avalonia settings were left unchanged. {0}",
@@ -150845,6 +151425,10 @@
       "translation": "Пранав Антал"
     },
     {
+      "source": "Praseodymium",
+      "translation": "Празеодим"
+    },
+    {
       "source": "Pre-download all available biology images",
       "translation": "Предварительно загрузите все доступные биологические изображения"
     },
@@ -151019,6 +151603,10 @@
     {
       "source": "Press the shortcut again to restore passive click-through behavior.",
       "translation": "Нажмите ярлык еще раз, чтобы восстановить поведение пассивного перехода по клику."
+    },
+    {
+      "source": "Preview chime",
+      "translation": "Предварительный звонок"
     },
     {
       "source": "Preview state index must be from 0 to {0}.",
@@ -153461,6 +154049,10 @@
       "translation": "Список горячих точек на поверхности носорога"
     },
     {
+      "source": "Rhodplumsite",
+      "translation": "Родплюмсит"
+    },
+    {
       "source": "Rig 1",
       "translation": "Установка 1"
     },
@@ -153775,6 +154367,10 @@
     {
       "source": "RuntimeProfileId",
       "translation": "Идентификатор профиля выполнения"
+    },
+    {
+      "source": "Rutile",
+      "translation": "Рутил"
     },
     {
       "source": "R−",
@@ -154211,6 +154807,10 @@
     {
       "source": "Salvage operation",
       "translation": "Спасательная операция"
+    },
+    {
+      "source": "Samarium",
+      "translation": "Самарий"
     },
     {
       "source": "Sample 1 of 3 recorded",
@@ -155241,6 +155841,10 @@
       "translation": "Сепаратор"
     },
     {
+      "source": "Serendibite",
+      "translation": "Серендибит"
+    },
+    {
       "source": "Service terms",
       "translation": "Условия обслуживания"
     },
@@ -156091,6 +156695,10 @@
     {
       "source": "Signed up · no contribution recorded",
       "translation": "Зарегистрировано · вклад не зарегистрирован"
+    },
+    {
+      "source": "Silver",
+      "translation": "Серебро"
     },
     {
       "source": "Silver Legal Group",
@@ -160681,6 +161289,10 @@
       "translation": "Две колонны транспортных средств расположены над шевронами буровой установки, а под ними находится грузовой отсек."
     },
     {
+      "source": "Two-tone",
+      "translation": "Двухцветный"
+    },
+    {
       "source": "Type",
       "translation": "Тип"
     },
@@ -161223,6 +161835,10 @@
     {
       "source": "Upper floor",
       "translation": "Верхний этаж"
+    },
+    {
+      "source": "Uraninite",
+      "translation": "Уранинит"
     },
     {
       "source": "Urn",
@@ -161803,6 +162419,10 @@
     {
       "source": "Void Amethyst",
       "translation": "Пустотный аметист"
+    },
+    {
+      "source": "Void Opals",
+      "translation": "Пустотные опалы"
     },
     {
       "source": "VoxStellar",
@@ -167859,6 +168479,10 @@
       "translation": "银河平均价格"
     },
     {
+      "source": "AVG SELL",
+      "translation": "平均卖出"
+    },
+    {
       "source": "AW",
       "translation": "爱华"
     },
@@ -168229,6 +168853,10 @@
     {
       "source": "Alarm",
       "translation": "报警"
+    },
+    {
+      "source": "Alexandrite",
+      "translation": "紫翠玉"
     },
     {
       "source": "Align with the squares and place the rigs.",
@@ -169603,6 +170231,10 @@
       "translation": "电池、医疗包、警报、电源..."
     },
     {
+      "source": "Bauxite",
+      "translation": "铝土矿"
+    },
+    {
       "source": "Beacon",
       "translation": "灯塔"
     },
@@ -169633,6 +170265,14 @@
     {
       "source": "Beluga Liner",
       "translation": "白鲸班轮"
+    },
+    {
+      "source": "Benitoite",
+      "translation": "蓝锥矿"
+    },
+    {
+      "source": "Bertrandite",
+      "translation": "伯特兰石"
     },
     {
       "source": "Beta",
@@ -170241,6 +170881,10 @@
     {
       "source": "Broken obelisk",
       "translation": "破碎的方尖碑"
+    },
+    {
+      "source": "Bromellite",
+      "translation": "布氏锰矿"
     },
     {
       "source": "Browse Codex",
@@ -171199,6 +171843,10 @@
       "translation": "孩子"
     },
     {
+      "source": "Chime sound",
+      "translation": "钟声"
+    },
+    {
       "source": "Chime volume",
       "translation": "铃声音量"
     },
@@ -171921,6 +172569,10 @@
     {
       "source": "Colour '{0}' must contain three RGB or four ARGB values.",
       "translation": "颜色“{0}”必须包含三个 RGB 或四个 ARGB 值。"
+    },
+    {
+      "source": "Coltan",
+      "translation": "钶钽铁矿"
     },
     {
       "source": "Combat",
@@ -173173,6 +173825,10 @@
     {
       "source": "Criteria can include body type, atmosphere and composition, gravity, temperature, pressure, volcanism, materials, parent star, galactic region, nebula proximity, and Guardian proximity.",
       "translation": "标准可以包括物体类型、大气和成分、重力、温度、压力、火山活动、材料、母星、银河区域、星云接近度和守护者接近度。"
+    },
+    {
+      "source": "Crystal",
+      "translation": "水晶"
     },
     {
       "source": "Crystals",
@@ -174591,8 +175247,8 @@
       "translation": "每个角色独立地增长或缩小。零使用主题的基线大小。"
     },
     {
-      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
-      "translation": "每一行都是一个独立的目标。当至少一种列出的矿物达到最低值时，潜在客户就符合资格。一张空清单公布了每种矿物。"
+      "source": "Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect.",
+      "translation": "每一行都是一个独立的目标。列出阈值后，采矿通知叠加、提示音和语音会忽略非核心前景，除非至少一种列出的矿物达到最低值。启用的核心小行星仍然符合资格。空列表允许每个已启用的潜在客户。"
     },
     {
       "source": "Eagle",
@@ -176859,6 +177515,10 @@
       "translation": "GalaxyMap.车展"
     },
     {
+      "source": "Gallite",
+      "translation": "加仑石"
+    },
+    {
       "source": "Game",
       "translation": "游戏"
     },
@@ -177033,6 +177693,10 @@
     {
       "source": "Gradient wedges mark active obelisks: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
       "translation": "渐变楔形标记活动方尖碑：灰色未扫描，橙色已扫描，而拉姆塔仍需要青色。"
+    },
+    {
+      "source": "Grandidierite",
+      "translation": "硅藻土"
     },
     {
       "source": "Gravity",
@@ -177751,6 +178415,10 @@
       "translation": "高强度冲突地区"
     },
     {
+      "source": "High-low",
+      "translation": "高低"
+    },
+    {
       "source": "HighGravityWarningLevel",
       "translation": "高重力警告级别"
     },
@@ -177941,6 +178609,10 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "人类网站.车展"
+    },
+    {
+      "source": "Hydrogen Peroxide",
+      "translation": "过氧化氢"
     },
     {
       "source": "Hyperspace",
@@ -178535,6 +179207,10 @@
       "translation": "靛青"
     },
     {
+      "source": "Indite",
+      "translation": "因迪特"
+    },
+    {
       "source": "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
       "translation": "单独的可见性设置仅抑制该叠加。切换覆盖隐藏或恢复分离的覆盖组。"
     },
@@ -179079,6 +179755,10 @@
       "translation": "停机坪已锁定"
     },
     {
+      "source": "LASER",
+      "translation": "激光"
+    },
+    {
       "source": "LAST DOCKED MARKET",
       "translation": "最后停靠市场"
     },
@@ -179253,22 +179933,6 @@
     {
       "source": "Laser mining",
       "translation": "激光采矿"
-    },
-    {
-      "source": "Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite.",
-      "translation": "激光：硅酸钙铁矿、铝土矿、钶钽铁矿、加仑石、印地石、锂云母、金红石。核心：紫翠玉、蓝锥矿、独居石、黑云母、色绿石。"
-    },
-    {
-      "source": "Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite.",
-      "translation": "激光：低温钻石、溴锰矿、过氧化氢、液氧、氢氧化锂、甲烷包合物、一水甲醇晶体、氚、水。核心：紫翠玉、紫翠玉石、低温钻石、空心蛋白石、菱镁矿。"
-    },
-    {
-      "source": "Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "激光：锇、硅酸钙石、钶钽铁矿、镓石、金、靛石、锂云母、镨、钐、银、铀矿。核心：紫翠玉、蓝锥矿、独居石、红锰矿、色绿辉石、磷铝石、铂。"
-    },
-    {
-      "source": "Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "激光：锇、磷铝石、铂、硅酸钙石、金、靛石、钯、镨、钐、银。核心：独居石、红柱石、赛伦石、磷铝石、铂。"
     },
     {
       "source": "Last approach {0}",
@@ -179471,6 +180135,10 @@
       "translation": "传奇"
     },
     {
+      "source": "Lepidolite",
+      "translation": "锂云母"
+    },
+    {
       "source": "Level with target",
       "translation": "与目标水平"
     },
@@ -179527,8 +180195,16 @@
       "translation": "Linux：打包OpenVR支持不可用。重新安装 SrvSurvey 或验证该软件包是否与您的系统架构匹配。"
     },
     {
+      "source": "Liquid Oxygen",
+      "translation": "液氧"
+    },
+    {
       "source": "Listening for community observations…",
       "translation": "倾听社区意见……"
+    },
+    {
+      "source": "Lithium Hydroxide",
+      "translation": "氢氧化锂"
     },
     {
       "source": "Live / destination",
@@ -179965,6 +180641,10 @@
     {
       "source": "Lost surface scans were not marked: {0}",
       "translation": "丢失的表面扫描未标记：{0}"
+    },
+    {
+      "source": "Low Temperature Diamonds",
+      "translation": "低温金刚石"
     },
     {
       "source": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
@@ -180595,6 +181275,14 @@
       "translation": "金属"
     },
     {
+      "source": "Methane Clathrate",
+      "translation": "甲烷笼形物"
+    },
+    {
+      "source": "Methanol Monohydrate Crystals",
+      "translation": "一水甲醇晶体"
+    },
+    {
       "source": "Microsoft Store profile ({0} files)",
       "translation": "Microsoft Store 配置文件（{0} 文件）"
     },
@@ -180675,8 +181363,8 @@
       "translation": "矿物量和密度描述了每个矿床，并接受 l、m 或 h 作为低、中或高的简写。矿床名称必须与“活动”>“露天采矿”>“热点列表”中的商品匹配；被拒绝的命令解释了状态通知中的问题。"
     },
     {
-      "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
-      "translation": "矿物的可用性取决于环的组成。价格各异；出售前检查当前的市场观察。"
+      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
+      "translation": "矿物的可用性取决于环的组成。平均售价为参考值，市场价格各不相同，因此在出售前请检查当前观察结果。"
     },
     {
       "source": "Mineral thresholds",
@@ -181081,6 +181769,10 @@
     {
       "source": "Multiply",
       "translation": "乘法"
+    },
+    {
+      "source": "Musgravite",
+      "translation": "黑云母"
     },
     {
       "source": "Music",
@@ -183675,6 +184367,10 @@
       "translation": "付费"
     },
     {
+      "source": "Painite",
+      "translation": "潘尼特"
+    },
+    {
       "source": "Paint job",
       "translation": "油漆工作"
     },
@@ -183689,6 +184385,10 @@
     {
       "source": "Paleas",
       "translation": "帕莱斯"
+    },
+    {
+      "source": "Palladium",
+      "translation": "钯"
     },
     {
       "source": "Panel / top",
@@ -183833,6 +184533,10 @@
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
       "translation": "正常播放；进入 FSS、接近物体、着陆、打开银河地图或对接都可以激活相关叠加层。"
+    },
+    {
+      "source": "Played the {0} chime at {1}% volume.",
+      "translation": "以 {1}% 音量播放 {0} 铃声。"
     },
     {
       "source": "Player data is byte-verified, but legacy UI preferences could not be translated; the current Avalonia settings were left unchanged. {0}",
@@ -184163,6 +184867,10 @@
       "translation": "普拉纳夫·安塔尔"
     },
     {
+      "source": "Praseodymium",
+      "translation": "镨"
+    },
+    {
       "source": "Pre-download all available biology images",
       "translation": "预下载所有可用的生物学图像"
     },
@@ -184337,6 +185045,10 @@
     {
       "source": "Press the shortcut again to restore passive click-through behavior.",
       "translation": "再次按快捷键可恢复被动点击行为。"
+    },
+    {
+      "source": "Preview chime",
+      "translation": "预览铃声"
     },
     {
       "source": "Preview state index must be from 0 to {0}.",
@@ -186779,6 +187491,10 @@
       "translation": "Rhino 表面热点列表"
     },
     {
+      "source": "Rhodplumsite",
+      "translation": "红梅石"
+    },
+    {
       "source": "Rig 1",
       "translation": "钻机 1"
     },
@@ -187093,6 +187809,10 @@
     {
       "source": "RuntimeProfileId",
       "translation": "运行时配置文件 ID"
+    },
+    {
+      "source": "Rutile",
+      "translation": "金红石"
     },
     {
       "source": "R−",
@@ -187529,6 +188249,10 @@
     {
       "source": "Salvage operation",
       "translation": "打捞作业"
+    },
+    {
+      "source": "Samarium",
+      "translation": "钐"
     },
     {
       "source": "Sample 1 of 3 recorded",
@@ -188559,6 +189283,10 @@
       "translation": "分离器"
     },
     {
+      "source": "Serendibite",
+      "translation": "偶然事件"
+    },
+    {
       "source": "Service terms",
       "translation": "服务条款"
     },
@@ -189409,6 +190137,10 @@
     {
       "source": "Signed up · no contribution recorded",
       "translation": "已注册 · 没有贡献记录"
+    },
+    {
+      "source": "Silver",
+      "translation": "银"
     },
     {
       "source": "Silver Legal Group",
@@ -193999,6 +194731,10 @@
       "translation": "两个车辆列位于钻机 V 字形上方，下方具有载货能力。"
     },
     {
+      "source": "Two-tone",
+      "translation": "双音"
+    },
+    {
       "source": "Type",
       "translation": "类型"
     },
@@ -194541,6 +195277,10 @@
     {
       "source": "Upper floor",
       "translation": "上层"
+    },
+    {
+      "source": "Uraninite",
+      "translation": "铀矿"
     },
     {
       "source": "Urn",
@@ -195121,6 +195861,10 @@
     {
       "source": "Void Amethyst",
       "translation": "虚空紫晶"
+    },
+    {
+      "source": "Void Opals",
+      "translation": "虚空蛋白石"
     },
     {
       "source": "VoxStellar",
@@ -201177,6 +201921,10 @@
       "translation": "* AVG GALACTIC PRICE >>>!"
     },
     {
+      "source": "AVG SELL",
+      "translation": "* AVG SELL >>>!"
+    },
+    {
       "source": "AW",
       "translation": "* AW >>>!"
     },
@@ -201547,6 +202295,10 @@
     {
       "source": "Alarm",
       "translation": "* ALARM >>>!"
+    },
+    {
+      "source": "Alexandrite",
+      "translation": "* ALEXANDRITE >>>!"
     },
     {
       "source": "Align with the squares and place the rigs.",
@@ -202921,6 +203673,10 @@
       "translation": "* BATTERY, MEDKIT, ALARM, POWER... >>>!"
     },
     {
+      "source": "Bauxite",
+      "translation": "* BAUXITE >>>!"
+    },
+    {
       "source": "Beacon",
       "translation": "* BEACON >>>!"
     },
@@ -202951,6 +203707,14 @@
     {
       "source": "Beluga Liner",
       "translation": "* BELUGA LINER >>>!"
+    },
+    {
+      "source": "Benitoite",
+      "translation": "* BENITOITE >>>!"
+    },
+    {
+      "source": "Bertrandite",
+      "translation": "* BERTRANDITE >>>!"
     },
     {
       "source": "Beta",
@@ -203559,6 +204323,10 @@
     {
       "source": "Broken obelisk",
       "translation": "* BROKEN OBELISK >>>!"
+    },
+    {
+      "source": "Bromellite",
+      "translation": "* BROMELLITE >>>!"
     },
     {
       "source": "Browse Codex",
@@ -204517,6 +205285,10 @@
       "translation": "* CHILD >>>!"
     },
     {
+      "source": "Chime sound",
+      "translation": "* CHIME SOUND >>>!"
+    },
+    {
       "source": "Chime volume",
       "translation": "* CHIME VOLUME >>>!"
     },
@@ -205239,6 +206011,10 @@
     {
       "source": "Colour '{0}' must contain three RGB or four ARGB values.",
       "translation": "* COLOUR '{0}' MUST CONTAIN THREE RGB OR FOUR ARGB VALUES. >>>!"
+    },
+    {
+      "source": "Coltan",
+      "translation": "* COLTAN >>>!"
     },
     {
       "source": "Combat",
@@ -206491,6 +207267,10 @@
     {
       "source": "Criteria can include body type, atmosphere and composition, gravity, temperature, pressure, volcanism, materials, parent star, galactic region, nebula proximity, and Guardian proximity.",
       "translation": "* CRITERIA CAN INCLUDE BODY TYPE, ATMOSPHERE AND COMPOSITION, GRAVITY, TEMPERATURE, PRESSURE, VOLCANISM, MATERIALS, PARENT STAR, GALACTIC REGION, NEBULA PROXIMITY, AND GUARDIAN PROXIMITY. >>>!"
+    },
+    {
+      "source": "Crystal",
+      "translation": "* CRYSTAL >>>!"
     },
     {
       "source": "Crystals",
@@ -207909,8 +208689,8 @@
       "translation": "* EACH ROLE GROWS OR SHRINKS INDEPENDENTLY. ZERO USES THE THEME'S BASELINE SIZE. >>>!"
     },
     {
-      "source": "Each row is an independent target. A prospect qualifies when at least one listed mineral reaches its minimum. An empty list announces every mineral.",
-      "translation": "* EACH ROW IS AN INDEPENDENT TARGET. A PROSPECT QUALIFIES WHEN AT LEAST ONE LISTED MINERAL REACHES ITS MINIMUM. AN EMPTY LIST ANNOUNCES EVERY MINERAL. >>>!"
+      "source": "Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect.",
+      "translation": "* EACH ROW IS AN INDEPENDENT TARGET. WHEN THRESHOLDS ARE LISTED, THE MINING NOTIFICATIONS OVERLAY, CHIME, AND SPEECH IGNORE NON-CORE PROSPECTS UNLESS AT LEAST ONE LISTED MINERAL REACHES ITS MINIMUM. ENABLED CORE ASTEROIDS STILL QUALIFY. AN EMPTY LIST ALLOWS EVERY ENABLED PROSPECT. >>>!"
     },
     {
       "source": "Eagle",
@@ -210177,6 +210957,10 @@
       "translation": "* GALAXYMAP.AUTOSHOW >>>!"
     },
     {
+      "source": "Gallite",
+      "translation": "* GALLITE >>>!"
+    },
+    {
       "source": "Game",
       "translation": "* GAME >>>!"
     },
@@ -210351,6 +211135,10 @@
     {
       "source": "Gradient wedges mark active obelisks: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
       "translation": "* GRADIENT WEDGES MARK ACTIVE OBELISKS: GRAY IS UNSCANNED, ORANGE IS SCANNED, AND CYAN IS STILL NEEDED FOR RAM TAH. >>>!"
+    },
+    {
+      "source": "Grandidierite",
+      "translation": "* GRANDIDIERITE >>>!"
     },
     {
       "source": "Gravity",
@@ -211069,6 +211857,10 @@
       "translation": "* HIGH-INTENSITY CONFLICT ZONE >>>!"
     },
     {
+      "source": "High-low",
+      "translation": "* HIGH-LOW >>>!"
+    },
+    {
       "source": "HighGravityWarningLevel",
       "translation": "* HIGHGRAVITYWARNINGLEVEL >>>!"
     },
@@ -211259,6 +212051,10 @@
     {
       "source": "HumanSite.AutoShow",
       "translation": "* HUMANSITE.AUTOSHOW >>>!"
+    },
+    {
+      "source": "Hydrogen Peroxide",
+      "translation": "* HYDROGEN PEROXIDE >>>!"
     },
     {
       "source": "Hyperspace",
@@ -211853,6 +212649,10 @@
       "translation": "* INDIGO >>>!"
     },
     {
+      "source": "Indite",
+      "translation": "* INDITE >>>!"
+    },
+    {
       "source": "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
       "translation": "* INDIVIDUAL VISIBILITY SETTINGS SUPPRESS ONLY THAT OVERLAY. TOGGLE OVERLAYS HIDES OR RESTORES THE DETACHED OVERLAY GROUP. >>>!"
     },
@@ -212397,6 +213197,10 @@
       "translation": "* LANDING PADS LOCKED >>>!"
     },
     {
+      "source": "LASER",
+      "translation": "* LASER >>>!"
+    },
+    {
       "source": "LAST DOCKED MARKET",
       "translation": "* LAST DOCKED MARKET >>>!"
     },
@@ -212571,22 +213375,6 @@
     {
       "source": "Laser mining",
       "translation": "* LASER MINING >>>!"
-    },
-    {
-      "source": "Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite.",
-      "translation": "* LASER: BERTRANDITE, BAUXITE, COLTAN, GALLITE, INDITE, LEPIDOLITE, RUTILE. CORE: ALEXANDRITE, BENITOITE, MONAZITE, MUSGRAVITE, SERENDIBITE. >>>!"
-    },
-    {
-      "source": "Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite.",
-      "translation": "* LASER: LOW TEMPERATURE DIAMONDS, BROMELLITE, HYDROGEN PEROXIDE, LIQUID OXYGEN, LITHIUM HYDROXIDE, METHANE CLATHRATE, METHANOL MONOHYDRATE CRYSTALS, TRITIUM, WATER. CORE: ALEXANDRITE, GRANDIDIERITE, LOW TEMPERATURE DIAMONDS, VOID OPALS, BROMELLITE. >>>!"
-    },
-    {
-      "source": "Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "* LASER: OSMIUM, BERTRANDITE, COLTAN, GALLITE, GOLD, INDITE, LEPIDOLITE, PRASEODYMIUM, SAMARIUM, SILVER, URANINITE. CORE: ALEXANDRITE, BENITOITE, MONAZITE, RHODPLUMSITE, SERENDIBITE, PAINITE, PLATINUM. >>>!"
-    },
-    {
-      "source": "Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum.",
-      "translation": "* LASER: OSMIUM, PAINITE, PLATINUM, BERTRANDITE, GOLD, INDITE, PALLADIUM, PRASEODYMIUM, SAMARIUM, SILVER. CORE: MONAZITE, RHODPLUMSITE, SERENDIBITE, PAINITE, PLATINUM. >>>!"
     },
     {
       "source": "Last approach {0}",
@@ -212789,6 +213577,10 @@
       "translation": "* LEGEND >>>!"
     },
     {
+      "source": "Lepidolite",
+      "translation": "* LEPIDOLITE >>>!"
+    },
+    {
       "source": "Level with target",
       "translation": "* LEVEL WITH TARGET >>>!"
     },
@@ -212845,8 +213637,16 @@
       "translation": "* LINUX: PACKAGED OPENVR SUPPORT IS UNAVAILABLE. REINSTALL SRVSURVEY OR VERIFY THAT THE PACKAGE MATCHES YOUR SYSTEM ARCHITECTURE. >>>!"
     },
     {
+      "source": "Liquid Oxygen",
+      "translation": "* LIQUID OXYGEN >>>!"
+    },
+    {
       "source": "Listening for community observations…",
       "translation": "* LISTENING FOR COMMUNITY OBSERVATIONS… >>>!"
+    },
+    {
+      "source": "Lithium Hydroxide",
+      "translation": "* LITHIUM HYDROXIDE >>>!"
     },
     {
       "source": "Live / destination",
@@ -213283,6 +214083,10 @@
     {
       "source": "Lost surface scans were not marked: {0}",
       "translation": "* LOST SURFACE SCANS WERE NOT MARKED: {0} >>>!"
+    },
+    {
+      "source": "Low Temperature Diamonds",
+      "translation": "* LOW TEMPERATURE DIAMONDS >>>!"
     },
     {
       "source": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
@@ -213913,6 +214717,14 @@
       "translation": "* METALS >>>!"
     },
     {
+      "source": "Methane Clathrate",
+      "translation": "* METHANE CLATHRATE >>>!"
+    },
+    {
+      "source": "Methanol Monohydrate Crystals",
+      "translation": "* METHANOL MONOHYDRATE CRYSTALS >>>!"
+    },
+    {
       "source": "Microsoft Store profile ({0} files)",
       "translation": "* MICROSOFT STORE PROFILE ({0} FILES) >>>!"
     },
@@ -213993,8 +214805,8 @@
       "translation": "* MINERAL AMOUNT AND DENSITY DESCRIBE EACH DEPOSIT AND ACCEPT L, M, OR H AS SHORTHAND FOR LOW, MEDIUM, OR HIGH. DEPOSIT NAMES MUST MATCH A COMMODITY IN ACTIVITIES > SURFACE MINING > HOTSPOT LIST; REJECTED COMMANDS EXPLAIN THE PROBLEM IN STATUS NOTIFICATIONS. >>>!"
     },
     {
-      "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
-      "translation": "* MINERAL AVAILABILITY FOLLOWS RING COMPOSITION. PRICES VARY; CHECK CURRENT MARKET OBSERVATIONS BEFORE SELLING. >>>!"
+      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
+      "translation": "* MINERAL AVAILABILITY FOLLOWS RING COMPOSITION. AVERAGE SELL PRICES ARE REFERENCE VALUES AND MARKET PRICES VARY, SO CHECK CURRENT OBSERVATIONS BEFORE SELLING. >>>!"
     },
     {
       "source": "Mineral thresholds",
@@ -214399,6 +215211,10 @@
     {
       "source": "Multiply",
       "translation": "* MULTIPLY >>>!"
+    },
+    {
+      "source": "Musgravite",
+      "translation": "* MUSGRAVITE >>>!"
     },
     {
       "source": "Music",
@@ -216993,6 +217809,10 @@
       "translation": "* PAID >>>!"
     },
     {
+      "source": "Painite",
+      "translation": "* PAINITE >>>!"
+    },
+    {
       "source": "Paint job",
       "translation": "* PAINT JOB >>>!"
     },
@@ -217007,6 +217827,10 @@
     {
       "source": "Paleas",
       "translation": "* PALEAS >>>!"
+    },
+    {
+      "source": "Palladium",
+      "translation": "* PALLADIUM >>>!"
     },
     {
       "source": "Panel / top",
@@ -217151,6 +217975,10 @@
     {
       "source": "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
       "translation": "* PLAY NORMALLY; ENTERING FSS, APPROACHING A BODY, LANDING, OPENING THE GALAXY MAP, OR DOCKING CAN ACTIVATE THE RELEVANT OVERLAY. >>>!"
+    },
+    {
+      "source": "Played the {0} chime at {1}% volume.",
+      "translation": "* PLAYED THE {0} CHIME AT {1}% VOLUME. >>>!"
     },
     {
       "source": "Player data is byte-verified, but legacy UI preferences could not be translated; the current Avalonia settings were left unchanged. {0}",
@@ -217481,6 +218309,10 @@
       "translation": "* PRANAV ANTAL >>>!"
     },
     {
+      "source": "Praseodymium",
+      "translation": "* PRASEODYMIUM >>>!"
+    },
+    {
       "source": "Pre-download all available biology images",
       "translation": "* PRE-DOWNLOAD ALL AVAILABLE BIOLOGY IMAGES >>>!"
     },
@@ -217655,6 +218487,10 @@
     {
       "source": "Press the shortcut again to restore passive click-through behavior.",
       "translation": "* PRESS THE SHORTCUT AGAIN TO RESTORE PASSIVE CLICK-THROUGH BEHAVIOR. >>>!"
+    },
+    {
+      "source": "Preview chime",
+      "translation": "* PREVIEW CHIME >>>!"
     },
     {
       "source": "Preview state index must be from 0 to {0}.",
@@ -220097,6 +220933,10 @@
       "translation": "* RHINO SURFACE HOTSPOT LIST >>>!"
     },
     {
+      "source": "Rhodplumsite",
+      "translation": "* RHODPLUMSITE >>>!"
+    },
+    {
       "source": "Rig 1",
       "translation": "* RIG 1 >>>!"
     },
@@ -220411,6 +221251,10 @@
     {
       "source": "RuntimeProfileId",
       "translation": "* RUNTIMEPROFILEID >>>!"
+    },
+    {
+      "source": "Rutile",
+      "translation": "* RUTILE >>>!"
     },
     {
       "source": "R−",
@@ -220847,6 +221691,10 @@
     {
       "source": "Salvage operation",
       "translation": "* SALVAGE OPERATION >>>!"
+    },
+    {
+      "source": "Samarium",
+      "translation": "* SAMARIUM >>>!"
     },
     {
       "source": "Sample 1 of 3 recorded",
@@ -221877,6 +222725,10 @@
       "translation": "* SEPARATOR >>>!"
     },
     {
+      "source": "Serendibite",
+      "translation": "* SERENDIBITE >>>!"
+    },
+    {
       "source": "Service terms",
       "translation": "* SERVICE TERMS >>>!"
     },
@@ -222727,6 +223579,10 @@
     {
       "source": "Signed up · no contribution recorded",
       "translation": "* SIGNED UP · NO CONTRIBUTION RECORDED >>>!"
+    },
+    {
+      "source": "Silver",
+      "translation": "* SILVER >>>!"
     },
     {
       "source": "Silver Legal Group",
@@ -227317,6 +228173,10 @@
       "translation": "* TWO VEHICLE COLUMNS SIT ABOVE THE RIG CHEVRONS, WITH CARGO CAPACITY BELOW THEM. >>>!"
     },
     {
+      "source": "Two-tone",
+      "translation": "* TWO-TONE >>>!"
+    },
+    {
       "source": "Type",
       "translation": "* TYPE >>>!"
     },
@@ -227859,6 +228719,10 @@
     {
       "source": "Upper floor",
       "translation": "* UPPER FLOOR >>>!"
+    },
+    {
+      "source": "Uraninite",
+      "translation": "* URANINITE >>>!"
     },
     {
       "source": "Urn",
@@ -228439,6 +229303,10 @@
     {
       "source": "Void Amethyst",
       "translation": "* VOID AMETHYST >>>!"
+    },
+    {
+      "source": "Void Opals",
+      "translation": "* VOID OPALS >>>!"
     },
     {
       "source": "VoxStellar",

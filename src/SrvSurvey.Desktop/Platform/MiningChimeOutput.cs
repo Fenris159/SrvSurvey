@@ -4,18 +4,20 @@ namespace SrvSurvey.Desktop.Platform;
 
 public interface IMiningChimeOutput : IDisposable
 {
-    void Play(int volume);
+    void Play(string chime, int volume);
 }
 
-/// <summary>Short synthesized two-tone cue played through the app's cross-platform SDL runtime.</summary>
+/// <summary>Short synthesized cues played through the app's cross-platform SDL runtime.</summary>
 public sealed class MiningChimeOutput : IMiningChimeOutput
 {
     private const int SampleRate = 24000;
+    public const string DefaultChime = "Two-tone";
+    public static IReadOnlyList<string> Chimes { get; } = [DefaultChime, "High-low", "Crystal"];
     private readonly Lock sync = new();
     private nint stream;
     private bool disposed;
 
-    public void Play(int volume)
+    public void Play(string chime, int volume)
     {
         lock (sync)
         {
@@ -32,7 +34,7 @@ public sealed class MiningChimeOutput : IMiningChimeOutput
                     return;
                 }
 
-                byte[] samples = CreateSamples(volume);
+                byte[] samples = CreateSamples(chime, volume);
                 SDL.PutAudioStreamData(stream, samples, samples.Length);
                 SDL.ResumeAudioStreamDevice(stream);
             }
@@ -43,7 +45,7 @@ public sealed class MiningChimeOutput : IMiningChimeOutput
         }
     }
 
-    internal static byte[] CreateSamples(int volume)
+    internal static byte[] CreateSamples(string chime, int volume)
     {
         const double durationSeconds = 0.28;
         int sampleCount = (int)(SampleRate * durationSeconds);
@@ -52,7 +54,7 @@ public sealed class MiningChimeOutput : IMiningChimeOutput
         for (int index = 0; index < sampleCount; index++)
         {
             double time = index / (double)SampleRate;
-            double frequency = time < 0.14 ? 660 : 880;
+            double frequency = Frequency(chime, time);
             double envelope = Math.Min(1, time / 0.012) * Math.Min(1, (durationSeconds - time) / 0.055);
             float sample = (float)(Math.Sin(2 * Math.PI * frequency * time) * gain * envelope);
             BitConverter.TryWriteBytes(bytes.AsSpan(index * sizeof(float), sizeof(float)), sample);
@@ -60,6 +62,19 @@ public sealed class MiningChimeOutput : IMiningChimeOutput
 
         return bytes;
     }
+
+    private static double Frequency(string chime, double time) =>
+        chime switch
+        {
+            "High-low" => time < 0.14 ? 880 : 660,
+            "Crystal" => time switch
+            {
+                < 0.09 => 1046.5,
+                < 0.18 => 1318.5,
+                _ => 1568,
+            },
+            _ => time < 0.14 ? 660 : 880,
+        };
 
     private void EnsureStream()
     {
