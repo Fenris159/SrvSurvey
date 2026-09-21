@@ -241,10 +241,10 @@ internal static class Program
         var options = new X11PlatformOptions
         {
             UseDBusMenu = false,
-            // Embedded popups apply the reserved drawn-decoration offset again
-            // on X11, leaving combo-box menus and flyouts detached from their
-            // controls. Native popup windows preserve the requested placement.
-            OverlayPopups = false,
+            // Keep tooltips, combo-box drop-downs, and flyouts in the owning
+            // window. OverlayPopupPlacementBehavior compensates for Avalonia's
+            // forced-decoration coordinate offset when positioning them.
+            OverlayPopups = true,
 #pragma warning disable AVALONIA_X11_FORCE_CSD // Force reserved Raven-themed chrome on X11 and XWayland.
             ForceDrawnDecorations = true,
 #pragma warning restore AVALONIA_X11_FORCE_CSD
