@@ -7,6 +7,18 @@ namespace used by RC52 and later releases. It also includes the per-panel
 overlay typography editor, AppImage updater, profile migration, window chrome,
 tooltip, pointer-input, and XWayland fixes from this release cycle.
 
+> [!IMPORTANT]
+> RC51 is an update bridge. Install RC51 before moving to RC52 or any later
+> release so SrvSurvey can follow the new automatic-update channel. The normal
+> updater should guide supported Windows and portable-Linux installations to
+> RC51 automatically. If the update is not offered, reports an error, or cannot
+> complete, download and install the newest SrvSurvey-XP build manually from
+> the [GitHub releases page](https://github.com/Fenris159/SrvSurvey/releases).
+> Follow the [Windows installation guide](docs/INSTALL_WINDOWS.md) for the ZIP
+> package or the [Linux installation guide](docs/INSTALL_LINUX.md) for the
+> AppImage and portable archive. Existing RC50 AppImage users should use this
+> manual fallback (or AppImageUpdate) for the one-time move to RC51.
+
 ## Automatic-update compatibility bridge
 
 - RC51 is published once as `xp-v2.1.3.0-rc.51` with a legacy schema-1
