@@ -166,8 +166,8 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         {
             string? library = OpenVrNativeLibraryResolver.FindExistingLinuxLibrary();
             return library is null
-                ? $"Linux: no OpenVR client library was found yet. Start SteamVR, or set {OpenVrNativeLibraryResolver.LibraryEnvironmentVariable} when SteamVR is installed in a custom location."
-                : $"Linux: OpenVR client library found at {library}.";
+                ? "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture."
+                : "Linux: packaged OpenVR support is ready.";
         }
 
         return "VR overlay projection is supported on Windows and Linux.";

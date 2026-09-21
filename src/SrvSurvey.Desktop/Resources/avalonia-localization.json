@@ -11425,6 +11425,10 @@
       "translation": "Wenn kein Commander angezeigt wird, verwenden Sie die Diagnose, um den ausgewählten Ordner und die neueste Journaldatei zu überprüfen."
     },
     {
+      "source": "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+      "translation": "Wenn die Unterstützung des Pakets OpenVR als nicht verfügbar gemeldet wird, installieren Sie SrvSurvey neu und überprüfen Sie, ob das Paket mit der Systemarchitektur übereinstimmt."
+    },
+    {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Wenn die bekannten Daten zu früh enden, geben Sie Erwartete Systeme ein und wählen Sie Übernehmen. Dies erweitert den Suffixbereich, den SrvSurvey verfolgt, ohne zu behaupten, dass jeder generierte Name im Spiel existiert."
     },
@@ -12817,16 +12821,16 @@
       "translation": "Verbundene Staffelladung von RavenColonial. Kapazität und Finanzen stammen aus der letzten Aktualisierung Frontier."
     },
     {
-      "source": "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
-      "translation": "Linux überprüft das Anwendungsverzeichnis sowie standardmäßige native, Flatpak- und Benutzer-SteamVR-Speicherorte auf libopenvr_api.so."
+      "source": "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+      "translation": "Linux-Pakete enthalten die von SrvSurvey verwendete Client-Bibliothek OpenVR; Es ist kein benutzerdefinierter Bibliotheksspeicherort erforderlich."
     },
     {
-      "source": "Linux: OpenVR client library found at {0}.",
-      "translation": "Linux: OpenVR-Client-Bibliothek unter {0} gefunden."
+      "source": "Linux: packaged OpenVR support is ready.",
+      "translation": "Linux: Paketunterstützung OpenVR ist bereit."
     },
     {
-      "source": "Linux: no OpenVR client library was found yet. Start SteamVR, or set {0} when SteamVR is installed in a custom location.",
-      "translation": "Linux: Es wurde noch keine OpenVR-Clientbibliothek gefunden. Starten Sie SteamVR oder legen Sie {0} fest, wenn SteamVR an einem benutzerdefinierten Speicherort installiert ist."
+      "source": "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+      "translation": "Linux: Paketunterstützung OpenVR ist nicht verfügbar. Installieren Sie SrvSurvey neu oder überprüfen Sie, ob das Paket zu Ihrer Systemarchitektur passt."
     },
     {
       "source": "Listening for community observations…",
@@ -16205,8 +16209,8 @@
       "translation": "OpenVR-Verbindung fehlgeschlagen"
     },
     {
-      "source": "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
-      "translation": "OpenVR-Verbindung fehlgeschlagen: Überprüfen Sie unter Linux den Bibliothekspfad. Starten Sie SteamVR auf beiden Plattformen neu und verwenden Sie „Verbindung prüfen“."
+      "source": "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+      "translation": "OpenVR Verbindung fehlgeschlagen: Starten Sie SteamVR neu und verwenden Sie „Verbindung prüfen“. Unter Linux installieren Sie SrvSurvey neu, wenn die Paketunterstützung OpenVR als nicht verfügbar gemeldet wird."
     },
     {
       "source": "OpenVR could not be initialized: {0}",
@@ -28771,10 +28775,6 @@
     {
       "source": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
       "translation": "Wenn „FSS erforderlich“ deaktiviert ist, wird der Vorgang durch einen FSD-Sprung in ein passendes System abgeschlossen. Wenn es eingeschaltet ist, warten neue lokale Besuche darauf, dass Elite FSSAllBodiesFound schreibt; Aktivierte frühere Verlaufsregeln zählen übereinstimmende Systeme immer noch als abgeschlossen."
-    },
-    {
-      "source": "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
-      "translation": "Wenn SteamVR einen benutzerdefinierten Linux-Speicherort verwendet, setzen Sie SRVSURVEY_OPENVR_LIBRARY vor dem Start auf den vollständigen libopenvr_api.so-Pfad SrvSurvey."
     },
     {
       "source": "When at planet surface and not in Combat mode",
@@ -44371,6 +44371,10 @@
       "translation": "Si no aparece ningún Commander, utilice Diagnóstico para inspeccionar la carpeta seleccionada y el archivo de diario más reciente."
     },
     {
+      "source": "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+      "translation": "Si se informa que el soporte del paquete OpenVR no está disponible, reinstale SrvSurvey y verifique que el paquete coincida con la arquitectura del sistema."
+    },
+    {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Si los datos conocidos finalizan demasiado pronto, ingrese Sistemas esperados y seleccione Aplicar. Esto amplía el rango de sufijos que SrvSurvey rastreará sin afirmar que todos los nombres generados existen en el juego."
     },
@@ -45763,16 +45767,16 @@
       "translation": "Carga del escuadrón vinculado de RavenColonial. La capacidad y las finanzas provienen de la última actualización Frontier."
     },
     {
-      "source": "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
-      "translation": "Linux comprueba el directorio de la aplicación además de las ubicaciones nativas estándar, Flatpak y SteamVR del usuario para libopenvr_api.so."
+      "source": "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+      "translation": "Los paquetes de Linux incluyen la biblioteca cliente OpenVR utilizada por SrvSurvey; no se requiere una ubicación de biblioteca personalizada."
     },
     {
-      "source": "Linux: OpenVR client library found at {0}.",
-      "translation": "Linux: biblioteca cliente OpenVR que se encuentra en {0}."
+      "source": "Linux: packaged OpenVR support is ready.",
+      "translation": "Linux: el soporte empaquetado OpenVR está listo."
     },
     {
-      "source": "Linux: no OpenVR client library was found yet. Start SteamVR, or set {0} when SteamVR is installed in a custom location.",
-      "translation": "Linux: aún no se ha encontrado ninguna biblioteca cliente OpenVR. Inicie SteamVR o configure {0} cuando SteamVR esté instalado en una ubicación personalizada."
+      "source": "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+      "translation": "Linux: la compatibilidad con paquetes OpenVR no está disponible. Reinstale SrvSurvey o verifique que el paquete coincida con la arquitectura de su sistema."
     },
     {
       "source": "Listening for community observations…",
@@ -49151,8 +49155,8 @@
       "translation": "La conexión OpenVR falló"
     },
     {
-      "source": "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
-      "translation": "La conexión OpenVR falló: en Linux verifique la ruta de la biblioteca; en cualquiera de las plataformas, reinicie SteamVR y use Comprobar conexión."
+      "source": "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+      "translation": "OpenVR falló la conexión: reinicie SteamVR y use Comprobar conexión. En Linux, reinstale SrvSurvey si se informa que la compatibilidad con el paquete OpenVR no está disponible."
     },
     {
       "source": "OpenVR could not be initialized: {0}",
@@ -61717,10 +61721,6 @@
     {
       "source": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
       "translation": "Cuando Requerir FSS está desactivado, un salto FSD a un sistema coincidente lo completa. Cuando está activado, las nuevas visitas locales esperan a que Elite escriba FSSAllBodiesFound; Las reglas de historial anterior habilitadas todavía cuentan los sistemas coincidentes como completos."
-    },
-    {
-      "source": "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
-      "translation": "Cuando SteamVR usa una ubicación de Linux personalizada, configure SRVSURVEY_OPENVR_LIBRARY en la ruta completa libopenvr_api.so antes de comenzar SrvSurvey."
     },
     {
       "source": "When at planet surface and not in Combat mode",
@@ -77317,6 +77317,10 @@
       "translation": "Si aucun Commander n'apparaît, utilisez Diagnostics pour inspecter le dossier sélectionné et le fichier journal le plus récent."
     },
     {
+      "source": "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+      "translation": "Si la prise en charge du package OpenVR est signalée indisponible, réinstallez SrvSurvey et vérifiez que le package correspond à l'architecture du système."
+    },
+    {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Si les données connues se terminent trop tôt, entrez Systèmes attendus et sélectionnez Appliquer. Cela étend la plage de suffixes que SrvSurvey suivra sans prétendre que chaque nom généré existe dans le jeu."
     },
@@ -78709,16 +78713,16 @@
       "translation": "Cargaison d'escadron liée de RavenColonial. La capacité et les finances proviennent de la dernière actualisation Frontier."
     },
     {
-      "source": "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
-      "translation": "Linux vérifie le répertoire de l'application ainsi que les emplacements natifs standard, Flatpak et SteamVR utilisateur pour libopenvr_api.so."
+      "source": "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+      "translation": "Les packages Linux incluent la bibliothèque client OpenVR utilisée par SrvSurvey ; aucun emplacement de bibliothèque personnalisé n’est requis."
     },
     {
-      "source": "Linux: OpenVR client library found at {0}.",
-      "translation": "Linux : bibliothèque client OpenVR trouvée sur {0}."
+      "source": "Linux: packaged OpenVR support is ready.",
+      "translation": "Linux : le support packagé OpenVR est prêt."
     },
     {
-      "source": "Linux: no OpenVR client library was found yet. Start SteamVR, or set {0} when SteamVR is installed in a custom location.",
-      "translation": "Linux : aucune bibliothèque client OpenVR n'a encore été trouvée. Démarrez SteamVR ou définissez {0} lorsque SteamVR est installé dans un emplacement personnalisé."
+      "source": "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+      "translation": "Linux : la prise en charge packagée OpenVR n'est pas disponible. Réinstallez SrvSurvey ou vérifiez que le package correspond à l'architecture de votre système."
     },
     {
       "source": "Listening for community observations…",
@@ -82097,8 +82101,8 @@
       "translation": "La connexion OpenVR a échoué"
     },
     {
-      "source": "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
-      "translation": "Échec de la connexion OpenVR : sous Linux, vérifiez le chemin de la bibliothèque ; sur l'une ou l'autre plate-forme, redémarrez SteamVR et utilisez Vérifier la connexion."
+      "source": "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+      "translation": "Échec de la connexion OpenVR : redémarrez SteamVR et utilisez Vérifier la connexion. Sous Linux, réinstallez SrvSurvey si la prise en charge packagée OpenVR est signalée indisponible."
     },
     {
       "source": "OpenVR could not be initialized: {0}",
@@ -94663,10 +94667,6 @@
     {
       "source": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
       "translation": "Lorsque Require FSS est désactivé, un saut FSD dans un système correspondant le complète. Lorsqu'il est activé, de nouvelles visites locales attendent qu'Elite écrive FSSAllBodiesFound ; Les règles d'historique antérieures activées comptent toujours les systèmes correspondants comme complets."
-    },
-    {
-      "source": "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
-      "translation": "Lorsque SteamVR utilise un emplacement Linux personnalisé, définissez SRVSURVEY_OPENVR_LIBRARY sur le chemin complet libopenvr_api.so avant de démarrer SrvSurvey."
     },
     {
       "source": "When at planet surface and not in Combat mode",
@@ -110263,6 +110263,10 @@
       "translation": "Se nenhum Commander aparecer, use Diagnóstico para inspecionar a pasta selecionada e o arquivo de Diário mais recente."
     },
     {
+      "source": "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+      "translation": "Se o suporte do pacote OpenVR for relatado como indisponível, reinstale SrvSurvey e verifique se o pacote corresponde à arquitetura do sistema."
+    },
+    {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Se os dados conhecidos terminarem muito cedo, insira Sistemas esperados e selecione Aplicar. Isso estende o intervalo de sufixos que SrvSurvey rastreará sem afirmar que todos os nomes gerados existem no jogo."
     },
@@ -111655,16 +111659,16 @@
       "translation": "Carga do esquadrão vinculado da RavenColonial. A capacidade e as finanças são da última atualização Frontier."
     },
     {
-      "source": "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
-      "translation": "O Linux verifica o diretório do aplicativo, além dos locais padrão nativos, Flatpak e SteamVR do usuário para libopenvr_api.so."
+      "source": "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+      "translation": "Os pacotes Linux incluem a biblioteca cliente OpenVR usada por SrvSurvey; nenhum local de biblioteca personalizado é necessário."
     },
     {
-      "source": "Linux: OpenVR client library found at {0}.",
-      "translation": "Linux: biblioteca cliente OpenVR encontrada em {0}."
+      "source": "Linux: packaged OpenVR support is ready.",
+      "translation": "Linux: o suporte empacotado OpenVR está pronto."
     },
     {
-      "source": "Linux: no OpenVR client library was found yet. Start SteamVR, or set {0} when SteamVR is installed in a custom location.",
-      "translation": "Linux: nenhuma biblioteca cliente OpenVR foi encontrada ainda. Inicie o SteamVR ou defina {0} quando o SteamVR estiver instalado em um local personalizado."
+      "source": "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+      "translation": "Linux: o suporte empacotado OpenVR não está disponível. Reinstale SrvSurvey ou verifique se o pacote corresponde à arquitetura do seu sistema."
     },
     {
       "source": "Listening for community observations…",
@@ -115043,8 +115047,8 @@
       "translation": "Falha na conexão OpenVR"
     },
     {
-      "source": "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
-      "translation": "Falha na conexão OpenVR: no Linux verifique o caminho da biblioteca; em qualquer plataforma, reinicie o SteamVR e use Verificar conexão."
+      "source": "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+      "translation": "OpenVR falha na conexão: reinicie SteamVR e use Verificar conexão. No Linux, reinstale SrvSurvey se o suporte empacotado OpenVR for relatado como indisponível."
     },
     {
       "source": "OpenVR could not be initialized: {0}",
@@ -127609,10 +127613,6 @@
     {
       "source": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
       "translation": "Quando Exigir FSS está desativado, um salto do FSD para um sistema correspondente o completa. Quando ativado, novas visitas locais aguardam que Elite escreva FSSAllBodiesFound; as regras de histórico anterior habilitadas ainda contam os sistemas correspondentes como completos."
-    },
-    {
-      "source": "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
-      "translation": "Quando o SteamVR usa um local Linux personalizado, defina SRVSURVEY_OPENVR_LIBRARY para o caminho libopenvr_api.so completo antes de iniciar SrvSurvey."
     },
     {
       "source": "When at planet surface and not in Combat mode",
@@ -143209,6 +143209,10 @@
       "translation": "Если Commander не появляется, используйте диагностику, чтобы проверить выбранную папку и самый новый файл журнала."
     },
     {
+      "source": "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+      "translation": "Если пакетная поддержка OpenVR сообщается о недоступности, переустановите SrvSurvey и убедитесь, что пакет соответствует архитектуре системы."
+    },
+    {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "Если известные данные заканчиваются слишком рано, введите «Ожидаемые системы» и выберите «Применить». Это расширяет диапазон суффиксов, который SrvSurvey будет отслеживать, не утверждая, что каждое сгенерированное имя существует в игре."
     },
@@ -144601,16 +144605,16 @@
       "translation": "Связанный эскадрильный груз от RavenColonial. Емкость и финансы взяты из последнего Frontier обновления."
     },
     {
-      "source": "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
-      "translation": "Linux проверяет каталог приложения, а также стандартные собственные расположения, папки Flatpak и пользовательские расположения SteamVR на наличие libopenvr_api.so."
+      "source": "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+      "translation": "Пакеты Linux включают клиентскую библиотеку OpenVR, используемую SrvSurvey; никакого специального местоположения библиотеки не требуется."
     },
     {
-      "source": "Linux: OpenVR client library found at {0}.",
-      "translation": "Linux: клиентская библиотека OpenVR находится по адресу {0}."
+      "source": "Linux: packaged OpenVR support is ready.",
+      "translation": "Linux: пакетная поддержка OpenVR готова."
     },
     {
-      "source": "Linux: no OpenVR client library was found yet. Start SteamVR, or set {0} when SteamVR is installed in a custom location.",
-      "translation": "Linux: клиентская библиотека OpenVR пока не найдена. Запустите SteamVR или установите {0}, если SteamVR установлен в произвольном месте."
+      "source": "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+      "translation": "Linux: пакетная поддержка OpenVR недоступна. Переустановите SrvSurvey или убедитесь, что пакет соответствует архитектуре вашей системы."
     },
     {
       "source": "Listening for community observations…",
@@ -147989,8 +147993,8 @@
       "translation": "Не удалось подключиться к OpenVR"
     },
     {
-      "source": "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
-      "translation": "Не удалось подключиться к OpenVR: в Linux проверьте путь к библиотеке; на любой платформе перезапустите SteamVR и используйте «Проверить соединение»."
+      "source": "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+      "translation": "OpenVR не удалось подключиться: перезапустите SteamVR и используйте «Проверить соединение». В Linux переустановите SrvSurvey, если пакетная поддержка OpenVR недоступна."
     },
     {
       "source": "OpenVR could not be initialized: {0}",
@@ -160555,10 +160559,6 @@
     {
       "source": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
       "translation": "Если параметр «Требовать FSS» отключен, переход FSD в соответствующую систему завершает его. Когда он включен, новые локальные посещения ждут, пока Elite напишет FSSAllBodiesFound; включенные правила более ранней истории по-прежнему считают соответствующие системы завершенными."
-    },
-    {
-      "source": "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
-      "translation": "Если SteamVR использует пользовательское расположение Linux, перед запуском установите для SRVSURVEY_OPENVR_LIBRARY полный путь libopenvr_api.so SrvSurvey."
     },
     {
       "source": "When at planet surface and not in Combat mode",
@@ -176155,6 +176155,10 @@
       "translation": "如果没有出现 Commander，请使用诊断检查所选文件夹和最新的日志文件。"
     },
     {
+      "source": "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+      "translation": "如果报告打包 OpenVR 支持不可用，请重新安装 SrvSurvey 并验证该包是否与系统架构匹配。"
+    },
+    {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "如果已知数据结束得太早，请输入预期系统并选择应用。这扩展了 SrvSurvey 将跟踪的后缀范围，而不声明游戏中存在每个生成的名称。"
     },
@@ -177547,16 +177551,16 @@
       "translation": "来自 RavenColonial 的链接中队货物。产能和财务来自上次 Frontier 刷新。"
     },
     {
-      "source": "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
-      "translation": "Linux 检查应用程序目录以及 libopenvr_api.so 的标准本机、Flatpak 和用户 SteamVR 位置。"
+      "source": "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+      "translation": "Linux 软件包包括 SrvSurvey 使用的 OpenVR 客户端库；不需要自定义库位置。"
     },
     {
-      "source": "Linux: OpenVR client library found at {0}.",
-      "translation": "Linux：OpenVR 客户端库位于 {0}。"
+      "source": "Linux: packaged OpenVR support is ready.",
+      "translation": "Linux：打包OpenVR支持已准备就绪。"
     },
     {
-      "source": "Linux: no OpenVR client library was found yet. Start SteamVR, or set {0} when SteamVR is installed in a custom location.",
-      "translation": "Linux：尚未找到 OpenVR 客户端库。启动 SteamVR，或在 SteamVR 安装在自定义位置时设置 {0}。"
+      "source": "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+      "translation": "Linux：打包OpenVR支持不可用。重新安装 SrvSurvey 或验证该软件包是否与您的系统架构匹配。"
     },
     {
       "source": "Listening for community observations…",
@@ -180935,8 +180939,8 @@
       "translation": "OpenVR 连接失败"
     },
     {
-      "source": "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
-      "translation": "OpenVR 连接失败：在 Linux 上验证库路径；在任一平台上重新启动 SteamVR 并使用检查连接。"
+      "source": "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+      "translation": "OpenVR连接失败：重新启动SteamVR并使用检查连接。在 Linux 上，如果报告打包 OpenVR 支持不可用，请重新安装 SrvSurvey。"
     },
     {
       "source": "OpenVR could not be initialized: {0}",
@@ -193501,10 +193505,6 @@
     {
       "source": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
       "translation": "当“要求 FSS”关闭时，FSD 跳转到匹配系统即可完成该操作。开启后，新的本地访问等待Elite写入FSSAllBodiesFound；启用的早期历史规则仍将匹配系统视为完整。"
-    },
-    {
-      "source": "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
-      "translation": "当 SteamVR 使用自定义 Linux 位置时，请在启动之前将 SRVSURVEY_OPENVR_LIBRARY 设置为完整的 libopenvr_api.so 路径 SrvSurvey。"
     },
     {
       "source": "When at planet surface and not in Combat mode",
@@ -209101,6 +209101,10 @@
       "translation": "* IF NO COMMANDER APPEARS, USE DIAGNOSTICS TO INSPECT THE SELECTED FOLDER AND NEWEST JOURNAL FILE. >>>!"
     },
     {
+      "source": "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+      "translation": "* IF PACKAGED OPENVR SUPPORT IS REPORTED UNAVAILABLE, REINSTALL SRVSURVEY AND VERIFY THAT THE PACKAGE MATCHES THE SYSTEM ARCHITECTURE. >>>!"
+    },
+    {
       "source": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
       "translation": "* IF THE KNOWN DATA ENDS TOO EARLY, ENTER EXPECTED SYSTEMS AND SELECT APPLY. THIS EXTENDS THE SUFFIX RANGE SRVSURVEY WILL TRACK WITHOUT CLAIMING THAT EVERY GENERATED NAME EXISTS IN THE GAME. >>>!"
     },
@@ -210493,16 +210497,16 @@
       "translation": "* LINKED SQUADRON CARGO FROM RAVENCOLONIAL. CAPACITY AND FINANCES ARE FROM THE LAST FRONTIER REFRESH. >>>!"
     },
     {
-      "source": "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
-      "translation": "* LINUX CHECKS THE APPLICATION DIRECTORY PLUS STANDARD NATIVE, FLATPAK, AND USER STEAMVR LOCATIONS FOR LIBOPENVR_API.SO. >>>!"
+      "source": "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+      "translation": "* LINUX PACKAGES INCLUDE THE OPENVR CLIENT LIBRARY USED BY SRVSURVEY; NO CUSTOM LIBRARY LOCATION IS REQUIRED. >>>!"
     },
     {
-      "source": "Linux: OpenVR client library found at {0}.",
-      "translation": "* LINUX: OPENVR CLIENT LIBRARY FOUND AT {0}. >>>!"
+      "source": "Linux: packaged OpenVR support is ready.",
+      "translation": "* LINUX: PACKAGED OPENVR SUPPORT IS READY. >>>!"
     },
     {
-      "source": "Linux: no OpenVR client library was found yet. Start SteamVR, or set {0} when SteamVR is installed in a custom location.",
-      "translation": "* LINUX: NO OPENVR CLIENT LIBRARY WAS FOUND YET. START STEAMVR, OR SET {0} WHEN STEAMVR IS INSTALLED IN A CUSTOM LOCATION. >>>!"
+      "source": "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+      "translation": "* LINUX: PACKAGED OPENVR SUPPORT IS UNAVAILABLE. REINSTALL SRVSURVEY OR VERIFY THAT THE PACKAGE MATCHES YOUR SYSTEM ARCHITECTURE. >>>!"
     },
     {
       "source": "Listening for community observations…",
@@ -213881,8 +213885,8 @@
       "translation": "* OPENVR CONNECTION FAILED >>>!"
     },
     {
-      "source": "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
-      "translation": "* OPENVR CONNECTION FAILED: ON LINUX VERIFY THE LIBRARY PATH; ON EITHER PLATFORM RESTART STEAMVR AND USE CHECK CONNECTION. >>>!"
+      "source": "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+      "translation": "* OPENVR CONNECTION FAILED: RESTART STEAMVR AND USE CHECK CONNECTION. ON LINUX, REINSTALL SRVSURVEY IF PACKAGED OPENVR SUPPORT IS REPORTED UNAVAILABLE. >>>!"
     },
     {
       "source": "OpenVR could not be initialized: {0}",
@@ -226447,10 +226451,6 @@
     {
       "source": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
       "translation": "* WHEN REQUIRE FSS IS OFF, AN FSD JUMP INTO A MATCHING SYSTEM COMPLETES IT. WHEN IT IS ON, NEW LOCAL VISITS WAIT FOR ELITE TO WRITE FSSALLBODIESFOUND; ENABLED EARLIER-HISTORY RULES STILL COUNT MATCHING SYSTEMS AS COMPLETE. >>>!"
-    },
-    {
-      "source": "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
-      "translation": "* WHEN STEAMVR USES A CUSTOM LINUX LOCATION, SET SRVSURVEY_OPENVR_LIBRARY TO THE FULL LIBOPENVR_API.SO PATH BEFORE STARTING SRVSURVEY. >>>!"
     },
     {
       "source": "When at planet surface and not in Combat mode",

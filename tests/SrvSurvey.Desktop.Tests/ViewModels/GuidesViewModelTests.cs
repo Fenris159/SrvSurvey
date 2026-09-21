@@ -196,7 +196,7 @@ public sealed class GuidesViewModelTests
     [InlineData("Rhino cargo", "Ship, Rhino, and cargo")]
     [InlineData("Meta users must launch Elite through SteamVR", "Pair the headset and activate overlays")]
     [InlineData("VDXR", "Choose a Meta compatibility bridge")]
-    [InlineData("SRVSURVEY_OPENVR_LIBRARY", "Windows and Linux setup")]
+    [InlineData("no custom library location", "Windows and Linux setup")]
     public void SearchFindsWorkflowAndGlossaryContent(string query, string expectedTitle)
     {
         var viewModel = new GuidesViewModel(GuideCatalog.Create()) { SearchText = query };
@@ -293,7 +293,7 @@ public sealed class GuidesViewModelTests
         Assert.Contains("OpenXR-only", instructions, StringComparison.Ordinal);
         Assert.Contains("Meta compatibility bridge", instructions, StringComparison.Ordinal);
         Assert.Contains("OpenComposite is not a compatible workaround", instructions, StringComparison.Ordinal);
-        Assert.Contains("SRVSURVEY_OPENVR_LIBRARY", instructions, StringComparison.Ordinal);
+        Assert.Contains("no custom library location is required", instructions, StringComparison.Ordinal);
         Assert.Contains("Connected with zero panels", instructions, StringComparison.Ordinal);
     }
 

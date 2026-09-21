@@ -22913,6 +22913,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
     "IsFormat": false,
     "SourceKinds": [
@@ -25706,7 +25714,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
+    "Text": "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -25714,16 +25722,16 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Linux: OpenVR client library found at {0}.",
-    "IsFormat": true,
+    "Text": "Linux: packaged OpenVR support is ready.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
-    "Text": "Linux: no OpenVR client library was found yet. Start SteamVR, or set {0} when SteamVR is installed in a custom location.",
-    "IsFormat": true,
+    "Text": "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -32500,7 +32508,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
-    "Text": "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
+    "Text": "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -57679,14 +57687,6 @@
   },
   {
     "Text": "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

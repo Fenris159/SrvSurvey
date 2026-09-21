@@ -864,8 +864,8 @@ public static class GuideCatalog
                         [],
                         [
                             "Windows packages include the OpenVR client library used by SrvSurvey.",
-                            "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
-                            "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
+                            "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+                            "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
                             "Elite can run through Proton while the native SrvSurvey application publishes to the same SteamVR compositor, but Frontier does not support that Linux game path and SrvSurvey labels it experimental.",
                         ]
                     ),
@@ -889,7 +889,7 @@ public static class GuideCatalog
                         [],
                         [
                             "Waiting: confirm SteamVR is running and the selected headset route is using that same session.",
-                            "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
+                            "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
                             "Connected with zero panels: make a SrvSurvey overlay visible in Elite or open its supported game context.",
                             "Connected but one panel is absent: verify that panel's normal visibility switch, vehicle exception, and game-state trigger.",
                             "Meta headset with no SrvSurvey panels: confirm Elite was launched through SteamVR rather than directly through the Meta OpenXR runtime.",
