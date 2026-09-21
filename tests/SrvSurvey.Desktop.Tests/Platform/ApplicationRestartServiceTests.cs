@@ -81,6 +81,21 @@ public sealed class ApplicationRestartServiceTests
         Assert.Contains(ApplicationRestartService.RestartAfterProcessArgument, capturedStartInfo.ArgumentList);
     }
 
+    [Theory]
+    [InlineData(true, "invocation", true, true)]
+    [InlineData(false, "invocation", true, false)]
+    [InlineData(true, null, true, false)]
+    [InlineData(true, "invocation", false, false)]
+    public void SystemdIsolationRequiresLinuxAnOwningUnitAndSystemdRun(
+        bool isLinux,
+        string? invocationId,
+        bool systemdRunExists,
+        bool expected
+    )
+    {
+        Assert.Equal(expected, SystemdProcessIsolation.IsRequired(isLinux, invocationId, systemdRunExists));
+    }
+
     [Fact]
     public void FrameworkDependentLaunchPreservesAssemblyAndArguments()
     {

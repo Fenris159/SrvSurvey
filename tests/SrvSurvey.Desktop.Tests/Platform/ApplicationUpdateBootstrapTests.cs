@@ -260,6 +260,47 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     }
 
     [Fact]
+    public async Task AppImageHandoffEscapesTheOwningSystemdService()
+    {
+        string stagedEntryPoint = Path.Combine(temporaryDirectory, "staged-appimage", "SrvSurvey.AppImage");
+        Directory.CreateDirectory(Path.GetDirectoryName(stagedEntryPoint)!);
+        await File.WriteAllTextAsync(stagedEntryPoint, "helper");
+        ProcessStartInfo? captured = null;
+        var service = new ApplicationUpdateHandoffService(
+            new ReleaseInstallationPlanStore(),
+            startInfo =>
+            {
+                captured = startInfo;
+                return Process.GetCurrentProcess();
+            },
+            isolateFromSystemdUnit: true
+        );
+        ReleaseInstallationPreparation preparation = CreatePlan().Preparation with
+        {
+            Kind = ReleaseInstallationKind.AppImage,
+            EntryPoint = "SrvSurvey.AppImage",
+        };
+
+        IApplicationUpdateHandoff handoff = service;
+        ApplicationUpdateHandoffResult result = await handoff.StartHelperAttemptAsync(
+            temporaryDirectory,
+            preparation,
+            stagedEntryPoint
+        );
+        ReleaseInstallationHandoffPlan plan = Assert.IsType<ReleaseInstallationHandoffPlan>(result.Plan);
+
+        Assert.Equal(ApplicationUpdateHandoffStatus.Started, result.Status);
+        Assert.NotNull(captured);
+        Assert.Equal("/usr/bin/systemd-run", captured.FileName);
+        Assert.Contains($"--unit=srvsurvey-update-{plan.ParentProcessId}", captured.ArgumentList);
+        Assert.Contains("--property=ExitType=cgroup", captured.ArgumentList);
+        Assert.Contains("--setenv=APPIMAGE_EXTRACT_AND_RUN=1", captured.ArgumentList);
+        Assert.Contains(Path.GetFullPath(stagedEntryPoint), captured.ArgumentList);
+        Assert.Contains(ApplicationUpdateBootstrap.ApplyArgument, captured.ArgumentList);
+        Assert.Contains(plan.PlanPath, captured.ArgumentList);
+    }
+
+    [Fact]
     public async Task ElevatedHandoffWaitsForHelperReadyMarker()
     {
         string stagedEntryPoint = Path.Combine(temporaryDirectory, "staged-elevated", "SrvSurvey.Desktop.exe");
