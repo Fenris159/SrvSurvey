@@ -611,22 +611,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     private void ApplyAutomation(JournalMonitorUpdate update, MiningNotice? previousNotice)
     {
-        if (!update.IsBootstrapRead && Runtime.DesktopExternalEffectPolicy.IsAllowed)
-        {
-            foreach (
-                MiningNotice? notice in state.Notices.TakeWhile(n => !ReferenceEquals(n, previousNotice)).Reverse()
-            )
-            {
-                if (Settings.SpeakAnnouncements)
-                {
-                    speech.Speak(notice.Text, Settings.Voice, Settings.SpeechVolume, Settings.SpeechRate);
-                }
-                if (Settings.PlayProspectChime && notice.Kind == "Prospected")
-                {
-                    chime.Play(Settings.ChimeVolume);
-                }
-            }
-        }
+        ApplyAnnouncements(update, previousNotice);
 
         if (
             Settings.AutoSearch
@@ -649,6 +634,26 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         )
         {
             SelectedTab = 0;
+        }
+    }
+
+    private void ApplyAnnouncements(JournalMonitorUpdate update, MiningNotice? previousNotice)
+    {
+        if (update.IsBootstrapRead || !Runtime.DesktopExternalEffectPolicy.IsAllowed)
+        {
+            return;
+        }
+
+        foreach (MiningNotice? notice in state.Notices.TakeWhile(n => !ReferenceEquals(n, previousNotice)).Reverse())
+        {
+            if (Settings.SpeakAnnouncements)
+            {
+                speech.Speak(notice.Text, Settings.Voice, Settings.SpeechVolume, Settings.SpeechRate);
+            }
+            if (Settings.PlayProspectChime && notice.Kind == "Prospected")
+            {
+                chime.Play(Settings.ChimeVolume);
+            }
         }
     }
 
