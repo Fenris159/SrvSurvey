@@ -181,6 +181,10 @@
       "translation": "1 · WÄHLEN SIE IHRE HEADSET-ROUTE"
     },
     {
+      "source": "1 · Choose the Powerplay goal",
+      "translation": "1 · Wählen Sie das Powerplay-Ziel"
+    },
+    {
       "source": "1,000 t",
       "translation": "1.000 t"
     },
@@ -345,6 +349,10 @@
       "translation": "2 · KOPPELN UND STARTEN"
     },
     {
+      "source": "2 · Select a target system",
+      "translation": "2 · Wählen Sie ein Zielsystem aus"
+    },
+    {
       "source": "2,450 need | 620 FC | 96 ship",
       "translation": "2.450 Bedarf | 620 FC | 96 Schiff"
     },
@@ -421,6 +429,10 @@
       "translation": "3 · AKTIVIEREN UND ÜBERPRÜFEN"
     },
     {
+      "source": "3 · Select a mining ring",
+      "translation": "3 · Wählen Sie einen Mining-Ring"
+    },
+    {
       "source": "3,892 t",
       "translation": "3.892 t"
     },
@@ -447,6 +459,10 @@
     {
       "source": "4 of 12 biological signals analyzed",
       "translation": "4 von 12 biologischen Signalen analysiert"
+    },
+    {
+      "source": "4 · Select a selling station",
+      "translation": "4 · Wählen Sie eine Verkaufsstation"
     },
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
@@ -1039,10 +1055,6 @@
     {
       "source": "ALL",
       "translation": "ALLE"
-    },
-    {
-      "source": "ALLEGIANCE",
-      "translation": "Treue"
     },
     {
       "source": "ALPHA",
@@ -1695,6 +1707,10 @@
     {
       "source": "All minerals are announced.",
       "translation": "Alle Mineralien sind bekannt gegeben."
+    },
+    {
+      "source": "All platinum",
+      "translation": "Alles Platin"
     },
     {
       "source": "All publication remains off unless you explicitly enable it. Imported profiles retain the original choices.",
@@ -3557,6 +3573,10 @@
       "translation": "Ausgewählten Ring mit einem Lesezeichen versehen"
     },
     {
+      "source": "Bookmark selected spot",
+      "translation": "Markierte Stelle mit einem Lesezeichen versehen"
+    },
+    {
       "source": "Bookmarks",
       "translation": "Lesezeichen"
     },
@@ -4809,10 +4829,6 @@
       "translation": "Wählen Sie einen vorhandenen absoluten Screenshot-Quellordner."
     },
     {
-      "source": "Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates.",
-      "translation": "Wählen Sie ein Ziel und eine Kraft, finden Sie ein System und dann seine Ringe. Nutzen Sie Verkaufsstationen aus einem Ring, um den Plan zu vervollständigen. Akquisitionskandidaten benötigen im Spiel weiterhin Überprüfungen der Unterstützungsreichweite; Preise sind keine Leistungsschätzungen."
-    },
-    {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Wählen Sie eine Überlagerung und überschreiben Sie dann optional deren geerbte Deckkraft, ohne die durch Ziehen gesteuerte Position zu ändern."
     },
@@ -4983,10 +4999,6 @@
     {
       "source": "Clear Decrypting the Guardian Logs progress?",
       "translation": "Fortschritt bei der Entschlüsselung der Guardian-Protokolle löschen?"
-    },
-    {
-      "source": "Clear Powerplay plan",
-      "translation": "Klarer Powerplay-Plan"
     },
     {
       "source": "Clear all trackers on current body",
@@ -5401,6 +5413,10 @@
       "translation": "Combat.AutoShowMassacreMissions"
     },
     {
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Kombinieren Sie SrvSurvey die integrierte Ringreferenz, Kommandantenentdeckungen, Live-Beobachtungen EDDN und Spansh API-Ergebnisse. Spots++ priorisiert kartierte RES-Standorte, Überlappungen, Multi-Hotspot-Ringe und unberührte Reserven, ohne dass ein heruntergeladener Galaxien-Dump erforderlich ist."
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "Der kombinierte Overlay-Bearbeitungsmodus ist unter Windows aktiv."
     },
@@ -5635,6 +5651,10 @@
     {
       "source": "Commodity row fill (colour + alpha)",
       "translation": "Füllung der Warenzeile (Farbe + Alpha)"
+    },
+    {
+      "source": "Common",
+      "translation": "Gemeinsam"
     },
     {
       "source": "Common fixes",
@@ -6237,10 +6257,6 @@
       "translation": "ControllerInputCard"
     },
     {
-      "source": "Controlling Power",
-      "translation": "Macht kontrollieren"
-    },
-    {
       "source": "Controlling faction unavailable",
       "translation": "Kontrollierende Fraktion nicht verfügbar"
     },
@@ -6463,6 +6479,10 @@
     {
       "source": "Could not open the desktop surface.",
       "translation": "Die Desktop-Oberfläche konnte nicht geöffnet werden."
+    },
+    {
+      "source": "Could not open the system link: {0}",
+      "translation": "Der Systemlink konnte nicht geöffnet werden: {0}"
     },
     {
       "source": "Could not open {0}.",
@@ -6699,6 +6719,10 @@
     {
       "source": "Current system is inside the limit",
       "translation": "Das aktuelle System liegt innerhalb der Grenzen"
+    },
+    {
+      "source": "Current system is not available from the journal yet.",
+      "translation": "Das aktuelle System ist in der Zeitschrift noch nicht verfügbar."
     },
     {
       "source": "Current system is outside the limit",
@@ -7187,6 +7211,10 @@
     {
       "source": "DepartureTime",
       "translation": "Abfahrtszeit"
+    },
+    {
+      "source": "Depleted",
+      "translation": "Erschöpft"
     },
     {
       "source": "Deployment bar color",
@@ -7851,10 +7879,6 @@
     {
       "source": "ECONOMIES",
       "translation": "WIRTSCHAFTEN"
-    },
-    {
-      "source": "ECONOMY",
-      "translation": "WIRTSCHAFT"
     },
     {
       "source": "EDAstro Codex map",
@@ -9005,10 +9029,6 @@
       "translation": "Durch die Anreicherung externer Daten können frühere Entdeckungen, Verkehr, Station und biologischer Kontext hinzugefügt werden, wenn die Datenschutzeinstellung aktiviert ist."
     },
     {
-      "source": "FACTION STATE",
-      "translation": "Fraktionsstaat"
-    },
-    {
       "source": "FACTIONS",
       "translation": "FRAKTIONEN"
     },
@@ -9433,6 +9453,18 @@
       "translation": "Finden"
     },
     {
+      "source": "Find Platinum spots",
+      "translation": "Finden Sie Platinum-Spots"
+    },
+    {
+      "source": "Find buyers",
+      "translation": "Finden Sie Käufer"
+    },
+    {
+      "source": "Find buyers for selected spot →",
+      "translation": "Käufer für ausgewählte Stelle finden →"
+    },
+    {
       "source": "Find hotspots",
       "translation": "Finden Sie Hotspots"
     },
@@ -9469,6 +9501,10 @@
       "translation": "Finden Sie Preise"
     },
     {
+      "source": "Find rings",
+      "translation": "Finden Sie Ringe"
+    },
+    {
       "source": "Find rings in selected system →",
       "translation": "Ringe im ausgewählten System finden →"
     },
@@ -9477,12 +9513,20 @@
       "translation": "Finden Sie Ringe, Märkte und Händler"
     },
     {
+      "source": "Find selling stations",
+      "translation": "Finden Sie Verkaufsstellen"
+    },
+    {
+      "source": "Find selling stations for selected ring →",
+      "translation": "Verkaufsstellen für den ausgewählten Ring finden →"
+    },
+    {
       "source": "Find system",
       "translation": "System finden"
     },
     {
-      "source": "Find systems",
-      "translation": "Systeme finden"
+      "source": "Find target systems",
+      "translation": "Zielsysteme finden"
     },
     {
       "source": "Find the last recorded FSD jump into {0}.",
@@ -10155,10 +10199,6 @@
     {
       "source": "GOAL #{0}",
       "translation": "ZIEL #{0}"
-    },
-    {
-      "source": "GOVERNMENT",
-      "translation": "Regierung"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -12701,6 +12741,10 @@
       "translation": "Groß"
     },
     {
+      "source": "Large landing pads only",
+      "translation": "Nur große Landeplätze"
+    },
+    {
       "source": "Large pads",
       "translation": "Große Polster"
     },
@@ -13433,6 +13477,10 @@
       "translation": "Verlorene Oberflächenscans wurden nicht markiert: {0}"
     },
     {
+      "source": "Low",
+      "translation": "Niedrig"
+    },
+    {
       "source": "Low Temperature Diamonds",
       "translation": "Diamanten mit niedriger Temperatur"
     },
@@ -13627,6 +13675,10 @@
     {
       "source": "Maintenance paid",
       "translation": "Unterhalt bezahlt"
+    },
+    {
+      "source": "Major",
+      "translation": "Wesentlich"
     },
     {
       "source": "Make primary",
@@ -13949,12 +14001,20 @@
       "translation": "Maverick-Anzug"
     },
     {
+      "source": "Max age (days)",
+      "translation": "Höchstalter (Tage)"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "MaxJumpRange"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Höchstalter (Tage)"
+    },
+    {
+      "source": "Maximum demand (0 = any)",
+      "translation": "Maximaler Bedarf (0 = beliebig)"
     },
     {
       "source": "Med kits",
@@ -14145,6 +14205,10 @@
       "translation": "Mineral (leer = beliebig)"
     },
     {
+      "source": "Mineral / metal",
+      "translation": "Mineralisch / Metall"
+    },
+    {
       "source": "Mineral Amount:",
       "translation": "Mineralstoffmenge:"
     },
@@ -14187,6 +14251,10 @@
     {
       "source": "Minimum DSS value (credits)",
       "translation": "Mindest-DSS-Wert (Credits)"
+    },
+    {
+      "source": "Minimum demand",
+      "translation": "Mindestbedarf"
     },
     {
       "source": "Minimum displayed body value (credits)",
@@ -15545,6 +15613,10 @@
       "translation": "Es ist keine geplante Raven-Site verfügbar; Wählen Sie manuell ein Build-Layout."
     },
     {
+      "source": "No pledge detected",
+      "translation": "Keine Verpfändung festgestellt"
+    },
+    {
       "source": "No projects loaded.",
       "translation": "Keine Projekte geladen."
     },
@@ -15937,6 +16009,10 @@
       "translation": "ANDERE"
     },
     {
+      "source": "OVERLAP",
+      "translation": "ÜBERLAPPEN"
+    },
+    {
       "source": "OVERLAPS",
       "translation": "Überlappungen"
     },
@@ -15963,10 +16039,6 @@
     {
       "source": "Object does not exist at path",
       "translation": "Das Objekt ist im Pfad nicht vorhanden"
-    },
-    {
-      "source": "Objective",
-      "translation": "Objektiv"
     },
     {
       "source": "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
@@ -16509,6 +16581,10 @@
       "translation": "Operationen"
     },
     {
+      "source": "Opposing Power (optional)",
+      "translation": "Gegenmacht (optional)"
+    },
+    {
       "source": "Opposition",
       "translation": "Opposition"
     },
@@ -16651,6 +16727,10 @@
     {
       "source": "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.",
       "translation": "Außerhalb der Körpervorhersage-Entdeckungsmarker identifiziert dieses Symbol einen Stern-/Körperkontext oder ein ungelöstes biologisches Signal entsprechend dem Zeilentitel."
+    },
+    {
+      "source": "Overlaps",
+      "translation": "Überschneidungen"
     },
     {
       "source": "Overlaps only",
@@ -17281,6 +17361,10 @@
       "translation": "PipeWire"
     },
     {
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
+      "translation": "Planen Sie einen Powerplay-Mining-Lauf vom Zielsystem zum Ring und zur Verkaufsstation. SrvSurvey kombiniert Journalkontext, integrierte Ringreferenzen, Live-Beobachtungen EDDN und gezielte API-Suchen Spansh; Es ist kein heruntergeladener Galaxy Dump erforderlich."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planen Sie eine Bergbaureise"
     },
@@ -17311,6 +17395,10 @@
     {
       "source": "Platinum 34.8% · Osmium 12.4%",
       "translation": "Platin 34,8 % · Osmium 12,4 %"
+    },
+    {
+      "source": "Platinum Spots++",
+      "translation": "Platin-Spots++"
     },
     {
       "source": "Platinum ×1",
@@ -17617,6 +17705,10 @@
       "translation": "Stromgeneratoren"
     },
     {
+      "source": "Power goal",
+      "translation": "Machtziel"
+    },
+    {
       "source": "Power post",
       "translation": "Stromposten"
     },
@@ -17639,6 +17731,14 @@
     {
       "source": "Powerplay",
       "translation": "Machtspiel"
+    },
+    {
+      "source": "Powerplay mining filters reset to commander defaults.",
+      "translation": "Powerplay-Mining-Filter wurden auf die Commander-Standardeinstellungen zurückgesetzt."
+    },
+    {
+      "source": "Powerplay mining planner",
+      "translation": "Powerplay-Bergbauplaner"
     },
     {
       "source": "PowerplayJoin",
@@ -17901,6 +18001,10 @@
       "translation": "Zuvor ausgewählter Controller"
     },
     {
+      "source": "Prices and demand are recent observations, not merit estimates or guarantees.",
+      "translation": "Bei Preisen und Nachfrage handelt es sich um aktuelle Beobachtungen, nicht um Schätzungen oder Garantien."
+    },
+    {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
       "translation": "Die Preise sind Richtwerte und können sich ändern. Einstellungen → Sitzung kann Nur-Empfangs-Beobachtungen EDDN aktivieren, die für Waren 24 Stunden lang aufbewahrt werden. Dadurch sind keine Uploads möglich."
     },
@@ -17987,6 +18091,10 @@
     {
       "source": "PriorScanMinimumValue",
       "translation": "PriorScanMinimumValue"
+    },
+    {
+      "source": "Pristine",
+      "translation": "Unberührt"
     },
     {
       "source": "Pristine icy ring",
@@ -18539,6 +18647,10 @@
     {
       "source": "RES",
       "translation": "RES"
+    },
+    {
+      "source": "RES mapped",
+      "translation": "RES kartiert"
     },
     {
       "source": "RES sites only",
@@ -19473,6 +19585,10 @@
       "translation": "Referenzsystem"
     },
     {
+      "source": "Reference system set to {0}.",
+      "translation": "Referenzsystem auf {0} gesetzt."
+    },
+    {
       "source": "Reference-data updates",
       "translation": "Aktualisierungen der Referenzdaten"
     },
@@ -19631,6 +19747,10 @@
     {
       "source": "Reinforce",
       "translation": "Verstärken"
+    },
+    {
+      "source": "Reinforce selects your Power's systems; Undermine selects other Powers (optionally one opponent); Acquire selects unoccupied or expansion candidates. Unknown Powerplay ownership is never treated as eligible.",
+      "translation": "„Verstärken“ wählt die Systeme Ihrer Macht aus; Unterminieren wählt andere Kräfte aus (optional einen Gegner); Acquire wählt unbesetzte oder Erweiterungskandidaten aus. Unbekannte Powerplay-Besitzer werden niemals als teilnahmeberechtigt behandelt."
     },
     {
       "source": "Reinforcements",
@@ -19977,6 +20097,10 @@
       "translation": "Tracker für Forschungsmissionen"
     },
     {
+      "source": "Reserve level",
+      "translation": "Reserveniveau"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Reservierter Restbetrag"
     },
@@ -20127,6 +20251,14 @@
     {
       "source": "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
       "translation": "Beschränken Sie jede Overlay-Kategorie auf ausgewählte Schiffe oder Fahrzeuge, ohne ihre normalen Auslöser zu ändern."
+    },
+    {
+      "source": "Result set",
+      "translation": "Ergebnissatz"
+    },
+    {
+      "source": "Results",
+      "translation": "Ergebnisse"
     },
     {
       "source": "Resume Selected",
@@ -23137,6 +23269,10 @@
       "translation": "Spansh hat eine Route ohne Systeme zurückgegeben."
     },
     {
+      "source": "Spansh unavailable; showing built-in and commander observations.",
+      "translation": "Spansh nicht verfügbar; Zeigt eingebaute und Kommandantenbeobachtungen."
+    },
+    {
       "source": "Spansh update time unavailable",
       "translation": "Spansh Aktualisierungszeit nicht verfügbar"
     },
@@ -23187,6 +23323,10 @@
     {
       "source": "Spoiler",
       "translation": "Spoiler"
+    },
+    {
+      "source": "Spots++",
+      "translation": "Flecken++"
     },
     {
       "source": "Squadron Carrier",
@@ -24449,6 +24589,10 @@
       "translation": "Systemautorität"
     },
     {
+      "source": "System and selling filters",
+      "translation": "System- und Verkaufsfilter"
+    },
+    {
       "source": "System biology",
       "translation": "Systembiologie"
     },
@@ -24479,10 +24623,6 @@
     {
       "source": "System files could not be analyzed: {0}",
       "translation": "Systemdateien konnten nicht analysiert werden: {0}"
-    },
-    {
-      "source": "System filters",
-      "translation": "Systemfilter"
     },
     {
       "source": "System lookup unavailable: {0}",
@@ -28205,10 +28345,6 @@
       "translation": "Verwenden Sie heruntergeladene Biodaten von Canonn und Spansh"
     },
     {
-      "source": "Use for hotspot search",
-      "translation": "Zur Hotspot-Suche verwenden"
-    },
-    {
       "source": "Use global opacity",
       "translation": "Verwenden Sie globale Deckkraft"
     },
@@ -28723,6 +28859,10 @@
     {
       "source": "WG Life",
       "translation": "WG Leben"
+    },
+    {
+      "source": "WHY IT RANKS",
+      "translation": "WARUM ES RANGIERT"
     },
     {
       "source": "WINDOW SIZE",
@@ -32525,6 +32665,14 @@
       "translation": "{0} OVERLAYS"
     },
     {
+      "source": "{0} Platinum Spots++ results · {1} · {2}.",
+      "translation": "{0} Platinum Spots++ Ergebnisse · {1} · {2}."
+    },
+    {
+      "source": "{0} Platinum hotspot{1}",
+      "translation": "{0} Platinum-Hotspot{1}"
+    },
+    {
       "source": "{0} ROUTE JUMPS",
       "translation": "{0} ROUTE-SPRINGE"
     },
@@ -33209,6 +33357,10 @@
       "translation": "{0} · {1} · {2} t · {3} t/h · {4} Asteroiden · {5} Kerne"
     },
     {
+      "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
+      "translation": "{0} · {1} · {2} · {3} · {4} Reserve · innerhalb {5} ly"
+    },
+    {
       "source": "{0} • updated {1}",
       "translation": "{0} • aktualisiert {1}"
     },
@@ -33623,6 +33775,10 @@
       "translation": "1 · ELIGE TU RUTA DE AURICULARES"
     },
     {
+      "source": "1 · Choose the Powerplay goal",
+      "translation": "1 · Elige el objetivo de Powerplay"
+    },
+    {
       "source": "1,000 t",
       "translation": "1.000 toneladas"
     },
@@ -33787,6 +33943,10 @@
       "translation": "2 · EMPAREJAR Y COMENZAR"
     },
     {
+      "source": "2 · Select a target system",
+      "translation": "2 · Seleccione un sistema de destino"
+    },
+    {
       "source": "2,450 need | 620 FC | 96 ship",
       "translation": "2.450 necesitan | 620 FC | 96 barco"
     },
@@ -33863,6 +34023,10 @@
       "translation": "3 · ACTIVAR Y VERIFICAR"
     },
     {
+      "source": "3 · Select a mining ring",
+      "translation": "3 · Selecciona un anillo minero"
+    },
+    {
       "source": "3,892 t",
       "translation": "3.892 toneladas"
     },
@@ -33889,6 +34053,10 @@
     {
       "source": "4 of 12 biological signals analyzed",
       "translation": "4 de 12 señales biológicas analizadas"
+    },
+    {
+      "source": "4 · Select a selling station",
+      "translation": "4 · Selecciona una estación de venta"
     },
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
@@ -34481,10 +34649,6 @@
     {
       "source": "ALL",
       "translation": "TODO"
-    },
-    {
-      "source": "ALLEGIANCE",
-      "translation": "Lealtad"
     },
     {
       "source": "ALPHA",
@@ -35137,6 +35301,10 @@
     {
       "source": "All minerals are announced.",
       "translation": "Todos los minerales están anunciados."
+    },
+    {
+      "source": "All platinum",
+      "translation": "Todo platino"
     },
     {
       "source": "All publication remains off unless you explicitly enable it. Imported profiles retain the original choices.",
@@ -36999,6 +37167,10 @@
       "translation": "Marcar el anillo seleccionado"
     },
     {
+      "source": "Bookmark selected spot",
+      "translation": "Marcar el lugar seleccionado"
+    },
+    {
       "source": "Bookmarks",
       "translation": "marcadores"
     },
@@ -38251,10 +38423,6 @@
       "translation": "Elija una carpeta de origen de captura de pantalla absoluta existente."
     },
     {
-      "source": "Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates.",
-      "translation": "Elige un objetivo y poder, encuentra un sistema y luego encuentra sus anillos. Utilice estaciones de venta de un anillo para completar el plan. Los candidatos a la adquisición aún necesitan controles de rango de soporte en el juego; Los precios no son estimaciones de mérito."
-    },
-    {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Elija una superposición y, opcionalmente, anule su opacidad heredada sin cambiar su posición administrada por arrastre."
     },
@@ -38425,10 +38593,6 @@
     {
       "source": "Clear Decrypting the Guardian Logs progress?",
       "translation": "¿Borrar el progreso de Descifrando los registros de Guardian?"
-    },
-    {
-      "source": "Clear Powerplay plan",
-      "translation": "Borrar plan Powerplay"
     },
     {
       "source": "Clear all trackers on current body",
@@ -38843,6 +39007,10 @@
       "translation": "Combat.AutoShowMassacreMisiones"
     },
     {
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Combine la referencia de anillo incorporada de SrvSurvey, los descubrimientos de comandantes, las observaciones en vivo EDDN y los resultados de API Spansh. Spots++ prioriza sitios RES mapeados, superposiciones, anillos de puntos múltiples y reservas prístinas sin necesidad de descargar un volcado de galaxias."
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "El modo de edición de superposición combinada está activo en Windows."
     },
@@ -39077,6 +39245,10 @@
     {
       "source": "Commodity row fill (colour + alpha)",
       "translation": "Relleno de fila de productos básicos (color + alfa)"
+    },
+    {
+      "source": "Common",
+      "translation": "Común"
     },
     {
       "source": "Common fixes",
@@ -39679,10 +39851,6 @@
       "translation": "ControladorTarjeta De Entrada"
     },
     {
-      "source": "Controlling Power",
-      "translation": "Controlar el poder"
-    },
-    {
       "source": "Controlling faction unavailable",
       "translation": "Facción controladora no disponible"
     },
@@ -39905,6 +40073,10 @@
     {
       "source": "Could not open the desktop surface.",
       "translation": "No se pudo abrir la superficie del escritorio."
+    },
+    {
+      "source": "Could not open the system link: {0}",
+      "translation": "No se pudo abrir el enlace del sistema: {0}"
     },
     {
       "source": "Could not open {0}.",
@@ -40141,6 +40313,10 @@
     {
       "source": "Current system is inside the limit",
       "translation": "El sistema actual está dentro del límite."
+    },
+    {
+      "source": "Current system is not available from the journal yet.",
+      "translation": "El sistema actual aún no está disponible en la revista."
     },
     {
       "source": "Current system is outside the limit",
@@ -40629,6 +40805,10 @@
     {
       "source": "DepartureTime",
       "translation": "Hora de salida"
+    },
+    {
+      "source": "Depleted",
+      "translation": "Agotado"
     },
     {
       "source": "Deployment bar color",
@@ -41293,10 +41473,6 @@
     {
       "source": "ECONOMIES",
       "translation": "ECONOMÍAS"
-    },
-    {
-      "source": "ECONOMY",
-      "translation": "ECONOMÍA"
     },
     {
       "source": "EDAstro Codex map",
@@ -42447,10 +42623,6 @@
       "translation": "El enriquecimiento de datos externos puede agregar descubrimiento previo, tráfico, estación y contexto biológico cuando su configuración de privacidad está habilitada."
     },
     {
-      "source": "FACTION STATE",
-      "translation": "estado de facción"
-    },
-    {
       "source": "FACTIONS",
       "translation": "FACCIONES"
     },
@@ -42875,6 +43047,18 @@
       "translation": "Encontrar"
     },
     {
+      "source": "Find Platinum spots",
+      "translation": "Encuentra lugares Platino"
+    },
+    {
+      "source": "Find buyers",
+      "translation": "encontrar compradores"
+    },
+    {
+      "source": "Find buyers for selected spot →",
+      "translation": "Encuentre compradores para el lugar seleccionado →"
+    },
+    {
       "source": "Find hotspots",
       "translation": "encontrar puntos de acceso"
     },
@@ -42911,6 +43095,10 @@
       "translation": "encontrar precios"
     },
     {
+      "source": "Find rings",
+      "translation": "encontrar anillos"
+    },
+    {
       "source": "Find rings in selected system →",
       "translation": "Buscar anillos en el sistema seleccionado →"
     },
@@ -42919,12 +43107,20 @@
       "translation": "Encuentra anillos, mercados y comerciantes."
     },
     {
+      "source": "Find selling stations",
+      "translation": "Encuentra estaciones de venta"
+    },
+    {
+      "source": "Find selling stations for selected ring →",
+      "translation": "Encuentra estaciones de venta para el anillo seleccionado →"
+    },
+    {
       "source": "Find system",
       "translation": "Buscar sistema"
     },
     {
-      "source": "Find systems",
-      "translation": "Buscar sistemas"
+      "source": "Find target systems",
+      "translation": "Encuentra sistemas de destino"
     },
     {
       "source": "Find the last recorded FSD jump into {0}.",
@@ -43597,10 +43793,6 @@
     {
       "source": "GOAL #{0}",
       "translation": "META #{0}"
-    },
-    {
-      "source": "GOVERNMENT",
-      "translation": "Gobierno"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -46143,6 +46335,10 @@
       "translation": "Grande"
     },
     {
+      "source": "Large landing pads only",
+      "translation": "Solo plataformas de aterrizaje grandes"
+    },
+    {
       "source": "Large pads",
       "translation": "Almohadillas grandes"
     },
@@ -46875,6 +47071,10 @@
       "translation": "Los escaneos de superficie perdidos no fueron marcados: {0}"
     },
     {
+      "source": "Low",
+      "translation": "Bajo"
+    },
+    {
       "source": "Low Temperature Diamonds",
       "translation": "Diamantes de baja temperatura"
     },
@@ -47069,6 +47269,10 @@
     {
       "source": "Maintenance paid",
       "translation": "Mantenimiento pagado"
+    },
+    {
+      "source": "Major",
+      "translation": "Importante"
     },
     {
       "source": "Make primary",
@@ -47391,12 +47595,20 @@
       "translation": "traje inconformista"
     },
     {
+      "source": "Max age (days)",
+      "translation": "Edad máxima (días)"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "Rango máximo de salto"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Edad máxima (días)"
+    },
+    {
+      "source": "Maximum demand (0 = any)",
+      "translation": "Demanda máxima (0 = cualquiera)"
     },
     {
       "source": "Med kits",
@@ -47587,6 +47799,10 @@
       "translation": "Mineral (en blanco = cualquiera)"
     },
     {
+      "source": "Mineral / metal",
+      "translation": "minerales/metales"
+    },
+    {
       "source": "Mineral Amount:",
       "translation": "Cantidad de minerales:"
     },
@@ -47629,6 +47845,10 @@
     {
       "source": "Minimum DSS value (credits)",
       "translation": "Valor mínimo de DSS (créditos)"
+    },
+    {
+      "source": "Minimum demand",
+      "translation": "Demanda mínima"
     },
     {
       "source": "Minimum displayed body value (credits)",
@@ -48987,6 +49207,10 @@
       "translation": "No hay ningún sitio Raven planificado disponible; Elija un diseño de construcción manualmente."
     },
     {
+      "source": "No pledge detected",
+      "translation": "No se detectó ningún compromiso"
+    },
+    {
       "source": "No projects loaded.",
       "translation": "No hay proyectos cargados."
     },
@@ -49379,6 +49603,10 @@
       "translation": "OTRO"
     },
     {
+      "source": "OVERLAP",
+      "translation": "SUPERPOSICIÓN"
+    },
+    {
       "source": "OVERLAPS",
       "translation": "SUPERPOSICIONES"
     },
@@ -49405,10 +49633,6 @@
     {
       "source": "Object does not exist at path",
       "translation": "El objeto no existe en la ruta"
-    },
-    {
-      "source": "Objective",
-      "translation": "Objetivo"
     },
     {
       "source": "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
@@ -49951,6 +50175,10 @@
       "translation": "Operaciones"
     },
     {
+      "source": "Opposing Power (optional)",
+      "translation": "Poder opuesto (opcional)"
+    },
+    {
       "source": "Opposition",
       "translation": "Oposición"
     },
@@ -50093,6 +50321,10 @@
     {
       "source": "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.",
       "translation": "Fuera de los marcadores de descubrimiento de predicción corporal, este símbolo identifica un contexto estelar/corporal o una señal biológica no resuelta según el título de la fila."
+    },
+    {
+      "source": "Overlaps",
+      "translation": "Superposiciones"
     },
     {
       "source": "Overlaps only",
@@ -50723,6 +50955,10 @@
       "translation": "TuberíaAlambre"
     },
     {
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
+      "translation": "Planifique una ejecución de minería Powerplay desde el sistema objetivo hasta el anillo y la estación de venta. SrvSurvey combina contexto de revista, referencias de anillo integradas, observaciones en vivo EDDN y búsquedas API enfocadas Spansh; no se requiere ningún volcado de galaxia descargado."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planifica un viaje minero"
     },
@@ -50753,6 +50989,10 @@
     {
       "source": "Platinum 34.8% · Osmium 12.4%",
       "translation": "Platino 34,8% · Osmio 12,4%"
+    },
+    {
+      "source": "Platinum Spots++",
+      "translation": "Puntos de platino++"
     },
     {
       "source": "Platinum ×1",
@@ -51059,6 +51299,10 @@
       "translation": "Generadores de energía"
     },
     {
+      "source": "Power goal",
+      "translation": "objetivo de poder"
+    },
+    {
       "source": "Power post",
       "translation": "puesto de energía"
     },
@@ -51081,6 +51325,14 @@
     {
       "source": "Powerplay",
       "translation": "juego de poder"
+    },
+    {
+      "source": "Powerplay mining filters reset to commander defaults.",
+      "translation": "Los filtros de minería de Powerplay se restablecen a los valores predeterminados del comandante."
+    },
+    {
+      "source": "Powerplay mining planner",
+      "translation": "Planificador de minería Powerplay"
     },
     {
       "source": "PowerplayJoin",
@@ -51343,6 +51595,10 @@
       "translation": "Controlador previamente seleccionado"
     },
     {
+      "source": "Prices and demand are recent observations, not merit estimates or guarantees.",
+      "translation": "Los precios y la demanda son observaciones recientes, no estimaciones de mérito ni garantías."
+    },
+    {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
       "translation": "Los precios son observaciones y pueden cambiar. Configuración → La sesión puede habilitar observaciones de solo recepción EDDN, retenidas durante 24 horas para productos básicos. Esto no permite las cargas."
     },
@@ -51429,6 +51685,10 @@
     {
       "source": "PriorScanMinimumValue",
       "translation": "Valor mínimo de escaneo previo"
+    },
+    {
+      "source": "Pristine",
+      "translation": "Prístino"
     },
     {
       "source": "Pristine icy ring",
@@ -51981,6 +52241,10 @@
     {
       "source": "RES",
       "translation": "RES"
+    },
+    {
+      "source": "RES mapped",
+      "translation": "RES mapeado"
     },
     {
       "source": "RES sites only",
@@ -52915,6 +53179,10 @@
       "translation": "Sistema de referencia"
     },
     {
+      "source": "Reference system set to {0}.",
+      "translation": "Sistema de referencia establecido en {0}."
+    },
+    {
       "source": "Reference-data updates",
       "translation": "Actualizaciones de datos de referencia"
     },
@@ -53073,6 +53341,10 @@
     {
       "source": "Reinforce",
       "translation": "Reforzarse"
+    },
+    {
+      "source": "Reinforce selects your Power's systems; Undermine selects other Powers (optionally one opponent); Acquire selects unoccupied or expansion candidates. Unknown Powerplay ownership is never treated as eligible.",
+      "translation": "Reinforce selecciona los sistemas de tu Power; Socavar selecciona otros poderes (opcionalmente un oponente); Adquirir selecciona candidatos desocupados o de expansión. La propiedad desconocida de Powerplay nunca se considera elegible."
     },
     {
       "source": "Reinforcements",
@@ -53419,6 +53691,10 @@
       "translation": "Rastreador de misiones de investigación"
     },
     {
+      "source": "Reserve level",
+      "translation": "Nivel de reserva"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Saldo reservado"
     },
@@ -53569,6 +53845,14 @@
     {
       "source": "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
       "translation": "Restrinja cada categoría de superposición a barcos o vehículos seleccionados sin cambiar sus activadores normales."
+    },
+    {
+      "source": "Result set",
+      "translation": "Conjunto de resultados"
+    },
+    {
+      "source": "Results",
+      "translation": "Resultados"
     },
     {
       "source": "Resume Selected",
@@ -56579,6 +56863,10 @@
       "translation": "Spansh devolvió una ruta sin sistemas."
     },
     {
+      "source": "Spansh unavailable; showing built-in and commander observations.",
+      "translation": "Spansh no disponible; mostrando observaciones integradas y del comandante."
+    },
+    {
       "source": "Spansh update time unavailable",
       "translation": "Spansh hora de actualización no disponible"
     },
@@ -56629,6 +56917,10 @@
     {
       "source": "Spoiler",
       "translation": "spoiler"
+    },
+    {
+      "source": "Spots++",
+      "translation": "Manchas++"
     },
     {
       "source": "Squadron Carrier",
@@ -57891,6 +58183,10 @@
       "translation": "Autoridad del sistema"
     },
     {
+      "source": "System and selling filters",
+      "translation": "Sistema y venta de filtros."
+    },
+    {
       "source": "System biology",
       "translation": "biología del sistema"
     },
@@ -57921,10 +58217,6 @@
     {
       "source": "System files could not be analyzed: {0}",
       "translation": "No se pudieron analizar los archivos del sistema: {0}"
-    },
-    {
-      "source": "System filters",
-      "translation": "Filtros del sistema"
     },
     {
       "source": "System lookup unavailable: {0}",
@@ -61647,10 +61939,6 @@
       "translation": "Utilice datos biográficos descargados de Canonn y Spansh"
     },
     {
-      "source": "Use for hotspot search",
-      "translation": "Usar para buscar puntos de acceso"
-    },
-    {
       "source": "Use global opacity",
       "translation": "Usar opacidad global"
     },
@@ -62165,6 +62453,10 @@
     {
       "source": "WG Life",
       "translation": "vida del grupo de trabajo"
+    },
+    {
+      "source": "WHY IT RANKS",
+      "translation": "POR QUÉ SE clasifica"
     },
     {
       "source": "WINDOW SIZE",
@@ -65967,6 +66259,14 @@
       "translation": "SUPERPOSICIONES {0}"
     },
     {
+      "source": "{0} Platinum Spots++ results · {1} · {2}.",
+      "translation": "Resultados de {0} Platinum Spots++ · {1} · {2}."
+    },
+    {
+      "source": "{0} Platinum hotspot{1}",
+      "translation": "{0} Punto de acceso platino{1}"
+    },
+    {
       "source": "{0} ROUTE JUMPS",
       "translation": "{0} SALTOS DE RUTA"
     },
@@ -66651,6 +66951,10 @@
       "translation": "{0} · {1} · {2} t · {3} t/h · {4} asteroides · {5} núcleos"
     },
     {
+      "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
+      "translation": "{0} · {1} · {2} · {3} · {4} reserva · dentro de {5} ly"
+    },
+    {
       "source": "{0} • updated {1}",
       "translation": "{0} • actualizado {1}"
     },
@@ -67065,6 +67369,10 @@
       "translation": "1 · CHOISISSEZ L'ITINÉRAIRE DE VOTRE CASQUE"
     },
     {
+      "source": "1 · Choose the Powerplay goal",
+      "translation": "1 · Choisissez l'objectif Powerplay"
+    },
+    {
       "source": "1,000 t",
       "translation": "1 000 tonnes"
     },
@@ -67229,6 +67537,10 @@
       "translation": "2 · APPAIREZ ET DÉMARREZ"
     },
     {
+      "source": "2 · Select a target system",
+      "translation": "2 · Sélectionnez un système cible"
+    },
+    {
       "source": "2,450 need | 620 FC | 96 ship",
       "translation": "2 450 besoins | 620 FC | 96 navire"
     },
@@ -67305,6 +67617,10 @@
       "translation": "3 · ACTIVER ET VÉRIFIER"
     },
     {
+      "source": "3 · Select a mining ring",
+      "translation": "3 · Sélectionnez un anneau minier"
+    },
+    {
       "source": "3,892 t",
       "translation": "3 892 tonnes"
     },
@@ -67331,6 +67647,10 @@
     {
       "source": "4 of 12 biological signals analyzed",
       "translation": "4 des 12 signaux biologiques analysés"
+    },
+    {
+      "source": "4 · Select a selling station",
+      "translation": "4 · Sélectionnez une station de vente"
     },
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
@@ -67923,10 +68243,6 @@
     {
       "source": "ALL",
       "translation": "TOUS"
-    },
-    {
-      "source": "ALLEGIANCE",
-      "translation": "Allégeance"
     },
     {
       "source": "ALPHA",
@@ -68579,6 +68895,10 @@
     {
       "source": "All minerals are announced.",
       "translation": "Tous les minéraux sont annoncés."
+    },
+    {
+      "source": "All platinum",
+      "translation": "Tout platine"
     },
     {
       "source": "All publication remains off unless you explicitly enable it. Imported profiles retain the original choices.",
@@ -70441,6 +70761,10 @@
       "translation": "Ajouter la bague sélectionnée aux favoris"
     },
     {
+      "source": "Bookmark selected spot",
+      "translation": "Ajouter l'endroit sélectionné aux favoris"
+    },
+    {
       "source": "Bookmarks",
       "translation": "signets"
     },
@@ -71693,10 +72017,6 @@
       "translation": "Choisissez un dossier source de capture d'écran absolu existant."
     },
     {
-      "source": "Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates.",
-      "translation": "Choisissez un objectif et une puissance, trouvez un système, puis trouvez ses anneaux. Utilisez des stations de vente depuis un anneau pour compléter le plan. Les candidats à l'acquisition ont toujours besoin de vérifier la plage de support dans le jeu ; les prix ne sont pas des estimations du mérite."
-    },
-    {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Choisissez une superposition, puis remplacez éventuellement son opacité héritée sans modifier sa position gérée par le glissement."
     },
@@ -71867,10 +72187,6 @@
     {
       "source": "Clear Decrypting the Guardian Logs progress?",
       "translation": "Effacer la progression du décryptage des journaux Guardian ?"
-    },
-    {
-      "source": "Clear Powerplay plan",
-      "translation": "Plan Powerplay clair"
     },
     {
       "source": "Clear all trackers on current body",
@@ -72285,6 +72601,10 @@
       "translation": "Combat.AutoShowMassacreMissions"
     },
     {
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Combinez la référence d'anneau intégrée de SrvSurvey, les découvertes du commandant, les observations en direct EDDN et les résultats de l'API Spansh. Spots++ donne la priorité aux sites RES cartographiés, aux chevauchements, aux anneaux multi-hotspots et aux réserves vierges sans nécessiter de téléchargement de vidage de galaxie."
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "Le mode d’édition de superposition combinée est actif sous Windows."
     },
@@ -72519,6 +72839,10 @@
     {
       "source": "Commodity row fill (colour + alpha)",
       "translation": "Remplissage de la ligne de produits (couleur + alpha)"
+    },
+    {
+      "source": "Common",
+      "translation": "Commun"
     },
     {
       "source": "Common fixes",
@@ -73121,10 +73445,6 @@
       "translation": "Carte d'entrée du contrôleur"
     },
     {
-      "source": "Controlling Power",
-      "translation": "Contrôler le pouvoir"
-    },
-    {
       "source": "Controlling faction unavailable",
       "translation": "Faction de contrôle indisponible"
     },
@@ -73347,6 +73667,10 @@
     {
       "source": "Could not open the desktop surface.",
       "translation": "Impossible d'ouvrir la surface du bureau."
+    },
+    {
+      "source": "Could not open the system link: {0}",
+      "translation": "Impossible d'ouvrir le lien système : {0}"
     },
     {
       "source": "Could not open {0}.",
@@ -73583,6 +73907,10 @@
     {
       "source": "Current system is inside the limit",
       "translation": "Le système actuel est dans la limite"
+    },
+    {
+      "source": "Current system is not available from the journal yet.",
+      "translation": "Le système actuel n'est pas encore disponible dans la revue."
     },
     {
       "source": "Current system is outside the limit",
@@ -74071,6 +74399,10 @@
     {
       "source": "DepartureTime",
       "translation": "Heure de départ"
+    },
+    {
+      "source": "Depleted",
+      "translation": "Épuisé"
     },
     {
       "source": "Deployment bar color",
@@ -74735,10 +75067,6 @@
     {
       "source": "ECONOMIES",
       "translation": "ÉCONOMIES"
-    },
-    {
-      "source": "ECONOMY",
-      "translation": "ÉCONOMIE"
     },
     {
       "source": "EDAstro Codex map",
@@ -75889,10 +76217,6 @@
       "translation": "L'enrichissement des données externes peut ajouter un contexte de découverte, de trafic, de station et biologique préalable lorsque son paramètre de confidentialité est activé."
     },
     {
-      "source": "FACTION STATE",
-      "translation": "État de faction"
-    },
-    {
       "source": "FACTIONS",
       "translation": "FACTIONS"
     },
@@ -76317,6 +76641,18 @@
       "translation": "Trouver"
     },
     {
+      "source": "Find Platinum spots",
+      "translation": "Trouver des places Platine"
+    },
+    {
+      "source": "Find buyers",
+      "translation": "Trouver des acheteurs"
+    },
+    {
+      "source": "Find buyers for selected spot →",
+      "translation": "Trouver des acheteurs pour le spot sélectionné →"
+    },
+    {
       "source": "Find hotspots",
       "translation": "Trouver des points chauds"
     },
@@ -76353,6 +76689,10 @@
       "translation": "Trouver les prix"
     },
     {
+      "source": "Find rings",
+      "translation": "Trouver des bagues"
+    },
+    {
       "source": "Find rings in selected system →",
       "translation": "Rechercher des sonneries dans le système sélectionné →"
     },
@@ -76361,12 +76701,20 @@
       "translation": "Trouvez des anneaux, des marchés et des commerçants"
     },
     {
+      "source": "Find selling stations",
+      "translation": "Trouver des stations de vente"
+    },
+    {
+      "source": "Find selling stations for selected ring →",
+      "translation": "Trouver des stations de vente pour la bague sélectionnée →"
+    },
+    {
       "source": "Find system",
       "translation": "Rechercher un système"
     },
     {
-      "source": "Find systems",
-      "translation": "Trouver des systèmes"
+      "source": "Find target systems",
+      "translation": "Trouver des systèmes cibles"
     },
     {
       "source": "Find the last recorded FSD jump into {0}.",
@@ -77039,10 +77387,6 @@
     {
       "source": "GOAL #{0}",
       "translation": "OBJECTIF #{0}"
-    },
-    {
-      "source": "GOVERNMENT",
-      "translation": "Gouvernement"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -79585,6 +79929,10 @@
       "translation": "Grand"
     },
     {
+      "source": "Large landing pads only",
+      "translation": "Grandes aires d'atterrissage uniquement"
+    },
+    {
       "source": "Large pads",
       "translation": "Grands coussinets"
     },
@@ -80317,6 +80665,10 @@
       "translation": "Les scans de surface perdus n'étaient pas marqués : {0}"
     },
     {
+      "source": "Low",
+      "translation": "Faible"
+    },
+    {
       "source": "Low Temperature Diamonds",
       "translation": "Diamants basse température"
     },
@@ -80511,6 +80863,10 @@
     {
       "source": "Maintenance paid",
       "translation": "Entretien payé"
+    },
+    {
+      "source": "Major",
+      "translation": "Majeur"
     },
     {
       "source": "Make primary",
@@ -80833,12 +81189,20 @@
       "translation": "Costume non-conformiste"
     },
     {
+      "source": "Max age (days)",
+      "translation": "Âge maximum (jours)"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "Plage de saut maximale"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Âge maximum (jours)"
+    },
+    {
+      "source": "Maximum demand (0 = any)",
+      "translation": "Demande maximale (0 = quelconque)"
     },
     {
       "source": "Med kits",
@@ -81029,6 +81393,10 @@
       "translation": "Minéral (vierge = n'importe lequel)"
     },
     {
+      "source": "Mineral / metal",
+      "translation": "Minéral / métal"
+    },
+    {
       "source": "Mineral Amount:",
       "translation": "Quantité minérale :"
     },
@@ -81071,6 +81439,10 @@
     {
       "source": "Minimum DSS value (credits)",
       "translation": "Valeur DSS minimale (crédits)"
+    },
+    {
+      "source": "Minimum demand",
+      "translation": "Demande minimale"
     },
     {
       "source": "Minimum displayed body value (credits)",
@@ -82429,6 +82801,10 @@
       "translation": "Aucun site Raven prévu n'est disponible ; choisissez manuellement une disposition de construction."
     },
     {
+      "source": "No pledge detected",
+      "translation": "Aucun engagement détecté"
+    },
+    {
       "source": "No projects loaded.",
       "translation": "Aucun projet chargé."
     },
@@ -82821,6 +83197,10 @@
       "translation": "AUTRE"
     },
     {
+      "source": "OVERLAP",
+      "translation": "CHEVAUCHER"
+    },
+    {
       "source": "OVERLAPS",
       "translation": "CHEVAUCHEMENT"
     },
@@ -82847,10 +83227,6 @@
     {
       "source": "Object does not exist at path",
       "translation": "L'objet n'existe pas sur le chemin"
-    },
-    {
-      "source": "Objective",
-      "translation": "Objectif"
     },
     {
       "source": "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
@@ -83393,6 +83769,10 @@
       "translation": "Opérations"
     },
     {
+      "source": "Opposing Power (optional)",
+      "translation": "Puissance adverse (facultatif)"
+    },
+    {
       "source": "Opposition",
       "translation": "Opposition"
     },
@@ -83535,6 +83915,10 @@
     {
       "source": "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.",
       "translation": "En dehors des marqueurs de découverte de prédiction corporelle, ce symbole identifie un contexte stellaire/corps ou un signal biologique non résolu selon le titre de la ligne."
+    },
+    {
+      "source": "Overlaps",
+      "translation": "Chevauchements"
     },
     {
       "source": "Overlaps only",
@@ -84165,6 +84549,10 @@
       "translation": "Fil de tuyau"
     },
     {
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
+      "translation": "Planifiez une exploitation minière Powerplay depuis le système cible jusqu'à l'anneau et la station de vente. SrvSurvey combine le contexte du journal, les références d'anneaux intégrées, les observations en direct EDDN et les recherches API ciblées Spansh ; aucun dump de galaxie téléchargé n'est requis."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planifier un voyage minier"
     },
@@ -84195,6 +84583,10 @@
     {
       "source": "Platinum 34.8% · Osmium 12.4%",
       "translation": "Platine 34,8% · Osmium 12,4%"
+    },
+    {
+      "source": "Platinum Spots++",
+      "translation": "Points Platine++"
     },
     {
       "source": "Platinum ×1",
@@ -84501,6 +84893,10 @@
       "translation": "Générateurs d'électricité"
     },
     {
+      "source": "Power goal",
+      "translation": "Objectif de puissance"
+    },
+    {
       "source": "Power post",
       "translation": "Poste de puissance"
     },
@@ -84523,6 +84919,14 @@
     {
       "source": "Powerplay",
       "translation": "Jeu de puissance"
+    },
+    {
+      "source": "Powerplay mining filters reset to commander defaults.",
+      "translation": "Les filtres miniers Powerplay sont réinitialisés aux valeurs par défaut du commandant."
+    },
+    {
+      "source": "Powerplay mining planner",
+      "translation": "Planificateur minier Powerplay"
     },
     {
       "source": "PowerplayJoin",
@@ -84785,6 +85189,10 @@
       "translation": "Contrôleur précédemment sélectionné"
     },
     {
+      "source": "Prices and demand are recent observations, not merit estimates or guarantees.",
+      "translation": "Les prix et la demande sont des observations récentes et ne méritent pas d’estimations ou de garanties."
+    },
+    {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
       "translation": "Les prix sont des observations et peuvent changer. Paramètres → La session peut activer les observations en réception uniquement EDDN, conservées pendant 24 heures pour les produits. Cela n'autorise pas les téléchargements."
     },
@@ -84871,6 +85279,10 @@
     {
       "source": "PriorScanMinimumValue",
       "translation": "Valeur minimale de PriorScan"
+    },
+    {
+      "source": "Pristine",
+      "translation": "Parfait"
     },
     {
       "source": "Pristine icy ring",
@@ -85423,6 +85835,10 @@
     {
       "source": "RES",
       "translation": "RES"
+    },
+    {
+      "source": "RES mapped",
+      "translation": "RES cartographiés"
     },
     {
       "source": "RES sites only",
@@ -86357,6 +86773,10 @@
       "translation": "Système de référence"
     },
     {
+      "source": "Reference system set to {0}.",
+      "translation": "Système de référence défini sur {0}."
+    },
+    {
       "source": "Reference-data updates",
       "translation": "Mises à jour des données de référence"
     },
@@ -86515,6 +86935,10 @@
     {
       "source": "Reinforce",
       "translation": "Renforcer"
+    },
+    {
+      "source": "Reinforce selects your Power's systems; Undermine selects other Powers (optionally one opponent); Acquire selects unoccupied or expansion candidates. Unknown Powerplay ownership is never treated as eligible.",
+      "translation": "Renforcer sélectionne les systèmes de votre puissance ; Undermine sélectionne d'autres pouvoirs (éventuellement un adversaire) ; Acquérir sélectionne les candidats inoccupés ou en expansion. La possession inconnue de Powerplay n'est jamais considérée comme éligible."
     },
     {
       "source": "Reinforcements",
@@ -86861,6 +87285,10 @@
       "translation": "Suivi des missions de recherche"
     },
     {
+      "source": "Reserve level",
+      "translation": "Niveau de réserve"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Solde réservé"
     },
@@ -87011,6 +87439,14 @@
     {
       "source": "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
       "translation": "Restreindre chaque catégorie de superposition aux navires ou véhicules sélectionnés sans modifier ses déclencheurs normaux."
+    },
+    {
+      "source": "Result set",
+      "translation": "Ensemble de résultats"
+    },
+    {
+      "source": "Results",
+      "translation": "Résultats"
     },
     {
       "source": "Resume Selected",
@@ -90021,6 +90457,10 @@
       "translation": "Spansh a renvoyé un itinéraire sans système."
     },
     {
+      "source": "Spansh unavailable; showing built-in and commander observations.",
+      "translation": "Spansh indisponible ; montrant les observations intégrées et celles du commandant."
+    },
+    {
       "source": "Spansh update time unavailable",
       "translation": "Spansh heure de mise à jour indisponible"
     },
@@ -90071,6 +90511,10 @@
     {
       "source": "Spoiler",
       "translation": "Aileron"
+    },
+    {
+      "source": "Spots++",
+      "translation": "Spots++"
     },
     {
       "source": "Squadron Carrier",
@@ -91333,6 +91777,10 @@
       "translation": "Autorité système"
     },
     {
+      "source": "System and selling filters",
+      "translation": "Système et vente de filtres"
+    },
+    {
       "source": "System biology",
       "translation": "Biologie des systèmes"
     },
@@ -91363,10 +91811,6 @@
     {
       "source": "System files could not be analyzed: {0}",
       "translation": "Les fichiers système n'ont pas pu être analysés : {0}"
-    },
-    {
-      "source": "System filters",
-      "translation": "Filtres système"
     },
     {
       "source": "System lookup unavailable: {0}",
@@ -95089,10 +95533,6 @@
       "translation": "Utiliser les données biologiques téléchargées depuis Canonn et Spansh"
     },
     {
-      "source": "Use for hotspot search",
-      "translation": "Utiliser pour la recherche de points d'accès"
-    },
-    {
       "source": "Use global opacity",
       "translation": "Utiliser l'opacité globale"
     },
@@ -95607,6 +96047,10 @@
     {
       "source": "WG Life",
       "translation": "Vie du GT"
+    },
+    {
+      "source": "WHY IT RANKS",
+      "translation": "POURQUOI IL CLASSE"
     },
     {
       "source": "WINDOW SIZE",
@@ -99409,6 +99853,14 @@
       "translation": "SUPERPOSITIONS {0}"
     },
     {
+      "source": "{0} Platinum Spots++ results · {1} · {2}.",
+      "translation": "Résultats {0} Platinum Spots++ · {1} · {2}."
+    },
+    {
+      "source": "{0} Platinum hotspot{1}",
+      "translation": "{0} Point d'accès Platine{1}"
+    },
+    {
       "source": "{0} ROUTE JUMPS",
       "translation": "{0} SAUTS D'ITINÉRAIRE"
     },
@@ -100093,6 +100545,10 @@
       "translation": "{0} · {1} · {2} t · {3} t/h · Astéroïdes {4} · Noyaux {5}"
     },
     {
+      "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
+      "translation": "{0} · {1} · {2} · {3} · {4} réserve · dans {5} ly"
+    },
+    {
       "source": "{0} • updated {1}",
       "translation": "{0} • mis à jour {1}"
     },
@@ -100507,6 +100963,10 @@
       "translation": "1 · ESCOLHA SUA ROTA DE HEADSET"
     },
     {
+      "source": "1 · Choose the Powerplay goal",
+      "translation": "1 · Escolha o objetivo do Powerplay"
+    },
+    {
       "source": "1,000 t",
       "translation": "1.000 toneladas"
     },
@@ -100671,6 +101131,10 @@
       "translation": "2 · PAR E INICIAR"
     },
     {
+      "source": "2 · Select a target system",
+      "translation": "2 · Selecione um sistema de destino"
+    },
+    {
       "source": "2,450 need | 620 FC | 96 ship",
       "translation": "2.450 necessidades | 620 FC | 96 navio"
     },
@@ -100747,6 +101211,10 @@
       "translation": "3 · ATIVAR E VERIFICAR"
     },
     {
+      "source": "3 · Select a mining ring",
+      "translation": "3 · Selecione um anel de mineração"
+    },
+    {
       "source": "3,892 t",
       "translation": "3.892 toneladas"
     },
@@ -100773,6 +101241,10 @@
     {
       "source": "4 of 12 biological signals analyzed",
       "translation": "4 de 12 sinais biológicos analisados"
+    },
+    {
+      "source": "4 · Select a selling station",
+      "translation": "4 · Selecione uma estação de venda"
     },
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
@@ -101365,10 +101837,6 @@
     {
       "source": "ALL",
       "translation": "TODOS"
-    },
-    {
-      "source": "ALLEGIANCE",
-      "translation": "Fidelidade"
     },
     {
       "source": "ALPHA",
@@ -102021,6 +102489,10 @@
     {
       "source": "All minerals are announced.",
       "translation": "Todos os minerais são anunciados."
+    },
+    {
+      "source": "All platinum",
+      "translation": "Tudo platina"
     },
     {
       "source": "All publication remains off unless you explicitly enable it. Imported profiles retain the original choices.",
@@ -103883,6 +104355,10 @@
       "translation": "Marcar o anel selecionado"
     },
     {
+      "source": "Bookmark selected spot",
+      "translation": "Marcar local selecionado"
+    },
+    {
       "source": "Bookmarks",
       "translation": "favoritos"
     },
@@ -105135,10 +105611,6 @@
       "translation": "Escolha uma pasta de origem absoluta da captura de tela existente."
     },
     {
-      "source": "Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates.",
-      "translation": "Escolha um objetivo e um poder, encontre um sistema e depois encontre seus anéis. Use estações de venda de um anel para completar o plano. Os candidatos à aquisição ainda precisam de verificações de alcance de suporte no jogo; os preços não são estimativas de mérito."
-    },
-    {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Escolha uma sobreposição e, opcionalmente, substitua sua opacidade herdada sem alterar sua posição gerenciada por arrastar."
     },
@@ -105309,10 +105781,6 @@
     {
       "source": "Clear Decrypting the Guardian Logs progress?",
       "translation": "Limpar o progresso da descriptografia dos registros do Guardian?"
-    },
-    {
-      "source": "Clear Powerplay plan",
-      "translation": "Limpar plano Powerplay"
     },
     {
       "source": "Clear all trackers on current body",
@@ -105727,6 +106195,10 @@
       "translation": "Combat.AutoShowMassacreMissões"
     },
     {
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Combine a referência de anel integrada de SrvSurvey, descobertas de comandante, observações ao vivo EDDN e resultados de API Spansh. Spots++ prioriza locais RES mapeados, sobreposições, anéis de múltiplos pontos de acesso e reservas intocadas sem a necessidade de download de um despejo de galáxia."
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "O modo de edição de sobreposição combinada está ativo no Windows."
     },
@@ -105961,6 +106433,10 @@
     {
       "source": "Commodity row fill (colour + alpha)",
       "translation": "Preenchimento da linha de mercadorias (cor + alfa)"
+    },
+    {
+      "source": "Common",
+      "translation": "Comum"
     },
     {
       "source": "Common fixes",
@@ -106563,10 +107039,6 @@
       "translation": "Cartão de entrada do controlador"
     },
     {
-      "source": "Controlling Power",
-      "translation": "Controlando o poder"
-    },
-    {
       "source": "Controlling faction unavailable",
       "translation": "Facção controladora indisponível"
     },
@@ -106789,6 +107261,10 @@
     {
       "source": "Could not open the desktop surface.",
       "translation": "Não foi possível abrir a superfície da área de trabalho."
+    },
+    {
+      "source": "Could not open the system link: {0}",
+      "translation": "Não foi possível abrir o link do sistema: {0}"
     },
     {
       "source": "Could not open {0}.",
@@ -107025,6 +107501,10 @@
     {
       "source": "Current system is inside the limit",
       "translation": "O sistema atual está dentro do limite"
+    },
+    {
+      "source": "Current system is not available from the journal yet.",
+      "translation": "O sistema atual ainda não está disponível na revista."
     },
     {
       "source": "Current system is outside the limit",
@@ -107513,6 +107993,10 @@
     {
       "source": "DepartureTime",
       "translation": "Hora de partida"
+    },
+    {
+      "source": "Depleted",
+      "translation": "Esgotado"
     },
     {
       "source": "Deployment bar color",
@@ -108177,10 +108661,6 @@
     {
       "source": "ECONOMIES",
       "translation": "ECONOMIAS"
-    },
-    {
-      "source": "ECONOMY",
-      "translation": "ECONOMIA"
     },
     {
       "source": "EDAstro Codex map",
@@ -109331,10 +109811,6 @@
       "translation": "O enriquecimento de dados externos pode adicionar descoberta anterior, tráfego, estação e contexto biológico quando sua configuração de privacidade está habilitada."
     },
     {
-      "source": "FACTION STATE",
-      "translation": "Estado da facção"
-    },
-    {
       "source": "FACTIONS",
       "translation": "FACÇÕES"
     },
@@ -109759,6 +110235,18 @@
       "translation": "Encontrar"
     },
     {
+      "source": "Find Platinum spots",
+      "translation": "Encontre vagas Platinum"
+    },
+    {
+      "source": "Find buyers",
+      "translation": "Encontre compradores"
+    },
+    {
+      "source": "Find buyers for selected spot →",
+      "translation": "Encontre compradores para o local selecionado →"
+    },
+    {
       "source": "Find hotspots",
       "translation": "Encontre pontos de acesso"
     },
@@ -109795,6 +110283,10 @@
       "translation": "Encontre preços"
     },
     {
+      "source": "Find rings",
+      "translation": "Encontre anéis"
+    },
+    {
       "source": "Find rings in selected system →",
       "translation": "Encontre anéis no sistema selecionado →"
     },
@@ -109803,12 +110295,20 @@
       "translation": "Encontre anéis, mercados e comerciantes"
     },
     {
+      "source": "Find selling stations",
+      "translation": "Encontre estações de venda"
+    },
+    {
+      "source": "Find selling stations for selected ring →",
+      "translation": "Encontre estações de venda para o anel selecionado →"
+    },
+    {
       "source": "Find system",
       "translation": "Encontrar sistema"
     },
     {
-      "source": "Find systems",
-      "translation": "Encontre sistemas"
+      "source": "Find target systems",
+      "translation": "Encontre sistemas alvo"
     },
     {
       "source": "Find the last recorded FSD jump into {0}.",
@@ -110481,10 +110981,6 @@
     {
       "source": "GOAL #{0}",
       "translation": "META #{0}"
-    },
-    {
-      "source": "GOVERNMENT",
-      "translation": "Governo"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -113027,6 +113523,10 @@
       "translation": "Grande"
     },
     {
+      "source": "Large landing pads only",
+      "translation": "Somente plataformas de pouso grandes"
+    },
+    {
       "source": "Large pads",
       "translation": "Almofadas grandes"
     },
@@ -113759,6 +114259,10 @@
       "translation": "As varreduras de superfície perdida não foram marcadas: {0}"
     },
     {
+      "source": "Low",
+      "translation": "Baixo"
+    },
+    {
       "source": "Low Temperature Diamonds",
       "translation": "Diamantes de baixa temperatura"
     },
@@ -113953,6 +114457,10 @@
     {
       "source": "Maintenance paid",
       "translation": "Manutenção paga"
+    },
+    {
+      "source": "Major",
+      "translation": "Principal"
     },
     {
       "source": "Make primary",
@@ -114275,12 +114783,20 @@
       "translation": "Traje independente"
     },
     {
+      "source": "Max age (days)",
+      "translation": "Idade máxima (dias)"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "Alcance máximo de salto"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Idade máxima (dias)"
+    },
+    {
+      "source": "Maximum demand (0 = any)",
+      "translation": "Demanda máxima (0 = qualquer)"
     },
     {
       "source": "Med kits",
@@ -114471,6 +114987,10 @@
       "translation": "Mineral (em branco = qualquer)"
     },
     {
+      "source": "Mineral / metal",
+      "translation": "Minerais / metálicos"
+    },
+    {
       "source": "Mineral Amount:",
       "translation": "Quantidade Mineral:"
     },
@@ -114513,6 +115033,10 @@
     {
       "source": "Minimum DSS value (credits)",
       "translation": "Valor mínimo de DSS (créditos)"
+    },
+    {
+      "source": "Minimum demand",
+      "translation": "Demanda mínima"
     },
     {
       "source": "Minimum displayed body value (credits)",
@@ -115871,6 +116395,10 @@
       "translation": "Nenhum site planejado da Raven está disponível; escolha um layout de construção manualmente."
     },
     {
+      "source": "No pledge detected",
+      "translation": "Nenhuma promessa detectada"
+    },
+    {
       "source": "No projects loaded.",
       "translation": "Nenhum projeto carregado."
     },
@@ -116263,6 +116791,10 @@
       "translation": "OUTRO"
     },
     {
+      "source": "OVERLAP",
+      "translation": "SOBREPOSIÇÃO"
+    },
+    {
       "source": "OVERLAPS",
       "translation": "SOBREPOSIÇÕES"
     },
@@ -116289,10 +116821,6 @@
     {
       "source": "Object does not exist at path",
       "translation": "O objeto não existe no caminho"
-    },
-    {
-      "source": "Objective",
-      "translation": "Objetivo"
     },
     {
       "source": "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
@@ -116835,6 +117363,10 @@
       "translation": "Operações"
     },
     {
+      "source": "Opposing Power (optional)",
+      "translation": "Poder Opositor (opcional)"
+    },
+    {
       "source": "Opposition",
       "translation": "Oposição"
     },
@@ -116977,6 +117509,10 @@
     {
       "source": "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.",
       "translation": "Fora dos marcadores de descoberta de previsão corporal, este símbolo identifica um contexto estelar/corporal ou um sinal biológico não resolvido de acordo com o título da linha."
+    },
+    {
+      "source": "Overlaps",
+      "translation": "Sobreposições"
     },
     {
       "source": "Overlaps only",
@@ -117607,6 +118143,10 @@
       "translation": "PipeWire"
     },
     {
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
+      "translation": "Planeje uma execução de mineração Powerplay do sistema de destino até o anel e a estação de venda. SrvSurvey combina contexto de diário, referências de anel integradas, observações ao vivo EDDN e pesquisas de API focadas Spansh; nenhum dump de galáxia baixado é necessário."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planeje uma viagem de mineração"
     },
@@ -117637,6 +118177,10 @@
     {
       "source": "Platinum 34.8% · Osmium 12.4%",
       "translation": "Platina 34,8% · Ósmio 12,4%"
+    },
+    {
+      "source": "Platinum Spots++",
+      "translation": "Pontos Platina++"
     },
     {
       "source": "Platinum ×1",
@@ -117943,6 +118487,10 @@
       "translation": "Geradores de energia"
     },
     {
+      "source": "Power goal",
+      "translation": "Meta de poder"
+    },
+    {
       "source": "Power post",
       "translation": "Posto de energia"
     },
@@ -117965,6 +118513,14 @@
     {
       "source": "Powerplay",
       "translation": "Jogo poderoso"
+    },
+    {
+      "source": "Powerplay mining filters reset to commander defaults.",
+      "translation": "Os filtros de mineração do Powerplay foram redefinidos para os padrões do comandante."
+    },
+    {
+      "source": "Powerplay mining planner",
+      "translation": "Planejador de mineração Powerplay"
     },
     {
       "source": "PowerplayJoin",
@@ -118227,6 +118783,10 @@
       "translation": "Controlador previamente selecionado"
     },
     {
+      "source": "Prices and demand are recent observations, not merit estimates or guarantees.",
+      "translation": "Os preços e a procura são observações recentes e não estimativas ou garantias de mérito."
+    },
+    {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
       "translation": "Os preços são observações e podem sofrer alterações. Configurações → A sessão pode permitir observações somente de recebimento EDDN, retidas por 24 horas para mercadorias. Isso não permite uploads."
     },
@@ -118313,6 +118873,10 @@
     {
       "source": "PriorScanMinimumValue",
       "translation": "PriorScanValorMínimo"
+    },
+    {
+      "source": "Pristine",
+      "translation": "Imaculado"
     },
     {
       "source": "Pristine icy ring",
@@ -118865,6 +119429,10 @@
     {
       "source": "RES",
       "translation": "RES"
+    },
+    {
+      "source": "RES mapped",
+      "translation": "RES mapeado"
     },
     {
       "source": "RES sites only",
@@ -119799,6 +120367,10 @@
       "translation": "Sistema de referência"
     },
     {
+      "source": "Reference system set to {0}.",
+      "translation": "Sistema de referência definido como {0}."
+    },
+    {
       "source": "Reference-data updates",
       "translation": "Atualizações de dados de referência"
     },
@@ -119957,6 +120529,10 @@
     {
       "source": "Reinforce",
       "translation": "Reforçar"
+    },
+    {
+      "source": "Reinforce selects your Power's systems; Undermine selects other Powers (optionally one opponent); Acquire selects unoccupied or expansion candidates. Unknown Powerplay ownership is never treated as eligible.",
+      "translation": "Reforçar seleciona os sistemas do seu Poder; Undermine seleciona outros Poderes (opcionalmente um oponente); Adquirir seleciona candidatos desocupados ou de expansão. A propriedade desconhecida do Powerplay nunca é tratada como elegível."
     },
     {
       "source": "Reinforcements",
@@ -120303,6 +120879,10 @@
       "translation": "Rastreador de missão de pesquisa"
     },
     {
+      "source": "Reserve level",
+      "translation": "Nível de reserva"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Saldo reservado"
     },
@@ -120453,6 +121033,14 @@
     {
       "source": "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
       "translation": "Restrinja cada categoria de sobreposição a navios ou veículos selecionados sem alterar seus acionadores normais."
+    },
+    {
+      "source": "Result set",
+      "translation": "Conjunto de resultados"
+    },
+    {
+      "source": "Results",
+      "translation": "Resultados"
     },
     {
       "source": "Resume Selected",
@@ -123463,6 +124051,10 @@
       "translation": "Spansh retornou uma rota sem sistemas."
     },
     {
+      "source": "Spansh unavailable; showing built-in and commander observations.",
+      "translation": "Spansh indisponível; mostrando observações internas e do comandante."
+    },
+    {
       "source": "Spansh update time unavailable",
       "translation": "Spansh horário de atualização indisponível"
     },
@@ -123513,6 +124105,10 @@
     {
       "source": "Spoiler",
       "translation": "Spoilers"
+    },
+    {
+      "source": "Spots++",
+      "translation": "Pontos++"
     },
     {
       "source": "Squadron Carrier",
@@ -124775,6 +125371,10 @@
       "translation": "Autoridade do Sistema"
     },
     {
+      "source": "System and selling filters",
+      "translation": "Filtros de sistema e venda"
+    },
+    {
       "source": "System biology",
       "translation": "Biologia do sistema"
     },
@@ -124805,10 +125405,6 @@
     {
       "source": "System files could not be analyzed: {0}",
       "translation": "Não foi possível analisar os arquivos do sistema: {0}"
-    },
-    {
-      "source": "System filters",
-      "translation": "Filtros do sistema"
     },
     {
       "source": "System lookup unavailable: {0}",
@@ -128531,10 +129127,6 @@
       "translation": "Use dados biográficos baixados de Canonn e Spansh"
     },
     {
-      "source": "Use for hotspot search",
-      "translation": "Use para pesquisa de ponto de acesso"
-    },
-    {
       "source": "Use global opacity",
       "translation": "Usar opacidade global"
     },
@@ -129049,6 +129641,10 @@
     {
       "source": "WG Life",
       "translation": "GT Vida"
+    },
+    {
+      "source": "WHY IT RANKS",
+      "translation": "POR QUE É CLASSIFICADO"
     },
     {
       "source": "WINDOW SIZE",
@@ -132851,6 +133447,14 @@
       "translation": "SOBREPOSIÇÕES {0}"
     },
     {
+      "source": "{0} Platinum Spots++ results · {1} · {2}.",
+      "translation": "Resultados {0} Platinum Spots++ · {1} · {2}."
+    },
+    {
+      "source": "{0} Platinum hotspot{1}",
+      "translation": "{0} Ponto de acesso platina{1}"
+    },
+    {
       "source": "{0} ROUTE JUMPS",
       "translation": "{0} SALTOS DE ROTA"
     },
@@ -133535,6 +134139,10 @@
       "translation": "{0} · {1} · {2} t · {3} t/h · Asteroides {4} · Núcleos {5}"
     },
     {
+      "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
+      "translation": "{0} · {1} · {2} · {3} · {4} reserva · dentro de {5} ly"
+    },
+    {
       "source": "{0} • updated {1}",
       "translation": "{0} • atualizado {1}"
     },
@@ -133949,6 +134557,10 @@
       "translation": "1 · ВЫБЕРИТЕ МАРШРУТ СВОЕЙ ГАРНИТУРЫ"
     },
     {
+      "source": "1 · Choose the Powerplay goal",
+      "translation": "1 · Выберите цель игры в большинстве"
+    },
+    {
       "source": "1,000 t",
       "translation": "1000 т"
     },
@@ -134113,6 +134725,10 @@
       "translation": "2 · СОПРЯЖЕНИЕ И СТАРТ"
     },
     {
+      "source": "2 · Select a target system",
+      "translation": "2 · Выберите целевую систему"
+    },
+    {
       "source": "2,450 need | 620 FC | 96 ship",
       "translation": "2450 нужно | 620 ФК | 96 корабль"
     },
@@ -134189,6 +134805,10 @@
       "translation": "3 · ВКЛЮЧИТЕ И ПРОВЕРЬТЕ"
     },
     {
+      "source": "3 · Select a mining ring",
+      "translation": "3 · Выберите кольцо для майнинга"
+    },
+    {
       "source": "3,892 t",
       "translation": "3892 т"
     },
@@ -134215,6 +134835,10 @@
     {
       "source": "4 of 12 biological signals analyzed",
       "translation": "Проанализировано 4 из 12 биологических сигналов"
+    },
+    {
+      "source": "4 · Select a selling station",
+      "translation": "4 · Выберите торговую станцию"
     },
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
@@ -134807,10 +135431,6 @@
     {
       "source": "ALL",
       "translation": "ВСЕ"
-    },
-    {
-      "source": "ALLEGIANCE",
-      "translation": "Верность"
     },
     {
       "source": "ALPHA",
@@ -135463,6 +136083,10 @@
     {
       "source": "All minerals are announced.",
       "translation": "Все полезные ископаемые заявлены."
+    },
+    {
+      "source": "All platinum",
+      "translation": "Вся платина"
     },
     {
       "source": "All publication remains off unless you explicitly enable it. Imported profiles retain the original choices.",
@@ -137325,6 +137949,10 @@
       "translation": "Добавить выбранное кольцо в закладки"
     },
     {
+      "source": "Bookmark selected spot",
+      "translation": "Добавить выбранное место в закладки"
+    },
+    {
       "source": "Bookmarks",
       "translation": "закладки"
     },
@@ -138577,10 +139205,6 @@
       "translation": "Выберите существующую исходную папку с абсолютным скриншотом."
     },
     {
-      "source": "Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates.",
-      "translation": "Выберите цель и Силу, найдите систему, затем найдите ее кольца. Используйте продающие станции с кольца, чтобы выполнить план. Кандидатам на приобретение по-прежнему необходимы проверки диапазона поддержки в игре; цены не являются оценочными."
-    },
-    {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Выберите наложение, а затем при необходимости переопределите его унаследованную непрозрачность, не меняя его положения, управляемого перетаскиванием."
     },
@@ -138751,10 +139375,6 @@
     {
       "source": "Clear Decrypting the Guardian Logs progress?",
       "translation": "Очистить прогресс расшифровки журналов Guardian?"
-    },
-    {
-      "source": "Clear Powerplay plan",
-      "translation": "Очистить план Powerplay"
     },
     {
       "source": "Clear all trackers on current body",
@@ -139169,6 +139789,10 @@
       "translation": "Combat.AutoShowMassacreMissions"
     },
     {
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Объедините встроенную кольцевую ссылку SrvSurvey, открытия командира, наблюдения в реальном времени EDDN и результаты API Spansh. Spots++ отдает приоритет нанесенным на карту объектам ВИЭ, перекрытиям, кольцам с несколькими горячими точками и нетронутым резервам, не требуя загрузки дампа галактики."
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "Режим редактирования комбинированного наложения активен в Windows."
     },
@@ -139403,6 +140027,10 @@
     {
       "source": "Commodity row fill (colour + alpha)",
       "translation": "Заливка товарной строки (цвет + альфа)"
+    },
+    {
+      "source": "Common",
+      "translation": "Общий"
     },
     {
       "source": "Common fixes",
@@ -140005,10 +140633,6 @@
       "translation": "КонтроллерВводКарта"
     },
     {
-      "source": "Controlling Power",
-      "translation": "Контроль власти"
-    },
-    {
       "source": "Controlling faction unavailable",
       "translation": "Контролирующая фракция недоступна."
     },
@@ -140231,6 +140855,10 @@
     {
       "source": "Could not open the desktop surface.",
       "translation": "Не удалось открыть поверхность рабочего стола."
+    },
+    {
+      "source": "Could not open the system link: {0}",
+      "translation": "Не удалось открыть системную ссылку: {0}."
     },
     {
       "source": "Could not open {0}.",
@@ -140467,6 +141095,10 @@
     {
       "source": "Current system is inside the limit",
       "translation": "Текущая система находится внутри предела"
+    },
+    {
+      "source": "Current system is not available from the journal yet.",
+      "translation": "Текущая система пока недоступна в журнале."
     },
     {
       "source": "Current system is outside the limit",
@@ -140955,6 +141587,10 @@
     {
       "source": "DepartureTime",
       "translation": "Время отправления"
+    },
+    {
+      "source": "Depleted",
+      "translation": "Истощенный"
     },
     {
       "source": "Deployment bar color",
@@ -141618,10 +142254,6 @@
     },
     {
       "source": "ECONOMIES",
-      "translation": "ЭКОНОМИКА"
-    },
-    {
-      "source": "ECONOMY",
       "translation": "ЭКОНОМИКА"
     },
     {
@@ -142773,10 +143405,6 @@
       "translation": "Обогащение внешних данных может добавить предварительное обнаружение, трафик, станцию и биологический контекст, если включена настройка конфиденциальности."
     },
     {
-      "source": "FACTION STATE",
-      "translation": "Состояние фракции"
-    },
-    {
       "source": "FACTIONS",
       "translation": "ФРАКЦИИ"
     },
@@ -143201,6 +143829,18 @@
       "translation": "Находить"
     },
     {
+      "source": "Find Platinum spots",
+      "translation": "Найдите платиновые места"
+    },
+    {
+      "source": "Find buyers",
+      "translation": "Найти покупателей"
+    },
+    {
+      "source": "Find buyers for selected spot →",
+      "translation": "Найти покупателей на выбранное место →"
+    },
+    {
       "source": "Find hotspots",
       "translation": "Найти точки доступа"
     },
@@ -143237,6 +143877,10 @@
       "translation": "Найти цены"
     },
     {
+      "source": "Find rings",
+      "translation": "Найти кольца"
+    },
+    {
       "source": "Find rings in selected system →",
       "translation": "Найти кольца в выбранной системе →"
     },
@@ -143245,12 +143889,20 @@
       "translation": "Найдите кольца, рынки и торговцев"
     },
     {
+      "source": "Find selling stations",
+      "translation": "Найти продающие станции"
+    },
+    {
+      "source": "Find selling stations for selected ring →",
+      "translation": "Найти станции продаж для выбранного кольца →"
+    },
+    {
       "source": "Find system",
       "translation": "Найти систему"
     },
     {
-      "source": "Find systems",
-      "translation": "Найти системы"
+      "source": "Find target systems",
+      "translation": "Найти целевые системы"
     },
     {
       "source": "Find the last recorded FSD jump into {0}.",
@@ -143923,10 +144575,6 @@
     {
       "source": "GOAL #{0}",
       "translation": "ЦЕЛЬ №{0}"
-    },
-    {
-      "source": "GOVERNMENT",
-      "translation": "Правительство"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -146469,6 +147117,10 @@
       "translation": "Большой"
     },
     {
+      "source": "Large landing pads only",
+      "translation": "Только большие посадочные площадки"
+    },
+    {
       "source": "Large pads",
       "translation": "Большие подушечки"
     },
@@ -147201,6 +147853,10 @@
       "translation": "Потерянные сканы поверхности не были отмечены: {0}"
     },
     {
+      "source": "Low",
+      "translation": "Низкий"
+    },
+    {
       "source": "Low Temperature Diamonds",
       "translation": "Низкотемпературные алмазы"
     },
@@ -147395,6 +148051,10 @@
     {
       "source": "Maintenance paid",
       "translation": "Содержание оплачено"
+    },
+    {
+      "source": "Major",
+      "translation": "Главный"
     },
     {
       "source": "Make primary",
@@ -147717,12 +148377,20 @@
       "translation": "костюм Маверик"
     },
     {
+      "source": "Max age (days)",
+      "translation": "Максимальный возраст (дни)"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "MaxJumpRange"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Максимальный возраст (дни)"
+    },
+    {
+      "source": "Maximum demand (0 = any)",
+      "translation": "Максимальная потребность (0 = любая)"
     },
     {
       "source": "Med kits",
@@ -147913,6 +148581,10 @@
       "translation": "Минерал (пусто = любой)"
     },
     {
+      "source": "Mineral / metal",
+      "translation": "Минерал/металл"
+    },
+    {
       "source": "Mineral Amount:",
       "translation": "Минеральное количество:"
     },
@@ -147955,6 +148627,10 @@
     {
       "source": "Minimum DSS value (credits)",
       "translation": "Минимальная стоимость DSS (кредиты)"
+    },
+    {
+      "source": "Minimum demand",
+      "translation": "Минимальный спрос"
     },
     {
       "source": "Minimum displayed body value (credits)",
@@ -149313,6 +149989,10 @@
       "translation": "Планируемого объекта Raven нет; выберите макет сборки вручную."
     },
     {
+      "source": "No pledge detected",
+      "translation": "Залог не обнаружен"
+    },
+    {
       "source": "No projects loaded.",
       "translation": "Ни один проект не загружен."
     },
@@ -149705,6 +150385,10 @@
       "translation": "ДРУГОЕ"
     },
     {
+      "source": "OVERLAP",
+      "translation": "ПЕРЕКРЫВАТЬ"
+    },
+    {
       "source": "OVERLAPS",
       "translation": "ПЕРЕХОДЫ"
     },
@@ -149731,10 +150415,6 @@
     {
       "source": "Object does not exist at path",
       "translation": "Объект не существует по пути"
-    },
-    {
-      "source": "Objective",
-      "translation": "Цель"
     },
     {
       "source": "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
@@ -150277,6 +150957,10 @@
       "translation": "Операции"
     },
     {
+      "source": "Opposing Power (optional)",
+      "translation": "Противостоящая сила (необязательно)"
+    },
+    {
       "source": "Opposition",
       "translation": "Оппозиция"
     },
@@ -150419,6 +151103,10 @@
     {
       "source": "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.",
       "translation": "За пределами маркеров обнаружения предсказания тела этот символ обозначает контекст звезды/тела или неразрешенный биологический сигнал в соответствии с заголовком строки."
+    },
+    {
+      "source": "Overlaps",
+      "translation": "Перекрытия"
     },
     {
       "source": "Overlaps only",
@@ -151049,6 +151737,10 @@
       "translation": "ТрубаПроволока"
     },
     {
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
+      "translation": "Спланируйте запуск майнинга Powerplay от целевой системы до кольцевой и продающей станции. SrvSurvey сочетает в себе контекст журнала, встроенные кольцевые ссылки, наблюдения в реальном времени EDDN и целенаправленный поиск Spansh через API; скачанный дамп галактики не требуется."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Запланируйте поездку на добычу полезных ископаемых"
     },
@@ -151079,6 +151771,10 @@
     {
       "source": "Platinum 34.8% · Osmium 12.4%",
       "translation": "Платина 34,8% · Осмий 12,4%"
+    },
+    {
+      "source": "Platinum Spots++",
+      "translation": "Платиновые споты++"
     },
     {
       "source": "Platinum ×1",
@@ -151385,6 +152081,10 @@
       "translation": "Генераторы энергии"
     },
     {
+      "source": "Power goal",
+      "translation": "Силовая цель"
+    },
+    {
       "source": "Power post",
       "translation": "Силовой пост"
     },
@@ -151407,6 +152107,14 @@
     {
       "source": "Powerplay",
       "translation": "Игра в большинстве"
+    },
+    {
+      "source": "Powerplay mining filters reset to commander defaults.",
+      "translation": "Фильтры майнинга Powerplay сбрасываются до настроек командира по умолчанию."
+    },
+    {
+      "source": "Powerplay mining planner",
+      "translation": "Планировщик майнинга Powerplay"
     },
     {
       "source": "PowerplayJoin",
@@ -151669,6 +152377,10 @@
       "translation": "Ранее выбранный контроллер"
     },
     {
+      "source": "Prices and demand are recent observations, not merit estimates or guarantees.",
+      "translation": "Цены и спрос — это недавние наблюдения, а не оценки или гарантии."
+    },
+    {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
       "translation": "Цены являются ориентировочными и могут измениться. Настройки → Сеанс может включить наблюдения только для получения EDDN, сохраняемые в течение 24 часов для товаров. Это не позволяет загрузку."
     },
@@ -151755,6 +152467,10 @@
     {
       "source": "PriorScanMinimumValue",
       "translation": "ПриорСканМинимумЗначение"
+    },
+    {
+      "source": "Pristine",
+      "translation": "Нетронутый"
     },
     {
       "source": "Pristine icy ring",
@@ -152307,6 +153023,10 @@
     {
       "source": "RES",
       "translation": "ВИЭ"
+    },
+    {
+      "source": "RES mapped",
+      "translation": "ВИЭ сопоставлены"
     },
     {
       "source": "RES sites only",
@@ -153241,6 +153961,10 @@
       "translation": "Справочная система"
     },
     {
+      "source": "Reference system set to {0}.",
+      "translation": "Система отсчета установлена ​​на {0}."
+    },
+    {
       "source": "Reference-data updates",
       "translation": "Обновления справочных данных"
     },
@@ -153399,6 +154123,10 @@
     {
       "source": "Reinforce",
       "translation": "Укрепить"
+    },
+    {
+      "source": "Reinforce selects your Power's systems; Undermine selects other Powers (optionally one opponent); Acquire selects unoccupied or expansion candidates. Unknown Powerplay ownership is never treated as eligible.",
+      "translation": "Укрепление выбирает системы вашей Силы; Подрыв выбирает другие Силы (необязательно, одного противника); Приобретение выбирает незанятых кандидатов или кандидатов на расширение. Неизвестное владение Powerplay никогда не считается приемлемым."
     },
     {
       "source": "Reinforcements",
@@ -153745,6 +154473,10 @@
       "translation": "Трекер исследовательских миссий"
     },
     {
+      "source": "Reserve level",
+      "translation": "Уровень резерва"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Зарезервированный баланс"
     },
@@ -153895,6 +154627,14 @@
     {
       "source": "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
       "translation": "Ограничьте каждую категорию наложения выбранными кораблями или транспортными средствами, не изменяя ее обычные триггеры."
+    },
+    {
+      "source": "Result set",
+      "translation": "Набор результатов"
+    },
+    {
+      "source": "Results",
+      "translation": "Результаты"
     },
     {
       "source": "Resume Selected",
@@ -156905,6 +157645,10 @@
       "translation": "Spansh вернул маршрут без систем."
     },
     {
+      "source": "Spansh unavailable; showing built-in and commander observations.",
+      "translation": "Spansh недоступен; показ встроенных и командирских наблюдений."
+    },
+    {
       "source": "Spansh update time unavailable",
       "translation": "Spansh время обновления недоступно"
     },
@@ -156955,6 +157699,10 @@
     {
       "source": "Spoiler",
       "translation": "Спойлер"
+    },
+    {
+      "source": "Spots++",
+      "translation": "Пятна++"
     },
     {
       "source": "Squadron Carrier",
@@ -158217,6 +158965,10 @@
       "translation": "Системный авторитет"
     },
     {
+      "source": "System and selling filters",
+      "translation": "Системные и продающиеся фильтры"
+    },
+    {
       "source": "System biology",
       "translation": "Системная биология"
     },
@@ -158247,10 +158999,6 @@
     {
       "source": "System files could not be analyzed: {0}",
       "translation": "Не удалось проанализировать системные файлы: {0}"
-    },
-    {
-      "source": "System filters",
-      "translation": "Системные фильтры"
     },
     {
       "source": "System lookup unavailable: {0}",
@@ -161973,10 +162721,6 @@
       "translation": "Использовать загруженные биоданные из Canonn и Spansh"
     },
     {
-      "source": "Use for hotspot search",
-      "translation": "Используйте для поиска точек доступа"
-    },
-    {
       "source": "Use global opacity",
       "translation": "Использовать глобальную непрозрачность"
     },
@@ -162491,6 +163235,10 @@
     {
       "source": "WG Life",
       "translation": "РГ Жизнь"
+    },
+    {
+      "source": "WHY IT RANKS",
+      "translation": "ПОЧЕМУ ЭТО ЗНАЧИТ"
     },
     {
       "source": "WINDOW SIZE",
@@ -166293,6 +167041,14 @@
       "translation": "{0} НАКЛАДКИ"
     },
     {
+      "source": "{0} Platinum Spots++ results · {1} · {2}.",
+      "translation": "{0} Платиновые споты++ результаты · {1} · {2}."
+    },
+    {
+      "source": "{0} Platinum hotspot{1}",
+      "translation": "{0} Платиновая точка доступа{1}"
+    },
+    {
       "source": "{0} ROUTE JUMPS",
       "translation": "{0} ПРЫЖКИ МАРШРУТА"
     },
@@ -166977,6 +167733,10 @@
       "translation": "{0} · {1} · {2} t · {3} т/ч · {4} астероиды · {5} ядра"
     },
     {
+      "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
+      "translation": "{0} · {1} · {2} · {3} · {4} резерв · в пределах {5} ly"
+    },
+    {
       "source": "{0} • updated {1}",
       "translation": "{0} • обновлено {1}"
     },
@@ -167391,6 +168151,10 @@
       "translation": "1 · 选择您的耳机路线"
     },
     {
+      "source": "1 · Choose the Powerplay goal",
+      "translation": "1 · 选择 Powerplay 目标"
+    },
+    {
       "source": "1,000 t",
       "translation": "1,000吨"
     },
@@ -167555,6 +168319,10 @@
       "translation": "2 · 配对并开始"
     },
     {
+      "source": "2 · Select a target system",
+      "translation": "2·选择目标系统"
+    },
+    {
       "source": "2,450 need | 620 FC | 96 ship",
       "translation": "2,450 需要 | 620 足球俱乐部 | 96船"
     },
@@ -167631,6 +168399,10 @@
       "translation": "3·启用并验证"
     },
     {
+      "source": "3 · Select a mining ring",
+      "translation": "3·选择矿环"
+    },
+    {
       "source": "3,892 t",
       "translation": "3,892吨"
     },
@@ -167657,6 +168429,10 @@
     {
       "source": "4 of 12 biological signals analyzed",
       "translation": "分析了 12 个生物信号中的 4 个"
+    },
+    {
+      "source": "4 · Select a selling station",
+      "translation": "4·选择销售站"
     },
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
@@ -168249,10 +169025,6 @@
     {
       "source": "ALL",
       "translation": "全部"
-    },
-    {
-      "source": "ALLEGIANCE",
-      "translation": "忠诚"
     },
     {
       "source": "ALPHA",
@@ -168905,6 +169677,10 @@
     {
       "source": "All minerals are announced.",
       "translation": "所有矿物均已公布。"
+    },
+    {
+      "source": "All platinum",
+      "translation": "全白金"
     },
     {
       "source": "All publication remains off unless you explicitly enable it. Imported profiles retain the original choices.",
@@ -170767,6 +171543,10 @@
       "translation": "为所选环添加书签"
     },
     {
+      "source": "Bookmark selected spot",
+      "translation": "为所选地点添加书签"
+    },
+    {
       "source": "Bookmarks",
       "translation": "书签"
     },
@@ -172019,10 +172799,6 @@
       "translation": "选择现有的绝对屏幕截图源文件夹。"
     },
     {
-      "source": "Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates.",
-      "translation": "选择一个目标和力量，找到一个系统，然后找到它的戒指。使用环形销售站来完成计划。收购候选者仍然需要在游戏中进行支持范围检查；价格并非价值评估。"
-    },
-    {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "选择一个叠加层，然后可以选择覆盖其继承的不透明度，而不更改其拖动管理位置。"
     },
@@ -172193,10 +172969,6 @@
     {
       "source": "Clear Decrypting the Guardian Logs progress?",
       "translation": "清除解密守护者日志进度？"
-    },
-    {
-      "source": "Clear Powerplay plan",
-      "translation": "清晰的 Powerplay 计划"
     },
     {
       "source": "Clear all trackers on current body",
@@ -172611,6 +173383,10 @@
       "translation": "战斗.汽车秀大屠杀任务"
     },
     {
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "结合 SrvSurvey 的内置环参考、指挥官发现、实时 EDDN 观察结果和 Spansh API 结果。 Spots++ 优先考虑映射的 RES 站点、重叠、多热点环和原始储备，无需下载星系转储。"
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "组合覆盖编辑模式在 Windows 上处于活动状态。"
     },
@@ -172845,6 +173621,10 @@
     {
       "source": "Commodity row fill (colour + alpha)",
       "translation": "商品行填充（颜色+alpha）"
+    },
+    {
+      "source": "Common",
+      "translation": "常见的"
     },
     {
       "source": "Common fixes",
@@ -173447,10 +174227,6 @@
       "translation": "控制器输入卡"
     },
     {
-      "source": "Controlling Power",
-      "translation": "控制电源"
-    },
-    {
       "source": "Controlling faction unavailable",
       "translation": "控制派系不可用"
     },
@@ -173673,6 +174449,10 @@
     {
       "source": "Could not open the desktop surface.",
       "translation": "无法打开桌面表面。"
+    },
+    {
+      "source": "Could not open the system link: {0}",
+      "translation": "无法打开系统链接：{0}"
     },
     {
       "source": "Could not open {0}.",
@@ -173909,6 +174689,10 @@
     {
       "source": "Current system is inside the limit",
       "translation": "当前系统处于限制范围内"
+    },
+    {
+      "source": "Current system is not available from the journal yet.",
+      "translation": "目前的系统还不能从期刊上获得。"
     },
     {
       "source": "Current system is outside the limit",
@@ -174397,6 +175181,10 @@
     {
       "source": "DepartureTime",
       "translation": "出发时间"
+    },
+    {
+      "source": "Depleted",
+      "translation": "耗尽"
     },
     {
       "source": "Deployment bar color",
@@ -175060,10 +175848,6 @@
     },
     {
       "source": "ECONOMIES",
-      "translation": "经济"
-    },
-    {
-      "source": "ECONOMY",
       "translation": "经济"
     },
     {
@@ -176215,10 +176999,6 @@
       "translation": "当启用隐私设置时，外部数据丰富可以添加先前的发现、流量、站点和生物背景。"
     },
     {
-      "source": "FACTION STATE",
-      "translation": "派系状态"
-    },
-    {
       "source": "FACTIONS",
       "translation": "派系"
     },
@@ -176643,6 +177423,18 @@
       "translation": "寻找"
     },
     {
+      "source": "Find Platinum spots",
+      "translation": "寻找白金点"
+    },
+    {
+      "source": "Find buyers",
+      "translation": "寻找买家"
+    },
+    {
+      "source": "Find buyers for selected spot →",
+      "translation": "寻找选定地点的买家 →"
+    },
+    {
       "source": "Find hotspots",
       "translation": "寻找热点"
     },
@@ -176679,6 +177471,10 @@
       "translation": "查找价格"
     },
     {
+      "source": "Find rings",
+      "translation": "寻找戒指"
+    },
+    {
       "source": "Find rings in selected system →",
       "translation": "在选定的系统中查找环 →"
     },
@@ -176687,12 +177483,20 @@
       "translation": "寻找戒指、市场和交易者"
     },
     {
+      "source": "Find selling stations",
+      "translation": "寻找销售站"
+    },
+    {
+      "source": "Find selling stations for selected ring →",
+      "translation": "查找所选戒指的销售站 →"
+    },
+    {
       "source": "Find system",
       "translation": "查找系统"
     },
     {
-      "source": "Find systems",
-      "translation": "查找系统"
+      "source": "Find target systems",
+      "translation": "查找目标系统"
     },
     {
       "source": "Find the last recorded FSD jump into {0}.",
@@ -177365,10 +178169,6 @@
     {
       "source": "GOAL #{0}",
       "translation": "目标#{0}"
-    },
-    {
-      "source": "GOVERNMENT",
-      "translation": "政府"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -179911,6 +180711,10 @@
       "translation": "大号"
     },
     {
+      "source": "Large landing pads only",
+      "translation": "仅大型着陆场"
+    },
+    {
       "source": "Large pads",
       "translation": "大垫"
     },
@@ -180643,6 +181447,10 @@
       "translation": "丢失的表面扫描未标记：{0}"
     },
     {
+      "source": "Low",
+      "translation": "低的"
+    },
+    {
       "source": "Low Temperature Diamonds",
       "translation": "低温金刚石"
     },
@@ -180837,6 +181645,10 @@
     {
       "source": "Maintenance paid",
       "translation": "已支付维护费"
+    },
+    {
+      "source": "Major",
+      "translation": "主要的"
     },
     {
       "source": "Make primary",
@@ -181159,12 +181971,20 @@
       "translation": "特立独行套装"
     },
     {
+      "source": "Max age (days)",
+      "translation": "最大年龄（天）"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "最大跳跃范围"
     },
     {
       "source": "Maximum age (days)",
       "translation": "最大年龄（天）"
+    },
+    {
+      "source": "Maximum demand (0 = any)",
+      "translation": "最大需求（0 = 任意）"
     },
     {
       "source": "Med kits",
@@ -181355,6 +182175,10 @@
       "translation": "矿物质（空白=任意）"
     },
     {
+      "source": "Mineral / metal",
+      "translation": "矿物/金属"
+    },
+    {
       "source": "Mineral Amount:",
       "translation": "矿物质含量："
     },
@@ -181397,6 +182221,10 @@
     {
       "source": "Minimum DSS value (credits)",
       "translation": "最低 DSS 值（学分）"
+    },
+    {
+      "source": "Minimum demand",
+      "translation": "最低需求"
     },
     {
       "source": "Minimum displayed body value (credits)",
@@ -182755,6 +183583,10 @@
       "translation": "没有计划中的 Raven 站点可用；手动选择构建布局。"
     },
     {
+      "source": "No pledge detected",
+      "translation": "未检测到质押"
+    },
+    {
       "source": "No projects loaded.",
       "translation": "没有加载项目。"
     },
@@ -183147,6 +183979,10 @@
       "translation": "其他"
     },
     {
+      "source": "OVERLAP",
+      "translation": "重叠"
+    },
+    {
       "source": "OVERLAPS",
       "translation": "重叠"
     },
@@ -183173,10 +184009,6 @@
     {
       "source": "Object does not exist at path",
       "translation": "路径中不存在对象"
-    },
-    {
-      "source": "Objective",
-      "translation": "客观的"
     },
     {
       "source": "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
@@ -183719,6 +184551,10 @@
       "translation": "运营"
     },
     {
+      "source": "Opposing Power (optional)",
+      "translation": "反对势力（可选）"
+    },
+    {
       "source": "Opposition",
       "translation": "反对派"
     },
@@ -183861,6 +184697,10 @@
     {
       "source": "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.",
       "translation": "在身体预测发现标记之外，该符号根据行标题标识恒星/身体背景或未解析的生物信号。"
+    },
+    {
+      "source": "Overlaps",
+      "translation": "重叠"
     },
     {
       "source": "Overlaps only",
@@ -184491,6 +185331,10 @@
       "translation": "管材线材"
     },
     {
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
+      "translation": "规划从目标系统到环站和销售站的 Powerplay 挖矿运行。 SrvSurvey 结合了期刊上下文、内置环引用、实时 EDDN 观察和重点 Spansh API 搜索；不需要下载 Galaxy 转储。"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "计划一次采矿之旅"
     },
@@ -184521,6 +185365,10 @@
     {
       "source": "Platinum 34.8% · Osmium 12.4%",
       "translation": "铂 34.8% · 锇 12.4%"
+    },
+    {
+      "source": "Platinum Spots++",
+      "translation": "白金点++"
     },
     {
       "source": "Platinum ×1",
@@ -184827,6 +185675,10 @@
       "translation": "发电机"
     },
     {
+      "source": "Power goal",
+      "translation": "动力目标"
+    },
+    {
       "source": "Power post",
       "translation": "电源柱"
     },
@@ -184849,6 +185701,14 @@
     {
       "source": "Powerplay",
       "translation": "强力游戏"
+    },
+    {
+      "source": "Powerplay mining filters reset to commander defaults.",
+      "translation": "Powerplay 挖掘过滤器重置为指挥官默认值。"
+    },
+    {
+      "source": "Powerplay mining planner",
+      "translation": "Powerplay 采矿规划器"
     },
     {
       "source": "PowerplayJoin",
@@ -185111,6 +185971,10 @@
       "translation": "先前选择的控制器"
     },
     {
+      "source": "Prices and demand are recent observations, not merit estimates or guarantees.",
+      "translation": "价格和需求是最近的观察结果，不值得估计或保证。"
+    },
+    {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
       "translation": "价格为观察结果，可能会发生变化。设置 → 会话可以启用仅接收EDDN观察，对商品保留 24 小时。这不会启用上传。"
     },
@@ -185197,6 +186061,10 @@
     {
       "source": "PriorScanMinimumValue",
       "translation": "优先扫描最小值"
+    },
+    {
+      "source": "Pristine",
+      "translation": "原始的"
     },
     {
       "source": "Pristine icy ring",
@@ -185749,6 +186617,10 @@
     {
       "source": "RES",
       "translation": "RES"
+    },
+    {
+      "source": "RES mapped",
+      "translation": "RES 映射"
     },
     {
       "source": "RES sites only",
@@ -186683,6 +187555,10 @@
       "translation": "参考系统"
     },
     {
+      "source": "Reference system set to {0}.",
+      "translation": "参考系统设置为 {0}。"
+    },
+    {
       "source": "Reference-data updates",
       "translation": "参考数据更新"
     },
@@ -186841,6 +187717,10 @@
     {
       "source": "Reinforce",
       "translation": "加强"
+    },
+    {
+      "source": "Reinforce selects your Power's systems; Undermine selects other Powers (optionally one opponent); Acquire selects unoccupied or expansion candidates. Unknown Powerplay ownership is never treated as eligible.",
+      "translation": "Reinforce 选择您的 Power 系统；破坏选择其他力量（可选一个对手）；获取选择未占用或扩展候选者。未知的 Powerplay 所有权永远不会被视为合格。"
     },
     {
       "source": "Reinforcements",
@@ -187187,6 +188067,10 @@
       "translation": "研究任务跟踪器"
     },
     {
+      "source": "Reserve level",
+      "translation": "储备水平"
+    },
+    {
       "source": "Reserved balance",
       "translation": "预留余额"
     },
@@ -187337,6 +188221,14 @@
     {
       "source": "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
       "translation": "将每个叠加类别限制为选定的船舶或车辆，而不改变其正常触发器。"
+    },
+    {
+      "source": "Result set",
+      "translation": "结果集"
+    },
+    {
+      "source": "Results",
+      "translation": "结果"
     },
     {
       "source": "Resume Selected",
@@ -190347,6 +191239,10 @@
       "translation": "Spansh 返回了一条没有系统的路线。"
     },
     {
+      "source": "Spansh unavailable; showing built-in and commander observations.",
+      "translation": "Spansh 不可用；显示内置和指挥官的观察结果。"
+    },
+    {
       "source": "Spansh update time unavailable",
       "translation": "Spansh更新时间不可用"
     },
@@ -190397,6 +191293,10 @@
     {
       "source": "Spoiler",
       "translation": "剧透"
+    },
+    {
+      "source": "Spots++",
+      "translation": "景点++"
     },
     {
       "source": "Squadron Carrier",
@@ -191659,6 +192559,10 @@
       "translation": "系统权限"
     },
     {
+      "source": "System and selling filters",
+      "translation": "系统和销售过滤器"
+    },
+    {
       "source": "System biology",
       "translation": "系统生物学"
     },
@@ -191689,10 +192593,6 @@
     {
       "source": "System files could not be analyzed: {0}",
       "translation": "无法分析系统文件：{0}"
-    },
-    {
-      "source": "System filters",
-      "translation": "系统过滤器"
     },
     {
       "source": "System lookup unavailable: {0}",
@@ -195415,10 +196315,6 @@
       "translation": "使用从 Canonn 和 Spansh 下载的生物数据"
     },
     {
-      "source": "Use for hotspot search",
-      "translation": "用于热点搜索"
-    },
-    {
       "source": "Use global opacity",
       "translation": "使用全局不透明度"
     },
@@ -195933,6 +196829,10 @@
     {
       "source": "WG Life",
       "translation": "工作生活"
+    },
+    {
+      "source": "WHY IT RANKS",
+      "translation": "为什么它排名"
     },
     {
       "source": "WINDOW SIZE",
@@ -199735,6 +200635,14 @@
       "translation": "{0} 覆盖"
     },
     {
+      "source": "{0} Platinum Spots++ results · {1} · {2}.",
+      "translation": "{0} 白金点++ 结果 · {1} · {2}。"
+    },
+    {
+      "source": "{0} Platinum hotspot{1}",
+      "translation": "{0} 白金热点{1}"
+    },
+    {
       "source": "{0} ROUTE JUMPS",
       "translation": "{0} 路线跳转"
     },
@@ -200419,6 +201327,10 @@
       "translation": "{0} · {1} · {2} t · {3} t/h · {4} 小行星 · {5} 核心"
     },
     {
+      "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
+      "translation": "{0} · {1} · {2} · {3} · {4} 保留 · {5} 内"
+    },
+    {
       "source": "{0} • updated {1}",
       "translation": "{0} • 更新{1}"
     },
@@ -200833,6 +201745,10 @@
       "translation": "* 1 · CHOOSE YOUR HEADSET ROUTE >>>!"
     },
     {
+      "source": "1 · Choose the Powerplay goal",
+      "translation": "* 1 · CHOOSE THE POWERPLAY GOAL >>>!"
+    },
+    {
       "source": "1,000 t",
       "translation": "* 1,000 T >>>!"
     },
@@ -200997,6 +201913,10 @@
       "translation": "* 2 · PAIR AND START >>>!"
     },
     {
+      "source": "2 · Select a target system",
+      "translation": "* 2 · SELECT A TARGET SYSTEM >>>!"
+    },
+    {
       "source": "2,450 need | 620 FC | 96 ship",
       "translation": "* 2,450 NEED | 620 FC | 96 SHIP >>>!"
     },
@@ -201073,6 +201993,10 @@
       "translation": "* 3 · ENABLE AND VERIFY >>>!"
     },
     {
+      "source": "3 · Select a mining ring",
+      "translation": "* 3 · SELECT A MINING RING >>>!"
+    },
+    {
       "source": "3,892 t",
       "translation": "* 3,892 T >>>!"
     },
@@ -201099,6 +202023,10 @@
     {
       "source": "4 of 12 biological signals analyzed",
       "translation": "* 4 OF 12 BIOLOGICAL SIGNALS ANALYZED >>>!"
+    },
+    {
+      "source": "4 · Select a selling station",
+      "translation": "* 4 · SELECT A SELLING STATION >>>!"
     },
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
@@ -201691,10 +202619,6 @@
     {
       "source": "ALL",
       "translation": "* ALL >>>!"
-    },
-    {
-      "source": "ALLEGIANCE",
-      "translation": "* ALLEGIANCE >>>!"
     },
     {
       "source": "ALPHA",
@@ -202347,6 +203271,10 @@
     {
       "source": "All minerals are announced.",
       "translation": "* ALL MINERALS ARE ANNOUNCED. >>>!"
+    },
+    {
+      "source": "All platinum",
+      "translation": "* ALL PLATINUM >>>!"
     },
     {
       "source": "All publication remains off unless you explicitly enable it. Imported profiles retain the original choices.",
@@ -204209,6 +205137,10 @@
       "translation": "* BOOKMARK SELECTED RING >>>!"
     },
     {
+      "source": "Bookmark selected spot",
+      "translation": "* BOOKMARK SELECTED SPOT >>>!"
+    },
+    {
       "source": "Bookmarks",
       "translation": "* BOOKMARKS >>>!"
     },
@@ -205461,10 +206393,6 @@
       "translation": "* CHOOSE AN EXISTING ABSOLUTE SCREENSHOT SOURCE FOLDER. >>>!"
     },
     {
-      "source": "Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates.",
-      "translation": "* CHOOSE AN OBJECTIVE AND POWER, FIND A SYSTEM, THEN FIND ITS RINGS. USE SELLING STATIONS FROM A RING TO COMPLETE THE PLAN. ACQUISITION CANDIDATES STILL NEED SUPPORT-RANGE CHECKS IN THE GAME; PRICES ARE NOT MERIT ESTIMATES. >>>!"
-    },
-    {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "* CHOOSE AN OVERLAY, THEN OPTIONALLY OVERRIDE ITS INHERITED OPACITY WITHOUT CHANGING ITS DRAG-MANAGED POSITION. >>>!"
     },
@@ -205635,10 +206563,6 @@
     {
       "source": "Clear Decrypting the Guardian Logs progress?",
       "translation": "* CLEAR DECRYPTING THE GUARDIAN LOGS PROGRESS? >>>!"
-    },
-    {
-      "source": "Clear Powerplay plan",
-      "translation": "* CLEAR POWERPLAY PLAN >>>!"
     },
     {
       "source": "Clear all trackers on current body",
@@ -206053,6 +206977,10 @@
       "translation": "* COMBAT.AUTOSHOWMASSACREMISSIONS >>>!"
     },
     {
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "* COMBINE SRVSURVEY'S BUILT-IN RING REFERENCE, COMMANDER DISCOVERIES, LIVE EDDN OBSERVATIONS, AND SPANSH API RESULTS. SPOTS++ PRIORITIZES MAPPED RES SITES, OVERLAPS, MULTI-HOTSPOT RINGS, AND PRISTINE RESERVES WITHOUT REQUIRING A DOWNLOADED GALAXY DUMP. >>>!"
+    },
+    {
       "source": "Combined overlay edit mode is active on Windows.",
       "translation": "* COMBINED OVERLAY EDIT MODE IS ACTIVE ON WINDOWS. >>>!"
     },
@@ -206287,6 +207215,10 @@
     {
       "source": "Commodity row fill (colour + alpha)",
       "translation": "* COMMODITY ROW FILL (COLOUR + ALPHA) >>>!"
+    },
+    {
+      "source": "Common",
+      "translation": "* COMMON >>>!"
     },
     {
       "source": "Common fixes",
@@ -206889,10 +207821,6 @@
       "translation": "* CONTROLLERINPUTCARD >>>!"
     },
     {
-      "source": "Controlling Power",
-      "translation": "* CONTROLLING POWER >>>!"
-    },
-    {
       "source": "Controlling faction unavailable",
       "translation": "* CONTROLLING FACTION UNAVAILABLE >>>!"
     },
@@ -207115,6 +208043,10 @@
     {
       "source": "Could not open the desktop surface.",
       "translation": "* COULD NOT OPEN THE DESKTOP SURFACE. >>>!"
+    },
+    {
+      "source": "Could not open the system link: {0}",
+      "translation": "* COULD NOT OPEN THE SYSTEM LINK: {0} >>>!"
     },
     {
       "source": "Could not open {0}.",
@@ -207351,6 +208283,10 @@
     {
       "source": "Current system is inside the limit",
       "translation": "* CURRENT SYSTEM IS INSIDE THE LIMIT >>>!"
+    },
+    {
+      "source": "Current system is not available from the journal yet.",
+      "translation": "* CURRENT SYSTEM IS NOT AVAILABLE FROM THE JOURNAL YET. >>>!"
     },
     {
       "source": "Current system is outside the limit",
@@ -207839,6 +208775,10 @@
     {
       "source": "DepartureTime",
       "translation": "* DEPARTURETIME >>>!"
+    },
+    {
+      "source": "Depleted",
+      "translation": "* DEPLETED >>>!"
     },
     {
       "source": "Deployment bar color",
@@ -208503,10 +209443,6 @@
     {
       "source": "ECONOMIES",
       "translation": "* ECONOMIES >>>!"
-    },
-    {
-      "source": "ECONOMY",
-      "translation": "* ECONOMY >>>!"
     },
     {
       "source": "EDAstro Codex map",
@@ -209657,10 +210593,6 @@
       "translation": "* EXTERNAL-DATA ENRICHMENT CAN ADD PRIOR DISCOVERY, TRAFFIC, STATION, AND BIOLOGICAL CONTEXT WHEN ITS PRIVACY SETTING IS ENABLED. >>>!"
     },
     {
-      "source": "FACTION STATE",
-      "translation": "* FACTION STATE >>>!"
-    },
-    {
       "source": "FACTIONS",
       "translation": "* FACTIONS >>>!"
     },
@@ -210085,6 +211017,18 @@
       "translation": "* FIND >>>!"
     },
     {
+      "source": "Find Platinum spots",
+      "translation": "* FIND PLATINUM SPOTS >>>!"
+    },
+    {
+      "source": "Find buyers",
+      "translation": "* FIND BUYERS >>>!"
+    },
+    {
+      "source": "Find buyers for selected spot →",
+      "translation": "* FIND BUYERS FOR SELECTED SPOT → >>>!"
+    },
+    {
       "source": "Find hotspots",
       "translation": "* FIND HOTSPOTS >>>!"
     },
@@ -210121,6 +211065,10 @@
       "translation": "* FIND PRICES >>>!"
     },
     {
+      "source": "Find rings",
+      "translation": "* FIND RINGS >>>!"
+    },
+    {
       "source": "Find rings in selected system →",
       "translation": "* FIND RINGS IN SELECTED SYSTEM → >>>!"
     },
@@ -210129,12 +211077,20 @@
       "translation": "* FIND RINGS, MARKETS AND TRADERS >>>!"
     },
     {
+      "source": "Find selling stations",
+      "translation": "* FIND SELLING STATIONS >>>!"
+    },
+    {
+      "source": "Find selling stations for selected ring →",
+      "translation": "* FIND SELLING STATIONS FOR SELECTED RING → >>>!"
+    },
+    {
       "source": "Find system",
       "translation": "* FIND SYSTEM >>>!"
     },
     {
-      "source": "Find systems",
-      "translation": "* FIND SYSTEMS >>>!"
+      "source": "Find target systems",
+      "translation": "* FIND TARGET SYSTEMS >>>!"
     },
     {
       "source": "Find the last recorded FSD jump into {0}.",
@@ -210807,10 +211763,6 @@
     {
       "source": "GOAL #{0}",
       "translation": "* GOAL #{0} >>>!"
-    },
-    {
-      "source": "GOVERNMENT",
-      "translation": "* GOVERNMENT >>>!"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -213353,6 +214305,10 @@
       "translation": "* LARGE >>>!"
     },
     {
+      "source": "Large landing pads only",
+      "translation": "* LARGE LANDING PADS ONLY >>>!"
+    },
+    {
       "source": "Large pads",
       "translation": "* LARGE PADS >>>!"
     },
@@ -214085,6 +215041,10 @@
       "translation": "* LOST SURFACE SCANS WERE NOT MARKED: {0} >>>!"
     },
     {
+      "source": "Low",
+      "translation": "* LOW >>>!"
+    },
+    {
       "source": "Low Temperature Diamonds",
       "translation": "* LOW TEMPERATURE DIAMONDS >>>!"
     },
@@ -214279,6 +215239,10 @@
     {
       "source": "Maintenance paid",
       "translation": "* MAINTENANCE PAID >>>!"
+    },
+    {
+      "source": "Major",
+      "translation": "* MAJOR >>>!"
     },
     {
       "source": "Make primary",
@@ -214601,12 +215565,20 @@
       "translation": "* MAVERICK SUIT >>>!"
     },
     {
+      "source": "Max age (days)",
+      "translation": "* MAX AGE (DAYS) >>>!"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "* MAXJUMPRANGE >>>!"
     },
     {
       "source": "Maximum age (days)",
       "translation": "* MAXIMUM AGE (DAYS) >>>!"
+    },
+    {
+      "source": "Maximum demand (0 = any)",
+      "translation": "* MAXIMUM DEMAND (0 = ANY) >>>!"
     },
     {
       "source": "Med kits",
@@ -214797,6 +215769,10 @@
       "translation": "* MINERAL (BLANK = ANY) >>>!"
     },
     {
+      "source": "Mineral / metal",
+      "translation": "* MINERAL / METAL >>>!"
+    },
+    {
       "source": "Mineral Amount:",
       "translation": "* MINERAL AMOUNT: >>>!"
     },
@@ -214839,6 +215815,10 @@
     {
       "source": "Minimum DSS value (credits)",
       "translation": "* MINIMUM DSS VALUE (CREDITS) >>>!"
+    },
+    {
+      "source": "Minimum demand",
+      "translation": "* MINIMUM DEMAND >>>!"
     },
     {
       "source": "Minimum displayed body value (credits)",
@@ -216197,6 +217177,10 @@
       "translation": "* NO PLANNED RAVEN SITE IS AVAILABLE; CHOOSE A BUILD LAYOUT MANUALLY. >>>!"
     },
     {
+      "source": "No pledge detected",
+      "translation": "* NO PLEDGE DETECTED >>>!"
+    },
+    {
       "source": "No projects loaded.",
       "translation": "* NO PROJECTS LOADED. >>>!"
     },
@@ -216589,6 +217573,10 @@
       "translation": "* OTHER >>>!"
     },
     {
+      "source": "OVERLAP",
+      "translation": "* OVERLAP >>>!"
+    },
+    {
       "source": "OVERLAPS",
       "translation": "* OVERLAPS >>>!"
     },
@@ -216615,10 +217603,6 @@
     {
       "source": "Object does not exist at path",
       "translation": "* OBJECT DOES NOT EXIST AT PATH >>>!"
-    },
-    {
-      "source": "Objective",
-      "translation": "* OBJECTIVE >>>!"
     },
     {
       "source": "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
@@ -217161,6 +218145,10 @@
       "translation": "* OPERATIONS >>>!"
     },
     {
+      "source": "Opposing Power (optional)",
+      "translation": "* OPPOSING POWER (OPTIONAL) >>>!"
+    },
+    {
       "source": "Opposition",
       "translation": "* OPPOSITION >>>!"
     },
@@ -217303,6 +218291,10 @@
     {
       "source": "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.",
       "translation": "* OUTSIDE THE BODY-PREDICTION DISCOVERY MARKERS, THIS SYMBOL IDENTIFIES A STELLAR/BODY CONTEXT OR AN UNRESOLVED BIOLOGICAL SIGNAL ACCORDING TO THE ROW TITLE. >>>!"
+    },
+    {
+      "source": "Overlaps",
+      "translation": "* OVERLAPS >>>!"
     },
     {
       "source": "Overlaps only",
@@ -217933,6 +218925,10 @@
       "translation": "* PIPEWIRE >>>!"
     },
     {
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
+      "translation": "* PLAN A POWERPLAY MINING RUN FROM TARGET SYSTEM TO RING AND SELLING STATION. SRVSURVEY COMBINES JOURNAL CONTEXT, BUILT-IN RING REFERENCES, LIVE EDDN OBSERVATIONS, AND FOCUSED SPANSH API SEARCHES; NO DOWNLOADED GALAXY DUMP IS REQUIRED. >>>!"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "* PLAN A MINING TRIP >>>!"
     },
@@ -217963,6 +218959,10 @@
     {
       "source": "Platinum 34.8% · Osmium 12.4%",
       "translation": "* PLATINUM 34.8% · OSMIUM 12.4% >>>!"
+    },
+    {
+      "source": "Platinum Spots++",
+      "translation": "* PLATINUM SPOTS++ >>>!"
     },
     {
       "source": "Platinum ×1",
@@ -218269,6 +219269,10 @@
       "translation": "* POWER GENERATORS >>>!"
     },
     {
+      "source": "Power goal",
+      "translation": "* POWER GOAL >>>!"
+    },
+    {
       "source": "Power post",
       "translation": "* POWER POST >>>!"
     },
@@ -218291,6 +219295,14 @@
     {
       "source": "Powerplay",
       "translation": "* POWERPLAY >>>!"
+    },
+    {
+      "source": "Powerplay mining filters reset to commander defaults.",
+      "translation": "* POWERPLAY MINING FILTERS RESET TO COMMANDER DEFAULTS. >>>!"
+    },
+    {
+      "source": "Powerplay mining planner",
+      "translation": "* POWERPLAY MINING PLANNER >>>!"
     },
     {
       "source": "PowerplayJoin",
@@ -218553,6 +219565,10 @@
       "translation": "* PREVIOUSLY SELECTED CONTROLLER >>>!"
     },
     {
+      "source": "Prices and demand are recent observations, not merit estimates or guarantees.",
+      "translation": "* PRICES AND DEMAND ARE RECENT OBSERVATIONS, NOT MERIT ESTIMATES OR GUARANTEES. >>>!"
+    },
+    {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
       "translation": "* PRICES ARE OBSERVATIONS AND MAY CHANGE. SETTINGS → SESSION CAN ENABLE RECEIVE-ONLY EDDN OBSERVATIONS, RETAINED FOR 24 HOURS FOR COMMODITIES. THIS DOES NOT ENABLE UPLOADS. >>>!"
     },
@@ -218639,6 +219655,10 @@
     {
       "source": "PriorScanMinimumValue",
       "translation": "* PRIORSCANMINIMUMVALUE >>>!"
+    },
+    {
+      "source": "Pristine",
+      "translation": "* PRISTINE >>>!"
     },
     {
       "source": "Pristine icy ring",
@@ -219191,6 +220211,10 @@
     {
       "source": "RES",
       "translation": "* RES >>>!"
+    },
+    {
+      "source": "RES mapped",
+      "translation": "* RES MAPPED >>>!"
     },
     {
       "source": "RES sites only",
@@ -220125,6 +221149,10 @@
       "translation": "* REFERENCE SYSTEM >>>!"
     },
     {
+      "source": "Reference system set to {0}.",
+      "translation": "* REFERENCE SYSTEM SET TO {0}. >>>!"
+    },
+    {
       "source": "Reference-data updates",
       "translation": "* REFERENCE-DATA UPDATES >>>!"
     },
@@ -220283,6 +221311,10 @@
     {
       "source": "Reinforce",
       "translation": "* REINFORCE >>>!"
+    },
+    {
+      "source": "Reinforce selects your Power's systems; Undermine selects other Powers (optionally one opponent); Acquire selects unoccupied or expansion candidates. Unknown Powerplay ownership is never treated as eligible.",
+      "translation": "* REINFORCE SELECTS YOUR POWER'S SYSTEMS; UNDERMINE SELECTS OTHER POWERS (OPTIONALLY ONE OPPONENT); ACQUIRE SELECTS UNOCCUPIED OR EXPANSION CANDIDATES. UNKNOWN POWERPLAY OWNERSHIP IS NEVER TREATED AS ELIGIBLE. >>>!"
     },
     {
       "source": "Reinforcements",
@@ -220629,6 +221661,10 @@
       "translation": "* RESEARCH MISSION TRACKER >>>!"
     },
     {
+      "source": "Reserve level",
+      "translation": "* RESERVE LEVEL >>>!"
+    },
+    {
       "source": "Reserved balance",
       "translation": "* RESERVED BALANCE >>>!"
     },
@@ -220779,6 +221815,14 @@
     {
       "source": "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
       "translation": "* RESTRICT EACH OVERLAY CATEGORY TO SELECTED SHIPS OR VEHICLES WITHOUT CHANGING ITS NORMAL TRIGGERS. >>>!"
+    },
+    {
+      "source": "Result set",
+      "translation": "* RESULT SET >>>!"
+    },
+    {
+      "source": "Results",
+      "translation": "* RESULTS >>>!"
     },
     {
       "source": "Resume Selected",
@@ -223789,6 +224833,10 @@
       "translation": "* SPANSH RETURNED A ROUTE WITH NO SYSTEMS. >>>!"
     },
     {
+      "source": "Spansh unavailable; showing built-in and commander observations.",
+      "translation": "* SPANSH UNAVAILABLE; SHOWING BUILT-IN AND COMMANDER OBSERVATIONS. >>>!"
+    },
+    {
       "source": "Spansh update time unavailable",
       "translation": "* SPANSH UPDATE TIME UNAVAILABLE >>>!"
     },
@@ -223839,6 +224887,10 @@
     {
       "source": "Spoiler",
       "translation": "* SPOILER >>>!"
+    },
+    {
+      "source": "Spots++",
+      "translation": "* SPOTS++ >>>!"
     },
     {
       "source": "Squadron Carrier",
@@ -225101,6 +226153,10 @@
       "translation": "* SYSTEM AUTHORITY >>>!"
     },
     {
+      "source": "System and selling filters",
+      "translation": "* SYSTEM AND SELLING FILTERS >>>!"
+    },
+    {
       "source": "System biology",
       "translation": "* SYSTEM BIOLOGY >>>!"
     },
@@ -225131,10 +226187,6 @@
     {
       "source": "System files could not be analyzed: {0}",
       "translation": "* SYSTEM FILES COULD NOT BE ANALYZED: {0} >>>!"
-    },
-    {
-      "source": "System filters",
-      "translation": "* SYSTEM FILTERS >>>!"
     },
     {
       "source": "System lookup unavailable: {0}",
@@ -228857,10 +229909,6 @@
       "translation": "* USE DOWNLOADED BIO DATA FROM CANONN AND SPANSH >>>!"
     },
     {
-      "source": "Use for hotspot search",
-      "translation": "* USE FOR HOTSPOT SEARCH >>>!"
-    },
-    {
       "source": "Use global opacity",
       "translation": "* USE GLOBAL OPACITY >>>!"
     },
@@ -229375,6 +230423,10 @@
     {
       "source": "WG Life",
       "translation": "* WG LIFE >>>!"
+    },
+    {
+      "source": "WHY IT RANKS",
+      "translation": "* WHY IT RANKS >>>!"
     },
     {
       "source": "WINDOW SIZE",
@@ -233177,6 +234229,14 @@
       "translation": "* {0} OVERLAYS >>>!"
     },
     {
+      "source": "{0} Platinum Spots++ results · {1} · {2}.",
+      "translation": "* {0} PLATINUM SPOTS++ RESULTS · {1} · {2}. >>>!"
+    },
+    {
+      "source": "{0} Platinum hotspot{1}",
+      "translation": "* {0} PLATINUM HOTSPOT{1} >>>!"
+    },
+    {
       "source": "{0} ROUTE JUMPS",
       "translation": "* {0} ROUTE JUMPS >>>!"
     },
@@ -233859,6 +234919,10 @@
     {
       "source": "{0} · {1} · {2} t · {3} t/h · {4} asteroids · {5} cores",
       "translation": "* {0} · {1} · {2} T · {3} T/H · {4} ASTEROIDS · {5} CORES >>>!"
+    },
+    {
+      "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
+      "translation": "* {0} · {1} · {2} · {3} · {4} RESERVE · WITHIN {5} LY >>>!"
     },
     {
       "source": "{0} • updated {1}",

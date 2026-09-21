@@ -8,6 +8,57 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MiningWorkspaceViewModelTests
 {
     [Fact]
+    public void JournalContextDefaultsSearchLocationAndPledgedPower()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory));
+            var context = new JournalSessionState();
+            var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+            JournalEventEnvelope[] entries =
+            [
+                FiregroupsWorkspaceViewModelTests.Event(
+                    """{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}"""
+                ),
+                FiregroupsWorkspaceViewModelTests.Event(
+                    """{"event":"Location","StarSystem":"Harma","StarPos":[1,2,3]}"""
+                ),
+                FiregroupsWorkspaceViewModelTests.Event("""{"event":"PowerplayJoin","Power":"Archon Delaine"}"""),
+            ];
+            foreach (JournalEventEnvelope entry in entries)
+            {
+                context.Apply(entry);
+            }
+
+            vm.Apply(new(null, entries, ship, null, null, null, [], true), context, null, ship);
+
+            Assert.Equal("Harma", vm.Search.Reference);
+            Assert.Equal("Harma", vm.Search.CurrentSystem);
+            Assert.Equal("Archon Delaine", vm.Search.PledgedPower);
+            vm.Search.Reference = "Sol";
+            vm.SelectedTab = 3;
+            Assert.Equal("Harma", vm.Search.Reference);
+            Assert.Equal("Reinforce", vm.Search.Objective);
+            vm.Search.Reference = "Sol";
+            vm.SelectedTab = 4;
+            vm.SelectedTab = 3;
+            Assert.Equal("Sol", vm.Search.Reference);
+            vm.Search.UpdateCurrentLocation("Wille");
+            Assert.Equal("Sol", vm.Search.Reference);
+            vm.Search.UseCurrentLocation();
+            Assert.Equal("Wille", vm.Search.Reference);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
     public void PersistentProspectsChimeAndCargoOverlayFollowMiningSettings()
     {
         string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

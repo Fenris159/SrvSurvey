@@ -360,6 +360,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "1 \u00B7 Choose the Powerplay goal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "1,000 t",
     "IsFormat": false,
     "SourceKinds": [
@@ -688,6 +696,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "2 \u00B7 Select a target system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "2,450 need | 620 FC | 96 ship",
     "IsFormat": false,
     "SourceKinds": [
@@ -840,6 +856,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "3 \u00B7 Select a mining ring",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "3,892 t",
     "IsFormat": false,
     "SourceKinds": [
@@ -894,6 +918,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "4 \u00B7 Select a selling station",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
@@ -2079,14 +2111,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
-  },
-  {
-    "Text": "ALLEGIANCE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "ALPHA",
@@ -3394,6 +3418,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "All platinum",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "All publication remains off unless you explicitly enable it. Imported profiles retain the original choices.",
     "IsFormat": false,
     "SourceKinds": [
@@ -3479,7 +3511,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Alliance Challenger",
@@ -7101,7 +7133,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Bookmark saved.",
@@ -7118,6 +7150,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Bookmark selected spot",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Bookmarks",
@@ -9638,14 +9678,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
   },
   {
-    "Text": "Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
-  },
-  {
     "Text": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9988,14 +10020,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
-  },
-  {
-    "Text": "Clear Powerplay plan",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Clear all trackers on current body",
@@ -10824,6 +10848,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
+    "Text": "Combine SrvSurvey\u0027s built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots\u002B\u002B prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
     "Text": "Combined overlay edit mode is active on Windows.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11296,6 +11328,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Common",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Common fixes",
@@ -12501,14 +12541,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
-    "Text": "Controlling Power",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
-  },
-  {
     "Text": "Controlling faction unavailable",
     "IsFormat": false,
     "SourceKinds": [
@@ -12955,6 +12987,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "Could not open the system link: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml.cs"
   },
   {
     "Text": "Could not open {0}.",
@@ -13429,6 +13469,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
+  },
+  {
+    "Text": "Current system is not available from the journal yet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Current system is outside the limit",
@@ -14410,6 +14458,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Depleted",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "Deployment bar color",
     "IsFormat": false,
     "SourceKinds": [
@@ -15176,9 +15232,10 @@
     "Text": "Distance (ly)",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Distance LY cannot be negative.",
@@ -15743,14 +15800,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/StationInfoOverlayPresentation.axaml"
   },
   {
-    "Text": "ECONOMY",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
-  },
-  {
     "Text": "EDAstro Codex map",
     "IsFormat": false,
     "SourceKinds": [
@@ -16176,7 +16225,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "EddnCard",
@@ -18053,14 +18102,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "FACTION STATE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
-  },
-  {
     "Text": "FACTIONS",
     "IsFormat": false,
     "SourceKinds": [
@@ -18662,7 +18703,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Fatal application error: {0}",
@@ -18913,6 +18954,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Find Platinum spots",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Find buyers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Find buyers for selected spot \u2192",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
     "Text": "Find hotspots",
     "IsFormat": false,
     "SourceKinds": [
@@ -18986,12 +19051,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Find rings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Find rings in selected system \u2192",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Find rings, markets and traders",
@@ -19002,6 +19075,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Find selling stations",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
+    "Text": "Find selling stations for selected ring \u2192",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Find system",
     "IsFormat": false,
     "SourceKinds": [
@@ -19010,12 +19099,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
   },
   {
-    "Text": "Find systems",
+    "Text": "Find target systems",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Find the last recorded FSD jump into {0}.",
@@ -20364,14 +20453,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "GOVERNMENT",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
-  },
-  {
     "Text": "GR 504 - Beta ruins #1",
     "IsFormat": false,
     "SourceKinds": [
@@ -21004,7 +21085,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Grade {0}",
@@ -25475,6 +25556,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "Large landing pads only",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Large pads",
     "IsFormat": false,
     "SourceKinds": [
@@ -26941,6 +27030,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceSurveyViewModel.cs"
   },
   {
+    "Text": "Low",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "Low Temperature Diamonds",
     "IsFormat": false,
     "SourceKinds": [
@@ -27162,7 +27259,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "MINING",
@@ -27331,6 +27428,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Major",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Make primary",
@@ -27975,6 +28080,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Max age (days)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "MaxJumpRange",
     "IsFormat": false,
     "SourceKinds": [
@@ -27989,6 +28102,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Maximum demand (0 = any)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Med kits",
@@ -28368,6 +28489,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Mineral / metal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Mineral Amount:",
     "IsFormat": false,
     "SourceKinds": [
@@ -28456,6 +28585,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Minimum demand",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Minimum displayed body value (credits)",
     "IsFormat": false,
     "SourceKinds": [
@@ -28469,7 +28606,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Minimum percentage",
@@ -28485,7 +28622,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Minimum reward (credits)",
@@ -31175,6 +31312,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
+    "Text": "No pledge detected",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "No projects loaded.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31910,7 +32055,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "OFF",
@@ -31959,6 +32104,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
+  },
+  {
+    "Text": "OVERLAP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "OVERLAPS",
@@ -32015,14 +32168,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationLogTraceListener.cs"
-  },
-  {
-    "Text": "Objective",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
@@ -32817,7 +32962,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Open system notes",
@@ -33109,6 +33254,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
   },
   {
+    "Text": "Opposing Power (optional)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Opposition",
     "IsFormat": false,
     "SourceKinds": [
@@ -33395,6 +33548,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Overlaps",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Overlaps only",
@@ -34140,7 +34301,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "PAD LOCKDOWN IN",
@@ -34236,7 +34397,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "POSITION X / Y / Z",
@@ -34260,7 +34421,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "POWER STATE",
@@ -34268,7 +34429,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "PREDICTED",
@@ -34656,6 +34817,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
+    "Text": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Plan a mining trip",
     "IsFormat": false,
     "SourceKinds": [
@@ -34691,9 +34860,10 @@
     "Text": "Platinum",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Platinum 22.1% \u00B7 Bertrandite 8.5%",
@@ -34718,6 +34888,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
+  },
+  {
+    "Text": "Platinum Spots\u002B\u002B",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Platinum \u00D71",
@@ -35329,6 +35507,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Power goal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Power post",
     "IsFormat": false,
     "SourceKinds": [
@@ -35342,7 +35528,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Powered",
@@ -35375,7 +35561,23 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Powerplay mining filters reset to commander defaults.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Powerplay mining planner",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "PowerplayJoin",
@@ -35899,6 +36101,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
   },
   {
+    "Text": "Prices and demand are recent observations, not merit estimates or guarantees.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Prices are observations and may change. Settings \u2192 Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
     "IsFormat": false,
     "SourceKinds": [
@@ -36074,6 +36284,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "Pristine",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Pristine icy ring",
@@ -37183,6 +37401,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "RES mapped",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "RES sites only",
     "IsFormat": false,
     "SourceKinds": [
@@ -37196,7 +37422,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "RESTOCK AMOUNT",
@@ -39047,6 +39273,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Reference system set to {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "Reference-data updates",
     "IsFormat": false,
     "SourceKinds": [
@@ -39366,6 +39600,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Reinforce selects your Power\u0027s systems; Undermine selects other Powers (optionally one opponent); Acquire selects unoccupied or expansion candidates. Unknown Powerplay ownership is never treated as eligible.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Reinforcements",
@@ -40056,6 +40298,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Reserve level",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Reserved balance",
     "IsFormat": false,
     "SourceKinds": [
@@ -40358,6 +40608,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Result set",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Results",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Resume Selected",
@@ -40910,7 +41176,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Rings",
@@ -41609,7 +41875,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "SELECT",
@@ -41923,7 +42189,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "STATION INFORMATION",
@@ -43504,7 +43770,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Search rings",
@@ -43698,7 +43964,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "See your path from the search root, move between boxels at the same level, or open a smaller child boxel. This does not move between systems in the table.",
@@ -46396,6 +46662,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Spansh unavailable; showing built-in and commander observations.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "Spansh update time unavailable",
     "IsFormat": false,
     "SourceKinds": [
@@ -46498,6 +46772,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Spots\u002B\u002B",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Squadron Carrier",
@@ -49024,6 +49306,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
   },
   {
+    "Text": "System and selling filters",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "System biology",
     "IsFormat": false,
     "SourceKinds": [
@@ -49086,14 +49376,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
-  },
-  {
-    "Text": "System filters",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "System lookup unavailable: {0}",
@@ -56548,14 +56830,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Use for hotspot search",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
-  },
-  {
     "Text": "Use global opacity",
     "IsFormat": false,
     "SourceKinds": [
@@ -57589,6 +57863,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "WHY IT RANKS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "WINDOW SIZE",
@@ -59062,7 +59344,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Your saved platform and overlay calibration are unchanged.",
@@ -60678,7 +60960,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml.cs"
   },
   {
     "Text": "elitedangerous",
@@ -61814,7 +62096,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml.cs"
   },
   {
     "Text": "inara.url",
@@ -62198,7 +62480,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml.cs"
   },
   {
     "Text": "medium",
@@ -63734,7 +64016,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml.cs"
   },
   {
     "Text": "state",
@@ -65194,6 +65476,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml.cs"
   },
   {
+    "Text": "{0} Platinum Spots\u002B\u002B results \u00B7 {1} \u00B7 {2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "{0} Platinum hotspot{1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "{0} ROUTE JUMPS",
     "IsFormat": true,
     "SourceKinds": [
@@ -66560,6 +66858,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0} \u00B7 {1} \u00B7 {2} \u00B7 {3} \u00B7 {4} reserve \u00B7 within {5} ly",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "{0} \u2022 updated {1}",

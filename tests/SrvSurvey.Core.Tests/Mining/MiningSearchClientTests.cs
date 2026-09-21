@@ -79,6 +79,8 @@ public sealed class MiningSearchClientTests
             ("Wrong type", "Outpost", true, now, 300L, 100L, 100L),
             ("Zero price", "Coriolis", true, now, 0L, 100L, 100L),
             ("No trade volume", "Coriolis", true, now, 300L, 0L, 0L),
+            ("Below selected volume", "Coriolis", true, now, 300L, 80L, 80L),
+            ("Above selected volume", "Coriolis", true, now, 300L, 120L, 120L),
         };
         object[] rows = candidates
             .Select(c =>
@@ -132,7 +134,9 @@ public sealed class MiningSearchClientTests
             buying,
             ExcludeCarriers: true,
             LargePads: true,
-            StationType: "Coriolis"
+            StationType: "Coriolis",
+            MinimumDemand: 90,
+            MaximumDemand: 110
         );
         IReadOnlyList<MiningMarketResult> results = spansh
             ? await client.FindSpanshMarketsAsync(query)

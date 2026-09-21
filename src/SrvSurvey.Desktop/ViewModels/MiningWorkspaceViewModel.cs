@@ -118,7 +118,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             {
                 Filter = mission.Commodity;
                 Search.Mineral = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(mission.Commodity);
-                SelectedTab = 3;
+                SelectedTab = 4;
             }
         });
         AddAsteroidCommand = new WorkspaceCommand(() => AdjustAsteroids(1));
@@ -363,7 +363,13 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public int SelectedTab
     {
         get => selectedTab;
-        set => Set(ref selectedTab, value);
+        set
+        {
+            if (Set(ref selectedTab, value) && value == 3)
+            {
+                Search.PreparePowerplay();
+            }
+        }
     }
     public string Notes
     {
@@ -538,10 +544,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         body = context.BodyName ?? body;
         ship = context.ShipType ?? ship;
         position = context.StarPosition ?? position;
-        if (Search.Reference.Length == 0)
-        {
-            Search.Reference = system;
-        }
+        Search.UpdateCurrentLocation(system);
 
         state.Missions.UpdateCargo(Cargo);
         if (dirty)
@@ -1264,7 +1267,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         SelectedSession = History.Count > 0 ? History[0] : null;
         if (Settings.AutoSwitchTabs)
         {
-            SelectedTab = 3;
+            SelectedTab = 4;
         }
         Refresh();
     }

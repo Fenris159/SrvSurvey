@@ -27,7 +27,9 @@ public sealed record MiningMarketQuery(
     int MaximumAgeDays = 2,
     string StationType = "",
     int Page = 0,
-    bool SystemOnly = false
+    bool SystemOnly = false,
+    long MinimumDemand = 0,
+    long MaximumDemand = 0
 );
 
 public sealed record MiningMarketResult(
@@ -191,8 +193,9 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         string path = query.GalaxyWide
             ? $"commodity/name/{Uri.EscapeDataString(commodity)}/{direction}"
             : $"system/name/{Uri.EscapeDataString(query.ReferenceSystem)}/commodity/name/{Uri.EscapeDataString(commodity)}/nearby/{direction}";
+        long minimumVolume = Math.Max(1, query.MinimumDemand);
         string uri =
-            $"https://api.ardent-insight.com/v2/{path}?minVolume=1&maxDaysAgo={query.MaximumAgeDays}&maxDistance={query.Radius.ToString(System.Globalization.CultureInfo.InvariantCulture)}&fleetCarriers={!query.ExcludeCarriers}";
+            $"https://api.ardent-insight.com/v2/{path}?minVolume={minimumVolume}&maxDaysAgo={query.MaximumAgeDays}&maxDistance={query.Radius.ToString(System.Globalization.CultureInfo.InvariantCulture)}&fleetCarriers={!query.ExcludeCarriers}";
         using HttpResponseMessage response = await client
             .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
@@ -227,7 +230,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         long demand = (long)MiningJson.Number(item, "demand");
         long supply = (long)MiningJson.Number(item, "stock");
         DateTimeOffset? updated = RecentObservation(MiningJson.Text(item, "updatedAt"), query.MaximumAgeDays);
-        if (!HasTradeVolume(price, demand, supply, query.Buying) || updated is null)
+        if (!HasTradeVolume(price, demand, supply, query) || updated is null)
         {
             return null;
         }
@@ -300,7 +303,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             long price = (long)MiningJson.Number(item, query.Buying ? "buy_price" : "sell_price");
             long supply = (long)(Number(item, "supply") ?? Number(item, "stock") ?? 0);
             long demand = (long)MiningJson.Number(item, "demand");
-            if (!HasTradeVolume(price, demand, supply, query.Buying))
+            if (!HasTradeVolume(price, demand, supply, query))
             {
                 continue;
             }
@@ -326,8 +329,14 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         && (!query.LargePads || largePad == true)
         && (query.StationType.Length == 0 || type.Contains(query.StationType, StringComparison.OrdinalIgnoreCase));
 
-    private static bool HasTradeVolume(long price, long demand, long supply, bool buying) =>
-        price > 0 && (buying ? supply : demand) > 0;
+    private static bool HasTradeVolume(long price, long demand, long supply, MiningMarketQuery query)
+    {
+        long volume = query.Buying ? supply : demand;
+        return price > 0
+            && volume > 0
+            && volume >= query.MinimumDemand
+            && (query.MaximumDemand == 0 || volume <= query.MaximumDemand);
+    }
 
     private static MiningMarketResult[] SortMarkets(IEnumerable<MiningMarketResult> results, bool buying) =>
         buying ? results.OrderBy(r => r.Price).ToArray() : results.OrderByDescending(r => r.Price).ToArray();

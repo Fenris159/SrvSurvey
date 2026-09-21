@@ -89,6 +89,12 @@ public sealed class MiningSearchViewModelTests
         model.Radius = 240;
         model.OnlyRes = true;
         model.TraderType = "Encoded";
+        model.Reserve = "Pristine";
+        model.MinimumDemand = 500;
+        model.MaximumDemand = 5000;
+        model.ResultLimit = 42;
+        model.PlatinumMode = "Overlaps";
+        model.OpposingPower = "Jerome Archer";
         MiningCommanderData restored = MiningStore.Parse(
             MiningStore.Export(
                 new MiningCommanderData { Settings = new MiningPreferences { SearchOptions = model.SaveOptions() } }
@@ -103,6 +109,64 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal(240, model.Radius);
         Assert.True(model.OnlyRes);
         Assert.Equal("Encoded", model.TraderType);
+        Assert.Equal("Pristine", model.Reserve);
+        Assert.Equal(500, model.MinimumDemand);
+        Assert.Equal(5000, model.MaximumDemand);
+        Assert.Equal(42, model.ResultLimit);
+        Assert.Equal("Overlaps", model.PlatinumMode);
+        Assert.Equal("Jerome Archer", model.OpposingPower);
+    }
+
+    [Fact]
+    public async Task PlatinumSpotsRanksUsefulLocalRingsAndCanShowAllPlatinumRings()
+    {
+        const string system = "Platinum Spots Test";
+        MiningRing[] rings =
+        [
+            Spot("Mapped A Ring", 1, resourceExtractionSites: "High"),
+            Spot("Overlap B Ring", 1, overlaps: "Platinum x2"),
+            Spot("Double C Ring", 2),
+            Spot("Plain D Ring", 1),
+            Spot("Wrong E Ring", 2) with
+            {
+                RingType = "Icy",
+            },
+        ];
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => rings,
+            new Resolver()
+        )
+        {
+            Reference = system,
+            Source = "Local",
+            Radius = 1,
+            ResultLimit = 10,
+        };
+
+        await model.SearchPlatinumAsync();
+
+        Assert.Equal(3, model.PlatinumSpots.Count);
+        Assert.Equal("Mapped A Ring", model.PlatinumSpots[0].Body);
+        Assert.DoesNotContain(model.PlatinumSpots, spot => spot.Body == "Plain D Ring");
+        model.PlatinumMode = "All platinum";
+        await model.SearchPlatinumAsync();
+        Assert.Equal(4, model.PlatinumSpots.Count);
+        Assert.Contains(model.PlatinumSpots, spot => spot.Body == "Plain D Ring");
+
+        static MiningRing Spot(string body, int hotspots, string overlaps = "", string resourceExtractionSites = "") =>
+            new()
+            {
+                System = system,
+                Body = body,
+                RingType = "Metallic",
+                Reserve = "Pristine",
+                Hotspots = new() { ["Platinum"] = hotspots },
+                Overlaps = overlaps,
+                ResourceExtractionSites = resourceExtractionSites,
+            };
     }
 
     [Fact]
@@ -186,6 +250,12 @@ public sealed class MiningSearchViewModelTests
         await model.SearchSystemsAsync();
         Assert.Equal("Own", Assert.Single(model.Systems).System);
         model.Objective = "Undermine";
+        await model.SearchSystemsAsync();
+        Assert.Equal("Other", Assert.Single(model.Systems).System);
+        model.OpposingPower = "Aisling Duval";
+        await model.SearchSystemsAsync();
+        Assert.Empty(model.Systems);
+        model.OpposingPower = "Jerome Archer";
         await model.SearchSystemsAsync();
         Assert.Equal("Other", Assert.Single(model.Systems).System);
         model.Objective = "Acquire";

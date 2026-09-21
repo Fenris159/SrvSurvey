@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.MiningPowerplayView" x:DataType="vm:MiningWorkspaceViewModel" Grid.IsSharedSizeScope="True">
+  <UserControl.Styles><Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style></UserControl.Styles>
+  <StackPanel Spacing="14" Margin="4,12,4,16">
+    <StackPanel Spacing="5">
+      <TextBlock Text="Powerplay mining planner" Classes="card-title"/>
+      <TextBlock Text="Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required." TextWrapping="Wrap" Classes="muted"/>
+      <TextBlock Text="{Binding Search.PowerplaySummary}" Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap"/>
+    </StackPanel>
+
+    <Border Classes="card raised">
+      <StackPanel Spacing="10">
+        <TextBlock Text="1 · Choose the Powerplay goal" Classes="card-title"/>
+        <WrapPanel>
+          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Reference system"/><TextBox x:Name="PowerplayReference" Text="{Binding Search.Reference}"/></StackPanel>
+          <StackPanel Spacing="4" Width="130" Margin="0,0,12,10"><TextBlock Text="Distance (ly)"/><NumericUpDown Minimum="1" Maximum="500" Value="{Binding Search.Radius}"/></StackPanel>
+          <StackPanel Spacing="4" Width="130" Margin="0,0,12,10"><TextBlock Text="Search results"/><NumericUpDown Minimum="1" Maximum="100" Value="{Binding Search.ResultLimit}"/></StackPanel>
+          <Button Content="Use current" Click="Current_Click" VerticalAlignment="Bottom" Margin="0,0,12,10"/>
+        </WrapPanel>
+        <WrapPanel>
+          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Your pledged Power"/><ComboBox x:Name="PowerplayPledgedPower" ItemsSource="{Binding Search.Powers}" SelectedItem="{Binding Search.PledgedPower}"/></StackPanel>
+          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Power goal"/><ComboBox x:Name="PowerplayGoal" ItemsSource="{Binding Search.Objectives}" SelectedItem="{Binding Search.Objective}"/></StackPanel>
+          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Opposing Power (optional)"/><ComboBox ItemsSource="{Binding Search.Powers}" SelectedItem="{Binding Search.OpposingPower}"/></StackPanel>
+        </WrapPanel>
+        <WrapPanel>
+          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Mineral / metal"/><ComboBox ItemsSource="{Binding Search.CommodityOptions}" SelectedItem="{Binding Search.Mineral}"/></StackPanel>
+          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Ring type"/><ComboBox ItemsSource="{Binding Search.RingTypes}" SelectedItem="{Binding Search.RingType}"/></StackPanel>
+          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Reserve level"/><ComboBox ItemsSource="{Binding Search.Reserves}" SelectedItem="{Binding Search.Reserve}"/></StackPanel>
+          <StackPanel Spacing="4" Width="150" Margin="0,0,12,10"><TextBlock Text="Minimum hotspots"/><NumericUpDown Minimum="1" Maximum="20" Value="{Binding Search.MinimumHotspots}"/></StackPanel>
+        </WrapPanel>
+        <Expander Header="System and selling filters">
+          <WrapPanel Margin="8">
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Power state"/><ComboBox ItemsSource="{Binding Search.PowerStates}" SelectedItem="{Binding Search.PowerState}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Faction state"/><TextBox Text="{Binding Search.State}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Security"/><TextBox Text="{Binding Search.Security}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Economy"/><TextBox Text="{Binding Search.Economy}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Government"/><TextBox Text="{Binding Search.Government}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Allegiance"/><TextBox Text="{Binding Search.Allegiance}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Minimum population"/><NumericUpDown Minimum="0" Maximum="1000000000000" Value="{Binding Search.MinimumPopulation}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Minimum demand"/><NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding Search.MinimumDemand}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Maximum demand (0 = any)"/><NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding Search.MaximumDemand}"/></StackPanel>
+            <StackPanel Spacing="4" Width="150" Margin="0,0,12,10"><TextBlock Text="Max age (days)"/><NumericUpDown Minimum="1" Maximum="30" Value="{Binding Search.MaximumAgeDays}"/></StackPanel>
+            <CheckBox Content="Large landing pads only" IsChecked="{Binding Search.LargePads}" Margin="0,24,12,10"/>
+          </WrapPanel>
+        </Expander>
+        <WrapPanel>
+          <Button Content="Find target systems" Click="SearchSystems_Click" Margin="0,0,8,4"/>
+          <Button Content="Reset" Click="Reset_Click" Margin="0,0,8,4"/>
+          <Button Content="Cancel" Click="Cancel_Click" IsVisible="{Binding Search.IsBusy}" Margin="0,0,8,4"/>
+          <TextBlock Text="{Binding CommunityStatus}" Classes="muted" VerticalAlignment="Center" Margin="12,0,0,4"/>
+        </WrapPanel>
+        <TextBlock Text="Reinforce selects your Power's systems; Undermine selects other Powers (optionally one opponent); Acquire selects unoccupied or expansion candidates. Unknown Powerplay ownership is never treated as eligible." TextWrapping="Wrap" Classes="muted"/>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card raised">
+      <StackPanel Spacing="8">
+        <TextBlock Text="2 · Select a target system" Classes="card-title"/>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+          <Grid RowDefinitions="Auto,*">
+            <Grid Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems0"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems1"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems2"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems3"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems4"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems5"/></Grid.ColumnDefinitions><TextBlock Classes="table-heading" Text="SYSTEM"/><TextBlock Grid.Column="1" Classes="table-heading" Text="POWER"/><TextBlock Grid.Column="2" Classes="table-heading" Text="POWER STATE"/><TextBlock Grid.Column="3" Classes="table-heading" Text="SECURITY"/><TextBlock Grid.Column="4" Classes="table-heading" Text="POPULATION"/><TextBlock Grid.Column="5" Classes="table-heading" Text="DISTANCE"/></Grid>
+            <ListBox x:Name="PowerplaySystems" Grid.Row="1" Classes="table-rows" ItemsSource="{Binding Search.Systems}" SelectedItem="{Binding Search.SelectedSystem}" MaxHeight="260" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ContextMenu><ContextMenu><MenuItem Header="Find rings" Click="FindRings_Click"/><MenuItem Header="Open system in Inara" Click="OpenSystem_Click" Tag="system"/><MenuItem Header="Copy system" behaviors:ClipboardCopyBehavior.Text="{Binding Search.SelectedSystem.System}"/></ContextMenu></ListBox.ContextMenu>
+              <ListBox.ItemTemplate><DataTemplate x:DataType="search:MiningSystemResult"><Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems0"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems1"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems2"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems3"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems4"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplaySystems5"/></Grid.ColumnDefinitions><TextBlock Text="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Power}"/><TextBlock Grid.Column="2" Text="{Binding PowerState}"/><TextBlock Grid.Column="3" Text="{Binding Security}"/><TextBlock Grid.Column="4" Text="{Binding Population, StringFormat='{}{0:N0}'}"/><TextBlock Grid.Column="5" Text="{Binding Distance, StringFormat='{}{0:N1} ly'}"/></Grid></DataTemplate></ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+        </ScrollViewer>
+        <Button Content="Find rings in selected system →" Click="FindRings_Click" HorizontalAlignment="Left"/>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card raised">
+      <StackPanel Spacing="8">
+        <TextBlock Text="3 · Select a mining ring" Classes="card-title"/>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+          <Grid RowDefinitions="Auto,*">
+            <Grid Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings0"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings1"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings2"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings3"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings4"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings5"/></Grid.ColumnDefinitions><TextBlock Classes="table-heading" Text="SYSTEM"/><TextBlock Grid.Column="1" Classes="table-heading" Text="RING"/><TextBlock Grid.Column="2" Classes="table-heading" Text="MINERALS"/><TextBlock Grid.Column="3" Classes="table-heading" Text="TYPE"/><TextBlock Grid.Column="4" Classes="table-heading" Text="RESERVE"/><TextBlock Grid.Column="5" Classes="table-heading" Text="ARRIVAL"/></Grid>
+            <ListBox x:Name="PowerplayRings" Grid.Row="1" Classes="table-rows" ItemsSource="{Binding Search.Rings}" SelectedItem="{Binding Search.SelectedRing}" MaxHeight="260" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ContextMenu><ContextMenu><MenuItem Header="Find selling stations" Click="SellingStations_Click"/><MenuItem Header="Bookmark ring" Click="Bookmark_Click"/><MenuItem Header="Copy system" behaviors:ClipboardCopyBehavior.Text="{Binding Search.SelectedRing.System}"/></ContextMenu></ListBox.ContextMenu>
+              <ListBox.ItemTemplate><DataTemplate x:DataType="mining:MiningRing"><Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings0"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings1"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings2"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings3"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings4"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayRings5"/></Grid.ColumnDefinitions><TextBlock Text="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Body}"/><TextBlock Grid.Column="2" Text="{Binding Minerals}"/><TextBlock Grid.Column="3" Text="{Binding RingType}"/><TextBlock Grid.Column="4" Text="{Binding Reserve}"/><TextBlock Grid.Column="5" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/></Grid></DataTemplate></ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+        </ScrollViewer>
+        <Button Content="Find selling stations for selected ring →" Click="SellingStations_Click" HorizontalAlignment="Left"/>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card raised">
+      <StackPanel Spacing="8">
+        <TextBlock Text="4 · Select a selling station" Classes="card-title"/>
+        <TextBlock Text="Prices and demand are recent observations, not merit estimates or guarantees." Classes="muted" TextWrapping="Wrap"/>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+          <Grid RowDefinitions="Auto,*">
+            <Grid Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets0"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets1"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets2"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets3"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets4"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets5"/></Grid.ColumnDefinitions><TextBlock Classes="table-heading" Text="SYSTEM"/><TextBlock Grid.Column="1" Classes="table-heading" Text="STATION"/><TextBlock Grid.Column="2" Classes="table-heading" Text="PAD"/><TextBlock Grid.Column="3" Classes="table-heading" Text="PRICE"/><TextBlock Grid.Column="4" Classes="table-heading" Text="DEMAND"/><TextBlock Grid.Column="5" Classes="table-heading" Text="OBSERVED"/></Grid>
+            <ListBox x:Name="PowerplayMarkets" Grid.Row="1" Classes="table-rows" ItemsSource="{Binding Search.Markets}" SelectedItem="{Binding Search.SelectedMarket}" MaxHeight="260" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ContextMenu><ContextMenu><MenuItem Header="Open system in Inara" Click="OpenSystem_Click" Tag="market"/><MenuItem Header="Copy system" behaviors:ClipboardCopyBehavior.Text="{Binding Search.SelectedMarket.System}"/></ContextMenu></ListBox.ContextMenu>
+              <ListBox.ItemTemplate><DataTemplate x:DataType="search:MiningMarketResult"><Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets0"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets1"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets2"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets3"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets4"/><ColumnDefinition Width="Auto" SharedSizeGroup="PowerplayMarkets5"/></Grid.ColumnDefinitions><TextBlock Text="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Station}"/><TextBlock Grid.Column="2" Text="{Binding PadDescription}"/><TextBlock Grid.Column="3" Text="{Binding Price, StringFormat='{}{0:N0} CR/t'}"/><TextBlock Grid.Column="4" Text="{Binding Demand, StringFormat='{}{0:N0} t'}"/><TextBlock Grid.Column="5" Text="{Binding Updated, StringFormat='{}{0:g}'}"/></Grid></DataTemplate></ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+        </ScrollViewer>
+      </StackPanel>
+    </Border>
+    <TextBlock Text="{Binding Search.Status}" Classes="muted" TextWrapping="Wrap"/>
+  </StackPanel>
+</UserControl>
