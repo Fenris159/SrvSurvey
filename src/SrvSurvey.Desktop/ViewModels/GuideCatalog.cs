@@ -903,6 +903,7 @@ public static class GuideCatalog
                         [
                             "Waiting: confirm SteamVR is running and the selected headset route is using that same session.",
                             "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+                            "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
                             "Connected with zero panels: make a SrvSurvey overlay visible in Elite or open its supported game context.",
                             "Connected but one panel is absent: verify that panel's normal visibility switch, vehicle exception, and game-state trigger.",
                             "Meta headset with no SrvSurvey panels: confirm Elite was launched through SteamVR rather than directly through the Meta OpenXR runtime.",

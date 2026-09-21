@@ -29033,6 +29033,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
+    "Text": "NEEDS ATTENTION \u2014 The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel\u0027s VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "NEUTRON",
     "IsFormat": false,
     "SourceKinds": [
@@ -32580,7 +32588,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
-    "Text": "OpenVR could not change overlay interaction: {0}",
+    "Text": "OpenVR could not change overlay interaction: {0}{1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -52442,6 +52450,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The rollback failed, so the OpenVR runtime was shut down.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
     "Text": "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",

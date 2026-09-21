@@ -294,6 +294,8 @@ public sealed class GuidesViewModelTests
         Assert.Contains("Meta compatibility bridge", instructions, StringComparison.Ordinal);
         Assert.Contains("OpenComposite is not a compatible workaround", instructions, StringComparison.Ordinal);
         Assert.Contains("no custom library location is required", instructions, StringComparison.Ordinal);
+        Assert.Contains("NEEDS ATTENTION", instructions, StringComparison.Ordinal);
+        Assert.Contains("The VR runtime rejected an overlay", instructions, StringComparison.Ordinal);
         Assert.Contains("Connected with zero panels", instructions, StringComparison.Ordinal);
     }
 

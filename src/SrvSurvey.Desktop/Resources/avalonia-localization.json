@@ -14477,6 +14477,10 @@
       "translation": "BRAUCHT AUFMERKSAMKEIT"
     },
     {
+      "source": "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+      "translation": "BENÖTIGT ACHTUNG – Die VR-Laufzeit hat ein Overlay abgelehnt: Verwenden Sie „Verbindung prüfen“, um die Veröffentlichung erneut zu versuchen. Wenn die Ablehnung weiterhin besteht, starten Sie neu SteamVR, setzen Sie die VR-Kalibrierung des betroffenen Panels zurück und überprüfen Sie, ob das Panel normal auf dem Desktop angezeigt wird, bevor Sie die Verbindung erneut herstellen."
+    },
+    {
       "source": "NEUTRON",
       "translation": "NEUTRON"
     },
@@ -16245,8 +16249,8 @@
       "translation": "OpenVR konnte nicht geprüft werden: {0}"
     },
     {
-      "source": "OpenVR could not change overlay interaction: {0}",
-      "translation": "OpenVR konnte die Overlay-Interaktion nicht ändern: {0}"
+      "source": "OpenVR could not change overlay interaction: {0}{1}",
+      "translation": "OpenVR konnte die Overlay-Interaktion nicht ändern: {0}{1}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -26155,6 +26159,10 @@
     {
       "source": "The ringed arrow at radar center is your current position and heading.",
       "translation": "Der ringförmige Pfeil in der Radarmitte zeigt Ihre aktuelle Position und Richtung an."
+    },
+    {
+      "source": "The rollback failed, so the OpenVR runtime was shut down.",
+      "translation": "Das Rollback ist fehlgeschlagen, sodass die Laufzeit OpenVR heruntergefahren wurde."
     },
     {
       "source": "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",
@@ -47495,6 +47503,10 @@
       "translation": "NECESITA ATENCIÓN"
     },
     {
+      "source": "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+      "translation": "NECESITA ATENCIÓN: el tiempo de ejecución de VR rechazó una superposición: use Verificar conexión para volver a intentar publicar. Si el rechazo persiste, reinicie SteamVR, restablezca la calibración de realidad virtual del panel afectado y verifique que el panel aparezca normalmente en el escritorio antes de volver a conectarse."
+    },
+    {
       "source": "NEUTRON",
       "translation": "NEUTRON"
     },
@@ -49263,8 +49275,8 @@
       "translation": "OpenVR no se pudo probar: {0}"
     },
     {
-      "source": "OpenVR could not change overlay interaction: {0}",
-      "translation": "OpenVR no se pudo cambiar la interacción de superposición: {0}"
+      "source": "OpenVR could not change overlay interaction: {0}{1}",
+      "translation": "OpenVR no se pudo cambiar la interacción de superposición: {0}{1}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -59173,6 +59185,10 @@
     {
       "source": "The ringed arrow at radar center is your current position and heading.",
       "translation": "La flecha anillada en el centro del radar es su posición y rumbo actuales."
+    },
+    {
+      "source": "The rollback failed, so the OpenVR runtime was shut down.",
+      "translation": "La reversión falló, por lo que se cerró el tiempo de ejecución OpenVR."
     },
     {
       "source": "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",
@@ -80513,6 +80529,10 @@
       "translation": "A BESOIN D'ATTENTION"
     },
     {
+      "source": "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+      "translation": "A BESOIN D'ATTENTION — Le runtime VR a rejeté une superposition : utilisez Vérifier la connexion pour réessayer la publication. Si le rejet persiste, redémarrez SteamVR, réinitialisez le calibrage VR du panneau concerné et vérifiez que le panneau apparaît normalement sur le bureau avant de vous reconnecter."
+    },
+    {
       "source": "NEUTRON",
       "translation": "NEUTRON"
     },
@@ -82281,8 +82301,8 @@
       "translation": "OpenVR n'a pas pu être sondé : {0}"
     },
     {
-      "source": "OpenVR could not change overlay interaction: {0}",
-      "translation": "OpenVR n'a pas pu modifier l'interaction de superposition : {0}"
+      "source": "OpenVR could not change overlay interaction: {0}{1}",
+      "translation": "OpenVR n'a pas pu modifier l'interaction de superposition : {0}{1}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -92191,6 +92211,10 @@
     {
       "source": "The ringed arrow at radar center is your current position and heading.",
       "translation": "La flèche annelée au centre du radar indique votre position et votre cap actuels."
+    },
+    {
+      "source": "The rollback failed, so the OpenVR runtime was shut down.",
+      "translation": "La restauration a échoué, le runtime OpenVR a donc été arrêté."
     },
     {
       "source": "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",
@@ -113531,6 +113555,10 @@
       "translation": "PRECISA DE ATENÇÃO"
     },
     {
+      "source": "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+      "translation": "PRECISA DE ATENÇÃO — O tempo de execução VR rejeitou uma sobreposição: use Verificar conexão para tentar publicar novamente. Se a rejeição persistir, reinicie SteamVR, redefina a calibração VR do painel afetado e verifique se o painel aparece normalmente na área de trabalho antes de reconectar."
+    },
+    {
       "source": "NEUTRON",
       "translation": "NÊUTRON"
     },
@@ -115299,8 +115327,8 @@
       "translation": "OpenVR não pôde ser investigado: {0}"
     },
     {
-      "source": "OpenVR could not change overlay interaction: {0}",
-      "translation": "OpenVR não foi possível alterar a interação de sobreposição: {0}"
+      "source": "OpenVR could not change overlay interaction: {0}{1}",
+      "translation": "OpenVR não foi possível alterar a interação de sobreposição: {0}{1}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -125209,6 +125237,10 @@
     {
       "source": "The ringed arrow at radar center is your current position and heading.",
       "translation": "A seta circular no centro do radar representa a sua posição e rumo atuais."
+    },
+    {
+      "source": "The rollback failed, so the OpenVR runtime was shut down.",
+      "translation": "A reversão falhou, portanto o tempo de execução OpenVR foi encerrado."
     },
     {
       "source": "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",
@@ -146549,6 +146581,10 @@
       "translation": "ТРЕБУЕТ ВНИМАНИЯ"
     },
     {
+      "source": "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+      "translation": "ТРЕБУЕТ ВНИМАНИЯ. Среда выполнения VR отклонила наложение: используйте «Проверить соединение», чтобы повторить публикацию. Если отказ не устранен, перезапустите SteamVR, сбросьте калибровку VR затронутой панели и убедитесь, что панель нормально отображается на рабочем столе, прежде чем повторно подключаться."
+    },
+    {
       "source": "NEUTRON",
       "translation": "НЕЙТРОН"
     },
@@ -148317,8 +148353,8 @@
       "translation": "Не удалось проверить OpenVR: {0}"
     },
     {
-      "source": "OpenVR could not change overlay interaction: {0}",
-      "translation": "OpenVR не удалось изменить взаимодействие наложения: {0}"
+      "source": "OpenVR could not change overlay interaction: {0}{1}",
+      "translation": "OpenVR не удалось изменить взаимодействие наложения: {0}{1}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -158227,6 +158263,10 @@
     {
       "source": "The ringed arrow at radar center is your current position and heading.",
       "translation": "Окруженная стрелка в центре радара указывает ваше текущее положение и курс."
+    },
+    {
+      "source": "The rollback failed, so the OpenVR runtime was shut down.",
+      "translation": "Откат не удался, поэтому среда выполнения OpenVR была остановлена."
     },
     {
       "source": "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",
@@ -179567,6 +179607,10 @@
       "translation": "需要注意"
     },
     {
+      "source": "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+      "translation": "需要注意 — VR 运行时拒绝了覆盖：使用检查连接重试发布。如果拒绝仍然存在，请重新启动SteamVR，重置受影响面板的 VR 校准，并在重新连接之前验证面板是否正常显示在桌面上。"
+    },
+    {
       "source": "NEUTRON",
       "translation": "中子"
     },
@@ -181335,8 +181379,8 @@
       "translation": "无法探测 OpenVR：{0}"
     },
     {
-      "source": "OpenVR could not change overlay interaction: {0}",
-      "translation": "OpenVR 无法更改覆盖交互：{0}"
+      "source": "OpenVR could not change overlay interaction: {0}{1}",
+      "translation": "OpenVR 无法更改覆盖交互：{0}{1}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -191245,6 +191289,10 @@
     {
       "source": "The ringed arrow at radar center is your current position and heading.",
       "translation": "雷达中心的环形箭头是您当前的位置和航向。"
+    },
+    {
+      "source": "The rollback failed, so the OpenVR runtime was shut down.",
+      "translation": "回滚失败，因此 OpenVR 运行时被关闭。"
     },
     {
       "source": "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",
@@ -212585,6 +212633,10 @@
       "translation": "* NEEDS ATTENTION >>>!"
     },
     {
+      "source": "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+      "translation": "* NEEDS ATTENTION — THE VR RUNTIME REJECTED AN OVERLAY: USE CHECK CONNECTION TO RETRY PUBLISHING. IF THE REJECTION PERSISTS, RESTART STEAMVR, RESET THE AFFECTED PANEL'S VR CALIBRATION, AND VERIFY THAT THE PANEL APPEARS NORMALLY ON THE DESKTOP BEFORE RECONNECTING. >>>!"
+    },
+    {
       "source": "NEUTRON",
       "translation": "* NEUTRON >>>!"
     },
@@ -214353,8 +214405,8 @@
       "translation": "* OPENVR COULD NOT BE PROBED: {0} >>>!"
     },
     {
-      "source": "OpenVR could not change overlay interaction: {0}",
-      "translation": "* OPENVR COULD NOT CHANGE OVERLAY INTERACTION: {0} >>>!"
+      "source": "OpenVR could not change overlay interaction: {0}{1}",
+      "translation": "* OPENVR COULD NOT CHANGE OVERLAY INTERACTION: {0}{1} >>>!"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -224263,6 +224315,10 @@
     {
       "source": "The ringed arrow at radar center is your current position and heading.",
       "translation": "* THE RINGED ARROW AT RADAR CENTER IS YOUR CURRENT POSITION AND HEADING. >>>!"
+    },
+    {
+      "source": "The rollback failed, so the OpenVR runtime was shut down.",
+      "translation": "* THE ROLLBACK FAILED, SO THE OPENVR RUNTIME WAS SHUT DOWN. >>>!"
     },
     {
       "source": "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",

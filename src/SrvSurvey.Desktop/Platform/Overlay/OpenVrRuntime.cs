@@ -190,21 +190,71 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
             return VrRuntimeResult.Failure("OpenVR is not active.");
         }
 
-        try
+        VROverlayInputMethod previousMethod = ToInputMethod(interactionEnabled);
+        VROverlayInputMethod nextMethod = ToInputMethod(enabled);
+        (bool succeeded, string? error, bool rollbackFailed) = UpdateOverlayInputMethods(
+            handles.Values.ToArray(),
+            previousMethod,
+            nextMethod,
+            overlay.SetOverlayInputMethod
+        );
+        if (!succeeded)
         {
-            foreach (ulong handle in handles.Values)
+            if (rollbackFailed)
             {
-                Check(overlay.SetOverlayInputMethod(handle, ToInputMethod(enabled)));
+                Shutdown();
             }
 
-            interactionEnabled = enabled;
-            return VrRuntimeResult.Success(
-                enabled ? "VR overlay controller interaction is enabled." : "VR overlays are click-through again."
+            return VrRuntimeResult.Failure(
+                "OpenVR could not change overlay interaction: "
+                    + error
+                    + (rollbackFailed ? " The rollback failed, so the OpenVR runtime was shut down." : string.Empty)
             );
+        }
+
+        interactionEnabled = enabled;
+        return VrRuntimeResult.Success(
+            enabled ? "VR overlay controller interaction is enabled." : "VR overlays are click-through again."
+        );
+    }
+
+    internal static (bool Succeeded, string? Error, bool RollbackFailed) UpdateOverlayInputMethods(
+        IReadOnlyList<ulong> overlayHandles,
+        VROverlayInputMethod previousMethod,
+        VROverlayInputMethod nextMethod,
+        Func<ulong, VROverlayInputMethod, EVROverlayError> setInputMethod
+    )
+    {
+        ArgumentNullException.ThrowIfNull(overlayHandles);
+        ArgumentNullException.ThrowIfNull(setInputMethod);
+
+        var updatedHandles = new List<ulong>(overlayHandles.Count);
+        try
+        {
+            foreach (ulong handle in overlayHandles)
+            {
+                Check(setInputMethod(handle, nextMethod));
+                updatedHandles.Add(handle);
+            }
+
+            return (true, null, false);
         }
         catch (InvalidOperationException exception)
         {
-            return VrRuntimeResult.Failure("OpenVR could not change overlay interaction: " + exception.Message);
+            bool rollbackFailed = false;
+            for (int index = updatedHandles.Count - 1; index >= 0; index--)
+            {
+                try
+                {
+                    rollbackFailed |= setInputMethod(updatedHandles[index], previousMethod) != EVROverlayError.None;
+                }
+                catch (InvalidOperationException)
+                {
+                    rollbackFailed = true;
+                }
+            }
+
+            return (false, exception.Message, rollbackFailed);
         }
     }
 
