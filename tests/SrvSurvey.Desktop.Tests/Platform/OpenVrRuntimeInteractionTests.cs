@@ -68,6 +68,53 @@ public sealed class OpenVrRuntimeInteractionTests
     }
 
     [Fact]
+    public void InteractionUpdateSucceedsForEveryHandle()
+    {
+        var calls = new List<(ulong Handle, VROverlayInputMethod Method)>();
+
+        (bool succeeded, string? error, bool rollbackFailed) = OpenVrRuntime.UpdateOverlayInputMethods(
+            [11, 22],
+            VROverlayInputMethod.None,
+            VROverlayInputMethod.Mouse,
+            (handle, method) =>
+            {
+                calls.Add((handle, method));
+                return EVROverlayError.None;
+            }
+        );
+
+        Assert.True(succeeded);
+        Assert.Null(error);
+        Assert.False(rollbackFailed);
+        Assert.Equal([(11UL, VROverlayInputMethod.Mouse), (22UL, VROverlayInputMethod.Mouse)], calls);
+    }
+
+    [Fact]
+    public void InteractionUpdateReportsRollbackException()
+    {
+        (bool succeeded, string? error, bool rollbackFailed) = OpenVrRuntime.UpdateOverlayInputMethods(
+            [11, 22],
+            VROverlayInputMethod.None,
+            VROverlayInputMethod.Mouse,
+            (handle, method) =>
+            {
+                if (handle == 22)
+                {
+                    return EVROverlayError.InvalidHandle;
+                }
+
+                return method == VROverlayInputMethod.None
+                    ? throw new InvalidOperationException("Rollback failed.")
+                    : EVROverlayError.None;
+            }
+        );
+
+        Assert.False(succeeded);
+        Assert.Equal(EVROverlayError.InvalidHandle.ToString(), error);
+        Assert.True(rollbackFailed);
+    }
+
+    [Fact]
     public void MouseMoveUpdatesThePointerPosition()
     {
         VREvent_t source = CreateMouseEvent(EVREventType.VREvent_MouseMove, 12.5f, 34.25f, 0);

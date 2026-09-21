@@ -813,102 +813,13 @@ public static class GuideCatalog
                 "VR & headset overlays",
                 "Connect the VR runtime used by Elite Dangerous, verify SrvSurvey overlays, and calibrate each panel safely on Windows or Linux.",
                 [
-                    Section(
-                        "Choose the connection route",
-                        "SrvSurvey uses SteamVR's OpenVR overlay compositor because it can place a companion panel over another running VR application.",
-                        [
-                            "Open Settings > Global overlays and find VR overlays.",
-                            "Choose SteamVR headset for Index, Vive, Pimax, Bigscreen Beyond, Pico, or another headset already exposed to SteamVR.",
-                            "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
-                            "Choose Windows Mixed Reality only on Windows 11 23H2 where the headset and its SteamVR bridge still work; Microsoft removed WMR from 24H2 and ends Steam support in November 2026.",
-                            "Use Custom OpenVR runtime only when the compositor implements the OpenVR overlay API and you know its process name.",
-                        ],
-                        [
-                            "Every route in this panel feeds the same OpenVR overlay backend. An OpenXR-only Elite session does not provide the external-overlay surface SrvSurvey needs.",
-                            "Changing connection routes does not erase overlay positions or vehicle-mode calibrations.",
-                        ]
-                    ),
-                    Section(
-                        "Pair the headset and activate overlays",
-                        "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
-                        [
-                            "Complete the vendor's normal wired or wireless headset connection first.",
-                            "Start SteamVR and wait until it reports the headset ready before launching Elite Dangerous in VR.",
-                            "Enable VR overlays in SrvSurvey. The status changes from Waiting to Connecting and then Connected automatically.",
-                            "Use Check connection after changing runtimes or repairing a headset connection.",
-                        ],
-                        [
-                            "Meta users must launch Elite through SteamVR. A session running directly in the Meta runtime cannot receive SrvSurvey's OpenVR overlays.",
-                            "A Connected state with zero live overlays means the runtime is ready but no SrvSurvey panel is currently visible in the active game context.",
-                        ]
-                    ),
-                    Section(
-                        "Choose a Meta compatibility bridge",
-                        "Meta headsets can receive SrvSurvey overlays when a supported bridge presents the headset to SteamVR; the SrvSurvey backend stays OpenVR in every case.",
-                        [
-                            "Choose Link / Air Link for Meta's wired or wireless Windows PC-VR connection, then start SteamVR inside it.",
-                            "Choose Steam Link for Valve's free wireless Quest app and pair it directly with the Windows PC running SteamVR.",
-                            "Choose Virtual Desktop when its Windows Streamer is configured to launch SteamVR, not its VDXR path.",
-                            "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
-                        ],
-                        [
-                            "Steam Link and Meta Horizon Link are Windows routes. Virtual Desktop's PC-VR streaming also requires Windows.",
-                            "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
-                            "OpenComposite is not a compatible workaround. It translates OpenVR scene applications toward OpenXR, while overlay-application support remains unfinished.",
-                            "Whichever bridge you choose, SteamVR must show the headset as ready before SrvSurvey can create overlays.",
-                        ]
-                    ),
-                    Section(
-                        "Windows and Linux setup",
-                        "The same overlay publisher runs on both supported desktop operating systems; only native OpenVR library discovery differs.",
-                        [],
-                        [
-                            "Windows packages include the OpenVR client library used by SrvSurvey.",
-                            "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
-                            "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
-                            "Elite can run through Proton while the native SrvSurvey application publishes to the same SteamVR compositor, but Frontier does not support that Linux game path and SrvSurvey labels it experimental.",
-                        ]
-                    ),
-                    Section(
-                        "Calibrate panels in the headset",
-                        "Each live panel keeps its own default placement and can also have ship, SRV, fighter, taxi, or on-foot overrides.",
-                        [
-                            "Select Adjust overlays or press the configured Adjust VR overlay shortcut while the runtime is connected.",
-                            "Choose the live panel and Default or the current vehicle/game mode.",
-                            "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
-                            "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
-                        ],
-                        [
-                            "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
-                            "Desktop overlay placement and VR calibration are stored independently.",
-                        ]
-                    ),
-                    Section(
-                        "Interact with panels in the headset",
-                        "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
-                        [
-                            "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-                            "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
-                            "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
-                        ],
-                        [
-                            "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
-                            "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
-                        ]
-                    ),
-                    Section(
-                        "Troubleshoot a missing overlay",
-                        "Use the connection state to separate headset/runtime problems from ordinary overlay visibility rules.",
-                        [],
-                        [
-                            "Waiting: confirm SteamVR is running and the selected headset route is using that same session.",
-                            "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
-                            "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
-                            "Connected with zero panels: make a SrvSurvey overlay visible in Elite or open its supported game context.",
-                            "Connected but one panel is absent: verify that panel's normal visibility switch, vehicle exception, and game-state trigger.",
-                            "Meta headset with no SrvSurvey panels: confirm Elite was launched through SteamVR rather than directly through the Meta OpenXR runtime.",
-                        ]
-                    ),
+                    CreateVrConnectionRouteSection(),
+                    CreateVrActivationSection(),
+                    CreateVrMetaBridgeSection(),
+                    CreateVrPlatformSetupSection(),
+                    CreateVrCalibrationSection(),
+                    CreateVrInteractionSection(),
+                    CreateVrTroubleshootingSection(),
                 ]
             ),
             Category(
@@ -1209,6 +1120,130 @@ public static class GuideCatalog
                 ]
             ),
         ];
+    }
+
+    private static GuideSectionViewModel CreateVrConnectionRouteSection()
+    {
+        return Section(
+            "Choose the connection route",
+            "SrvSurvey uses SteamVR's OpenVR overlay compositor because it can place a companion panel over another running VR application.",
+            [
+                "Open Settings > Global overlays and find VR overlays.",
+                "Choose SteamVR headset for Index, Vive, Pimax, Bigscreen Beyond, Pico, or another headset already exposed to SteamVR.",
+                "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
+                "Choose Windows Mixed Reality only on Windows 11 23H2 where the headset and its SteamVR bridge still work; Microsoft removed WMR from 24H2 and ends Steam support in November 2026.",
+                "Use Custom OpenVR runtime only when the compositor implements the OpenVR overlay API and you know its process name.",
+            ],
+            [
+                "Every route in this panel feeds the same OpenVR overlay backend. An OpenXR-only Elite session does not provide the external-overlay surface SrvSurvey needs.",
+                "Changing connection routes does not erase overlay positions or vehicle-mode calibrations.",
+            ]
+        );
+    }
+
+    private static GuideSectionViewModel CreateVrActivationSection()
+    {
+        return Section(
+            "Pair the headset and activate overlays",
+            "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
+            [
+                "Complete the vendor's normal wired or wireless headset connection first.",
+                "Start SteamVR and wait until it reports the headset ready before launching Elite Dangerous in VR.",
+                "Enable VR overlays in SrvSurvey. The status changes from Waiting to Connecting and then Connected automatically.",
+                "Use Check connection after changing runtimes or repairing a headset connection.",
+            ],
+            [
+                "Meta users must launch Elite through SteamVR. A session running directly in the Meta runtime cannot receive SrvSurvey's OpenVR overlays.",
+                "A Connected state with zero live overlays means the runtime is ready but no SrvSurvey panel is currently visible in the active game context.",
+            ]
+        );
+    }
+
+    private static GuideSectionViewModel CreateVrMetaBridgeSection()
+    {
+        return Section(
+            "Choose a Meta compatibility bridge",
+            "Meta headsets can receive SrvSurvey overlays when a supported bridge presents the headset to SteamVR; the SrvSurvey backend stays OpenVR in every case.",
+            [
+                "Choose Link / Air Link for Meta's wired or wireless Windows PC-VR connection, then start SteamVR inside it.",
+                "Choose Steam Link for Valve's free wireless Quest app and pair it directly with the Windows PC running SteamVR.",
+                "Choose Virtual Desktop when its Windows Streamer is configured to launch SteamVR, not its VDXR path.",
+                "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
+            ],
+            [
+                "Steam Link and Meta Horizon Link are Windows routes. Virtual Desktop's PC-VR streaming also requires Windows.",
+                "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
+                "OpenComposite is not a compatible workaround. It translates OpenVR scene applications toward OpenXR, while overlay-application support remains unfinished.",
+                "Whichever bridge you choose, SteamVR must show the headset as ready before SrvSurvey can create overlays.",
+            ]
+        );
+    }
+
+    private static GuideSectionViewModel CreateVrPlatformSetupSection()
+    {
+        return Section(
+            "Windows and Linux setup",
+            "The same overlay publisher runs on both supported desktop operating systems; only native OpenVR library discovery differs.",
+            [],
+            [
+                "Windows packages include the OpenVR client library used by SrvSurvey.",
+                "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+                "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+                "Elite can run through Proton while the native SrvSurvey application publishes to the same SteamVR compositor, but Frontier does not support that Linux game path and SrvSurvey labels it experimental.",
+            ]
+        );
+    }
+
+    private static GuideSectionViewModel CreateVrCalibrationSection()
+    {
+        return Section(
+            "Calibrate panels in the headset",
+            "Each live panel keeps its own default placement and can also have ship, SRV, fighter, taxi, or on-foot overrides.",
+            [
+                "Select Adjust overlays or press the configured Adjust VR overlay shortcut while the runtime is connected.",
+                "Choose the live panel and Default or the current vehicle/game mode.",
+                "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
+                "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
+            ],
+            [
+                "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
+                "Desktop overlay placement and VR calibration are stored independently.",
+            ]
+        );
+    }
+
+    private static GuideSectionViewModel CreateVrInteractionSection()
+    {
+        return Section(
+            "Interact with panels in the headset",
+            "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+            [
+                "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+                "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+                "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+            ],
+            [
+                "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+                "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+            ]
+        );
+    }
+
+    private static GuideSectionViewModel CreateVrTroubleshootingSection()
+    {
+        return Section(
+            "Troubleshoot a missing overlay",
+            "Use the connection state to separate headset/runtime problems from ordinary overlay visibility rules.",
+            [],
+            [
+                "Waiting: confirm SteamVR is running and the selected headset route is using that same session.",
+                "OpenVR connection failed: restart SteamVR and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+                "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+                "Connected with zero panels: make a SrvSurvey overlay visible in Elite or open its supported game context.",
+                "Connected but one panel is absent: verify that panel's normal visibility switch, vehicle exception, and game-state trigger.",
+                "Meta headset with no SrvSurvey panels: confirm Elite was launched through SteamVR rather than directly through the Meta OpenXR runtime.",
+            ]
+        );
     }
 
     private static GuideSectionViewModel[] LoadChatCommandSections()
