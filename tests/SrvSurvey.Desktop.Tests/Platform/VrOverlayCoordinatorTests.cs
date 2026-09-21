@@ -40,6 +40,49 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         Assert.Contains("Enable OpenVR", viewModel.StatusMessage);
     }
 
+    [Fact]
+    public void SteamVrProfileUsesOpenVrCapabilityProbeInsteadOfProcessNames()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var inspectedProcesses = new List<string>();
+        var runtime = new StubOpenVrRuntime();
+
+        using var coordinator = new VrOverlayCoordinator(
+            viewModel,
+            new OverlayWindowRegistry(),
+            runtime,
+            processName =>
+            {
+                inspectedProcesses.Add(processName);
+                return false;
+            }
+        );
+
+        Assert.Empty(inspectedProcesses);
+        Assert.Equal(1, runtime.ProbeCount);
+        Assert.True(runtime.IsInitialized);
+        Assert.Equal(VrOverlayConnectionState.Ready, viewModel.ConnectionState);
+        Assert.Contains("Connected through", viewModel.ConnectionHeadline);
+    }
+
+    [Fact]
+    public void MissingRuntimeReportsActionableWaitingState()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var runtime = new StubOpenVrRuntime
+        {
+            ProbeResult = VrRuntimeProbe.RuntimeUnavailable("SteamVR is not installed."),
+        };
+
+        using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => false);
+
+        Assert.False(runtime.IsInitialized);
+        Assert.Equal(VrOverlayConnectionState.WaitingForRuntime, viewModel.ConnectionState);
+        Assert.Contains("not installed", viewModel.ConnectionDetail);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -70,6 +113,16 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         public bool IsInitialized { get; private set; }
 
         public int ResetCount { get; private set; }
+
+        public int ProbeCount { get; private set; }
+
+        public VrRuntimeProbe ProbeResult { get; init; } = VrRuntimeProbe.Ready();
+
+        public VrRuntimeProbe Probe()
+        {
+            ProbeCount++;
+            return ProbeResult;
+        }
 
         public VrRuntimeResult Initialize()
         {

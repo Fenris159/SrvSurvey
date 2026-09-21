@@ -22,7 +22,12 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.0" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.0" />
     <PackageReference Include="NetMQ" Version="4.0.4.3" />
-    <PackageReference Include="OVRSharp" Version="1.2.0" />
+    <PackageReference Include="OVRSharp" Version="1.2.0">
+      <!-- Keep the managed Valve.VR binding while replacing its 2021 client
+           payload with the current cross-platform Valve binaries below. -->
+      <ExcludeAssets>contentFiles</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="JeppDev.OpenVR.Binaries" Version="2.15.6" />
     <PackageReference Include="SDL3-CS" Version="3.4.12.3" />
     <PackageReference Include="SDL3-CS.Linux" Version="3.4.12.1" />
     <PackageReference Include="SDL3-CS.Windows" Version="3.4.12.1" />

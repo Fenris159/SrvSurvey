@@ -352,6 +352,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "1 \u00B7 CHOOSE YOUR HEADSET ROUTE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "1,000 t",
     "IsFormat": false,
     "SourceKinds": [
@@ -672,6 +680,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "2 \u00B7 PAIR AND START",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "2,450 need | 620 FC | 96 ship",
     "IsFormat": false,
     "SourceKinds": [
@@ -814,6 +830,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "3 \u00B7 ENABLE AND VERIFY",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "3,892 t",
@@ -1166,6 +1190,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs"
+  },
+  {
+    "Text": "A Connected state with zero live overlays means the runtime is ready but no SrvSurvey panel is currently visible in the active game context.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "A DSS scan is required before genus and species rows are available.",
@@ -2241,6 +2273,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputSettingsStore.cs"
   },
   {
+    "Text": "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "ALVR wireless streaming driver for SteamVR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "AMOUNT",
     "IsFormat": false,
     "SourceKinds": [
@@ -3120,6 +3168,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "Advanced setups with an OpenVR-compatible compositor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Advanced. The runtime must implement the OpenVR overlay API; an OpenXR-only runtime is not sufficient.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Aerial copies need to be within 50 m of site origin, altitude 500\u20132000 m (e.g. \u0027Aerial alpha\u0027). Alt\u002BCtrl\u002BI toggles data banners for future screenshots.",
@@ -7755,6 +7819,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
   },
   {
+    "Text": "CONNECTED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "CONNECTING",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "CONTAINS",
     "IsFormat": false,
     "SourceKinds": [
@@ -7999,6 +8079,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
+    "Text": "CUSTOM RUNTIME PROCESS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "CacheDirectory",
     "IsFormat": false,
     "SourceKinds": [
@@ -8021,6 +8109,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DistanceView.axaml"
+  },
+  {
+    "Text": "Calibrate panels in the headset",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Calibration Test is a preview and never changes saved trackers. Use the editor\u0027s save button and close the editor before automatic tracking takes effect, or cancel to discard calibration changes. Start automatic tracking before deploying rigs so each position is recorded at deployment. During normal play the frame is invisible; detection results appear in Mining settings and directly below the overlay\u0027s rig trackers.",
@@ -8812,6 +8908,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
     "IsFormat": false,
     "SourceKinds": [
@@ -8845,6 +8949,14 @@
   },
   {
     "Text": "Changing Blue light, Blue dark, Orange dark, Green light, or Green dark for the application never rewrites theme.json or a named overlay state.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Changing connection routes does not erase overlay positions or vehicle-mode calibrations.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -8898,6 +9010,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Check connection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Check for updates",
@@ -9028,6 +9148,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Choose ALVR only for an advanced or Linux setup; install its SteamVR driver and matching Quest client before pairing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Choose Application, Desktop, Global overlays, Input, Privacy \u0026 sharing, Screenshots, or Data \u0026 migration from the Settings column.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9068,6 +9196,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml.cs"
   },
   {
+    "Text": "Choose Link / Air Link for Meta\u0027s wired or wireless Windows PC-VR connection, then start SteamVR inside it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Choose Lowest mass code. Keeping it equal to the top system\u0027s mass code searches only that boxel; choosing a lower letter includes every nested child down to that level. Check the displayed boxel count before continuing.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9093,6 +9229,46 @@
   },
   {
     "Text": "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose Steam Link for Valve\u0027s free wireless Quest app and pair it directly with the Windows PC running SteamVR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose SteamVR headset for Index, Vive, Pimax, Bigscreen Beyond, Pico, or another headset already exposed to SteamVR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose Virtual Desktop when its Windows Streamer is configured to launch SteamVR, not its VDXR path.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose Windows Mixed Reality only on Windows 11 23H2 where the headset and its SteamVR bridge still work; Microsoft removed WMR from 24H2 and ends Steam support in November 2026.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose a Meta compatibility bridge",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -9138,6 +9314,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
+  },
+  {
+    "Text": "Choose a connection route, complete its pairing steps, then enable VR overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "Choose a folder, then save both the JSON detail and CSV summary there.",
@@ -9461,6 +9645,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Choose the connection route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Choose the converted screenshot folder",
     "IsFormat": false,
     "SourceKinds": [
@@ -9491,6 +9683,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
+  },
+  {
+    "Text": "Choose the live panel and Default or the current vehicle/game mode.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Choose the local flora image folder",
@@ -11122,6 +11322,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Complete the vendor\u0027s normal wired or wireless headset connection first.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Complete the {0} pairing steps while SrvSurvey checks the runtime.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "Complete this route\u0027s pairing steps, then enable VR overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Completed build-site repair",
     "IsFormat": false,
     "SourceKinds": [
@@ -11739,6 +11963,54 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Connect from ALVR and wait until SteamVR reports the headset ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Connect in Virtual Desktop, launch SteamVR from its VR menu, and confirm the headset is ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Connect or wake the headset",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "Connect the VR runtime used by Elite Dangerous, verify SrvSurvey overlays, and calibrate each panel safely on Windows or Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Connect the headset and complete its normal SteamVR room or seated setup.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Connect the headset with Meta Horizon Link over USB or Air Link and enter PC VR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Connect the same commander before backing up Firegroups.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11771,12 +12043,52 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
+    "Text": "Connected but one panel is absent: verify that panel\u0027s normal visibility switch, vehicle exception, and game-state trigger.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Connected nodes show completed, current, and remaining route positions. The emphasized node is the active jump context.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Connected through {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "Connected with zero panels: make a SrvSurvey overlay visible in Elite or open its supported game context.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Connecting SrvSurvey to the OpenVR overlay compositor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "Connection route changed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "Construction complete",
@@ -13014,6 +13326,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "Custom OpenVR runtime",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Custom origin cleared. Distances now use Sol.",
     "IsFormat": false,
     "SourceKinds": [
@@ -13978,6 +14298,14 @@
   },
   {
     "Text": "Desktop behavior controls where the main application returns, how large it appears, and whether focus is handed back to Elite Dangerous.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Desktop overlay placement and VR calibration are stored independently.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -15577,6 +15905,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
   },
   {
+    "Text": "Each live panel keeps its own default placement and can also have ship, SRV, fighter, taxi, or on-foot overrides.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
     "IsFormat": false,
     "SourceKinds": [
@@ -15866,6 +16202,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Elite can run through Proton while the native SrvSurvey application publishes to the same SteamVR compositor, but Frontier does not support that Linux game path and SrvSurvey labels it experimental.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Elite journal source",
     "IsFormat": false,
     "SourceKinds": [
@@ -16121,6 +16465,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Enable VR overlays in SrvSurvey. The status changes from Waiting to Connecting and then Connected automatically.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Enable Wayland screen capture",
@@ -16532,12 +16884,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
+    "Text": "Enter the compositor\u0027s process name below without a file extension.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Enter the current route, boxel, or clipboard target in the Galaxy Map.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Enter the process name only, without a path or file extension.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Enter {0} or higher; that suffix is already recorded.",
@@ -16717,6 +17085,14 @@
   },
   {
     "Text": "Every lower level multiplies the work: one boxel has eight direct children, and selecting several levels can create a very large search tree.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Every route in this panel feeds the same OpenVR overlay backend. An OpenXR-only Elite session does not provide the external-overlay surface SrvSurvey needs.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -16930,6 +17306,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Experimental. ALVR supports Windows and Linux, but Linux SteamVR, ALVR, and Elite through Proton each add unsupported setup and troubleshooting requirements.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Expert only",
@@ -19025,6 +19409,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop, or experimental ALVR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "For Rig tracking and full command details click here",
@@ -23493,6 +23885,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Install SteamVR and ALVR on the PC, then install and trust the matching ALVR client on the Quest.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Install Valve\u0027s Steam Link app on the Quest and connect the PC to the router by Ethernet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Install Virtual Desktop on the Quest and Virtual Desktop Streamer on the Windows PC.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Installation-plan cleanup retained an inaccessible directory: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -24962,6 +25378,54 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Launch Elite Dangerous in VR, then enable SrvSurvey overlays below.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Launch Elite from the SteamVR session, then enable SrvSurvey overlays below.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Launch Elite in that SteamVR session, then enable SrvSurvey overlays below.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Launch Elite in the same SteamVR session, then enable SrvSurvey overlays below.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Launch Elite in the same runtime, then enable SrvSurvey overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Launch Elite through SteamVR, then enable SrvSurvey overlays below.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Launch another isolated SrvSurvey process for a saved commander profile.",
     "IsFormat": false,
     "SourceKinds": [
@@ -25032,6 +25496,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "Legacy Windows route. Microsoft removed WMR from Windows 11 24H2; remaining Windows 11 23H2 SteamVR support ends in November 2026.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Legacy Windows-only steps are replaced with their current Avalonia workflow. Features that still require an operating-system capability report that status in the relevant setting.",
@@ -25232,6 +25704,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Linux checks the application directory plus standard native, Flatpak, and user SteamVR locations for libopenvr_api.so.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Linux: OpenVR client library found at {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "Linux: no OpenVR client library was found yet. Start SteamVR, or set {0} when SteamVR is installed in a custom location.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "Listening for community observations\u2026",
@@ -27247,6 +27743,70 @@
     "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
   },
   {
+    "Text": "Meta Horizon Link bridged into SteamVR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Meta Quest or Rift \u2014 Link / Air Link",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Meta Quest \u2014 ALVR (experimental)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Meta Quest \u2014 Steam Link",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Meta Quest \u2014 Virtual Desktop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Meta headset with no SrvSurvey panels: confirm Elite was launched through SteamVR rather than directly through the Meta OpenXR runtime.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Meta headsets can receive SrvSurvey overlays when a supported bridge presents the headset to SteamVR; the SrvSurvey backend stays OpenVR in every case.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Meta users must launch Elite through SteamVR. A session running directly in the Meta runtime cannot receive SrvSurvey\u0027s OpenVR overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Metal Rich",
     "IsFormat": false,
     "SourceKinds": [
@@ -28417,6 +28977,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "NEEDS ATTENTION",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "NEUTRON",
     "IsFormat": false,
     "SourceKinds": [
@@ -28675,6 +29243,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Native SteamVR / OpenVR connection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "NavRouteClear",
@@ -30928,6 +31504,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "OFF",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "ON BOARD",
     "IsFormat": false,
     "SourceKinds": [
@@ -31499,6 +32083,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Open Settings \u003E Global overlays and find VR overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Open Settings \u003E Overlay behavior and layout \u003E Edit overlay positions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31553,6 +32145,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Open Steam Link in the headset, pair the PC, and wait for SteamVR to report the headset ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Open Surface Mining overlay settings and enable Automatically track rigs from the Rhino HUD. Deployment bar color defaults to the bright green game HUD; use the color picker if your HUD mod changes it. Open Edit Overlay Positions and choose Mining to show the calibration frame.",
@@ -31876,6 +32476,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "OpenComposite is not a compatible workaround. It translates OpenVR scene applications toward OpenXR, while overlay-application support remains unfinished.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "OpenThemeWorkspaceButton",
     "IsFormat": false,
     "SourceKinds": [
@@ -31884,7 +32492,31 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
+    "Text": "OpenVR connection failed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "OpenVR connection failed: on Linux verify the library path; on either platform restart SteamVR and use Check connection.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "OpenVR could not be initialized: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
+  },
+  {
+    "Text": "OpenVR could not be probed: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -31898,14 +32530,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
-  },
-  {
-    "Text": "OpenVR is active with {0} live overlays.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "OpenVR is active.",
@@ -31922,22 +32546,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
-  },
-  {
-    "Text": "OpenVR overlays",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "OpenVR overlays are disabled.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "OpenVR rejected {0}: {1}",
@@ -33381,6 +33989,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCurrentShipTabView.axaml"
+  },
+  {
+    "Text": "Pair the headset and activate overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Paleas",
@@ -35100,14 +35716,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Project every live Avalonia overlay into SteamVR with the original per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Project name",
     "IsFormat": false,
     "SourceKinds": [
@@ -35146,14 +35754,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "Projection starts only while this process is running. Use SRVSURVEY_OPENVR_LIBRARY on Linux when SteamVR is installed in a custom location.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Propagito",
@@ -35436,6 +36036,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Put every live SrvSurvey panel into your headset through SteamVR, with the original per-overlay position, rotation, scale, opacity, and vehicle-mode overrides.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Pylon P3 | 64 m",
     "IsFormat": false,
     "SourceKinds": [
@@ -35530,6 +36138,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs"
+  },
+  {
+    "Text": "Quest 2, 3, 3S, Pro, Rift, and Rift S on Windows",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Quest action failed: {0}",
@@ -37638,6 +38254,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "Recommended on Windows. SrvSurvey publishes through SteamVR\u0027s overlay compositor; SteamVR for Linux and Elite through Proton are experimental.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Reconcile planned and completed sites with live journal discoveries.",
     "IsFormat": false,
     "SourceKinds": [
@@ -38927,6 +39551,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Reset VR orientation captures the current headset yaw as the overlay origin without changing saved panel placement.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Reset cancelled; totals were not changed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39261,6 +39893,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Reverb G2 and other Windows Mixed Reality headsets on supported Windows installations",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Review Boxel statistics",
@@ -40120,6 +40760,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "RuntimeProfileId",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/VrOverlaySettingsStore.cs"
   },
   {
     "Text": "R\u2212",
@@ -41196,6 +41844,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Save changes",
@@ -42490,6 +43146,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Select Adjust overlays or press the configured Adjust VR overlay shortcut while the runtime is connected.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Select Configure sharing, review the journal and companion-file data SrvSurvey can send, then enable live-session sharing and save.",
@@ -45827,6 +46491,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/SystemStatusOverlayWindow.axaml"
   },
   {
+    "Text": "SrvSurvey uses SteamVR\u0027s OpenVR overlay compositor because it can place a companion panel over another running VR application.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "SrvSurvey verifies the corrected order and makes at most two correction attempts. An unverifiable result is reported clearly instead of being treated as safe.",
     "IsFormat": false,
     "SourceKinds": [
@@ -46251,6 +46923,46 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
   },
   {
+    "Text": "Start Mixed Reality Portal and complete the headset\u0027s normal connection setup.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Start SteamVR and wait until it reports the Meta headset and controllers ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Start SteamVR and wait until it reports the headset ready before launching Elite Dangerous in VR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Start SteamVR and wait until the headset icon reports ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Start SteamVR through the Windows Mixed Reality bridge and confirm the headset is ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Start a Guardian template draft before exporting.",
     "IsFormat": false,
     "SourceKinds": [
@@ -46411,12 +47123,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Start the OpenVR runtime process \u0027{0}\u0027.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "Start the OpenVR-compatible compositor and connect the headset.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Start the draft, then select a point to rename it, change its type, fine-tune angle, distance, or rotation in 0.1 steps, or remove it.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Start {0} and complete the pairing checklist.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "StartJump",
@@ -46644,12 +47380,84 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
   },
   {
+    "Text": "Steam Link and Meta Horizon Link are Windows routes. Virtual Desktop\u0027s PC-VR streaming also requires Windows.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "SteamVR",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+  },
+  {
+    "Text": "SteamVR and a headset are available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
+  },
+  {
+    "Text": "SteamVR and headset detected",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "SteamVR headset",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "SteamVR is available, but no ready headset was detected.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
+  },
+  {
+    "Text": "SteamVR overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "SteamVR/OpenVR is active with {0} live overlays.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "SteamVR/OpenVR is not available",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "SteamVR/OpenVR is not installed or registered.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
     "Text": "Steel",
@@ -46938,6 +47746,30 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
+  },
+  {
+    "Text": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Supported on Windows. SteamVR must stay running because SrvSurvey publishes to its OpenVR overlay compositor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Supported on Windows. Virtual Desktop must use its SteamVR path; VDXR bypasses SteamVR and cannot carry SrvSurvey overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Supporting data",
@@ -49234,6 +50066,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
+  },
+  {
+    "Text": "The VR runtime rejected an overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "The VoxStellar preference changed for this session but could not be saved: {0}",
@@ -51652,6 +52492,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
+    "Text": "The same overlay publisher runs on both supported desktop operating systems; only native OpenVR library discovery differs.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
     "IsFormat": true,
     "SourceKinds": [
@@ -52010,6 +52858,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiagnosticsLogViewModel.cs"
+  },
+  {
+    "Text": "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "The settlement template catalog was not exported: {0}",
@@ -53581,6 +54437,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Troubleshoot a missing overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54778,6 +55642,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use Check connection after changing runtimes or repairing a headset connection.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Use Clear primary only when you intentionally want aggregate planning across visible projects.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54787,6 +55659,14 @@
   },
   {
     "Text": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Boxel, Route Manager, and FC Route auto-copy are mutually exclusive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use Custom OpenVR runtime only when the compositor implements the OpenVR overlay API and you know its process name.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -55122,6 +56002,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use the connection state to separate headset/runtime problems from ordinary overlay visibility rules.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Use the global overlay visibility shortcut when you need to hide or restore every detached overlay at once.",
     "IsFormat": false,
     "SourceKinds": [
@@ -55298,6 +56186,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "User-specified OpenVR runtime process",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Uses carriers linked in RavenColonial. Cargo updates follow the existing colonization sync settings.",
     "IsFormat": false,
     "SourceKinds": [
@@ -55427,12 +56323,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
-    "Text": "VR RUNTIME PROCESS",
+    "Text": "VR \u0026 headset overlays",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "VR adjustment mode closed.",
@@ -55473,6 +56369,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "VR overlay projection is supported on Windows and Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "VR overlays are disabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "VR overlays are off",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "VR override \u0027{0}/{1}\u0027 could not be verified before saving.",
@@ -55529,6 +56449,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Valve Index, HTC Vive, Pimax, Bigscreen Beyond, Pico, and other SteamVR headsets",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Valve Steam Link direct to SteamVR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Variant",
@@ -55649,6 +56585,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
+    "Text": "Virtual Desktop Streamer bridged into SteamVR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "VirtualReality",
@@ -55997,14 +56941,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
-    "Text": "Waiting for VR process \u0027{0}\u0027.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
-  },
-  {
     "Text": "Waiting for a Loadout event. Board your ship to identify its equipped modules.",
     "IsFormat": false,
     "SourceKinds": [
@@ -56205,20 +57141,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/StreamOverlayCoordinator.cs"
   },
   {
+    "Text": "Waiting for the VR runtime",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Waiting for the commander journal session.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "Waiting for the configured OpenVR runtime process.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "Waiting for the current commander and system.",
@@ -56229,12 +57165,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNotesViewModel.cs"
   },
   {
+    "Text": "Waiting for the selected OpenVR runtime.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Waiting for the selected controller...",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerInputBackend.cs"
+  },
+  {
+    "Text": "Waiting for {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "Waiting to approach a human settlement.",
@@ -56734,6 +57686,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "When SteamVR uses a custom Linux location, set SRVSURVEY_OPENVR_LIBRARY to the full libopenvr_api.so path before starting SrvSurvey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "When at planet surface and not in Combat mode",
     "IsFormat": false,
     "SourceKinds": [
@@ -56828,6 +57788,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
+    "Text": "Whichever bridge you choose, SteamVR must show the headset as ready before SrvSurvey can create overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "While a polygon is active, toggling ship shields captures the current point just like the original builder.",
@@ -56935,6 +57903,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
+    "Text": "Windows Mixed Reality",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Windows Mixed Reality bridged through SteamVR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Windows Restart Manager discovery failed with error {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -56965,6 +57949,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Windows and Linux setup",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Windows or Linux prevented SrvSurvey from verifying {0} matching process(es). Close every SrvSurvey-XP instance manually, then try again.",
@@ -56999,6 +57991,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs"
   },
   {
+    "Text": "Windows packages include the OpenVR client library used by SrvSurvey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending.",
     "IsFormat": false,
     "SourceKinds": [
@@ -57013,6 +58013,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+  },
+  {
+    "Text": "Windows: the OpenVR client library is included with SrvSurvey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "Wings",
@@ -57293,6 +58301,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Your saved platform and overlay calibration are unchanged.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "Yuri Grom",
@@ -58637,6 +59653,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "custom-openvr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/VrOverlaySettingsStore.cs"
   },
   {
     "Text": "cutter",
@@ -60135,6 +61159,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
+    "Text": "linux-arm64",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+  },
+  {
+    "Text": "linux-x64",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+  },
+  {
     "Text": "linux64",
     "IsFormat": false,
     "SourceKinds": [
@@ -60261,6 +61301,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
+    "Text": "meta-alvr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "meta-steam-link",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "meta-via-steamvr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "meta-virtual-desktop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "metal rich",
@@ -60437,6 +61509,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemeStateStore.cs"
+  },
+  {
+    "Text": "native",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
   },
   {
     "Text": "navigation",
@@ -61295,6 +62375,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
+    "Text": "runtimes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+  },
+  {
     "Text": "ruthenium",
     "IsFormat": false,
     "SourceKinds": [
@@ -61733,6 +62821,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+  },
+  {
+    "Text": "steamvr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/VrOverlaySettingsStore.cs"
   },
   {
     "Text": "steel",
@@ -62607,6 +63703,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "virtual-reality",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "vis",
     "IsFormat": false,
     "SourceKinds": [
@@ -62822,6 +63926,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "wmr-via-steamvr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "www.edsm.net",

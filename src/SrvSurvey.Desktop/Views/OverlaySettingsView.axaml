@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:overlay="using:SrvSurvey.Desktop.Platform.Overlay"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.OverlaySettingsView"
              x:DataType="vm:MainWindowViewModel"
@@ -399,13 +400,13 @@
     </Border>
 
     <Border x:Name="OpenVrOverlayCard" Classes="card raised">
-      <StackPanel Spacing="14">
+      <StackPanel Spacing="18">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
           <StackPanel Spacing="4">
-            <TextBlock Classes="card-title" Text="OpenVR overlays" />
+            <TextBlock Classes="card-title" Text="SteamVR overlays" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Project every live Avalonia overlay into SteamVR with the original per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
+                       Text="Put every live SrvSurvey panel into your headset through SteamVR, with the original per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
           </StackPanel>
           <CheckBox Grid.Column="1"
                     VerticalAlignment="Center"
@@ -413,28 +414,93 @@
                     Content="Enable VR overlays" />
         </Grid>
 
-        <Grid ColumnDefinitions="*,220" ColumnSpacing="18">
-          <StackPanel Spacing="4">
-            <TextBlock Classes="eyebrow" Text="VR RUNTIME PROCESS" />
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="20">
+          <StackPanel Spacing="6">
+            <TextBlock Classes="eyebrow" Text="1 · CHOOSE YOUR HEADSET ROUTE" />
+            <ComboBox ItemsSource="{Binding VrOverlay.PlatformProfiles}"
+                      SelectedItem="{Binding VrOverlay.SelectedPlatformProfile, Mode=TwoWay}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="overlay:VrPlatformProfile">
+                  <TextBlock Text="{Binding DisplayName}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Bottom">
+            <TextBlock FontWeight="SemiBold"
+                       Text="{Binding VrOverlay.SelectedPlatformProfile.ConnectionRoute}" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Projection starts only while this process is running. Use SRVSURVEY_OPENVR_LIBRARY on Linux when SteamVR is installed in a custom location." />
+                       Text="{Binding VrOverlay.SelectedPlatformProfile.HeadsetExamples}" />
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       TextWrapping="Wrap"
+                       Text="{Binding VrOverlay.SelectedPlatformProfile.CompatibilityNote}" />
           </StackPanel>
-          <TextBox Grid.Column="1"
-                   VerticalAlignment="Center"
-                   Text="{Binding VrOverlay.RuntimeProcessName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                   PlaceholderText="vrserver" />
         </Grid>
 
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
-          <TextBlock VerticalAlignment="Center"
-                     Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="{Binding VrOverlay.StatusMessage}" />
-          <Button Grid.Column="1"
-                  Classes="secondary"
-                  Click="BeginVrAdjustment_Click"
-                  Content="Adjust overlays" />
+        <StackPanel IsVisible="{Binding VrOverlay.IsCustomRuntime}" Spacing="5">
+          <TextBlock Classes="eyebrow" Text="CUSTOM RUNTIME PROCESS" />
+          <TextBox MaxWidth="360"
+                   HorizontalAlignment="Left"
+                   Text="{Binding VrOverlay.RuntimeProcessName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                   PlaceholderText="vrserver" />
+          <TextBlock Classes="muted"
+                     FontSize="11"
+                     Text="Enter the process name only, without a path or file extension." />
+        </StackPanel>
+
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="eyebrow" Text="2 · PAIR AND START" />
+            <ItemsControl ItemsSource="{Binding VrOverlay.SelectedPlatformProfile.PairingSteps}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="0,0,0,7" ColumnDefinitions="Auto,*" ColumnSpacing="9">
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}" Text="✓" />
+                    <TextBlock Grid.Column="1" TextWrapping="Wrap" Text="{Binding}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="{Binding VrOverlay.PlatformSupportMessage}" />
+          </StackPanel>
+
+          <Border Grid.Column="1"
+                  Padding="16"
+                  Background="{DynamicResource RavenSurfaceBrush}"
+                  BorderBrush="{DynamicResource RavenBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8">
+            <StackPanel Spacing="10">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Classes="eyebrow" Text="3 · ENABLE AND VERIFY" />
+                <Border Grid.Column="1" Classes="badge">
+                  <TextBlock FontSize="11"
+                             FontWeight="SemiBold"
+                             Text="{Binding VrOverlay.ConnectionStateLabel}" />
+                </Border>
+              </Grid>
+              <TextBlock Classes="card-title"
+                         TextWrapping="Wrap"
+                         Text="{Binding VrOverlay.ConnectionHeadline}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding VrOverlay.ConnectionDetail}" />
+              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                <Button Grid.Column="1"
+                        Classes="secondary"
+                        Command="{Binding VrOverlay.RefreshConnectionCommand}"
+                        Content="Check connection" />
+                <Button Grid.Column="2"
+                        Classes="secondary"
+                        Click="BeginVrAdjustment_Click"
+                        Content="Adjust overlays" />
+              </Grid>
+            </StackPanel>
+          </Border>
         </Grid>
 
         <Border IsVisible="{Binding VrOverlay.IsAdjusting}"

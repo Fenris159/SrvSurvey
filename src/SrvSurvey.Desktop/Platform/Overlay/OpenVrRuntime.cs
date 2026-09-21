@@ -11,6 +11,8 @@ public interface IOpenVrRuntime : IDisposable
 {
     bool IsInitialized { get; }
 
+    VrRuntimeProbe Probe();
+
     VrRuntimeResult Initialize();
 
     VrRuntimeResult PublishOverlay(
@@ -36,6 +38,33 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
     private Matrix4x4 headsetOrientationOffset = Matrix4x4.Identity;
 
     public bool IsInitialized => system is not null && overlay is not null;
+
+    public VrRuntimeProbe Probe()
+    {
+        try
+        {
+            OpenVrNativeLibraryResolver.Register();
+            if (!OpenVR.IsRuntimeInstalled())
+            {
+                return VrRuntimeProbe.RuntimeUnavailable("SteamVR/OpenVR is not installed or registered.");
+            }
+
+            return OpenVR.IsHmdPresent()
+                ? VrRuntimeProbe.Ready()
+                : VrRuntimeProbe.HeadsetUnavailable("SteamVR is available, but no ready headset was detected.");
+        }
+        catch (Exception exception)
+            when (exception
+                    is DllNotFoundException
+                        or BadImageFormatException
+                        or EntryPointNotFoundException
+                        or TypeInitializationException
+                        or InvalidOperationException
+            )
+        {
+            return VrRuntimeProbe.RuntimeUnavailable("OpenVR could not be probed: " + exception.Message);
+        }
+    }
 
     public VrRuntimeResult Initialize()
     {
@@ -225,5 +254,23 @@ public sealed record VrRuntimeResult(bool Succeeded, string Message)
     public static VrRuntimeResult Failure(string message)
     {
         return new VrRuntimeResult(false, message);
+    }
+}
+
+public sealed record VrRuntimeProbe(bool RuntimeAvailable, bool HeadsetPresent, string Message)
+{
+    public static VrRuntimeProbe Ready()
+    {
+        return new VrRuntimeProbe(true, true, "SteamVR and a headset are available.");
+    }
+
+    public static VrRuntimeProbe RuntimeUnavailable(string message)
+    {
+        return new VrRuntimeProbe(false, false, message);
+    }
+
+    public static VrRuntimeProbe HeadsetUnavailable(string message)
+    {
+        return new VrRuntimeProbe(true, false, message);
     }
 }

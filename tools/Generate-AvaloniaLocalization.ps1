@@ -20,9 +20,9 @@ $script:TechnicalTokenPattern = [regex]::new(
     '|(?<!\w)\.[A-Za-z][A-Za-z0-9_-]*' +
     '|(?<!\w)\+[A-Za-z][A-Za-z0-9_-]*' +
     '|(?<!-)---(?!-)' +
-    '|\b[A-Za-z0-9_{}-]+\.(?:json|zip|txt|csv|png|jpe?g|gif|exe|dll|axaml|xml|lock|log|tmp|bak|db|toml|md|html?|svg)\b' +
+    '|\b[A-Za-z0-9_{}-]+\.(?:json|zip|txt|csv|png|jpe?g|gif|exe|dll|so|axaml|xml|lock|log|tmp|bak|db|toml|md|html?|svg)\b' +
     '|(?<!\w)--needed\b' +
-    '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|Discord|VoxStellar|EDMC|EDDN|HMAC-SHA256|GPL-3\.0|secret-tool|libsecret-tools|libsecret|sudo|apt|pacman|Debian|Ubuntu|Arch|Manjaro|CachyOS)\b)',
+    '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|SteamVR|OpenVR|OpenXR|XR_EXTX_overlay|Meta Quest|Meta|Quest Link|Air Link|Steam Link|Virtual Desktop|Windows Mixed Reality|WMR|PimaxXR|Pimax|VDXR|OpenComposite|Bigscreen Beyond|Pico|Rift|Proton|SRVSURVEY_OPENVR_LIBRARY|Discord|VoxStellar|EDMC|EDDN|HMAC-SHA256|GPL-3\.0|secret-tool|libsecret-tools|libsecret|sudo|apt|pacman|Debian|Ubuntu|Arch|Manjaro|CachyOS)\b)',
     [Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
         [Text.RegularExpressions.RegexOptions]::CultureInvariant)
 

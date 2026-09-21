@@ -11,9 +11,9 @@ public sealed class GuidesViewModelTests
     {
         IReadOnlyList<GuideCategoryViewModel> categories = GuideCatalog.Create();
 
-        Assert.Equal(16, categories.Count);
+        Assert.Equal(17, categories.Count);
         Assert.Equal(
-            Enumerable.Range(1, 16).Select(number => number.ToString("00", CultureInfo.InvariantCulture)).ToArray(),
+            Enumerable.Range(1, 17).Select(number => number.ToString("00", CultureInfo.InvariantCulture)).ToArray(),
             categories.Select(category => category.Number).ToArray()
         );
         Assert.Equal(categories.Count, categories.Select(category => category.Key).Distinct().Count());
@@ -194,6 +194,9 @@ public sealed class GuidesViewModelTests
     [InlineData("@@", "Settlement mapping — measurements and calibration")]
     [InlineData("Clear rigs automatically", "Rig tracking with key chords")]
     [InlineData("Rhino cargo", "Ship, Rhino, and cargo")]
+    [InlineData("Meta users must launch Elite through SteamVR", "Pair the headset and activate overlays")]
+    [InlineData("VDXR", "Choose a Meta compatibility bridge")]
+    [InlineData("SRVSURVEY_OPENVR_LIBRARY", "Windows and Linux setup")]
     public void SearchFindsWorkflowAndGlossaryContent(string query, string expectedTitle)
     {
         var viewModel = new GuidesViewModel(GuideCatalog.Create()) { SearchText = query };
@@ -268,6 +271,30 @@ public sealed class GuidesViewModelTests
         Assert.Equal(string.Empty, viewModel.SearchText);
         Assert.True(viewModel.IsBrowsing);
         Assert.Equal("Guardian sites", viewModel.SelectedCategory.Title);
+    }
+
+    [Fact]
+    public void VirtualRealityGuideDocumentsSupportedRoutesAndFailureStates()
+    {
+        GuideCategoryViewModel virtualReality = GuideCatalog
+            .Create()
+            .Single(category => category.Key == "virtual-reality");
+        string instructions = string.Join(
+            ' ',
+            virtualReality.Sections.SelectMany(section =>
+                new[] { section.Title, section.Summary }.Concat(section.Steps).Concat(section.Details)
+            )
+        );
+
+        Assert.Equal("VR & headset overlays", virtualReality.Title);
+        Assert.Contains("SteamVR headset", instructions, StringComparison.Ordinal);
+        Assert.Contains("Meta Quest or Rift", instructions, StringComparison.Ordinal);
+        Assert.Contains("Windows Mixed Reality", instructions, StringComparison.Ordinal);
+        Assert.Contains("OpenXR-only", instructions, StringComparison.Ordinal);
+        Assert.Contains("Meta compatibility bridge", instructions, StringComparison.Ordinal);
+        Assert.Contains("OpenComposite is not a compatible workaround", instructions, StringComparison.Ordinal);
+        Assert.Contains("SRVSURVEY_OPENVR_LIBRARY", instructions, StringComparison.Ordinal);
+        Assert.Contains("Connected with zero panels", instructions, StringComparison.Ordinal);
     }
 
     [Fact]

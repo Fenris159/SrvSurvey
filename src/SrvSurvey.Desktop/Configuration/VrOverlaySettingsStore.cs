@@ -4,6 +4,8 @@ namespace SrvSurvey.Desktop.Configuration;
 
 public sealed class VrOverlaySettingsStore
 {
+    private const string DefaultProfileId = "steamvr";
+    private const string CustomProfileId = "custom-openvr";
     private readonly UiSettingsDocumentStore documentStore;
 
     public VrOverlaySettingsStore(string path)
@@ -14,9 +16,17 @@ public sealed class VrOverlaySettingsStore
     public VrOverlayPreferences Load()
     {
         var settings = documentStore.Load()["VirtualReality"] as JsonObject;
+        string runtimeProcessName = GetString(settings, "RuntimeProcessName", "vrserver");
         return new VrOverlayPreferences(
             GetBoolean(settings, "Enabled", false),
-            GetString(settings, "RuntimeProcessName", "vrserver")
+            GetString(
+                settings,
+                "RuntimeProfileId",
+                string.Equals(runtimeProcessName, "vrserver", StringComparison.OrdinalIgnoreCase)
+                    ? DefaultProfileId
+                    : CustomProfileId
+            ),
+            runtimeProcessName
         );
     }
 
@@ -34,6 +44,7 @@ public sealed class VrOverlaySettingsStore
 
             root["Version"] = 1;
             settings["Enabled"] = preferences.Enabled;
+            settings["RuntimeProfileId"] = preferences.RuntimeProfileId;
             settings["RuntimeProcessName"] = preferences.RuntimeProcessName;
         });
     }
@@ -56,4 +67,4 @@ public sealed class VrOverlaySettingsStore
     }
 }
 
-public sealed record VrOverlayPreferences(bool Enabled, string RuntimeProcessName);
+public sealed record VrOverlayPreferences(bool Enabled, string RuntimeProfileId, string RuntimeProcessName);

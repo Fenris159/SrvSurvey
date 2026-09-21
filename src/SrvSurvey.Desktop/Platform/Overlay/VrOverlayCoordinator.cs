@@ -32,6 +32,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         this.modeProvider = modeProvider ?? (() => null);
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         viewModel.CalibrationChanged += OnCalibrationChanged;
+        viewModel.ConnectionCheckRequested += OnConnectionCheckRequested;
         this.registry.Changed += OnRegistryChanged;
         timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
@@ -64,6 +65,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         timer.Tick -= OnTimerTick;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         viewModel.CalibrationChanged -= OnCalibrationChanged;
+        viewModel.ConnectionCheckRequested -= OnConnectionCheckRequested;
         registry.Changed -= OnRegistryChanged;
         runtime.Dispose();
     }
@@ -83,12 +85,18 @@ public sealed class VrOverlayCoordinator : IDisposable
         Synchronize();
     }
 
+    private void OnConnectionCheckRequested(object? sender, EventArgs eventArgs)
+    {
+        Synchronize();
+    }
+
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (
             eventArgs.PropertyName
             is nameof(VrOverlayViewModel.Enabled)
                 or nameof(VrOverlayViewModel.RuntimeProcessName)
+                or nameof(VrOverlayViewModel.SelectedPlatformProfile)
                 or nameof(VrOverlayViewModel.Scale)
                 or nameof(VrOverlayViewModel.PositionX)
                 or nameof(VrOverlayViewModel.PositionY)
@@ -120,7 +128,22 @@ public sealed class VrOverlayCoordinator : IDisposable
         RemoveStaleOverlays(active);
         published.Clear();
         published.UnionWith(active);
-        viewModel.SetRuntimeStatus(lastError ?? $"OpenVR is active with {active.Count:N0} live overlays.");
+        if (lastError is null)
+        {
+            viewModel.SetConnectionStatus(
+                VrOverlayConnectionState.Ready,
+                $"Connected through {viewModel.SelectedPlatformProfile.DisplayName}",
+                $"SteamVR/OpenVR is active with {active.Count:N0} live overlays."
+            );
+        }
+        else
+        {
+            viewModel.SetConnectionStatus(
+                VrOverlayConnectionState.Error,
+                "The VR runtime rejected an overlay",
+                lastError
+            );
+        }
     }
 
     private (HashSet<string> Active, string? LastError) PublishRegistrations(
@@ -154,23 +177,66 @@ public sealed class VrOverlayCoordinator : IDisposable
         {
             published.Clear();
             runtime.Shutdown();
+            viewModel.SetConnectionStatus(
+                VrOverlayConnectionState.Disabled,
+                "VR overlays are off",
+                "Choose a connection route, complete its pairing steps, then enable VR overlays."
+            );
             return false;
         }
 
-        if (!processDetector(viewModel.RuntimeProcessName))
+        if (viewModel.IsCustomRuntime && !processDetector(viewModel.RuntimeProcessName))
         {
             published.Clear();
             runtime.Shutdown();
-            viewModel.SetRuntimeStatus($"Waiting for VR process '{viewModel.RuntimeProcessName}'.");
+            viewModel.SetConnectionStatus(
+                VrOverlayConnectionState.WaitingForRuntime,
+                $"Waiting for {viewModel.SelectedPlatformProfile.DisplayName}",
+                $"Start the OpenVR runtime process '{viewModel.RuntimeProcessName}'."
+            );
+            return false;
+        }
+
+        VrRuntimeProbe probe = runtime.Probe();
+        if (!probe.RuntimeAvailable)
+        {
+            published.Clear();
+            runtime.Shutdown();
+            viewModel.SetConnectionStatus(
+                VrOverlayConnectionState.WaitingForRuntime,
+                "SteamVR/OpenVR is not available",
+                probe.Message
+            );
+            return false;
+        }
+
+        if (!probe.HeadsetPresent)
+        {
+            published.Clear();
+            runtime.Shutdown();
+            viewModel.SetConnectionStatus(
+                VrOverlayConnectionState.WaitingForRuntime,
+                "Connect or wake the headset",
+                probe.Message
+            );
             return false;
         }
 
         if (!runtime.IsInitialized)
         {
+            viewModel.SetConnectionStatus(
+                VrOverlayConnectionState.Connecting,
+                "SteamVR and headset detected",
+                "Connecting SrvSurvey to the OpenVR overlay compositor."
+            );
             VrRuntimeResult initialization = runtime.Initialize();
             if (!initialization.Succeeded)
             {
-                viewModel.SetRuntimeStatus(initialization.Message);
+                viewModel.SetConnectionStatus(
+                    VrOverlayConnectionState.Error,
+                    "OpenVR connection failed",
+                    initialization.Message
+                );
                 return false;
             }
         }

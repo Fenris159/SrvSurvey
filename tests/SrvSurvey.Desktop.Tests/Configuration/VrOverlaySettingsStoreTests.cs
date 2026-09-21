@@ -14,7 +14,7 @@ public sealed class VrOverlaySettingsStoreTests : IDisposable
     {
         VrOverlaySettingsStore store = CreateStore();
 
-        Assert.Equal(new VrOverlayPreferences(false, "vrserver"), store.Load());
+        Assert.Equal(new VrOverlayPreferences(false, "steamvr", "vrserver"), store.Load());
     }
 
     [Fact]
@@ -25,10 +25,22 @@ public sealed class VrOverlaySettingsStoreTests : IDisposable
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new VrOverlaySettingsStore(path);
 
-        store.Save(new VrOverlayPreferences(true, "vrcompositor"));
+        store.Save(new VrOverlayPreferences(true, "meta-via-steamvr", "vrcompositor"));
 
-        Assert.Equal(new VrOverlayPreferences(true, "vrcompositor"), store.Load());
+        Assert.Equal(new VrOverlayPreferences(true, "meta-via-steamvr", "vrcompositor"), store.Load());
         Assert.Contains("\"Keep\": 42", File.ReadAllText(path));
+    }
+
+    [Fact]
+    public void ExistingCustomProcessMigratesToCustomProfile()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        File.WriteAllText(path, "{\"VirtualReality\":{\"Enabled\":true,\"RuntimeProcessName\":\"my-compositor\"}}");
+
+        var store = new VrOverlaySettingsStore(path);
+
+        Assert.Equal(new VrOverlayPreferences(true, "custom-openvr", "my-compositor"), store.Load());
     }
 
     public void Dispose()

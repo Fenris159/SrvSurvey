@@ -49,6 +49,19 @@ public static class OpenVrNativeLibraryResolver
         }
 
         candidates.Add(Path.Combine(AppContext.BaseDirectory, LinuxLibraryFileName));
+        string runtimeIdentifier = RuntimeInformation.ProcessArchitecture switch
+        {
+            Architecture.X64 => "linux-x64",
+            Architecture.Arm64 => "linux-arm64",
+            _ => string.Empty,
+        };
+        if (!string.IsNullOrEmpty(runtimeIdentifier))
+        {
+            candidates.Add(
+                Path.Combine(AppContext.BaseDirectory, "runtimes", runtimeIdentifier, "native", LinuxLibraryFileName)
+            );
+        }
+
         string profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (!string.IsNullOrWhiteSpace(profile))
         {
@@ -99,6 +112,11 @@ public static class OpenVrNativeLibraryResolver
         }
 
         return candidates.Distinct(StringComparer.Ordinal).ToArray();
+    }
+
+    public static string? FindExistingLinuxLibrary()
+    {
+        return OperatingSystem.IsLinux() ? GetLinuxCandidates().FirstOrDefault(File.Exists) : null;
     }
 
     private static nint ResolveLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
