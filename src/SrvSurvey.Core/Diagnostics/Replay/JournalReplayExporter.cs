@@ -1214,6 +1214,10 @@ public enum ReplayVerticalAnchor
 
 internal static class ReplayPresentationSnapshotValidator
 {
+    private const int MaximumLegacyScaleIndex = 100;
+    private const int MinimumRelativeScaleIndex = 1_000;
+    private const int MaximumRelativeScaleIndex = 1_060;
+
     public static void Validate(ReplayPresentationSnapshot? snapshot)
     {
         if (snapshot is null)
@@ -1239,7 +1243,7 @@ internal static class ReplayPresentationSnapshotValidator
         if (
             snapshot.ViewportWidth is < 320 or > 16_384
             || snapshot.ViewportHeight is < 200 or > 16_384
-            || snapshot.GlobalScaleIndex is < 0 or > 100
+            || !IsSupportedScaleIndex(snapshot.GlobalScaleIndex)
             || snapshot.DefaultOpacity is { } opacity && (!double.IsFinite(opacity) || opacity is < 0 or > 1)
             || snapshot.OverlayEnablement is null
             || snapshot.OverlayPlacements is null
@@ -1260,12 +1264,16 @@ internal static class ReplayPresentationSnapshotValidator
             || Math.Abs((long)placement.HorizontalOffset) > 100_000
             || Math.Abs((long)placement.VerticalOffset) > 100_000
             || placement.Opacity is { } itemOpacity && (!double.IsFinite(itemOpacity) || itemOpacity is < 0 or > 1)
-            || placement.ScaleIndex is { } scaleIndex && scaleIndex is < 0 or > 100
+            || placement.ScaleIndex is { } scaleIndex && !IsSupportedScaleIndex(scaleIndex)
         )
         {
             throw new InvalidDataException("The replay overlay presentation snapshot contains an invalid placement.");
         }
     }
+
+    private static bool IsSupportedScaleIndex(int scaleIndex) =>
+        scaleIndex is >= 0 and <= MaximumLegacyScaleIndex
+        || scaleIndex is >= MinimumRelativeScaleIndex and <= MaximumRelativeScaleIndex;
 
     private static void ValidateName(string name)
     {

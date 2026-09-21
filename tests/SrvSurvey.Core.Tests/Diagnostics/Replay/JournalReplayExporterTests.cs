@@ -434,6 +434,80 @@ public sealed class JournalReplayExporterTests
         Assert.Equal(42, imported.PresentationSnapshot?.OverlayPlacements["PlotFSSInfo"].HorizontalOffset);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(100)]
+    [InlineData(1_000)]
+    [InlineData(1_060)]
+    public async Task ExportAcceptsBoundedPresentationScaleIndexes(int scaleIndex)
+    {
+        using var temp = new TemporaryDirectory();
+        string journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            "{\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n"
+        );
+        string destination = Path.Combine(temp.Path, $"scale-{scaleIndex}.srvreplay");
+        var presentation = new ReplayPresentationSnapshot(
+            1920,
+            1080,
+            scaleIndex,
+            null,
+            new Dictionary<string, bool>(),
+            new Dictionary<string, ReplayOverlayPlacement>
+            {
+                ["PlotFSSInfo"] = new(ReplayHorizontalAnchor.Right, 0, ReplayVerticalAnchor.Top, 0, null, scaleIndex),
+            }
+        );
+
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(null, null, ReplayPrivacyMode.Redacted, "test", presentation),
+            CancellationToken.None
+        );
+
+        Assert.True(File.Exists(destination));
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(101)]
+    [InlineData(999)]
+    [InlineData(1_061)]
+    public async Task ExportRejectsUnboundedPresentationScaleIndexes(int scaleIndex)
+    {
+        using var temp = new TemporaryDirectory();
+        string journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            "{\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n"
+        );
+        string destination = Path.Combine(temp.Path, "invalid-scale.srvreplay");
+        var presentation = new ReplayPresentationSnapshot(
+            1920,
+            1080,
+            scaleIndex,
+            null,
+            new Dictionary<string, bool>(),
+            new Dictionary<string, ReplayOverlayPlacement>()
+        );
+
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new JournalReplayExporter().ExportAsync(
+                journals,
+                destination,
+                new JournalReplayExportRequest(null, null, ReplayPrivacyMode.Redacted, "test", presentation),
+                CancellationToken.None
+            )
+        );
+
+        Assert.Contains("presentation snapshot is invalid", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(destination));
+    }
+
     [Fact]
     public async Task FailedExportPreservesAnExistingPackage()
     {
