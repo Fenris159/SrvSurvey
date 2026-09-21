@@ -107,6 +107,54 @@ public sealed class ReplayPresentationSnapshotStoreTests
     }
 
     [Fact]
+    public async Task CapturedRelativeScaleRangeCanBeExported()
+    {
+        using var temp = new TemporaryDirectory();
+        AppDataPaths paths = CreatePaths(Path.Combine(temp.Path, "source"));
+        Directory.CreateDirectory(paths.ConfigDirectory);
+        Directory.CreateDirectory(paths.DataDirectory);
+        string overlayName = OverlayLayoutCatalog.Supported[0].Name;
+        _ = new LegacyOverlayLayoutStore(paths.DataDirectory).Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                [overlayName] = new(
+                    LegacyHorizontalAnchor.Left,
+                    10,
+                    LegacyVerticalAnchor.Top,
+                    20,
+                    null,
+                    OverlayScaleCatalog.Options[0].Index
+                ),
+            },
+            defaultOpacity: 1d,
+            updateDefaultOpacity: false
+        );
+        new OverlayScaleSettingsStore(paths.UiSettingsPath).Save(
+            new OverlayScalePreferences(OverlayScaleCatalog.Options[^1].Index)
+        );
+        ReplayPresentationSnapshot snapshot = ReplayPresentationSnapshotStore.Capture(
+            paths,
+            new PixelRect(0, 0, 1920, 1080)
+        );
+        string journals = Path.Combine(temp.Path, "journals");
+        Directory.CreateDirectory(journals);
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Journal.01.log"),
+            "{\"timestamp\":\"2026-09-20T00:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay\",\"FID\":\"F000000\"}\n"
+        );
+        string destination = Path.Combine(temp.Path, "relative-scale.srvreplay");
+
+        await new JournalReplayExporter().ExportAsync(
+            journals,
+            destination,
+            new JournalReplayExportRequest(null, null, ReplayPrivacyMode.Redacted, "test", snapshot),
+            CancellationToken.None
+        );
+
+        Assert.True(File.Exists(destination));
+    }
+
+    [Fact]
     public void CaptureAndApplyRejectInvalidPortablePresentation()
     {
         using var temp = new TemporaryDirectory();
