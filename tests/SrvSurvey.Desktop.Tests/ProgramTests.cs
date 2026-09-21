@@ -34,12 +34,12 @@ public sealed class ProgramTests
     }
 
     [Fact]
-    public void LinuxX11OptionsDisableTheUnusedGlobalMenuExporter()
+    public void LinuxX11OptionsUseNativePopupWindowsWithDrawnDecorations()
     {
         X11PlatformOptions options = Program.CreateX11Options(useSoftwareRendering: false);
 
         Assert.False(options.UseDBusMenu);
-        Assert.True(options.OverlayPopups);
+        Assert.False(options.OverlayPopups);
 #pragma warning disable AVALONIA_X11_FORCE_CSD // Verify the reserved Raven-themed X11 chrome configuration.
         Assert.True(options.ForceDrawnDecorations);
 #pragma warning restore AVALONIA_X11_FORCE_CSD
