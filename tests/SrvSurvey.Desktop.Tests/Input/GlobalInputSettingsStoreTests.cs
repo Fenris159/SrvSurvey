@@ -12,7 +12,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     [Fact]
     public void CatalogPreservesLegacyActionsAndAddsOverlayEditShortcut()
     {
-        Assert.Equal(67, GlobalInputActionCatalog.All.Count);
+        Assert.Equal(68, GlobalInputActionCatalog.All.Count);
         Assert.Equal(
             GlobalInputActionCatalog.All.Count,
             GlobalInputActionCatalog
@@ -26,6 +26,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
             "ALT SHIFT O",
             GlobalInputActionCatalog.Get(GlobalInputAction.ToggleOverlayInteraction).DefaultChord
         );
+        Assert.Empty(GlobalInputActionCatalog.Get(GlobalInputAction.ToggleVrOverlayInteraction).DefaultChord);
         Assert.Equal(new("adjustVR", "ALT V"), GetLegacyBinding(GlobalInputAction.AdjustVr));
         Assert.Equal(new("resetVR", string.Empty), GetLegacyBinding(GlobalInputAction.ResetVr));
         GlobalInputActionDefinition[] panelToggles = GlobalInputActionCatalog

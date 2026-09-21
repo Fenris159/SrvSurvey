@@ -323,7 +323,7 @@ The supported stack is intentionally small:
 | Desktop UI | Avalonia 12.1 with Fluent controls and Inter fonts |
 | Rendering | SkiaSharp 3.119 |
 | Global input | SDL3 and SharpHook |
-| VR support | OVRSharp |
+| VR support | OVRSharp binding with Valve OpenVR 2.15.6 clients |
 | Messaging and storage | NetMQ, Newtonsoft.Json and application-owned JSON stores |
 | Formatting and analysis | CSharpier, SDK NetAnalyzers and SonarAnalyzer.CSharp |
 

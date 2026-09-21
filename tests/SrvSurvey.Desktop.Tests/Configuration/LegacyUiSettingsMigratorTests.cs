@@ -314,7 +314,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal("SHIFT C", input.Bindings[GlobalInputAction.CopyNextBoxel]);
         Assert.True(new StreamOverlaySettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.Equal(
-            new VrOverlayPreferences(true, "vrcompositor"),
+            new VrOverlayPreferences(true, "custom-openvr", "vrcompositor"),
             new VrOverlaySettingsStore(paths.UiSettingsPath).Load()
         );
         Assert.True(new DockToDockSettingsStore(paths.UiSettingsPath).LoadEnabled());

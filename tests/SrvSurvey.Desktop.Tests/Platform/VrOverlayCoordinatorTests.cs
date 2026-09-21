@@ -40,6 +40,103 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         Assert.Contains("Enable OpenVR", viewModel.StatusMessage);
     }
 
+    [Fact]
+    public void SteamVrProfileUsesOpenVrCapabilityProbeInsteadOfProcessNames()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var inspectedProcesses = new List<string>();
+        var runtime = new StubOpenVrRuntime();
+
+        using var coordinator = new VrOverlayCoordinator(
+            viewModel,
+            new OverlayWindowRegistry(),
+            runtime,
+            processName =>
+            {
+                inspectedProcesses.Add(processName);
+                return false;
+            }
+        );
+
+        Assert.Empty(inspectedProcesses);
+        Assert.Equal(1, runtime.ProbeCount);
+        Assert.True(runtime.IsInitialized);
+        Assert.Equal(VrOverlayConnectionState.Ready, viewModel.ConnectionState);
+        Assert.Contains("Connected through", viewModel.ConnectionHeadline);
+    }
+
+    [Fact]
+    public void MissingRuntimeReportsActionableWaitingState()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var runtime = new StubOpenVrRuntime
+        {
+            ProbeResult = VrRuntimeProbe.RuntimeUnavailable("SteamVR is not installed."),
+        };
+
+        using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => false);
+
+        Assert.False(runtime.IsInitialized);
+        Assert.Equal(VrOverlayConnectionState.WaitingForRuntime, viewModel.ConnectionState);
+        Assert.Contains("not installed", viewModel.ConnectionDetail);
+    }
+
+    [Fact]
+    public void ConnectionRequestsSynchronizeOnceWhileDisablingStillShutsDown()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        var runtime = new StubOpenVrRuntime();
+        using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => true);
+
+        Assert.Equal(1, runtime.ShutdownCount);
+
+        viewModel.Enabled = true;
+        Assert.Equal(1, runtime.ProbeCount);
+
+        viewModel.SelectedPlatformProfile = viewModel.PlatformProfiles.Single(profile =>
+            profile.Id == VrPlatformProfileCatalog.MetaAlvrProfileId
+        );
+        Assert.Equal(2, runtime.ProbeCount);
+
+        viewModel.RuntimeProcessName = "custom-runtime";
+        Assert.Equal(3, runtime.ProbeCount);
+
+        viewModel.Scale = 12;
+        Assert.Equal(4, runtime.ProbeCount);
+
+        viewModel.Enabled = false;
+        Assert.Equal(2, runtime.ShutdownCount);
+    }
+
+    [Fact]
+    public void VrInteractionTogglesOpenVrInputAndReturnsToClickThroughWhenDisabled()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var runtime = new StubOpenVrRuntime();
+        using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => true);
+
+        Assert.True(coordinator.ToggleInteraction());
+        Assert.True(coordinator.IsInteractionEnabled);
+        Assert.True(runtime.InteractionEnabled);
+        Assert.Contains("interaction is enabled", viewModel.StatusMessage);
+
+        Assert.True(coordinator.ToggleInteraction());
+        Assert.False(coordinator.IsInteractionEnabled);
+        Assert.False(runtime.InteractionEnabled);
+        Assert.Equal(2, runtime.InteractionChangeCount);
+        Assert.Contains("click-through", viewModel.StatusMessage);
+
+        Assert.True(coordinator.ToggleInteraction());
+        viewModel.Enabled = false;
+
+        Assert.False(coordinator.IsInteractionEnabled);
+        Assert.False(coordinator.ToggleInteraction());
+        Assert.Contains("Enable and connect", viewModel.StatusMessage);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -71,6 +168,24 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public int ResetCount { get; private set; }
 
+        public int ProbeCount { get; private set; }
+
+        public int ShutdownCount { get; private set; }
+
+        public int InteractionChangeCount { get; private set; }
+
+        public bool InteractionEnabled { get; private set; }
+
+        public Queue<VrOverlayPointerEvent> PointerEvents { get; } = new();
+
+        public VrRuntimeProbe ProbeResult { get; init; } = VrRuntimeProbe.Ready();
+
+        public VrRuntimeProbe Probe()
+        {
+            ProbeCount++;
+            return ProbeResult;
+        }
+
         public VrRuntimeResult Initialize()
         {
             IsInitialized = true;
@@ -89,6 +204,26 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public void RemoveOverlay(string plotterName) { }
 
+        public VrRuntimeResult SetInteractionEnabled(bool enabled)
+        {
+            InteractionChangeCount++;
+            InteractionEnabled = enabled;
+            return VrRuntimeResult.Success(
+                enabled ? "VR overlay controller interaction is enabled." : "VR overlays are click-through again."
+            );
+        }
+
+        public IReadOnlyList<VrOverlayPointerEvent> PollPointerEvents()
+        {
+            var events = new List<VrOverlayPointerEvent>();
+            while (PointerEvents.TryDequeue(out VrOverlayPointerEvent? pointerEvent))
+            {
+                events.Add(pointerEvent);
+            }
+
+            return events;
+        }
+
         public VrRuntimeResult ResetOrientation()
         {
             ResetCount++;
@@ -97,6 +232,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public void Shutdown()
         {
+            ShutdownCount++;
             IsInitialized = false;
         }
 

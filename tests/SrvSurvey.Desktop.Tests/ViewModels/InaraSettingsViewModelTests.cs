@@ -44,7 +44,7 @@ public sealed class InaraSettingsViewModelTests : IDisposable
         Assert.Equal("personal-key", viewModel.StoredApiKey);
 
         viewModel.ConfirmClearApiKeyCommand.Execute(null);
-        await WaitForAsync(() => !viewModel.HasStoredApiKey);
+        await WaitForAsync(() => !viewModel.HasStoredApiKey && changes == 1);
 
         CommanderProfileLoadResult profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync(
             "F123",

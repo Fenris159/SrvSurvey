@@ -1,216 +1,121 @@
-# SrvSurvey-XP 2.1.3.0-rc.52
+# SrvSurvey-XP 2.1.3.0-rc.53
 
-RC52 is the first release delivered through the new SrvSurvey-XP update
-channel. RC51 established the permanent bridge from the original `xp-v`
-channel to the new `xp2-v` channel used by this and later releases. RC52 also
-includes the per-panel overlay typography editor, AppImage updater, profile
-migration, window chrome, tooltip, pointer-input, and XWayland fixes from this
-release cycle.
+RC53 modernizes SrvSurvey's SteamVR overlays for Windows and Linux. It adds a
+guided headset connection workflow, clearer runtime status, per-platform setup
+profiles, controller-pointer interaction, safer runtime recovery, and a new VR
+guide inside the application.
 
 > [!IMPORTANT]
-> RC51 users should receive RC52 through the normal updater. If you are still
-> on an earlier release, install the RC51 bridge first so SrvSurvey can follow
-> the new automatic-update channel. If an update is not offered, reports an
-> error, or cannot complete, download and install the newest SrvSurvey-XP build
-> manually from the
-> [GitHub releases page](https://github.com/Fenris159/SrvSurvey/releases).
-> Follow the [Windows installation guide](docs/INSTALL_WINDOWS.md) for the ZIP
-> package or the [Linux installation guide](docs/INSTALL_LINUX.md) for the
-> AppImage and portable archive.
+> SrvSurvey VR panels use the SteamVR/OpenVR overlay compositor. OpenXR-only
+> Elite Dangerous sessions cannot host these external overlays. Meta Quest and
+> Rift users must connect through a route that presents the headset to SteamVR.
 
-## Automatic-update channel transition
+## Connect a headset
 
-- RC51 remains published as `xp-v2.1.3.0-rc.51` with a legacy schema-1
-  `release-index.json` containing only the `win-x64` and `linux-x64` packages.
-  Older Windows and portable-Linux clients continue to discover that bridge.
-- RC52 publishes as `xp2-v2.1.3.0-rc.52` with a schema-2 index containing the
-  `win-x64`, `linux-x64`, and `linux-x64-appimage` packages.
-- RC51 and later applications accept both schema versions and scan both tag
-  namespaces, so a client on RC51 can move directly to RC52 and future builds.
-- No tag above RC51 may ever be published under `xp-v`, because it would shadow
-  the permanent bridge for legacy clients.
+- Open **Settings > Global overlays > VR overlays** and choose the route that
+  matches the active headset connection.
+- Native SteamVR headsets can use **SteamVR headset**. Meta users can choose
+  **Link / Air Link**, **Steam Link**, **Virtual Desktop**, or experimental
+  **ALVR**, then follow the route-specific pairing guidance in the panel.
+- Meta Link, Air Link, Steam Link, and Virtual Desktop PC-VR are Windows routes.
+  ALVR can bridge a Meta headset on Windows or Linux, but its Linux path,
+  SteamVR on Linux, and Elite through Proton remain experimental.
+- Windows Mixed Reality is offered only as a legacy Windows route for systems
+  where the headset and SteamVR bridge still work.
+- A custom OpenVR runtime can be selected when its compositor implements the
+  OpenVR overlay API. OpenComposite is not an overlay compatibility path.
 
-## Per-panel overlay typography
+The selected profile supplies the expected runtime process and concise pairing
+steps. Changing profiles does not erase saved panel placement or vehicle-mode
+calibration.
 
-- Right-click an overlay in the position editor and select the **Aa** button to
-  adjust Header, Title, Value, Body, Detail, Caption, and Icons for that panel.
-- Every overlay string is classified by meaning as Header, Title, Value, Body,
-  Detail, or Caption. Each role scales from that string's original size, so the
-  0% baseline preserves the existing layout, colours, font family, and weight.
-- Icons independently scale badges, PIPs, direction markers, body symbols, and
-  other panel glyphs without changing Caption text. Layout-aware scaling gives
-  larger icons the space they need instead of drawing over nearby content.
-- Fleet Carrier Route, Route Bodies, FSS, biology, surface navigation, and the
-  remaining panel templates now classify their full content consistently, so
-  Body, Detail, Caption, and Icons affect the content their names describe.
-- Each panel stores its own seven-role typography profile and updates its
-  preview and live overlay immediately. Profiles saved without an Icons value
-  load with Icons at the unchanged 0% baseline.
-- Biology sample circles, Codex-image indicators, pulse indicators, PIPs,
-  badges, and the remaining status glyphs now follow the Icons slider. The
-  per-panel text scale card includes a one-click reset that returns all seven
-  roles to 0%.
-- Overlay layouts now remeasure around scaled text. Compact content wraps,
-  scrolls, or uses intentional ellipsis instead of clipping into nearby text.
-- The overlay-category list and typography panel open upward, keeping both
-  menus inside the editor near the bottom of the display.
+## Windows and Linux packaging
 
-Existing users keep the current appearance because every new typography scale
-defaults to the 0% baseline.
+- Windows and Linux packages include the native OpenVR client library used by
+  SrvSurvey. Users do not need to locate SteamVR's library or configure a
+  custom library path.
+- If packaged OpenVR support is reported unavailable, reinstall the package for
+  the correct architecture rather than pointing SrvSurvey into the Steam
+  installation.
+- The same overlay publisher, calibration model, and connection states are used
+  on both operating systems.
 
-## Overlay sizing and FSS layout
+## Runtime status and recovery
 
-- Global overlay scale is now a slider from -100% through +200% in 5% steps.
-  Zero uses the operating system's display scale as the baseline, so positive
-  and negative values consistently grow or shrink overlays on every desktop.
-- Each panel's optional scale override uses the same signed slider and range in
-  the right-click appearance editor. On first startup, existing absolute-scale
-  selections are backed up and converted once to the nearest equivalent value
-  for the active display, preserving their previous physical size. Converted
-  values are marked so later startups cannot migrate them again.
-- Overlay previews have a lower-right resize grip. Custom panel dimensions are
-  saved per overlay and replace that presentation's default width and height
-  caps so flexible columns and wrapped text use the chosen shape. Fixed
-  diagrams and semantic groups retain their familiar internal arrangement.
-  The four-arrow button beside **Aa** restores the panel's measured default
-  size.
-- Prior Scans uses one fixed geometry for ACTIVE and ANALYZED pills.
-- FSS Information now constrains and wraps its summary and filter explanation,
-  reducing the oversized gap between body names and right-aligned values.
-- The **Aa** typography controls are measured above the appearance card instead
-  of using a constrained in-window popup, so they expand upward from the editor.
-- The category selector now uses an upward-only popup from its first opening;
-  it cannot flip below the editor when the lower edge is constrained.
-- FSS Information, Prior Scans, and Route Bodies give additional custom panel
-  height to their scrolling lists while keeping their headers, diagrams, and
-  footers stable. Resetting the panel restores each compact list cap.
-- Position and source-display reference files now save as one transaction. If
-  either write fails, both original layout files are restored together.
+- Enabling VR overlays now follows explicit **Waiting**, **Connecting**,
+  **Connected**, and **Needs attention** states.
+- **Check connection** retries after starting SteamVR, changing a headset
+  bridge, or repairing a headset connection.
+- SrvSurvey distinguishes a missing runtime or headset from an individual
+  overlay rejected by the compositor and provides an appropriate recovery
+  action for each case.
+- Runtime or profile changes reconnect through the explicit connection check;
+  disabling VR still shuts down and removes overlays immediately.
+- Interaction-mode changes are transactional across every live panel. If one
+  update fails, panels already changed are restored to their previous input
+  mode. A failed rollback shuts down OpenVR instead of leaving mixed interactive
+  and click-through panels behind.
 
-## Surface mining map integration
+## Panel calibration
 
-- The Surface Mining overlay now lists the nearest four saved deposits from the
-  active Mining Overview map, ordered by live distance from the player or Rhino.
-- Adding, editing, or removing a map marker refreshes the compact tracker
-  immediately, while the existing saved-bookmark list remains available as a
-  fallback for older mining data.
+- **Adjust overlays** opens the existing per-panel VR calibration workflow once
+  the runtime is connected.
+- Each panel retains its own default placement plus ship, SRV, fighter, taxi,
+  and on-foot overrides.
+- Scale, position, pitch, yaw, and roll update the headset preview. Save verifies
+  and preserves the calibration; Cancel restores saved values; Reset selected
+  restores the shipped placement for that target.
+- **Reset VR orientation** captures the current headset yaw without changing
+  saved panel placement.
+- Desktop overlay placement and VR calibration remain independent.
 
-## Workspace usability
+## Controller-pointer interaction
 
-- The global experimental Typography card has been removed from Theme. Per-panel
-  text and icon scaling in the overlay editor is now the supported control; old
-  theme typography values remain readable so saved themes keep their appearance.
-- Colonization uses the available application width, wraps action groups, and
-  proportionally sizes site, project, and depot columns without a horizontal
-  workspace scrollbar. Clear primary and Make primary retain readable labels at
-  narrow widths.
-- Boxel Statistics uses accordion sections so Recently Recorded and the full
-  Boxel browser share one viewport. Opening either section closes the other.
-- Recently Recorded is capped at the latest eight matching boxels. Both sections
-  use the same bordered, separated row format and keep large result sets inside
-  a scrolling frame.
-- Mass-code buttons are immediate multi-select filters with a theme-safe accent
-  border. Selecting a letter keeps it highlighted and clicking it again clears
-  that filter without hiding the label. Returning to the unscoped top-level
-  view clears previous mass-code filters from recent and browser results.
-- Boxel row radial actions align their center hole with the launcher on Linux
-  after popup layout and display scaling are known. Window edges no longer push
-  Complete, Reopen, Defer, or Start Here away from the selected row.
+- Assign **Toggle VR overlay interaction** in **Settings > Global overlays**.
+  It appears directly below the existing live-overlay interaction shortcut.
+- With VR overlays connected, the shortcut enables SteamVR controller-pointer
+  movement, clicks, and scrolling for controls already visible inside live
+  SrvSurvey panels.
+- Use the shortcut again to restore passive click-through behavior. Interaction
+  is also cleared automatically when VR overlays are disabled, disconnected,
+  or disposed.
+- Desktop live-overlay interaction remains a separate shortcut for desktop
+  dragging and does not enable VR controller input.
 
-## Inara Community Goals
+## In-app VR guide
 
-- Community Goal reads use the active commander's saved Inara API key when one
-  is configured, allowing refreshes to continue when the bundled read key is
-  rejected.
-- Inara's explanatory API error text is now shown with the status code instead
-  of reducing failures such as an invalid key to an unexplained status 400.
+The new **VR & headset overlays** category under **Guides** covers:
 
-## AppImage updates
+- choosing and pairing the correct SteamVR connection route;
+- Meta headset compatibility and the limitations of OpenXR-only sessions;
+- Windows and Linux package behavior;
+- panel calibration and orientation reset;
+- assigning and using controller-pointer interaction; and
+- troubleshooting missing runtimes, rejected overlays, and panels hidden by
+  normal game-context visibility rules.
 
-- A writable Linux AppImage can now install releases from SrvSurvey's update
-  card instead of requiring a manual download and replacement.
-- The updater verifies the indexed AppImage checksum, keeps the previous image
-  for rollback, and restores it if the replacement cannot confirm a healthy
-  startup, including when the operating system cannot launch the replacement.
-  Activation uses one same-filesystem atomic replacement so interruption cannot
-  leave the normal AppImage launch path missing.
-- AppImage update mode now requires a matching `APPIMAGE` and `APPDIR`
-  environment, verifies that SrvSurvey is running inside that mounted AppDir,
-  and confirms the canonical launch file is a real x64 AppImage before offering
-  self-update installation.
-- Stable file names and symbolic-link launch paths are supported. The update
-  helper uses extract-and-run mode so the update transaction does not depend on
-  FUSE being installed.
-- Release AppImages now embed update-channel metadata and publish a matching
-  `.zsync` asset for standard AppImage tooling.
-- Stable AppImages, tarballs, checksum manifests, `.zsync` metadata, and both
-  in-application update feeds now publish to and consume from the same stable
-  release repository.
+## Update channel
 
-The manual download instructions remain available when the AppImage or its
-containing folder is read-only. The Linux guide also documents the writable
-installation-directory and launch-path requirements for automatic AppImage and
-tarball updates.
-
-## Linux window theme
-
-- The main window and normal tool windows now share title-bar, border, text, and
-  caption-button colours from the selected application theme on X11 and XWayland.
-- The themed title bar reserves its own space above the application content, so
-  the navigation and page controls no longer cover the caption area.
-- The themed frame keeps normal Linux window dragging, resizing, minimizing,
-  maximizing, and closing behavior. Transparent overlay windows remain
-  borderless.
-
-## Linux integration fixes
-
-- The Frontier connection warning now names the `secret-tool` executable and
-  gives the correct package and install command for Debian/Ubuntu and
-  Arch/Manjaro/CachyOS.
-- Expected X11 session-manager, disposed IBus context, window-lifecycle races,
-  and unrelated Avalonia rendering events no longer fill the application log;
-  SrvSurvey's own X11 failures and incomplete unexpected IME diagnostics remain
-  visible through shutdown.
-- Tooltips, drop-downs, and flyouts remain available while using Avalonia's
-  in-window popup layer on Linux. This avoids the transient X11 windows that
-  caused hover flicker, missed button input, and unreliable focus activation.
-- Clicking the main application content explicitly restores focus when the
-  window is in the background.
-- Standard X11 and XWayland overlays now use the notification window hint with
-  a normal-window fallback, allowing positioning in the top screen area that
-  GNOME reserves for its desktop toolbar when the game is not covering it.
-- Choosing a Windows SrvSurvey application-data folder now prefers its populated
-  `cross-platform` profile and imports the adjacent `cross-platform-ui.json`.
-  Legacy version folders remain supported when no current-format profile exists.
-- Profile data and UI settings are verified and backed up before replacement.
-  SrvSurvey pauses its own log-file writes during the transaction so an active
-  local log cannot invalidate the staged profile. Network imports report each
-  phase plus live file and byte progress and warn that large shares can take time.
-- Current-profile UI imports record completion separately from their verified
-  backup. An interrupted migration resumes safely, reuses only a hash-matching
-  backup, and cannot mistake a backup file alone for a completed import.
-- Imported overlay offsets retain their source game-display dimensions and are
-  scaled proportionally against the current Elite Dangerous window. Left,
-  centre, right, top, middle, and bottom anchors keep their original orientation
-  when moving a profile between resolutions.
-- Profile-import restart helpers escape the original systemd application unit,
-  so closing the importing process does not also terminate the replacement.
-- Automatic Frontier commander selection now refreshes from the active journal
-  even when secure-storage or linked-account discovery is unavailable.
+- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge for older
+  clients.
+- RC53 publishes as `xp2-v2.1.3.0-rc.53` with the schema-2 Windows, Linux
+  portable, and Linux AppImage package index.
+- RC51 and later clients scan the `xp2-v` namespace and can move directly to
+  RC53. No release above RC51 may use the legacy `xp-v` namespace.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.52`
-- Tag: `xp2-v2.1.3.0-rc.52`
+- Version: `2.1.3.0-rc.53`
+- Tag: `xp2-v2.1.3.0-rc.53`
 - Release-index schema: `2` (`win-x64`, `linux-x64`, and
   `linux-x64-appimage`)
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.52-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.52-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.52-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.52-x86_64.AppImage.zsync`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.53-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.53-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.53-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.53-x86_64.AppImage.zsync`
 
-Windows and Linux packages remain self-contained. Numeric Windows FileVersion
-remains `2.1.3.0`.
+Windows and Linux packages remain self-contained. The numeric Windows
+`FileVersion` remains `2.1.3.0`.
 
 ## Testing notice
 

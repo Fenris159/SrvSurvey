@@ -1454,6 +1454,7 @@ internal sealed partial class DesktopRuntime
             GlobalInputAction.MapBeHuge => humanSiteOverlayCoordinator?.ToggleHuge() == true,
             GlobalInputAction.ToggleAllVisibility => ToggleAllOverlayVisibility(),
             GlobalInputAction.ToggleOverlayInteraction => ToggleOverlayInteraction(),
+            GlobalInputAction.ToggleVrOverlayInteraction => ToggleVrOverlayInteraction(),
             GlobalInputAction.ShowJumpInfo => viewModel.JumpInfo.ToggleForcedVisibility(),
             GlobalInputAction.ShowFssInfo => viewModel.SystemSurvey.ToggleFssInfoVisibility(),
             GlobalInputAction.ShowBodyInfo => viewModel.SystemSurvey.ToggleBodyInfoVisibility(),
@@ -1629,6 +1630,22 @@ internal sealed partial class DesktopRuntime
         }
 
         viewModel.Notifications.ShowOverlayInteraction(viewModel.OverlayInteraction.IsLiveInteractionEnabled);
+        return true;
+    }
+
+    private bool ToggleVrOverlayInteraction()
+    {
+        MainWindowViewModel? viewModel = mainViewModel;
+        if (viewModel is null || vrOverlayCoordinator?.ToggleInteraction() != true)
+        {
+            return false;
+        }
+
+        viewModel.Notifications.ShowMessage(
+            vrOverlayCoordinator.IsInteractionEnabled
+                ? "VR overlay controller interaction enabled"
+                : "VR overlay controller interaction disabled"
+        );
         return true;
     }
 }

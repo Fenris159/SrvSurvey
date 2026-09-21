@@ -408,6 +408,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             OverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
                 binding.Definition.Action == GlobalInputAction.ToggleOverlayInteraction
             );
+            VrOverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
+                binding.Definition.Action == GlobalInputAction.ToggleVrOverlayInteraction
+            );
             OverlayTheme =
                 overlayThemeSettings
                 ?? new OverlayThemeSettingsViewModel(
@@ -961,6 +964,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public OverlayInteractionViewModel OverlayInteraction { get; }
 
     public InputBindingViewModel OverlayInteractionBinding { get; }
+
+    public InputBindingViewModel VrOverlayInteractionBinding { get; }
 
     public OverlayThemeSettingsViewModel OverlayTheme { get; }
 

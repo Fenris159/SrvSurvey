@@ -10,13 +10,16 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class VrOverlayViewModel : INotifyPropertyChanged
 {
     public const string DefaultMode = "Default";
+    private const string OverlaysOffHeadline = "VR overlays are off";
     private readonly VrOverlaySettingsStore settingsStore;
     private readonly VrOverlayCalibrationStore calibrationStore;
+    private readonly IReadOnlyList<VrPlatformProfile> platformProfiles = VrPlatformProfileCatalog.All;
     private readonly RelayCommand saveCommand;
     private readonly RelayCommand resetCommand;
     private readonly RelayCommand cancelCommand;
     private VrOverlayPreferences preferences;
     private VrOverlayCalibrationCatalog catalog;
+    private VrPlatformProfile selectedPlatformProfile;
     private IReadOnlyList<string> availableOverlays = [];
     private IReadOnlyList<string> availableModes = [DefaultMode];
     private string? selectedOverlayName;
@@ -31,18 +34,31 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
     private double rotationYaw;
     private double rotationRoll;
     private string statusMessage;
+    private VrOverlayConnectionState connectionState;
+    private string connectionHeadline;
+    private string connectionDetail;
+    private string platformSupportMessage;
 
     public VrOverlayViewModel(VrOverlaySettingsStore settingsStore, VrOverlayCalibrationStore calibrationStore)
     {
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.calibrationStore = calibrationStore ?? throw new ArgumentNullException(nameof(calibrationStore));
+        platformSupportMessage = CreatePlatformSupportMessage();
         preferences = settingsStore.Load();
+        selectedPlatformProfile = VrPlatformProfileCatalog.Get(preferences.RuntimeProfileId);
+        connectionState = preferences.Enabled
+            ? VrOverlayConnectionState.WaitingForRuntime
+            : VrOverlayConnectionState.Disabled;
+        connectionHeadline = preferences.Enabled ? "Waiting for the VR runtime" : OverlaysOffHeadline;
+        connectionDetail = preferences.Enabled
+            ? $"Start {selectedPlatformProfile.DisplayName} and complete the pairing checklist."
+            : "Choose a connection route, complete its pairing steps, then enable VR overlays.";
         try
         {
             catalog = calibrationStore.Load();
             statusMessage = preferences.Enabled
-                ? "Waiting for the configured OpenVR runtime process."
-                : "OpenVR overlays are disabled.";
+                ? "Waiting for the selected OpenVR runtime."
+                : "VR overlays are disabled.";
         }
         catch (Exception exception)
             when (exception
@@ -63,11 +79,14 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         SaveCommand = saveCommand;
         ResetCommand = resetCommand;
         CancelCommand = cancelCommand;
+        RefreshConnectionCommand = new RelayCommand(RequestConnectionCheck, () => true);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public event EventHandler? CalibrationChanged;
+
+    public event EventHandler? ConnectionCheckRequested;
 
     public bool Enabled
     {
@@ -82,10 +101,76 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             preferences = preferences with { Enabled = value };
             settingsStore.Save(preferences);
             OnPropertyChanged();
-            StatusMessage = value
-                ? "Waiting for the configured OpenVR runtime process."
-                : "OpenVR overlays are disabled.";
+            if (value)
+            {
+                SetConnectionStatus(
+                    VrOverlayConnectionState.WaitingForRuntime,
+                    "Waiting for the VR runtime",
+                    $"Start {SelectedPlatformProfile.DisplayName} and complete the pairing checklist."
+                );
+                RequestConnectionCheck();
+            }
+            else
+            {
+                SetConnectionStatus(
+                    VrOverlayConnectionState.Disabled,
+                    OverlaysOffHeadline,
+                    "Your saved platform and overlay calibration are unchanged."
+                );
+            }
         }
+    }
+
+    public IReadOnlyList<VrPlatformProfile> PlatformProfiles => platformProfiles;
+
+    public VrPlatformProfile SelectedPlatformProfile
+    {
+        get => selectedPlatformProfile;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            if (selectedPlatformProfile == value)
+            {
+                return;
+            }
+
+            selectedPlatformProfile = value;
+            preferences = preferences with { RuntimeProfileId = value.Id };
+            settingsStore.Save(preferences);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsCustomRuntime));
+            OnPropertyChanged(nameof(PlatformSupportMessage));
+            SetConnectionStatus(
+                Enabled ? VrOverlayConnectionState.WaitingForRuntime : VrOverlayConnectionState.Disabled,
+                Enabled ? "Connection route changed" : OverlaysOffHeadline,
+                Enabled
+                    ? $"Complete the {value.DisplayName} pairing steps while SrvSurvey checks the runtime."
+                    : "Complete this route's pairing steps, then enable VR overlays."
+            );
+            RequestConnectionCheck();
+        }
+    }
+
+    public bool IsCustomRuntime => SelectedPlatformProfile.IsCustom;
+
+    public string PlatformSupportMessage => platformSupportMessage;
+
+    private static string CreatePlatformSupportMessage()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return "Windows: the OpenVR client library is included with SrvSurvey.";
+        }
+
+        if (OperatingSystem.IsLinux())
+        {
+            string? library = OpenVrNativeLibraryResolver.FindExistingLinuxLibrary();
+            return library is null
+                ? "Linux: packaged OpenVR support is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture."
+                : "Linux: packaged OpenVR support is ready.";
+        }
+
+        return "VR overlay projection is supported on Windows and Linux.";
     }
 
     public string RuntimeProcessName
@@ -102,7 +187,43 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             preferences = preferences with { RuntimeProcessName = normalized };
             settingsStore.Save(preferences);
             OnPropertyChanged();
+            RequestConnectionCheck();
         }
+    }
+
+    public VrOverlayConnectionState ConnectionState
+    {
+        get => connectionState;
+        private set
+        {
+            if (SetField(ref connectionState, value))
+            {
+                OnPropertyChanged(nameof(ConnectionStateLabel));
+            }
+        }
+    }
+
+    public string ConnectionStateLabel =>
+        ConnectionState switch
+        {
+            VrOverlayConnectionState.Disabled => "OFF",
+            VrOverlayConnectionState.WaitingForRuntime => "WAITING",
+            VrOverlayConnectionState.Connecting => "CONNECTING",
+            VrOverlayConnectionState.Ready => "CONNECTED",
+            VrOverlayConnectionState.Error => "NEEDS ATTENTION",
+            _ => "UNKNOWN",
+        };
+
+    public string ConnectionHeadline
+    {
+        get => connectionHeadline;
+        private set => SetField(ref connectionHeadline, value);
+    }
+
+    public string ConnectionDetail
+    {
+        get => connectionDetail;
+        private set => SetField(ref connectionDetail, value);
     }
 
     public IReadOnlyList<string> AvailableOverlays
@@ -216,6 +337,8 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
     public ICommand CancelCommand { get; }
 
+    public ICommand RefreshConnectionCommand { get; }
+
     public bool BeginAdjustment()
     {
         SetAvailableOverlays(catalog.Defaults.Keys);
@@ -280,6 +403,16 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         }
     }
 
+    public void SetConnectionStatus(VrOverlayConnectionState state, string headline, string detail)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(headline);
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+        ConnectionState = state;
+        ConnectionHeadline = headline;
+        ConnectionDetail = detail;
+        SetRuntimeStatus(detail);
+    }
+
     private void SaveCalibration()
     {
         if (SelectedOverlayName is null)
@@ -337,7 +470,19 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
     {
         IsAdjusting = false;
         LoadSelectedCalibration();
-        StatusMessage = preferences.Enabled ? "VR adjustment mode closed." : "OpenVR overlays are disabled.";
+        StatusMessage = preferences.Enabled ? "VR adjustment mode closed." : "VR overlays are disabled.";
+    }
+
+    private void RequestConnectionCheck()
+    {
+        string currentPlatformSupportMessage = CreatePlatformSupportMessage();
+        if (!string.Equals(platformSupportMessage, currentPlatformSupportMessage, StringComparison.Ordinal))
+        {
+            platformSupportMessage = currentPlatformSupportMessage;
+            OnPropertyChanged(nameof(PlatformSupportMessage));
+        }
+
+        ConnectionCheckRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void LoadSelectedCalibration()

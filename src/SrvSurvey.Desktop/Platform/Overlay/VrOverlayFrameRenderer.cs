@@ -28,7 +28,8 @@ public static class VrOverlayFrameRenderer
         bitmap.Render(visual);
         using var stream = new MemoryStream();
         bitmap.Save(stream, PngBitmapEncoderOptions.Default);
-        return DecodePng(stream.ToArray());
+        VrOverlayFrame frame = DecodePng(stream.ToArray());
+        return frame with { PointerWidth = size.Width, PointerHeight = size.Height };
     }
 
     public static VrOverlayFrame DecodePng(byte[] pngBytes)
@@ -55,4 +56,10 @@ public static class VrOverlayFrameRenderer
     }
 }
 
-public sealed record VrOverlayFrame(int Width, int Height, byte[] RgbaBytes);
+public sealed record VrOverlayFrame(
+    int Width,
+    int Height,
+    byte[] RgbaBytes,
+    double PointerWidth = 0,
+    double PointerHeight = 0
+);
