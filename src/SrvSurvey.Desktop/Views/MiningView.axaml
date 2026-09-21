@@ -1,4 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:journal="using:SrvSurvey.Core.Journal" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:controls="using:SrvSurvey.Desktop.Controls" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" Grid.IsSharedSizeScope="True" x:Class="SrvSurvey.Desktop.Views.MiningView" x:Name="MiningRoot" x:DataType="vm:MainWindowViewModel">
+  <UserControl.Styles>
+    <Style Selector="TabItem.mining-workspace-tab">
+      <Setter Property="Padding" Value="8,6"/>
+    </Style>
+  </UserControl.Styles>
   <Grid DataContext="{Binding MiningWorkspace}" x:DataType="vm:MiningWorkspaceViewModel" RowDefinitions="Auto,*,Auto" Margin="24">
     <StackPanel Spacing="6" Margin="0,0,0,16">
       <TextBlock Classes="eyebrow" Text="ACTIVITIES"/>
@@ -11,7 +16,7 @@
           <controls:AdaptiveTabHeaderPanel/>
         </ItemsPanelTemplate>
       </TabControl.ItemsPanel>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Session"/>
         </TabItem.Header>
@@ -183,7 +188,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Reports"/>
         </TabItem.Header>
@@ -265,7 +270,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Missions"/>
         </TabItem.Header>
@@ -304,7 +309,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Powerplay"/>
         </TabItem.Header>
@@ -312,7 +317,7 @@
           <views:MiningPowerplayView DataContext="{Binding}" Margin="4,12,4,16"/>
         </ScrollViewer>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Find"/>
         </TabItem.Header>
@@ -365,13 +370,13 @@
           </Border>
         </Grid>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Bookmarks"/>
         </TabItem.Header>
         <views:BookmarksView DataContext="{Binding #MiningRoot.DataContext.Bookmarks}"/>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Reference"/>
         </TabItem.Header>
@@ -429,7 +434,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Settings"/>
         </TabItem.Header>
