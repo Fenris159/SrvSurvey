@@ -1,9 +1,39 @@
-# SrvSurvey-XP 2.1.3.0-rc.50
+# SrvSurvey-XP 2.1.3.0-rc.51
 
-RC50 completes the per-panel overlay typography editor with independent icon
-scaling, corrects text-role coverage across every overlay, and improves overlay
-placement on Linux. It also includes the AppImage updater, profile migration,
-window chrome, tooltip, pointer-input, and XWayland fixes from this release cycle.
+RC51 restores automatic updates for Windows and portable-Linux installations
+that are still on a release before RC51. It is the permanent compatibility
+bridge between the original `xp-v` update namespace and the new `xp2-v`
+namespace used by RC52 and later releases. It also includes the per-panel
+overlay typography editor, AppImage updater, profile migration, window chrome,
+tooltip, pointer-input, and XWayland fixes from this release cycle.
+
+> [!IMPORTANT]
+> RC51 is an update bridge. Install RC51 before moving to RC52 or any later
+> release so SrvSurvey can follow the new automatic-update channel. The normal
+> updater should guide supported Windows and portable-Linux installations to
+> RC51 automatically. If the update is not offered, reports an error, or cannot
+> complete, download and install the newest SrvSurvey-XP build manually from
+> the [GitHub releases page](https://github.com/Fenris159/SrvSurvey/releases).
+> Follow the [Windows installation guide](docs/INSTALL_WINDOWS.md) for the ZIP
+> package or the [Linux installation guide](docs/INSTALL_LINUX.md) for the
+> AppImage and portable archive. Existing RC50 AppImage users should use this
+> manual fallback (or AppImageUpdate) for the one-time move to RC51.
+
+## Automatic-update compatibility bridge
+
+- RC51 is published once as `xp-v2.1.3.0-rc.51` with a legacy schema-1
+  `release-index.json` containing only the `win-x64` and `linux-x64` packages.
+  This lets clients through RC49.3 discover and install the bridge.
+- The RC51 application accepts both schema 1 and schema 2 release indexes and
+  scans both the permanent legacy `xp-v` namespace and the current `xp2-v`
+  namespace.
+- RC52 and every later release use only `xp2-v` with schema 2. No tag above
+  RC51 may ever be published under `xp-v`, because it would shadow the bridge
+  for legacy clients.
+- The RC51 AppImage and `.zsync` files are still published as assets, but the
+  legacy index intentionally does not advertise the AppImage. Existing RC50
+  AppImage users must make this one transition manually or with AppImageUpdate;
+  after RC51, in-application AppImage updates follow `xp2-v` normally.
 
 ## Per-panel overlay typography
 
@@ -175,12 +205,13 @@ tarball updates.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.50`
-- Tag: `xp-v2.1.3.0-rc.50`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.50-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.50-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.50-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.51`
+- Tag: `xp-v2.1.3.0-rc.51` (permanent legacy bridge)
+- Release-index schema: `1` (`win-x64` and `linux-x64` only)
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.51-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.51-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.51-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.51-x86_64.AppImage.zsync`
 
 Windows and Linux packages remain self-contained. Numeric Windows FileVersion
 remains `2.1.3.0`.

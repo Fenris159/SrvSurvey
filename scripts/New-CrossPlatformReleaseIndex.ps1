@@ -13,7 +13,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $packageRoot = (Resolve-Path -LiteralPath $PackageDirectory).Path
-$definitions = @(
+$contract = & (Join-Path $PSScriptRoot 'Resolve-CrossPlatformReleaseContract.ps1') -Version $Version |
+    ConvertFrom-Json
+$definitions = [Collections.Generic.List[object]]@(
     [ordered]@{
         runtimeIdentifier = 'win-x64'
         archive = "SrvSurvey-XP-$Version-win-x64.zip"
@@ -23,13 +25,16 @@ $definitions = @(
         runtimeIdentifier = 'linux-x64'
         archive = "SrvSurvey-XP-$Version-linux-x64.tar.gz"
         archiveType = 'tar.gz'
-    },
-    [ordered]@{
-        runtimeIdentifier = 'linux-x64-appimage'
-        archive = "SrvSurvey-XP-$Version-x86_64.AppImage"
-        archiveType = 'appimage'
     }
 )
+if ($contract.indexSchemaVersion -eq 2) {
+    $definitions.Add(
+        [ordered]@{
+            runtimeIdentifier = 'linux-x64-appimage'
+            archive = "SrvSurvey-XP-$Version-x86_64.AppImage"
+            archiveType = 'appimage'
+        })
+}
 
 $packages = @(
     foreach ($definition in $definitions) {
@@ -51,7 +56,7 @@ $packages = @(
 )
 
 $index = [ordered]@{
-    schemaVersion = 2
+    schemaVersion = $contract.indexSchemaVersion
     product = 'SrvSurvey.XP'
     version = $Version
     packages = $packages

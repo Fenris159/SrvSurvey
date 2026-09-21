@@ -1,6 +1,6 @@
 # Install SrvSurvey on Windows
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.50**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.51**.
 
 > [!IMPORTANT]
 > If RC4 or earlier is installed under a protected folder such as
@@ -25,10 +25,15 @@ Repository maintainers can build and publish a new release as follows:
 2. Select **Run workflow**, choose the source branch/tag/commit and release
    channel. The workflow reads the complete version, including any RC suffix,
    from the desktop project.
-3. After all builds and tests pass, the workflow creates an `xp-v<version>`
-   release. Development builds append `-rc.<number>` and are GitHub
+3. After all builds and tests pass, the workflow creates the RC51 compatibility
+   bridge as `xp-v2.1.3.0-rc.51`; RC52 and later releases use `xp2-v<version>`.
+   Development builds append `-rc.<number>` and are GitHub
    pre-releases; stable builds use the base version and are explicitly not
    assigned GitHub's **Latest** badge.
+
+The RC51 `xp-v` tag is a permanent legacy anchor and must never be superseded
+by a higher `xp-v` release. The release workflow resolves the tag namespace and
+release-index schema from the project version to enforce that contract.
 
 ## Extract and run it
 

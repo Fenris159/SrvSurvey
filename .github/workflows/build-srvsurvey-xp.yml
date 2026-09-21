@@ -41,6 +41,7 @@ jobs:
       package_version: ${{ steps.metadata.outputs.package_version }}
       file_version: ${{ steps.metadata.outputs.file_version }}
       is_prerelease: ${{ steps.metadata.outputs.is_prerelease }}
+      release_index_schema: ${{ steps.metadata.outputs.release_index_schema }}
       source_sha: ${{ steps.metadata.outputs.source_sha }}
 
     steps:
@@ -90,12 +91,15 @@ jobs:
           $packageVersion = $projectVersionText
           $fileVersion = $fileVersionValue.ToString()
           $sourceSha = (git rev-parse HEAD).Trim()
-          $releaseTag = "xp-v$packageVersion"
+          $releaseContract = ./scripts/Resolve-CrossPlatformReleaseContract.ps1 `
+            -Version $packageVersion | ConvertFrom-Json
+          $releaseTag = $releaseContract.releaseTag
           "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "release_tag=$releaseTag" >> $env:GITHUB_OUTPUT
           "package_version=$packageVersion" >> $env:GITHUB_OUTPUT
           "file_version=$fileVersion" >> $env:GITHUB_OUTPUT
           "is_prerelease=$($isPrerelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "release_index_schema=$($releaseContract.indexSchemaVersion)" >> $env:GITHUB_OUTPUT
           "source_sha=$sourceSha" >> $env:GITHUB_OUTPUT
 
   build-test-publish:
@@ -439,11 +443,16 @@ jobs:
 
       - name: Generate release index
         shell: pwsh
-        run: >-
-          ./scripts/New-CrossPlatformReleaseIndex.ps1
-          -PackageDirectory packages
-          -Version "${{ needs.release-metadata.outputs.package_version }}"
-          -OutputPath packages/release-index.json
+        run: |
+          ./scripts/New-CrossPlatformReleaseIndex.ps1 `
+            -PackageDirectory packages `
+            -Version "${{ needs.release-metadata.outputs.package_version }}" `
+            -OutputPath packages/release-index.json
+          $index = Get-Content packages/release-index.json -Raw | ConvertFrom-Json
+          $expectedSchema = [int]'${{ needs.release-metadata.outputs.release_index_schema }}'
+          if ($index.schemaVersion -ne $expectedSchema) {
+            throw "Release index schema $($index.schemaVersion) does not match resolved schema $expectedSchema."
+          }
 
       - name: Read release notes from packaged source
         shell: bash

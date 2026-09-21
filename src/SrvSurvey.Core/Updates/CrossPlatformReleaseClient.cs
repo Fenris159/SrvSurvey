@@ -40,7 +40,8 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
     private const int MaximumReleaseIndexBytes = 64 * 1024;
     private const long MaximumPackageBytes = 512L * 1024 * 1024;
     private const string ProductName = "SrvSurvey.XP";
-    private const string ProductTagPrefix = "xp-v";
+    private const string LegacyProductTagPrefix = "xp-v";
+    private const string CurrentProductTagPrefix = "xp2-v";
     private const string PackageNamePrefix = "SrvSurvey-XP";
     private const string ReleaseIndexName = "release-index.json";
     private const string WinX64RuntimeIdentifier = "win-x64";
@@ -211,14 +212,13 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         if (
             isDraft
             || (channel == ReleaseChannel.Stable && isPrerelease)
-            || !tag.StartsWith(ProductTagPrefix, StringComparison.OrdinalIgnoreCase)
+            || !TryParseTagVersion(tag, out ReleaseVersion version)
         )
         {
             return null;
         }
 
-        string versionText = tag[ProductTagPrefix.Length..];
-        if (!ReleaseVersion.TryParse(versionText, out ReleaseVersion version) || version.IsPrerelease != isPrerelease)
+        if (version.IsPrerelease != isPrerelease)
         {
             return null;
         }
@@ -262,6 +262,26 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         }
 
         return new ReleaseCandidate(version, releaseUri, assets, GitHubReleaseNotes.ExtractChanges(releaseNotes));
+    }
+
+    private static bool TryParseTagVersion(string tag, out ReleaseVersion version)
+    {
+        string versionText;
+        if (tag.StartsWith(CurrentProductTagPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            versionText = tag[CurrentProductTagPrefix.Length..];
+        }
+        else if (tag.StartsWith(LegacyProductTagPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            versionText = tag[LegacyProductTagPrefix.Length..];
+        }
+        else
+        {
+            version = default;
+            return false;
+        }
+
+        return ReleaseVersion.TryParse(versionText, out version);
     }
 
     private static CrossPlatformReleasePackage ParseReleaseIndex(
