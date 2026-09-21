@@ -242,8 +242,8 @@ internal static class Program
         {
             UseDBusMenu = false,
             // Keep tooltips, combo-box drop-downs, and flyouts in the owning
-            // window. Separate X11 popup windows can briefly intercept pointer
-            // input and race the overlay window scanner while they close.
+            // window. OverlayPopupPlacementBehavior compensates for Avalonia's
+            // forced-decoration coordinate offset when positioning them.
             OverlayPopups = true,
 #pragma warning disable AVALONIA_X11_FORCE_CSD // Force reserved Raven-themed chrome on X11 and XWayland.
             ForceDrawnDecorations = true,

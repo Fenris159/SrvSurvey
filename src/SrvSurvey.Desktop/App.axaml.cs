@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Behaviors;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Runtime;
 
@@ -24,6 +25,7 @@ public sealed partial class App : Application
 
     public override void Initialize()
     {
+        OverlayPopupPlacementBehavior.Register();
         AvaloniaXamlLoader.Load(this);
 #if DEBUG
         if (Interlocked.Exchange(ref developerToolsAttached, 1) == 0)

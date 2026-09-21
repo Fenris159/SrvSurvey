@@ -24,17 +24,24 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
     private static readonly TimeSpan HelperReadyTimeout = TimeSpan.FromSeconds(30);
     private readonly ReleaseInstallationPlanStore planStore;
     private readonly Func<ProcessStartInfo, Process?> startProcess;
+    private readonly bool isolateFromSystemdUnit;
 
     public ApplicationUpdateHandoffService()
-        : this(new ReleaseInstallationPlanStore(), startInfo => Process.Start(startInfo)) { }
+        : this(
+            new ReleaseInstallationPlanStore(),
+            startInfo => Process.Start(startInfo),
+            SystemdProcessIsolation.IsRequired()
+        ) { }
 
     internal ApplicationUpdateHandoffService(
         ReleaseInstallationPlanStore planStore,
-        Func<ProcessStartInfo, Process?> startProcess
+        Func<ProcessStartInfo, Process?> startProcess,
+        bool isolateFromSystemdUnit = false
     )
     {
         this.planStore = planStore;
         this.startProcess = startProcess;
+        this.isolateFromSystemdUnit = isolateFromSystemdUnit;
     }
 
     Task<ApplicationUpdateHandoffResult> IApplicationUpdateHandoff.StartHelperAttemptAsync(
@@ -86,6 +93,15 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
                 preparation.RequiresElevation,
                 preparation.Kind == ReleaseInstallationKind.AppImage
             );
+            if (isolateFromSystemdUnit)
+            {
+                startInfo = SystemdProcessIsolation.CreateTransientServiceStartInfo(
+                    startInfo,
+                    $"--unit=srvsurvey-update-{currentProcess.Id}",
+                    preparation.Kind == ReleaseInstallationKind.AppImage ? ["APPIMAGE_EXTRACT_AND_RUN=1"] : []
+                );
+            }
+
             helper = startProcess(startInfo);
             if (helper is null)
             {

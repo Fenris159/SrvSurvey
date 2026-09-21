@@ -34,7 +34,7 @@ public sealed class ProgramTests
     }
 
     [Fact]
-    public void LinuxX11OptionsDisableTheUnusedGlobalMenuExporter()
+    public void LinuxX11OptionsEmbedPopupsWithDrawnDecorations()
     {
         X11PlatformOptions options = Program.CreateX11Options(useSoftwareRendering: false);
 

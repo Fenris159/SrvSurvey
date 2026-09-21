@@ -248,29 +248,11 @@ public sealed class ApplicationRestartService
         int parentProcessId
     )
     {
-        ArgumentNullException.ThrowIfNull(helperStartInfo);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(parentProcessId);
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = "/usr/bin/systemd-run",
-            WorkingDirectory = helperStartInfo.WorkingDirectory,
-            UseShellExecute = false,
-        };
-        startInfo.ArgumentList.Add("--user");
-        startInfo.ArgumentList.Add("--collect");
-        startInfo.ArgumentList.Add("--quiet");
-        startInfo.ArgumentList.Add("--no-block");
-        startInfo.ArgumentList.Add($"--unit=srvsurvey-restart-{parentProcessId}");
-        startInfo.ArgumentList.Add("--property=Type=exec");
-        startInfo.ArgumentList.Add("--property=ExitType=cgroup");
-        startInfo.ArgumentList.Add("--");
-        startInfo.ArgumentList.Add(helperStartInfo.FileName);
-        foreach (string argument in helperStartInfo.ArgumentList)
-        {
-            startInfo.ArgumentList.Add(argument);
-        }
-
-        return startInfo;
+        return SystemdProcessIsolation.CreateTransientServiceStartInfo(
+            helperStartInfo,
+            $"--unit=srvsurvey-restart-{parentProcessId}"
+        );
     }
 
     private static bool WaitForParentExit(int parentProcessId, long parentProcessStartTimeUtcTicks)
@@ -316,10 +298,7 @@ public sealed class ApplicationRestartService
         return process is not null;
     }
 
-    private static bool ShouldIsolateFromSystemdUnit() =>
-        OperatingSystem.IsLinux()
-        && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("INVOCATION_ID"))
-        && File.Exists("/usr/bin/systemd-run");
+    private static bool ShouldIsolateFromSystemdUnit() => SystemdProcessIsolation.IsRequired();
 
     private static string ResolveLauncherPath()
     {
@@ -367,5 +346,62 @@ public sealed class ApplicationRestartService
     private static bool IsDotnetHost(string path)
     {
         return string.Equals(Path.GetFileNameWithoutExtension(path), "dotnet", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+internal static class SystemdProcessIsolation
+{
+    private const string SystemdRunPath = "/usr/bin/systemd-run";
+
+    internal static bool IsRequired() =>
+        IsRequired(
+            OperatingSystem.IsLinux(),
+            Environment.GetEnvironmentVariable("INVOCATION_ID"),
+            File.Exists(SystemdRunPath)
+        );
+
+    internal static bool IsRequired(bool isLinux, string? invocationId, bool systemdRunExists) =>
+        isLinux && !string.IsNullOrWhiteSpace(invocationId) && systemdRunExists;
+
+    internal static ProcessStartInfo CreateTransientServiceStartInfo(
+        ProcessStartInfo commandStartInfo,
+        string unitArgument
+    ) => CreateTransientServiceStartInfo(commandStartInfo, unitArgument, []);
+
+    internal static ProcessStartInfo CreateTransientServiceStartInfo(
+        ProcessStartInfo commandStartInfo,
+        string unitArgument,
+        IReadOnlyList<string> environmentAssignments
+    )
+    {
+        ArgumentNullException.ThrowIfNull(commandStartInfo);
+        ArgumentException.ThrowIfNullOrWhiteSpace(unitArgument);
+        ArgumentNullException.ThrowIfNull(environmentAssignments);
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = SystemdRunPath,
+            WorkingDirectory = commandStartInfo.WorkingDirectory,
+            UseShellExecute = false,
+        };
+        startInfo.ArgumentList.Add("--user");
+        startInfo.ArgumentList.Add("--collect");
+        startInfo.ArgumentList.Add("--quiet");
+        startInfo.ArgumentList.Add("--no-block");
+        startInfo.ArgumentList.Add(unitArgument);
+        startInfo.ArgumentList.Add("--property=Type=exec");
+        startInfo.ArgumentList.Add("--property=ExitType=cgroup");
+        foreach (string assignment in environmentAssignments)
+        {
+            startInfo.ArgumentList.Add($"--setenv={assignment}");
+        }
+
+        startInfo.ArgumentList.Add("--");
+        startInfo.ArgumentList.Add(commandStartInfo.FileName);
+        foreach (string argument in commandStartInfo.ArgumentList)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        return startInfo;
     }
 }

@@ -88,6 +88,25 @@ public sealed class MainWindowRedesignMarkupTests
     }
 
     [Fact]
+    public void NavigationRowsUseAccessibleHelpWithoutRedundantTooltips()
+    {
+        XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
+        XElement navigationTemplate = mainWindow
+            .Descendants()
+            .Single(element =>
+                element
+                    .Attributes()
+                    .Any(attribute => attribute.Name.LocalName == "Key" && attribute.Value == "NavigationRowTemplate")
+            );
+        XElement destination = navigationTemplate
+            .Descendants()
+            .Single(element => element.Attribute("Classes")?.Value == "nav-item");
+
+        Assert.Null(destination.Attribute("ToolTip.Tip"));
+        Assert.Equal("{Binding Description}", destination.Attribute("AutomationProperties.HelpText")?.Value);
+    }
+
+    [Fact]
     public void MainWindowControlsKeepContextualTooltips()
     {
         XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
@@ -98,9 +117,20 @@ public sealed class MainWindowRedesignMarkupTests
             .Select(attribute => attribute.Value)
             .ToArray();
 
-        Assert.Contains("{Binding Description}", tooltips);
+        Assert.DoesNotContain("{Binding Description}", tooltips);
         Assert.Contains("Open category overlay settings", tooltips);
         Assert.Contains("{Binding SidebarToggleLabel}", tooltips);
+    }
+
+    [Fact]
+    public void GlobalTooltipsAreMouseTransparent()
+    {
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XElement toolTipStyle = styles
+            .Descendants()
+            .Single(element => element.Name.LocalName == "Style" && element.Attribute("Selector")?.Value == "ToolTip");
+
+        AssertStyleSetter(toolTipStyle, "IsHitTestVisible", "False");
     }
 
     [Fact]
