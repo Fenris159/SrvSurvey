@@ -884,6 +884,19 @@ public static class GuideCatalog
                         ]
                     ),
                     Section(
+                        "Interact with panels in the headset",
+                        "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+                        [
+                            "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+                            "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+                            "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+                        ],
+                        [
+                            "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+                            "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+                        ]
+                    ),
+                    Section(
                         "Troubleshoot a missing overlay",
                         "Use the connection state to separate headset/runtime problems from ordinary overlay visibility rules.",
                         [],

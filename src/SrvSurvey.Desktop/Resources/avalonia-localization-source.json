@@ -12300,6 +12300,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerDeviceProvider.cs"
   },
   {
+    "Text": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
     "Text": "ControllerDeviceId",
     "IsFormat": false,
     "SourceKinds": [
@@ -16483,6 +16491,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Enable and connect VR overlays before turning on controller interaction.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
     "Text": "Enable colonization features",
     "IsFormat": false,
     "SourceKinds": [
@@ -16509,6 +16525,14 @@
   },
   {
     "Text": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -23500,6 +23524,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "In Settings \u003E Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
     "IsFormat": false,
     "SourceKinds": [
@@ -23963,6 +23995,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianSiteMapControl.cs"
+  },
+  {
+    "Text": "Interact with panels in the headset",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Internal update helper modes cannot be combined.",
@@ -31842,6 +31882,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
+    "Text": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
     "IsFormat": false,
     "SourceKinds": [
@@ -32525,6 +32573,14 @@
   },
   {
     "Text": "OpenVR could not be probed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
+  },
+  {
+    "Text": "OpenVR could not change overlay interaction: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -47444,7 +47500,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "SteamVR/OpenVR is active with {0} live overlays.",
+    "Text": "SteamVR/OpenVR is active with {0} live overlays.{1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -48276,6 +48332,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
+  },
+  {
+    "Text": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
     "Text": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -50786,6 +50850,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
+    "Text": "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "The desktop portal returned an unexpected request handle.",
@@ -53861,6 +53933,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Toggle VR overlay interaction",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Toggle body information",
     "IsFormat": false,
     "SourceKinds": [
@@ -55209,6 +55290,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Unsupported VR pointer event.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayInputRouter.cs"
+  },
+  {
     "Text": "Unsupported installation result: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -56106,6 +56195,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
     "IsFormat": false,
     "SourceKinds": [
@@ -56379,12 +56476,44 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "VR overlay controller interaction disabled",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "VR overlay controller interaction enabled",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "VR overlay controller interaction is enabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
+  },
+  {
     "Text": "VR overlay projection is supported on Windows and Linux.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "VR overlays are click-through again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
     "Text": "VR overlays are disabled.",
@@ -56401,6 +56530,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "VR override \u0027{0}/{1}\u0027 could not be verified before saving.",
@@ -58029,6 +58166,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Within 150 meters, the name and distance use the theme\u0027s near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",

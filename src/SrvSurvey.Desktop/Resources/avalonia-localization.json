@@ -6137,6 +6137,10 @@
       "translation": "Controller {0}"
     },
     {
+      "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
+      "translation": "Controller-Zeiger-Interaktion ist aktiviert; Verwenden Sie die Verknüpfung erneut, um die Klickrate wiederherzustellen."
+    },
+    {
       "source": "ControllerDeviceId",
       "translation": "ControllerDeviceId"
     },
@@ -8221,6 +8225,10 @@
       "translation": "Aktivieren Sie die Wayland-Bildschirmaufnahme"
     },
     {
+      "source": "Enable and connect VR overlays before turning on controller interaction.",
+      "translation": "Aktivieren und verbinden Sie VR-Overlays, bevor Sie die Controller-Interaktion aktivieren."
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Kolonisierungsfunktionen aktivieren"
     },
@@ -8235,6 +8243,10 @@
     {
       "source": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
       "translation": "Aktivieren Sie unten die globale Tastatureingabe und verwenden Sie dann diese Verknüpfung, um vorhandene Live-Overlays anklickbar und ziehbar zu machen. Verwenden Sie es erneut, um Positionen zu speichern und den Click-through-Modus wiederherzustellen. Der vollständige Editor wird nie geöffnet."
+    },
+    {
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
+      "translation": "Aktivieren Sie unten die globale Tastatureingabe und verwenden Sie dann diese Verknüpfung, um SteamVR Overlays zwischen Click-through und Controller-Zeiger-Interaktion umzuschalten. Verwenden Sie es erneut, um den Click-through-Modus wiederherzustellen."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -11717,6 +11729,10 @@
       "translation": "Aktivieren Sie in den Mining-Overlay-Einstellungen Mining-Benachrichtigungen. Firegroups verfügt über ein eigenes Overlay-Einstellungsfenster, das mit dem Einstellungssymbol neben Firegroups in der Seitenleiste geöffnet wird. Die Platzierung bleibt in der Kategorie „Status & Dienstprogramme“ des Herausgebers. Weisen Sie Verknüpfungen zu und passen Sie die Platzierung im Overlay-Editor an."
     },
     {
+      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+      "translation": "Weisen Sie unter „Einstellungen“ > „Globale Overlays“ die Interaktion „VR-Overlay umschalten“ direkt unter der Verknüpfung „Live-Overlay-Interaktion“ zu. Außerdem muss die globale Tastatureingabe aktiviert sein."
+    },
+    {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
       "translation": "Stellen Sie in einem Rhino jedes Rig an seiner Einsatzposition ein oder aus. Dies sind die gleichen Bindungen, die in den Eingabeeinstellungen angezeigt werden. Halten Sie eine Kombination gedrückt und lassen Sie sie los, um sie zu speichern. Escape bricht ab; Rücktaste oder Entf löschen."
     },
@@ -11947,6 +11963,10 @@
     {
       "source": "Inter",
       "translation": "Inter"
+    },
+    {
+      "source": "Interact with panels in the headset",
+      "translation": "Interagieren Sie mit Panels im Headset"
     },
     {
       "source": "Internal update helper modes cannot be combined.",
@@ -15877,6 +15897,10 @@
       "translation": "Es können nur kommandantspezifische Rohpunkte entfernt werden."
     },
     {
+      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+      "translation": "Es können nur Steuerelemente aktiviert werden, die bereits durch ein Live-Overlay SrvSurvey angezeigt werden. Bei der VR-Kalibrierung werden weiterhin „Overlays anpassen“ und die entsprechende Verknüpfung verwendet."
+    },
+    {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
       "translation": "Es werden nur zukünftige, zurechenbare Live-Aktivitäten hochgeladen. Ausgenommen sind Startverlauf, Legacy, Alpha/Beta, Diagnosewiederholung, Multicrew und Sitzungen mit mehreren Elite-Fenstern. Rohe Journalinhalte und API-Schlüssel werden niemals in normale Protokolle oder eine dauerhafte Upload-Warteschlange geschrieben."
     },
@@ -16219,6 +16243,10 @@
     {
       "source": "OpenVR could not be probed: {0}",
       "translation": "OpenVR konnte nicht geprüft werden: {0}"
+    },
+    {
+      "source": "OpenVR could not change overlay interaction: {0}",
+      "translation": "OpenVR konnte die Overlay-Interaktion nicht ändern: {0}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -23661,8 +23689,8 @@
       "translation": "SteamVR-Overlays"
     },
     {
-      "source": "SteamVR/OpenVR is active with {0} live overlays.",
-      "translation": "SteamVR/OpenVR ist mit {0} Live-Overlays aktiv."
+      "source": "SteamVR/OpenVR is active with {0} live overlays.{1}",
+      "translation": "SteamVR/OpenVR ist mit {0} Live-Overlays aktiv.{1}"
     },
     {
       "source": "SteamVR/OpenVR is not available",
@@ -24075,6 +24103,10 @@
     {
       "source": "Swap complete. Restart Elite Dangerous when ready. Original backup: {0}",
       "translation": "Tausch abgeschlossen. Starten Sie Elite Dangerous neu, wenn Sie bereit sind. Ursprüngliches Backup: {0}"
+    },
+    {
+      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Schalter SteamVR überlagert zwischen passivem Click-through und Controller-Zeiger-Interaktion."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -25327,6 +25359,10 @@
     {
       "source": "The desktop link launcher is not available.",
       "translation": "Der Desktop-Link-Launcher ist nicht verfügbar."
+    },
+    {
+      "source": "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+      "translation": "Die Desktop-Live-Overlay-Interaktionsverknüpfung bleibt separat; Es steuert das Ziehen auf dem Desktop und ermöglicht keine VR-Eingabe."
     },
     {
       "source": "The desktop portal returned an unexpected request handle.",
@@ -26865,6 +26901,10 @@
       "translation": "FSS-Informationen umschalten"
     },
     {
+      "source": "Toggle VR overlay interaction",
+      "translation": "Schalten Sie die VR-Overlay-Interaktion um"
+    },
+    {
       "source": "Toggle body information",
       "translation": "Körperinformationen umschalten"
     },
@@ -27537,6 +27577,10 @@
       "translation": "Nicht gescanntes System"
     },
     {
+      "source": "Unsupported VR pointer event.",
+      "translation": "Nicht unterstütztes VR-Zeigerereignis."
+    },
+    {
       "source": "Unsupported installation result: {0}",
       "translation": "Nicht unterstütztes Installationsergebnis: {0}"
     },
@@ -27985,6 +28029,10 @@
       "translation": "Verwenden Sie die Screenshot-Daten-Verknüpfung, um Banner für zukünftige Bilder zu aktivieren oder zu deaktivieren."
     },
     {
+      "source": "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+      "translation": "Verwenden Sie die Verknüpfung erneut, wenn Sie fertig sind. SrvSurvey stellt den passiven Click-through-Modus automatisch wieder her, wenn VR-Overlays deaktiviert sind oder die Laufzeitverbindung getrennt wird."
+    },
+    {
       "source": "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
       "translation": "Verwenden Sie das Seitenleistensymbol oben rechts in der Navigationsspalte, um sie auf einen schmalen Streifen zu reduzieren und dem aktuellen Arbeitsbereich mehr Platz zu geben. Das gleiche Symbol stellt die Navigation wieder her; Ihr ausgewählter Arbeitsbereich bleibt geöffnet und das Fenster behält seine Größe."
     },
@@ -28121,8 +28169,24 @@
       "translation": "Die VR-Overlay-Anpassung erfasst die Ausrichtung und setzt sie durch spezielle Aktionen zurück. Funktion und Status werden gemeldet, wenn die Laufzeit nicht verfügbar ist."
     },
     {
+      "source": "VR overlay controller interaction disabled",
+      "translation": "VR-Overlay-Controller-Interaktion deaktiviert"
+    },
+    {
+      "source": "VR overlay controller interaction enabled",
+      "translation": "VR-Overlay-Controller-Interaktion aktiviert"
+    },
+    {
+      "source": "VR overlay controller interaction is enabled.",
+      "translation": "Die Interaktion mit dem VR-Overlay-Controller ist aktiviert."
+    },
+    {
       "source": "VR overlay projection is supported on Windows and Linux.",
       "translation": "VR-Overlay-Projektion wird unter Windows und Linux unterstützt."
+    },
+    {
+      "source": "VR overlays are click-through again.",
+      "translation": "VR-Overlays sind wieder durchklickbar."
     },
     {
       "source": "VR overlays are disabled.",
@@ -28131,6 +28195,10 @@
     {
       "source": "VR overlays are off",
       "translation": "VR-Overlays sind deaktiviert"
+    },
+    {
+      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+      "translation": "VR-Overlays bleiben passiv, bis Sie die Controller-Zeiger-Interaktion explizit aktivieren SteamVR."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -28943,6 +29011,10 @@
     {
       "source": "Wings",
       "translation": "Flügel"
+    },
+    {
+      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+      "translation": "Wenn VR-Overlays angeschlossen sind, verwenden Sie diese Verknüpfung einmal, damit SteamVR Controller-Laserpointer-Klicks senden und zu SrvSurvey Panels scrollen kann."
     },
     {
       "source": "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",
@@ -39083,6 +39155,10 @@
       "translation": "Controlador {0}"
     },
     {
+      "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
+      "translation": "La interacción controlador-puntero está activada; use su acceso directo nuevamente para restaurar el clic."
+    },
+    {
       "source": "ControllerDeviceId",
       "translation": "ControladorDeviceId"
     },
@@ -41167,6 +41243,10 @@
       "translation": "Habilitar captura de pantalla de Wayland"
     },
     {
+      "source": "Enable and connect VR overlays before turning on controller interaction.",
+      "translation": "Habilite y conecte superposiciones de realidad virtual antes de activar la interacción del controlador."
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Habilitar funciones de colonización"
     },
@@ -41181,6 +41261,10 @@
     {
       "source": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
       "translation": "Habilite la entrada de teclado global a continuación, luego use este atajo para hacer que se pueda hacer clic y arrastrar las superposiciones en vivo existentes. Úselo nuevamente para guardar posiciones y restaurar el modo de clic; nunca abre el editor completo."
+    },
+    {
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
+      "translation": "Habilite la entrada de teclado global a continuación, luego use este atajo para cambiar SteamVR superposiciones entre clic y interacción controlador-puntero. Úselo nuevamente para restaurar el modo de clic."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -44663,6 +44747,10 @@
       "translation": "En Configuración de superposición de minería, habilite las notificaciones de minería. Firegroups tiene su propia ventana de configuración superpuesta, abierta con el ícono de configuración al lado de Firegroups en la barra lateral; la ubicación permanece en la categoría Estado y utilidades del editor. Asigne atajos y ajuste la ubicación en el editor de superposición."
     },
     {
+      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+      "translation": "En Configuración > Superposiciones globales, asigne Alternar interacción de superposición de VR directamente debajo del acceso directo de Interacción de superposición en vivo. La entrada de teclado global también debe estar habilitada."
+    },
+    {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
       "translation": "En un Rhino, configure o borre cada equipo en su posición de despliegue. Estos son los mismos enlaces que se muestran en la configuración de Entrada. Mantenga presionada una combinación y suéltela para guardar; La fuga se cancela; Se borra la tecla Retroceso o Eliminar."
     },
@@ -44893,6 +44981,10 @@
     {
       "source": "Inter",
       "translation": "Inter"
+    },
+    {
+      "source": "Interact with panels in the headset",
+      "translation": "Interactuar con paneles en el auricular"
     },
     {
       "source": "Internal update helper modes cannot be combined.",
@@ -48823,6 +48915,10 @@
       "translation": "Sólo se pueden eliminar puntos sin procesar específicos del comandante."
     },
     {
+      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+      "translation": "Solo se pueden activar los controles que ya se muestran en una superposición en vivo SrvSurvey. La calibración de realidad virtual todavía utiliza superposiciones de ajuste y su acceso directo dedicado."
+    },
+    {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
       "translation": "Solo se carga la actividad en vivo atribuible futura. Se excluyen el historial de inicio, Legacy, alfa/beta, repetición de diagnóstico, multicrew y sesiones con múltiples ventanas Elite. El contenido del diario sin procesar y las claves API nunca se escriben en registros normales ni en una cola de carga duradera."
     },
@@ -49165,6 +49261,10 @@
     {
       "source": "OpenVR could not be probed: {0}",
       "translation": "OpenVR no se pudo probar: {0}"
+    },
+    {
+      "source": "OpenVR could not change overlay interaction: {0}",
+      "translation": "OpenVR no se pudo cambiar la interacción de superposición: {0}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -56607,8 +56707,8 @@
       "translation": "Superposiciones de SteamVR"
     },
     {
-      "source": "SteamVR/OpenVR is active with {0} live overlays.",
-      "translation": "SteamVR/OpenVR está activo con superposiciones en vivo {0}."
+      "source": "SteamVR/OpenVR is active with {0} live overlays.{1}",
+      "translation": "SteamVR/OpenVR está activo con superposiciones en vivo {0}.{1}"
     },
     {
       "source": "SteamVR/OpenVR is not available",
@@ -57021,6 +57121,10 @@
     {
       "source": "Swap complete. Restart Elite Dangerous when ready. Original backup: {0}",
       "translation": "Intercambio completo. Reinicie Elite Dangerous cuando esté listo. Copia de seguridad original: {0}"
+    },
+    {
+      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Cambie las superposiciones SteamVR entre el clic pasivo y la interacción controlador-puntero."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -58273,6 +58377,10 @@
     {
       "source": "The desktop link launcher is not available.",
       "translation": "El iniciador de enlaces de escritorio no está disponible."
+    },
+    {
+      "source": "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+      "translation": "El acceso directo de interacción de superposición en vivo del escritorio permanece separado; controla el arrastre del escritorio y no habilita la entrada de realidad virtual."
     },
     {
       "source": "The desktop portal returned an unexpected request handle.",
@@ -59811,6 +59919,10 @@
       "translation": "Alternar información FSS"
     },
     {
+      "source": "Toggle VR overlay interaction",
+      "translation": "Alternar interacción de superposición de realidad virtual"
+    },
+    {
       "source": "Toggle body information",
       "translation": "Alternar información del cuerpo"
     },
@@ -60483,6 +60595,10 @@
       "translation": "Sistema no escaneado"
     },
     {
+      "source": "Unsupported VR pointer event.",
+      "translation": "Evento de puntero de realidad virtual no compatible."
+    },
+    {
       "source": "Unsupported installation result: {0}",
       "translation": "Resultado de instalación no compatible: {0}"
     },
@@ -60931,6 +61047,10 @@
       "translation": "Utilice el acceso directo a datos de captura de pantalla para habilitar o deshabilitar pancartas para imágenes futuras."
     },
     {
+      "source": "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+      "translation": "Utilice el acceso directo nuevamente cuando haya terminado. SrvSurvey restaura automáticamente el modo de clic pasivo cuando las superposiciones de realidad virtual están desactivadas o el tiempo de ejecución se desconecta."
+    },
+    {
       "source": "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
       "translation": "Utilice el icono de la barra lateral en la parte superior derecha de la columna de navegación para contraerla en una franja estrecha y darle más espacio al espacio de trabajo actual. El mismo icono restaura la navegación; el espacio de trabajo seleccionado permanece abierto y la ventana mantiene su tamaño."
     },
@@ -61067,8 +61187,24 @@
       "translation": "El ajuste de superposición de realidad virtual captura y restablece la orientación mediante acciones dedicadas; La capacidad y el estado se informan cuando el tiempo de ejecución no está disponible."
     },
     {
+      "source": "VR overlay controller interaction disabled",
+      "translation": "Interacción del controlador de superposición de realidad virtual deshabilitada"
+    },
+    {
+      "source": "VR overlay controller interaction enabled",
+      "translation": "Interacción del controlador de superposición de realidad virtual habilitada"
+    },
+    {
+      "source": "VR overlay controller interaction is enabled.",
+      "translation": "La interacción del controlador de superposición de realidad virtual está habilitada."
+    },
+    {
       "source": "VR overlay projection is supported on Windows and Linux.",
       "translation": "La proyección de superposición de realidad virtual es compatible con Windows y Linux."
+    },
+    {
+      "source": "VR overlays are click-through again.",
+      "translation": "Se puede hacer clic nuevamente en las superposiciones de realidad virtual."
     },
     {
       "source": "VR overlays are disabled.",
@@ -61077,6 +61213,10 @@
     {
       "source": "VR overlays are off",
       "translation": "Las superposiciones de realidad virtual están desactivadas"
+    },
+    {
+      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+      "translation": "Las superposiciones de realidad virtual permanecen pasivas hasta que habilites explícitamente SteamVR la interacción controlador-puntero."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -61889,6 +62029,10 @@
     {
       "source": "Wings",
       "translation": "alas"
+    },
+    {
+      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+      "translation": "Con las superposiciones de realidad virtual conectadas, use ese acceso directo una vez para permitir que SteamVR envíe clics del puntero láser del controlador y se desplace a los paneles SrvSurvey."
     },
     {
       "source": "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",
@@ -72029,6 +72173,10 @@
       "translation": "Contrôleur {0}"
     },
     {
+      "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
+      "translation": "L'interaction contrôleur-pointeur est activée ; utilisez à nouveau son raccourci pour restaurer le clic."
+    },
+    {
       "source": "ControllerDeviceId",
       "translation": "ControllerDeviceId"
     },
@@ -74113,6 +74261,10 @@
       "translation": "Activer la capture d'écran Wayland"
     },
     {
+      "source": "Enable and connect VR overlays before turning on controller interaction.",
+      "translation": "Activez et connectez les superpositions VR avant d’activer l’interaction du contrôleur."
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Activer les fonctionnalités de colonisation"
     },
@@ -74127,6 +74279,10 @@
     {
       "source": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
       "translation": "Activez la saisie globale au clavier ci-dessous, puis utilisez ce raccourci pour rendre les superpositions en direct existantes cliquables et déplaçables. Utilisez-le à nouveau pour enregistrer les positions et restaurer le mode clic ; il n'ouvre jamais l'éditeur complet."
+    },
+    {
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
+      "translation": "Activez la saisie globale au clavier ci-dessous, puis utilisez ce raccourci pour basculer les superpositions SteamVR entre le clic et l'interaction contrôleur-pointeur. Utilisez-le à nouveau pour restaurer le mode clic."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -77609,6 +77765,10 @@
       "translation": "Dans Paramètres de superposition minière, activez les notifications minières. Firegroups possède sa propre fenêtre de paramètres de superposition, ouverte avec l'icône des paramètres à côté de Firegroups dans la barre latérale ; le placement reste dans la catégorie Statut et utilitaires de l’éditeur. Attribuez des raccourcis et ajustez le placement dans l’éditeur de superposition."
     },
     {
+      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+      "translation": "Dans Paramètres > Superpositions globales, attribuez l’interaction Toggle VR overlay directement sous le raccourci d’interaction Live-overlay. La saisie globale au clavier doit également être activée."
+    },
+    {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
       "translation": "Dans un Rhino, placez ou désactivez chaque plate-forme à sa position de déploiement. Ce sont les mêmes liaisons affichées dans les paramètres d’entrée. Maintenez une combinaison et relâchez-la pour sauvegarder ; L'évasion est annulée ; Retour arrière ou Supprimer s'efface."
     },
@@ -77839,6 +77999,10 @@
     {
       "source": "Inter",
       "translation": "Inter"
+    },
+    {
+      "source": "Interact with panels in the headset",
+      "translation": "Interagissez avec les panneaux du casque"
     },
     {
       "source": "Internal update helper modes cannot be combined.",
@@ -81769,6 +81933,10 @@
       "translation": "Seuls les points bruts spécifiques au commandant peuvent être supprimés."
     },
     {
+      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+      "translation": "Seules les commandes déjà affichées par une superposition en direct SrvSurvey peuvent être activées. L’étalonnage VR utilise toujours les superpositions Ajuster et son raccourci dédié."
+    },
+    {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
       "translation": "Seules les futures activités Live attribuables sont téléchargées. L'historique de démarrage, Legacy, alpha/bêta, la relecture de diagnostic, le multicrew et les sessions avec plusieurs fenêtres Elite sont exclus. Le contenu brut du journal et les clés API ne sont jamais écrits dans des journaux normaux ou dans une file d'attente de téléchargement durable."
     },
@@ -82111,6 +82279,10 @@
     {
       "source": "OpenVR could not be probed: {0}",
       "translation": "OpenVR n'a pas pu être sondé : {0}"
+    },
+    {
+      "source": "OpenVR could not change overlay interaction: {0}",
+      "translation": "OpenVR n'a pas pu modifier l'interaction de superposition : {0}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -89553,8 +89725,8 @@
       "translation": "Superpositions SteamVR"
     },
     {
-      "source": "SteamVR/OpenVR is active with {0} live overlays.",
-      "translation": "SteamVR/OpenVR est actif avec les superpositions en direct {0}."
+      "source": "SteamVR/OpenVR is active with {0} live overlays.{1}",
+      "translation": "SteamVR/OpenVR est actif avec les superpositions en direct {0}.{1}"
     },
     {
       "source": "SteamVR/OpenVR is not available",
@@ -89967,6 +90139,10 @@
     {
       "source": "Swap complete. Restart Elite Dangerous when ready. Original backup: {0}",
       "translation": "Échange terminé. Redémarrez Elite Dangerous lorsque vous êtes prêt. Sauvegarde d'origine : {0}"
+    },
+    {
+      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Basculez les superpositions SteamVR entre le clic passif et l'interaction contrôleur-pointeur."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -91219,6 +91395,10 @@
     {
       "source": "The desktop link launcher is not available.",
       "translation": "Le lanceur de liens de bureau n'est pas disponible."
+    },
+    {
+      "source": "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+      "translation": "Le raccourci d'interaction en superposition en direct sur le bureau reste séparé ; il contrôle le déplacement du bureau et n'active pas l'entrée VR."
     },
     {
       "source": "The desktop portal returned an unexpected request handle.",
@@ -92757,6 +92937,10 @@
       "translation": "Basculer les informations FSS"
     },
     {
+      "source": "Toggle VR overlay interaction",
+      "translation": "Activer/désactiver l'interaction de superposition VR"
+    },
+    {
       "source": "Toggle body information",
       "translation": "Basculer les informations sur le corps"
     },
@@ -93429,6 +93613,10 @@
       "translation": "Système non analysé"
     },
     {
+      "source": "Unsupported VR pointer event.",
+      "translation": "Événement de pointeur VR non pris en charge."
+    },
+    {
       "source": "Unsupported installation result: {0}",
       "translation": "Résultat d'installation non pris en charge : {0}"
     },
@@ -93877,6 +94065,10 @@
       "translation": "Utilisez le raccourci des données de capture d'écran pour activer ou désactiver les bannières pour les futures images."
     },
     {
+      "source": "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+      "translation": "Utilisez à nouveau le raccourci lorsque vous avez terminé. SrvSurvey restaure automatiquement le mode de clic passif lorsque les superpositions VR sont désactivées ou que le runtime se déconnecte."
+    },
+    {
       "source": "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
       "translation": "Utilisez l'icône de la barre latérale en haut à droite de la colonne de navigation pour la réduire en une bande étroite et donner plus d'espace à l'espace de travail actuel. La même icône rétablit la navigation ; votre espace de travail sélectionné reste ouvert et la fenêtre conserve sa taille."
     },
@@ -94013,8 +94205,24 @@
       "translation": "L'ajustement de la superposition VR capture et réinitialise l'orientation via des actions dédiées ; la capacité et l’état sont signalés lorsque le runtime n’est pas disponible."
     },
     {
+      "source": "VR overlay controller interaction disabled",
+      "translation": "Interaction du contrôleur de superposition VR désactivée"
+    },
+    {
+      "source": "VR overlay controller interaction enabled",
+      "translation": "Interaction du contrôleur de superposition VR activée"
+    },
+    {
+      "source": "VR overlay controller interaction is enabled.",
+      "translation": "L'interaction du contrôleur de superposition VR est activée."
+    },
+    {
       "source": "VR overlay projection is supported on Windows and Linux.",
       "translation": "La projection par superposition VR est prise en charge sous Windows et Linux."
+    },
+    {
+      "source": "VR overlays are click-through again.",
+      "translation": "Les superpositions VR sont à nouveau cliquables."
     },
     {
       "source": "VR overlays are disabled.",
@@ -94023,6 +94231,10 @@
     {
       "source": "VR overlays are off",
       "translation": "Les superpositions VR sont désactivées"
+    },
+    {
+      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+      "translation": "Les superpositions VR restent passives jusqu'à ce que vous activiez explicitement SteamVR l'interaction contrôleur-pointeur."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -94835,6 +95047,10 @@
     {
       "source": "Wings",
       "translation": "Ailes"
+    },
+    {
+      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+      "translation": "Avec les superpositions VR connectées, utilisez ce raccourci une fois pour permettre à SteamVR d'envoyer des clics de pointeur laser du contrôleur et de faire défiler vers les panneaux SrvSurvey."
     },
     {
       "source": "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",
@@ -104975,6 +105191,10 @@
       "translation": "Controlador {0}"
     },
     {
+      "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
+      "translation": "A interação controlador-ponteiro está ativada; use seu atalho novamente para restaurar o clique."
+    },
+    {
       "source": "ControllerDeviceId",
       "translation": "ControladorDeviceId"
     },
@@ -107059,6 +107279,10 @@
       "translation": "Habilitar captura de tela do Wayland"
     },
     {
+      "source": "Enable and connect VR overlays before turning on controller interaction.",
+      "translation": "Ative e conecte sobreposições de VR antes de ativar a interação do controlador."
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Habilitar recursos de colonização"
     },
@@ -107073,6 +107297,10 @@
     {
       "source": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
       "translation": "Ative a entrada global do teclado abaixo e use este atalho para tornar as sobreposições ao vivo existentes clicáveis e arrastáveis. Use-o novamente para salvar posições e restaurar o modo click-through; nunca abre o editor completo."
+    },
+    {
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
+      "translation": "Ative a entrada global do teclado abaixo e use este atalho para alternar as sobreposições SteamVR entre clique e interação do ponteiro do controlador. Use-o novamente para restaurar o modo click-through."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -110555,6 +110783,10 @@
       "translation": "Nas configurações de sobreposição de mineração, ative as notificações de mineração. Firegroups tem sua própria janela de configurações de sobreposição, aberta com o ícone de configurações ao lado de Firegroups na barra lateral; o posicionamento permanece na categoria Status e utilitários do editor. Atribua atalhos e ajuste o posicionamento no editor de sobreposição."
     },
     {
+      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+      "translation": "Em Configurações > Sobreposições globais, atribua a interação Alternar sobreposição de VR diretamente abaixo do atalho de interação de sobreposição ao vivo. A entrada global do teclado também deve estar habilitada."
+    },
+    {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
       "translation": "Em um Rhino, coloque ou limpe cada plataforma em sua posição de implantação. Estas são as mesmas ligações mostradas nas configurações de entrada. Segure uma combinação e solte para salvar; A fuga é cancelada; Backspace ou Delete são limpos."
     },
@@ -110785,6 +111017,10 @@
     {
       "source": "Inter",
       "translation": "Internacional"
+    },
+    {
+      "source": "Interact with panels in the headset",
+      "translation": "Interaja com painéis no headset"
     },
     {
       "source": "Internal update helper modes cannot be combined.",
@@ -114715,6 +114951,10 @@
       "translation": "Somente pontos brutos específicos do comandante podem ser removidos."
     },
     {
+      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+      "translation": "Somente os controles já mostrados por uma sobreposição ao vivo SrvSurvey podem ser ativados. A calibração VR ainda usa sobreposições de ajuste e seu atalho dedicado."
+    },
+    {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
       "translation": "Somente atividades ao vivo atribuíveis futuras são carregadas. Histórico de inicialização, legado, alfa/beta, reprodução de diagnóstico, equipe múltipla e sessões com múltiplas janelas Elite são excluídos. O conteúdo bruto do diário e as chaves de API nunca são gravados em logs normais ou em uma fila de upload durável."
     },
@@ -115057,6 +115297,10 @@
     {
       "source": "OpenVR could not be probed: {0}",
       "translation": "OpenVR não pôde ser investigado: {0}"
+    },
+    {
+      "source": "OpenVR could not change overlay interaction: {0}",
+      "translation": "OpenVR não foi possível alterar a interação de sobreposição: {0}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -122499,8 +122743,8 @@
       "translation": "Sobreposições SteamVR"
     },
     {
-      "source": "SteamVR/OpenVR is active with {0} live overlays.",
-      "translation": "SteamVR/OpenVR está ativo com sobreposições ao vivo {0}."
+      "source": "SteamVR/OpenVR is active with {0} live overlays.{1}",
+      "translation": "SteamVR/OpenVR está ativo com sobreposições ao vivo {0}.{1}"
     },
     {
       "source": "SteamVR/OpenVR is not available",
@@ -122913,6 +123157,10 @@
     {
       "source": "Swap complete. Restart Elite Dangerous when ready. Original backup: {0}",
       "translation": "Troca concluída. Reinicie Elite Dangerous quando estiver pronto. Backup original: {0}"
+    },
+    {
+      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Alternar sobreposições SteamVR entre clique passivo e interação ponteiro-controlador."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -124165,6 +124413,10 @@
     {
       "source": "The desktop link launcher is not available.",
       "translation": "O iniciador de link da área de trabalho não está disponível."
+    },
+    {
+      "source": "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+      "translation": "O atalho de interação de sobreposição ao vivo na área de trabalho permanece separado; ele controla o arrastamento da área de trabalho e não permite a entrada de VR."
     },
     {
       "source": "The desktop portal returned an unexpected request handle.",
@@ -125703,6 +125955,10 @@
       "translation": "Alternar informações do FSS"
     },
     {
+      "source": "Toggle VR overlay interaction",
+      "translation": "Alternar interação de sobreposição de VR"
+    },
+    {
       "source": "Toggle body information",
       "translation": "Alternar informações do corpo"
     },
@@ -126375,6 +126631,10 @@
       "translation": "Sistema não verificado"
     },
     {
+      "source": "Unsupported VR pointer event.",
+      "translation": "Evento de ponteiro VR não suportado."
+    },
+    {
       "source": "Unsupported installation result: {0}",
       "translation": "Resultado de instalação não suportado: {0}"
     },
@@ -126823,6 +127083,10 @@
       "translation": "Use o atalho de dados de captura de tela para ativar ou desativar banners para imagens futuras."
     },
     {
+      "source": "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+      "translation": "Use o atalho novamente quando terminar. SrvSurvey restaura o modo de clique passivo automaticamente quando as sobreposições de VR são desativadas ou o tempo de execução é desconectado."
+    },
+    {
       "source": "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
       "translation": "Use o ícone da barra lateral no canto superior direito da coluna de navegação para recolhê-la em uma faixa estreita e dar mais espaço ao espaço de trabalho atual. O mesmo ícone restaura a navegação; seu espaço de trabalho selecionado permanece aberto e a janela mantém seu tamanho."
     },
@@ -126959,8 +127223,24 @@
       "translation": "O ajuste de sobreposição de VR captura e redefine a orientação por meio de ações dedicadas; capacidade e status são relatados quando o tempo de execução não está disponível."
     },
     {
+      "source": "VR overlay controller interaction disabled",
+      "translation": "Interação do controlador de sobreposição VR desativada"
+    },
+    {
+      "source": "VR overlay controller interaction enabled",
+      "translation": "Interação do controlador de sobreposição VR ativada"
+    },
+    {
+      "source": "VR overlay controller interaction is enabled.",
+      "translation": "A interação do controlador de sobreposição VR está habilitada."
+    },
+    {
       "source": "VR overlay projection is supported on Windows and Linux.",
       "translation": "A projeção de sobreposição VR é compatível com Windows e Linux."
+    },
+    {
+      "source": "VR overlays are click-through again.",
+      "translation": "As sobreposições de VR são clicadas novamente."
     },
     {
       "source": "VR overlays are disabled.",
@@ -126969,6 +127249,10 @@
     {
       "source": "VR overlays are off",
       "translation": "As sobreposições de VR estão desativadas"
+    },
+    {
+      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+      "translation": "As sobreposições de VR permanecem passivas até que você habilite explicitamente SteamVR a interação controlador-ponteiro."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -127781,6 +128065,10 @@
     {
       "source": "Wings",
       "translation": "Asas"
+    },
+    {
+      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+      "translation": "Com as sobreposições VR conectadas, use esse atalho uma vez para permitir que SteamVR envie cliques do ponteiro laser do controlador e role para os painéis SrvSurvey."
     },
     {
       "source": "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",
@@ -137921,6 +138209,10 @@
       "translation": "Контроллер {0}"
     },
     {
+      "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
+      "translation": "Взаимодействие контроллер-указатель включено; используйте его ярлык еще раз, чтобы восстановить кликабельность."
+    },
+    {
       "source": "ControllerDeviceId",
       "translation": "Контроллердевицеид"
     },
@@ -140005,6 +140297,10 @@
       "translation": "Включить захват экрана Wayland"
     },
     {
+      "source": "Enable and connect VR overlays before turning on controller interaction.",
+      "translation": "Включите и подключите наложения VR, прежде чем включать взаимодействие с контроллером."
+    },
+    {
       "source": "Enable colonization features",
       "translation": "Включить функции колонизации"
     },
@@ -140019,6 +140315,10 @@
     {
       "source": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
       "translation": "Включите глобальный ввод с клавиатуры ниже, а затем используйте этот ярлык, чтобы сделать существующие живые наложения кликабельными и перетаскиваемыми. Используйте его еще раз, чтобы сохранить позиции и восстановить режим кликабельности; он никогда не открывает полный редактор."
+    },
+    {
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
+      "translation": "Включите глобальный ввод с клавиатуры ниже, а затем используйте этот ярлык для переключения SteamVR наложений между взаимодействием по клику и указателем контроллера. Используйте его еще раз, чтобы восстановить режим перехода по клику."
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -143501,6 +143801,10 @@
       "translation": "В настройках наложения майнинга включите уведомления о майнинге. У Firegroups есть собственное окно настроек наложения, которое открывается с помощью значка настроек рядом с Firegroups на боковой панели; размещение остается в категории «Статус и утилиты» редактора. Назначайте ярлыки и настраивайте их размещение в редакторе наложений."
     },
     {
+      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+      "translation": "В меню «Настройки» > «Глобальные наложения» назначьте «Переключить взаимодействие с наложением VR» непосредственно под ярлыком взаимодействия с Live-overlay. Глобальный ввод с клавиатуры также должен быть включен."
+    },
+    {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
       "translation": "В Rhino установите или очистите каждую установку в ее позиции развертывания. Это те же привязки, которые показаны в настройках ввода. Удерживайте комбинацию и отпустите, чтобы сохраниться; Побег отменяется; Backspace или Удалить очищаются."
     },
@@ -143731,6 +144035,10 @@
     {
       "source": "Inter",
       "translation": "Интер"
+    },
+    {
+      "source": "Interact with panels in the headset",
+      "translation": "Взаимодействуйте с панелями в гарнитуре"
     },
     {
       "source": "Internal update helper modes cannot be combined.",
@@ -147661,6 +147969,10 @@
       "translation": "Удалить можно только необработанные точки, относящиеся к командиру."
     },
     {
+      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+      "translation": "Могут быть активированы только элементы управления, уже отображенные в реальном наложении SrvSurvey. Калибровка VR по-прежнему использует наложения настройки и специальный ярлык."
+    },
+    {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
       "translation": "Загружаются только будущие действия в прямом эфире. История запуска, Legacy, альфа/бета, диагностический повтор, многопользовательская игра и сеансы с несколькими окнами Elite исключены. Необработанное содержимое журнала и ключи API никогда не записываются в обычные журналы или в постоянную очередь загрузки."
     },
@@ -148003,6 +148315,10 @@
     {
       "source": "OpenVR could not be probed: {0}",
       "translation": "Не удалось проверить OpenVR: {0}"
+    },
+    {
+      "source": "OpenVR could not change overlay interaction: {0}",
+      "translation": "OpenVR не удалось изменить взаимодействие наложения: {0}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -155445,8 +155761,8 @@
       "translation": "Оверлеи SteamVR"
     },
     {
-      "source": "SteamVR/OpenVR is active with {0} live overlays.",
-      "translation": "SteamVR/OpenVR активен с живыми наложениями {0}."
+      "source": "SteamVR/OpenVR is active with {0} live overlays.{1}",
+      "translation": "SteamVR/OpenVR активен с живыми наложениями {0}. {1}"
     },
     {
       "source": "SteamVR/OpenVR is not available",
@@ -155859,6 +156175,10 @@
     {
       "source": "Swap complete. Restart Elite Dangerous when ready. Original backup: {0}",
       "translation": "Обмен завершен. Перезапустите Elite Dangerous, когда будете готовы. Исходная резервная копия: {0}"
+    },
+    {
+      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Переключение SteamVR между пассивным переходом по клику и взаимодействием контроллера-указателя."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -157111,6 +157431,10 @@
     {
       "source": "The desktop link launcher is not available.",
       "translation": "Средство запуска ссылок на рабочий стол недоступно."
+    },
+    {
+      "source": "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+      "translation": "Ярлык взаимодействия с живым наложением на рабочем столе остается отдельным; он управляет перетаскиванием рабочего стола и не включает ввод VR."
     },
     {
       "source": "The desktop portal returned an unexpected request handle.",
@@ -158649,6 +158973,10 @@
       "translation": "Переключить информацию FSS"
     },
     {
+      "source": "Toggle VR overlay interaction",
+      "translation": "Переключить взаимодействие с наложением VR"
+    },
+    {
       "source": "Toggle body information",
       "translation": "Переключить информацию о теле"
     },
@@ -159321,6 +159649,10 @@
       "translation": "Несканированная система"
     },
     {
+      "source": "Unsupported VR pointer event.",
+      "translation": "Неподдерживаемое событие указателя VR."
+    },
+    {
       "source": "Unsupported installation result: {0}",
       "translation": "Неподдерживаемый результат установки: {0}."
     },
@@ -159769,6 +160101,10 @@
       "translation": "Используйте ярлык данных скриншота, чтобы включить или отключить баннеры для будущих изображений."
     },
     {
+      "source": "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+      "translation": "Когда закончите, снова используйте ярлык. SrvSurvey автоматически восстанавливает режим пассивного перехода по клику, когда наложения VR отключены или среда выполнения отключается."
+    },
+    {
       "source": "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
       "translation": "Используйте значок боковой панели в правом верхнем углу столбца навигации, чтобы свернуть его в узкую полоску и освободить текущее рабочее пространство. Этот же значок восстанавливает навигацию; выбранное вами рабочее пространство остается открытым, а окно сохраняет свой размер."
     },
@@ -159905,8 +160241,24 @@
       "translation": "Настройка наложения VR фиксирует и сбрасывает ориентацию с помощью специальных действий; о возможностях и статусе сообщается, когда среда выполнения недоступна."
     },
     {
+      "source": "VR overlay controller interaction disabled",
+      "translation": "Взаимодействие с контроллером наложения VR отключено"
+    },
+    {
+      "source": "VR overlay controller interaction enabled",
+      "translation": "Взаимодействие с контроллером наложения VR включено"
+    },
+    {
+      "source": "VR overlay controller interaction is enabled.",
+      "translation": "Взаимодействие с контроллером наложения VR включено."
+    },
+    {
       "source": "VR overlay projection is supported on Windows and Linux.",
       "translation": "Наложение VR-проекции поддерживается в Windows и Linux."
+    },
+    {
+      "source": "VR overlays are click-through again.",
+      "translation": "Оверлеи VR снова стали кликабельными."
     },
     {
       "source": "VR overlays are disabled.",
@@ -159915,6 +160267,10 @@
     {
       "source": "VR overlays are off",
       "translation": "Оверлеи VR отключены"
+    },
+    {
+      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+      "translation": "Наложения виртуальной реальности остаются пассивными до тех пор, пока вы явно не включите SteamVR взаимодействие контроллера и указателя."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -160727,6 +161083,10 @@
     {
       "source": "Wings",
       "translation": "Крылья"
+    },
+    {
+      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+      "translation": "При подключенных наложениях VR используйте этот ярлык один раз, чтобы позволить SteamVR отправлять щелчки лазерной указки контроллера и прокручивать панели SrvSurvey."
     },
     {
       "source": "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",
@@ -170867,6 +171227,10 @@
       "translation": "控制器 {0}"
     },
     {
+      "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
+      "translation": "控制器-指针交互已开启；再次使用其快捷方式恢复点击。"
+    },
+    {
       "source": "ControllerDeviceId",
       "translation": "控制器设备ID"
     },
@@ -172951,6 +173315,10 @@
       "translation": "启用 Wayland 屏幕捕获"
     },
     {
+      "source": "Enable and connect VR overlays before turning on controller interaction.",
+      "translation": "在打开控制器交互之前启用并连接 VR 叠加层。"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "启用殖民功能"
     },
@@ -172965,6 +173333,10 @@
     {
       "source": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
       "translation": "启用下面的全局键盘输入，然后使用此快捷方式使现有的实时覆盖可单击和可拖动。再次使用它可以保存位置并恢复点击模式；它永远不会打开完整的编辑器。"
+    },
+    {
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
+      "translation": "启用下面的全局键盘输入，然后使用此快捷方式在点击和控制器指针交互之间切换 SteamVR 覆盖。再次使用它可以恢复点击模式。"
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -176447,6 +176819,10 @@
       "translation": "在挖矿覆盖设置中，启用挖矿通知。 Firegroups 有自己的覆盖设置窗口，可通过侧边栏中 Firegroups 旁边的设置图标打开；位置仍保留在编辑器的“状态和实用程序”类别中。在叠加编辑器中分配快捷键并调整位置。"
     },
     {
+      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+      "translation": "在“设置”>“全局叠加”中，直接在“实时叠加交互”快捷方式下方分配“切换 VR 叠加交互”。还必须启用全局键盘输入。"
+    },
+    {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
       "translation": "在 Rhino 中，在其部署位置设置或清除每个装备。这些与输入设置中显示的绑定相同。按住组合键并松开即可保存；逃脱取消；退格键或删除会清除。"
     },
@@ -176677,6 +177053,10 @@
     {
       "source": "Inter",
       "translation": "国际米兰"
+    },
+    {
+      "source": "Interact with panels in the headset",
+      "translation": "与耳机中的面板交互"
     },
     {
       "source": "Internal update helper modes cannot be combined.",
@@ -180607,6 +180987,10 @@
       "translation": "只能删除指挥官特定的原始点。"
     },
     {
+      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+      "translation": "仅可激活实时 SrvSurvey 叠加层已显示的控件。 VR 校准仍然使用调整叠加及其专用快捷方式。"
+    },
+    {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
       "translation": "仅上传未来可归因的实时活动。排除启动历史记录、Legacy、alpha/beta、诊断重播、multicrew 以及具有多个 Elite 窗口的会话。原始日志内容和 API 密钥永远不会写入普通日志或持久上传队列。"
     },
@@ -180949,6 +181333,10 @@
     {
       "source": "OpenVR could not be probed: {0}",
       "translation": "无法探测 OpenVR：{0}"
+    },
+    {
+      "source": "OpenVR could not change overlay interaction: {0}",
+      "translation": "OpenVR 无法更改覆盖交互：{0}"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -188391,8 +188779,8 @@
       "translation": "SteamVR 叠加层"
     },
     {
-      "source": "SteamVR/OpenVR is active with {0} live overlays.",
-      "translation": "SteamVR/OpenVR 已启用 {0} 实时覆盖。"
+      "source": "SteamVR/OpenVR is active with {0} live overlays.{1}",
+      "translation": "SteamVR/OpenVR 与 {0} 实时叠加一起激活。{1}"
     },
     {
       "source": "SteamVR/OpenVR is not available",
@@ -188805,6 +189193,10 @@
     {
       "source": "Swap complete. Restart Elite Dangerous when ready. Original backup: {0}",
       "translation": "交换完成。准备好后重新启动 Elite Dangerous。原始备份：{0}"
+    },
+    {
+      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "开关 SteamVR 在被动点击和控制器指针交互之间叠加。"
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -190057,6 +190449,10 @@
     {
       "source": "The desktop link launcher is not available.",
       "translation": "桌面链接启动器不可用。"
+    },
+    {
+      "source": "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+      "translation": "桌面实时叠加交互快捷方式保持独立；它控制桌面拖动并且不启用 VR 输入。"
     },
     {
       "source": "The desktop portal returned an unexpected request handle.",
@@ -191595,6 +191991,10 @@
       "translation": "切换 FSS 信息"
     },
     {
+      "source": "Toggle VR overlay interaction",
+      "translation": "切换 VR 叠加交互"
+    },
+    {
       "source": "Toggle body information",
       "translation": "切换身体信息"
     },
@@ -192267,6 +192667,10 @@
       "translation": "未扫描系统"
     },
     {
+      "source": "Unsupported VR pointer event.",
+      "translation": "不支持 VR 指针事件。"
+    },
+    {
       "source": "Unsupported installation result: {0}",
       "translation": "不支持的安装结果：{0}"
     },
@@ -192715,6 +193119,10 @@
       "translation": "使用屏幕截图数据快捷方式启用或禁用未来图像的横幅。"
     },
     {
+      "source": "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+      "translation": "完成后再次使用快捷方式。 SrvSurvey 当 VR 覆盖被禁用或运行时断开连接时，自动恢复被动点击模式。"
+    },
+    {
       "source": "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
       "translation": "使用导航栏右上角的侧边栏图标将其折叠成窄条，并为当前工作区提供更多空间。相同的图标恢复导航；您选择的工作区保持打开状态，窗口保持其大小。"
     },
@@ -192851,8 +193259,24 @@
       "translation": "VR叠加调整通过专用动作捕捉和重置方向；当运行时不可用时，会报告功能和状态。"
     },
     {
+      "source": "VR overlay controller interaction disabled",
+      "translation": "VR 覆盖控制器交互已禁用"
+    },
+    {
+      "source": "VR overlay controller interaction enabled",
+      "translation": "启用 VR 叠加控制器交互"
+    },
+    {
+      "source": "VR overlay controller interaction is enabled.",
+      "translation": "VR 叠加控制器交互已启用。"
+    },
+    {
       "source": "VR overlay projection is supported on Windows and Linux.",
       "translation": "Windows 和 Linux 支持 VR 叠加投影。"
+    },
+    {
+      "source": "VR overlays are click-through again.",
+      "translation": "VR 叠加层再次可点击。"
     },
     {
       "source": "VR overlays are disabled.",
@@ -192861,6 +193285,10 @@
     {
       "source": "VR overlays are off",
       "translation": "VR 叠加已关闭"
+    },
+    {
+      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+      "translation": "VR 叠加层将保持被动状态，直到您明确启用 SteamVR 控制器指针交互。"
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -193673,6 +194101,10 @@
     {
       "source": "Wings",
       "translation": "翅膀"
+    },
+    {
+      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+      "translation": "连接 VR 叠加层后，使用该快捷方式一次即可让 SteamVR 发送控制器激光指针点击并滚动到 SrvSurvey 面板。"
     },
     {
       "source": "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",
@@ -203813,6 +204245,10 @@
       "translation": "* CONTROLLER {0} >>>!"
     },
     {
+      "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
+      "translation": "* CONTROLLER-POINTER INTERACTION IS ON; USE ITS SHORTCUT AGAIN TO RESTORE CLICK-THROUGH. >>>!"
+    },
+    {
       "source": "ControllerDeviceId",
       "translation": "* CONTROLLERDEVICEID >>>!"
     },
@@ -205897,6 +206333,10 @@
       "translation": "* ENABLE WAYLAND SCREEN CAPTURE >>>!"
     },
     {
+      "source": "Enable and connect VR overlays before turning on controller interaction.",
+      "translation": "* ENABLE AND CONNECT VR OVERLAYS BEFORE TURNING ON CONTROLLER INTERACTION. >>>!"
+    },
+    {
       "source": "Enable colonization features",
       "translation": "* ENABLE COLONIZATION FEATURES >>>!"
     },
@@ -205911,6 +206351,10 @@
     {
       "source": "Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor.",
       "translation": "* ENABLE GLOBAL KEYBOARD INPUT BELOW, THEN USE THIS SHORTCUT TO MAKE EXISTING LIVE OVERLAYS CLICKABLE AND DRAGGABLE. USE IT AGAIN TO SAVE POSITIONS AND RESTORE CLICK-THROUGH MODE; IT NEVER OPENS THE FULL EDITOR. >>>!"
+    },
+    {
+      "source": "Enable global keyboard input below, then use this shortcut to switch SteamVR overlays between click-through and controller-pointer interaction. Use it again to restore click-through mode.",
+      "translation": "* ENABLE GLOBAL KEYBOARD INPUT BELOW, THEN USE THIS SHORTCUT TO SWITCH STEAMVR OVERLAYS BETWEEN CLICK-THROUGH AND CONTROLLER-POINTER INTERACTION. USE IT AGAIN TO RESTORE CLICK-THROUGH MODE. >>>!"
     },
     {
       "source": "Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates.",
@@ -209393,6 +209837,10 @@
       "translation": "* IN MINING OVERLAY SETTINGS, ENABLE MINING NOTIFICATIONS. FIREGROUPS HAS ITS OWN OVERLAY SETTINGS WINDOW, OPENED WITH THE SETTINGS ICON BESIDE FIREGROUPS IN THE SIDEBAR; PLACEMENT REMAINS IN THE EDITOR’S STATUS & UTILITIES CATEGORY. ASSIGN SHORTCUTS AND ADJUST PLACEMENT IN THE OVERLAY EDITOR. >>>!"
     },
     {
+      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
+      "translation": "* IN SETTINGS > GLOBAL OVERLAYS, ASSIGN TOGGLE VR OVERLAY INTERACTION DIRECTLY BELOW THE LIVE-OVERLAY INTERACTION SHORTCUT. GLOBAL KEYBOARD INPUT MUST ALSO BE ENABLED. >>>!"
+    },
+    {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
       "translation": "* IN A RHINO, SET OR CLEAR EACH RIG AT ITS DEPLOYMENT POSITION. THESE ARE THE SAME BINDINGS SHOWN IN INPUT SETTINGS. HOLD A COMBINATION AND RELEASE TO SAVE; ESCAPE CANCELS; BACKSPACE OR DELETE CLEARS. >>>!"
     },
@@ -209623,6 +210071,10 @@
     {
       "source": "Inter",
       "translation": "* INTER >>>!"
+    },
+    {
+      "source": "Interact with panels in the headset",
+      "translation": "* INTERACT WITH PANELS IN THE HEADSET >>>!"
     },
     {
       "source": "Internal update helper modes cannot be combined.",
@@ -213553,6 +214005,10 @@
       "translation": "* ONLY COMMANDER-SPECIFIC RAW POINTS CAN BE REMOVED. >>>!"
     },
     {
+      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+      "translation": "* ONLY CONTROLS ALREADY SHOWN BY A LIVE SRVSURVEY OVERLAY CAN BE ACTIVATED. VR CALIBRATION STILL USES ADJUST OVERLAYS AND ITS DEDICATED SHORTCUT. >>>!"
+    },
+    {
       "source": "Only future attributable Live activity is uploaded. Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. Raw journal content and API keys are never written to normal logs or a durable upload queue.",
       "translation": "* ONLY FUTURE ATTRIBUTABLE LIVE ACTIVITY IS UPLOADED. STARTUP HISTORY, LEGACY, ALPHA/BETA, DIAGNOSTIC REPLAY, MULTICREW, AND SESSIONS WITH MULTIPLE ELITE WINDOWS ARE EXCLUDED. RAW JOURNAL CONTENT AND API KEYS ARE NEVER WRITTEN TO NORMAL LOGS OR A DURABLE UPLOAD QUEUE. >>>!"
     },
@@ -213895,6 +214351,10 @@
     {
       "source": "OpenVR could not be probed: {0}",
       "translation": "* OPENVR COULD NOT BE PROBED: {0} >>>!"
+    },
+    {
+      "source": "OpenVR could not change overlay interaction: {0}",
+      "translation": "* OPENVR COULD NOT CHANGE OVERLAY INTERACTION: {0} >>>!"
     },
     {
       "source": "OpenVR initialization failed: {0}.",
@@ -221337,8 +221797,8 @@
       "translation": "* STEAMVR OVERLAYS >>>!"
     },
     {
-      "source": "SteamVR/OpenVR is active with {0} live overlays.",
-      "translation": "* STEAMVR/OPENVR IS ACTIVE WITH {0} LIVE OVERLAYS. >>>!"
+      "source": "SteamVR/OpenVR is active with {0} live overlays.{1}",
+      "translation": "* STEAMVR/OPENVR IS ACTIVE WITH {0} LIVE OVERLAYS.{1} >>>!"
     },
     {
       "source": "SteamVR/OpenVR is not available",
@@ -221751,6 +222211,10 @@
     {
       "source": "Swap complete. Restart Elite Dangerous when ready. Original backup: {0}",
       "translation": "* SWAP COMPLETE. RESTART ELITE DANGEROUS WHEN READY. ORIGINAL BACKUP: {0} >>>!"
+    },
+    {
+      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "* SWITCH STEAMVR OVERLAYS BETWEEN PASSIVE CLICK-THROUGH AND CONTROLLER-POINTER INTERACTION. >>>!"
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -223003,6 +223467,10 @@
     {
       "source": "The desktop link launcher is not available.",
       "translation": "* THE DESKTOP LINK LAUNCHER IS NOT AVAILABLE. >>>!"
+    },
+    {
+      "source": "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
+      "translation": "* THE DESKTOP LIVE-OVERLAY INTERACTION SHORTCUT REMAINS SEPARATE; IT CONTROLS DESKTOP DRAGGING AND DOES NOT ENABLE VR INPUT. >>>!"
     },
     {
       "source": "The desktop portal returned an unexpected request handle.",
@@ -224541,6 +225009,10 @@
       "translation": "* TOGGLE FSS INFORMATION >>>!"
     },
     {
+      "source": "Toggle VR overlay interaction",
+      "translation": "* TOGGLE VR OVERLAY INTERACTION >>>!"
+    },
+    {
       "source": "Toggle body information",
       "translation": "* TOGGLE BODY INFORMATION >>>!"
     },
@@ -225213,6 +225685,10 @@
       "translation": "* UNSCANNED SYSTEM >>>!"
     },
     {
+      "source": "Unsupported VR pointer event.",
+      "translation": "* UNSUPPORTED VR POINTER EVENT. >>>!"
+    },
+    {
       "source": "Unsupported installation result: {0}",
       "translation": "* UNSUPPORTED INSTALLATION RESULT: {0} >>>!"
     },
@@ -225661,6 +226137,10 @@
       "translation": "* USE THE SCREENSHOT-DATA SHORTCUT TO ENABLE OR DISABLE BANNERS FOR FUTURE IMAGES. >>>!"
     },
     {
+      "source": "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
+      "translation": "* USE THE SHORTCUT AGAIN WHEN FINISHED. SRVSURVEY RESTORES PASSIVE CLICK-THROUGH MODE AUTOMATICALLY WHEN VR OVERLAYS ARE DISABLED OR THE RUNTIME DISCONNECTS. >>>!"
+    },
+    {
       "source": "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
       "translation": "* USE THE SIDEBAR ICON AT THE TOP-RIGHT OF THE NAVIGATION COLUMN TO COLLAPSE IT INTO A NARROW STRIP AND GIVE THE CURRENT WORKSPACE MORE ROOM. THE SAME ICON RESTORES NAVIGATION; YOUR SELECTED WORKSPACE STAYS OPEN AND THE WINDOW KEEPS ITS SIZE. >>>!"
     },
@@ -225797,8 +226277,24 @@
       "translation": "* VR OVERLAY ADJUSTMENT CAPTURES AND RESETS ORIENTATION THROUGH DEDICATED ACTIONS; CAPABILITY AND STATUS ARE REPORTED WHEN THE RUNTIME IS UNAVAILABLE. >>>!"
     },
     {
+      "source": "VR overlay controller interaction disabled",
+      "translation": "* VR OVERLAY CONTROLLER INTERACTION DISABLED >>>!"
+    },
+    {
+      "source": "VR overlay controller interaction enabled",
+      "translation": "* VR OVERLAY CONTROLLER INTERACTION ENABLED >>>!"
+    },
+    {
+      "source": "VR overlay controller interaction is enabled.",
+      "translation": "* VR OVERLAY CONTROLLER INTERACTION IS ENABLED. >>>!"
+    },
+    {
       "source": "VR overlay projection is supported on Windows and Linux.",
       "translation": "* VR OVERLAY PROJECTION IS SUPPORTED ON WINDOWS AND LINUX. >>>!"
+    },
+    {
+      "source": "VR overlays are click-through again.",
+      "translation": "* VR OVERLAYS ARE CLICK-THROUGH AGAIN. >>>!"
     },
     {
       "source": "VR overlays are disabled.",
@@ -225807,6 +226303,10 @@
     {
       "source": "VR overlays are off",
       "translation": "* VR OVERLAYS ARE OFF >>>!"
+    },
+    {
+      "source": "VR overlays stay passive until you explicitly enable SteamVR controller-pointer interaction.",
+      "translation": "* VR OVERLAYS STAY PASSIVE UNTIL YOU EXPLICITLY ENABLE STEAMVR CONTROLLER-POINTER INTERACTION. >>>!"
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -226619,6 +227119,10 @@
     {
       "source": "Wings",
       "translation": "* WINGS >>>!"
+    },
+    {
+      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+      "translation": "* WITH VR OVERLAYS CONNECTED, USE THAT SHORTCUT ONCE TO LET STEAMVR SEND CONTROLLER LASER-POINTER CLICKS AND SCROLLING TO SRVSURVEY PANELS. >>>!"
     },
     {
       "source": "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",

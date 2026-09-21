@@ -24,6 +24,10 @@ public sealed class VrOverlaySettingsMarkupTests
         Assert.Contains("VrOverlay.PlatformProfiles", markup, StringComparison.Ordinal);
         Assert.Contains("VrOverlay.ConnectionStateLabel", markup, StringComparison.Ordinal);
         Assert.Contains("VrOverlay.IsCustomRuntime", markup, StringComparison.Ordinal);
+        int desktopInteraction = markup.IndexOf("Live-overlay interaction shortcut", StringComparison.Ordinal);
+        int vrInteraction = markup.IndexOf("Toggle VR overlay interaction", StringComparison.Ordinal);
+        Assert.True(vrInteraction > desktopInteraction);
+        Assert.Contains("VrOverlayInteractionBinding.Chord", markup, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()

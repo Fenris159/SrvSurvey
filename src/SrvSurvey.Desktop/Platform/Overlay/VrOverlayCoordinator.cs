@@ -14,6 +14,8 @@ public sealed class VrOverlayCoordinator : IDisposable
     private readonly Func<string, bool> processDetector;
     private readonly Func<string?> modeProvider;
     private readonly OverlayDispatcherTimer timer;
+    private readonly OverlayDispatcherTimer interactionTimer;
+    private VrOverlayInputRouter? inputRouter;
     private readonly HashSet<string> published = new(StringComparer.Ordinal);
     private bool disposed;
 
@@ -22,7 +24,8 @@ public sealed class VrOverlayCoordinator : IDisposable
         OverlayWindowRegistry? registry = null,
         IOpenVrRuntime? runtime = null,
         Func<string, bool>? processDetector = null,
-        Func<string?>? modeProvider = null
+        Func<string?>? modeProvider = null,
+        VrOverlayInputRouter? inputRouter = null
     )
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
@@ -30,6 +33,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         this.runtime = runtime ?? new OpenVrRuntime();
         this.processDetector = processDetector ?? IsProcessRunning;
         this.modeProvider = modeProvider ?? (() => null);
+        this.inputRouter = inputRouter;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         viewModel.CalibrationChanged += OnCalibrationChanged;
         viewModel.ConnectionCheckRequested += OnConnectionCheckRequested;
@@ -37,7 +41,42 @@ public sealed class VrOverlayCoordinator : IDisposable
         timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
+        interactionTimer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+        interactionTimer.Tick += OnInteractionTimerTick;
         Synchronize();
+    }
+
+    public bool IsInteractionEnabled { get; private set; }
+
+    public bool ToggleInteraction()
+    {
+        if (disposed || !viewModel.Enabled || !runtime.IsInitialized)
+        {
+            viewModel.SetRuntimeStatus("Enable and connect VR overlays before turning on controller interaction.");
+            return false;
+        }
+
+        bool enabled = !IsInteractionEnabled;
+        VrRuntimeResult result = runtime.SetInteractionEnabled(enabled);
+        viewModel.SetRuntimeStatus(result.Message);
+        if (!result.Succeeded)
+        {
+            return false;
+        }
+
+        IsInteractionEnabled = enabled;
+        if (enabled)
+        {
+            inputRouter ??= new VrOverlayInputRouter();
+            interactionTimer.Start();
+        }
+        else
+        {
+            interactionTimer.Stop();
+            inputRouter?.Reset();
+        }
+
+        return true;
     }
 
     public bool ResetOrientation()
@@ -63,6 +102,8 @@ public sealed class VrOverlayCoordinator : IDisposable
         disposed = true;
         timer.Stop();
         timer.Tick -= OnTimerTick;
+        interactionTimer.Stop();
+        interactionTimer.Tick -= OnInteractionTimerTick;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         viewModel.CalibrationChanged -= OnCalibrationChanged;
         viewModel.ConnectionCheckRequested -= OnConnectionCheckRequested;
@@ -73,6 +114,31 @@ public sealed class VrOverlayCoordinator : IDisposable
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
         Synchronize();
+    }
+
+    private void OnInteractionTimerTick(object? sender, EventArgs eventArgs)
+    {
+        PollInteractionEvents();
+    }
+
+    internal void PollInteractionEvents()
+    {
+        if (disposed || !IsInteractionEnabled)
+        {
+            return;
+        }
+
+        var registrations = registry
+            .Snapshot()
+            .Where(registration => registration.IsVisible)
+            .ToDictionary(registration => registration.PlotterName, StringComparer.Ordinal);
+        foreach (VrOverlayPointerEvent pointerEvent in runtime.PollPointerEvents())
+        {
+            if (registrations.TryGetValue(pointerEvent.PlotterName, out RegisteredOverlayWindow? registration))
+            {
+                inputRouter?.Dispatch(registration, pointerEvent);
+            }
+        }
     }
 
     private void OnRegistryChanged(object? sender, EventArgs eventArgs)
@@ -128,10 +194,13 @@ public sealed class VrOverlayCoordinator : IDisposable
         published.UnionWith(active);
         if (lastError is null)
         {
+            string interactionStatus = IsInteractionEnabled
+                ? " Controller-pointer interaction is on; use its shortcut again to restore click-through."
+                : string.Empty;
             viewModel.SetConnectionStatus(
                 VrOverlayConnectionState.Ready,
                 $"Connected through {viewModel.SelectedPlatformProfile.DisplayName}",
-                $"SteamVR/OpenVR is active with {active.Count:N0} live overlays."
+                $"SteamVR/OpenVR is active with {active.Count:N0} live overlays.{interactionStatus}"
             );
         }
         else
@@ -174,7 +243,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         if (!viewModel.Enabled)
         {
             published.Clear();
-            runtime.Shutdown();
+            ShutdownRuntime();
             viewModel.SetConnectionStatus(
                 VrOverlayConnectionState.Disabled,
                 "VR overlays are off",
@@ -186,7 +255,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         if (viewModel.IsCustomRuntime && !processDetector(viewModel.RuntimeProcessName))
         {
             published.Clear();
-            runtime.Shutdown();
+            ShutdownRuntime();
             viewModel.SetConnectionStatus(
                 VrOverlayConnectionState.WaitingForRuntime,
                 $"Waiting for {viewModel.SelectedPlatformProfile.DisplayName}",
@@ -199,7 +268,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         if (!probe.RuntimeAvailable)
         {
             published.Clear();
-            runtime.Shutdown();
+            ShutdownRuntime();
             viewModel.SetConnectionStatus(
                 VrOverlayConnectionState.WaitingForRuntime,
                 "SteamVR/OpenVR is not available",
@@ -211,7 +280,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         if (!probe.HeadsetPresent)
         {
             published.Clear();
-            runtime.Shutdown();
+            ShutdownRuntime();
             viewModel.SetConnectionStatus(
                 VrOverlayConnectionState.WaitingForRuntime,
                 "Connect or wake the headset",
@@ -240,6 +309,14 @@ public sealed class VrOverlayCoordinator : IDisposable
         }
 
         return true;
+    }
+
+    private void ShutdownRuntime()
+    {
+        IsInteractionEnabled = false;
+        interactionTimer.Stop();
+        inputRouter?.Reset();
+        runtime.Shutdown();
     }
 
     private bool TryPublishRegistration(RegisteredOverlayWindow registration, HashSet<string> active, out string? error)

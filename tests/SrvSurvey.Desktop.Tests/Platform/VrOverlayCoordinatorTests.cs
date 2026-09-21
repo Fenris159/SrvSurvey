@@ -110,6 +110,33 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         Assert.Equal(2, runtime.ShutdownCount);
     }
 
+    [Fact]
+    public void VrInteractionTogglesOpenVrInputAndReturnsToClickThroughWhenDisabled()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var runtime = new StubOpenVrRuntime();
+        using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => true);
+
+        Assert.True(coordinator.ToggleInteraction());
+        Assert.True(coordinator.IsInteractionEnabled);
+        Assert.True(runtime.InteractionEnabled);
+        Assert.Contains("interaction is enabled", viewModel.StatusMessage);
+
+        Assert.True(coordinator.ToggleInteraction());
+        Assert.False(coordinator.IsInteractionEnabled);
+        Assert.False(runtime.InteractionEnabled);
+        Assert.Equal(2, runtime.InteractionChangeCount);
+        Assert.Contains("click-through", viewModel.StatusMessage);
+
+        Assert.True(coordinator.ToggleInteraction());
+        viewModel.Enabled = false;
+
+        Assert.False(coordinator.IsInteractionEnabled);
+        Assert.False(coordinator.ToggleInteraction());
+        Assert.Contains("Enable and connect", viewModel.StatusMessage);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -145,6 +172,12 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public int ShutdownCount { get; private set; }
 
+        public int InteractionChangeCount { get; private set; }
+
+        public bool InteractionEnabled { get; private set; }
+
+        public Queue<VrOverlayPointerEvent> PointerEvents { get; } = new();
+
         public VrRuntimeProbe ProbeResult { get; init; } = VrRuntimeProbe.Ready();
 
         public VrRuntimeProbe Probe()
@@ -170,6 +203,26 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         }
 
         public void RemoveOverlay(string plotterName) { }
+
+        public VrRuntimeResult SetInteractionEnabled(bool enabled)
+        {
+            InteractionChangeCount++;
+            InteractionEnabled = enabled;
+            return VrRuntimeResult.Success(
+                enabled ? "VR overlay controller interaction is enabled." : "VR overlays are click-through again."
+            );
+        }
+
+        public IReadOnlyList<VrOverlayPointerEvent> PollPointerEvents()
+        {
+            var events = new List<VrOverlayPointerEvent>();
+            while (PointerEvents.TryDequeue(out VrOverlayPointerEvent? pointerEvent))
+            {
+                events.Add(pointerEvent);
+            }
+
+            return events;
+        }
 
         public VrRuntimeResult ResetOrientation()
         {

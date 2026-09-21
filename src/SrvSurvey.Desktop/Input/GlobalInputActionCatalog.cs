@@ -69,6 +69,7 @@ public enum GlobalInputAction
     ToggleMiningFiregroupsVisibility,
     ToggleMineMapVisibility,
     ToggleSurfaceMiningSurveyVisibility,
+    ToggleVrOverlayInteraction,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -97,6 +98,13 @@ public static class GlobalInputActionCatalog
             "Toggle live overlay interaction",
             "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
             "ALT SHIFT O"
+        ),
+        Define(
+            GlobalInputAction.ToggleVrOverlayInteraction,
+            "toggleVrOverlayInteraction",
+            "Toggle VR overlay interaction",
+            "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+            string.Empty
         ),
         Define(GlobalInputAction.MapZoomIn, "mapZoomIn", "Map zoom in", "Increase the active map scale.", "CTRL +"),
         Define(GlobalInputAction.MapZoomOut, "mapZoomOut", "Map zoom out", "Decrease the active map scale.", "CTRL -"),

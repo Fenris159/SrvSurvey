@@ -1,10 +1,28 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
 using SkiaSharp;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Tests.Infrastructure;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class VrOverlayFrameRendererTests
 {
+    [AvaloniaFact]
+    public void RenderPreservesLogicalPointerDimensions()
+    {
+        var visual = new Border { Width = 25, Height = 10 };
+
+        VrOverlayFrame frame = VrOverlayFrameRenderer.Render(visual, new Size(25, 10), scaling: 2);
+
+        Assert.Equal(50, frame.Width);
+        Assert.Equal(20, frame.Height);
+        Assert.Equal(25, frame.PointerWidth);
+        Assert.Equal(10, frame.PointerHeight);
+    }
+
     [Fact]
     public void PngIsDecodedToExactUnpremultipliedRgbaBytes()
     {
