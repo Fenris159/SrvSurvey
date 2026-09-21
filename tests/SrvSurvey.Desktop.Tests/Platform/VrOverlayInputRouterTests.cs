@@ -32,7 +32,7 @@ public sealed class VrOverlayInputRouterTests
         {
             window.Show();
             var registration = new RegisteredOverlayWindow(window, "PlotJumpInfo", button, IsVisible: true);
-            var router = new VrOverlayInputRouter();
+            using var router = new VrOverlayInputRouter();
 
             router.Dispatch(
                 registration,
@@ -72,7 +72,7 @@ public sealed class VrOverlayInputRouterTests
         {
             window.Show();
             var registration = new RegisteredOverlayWindow(window, "PlotJumpInfo", panel, IsVisible: true);
-            var router = new VrOverlayInputRouter();
+            using var router = new VrOverlayInputRouter();
 
             router.Dispatch(
                 registration,
@@ -123,7 +123,8 @@ public sealed class VrOverlayInputRouterTests
             window.Show();
             var registration = new RegisteredOverlayWindow(window, "PlotJumpInfo", panel, IsVisible: true);
 
-            new VrOverlayInputRouter().Dispatch(registration, new VrOverlayPointerEvent("PlotJumpInfo", kind, 20, 20));
+            using var router = new VrOverlayInputRouter();
+            router.Dispatch(registration, new VrOverlayPointerEvent("PlotJumpInfo", kind, 20, 20));
 
             Assert.Equal(expected, observed);
         }

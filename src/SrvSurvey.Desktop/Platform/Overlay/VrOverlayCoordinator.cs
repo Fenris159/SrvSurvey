@@ -108,6 +108,8 @@ public sealed class VrOverlayCoordinator : IDisposable
         viewModel.CalibrationChanged -= OnCalibrationChanged;
         viewModel.ConnectionCheckRequested -= OnConnectionCheckRequested;
         registry.Changed -= OnRegistryChanged;
+        inputRouter?.Dispose();
+        inputRouter = null;
         runtime.Dispose();
     }
 

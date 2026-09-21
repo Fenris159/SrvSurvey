@@ -3,7 +3,7 @@ using Avalonia.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-public sealed class VrOverlayInputRouter
+public sealed class VrOverlayInputRouter : IDisposable
 {
     private readonly Pointer pointer = new(1, PointerType.Mouse, true);
     private readonly Dictionary<string, RawInputModifiers> modifiers = new(StringComparer.Ordinal);
@@ -106,6 +106,12 @@ public sealed class VrOverlayInputRouter
     {
         modifiers.Clear();
         pointer.Capture(null);
+    }
+
+    public void Dispose()
+    {
+        Reset();
+        pointer.Dispose();
     }
 
     private static (PointerUpdateKind UpdateKind, RawInputModifiers Button, MouseButton? ReleasedButton) Map(
