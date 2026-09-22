@@ -69,7 +69,7 @@ public sealed record MiningSystemQuery(
     string PowerState = "",
     long MinimumPopulation = 0,
     int Page = 0,
-    bool OpenAcquisition = false
+    string Objective = ""
 );
 
 public sealed record MiningSystemResult(
@@ -422,7 +422,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
     )
     {
         Dictionary<string, object> filters = DistanceFilter(query.Radius);
-        string indexedPowerState = IndexedPowerState(query);
+        PowerplaySpanshQuery spansh = PowerplayPlan.SpanshFilter(query.Objective, query.PowerState);
         foreach (
             (string? name, string? value, bool array) in new[]
             {
@@ -432,7 +432,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
                 ("primary_economy", query.Economy, false),
                 ("controlling_minor_faction_state", query.State, true),
                 ("controlling_power", query.Power, true),
-                ("power_state", indexedPowerState, true),
+                ("power_state", spansh.IndexedState, true),
             }
         )
         {
@@ -455,25 +455,15 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             cancellationToken
         );
         IEnumerable<MiningSystemResult> systems = Results(response).Select(ReadSystem);
-        if (NarrowsAcquisitionState(query))
+        if (spansh.RequiredState.Length > 0)
         {
             systems = systems.Where(system =>
-                system.PowerState.Equals(query.PowerState, StringComparison.OrdinalIgnoreCase)
+                system.PowerState.Equals(spansh.RequiredState, StringComparison.OrdinalIgnoreCase)
             );
         }
 
         return systems.ToArray();
     }
-
-    private static string IndexedPowerState(MiningSystemQuery query) =>
-        query.OpenAcquisition || NarrowsAcquisitionState(query) ? PowerplayStanding.Unoccupied : query.PowerState;
-
-    private static bool NarrowsAcquisitionState(MiningSystemQuery query) =>
-        !query.OpenAcquisition
-        && query.PowerState
-            is PowerplayStanding.Unoccupied
-                or PowerplayStanding.Expansion
-                or PowerplayStanding.Contested;
 
     private static MiningSystemResult ReadSystem(JsonElement system)
     {
@@ -496,7 +486,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             MiningJson.Text(system, "primary_economy"),
             MiningJson.Text(system, "controlling_minor_faction_state"),
             controllingPower,
-            PowerplayStanding.Infer(controllingPower, reportedState, progress),
+            PowerplayPlan.Infer(controllingPower, reportedState, progress),
             (long)MiningJson.Number(system, "population"),
             Coordinates(system)
         );

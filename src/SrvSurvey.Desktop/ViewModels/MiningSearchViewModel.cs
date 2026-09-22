@@ -973,11 +973,10 @@ public sealed class MiningSearchViewModel(
         foreach (MiningSystemResult supporter in supporters)
         {
             token.ThrowIfCancellationRequested();
-            double reach = Same(supporter.PowerState, "Stronghold") ? 30 : 20;
             IReadOnlyList<MiningSystemResult> bubble = await client.FindSystemsAsync(
                 new MiningSystemQuery(
                     supporter.System,
-                    reach,
+                    PowerplayPlan.AcquisitionReachLy(supporter.PowerState),
                     Security.Trim(),
                     Allegiance.Trim(),
                     Government.Trim(),
@@ -987,11 +986,15 @@ public sealed class MiningSearchViewModel(
                     "",
                     MinimumPopulation,
                     0,
-                    OpenAcquisition: true
+                    PowerplayPlan.Acquire
                 ),
                 token
             );
-            foreach (MiningSystemResult candidate in bubble.Where(KeepAcquisitionCandidate))
+            foreach (
+                MiningSystemResult candidate in bubble.Where(candidate =>
+                    PowerplayPlan.IsAcquisitionTarget(candidate, PowerState)
+                )
+            )
             {
                 found.TryAdd(candidate.System, candidate);
             }
@@ -1006,14 +1009,9 @@ public sealed class MiningSearchViewModel(
         await PublishMeritRowsAsync(token);
         Status =
             MeritRows.Count
-            + " acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. "
+            + $" acquisition systems within {PowerplayPlan.FortifiedReachLy:0} ly of a Fortified system or {PowerplayPlan.StrongholdReachLy:0} ly of a Stronghold, best sell price first. "
             + Status;
     }
-
-    private bool KeepAcquisitionCandidate(MiningSystemResult candidate) =>
-        candidate.Power.Length == 0
-        && PowerplayStanding.IsAcquisitionState(candidate.PowerState)
-        && (IsAny(PowerState) || Same(candidate.PowerState, PowerState));
 
     private async Task<IReadOnlyList<MiningSystemResult>> CollectPowerSystemsAsync(
         string state,
@@ -1052,7 +1050,6 @@ public sealed class MiningSearchViewModel(
                 return;
             }
 
-            bool openAcquisition = Objective == AcquireObjective && IsAny(PowerState);
             var query = new MiningSystemQuery(
                 Reference,
                 Radius,
@@ -1065,19 +1062,18 @@ public sealed class MiningSearchViewModel(
                 PowerState.Trim(),
                 MinimumPopulation,
                 Page,
-                openAcquisition
+                Objective
             );
             IReadOnlyList<MiningSystemResult> online = await client.FindSystemsAsync(query, token);
-            string source =
-                openAcquisition || PowerState is ExpansionState or "Contested" or "Unoccupied"
-                    ? "Spansh conflict progress + local Powerplay observations"
-                    : "Spansh + local Powerplay observations";
+            string source = PowerplayPlan.UsesLiveConflict(Objective, PowerState)
+                ? "Spansh conflict progress + local Powerplay observations"
+                : "Spansh + local Powerplay observations";
 
             IReadOnlyList<MiningSystemResult> local = community?.FindSystems(query, DateTimeOffset.UtcNow) ?? [];
             MiningSystemResult[] result = local
                 .Concat(online)
                 .DistinctBy(s => s.System, StringComparer.OrdinalIgnoreCase)
-                .Where(MatchesObjective)
+                .Where(system => PowerplayPlan.Matches(Objective, system, PledgedPower, OpposingPower))
                 .OrderBy(s => s.Distance ?? double.MaxValue)
                 .Take(ResultLimit)
                 .ToArray();
@@ -1239,27 +1235,6 @@ public sealed class MiningSearchViewModel(
         Destination = 1;
         await SearchMarketsAsync();
     }
-
-    private bool MatchesObjective(MiningSystemResult system) =>
-        Objective switch
-        {
-            ReinforceObjective => !Same(system.PowerState, ExpansionState)
-                && (
-                    PledgedPower == NoPower
-                        ? system.Power.Length == 0
-                        : system.Power.Length > 0 && (IsAny(PledgedPower) || Same(system.Power, PledgedPower))
-                ),
-            UndermineObjective => !Same(system.PowerState, ExpansionState)
-                && (
-                    OpposingPower == NoPower
-                        ? system.Power.Length == 0
-                        : system.Power.Length > 0
-                            && (IsAny(OpposingPower) || Same(system.Power, OpposingPower))
-                            && (IsAny(PledgedPower) || !Same(system.Power, PledgedPower))
-                ),
-            AcquireObjective => PowerplayStanding.IsAcquisitionState(system.PowerState),
-            _ => true,
-        };
 
     public string PowerplaySummary =>
         $"{Objective} · {(IsAny(PledgedPower) ? "Any Power" : PledgedPower)} · {Mineral} · {RingType} · {Reserve} reserve · within {Radius:0} ly";

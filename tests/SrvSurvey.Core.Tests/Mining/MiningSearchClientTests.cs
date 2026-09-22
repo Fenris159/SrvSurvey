@@ -246,7 +246,7 @@ public sealed class MiningSearchClientTests
         Assert.Equal("Contested", alrai.PowerState);
 
         IReadOnlyList<MiningSystemResult> open = await new MiningSearchClient(http).FindSystemsAsync(
-            new("Sol", 80, OpenAcquisition: true)
+            new("Sol", 80, Objective: PowerplayPlan.Acquire)
         );
         Assert.Equal(4, open.Count);
         Assert.Contains(open, system => system.System == "Quiet" && system.PowerState == "Expansion");
