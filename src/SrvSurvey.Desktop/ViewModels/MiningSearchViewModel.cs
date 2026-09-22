@@ -1009,7 +1009,7 @@ public sealed class MiningSearchViewModel(
         await PublishMeritRowsAsync(token);
         Status =
             MeritRows.Count
-            + $" acquisition systems within {PowerplayPlan.FortifiedReachLy:0} ly of a Fortified system or {PowerplayPlan.StrongholdReachLy:0} ly of a Stronghold, best sell price first. "
+            + " acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. "
             + Status;
     }
 
