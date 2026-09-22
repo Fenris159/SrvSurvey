@@ -6,6 +6,28 @@ using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Search;
 
+public sealed record MiningPlanetaryQuery(
+    string ReferenceSystem,
+    IReadOnlyList<string> BodySubtypes,
+    IReadOnlyList<string> LandmarkSubtypes,
+    string Reserve = "",
+    double Radius = 100,
+    IReadOnlyList<string>? ControllingPowers = null,
+    string PowerState = ""
+);
+
+public sealed record MiningPlanetaryBody(
+    string System,
+    string Body,
+    string Subtype,
+    string Reserve,
+    double Gravity,
+    double ArrivalLs,
+    double? DistanceLy = null,
+    string Power = "",
+    string PowerState = ""
+);
+
 public sealed record MiningRingQuery(
     string ReferenceSystem,
     string Mineral,
@@ -176,6 +198,76 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             }
         }
         return output;
+    }
+
+    public async Task<IReadOnlyList<MiningPlanetaryBody>> FindPlanetaryBodiesAsync(
+        MiningPlanetaryQuery query,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (query.BodySubtypes.Count == 0)
+        {
+            return [];
+        }
+
+        Dictionary<string, object> filters = DistanceFilter(query.Radius);
+        filters["is_landable"] = new { value = true };
+        filters["subtype"] = new { value = query.BodySubtypes.ToArray() };
+        if (query.ControllingPowers is { Count: > 0 })
+        {
+            filters["system_controlling_power"] = new { value = query.ControllingPowers.ToArray() };
+        }
+
+        if (query.PowerState.Length > 0)
+        {
+            filters["system_power_state"] = new { value = new[] { query.PowerState } };
+        }
+        if (query.LandmarkSubtypes.Count > 0)
+        {
+            filters["landmarks"] = new[]
+            {
+                new
+                {
+                    comparison = "<=>",
+                    subtype = query.LandmarkSubtypes.ToArray(),
+                    count = new[] { 1, 999 },
+                },
+            };
+        }
+
+        if (query.Reserve.Length > 0)
+        {
+            filters["reserve_level"] = new { value = new[] { query.Reserve } };
+        }
+
+        using JsonDocument response = await SearchAsync("bodies", query.ReferenceSystem, filters, 0, cancellationToken);
+        return Results(response)
+            .Select(ReadPlanetaryBody)
+            .Where(body => body is not null)
+            .Cast<MiningPlanetaryBody>()
+            .ToArray();
+    }
+
+    private static MiningPlanetaryBody? ReadPlanetaryBody(JsonElement body)
+    {
+        string name = MiningJson.Text(body, "name");
+        string system = MiningJson.Text(body, SystemNameField);
+        if (name.Length == 0 || system.Length == 0)
+        {
+            return null;
+        }
+
+        return new MiningPlanetaryBody(
+            system,
+            name,
+            MiningJson.Text(body, "subtype"),
+            MiningJson.Text(body, "reserve_level"),
+            Number(body, "gravity") ?? 0,
+            Number(body, "distance_to_arrival") ?? 0,
+            Number(body, DistanceField),
+            MiningJson.Text(body, "system_controlling_power"),
+            MiningJson.Text(body, "system_power_state")
+        );
     }
 
     private static bool MatchesRingType(string requested, string actual) =>

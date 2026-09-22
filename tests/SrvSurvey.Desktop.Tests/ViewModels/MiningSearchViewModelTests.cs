@@ -8,6 +8,33 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MiningSearchViewModelTests
 {
     [Fact]
+    public void PlanetaryMiningIsExclusiveAndSwitchesToSurfaceHuntMaterials()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        );
+
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+
+        Assert.Equal(PlanetaryMiningPlan.MiningType, Assert.Single(model.MiningTypeChips.Selected));
+        Assert.False(model.UsesRingFilters);
+        Assert.Contains("Diamond", PlanetaryMiningPlan.Materials);
+        model.MineralChips.Add("Diamond");
+        Assert.Contains("Diamond", model.MineralChips.Selected);
+        model.MineralChips.Add("Void Opal");
+        Assert.DoesNotContain("Void Opal", model.MineralChips.Selected);
+
+        model.MiningTypeChips.Add("Core");
+        Assert.Equal("Core", Assert.Single(model.MiningTypeChips.Selected));
+        Assert.True(model.UsesRingFilters);
+        Assert.DoesNotContain("Diamond", model.MineralChips.Selected);
+    }
+
+    [Fact]
     public void EachSearchTableRetainsIndependentSortState()
     {
         using var model = new MiningSearchViewModel(

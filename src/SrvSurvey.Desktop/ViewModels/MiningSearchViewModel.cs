@@ -444,7 +444,7 @@ public sealed class MiningSearchViewModel(
     public static IReadOnlyList<string> Reserves { get; } =
     ["All", "Pristine", "Major", "Common", "Low", "Depleted", "Unknown"];
     public static IReadOnlyList<string> MiningTypes { get; } =
-    ["All", "Core", "Laser Surface", "Surface Deposit", "Sub Surface Deposit"];
+    ["All", "Core", "Laser Surface", "Surface Deposit", "Sub Surface Deposit", PlanetaryMiningPlan.MiningType];
     public static IReadOnlyList<string> PadSizes { get; } = ["Any", "S", "M", "L"];
     public static IReadOnlyList<string> MarketAgeUnits { get; } = ["Hours", "Days", "Months", "Years"];
     public static IReadOnlyList<string> FactionStates { get; } =
@@ -480,7 +480,32 @@ public sealed class MiningSearchViewModel(
             new[] { AnyPower }.Concat(MiningReferenceData.Commodities.GetValueOrDefault("Mining") ?? []).ToArray(),
             PlatinumMineral
         );
-    public MiningChipBoxViewModel MiningTypeChips { get; } = new("Mining type", MiningTypes, "All");
+    private readonly MiningChipBoxViewModel miningTypeChips = new(
+        "Mining type",
+        MiningTypes,
+        "All",
+        ["All", PlanetaryMiningPlan.MiningType]
+    );
+    private bool miningTypeHooked;
+    public MiningChipBoxViewModel MiningTypeChips
+    {
+        get
+        {
+            if (!miningTypeHooked)
+            {
+                miningTypeHooked = true;
+                miningTypeChips.Selected.CollectionChanged += (_, _) => SyncMineralCatalogue();
+            }
+
+            return miningTypeChips;
+        }
+    }
+    public bool UsesRingFilters => !IsPlanetaryMining;
+    public bool IsPlanetaryMining =>
+        MiningTypeChips.Selected.Any(item =>
+            item.Equals(PlanetaryMiningPlan.MiningType, StringComparison.OrdinalIgnoreCase)
+        );
+    private bool showingSurfaceMaterials;
     public MiningChipBoxViewModel StateChips { get; } = new("System state", FactionStates, "Any");
     private IReadOnlyList<MeritSystemRowViewModel> meritRows = [];
     public IReadOnlyList<MeritSystemRowViewModel> MeritRows
@@ -1044,6 +1069,12 @@ public sealed class MiningSearchViewModel(
                 UndermineObjective when IsChosenPower(OpposingPower) => OpposingPower,
                 _ => "",
             };
+            if (IsPlanetaryMining)
+            {
+                await PublishPlanetaryRowsAsync(token);
+                return;
+            }
+
             if (Objective == AcquireObjective && IsChosenPower(PledgedPower))
             {
                 await SearchAcquisitionTargetsAsync(token);
@@ -1093,6 +1124,12 @@ public sealed class MiningSearchViewModel(
         }
 
         string commodity = MineralChips.Selected.FirstOrDefault(item => !IsAny(item)) ?? PlatinumMineral;
+        if (IsPlanetaryMining)
+        {
+            await PublishPlanetaryRowsAsync(token);
+            return;
+        }
+
         try
         {
             IReadOnlyList<MiningRing> foundRings = await client.FindRingsAsync(
@@ -1130,6 +1167,128 @@ public sealed class MiningSearchViewModel(
             MeritRows = [];
             Status = "Station prices are unavailable: " + ex.Message;
         }
+    }
+
+    private async Task PublishPlanetaryRowsAsync(CancellationToken token)
+    {
+        string[] materials = MineralChips.Selected.Where(item => !IsAny(item)).ToArray();
+        PlanetaryBodyCriteria? criteria = PlanetaryMiningPlan.For(materials);
+        if (criteria is null)
+        {
+            MeritRows = [];
+            Status = "Choose a Surface Hunt material.";
+            return;
+        }
+
+        string commodity = materials[0];
+        try
+        {
+            IReadOnlyList<MiningPlanetaryBody> bodies = await client.FindPlanetaryBodiesAsync(
+                new MiningPlanetaryQuery(
+                    Reference,
+                    criteria.BodySubtypes,
+                    criteria.LandmarkSubtypes,
+                    PlanetaryReserve,
+                    Radius,
+                    PlanetaryPowers,
+                    PlanetaryPowerState
+                ),
+                token
+            );
+            IReadOnlyList<MiningMarketResult> foundMarkets = await client.FindMarketsAsync(
+                new MiningMarketQuery(
+                    Reference,
+                    commodity,
+                    false,
+                    Radius,
+                    false,
+                    false,
+                    PadSize == "L",
+                    MaximumAgeDays,
+                    "",
+                    0,
+                    false,
+                    MinimumDemand,
+                    MaximumDemand,
+                    MarketFreshness,
+                    PadSize
+                ),
+                token
+            );
+            MeritRows = OrderByDistance(
+                PowerplayMeritRank
+                    .ComposePlanets(Systems, bodies, foundMarkets, ResultLimit)
+                    .Select(MeritSystemRowViewModel.From)
+            );
+            Status =
+                "Landable planets for "
+                + string.Join(", ", materials)
+                + " within "
+                + Radius.ToString("0", CultureInfo.CurrentCulture)
+                + " ly of "
+                + Reference
+                + ".";
+        }
+        catch (Exception ex) when (IsProviderFailure(ex))
+        {
+            MeritRows = [];
+            Status = "Station prices are unavailable: " + ex.Message;
+        }
+    }
+
+    private string PlanetaryReserve => Reserve is "All" or "Unknown" or "" ? "" : Reserve.Trim();
+
+    private IReadOnlyList<string> PlanetaryPowers =>
+        IsChosenPower(PledgedPower) ? PlanetaryMiningPlan.OtherPowers(PledgedPower) : [];
+
+    private string PlanetaryPowerState =>
+        PowerplayPlan.UsesLiveConflict(Objective, PowerState) || IsAny(PowerState) ? "" : PowerState.Trim();
+
+    private bool nearestFirst = true;
+    public string DistanceSortLabel => nearestFirst ? "Nearest first" : "Farthest first";
+    public string ResultOrderLabel =>
+        IsPlanetaryMining
+            ? DistanceSortLabel == "Nearest first"
+                ? "Results, nearest reference distance first"
+                : "Results, farthest reference distance first"
+            : "Results, best sell price first";
+    private WorkspaceCommand? distanceSortCommand;
+    public WorkspaceCommand DistanceSortCommand => distanceSortCommand ??= new WorkspaceCommand(ToggleDistanceSort);
+
+    private void ToggleDistanceSort()
+    {
+        nearestFirst = !nearestFirst;
+        MeritRows = OrderByDistance(MeritRows);
+        Changed(nameof(DistanceSortLabel));
+        Changed(nameof(ResultOrderLabel));
+    }
+
+    private MeritSystemRowViewModel[] OrderByDistance(IEnumerable<MeritSystemRowViewModel> rows) =>
+        (
+            nearestFirst
+                ? rows.OrderBy(row => row.DistanceLy ?? double.MaxValue)
+                : rows.OrderByDescending(row => row.DistanceLy ?? double.MaxValue)
+        ).ToArray();
+
+    private void SyncMineralCatalogue()
+    {
+        bool surface = IsPlanetaryMining;
+        if (surface != showingSurfaceMaterials)
+        {
+            showingSurfaceMaterials = surface;
+            if (surface)
+            {
+                MineralChips.ReplaceChoices(PlanetaryMiningPlan.Materials, "");
+            }
+            else
+            {
+                MineralChips.ReplaceChoices(PowerplayMinerals, PlatinumMineral);
+            }
+        }
+
+        Changed(nameof(UsesRingFilters));
+        Changed(nameof(IsPlanetaryMining));
+        Changed(nameof(ResultOrderLabel));
     }
 
     public Task SearchTradersAsync() =>

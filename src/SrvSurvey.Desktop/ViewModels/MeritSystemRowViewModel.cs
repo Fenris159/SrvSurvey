@@ -9,6 +9,7 @@ public sealed class MeritSystemRowViewModel
     private MeritSystemRowViewModel(
         string name,
         string distance,
+        double? distanceLy,
         string stateIcon,
         string stateText,
         string power,
@@ -18,6 +19,7 @@ public sealed class MeritSystemRowViewModel
     {
         Name = name;
         Distance = distance;
+        DistanceLy = distanceLy;
         StateIcon = stateIcon;
         StateText = stateText;
         Power = power.Length == 0 ? "No controlling Power" : power;
@@ -27,6 +29,7 @@ public sealed class MeritSystemRowViewModel
 
     public string Name { get; }
     public string Distance { get; }
+    public double? DistanceLy { get; }
     public string StateIcon { get; }
     public string StateText { get; }
     public string Power { get; }
@@ -39,8 +42,11 @@ public sealed class MeritSystemRowViewModel
         MeritLineViewModel[] rings = system
             .Rings.Select(ring =>
             {
-                string icon = planet ? "Planet" : "";
-                planet = false;
+                string icon = ring.Planetary || planet ? "Planet" : "";
+                if (!ring.Planetary)
+                {
+                    planet = false;
+                }
                 return new MeritLineViewModel(icon, $"{ring.Body}: {ring.Detail}");
             })
             .ToArray();
@@ -53,6 +59,7 @@ public sealed class MeritSystemRowViewModel
         return new(
             system.Name,
             system.DistanceLy is { } distance ? $"{distance:N1} ly" : "",
+            system.DistanceLy,
             system.PowerState,
             system.PowerState.Length == 0 ? "Unknown" : system.PowerState,
             system.Power,

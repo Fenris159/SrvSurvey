@@ -3,7 +3,7 @@
   <StackPanel Spacing="14" Margin="4,12,4,16">
     <StackPanel Spacing="5">
       <TextBlock Text="Powerplay mining planner" Classes="card-title"/>
-      <TextBlock Text="Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required." TextWrapping="Wrap" Classes="muted"/>
+      <TextBlock Text="Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material." TextWrapping="Wrap" Classes="muted"/>
       <TextBlock Text="{Binding Search.PowerplaySummary}" Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap"/>
     </StackPanel>
 
@@ -25,9 +25,9 @@
           <views:MiningChipBox DataContext="{Binding Search.MineralChips}"/>
           <views:MiningChipBox DataContext="{Binding Search.MiningTypeChips}"/>
           <views:MiningChipBox DataContext="{Binding Search.StateChips}"/>
-          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Ring type"/><ComboBox ItemsSource="{Binding Search.RingTypes}" SelectedItem="{Binding Search.RingType}"/></StackPanel>
+          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Ring type"/><ComboBox ItemsSource="{Binding Search.RingTypes}" SelectedItem="{Binding Search.RingType}" IsEnabled="{Binding Search.UsesRingFilters}"/></StackPanel>
           <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Reserve level"/><ComboBox ItemsSource="{Binding Search.Reserves}" SelectedItem="{Binding Search.Reserve}"/></StackPanel>
-          <StackPanel Spacing="4" Width="150" Margin="0,0,12,10"><TextBlock Text="Minimum hotspots"/><NumericUpDown Minimum="0" Maximum="20" Value="{Binding Search.MinimumHotspots}"/></StackPanel>
+          <StackPanel Spacing="4" Width="150" Margin="0,0,12,10"><TextBlock Text="Minimum hotspots"/><NumericUpDown Minimum="0" Maximum="20" Value="{Binding Search.MinimumHotspots}" IsEnabled="{Binding Search.UsesRingFilters}"/></StackPanel>
         </WrapPanel>
         <WrapPanel>
           <StackPanel Spacing="4" Width="160" Margin="0,0,12,10"><TextBlock Text="Landing pad"/><ComboBox ItemsSource="{Binding Search.PadSizes}" SelectedItem="{Binding Search.PadSize}"/></StackPanel>
@@ -58,7 +58,10 @@
 
     <Border Classes="card raised">
       <StackPanel Spacing="8">
-        <TextBlock Text="Results, best sell price first" Classes="card-title"/>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <TextBlock Text="{Binding Search.ResultOrderLabel}" Classes="card-title" VerticalAlignment="Center"/>
+          <Button Content="{Binding Search.DistanceSortLabel}" Command="{Binding Search.DistanceSortCommand}" Padding="8,2"/>
+        </StackPanel>
         <TextBlock Text="Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates." Classes="muted" TextWrapping="Wrap"/>
         <ScrollViewer MaxHeight="640" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
           <ItemsControl x:Name="PowerplayResults" ItemsSource="{Binding Search.MeritRows}">

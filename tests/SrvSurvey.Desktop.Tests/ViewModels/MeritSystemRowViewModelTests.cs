@@ -50,6 +50,23 @@ public sealed class MeritSystemRowViewModelTests
         Assert.Equal("", known.Distance);
         Assert.Equal("Archon Delaine", known.Power);
         Assert.Equal("Exploited", known.StateText);
+
+        var planet = MeritSystemRowViewModel.From(
+            new PowerplayMeritSystem(
+                "HR 5098",
+                12,
+                "Nakato Kaine",
+                "Exploited",
+                "",
+                1,
+                [
+                    new PowerplayMeritRing("HR 5098 2", "2.53 g · 294.3 ls", true),
+                    new PowerplayMeritRing("HR 5098 3", "1.10 g · 40 ls", true),
+                ],
+                []
+            )
+        );
+        Assert.Equal(["Planet", "Planet"], planet.Rings.Select(line => line.Icon));
     }
 
     [Fact]

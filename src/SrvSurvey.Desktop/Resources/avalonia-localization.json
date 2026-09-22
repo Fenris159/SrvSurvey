@@ -4757,6 +4757,10 @@
       "translation": "Wählen Sie ein PNG-Hintergrundbild, bevor Sie einen neuen Kartenentwurf speichern."
     },
     {
+      "source": "Choose a Surface Hunt material.",
+      "translation": "Wählen Sie ein Surface Hunt-Material."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Wählen Sie oben in der Auswahl eine Kategorie aus. Es wird nur diese Gruppe angezeigt, sodass der Desktop nicht überlastet wird."
     },
@@ -9393,6 +9397,10 @@
       "translation": "Hungersnot"
     },
     {
+      "source": "Farthest first",
+      "translation": "Am weitesten zuerst"
+    },
+    {
       "source": "Fatal application error: {0}",
       "translation": "Schwerwiegender Anwendungsfehler: {0}"
     },
@@ -12769,6 +12777,10 @@
       "translation": "Landbar"
     },
     {
+      "source": "Landable planets for {0} within {1} ly of {2}.",
+      "translation": "Landbare Planeten für {0} innerhalb der {1}-Linie von {2}."
+    },
+    {
       "source": "Landing pad",
       "translation": "Landeplatz"
     },
@@ -14995,6 +15007,10 @@
     {
       "source": "Nearest",
       "translation": "Am nächsten"
+    },
+    {
+      "source": "Nearest first",
+      "translation": "Am nächsten zuerst"
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -17485,8 +17501,8 @@
       "translation": "Piratenangriff"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
-      "translation": "Planen Sie einen Powerplay-Mining-Lauf vom Zielsystem zum Ring und zur Verkaufsstation. SrvSurvey kombiniert Journalkontext, integrierte Ringreferenzen, Live-Beobachtungen EDDN und gezielte API-Suchen Spansh; Es ist kein heruntergeladener Galaxy Dump erforderlich."
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
+      "translation": "Planen Sie einen Powerplay-Mining-Lauf vom Zielsystem zum Ring und zur Verkaufsstation. SrvSurvey kombiniert Journalkontext, integrierte Ringreferenzen, Live-Beobachtungen EDDN und gezielte API-Suchen Spansh; Es ist kein heruntergeladener Galaxy Dump erforderlich. Planetary Mining kann nicht mit anderen Bergbauarten kombiniert werden. Es ignoriert den Ringtyp und listet landbare Planeten für ein Oberflächenjagdmaterial auf."
     },
     {
       "source": "Plan a mining trip",
@@ -20395,6 +20411,14 @@
     {
       "source": "Results, best sell price first",
       "translation": "Ergebnisse, bester Verkaufspreis zuerst"
+    },
+    {
+      "source": "Results, farthest reference distance first",
+      "translation": "Ergebnisse, weiteste Referenzentfernung zuerst"
+    },
+    {
+      "source": "Results, nearest reference distance first",
+      "translation": "Ergebnisse, nächste Referenzentfernung zuerst"
     },
     {
       "source": "Resume Selected",
@@ -38543,6 +38567,10 @@
       "translation": "Elija una imagen de fondo PNG antes de guardar un nuevo borrador de mapa."
     },
     {
+      "source": "Choose a Surface Hunt material.",
+      "translation": "Elija un material de Surface Hunt."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Elija una categoría del selector en la parte superior; solo aparece ese grupo para que el escritorio no se vea abrumado."
     },
@@ -43179,6 +43207,10 @@
       "translation": "Hambruna"
     },
     {
+      "source": "Farthest first",
+      "translation": "Lo más lejano primero"
+    },
+    {
       "source": "Fatal application error: {0}",
       "translation": "Error grave de aplicación: {0}"
     },
@@ -46555,6 +46587,10 @@
       "translation": "Aterrizable"
     },
     {
+      "source": "Landable planets for {0} within {1} ly of {2}.",
+      "translation": "Planetas aterrizables para {0} dentro de {1} ly de {2}."
+    },
+    {
       "source": "Landing pad",
       "translation": "Pista de aterrizaje"
     },
@@ -48781,6 +48817,10 @@
     {
       "source": "Nearest",
       "translation": "Más cercano"
+    },
+    {
+      "source": "Nearest first",
+      "translation": "El más cercano primero"
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -51271,8 +51311,8 @@
       "translation": "Ataque pirata"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
-      "translation": "Planifique una ejecución de minería Powerplay desde el sistema objetivo hasta el anillo y la estación de venta. SrvSurvey combina contexto de revista, referencias de anillo integradas, observaciones en vivo EDDN y búsquedas API enfocadas Spansh; no se requiere ningún volcado de galaxia descargado."
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
+      "translation": "Planifique una ejecución de minería Powerplay desde el sistema objetivo hasta el anillo y la estación de venta. SrvSurvey combina contexto de revista, referencias de anillo integradas, observaciones en vivo EDDN y búsquedas API enfocadas Spansh; no se requiere ningún volcado de galaxia descargado. La Minería Planetaria no se puede combinar con otros tipos de minería. Ignora el tipo de anillo y enumera los planetas en los que se puede aterrizar para un material de Surface Hunt."
     },
     {
       "source": "Plan a mining trip",
@@ -54181,6 +54221,14 @@
     {
       "source": "Results, best sell price first",
       "translation": "Resultados, mejor precio de venta primero"
+    },
+    {
+      "source": "Results, farthest reference distance first",
+      "translation": "Resultados, la distancia de referencia más lejana primero"
+    },
+    {
+      "source": "Results, nearest reference distance first",
+      "translation": "Resultados, distancia de referencia más cercana primero"
     },
     {
       "source": "Resume Selected",
@@ -72329,6 +72377,10 @@
       "translation": "Choisissez une image d’arrière-plan PNG avant d’enregistrer un nouveau brouillon de carte."
     },
     {
+      "source": "Choose a Surface Hunt material.",
+      "translation": "Choisissez un matériau Surface Hunt."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Choisissez une catégorie dans le sélecteur en haut ; seul ce groupe apparaît afin que le bureau ne soit pas submergé."
     },
@@ -76965,6 +77017,10 @@
       "translation": "Famine"
     },
     {
+      "source": "Farthest first",
+      "translation": "Le plus éloigné en premier"
+    },
+    {
       "source": "Fatal application error: {0}",
       "translation": "Erreur d'application fatale : {0}"
     },
@@ -80341,6 +80397,10 @@
       "translation": "Atterrissable"
     },
     {
+      "source": "Landable planets for {0} within {1} ly of {2}.",
+      "translation": "Planètes atterrissables pour {0} au sein de {1} à proximité de {2}."
+    },
+    {
       "source": "Landing pad",
       "translation": "Aire d'atterrissage"
     },
@@ -82567,6 +82627,10 @@
     {
       "source": "Nearest",
       "translation": "Le plus proche"
+    },
+    {
+      "source": "Nearest first",
+      "translation": "Le plus proche en premier"
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -85057,8 +85121,8 @@
       "translation": "Attaque de pirates"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
-      "translation": "Planifiez une exploitation minière Powerplay depuis le système cible jusqu'à l'anneau et la station de vente. SrvSurvey combine le contexte du journal, les références d'anneaux intégrées, les observations en direct EDDN et les recherches API ciblées Spansh ; aucun dump de galaxie téléchargé n'est requis."
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
+      "translation": "Planifiez une exploitation minière Powerplay depuis le système cible jusqu'à l'anneau et la station de vente. SrvSurvey combine le contexte du journal, les références d'anneaux intégrées, les observations en direct EDDN et les recherches API ciblées Spansh ; aucun dump de galaxie téléchargé n'est requis. L’exploitation minière planétaire ne peut pas être combinée avec d’autres types d’exploitation minière. Il ignore le type d'anneau et répertorie les planètes atterrissables pour un matériau Surface Hunt."
     },
     {
       "source": "Plan a mining trip",
@@ -87967,6 +88031,14 @@
     {
       "source": "Results, best sell price first",
       "translation": "Résultats, meilleur prix de vente en premier"
+    },
+    {
+      "source": "Results, farthest reference distance first",
+      "translation": "Résultats, distance de référence la plus éloignée en premier"
+    },
+    {
+      "source": "Results, nearest reference distance first",
+      "translation": "Résultats, distance de référence la plus proche en premier"
     },
     {
       "source": "Resume Selected",
@@ -106115,6 +106187,10 @@
       "translation": "Escolha uma imagem de fundo PNG antes de salvar um novo rascunho de mapa."
     },
     {
+      "source": "Choose a Surface Hunt material.",
+      "translation": "Escolha um material Surface Hunt."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Escolha uma categoria no seletor na parte superior; apenas esse grupo aparece para que a área de trabalho não fique sobrecarregada."
     },
@@ -110751,6 +110827,10 @@
       "translation": "Fome"
     },
     {
+      "source": "Farthest first",
+      "translation": "Mais distante primeiro"
+    },
+    {
       "source": "Fatal application error: {0}",
       "translation": "Erro fatal de aplicativo: {0}"
     },
@@ -114127,6 +114207,10 @@
       "translation": "Landable"
     },
     {
+      "source": "Landable planets for {0} within {1} ly of {2}.",
+      "translation": "Planetas pousáveis ​​para {0} dentro de {1} a partir de {2}."
+    },
+    {
       "source": "Landing pad",
       "translation": "Plataforma de pouso"
     },
@@ -116353,6 +116437,10 @@
     {
       "source": "Nearest",
       "translation": "Mais próximo"
+    },
+    {
+      "source": "Nearest first",
+      "translation": "Mais próximo primeiro"
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -118843,8 +118931,8 @@
       "translation": "Ataque pirata"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
-      "translation": "Planeje uma execução de mineração Powerplay do sistema de destino até o anel e a estação de venda. SrvSurvey combina contexto de diário, referências de anel integradas, observações ao vivo EDDN e pesquisas de API focadas Spansh; nenhum dump de galáxia baixado é necessário."
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
+      "translation": "Planeje uma execução de mineração Powerplay do sistema de destino até o anel e a estação de venda. SrvSurvey combina contexto de diário, referências de anel integradas, observações ao vivo EDDN e pesquisas de API focadas Spansh; nenhum dump de galáxia baixado é necessário. A Mineração Planetária não pode ser combinada com outros tipos de mineração. Ele ignora o tipo de anel e lista os planetas pousáveis ​​para um material Surface Hunt."
     },
     {
       "source": "Plan a mining trip",
@@ -121753,6 +121841,14 @@
     {
       "source": "Results, best sell price first",
       "translation": "Resultados, melhor preço de venda primeiro"
+    },
+    {
+      "source": "Results, farthest reference distance first",
+      "translation": "Resultados, distância de referência mais distante primeiro"
+    },
+    {
+      "source": "Results, nearest reference distance first",
+      "translation": "Resultados, distância de referência mais próxima primeiro"
     },
     {
       "source": "Resume Selected",
@@ -139901,6 +139997,10 @@
       "translation": "Прежде чем сохранять новый черновик карты, выберите фоновое изображение PNG."
     },
     {
+      "source": "Choose a Surface Hunt material.",
+      "translation": "Выберите материал Surface Hunt."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Выберите категорию в селекторе вверху; появляется только эта группа, чтобы рабочий стол не был перегружен."
     },
@@ -144537,6 +144637,10 @@
       "translation": "Голод"
     },
     {
+      "source": "Farthest first",
+      "translation": "Самый дальний первый"
+    },
+    {
       "source": "Fatal application error: {0}",
       "translation": "Неустранимая ошибка приложения: {0}"
     },
@@ -147913,6 +148017,10 @@
       "translation": "Пригодный для посадки"
     },
     {
+      "source": "Landable planets for {0} within {1} ly of {2}.",
+      "translation": "Планеты, пригодные для посадки для {0} в пределах {1} от {2}."
+    },
+    {
       "source": "Landing pad",
       "translation": "Посадочная площадка"
     },
@@ -150139,6 +150247,10 @@
     {
       "source": "Nearest",
       "translation": "Ближайший"
+    },
+    {
+      "source": "Nearest first",
+      "translation": "Сначала ближайший"
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -152629,8 +152741,8 @@
       "translation": "Пиратская атака"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
-      "translation": "Спланируйте запуск майнинга Powerplay от целевой системы до кольцевой и продающей станции. SrvSurvey сочетает в себе контекст журнала, встроенные кольцевые ссылки, наблюдения в реальном времени EDDN и целенаправленный поиск Spansh через API; скачанный дамп галактики не требуется."
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
+      "translation": "Спланируйте запуск майнинга Powerplay от целевой системы до кольцевой и продающей станции. SrvSurvey сочетает в себе контекст журнала, встроенные кольцевые ссылки, наблюдения в реальном времени EDDN и целенаправленный поиск Spansh через API; скачанный дамп галактики не требуется. Планетарный майнинг нельзя совмещать с другими видами майнинга. Он игнорирует тип кольца и перечисляет планеты, на которые можно приземлиться, для материала Surface Hunt."
     },
     {
       "source": "Plan a mining trip",
@@ -155539,6 +155651,14 @@
     {
       "source": "Results, best sell price first",
       "translation": "Результаты, сначала лучшая цена продажи"
+    },
+    {
+      "source": "Results, farthest reference distance first",
+      "translation": "Результаты: сначала самое дальнее опорное расстояние"
+    },
+    {
+      "source": "Results, nearest reference distance first",
+      "translation": "Результаты, сначала ближайшее опорное расстояние"
     },
     {
       "source": "Resume Selected",
@@ -173687,6 +173807,10 @@
       "translation": "在保存新地图草稿之前选择 PNG 背景图像。"
     },
     {
+      "source": "Choose a Surface Hunt material.",
+      "translation": "选择 Surface Hunt 材质。"
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "从顶部的选择器中选择一个类别；只有该组才会出现，这样桌面就不会被淹没。"
     },
@@ -178323,6 +178447,10 @@
       "translation": "饥荒"
     },
     {
+      "source": "Farthest first",
+      "translation": "最远的优先"
+    },
+    {
       "source": "Fatal application error: {0}",
       "translation": "致命应用程序错误：{0}"
     },
@@ -181699,6 +181827,10 @@
       "translation": "可登陆"
     },
     {
+      "source": "Landable planets for {0} within {1} ly of {2}.",
+      "translation": "{0} 的可登陆行星位于 {2} 的 {1} 内。"
+    },
+    {
       "source": "Landing pad",
       "translation": "停机坪"
     },
@@ -183925,6 +184057,10 @@
     {
       "source": "Nearest",
       "translation": "最近的"
+    },
+    {
+      "source": "Nearest first",
+      "translation": "最近的优先"
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -186415,8 +186551,8 @@
       "translation": "海盗袭击"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
-      "translation": "规划从目标系统到环站和销售站的 Powerplay 挖矿运行。 SrvSurvey 结合了期刊上下文、内置环引用、实时 EDDN 观察和重点 Spansh API 搜索；不需要下载 Galaxy 转储。"
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
+      "translation": "规划从目标系统到环站和销售站的 Powerplay 挖矿运行。 SrvSurvey 结合了期刊上下文、内置环引用、实时 EDDN 观察和重点 Spansh API 搜索；不需要下载 Galaxy 转储。行星采矿不能与其他采矿类型结合使用。它忽略环类型并列出表面狩猎材料的可着陆行星。"
     },
     {
       "source": "Plan a mining trip",
@@ -189325,6 +189461,14 @@
     {
       "source": "Results, best sell price first",
       "translation": "结果，最优惠价格优先"
+    },
+    {
+      "source": "Results, farthest reference distance first",
+      "translation": "结果，最远参考距离优先"
+    },
+    {
+      "source": "Results, nearest reference distance first",
+      "translation": "结果，最近参考距离优先"
     },
     {
       "source": "Resume Selected",
@@ -207473,6 +207617,10 @@
       "translation": "* CHOOSE A PNG BACKGROUND IMAGE BEFORE SAVING A NEW MAP DRAFT. >>>!"
     },
     {
+      "source": "Choose a Surface Hunt material.",
+      "translation": "* CHOOSE A SURFACE HUNT MATERIAL. >>>!"
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "* CHOOSE A CATEGORY FROM THE SELECTOR AT THE TOP; ONLY THAT GROUP APPEARS SO THE DESKTOP IS NOT OVERWHELMED. >>>!"
     },
@@ -212109,6 +212257,10 @@
       "translation": "* FAMINE >>>!"
     },
     {
+      "source": "Farthest first",
+      "translation": "* FARTHEST FIRST >>>!"
+    },
+    {
       "source": "Fatal application error: {0}",
       "translation": "* FATAL APPLICATION ERROR: {0} >>>!"
     },
@@ -215485,6 +215637,10 @@
       "translation": "* LANDABLE >>>!"
     },
     {
+      "source": "Landable planets for {0} within {1} ly of {2}.",
+      "translation": "* LANDABLE PLANETS FOR {0} WITHIN {1} LY OF {2}. >>>!"
+    },
+    {
       "source": "Landing pad",
       "translation": "* LANDING PAD >>>!"
     },
@@ -217711,6 +217867,10 @@
     {
       "source": "Nearest",
       "translation": "* NEAREST >>>!"
+    },
+    {
+      "source": "Nearest first",
+      "translation": "* NEAREST FIRST >>>!"
     },
     {
       "source": "Nearest relic tower A02 · 38.4 m · toggle shields 2x to conf.",
@@ -220201,8 +220361,8 @@
       "translation": "* PIRATE ATTACK >>>!"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required.",
-      "translation": "* PLAN A POWERPLAY MINING RUN FROM TARGET SYSTEM TO RING AND SELLING STATION. SRVSURVEY COMBINES JOURNAL CONTEXT, BUILT-IN RING REFERENCES, LIVE EDDN OBSERVATIONS, AND FOCUSED SPANSH API SEARCHES; NO DOWNLOADED GALAXY DUMP IS REQUIRED. >>>!"
+      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
+      "translation": "* PLAN A POWERPLAY MINING RUN FROM TARGET SYSTEM TO RING AND SELLING STATION. SRVSURVEY COMBINES JOURNAL CONTEXT, BUILT-IN RING REFERENCES, LIVE EDDN OBSERVATIONS, AND FOCUSED SPANSH API SEARCHES; NO DOWNLOADED GALAXY DUMP IS REQUIRED. PLANETARY MINING CANNOT BE COMBINED WITH OTHER MINING TYPES. IT IGNORES RING TYPE AND LISTS LANDABLE PLANETS FOR A SURFACE HUNT MATERIAL. >>>!"
     },
     {
       "source": "Plan a mining trip",
@@ -223111,6 +223271,14 @@
     {
       "source": "Results, best sell price first",
       "translation": "* RESULTS, BEST SELL PRICE FIRST >>>!"
+    },
+    {
+      "source": "Results, farthest reference distance first",
+      "translation": "* RESULTS, FARTHEST REFERENCE DISTANCE FIRST >>>!"
+    },
+    {
+      "source": "Results, nearest reference distance first",
+      "translation": "* RESULTS, NEAREST REFERENCE DISTANCE FIRST >>>!"
     },
     {
       "source": "Resume Selected",

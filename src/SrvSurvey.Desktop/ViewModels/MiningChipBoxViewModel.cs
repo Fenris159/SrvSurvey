@@ -4,17 +4,24 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class MiningChipBoxViewModel : WorkspaceObservable
 {
-    private readonly IReadOnlyList<string> choices;
-    private readonly string fallback;
+    private readonly HashSet<string> exclusive;
+    private IReadOnlyList<string> choices;
+    private string fallback;
     private string query = "";
     private bool open;
     private IReadOnlyList<string> suggestions = [];
 
-    public MiningChipBoxViewModel(string title, IReadOnlyList<string> choices, string initial)
+    public MiningChipBoxViewModel(
+        string title,
+        IReadOnlyList<string> choices,
+        string initial,
+        IReadOnlyList<string>? exclusive = null
+    )
     {
         Title = title;
         this.choices = choices;
         fallback = initial;
+        this.exclusive = new HashSet<string>(exclusive ?? ["Any", "All"], StringComparer.OrdinalIgnoreCase);
         if (initial.Length > 0)
         {
             Selected.Add(initial);
@@ -62,17 +69,16 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
             return;
         }
 
-        if (
-            value.Equals("Any", StringComparison.OrdinalIgnoreCase)
-            || value.Equals("All", StringComparison.OrdinalIgnoreCase)
-        )
+        if (exclusive.Contains(value))
         {
             Selected.Clear();
         }
         else
         {
-            RemoveToken("Any");
-            RemoveToken("All");
+            foreach (string token in exclusive)
+            {
+                RemoveToken(token);
+            }
         }
 
         if (!Selected.Contains(value, StringComparer.OrdinalIgnoreCase))
@@ -82,6 +88,28 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
 
         Query = "";
         Open = false;
+        RefreshSuggestions();
+        Changed(nameof(Selected));
+    }
+
+    public void ReplaceChoices(IReadOnlyList<string> next, string nextFallback)
+    {
+        choices = next;
+        fallback = nextFallback;
+        foreach (
+            string selected in Selected
+                .Where(item => !choices.Contains(item, StringComparer.OrdinalIgnoreCase))
+                .ToArray()
+        )
+        {
+            Selected.Remove(selected);
+        }
+
+        if (Selected.Count == 0 && fallback.Length > 0)
+        {
+            Selected.Add(fallback);
+        }
+
         RefreshSuggestions();
         Changed(nameof(Selected));
     }

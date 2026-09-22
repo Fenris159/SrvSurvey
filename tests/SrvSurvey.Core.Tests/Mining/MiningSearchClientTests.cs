@@ -269,6 +269,48 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task PlanetaryBodiesAskSpanshForLandableSystemsAndMagma()
+    {
+        using var handler = new RequestHandler(
+            """{"results":[{"system_name":"HR 5098","name":"HR 5098 2","subtype":"High metal content world","reserve_level":"Pristine","gravity":2.532,"distance_to_arrival":294.25}]}"""
+        );
+        using var http = new HttpClient(handler);
+        IReadOnlyList<MiningPlanetaryBody> bodies = await new MiningSearchClient(http).FindPlanetaryBodiesAsync(
+            new MiningPlanetaryQuery(
+                "Timbalderis",
+                ["High metal content world", "Rocky body"],
+                ["Iron Magma Lava Spout", "Silicate Magma Lava Spout"],
+                "Pristine",
+                150,
+                PlanetaryMiningPlan.OtherPowers("Aisling Duval"),
+                "Exploited"
+            )
+        );
+
+        MiningPlanetaryBody body = Assert.Single(bodies);
+        Assert.Equal("HR 5098", body.System);
+        Assert.Equal("HR 5098 2", body.Body);
+        Assert.Equal(2.532, body.Gravity);
+        Assert.Equal(294.25, body.ArrivalLs);
+        using var request = JsonDocument.Parse(handler.Body!);
+        JsonElement filters = request.RootElement.GetProperty("filters");
+        Assert.True(filters.GetProperty("is_landable").GetProperty("value").GetBoolean());
+        Assert.False(filters.TryGetProperty("system_name", out _));
+        Assert.Equal("Timbalderis", request.RootElement.GetProperty("reference_system").GetString());
+        Assert.Equal(150, filters.GetProperty("distance").GetProperty("max").GetDouble());
+        JsonElement powers = filters.GetProperty("system_controlling_power").GetProperty("value");
+        Assert.Equal(11, powers.GetArrayLength());
+        Assert.DoesNotContain(powers.EnumerateArray(), power => power.GetString() == "Aisling Duval");
+        Assert.Contains(powers.EnumerateArray(), power => power.GetString() == "A. Lavigny-Duval");
+        Assert.Equal("Exploited", filters.GetProperty("system_power_state").GetProperty("value")[0].GetString());
+        Assert.Equal("Pristine", filters.GetProperty("reserve_level").GetProperty("value")[0].GetString());
+        Assert.Equal(
+            "Silicate Magma Lava Spout",
+            filters.GetProperty("landmarks")[0].GetProperty("subtype")[1].GetString()
+        );
+    }
+
+    [Fact]
     public async Task ExactSystemMarketScopeIsAppliedBeforeStationPagination()
     {
         using var handler = new RequestHandler();
