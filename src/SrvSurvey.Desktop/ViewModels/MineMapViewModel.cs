@@ -4,6 +4,7 @@ using System.Windows.Input;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Controls;
 
@@ -117,6 +118,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 this.editBookmark(row.Id);
             }
         });
+        SurfaceSearch = new SurfaceMiningSearchViewModel(new MiningSearchClient());
         ActivateSelectedSurveyCommand = new WorkspaceCommand(() =>
         {
             if (SelectedSurveyRow is { } row)
@@ -125,6 +127,16 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             }
         });
         RefreshCatalog();
+    }
+
+    public SurfaceMiningSearchViewModel SurfaceSearch { get; private set; }
+
+    public void UseSurfaceSearch(MiningSearchClient client, Action<string>? diagnosticLog = null)
+    {
+        SurfaceSearch.Dispose();
+        client.DiagnosticLog = diagnosticLog;
+        SurfaceSearch = new SurfaceMiningSearchViewModel(client);
+        Changed(nameof(SurfaceSearch));
     }
 
     public int SelectedTab
@@ -643,6 +655,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     {
         service.Changed -= OnServiceChanged;
         service.NotificationRequested -= OnServiceNotificationRequested;
+        SurfaceSearch.Dispose();
         service.Dispose();
     }
 

@@ -128,6 +128,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
   },
   {
+    "Text": ", {0} reserve",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
     "Text": "-1 asteroid",
     "IsFormat": false,
     "SourceKinds": [
@@ -4107,14 +4115,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
-    "Text": "Any or None locks the goal on Reinforce and Opposing Power on Any. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power\u0027s Fortified systems or 30 ly of its Stronghold systems, and reads Expansion and Contested from conflict progress until the Thursday tick.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
-  },
-  {
     "Text": "AppImage manual update",
     "IsFormat": false,
     "SourceKinds": [
@@ -6936,6 +6936,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Body Details",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Body Protectorate",
     "IsFormat": false,
     "SourceKinds": [
@@ -9646,6 +9654,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
+    "Text": "Choose a reference system and a surface material.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
     "Text": "Choose a reference system to search.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9684,6 +9700,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Choose a surface material.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
     "Text": "Choose a system-name text file",
@@ -10244,14 +10268,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Click to add",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningChipBox.axaml"
   },
   {
     "Text": "Click to copy",
@@ -14009,6 +14025,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "DST",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Danger",
     "IsFormat": false,
     "SourceKinds": [
@@ -14528,6 +14552,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
+  },
+  {
+    "Text": "Demand: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Denied",
@@ -15355,7 +15387,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Distance LY cannot be negative.",
@@ -15420,6 +15452,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Distance: {0} Ls",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
+    "Text": "Distance: {0} ls",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "DistanceFromArrivalLS",
@@ -19138,6 +19186,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Find landable surface deposits",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Find last visit",
     "IsFormat": false,
     "SourceKinds": [
@@ -19378,6 +19434,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleSettingsStore.cs"
+  },
+  {
+    "Text": "First",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "First discovered by CMDR Raven",
@@ -25627,7 +25691,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Landable planets for {0} within {1} ly of {2}.",
+    "Text": "Landable planets for {0} within {1} ly of {2}.{3}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -25763,6 +25827,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Last",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Last approach {0}",
@@ -28867,6 +28939,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Mining System",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Mining announcements",
     "IsFormat": false,
     "SourceKinds": [
@@ -29056,7 +29136,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
   },
   {
     "Text": "Mining workspace",
@@ -30389,7 +30469,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Next Elite window",
@@ -33791,6 +33871,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "Other Commodities:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+  },
+  {
     "Text": "Other SrvSurvey instances are already open",
     "IsFormat": false,
     "SourceKinds": [
@@ -35751,9 +35839,10 @@
     "Text": "Power",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Controls/HumanSiteMapControl.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Power Cell",
@@ -36398,12 +36487,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
   },
   {
-    "Text": "Prices are for {0}.",
+    "Text": "Price: {0} CR {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Prices are observations and may change. Settings \u2192 Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
@@ -40547,6 +40636,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Request failed. Try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "Requested a fresh Wayland screen-capture source selection after restart.",
     "IsFormat": false,
     "SourceKinds": [
@@ -40600,7 +40697,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Reserved balance",
@@ -41482,6 +41579,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+  },
+  {
+    "Text": "Ring Details",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Ring mining reference",
@@ -44078,6 +44183,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuidesView.axaml"
   },
   {
+    "Text": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Search procedural boxels, track every generated system, and choose what counts as complete.",
     "IsFormat": false,
     "SourceKinds": [
@@ -44124,14 +44237,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "Search unavailable: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Search\u002B",
@@ -45830,6 +45935,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "Show all signals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
     "Text": "Show bio signals from Canonn on the radar",
     "IsFormat": false,
     "SourceKinds": [
@@ -45980,6 +46093,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Show less",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Show list in system map",
@@ -46596,6 +46717,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
+  },
+  {
+    "Text": "Single",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Site heading",
@@ -48474,9 +48603,10 @@
     "Text": "State",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Station",
@@ -48510,14 +48640,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
-  },
-  {
-    "Text": "Station prices are unavailable: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Station type contains",
@@ -48566,6 +48688,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Stations",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Statistics settings",
@@ -49889,7 +50019,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
   },
   {
     "Text": "System status",
@@ -50485,6 +50615,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianOverlayPreviewState.cs"
+  },
+  {
+    "Text": "Target System",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Target not supplied",
@@ -55933,6 +56071,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuidesView.axaml"
   },
   {
+    "Text": "Type to add minerals/metals...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
+  },
+  {
+    "Text": "Type to add mining types...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
+  },
+  {
+    "Text": "Type to add system states...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
+  },
+  {
     "Text": "Type-10 Defender",
     "IsFormat": false,
     "SourceKinds": [
@@ -56860,6 +57022,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
+  },
+  {
+    "Text": "Updated: just now",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
+    "Text": "Updated: {0}d ago",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
+    "Text": "Updated: {0}h {1}m ago",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
+    "Text": "Updated: {0}m ago",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Updates",
@@ -60810,6 +61004,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
+  },
+  {
+    "Text": "chip-remove",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningChipBox.axaml.cs"
   },
   {
     "Text": "clear",
@@ -64780,6 +64982,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "the selected minerals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "the selected origin",
     "IsFormat": false,
     "SourceKinds": [
@@ -65693,6 +65903,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
+    "Text": "{0} ({1}{2}Price: {3}{4}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
     "Text": "{0} \u002B pending",
     "IsFormat": true,
     "SourceKinds": [
@@ -65765,6 +65983,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
   },
   {
+    "Text": "{0} CR {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
     "Text": "{0} CR/t",
     "IsFormat": true,
     "SourceKinds": [
@@ -65779,6 +66005,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "{0} Demand",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "{0} FCs: {1} deficit{2} {3}",
@@ -65973,7 +66207,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
-    "Text": "{0} acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. {1}",
+    "Text": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -66325,6 +66559,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PriorScansOverlayViewModel.cs"
   },
   {
+    "Text": "{0} landable bodies for {1}. Best sell from {2}.{3}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
     "Text": "{0} layout - no blueprint category recorded",
     "IsFormat": true,
     "SourceKinds": [
@@ -66597,6 +66839,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "{0} material traders \u00B7 {1}{2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "{0} messages \u2022 {1} unread",
     "IsFormat": true,
     "SourceKinds": [
@@ -66779,6 +67029,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/OverlayCategorySettingsWindow.axaml.cs"
+  },
+  {
+    "Text": "{0} prices for {1}.{2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "{0} rebuilds",
@@ -67093,14 +67351,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
-    "Text": "{0} {1} material traders \u00B7 Spansh.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
-  },
-  {
     "Text": "{0} {1} on {2}",
     "IsFormat": true,
     "SourceKinds": [
@@ -67261,6 +67511,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
   },
   {
+    "Text": "{0} \u00B7 {1} ly",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
     "Text": "{0} \u00B7 {1} recorded \u00B7 highest suffix {2} \u00B7 {3}",
     "IsFormat": true,
     "SourceKinds": [
@@ -67347,6 +67605,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0}: {1}{2}, {3} g, {4} ls",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
     "Text": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",

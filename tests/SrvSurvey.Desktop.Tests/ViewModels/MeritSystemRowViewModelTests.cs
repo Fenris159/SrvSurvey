@@ -70,6 +70,15 @@ public sealed class MeritSystemRowViewModelTests
     }
 
     [Fact]
+    public void AcquireConnectorBranchesEveryMiningRow()
+    {
+        Assert.Equal("Single", AcquireConnector.ForIndex(0, 1));
+        Assert.Equal("First", AcquireConnector.ForIndex(0, 3));
+        Assert.Equal("Next", AcquireConnector.ForIndex(1, 3));
+        Assert.Equal("Last", AcquireConnector.ForIndex(2, 3));
+    }
+
+    [Fact]
     public void ChipBoxRejectsUnknownNamesAndRestoresAny()
     {
         var chips = new MiningChipBoxViewModel("Mineral / metal", ["Any", "Platinum", "Osmium"], "Any");
@@ -84,6 +93,74 @@ public sealed class MeritSystemRowViewModelTests
         Assert.Equal("Any", Assert.Single(chips.Selected));
         chips.Remove("Any");
         Assert.Equal("Any", Assert.Single(chips.Selected));
+    }
+
+    [Fact]
+    public void ChipBoxPromptsMatchTheEntryAndListEveryRemainingChoice()
+    {
+        string[] minerals =
+        [
+            "Default",
+            "Any",
+            "Platinum",
+            "Painite",
+            "Osmium",
+            "Gold",
+            "Silver",
+            "Indite",
+            "Jadeite",
+            "Monazite",
+            "Lithium Hydroxide",
+        ];
+        var mineralsBox = new MiningChipBoxViewModel("Mineral / metal", minerals, "Default", ["Default", "Any"]);
+        var miningTypes = new MiningChipBoxViewModel("Mining type", ["All", "Core", "Laser"], "All");
+        var states = new MiningChipBoxViewModel("System state", ["Any", "Boom"], "Any");
+
+        Assert.Equal("LHY", mineralsBox.ChipLabel("Lithium Hydroxide"));
+        Assert.Equal("Default", mineralsBox.ChipLabel("Default"));
+        Assert.Equal("All", miningTypes.ChipLabel("All"));
+        Assert.Equal("Boom", states.ChipLabel("Boom"));
+        mineralsBox.Query = "lhy";
+        Assert.Contains(mineralsBox.Suggestions, choice => choice == "Lithium Hydroxide");
+        mineralsBox.Add("Lithium Hydroxide");
+        Assert.Equal("LHY", mineralsBox.Tags[^1].Label);
+        Assert.Equal("Type to add minerals/metals...", mineralsBox.Prompt);
+        Assert.Equal("Type to add mining types...", miningTypes.Prompt);
+        Assert.Equal("Type to add system states...", states.Prompt);
+        Assert.Equal(minerals.Length - 1, mineralsBox.Suggestions.Count);
+        mineralsBox.Query = "ite";
+        Assert.Equal(["Painite", "Indite", "Jadeite", "Monazite"], mineralsBox.Suggestions);
+    }
+
+    [Fact]
+    public void ShowAllSignalsRevealsLowerPricedCommoditiesAndEveryRing()
+    {
+        var row = MeritSystemRowViewModel.From(
+            new PowerplayMeritSystem(
+                "Sol",
+                10,
+                "Archon Delaine",
+                "Exploited",
+                "",
+                200,
+                [
+                    new PowerplayMeritRing("A Ring", "Platinum ×2 · Metallic"),
+                    new PowerplayMeritRing("B Ring", "Monazite ×1 · Rocky"),
+                ],
+                [
+                    new PowerplayMeritStation("Hub", "Coriolis Starport", "Large", 200, 10, "", "Platinum"),
+                    new PowerplayMeritStation("Hub", "Coriolis Starport", "Large", 50, 4, "", "Monazite"),
+                ]
+            )
+        );
+
+        Assert.Equal("Platinum", Assert.Single(row.StationBlocks).Commodity);
+        Assert.Equal(2, Assert.Single(row.StationBlocks).OtherCommodities.Count);
+        Assert.Contains("Platinum", Assert.Single(row.Rings).Text, StringComparison.Ordinal);
+        row.ToggleSignals();
+        Assert.Equal(2, row.Stations.Count);
+        Assert.Equal(2, row.Rings.Count);
+        Assert.Equal("Show less", row.SignalToggleLabel);
     }
 
     private static PowerplayMeritStation Station(string name, string type) => new(name, type, "L", 1, 1, name);

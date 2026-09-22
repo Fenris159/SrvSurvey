@@ -517,6 +517,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 externalNetworkClient,
                 firegroups: Firegroups
             );
+            MiningWorkspace.Search.UseDiagnosticLog(message => resolvedApplicationLogService?.Append(message));
             rollback.Add(MiningWorkspace.Dispose);
             ExobiologyReferenceCatalog sharedExobiologyCatalog = legacyReferences.Exobiology;
             string defaultCodexImageCache = Path.Combine(AppDataPaths.CacheDirectory, "codex-images");
@@ -677,6 +678,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 ShowBookmarkEditor,
                 Bookmarks.Catalog,
                 requestOverviewMapVisibility: () => OverlayPanelVisibility.EnsureVisible("PlotMineMap")
+            );
+            MineMap.UseSurfaceSearch(
+                new MiningSearchClient(externalNetworkClient),
+                message => resolvedApplicationLogService?.Append(message)
             );
             rollback.Add(MineMap.Dispose);
             MineMap.PropertyChanged += OnMineMapPropertyChanged;

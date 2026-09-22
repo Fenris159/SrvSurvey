@@ -65,6 +65,10 @@
       "translation": ", Ruinen{0} {1}"
     },
     {
+      "source": ", {0} reserve",
+      "translation": ", {0} Reserve"
+    },
+    {
       "source": "-1 asteroid",
       "translation": "-1 Asteroid"
     },
@@ -2053,10 +2057,6 @@
       "translation": "Beliebiger Warenname"
     },
     {
-      "source": "Any or None locks the goal on Reinforce and Opposing Power on Any. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power's Fortified systems or 30 ly of its Stronghold systems, and reads Expansion and Contested from conflict progress until the Thursday tick.",
-      "translation": "„Any“ oder „None“ sperrt das Ziel auf „Verstärken“ und „Gegnerische Kraft“ auf „Any“. Eine gewählte Macht kann ihre etablierten Systeme verstärken, andere Mächte untergraben oder erwerben. Acquire hält nicht besessene Systeme innerhalb von 20 Lichtjahren der befestigten Systeme dieser Macht oder 30 Lichtjahren ihrer Festungssysteme und zeigt „Erweiterung“ und „Umkämpft“ vom Konfliktfortschritt bis zum Tick am Donnerstag an."
-    },
-    {
       "source": "AppImage manual update",
       "translation": "Manuelle Aktualisierung von AppImage"
     },
@@ -3465,6 +3465,10 @@
       "translation": "Körper (optional)"
     },
     {
+      "source": "Body Details",
+      "translation": "Körperdetails"
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Körperschutz"
     },
@@ -4813,6 +4817,10 @@
       "translation": "Wählen Sie vor dem Speichern einen anerkannten Guardian-Site-Typ aus."
     },
     {
+      "source": "Choose a reference system and a surface material.",
+      "translation": "Wählen Sie ein Bezugssystem und ein Oberflächenmaterial."
+    },
+    {
       "source": "Choose a reference system to search.",
       "translation": "Wählen Sie ein Referenzsystem für die Suche aus."
     },
@@ -4831,6 +4839,10 @@
     {
       "source": "Choose a start date",
       "translation": "Wählen Sie ein Startdatum"
+    },
+    {
+      "source": "Choose a surface material.",
+      "translation": "Wählen Sie ein Oberflächenmaterial."
     },
     {
       "source": "Choose a system-name text file",
@@ -5111,10 +5123,6 @@
     {
       "source": "Click a shortcut field, hold the keyboard keys or controller buttons you want, then release them. Click outside the field to accept the new binding.",
       "translation": "Klicken Sie auf ein Tastenkombinationsfeld, halten Sie die gewünschten Tastatur- oder Controller-Tasten gedrückt und lassen Sie sie dann los. Klicken Sie außerhalb des Feldes, um die neue Bindung zu akzeptieren."
-    },
-    {
-      "source": "Click to add",
-      "translation": "Klicken Sie zum Hinzufügen"
     },
     {
       "source": "Click to copy",
@@ -6989,6 +6997,10 @@
       "translation": "DSS-Umfrage: Keine"
     },
     {
+      "source": "DST",
+      "translation": "Sommerzeit"
+    },
+    {
       "source": "Danger",
       "translation": "Gefahr"
     },
@@ -7247,6 +7259,10 @@
     {
       "source": "Delivery and local storage",
       "translation": "Lieferung und lokale Lagerung"
+    },
+    {
+      "source": "Demand: {0}",
+      "translation": "Nachfrage: {0}"
     },
     {
       "source": "Denied",
@@ -7691,6 +7707,14 @@
     {
       "source": "Distance unavailable",
       "translation": "Entfernung nicht verfügbar"
+    },
+    {
+      "source": "Distance: {0} Ls",
+      "translation": "Entfernung: {0} Ls"
+    },
+    {
+      "source": "Distance: {0} ls",
+      "translation": "Entfernung: {0} ls"
     },
     {
       "source": "DistanceFromArrivalLS",
@@ -9545,6 +9569,10 @@
       "translation": "Finden Sie Hotspots für diesen Artikel"
     },
     {
+      "source": "Find landable surface deposits",
+      "translation": "Finden Sie landbare Oberflächenlagerstätten"
+    },
+    {
       "source": "Find last visit",
       "translation": "Finden Sie den letzten Besuch"
     },
@@ -9663,6 +9691,10 @@
     {
       "source": "FiregroupsOverlayExceptionsMigrated",
       "translation": "FiregroupsOverlayExceptionsMigrated"
+    },
+    {
+      "source": "First",
+      "translation": "Erste"
     },
     {
       "source": "First discovered by CMDR Raven",
@@ -12777,8 +12809,8 @@
       "translation": "Landbar"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.",
-      "translation": "Landbare Planeten für {0} innerhalb der {1}-Linie von {2}."
+      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
+      "translation": "Landbare Planeten für {0} innerhalb der {1}-Linie von {2}.{3}"
     },
     {
       "source": "Landing pad",
@@ -12843,6 +12875,10 @@
     {
       "source": "Laser mining",
       "translation": "Laser-Mining"
+    },
+    {
+      "source": "Last",
+      "translation": "Zuletzt"
     },
     {
       "source": "Last approach {0}",
@@ -14391,6 +14427,10 @@
     {
       "source": "Mining Ref",
       "translation": "Bergbau Ref"
+    },
+    {
+      "source": "Mining System",
+      "translation": "Bergbausystem"
     },
     {
       "source": "Mining announcements",
@@ -16849,6 +16889,10 @@
       "translation": "Andere / unbekannt"
     },
     {
+      "source": "Other Commodities:",
+      "translation": "Andere Waren:"
+    },
+    {
       "source": "Other SrvSurvey instances are already open",
       "translation": "Andere SrvSurvey Instanzen sind bereits geöffnet"
     },
@@ -18149,8 +18193,8 @@
       "translation": "Zuvor ausgewählter Controller"
     },
     {
-      "source": "Prices are for {0}.",
-      "translation": "Die Preise gelten für {0}."
+      "source": "Price: {0} CR {1}",
+      "translation": "Preis: {0} CR {1}"
     },
     {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
@@ -20221,6 +20265,10 @@
       "translation": "Ruf"
     },
     {
+      "source": "Request failed. Try again.",
+      "translation": "Die Anfrage ist fehlgeschlagen. Versuchen Sie es erneut."
+    },
+    {
       "source": "Requested a fresh Wayland screen-capture source selection after restart.",
       "translation": "Nach dem Neustart wurde eine neue Auswahl der Wayland-Screenshot-Quelle angefordert."
     },
@@ -20687,6 +20735,10 @@
     {
       "source": "Ring (optional)",
       "translation": "Ring (optional)"
+    },
+    {
+      "source": "Ring Details",
+      "translation": "Ringdetails"
     },
     {
       "source": "Ring mining reference",
@@ -21981,6 +22033,10 @@
       "translation": "Durchsuchen Sie Anleitungen, Einstellungen, Symbole oder Workflows"
     },
     {
+      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
+      "translation": "Durchsuchen Sie landbare Körper in der Nähe des Referenzsystems nach den von Ihnen ausgewählten Oberflächenmaterialien. Das Ziel ist die Station innerhalb dieser Entfernung, die am meisten zahlt."
+    },
+    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Durchsuchen Sie Verfahrensfelder, verfolgen Sie jedes generierte System und wählen Sie aus, was als vollständig gilt."
     },
@@ -22003,10 +22059,6 @@
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
       "translation": "Durchsuchen Sie den dauerhaften Spieljournaldatensatz und exportieren Sie ein begrenztes Diagnose-Wiedergabepaket."
-    },
-    {
-      "source": "Search unavailable: {0}",
-      "translation": "Suche nicht verfügbar: {0}"
     },
     {
       "source": "Search+",
@@ -22853,6 +22905,10 @@
       "translation": "Alle Massencode-{0}-Boxel anzeigen"
     },
     {
+      "source": "Show all signals",
+      "translation": "Alle Signale anzeigen"
+    },
+    {
       "source": "Show bio signals from Canonn on the radar",
       "translation": "Zeigen Sie Biosignale von Canonn auf dem Radar an"
     },
@@ -22927,6 +22983,10 @@
     {
       "source": "Show legend",
       "translation": "Legende anzeigen"
+    },
+    {
+      "source": "Show less",
+      "translation": "Weniger anzeigen"
     },
     {
       "source": "Show list in system map",
@@ -23235,6 +23295,10 @@
     {
       "source": "Silver Legal Group",
       "translation": "Silver Legal Group"
+    },
+    {
+      "source": "Single",
+      "translation": "Einzel"
     },
     {
       "source": "Site heading",
@@ -24193,10 +24257,6 @@
       "translation": "Die Einstellungen der Stationsinformationen konnten nicht gespeichert werden: {0}"
     },
     {
-      "source": "Station prices are unavailable: {0}",
-      "translation": "Stationspreise sind nicht verfügbar: {0}"
-    },
-    {
       "source": "Station type contains",
       "translation": "Stationstyp enthält"
     },
@@ -24219,6 +24279,10 @@
     {
       "source": "StationType",
       "translation": "Stationstyp"
+    },
+    {
+      "source": "Stations",
+      "translation": "Stationen"
     },
     {
       "source": "Statistics settings",
@@ -25175,6 +25239,10 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Zielen Sie auf A01 und scannen Sie es mit den erforderlichen Artefakten an Bord."
+    },
+    {
+      "source": "Target System",
+      "translation": "Zielsystem"
     },
     {
       "source": "Target not supplied",
@@ -27897,6 +27965,18 @@
       "translation": "Geben Sie weitere Wörter ein, um die Ergebnisse einzugrenzen"
     },
     {
+      "source": "Type to add minerals/metals...",
+      "translation": "Geben Sie ein, um Mineralien/Metalle hinzuzufügen..."
+    },
+    {
+      "source": "Type to add mining types...",
+      "translation": "Geben Sie ein, um Mining-Typen hinzuzufügen..."
+    },
+    {
+      "source": "Type to add system states...",
+      "translation": "Geben Sie Folgendes ein, um Systemzustände hinzuzufügen..."
+    },
+    {
       "source": "Type-10 Defender",
       "translation": "Typ-10-Verteidiger"
     },
@@ -28359,6 +28439,22 @@
     {
       "source": "Updated {0}. A verified state backup was retained.",
       "translation": "{0} aktualisiert. Es wurde eine verifizierte Zustandssicherung aufbewahrt."
+    },
+    {
+      "source": "Updated: just now",
+      "translation": "Aktualisiert: gerade eben"
+    },
+    {
+      "source": "Updated: {0}d ago",
+      "translation": "Aktualisiert: vor {0}d"
+    },
+    {
+      "source": "Updated: {0}h {1}m ago",
+      "translation": "Aktualisiert: {0}h {1}m vor"
+    },
+    {
+      "source": "Updated: {0}m ago",
+      "translation": "Aktualisiert: vor {0}m"
     },
     {
       "source": "Updates",
@@ -30331,6 +30427,10 @@
     {
       "source": "child",
       "translation": "Kind"
+    },
+    {
+      "source": "chip-remove",
+      "translation": "Span entfernen"
     },
     {
       "source": "clear",
@@ -32317,6 +32417,10 @@
       "translation": "die Route"
     },
     {
+      "source": "the selected minerals",
+      "translation": "die ausgewählten Mineralien"
+    },
+    {
       "source": "the selected origin",
       "translation": "der ausgewählte Ursprung"
     },
@@ -32773,6 +32877,10 @@
       "translation": "{0} ({1}) kann nicht als leer markiert werden."
     },
     {
+      "source": "{0} ({1}{2}Price: {3}{4}",
+      "translation": "{0} ({1}{2}Preis: {3}{4}"
+    },
+    {
       "source": "{0} + pending",
       "translation": "{0} + ausstehend"
     },
@@ -32809,12 +32917,20 @@
       "translation": "{0} CR-Basisbelohnung"
     },
     {
+      "source": "{0} CR {1}",
+      "translation": "{0} CR {1}"
+    },
+    {
       "source": "{0} CR/t",
       "translation": "{0} CR/t"
     },
     {
       "source": "{0} Cleanup also failed: {1}",
       "translation": "{0} Bereinigung ist ebenfalls fehlgeschlagen: {1}"
+    },
+    {
+      "source": "{0} Demand",
+      "translation": "{0} Nachfrage"
     },
     {
       "source": "{0} FCs: {1} deficit{2} {3}",
@@ -32913,8 +33029,8 @@
       "translation": "{0} Win32-Fehler {1}."
     },
     {
-      "source": "{0} acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. {1}",
-      "translation": "{0} Erwerbssysteme innerhalb von 20 Lichtjahren eines befestigten Systems oder 30 Lichtjahren einer Festung, bester Verkaufspreis zuerst. {1}"
+      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
+      "translation": "{0} Erfassungsziele innerhalb von 20 Lichtpunkten um ein befestigtes System oder 30 Lichtpunkte um eine Festung. {1}{2}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -33089,6 +33205,10 @@
       "translation": "{0} bekannte Arten"
     },
     {
+      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
+      "translation": "{0} landbare Aufbauten für {1}. Bestseller von {2}.{3}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "{0} Layout – keine Blueprint-Kategorie aufgezeichnet"
     },
@@ -33225,6 +33345,10 @@
       "translation": "{0} passende Ringe · {1} · {2} · Online-Seite {3}."
     },
     {
+      "source": "{0} material traders · {1}{2}",
+      "translation": "{0} Materialhändler · {1}{2}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} Nachrichten • {1} ungelesen"
     },
@@ -33315,6 +33439,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "{0} Overlay-Einstellungen"
+    },
+    {
+      "source": "{0} prices for {1}.{2}",
+      "translation": "{0} Preise für {1}.{2}"
     },
     {
       "source": "{0} rebuilds",
@@ -33473,10 +33601,6 @@
       "translation": "{0} {1} LINKS"
     },
     {
-      "source": "{0} {1} material traders · Spansh.",
-      "translation": "{0} {1} Materialhändler · Spansh."
-    },
-    {
       "source": "{0} {1} on {2}",
       "translation": "{0} {1} auf {2}"
     },
@@ -33557,6 +33681,10 @@
       "translation": "{0} · {1} Einträge"
     },
     {
+      "source": "{0} · {1} ly",
+      "translation": "{0} · {1} ly"
+    },
+    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} erfasst · höchstes Suffix {2} · {3}"
     },
@@ -33599,6 +33727,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1} t"
+    },
+    {
+      "source": "{0}: {1}{2}, {3} g, {4} ls",
+      "translation": "{0}: {1}{2}, {3} g, {4} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -33873,6 +34005,10 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", Ruinas{0} {1}"
+    },
+    {
+      "source": ", {0} reserve",
+      "translation": ", reserva {0}"
     },
     {
       "source": "-1 asteroid",
@@ -35863,10 +35999,6 @@
       "translation": "Cualquier nombre de producto"
     },
     {
-      "source": "Any or None locks the goal on Reinforce and Opposing Power on Any. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power's Fortified systems or 30 ly of its Stronghold systems, and reads Expansion and Contested from conflict progress until the Thursday tick.",
-      "translation": "Cualquiera o Ninguno bloquea el objetivo en Reforzar y el poder opuesto en Cualquiera. Una Potencia elegida puede Reforzar sus sistemas establecidos, Socavar otras Potencias o Adquirir. Adquirir mantiene los sistemas sin dueño dentro de 20 años de los sistemas Fortificados de esa Potencia o 30 años de sus sistemas de Fortaleza, y lee Expansión y Disputa desde el progreso del conflicto hasta el tic del jueves."
-    },
-    {
       "source": "AppImage manual update",
       "translation": "Actualización manual de AppImage"
     },
@@ -37275,6 +37407,10 @@
       "translation": "Cuerpo (opcional)"
     },
     {
+      "source": "Body Details",
+      "translation": "Detalles del cuerpo"
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Protectorado del cuerpo"
     },
@@ -38623,6 +38759,10 @@
       "translation": "Elija un tipo de sitio Guardian reconocido antes de guardar."
     },
     {
+      "source": "Choose a reference system and a surface material.",
+      "translation": "Elija un sistema de referencia y un material de superficie."
+    },
+    {
       "source": "Choose a reference system to search.",
       "translation": "Elija un sistema de referencia para buscar."
     },
@@ -38641,6 +38781,10 @@
     {
       "source": "Choose a start date",
       "translation": "Elige una fecha de inicio"
+    },
+    {
+      "source": "Choose a surface material.",
+      "translation": "Elija un material de superficie."
     },
     {
       "source": "Choose a system-name text file",
@@ -38921,10 +39065,6 @@
     {
       "source": "Click a shortcut field, hold the keyboard keys or controller buttons you want, then release them. Click outside the field to accept the new binding.",
       "translation": "Haga clic en un campo de acceso directo, mantenga presionadas las teclas del teclado o los botones del controlador que desee y luego suéltelos. Haga clic fuera del campo para aceptar el nuevo enlace."
-    },
-    {
-      "source": "Click to add",
-      "translation": "Haga clic para agregar"
     },
     {
       "source": "Click to copy",
@@ -40799,6 +40939,10 @@
       "translation": "Encuesta DSS: Ninguna"
     },
     {
+      "source": "DST",
+      "translation": "horario de verano"
+    },
+    {
       "source": "Danger",
       "translation": "Peligro"
     },
@@ -41057,6 +41201,10 @@
     {
       "source": "Delivery and local storage",
       "translation": "Entrega y almacenamiento local."
+    },
+    {
+      "source": "Demand: {0}",
+      "translation": "Demanda: {0}"
     },
     {
       "source": "Denied",
@@ -41501,6 +41649,14 @@
     {
       "source": "Distance unavailable",
       "translation": "Distancia no disponible"
+    },
+    {
+      "source": "Distance: {0} Ls",
+      "translation": "Distancia: {0} Ls"
+    },
+    {
+      "source": "Distance: {0} ls",
+      "translation": "Distancia: {0} ls"
     },
     {
       "source": "DistanceFromArrivalLS",
@@ -43355,6 +43511,10 @@
       "translation": "Encuentre puntos de acceso para este producto"
     },
     {
+      "source": "Find landable surface deposits",
+      "translation": "Encuentre depósitos superficiales aptos para el aterrizaje"
+    },
+    {
       "source": "Find last visit",
       "translation": "Encuentra la última visita"
     },
@@ -43473,6 +43633,10 @@
     {
       "source": "FiregroupsOverlayExceptionsMigrated",
       "translation": "Grupos de fuegoSuperposiciónExcepciones migradas"
+    },
+    {
+      "source": "First",
+      "translation": "Primero"
     },
     {
       "source": "First discovered by CMDR Raven",
@@ -46587,8 +46751,8 @@
       "translation": "Aterrizable"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.",
-      "translation": "Planetas aterrizables para {0} dentro de {1} ly de {2}."
+      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
+      "translation": "Planetas aterrizables para {0} dentro de {1} ly de {2}.{3}"
     },
     {
       "source": "Landing pad",
@@ -46653,6 +46817,10 @@
     {
       "source": "Laser mining",
       "translation": "Minería láser"
+    },
+    {
+      "source": "Last",
+      "translation": "Último"
     },
     {
       "source": "Last approach {0}",
@@ -48201,6 +48369,10 @@
     {
       "source": "Mining Ref",
       "translation": "Referencia Minera"
+    },
+    {
+      "source": "Mining System",
+      "translation": "Sistema Minero"
     },
     {
       "source": "Mining announcements",
@@ -50659,6 +50831,10 @@
       "translation": "Otro / desconocido"
     },
     {
+      "source": "Other Commodities:",
+      "translation": "Otros productos básicos:"
+    },
+    {
       "source": "Other SrvSurvey instances are already open",
       "translation": "Otras instancias SrvSurvey ya están abiertas"
     },
@@ -51959,8 +52135,8 @@
       "translation": "Controlador previamente seleccionado"
     },
     {
-      "source": "Prices are for {0}.",
-      "translation": "Los precios son para {0}."
+      "source": "Price: {0} CR {1}",
+      "translation": "Precio: {0} CR {1}"
     },
     {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
@@ -54031,6 +54207,10 @@
       "translation": "Reputación"
     },
     {
+      "source": "Request failed. Try again.",
+      "translation": "La solicitud falló. Intentar otra vez."
+    },
+    {
       "source": "Requested a fresh Wayland screen-capture source selection after restart.",
       "translation": "Solicitó una nueva selección de fuente de captura de pantalla de Wayland después del reinicio."
     },
@@ -54497,6 +54677,10 @@
     {
       "source": "Ring (optional)",
       "translation": "Anillo (opcional)"
+    },
+    {
+      "source": "Ring Details",
+      "translation": "Detalles del anillo"
     },
     {
       "source": "Ring mining reference",
@@ -55791,6 +55975,10 @@
       "translation": "Guías de búsqueda, configuraciones, símbolos o flujos de trabajo"
     },
     {
+      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
+      "translation": "Busque cuerpos aterrizables cerca del sistema de referencia para los materiales de superficie que elija. El objetivo es la estación dentro de esa distancia que paga más."
+    },
+    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Busque cuadros de procedimientos, realice un seguimiento de cada sistema generado y elija lo que se considera completo."
     },
@@ -55813,10 +56001,6 @@
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
       "translation": "Busque el registro duradero del diario del juego y exporte un paquete de repetición de diagnóstico limitado."
-    },
-    {
-      "source": "Search unavailable: {0}",
-      "translation": "Búsqueda no disponible: {0}"
     },
     {
       "source": "Search+",
@@ -56663,6 +56847,10 @@
       "translation": "Mostrar todos los cuadros de código masivo {0}"
     },
     {
+      "source": "Show all signals",
+      "translation": "Mostrar todas las señales"
+    },
+    {
       "source": "Show bio signals from Canonn on the radar",
       "translation": "Mostrar señales biológicas de Canonn en el radar"
     },
@@ -56737,6 +56925,10 @@
     {
       "source": "Show legend",
       "translation": "Mostrar leyenda"
+    },
+    {
+      "source": "Show less",
+      "translation": "Mostrar menos"
     },
     {
       "source": "Show list in system map",
@@ -57045,6 +57237,10 @@
     {
       "source": "Silver Legal Group",
       "translation": "Grupo Legal Plata"
+    },
+    {
+      "source": "Single",
+      "translation": "Soltero"
     },
     {
       "source": "Site heading",
@@ -58003,10 +58199,6 @@
       "translation": "No se pudo guardar la configuración de información de la estación: {0}"
     },
     {
-      "source": "Station prices are unavailable: {0}",
-      "translation": "Los precios de las estaciones no están disponibles: {0}"
-    },
-    {
       "source": "Station type contains",
       "translation": "El tipo de estación contiene"
     },
@@ -58029,6 +58221,10 @@
     {
       "source": "StationType",
       "translation": "Tipo de estación"
+    },
+    {
+      "source": "Stations",
+      "translation": "Estaciones"
     },
     {
       "source": "Statistics settings",
@@ -58985,6 +59181,10 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Apunte a A01 y escanee con los artefactos requeridos a bordo."
+    },
+    {
+      "source": "Target System",
+      "translation": "Sistema de destino"
     },
     {
       "source": "Target not supplied",
@@ -61707,6 +61907,18 @@
       "translation": "Escriba más palabras para limitar los resultados."
     },
     {
+      "source": "Type to add minerals/metals...",
+      "translation": "Escriba para agregar minerales/metales..."
+    },
+    {
+      "source": "Type to add mining types...",
+      "translation": "Escriba para agregar tipos de minería..."
+    },
+    {
+      "source": "Type to add system states...",
+      "translation": "Escriba para agregar estados del sistema..."
+    },
+    {
       "source": "Type-10 Defender",
       "translation": "Defensor tipo 10"
     },
@@ -62169,6 +62381,22 @@
     {
       "source": "Updated {0}. A verified state backup was retained.",
       "translation": "Actualizado {0}. Se retuvo una copia de seguridad del estado verificado."
+    },
+    {
+      "source": "Updated: just now",
+      "translation": "Actualizado: justo ahora"
+    },
+    {
+      "source": "Updated: {0}d ago",
+      "translation": "Actualizado: hace {0}d"
+    },
+    {
+      "source": "Updated: {0}h {1}m ago",
+      "translation": "Actualizado: Hace {0}h {1}m"
+    },
+    {
+      "source": "Updated: {0}m ago",
+      "translation": "Actualizado: Hace {0}m"
     },
     {
       "source": "Updates",
@@ -64141,6 +64369,10 @@
     {
       "source": "child",
       "translation": "niño"
+    },
+    {
+      "source": "chip-remove",
+      "translation": "quitar chip"
     },
     {
       "source": "clear",
@@ -66127,6 +66359,10 @@
       "translation": "la ruta"
     },
     {
+      "source": "the selected minerals",
+      "translation": "los minerales seleccionados"
+    },
+    {
       "source": "the selected origin",
       "translation": "el origen seleccionado"
     },
@@ -66583,6 +66819,10 @@
       "translation": "{0} ({1}) no se puede marcar vacío."
     },
     {
+      "source": "{0} ({1}{2}Price: {3}{4}",
+      "translation": "{0} ({1}{2}Precio: {3}{4}"
+    },
+    {
       "source": "{0} + pending",
       "translation": "{0} + pendiente"
     },
@@ -66619,12 +66859,20 @@
       "translation": "{0} Recompensa base CR"
     },
     {
+      "source": "{0} CR {1}",
+      "translation": "{0} CR {1}"
+    },
+    {
       "source": "{0} CR/t",
       "translation": "{0} CR/t"
     },
     {
       "source": "{0} Cleanup also failed: {1}",
       "translation": "{0} La limpieza también falló: {1}"
+    },
+    {
+      "source": "{0} Demand",
+      "translation": "{0} Demanda"
     },
     {
       "source": "{0} FCs: {1} deficit{2} {3}",
@@ -66723,8 +66971,8 @@
       "translation": "{0} Error de Win32 {1}."
     },
     {
-      "source": "{0} acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. {1}",
-      "translation": "Sistemas de adquisición {0} dentro de 20 años de un sistema Fortificado o 30 años de una Fortaleza, el mejor precio de venta primero. {1}"
+      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
+      "translation": "Objetivos de adquisición {0} dentro de 20 ly de un sistema fortificado o 30 ly de una fortaleza. {1}{2}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -66899,6 +67147,10 @@
       "translation": "{0} especies conocidas"
     },
     {
+      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
+      "translation": "{0} carrocerías aterrizables para {1}. Mejor venta de {2}.{3}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "Diseño {0} - no se registró ninguna categoría de plano"
     },
@@ -67035,6 +67287,10 @@
       "translation": "Anillos a juego {0} · {1} · {2} · página online {3}."
     },
     {
+      "source": "{0} material traders · {1}{2}",
+      "translation": "{0} comerciantes de materiales · {1}{2}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} mensajes • {1} no leídos"
     },
@@ -67125,6 +67381,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "Configuración de superposición {0}"
+    },
+    {
+      "source": "{0} prices for {1}.{2}",
+      "translation": "Precios de {0} para {1}.{2}"
     },
     {
       "source": "{0} rebuilds",
@@ -67283,10 +67543,6 @@
       "translation": "{0} {1} IZQUIERDA"
     },
     {
-      "source": "{0} {1} material traders · Spansh.",
-      "translation": "{0} {1} comerciantes de materiales · Spansh."
-    },
-    {
       "source": "{0} {1} on {2}",
       "translation": "{0} {1} en {2}"
     },
@@ -67367,6 +67623,10 @@
       "translation": "{0} · {1} entradas"
     },
     {
+      "source": "{0} · {1} ly",
+      "translation": "{0} · {1} ly"
+    },
+    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} registrado · sufijo más alto {2} · {3}"
     },
@@ -67409,6 +67669,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1}"
+    },
+    {
+      "source": "{0}: {1}{2}, {3} g, {4} ls",
+      "translation": "{0}: {1}{2}, {3} g, {4} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -67683,6 +67947,10 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", Ruines{0} {1}"
+    },
+    {
+      "source": ", {0} reserve",
+      "translation": ", réserve {0}"
     },
     {
       "source": "-1 asteroid",
@@ -69673,10 +69941,6 @@
       "translation": "N'importe quel nom de produit"
     },
     {
-      "source": "Any or None locks the goal on Reinforce and Opposing Power on Any. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power's Fortified systems or 30 ly of its Stronghold systems, and reads Expansion and Contested from conflict progress until the Thursday tick.",
-      "translation": "Any ou None verrouille l'objectif sur Renforcement et la puissance adverse sur Any. Une puissance choisie peut renforcer ses systèmes établis, saper d'autres puissances ou acquérir. Acquérir maintient les systèmes sans propriétaire à moins de 20 ly des systèmes fortifiés de cette puissance ou à 30 ly de ses systèmes de forteresse, et lit Expansion et Contesté depuis la progression du conflit jusqu'au tick du jeudi."
-    },
-    {
       "source": "AppImage manual update",
       "translation": "Mise à jour manuelle d'AppImage"
     },
@@ -71085,6 +71349,10 @@
       "translation": "Corps (facultatif)"
     },
     {
+      "source": "Body Details",
+      "translation": "Détails du corps"
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Protectorat du corps"
     },
@@ -72433,6 +72701,10 @@
       "translation": "Choisissez un type de site Guardian reconnu avant d'enregistrer."
     },
     {
+      "source": "Choose a reference system and a surface material.",
+      "translation": "Choisissez un système de référence et un matériau de surface."
+    },
+    {
       "source": "Choose a reference system to search.",
       "translation": "Choisissez un système de référence à rechercher."
     },
@@ -72451,6 +72723,10 @@
     {
       "source": "Choose a start date",
       "translation": "Choisissez une date de début"
+    },
+    {
+      "source": "Choose a surface material.",
+      "translation": "Choisissez un matériau de surface."
     },
     {
       "source": "Choose a system-name text file",
@@ -72731,10 +73007,6 @@
     {
       "source": "Click a shortcut field, hold the keyboard keys or controller buttons you want, then release them. Click outside the field to accept the new binding.",
       "translation": "Cliquez sur un champ de raccourci, maintenez les touches du clavier ou les boutons du contrôleur souhaités, puis relâchez-les. Cliquez en dehors du champ pour accepter la nouvelle liaison."
-    },
-    {
-      "source": "Click to add",
-      "translation": "Cliquez pour ajouter"
     },
     {
       "source": "Click to copy",
@@ -74609,6 +74881,10 @@
       "translation": "Enquête DSS : Aucune"
     },
     {
+      "source": "DST",
+      "translation": "heure d'été"
+    },
+    {
       "source": "Danger",
       "translation": "Danger"
     },
@@ -74867,6 +75143,10 @@
     {
       "source": "Delivery and local storage",
       "translation": "Livraison et stockage local"
+    },
+    {
+      "source": "Demand: {0}",
+      "translation": "Demande : {0}"
     },
     {
       "source": "Denied",
@@ -75311,6 +75591,14 @@
     {
       "source": "Distance unavailable",
       "translation": "Distance indisponible"
+    },
+    {
+      "source": "Distance: {0} Ls",
+      "translation": "Distance: {0} Ls"
+    },
+    {
+      "source": "Distance: {0} ls",
+      "translation": "Distance: {0} ls"
     },
     {
       "source": "DistanceFromArrivalLS",
@@ -77165,6 +77453,10 @@
       "translation": "Trouver des points chauds pour ce produit"
     },
     {
+      "source": "Find landable surface deposits",
+      "translation": "Trouver des gisements de surface exploitables"
+    },
+    {
       "source": "Find last visit",
       "translation": "Rechercher la dernière visite"
     },
@@ -77283,6 +77575,10 @@
     {
       "source": "FiregroupsOverlayExceptionsMigrated",
       "translation": "FiregroupsOverlayExceptionsMigrated"
+    },
+    {
+      "source": "First",
+      "translation": "D'abord"
     },
     {
       "source": "First discovered by CMDR Raven",
@@ -80397,8 +80693,8 @@
       "translation": "Atterrissable"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.",
-      "translation": "Planètes atterrissables pour {0} au sein de {1} à proximité de {2}."
+      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
+      "translation": "Planètes atterrissables pour {0} dans {1} à proximité de {2}.{3}"
     },
     {
       "source": "Landing pad",
@@ -80463,6 +80759,10 @@
     {
       "source": "Laser mining",
       "translation": "Exploitation minière au laser"
+    },
+    {
+      "source": "Last",
+      "translation": "Dernier"
     },
     {
       "source": "Last approach {0}",
@@ -82011,6 +82311,10 @@
     {
       "source": "Mining Ref",
       "translation": "Réf minière"
+    },
+    {
+      "source": "Mining System",
+      "translation": "Système minier"
     },
     {
       "source": "Mining announcements",
@@ -84469,6 +84773,10 @@
       "translation": "Autre / inconnu"
     },
     {
+      "source": "Other Commodities:",
+      "translation": "Autres produits :"
+    },
+    {
       "source": "Other SrvSurvey instances are already open",
       "translation": "D'autres instances SrvSurvey sont déjà ouvertes"
     },
@@ -85769,8 +86077,8 @@
       "translation": "Contrôleur précédemment sélectionné"
     },
     {
-      "source": "Prices are for {0}.",
-      "translation": "Les prix sont pour {0}."
+      "source": "Price: {0} CR {1}",
+      "translation": "Prix ​​: {0} CR {1}"
     },
     {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
@@ -87841,6 +88149,10 @@
       "translation": "Réputation"
     },
     {
+      "source": "Request failed. Try again.",
+      "translation": "La demande a échoué. Essayer à nouveau."
+    },
+    {
       "source": "Requested a fresh Wayland screen-capture source selection after restart.",
       "translation": "Demandé une nouvelle sélection de source de capture d'écran Wayland après le redémarrage."
     },
@@ -88307,6 +88619,10 @@
     {
       "source": "Ring (optional)",
       "translation": "Bague (facultatif)"
+    },
+    {
+      "source": "Ring Details",
+      "translation": "Détails de la bague"
     },
     {
       "source": "Ring mining reference",
@@ -89601,6 +89917,10 @@
       "translation": "Rechercher des guides, des paramètres, des symboles ou des flux de travail"
     },
     {
+      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
+      "translation": "Recherchez des corps atterrissables à proximité du système de référence pour les matériaux de surface que vous choisissez. La cible est la station située à l’intérieur de cette distance qui paie le plus."
+    },
+    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Recherchez des boîtes procédurales, suivez chaque système généré et choisissez ce qui compte comme terminé."
     },
@@ -89623,10 +89943,6 @@
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
       "translation": "Recherchez l'enregistrement durable du journal de jeu et exportez un package de relecture de diagnostic limité."
-    },
-    {
-      "source": "Search unavailable: {0}",
-      "translation": "Recherche indisponible : {0}"
     },
     {
       "source": "Search+",
@@ -90473,6 +90789,10 @@
       "translation": "Afficher tous les boxels de code de masse {0}"
     },
     {
+      "source": "Show all signals",
+      "translation": "Afficher tous les signaux"
+    },
+    {
       "source": "Show bio signals from Canonn on the radar",
       "translation": "Afficher les signaux biologiques de Canonn sur le radar"
     },
@@ -90547,6 +90867,10 @@
     {
       "source": "Show legend",
       "translation": "Afficher la légende"
+    },
+    {
+      "source": "Show less",
+      "translation": "Afficher moins"
     },
     {
       "source": "Show list in system map",
@@ -90855,6 +91179,10 @@
     {
       "source": "Silver Legal Group",
       "translation": "Groupe juridique Silver"
+    },
+    {
+      "source": "Single",
+      "translation": "Célibataire"
     },
     {
       "source": "Site heading",
@@ -91813,10 +92141,6 @@
       "translation": "Les paramètres des informations sur la station n'ont pas pu être enregistrés : {0}"
     },
     {
-      "source": "Station prices are unavailable: {0}",
-      "translation": "Les tarifs des stations ne sont pas disponibles : {0}"
-    },
-    {
       "source": "Station type contains",
       "translation": "Le type de station contient"
     },
@@ -91839,6 +92163,10 @@
     {
       "source": "StationType",
       "translation": "Type de station"
+    },
+    {
+      "source": "Stations",
+      "translation": "Gares"
     },
     {
       "source": "Statistics settings",
@@ -92795,6 +93123,10 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Ciblez A01 et scannez avec les artefacts requis à bord."
+    },
+    {
+      "source": "Target System",
+      "translation": "Système cible"
     },
     {
       "source": "Target not supplied",
@@ -95517,6 +95849,18 @@
       "translation": "Tapez plus de mots pour affiner les résultats"
     },
     {
+      "source": "Type to add minerals/metals...",
+      "translation": "Tapez pour ajouter des minéraux/métaux..."
+    },
+    {
+      "source": "Type to add mining types...",
+      "translation": "Tapez pour ajouter des types d'exploration de données..."
+    },
+    {
+      "source": "Type to add system states...",
+      "translation": "Tapez pour ajouter des états système..."
+    },
+    {
       "source": "Type-10 Defender",
       "translation": "Défenseur de type 10"
     },
@@ -95979,6 +96323,22 @@
     {
       "source": "Updated {0}. A verified state backup was retained.",
       "translation": "Mise à jour de {0}. Une sauvegarde d'état vérifiée a été conservée."
+    },
+    {
+      "source": "Updated: just now",
+      "translation": "Mise à jour : tout à l'heure"
+    },
+    {
+      "source": "Updated: {0}d ago",
+      "translation": "Mise à jour : {0}d il y a"
+    },
+    {
+      "source": "Updated: {0}h {1}m ago",
+      "translation": "Mise à jour : {0}h {1}m il y a"
+    },
+    {
+      "source": "Updated: {0}m ago",
+      "translation": "Mise à jour : il y a {0}m"
     },
     {
       "source": "Updates",
@@ -97951,6 +98311,10 @@
     {
       "source": "child",
       "translation": "enfant"
+    },
+    {
+      "source": "chip-remove",
+      "translation": "puce-retirer"
     },
     {
       "source": "clear",
@@ -99937,6 +100301,10 @@
       "translation": "l'itinéraire"
     },
     {
+      "source": "the selected minerals",
+      "translation": "les minéraux sélectionnés"
+    },
+    {
       "source": "the selected origin",
       "translation": "l'origine sélectionnée"
     },
@@ -100393,6 +100761,10 @@
       "translation": "{0} ({1}) ne peut pas être marqué comme vide."
     },
     {
+      "source": "{0} ({1}{2}Price: {3}{4}",
+      "translation": "{0} ({1}{2}Prix : {3}{4}"
+    },
+    {
       "source": "{0} + pending",
       "translation": "{0} + en attente"
     },
@@ -100429,12 +100801,20 @@
       "translation": "{0} Récompense de base CR"
     },
     {
+      "source": "{0} CR {1}",
+      "translation": "{0} CR {1}"
+    },
+    {
       "source": "{0} CR/t",
       "translation": "{0} RC/t"
     },
     {
       "source": "{0} Cleanup also failed: {1}",
       "translation": "Le nettoyage de {0} a également échoué : {1}"
+    },
+    {
+      "source": "{0} Demand",
+      "translation": "{0} Demande"
     },
     {
       "source": "{0} FCs: {1} deficit{2} {3}",
@@ -100533,8 +100913,8 @@
       "translation": "{0} Erreur Win32 {1}."
     },
     {
-      "source": "{0} acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. {1}",
-      "translation": "Systèmes d'acquisition {0} à moins de 20 ly d'un système fortifié ou de 30 ly d'une forteresse, meilleur prix de vente en premier. {1}"
+      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
+      "translation": "L'acquisition {0} cible à moins de 20 ly d'un système fortifié ou de 30 ly d'une forteresse. {1}{2}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -100709,6 +101089,10 @@
       "translation": "{0} espèces connues"
     },
     {
+      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
+      "translation": "Carrosseries atterrissables {0} pour {1}. Meilleure vente de {2}.{3}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "Mise en page {0} - aucune catégorie de plan enregistrée"
     },
@@ -100845,6 +101229,10 @@
       "translation": "Bagues assorties {0} · {1} · {2} · page en ligne {3}."
     },
     {
+      "source": "{0} material traders · {1}{2}",
+      "translation": "{0} commerçants de matériaux · {1}{2}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} messages • {1} non lus"
     },
@@ -100935,6 +101323,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "Paramètres de superposition {0}"
+    },
+    {
+      "source": "{0} prices for {1}.{2}",
+      "translation": "{0} prix pour {1}.{2}"
     },
     {
       "source": "{0} rebuilds",
@@ -101093,10 +101485,6 @@
       "translation": "{0} {1} GAUCHE"
     },
     {
-      "source": "{0} {1} material traders · Spansh.",
-      "translation": "{0} {1} commerçants de matériaux · Spansh."
-    },
-    {
       "source": "{0} {1} on {2}",
       "translation": "{0} {1} sur {2}"
     },
@@ -101177,6 +101565,10 @@
       "translation": "{0} · {1} entrées"
     },
     {
+      "source": "{0} · {1} ly",
+      "translation": "{0} · {1} ly"
+    },
+    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} enregistré · suffixe le plus élevé {2} · {3}"
     },
@@ -101219,6 +101611,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0} : {1} t"
+    },
+    {
+      "source": "{0}: {1}{2}, {3} g, {4} ls",
+      "translation": "{0} : {1}{2}, {3} g, {4} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -101493,6 +101889,10 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", Ruínas{0} {1}"
+    },
+    {
+      "source": ", {0} reserve",
+      "translation": ", reserva {0}"
     },
     {
       "source": "-1 asteroid",
@@ -103483,10 +103883,6 @@
       "translation": "Qualquer nome de mercadoria"
     },
     {
-      "source": "Any or None locks the goal on Reinforce and Opposing Power on Any. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power's Fortified systems or 30 ly of its Stronghold systems, and reads Expansion and Contested from conflict progress until the Thursday tick.",
-      "translation": "Qualquer ou Nenhum bloqueia o objetivo em Reforçar e Poder Opositor em Qualquer. Um Poder escolhido pode Reforçar seus sistemas estabelecidos, Minar outros Poderes ou Adquirir. Adquirir mantém sistemas sem dono dentro de 20 anos dos sistemas Fortificados daquele Poder ou 30 anos de seus sistemas de Fortaleza, e lê Expansão e Contestado do progresso do conflito até o tick de quinta-feira."
-    },
-    {
       "source": "AppImage manual update",
       "translation": "Atualização manual do AppImage"
     },
@@ -104895,6 +105291,10 @@
       "translation": "Corpo (opcional)"
     },
     {
+      "source": "Body Details",
+      "translation": "Detalhes do corpo"
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Protetorado Corporal"
     },
@@ -106243,6 +106643,10 @@
       "translation": "Escolha um tipo de site reconhecido do Guardian antes de salvar."
     },
     {
+      "source": "Choose a reference system and a surface material.",
+      "translation": "Escolha um sistema de referência e um material de superfície."
+    },
+    {
       "source": "Choose a reference system to search.",
       "translation": "Escolha um sistema de referência para pesquisar."
     },
@@ -106261,6 +106665,10 @@
     {
       "source": "Choose a start date",
       "translation": "Escolha uma data de início"
+    },
+    {
+      "source": "Choose a surface material.",
+      "translation": "Escolha um material de superfície."
     },
     {
       "source": "Choose a system-name text file",
@@ -106541,10 +106949,6 @@
     {
       "source": "Click a shortcut field, hold the keyboard keys or controller buttons you want, then release them. Click outside the field to accept the new binding.",
       "translation": "Clique em um campo de atalho, segure as teclas do teclado ou botões do controlador desejados e solte-os. Clique fora do campo para aceitar a nova vinculação."
-    },
-    {
-      "source": "Click to add",
-      "translation": "Clique para adicionar"
     },
     {
       "source": "Click to copy",
@@ -108419,6 +108823,10 @@
       "translation": "Pesquisa DSS: Nenhuma"
     },
     {
+      "source": "DST",
+      "translation": "Horário de verão"
+    },
+    {
       "source": "Danger",
       "translation": "Perigo"
     },
@@ -108677,6 +109085,10 @@
     {
       "source": "Delivery and local storage",
       "translation": "Entrega e armazenamento local"
+    },
+    {
+      "source": "Demand: {0}",
+      "translation": "Demanda: {0}"
     },
     {
       "source": "Denied",
@@ -109121,6 +109533,14 @@
     {
       "source": "Distance unavailable",
       "translation": "Distância indisponível"
+    },
+    {
+      "source": "Distance: {0} Ls",
+      "translation": "Distância: {0} Ls"
+    },
+    {
+      "source": "Distance: {0} ls",
+      "translation": "Distância: {0} ls"
     },
     {
       "source": "DistanceFromArrivalLS",
@@ -110975,6 +111395,10 @@
       "translation": "Encontre pontos de acesso para esta mercadoria"
     },
     {
+      "source": "Find landable surface deposits",
+      "translation": "Encontre depósitos superficiais aterrissáveis"
+    },
+    {
       "source": "Find last visit",
       "translation": "Encontrar última visita"
     },
@@ -111093,6 +111517,10 @@
     {
       "source": "FiregroupsOverlayExceptionsMigrated",
       "translation": "FiregroupsOverlayExceptionsMigrated"
+    },
+    {
+      "source": "First",
+      "translation": "Primeiro"
     },
     {
       "source": "First discovered by CMDR Raven",
@@ -114207,8 +114635,8 @@
       "translation": "Landable"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.",
-      "translation": "Planetas pousáveis ​​para {0} dentro de {1} a partir de {2}."
+      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
+      "translation": "Planetas pousáveis ​​para {0} dentro de {1} ano de {2}.{3}"
     },
     {
       "source": "Landing pad",
@@ -114273,6 +114701,10 @@
     {
       "source": "Laser mining",
       "translation": "Mineração a laser"
+    },
+    {
+      "source": "Last",
+      "translation": "Durar"
     },
     {
       "source": "Last approach {0}",
@@ -115821,6 +116253,10 @@
     {
       "source": "Mining Ref",
       "translation": "Referência de mineração"
+    },
+    {
+      "source": "Mining System",
+      "translation": "Sistema de mineração"
     },
     {
       "source": "Mining announcements",
@@ -118279,6 +118715,10 @@
       "translation": "Outro/desconhecido"
     },
     {
+      "source": "Other Commodities:",
+      "translation": "Outras mercadorias:"
+    },
+    {
       "source": "Other SrvSurvey instances are already open",
       "translation": "Outras instâncias SrvSurvey já estão abertas"
     },
@@ -119579,8 +120019,8 @@
       "translation": "Controlador previamente selecionado"
     },
     {
-      "source": "Prices are for {0}.",
-      "translation": "Os preços são para {0}."
+      "source": "Price: {0} CR {1}",
+      "translation": "Preço: {0} CR {1}"
     },
     {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
@@ -121651,6 +122091,10 @@
       "translation": "Reputação"
     },
     {
+      "source": "Request failed. Try again.",
+      "translation": "Falha na solicitação. Tente novamente."
+    },
+    {
       "source": "Requested a fresh Wayland screen-capture source selection after restart.",
       "translation": "Solicitada uma nova seleção de fonte de captura de tela do Wayland após a reinicialização."
     },
@@ -122117,6 +122561,10 @@
     {
       "source": "Ring (optional)",
       "translation": "Anel (opcional)"
+    },
+    {
+      "source": "Ring Details",
+      "translation": "Detalhes do anel"
     },
     {
       "source": "Ring mining reference",
@@ -123411,6 +123859,10 @@
       "translation": "Guias de pesquisa, configurações, símbolos ou fluxos de trabalho"
     },
     {
+      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
+      "translation": "Procure em corpos pousáveis ​​próximos ao sistema de referência os materiais de superfície que você escolher. O alvo é a estação dentro daquela distância que paga mais."
+    },
+    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Pesquise caixas processuais, rastreie cada sistema gerado e escolha o que é considerado completo."
     },
@@ -123433,10 +123885,6 @@
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
       "translation": "Pesquise o registro durável do diário do jogo e exporte um pacote de reprodução de diagnóstico local."
-    },
-    {
-      "source": "Search unavailable: {0}",
-      "translation": "Pesquisa indisponível: {0}"
     },
     {
       "source": "Search+",
@@ -124283,6 +124731,10 @@
       "translation": "Mostrar todos os boxels de código de massa {0}"
     },
     {
+      "source": "Show all signals",
+      "translation": "Mostrar todos os sinais"
+    },
+    {
       "source": "Show bio signals from Canonn on the radar",
       "translation": "Mostrar sinais biológicos de Canonn no radar"
     },
@@ -124357,6 +124809,10 @@
     {
       "source": "Show legend",
       "translation": "Mostrar legenda"
+    },
+    {
+      "source": "Show less",
+      "translation": "Mostrar menos"
     },
     {
       "source": "Show list in system map",
@@ -124665,6 +125121,10 @@
     {
       "source": "Silver Legal Group",
       "translation": "Grupo Jurídico Prata"
+    },
+    {
+      "source": "Single",
+      "translation": "Solteiro"
     },
     {
       "source": "Site heading",
@@ -125623,10 +126083,6 @@
       "translation": "As configurações de informações da estação não puderam ser salvas: {0}"
     },
     {
-      "source": "Station prices are unavailable: {0}",
-      "translation": "Os preços das estações não estão disponíveis: {0}"
-    },
-    {
       "source": "Station type contains",
       "translation": "O tipo de estação contém"
     },
@@ -125649,6 +126105,10 @@
     {
       "source": "StationType",
       "translation": "EstaçãoTipo"
+    },
+    {
+      "source": "Stations",
+      "translation": "Estações"
     },
     {
       "source": "Statistics settings",
@@ -126605,6 +127065,10 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Alvo A01 e escaneie com os artefatos necessários a bordo."
+    },
+    {
+      "source": "Target System",
+      "translation": "Sistema de destino"
     },
     {
       "source": "Target not supplied",
@@ -129327,6 +129791,18 @@
       "translation": "Digite mais palavras para restringir os resultados"
     },
     {
+      "source": "Type to add minerals/metals...",
+      "translation": "Digite para adicionar minerais/metais..."
+    },
+    {
+      "source": "Type to add mining types...",
+      "translation": "Digite para adicionar tipos de mineração..."
+    },
+    {
+      "source": "Type to add system states...",
+      "translation": "Digite para adicionar estados do sistema..."
+    },
+    {
       "source": "Type-10 Defender",
       "translation": "Defensor Tipo 10"
     },
@@ -129789,6 +130265,22 @@
     {
       "source": "Updated {0}. A verified state backup was retained.",
       "translation": "Atualizado {0}. Um backup de estado verificado foi retido."
+    },
+    {
+      "source": "Updated: just now",
+      "translation": "Atualizado: agora mesmo"
+    },
+    {
+      "source": "Updated: {0}d ago",
+      "translation": "Atualizado: {0}d atrás"
+    },
+    {
+      "source": "Updated: {0}h {1}m ago",
+      "translation": "Atualizado: {0}h {1}m atrás"
+    },
+    {
+      "source": "Updated: {0}m ago",
+      "translation": "Atualizado: {0}m atrás"
     },
     {
       "source": "Updates",
@@ -131761,6 +132253,10 @@
     {
       "source": "child",
       "translation": "criança"
+    },
+    {
+      "source": "chip-remove",
+      "translation": "remover chip"
     },
     {
       "source": "clear",
@@ -133747,6 +134243,10 @@
       "translation": "a rota"
     },
     {
+      "source": "the selected minerals",
+      "translation": "os minerais selecionados"
+    },
+    {
       "source": "the selected origin",
       "translation": "a origem selecionada"
     },
@@ -134203,6 +134703,10 @@
       "translation": "{0} ({1}) não pode ser marcado como vazio."
     },
     {
+      "source": "{0} ({1}{2}Price: {3}{4}",
+      "translation": "{0} ({1}{2}Preço: {3}{4}"
+    },
+    {
       "source": "{0} + pending",
       "translation": "{0} + pendente"
     },
@@ -134239,12 +134743,20 @@
       "translation": "{0} Recompensa base CR"
     },
     {
+      "source": "{0} CR {1}",
+      "translation": "{0} CR {1}"
+    },
+    {
       "source": "{0} CR/t",
       "translation": "{0} CR/t"
     },
     {
       "source": "{0} Cleanup also failed: {1}",
       "translation": "A limpeza {0} também falhou: {1}"
+    },
+    {
+      "source": "{0} Demand",
+      "translation": "Demanda {0}"
     },
     {
       "source": "{0} FCs: {1} deficit{2} {3}",
@@ -134343,8 +134855,8 @@
       "translation": "{0} Erro Win32 {1}."
     },
     {
-      "source": "{0} acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. {1}",
-      "translation": "Sistemas de aquisição {0} dentro de 20 anos de um sistema Fortificado ou 30 anos de uma Fortaleza, melhor preço de venda primeiro. {1}"
+      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
+      "translation": "Alvos de aquisição {0} dentro de 20 anos de um sistema fortificado ou 30 anos de uma fortaleza. {1}{2}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -134519,6 +135031,10 @@
       "translation": "{0} espécies conhecidas"
     },
     {
+      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
+      "translation": "Corpos pousáveis ​​{0} para {1}. Melhor venda de {2}.{3}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "Layout {0} - nenhuma categoria de blueprint registrada"
     },
@@ -134655,6 +135171,10 @@
       "translation": "{0} anéis correspondentes · {1} · {2} · página online {3}."
     },
     {
+      "source": "{0} material traders · {1}{2}",
+      "translation": "Comerciantes de materiais {0} · {1}{2}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} mensagens • {1} não lidas"
     },
@@ -134745,6 +135265,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "Configurações de sobreposição {0}"
+    },
+    {
+      "source": "{0} prices for {1}.{2}",
+      "translation": "Preços {0} para {1}.{2}"
     },
     {
       "source": "{0} rebuilds",
@@ -134903,10 +135427,6 @@
       "translation": "{0} {1} ESQUERDA"
     },
     {
-      "source": "{0} {1} material traders · Spansh.",
-      "translation": "{0} {1} comerciantes de materiais · Spansh."
-    },
-    {
       "source": "{0} {1} on {2}",
       "translation": "{0} {1} em {2}"
     },
@@ -134987,6 +135507,10 @@
       "translation": "{0} · {1} entradas"
     },
     {
+      "source": "{0} · {1} ly",
+      "translation": "{0} · {1} ly"
+    },
+    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} registrado · sufixo mais alto {2} · {3}"
     },
@@ -135029,6 +135553,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1} t"
+    },
+    {
+      "source": "{0}: {1}{2}, {3} g, {4} ls",
+      "translation": "{0}: {1}{2}, {3} g, {4} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -135303,6 +135831,10 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", Руины{0} {1}"
+    },
+    {
+      "source": ", {0} reserve",
+      "translation": ", {0} резерв"
     },
     {
       "source": "-1 asteroid",
@@ -137293,10 +137825,6 @@
       "translation": "Любое товарное наименование"
     },
     {
-      "source": "Any or None locks the goal on Reinforce and Opposing Power on Any. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power's Fortified systems or 30 ly of its Stronghold systems, and reads Expansion and Contested from conflict progress until the Thursday tick.",
-      "translation": "Параметр «Любой» или «Нет» фиксирует цель на уровне «Усиление», а «Противоположная сила» — на «Любой». Выбранная держава может укрепить свои устоявшиеся системы, подорвать другие державы или приобрести. «Приобретение» сохраняет бесхозные системы в пределах 20 миль от укрепленных систем этой державы или 30 миль от ее систем-крепостей и читает «Расширение» и «Оспорение» с момента прогресса конфликта до тика в четверг."
-    },
-    {
       "source": "AppImage manual update",
       "translation": "Обновление AppImage вручную"
     },
@@ -138705,6 +139233,10 @@
       "translation": "Тело (необязательно)"
     },
     {
+      "source": "Body Details",
+      "translation": "Детали тела"
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Протекторат тела"
     },
@@ -140053,6 +140585,10 @@
       "translation": "Перед сохранением выберите признанный тип сайта Guardian."
     },
     {
+      "source": "Choose a reference system and a surface material.",
+      "translation": "Выберите систему отсчета и материал поверхности."
+    },
+    {
       "source": "Choose a reference system to search.",
       "translation": "Выберите систему отсчета для поиска."
     },
@@ -140071,6 +140607,10 @@
     {
       "source": "Choose a start date",
       "translation": "Выберите дату начала"
+    },
+    {
+      "source": "Choose a surface material.",
+      "translation": "Выберите материал поверхности."
     },
     {
       "source": "Choose a system-name text file",
@@ -140351,10 +140891,6 @@
     {
       "source": "Click a shortcut field, hold the keyboard keys or controller buttons you want, then release them. Click outside the field to accept the new binding.",
       "translation": "Щелкните поле ярлыка, удерживайте нужные клавиши клавиатуры или кнопки контроллера, а затем отпустите их. Щелкните за пределами поля, чтобы принять новую привязку."
-    },
-    {
-      "source": "Click to add",
-      "translation": "Нажмите, чтобы добавить"
     },
     {
       "source": "Click to copy",
@@ -142229,6 +142765,10 @@
       "translation": "Опрос DSS: нет"
     },
     {
+      "source": "DST",
+      "translation": "летнее время"
+    },
+    {
       "source": "Danger",
       "translation": "Опасность"
     },
@@ -142487,6 +143027,10 @@
     {
       "source": "Delivery and local storage",
       "translation": "Доставка и локальное хранение"
+    },
+    {
+      "source": "Demand: {0}",
+      "translation": "Спрос: {0}"
     },
     {
       "source": "Denied",
@@ -142931,6 +143475,14 @@
     {
       "source": "Distance unavailable",
       "translation": "Расстояние недоступно"
+    },
+    {
+      "source": "Distance: {0} Ls",
+      "translation": "Расстояние: {0} Ls"
+    },
+    {
+      "source": "Distance: {0} ls",
+      "translation": "Расстояние: {0} ls"
     },
     {
       "source": "DistanceFromArrivalLS",
@@ -144785,6 +145337,10 @@
       "translation": "Найдите горячие точки для этого товара"
     },
     {
+      "source": "Find landable surface deposits",
+      "translation": "Найдите пригодные для высадки залежи на поверхности"
+    },
+    {
       "source": "Find last visit",
       "translation": "Найти последний визит"
     },
@@ -144903,6 +145459,10 @@
     {
       "source": "FiregroupsOverlayExceptionsMigrated",
       "translation": "FiregroupsOverlayExceptionsMigrated"
+    },
+    {
+      "source": "First",
+      "translation": "Первый"
     },
     {
       "source": "First discovered by CMDR Raven",
@@ -148017,8 +148577,8 @@
       "translation": "Пригодный для посадки"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.",
-      "translation": "Планеты, пригодные для посадки для {0} в пределах {1} от {2}."
+      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
+      "translation": "Планеты, пригодные для посадки для {0} в пределах {1} от {2}.{3}"
     },
     {
       "source": "Landing pad",
@@ -148083,6 +148643,10 @@
     {
       "source": "Laser mining",
       "translation": "Лазерная добыча"
+    },
+    {
+      "source": "Last",
+      "translation": "Последний"
     },
     {
       "source": "Last approach {0}",
@@ -149631,6 +150195,10 @@
     {
       "source": "Mining Ref",
       "translation": "Горное дело"
+    },
+    {
+      "source": "Mining System",
+      "translation": "Система майнинга"
     },
     {
       "source": "Mining announcements",
@@ -152089,6 +152657,10 @@
       "translation": "Другое/неизвестно"
     },
     {
+      "source": "Other Commodities:",
+      "translation": "Другие товары:"
+    },
+    {
       "source": "Other SrvSurvey instances are already open",
       "translation": "Другие экземпляры SrvSurvey уже открыты."
     },
@@ -153389,8 +153961,8 @@
       "translation": "Ранее выбранный контроллер"
     },
     {
-      "source": "Prices are for {0}.",
-      "translation": "Цены указаны за {0}."
+      "source": "Price: {0} CR {1}",
+      "translation": "Цена: {0} CR {1}"
     },
     {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
@@ -155461,6 +156033,10 @@
       "translation": "Репутация"
     },
     {
+      "source": "Request failed. Try again.",
+      "translation": "Запрос не выполнен. Попробуйте еще раз."
+    },
+    {
       "source": "Requested a fresh Wayland screen-capture source selection after restart.",
       "translation": "После перезапуска запрошен новый выбор источника снимка экрана Wayland."
     },
@@ -155927,6 +156503,10 @@
     {
       "source": "Ring (optional)",
       "translation": "Кольцо (по желанию)"
+    },
+    {
+      "source": "Ring Details",
+      "translation": "Детали кольца"
     },
     {
       "source": "Ring mining reference",
@@ -157221,6 +157801,10 @@
       "translation": "Руководства по поиску, настройки, символы или рабочие процессы"
     },
     {
+      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
+      "translation": "Найдите приземляемые тела рядом с системой отсчета, чтобы найти материалы поверхности, которые вы выберете. Целью является станция, находящаяся на этом расстоянии и платящая больше всего."
+    },
+    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Ищите процедурные блоки, отслеживайте каждую сгенерированную систему и выбирайте, что считать завершенным."
     },
@@ -157243,10 +157827,6 @@
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
       "translation": "Выполните поиск в надежной записи игрового журнала и экспортируйте ограниченный пакет диагностических повторов."
-    },
-    {
-      "source": "Search unavailable: {0}",
-      "translation": "Поиск недоступен: {0}"
     },
     {
       "source": "Search+",
@@ -158093,6 +158673,10 @@
       "translation": "Показать все боксели с массовым кодом {0}"
     },
     {
+      "source": "Show all signals",
+      "translation": "Показать все сигналы"
+    },
+    {
       "source": "Show bio signals from Canonn on the radar",
       "translation": "Показывать биосигналы от Canonn на радаре"
     },
@@ -158167,6 +158751,10 @@
     {
       "source": "Show legend",
       "translation": "Показать легенду"
+    },
+    {
+      "source": "Show less",
+      "translation": "Показать меньше"
     },
     {
       "source": "Show list in system map",
@@ -158475,6 +159063,10 @@
     {
       "source": "Silver Legal Group",
       "translation": "Сильвер Юридическая Группа"
+    },
+    {
+      "source": "Single",
+      "translation": "Одинокий"
     },
     {
       "source": "Site heading",
@@ -159433,10 +160025,6 @@
       "translation": "Не удалось сохранить настройки информации о станции: {0}"
     },
     {
-      "source": "Station prices are unavailable: {0}",
-      "translation": "Цены на станции недоступны: {0}"
-    },
-    {
       "source": "Station type contains",
       "translation": "Тип станции содержит"
     },
@@ -159459,6 +160047,10 @@
     {
       "source": "StationType",
       "translation": "Тип станции"
+    },
+    {
+      "source": "Stations",
+      "translation": "Станции"
     },
     {
       "source": "Statistics settings",
@@ -160415,6 +161007,10 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Нацельтесь на А01 и просканируйте его, имея на борту необходимые артефакты."
+    },
+    {
+      "source": "Target System",
+      "translation": "Целевая система"
     },
     {
       "source": "Target not supplied",
@@ -163137,6 +163733,18 @@
       "translation": "Введите больше слов, чтобы сузить результаты"
     },
     {
+      "source": "Type to add minerals/metals...",
+      "translation": "Введите, чтобы добавить минералы/металлы..."
+    },
+    {
+      "source": "Type to add mining types...",
+      "translation": "Введите, чтобы добавить типы добычи..."
+    },
+    {
+      "source": "Type to add system states...",
+      "translation": "Введите, чтобы добавить состояния системы..."
+    },
+    {
       "source": "Type-10 Defender",
       "translation": "Тип-10 Защитник"
     },
@@ -163599,6 +164207,22 @@
     {
       "source": "Updated {0}. A verified state backup was retained.",
       "translation": "Обновлен {0}. Была сохранена проверенная резервная копия состояния."
+    },
+    {
+      "source": "Updated: just now",
+      "translation": "Обновлено: только что"
+    },
+    {
+      "source": "Updated: {0}d ago",
+      "translation": "Обновлено: {0}d назад."
+    },
+    {
+      "source": "Updated: {0}h {1}m ago",
+      "translation": "Обновлено: {0}h {1}m назад"
+    },
+    {
+      "source": "Updated: {0}m ago",
+      "translation": "Обновлено: {0}м назад."
     },
     {
       "source": "Updates",
@@ -165571,6 +166195,10 @@
     {
       "source": "child",
       "translation": "ребенок"
+    },
+    {
+      "source": "chip-remove",
+      "translation": "удаление чипа"
     },
     {
       "source": "clear",
@@ -167557,6 +168185,10 @@
       "translation": "маршрут"
     },
     {
+      "source": "the selected minerals",
+      "translation": "выбранные минералы"
+    },
+    {
       "source": "the selected origin",
       "translation": "выбранное происхождение"
     },
@@ -168013,6 +168645,10 @@
       "translation": "{0} ({1}) нельзя пометить как пустое."
     },
     {
+      "source": "{0} ({1}{2}Price: {3}{4}",
+      "translation": "{0} ({1}{2}Цена: {3}{4}"
+    },
+    {
       "source": "{0} + pending",
       "translation": "{0} + ожидание"
     },
@@ -168049,12 +168685,20 @@
       "translation": "{0} Базовая награда CR"
     },
     {
+      "source": "{0} CR {1}",
+      "translation": "{0} CR {1}"
+    },
+    {
       "source": "{0} CR/t",
       "translation": "{0} CR/t"
     },
     {
       "source": "{0} Cleanup also failed: {1}",
       "translation": "{0} Очистка также не удалась: {1}"
+    },
+    {
+      "source": "{0} Demand",
+      "translation": "{0} Спрос"
     },
     {
       "source": "{0} FCs: {1} deficit{2} {3}",
@@ -168153,8 +168797,8 @@
       "translation": "{0} Ошибка Win32 {1}."
     },
     {
-      "source": "{0} acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. {1}",
-      "translation": "Системы приобретения {0} в пределах 20 миль от укрепленной системы или 30 миль от крепости, сначала лучшая цена продажи. {1}"
+      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
+      "translation": "Цели захвата {0} находятся в пределах 20 миль от укрепленной системы или 30 миль от крепости. {1}{2}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -168329,6 +168973,10 @@
       "translation": "{0} известный вид"
     },
     {
+      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
+      "translation": "Посадочные корпуса {0} для {1}. Лучшая продажа от {2}.{3}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "Макет {0} — категория чертежей не записана"
     },
@@ -168465,6 +169113,10 @@
       "translation": "{0} соответствующие кольца · {1} · {2} · онлайн-страница {3}."
     },
     {
+      "source": "{0} material traders · {1}{2}",
+      "translation": "{0} Торговцы материалами · {1}{2}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} сообщения • {1} непрочитано"
     },
@@ -168555,6 +169207,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "Настройки наложения {0}"
+    },
+    {
+      "source": "{0} prices for {1}.{2}",
+      "translation": "{0} цены на {1}.{2}"
     },
     {
       "source": "{0} rebuilds",
@@ -168713,10 +169369,6 @@
       "translation": "{0} {1} ЛЕВЫЙ"
     },
     {
-      "source": "{0} {1} material traders · Spansh.",
-      "translation": "{0} {1} торговцы материалами · Spansh."
-    },
-    {
       "source": "{0} {1} on {2}",
       "translation": "{0} {1} на {2}"
     },
@@ -168797,6 +169449,10 @@
       "translation": "{0} · {1} записи"
     },
     {
+      "source": "{0} · {1} ly",
+      "translation": "{0} · {1} ly"
+    },
+    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} записано · наивысший суффикс {2} · {3}"
     },
@@ -168839,6 +169495,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1} т"
+    },
+    {
+      "source": "{0}: {1}{2}, {3} g, {4} ls",
+      "translation": "{0}: {1}{2}, {3} г, {4} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -169113,6 +169773,10 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", 废墟{0} {1}"
+    },
+    {
+      "source": ", {0} reserve",
+      "translation": ",{0} 预留"
     },
     {
       "source": "-1 asteroid",
@@ -171103,10 +171767,6 @@
       "translation": "任意商品名称"
     },
     {
-      "source": "Any or None locks the goal on Reinforce and Opposing Power on Any. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power's Fortified systems or 30 ly of its Stronghold systems, and reads Expansion and Contested from conflict progress until the Thursday tick.",
-      "translation": "“任何”或“无”将目标锁定在“强化”上，将“反对力量”锁定在“任何”上。选定的力量可以强化其固定系统、破坏其他力量或获取。获取将无主系统保留在该力量的强化系统 20 ly 范围内或其要塞系统 30 ly 范围内，并从冲突进度中读取扩张和竞争，直到周四勾选。"
-    },
-    {
       "source": "AppImage manual update",
       "translation": "AppImage手动更新"
     },
@@ -172515,6 +173175,10 @@
       "translation": "本体（可选）"
     },
     {
+      "source": "Body Details",
+      "translation": "车身细节"
+    },
+    {
       "source": "Body Protectorate",
       "translation": "身体保护"
     },
@@ -173863,6 +174527,10 @@
       "translation": "保存前选择一个公认的 Guardian 站点类型。"
     },
     {
+      "source": "Choose a reference system and a surface material.",
+      "translation": "选择参考系统和表面材料。"
+    },
+    {
       "source": "Choose a reference system to search.",
       "translation": "选择要搜索的参考系统。"
     },
@@ -173881,6 +174549,10 @@
     {
       "source": "Choose a start date",
       "translation": "选择开始日期"
+    },
+    {
+      "source": "Choose a surface material.",
+      "translation": "选择表面材料。"
     },
     {
       "source": "Choose a system-name text file",
@@ -174161,10 +174833,6 @@
     {
       "source": "Click a shortcut field, hold the keyboard keys or controller buttons you want, then release them. Click outside the field to accept the new binding.",
       "translation": "单击快捷方式字段，按住所需的键盘按键或控制器按钮，然后释放它们。单击字段外部以接受新绑定。"
-    },
-    {
-      "source": "Click to add",
-      "translation": "点击添加"
     },
     {
       "source": "Click to copy",
@@ -176039,6 +176707,10 @@
       "translation": "DSS 调查：无"
     },
     {
+      "source": "DST",
+      "translation": "夏令时"
+    },
+    {
       "source": "Danger",
       "translation": "危险"
     },
@@ -176297,6 +176969,10 @@
     {
       "source": "Delivery and local storage",
       "translation": "交付和本地存储"
+    },
+    {
+      "source": "Demand: {0}",
+      "translation": "需求：{0}"
     },
     {
       "source": "Denied",
@@ -176741,6 +177417,14 @@
     {
       "source": "Distance unavailable",
       "translation": "距离不详"
+    },
+    {
+      "source": "Distance: {0} Ls",
+      "translation": "距离：{0} Ls"
+    },
+    {
+      "source": "Distance: {0} ls",
+      "translation": "距离：{0} ls"
     },
     {
       "source": "DistanceFromArrivalLS",
@@ -178595,6 +179279,10 @@
       "translation": "寻找该商品的热点"
     },
     {
+      "source": "Find landable surface deposits",
+      "translation": "寻找可登陆的地表沉积物"
+    },
+    {
       "source": "Find last visit",
       "translation": "查找上次访问"
     },
@@ -178713,6 +179401,10 @@
     {
       "source": "FiregroupsOverlayExceptionsMigrated",
       "translation": "FiregroupsOverlayExceptions迁移"
+    },
+    {
+      "source": "First",
+      "translation": "第一的"
     },
     {
       "source": "First discovered by CMDR Raven",
@@ -181827,8 +182519,8 @@
       "translation": "可登陆"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.",
-      "translation": "{0} 的可登陆行星位于 {2} 的 {1} 内。"
+      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
+      "translation": "{0} 的可登陆行星位于 {2}.{3} 内的 {1} ly"
     },
     {
       "source": "Landing pad",
@@ -181893,6 +182585,10 @@
     {
       "source": "Laser mining",
       "translation": "激光采矿"
+    },
+    {
+      "source": "Last",
+      "translation": "最后的"
     },
     {
       "source": "Last approach {0}",
@@ -183441,6 +184137,10 @@
     {
       "source": "Mining Ref",
       "translation": "采矿参考"
+    },
+    {
+      "source": "Mining System",
+      "translation": "挖矿系统"
     },
     {
       "source": "Mining announcements",
@@ -185899,6 +186599,10 @@
       "translation": "其他/未知"
     },
     {
+      "source": "Other Commodities:",
+      "translation": "其他商品："
+    },
+    {
       "source": "Other SrvSurvey instances are already open",
       "translation": "其他SrvSurvey实例已开放"
     },
@@ -187199,8 +187903,8 @@
       "translation": "先前选择的控制器"
     },
     {
-      "source": "Prices are for {0}.",
-      "translation": "价格为 {0}。"
+      "source": "Price: {0} CR {1}",
+      "translation": "价格：{0} CR {1}"
     },
     {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
@@ -189271,6 +189975,10 @@
       "translation": "声誉"
     },
     {
+      "source": "Request failed. Try again.",
+      "translation": "请求失败。再试一次。"
+    },
+    {
       "source": "Requested a fresh Wayland screen-capture source selection after restart.",
       "translation": "重新启动后请求重新选择 Wayland 屏幕捕获源。"
     },
@@ -189737,6 +190445,10 @@
     {
       "source": "Ring (optional)",
       "translation": "环（可选）"
+    },
+    {
+      "source": "Ring Details",
+      "translation": "戒指细节"
     },
     {
       "source": "Ring mining reference",
@@ -191031,6 +191743,10 @@
       "translation": "搜索指南、设置、符号或工作流程"
     },
     {
+      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
+      "translation": "在参考系附近搜索可着陆物体以获取您选择的表面材料。目标是该距离内支付最多的车站。"
+    },
+    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "搜索程序框，跟踪每个生成的系统，并选择什么算完整。"
     },
@@ -191053,10 +191769,6 @@
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
       "translation": "搜索持久的游戏日志记录并导出有限的诊断重播包。"
-    },
-    {
-      "source": "Search unavailable: {0}",
-      "translation": "搜索不可用：{0}"
     },
     {
       "source": "Search+",
@@ -191903,6 +192615,10 @@
       "translation": "显示所有质量代码 {0} 框"
     },
     {
+      "source": "Show all signals",
+      "translation": "显示所有信号"
+    },
+    {
       "source": "Show bio signals from Canonn on the radar",
       "translation": "在雷达上显示来自 Canonn 的生物信号"
     },
@@ -191977,6 +192693,10 @@
     {
       "source": "Show legend",
       "translation": "显示图例"
+    },
+    {
+      "source": "Show less",
+      "translation": "显示较少"
     },
     {
       "source": "Show list in system map",
@@ -192285,6 +193005,10 @@
     {
       "source": "Silver Legal Group",
       "translation": "银色法律集团"
+    },
+    {
+      "source": "Single",
+      "translation": "单身的"
     },
     {
       "source": "Site heading",
@@ -193243,10 +193967,6 @@
       "translation": "无法保存电台信息设置：{0}"
     },
     {
-      "source": "Station prices are unavailable: {0}",
-      "translation": "车站价格不可用：{0}"
-    },
-    {
       "source": "Station type contains",
       "translation": "站类型包含"
     },
@@ -193269,6 +193989,10 @@
     {
       "source": "StationType",
       "translation": "车站类型"
+    },
+    {
+      "source": "Stations",
+      "translation": "车站"
     },
     {
       "source": "Statistics settings",
@@ -194225,6 +194949,10 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "瞄准 A01 并扫描船上所需的工件。"
+    },
+    {
+      "source": "Target System",
+      "translation": "目标系统"
     },
     {
       "source": "Target not supplied",
@@ -196947,6 +197675,18 @@
       "translation": "输入更多单词以缩小结果范围"
     },
     {
+      "source": "Type to add minerals/metals...",
+      "translation": "输入添加矿物质/金属..."
+    },
+    {
+      "source": "Type to add mining types...",
+      "translation": "输入以添加采矿类型..."
+    },
+    {
+      "source": "Type to add system states...",
+      "translation": "键入以添加系统状态..."
+    },
+    {
       "source": "Type-10 Defender",
       "translation": "10型防御者"
     },
@@ -197409,6 +198149,22 @@
     {
       "source": "Updated {0}. A verified state backup was retained.",
       "translation": "更新了{0}。保留经过验证的状态备份。"
+    },
+    {
+      "source": "Updated: just now",
+      "translation": "更新：刚刚"
+    },
+    {
+      "source": "Updated: {0}d ago",
+      "translation": "更新时间：{0}d 前"
+    },
+    {
+      "source": "Updated: {0}h {1}m ago",
+      "translation": "更新：{0}h {1}m 前"
+    },
+    {
+      "source": "Updated: {0}m ago",
+      "translation": "更新：{0}m 前"
     },
     {
       "source": "Updates",
@@ -199381,6 +200137,10 @@
     {
       "source": "child",
       "translation": "孩子"
+    },
+    {
+      "source": "chip-remove",
+      "translation": "排屑"
     },
     {
       "source": "clear",
@@ -201367,6 +202127,10 @@
       "translation": "路线"
     },
     {
+      "source": "the selected minerals",
+      "translation": "选定的矿物"
+    },
+    {
       "source": "the selected origin",
       "translation": "选定的原点"
     },
@@ -201823,6 +202587,10 @@
       "translation": "{0} ({1}) 不能标记为空。"
     },
     {
+      "source": "{0} ({1}{2}Price: {3}{4}",
+      "translation": "{0} ({1}{2}价格：{3}{4}"
+    },
+    {
       "source": "{0} + pending",
       "translation": "{0} + 待处理"
     },
@@ -201859,12 +202627,20 @@
       "translation": "{0} CR基础奖励"
     },
     {
+      "source": "{0} CR {1}",
+      "translation": "{0} CR {1}"
+    },
+    {
       "source": "{0} CR/t",
       "translation": "{0}CR/t"
     },
     {
       "source": "{0} Cleanup also failed: {1}",
       "translation": "{0} 清理也失败：{1}"
+    },
+    {
+      "source": "{0} Demand",
+      "translation": "{0} 需求"
     },
     {
       "source": "{0} FCs: {1} deficit{2} {3}",
@@ -201963,8 +202739,8 @@
       "translation": "{0} Win32 错误 {1}。"
     },
     {
-      "source": "{0} acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. {1}",
-      "translation": "{0} 强化系统 20 ly 内或要塞 30 ly 以内的采集系统，最优惠价格优先。 {1}"
+      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
+      "translation": "{0} 采集目标为强化系统 20 里以内或要塞 30 里以内。 {1}{2}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -202139,6 +202915,10 @@
       "translation": "{0} 已知物种"
     },
     {
+      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
+      "translation": "{0} 适用于 {1} 的可着陆车身。畅销 {2}.{3}"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "{0} 布局 - 未记录蓝图类别"
     },
@@ -202275,6 +203055,10 @@
       "translation": "{0} 配套环 · {1} · {2} · 在线页面 {3}。"
     },
     {
+      "source": "{0} material traders · {1}{2}",
+      "translation": "{0} 物料贸易商 · {1}{2}"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "{0} 消息 • {1} 未读"
     },
@@ -202365,6 +203149,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "{0} 叠加设置"
+    },
+    {
+      "source": "{0} prices for {1}.{2}",
+      "translation": "{0} 价格为 {1}.{2}"
     },
     {
       "source": "{0} rebuilds",
@@ -202523,10 +203311,6 @@
       "translation": "{0} {1} 左"
     },
     {
-      "source": "{0} {1} material traders · Spansh.",
-      "translation": "{0} {1} 材料贸易商·Spansh。"
-    },
-    {
       "source": "{0} {1} on {2}",
       "translation": "{0} {1} 在 {2}"
     },
@@ -202607,6 +203391,10 @@
       "translation": "{0} · {1} 条目"
     },
     {
+      "source": "{0} · {1} ly",
+      "translation": "{0} · {1} ly"
+    },
+    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} 已记录 · 最高后缀 {2} · {3}"
     },
@@ -202649,6 +203437,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1} t"
+    },
+    {
+      "source": "{0}: {1}{2}, {3} g, {4} ls",
+      "translation": "{0}：{1}{2}、{3} g、{4} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -202923,6 +203715,10 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": "* , RUINS{0} {1} >>>!"
+    },
+    {
+      "source": ", {0} reserve",
+      "translation": "* , {0} RESERVE >>>!"
     },
     {
       "source": "-1 asteroid",
@@ -204913,10 +205709,6 @@
       "translation": "* ANY COMMODITY NAME >>>!"
     },
     {
-      "source": "Any or None locks the goal on Reinforce and Opposing Power on Any. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power's Fortified systems or 30 ly of its Stronghold systems, and reads Expansion and Contested from conflict progress until the Thursday tick.",
-      "translation": "* ANY OR NONE LOCKS THE GOAL ON REINFORCE AND OPPOSING POWER ON ANY. A CHOSEN POWER CAN REINFORCE ITS SETTLED SYSTEMS, UNDERMINE OTHER POWERS, OR ACQUIRE. ACQUIRE KEEPS UNOWNED SYSTEMS WITHIN 20 LY OF THAT POWER'S FORTIFIED SYSTEMS OR 30 LY OF ITS STRONGHOLD SYSTEMS, AND READS EXPANSION AND CONTESTED FROM CONFLICT PROGRESS UNTIL THE THURSDAY TICK. >>>!"
-    },
-    {
       "source": "AppImage manual update",
       "translation": "* APPIMAGE MANUAL UPDATE >>>!"
     },
@@ -206325,6 +207117,10 @@
       "translation": "* BODY (OPTIONAL) >>>!"
     },
     {
+      "source": "Body Details",
+      "translation": "* BODY DETAILS >>>!"
+    },
+    {
       "source": "Body Protectorate",
       "translation": "* BODY PROTECTORATE >>>!"
     },
@@ -207673,6 +208469,10 @@
       "translation": "* CHOOSE A RECOGNIZED GUARDIAN SITE TYPE BEFORE SAVING. >>>!"
     },
     {
+      "source": "Choose a reference system and a surface material.",
+      "translation": "* CHOOSE A REFERENCE SYSTEM AND A SURFACE MATERIAL. >>>!"
+    },
+    {
       "source": "Choose a reference system to search.",
       "translation": "* CHOOSE A REFERENCE SYSTEM TO SEARCH. >>>!"
     },
@@ -207691,6 +208491,10 @@
     {
       "source": "Choose a start date",
       "translation": "* CHOOSE A START DATE >>>!"
+    },
+    {
+      "source": "Choose a surface material.",
+      "translation": "* CHOOSE A SURFACE MATERIAL. >>>!"
     },
     {
       "source": "Choose a system-name text file",
@@ -207971,10 +208775,6 @@
     {
       "source": "Click a shortcut field, hold the keyboard keys or controller buttons you want, then release them. Click outside the field to accept the new binding.",
       "translation": "* CLICK A SHORTCUT FIELD, HOLD THE KEYBOARD KEYS OR CONTROLLER BUTTONS YOU WANT, THEN RELEASE THEM. CLICK OUTSIDE THE FIELD TO ACCEPT THE NEW BINDING. >>>!"
-    },
-    {
-      "source": "Click to add",
-      "translation": "* CLICK TO ADD >>>!"
     },
     {
       "source": "Click to copy",
@@ -209849,6 +210649,10 @@
       "translation": "* DSS SURVEY: NONE >>>!"
     },
     {
+      "source": "DST",
+      "translation": "* DST >>>!"
+    },
+    {
       "source": "Danger",
       "translation": "* DANGER >>>!"
     },
@@ -210107,6 +210911,10 @@
     {
       "source": "Delivery and local storage",
       "translation": "* DELIVERY AND LOCAL STORAGE >>>!"
+    },
+    {
+      "source": "Demand: {0}",
+      "translation": "* DEMAND: {0} >>>!"
     },
     {
       "source": "Denied",
@@ -210551,6 +211359,14 @@
     {
       "source": "Distance unavailable",
       "translation": "* DISTANCE UNAVAILABLE >>>!"
+    },
+    {
+      "source": "Distance: {0} Ls",
+      "translation": "* DISTANCE: {0} LS >>>!"
+    },
+    {
+      "source": "Distance: {0} ls",
+      "translation": "* DISTANCE: {0} LS >>>!"
     },
     {
       "source": "DistanceFromArrivalLS",
@@ -212405,6 +213221,10 @@
       "translation": "* FIND HOTSPOTS FOR THIS COMMODITY >>>!"
     },
     {
+      "source": "Find landable surface deposits",
+      "translation": "* FIND LANDABLE SURFACE DEPOSITS >>>!"
+    },
+    {
       "source": "Find last visit",
       "translation": "* FIND LAST VISIT >>>!"
     },
@@ -212523,6 +213343,10 @@
     {
       "source": "FiregroupsOverlayExceptionsMigrated",
       "translation": "* FIREGROUPSOVERLAYEXCEPTIONSMIGRATED >>>!"
+    },
+    {
+      "source": "First",
+      "translation": "* FIRST >>>!"
     },
     {
       "source": "First discovered by CMDR Raven",
@@ -215637,8 +216461,8 @@
       "translation": "* LANDABLE >>>!"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.",
-      "translation": "* LANDABLE PLANETS FOR {0} WITHIN {1} LY OF {2}. >>>!"
+      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
+      "translation": "* LANDABLE PLANETS FOR {0} WITHIN {1} LY OF {2}.{3} >>>!"
     },
     {
       "source": "Landing pad",
@@ -215703,6 +216527,10 @@
     {
       "source": "Laser mining",
       "translation": "* LASER MINING >>>!"
+    },
+    {
+      "source": "Last",
+      "translation": "* LAST >>>!"
     },
     {
       "source": "Last approach {0}",
@@ -217251,6 +218079,10 @@
     {
       "source": "Mining Ref",
       "translation": "* MINING REF >>>!"
+    },
+    {
+      "source": "Mining System",
+      "translation": "* MINING SYSTEM >>>!"
     },
     {
       "source": "Mining announcements",
@@ -219709,6 +220541,10 @@
       "translation": "* OTHER / UNKNOWN >>>!"
     },
     {
+      "source": "Other Commodities:",
+      "translation": "* OTHER COMMODITIES: >>>!"
+    },
+    {
       "source": "Other SrvSurvey instances are already open",
       "translation": "* OTHER SRVSURVEY INSTANCES ARE ALREADY OPEN >>>!"
     },
@@ -221009,8 +221845,8 @@
       "translation": "* PREVIOUSLY SELECTED CONTROLLER >>>!"
     },
     {
-      "source": "Prices are for {0}.",
-      "translation": "* PRICES ARE FOR {0}. >>>!"
+      "source": "Price: {0} CR {1}",
+      "translation": "* PRICE: {0} CR {1} >>>!"
     },
     {
       "source": "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
@@ -223081,6 +223917,10 @@
       "translation": "* REPUTATION >>>!"
     },
     {
+      "source": "Request failed. Try again.",
+      "translation": "* REQUEST FAILED. TRY AGAIN. >>>!"
+    },
+    {
       "source": "Requested a fresh Wayland screen-capture source selection after restart.",
       "translation": "* REQUESTED A FRESH WAYLAND SCREEN-CAPTURE SOURCE SELECTION AFTER RESTART. >>>!"
     },
@@ -223547,6 +224387,10 @@
     {
       "source": "Ring (optional)",
       "translation": "* RING (OPTIONAL) >>>!"
+    },
+    {
+      "source": "Ring Details",
+      "translation": "* RING DETAILS >>>!"
     },
     {
       "source": "Ring mining reference",
@@ -224841,6 +225685,10 @@
       "translation": "* SEARCH GUIDES, SETTINGS, SYMBOLS, OR WORKFLOWS >>>!"
     },
     {
+      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
+      "translation": "* SEARCH LANDABLE BODIES NEAR THE REFERENCE SYSTEM FOR THE SURFACE MATERIALS YOU CHOOSE. THE TARGET IS THE STATION INSIDE THAT DISTANCE PAYING THE MOST. >>>!"
+    },
+    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "* SEARCH PROCEDURAL BOXELS, TRACK EVERY GENERATED SYSTEM, AND CHOOSE WHAT COUNTS AS COMPLETE. >>>!"
     },
@@ -224863,10 +225711,6 @@
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
       "translation": "* SEARCH THE DURABLE GAME JOURNAL RECORD AND EXPORT A BOUNDED DIAGNOSTIC REPLAY PACKAGE. >>>!"
-    },
-    {
-      "source": "Search unavailable: {0}",
-      "translation": "* SEARCH UNAVAILABLE: {0} >>>!"
     },
     {
       "source": "Search+",
@@ -225713,6 +226557,10 @@
       "translation": "* SHOW ALL MASS CODE {0} BOXELS >>>!"
     },
     {
+      "source": "Show all signals",
+      "translation": "* SHOW ALL SIGNALS >>>!"
+    },
+    {
       "source": "Show bio signals from Canonn on the radar",
       "translation": "* SHOW BIO SIGNALS FROM CANONN ON THE RADAR >>>!"
     },
@@ -225787,6 +226635,10 @@
     {
       "source": "Show legend",
       "translation": "* SHOW LEGEND >>>!"
+    },
+    {
+      "source": "Show less",
+      "translation": "* SHOW LESS >>>!"
     },
     {
       "source": "Show list in system map",
@@ -226095,6 +226947,10 @@
     {
       "source": "Silver Legal Group",
       "translation": "* SILVER LEGAL GROUP >>>!"
+    },
+    {
+      "source": "Single",
+      "translation": "* SINGLE >>>!"
     },
     {
       "source": "Site heading",
@@ -227053,10 +227909,6 @@
       "translation": "* STATION INFORMATION SETTINGS COULD NOT BE SAVED: {0} >>>!"
     },
     {
-      "source": "Station prices are unavailable: {0}",
-      "translation": "* STATION PRICES ARE UNAVAILABLE: {0} >>>!"
-    },
-    {
       "source": "Station type contains",
       "translation": "* STATION TYPE CONTAINS >>>!"
     },
@@ -227079,6 +227931,10 @@
     {
       "source": "StationType",
       "translation": "* STATIONTYPE >>>!"
+    },
+    {
+      "source": "Stations",
+      "translation": "* STATIONS >>>!"
     },
     {
       "source": "Statistics settings",
@@ -228035,6 +228891,10 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "* TARGET A01 AND SCAN WITH THE REQUIRED ARTIFACTS ABOARD. >>>!"
+    },
+    {
+      "source": "Target System",
+      "translation": "* TARGET SYSTEM >>>!"
     },
     {
       "source": "Target not supplied",
@@ -230757,6 +231617,18 @@
       "translation": "* TYPE MORE WORDS TO NARROW THE RESULTS >>>!"
     },
     {
+      "source": "Type to add minerals/metals...",
+      "translation": "* TYPE TO ADD MINERALS/METALS... >>>!"
+    },
+    {
+      "source": "Type to add mining types...",
+      "translation": "* TYPE TO ADD MINING TYPES... >>>!"
+    },
+    {
+      "source": "Type to add system states...",
+      "translation": "* TYPE TO ADD SYSTEM STATES... >>>!"
+    },
+    {
       "source": "Type-10 Defender",
       "translation": "* TYPE-10 DEFENDER >>>!"
     },
@@ -231219,6 +232091,22 @@
     {
       "source": "Updated {0}. A verified state backup was retained.",
       "translation": "* UPDATED {0}. A VERIFIED STATE BACKUP WAS RETAINED. >>>!"
+    },
+    {
+      "source": "Updated: just now",
+      "translation": "* UPDATED: JUST NOW >>>!"
+    },
+    {
+      "source": "Updated: {0}d ago",
+      "translation": "* UPDATED: {0}D AGO >>>!"
+    },
+    {
+      "source": "Updated: {0}h {1}m ago",
+      "translation": "* UPDATED: {0}H {1}M AGO >>>!"
+    },
+    {
+      "source": "Updated: {0}m ago",
+      "translation": "* UPDATED: {0}M AGO >>>!"
     },
     {
       "source": "Updates",
@@ -233191,6 +234079,10 @@
     {
       "source": "child",
       "translation": "* CHILD >>>!"
+    },
+    {
+      "source": "chip-remove",
+      "translation": "* CHIP-REMOVE >>>!"
     },
     {
       "source": "clear",
@@ -235177,6 +236069,10 @@
       "translation": "* THE ROUTE >>>!"
     },
     {
+      "source": "the selected minerals",
+      "translation": "* THE SELECTED MINERALS >>>!"
+    },
+    {
       "source": "the selected origin",
       "translation": "* THE SELECTED ORIGIN >>>!"
     },
@@ -235633,6 +236529,10 @@
       "translation": "* {0} ({1}) CANNOT BE MARKED EMPTY. >>>!"
     },
     {
+      "source": "{0} ({1}{2}Price: {3}{4}",
+      "translation": "* {0} ({1}{2}PRICE: {3}{4} >>>!"
+    },
+    {
       "source": "{0} + pending",
       "translation": "* {0} + PENDING >>>!"
     },
@@ -235669,12 +236569,20 @@
       "translation": "* {0} CR BASE REWARD >>>!"
     },
     {
+      "source": "{0} CR {1}",
+      "translation": "* {0} CR {1} >>>!"
+    },
+    {
       "source": "{0} CR/t",
       "translation": "* {0} CR/T >>>!"
     },
     {
       "source": "{0} Cleanup also failed: {1}",
       "translation": "* {0} CLEANUP ALSO FAILED: {1} >>>!"
+    },
+    {
+      "source": "{0} Demand",
+      "translation": "* {0} DEMAND >>>!"
     },
     {
       "source": "{0} FCs: {1} deficit{2} {3}",
@@ -235773,8 +236681,8 @@
       "translation": "* {0} WIN32 ERROR {1}. >>>!"
     },
     {
-      "source": "{0} acquisition systems within 20 ly of a Fortified system or 30 ly of a Stronghold, best sell price first. {1}",
-      "translation": "* {0} ACQUISITION SYSTEMS WITHIN 20 LY OF A FORTIFIED SYSTEM OR 30 LY OF A STRONGHOLD, BEST SELL PRICE FIRST. {1} >>>!"
+      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
+      "translation": "* {0} ACQUISITION TARGETS WITHIN 20 LY OF A FORTIFIED SYSTEM OR 30 LY OF A STRONGHOLD. {1}{2} >>>!"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -235949,6 +236857,10 @@
       "translation": "* {0} KNOWN SPECIES >>>!"
     },
     {
+      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
+      "translation": "* {0} LANDABLE BODIES FOR {1}. BEST SELL FROM {2}.{3} >>>!"
+    },
+    {
       "source": "{0} layout - no blueprint category recorded",
       "translation": "* {0} LAYOUT - NO BLUEPRINT CATEGORY RECORDED >>>!"
     },
@@ -236085,6 +236997,10 @@
       "translation": "* {0} MATCHING RINGS · {1} · {2} · ONLINE PAGE {3}. >>>!"
     },
     {
+      "source": "{0} material traders · {1}{2}",
+      "translation": "* {0} MATERIAL TRADERS · {1}{2} >>>!"
+    },
+    {
       "source": "{0} messages • {1} unread",
       "translation": "* {0} MESSAGES • {1} UNREAD >>>!"
     },
@@ -236175,6 +237091,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "* {0} OVERLAY SETTINGS >>>!"
+    },
+    {
+      "source": "{0} prices for {1}.{2}",
+      "translation": "* {0} PRICES FOR {1}.{2} >>>!"
     },
     {
       "source": "{0} rebuilds",
@@ -236333,10 +237253,6 @@
       "translation": "* {0} {1} LEFT >>>!"
     },
     {
-      "source": "{0} {1} material traders · Spansh.",
-      "translation": "* {0} {1} MATERIAL TRADERS · SPANSH. >>>!"
-    },
-    {
       "source": "{0} {1} on {2}",
       "translation": "* {0} {1} ON {2} >>>!"
     },
@@ -236417,6 +237333,10 @@
       "translation": "* {0} · {1} ENTRIES >>>!"
     },
     {
+      "source": "{0} · {1} ly",
+      "translation": "* {0} · {1} LY >>>!"
+    },
+    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "* {0} · {1} RECORDED · HIGHEST SUFFIX {2} · {3} >>>!"
     },
@@ -236459,6 +237379,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "* {0}: {1} T >>>!"
+    },
+    {
+      "source": "{0}: {1}{2}, {3} g, {4} ls",
+      "translation": "* {0}: {1}{2}, {3} G, {4} LS >>>!"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",

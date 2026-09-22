@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:SrvSurvey.Desktop.Views"
+             x:Class="SrvSurvey.Desktop.Views.AcquireSplitRow"
+             x:Name="Root"
+             x:CompileBindings="False">
+  <Grid ColumnDefinitions="42*,4*,54*">
+    <Border Background="{DynamicResource RavenSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="1">
+      <ContentControl Content="{Binding}" ContentTemplate="{Binding TargetTemplate, ElementName=Root}"/>
+    </Border>
+    <ItemsControl Grid.Column="1" Grid.ColumnSpan="2" ItemsSource="{Binding Lines, ElementName=Root}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Grid ColumnDefinitions="4*,54*">
+            <views:AcquireTreeLink Kind="{Binding Connector}"/>
+            <Border Grid.Column="1"
+                    Background="{DynamicResource RavenSurfaceBrush}"
+                    BorderBrush="{DynamicResource RavenBorderBrush}"
+                    BorderThickness="1,0,1,1">
+              <ContentControl Content="{Binding}" ContentTemplate="{Binding $parent[views:AcquireSplitRow].LineTemplate}"/>
+            </Border>
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </Grid>
+</UserControl>

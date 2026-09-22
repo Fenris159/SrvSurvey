@@ -9,10 +9,18 @@ public sealed record PowerplayMeritStation(
     string Pad,
     long Price,
     long Demand,
-    string Detail
+    string Detail,
+    string Commodity = "",
+    double? ArrivalLs = null,
+    DateTimeOffset? Updated = null
 );
 
-public sealed record PowerplayMeritRing(string Body, string Detail, bool Planetary = false);
+public sealed record PowerplayMeritRing(
+    string Body,
+    string Detail,
+    bool Planetary = false,
+    IReadOnlyList<string>? SignalLines = null
+);
 
 public sealed record PowerplayMeritSystem(
     string Name,
@@ -23,7 +31,10 @@ public sealed record PowerplayMeritSystem(
     long BestPrice,
     IReadOnlyList<PowerplayMeritRing> Rings,
     IReadOnlyList<PowerplayMeritStation> Stations
-);
+)
+{
+    public IReadOnlyList<string> NearbyPowers { get; init; } = [];
+}
 
 /// <summary>Joins a Powerplay system list with rings and station prices, best sell price first.</summary>
 public static class PowerplayMeritRank
@@ -59,6 +70,9 @@ public static class PowerplayMeritRank
                     systemRings,
                     systemStations
                 )
+                {
+                    NearbyPowers = system.NearbyPowers,
+                }
             );
         }
 
@@ -121,7 +135,10 @@ public static class PowerplayMeritRank
                 market.PadDescription,
                 market.Price,
                 market.Demand,
-                $"{market.Price:N0} CR/t · {market.Demand:N0} t · {market.PadDescription}"
+                $"{market.Price:N0} CR/t · {market.Demand:N0} t · {market.PadDescription}",
+                market.Commodity,
+                market.ArrivalLs,
+                market.Updated
             ))
             .ToArray();
 
@@ -143,6 +160,11 @@ public static class PowerplayMeritRank
             " · ",
             new[] { ring.Minerals, ring.RingType, ring.Reserve, mapped }.Where(part => part.Length > 0)
         );
-        return new PowerplayMeritRing(ring.Body, detail);
+        return new PowerplayMeritRing(
+            ring.Body,
+            detail,
+            false,
+            ring.Hotspots.Select(spot => $"{spot.Key}: {spot.Value} Hotspot").ToArray()
+        );
     }
 }

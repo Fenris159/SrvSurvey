@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.MiningStationList"
+             x:Name="StationList">
+  <UserControl.Styles>
+    <Style Selector="Border.highlight">
+      <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}"/>
+    </Style>
+    <Style Selector="Border.highlight TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}"/>
+    </Style>
+  </UserControl.Styles>
+  <ItemsControl ItemsSource="{Binding Stations, ElementName=StationList}" Margin="6,4">
+    <ItemsControl.ItemTemplate>
+      <DataTemplate x:DataType="vm:AcquireStationViewModel">
+        <StackPanel Spacing="2" Margin="0,0,0,8">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}">
+            <Run Text="{Binding Name}"/>
+            <Run Text=" ("/>
+            <Run Text="{Binding Pad}"/>
+            <Run Text=")"/>
+          </TextBlock>
+          <TextBlock Text="{Binding Arrival}" Foreground="{DynamicResource RavenMutedTextBrush}" FontSize="12"/>
+          <TextBlock Text="{Binding Updated}" IsVisible="{Binding HasUpdated}" Foreground="{DynamicResource RavenMutedTextBrush}" FontSize="12" FontStyle="Italic"/>
+          <ItemsControl ItemsSource="{Binding Quotes}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:AcquireQuoteViewModel">
+                <Grid ColumnDefinitions="40,140,*" Margin="0,1">
+                  <Border Classes.highlight="{Binding Highlight}" Padding="4,0">
+                    <TextBlock Text="{Binding Code}" Foreground="{DynamicResource RavenAccentBrush}" FontFamily="monospace" FontSize="12" HorizontalAlignment="Center"/>
+                  </Border>
+                  <TextBlock Grid.Column="1" Text="{Binding Price}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Demand}" Foreground="{DynamicResource RavenTextBrush}" VerticalAlignment="Center"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+  </ItemsControl>
+</UserControl>

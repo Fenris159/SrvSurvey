@@ -12,6 +12,9 @@ public static class PowerplayPlan
     public const string Acquire = "Acquire";
     public const string AnyPower = "Any";
     public const string NoPower = "None";
+    public const string OneOpposition = "One";
+    public const string TwoOpposition = "Two";
+    public const string MultipleOpposition = "Multiple";
     public const double FortifiedReachLy = 20;
     public const double StrongholdReachLy = 30;
 
@@ -68,6 +71,20 @@ public static class PowerplayPlan
     private static bool IsUnspecified(string state) =>
         state.Length == 0 || state.Equals(AnyPower, StringComparison.OrdinalIgnoreCase);
 
+    private static bool IsCountChoice(string opposing) =>
+        opposing.Equals(OneOpposition, StringComparison.OrdinalIgnoreCase)
+        || opposing.Equals(TwoOpposition, StringComparison.OrdinalIgnoreCase)
+        || opposing.Equals(MultipleOpposition, StringComparison.OrdinalIgnoreCase)
+        || opposing.Equals(NoPower, StringComparison.Ordinal);
+
+    private static bool IsNamedPower(string power) => !IsUnspecified(power) && !IsCountChoice(power);
+
+    private static string Canonical(string power) =>
+        power.Equals("Arissa Lavigny-Duval", StringComparison.OrdinalIgnoreCase)
+        || power.Equals("A. Lavigny-Duval", StringComparison.OrdinalIgnoreCase)
+            ? "A. Lavigny-Duval"
+            : power;
+
     private static bool IsLiveState(string state) =>
         state is PowerplayStanding.Unoccupied or PowerplayStanding.Expansion or PowerplayStanding.Contested;
 
@@ -91,8 +108,61 @@ public static class PowerplayPlan
         }
 
         return system.Power.Length > 0
-            && (IsUnspecified(opposingPower) || Same(system.Power, opposingPower))
+            && (!IsNamedPower(opposingPower) || Same(system.Power, opposingPower))
             && (IsUnspecified(pledgedPower) || !Same(system.Power, pledgedPower));
+    }
+
+    public static bool MatchesOppositionCount(
+        string objective,
+        string opposing,
+        MiningSystemResult system,
+        string pledgedPower
+    )
+    {
+        if (!IsCountChoice(opposing))
+        {
+            return true;
+        }
+
+        if (Same(opposing, NoPower) && !objective.Equals(Reinforce, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        int count = OpposingPowerCount(system.Conflict, pledgedPower);
+        if (Same(opposing, NoPower))
+        {
+            return count == 0;
+        }
+
+        if (Same(opposing, OneOpposition))
+        {
+            return count == 1;
+        }
+
+        if (Same(opposing, TwoOpposition))
+        {
+            return count == 2;
+        }
+
+        return count >= 2;
+    }
+
+    public static int OpposingPowerCount(IReadOnlyList<PowerplayProgress> progress, string pledgedPower)
+    {
+        string pledged = Canonical(pledgedPower);
+        bool ignorePledge = IsUnspecified(pledgedPower) || pledgedPower.Equals(NoPower, StringComparison.Ordinal);
+        return progress.Count(entry => ignorePledge || !Same(Canonical(entry.Power), pledged));
+    }
+
+    public static double? TravelDistance(GalacticCoordinate? origin, GalacticCoordinate? target)
+    {
+        if (origin is not { } from || target is not { } at)
+        {
+            return null;
+        }
+
+        return from.DistanceTo(at);
     }
 
     private static bool Same(string left, string right) => left.Equals(right, StringComparison.OrdinalIgnoreCase);

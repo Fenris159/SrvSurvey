@@ -1,6 +1,9 @@
 using System.Collections.ObjectModel;
+using SrvSurvey.Core.Mining;
 
 namespace SrvSurvey.Desktop.ViewModels;
+
+public sealed record MiningChipTag(string Name, string Label);
 
 public sealed class MiningChipBoxViewModel : WorkspaceObservable
 {
@@ -22,16 +25,26 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
         this.choices = choices;
         fallback = initial;
         this.exclusive = new HashSet<string>(exclusive ?? ["Any", "All"], StringComparer.OrdinalIgnoreCase);
+        Selected.CollectionChanged += (_, _) => PublishTags();
         if (initial.Length > 0)
         {
             Selected.Add(initial);
         }
 
         RefreshSuggestions();
+        PublishTags();
     }
 
     public string Title { get; }
+    public string Prompt =>
+        Title switch
+        {
+            "Mining type" => "Type to add mining types...",
+            "System state" => "Type to add system states...",
+            _ => "Type to add minerals/metals...",
+        };
     public ObservableCollection<string> Selected { get; } = [];
+    public IReadOnlyList<MiningChipTag> Tags { get; private set; } = [];
     public string Query
     {
         get => query;
@@ -55,9 +68,12 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
         suggestions = choices
             .Where(choice =>
                 !Selected.Contains(choice, StringComparer.OrdinalIgnoreCase)
-                && (query.Length == 0 || choice.Contains(query, StringComparison.OrdinalIgnoreCase))
+                && (
+                    query.Length == 0
+                    || choice.Contains(query, StringComparison.OrdinalIgnoreCase)
+                    || ChipLabel(choice).Contains(query, StringComparison.OrdinalIgnoreCase)
+                )
             )
-            .Take(8)
             .ToArray();
         Changed(nameof(Suggestions));
     }
@@ -125,6 +141,28 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
         RefreshSuggestions();
         Changed(nameof(Selected));
     }
+
+    public string ChipLabel(string name)
+    {
+        if (Title is "Mining type" or "System state" || IsWordToken(name))
+        {
+            return name;
+        }
+
+        return MiningCommodityCode.Abbreviate(name);
+    }
+
+    private void PublishTags()
+    {
+        Tags = Selected.Select(name => new MiningChipTag(name, ChipLabel(name))).ToArray();
+        Changed(nameof(Tags));
+    }
+
+    private static bool IsWordToken(string name) =>
+        name.Equals("Default", StringComparison.OrdinalIgnoreCase)
+        || name.Equals("Any", StringComparison.OrdinalIgnoreCase)
+        || name.Equals("All", StringComparison.OrdinalIgnoreCase)
+        || name.Equals("None", StringComparison.OrdinalIgnoreCase);
 
     private void RemoveToken(string value)
     {

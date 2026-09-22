@@ -16,7 +16,7 @@ public sealed class MineMapViewMarkupTests
             .Select(item => item.Attribute("Header")?.Value ?? string.Empty)
             .ToArray();
 
-        Assert.Equal(["Surface Maps", "Survey map", "Hotspot List", "Surface Hunt", "Instructions"], headers);
+        Assert.Equal(["Surface Maps", "Survey map", "Hotspot List", "Surface Hunt", "Search", "Instructions"], headers);
         XElement map = Assert.Single(document.Descendants(), element => element.Name.LocalName == "MineMapControl");
         Assert.Equal("True", map.Attribute("AllowViewportInteraction")?.Value);
         Assert.Contains("ViewportZoom", map.Attribute("ViewportZoom")?.Value);

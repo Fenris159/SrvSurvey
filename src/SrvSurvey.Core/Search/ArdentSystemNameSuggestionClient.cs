@@ -1,5 +1,5 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Search;
 
@@ -14,16 +14,13 @@ public sealed class ArdentSystemNameSuggestionClient : ISystemNameSuggestionClie
 {
     private const int MaximumResponseBytes = 2 * 1024 * 1024;
     private const int MaximumSuggestions = 15;
-    private static readonly Uri DefaultApiBaseUri = new("https://api.ardent-insight.com/v2/search/system/name/");
     private static readonly HttpClient SharedClient = CreateSharedClient();
 
-    private readonly HttpClient client;
-    private readonly Uri apiBaseUri;
+    private readonly ArdentApi api;
 
     public ArdentSystemNameSuggestionClient(HttpClient? client = null, Uri? apiBaseUri = null)
     {
-        this.client = client ?? SharedClient;
-        this.apiBaseUri = apiBaseUri ?? DefaultApiBaseUri;
+        api = new ArdentApi(client ?? SharedClient, apiBaseUri);
     }
 
     public async Task<IReadOnlyList<SystemNameSuggestion>> SearchAsync(
@@ -38,19 +35,16 @@ public sealed class ArdentSystemNameSuggestionClient : ISystemNameSuggestionClie
             return [];
         }
 
-        var requestUri = new Uri(apiBaseUri, Uri.EscapeDataString(normalized));
-        using HttpResponseMessage response = await client
-            .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-        IReadOnlyList<ArdentSystemSuggestion>? payload = await BoundedHttpContent
-            .ReadFromJsonAsync<IReadOnlyList<ArdentSystemSuggestion>>(
-                response.Content,
+        using JsonDocument document = await api.GetAsync(
+                ArdentRoutes.SystemName(normalized),
                 MaximumResponseBytes,
                 "The Ardent system-name response",
-                cancellationToken: cancellationToken
+                cancellationToken
             )
             .ConfigureAwait(false);
+        IReadOnlyList<ArdentSystemSuggestion>? payload = JsonSerializer.Deserialize<
+            IReadOnlyList<ArdentSystemSuggestion>
+        >(document.RootElement);
 
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         return (payload ?? [])

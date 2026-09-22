@@ -20,10 +20,7 @@ public sealed class ArdentSystemNameSuggestionClientTests
             ]
             """
         );
-        var client = new ArdentSystemNameSuggestionClient(
-            new HttpClient(handler),
-            new Uri("https://example.test/v2/search/system/name/")
-        );
+        var client = new ArdentSystemNameSuggestionClient(new HttpClient(handler), new Uri("https://example.test/v2/"));
 
         IReadOnlyList<SystemNameSuggestion> results = await client.SearchAsync(" Sol ");
 

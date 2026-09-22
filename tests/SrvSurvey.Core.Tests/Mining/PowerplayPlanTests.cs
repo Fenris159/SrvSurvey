@@ -82,6 +82,87 @@ public sealed class PowerplayPlanTests
         Assert.False(PowerplayPlan.IsAcquisitionTarget(claim, PowerplayStanding.Contested));
     }
 
-    private static MiningSystemResult System(string name, string power, string state) =>
-        new(name, 1, "", "", "", "", "", power, state, 0);
+    [Fact]
+    public void OppositionCountsUseConflictProgressAndKeepNoneForReinforce()
+    {
+        MiningSystemResult quiet = System("Quiet", "Aisling Duval", "Fortified");
+        MiningSystemResult one = System(
+            "One",
+            "Aisling Duval",
+            "Fortified",
+            [new PowerplayProgress("Jerome Archer", 0.1)]
+        );
+        MiningSystemResult two = System(
+            "Two",
+            "Aisling Duval",
+            "Fortified",
+            [new PowerplayProgress("Jerome Archer", 0.1), new PowerplayProgress("Yuri Grom", 0.4)]
+        );
+        MiningSystemResult ownProgress = System(
+            "Own",
+            "A. Lavigny-Duval",
+            "Fortified",
+            [new PowerplayProgress("A. Lavigny-Duval", 0.9), new PowerplayProgress("Edmund Mahon", 0.2)]
+        );
+
+        Assert.Equal(0, PowerplayPlan.OpposingPowerCount(quiet.Conflict, "Aisling Duval"));
+        Assert.Equal(1, PowerplayPlan.OpposingPowerCount(one.Conflict, "Aisling Duval"));
+        Assert.Equal(2, PowerplayPlan.OpposingPowerCount(two.Conflict, "Aisling Duval"));
+        Assert.Equal(1, PowerplayPlan.OpposingPowerCount(ownProgress.Conflict, "Arissa Lavigny-Duval"));
+        Assert.True(
+            PowerplayPlan.MatchesOppositionCount(PowerplayPlan.Reinforce, PowerplayPlan.NoPower, quiet, "Aisling Duval")
+        );
+        Assert.False(
+            PowerplayPlan.MatchesOppositionCount(PowerplayPlan.Undermine, PowerplayPlan.NoPower, quiet, "Aisling Duval")
+        );
+        Assert.True(
+            PowerplayPlan.MatchesOppositionCount(
+                PowerplayPlan.Undermine,
+                PowerplayPlan.OneOpposition,
+                one,
+                "Nakato Kaine"
+            )
+        );
+        Assert.True(
+            PowerplayPlan.MatchesOppositionCount(
+                PowerplayPlan.Undermine,
+                PowerplayPlan.TwoOpposition,
+                two,
+                "Nakato Kaine"
+            )
+        );
+        Assert.True(
+            PowerplayPlan.MatchesOppositionCount(
+                PowerplayPlan.Undermine,
+                PowerplayPlan.MultipleOpposition,
+                two,
+                "Nakato Kaine"
+            )
+        );
+        Assert.False(
+            PowerplayPlan.MatchesOppositionCount(
+                PowerplayPlan.Undermine,
+                PowerplayPlan.MultipleOpposition,
+                one,
+                "Nakato Kaine"
+            )
+        );
+    }
+
+    [Fact]
+    public void TravelDistanceUsesTheReferencePosition()
+    {
+        var origin = new GalacticCoordinate(0, 0, 0);
+        var target = new GalacticCoordinate(3, 4, 0);
+
+        Assert.Equal(5, PowerplayPlan.TravelDistance(origin, target));
+        Assert.Null(PowerplayPlan.TravelDistance(null, target));
+    }
+
+    private static MiningSystemResult System(
+        string name,
+        string power,
+        string state,
+        IReadOnlyList<PowerplayProgress>? conflict = null
+    ) => new(name, 1, "", "", "", "", "", power, state, 0) { Conflict = conflict ?? [] };
 }

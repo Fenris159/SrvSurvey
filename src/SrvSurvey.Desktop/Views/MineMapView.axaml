@@ -3,6 +3,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             xmlns:views="using:SrvSurvey.Desktop.Views"
              Grid.IsSharedSizeScope="True" x:Class="SrvSurvey.Desktop.Views.MineMapView"
              x:DataType="vm:MainWindowViewModel">
   <UserControl.Styles>
@@ -428,6 +429,86 @@
             </ScrollViewer>
           </Border>
         </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Search">
+        <ScrollViewer Margin="0,16,0,0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="14" DataContext="{Binding SurfaceSearch}" x:DataType="vm:SurfaceMiningSearchViewModel">
+          <Border Classes="card raised">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="card-title" Text="Find landable surface deposits"/>
+              <TextBlock Classes="muted" TextWrapping="Wrap" Text="Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most."/>
+              <WrapPanel>
+                <StackPanel Spacing="4" Width="250" Margin="0,0,12,10">
+                  <TextBlock Text="Reference system"/>
+                  <TextBox Text="{Binding Reference}"/>
+                </StackPanel>
+                <StackPanel Spacing="4" Width="130" Margin="0,0,12,10">
+                  <TextBlock Text="Distance (ly)"/>
+                  <NumericUpDown Minimum="1" Maximum="500" Value="{Binding Radius}"/>
+                </StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                  <TextBlock Text="Reserve level"/>
+                  <ComboBox ItemsSource="{Binding Reserves}" SelectedItem="{Binding Reserve}"/>
+                </StackPanel>
+                <views:MiningChipBox DataContext="{Binding Materials}"/>
+              </WrapPanel>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Search" Command="{Binding SearchCommand}"/>
+                <Button Content="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
+                <Button Content="{Binding DistanceSortLabel}" Command="{Binding DistanceSortCommand}" Padding="8,2"/>
+              </StackPanel>
+              <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>
+            </StackPanel>
+          </Border>
+          <StackPanel Width="1040" HorizontalAlignment="Left" IsVisible="{Binding HasRows}">
+          <Grid ColumnDefinitions="42*,4*,54*">
+            <Grid ColumnDefinitions="28*,12*,*">
+              <Border Classes="acquire-header first"><TextBlock Text="Target System"/></Border>
+              <Border Grid.Column="1" Classes="acquire-header"><TextBlock Text="DST"/></Border>
+              <Border Grid.Column="2" Classes="acquire-header"><TextBlock Text="Stations"/></Border>
+            </Grid>
+            <Grid Grid.Column="2" ColumnDefinitions="34*,*">
+              <Border Classes="acquire-header first"><TextBlock Text="Mining System"/></Border>
+              <Border Grid.Column="1" Classes="acquire-header"><TextBlock Text="Body Details"/></Border>
+            </Grid>
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Rows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:SurfaceSellRowViewModel">
+                <views:AcquireSplitRow Lines="{Binding Bodies}" Margin="0,0,0,12">
+                  <views:AcquireSplitRow.TargetTemplate>
+                    <DataTemplate x:DataType="vm:SurfaceSellRowViewModel">
+                      <Grid ColumnDefinitions="28*,12*,*">
+                        <Border Classes="acquire-cell">
+                          <Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Center" behaviors:ClipboardCopyBehavior.Text="{Binding Target}">
+                            <TextBlock Text="{Binding Target}" TextWrapping="Wrap"/>
+                          </Button>
+                        </Border>
+                        <Border Grid.Column="1" Classes="acquire-cell"><TextBlock Text="{Binding Distance}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Center"/></Border>
+                        <views:MiningStationList Grid.Column="2" Stations="{Binding Stations}"/>
+                      </Grid>
+                    </DataTemplate>
+                  </views:AcquireSplitRow.TargetTemplate>
+                  <views:AcquireSplitRow.LineTemplate>
+                    <DataTemplate x:DataType="vm:SurfaceBodyLine">
+                      <Grid ColumnDefinitions="34*,*">
+                        <Border Classes="acquire-cell">
+                          <Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Center" behaviors:ClipboardCopyBehavior.Text="{Binding System}">
+                            <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
+                          </Button>
+                        </Border>
+                        <Border Grid.Column="1" Padding="6"><TextBlock Text="{Binding Details}" TextWrapping="Wrap" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Center"/></Border>
+                      </Grid>
+                    </DataTemplate>
+                  </views:AcquireSplitRow.LineTemplate>
+                </views:AcquireSplitRow>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          </StackPanel>
+        </StackPanel>
+        </ScrollViewer>
       </TabItem>
 
       <TabItem Header="Instructions">

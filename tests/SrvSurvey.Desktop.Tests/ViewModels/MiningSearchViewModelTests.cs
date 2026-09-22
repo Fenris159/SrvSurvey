@@ -182,6 +182,13 @@ public sealed class MiningSearchViewModelTests
         await model.SearchPlatinumAsync();
         Assert.Equal(4, model.PlatinumSpots.Count);
         Assert.Contains(model.PlatinumSpots, spot => spot.Body == "Plain D Ring");
+        model.SelectedPlatinumSpot = model.PlatinumSpots[0];
+        model.UseSelectedPlatinumSpot();
+        Assert.Equal(system, model.Reference);
+        model.BookmarkSelectedPlatinumSpot();
+        model.SelectedPlatinumSpot = null;
+        model.UseSelectedPlatinumSpot();
+        model.BookmarkSelectedPlatinumSpot();
 
         static MiningRing Spot(string body, int hotspots, string overlaps = "", string resourceExtractionSites = "") =>
             new()
@@ -213,7 +220,7 @@ public sealed class MiningSearchViewModelTests
         Exception? error = await Record.ExceptionAsync(() => model.SearchTradersAsync());
         Assert.Null(error);
         Assert.False(model.IsBusy);
-        Assert.Contains("Search unavailable", model.Status);
+        Assert.Contains("Request failed. Try again.", model.Status);
         Assert.Empty(model.Markets);
         await model.SearchTradersAsync();
         Assert.Contains("material traders", model.Status);
@@ -346,6 +353,105 @@ public sealed class MiningSearchViewModelTests
     }
 
     [Fact]
+    public void OpposingNoneIsOnlyAvailableWhileReinforcing()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        );
+
+        Assert.Equal("Default", Assert.Single(model.MineralChips.Selected));
+        model.MineralChips.Add("Platinum");
+        Assert.Equal("Platinum", Assert.Single(model.MineralChips.Selected));
+        model.MineralChips.Add("Any");
+        Assert.Equal("Any", Assert.Single(model.MineralChips.Selected));
+
+        model.PledgedPower = "Aisling Duval";
+        model.Objective = "Reinforce";
+        Assert.Contains("None", model.OpposingChoices);
+        Assert.Contains("Multiple", model.OpposingChoices);
+        model.OpposingPower = "None";
+        model.Objective = "Undermine";
+
+        Assert.Equal("Any", model.OpposingPower);
+        Assert.DoesNotContain("None", model.OpposingChoices);
+        Assert.Contains("Two", model.OpposingChoices);
+    }
+
+    [Fact]
+    public async Task ReinforceSearchFallsBackWhenArdentFailsAndKeepsTheDiagnosticTogether()
+    {
+        var logs = new List<string>();
+        using var http = new HttpClient(new ArdentFailureHandler());
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(http),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Wille",
+            PledgedPower = "Aisling Duval",
+            Objective = "Reinforce",
+            Radius = 50,
+        };
+        model.UseDiagnosticLog(logs.Add);
+        model.OpposingPower = "One";
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Own", Assert.Single(model.Systems).System);
+        Assert.Contains("Request failed. Try again.", model.Status);
+        Assert.Contains(logs, line => line.Contains("failed", StringComparison.OrdinalIgnoreCase));
+        model.DistanceSortCommand.Execute(null);
+        Assert.Equal("Farthest first", model.DistanceSortLabel);
+        model.ResetPowerplay();
+        Assert.Equal("Reinforce", model.Objective);
+        Assert.Equal("Any", model.OpposingPower);
+    }
+
+    private sealed class ArdentFailureHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            string path = request.RequestUri?.AbsolutePath ?? "";
+            if (path.Contains("/api/systems/search", StringComparison.Ordinal))
+            {
+                return Json(
+                    """{"results":[{"name":"Own","distance":12,"x":1,"y":2,"z":3,"controlling_power":"Aisling Duval","power_state":"Fortified","power_conflict_progress":[{"power":"Jerome Archer","progress":0.1}]}]}"""
+                );
+            }
+
+            if (path.Contains("/api/bodies/search", StringComparison.Ordinal))
+            {
+                return Json(
+                    """{"results":[{"system_name":"Own","name":"Own A","rings":[{"name":"Own A Ring","type":"Metallic","signals":[{"name":"Platinum","count":2}]}]}]}"""
+                );
+            }
+
+            if (path.Contains("/api/stations/search", StringComparison.Ordinal))
+            {
+                return Json(
+                    """{"results":[{"system_name":"Own","name":"Market","type":"Orbis Starport","distance_to_arrival":5,"large_pads":1,"market":[{"commodity":"Platinum","sell_price":200000,"demand":1000}]}]}"""
+                );
+            }
+
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable));
+        }
+
+        private static Task<HttpResponseMessage> Json(string payload) =>
+            Task.FromResult(
+                new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) }
+            );
+    }
+
+    [Fact]
     public async Task AcquireKeepsUnownedSystemsInsideFortifiedOrStrongholdRange()
     {
         using var http = new HttpClient(new AcquisitionRangeHandler());
@@ -368,6 +474,9 @@ public sealed class MiningSearchViewModelTests
         MiningSystemResult claim = Assert.Single(model.Systems);
         Assert.Equal("Claim", claim.System);
         Assert.Equal("Unoccupied", claim.PowerState);
+        AcquireResultRowViewModel row = Assert.Single(model.AcquireRows);
+        Assert.Equal("Claim", row.Target);
+        Assert.Equal("Anchor", Assert.Single(row.Miners).Name);
         Assert.Contains("20 ly", model.Status);
     }
 
@@ -417,7 +526,15 @@ public sealed class MiningSearchViewModelTests
             CancellationToken cancellationToken
         )
         {
-            string payload = request.RequestUri!.AbsolutePath switch
+            string path = request.RequestUri!.AbsolutePath;
+            if (path.Contains("material-trader", StringComparison.Ordinal))
+            {
+                return Task.FromResult(
+                    new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("{}") }
+                );
+            }
+
+            string payload = path switch
             {
                 "/api/bodies/search" =>
                     """{"results":[{"system_name":"Wille","rings":[{"name":"Wille A Ring","type":"Metallic","signals":[{"name":"Platinum","count":2}]}]}]}""",
@@ -548,9 +665,9 @@ public sealed class MiningSearchViewModelTests
         )
         {
             HttpContent content =
-                ++calls == 1
+                ++calls <= 2
                     ? (HttpContent)new ByteArrayContent(new byte[8 * 1024 * 1024 + 1])
-                    : new StringContent("{\"results\":[]}");
+                    : new StringContent("[]");
             return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = content });
         }
     }

@@ -29,6 +29,23 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task NearestMaterialTradersComeFromArdentAndDropStationsOutsideTheRadius()
+    {
+        using var http = new HttpClient(
+            new Handler(
+                """[{"systemName":"Sirius","stationName":"Patterson Enterprise","stationType":"Coriolis","distanceToArrival":955,"maxLandingPadSize":3,"marketId":12,"distance":9,"updatedAt":"2026-09-21T00:00:00Z"},{"systemName":"Far","stationName":"Distant","stationType":"Outpost","distance":400,"marketId":13}]"""
+            )
+        );
+        (IReadOnlyList<MiningMarketResult> traders, string source) = await new MiningSearchClient(
+            http
+        ).FindTradersPreferringArdentAsync("Sol", "Encoded", radius: 75);
+        MiningMarketResult trader = Assert.Single(traders);
+        Assert.Equal("Ardent", source);
+        Assert.Equal("Patterson Enterprise", trader.Station);
+        Assert.Equal("Large", trader.QuotedPad);
+    }
+
+    [Fact]
     public async Task TraderRequestUsesRadiusAndSmallPages()
     {
         using var handler = new RequestHandler();
@@ -269,6 +286,42 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public void MonaziteUsesTheMeritMinerAbbreviation()
+    {
+        Assert.Equal("MON", MiningCommodityCode.Abbreviate("Monazite"));
+        Assert.Equal("ALE", MiningCommodityCode.Abbreviate("Alexandrite"));
+        Assert.Equal("LHY", MiningCommodityCode.Abbreviate("Lithium Hydroxide"));
+        Assert.Equal("MNL", MiningCommodityCode.Abbreviate("Methanol Monohydrate Crystals"));
+        Assert.Equal("JAD", MiningCommodityCode.Abbreviate("Jadeite"));
+        Assert.Equal("IDT", MiningCommodityCode.Abbreviate("Indite"));
+        Assert.Equal("BIS", MiningCommodityCode.Abbreviate("Bismuth"));
+    }
+
+    [Fact]
+    public async Task TargetStationQuotesKeepPriceAndDemand()
+    {
+        using var handler = new RequestHandler(
+            """{"results":[{"system_name":"Shui Wei Sector EQ-Y b0","name":"Birkhoff Platform","type":"Orbis Starport","distance_to_arrival":5,"medium_pads":1,"market":[{"commodity":"Monazite","sell_price":420153,"demand":31},{"commodity":"Alexandrite","sell_price":228919,"demand":31}]}]}"""
+        );
+        using var http = new HttpClient(handler);
+        IReadOnlyList<MiningSellQuote> quotes = await new MiningSearchClient(http).FindSellQuotesAsync(
+            "Sol",
+            200,
+            ["Shui Wei Sector EQ-Y b0"],
+            ["Monazite", "Alexandrite"]
+        );
+
+        Assert.Equal(2, quotes.Count);
+        Assert.Equal("Birkhoff Platform", quotes[0].Station);
+        Assert.Equal("Medium", quotes[0].Pad);
+        Assert.Equal(420153, quotes[0].Price);
+        Assert.Equal(31, quotes[0].Demand);
+        Assert.False(
+            JsonDocument.Parse(handler.Body!).RootElement.GetProperty("filters").TryGetProperty("power_state", out _)
+        );
+    }
+
+    [Fact]
     public async Task PlanetaryBodiesAskSpanshForLandableSystemsAndMagma()
     {
         using var handler = new RequestHandler(
@@ -311,29 +364,120 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task ArdentFailureFallsBackToSpanshStationPrices()
+    {
+        using var http = new HttpClient(new ArdentThenSpanshHandler());
+        (IReadOnlyList<MiningMarketResult> markets, string source) = await new MiningSearchClient(
+            http
+        ).FindMarketsPreferringArdentAsync(new("Sol", "Platinum", false, MaximumAge: TimeSpan.FromDays(30)));
+        MiningMarketResult market = Assert.Single(markets);
+        Assert.Equal("Spansh fallback", source);
+        Assert.Equal("Birkhoff Platform", market.Station);
+        Assert.Equal(420153, market.Price);
+        Assert.Equal(31, market.Demand);
+    }
+
+    private sealed class ArdentThenSpanshHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request.RequestUri?.Host.Contains("ardent", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+            }
+
+            return Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        $$"""{"results":[{"system_name":"Sol","name":"Birkhoff Platform","type":"Orbis Starport","medium_pads":1,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","market":[{"commodity":"Platinum","sell_price":420153,"demand":31}]}]}"""
+                    ),
+                }
+            );
+        }
+    }
+
+    [Fact]
     public async Task ExactSystemMarketScopeIsAppliedBeforeStationPagination()
     {
-        using var handler = new RequestHandler();
+        using var handler = new RequestHandler("[]");
         using var http = new HttpClient(handler);
         await new MiningSearchClient(http).FindMarketsAsync(new("Wille", "Platinum", false, Page: 2, SystemOnly: true));
-        using var request = System.Text.Json.JsonDocument.Parse(handler.Body!);
-        Assert.Equal(
-            "Wille",
-            request.RootElement.GetProperty("filters").GetProperty("system_name").GetProperty("value")[0].GetString()
+        Assert.Contains("/v2/system/name/Wille/commodity/name/", handler.Uri!.AbsolutePath, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GalaxyMarketsOmitCarriersUntilTheSearchExcludesThem()
+    {
+        using var included = new RequestHandler("[]");
+        using var http = new HttpClient(included);
+        await new MiningSearchClient(http).FindMarketsAsync(new("Sol", "Platinum", false, GalaxyWide: true));
+        Assert.DoesNotContain("fleetCarriers", included.Uri!.Query, StringComparison.Ordinal);
+
+        using var excluded = new RequestHandler("[]");
+        using var excluding = new HttpClient(excluded);
+        await new MiningSearchClient(excluding).FindMarketsAsync(
+            new("Sol", "Platinum", false, GalaxyWide: true, ExcludeCarriers: true)
         );
-        Assert.Equal(2, request.RootElement.GetProperty("page").GetInt32());
+        Assert.Contains("fleetCarriers=false", excluded.Uri!.Query, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AveragePricesCacheAndAFailedCatalogueLeavesMarksUnavailable()
+    {
+        var logs = new List<string>();
+        using var http = new HttpClient(new RequestHandler("""[{"commodityName":"Platinum","avgSellPrice":1000}]"""));
+        var client = new MiningSearchClient(http) { DiagnosticLog = logs.Add };
+        IReadOnlyDictionary<string, long> prices = await client.AverageSellPricesAsync();
+        Assert.Equal(1000, prices["Platinum"]);
+        Assert.False(client.PriceMarksUnavailable);
+        Assert.Same(prices, await client.AverageSellPricesAsync());
+
+        using var failed = new HttpClient(new StatusHandler(System.Net.HttpStatusCode.TooManyRequests));
+        var failing = new MiningSearchClient(failed)
+        {
+            DiagnosticLog = _ => throw new InvalidOperationException("log sink failed"),
+        };
+        Assert.Empty(await failing.AverageSellPricesAsync());
+        Assert.True(failing.PriceMarksUnavailable);
+        failing.FlushDiagnostics();
+        failing.ResetDiagnostics();
+        Assert.False(failing.PriceMarksUnavailable);
+    }
+
+    [Fact]
+    public async Task RingSearchCanNameSeveralMinerals()
+    {
+        using var handler = new RequestHandler("""{"results":[]}""");
+        using var http = new HttpClient(handler);
+        await new MiningSearchClient(http).FindRingsAsync(new("Sol", "", "All", 20, Minerals: ["Platinum", "Painite"]));
+        Assert.Contains("Painite", handler.Body, StringComparison.Ordinal);
+        Assert.Contains("Platinum", handler.Body, StringComparison.Ordinal);
+    }
+
+    private sealed class StatusHandler(System.Net.HttpStatusCode status) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        ) => Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent("") });
     }
 
     private sealed class RequestHandler(string payload = "{\"results\":[]}") : HttpMessageHandler
     {
         public string? Body { get; private set; }
+        public Uri? Uri { get; private set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
         )
         {
-            Body = await request.Content!.ReadAsStringAsync(cancellationToken);
+            Uri = request.RequestUri;
+            Body = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
             return new(HttpStatusCode.OK) { Content = new StringContent(payload) };
         }
     }
