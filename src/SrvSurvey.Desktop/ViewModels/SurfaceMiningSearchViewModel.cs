@@ -142,14 +142,13 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             .ToArray();
         Rows = orderedBodies.Length == 0 ? [] : [Describe(orderedBodies, best, stations)];
         Changed(nameof(HasRows));
-        string summary =
-            orderedBodies.Length
+        return orderedBodies.Length
             + " landable bodies for "
             + string.Join(", ", materials)
             + ". Best sell from "
             + source
-            + ".";
-        return client.PriceMarksUnavailable ? summary + " " + RequestFailed : summary;
+            + "."
+            + (client.PriceMarksUnavailable ? " " + RequestFailed : "");
     }
 
     public async Task SearchAsync()
