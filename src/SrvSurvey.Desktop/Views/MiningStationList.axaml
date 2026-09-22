@@ -28,7 +28,7 @@
               <DataTemplate x:DataType="vm:AcquireQuoteViewModel">
                 <Grid ColumnDefinitions="40,140,*" Margin="0,1">
                   <Border Classes.highlight="{Binding Highlight}" Padding="4,0">
-                    <TextBlock Text="{Binding Code}" Foreground="{DynamicResource RavenAccentBrush}" FontFamily="monospace" FontSize="12" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding Code}" FontFamily="monospace" FontSize="12" HorizontalAlignment="Center"/>
                   </Border>
                   <TextBlock Grid.Column="1" Text="{Binding Price}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Center"/>
                   <TextBlock Grid.Column="2" Text="{Binding Demand}" Foreground="{DynamicResource RavenTextBrush}" VerticalAlignment="Center"/>

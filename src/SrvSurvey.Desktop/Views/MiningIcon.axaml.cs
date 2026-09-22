@@ -41,11 +41,15 @@ public sealed partial class MiningIcon : UserControl
         ["Outpost"] = "Outpost_sm.png",
     };
 
+    static MiningIcon()
+    {
+        KindProperty.Changed.AddClassHandler<MiningIcon>((icon, _) => icon.Apply());
+        AccentProperty.Changed.AddClassHandler<MiningIcon>((icon, _) => icon.Apply());
+    }
+
     public MiningIcon()
     {
         InitializeComponent();
-        KindProperty.Changed.AddClassHandler<MiningIcon>((icon, _) => icon.Apply());
-        AccentProperty.Changed.AddClassHandler<MiningIcon>((icon, _) => icon.Apply());
     }
 
     public string? Kind

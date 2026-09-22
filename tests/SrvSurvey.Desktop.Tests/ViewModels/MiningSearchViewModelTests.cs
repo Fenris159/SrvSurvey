@@ -122,6 +122,8 @@ public sealed class MiningSearchViewModelTests
         model.ResultLimit = 42;
         model.PlatinumMode = "Overlaps";
         model.OpposingPower = "Jerome Archer";
+        model.PledgedPower = "Aisling Duval";
+        model.Objective = "Acquire";
         MiningCommanderData restored = MiningStore.Parse(
             MiningStore.Export(
                 new MiningCommanderData { Settings = new MiningPreferences { SearchOptions = model.SaveOptions() } }
@@ -131,6 +133,8 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("", model.Reference);
         Assert.Equal(100, model.Radius);
         Assert.False(model.OnlyRes);
+        Assert.Equal("All systems", model.Objective);
+        Assert.Equal("Any", model.PledgedPower);
         model.LoadOptions(restored.Settings.SearchOptions);
         Assert.Equal("Sol", model.Reference);
         Assert.Equal(240, model.Radius);

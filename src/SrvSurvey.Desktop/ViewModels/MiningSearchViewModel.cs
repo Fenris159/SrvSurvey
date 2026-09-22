@@ -1937,8 +1937,8 @@ public sealed class MiningSearchViewModel(
         SelectedTrader = null;
         SystemOnly = false;
         powerplayPrepared = false;
-        Objective = AllSystems;
         PledgedPower = "";
+        Objective = AllSystems;
         SelectedRing = null;
         SelectedMarket = null;
         SelectedSystem = null;

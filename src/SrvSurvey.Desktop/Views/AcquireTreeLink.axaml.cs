@@ -10,10 +10,14 @@ public sealed partial class AcquireTreeLink : UserControl
         "Single"
     );
 
+    static AcquireTreeLink()
+    {
+        KindProperty.Changed.AddClassHandler<AcquireTreeLink>((link, _) => link.ApplyKind());
+    }
+
     public AcquireTreeLink()
     {
         InitializeComponent();
-        KindProperty.Changed.AddClassHandler<AcquireTreeLink>((link, _) => link.ApplyKind());
     }
 
     public string Kind
