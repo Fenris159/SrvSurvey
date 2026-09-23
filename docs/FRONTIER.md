@@ -92,6 +92,9 @@ is not activatable**, the Secret Service provider could not be started on that
 login session's D-Bus. Sign out and back in after enabling the interface; if
 it still fails, check your distribution's KWallet startup/login integration
 (for Arch derivatives, see the [KDE Wallet guidance](https://wiki.archlinux.org/title/KDE_Wallet)).
+On systems using SDDM, check whether the KWallet login integration starts
+`ksecretd` in your Plasma session; this was relevant to the reported CachyOS
+case, but the exact configuration depends on the distribution.
 Do not edit PAM configuration based on a generic example without checking your
 distribution's login setup. A successful probe in `dbus-run-session` uses a
 separate temporary bus and does not establish that SrvSurvey's normal session

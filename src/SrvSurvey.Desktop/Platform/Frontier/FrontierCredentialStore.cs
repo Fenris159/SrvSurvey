@@ -200,7 +200,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
 ) : IFrontierCredentialStore
 {
     internal const string UnavailableMessage =
-        "Secure Frontier token storage is unavailable: Secret Service is inaccessible. secret-tool is installed, but a keyring must be running and unlocked in this login session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet and unlock the wallet. If activation still fails, sign out and back in, then check your distribution's KWallet login integration. On other desktops, start and unlock GNOME Keyring or another provider. Retry Connect to Frontier.";
+        "Secure Frontier token storage is unavailable: Secret Service is inaccessible. secret-tool is installed, but a keyring must run and be unlocked in this login session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet and unlock the wallet. If activation still fails, sign out and back in; on SDDM systems, check KWallet/ksecretd login integration. On other desktops, start and unlock GNOME Keyring or another provider. Retry Connect to Frontier.";
     internal const string MissingSecretToolMessage =
         "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.";
     private static readonly string[] SecretToolPaths =

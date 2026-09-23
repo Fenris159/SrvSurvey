@@ -14,6 +14,8 @@ public sealed class FrontierCredentialStoreTests
         Assert.Contains("Secret Service interface", message);
         Assert.Contains("sign out and back in", message);
         Assert.Contains("login integration", message);
+        Assert.Contains("SDDM", message);
+        Assert.Contains("ksecretd", message);
         Assert.DoesNotContain("sudo pacman", message);
     }
 
