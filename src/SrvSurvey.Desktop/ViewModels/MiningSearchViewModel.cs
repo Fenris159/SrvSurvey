@@ -2002,12 +2002,14 @@ public sealed class MiningSearchViewModel(
             return ([], "Ardent");
         }
 
-        try
+        var reported = new List<MiningMarketResult>();
+        var missing = new List<string>();
+        foreach (string commodity in wantedCommodities)
         {
-            var reported = new List<MiningMarketResult>();
-            foreach (string commodity in wantedCommodities)
+            IReadOnlyList<MiningMarketResult> found;
+            try
             {
-                IReadOnlyList<MiningMarketResult> found = await client.FindMarketsAsync(
+                found = await client.FindMarketsAsync(
                     new MiningMarketQuery(
                         Reference,
                         commodity,
@@ -2027,49 +2029,73 @@ public sealed class MiningSearchViewModel(
                     ),
                     token
                 );
-                reported.AddRange(
-                    anywhereInRadius
-                        ? found
-                        : found.Where(market => wantedSystems.Contains(market.System, StringComparer.OrdinalIgnoreCase))
-                );
+            }
+            catch (Exception ex) when (IsProviderFailure(ex))
+            {
+                missing.Add(commodity);
+                continue;
             }
 
+            MiningMarketResult[] eligible = (
+                anywhereInRadius
+                    ? found
+                    : found.Where(market => wantedSystems.Contains(market.System, StringComparer.OrdinalIgnoreCase))
+            ).ToArray();
+            if (eligible.Length == 0)
+            {
+                missing.Add(commodity);
+            }
+            else
+            {
+                reported.AddRange(eligible);
+            }
+        }
+
+        if (missing.Count == 0)
+        {
             return (reported, "Ardent");
         }
-        catch (Exception ex) when (IsProviderFailure(ex))
+
+        IReadOnlyList<MiningSellQuote> quotes;
+        try
         {
-            IReadOnlyList<MiningSellQuote> quotes = await client.FindSellQuotesAsync(
+            quotes = await client.FindSellQuotesAsync(
                 Reference,
                 Radius,
                 wantedSystems,
-                wantedCommodities,
+                missing,
                 MarketFreshness ?? TimeSpan.FromDays(MaximumAgeDays),
                 token
             );
-            return (
-                quotes
-                    .Where(FitsQuotedStation)
-                    .Select(quote => new MiningMarketResult(
-                        quote.System,
-                        quote.Station,
-                        quote.StationType,
-                        null,
-                        quote.ArrivalLs,
-                        quote.Price,
-                        quote.Demand,
-                        0,
-                        quote.Updated,
-                        0,
-                        quote.Pad.Equals("Large", StringComparison.OrdinalIgnoreCase)
-                    )
-                    {
-                        Commodity = quote.Commodity,
-                        QuotedPad = quote.Pad,
-                    })
-                    .ToArray(),
-                "Spansh fallback"
-            );
         }
+        catch (Exception ex) when (IsProviderFailure(ex) && reported.Count > 0)
+        {
+            return (reported, "Ardent; Spansh fallback unavailable");
+        }
+
+        bool hadArdent = reported.Count > 0;
+        reported.AddRange(
+            quotes
+                .Where(FitsQuotedStation)
+                .Select(quote => new MiningMarketResult(
+                    quote.System,
+                    quote.Station,
+                    quote.StationType,
+                    null,
+                    quote.ArrivalLs,
+                    quote.Price,
+                    quote.Demand,
+                    0,
+                    quote.Updated,
+                    0,
+                    quote.Pad.Equals("Large", StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    Commodity = quote.Commodity,
+                    QuotedPad = quote.Pad,
+                })
+        );
+        return (reported, hadArdent ? "Ardent/Spansh fallback" : "Spansh fallback");
     }
 
     private bool FitsQuotedStation(MiningSellQuote quote)

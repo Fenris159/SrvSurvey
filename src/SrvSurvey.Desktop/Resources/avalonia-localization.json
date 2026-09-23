@@ -2257,6 +2257,10 @@
       "translation": "Ardent/Spansh Fallback"
     },
     {
+      "source": "Ardent; Spansh fallback unavailable",
+      "translation": "Leidenschaftlich; Spansh Fallback nicht verfügbar"
+    },
+    {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
       "translation": "Sind Sie sicher, dass Sie fortfahren möchten? Dadurch werden alle Instanzen geschlossen."
     },
@@ -36461,6 +36465,10 @@
     {
       "source": "Ardent/Spansh fallback",
       "translation": "Alternativa de Ardent/Spansh"
+    },
+    {
+      "source": "Ardent; Spansh fallback unavailable",
+      "translation": "Ardiente; Spansh reserva no disponible"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
@@ -70669,6 +70677,10 @@
       "translation": "Ardent/Spansh solution de secours"
     },
     {
+      "source": "Ardent; Spansh fallback unavailable",
+      "translation": "Ardent; Spansh solution de secours indisponible"
+    },
+    {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
       "translation": "Êtes-vous sûr de vouloir continuer ? Cela fermera toutes les instances."
     },
@@ -104873,6 +104885,10 @@
     {
       "source": "Ardent/Spansh fallback",
       "translation": "Alternativa Ardent/Spansh"
+    },
+    {
+      "source": "Ardent; Spansh fallback unavailable",
+      "translation": "Ardente; Spansh substituto indisponível"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
@@ -139081,6 +139097,10 @@
       "translation": "Ardent/Spansh резервный вариант"
     },
     {
+      "source": "Ardent; Spansh fallback unavailable",
+      "translation": "Ярый; Spansh резервный вариант недоступен."
+    },
+    {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
       "translation": "Вы уверены, что хотите продолжить? Это приведет к закрытию всех экземпляров."
     },
@@ -173287,6 +173307,10 @@
       "translation": "Ardent/Spansh 后备"
     },
     {
+      "source": "Ardent; Spansh fallback unavailable",
+      "translation": "热心; Spansh 后备不可用"
+    },
+    {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
       "translation": "您确定要继续吗？这样做将关闭所有实例。"
     },
@@ -207491,6 +207515,10 @@
     {
       "source": "Ardent/Spansh fallback",
       "translation": "* ARDENT/SPANSH FALLBACK >>>!"
+    },
+    {
+      "source": "Ardent; Spansh fallback unavailable",
+      "translation": "* ARDENT; SPANSH FALLBACK UNAVAILABLE >>>!"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",

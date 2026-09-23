@@ -556,9 +556,38 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("Any", model.OpposingPower);
     }
 
+    [Fact]
+    public async Task RingSearchFallsBackOnlyForTheCommodityMissingFromArdent()
+    {
+        using var handler = new ArdentFailureHandler { PartialArdent = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Wille",
+            Radius = 50,
+        };
+        model.MineralChips.Add("Gold");
+        model.MineralChips.Add("Platinum");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Own", Assert.Single(model.MeritRows).Name);
+        Assert.Contains("Ardent/Spansh fallback", model.Status);
+        Assert.Contains("Platinum", handler.FallbackFilter);
+        Assert.DoesNotContain("Gold", handler.FallbackFilter);
+    }
+
     private sealed class ArdentFailureHandler : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(
+        public bool PartialArdent { get; init; }
+        public string? FallbackFilter { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
         )
@@ -566,26 +595,44 @@ public sealed class MiningSearchViewModelTests
             string path = request.RequestUri?.AbsolutePath ?? "";
             if (path.Contains("/api/systems/search", StringComparison.Ordinal))
             {
-                return Json(
+                return await Json(
                     """{"results":[{"name":"Own","distance":12,"x":1,"y":2,"z":3,"controlling_power":"Aisling Duval","power_state":"Fortified","power_conflict_progress":[{"power":"Jerome Archer","progress":0.1}]}]}"""
                 );
             }
 
             if (path.Contains("/api/bodies/search", StringComparison.Ordinal))
             {
-                return Json(
+                return await Json(
                     """{"results":[{"system_name":"Own","name":"Own A","rings":[{"name":"Own A Ring","type":"Metallic","signals":[{"name":"Platinum","count":2}]}]}]}"""
                 );
             }
 
             if (path.Contains("/api/stations/search", StringComparison.Ordinal))
             {
-                return Json(
+                string filter = await request.Content!.ReadAsStringAsync(cancellationToken);
+                if (filter.Contains("buying_commodities", StringComparison.Ordinal))
+                {
+                    FallbackFilter = filter;
+                }
+
+                return await Json(
                     $$"""{"results":[{"system_name":"Own","name":"Market","type":"Orbis Starport","distance_to_arrival":5,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","large_pads":1,"market":[{"commodity":"Platinum","sell_price":200000,"demand":1000}]}]}"""
                 );
             }
 
-            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable));
+            if (PartialArdent && path.Contains("/commodity/name/gold/nearby/imports", StringComparison.Ordinal))
+            {
+                return await Json(
+                    $$"""[{"systemName":"Own","stationName":"Market","stationType":"Orbis Starport","maxLandingPadSize":3,"sellPrice":250000,"demand":1000,"updatedAt":"{{DateTimeOffset.UtcNow:O}}","distance":12,"commodityName":"Gold"}]"""
+                );
+            }
+
+            if (PartialArdent && path.Contains("/commodity/name/platinum/nearby/imports", StringComparison.Ordinal))
+            {
+                return await Json("[]");
+            }
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
         }
 
         private static Task<HttpResponseMessage> Json(string payload) =>
