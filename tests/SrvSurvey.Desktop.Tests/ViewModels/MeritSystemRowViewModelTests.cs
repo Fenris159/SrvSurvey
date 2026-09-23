@@ -17,6 +17,7 @@ public sealed class MeritSystemRowViewModelTests
             new("Hub", "Coriolis", "Large", 600, 100, "", "Platinum"),
             new("Hub", "Coriolis", "Large", 500, 100, "", "Monazite"),
             new("Hub", "Coriolis", "Large", 400, 100, "", "Alexandrite"),
+            new("Hub", "Coriolis", "Large", 300, 100, "", "Painite"),
             new("Other", "Orbis", "Large", 350, 100, "", "Gold"),
         ];
         var system = new PowerplayMeritSystem(
@@ -26,13 +27,19 @@ public sealed class MeritSystemRowViewModelTests
             "Stronghold",
             "",
             1_000,
-            [new PowerplayMeritRing("Sol 1 A Ring", "Monazite", SignalLines: ["Monazite: 1 Hotspot"])],
+            [
+                new PowerplayMeritRing(
+                    "Sol 1 A Ring",
+                    "Monazite",
+                    SignalLines: ["Monazite: 1 Hotspot", "Alexandrite: 1 Hotspot"]
+                ),
+            ],
             quotes
         );
 
         var row = MeritSystemRowViewModel.From(system);
         MeritStationBlockViewModel hub = Assert.Single(row.StationBlocks);
-        Assert.Equal("MON", hub.OtherCommodities[0].Code);
+        Assert.Equal("ALE", hub.OtherCommodities[0].Code);
         Assert.Equal(6, hub.OtherCommodities.Count);
         Assert.True(hub.CanToggleCommodities);
         hub.ToggleCommoditiesCommand.Execute(null);
@@ -53,6 +60,42 @@ public sealed class MeritSystemRowViewModelTests
             lines.Select(line => line.Display)
         );
         Assert.Equal("#7F00FF", lines[0].ColorHex);
+    }
+
+    [Fact]
+    public void StationPadIsCompactAndSavedQuoteAgeIsRecomputed()
+    {
+        DateTimeOffset updated = DateTimeOffset.UtcNow.AddHours(-2);
+        var system = new PowerplayMeritSystem(
+            "Sol",
+            2,
+            "Aisling Duval",
+            "Fortified",
+            "",
+            1_000,
+            [],
+            [
+                new PowerplayMeritStation(
+                    "Hub",
+                    "Outpost",
+                    "Small / medium pads",
+                    1_000,
+                    10,
+                    "",
+                    "Gold",
+                    Updated: updated
+                ),
+            ]
+        );
+
+        MeritStationBlockViewModel station = Assert.Single(MeritSystemRowViewModel.From(system).StationBlocks);
+        Assert.Equal("Hub (S/M)", station.Heading);
+        Assert.Equal(updated, station.UpdatedAt);
+        Assert.Contains("2h", station.Updated, StringComparison.Ordinal);
+
+        MeritStationBlockViewModel restored = MeritStationBlockSnapshot.From(station).Restore();
+        Assert.Equal(updated, restored.UpdatedAt);
+        Assert.Contains("2h", restored.Updated, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -210,7 +253,7 @@ public sealed class MeritSystemRowViewModelTests
         );
 
         Assert.Equal("Platinum", Assert.Single(row.StationBlocks).Commodity);
-        Assert.Equal(2, Assert.Single(row.StationBlocks).OtherCommodities.Count);
+        Assert.Equal("MON", Assert.Single(Assert.Single(row.StationBlocks).OtherCommodities).Code);
         Assert.Contains("Platinum", Assert.Single(row.Rings).Text, StringComparison.Ordinal);
         row.ToggleSignals();
         Assert.Equal(2, row.Stations.Count);

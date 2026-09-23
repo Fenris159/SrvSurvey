@@ -13,6 +13,8 @@ public sealed record MeritStationBlockSnapshot(
     MeritCommodityLineViewModel[] Commodities
 )
 {
+    public DateTimeOffset? UpdatedAt { get; init; }
+
     public static MeritStationBlockSnapshot From(MeritStationBlockViewModel block) =>
         new(
             block.Icon,
@@ -23,7 +25,10 @@ public sealed record MeritStationBlockSnapshot(
             block.Arrival,
             block.Updated,
             block.AllCommodities.ToArray()
-        );
+        )
+        {
+            UpdatedAt = block.UpdatedAt,
+        };
 
     public MeritStationBlockViewModel Restore() => new(this);
 }

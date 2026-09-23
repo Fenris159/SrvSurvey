@@ -29,6 +29,13 @@ public sealed class SurfaceMiningSearchViewModelTests
                 await first.SearchAsync();
                 Assert.Single(first.Rows);
                 first.HideIrrelevantMaterialTags = true;
+                using var otherHandler = new SurfaceHandler();
+                using SurfaceMiningSearchViewModel planetary = Create(otherHandler);
+                planetary.ConfigureCache(cache, "planetary", restoreLast: false);
+                Assert.True(planetary.HideIrrelevantMaterialTags);
+                planetary.HideIrrelevantMaterialTags = false;
+                Assert.False(first.HideIrrelevantMaterialTags);
+                first.HideIrrelevantMaterialTags = true;
             }
 
             using var secondHandler = new SurfaceHandler { Mode = "fail" };

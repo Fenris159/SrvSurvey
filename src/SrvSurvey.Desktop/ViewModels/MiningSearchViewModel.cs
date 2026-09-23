@@ -2744,9 +2744,11 @@ public sealed class MiningSearchViewModel(
 
     public void ConfigureResultCache(MiningSearchResultCache cache)
     {
+        resultCache?.HideIrrelevantMaterialTagsChanged -= SyncHideIrrelevantTags;
         resultCache = cache;
-        PlanetarySearch.HideIrrelevantTagsChanged = value => cache.Save("mining-display", "hide-irrelevant", value);
-        PlanetarySearch.HideIrrelevantMaterialTags = cache.Load<bool>("mining-display", "hide-irrelevant");
+        cache.HideIrrelevantMaterialTagsChanged += SyncHideIrrelevantTags;
+        PlanetarySearch.HideIrrelevantTagsChanged = value => cache.HideIrrelevantMaterialTags = value;
+        PlanetarySearch.HideIrrelevantMaterialTags = cache.HideIrrelevantMaterialTags;
         PropertyChanged += RestorePowerplayWhenFiltersChange;
         MiningTypeChips.Selected.CollectionChanged += (_, _) => TryRestorePowerplaySearch();
         MineralChips.Selected.CollectionChanged += (_, _) => TryRestorePowerplaySearch();
@@ -2756,6 +2758,8 @@ public sealed class MiningSearchViewModel(
             RestorePowerplaySnapshot(last, restoreFilters: true);
         }
     }
+
+    private void SyncHideIrrelevantTags(bool value) => PlanetarySearch.HideIrrelevantMaterialTags = value;
 
     internal string PowerplayCacheKey() =>
         JsonSerializer.Serialize(
@@ -2959,6 +2963,7 @@ public sealed class MiningSearchViewModel(
 
     public void Dispose()
     {
+        resultCache?.HideIrrelevantMaterialTagsChanged -= SyncHideIrrelevantTags;
         pending?.Cancel();
         pending?.Dispose();
         pending = null;
@@ -2983,7 +2988,12 @@ public sealed class MiningSearchViewModel(
 
             token.ThrowIfCancellationRequested();
             await action(token);
-            if (cacheSearch && pending == current && resultCache is not null && Status != RequestFailed)
+            if (
+                cacheSearch
+                && pending == current
+                && resultCache is not null
+                && !Status.Contains(RequestFailed, StringComparison.Ordinal)
+            )
             {
                 resultCache.Save("powerplay", PowerplayCacheKey(), ExportPowerplaySnapshot());
             }

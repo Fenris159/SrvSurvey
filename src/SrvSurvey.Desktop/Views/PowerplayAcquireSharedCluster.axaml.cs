@@ -24,16 +24,10 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
 
     private void ChangeCluster()
     {
-        if (cluster is not null)
-        {
-            cluster.PropertyChanged -= OnClusterChanged;
-        }
+        cluster?.PropertyChanged -= OnClusterChanged;
 
         cluster = DataContext as PowerplayAcquireClusterViewModel;
-        if (cluster is not null)
-        {
-            cluster.PropertyChanged += OnClusterChanged;
-        }
+        cluster?.PropertyChanged += OnClusterChanged;
 
         lastActivePath = "";
         lastInactivePath = "";

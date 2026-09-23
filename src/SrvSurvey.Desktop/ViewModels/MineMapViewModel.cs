@@ -70,7 +70,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     )
     {
         service = new MineMapService(dataDirectory, bookmarkCatalog);
-        miningSearchCache = new MiningSearchResultCache(dataDirectory);
+        miningSearchCache = MiningSearchResultCache.ForDirectory(dataDirectory);
         this.settingsStore = settingsStore;
         this.notify = notify;
         this.editBookmark = editBookmark ?? (_ => { });

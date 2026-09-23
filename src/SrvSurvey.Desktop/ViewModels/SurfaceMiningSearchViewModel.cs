@@ -429,6 +429,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     {
         restoringCache = true;
         Cancel();
+        pending = null;
+        IsBusy = false;
         Materials.Selected.Clear();
         Radius = 100;
         ResultLimit = 1;
@@ -449,15 +451,19 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     public void ConfigureCache(MiningSearchResultCache cache, string workspace = "surface", bool restoreLast = true)
     {
+        resultCache?.HideIrrelevantMaterialTagsChanged -= SyncHideIrrelevantTags;
         resultCache = cache;
         cacheWorkspace = workspace;
-        HideIrrelevantTagsChanged = value => cache.Save("mining-display", "hide-irrelevant", value);
-        HideIrrelevantMaterialTags = cache.Load<bool>("mining-display", "hide-irrelevant");
+        cache.HideIrrelevantMaterialTagsChanged += SyncHideIrrelevantTags;
+        HideIrrelevantTagsChanged = value => cache.HideIrrelevantMaterialTags = value;
+        HideIrrelevantMaterialTags = cache.HideIrrelevantMaterialTags;
         if (restoreLast && cache.LoadLast<SurfaceMiningSearchSnapshot>(workspace) is { } last)
         {
             RestoreSnapshot(last, restoreFilters: true);
         }
     }
+
+    private void SyncHideIrrelevantTags(bool value) => HideIrrelevantMaterialTags = value;
 
     public SurfaceMiningSearchSnapshot ExportSnapshot() =>
         new(
@@ -1289,7 +1295,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     private void SaveCompletedSearch(CancellationTokenSource current)
     {
-        if (pending == current && resultCache is not null && Status != RequestFailed)
+        if (pending == current && resultCache is not null && !Status.Contains(RequestFailed, StringComparison.Ordinal))
         {
             resultCache.Save(cacheWorkspace, CacheKey(), ExportSnapshot());
         }
@@ -1299,6 +1305,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     public void Dispose()
     {
+        resultCache?.HideIrrelevantMaterialTagsChanged -= SyncHideIrrelevantTags;
         pending?.Cancel();
         pending?.Dispose();
         pending = null;

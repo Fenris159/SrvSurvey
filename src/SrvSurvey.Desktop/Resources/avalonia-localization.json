@@ -31485,10 +31485,6 @@
       "translation": "Helium"
     },
     {
-      "source": "hide-irrelevant",
-      "translation": "verstecken-irrelevant"
-    },
-    {
       "source": "high",
       "translation": "hoch"
     },
@@ -31859,10 +31855,6 @@
     {
       "source": "mining overview map",
       "translation": "Bergbau-Übersichtskarte"
-    },
-    {
-      "source": "mining-display",
-      "translation": "Bergbau-Anzeige"
     },
     {
       "source": "mining-report.{0}",
@@ -65763,10 +65755,6 @@
       "translation": "helio"
     },
     {
-      "source": "hide-irrelevant",
-      "translation": "ocultar-irrelevante"
-    },
-    {
       "source": "high",
       "translation": "alto"
     },
@@ -66137,10 +66125,6 @@
     {
       "source": "mining overview map",
       "translation": "mapa general de minería"
-    },
-    {
-      "source": "mining-display",
-      "translation": "exhibición-minera"
     },
     {
       "source": "mining-report.{0}",
@@ -100041,10 +100025,6 @@
       "translation": "hélium"
     },
     {
-      "source": "hide-irrelevant",
-      "translation": "cacher-non pertinent"
-    },
-    {
       "source": "high",
       "translation": "haut"
     },
@@ -100415,10 +100395,6 @@
     {
       "source": "mining overview map",
       "translation": "carte d'ensemble de l'exploitation minière"
-    },
-    {
-      "source": "mining-display",
-      "translation": "affichage minier"
     },
     {
       "source": "mining-report.{0}",
@@ -134319,10 +134295,6 @@
       "translation": "hélio"
     },
     {
-      "source": "hide-irrelevant",
-      "translation": "ocultar-irrelevante"
-    },
-    {
       "source": "high",
       "translation": "alto"
     },
@@ -134693,10 +134665,6 @@
     {
       "source": "mining overview map",
       "translation": "mapa geral de mineração"
-    },
-    {
-      "source": "mining-display",
-      "translation": "exibição de mineração"
     },
     {
       "source": "mining-report.{0}",
@@ -168597,10 +168565,6 @@
       "translation": "гелий"
     },
     {
-      "source": "hide-irrelevant",
-      "translation": "скрыть-не имеет значения"
-    },
-    {
       "source": "high",
       "translation": "высокий"
     },
@@ -168971,10 +168935,6 @@
     {
       "source": "mining overview map",
       "translation": "обзорная карта добычи полезных ископаемых"
-    },
-    {
-      "source": "mining-display",
-      "translation": "майнинг-дисплей"
     },
     {
       "source": "mining-report.{0}",
@@ -202875,10 +202835,6 @@
       "translation": "氦"
     },
     {
-      "source": "hide-irrelevant",
-      "translation": "隐藏不相关的"
-    },
-    {
       "source": "high",
       "translation": "高"
     },
@@ -203249,10 +203205,6 @@
     {
       "source": "mining overview map",
       "translation": "采矿概况图"
-    },
-    {
-      "source": "mining-display",
-      "translation": "采矿展示"
     },
     {
       "source": "mining-report.{0}",
@@ -237153,10 +237105,6 @@
       "translation": "* HELIUM >>>!"
     },
     {
-      "source": "hide-irrelevant",
-      "translation": "* HIDE-IRRELEVANT >>>!"
-    },
-    {
       "source": "high",
       "translation": "* HIGH >>>!"
     },
@@ -237527,10 +237475,6 @@
     {
       "source": "mining overview map",
       "translation": "* MINING OVERVIEW MAP >>>!"
-    },
-    {
-      "source": "mining-display",
-      "translation": "* MINING-DISPLAY >>>!"
     },
     {
       "source": "mining-report.{0}",

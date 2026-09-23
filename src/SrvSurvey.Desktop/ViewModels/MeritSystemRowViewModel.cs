@@ -42,7 +42,8 @@ public sealed class MeritStationBlockViewModel : WorkspaceObservable
         Price = snapshot.Price;
         Demand = snapshot.Demand;
         Arrival = snapshot.Arrival;
-        Updated = snapshot.Updated;
+        UpdatedAt = snapshot.UpdatedAt;
+        cachedUpdated = snapshot.Updated;
         allCommodities = snapshot.Commodities;
         previewCommodities = snapshot.Commodities.Take(6).ToArray();
         ToggleCommoditiesCommand = new WorkspaceCommand(() =>
@@ -59,7 +60,9 @@ public sealed class MeritStationBlockViewModel : WorkspaceObservable
     public string Price { get; }
     public string Demand { get; }
     public string Arrival { get; }
-    public string Updated { get; }
+    private readonly string cachedUpdated;
+    public DateTimeOffset? UpdatedAt { get; }
+    public string Updated => UpdatedAt is { } updated ? MeritSystemRowViewModel.UpdatedLabel(updated) : cachedUpdated;
     public IReadOnlyList<MeritCommodityLineViewModel> OtherCommodities => showAll ? allCommodities : previewCommodities;
     public IReadOnlyList<MeritCommodityLineViewModel> AllCommodities => allCommodities;
     public bool CanToggleCommodities => allCommodities.Length > 6;
@@ -509,6 +512,7 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
                             : "",
                         UpdatedLabel(primary.Updated),
                         quotes
+                            .Where(station => !MiningCommodityName.Same(station.Commodity, primary.Commodity))
                             .OrderByDescending(station => hotspots.Contains(MiningCommodityName.Key(station.Commodity)))
                             .ThenByDescending(station => station.Price)
                             .Select(station => new MeritCommodityLineViewModel(
@@ -523,6 +527,9 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
                             ))
                             .ToArray()
                     )
+                    {
+                        UpdatedAt = primary.Updated,
+                    }
                 )
             );
         }
@@ -570,10 +577,11 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
             "Large" or "L" => "L",
             "Medium" or "M" => "M",
             "Small" or "S" => "S",
+            "Small / medium pads" => "S/M",
             _ => pad,
         };
 
-    private static string UpdatedLabel(DateTimeOffset? updated)
+    internal static string UpdatedLabel(DateTimeOffset? updated)
     {
         if (updated is null)
         {

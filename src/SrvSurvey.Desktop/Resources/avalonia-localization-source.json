@@ -63127,14 +63127,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
-    "Text": "hide-irrelevant",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
-  },
-  {
     "Text": "high",
     "IsFormat": false,
     "SourceKinds": [
@@ -63877,14 +63869,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
-  },
-  {
-    "Text": "mining-display",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "mining-report.{0}",
