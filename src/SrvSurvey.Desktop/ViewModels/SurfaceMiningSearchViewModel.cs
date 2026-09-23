@@ -1066,8 +1066,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         {
             if (pending == current)
             {
-                Rows = [];
-                Status = RequestFailed;
+                Status = Rows.Count > 0 ? "Showing partial results. Request failed. Try again." : RequestFailed;
             }
         }
         catch (ArgumentException ex)

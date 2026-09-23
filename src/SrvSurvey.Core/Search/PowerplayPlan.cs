@@ -79,11 +79,16 @@ public static class PowerplayPlan
 
     private static bool IsNamedPower(string power) => !IsUnspecified(power) && !IsCountChoice(power);
 
-    private static string Canonical(string power) =>
+    public static string SpanshPowerName(string power) =>
         power.Equals("Arissa Lavigny-Duval", StringComparison.OrdinalIgnoreCase)
         || power.Equals("A. Lavigny-Duval", StringComparison.OrdinalIgnoreCase)
             ? "A. Lavigny-Duval"
             : power;
+
+    public static string InaraPowerName(string power) =>
+        SamePower(power, "A. Lavigny-Duval") ? "Arissa Lavigny-Duval" : power;
+
+    public static bool SamePower(string left, string right) => Same(SpanshPowerName(left), SpanshPowerName(right));
 
     private static bool IsLiveState(string state) =>
         state is PowerplayStanding.Unoccupied or PowerplayStanding.Expansion or PowerplayStanding.Contested;
@@ -102,7 +107,7 @@ public static class PowerplayPlan
             return system.Power.Length == 0;
         }
 
-        return system.Power.Length > 0 && Same(system.Power, pledgedPower);
+        return system.Power.Length > 0 && SamePower(system.Power, pledgedPower);
     }
 
     private static bool MatchesOpposition(MiningSystemResult system, string pledgedPower, string opposingPower)
@@ -113,8 +118,8 @@ public static class PowerplayPlan
         }
 
         return system.Power.Length > 0
-            && (!IsNamedPower(opposingPower) || Same(system.Power, opposingPower))
-            && (IsUnspecified(pledgedPower) || !Same(system.Power, pledgedPower));
+            && (!IsNamedPower(opposingPower) || SamePower(system.Power, opposingPower))
+            && (IsUnspecified(pledgedPower) || !SamePower(system.Power, pledgedPower));
     }
 
     public static bool MatchesOppositionCount(
@@ -155,9 +160,9 @@ public static class PowerplayPlan
 
     public static int OpposingPowerCount(IReadOnlyList<PowerplayProgress> progress, string pledgedPower)
     {
-        string pledged = Canonical(pledgedPower);
+        string pledged = SpanshPowerName(pledgedPower);
         bool ignorePledge = IsUnspecified(pledgedPower) || pledgedPower.Equals(NoPower, StringComparison.Ordinal);
-        return progress.Count(entry => ignorePledge || !Same(Canonical(entry.Power), pledged));
+        return progress.Count(entry => ignorePledge || !Same(SpanshPowerName(entry.Power), pledged));
     }
 
     public static double? TravelDistance(GalacticCoordinate? origin, GalacticCoordinate? target)

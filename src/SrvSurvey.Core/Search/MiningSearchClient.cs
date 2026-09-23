@@ -462,7 +462,10 @@ public sealed class MiningSearchClient
         filters[SubtypeField] = new { value = query.BodySubtypes.ToArray() };
         if (query.ControllingPowers is { Count: > 0 })
         {
-            filters["system_controlling_power"] = new { value = query.ControllingPowers.ToArray() };
+            filters["system_controlling_power"] = new
+            {
+                value = query.ControllingPowers.Select(PowerplayPlan.SpanshPowerName).ToArray(),
+            };
         }
 
         if (query.SystemNames is { Count: > 0 })
@@ -1410,7 +1413,7 @@ public sealed class MiningSearchClient
                 ("government", query.Government, false),
                 ("primary_economy", query.Economy, false),
                 ("controlling_minor_faction_state", query.State, true),
-                ("controlling_power", query.Power, true),
+                ("controlling_power", PowerplayPlan.SpanshPowerName(query.Power), true),
                 ("power_state", spanshQuery.IndexedState, true),
             }
         )

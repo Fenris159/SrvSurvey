@@ -23425,6 +23425,10 @@
       "translation": "Zeigt verzögerte Systeme {0}–{1} von {2} ({3})."
     },
     {
+      "source": "Showing partial results. Request failed. Try again.",
+      "translation": "Teilergebnisse werden angezeigt. Die Anfrage ist fehlgeschlagen. Versuchen Sie es erneut."
+    },
+    {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Zeigt gespeicherte Ardent-Marktpreise für {0}-Materialien an (aktuellstes Angebot {1} UTC; geprüftes {2} UTC). Für fehlende Zitate verwenden Sie den älteren Bericht oder Katalog."
     },
@@ -57653,6 +57657,10 @@
     {
       "source": "Showing deferred systems {0}–{1} of {2} ({3}).",
       "translation": "Mostrando sistemas diferidos {0}–{1} de {2} ({3})."
+    },
+    {
+      "source": "Showing partial results. Request failed. Try again.",
+      "translation": "Mostrando resultados parciales. La solicitud falló. Intentar otra vez."
     },
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
@@ -91885,6 +91893,10 @@
       "translation": "Affichage des systèmes différés {0}–{1} de {2} ({3})."
     },
     {
+      "source": "Showing partial results. Request failed. Try again.",
+      "translation": "Affichage des résultats partiels. La demande a échoué. Essayer à nouveau."
+    },
+    {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Affichage des prix du marché Ardent stockés pour les matériaux {0} (dernière cotation {1} UTC ; vérifiée {2} UTC). Les guillemets manquants utilisent l'ancien rapport ou catalogue."
     },
@@ -126113,6 +126125,10 @@
     {
       "source": "Showing deferred systems {0}–{1} of {2} ({3}).",
       "translation": "Mostrando sistemas diferidos {0}–{1} de {2} ({3})."
+    },
+    {
+      "source": "Showing partial results. Request failed. Try again.",
+      "translation": "Mostrando resultados parciais. Falha na solicitação. Tente novamente."
     },
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
@@ -160345,6 +160361,10 @@
       "translation": "Показаны отложенные системы {0}–{1} из {2} ({3})."
     },
     {
+      "source": "Showing partial results. Request failed. Try again.",
+      "translation": "Показаны частичные результаты. Запрос не выполнен. Попробуйте еще раз."
+    },
+    {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Показаны сохраненные рыночные цены Ardent на материалы {0} (последняя котировка {1} UTC; проверено {2} UTC). Для отсутствующих цитат используйте старый отчет или каталог."
     },
@@ -194575,6 +194595,10 @@
       "translation": "显示 {2} ({3}) 的延迟系统 {0}–{1}。"
     },
     {
+      "source": "Showing partial results. Request failed. Try again.",
+      "translation": "显示部分结果。请求失败。再试一次。"
+    },
+    {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "显示 {0} 材料的存储 Ardent 市场价格（最新报价 {1} UTC；检查 {2} UTC）。缺少的报价使用旧的报告或目录。"
     },
@@ -228803,6 +228827,10 @@
     {
       "source": "Showing deferred systems {0}–{1} of {2} ({3}).",
       "translation": "* SHOWING DEFERRED SYSTEMS {0}–{1} OF {2} ({3}). >>>!"
+    },
+    {
+      "source": "Showing partial results. Request failed. Try again.",
+      "translation": "* SHOWING PARTIAL RESULTS. REQUEST FAILED. TRY AGAIN. >>>!"
     },
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",

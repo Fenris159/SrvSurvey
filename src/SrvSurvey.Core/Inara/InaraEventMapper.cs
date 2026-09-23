@@ -1,4 +1,5 @@
 using Newtonsoft.Json.Linq;
+using SrvSurvey.Core.Search;
 
 // Behavioral reference:
 // https://github.com/EDCD/EDMarketConnector/blob/2b6a0ce1ee3ba60c21f3f4e9fa093046da8825e4/plugins/inara.py
@@ -202,7 +203,7 @@ internal sealed class InaraEventMapper
                     events,
                     SetCommanderRankPowerEvent,
                     timestamp,
-                    obj((PowerNameKey, entry[PowerProperty]), (RankValueKey, 1)),
+                    obj((PowerNameKey, inaraPowerName(entry[PowerProperty])), (RankValueKey, 1)),
                     PowerTrackCategory
                 );
                 break;
@@ -211,7 +212,7 @@ internal sealed class InaraEventMapper
                     events,
                     SetCommanderRankPowerEvent,
                     timestamp,
-                    obj((PowerNameKey, entry[PowerProperty]), (RankValueKey, -1)),
+                    obj((PowerNameKey, inaraPowerName(entry[PowerProperty])), (RankValueKey, -1)),
                     PowerTrackCategory
                 );
                 break;
@@ -220,7 +221,7 @@ internal sealed class InaraEventMapper
                     events,
                     SetCommanderRankPowerEvent,
                     timestamp,
-                    obj((PowerNameKey, entry["ToPower"]), (RankValueKey, 1)),
+                    obj((PowerNameKey, inaraPowerName(entry["ToPower"])), (RankValueKey, 1)),
                     PowerTrackCategory
                 );
                 break;
@@ -230,7 +231,7 @@ internal sealed class InaraEventMapper
                     SetCommanderRankPowerEvent,
                     timestamp,
                     obj(
-                        (PowerNameKey, entry[PowerProperty]),
+                        (PowerNameKey, inaraPowerName(entry[PowerProperty])),
                         (RankValueKey, entry["Rank"]),
                         ("meritsValue", entry["Merits"])
                     ),
@@ -242,7 +243,7 @@ internal sealed class InaraEventMapper
                     events,
                     SetCommanderRankPowerEvent,
                     timestamp,
-                    obj((PowerNameKey, entry[PowerProperty]), (RankValueKey, entry["Rank"])),
+                    obj((PowerNameKey, inaraPowerName(entry[PowerProperty])), (RankValueKey, entry["Rank"])),
                     PowerTrackCategory
                 );
                 break;
@@ -1149,6 +1150,9 @@ internal sealed class InaraEventMapper
             events.Add(new(eventName, timestamp, data));
         }
     }
+
+    private static string? inaraPowerName(JToken? power) =>
+        power is null ? null : PowerplayPlan.InaraPowerName(power.Value<string>() ?? "");
 
     private static JToken? opponent(JObject entry, string primary)
     {

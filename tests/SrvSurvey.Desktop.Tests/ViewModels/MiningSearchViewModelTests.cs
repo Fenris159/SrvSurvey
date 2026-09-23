@@ -252,8 +252,63 @@ public sealed class MiningSearchViewModelTests
         Assert.True(handler.Events.IndexOf("Bubble Fortress B") < handler.Events.IndexOf("Import Empty Target"));
     }
 
+    [Fact]
+    public async Task PlanetaryAcquireUsesSpanshShortNameForArissaWithoutAReferenceRadius()
+    {
+        using var handler = new DistantPlanetaryAcquireHandler { UseArissaAlias = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            Radius = 1,
+            PledgedPower = "Arissa Lavigny-Duval",
+            Objective = "Acquire",
+            ResultLimit = 1,
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Good Target", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.True(handler.SawGlobalSupporterQuery);
+    }
+
+    [Fact]
+    public async Task PlanetaryAcquireKeepsFoundRowsWhenASecondBodySearchFails()
+    {
+        using var handler = new DistantPlanetaryAcquireHandler { FailLaterBodySearch = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            PledgedPower = "Aisling Duval",
+            Objective = "Acquire",
+            ResultLimit = 2,
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Good Target", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Contains("partial results", model.Status, StringComparison.OrdinalIgnoreCase);
+    }
+
     private sealed class DistantPlanetaryAcquireHandler : HttpMessageHandler
     {
+        public bool UseArissaAlias { get; init; }
+        public bool FailLaterBodySearch { get; init; }
         public List<string> ImportSystems { get; } = [];
         public List<string> Events { get; } = [];
         public List<string> BodyReferences { get; } = [];
@@ -288,8 +343,19 @@ public sealed class MiningSearchViewModelTests
                 if (filters.TryGetProperty("controlling_power", out _) && state == "Fortified")
                 {
                     SawGlobalSupporterQuery = !filters.TryGetProperty("distance", out _);
+                    string filteredPower =
+                        filters.GetProperty("controlling_power").GetProperty("value")[0].GetString() ?? "";
+                    if (UseArissaAlias && filteredPower != "A. Lavigny-Duval")
+                    {
+                        return Json("""{"results":[]}""");
+                    }
+
+                    string response =
+                        """{"results":[{"name":"Fortress A","distance":700,"x":700,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Fortress B","distance":800,"x":800,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Fortress C","distance":900,"x":900,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"}]}""";
                     return Json(
-                        """{"results":[{"name":"Fortress A","distance":700,"x":700,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Fortress B","distance":800,"x":800,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Fortress C","distance":900,"x":900,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"}]}"""
+                        UseArissaAlias
+                            ? response.Replace("Aisling Duval", "A. Lavigny-Duval", StringComparison.Ordinal)
+                            : response
                     );
                 }
 
@@ -324,7 +390,13 @@ public sealed class MiningSearchViewModelTests
                 using var body = System.Text.Json.JsonDocument.Parse(
                     await request.Content!.ReadAsStringAsync(cancellationToken)
                 );
-                BodyReferences.Add(body.RootElement.GetProperty("reference_system").GetString() ?? "");
+                string reference = body.RootElement.GetProperty("reference_system").GetString() ?? "";
+                BodyReferences.Add(reference);
+                if (FailLaterBodySearch && reference == "Third Target")
+                {
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.BadGateway);
+                }
+
                 return Json(
                     """{"results":[{"name":"Fortress B 1","system_name":"Fortress B","subtype":"Rocky body","distance":10}]}"""
                 );

@@ -46983,6 +46983,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "Showing partial results. Request failed. Try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
     "Text": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
     "IsFormat": true,
     "SourceKinds": [

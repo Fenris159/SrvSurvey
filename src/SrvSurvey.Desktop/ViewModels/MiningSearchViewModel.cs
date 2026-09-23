@@ -1626,7 +1626,9 @@ public sealed class MiningSearchViewModel(
                 token
             );
             all.AddRange(
-                resultPage.Systems.Where(system => Same(system.Power, PledgedPower) && Same(system.PowerState, state))
+                resultPage.Systems.Where(system =>
+                    PowerplayPlan.SamePower(system.Power, PledgedPower) && Same(system.PowerState, state)
+                )
             );
             hasMore = resultPage.HasMore;
             pageIndex++;
@@ -2145,7 +2147,7 @@ public sealed class MiningSearchViewModel(
             foreach (MiningSystemResult supporter in nearby.Systems)
             {
                 if (
-                    Same(supporter.Power, PledgedPower)
+                    PowerplayPlan.SamePower(supporter.Power, PledgedPower)
                     && supporter.PowerState is "Fortified" or "Stronghold"
                     && supporter.Distance <= PowerplayPlan.AcquisitionReachLy(supporter.PowerState)
                 )
