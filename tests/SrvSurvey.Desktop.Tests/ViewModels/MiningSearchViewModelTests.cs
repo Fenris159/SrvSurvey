@@ -8,6 +8,17 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MiningSearchViewModelTests
 {
     [Fact]
+    public void PowerplayPickerOnlyOffersRingCommoditiesThatTheSearchCanPrice()
+    {
+        Assert.All(
+            MiningSearchViewModel.PowerplayMinerals.Skip(2),
+            commodity => Assert.True(PlanetaryMiningPlan.IsEdpmCommodity(commodity), commodity)
+        );
+        Assert.Contains("Void Opals", MiningSearchViewModel.PowerplayMinerals);
+        Assert.DoesNotContain("Tritium", MiningSearchViewModel.PowerplayMinerals);
+    }
+
+    [Fact]
     public void PlanetaryMiningIsExclusiveAndSwitchesToSurfaceHuntMaterials()
     {
         using var model = new MiningSearchViewModel(
@@ -32,6 +43,64 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("Core", Assert.Single(model.MiningTypeChips.Selected));
         Assert.True(model.UsesRingFilters);
         Assert.DoesNotContain("Diamond", model.MineralChips.Selected);
+    }
+
+    [Fact]
+    public async Task PlanetaryPowerplayUsesSurfaceHuntVolcanismWithoutReserveOrLandmarks()
+    {
+        using var handler = new PlanetaryFilterHandler();
+        using var http = new HttpClient(handler);
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(http),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            Reserve = "Pristine",
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Periclase Dunite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.NotNull(handler.BodyFilters);
+        using var request = System.Text.Json.JsonDocument.Parse(handler.BodyFilters);
+        System.Text.Json.JsonElement filters = request.RootElement.GetProperty("filters");
+        Assert.True(filters.GetProperty("is_landable").GetProperty("value").GetBoolean());
+        Assert.Equal(
+            PlanetaryMiningPlan.MetallicMagmaTypes,
+            filters
+                .GetProperty("volcanism_type")
+                .GetProperty("value")
+                .EnumerateArray()
+                .Select(value => value.GetString())
+        );
+        Assert.False(filters.TryGetProperty("reserve_level", out _));
+        Assert.False(filters.TryGetProperty("landmarks", out _));
+    }
+
+    private sealed class PlanetaryFilterHandler : HttpMessageHandler
+    {
+        public string? BodyFilters { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request.RequestUri?.AbsolutePath == "/api/bodies/search")
+            {
+                BodyFilters = await request.Content!.ReadAsStringAsync(cancellationToken);
+            }
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"results\":[]}"),
+            };
+        }
     }
 
     [Fact]
@@ -267,7 +336,7 @@ public sealed class MiningSearchViewModelTests
     }
 
     [Fact]
-    public async Task PowerplayObjectivesExcludeUnknownOwnershipAndRequirePledge()
+    public async Task PowerplayObjectivesUseAnyOwnershipThenRequireTheNamedPledge()
     {
         using var handler = new WorkflowHandler();
         using var http = new HttpClient(handler);
@@ -285,7 +354,9 @@ public sealed class MiningSearchViewModelTests
         await model.SearchSystemsAsync();
         Assert.Equal("Any", model.PledgedPower);
         Assert.DoesNotContain("Choose your pledged Power", model.Status);
-        Assert.Equal(2, model.Systems.Count);
+        Assert.Contains(model.Systems, system => system.System == "Own");
+        Assert.Contains(model.Systems, system => system.System == "Other");
+        Assert.Contains(model.Systems, system => system.System == "Open");
         model.PledgedPower = "Aisling Duval";
         await model.SearchSystemsAsync();
         Assert.Equal("Own", Assert.Single(model.Systems).System);

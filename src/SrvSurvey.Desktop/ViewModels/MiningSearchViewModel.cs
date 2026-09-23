@@ -566,7 +566,7 @@ public sealed class MiningSearchViewModel(
         MiningMaterialSelection.Default,
         MiningMaterialSelection.Any,
         .. (MiningReferenceData.Commodities.GetValueOrDefault("Mining") ?? []).Where(name =>
-            !PlanetaryMiningPlan.IsSurfaceExclusive(name)
+            PlanetaryMiningPlan.IsEdpmCommodity(name)
         ),
     ];
     public IReadOnlyList<string> RingMinerals => IsPlanetaryMining ? PlanetaryMineralChoices : RingMineralChoices;
@@ -974,7 +974,9 @@ public sealed class MiningSearchViewModel(
     )
     {
         var byName = known.ToDictionary(system => system.System, StringComparer.OrdinalIgnoreCase);
-        foreach (IGrouping<string, MiningRing> group in rings.GroupBy(ring => ring.System, StringComparer.OrdinalIgnoreCase))
+        foreach (
+            IGrouping<string, MiningRing> group in rings.GroupBy(ring => ring.System, StringComparer.OrdinalIgnoreCase)
+        )
         {
             if (byName.ContainsKey(group.Key))
             {
@@ -1001,7 +1003,10 @@ public sealed class MiningSearchViewModel(
             }
         }
 
-        return byName.Values.Where(MatchesPowerplaySystem).OrderBy(system => system.Distance ?? double.MaxValue).ToArray();
+        return byName
+            .Values.Where(MatchesPowerplaySystem)
+            .OrderBy(system => system.Distance ?? double.MaxValue)
+            .ToArray();
     }
 
     private async Task<MiningSystemResult[]> CompleteSystemRecordsAsync(
@@ -1085,9 +1090,7 @@ public sealed class MiningSearchViewModel(
     }
 
     private static bool HasHotspot(MiningRing ring, string mineral, int minimum) =>
-        ring.Hotspots.Any(hotspot =>
-            Same(hotspot.Key.Replace(" ", ""), mineral.Replace(" ", "")) && hotspot.Value >= minimum
-        );
+        ring.Hotspots.Any(hotspot => MiningCommodityName.Same(hotspot.Key, mineral) && hotspot.Value >= minimum);
 
     private bool MatchesMiningType(MiningRing ring, string mineral)
     {
@@ -1099,10 +1102,10 @@ public sealed class MiningSearchViewModel(
         bool core = MiningType == "Core";
         if (mineral.Length > 0)
         {
-            return core ? CoreMinerals.Contains(mineral) : !CoreMinerals.Contains(mineral);
+            return core ? IsCoreMineral(mineral) : !IsCoreMineral(mineral);
         }
 
-        return ring.Hotspots.Keys.Any(name => CoreMinerals.Contains(name) == core);
+        return ring.Hotspots.Keys.Any(name => IsCoreMineral(name) == core);
     }
 
     private bool MatchesSelectedMiningType(MiningRing ring)
@@ -1121,12 +1124,13 @@ public sealed class MiningSearchViewModel(
 
         return types.Any(type =>
             type.Equals("Core", StringComparison.OrdinalIgnoreCase)
-                ? ring.Hotspots.Keys.Any(name =>
-                    CoreMinerals.Contains(name) && !PlanetaryMiningPlan.IsSurfaceExclusive(name)
-                )
+                ? ring.Hotspots.Keys.Any(name => IsCoreMineral(name) && !PlanetaryMiningPlan.IsSurfaceExclusive(name))
                 : ring.Hotspots.Keys.Any(name => !PlanetaryMiningPlan.IsSurfaceExclusive(name))
         );
     }
+
+    private static bool IsCoreMineral(string name) =>
+        CoreMinerals.Any(mineral => MiningCommodityName.Same(mineral, name));
 
     private static readonly HashSet<string> CoreMinerals = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -1389,10 +1393,10 @@ public sealed class MiningSearchViewModel(
                 MiningMarketResult first = station.First();
                 MiningMarketResult[] top = station
                     .Where(quote =>
-                        named.Length == 0 || named.Contains(quote.Commodity, StringComparer.OrdinalIgnoreCase)
+                        named.Length == 0 || named.Any(name => MiningCommodityName.Same(name, quote.Commodity))
                     )
                     .OrderByDescending(quote => quote.Price)
-                    .DistinctBy(quote => quote.Commodity, StringComparer.OrdinalIgnoreCase)
+                    .DistinctBy(quote => MiningCommodityName.Key(quote.Commodity), StringComparer.Ordinal)
                     .Take(commodityLimit)
                     .ToArray();
                 return new AcquireStationViewModel(
@@ -1402,22 +1406,16 @@ public sealed class MiningSearchViewModel(
                         ? "Distance: " + arrival.ToString("0", CultureInfo.CurrentCulture) + " ls"
                         : "",
                     UpdatedAgo(first.Updated),
-                    top.Select(
-                            (quote, index) =>
-                                new AcquireQuoteViewModel(
-                                    MiningCommodityCode.Abbreviate(quote.Commodity),
-                                    quote.Price.ToString("N0", CultureInfo.CurrentCulture)
-                                        + " CR "
-                                        + MiningPriceMarks.For(
-                                            quote.Price,
-                                            averageSellPrices.TryGetValue(quote.Commodity, out long average)
-                                                ? average
-                                                : 0
-                                        ),
-                                    quote.Demand.ToString("N0", CultureInfo.CurrentCulture) + " Demand",
-                                    index == 0
-                                )
-                        )
+                    top.Select(quote => new AcquireQuoteViewModel(
+                            MiningCommodityCode.Abbreviate(quote.Commodity),
+                            quote.Price.ToString("N0", CultureInfo.CurrentCulture)
+                                + " CR "
+                                + MiningPriceMarks.For(
+                                    quote.Price,
+                                    averageSellPrices.TryGetValue(quote.Commodity, out long average) ? average : 0
+                                ),
+                            quote.Demand.ToString("N0", CultureInfo.CurrentCulture) + " Demand"
+                        ))
                         .ToArray()
                 );
             })
@@ -1481,19 +1479,20 @@ public sealed class MiningSearchViewModel(
                             && market.Demand > 0
                             && (
                                 IsPlanetaryMining
-                                    ? PlanetaryMiningPlan.Materials.Contains(
-                                        market.Commodity,
-                                        StringComparer.OrdinalIgnoreCase
+                                    ? PlanetaryMiningPlan.Materials.Any(material =>
+                                        MiningCommodityName.Same(material, market.Commodity)
                                     )
                                     : PlanetaryMiningPlan.IsEdpmCommodity(market.Commodity)
                             )
-                            && (named.Length == 0 || named.Contains(market.Commodity, StringComparer.OrdinalIgnoreCase))
+                            && (
+                                named.Length == 0 || named.Any(name => MiningCommodityName.Same(name, market.Commodity))
+                            )
                         )
                         .GroupBy(market => market.Station, StringComparer.OrdinalIgnoreCase)
                         .SelectMany(group =>
                             group
                                 .OrderByDescending(market => market.Price)
-                                .DistinctBy(market => market.Commodity, StringComparer.OrdinalIgnoreCase)
+                                .DistinctBy(market => MiningCommodityName.Key(market.Commodity), StringComparer.Ordinal)
                                 .Take(MiningMaterialSelection.StationLimit(MineralChips.Selected, acquire: true))
                         )
                 );
@@ -1657,8 +1656,12 @@ public sealed class MiningSearchViewModel(
             string[] pricedCommodities = hotspotMinerals
                 .Where(name => IsPlanetaryMining || PlanetaryMiningPlan.IsEdpmCommodity(name))
                 .ToArray();
-            (IReadOnlyList<MiningMarketResult> radiusMarkets, string priceSource) =
-                await ReportedStationPricesAsync([], pricedCommodities, token, anywhereInRadius: true);
+            (IReadOnlyList<MiningMarketResult> radiusMarkets, string priceSource) = await ReportedStationPricesAsync(
+                [],
+                pricedCommodities,
+                token,
+                anywhereInRadius: true
+            );
             (IReadOnlyList<MiningRing> foundRings, IReadOnlyList<MiningMarketResult> foundMarkets) =
                 await RingsForBestPricesAsync(hotspotMinerals, radiusMarkets, token);
             Systems = await CompleteSystemRecordsAsync(SystemsWithRings(Systems, foundRings), token);
@@ -1702,13 +1705,36 @@ public sealed class MiningSearchViewModel(
                     Reference,
                     criteria.BodySubtypes,
                     criteria.LandmarkSubtypes,
-                    PlanetaryReserve,
+                    "",
                     Radius,
                     PlanetaryPowers,
-                    PlanetaryPowerState
+                    PlanetaryPowerState,
+                    VolcanismTypes: criteria.VolcanismTypes
                 ),
                 token
             );
+            PlanetaryBodyCriteria[] materialRules = materials
+                .Select(material => PlanetaryMiningPlan.For([material]))
+                .OfType<PlanetaryBodyCriteria>()
+                .ToArray();
+            MiningPlanetaryBody[] whiteDwarfCandidates = bodies
+                .Where(body =>
+                    materialRules.Any(rule => rule.RequiresWhiteDwarfHost && PlanetaryMiningPlan.Matches(rule, body))
+                )
+                .ToArray();
+            IReadOnlySet<string> hosted =
+                whiteDwarfCandidates.Length > 0
+                    ? await client.FindWhiteDwarfHostedBodiesAsync(Reference, whiteDwarfCandidates, token)
+                    : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            bodies = bodies
+                .Where(body =>
+                    materialRules.Any(rule =>
+                        PlanetaryMiningPlan.Matches(rule, body)
+                        && (!rule.RequiresWhiteDwarfHost || hosted.Contains(body.System + "\u001f" + body.Body))
+                    )
+                )
+                .ToArray();
+
             (IReadOnlyList<MiningMarketResult> foundMarkets, _) = await ReportedStationPricesAsync(
                 bodies.Select(body => body.System).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
                 materials,
@@ -1802,16 +1828,23 @@ public sealed class MiningSearchViewModel(
                     && market.Demand > 0
                     && (
                         IsPlanetaryMining
-                            ? PlanetaryMiningPlan.Materials.Contains(market.Commodity, StringComparer.OrdinalIgnoreCase)
+                            ? PlanetaryMiningPlan.Materials.Any(material =>
+                                MiningCommodityName.Same(material, market.Commodity)
+                            )
                             : PlanetaryMiningPlan.IsEdpmCommodity(market.Commodity)
                                 && (
                                     named.Length == 0
-                                    || named.Contains(market.Commodity, StringComparer.OrdinalIgnoreCase)
+                                    || named.Any(name => MiningCommodityName.Same(name, market.Commodity))
                                 )
                     )
                 )
                 .GroupBy(market => market.Station, StringComparer.OrdinalIgnoreCase)
-                .SelectMany(group => group.OrderByDescending(market => market.Price).Take(limit))
+                .SelectMany(group =>
+                    group
+                        .OrderByDescending(market => market.Price)
+                        .DistinctBy(market => MiningCommodityName.Key(market.Commodity), StringComparer.Ordinal)
+                        .Take(limit)
+                )
                 .Select(market => new PowerplayMeritStation(
                     market.Station,
                     market.Type,
@@ -1832,7 +1865,10 @@ public sealed class MiningSearchViewModel(
         }
     }
 
-    private async Task<(IReadOnlyList<MiningRing> Rings, IReadOnlyList<MiningMarketResult> Markets)> RingsForBestPricesAsync(
+    private async Task<(
+        IReadOnlyList<MiningRing> Rings,
+        IReadOnlyList<MiningMarketResult> Markets
+    )> RingsForBestPricesAsync(
         IReadOnlyList<string> minerals,
         IReadOnlyList<MiningMarketResult> markets,
         CancellationToken token
@@ -1887,7 +1923,7 @@ public sealed class MiningSearchViewModel(
             {
                 HashSet<string> hotspots = HotspotsIn(matched, candidate.System);
                 long price = candidate
-                    .Quotes.Where(quote => hotspots.Contains(quote.Commodity))
+                    .Quotes.Where(quote => hotspots.Contains(MiningCommodityName.Key(quote.Commodity)))
                     .Select(quote => quote.Price)
                     .DefaultIfEmpty(0)
                     .Max();
@@ -1907,23 +1943,20 @@ public sealed class MiningSearchViewModel(
     private static HashSet<string> HotspotsIn(IReadOnlyList<MiningRing> matches, string system)
     {
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (MiningRing ring in matches.Where(ring => ring.System.Equals(system, StringComparison.OrdinalIgnoreCase)))
+        foreach (
+            MiningRing ring in matches.Where(ring => ring.System.Equals(system, StringComparison.OrdinalIgnoreCase))
+        )
         {
             foreach (string name in ring.Hotspots.Keys.Where(PlanetaryMiningPlan.IsEdpmCommodity))
             {
-                names.Add(name);
+                names.Add(MiningCommodityName.Key(name));
             }
         }
 
         return names;
     }
 
-    private sealed record PriceCandidate(
-        string System,
-        MiningMarketResult[] Quotes,
-        long Ceiling,
-        double Distance
-    );
+    private sealed record PriceCandidate(string System, MiningMarketResult[] Quotes, long Ceiling, double Distance);
 
     private async Task<(IReadOnlyList<MiningMarketResult> Markets, string Source)> ReportedStationPricesAsync(
         IReadOnlyList<string> systems,
@@ -2026,8 +2059,6 @@ public sealed class MiningSearchViewModel(
             _ => true,
         };
     }
-
-    private string PlanetaryReserve => Reserve is "All" or UnknownState or "" ? "" : Reserve.Trim();
 
     private IReadOnlyList<string> SurfaceMinerals { get; } =
         new[] { MiningMaterialSelection.Default, MiningMaterialSelection.Any }
@@ -2293,6 +2324,8 @@ public sealed class MiningSearchViewModel(
     {
         pending?.Cancel();
         pending = null;
+        detectedPower = "";
+        PledgedPower = AnyPower;
         IsBusy = false;
         Rings = [];
         Markets = [];
@@ -2366,7 +2399,7 @@ public sealed class MiningSearchViewModel(
     private async Task Run(Func<CancellationToken, Task> action)
     {
         CancellationTokenSource? previous = pending;
-        using var current = new CancellationTokenSource(TimeSpan.FromSeconds(40));
+        using var current = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         pending = current;
         IsBusy = true;
         Status = "Searching…";

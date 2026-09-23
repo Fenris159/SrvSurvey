@@ -22,6 +22,8 @@ public sealed partial class MiningPowerplayView : UserControl
         ResultsScroller.SizeChanged += (_, _) => FitResultsToWorkspace();
     }
 
+    internal (ScrollViewer Scroller, Control Table) ResultsWidthTarget => (ResultsScroller, ResultsTable);
+
     private void FitResultsToWorkspace()
     {
         double width = ResultsScroller.Bounds.Width;

@@ -6,6 +6,10 @@ using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Search;
 
+public sealed record MiningCommodityPriceSummary(string Commodity, long AverageSellPrice, long MaximumSellPrice);
+
+public sealed record MiningBodyParent(long Id64, string Type, string Subtype);
+
 public sealed record MiningPlanetaryQuery(
     string ReferenceSystem,
     IReadOnlyList<string> BodySubtypes,
@@ -13,7 +17,10 @@ public sealed record MiningPlanetaryQuery(
     string Reserve = "",
     double Radius = 100,
     IReadOnlyList<string>? ControllingPowers = null,
-    string PowerState = ""
+    string PowerState = "",
+    int Page = 0,
+    bool GalaxyWide = false,
+    IReadOnlyList<string>? VolcanismTypes = null
 );
 
 public sealed record MiningPlanetaryBody(
@@ -25,7 +32,10 @@ public sealed record MiningPlanetaryBody(
     double ArrivalLs,
     double? DistanceLy = null,
     string Power = "",
-    string PowerState = ""
+    string PowerState = "",
+    IReadOnlyList<string>? Landmarks = null,
+    IReadOnlyList<MiningBodyParent>? Parents = null,
+    string VolcanismType = ""
 );
 
 public sealed record MiningRingQuery(
@@ -138,23 +148,44 @@ public sealed class MiningSearchClient
     private const string SystemNameField = "system_name";
     private const string DistanceField = "distance";
     private const string ArrivalField = "distance_to_arrival";
+    private const string SubtypeField = "subtype";
     private const string DemandField = "demand";
+    private const string CommodityField = "commodity";
     private const string ArdentProvider = "Ardent";
     private const string SpanshProvider = "Spansh";
     private const string MarketResponse = "Mining market response";
     private const string MarketUpdatedSort = "market_updated_at";
     private const int MaximumResponseBytes = 8 * 1024 * 1024;
+    private static readonly TimeSpan CommodityReportCheckInterval = TimeSpan.FromHours(1);
+    private static readonly TimeSpan CommodityReportRetryDelay = TimeSpan.FromHours(1);
+    private static readonly IReadOnlyDictionary<string, MiningCommodityPriceSummary> EmptyCommodityReport =
+        new Dictionary<string, MiningCommodityPriceSummary>(StringComparer.OrdinalIgnoreCase);
     private static readonly HttpClient SharedClient = new() { Timeout = TimeSpan.FromSeconds(35) };
     private readonly ArdentApi ardent;
     private readonly SpanshApi spansh;
     private readonly ProviderFailureLog diagnostics = new();
+    private readonly SemaphoreSlim commodityReportGate = new(1, 1);
+    private readonly TimeProvider timeProvider;
+    private readonly MiningCommodityPriceReportStore? commodityReportStore;
+    private IReadOnlyDictionary<string, MiningCommodityPriceSummary>? commodityReport;
+    private DateTimeOffset nextCommodityReportRefresh;
+    private string? lastCommodityName;
+    private DateTimeOffset? lastCommodityUpdatedAt;
+    private DateTimeOffset? liveCommodityQuoteUpdatedAt;
+    private int liveSurfaceQuoteCount;
     private Dictionary<string, long>? averageSellPrices;
 
     public Action<string>? DiagnosticLog { get; set; }
 
-    public MiningSearchClient(HttpClient? httpClient = null)
+    public MiningSearchClient(
+        HttpClient? httpClient = null,
+        TimeProvider? timeProvider = null,
+        MiningCommodityPriceReportStore? commodityReportStore = null
+    )
     {
         HttpClient http = httpClient ?? SharedClient;
+        this.timeProvider = timeProvider ?? TimeProvider.System;
+        this.commodityReportStore = commodityReportStore;
         ardent = new ArdentApi(
             http,
             onFailure: (route, exception) => diagnostics.Record(ArdentProvider, route, exception)
@@ -163,9 +194,50 @@ public sealed class MiningSearchClient
             http,
             onFailure: (route, exception) => diagnostics.Record(SpanshProvider, route, exception)
         );
+        if (commodityReportStore?.Load() is { } snapshot)
+        {
+            var cached = snapshot
+                .Prices.Where(item => !string.IsNullOrWhiteSpace(item.Commodity))
+                .GroupBy(item => MiningCommodityName.Key(item.Commodity), StringComparer.Ordinal)
+                .Select(group =>
+                    group.First() with
+                    {
+                        Commodity = MiningCommodityName.Canonical(group.First().Commodity),
+                    }
+                )
+                .ToDictionary(item => item.Commodity, StringComparer.OrdinalIgnoreCase);
+            if (cached.Count > 0)
+            {
+                commodityReport = cached;
+                CommodityReportFetchedAt = snapshot.FetchedAt;
+                lastCommodityUpdatedAt = snapshot.SourceUpdatedAt;
+                lastCommodityName = snapshot.LastCommodityName;
+                liveCommodityQuoteUpdatedAt = snapshot.LiveQuoteUpdatedAt;
+                liveSurfaceQuoteCount = snapshot.LiveSurfaceQuoteCount;
+                averageSellPrices = cached
+                    .Values.Where(item => item.AverageSellPrice > 0)
+                    .ToDictionary(
+                        item => item.Commodity,
+                        item => item.AverageSellPrice,
+                        StringComparer.OrdinalIgnoreCase
+                    );
+            }
+        }
     }
 
     public bool PriceMarksUnavailable { get; private set; }
+
+    public DateTimeOffset? CommodityReportFetchedAt { get; private set; }
+
+    public DateTimeOffset? CommodityReportSourceUpdatedAt => lastCommodityUpdatedAt;
+
+    public DateTimeOffset? CommodityLiveQuoteUpdatedAt => liveCommodityQuoteUpdatedAt;
+
+    public int LiveSurfaceQuoteCount => liveSurfaceQuoteCount;
+
+    public static int SurfaceQuoteCount => SurfaceMiningCommodityCatalog.All.Count;
+
+    public IReadOnlyDictionary<string, MiningCommodityPriceSummary>? CachedCommodityPriceReport => commodityReport;
 
     public void ResetDiagnostics()
     {
@@ -275,14 +347,7 @@ public sealed class MiningSearchClient
         {
             // A long name list is treated as "any of these hotspots", which Spansh cannot express
             // as one OR filter. Ask for any hotspot and keep the mineral check while reading.
-            filters["ring_signals"] = new[]
-            {
-                new
-                {
-                    comparison = ">=",
-                    count = query.MinimumHotspots,
-                },
-            };
+            filters["ring_signals"] = new[] { new { comparison = ">=", count = query.MinimumHotspots } };
         }
 
         if (query.RingType.Length > 0 && query.RingType != "All")
@@ -326,13 +391,12 @@ public sealed class MiningSearchClient
         var signals = MiningJson
             .Array(ring, "signals")
             .Where(signal => MiningJson.Text(signal, "name").Length > 0)
-            .GroupBy(signal => MiningJson.Text(signal, "name"))
+            .GroupBy(signal => MiningCommodityName.Canonical(MiningJson.Text(signal, "name")))
             .ToDictionary(group => group.Key, group => (int)group.Max(signal => MiningJson.Number(signal, "count")));
         if (
             query.Mineral.Length > 0
             && !signals.Any(pair =>
-                pair.Key.Equals(query.Mineral, StringComparison.OrdinalIgnoreCase)
-                && pair.Value >= query.MinimumHotspots
+                MiningCommodityName.Same(pair.Key, query.Mineral) && pair.Value >= query.MinimumHotspots
             )
         )
         {
@@ -342,7 +406,7 @@ public sealed class MiningSearchClient
         if (
             query.Minerals is { Count: > 8 } wanted
             && !signals.Any(pair =>
-                wanted.Contains(pair.Key, StringComparer.OrdinalIgnoreCase) && pair.Value >= query.MinimumHotspots
+                wanted.Any(name => MiningCommodityName.Same(name, pair.Key)) && pair.Value >= query.MinimumHotspots
             )
         )
         {
@@ -376,9 +440,9 @@ public sealed class MiningSearchClient
             return [];
         }
 
-        Dictionary<string, object> filters = DistanceFilter(query.Radius);
+        Dictionary<string, object> filters = query.GalaxyWide ? [] : DistanceFilter(query.Radius);
         filters["is_landable"] = new { value = true };
-        filters["subtype"] = new { value = query.BodySubtypes.ToArray() };
+        filters[SubtypeField] = new { value = query.BodySubtypes.ToArray() };
         if (query.ControllingPowers is { Count: > 0 })
         {
             filters["system_controlling_power"] = new { value = query.ControllingPowers.ToArray() };
@@ -401,6 +465,11 @@ public sealed class MiningSearchClient
             };
         }
 
+        if (query.VolcanismTypes is { Count: > 0 })
+        {
+            filters["volcanism_type"] = new { value = query.VolcanismTypes.ToArray() };
+        }
+
         if (query.Reserve.Length > 0)
         {
             filters["reserve_level"] = new { value = new[] { query.Reserve } };
@@ -410,7 +479,7 @@ public sealed class MiningSearchClient
             SpanshRoutes.Bodies,
             query.ReferenceSystem,
             filters,
-            0,
+            query.Page,
             cancellationToken: cancellationToken
         );
         return Results(response)
@@ -432,14 +501,127 @@ public sealed class MiningSearchClient
         return new MiningPlanetaryBody(
             system,
             name,
-            MiningJson.Text(body, "subtype"),
+            MiningJson.Text(body, SubtypeField),
             MiningJson.Text(body, "reserve_level"),
             Number(body, "gravity") ?? 0,
             Number(body, ArrivalField) ?? 0,
             Number(body, DistanceField),
             MiningJson.Text(body, "system_controlling_power"),
-            MiningJson.Text(body, "system_power_state")
+            MiningJson.Text(body, "system_power_state"),
+            ReadLandmarkSubtypes(body),
+            ReadBodyParents(body),
+            MiningJson.Text(body, "volcanism_type")
         );
+    }
+
+    public async Task<IReadOnlyDictionary<long, IReadOnlyList<MiningBodyParent>>> FindBodyParentsAsync(
+        string reference,
+        IReadOnlyList<long> bodyIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var parents = new Dictionary<long, IReadOnlyList<MiningBodyParent>>();
+        foreach (long[] chunk in bodyIds.Where(id => id > 0).Distinct().Chunk(100))
+        {
+            Dictionary<string, object> filters = new() { ["id64"] = new { value = chunk } };
+            using JsonDocument response = await spansh
+                .SearchAsync(SpanshRoutes.Bodies, reference, filters, 0, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            foreach (JsonElement body in Results(response))
+            {
+                long id = BodyId(body);
+                if (id > 0)
+                {
+                    parents[id] = ReadBodyParents(body);
+                }
+            }
+        }
+
+        return parents;
+    }
+
+    private static MiningBodyParent[] ReadBodyParents(JsonElement body) =>
+        MiningJson
+            .Array(body, "parents")
+            .Select(parent => new MiningBodyParent(
+                BodyId(parent),
+                MiningJson.Text(parent, "type"),
+                MiningJson.Text(parent, SubtypeField)
+            ))
+            .ToArray();
+
+    private static long BodyId(JsonElement body) =>
+        body.TryGetProperty("id64", out JsonElement value) && value.TryGetInt64(out long id) ? id : 0;
+
+    public async Task<IReadOnlySet<string>> FindWhiteDwarfHostedBodiesAsync(
+        string reference,
+        IReadOnlyList<MiningPlanetaryBody> bodies,
+        CancellationToken cancellationToken = default
+    )
+    {
+        HashSet<string> hosted = new(StringComparer.OrdinalIgnoreCase);
+        (string Key, MiningBodyParent Parent)[] frontier = bodies
+            .SelectMany(body =>
+                (body.Parents ?? []).Select(parent => (Key: body.System + "\u001f" + body.Body, Parent: parent))
+            )
+            .ToArray();
+        var knownParents = new Dictionary<long, IReadOnlyList<MiningBodyParent>>();
+        for (int depth = 0; depth < 6 && frontier.Length > 0; depth++)
+        {
+            long[] unresolved = frontier
+                .Select(entry => entry.Parent)
+                .Where(parent => parent.Id64 > 0 && parent.Type.Equals("Planet", StringComparison.OrdinalIgnoreCase))
+                .Select(parent => parent.Id64)
+                .Distinct()
+                .Where(id => !knownParents.ContainsKey(id))
+                .ToArray();
+            if (unresolved.Length > 0)
+            {
+                IReadOnlyDictionary<long, IReadOnlyList<MiningBodyParent>> fetched = await FindBodyParentsAsync(
+                        reference,
+                        unresolved,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+                foreach (long id in unresolved)
+                {
+                    knownParents[id] = fetched.GetValueOrDefault(id) ?? [];
+                }
+            }
+
+            var next = new List<(string Key, MiningBodyParent Parent)>();
+            foreach ((string key, MiningBodyParent parent) in frontier)
+            {
+                if (PlanetaryMiningPlan.IsWhiteDwarf(parent))
+                {
+                    hosted.Add(key);
+                }
+                else if (parent.Type.Equals("Planet", StringComparison.OrdinalIgnoreCase) && parent.Id64 > 0)
+                {
+                    next.AddRange(knownParents[parent.Id64].Select(ancestor => (key, ancestor)));
+                }
+            }
+
+            frontier = next.ToArray();
+        }
+
+        return hosted;
+    }
+
+    private static string[] ReadLandmarkSubtypes(JsonElement body)
+    {
+        if (!body.TryGetProperty("landmarks", out JsonElement landmarks) || landmarks.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return landmarks
+            .EnumerateArray()
+            .Where(landmark => landmark.ValueKind == JsonValueKind.Object)
+            .Select(landmark => MiningJson.Text(landmark, SubtypeField))
+            .Where(subtype => subtype.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static bool MatchesRingType(string requested, string actual) =>
@@ -528,53 +710,273 @@ public sealed class MiningSearchClient
             .ToArray();
     }
 
-    public async Task<IReadOnlyDictionary<string, long>> AverageSellPricesAsync(
+    public async Task<IReadOnlyDictionary<string, MiningCommodityPriceSummary>> CommodityPriceReportAsync(
         CancellationToken cancellationToken = default
     )
     {
-        if (averageSellPrices is not null)
-        {
-            return averageSellPrices;
-        }
-
-        JsonDocument document;
+        await commodityReportGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            document = await ardent
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            if (now < nextCommodityReportRefresh)
+            {
+                return commodityReport ?? EmptyCommodityReport;
+            }
+
+            if (await ShouldUseCachedCommodityReportAsync(now, cancellationToken).ConfigureAwait(false))
+            {
+                return commodityReport ?? EmptyCommodityReport;
+            }
+
+            using JsonDocument document = await ardent
                 .GetAsync(ArdentRoutes.Commodities, MaximumResponseBytes, MarketResponse, cancellationToken)
                 .ConfigureAwait(false);
+            if (document.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidDataException("Commodity prices were not a list.");
+            }
+
+            JsonElement[] items = document.RootElement.EnumerateArray().ToArray();
+            var prices = items
+                .Select(item => new MiningCommodityPriceSummary(
+                    MiningJson.Text(item, "commodityName"),
+                    (long)MiningJson.Number(item, "avgSellPrice"),
+                    (long)MiningJson.Number(item, "maxSellPrice")
+                ))
+                .Where(item => item.Commodity.Length > 0 && (item.AverageSellPrice > 0 || item.MaximumSellPrice > 0))
+                .GroupBy(item => MiningCommodityName.Key(item.Commodity), StringComparer.Ordinal)
+                .Select(group =>
+                    group
+                        .OrderByDescending(item =>
+                            item.Commodity.Equals(
+                                MiningCommodityName.Normalize(item.Commodity),
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                        )
+                        .First()
+                )
+                .Select(item => item with { Commodity = MiningCommodityName.Canonical(item.Commodity) })
+                .ToDictionary(item => item.Commodity, StringComparer.OrdinalIgnoreCase);
+            if (prices.Count == 0)
+            {
+                throw new InvalidDataException("Commodity prices were empty.");
+            }
+
+            (int liveCount, DateTimeOffset? quoteUpdatedAt, bool anyFailures) = await OverlayCurrentSurfacePricesAsync(
+                    prices,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+
+            commodityReport = prices;
+            CommodityReportFetchedAt = now;
+            liveSurfaceQuoteCount = liveCount;
+            liveCommodityQuoteUpdatedAt = quoteUpdatedAt;
+            lastCommodityName = MiningJson.Text(items[^1], "commodityName");
+            lastCommodityUpdatedAt = await LastCommodityUpdatedAtAsync(cancellationToken).ConfigureAwait(false);
+            averageSellPrices = prices
+                .Values.Where(item => item.AverageSellPrice > 0)
+                .ToDictionary(item => item.Commodity, item => item.AverageSellPrice, StringComparer.OrdinalIgnoreCase);
+            nextCommodityReportRefresh = NextCommodityRefreshBoundary(now, now + CommodityReportCheckInterval);
+            PriceMarksUnavailable = anyFailures;
+            if (commodityReportStore is not null)
+            {
+                try
+                {
+                    commodityReportStore.Save(
+                        new MiningCommodityPriceReportSnapshot(
+                            now,
+                            lastCommodityUpdatedAt,
+                            lastCommodityName,
+                            prices.Values.ToArray(),
+                            Version: 2,
+                            LiveSurfaceQuoteCount: liveCount,
+                            LiveQuoteUpdatedAt: quoteUpdatedAt
+                        )
+                    );
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    diagnostics.Record("Local cache", commodityReportStore.Path, ex);
+                }
+            }
+
+            return prices;
         }
         catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
         {
             PriceMarksUnavailable = true;
-            return new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        using (document)
-        {
-            if (document.RootElement.ValueKind != JsonValueKind.Array)
+            nextCommodityReportRefresh = timeProvider.GetUtcNow() + CommodityReportRetryDelay;
+            if (ex is InvalidDataException)
             {
-                PriceMarksUnavailable = true;
-                diagnostics.Record(
-                    ArdentProvider,
-                    ArdentRoutes.Commodities,
-                    new InvalidDataException("Commodity averages were not a list.")
-                );
-                return new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+                diagnostics.Record(ArdentProvider, ArdentRoutes.Commodities, ex);
             }
 
-            averageSellPrices = document
-                .RootElement.EnumerateArray()
-                .Select(item =>
-                    (Name: MiningJson.Text(item, "commodityName"), Price: (long)MiningJson.Number(item, "avgSellPrice"))
-                )
-                .Where(item => item.Name.Length > 0 && item.Price > 0)
-                .GroupBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(group => group.Key, group => group.First().Price, StringComparer.OrdinalIgnoreCase);
+            return commodityReport ?? EmptyCommodityReport;
+        }
+        finally
+        {
+            commodityReportGate.Release();
+        }
+    }
+
+    private async Task<(int Count, DateTimeOffset? UpdatedAt, bool AnyFailures)> OverlayCurrentSurfacePricesAsync(
+        Dictionary<string, MiningCommodityPriceSummary> prices,
+        CancellationToken cancellationToken
+    )
+    {
+        int count = 0;
+        bool anyFailures = false;
+        DateTimeOffset? latest = null;
+        foreach (string material in SurfaceMiningCommodityCatalog.All.Select(commodity => commodity.Name))
+        {
+            string route = ArdentRoutes.CurrentCommodityImporters(MiningCommodityName.Key(material));
+            try
+            {
+                using JsonDocument document = await ardent
+                    .GetAsync(route, MaximumResponseBytes, MarketResponse, cancellationToken)
+                    .ConfigureAwait(false);
+                if (document.RootElement.ValueKind != JsonValueKind.Array)
+                {
+                    throw new InvalidDataException("Commodity importers were not a list.");
+                }
+
+                JsonElement[] quotes = document
+                    .RootElement.EnumerateArray()
+                    .Where(item => MiningJson.Number(item, "sellPrice") > 0 && MiningJson.Number(item, "meanPrice") > 0)
+                    .ToArray();
+                if (quotes.Length == 0)
+                {
+                    continue;
+                }
+
+                long average = (long)MiningJson.Number(quotes[0], "meanPrice");
+                long maximum = (long)quotes.Max(item => MiningJson.Number(item, "sellPrice"));
+                prices[material] = new MiningCommodityPriceSummary(material, average, maximum);
+                count++;
+                latest = LatestQuoteUpdate(quotes, latest);
+            }
+            catch (Exception ex)
+                when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+            {
+                anyFailures = true;
+                diagnostics.Record(ArdentProvider, route, ex);
+            }
         }
 
-        PriceMarksUnavailable = false;
-        return averageSellPrices;
+        return (count, latest, anyFailures);
+    }
+
+    private static DateTimeOffset? LatestQuoteUpdate(JsonElement[] quotes, DateTimeOffset? latest)
+    {
+        foreach (JsonElement quote in quotes)
+        {
+            if (
+                DateTimeOffset.TryParse(
+                    MiningJson.Text(quote, "updatedAt"),
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal,
+                    out DateTimeOffset updatedAt
+                ) && (latest is null || updatedAt > latest)
+            )
+            {
+                latest = updatedAt;
+            }
+        }
+
+        return latest;
+    }
+
+    private async Task<bool> ShouldUseCachedCommodityReportAsync(
+        DateTimeOffset now,
+        CancellationToken cancellationToken
+    )
+    {
+        if (commodityReport is null || CommodityReportFetchedAt is not { } fetchedAt)
+        {
+            return false;
+        }
+
+        DateTimeOffset? latest = await LastCommodityUpdatedAtAsync(cancellationToken).ConfigureAwait(false);
+        if (latest is { } updated && now - updated < TimeSpan.FromMinutes(5))
+        {
+            nextCommodityReportRefresh = updated + TimeSpan.FromMinutes(5);
+            return true;
+        }
+
+        DateTimeOffset dailyRefresh = NextCommodityRefreshBoundary(fetchedAt, DateTimeOffset.MaxValue);
+
+        if (now >= dailyRefresh || latest != lastCommodityUpdatedAt && latest is not null)
+        {
+            return false;
+        }
+
+        DateTimeOffset hourlyRefresh = now + CommodityReportCheckInterval;
+        nextCommodityReportRefresh = hourlyRefresh < dailyRefresh ? hourlyRefresh : dailyRefresh;
+        return true;
+    }
+
+    private static DateTimeOffset NextCommodityRefreshBoundary(DateTimeOffset fetchedAt, DateTimeOffset hourlyRefresh)
+    {
+        DateTimeOffset dailyRefresh = new(fetchedAt.UtcDateTime.Date.AddHours(6), TimeSpan.Zero);
+        if (fetchedAt >= dailyRefresh)
+        {
+            dailyRefresh = dailyRefresh.AddDays(1);
+        }
+
+        return hourlyRefresh < dailyRefresh ? hourlyRefresh : dailyRefresh;
+    }
+
+    private async Task<DateTimeOffset?> LastCommodityUpdatedAtAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(lastCommodityName))
+        {
+            return null;
+        }
+
+        try
+        {
+            using JsonDocument summary = await ardent
+                .GetAsync(
+                    ArdentRoutes.CommoditySummary(lastCommodityName),
+                    64 * 1024,
+                    MarketResponse,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            if (summary.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            string timestamp = MiningJson.Text(summary.RootElement, "timestamp");
+            return DateTimeOffset.TryParse(
+                timestamp,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal,
+                out DateTimeOffset updated
+            )
+                ? updated
+                : null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+        {
+            return null;
+        }
+    }
+
+    public async Task<IReadOnlyDictionary<string, long>> AverageSellPricesAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        IReadOnlyDictionary<string, MiningCommodityPriceSummary> report = await CommodityPriceReportAsync(
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+        return averageSellPrices
+            ?? report
+                .Values.Where(item => item.AverageSellPrice > 0)
+                .ToDictionary(item => item.Commodity, item => item.AverageSellPrice, StringComparer.OrdinalIgnoreCase);
     }
 
     public async Task<(IReadOnlyList<MiningMarketResult> Markets, string Source)> FindMarketsPreferringArdentAsync(
@@ -582,14 +984,22 @@ public sealed class MiningSearchClient
         CancellationToken cancellationToken = default
     )
     {
+        IReadOnlyList<MiningMarketResult> markets;
         try
         {
-            return (await FindMarketsAsync(query, cancellationToken).ConfigureAwait(false), ArdentProvider);
+            markets = await FindMarketsAsync(query, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
         {
-            return (await FindSpanshMarketsAsync(query, cancellationToken).ConfigureAwait(false), "Spansh fallback");
+            markets = [];
         }
+
+        if (markets.Count > 0)
+        {
+            return (markets, ArdentProvider);
+        }
+
+        return (await FindSpanshMarketsAsync(query, cancellationToken).ConfigureAwait(false), "Spansh fallback");
     }
 
     private static MiningMarketResult? ReadArdentMarket(JsonElement item, MiningMarketQuery query)
@@ -625,7 +1035,9 @@ public sealed class MiningSearchClient
             largePad
         )
         {
-            Commodity = MiningJson.Text(item, "commodityName") is { Length: > 0 } name ? name : query.Commodity,
+            Commodity = MiningCommodityName.Canonical(
+                MiningJson.Text(item, "commodityName") is { Length: > 0 } name ? name : query.Commodity
+            ),
         };
     }
 
@@ -649,7 +1061,7 @@ public sealed class MiningSearchClient
                     .Array(station, "market")
                     .Select(item =>
                     {
-                        string commodity = MiningJson.Text(item, "commodity");
+                        string commodity = MiningJson.Text(item, CommodityField);
                         long price = (long)MiningJson.Number(item, "sell_price");
                         long demand = (long)MiningJson.Number(item, DemandField);
                         if (commodity.Length == 0 || price <= 0 || demand <= 0)
@@ -672,7 +1084,7 @@ public sealed class MiningSearchClient
                             padSize >= 3
                         )
                         {
-                            Commodity = commodity,
+                            Commodity = MiningCommodityName.Canonical(commodity),
                             QuotedPad = padSize switch
                             {
                                 >= 3 => "Large",
@@ -726,8 +1138,8 @@ public sealed class MiningSearchClient
         double? arrival = Number(station, ArrivalField);
         foreach (JsonElement item in MiningJson.Array(station, "market"))
         {
-            string commodity = MiningJson.Text(item, "commodity");
-            if (!commodities.Contains(commodity, StringComparer.OrdinalIgnoreCase))
+            string commodity = MiningJson.Text(item, CommodityField);
+            if (!commodities.Any(wanted => MiningCommodityName.Same(wanted, commodity)))
             {
                 continue;
             }
@@ -745,7 +1157,7 @@ public sealed class MiningSearchClient
                 MiningJson.Text(station, "type"),
                 pad,
                 arrival,
-                commodity,
+                MiningCommodityName.Canonical(commodity),
                 price,
                 demand
             );
@@ -797,7 +1209,7 @@ public sealed class MiningSearchClient
         foreach (
             JsonElement item in MiningJson
                 .Array(station, "market")
-                .Where(m => MiningJson.Text(m, "commodity").Equals(query.Commodity, StringComparison.OrdinalIgnoreCase))
+                .Where(m => MiningCommodityName.Same(MiningJson.Text(m, CommodityField), query.Commodity))
         )
         {
             long price = (long)MiningJson.Number(item, query.Buying ? "buy_price" : "sell_price");
@@ -820,7 +1232,10 @@ public sealed class MiningSearchClient
                 updated,
                 (long)MiningJson.Number(station, "market_id"),
                 largePad
-            );
+            )
+            {
+                Commodity = MiningCommodityName.Canonical(MiningJson.Text(item, CommodityField)),
+            };
         }
     }
 
@@ -968,7 +1383,9 @@ public sealed class MiningSearchClient
     )
     {
         var found = new List<MiningSystemResult>();
-        foreach (string[] chunk in names.Where(name => name.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).Chunk(50))
+        foreach (
+            string[] chunk in names.Where(name => name.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).Chunk(50)
+        )
         {
             Dictionary<string, object> filters = new() { ["name"] = new { value = chunk } };
             using JsonDocument response = await spansh

@@ -285,7 +285,10 @@ public sealed class MiningWorkspacePresentationTests
                     search.GetVisualDescendants().OfType<ListBox>(),
                     l => l.IsEffectivelyVisible
                 );
-                Assert.NotEmpty(results.Items);
+                Assert.True(
+                    results.Items.Cast<object>().Any(),
+                    $"{prefix} results are empty. Search status: {model.MiningWorkspace.Search.Status}"
+                );
                 Assert.DoesNotContain(header.GetVisualAncestors(), ancestor => ReferenceEquals(ancestor, results));
                 Grid[] rows = results
                     .GetVisualDescendants()
@@ -493,7 +496,7 @@ public sealed class MiningWorkspacePresentationTests
                             stationName = $"Long commodity market station name {i}",
                             stationType = "Coriolis Starport",
                             sellPrice = 250000,
-                            demand = 500000,
+                            demand = 50000,
                             updatedAt = DateTimeOffset.UtcNow,
                             maxLandingPadSize = 3,
                             distance = i * 1.2,

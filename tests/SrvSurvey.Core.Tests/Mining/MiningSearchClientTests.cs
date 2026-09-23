@@ -325,7 +325,7 @@ public sealed class MiningSearchClientTests
     public async Task PlanetaryBodiesAskSpanshForLandableSystemsAndMagma()
     {
         using var handler = new RequestHandler(
-            """{"results":[{"system_name":"HR 5098","name":"HR 5098 2","subtype":"High metal content world","reserve_level":"Pristine","gravity":2.532,"distance_to_arrival":294.25}]}"""
+            """{"results":[{"system_name":"HR 5098","name":"HR 5098 2","subtype":"High metal content world","reserve_level":"Pristine","gravity":2.532,"distance_to_arrival":294.25,"landmarks":[{"subtype":"Iron Magma Lava Spout"},{"subtype":"Iron Magma Lava Spout"}]}]}"""
         );
         using var http = new HttpClient(handler);
         IReadOnlyList<MiningPlanetaryBody> bodies = await new MiningSearchClient(http).FindPlanetaryBodiesAsync(
@@ -336,7 +336,8 @@ public sealed class MiningSearchClientTests
                 "Pristine",
                 150,
                 PlanetaryMiningPlan.OtherPowers("Aisling Duval"),
-                "Exploited"
+                "Exploited",
+                Page: 2
             )
         );
 
@@ -345,11 +346,13 @@ public sealed class MiningSearchClientTests
         Assert.Equal("HR 5098 2", body.Body);
         Assert.Equal(2.532, body.Gravity);
         Assert.Equal(294.25, body.ArrivalLs);
+        Assert.Equal(["Iron Magma Lava Spout"], body.Landmarks);
         using var request = JsonDocument.Parse(handler.Body!);
         JsonElement filters = request.RootElement.GetProperty("filters");
         Assert.True(filters.GetProperty("is_landable").GetProperty("value").GetBoolean());
         Assert.False(filters.TryGetProperty("system_name", out _));
         Assert.Equal("Timbalderis", request.RootElement.GetProperty("reference_system").GetString());
+        Assert.Equal(2, request.RootElement.GetProperty("page").GetInt32());
         Assert.Equal(150, filters.GetProperty("distance").GetProperty("max").GetDouble());
         JsonElement powers = filters.GetProperty("system_controlling_power").GetProperty("value");
         Assert.Equal(11, powers.GetArrayLength());
@@ -377,8 +380,33 @@ public sealed class MiningSearchClientTests
         Assert.Equal(31, market.Demand);
     }
 
+    [Fact]
+    public async Task ArdentQuotesAvoidSpanshAndEmptyArdentResultsUseTheFallback()
+    {
+        using var handler = new ArdentThenSpanshHandler { ArdentResponse = "quote" };
+        using var http = new HttpClient(handler);
+        var client = new MiningSearchClient(http);
+        var query = new MiningMarketQuery("Sol", "Platinum", false, MaximumAge: TimeSpan.FromDays(30));
+
+        (IReadOnlyList<MiningMarketResult> quotes, string source) = await client.FindMarketsPreferringArdentAsync(
+            query
+        );
+        Assert.Equal("Ardent", source);
+        Assert.Equal(900_000, Assert.Single(quotes).Price);
+        Assert.Equal(0, handler.SpanshRequests);
+
+        handler.ArdentResponse = "empty";
+        (quotes, source) = await client.FindMarketsPreferringArdentAsync(query);
+        Assert.Equal("Spansh fallback", source);
+        Assert.Equal(420_153, Assert.Single(quotes).Price);
+        Assert.Equal(1, handler.SpanshRequests);
+    }
+
     private sealed class ArdentThenSpanshHandler : HttpMessageHandler
     {
+        public string ArdentResponse { get; set; } = "failure";
+        public int SpanshRequests { get; private set; }
+
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -386,9 +414,29 @@ public sealed class MiningSearchClientTests
         {
             if (request.RequestUri?.Host.Contains("ardent", StringComparison.OrdinalIgnoreCase) == true)
             {
+                if (ArdentResponse == "empty")
+                {
+                    return Task.FromResult(
+                        new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("[]") }
+                    );
+                }
+
+                if (ArdentResponse == "quote")
+                {
+                    return Task.FromResult(
+                        new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent(
+                                $$"""[{"systemName":"Sol","stationName":"Ardent Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":900000,"demand":1000,"stock":0,"updatedAt":"{{DateTimeOffset.UtcNow:O}}","commodityName":"Platinum"}]"""
+                            ),
+                        }
+                    );
+                }
+
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
             }
 
+            SpanshRequests++;
             return Task.FromResult(
                 new HttpResponseMessage(HttpStatusCode.OK)
                 {
@@ -446,6 +494,176 @@ public sealed class MiningSearchClientTests
         failing.FlushDiagnostics();
         failing.ResetDiagnostics();
         Assert.False(failing.PriceMarksUnavailable);
+    }
+
+    [Fact]
+    public async Task ArdentImportNamesUseTheSharedCommodityIdentity()
+    {
+        string updated = DateTimeOffset.UtcNow.ToString("O");
+        using var handler = new RequestHandler(
+            $$"""[{"systemName":"Sol","stationName":"Hub","stationType":"Coriolis","sellPrice":800000,"demand":100,"updatedAt":"{{updated}}","commodityName":"periclasedunite"},{"systemName":"Sol","stationName":"Hub","stationType":"Coriolis","sellPrice":700000,"demand":100,"updatedAt":"{{updated}}","commodityName":"lowtemperaturediamond"},{"systemName":"Sol","stationName":"Hub","stationType":"Coriolis","sellPrice":600000,"demand":100,"updatedAt":"{{updated}}","commodityName":"diamond"}]"""
+        );
+        using var http = new HttpClient(handler);
+
+        IReadOnlyList<MiningMarketResult> imports = await new MiningSearchClient(http).FindSystemImportsAsync(
+            "Sol",
+            TimeSpan.FromDays(2)
+        );
+
+        Assert.Equal("Periclase Dunite", imports[0].Commodity);
+        Assert.Equal("Low Temperature Diamonds", imports[1].Commodity);
+        Assert.Equal("Diamond", imports[2].Commodity);
+    }
+
+    [Fact]
+    public async Task DailyPriceReportUsesTheCommodityNameQueriedFromArdent()
+    {
+        using var handler = new RequestHandler(
+            """[{"commodityName":"periclase dunite","avgSellPrice":634136,"maxSellPrice":1038104},{"commodityName":"periclasedunite","avgSellPrice":207564,"maxSellPrice":1038104},{"commodityName":"diamond","avgSellPrice":134784,"maxSellPrice":720648},{"commodityName":"lowtemperaturediamond","avgSellPrice":130184,"maxSellPrice":384562}]"""
+        );
+        using var http = new HttpClient(handler);
+
+        IReadOnlyDictionary<string, MiningCommodityPriceSummary> report = await new MiningSearchClient(
+            http
+        ).CommodityPriceReportAsync();
+
+        Assert.Equal(207_564, report["Periclase Dunite"].AverageSellPrice);
+        Assert.Equal(134_784, report["Diamond"].AverageSellPrice);
+        Assert.Equal(130_184, report["Low Temperature Diamonds"].AverageSellPrice);
+    }
+
+    [Fact]
+    public async Task CurrentMarketQuotesReplaceStaleAggregatePricesForSurfaceMaterials()
+    {
+        using var handler = new CurrentSurfacePriceHandler();
+        using var http = new HttpClient(handler);
+        var client = new MiningSearchClient(http);
+
+        IReadOnlyDictionary<string, MiningCommodityPriceSummary> prices = await client.CommodityPriceReportAsync();
+
+        Assert.Equal(195_083, prices["Monazite"].AverageSellPrice);
+        Assert.Equal(865_908, prices["Monazite"].MaximumSellPrice);
+        Assert.Equal(129_763, prices["Periclase Dunite"].AverageSellPrice);
+        Assert.Equal(944_252, prices["Periclase Dunite"].MaximumSellPrice);
+        Assert.Equal(2, client.LiveSurfaceQuoteCount);
+        Assert.Equal(new DateTimeOffset(2026, 9, 23, 10, 0, 0, TimeSpan.Zero), client.CommodityLiveQuoteUpdatedAt);
+    }
+
+    [Fact]
+    public async Task CommodityReportRefreshesWhenArdentFinishesANewReport()
+    {
+        var clock = new MutableTimeProvider(new DateTimeOffset(2026, 9, 23, 12, 0, 0, TimeSpan.Zero));
+        var handler = new CommodityReportHandler();
+        using var http = new HttpClient(handler);
+        var client = new MiningSearchClient(http, clock);
+
+        IReadOnlyDictionary<string, MiningCommodityPriceSummary> first = await client.CommodityPriceReportAsync();
+        Assert.Equal(136_783, first["Diamond"].AverageSellPrice);
+        Assert.Equal(720_648, first["Diamond"].MaximumSellPrice);
+        Assert.Equal(1, handler.ReportRequests);
+        Assert.Equal(1, handler.MarkerRequests);
+        Assert.Equal(clock.GetUtcNow(), client.CommodityReportFetchedAt);
+        Assert.Equal(new DateTimeOffset(2026, 9, 7, 9, 19, 53, TimeSpan.Zero), client.CommodityReportSourceUpdatedAt);
+
+        clock.Advance(TimeSpan.FromHours(1));
+        Assert.Same(first, await client.CommodityPriceReportAsync());
+        Assert.Equal(1, handler.ReportRequests);
+        Assert.Equal(2, handler.MarkerRequests);
+
+        handler.MarkerTimestamp = "2026-09-23T14:00:00Z";
+        handler.AverageSellPrice = 200_000;
+        clock.Advance(TimeSpan.FromHours(1));
+        Assert.Same(first, await client.CommodityPriceReportAsync());
+        Assert.Equal(1, handler.ReportRequests);
+
+        clock.Advance(TimeSpan.FromMinutes(5));
+        Assert.Equal(200_000, (await client.CommodityPriceReportAsync())["Diamond"].AverageSellPrice);
+        Assert.Equal(2, handler.ReportRequests);
+    }
+
+    [Fact]
+    public async Task CommodityReportSurvivesRestartWithItsSourceTimestamp()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Ardent-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new MiningCommodityPriceReportStore(directory);
+            using var handler = new CommodityReportHandler();
+            using var http = new HttpClient(handler);
+            var first = new MiningSearchClient(http, commodityReportStore: store);
+
+            await first.CommodityPriceReportAsync();
+
+            Assert.True(File.Exists(store.Path));
+            var reloaded = new MiningSearchClient(http, commodityReportStore: store);
+            Assert.Equal(136_783, reloaded.CachedCommodityPriceReport!["Diamond"].AverageSellPrice);
+            Assert.Equal(first.CommodityReportFetchedAt, reloaded.CommodityReportFetchedAt);
+            Assert.Equal(first.CommodityReportSourceUpdatedAt, reloaded.CommodityReportSourceUpdatedAt);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task WhiteDwarfHostLookupFollowsPlanetParentAndKeepsLargeBodyIdsExact()
+    {
+        using var http = new HttpClient(
+            new Handler(
+                """{"results":[{"id64":9007199254740993,"parents":[{"id64":123,"type":"Star","subtype":"White Dwarf (DC) Star"}]}]}"""
+            )
+        );
+        var client = new MiningSearchClient(http);
+        MiningPlanetaryBody moon = new(
+            "Sirius",
+            "Sirius B 1 a",
+            "Rocky body",
+            "",
+            0.1,
+            100,
+            Parents: [new MiningBodyParent(9007199254740993, "Planet", "Rocky body")]
+        );
+        MiningPlanetaryBody other = moon with
+        {
+            Body = "Sirius A 1",
+            Parents = [new MiningBodyParent(456, "Star", "A (Blue-White) Star")],
+        };
+
+        IReadOnlySet<string> hosted = await client.FindWhiteDwarfHostedBodiesAsync("Sirius", [moon, other]);
+
+        Assert.Contains("Sirius\u001fSirius B 1 a", hosted);
+        Assert.DoesNotContain("Sirius\u001fSirius A 1", hosted);
+    }
+
+    [Fact]
+    public async Task PericlaseQueryUsesVolcanismTypeInsteadOfLavaSpoutLandmarks()
+    {
+        using var handler = new RequestHandler(
+            """{"results":[{"system_name":"Sirius","name":"Sirius B 1","subtype":"Rocky body","volcanism_type":"Minor Metallic Magma"}]}"""
+        );
+        using var http = new HttpClient(handler);
+        PlanetaryBodyCriteria criteria = PlanetaryMiningPlan.For(["Periclase Dunite"])!;
+
+        MiningPlanetaryBody body = Assert.Single(
+            await new MiningSearchClient(http).FindPlanetaryBodiesAsync(
+                new MiningPlanetaryQuery(
+                    "Sirius",
+                    criteria.BodySubtypes,
+                    criteria.LandmarkSubtypes,
+                    VolcanismTypes: criteria.VolcanismTypes
+                )
+            )
+        );
+
+        Assert.Equal("Minor Metallic Magma", body.VolcanismType);
+        using var request = JsonDocument.Parse(handler.Body!);
+        JsonElement filters = request.RootElement.GetProperty("filters");
+        Assert.False(filters.TryGetProperty("landmarks", out _));
+        Assert.Equal(3, filters.GetProperty("volcanism_type").GetProperty("value").GetArrayLength());
     }
 
     [Fact]
@@ -518,9 +736,7 @@ public sealed class MiningSearchClientTests
             CancellationToken cancellationToken
         )
         {
-            string body = request.Content is null
-                ? ""
-                : await request.Content.ReadAsStringAsync(cancellationToken);
+            string body = request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken);
             Pages++;
             BodiesRequest = body;
             using var document = JsonDocument.Parse(body);
@@ -530,9 +746,11 @@ public sealed class MiningSearchClientTests
                 Bodies = 100;
                 string results = string.Join(
                     ',',
-                    Enumerable.Range(0, 100).Select(index =>
-                        "{\"name\":\"Body " + index + "\",\"system_name\":\"Near\",\"distance\":1,\"rings\":[]}"
-                    )
+                    Enumerable
+                        .Range(0, 100)
+                        .Select(index =>
+                            "{\"name\":\"Body " + index + "\",\"system_name\":\"Near\",\"distance\":1,\"rings\":[]}"
+                        )
                 );
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {
@@ -563,15 +781,82 @@ public sealed class MiningSearchClientTests
     {
         public string? Body { get; private set; }
         public Uri? Uri { get; private set; }
+        public int RequestCount { get; private set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
         )
         {
+            RequestCount++;
             Uri = request.RequestUri;
             Body = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
             return new(HttpStatusCode.OK) { Content = new StringContent(payload) };
+        }
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        private DateTimeOffset now = now;
+
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public void Advance(TimeSpan duration) => now += duration;
+    }
+
+    private sealed class CommodityReportHandler : HttpMessageHandler
+    {
+        public int ReportRequests { get; private set; }
+        public int MarkerRequests { get; private set; }
+        public long AverageSellPrice { get; set; } = 136_783;
+        public string MarkerTimestamp { get; set; } = "2026-09-07T09:19:53Z";
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            string payload;
+            if (request.RequestUri?.AbsolutePath.EndsWith("/commodities", StringComparison.Ordinal) == true)
+            {
+                ReportRequests++;
+                payload =
+                    $$"""[{"commodityName":"Diamond","avgSellPrice":{{AverageSellPrice}},"maxSellPrice":720648}]""";
+            }
+            else if (request.RequestUri?.AbsolutePath.EndsWith("/imports", StringComparison.Ordinal) == true)
+            {
+                payload = "[]";
+            }
+            else
+            {
+                MarkerRequests++;
+                payload = $$"""{"timestamp":"{{MarkerTimestamp}}"}""";
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(payload) });
+        }
+    }
+
+    private sealed class CurrentSurfacePriceHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            string path = request.RequestUri?.AbsolutePath ?? "";
+            string payload = path switch
+            {
+                "/v2/commodities" =>
+                    """[{"commodityName":"monazite","avgSellPrice":267777,"maxSellPrice":892835},{"commodityName":"periclasedunite","avgSellPrice":207564,"maxSellPrice":1038104}]""",
+                "/v2/commodity/name/monazite/imports" =>
+                    """[{"meanPrice":195083,"sellPrice":865908,"updatedAt":"2026-09-23T10:00:00Z"}]""",
+                "/v2/commodity/name/periclasedunite/imports" =>
+                    """[{"meanPrice":129763,"sellPrice":944252,"updatedAt":"2026-09-23T09:00:00Z"}]""",
+                _ when path.EndsWith("/imports", StringComparison.Ordinal) => "[]",
+                _ => """{"timestamp":"2026-09-07T09:19:53Z"}""",
+            };
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(payload) });
         }
     }
 

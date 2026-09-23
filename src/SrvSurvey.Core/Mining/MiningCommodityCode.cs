@@ -22,6 +22,8 @@ public static class MiningCommodityCode
         ["Goslarite"] = "GOS",
         ["Grandidierite"] = "GRA",
         ["Hafnium 178"] = "HAF",
+        ["Helium"] = "HEL",
+        ["Helium-3"] = "HE3",
         ["Indite"] = "IDT",
         ["Indium"] = "IND",
         ["Jadeite"] = "JAD",
@@ -59,7 +61,7 @@ public static class MiningCommodityCode
 
     public static string Abbreviate(string name)
     {
-        string trimmed = name.Trim();
+        string trimmed = MiningCommodityName.Canonical(name.Trim());
         if (Codes.TryGetValue(trimmed, out string? code))
         {
             return code;

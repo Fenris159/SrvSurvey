@@ -694,7 +694,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 requestOverviewMapVisibility: () => OverlayPanelVisibility.EnsureVisible("PlotMineMap")
             );
             MineMap.UseSurfaceSearch(
-                new MiningSearchClient(externalNetworkClient),
+                new MiningSearchClient(
+                    externalNetworkClient,
+                    commodityReportStore: new MiningCommodityPriceReportStore(AppDataPaths.DataDirectory)
+                ),
                 message => resolvedApplicationLogService?.Append(message)
             );
             rollback.Add(MineMap.Dispose);
@@ -2929,6 +2932,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private async Task UpdateFeatureSystemContextsAsync(bool forceCodexBingoRefresh)
     {
         Search.UpdateCurrentSystem(journalState.SystemName, journalState.StarPosition, journalState.SystemAddress);
+        MineMap.UpdateCurrentSystem(journalState.SystemName);
         NearestSystems.UpdateContext(
             journalState.SystemName,
             journalState.StarPosition,

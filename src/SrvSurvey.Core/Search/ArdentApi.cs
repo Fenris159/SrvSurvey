@@ -44,6 +44,11 @@ public static class ArdentRoutes
 
     public const string Commodities = "commodities";
 
+    public static string CommoditySummary(string commodity) => $"commodity/name/{Escape(commodity)}";
+
+    public static string CurrentCommodityImporters(string commodity) =>
+        GalaxyCommodity(commodity, "imports", 1, 2, excludeFleetCarriers: true);
+
     public static string NearestMaterialTrader(string system, int minimumPadSize) =>
         $"system/name/{Escape(system)}/nearest/material-trader?minLandingPadSize={minimumPadSize}";
 

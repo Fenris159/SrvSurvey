@@ -92,12 +92,17 @@ public static class PowerplayPlan
 
     private static bool MatchesPledge(MiningSystemResult system, string pledgedPower)
     {
+        if (IsUnspecified(pledgedPower))
+        {
+            return true;
+        }
+
         if (pledgedPower.Equals(NoPower, StringComparison.Ordinal))
         {
             return system.Power.Length == 0;
         }
 
-        return system.Power.Length > 0 && (IsUnspecified(pledgedPower) || Same(system.Power, pledgedPower));
+        return system.Power.Length > 0 && Same(system.Power, pledgedPower);
     }
 
     private static bool MatchesOpposition(MiningSystemResult system, string pledgedPower, string opposingPower)

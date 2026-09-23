@@ -22,7 +22,11 @@ public sealed record MeritLineViewModel(
     public bool ShowPlainText => Mineral.Length == 0;
 }
 
-public sealed record MeritCommodityLineViewModel(string Code, string Price, string Demand);
+public sealed record MeritCommodityLineViewModel(string Code, string Price, string Demand)
+{
+    public string ColorHex => SurfaceMaterialBadgePalette.ColorHexFor(Code);
+    public string ContrastForeground => SurfaceMaterialBadgePalette.ForegroundFor(ColorHex);
+}
 
 public sealed record MeritStationBlockViewModel(
     string Icon,
@@ -35,7 +39,17 @@ public sealed record MeritStationBlockViewModel(
     IReadOnlyList<MeritCommodityLineViewModel> OtherCommodities
 );
 
-public sealed record AcquireQuoteViewModel(string Code, string Price, string Demand, bool Highlight);
+public sealed record AcquireQuoteViewModel(
+    string Code,
+    string Price,
+    string Demand,
+    bool IsUnavailable = false,
+    bool UseMaterialColor = false
+)
+{
+    public string ColorHex => SurfaceMaterialBadgePalette.ColorHexFor(Code);
+    public string ContrastForeground => SurfaceMaterialBadgePalette.ForegroundFor(ColorHex);
+}
 
 public sealed record AcquireStationViewModel(
     string Name,
@@ -46,6 +60,8 @@ public sealed record AcquireStationViewModel(
 )
 {
     public bool HasUpdated => Updated.Length > 0;
+
+    public string PadBadge => Pad == "Small / medium pads" ? "S/M" : Pad;
 }
 
 public static class AcquireConnector
@@ -174,7 +190,7 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
             preferredCommodity.Length > 0
                 ? preferredCommodity
                 : system
-                    .Stations.Where(station => hotspotNames.Contains(station.Commodity))
+                    .Stations.Where(station => hotspotNames.Contains(MiningCommodityName.Key(station.Commodity)))
                     .OrderByDescending(SellScore)
                     .ThenByDescending(station => station.Price)
                     .Select(station => station.Commodity)
@@ -222,32 +238,33 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
     private static MeritLineViewModel[] RingLines(PowerplayMeritSystem system)
     {
         var lines = new List<MeritLineViewModel>();
-        foreach (
-            PowerplayMeritRing ring in system.Rings.OrderBy(ring => ring.Body, StringComparer.OrdinalIgnoreCase)
-        )
+        foreach (PowerplayMeritRing ring in system.Rings.OrderBy(ring => ring.Body, StringComparer.OrdinalIgnoreCase))
         {
-            string body = ring.Body.StartsWith(system.Name, StringComparison.OrdinalIgnoreCase)
-                ? ring.Body[system.Name.Length..].Trim()
-                : ring.Body;
-            IReadOnlyList<string> signals = ring.SignalLines is { Count: > 0 } ? ring.SignalLines : [ring.Detail];
-            for (int index = 0; index < signals.Count; index++)
-            {
-                string mineral = signals[index];
-                string text = body.Length == 0 ? mineral : $"{body}: {mineral}";
-                lines.Add(
-                    new MeritLineViewModel(
-                        ring.Planetary || index == 0 ? "Planet" : "",
-                        text,
-                        body,
-                        RingTypeKind(ring.RingType),
-                        ReserveKind(ring.Reserve),
-                        ring.Planetary ? "" : mineral
-                    )
-                );
-            }
+            lines.AddRange(LinesForRing(system.Name, ring));
         }
 
         return lines.ToArray();
+    }
+
+    private static IEnumerable<MeritLineViewModel> LinesForRing(string systemName, PowerplayMeritRing ring)
+    {
+        string body = ring.Body.StartsWith(systemName, StringComparison.OrdinalIgnoreCase)
+            ? ring.Body[systemName.Length..].Trim()
+            : ring.Body;
+        IReadOnlyList<string> signals = ring.SignalLines is { Count: > 0 } ? ring.SignalLines : [ring.Detail];
+        for (int index = 0; index < signals.Count; index++)
+        {
+            string mineral = signals[index];
+            string text = body.Length == 0 ? mineral : $"{body}: {mineral}";
+            yield return new MeritLineViewModel(
+                ring.Planetary || index == 0 ? "Planet" : "",
+                text,
+                body,
+                RingTypeKind(ring.RingType),
+                ReserveKind(ring.Reserve),
+                ring.Planetary ? "" : mineral
+            );
+        }
     }
 
     private static string RingTypeKind(string ringType)
@@ -340,9 +357,8 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
             }
 
             PowerplayMeritStation primary =
-                quotes.FirstOrDefault(station =>
-                    station.Commodity.Equals(preferredCommodity, StringComparison.OrdinalIgnoreCase)
-                ) ?? quotes[0];
+                quotes.FirstOrDefault(station => MiningCommodityName.Same(station.Commodity, preferredCommodity))
+                ?? quotes[0];
             blocks.Add(
                 new MeritStationBlockViewModel(
                     StationIcon(primary.Type),
@@ -376,7 +392,7 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
 
     private static long HeadlinePrice(IEnumerable<PowerplayMeritStation> quotes, string commodity) =>
         quotes
-            .Where(station => station.Commodity.Equals(commodity, StringComparison.OrdinalIgnoreCase))
+            .Where(station => MiningCommodityName.Same(station.Commodity, commodity))
             .Select(station => station.Price)
             .DefaultIfEmpty(0)
             .Max();
@@ -392,7 +408,7 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
                 string name = (split < 0 ? line : line[..split]).Trim();
                 if (name.Length > 0 && !PlanetaryMiningPlan.IsSurfaceExclusive(name))
                 {
-                    names.Add(name);
+                    names.Add(MiningCommodityName.Key(name));
                 }
             }
         }

@@ -67,6 +67,16 @@ public sealed class PowerplayPlanTests
     }
 
     [Fact]
+    public void AnyPowerIncludesUnoccupiedSystemsInTheGeneralSearch()
+    {
+        MiningSystemResult unoccupied = System("Scorpii Sector EL-Y c17", "", PowerplayStanding.Unoccupied);
+
+        Assert.True(
+            PowerplayPlan.Matches(PowerplayPlan.Reinforce, unoccupied, PowerplayPlan.AnyPower, PowerplayPlan.AnyPower)
+        );
+    }
+
+    [Fact]
     public void AcquisitionReachFollowsTheSupportingStrongholdOrFortifiedSystem()
     {
         Assert.Equal(PowerplayPlan.StrongholdReachLy, PowerplayPlan.AcquisitionReachLy("Stronghold"));

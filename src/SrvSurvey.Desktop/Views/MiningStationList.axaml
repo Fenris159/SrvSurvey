@@ -3,14 +3,6 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.MiningStationList"
              x:Name="StationList">
-  <UserControl.Styles>
-    <Style Selector="Border.highlight">
-      <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}"/>
-    </Style>
-    <Style Selector="Border.highlight TextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}"/>
-    </Style>
-  </UserControl.Styles>
   <ItemsControl ItemsSource="{Binding Stations, ElementName=StationList}" Margin="6,4">
     <ItemsControl.ItemTemplate>
       <DataTemplate x:DataType="vm:AcquireStationViewModel">
@@ -18,7 +10,7 @@
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}">
             <Run Text="{Binding Name}"/>
             <Run Text=" ("/>
-            <Run Text="{Binding Pad}"/>
+            <Run Text="{Binding PadBadge}"/>
             <Run Text=")"/>
           </TextBlock>
           <TextBlock Text="{Binding Arrival}" Foreground="{DynamicResource RavenMutedTextBrush}" FontSize="12"/>
@@ -27,8 +19,13 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:AcquireQuoteViewModel">
                 <Grid ColumnDefinitions="40,140,*" Margin="0,1">
-                  <Border Classes.highlight="{Binding Highlight}" Padding="4,0">
-                    <TextBlock Text="{Binding Code}" FontFamily="monospace" FontSize="12" HorizontalAlignment="Center"/>
+                  <Border Classes="commodity-code" Classes.material="{Binding UseMaterialColor}" Classes.unavailable="{Binding IsUnavailable}" Padding="0">
+                    <Grid Width="38" Height="18" ClipToBounds="True">
+                      <Path Data="M -8,18 L 10,0 M 0,18 L 18,0 M 8,18 L 26,0 M 16,18 L 34,0 M 24,18 L 42,0 M 32,18 L 50,0"
+                            Stroke="{DynamicResource RavenDangerBrush}" StrokeThickness="2" Opacity="0.5" IsVisible="{Binding IsUnavailable}"
+                            ToolTip.Tip="No matching Spansh body within the search radius"/>
+                      <TextBlock Text="{Binding Code}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
                   </Border>
                   <TextBlock Grid.Column="1" Text="{Binding Price}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Center"/>
                   <TextBlock Grid.Column="2" Text="{Binding Demand}" Foreground="{DynamicResource RavenTextBrush}" VerticalAlignment="Center"/>

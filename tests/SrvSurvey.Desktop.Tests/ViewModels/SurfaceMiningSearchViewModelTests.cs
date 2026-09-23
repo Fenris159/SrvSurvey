@@ -1,6 +1,9 @@
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
+using SrvSurvey.Core.Mining;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -10,10 +13,31 @@ public sealed class SurfaceMiningSearchViewModelTests
     private const string Material = "Diamond";
 
     [Fact]
+    public void PowerplayCommodityBadgesUseMaterialColorsAcrossTheEdpmList()
+    {
+        Assert.Equal("#B87333", new MeritCommodityLineViewModel("COP", "", "").ColorHex);
+        Assert.Equal("#C0C0C0", new MeritCommodityLineViewModel("SIL", "", "").ColorHex);
+        Assert.Equal("#2E8B57", new MeritCommodityLineViewModel("MON", "", "").ColorHex);
+        Assert.Equal("#7D5894", new MeritCommodityLineViewModel("MUS", "", "").ColorHex);
+        Assert.All(
+            PlanetaryMiningPlan.EdpmCommodityNames,
+            commodity =>
+            {
+                string code = MiningCommodityCode.Abbreviate(commodity);
+                Assert.NotEqual("#E6D59A", new MeritCommodityLineViewModel(code, "", "").ColorHex);
+            }
+        );
+    }
+
+    [Fact]
     public async Task EmptyReferenceAndUnknownMaterialDoNotSearch()
     {
         using var handler = new SurfaceHandler();
         using SurfaceMiningSearchViewModel model = Create(handler);
+        Assert.Empty(model.Materials.Selected);
+        Assert.DoesNotContain("Default", model.Materials.Suggestions);
+        Assert.Equal(0, model.MinimumDemand);
+        Assert.Equal(90_000, model.MaximumDemand);
 
         await model.SearchAsync();
 
@@ -36,9 +60,6 @@ public sealed class SurfaceMiningSearchViewModelTests
         using SurfaceMiningSearchViewModel model = Create(handler);
         model.Reference = "  Sol  ";
         model.Radius = 40;
-        model.Reserve = " ";
-        Assert.Equal("All", model.Reserve);
-        model.Reserve = "Pristine";
         model.Materials.Add(Material);
 
         await model.SearchAsync();
@@ -46,24 +67,189 @@ public sealed class SurfaceMiningSearchViewModelTests
         SurfaceSellRowViewModel row = Assert.Single(model.Rows);
         Assert.Equal("Sell System", row.Target);
         Assert.Equal("12 ly", row.Distance);
-        Assert.Equal(["Alpha", "Beta", "Gamma"], row.Bodies.Select(body => body.System).ToArray());
-        Assert.Contains("Pristine reserve", row.Bodies[0].Details);
-        Assert.DoesNotContain("reserve", row.Bodies[1].Details);
-        Assert.DoesNotContain(" ly", row.Bodies[2].Details);
+        Assert.Equal("Sell System", handler.BodyReference);
+        Assert.Equal(["Alpha", "Beta", "Gamma"], row.Systems.Select(system => system.System).ToArray());
+        Assert.Equal(["4.2 ly", "9.5 ly", ""], row.Systems.Select(system => system.Distance).ToArray());
+        Assert.Equal("↑", model.DistanceSortIndicator);
+        Assert.DoesNotContain("reserve", row.Systems[0].Bodies[0].Details);
+        Assert.DoesNotContain("reserve", row.Systems[1].Bodies[0].Details);
+        Assert.DoesNotContain(" ly", row.Systems[2].Bodies[0].Details);
+        Assert.StartsWith("1: Rocky body", row.Systems[0].Bodies[0].Details);
+        Assert.Equal(["DIA"], row.Systems[0].Bodies[0].Codes);
         AcquireStationViewModel station = Assert.Single(row.Stations);
         Assert.Equal("Gold Port", station.Name);
         Assert.Equal("DIA", Assert.Single(station.Quotes).Code);
         Assert.Contains("3 landable bodies for Diamond", model.Status);
         Assert.Contains("Ardent", model.Status);
         Assert.True(model.HasRows);
+        Assert.Equal(0, handler.ImportRequests);
 
         model.DistanceSortCommand.Execute(null);
 
         Assert.Equal("Farthest first", model.DistanceSortLabel);
+        Assert.Equal("↓", model.DistanceSortIndicator);
         Assert.Equal(
             ["Gamma", "Beta", "Alpha"],
-            Assert.Single(model.Rows).Bodies.Select(body => body.System).ToArray()
+            Assert.Single(model.Rows).Systems.Select(system => system.System).ToArray()
         );
+    }
+
+    [Fact]
+    public void CurrentSystemFillsAndRestoresTheReference()
+    {
+        using var handler = new SurfaceHandler();
+        using SurfaceMiningSearchViewModel model = Create(handler);
+
+        model.UpdateCurrentLocation("Timbalderis");
+        Assert.Equal("Timbalderis", model.Reference);
+        model.Reference = "Sol";
+        model.UpdateCurrentLocation("Wille");
+        Assert.Equal("Sol", model.Reference);
+        model.Reference = "";
+        Assert.Equal("Wille", model.Reference);
+        model.UpdateCurrentLocation("Lave");
+        Assert.Equal("Lave", model.Reference);
+    }
+
+    [Fact]
+    public async Task DuplicateBodiesCollapseBySystemAndOnlyFiveSystemsShowInitially()
+    {
+        using var handler = new SurfaceHandler { Mode = "many-systems" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Sol";
+        model.Materials.Add(Material);
+
+        await model.SearchAsync();
+
+        SurfaceSellRowViewModel row = Assert.Single(model.Rows);
+        Assert.Equal(7, row.Systems.Count);
+        Assert.Equal(5, row.VisibleSystems.Count);
+        Assert.True(row.HasAdditionalSystems);
+        Assert.Equal("Show all Systems", row.ShowAllLabel);
+        SurfaceMiningSystemRowViewModel first = row.VisibleSystems[0];
+        Assert.Equal("Alpha", first.System);
+        Assert.Equal(2, first.Bodies.Count);
+        Assert.Single(first.VisibleBodies);
+        Assert.Equal("▸", first.Chevron);
+
+        first.ToggleCommand.Execute(null);
+        Assert.Equal(2, first.VisibleBodies.Count);
+        Assert.Equal("▾", first.Chevron);
+        first.ToggleCommand.Execute(null);
+        Assert.Single(first.VisibleBodies);
+
+        row.ToggleAllCommand.Execute(null);
+        Assert.Equal(7, row.VisibleSystems.Count);
+        Assert.Equal("Show fewer Systems", row.ShowAllLabel);
+        model.DistanceSortCommand.Execute(null);
+        Assert.Equal("Eta", row.VisibleSystems[0].System);
+        row.ToggleAllCommand.Execute(null);
+        Assert.Equal(5, row.VisibleSystems.Count);
+    }
+
+    [Fact]
+    public async Task AnyLabelsBodiesWithMaterialsMatchingTheirTypeAndGeology()
+    {
+        using var handler = new SurfaceHandler { Mode = "any" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Sol";
+        model.Materials.Add("Any");
+
+        await model.SearchAsync();
+
+        SurfaceSellRowViewModel row = Assert.Single(model.Rows);
+        SurfaceBodyLine first = row.Systems[0].Bodies[0];
+        Assert.Contains("DIA", first.Codes);
+        Assert.Contains("MON", first.Codes);
+        Assert.Contains("LTD", first.Codes);
+        Assert.DoesNotContain("JAD", first.Codes);
+        Assert.Contains(first.Tags, tag => tag.Code == "MON" && tag.IsExtraMaterial);
+        Assert.Contains(first.Tags, tag => tag.Code == "DIA" && tag.MatchesStation && !tag.IsExtraMaterial);
+        Assert.All(Assert.Single(row.Stations).Quotes, quote => Assert.True(quote.UseMaterialColor));
+        Assert.StartsWith("1: Rocky body", first.Details);
+        SurfaceBodyLine second = row.Systems[1].Bodies[0];
+        Assert.DoesNotContain("MON", second.Codes);
+        Assert.Contains("LTD", second.Codes);
+    }
+
+    [Fact]
+    public async Task SellSystemsRankByAvailableCommodityAndMarkQuotesWithoutNearbyBodies()
+    {
+        using var handler = new SurfaceHandler { Mode = "ranked" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Sol";
+        model.ResultLimit = 2;
+        model.Materials.Add("Any");
+
+        await model.SearchAsync();
+
+        Assert.Equal(2, model.Rows.Count);
+        Assert.Equal(["Viable Sell", "High Sell"], model.Rows.Select(row => row.Target).ToArray());
+        Assert.Equal([850_000L, 1_100_000L], model.Rows.Select(row => row.BestViablePrice).ToArray());
+        AcquireQuoteViewModel[] highQuotes = Assert.Single(model.Rows[1].Stations).Quotes.ToArray();
+        Assert.True(highQuotes.Single(quote => quote.Code == "PER").IsUnavailable);
+        Assert.False(highQuotes.Single(quote => quote.Code == "GLD").IsUnavailable);
+        Assert.All(
+            model.Rows[1].Systems.SelectMany(system => system.Bodies),
+            body => Assert.Contains(body.Tags, tag => tag.Code == "GLD" && tag.MatchesStation)
+        );
+        Assert.Contains(
+            model.Rows[0].Systems.SelectMany(system => system.Bodies),
+            body => body.Tags.Any(tag => tag.Code == "PER" && tag.MatchesStation)
+        );
+        Assert.Equal("#8BC34A", new SurfaceBodyTag("PER", true).ColorHex);
+        Assert.Equal("#8BC34A", highQuotes.Single(quote => quote.Code == "PER").ColorHex);
+
+        model.ResultLimit = 1;
+        await model.SearchAsync();
+
+        Assert.Equal("Viable Sell", Assert.Single(model.Rows).Target);
+    }
+
+    [Fact]
+    public async Task EveryQuotedMaterialGetsAVisibleBodyEvenWhenItAppearsOnTheNextSpanshPage()
+    {
+        using var handler = new SurfaceHandler { Mode = "paged" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Sol";
+        model.Materials.Add("Any");
+
+        await model.SearchAsync();
+
+        SurfaceSellRowViewModel row = Assert.Single(model.Rows);
+        Assert.Equal(2, handler.BodyPages);
+        Assert.Equal(30, row.Systems.Sum(system => system.Bodies.Count));
+        Assert.Contains(row.Systems.SelectMany(system => system.Bodies), body => body.Codes.Contains("PER"));
+        Assert.All(Assert.Single(row.Stations).Quotes, quote => Assert.False(quote.IsUnavailable));
+    }
+
+    [Fact]
+    public async Task LandingPadAndDemandFilterSellStationsBeforeBodySearch()
+    {
+        using var handler = new SurfaceHandler { Mode = "pad-demand" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Sol";
+        model.Materials.Add(Material);
+        model.MinimumDemand = 900;
+        model.MaximumDemand = 1_500;
+        model.PadSize = "L";
+
+        await model.SearchAsync();
+
+        Assert.Equal("Large Port", Assert.Single(Assert.Single(model.Rows).Stations).Name);
+        Assert.Equal("Large Sell", handler.BodyReference);
+
+        model.PadSize = "M";
+        await model.SearchAsync();
+
+        Assert.Equal("Medium Port", Assert.Single(Assert.Single(model.Rows).Stations).Name);
+        Assert.Equal("Medium Sell", handler.BodyReference);
+
+        model.MaximumDemand = 500;
+        await model.SearchAsync();
+
+        Assert.Empty(model.Rows);
+        Assert.Contains("No sell station matches", model.Status);
     }
 
     [Fact]
@@ -73,6 +259,7 @@ public sealed class SurfaceMiningSearchViewModelTests
         using SurfaceMiningSearchViewModel model = Create(handler);
         model.Reference = "Sol";
         model.Materials.Add(Material);
+        model.Materials.Add("Gold");
         var notes = new List<string>();
         model.UseDiagnosticLog(notes.Add);
 
@@ -89,6 +276,96 @@ public sealed class SurfaceMiningSearchViewModelTests
 
         Assert.Contains("Request failed. Try again.", priced.Status);
         Assert.True(priced.HasRows);
+    }
+
+    [Fact]
+    public async Task NoBodiesExplainTheEmptyResult()
+    {
+        using var handler = new SurfaceHandler { Mode = "no-bodies" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Materials.Add("Monazite");
+
+        await model.SearchAsync();
+
+        Assert.False(model.HasRows);
+        Assert.Contains("No sell station has a matching surface mining body", model.Status);
+    }
+
+    [Fact]
+    public async Task EmptyBodiesStopAtTheRequestBudget()
+    {
+        using var handler = new SurfaceHandler { Mode = "reserve-stress" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Materials.Add("Monazite");
+        model.ResultLimit = 99;
+
+        await model.SearchAsync();
+
+        Assert.Equal(40, handler.BodyPages);
+        Assert.Equal(0, handler.ImportRequests);
+        Assert.Equal(5, model.ResultLimit);
+        Assert.False(model.HasRows);
+        Assert.Contains("request limit", model.Status);
+    }
+
+    [Fact]
+    public async Task CompactArdentPericlaseNameMatchesTheSelectedSurfaceMaterial()
+    {
+        using var handler = new SurfaceHandler { Mode = "compact-periclase" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Radius = 214;
+        model.MaximumDemand = 90_000;
+        model.PadSize = "Any";
+        model.Materials.Add("Periclase Dunite");
+
+        await model.SearchAsync();
+
+        SurfaceSellRowViewModel row = Assert.Single(model.Rows);
+        Assert.Equal("Barnard's Star", row.Target);
+        Assert.Equal("PER", Assert.Single(Assert.Single(row.Stations).Quotes).Code);
+        Assert.Contains(Assert.Single(row.Systems).Bodies, body => body.Codes.Contains("PER"));
+        Assert.Contains("/commodity/name/periclasedunite/nearby/imports", handler.MarketPath, StringComparison.Ordinal);
+        Assert.Contains("maxDistance=214", handler.MarketQuery, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SparseBodiesCanCheckBeyondTenSellSystemsWithinThePageBudget()
+    {
+        using var handler = new SurfaceHandler { Mode = "reserve-stress-positive" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Materials.Add("Monazite");
+        model.ResultLimit = 5;
+
+        await model.SearchAsync();
+
+        Assert.False(model.HasRows);
+        Assert.Equal(40, handler.BodyPages);
+        Assert.Equal(0, handler.ImportRequests);
+        Assert.Contains("checking the highest-paying", model.Status, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("40 Spansh body pages", model.Status, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SurfaceSearchNeverSendsReserveFilterAtFiveHundredLightYears()
+    {
+        using var handler = new SurfaceHandler { Mode = "reserve-stress" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Radius = 500;
+        model.Materials.Add("Monazite");
+
+        await model.SearchAsync();
+
+        Assert.Empty(model.Rows);
+        Assert.Equal(40, handler.BodyPages);
+        Assert.True(handler.FirstBodyRequestHadDistance);
+        Assert.False(handler.FirstBodyRequestHadReserve);
+        Assert.Equal(0, handler.ImportRequests);
+        Assert.Contains("request limit", model.Status, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -122,6 +399,13 @@ public sealed class SurfaceMiningSearchViewModelTests
     {
         public string Mode { get; set; } = "ok";
         public int Requests { get; private set; }
+        public string BodyReference { get; private set; } = "";
+        public int BodyPages { get; private set; }
+        public bool FirstBodyRequestHadDistance { get; private set; }
+        public bool FirstBodyRequestHadReserve { get; private set; }
+        public int ImportRequests { get; private set; }
+        public string MarketPath { get; private set; } = "";
+        public string MarketQuery { get; private set; } = "";
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -144,6 +428,118 @@ public sealed class SurfaceMiningSearchViewModelTests
 
             if (path.Contains("bodies/search", StringComparison.Ordinal))
             {
+                using var bodyRequest = System.Text.Json.JsonDocument.Parse(
+                    await request.Content!.ReadAsStringAsync(cancellationToken)
+                );
+                BodyReference = bodyRequest.RootElement.GetProperty("reference_system").GetString() ?? "";
+                if (BodyPages == 0)
+                {
+                    FirstBodyRequestHadDistance = bodyRequest
+                        .RootElement.GetProperty("filters")
+                        .TryGetProperty("distance", out _);
+                    FirstBodyRequestHadReserve = bodyRequest
+                        .RootElement.GetProperty("filters")
+                        .TryGetProperty("reserve_level", out _);
+                }
+                BodyPages++;
+                if (Mode == "paged")
+                {
+                    int page = bodyRequest.RootElement.GetProperty("page").GetInt32();
+                    if (page == 1)
+                    {
+                        return Json(
+                            """{"results":[{"name":"Periclase Miner 1","system_name":"Periclase Miner","subtype":"Rocky body","distance":99,"volcanism_type":"Minor Metallic Magma","parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DA) Star"}]}]}"""
+                        );
+                    }
+
+                    return Json(
+                        JsonSerializer.Serialize(
+                            new
+                            {
+                                results = Enumerable
+                                    .Range(1, 100)
+                                    .Select(index => new
+                                    {
+                                        name = $"Gold Miner {index}",
+                                        system_name = "Gold Miner",
+                                        subtype = "Rocky body",
+                                        distance = index * 0.5,
+                                    }),
+                            }
+                        )
+                    );
+                }
+                if (Mode == "reserve-stress-positive" && BodyReference == "Timbalderis")
+                {
+                    return Json(
+                        """{"results":[{"name":"Viable Somewhere 1","system_name":"Viable Somewhere","subtype":"Rocky body","reserve_level":"Pristine","distance":50}]}"""
+                    );
+                }
+
+                if (Mode is "no-bodies" or "reserve-stress" or "reserve-stress-positive")
+                {
+                    return Json("""{"results":[]}""");
+                }
+
+                if (Mode is "ranked" or "paged")
+                {
+                    return Json(
+                        BodyReference switch
+                        {
+                            "Viable Sell" =>
+                                """{"results":[{"name":"Periclase Miner 1","system_name":"Periclase Miner","subtype":"Rocky body","distance":8,"volcanism_type":"Metallic Magma","parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DB) Star"}]}]}""",
+                            "High Sell" =>
+                                """{"results":[{"name":"Gold Miner 1","system_name":"Gold Miner","subtype":"Rocky body","distance":4}]}""",
+                            _ =>
+                                """{"results":[{"name":"Icy Miner 1","system_name":"Icy Miner","subtype":"Icy body","distance":3}]}""",
+                        }
+                    );
+                }
+
+                if (Mode == "many-systems")
+                {
+                    return Json(
+                        """
+                        {"results":[
+                          {"name":"Alpha 1","system_name":"Alpha","subtype":"Rocky body","distance":1},
+                          {"name":"Alpha 2","system_name":"Alpha","subtype":"Rocky body","distance":1},
+                          {"name":"Beta 1","system_name":"Beta","subtype":"Rocky body","distance":2},
+                          {"name":"Gamma 1","system_name":"Gamma","subtype":"Rocky body","distance":3},
+                          {"name":"Delta 1","system_name":"Delta","subtype":"Rocky body","distance":4},
+                          {"name":"Epsilon 1","system_name":"Epsilon","subtype":"Rocky body","distance":5},
+                          {"name":"Zeta 1","system_name":"Zeta","subtype":"Rocky body","distance":6},
+                          {"name":"Eta 1","system_name":"Eta","subtype":"Rocky body","distance":7}
+                        ]}
+                        """
+                    );
+                }
+
+                if (Mode == "any")
+                {
+                    return Json(
+                        """
+                        {"results":[
+                          {"name":"Alpha 1","system_name":"Alpha","subtype":"Rocky body","distance":1,"volcanism_type":"Minor Metallic Magma","landmarks":[{"subtype":"Iron Magma Lava Spout"}]},
+                          {"name":"Beta 1","system_name":"Beta","subtype":"Icy body","distance":2}
+                        ]}
+                        """
+                    );
+                }
+
+                if (Mode == "imports-fail")
+                {
+                    return Json(
+                        """{"results":[{"name":"Alpha 1","system_name":"Alpha","subtype":"Metal-rich body","distance":4.2,"volcanism_type":"Minor Metallic Magma","landmarks":[{"subtype":"Iron Magma Lava Spout"}]}]}"""
+                    );
+                }
+
+                if (Mode == "compact-periclase")
+                {
+                    return Json(
+                        """{"results":[{"name":"Miner 1","system_name":"Miner","subtype":"Rocky body","distance":12,"volcanism_type":"Major Metallic Magma","parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DC) Star"}]}]}"""
+                    );
+                }
+
                 return Json(
                     """
                     {"results":[
@@ -157,9 +553,24 @@ public sealed class SurfaceMiningSearchViewModelTests
 
             if (path.Contains("/commodities/imports", StringComparison.Ordinal))
             {
+                ImportRequests++;
+                if (Mode == "ranked")
+                {
+                    return Json("[]");
+                }
                 if (Mode == "imports-fail")
                 {
                     return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                }
+
+                if (Mode == "any")
+                {
+                    string updated = DateTimeOffset.UtcNow.ToString("O");
+                    return Json(
+                        Markets(extra: true)[..^1]
+                            + ","
+                            + $$"""{"systemName":"Sell System","stationName":"Gold Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":180000,"demand":1000,"stock":10,"updatedAt":"{{updated}}","distance":12.4,"distanceToArrival":150,"marketId":9,"commodityName":"Low Temperature Diamonds"}]"""
+                    );
                 }
 
                 return Json(Markets(extra: true));
@@ -170,7 +581,181 @@ public sealed class SurfaceMiningSearchViewModelTests
                 return Json(Mode == "averages-bad" ? "{}" : """[{"commodityName":"Diamond","avgSellPrice":100000}]""");
             }
 
-            return Json(Markets(extra: false));
+            if (path.Contains("/nearby/imports", StringComparison.Ordinal))
+            {
+                MarketPath = path;
+                MarketQuery = request.RequestUri.Query;
+            }
+            if (Mode == "compact-periclase")
+            {
+                string updated = DateTimeOffset.UtcNow.ToString("O");
+                return Json(
+                    $$"""[{"systemName":"Barnard's Star","stationName":"Boston Base","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":925152,"demand":3784,"stock":0,"updatedAt":"{{updated}}","distance":74,"distanceToArrival":100,"marketId":1,"commodityName":"periclasedunite"}]"""
+                );
+            }
+
+            return Json(
+                Mode switch
+                {
+                    "pad-demand" => MarketsWithPads(),
+                    "ranked" => RankedMarkets(),
+                    "paged" => CoverageMarkets(),
+                    "no-bodies" => MonaziteMarket(),
+                    "reserve-stress" => ManyMonaziteMarkets(),
+                    "reserve-stress-positive" => ManyMonaziteMarkets(),
+                    _ => Markets(extra: false),
+                }
+            );
+        }
+
+        private static string ManyMonaziteMarkets()
+        {
+            string updated = DateTimeOffset.UtcNow.ToString("O");
+            return JsonSerializer.Serialize(
+                Enumerable
+                    .Range(1, 60)
+                    .Select(index => new
+                    {
+                        systemName = $"Sell {index}",
+                        stationName = $"Port {index}",
+                        stationType = "Coriolis",
+                        maxLandingPadSize = 3,
+                        sellPrice = 1_000_000 - index,
+                        demand = 1_000,
+                        stock = 0,
+                        updatedAt = updated,
+                        distance = (double)index,
+                        distanceToArrival = 100,
+                        marketId = index,
+                        commodityName = "Monazite",
+                    })
+            );
+        }
+
+        private static string MonaziteMarket()
+        {
+            string updated = DateTimeOffset.UtcNow.ToString("O");
+            return $$"""[{"systemName":"Sell System","stationName":"Gold Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":200000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":12.4,"distanceToArrival":150,"marketId":9,"commodityName":"Monazite"}]""";
+        }
+
+        private static string RankedMarkets()
+        {
+            string updated = DateTimeOffset.UtcNow.ToString("O");
+            return JsonSerializer.Serialize(
+                new[]
+                {
+                    new
+                    {
+                        systemName = "Unviable Sell",
+                        stationName = "No Mine Port",
+                        stationType = "Coriolis",
+                        maxLandingPadSize = 3,
+                        sellPrice = 1_200_000,
+                        demand = 1_000,
+                        stock = 0,
+                        updatedAt = updated,
+                        distance = 10.0,
+                        distanceToArrival = 100,
+                        marketId = 1,
+                        commodityName = "Periclase Dunite",
+                    },
+                    new
+                    {
+                        systemName = "High Sell",
+                        stationName = "High Port",
+                        stationType = "Coriolis",
+                        maxLandingPadSize = 3,
+                        sellPrice = 1_000_000,
+                        demand = 1_000,
+                        stock = 0,
+                        updatedAt = updated,
+                        distance = 20.0,
+                        distanceToArrival = 100,
+                        marketId = 2,
+                        commodityName = "Periclase Dunite",
+                    },
+                    new
+                    {
+                        systemName = "High Sell",
+                        stationName = "High Port",
+                        stationType = "Coriolis",
+                        maxLandingPadSize = 3,
+                        sellPrice = 1_100_000,
+                        demand = 1_000,
+                        stock = 0,
+                        updatedAt = updated,
+                        distance = 20.0,
+                        distanceToArrival = 100,
+                        marketId = 2,
+                        commodityName = "Gold",
+                    },
+                    new
+                    {
+                        systemName = "Viable Sell",
+                        stationName = "Viable Port",
+                        stationType = "Coriolis",
+                        maxLandingPadSize = 3,
+                        sellPrice = 850_000,
+                        demand = 1_000,
+                        stock = 0,
+                        updatedAt = updated,
+                        distance = 30.0,
+                        distanceToArrival = 100,
+                        marketId = 3,
+                        commodityName = "Periclase Dunite",
+                    },
+                }
+            );
+        }
+
+        private static string CoverageMarkets()
+        {
+            string updated = DateTimeOffset.UtcNow.ToString("O");
+            return JsonSerializer.Serialize(
+                new[]
+                {
+                    new
+                    {
+                        systemName = "Sell System",
+                        stationName = "Best Port",
+                        stationType = "Coriolis",
+                        maxLandingPadSize = 3,
+                        sellPrice = 1_000_000,
+                        demand = 1_000,
+                        stock = 0,
+                        updatedAt = updated,
+                        distance = 10.0,
+                        distanceToArrival = 100,
+                        marketId = 1,
+                        commodityName = "Periclase Dunite",
+                    },
+                    new
+                    {
+                        systemName = "Sell System",
+                        stationName = "Best Port",
+                        stationType = "Coriolis",
+                        maxLandingPadSize = 3,
+                        sellPrice = 400_000,
+                        demand = 1_000,
+                        stock = 0,
+                        updatedAt = updated,
+                        distance = 10.0,
+                        distanceToArrival = 100,
+                        marketId = 1,
+                        commodityName = "Gold",
+                    },
+                }
+            );
+        }
+
+        private static string MarketsWithPads()
+        {
+            string updated = DateTimeOffset.UtcNow.ToString("O");
+            return "["
+                + $$"""{"systemName":"Large Sell","stationName":"Large Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":200000,"demand":1000,"stock":10,"updatedAt":"{{updated}}","distance":12,"distanceToArrival":150,"marketId":9,"commodityName":"Diamond"}"""
+                + ","
+                + $$"""{"systemName":"Medium Sell","stationName":"Medium Port","stationType":"Outpost","maxLandingPadSize":2,"sellPrice":300000,"demand":1200,"stock":10,"updatedAt":"{{updated}}","distance":8,"distanceToArrival":40,"marketId":4,"commodityName":"Diamond"}"""
+                + "]";
         }
 
         private static string Markets(bool extra)

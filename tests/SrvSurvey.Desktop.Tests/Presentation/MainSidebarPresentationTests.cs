@@ -116,6 +116,68 @@ public sealed class MainSidebarPresentationTests
         }
     }
 
+    [AvaloniaFact]
+    public void MiningResultsWidthToggleFitsBothWorkspacesAndRestoresAfterManualResize()
+    {
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "mine-map");
+        viewModel.MineMap.SelectedTab = 4;
+        var window = new MainWindow(viewModel);
+        try
+        {
+            window.Show();
+            Layout(window);
+            Button expand = Assert.IsType<Button>(window.FindControl<Button>("MiningWidthExpandButton"));
+            Button restore = Assert.IsType<Button>(window.FindControl<Button>("MiningWidthRestoreButton"));
+            ScrollViewer surfaceResults = window
+                .GetVisualDescendants()
+                .OfType<ScrollViewer>()
+                .Single(scroller => scroller.Name == "SurfaceSearchResultsScroller");
+            double defaultWidth = window.Bounds.Width;
+            Assert.True(expand.IsEffectivelyVisible);
+            Assert.True(surfaceResults.Extent.Width > surfaceResults.Viewport.Width);
+
+            expand.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Layout(window);
+            Assert.True(window.Bounds.Width > defaultWidth);
+            Assert.True(surfaceResults.Extent.Width <= surfaceResults.Viewport.Width + 3);
+            Assert.True(restore.IsEffectivelyVisible);
+
+            window.Width += 100;
+            Layout(window);
+            Assert.True(restore.IsEffectivelyVisible);
+            restore.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Layout(window);
+            Assert.InRange(Math.Abs(window.Bounds.Width - defaultWidth), 0, 1);
+
+            viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "mining");
+            viewModel.MiningWorkspace.SelectedTab = 3;
+            Layout(window);
+            ScrollViewer powerplayResults = window
+                .GetVisualDescendants()
+                .OfType<ScrollViewer>()
+                .Single(scroller => scroller.Name == "ResultsScroller");
+            Assert.True(expand.IsEffectivelyVisible);
+            expand.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Layout(window);
+            Assert.True(powerplayResults.Extent.Width <= powerplayResults.Viewport.Width + 3);
+            Assert.True(restore.IsEffectivelyVisible);
+            restore.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Layout(window);
+            Assert.InRange(Math.Abs(window.Bounds.Width - defaultWidth), 0, 1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static void Layout(Window window)
+    {
+        using WriteableBitmap? frame = window.CaptureRenderedFrame();
+        Assert.NotNull(frame);
+    }
+
     private static void Capture(Window window, string theme, string state)
     {
         using WriteableBitmap? frame = window.CaptureRenderedFrame();

@@ -14,7 +14,6 @@ public sealed class MiningWorkspaceViewModelTests
         try
         {
             using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory));
-            Assert.Equal("Any", vm.Search.PledgedPower);
             var context = new JournalSessionState();
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             JournalEventEnvelope[] entries =

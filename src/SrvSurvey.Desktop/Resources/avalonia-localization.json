@@ -65,10 +65,6 @@
       "translation": ", Ruinen{0} {1}"
     },
     {
-      "source": ", {0} reserve",
-      "translation": ", {0} Reserve"
-    },
-    {
       "source": "-1 asteroid",
       "translation": "-1 Asteroid"
     },
@@ -1153,6 +1149,10 @@
       "translation": "ALT {0}"
     },
     {
+      "source": "ALU",
+      "translation": "ALU"
+    },
+    {
       "source": "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
       "translation": "ALVR unterstützt Windows und Linux, aber sein Linux-Setup und SteamVR unter Linux sind experimentell; Elite läuft zusätzlich durch Proton."
     },
@@ -2049,6 +2049,10 @@
       "translation": "Beliebiger Warenname"
     },
     {
+      "source": "Any surface material",
+      "translation": "Jedes Oberflächenmaterial"
+    },
+    {
       "source": "AppImage manual update",
       "translation": "Manuelle Aktualisierung von AppImage"
     },
@@ -2234,7 +2238,23 @@
     },
     {
       "source": "Ardent",
-      "translation": "Leidenschaftlich"
+      "translation": "Ardent"
+    },
+    {
+      "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
+      "translation": "Ardent-Tagespreise sind nicht verfügbar. Der Katalog-Snapshot wird angezeigt."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC); some quotes could not be refreshed. Missing quotes use the older report or catalog.",
+      "translation": "Heiße Marktpreise für {0}-Materialien (aktuellste Notierung {1} UTC); Einige Zitate konnten nicht aktualisiert werden. Für fehlende Zitate verwenden Sie den älteren Bericht oder Katalog."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Heiße Marktpreise für {0}-Materialien (aktueller Kurs {1} UTC; überprüft {2} UTC). Für fehlende Zitate verwenden Sie den älteren Bericht oder Katalog."
+    },
+    {
+      "source": "Ardent/Spansh fallback",
+      "translation": "Ardent/Spansh Fallback"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
@@ -2813,6 +2833,10 @@
       "translation": "BAR"
     },
     {
+      "source": "BAU",
+      "translation": "BAU"
+    },
+    {
       "source": "BC3",
       "translation": "BC3"
     },
@@ -2823,6 +2847,14 @@
     {
       "source": "BEARING",
       "translation": "LAGER"
+    },
+    {
+      "source": "BEN",
+      "translation": "BEN"
+    },
+    {
+      "source": "BER",
+      "translation": "BER"
     },
     {
       "source": "BEST",
@@ -2855,6 +2887,10 @@
     {
       "source": "BIOLOGY PRESENTATION",
       "translation": "BIOLOGIE-PRÄSENTATION"
+    },
+    {
+      "source": "BIS",
+      "translation": "BIS"
     },
     {
       "source": "BLOCKED",
@@ -2935,6 +2971,14 @@
     {
       "source": "BOXELS · MASS CODES {0}",
       "translation": "BOXEL · MASSENCODES {0}"
+    },
+    {
+      "source": "BRO",
+      "translation": "Bruder"
+    },
+    {
+      "source": "BRT",
+      "translation": "BRT"
     },
     {
       "source": "BUILD TYPE",
@@ -3087,6 +3131,10 @@
     {
       "source": "Bertrandite",
       "translation": "Bertrandit"
+    },
+    {
+      "source": "Best Sell Station",
+      "translation": "Bestseller-Station"
     },
     {
       "source": "Beta",
@@ -3465,8 +3513,8 @@
       "translation": "Körperschutz"
     },
     {
-      "source": "Body availability follows the Surface Hunt location reference. Sell prices retain the community snapshot and can change.",
-      "translation": "Die Körperverfügbarkeit richtet sich nach der Standortreferenz von Surface Hunt. Verkaufspreise behalten den Community-Snapshot bei und können sich ändern."
+      "source": "Body availability follows the Surface Hunt location reference.",
+      "translation": "Die Körperverfügbarkeit richtet sich nach der Standortreferenz von Surface Hunt."
     },
     {
       "source": "Body baseline {0} K",
@@ -3889,6 +3937,10 @@
       "translation": "DURCHKLICKEN"
     },
     {
+      "source": "CLT",
+      "translation": "CLT"
+    },
+    {
       "source": "CMD",
       "translation": "CMD"
     },
@@ -3915,6 +3967,10 @@
     {
       "source": "CMM composites",
       "translation": "CMM-Verbundwerkstoffe"
+    },
+    {
+      "source": "COB",
+      "translation": "COB"
     },
     {
       "source": "CODEX BINGO",
@@ -4043,6 +4099,10 @@
     {
       "source": "CREDIT VALUE",
       "translation": "KREDITWERT"
+    },
+    {
+      "source": "CRY",
+      "translation": "WEINEN"
     },
     {
       "source": "CSV",
@@ -4513,6 +4573,10 @@
       "translation": "Katalog"
     },
     {
+      "source": "Catalog prices shown while Ardent market quotes load.",
+      "translation": "Die Katalogpreise werden angezeigt, während die Marktangebote von Ardent geladen werden."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Kataloge haben diese Sitzung aktualisiert:"
     },
@@ -4643,6 +4707,10 @@
     {
       "source": "Checking for other running SrvSurvey instances...",
       "translation": "Suche nach anderen laufenden SrvSurvey-Instanzen ..."
+    },
+    {
+      "source": "Checking sell systems {0}/{1}…",
+      "translation": "Überprüfung der Verkaufssysteme {0}/{1}…"
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -6993,6 +7061,14 @@
       "translation": "Sommerzeit"
     },
     {
+      "source": "DST REF",
+      "translation": "DST REF"
+    },
+    {
+      "source": "DST SELL",
+      "translation": "DST VERKAUFEN"
+    },
+    {
       "source": "Danger",
       "translation": "Gefahr"
     },
@@ -8821,6 +8897,10 @@
       "translation": "Erweitern Sie die Option, um Tastatur- oder Controller-Eingaben Aktionen zuzuweisen."
     },
     {
+      "source": "Expand window to fit mining results",
+      "translation": "Erweitern Sie das Fenster, um es den Mining-Ergebnissen anzupassen"
+    },
+    {
       "source": "Expansion",
       "translation": "Erweiterung"
     },
@@ -9557,10 +9637,6 @@
       "translation": "Finden Sie Hotspots für diesen Artikel"
     },
     {
-      "source": "Find landable surface deposits",
-      "translation": "Finden Sie landbare Oberflächenlagerstätten"
-    },
-    {
       "source": "Find last visit",
       "translation": "Finden Sie den letzten Besuch"
     },
@@ -10201,6 +10277,10 @@
       "translation": "Zukünftige Screenshots werden kein eingebettetes Banner enthalten"
     },
     {
+      "source": "GAL",
+      "translation": "GAL"
+    },
+    {
       "source": "GALACTIC POSITION",
       "translation": "galaktische Position"
     },
@@ -10265,12 +10345,20 @@
       "translation": "GGWL"
     },
     {
+      "source": "GLM",
+      "translation": "GLM"
+    },
+    {
       "source": "GLOBAL PROGRESS",
       "translation": "GLOBALER FORTSCHRITT"
     },
     {
       "source": "GOAL #{0}",
       "translation": "ZIEL #{0}"
+    },
+    {
+      "source": "GOS",
+      "translation": "GOS"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -11009,6 +11097,10 @@
       "translation": "HAB"
     },
     {
+      "source": "HAF",
+      "translation": "HAF"
+    },
+    {
       "source": "HAVE",
       "translation": "HABEN"
     },
@@ -11577,6 +11669,10 @@
       "translation": "UMFRAGEPUNKT IDENTIFIZIEREN"
     },
     {
+      "source": "IDT",
+      "translation": "IDT"
+    },
+    {
       "source": "IMAGE X",
       "translation": "BILD X"
     },
@@ -11599,6 +11695,10 @@
     {
       "source": "INACTIVE",
       "translation": "INAKTIV"
+    },
+    {
+      "source": "IND",
+      "translation": "IND"
     },
     {
       "source": "INDEX",
@@ -12661,6 +12761,10 @@
       "translation": "LABOR"
     },
     {
+      "source": "LAN",
+      "translation": "LAN"
+    },
+    {
       "source": "LANDABLE",
       "translation": "LANDBAR"
     },
@@ -12707,6 +12811,14 @@
     {
       "source": "LAYOUT",
       "translation": "LAYOUT"
+    },
+    {
+      "source": "LEP",
+      "translation": "LEP"
+    },
+    {
+      "source": "LHY",
+      "translation": "LHY"
     },
     {
       "source": "LIGHT",
@@ -13697,6 +13809,14 @@
       "translation": "MAX CR/T"
     },
     {
+      "source": "MAX SELL CR/T",
+      "translation": "MAX SELL CR/T"
+    },
+    {
+      "source": "MCL",
+      "translation": "MCL"
+    },
+    {
       "source": "MEASURED MASTER POINT",
       "translation": "Gemessener Masterpunkt"
     },
@@ -13765,8 +13885,16 @@
       "translation": "MODUL"
     },
     {
+      "source": "MOI",
+      "translation": "MOI"
+    },
+    {
       "source": "MR",
       "translation": "HERR"
+    },
+    {
+      "source": "MUS",
+      "translation": "MUS"
     },
     {
       "source": "Magenta",
@@ -15689,6 +15817,14 @@
       "translation": "Vom zuletzt angedockten Standort sind keine Marktdaten verfügbar."
     },
     {
+      "source": "No matching Spansh body within the search radius",
+      "translation": "Kein passender Spansh Körper im Suchradius"
+    },
+    {
+      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
+      "translation": "Bei der Überprüfung der bestbezahlten Verkaufsstellen wurden keine passenden Leichen gefunden. Die Suche wurde bei Erreichen des Anforderungslimits ({0} Spansh Textseiten) gestoppt. Verringern Sie den Abstand oder wählen Sie ein Material aus."
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Es sind noch keine passenden bestückten Module verfügbar. Es ist ein vollständiges Loadout-Ereignis erforderlich. Gespeicherte Aufgaben bleiben bearbeitbar."
     },
@@ -15855,6 +15991,14 @@
     {
       "source": "No selectable mapped object is available.",
       "translation": "Es ist kein auswählbares zugeordnetes Objekt verfügbar."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the distance.",
+      "translation": "Keine Verkaufsstation verfügt in der Entfernung über einen entsprechenden Tagebaustandort."
+    },
+    {
+      "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
+      "translation": "Keine Verkaufsstation entspricht dem ausgewählten Material, der Nachfrage und dem Landeplatz innerhalb der Entfernung."
     },
     {
       "source": "No session log file is available.",
@@ -17285,6 +17429,10 @@
       "translation": "PAD-VERRIEGELUNG IN"
     },
     {
+      "source": "PAI",
+      "translation": "PAI"
+    },
+    {
       "source": "PASS-THROUGH UNAVAILABLE",
       "translation": "PASS-THROUGH NICHT VERFÜGBAR"
     },
@@ -17295,10 +17443,6 @@
     {
       "source": "PATH",
       "translation": "WEG"
-    },
-    {
-      "source": "PEAK SELL SNAPSHOT",
-      "translation": "SPITZENVERKAUFS-SCHNAPPSCHUSS"
     },
     {
       "source": "PIN",
@@ -17335,6 +17479,10 @@
     {
       "source": "POWER",
       "translation": "LEISTUNG"
+    },
+    {
+      "source": "PRA",
+      "translation": "PRA"
     },
     {
       "source": "PREDICTED",
@@ -17387,6 +17535,10 @@
     {
       "source": "PROJECT NAME",
       "translation": "Projektname"
+    },
+    {
+      "source": "PYR",
+      "translation": "PYR"
     },
     {
       "source": "Pad 02 | 164 m",
@@ -18909,6 +19061,10 @@
       "translation": "RUINEN-RELIKT-ÜBERGANG"
     },
     {
+      "source": "RUT",
+      "translation": "FURCHE"
+    },
+    {
       "source": "Radar size (0–4)",
       "translation": "Radargröße (0–4)"
     },
@@ -20417,6 +20573,10 @@
       "translation": "Sicherung wiederherstellen…"
     },
     {
+      "source": "Restore default window width",
+      "translation": "Standardfensterbreite wiederherstellen"
+    },
+    {
       "source": "Restore defaults",
       "translation": "Standardeinstellungen wiederherstellen"
     },
@@ -20971,6 +21131,10 @@
     {
       "source": "R−",
       "translation": "R−"
+    },
+    {
+      "source": "S/M",
+      "translation": "S/M"
     },
     {
       "source": "S256",
@@ -22049,10 +22213,6 @@
       "translation": "Durchsuchen Sie Anleitungen, Einstellungen, Symbole oder Workflows"
     },
     {
-      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
-      "translation": "Durchsuchen Sie landbare Körper in der Nähe des Referenzsystems nach den von Ihnen ausgewählten Oberflächenmaterialien. Das Ziel ist die Station innerhalb dieser Entfernung, die am meisten zahlt."
-    },
-    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Durchsuchen Sie Verfahrensfelder, verfolgen Sie jedes generierte System und wählen Sie aus, was als vollständig gilt."
     },
@@ -22071,6 +22231,10 @@
     {
       "source": "Search settings",
       "translation": "Sucheinstellungen"
+    },
+    {
+      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
+      "translation": "Die Suche wurde bei Erreichen des Anforderungslimits ({0} Spansh Textseiten) gestoppt. Verringern Sie den Abstand für mehr Abdeckung."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -22391,6 +22555,10 @@
     {
       "source": "SelectedWeapon: {0} / {1}",
       "translation": "Ausgewählte Waffe: {0} / {1}"
+    },
+    {
+      "source": "Sell System",
+      "translation": "Verkaufssystem"
     },
     {
       "source": "Sell mined cargo",
@@ -22917,6 +23085,10 @@
       "translation": "Zielführung für Biosignale von Canonn anzeigen"
     },
     {
+      "source": "Show all Systems",
+      "translation": "Alle Systeme anzeigen"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Alle Massencode-{0}-Boxel anzeigen"
     },
@@ -22979,6 +23151,10 @@
     {
       "source": "Show factions in gal-map",
       "translation": "Fraktionen in Gal-Map anzeigen"
+    },
+    {
+      "source": "Show fewer Systems",
+      "translation": "Weniger Systeme anzeigen"
     },
     {
       "source": "Show flight warnings",
@@ -23229,6 +23405,10 @@
       "translation": "Zeigt verzögerte Systeme {0}–{1} von {2} ({3})."
     },
     {
+      "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Zeigt gespeicherte Ardent-Marktpreise für {0}-Materialien an (aktuellstes Angebot {1} UTC; geprüftes {2} UTC). Für fehlende Zitate verwenden Sie den älteren Bericht oder Katalog."
+    },
+    {
       "source": "Showing systems {0}–{1} of {2} (descending).",
       "translation": "Zeigt die Systeme {0}–{1} von {2} (absteigend)."
     },
@@ -23421,6 +23601,10 @@
       "translation": "Klein"
     },
     {
+      "source": "Small / medium pads",
+      "translation": "Kleine / mittlere Pads"
+    },
+    {
       "source": "Small circles (~100 m)",
       "translation": "Kleine Kreise (~100 m)"
     },
@@ -23451,6 +23635,10 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Einige Körper benötigen noch vollständige Planeten- oder Mutterstern-Scans."
+    },
+    {
+      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
+      "translation": "Bei einigen Körpersuchen wurde das Seitenlimit erreicht; Unübertroffene Preise wurden nicht gekennzeichnet."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -25133,6 +25321,10 @@
       "translation": "T07"
     },
     {
+      "source": "TAF",
+      "translation": "TAF"
+    },
+    {
       "source": "TARGET",
       "translation": "ZIEL"
     },
@@ -25179,6 +25371,10 @@
     {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "DIE KATALOGDETAILS DIESER WEBSITE"
+    },
+    {
+      "source": "THL",
+      "translation": "THL"
     },
     {
       "source": "TIME",
@@ -28653,8 +28849,8 @@
       "translation": "Nutzen Sie den Biosignalradius"
     },
     {
-      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity. Prices are a community snapshot and can change.",
-      "translation": "Nutzen Sie Körpertyp, Geologie und Sternhinweise, um die Suche nach einem Rohstoff aus dem Tagebau einzugrenzen. Die Preise sind eine Momentaufnahme der Community und können sich ändern."
+      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity.",
+      "translation": "Nutzen Sie Körpertyp, Geologie und Sternhinweise, um die Suche nach einem Rohstoff aus dem Tagebau einzugrenzen."
     },
     {
       "source": "Use boost on B → C",
@@ -28911,6 +29107,10 @@
     {
       "source": "VOLCANISM",
       "translation": "Vulkanismus"
+    },
+    {
+      "source": "VOP",
+      "translation": "VOP"
     },
     {
       "source": "VOXSTELLAR",
@@ -30669,6 +30869,10 @@
       "translation": "Daten"
     },
     {
+      "source": "dd MMM yyyy HH:mm",
+      "translation": "tt MMM jjjj HH:mm"
+    },
+    {
       "source": "de",
       "translation": "de"
     },
@@ -32153,6 +32357,14 @@
       "translation": "Sekunden"
     },
     {
+      "source": "sell systems, best viable price first. Best sell from",
+      "translation": "Systeme verkaufen, bestmöglicher Preis zuerst. Best sell from"
+    },
+    {
+      "source": "sell systems, daily commodity value order. Best sell from",
+      "translation": "Verkaufssysteme, tägliche Warenwertbestellung. Bester Verkauf von"
+    },
+    {
       "source": "sensor",
       "translation": "Sensor"
     },
@@ -33269,8 +33481,8 @@
       "translation": "{0} bekannte Arten"
     },
     {
-      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
-      "translation": "{0} landbare Aufbauten für {1}. Bestseller von {2}.{3}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
+      "translation": "{0} landbare Aufbauten für {1}. {2}{3}{4}.{5}{6}{7}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -33745,10 +33957,6 @@
       "translation": "{0} · {1} Einträge"
     },
     {
-      "source": "{0} · {1} ly",
-      "translation": "{0} · {1} ly"
-    },
-    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} erfasst · höchstes Suffix {2} · {3}"
     },
@@ -33793,8 +34001,8 @@
       "translation": "{0}: {1} t"
     },
     {
-      "source": "{0}: {1}{2}, {3} g, {4} ls",
-      "translation": "{0}: {1}{2}, {3} g, {4} ls"
+      "source": "{0}: {1}, {2} g, {3} ls",
+      "translation": "{0}: {1}, {2} g, {3} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -34069,10 +34277,6 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", Ruinas{0} {1}"
-    },
-    {
-      "source": ", {0} reserve",
-      "translation": ", reserva {0}"
     },
     {
       "source": "-1 asteroid",
@@ -35159,6 +35363,10 @@
       "translation": "ALT {0}"
     },
     {
+      "source": "ALU",
+      "translation": "ALU"
+    },
+    {
       "source": "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
       "translation": "ALVR es compatible con Windows y Linux, pero su configuración de Linux y SteamVR en Linux son experimentales; Elite también pasa por Proton."
     },
@@ -36055,6 +36263,10 @@
       "translation": "Cualquier nombre de producto"
     },
     {
+      "source": "Any surface material",
+      "translation": "Cualquier material de superficie"
+    },
+    {
       "source": "AppImage manual update",
       "translation": "Actualización manual de AppImage"
     },
@@ -36240,7 +36452,23 @@
     },
     {
       "source": "Ardent",
-      "translation": "Ardiente"
+      "translation": "Ardent"
+    },
+    {
+      "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
+      "translation": "Los precios diarios de Ardent no están disponibles. Se muestra la instantánea del catálogo."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC); some quotes could not be refreshed. Missing quotes use the older report or catalog.",
+      "translation": "Precios de mercado ardientes para los materiales {0} (última cotización {1} UTC); algunas citas no se pudieron actualizar. Las citas que faltan utilizan el informe o catálogo anterior."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Precios de mercado ardientes para materiales {0} (última cotización {1} UTC; verificado {2} UTC). Las citas que faltan utilizan el informe o catálogo anterior."
+    },
+    {
+      "source": "Ardent/Spansh fallback",
+      "translation": "Alternativa de Ardent/Spansh"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
@@ -36819,6 +37047,10 @@
       "translation": "BAR"
     },
     {
+      "source": "BAU",
+      "translation": "BAU"
+    },
+    {
       "source": "BC3",
       "translation": "BC3"
     },
@@ -36829,6 +37061,14 @@
     {
       "source": "BEARING",
       "translation": "COJINETE"
+    },
+    {
+      "source": "BEN",
+      "translation": "ben"
+    },
+    {
+      "source": "BER",
+      "translation": "BER"
     },
     {
       "source": "BEST",
@@ -36861,6 +37101,10 @@
     {
       "source": "BIOLOGY PRESENTATION",
       "translation": "PRESENTACIÓN DE BIOLOGÍA"
+    },
+    {
+      "source": "BIS",
+      "translation": "BIS"
     },
     {
       "source": "BLOCKED",
@@ -36941,6 +37185,14 @@
     {
       "source": "BOXELS · MASS CODES {0}",
       "translation": "CAJAS · CÓDIGOS DE MASA {0}"
+    },
+    {
+      "source": "BRO",
+      "translation": "HERMANO"
+    },
+    {
+      "source": "BRT",
+      "translation": "BRT"
     },
     {
       "source": "BUILD TYPE",
@@ -37093,6 +37345,10 @@
     {
       "source": "Bertrandite",
       "translation": "bertrandita"
+    },
+    {
+      "source": "Best Sell Station",
+      "translation": "Estación más vendida"
     },
     {
       "source": "Beta",
@@ -37471,8 +37727,8 @@
       "translation": "Protectorado del cuerpo"
     },
     {
-      "source": "Body availability follows the Surface Hunt location reference. Sell prices retain the community snapshot and can change.",
-      "translation": "La disponibilidad del cuerpo sigue la referencia de ubicación de Surface Hunt. Los precios de venta conservan la imagen de la comunidad y pueden cambiar."
+      "source": "Body availability follows the Surface Hunt location reference.",
+      "translation": "La disponibilidad del cuerpo sigue la referencia de ubicación de Surface Hunt."
     },
     {
       "source": "Body baseline {0} K",
@@ -37895,6 +38151,10 @@
       "translation": "HACER CLIC"
     },
     {
+      "source": "CLT",
+      "translation": "CLT"
+    },
+    {
       "source": "CMD",
       "translation": "CMD"
     },
@@ -37921,6 +38181,10 @@
     {
       "source": "CMM composites",
       "translation": "Compuestos de MMC"
+    },
+    {
+      "source": "COB",
+      "translation": "MAZORCA"
     },
     {
       "source": "CODEX BINGO",
@@ -38049,6 +38313,10 @@
     {
       "source": "CREDIT VALUE",
       "translation": "VALOR DEL CRÉDITO"
+    },
+    {
+      "source": "CRY",
+      "translation": "LLORAR"
     },
     {
       "source": "CSV",
@@ -38519,6 +38787,10 @@
       "translation": "Catálogo"
     },
     {
+      "source": "Catalog prices shown while Ardent market quotes load.",
+      "translation": "Los precios del catálogo se muestran mientras se cargan las cotizaciones del mercado Ardent."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Catálogos actualizados esta sesión:"
     },
@@ -38649,6 +38921,10 @@
     {
       "source": "Checking for other running SrvSurvey instances...",
       "translation": "Comprobando otras instancias SrvSurvey en ejecución..."
+    },
+    {
+      "source": "Checking sell systems {0}/{1}…",
+      "translation": "Comprobando los sistemas de venta {0}/{1}…"
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -40999,6 +41275,14 @@
       "translation": "horario de verano"
     },
     {
+      "source": "DST REF",
+      "translation": "REFERENCIA DE DST"
+    },
+    {
+      "source": "DST SELL",
+      "translation": "VENTA DE DST"
+    },
+    {
       "source": "Danger",
       "translation": "Peligro"
     },
@@ -42827,6 +43111,10 @@
       "translation": "Expanda para asignar entradas de teclado o controlador a acciones."
     },
     {
+      "source": "Expand window to fit mining results",
+      "translation": "Ampliar la ventana para adaptarla a los resultados de la minería"
+    },
+    {
       "source": "Expansion",
       "translation": "Expansión"
     },
@@ -43563,10 +43851,6 @@
       "translation": "Encuentre puntos de acceso para este producto"
     },
     {
-      "source": "Find landable surface deposits",
-      "translation": "Encuentre depósitos superficiales aptos para el aterrizaje"
-    },
-    {
       "source": "Find last visit",
       "translation": "Encuentra la última visita"
     },
@@ -44207,6 +44491,10 @@
       "translation": "Las capturas de pantalla futuras no tendrán ningún banner incrustado."
     },
     {
+      "source": "GAL",
+      "translation": "GALÓN"
+    },
+    {
       "source": "GALACTIC POSITION",
       "translation": "posición galáctica"
     },
@@ -44271,12 +44559,20 @@
       "translation": "GGWL"
     },
     {
+      "source": "GLM",
+      "translation": "GLM"
+    },
+    {
       "source": "GLOBAL PROGRESS",
       "translation": "PROGRESO MUNDIAL"
     },
     {
       "source": "GOAL #{0}",
       "translation": "META #{0}"
+    },
+    {
+      "source": "GOS",
+      "translation": "GOS"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -45015,6 +45311,10 @@
       "translation": "HAB"
     },
     {
+      "source": "HAF",
+      "translation": "HAF"
+    },
+    {
       "source": "HAVE",
       "translation": "tener"
     },
@@ -45583,6 +45883,10 @@
       "translation": "IDENTIFICAR EL PUNTO DE ENCUESTA"
     },
     {
+      "source": "IDT",
+      "translation": "IDT"
+    },
+    {
       "source": "IMAGE X",
       "translation": "IMAGEN X"
     },
@@ -45605,6 +45909,10 @@
     {
       "source": "INACTIVE",
       "translation": "INACTIVO"
+    },
+    {
+      "source": "IND",
+      "translation": "INDIANA"
     },
     {
       "source": "INDEX",
@@ -46667,6 +46975,10 @@
       "translation": "LABORATORIO"
     },
     {
+      "source": "LAN",
+      "translation": "LAN"
+    },
+    {
       "source": "LANDABLE",
       "translation": "ATERRIZABLE"
     },
@@ -46713,6 +47025,14 @@
     {
       "source": "LAYOUT",
       "translation": "DISEÑO"
+    },
+    {
+      "source": "LEP",
+      "translation": "LEP"
+    },
+    {
+      "source": "LHY",
+      "translation": "LHY"
     },
     {
       "source": "LIGHT",
@@ -47703,6 +48023,14 @@
       "translation": "CR/T MÁX."
     },
     {
+      "source": "MAX SELL CR/T",
+      "translation": "VENTA MÁXIMA CR/T"
+    },
+    {
+      "source": "MCL",
+      "translation": "MCL"
+    },
+    {
       "source": "MEASURED MASTER POINT",
       "translation": "PUNTO MAESTRO MEDIDO"
     },
@@ -47771,8 +48099,16 @@
       "translation": "MÓDULO"
     },
     {
+      "source": "MOI",
+      "translation": "MOI"
+    },
+    {
       "source": "MR",
       "translation": "señor"
+    },
+    {
+      "source": "MUS",
+      "translation": "mus"
     },
     {
       "source": "Magenta",
@@ -49695,6 +50031,14 @@
       "translation": "No hay datos de mercado disponibles desde la última ubicación atracada."
     },
     {
+      "source": "No matching Spansh body within the search radius",
+      "translation": "No hay ningún cuerpo coincidente Spansh dentro del radio de búsqueda"
+    },
+    {
+      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
+      "translation": "Después de comprobar las estaciones de venta mejor pagadas, no se encontraron organismos coincidentes. La búsqueda se detuvo en su límite de solicitudes (páginas del cuerpo de {0} Spansh); reducir la distancia o seleccionar un material."
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Aún no hay disponibles módulos equipados a juego. Se necesita un evento de equipamiento completo; Las tareas guardadas siguen siendo editables."
     },
@@ -49861,6 +50205,14 @@
     {
       "source": "No selectable mapped object is available.",
       "translation": "No hay ningún objeto mapeado seleccionable disponible."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the distance.",
+      "translation": "Ninguna estación de venta tiene un cuerpo de minería a cielo abierto correspondiente en la distancia."
+    },
+    {
+      "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
+      "translation": "Ninguna estación de venta coincide con el material seleccionado, la demanda y la plataforma de aterrizaje dentro de la distancia."
     },
     {
       "source": "No session log file is available.",
@@ -51291,6 +51643,10 @@
       "translation": "BLOQUEO DE PAD EN"
     },
     {
+      "source": "PAI",
+      "translation": "pai"
+    },
+    {
       "source": "PASS-THROUGH UNAVAILABLE",
       "translation": "PASO A TRAVÉS NO DISPONIBLE"
     },
@@ -51301,10 +51657,6 @@
     {
       "source": "PATH",
       "translation": "CAMINO"
-    },
-    {
-      "source": "PEAK SELL SNAPSHOT",
-      "translation": "INSTANTÁNEA DEL PICO DE VENTA"
     },
     {
       "source": "PIN",
@@ -51341,6 +51693,10 @@
     {
       "source": "POWER",
       "translation": "FUERZA"
+    },
+    {
+      "source": "PRA",
+      "translation": "PRA"
     },
     {
       "source": "PREDICTED",
@@ -51393,6 +51749,10 @@
     {
       "source": "PROJECT NAME",
       "translation": "Nombre del proyecto"
+    },
+    {
+      "source": "PYR",
+      "translation": "PIR"
     },
     {
       "source": "Pad 02 | 164 m",
@@ -52915,6 +53275,10 @@
       "translation": "RUINAS RELIQUIA RUMBO"
     },
     {
+      "source": "RUT",
+      "translation": "RODERA"
+    },
+    {
       "source": "Radar size (0–4)",
       "translation": "Tamaño del radar (0–4)"
     },
@@ -54423,6 +54787,10 @@
       "translation": "Restaurar copia de seguridad…"
     },
     {
+      "source": "Restore default window width",
+      "translation": "Restaurar el ancho de ventana predeterminado"
+    },
+    {
       "source": "Restore defaults",
       "translation": "Restaurar valores predeterminados"
     },
@@ -54977,6 +55345,10 @@
     {
       "source": "R−",
       "translation": "R-"
+    },
+    {
+      "source": "S/M",
+      "translation": "S/M"
     },
     {
       "source": "S256",
@@ -56055,10 +56427,6 @@
       "translation": "Guías de búsqueda, configuraciones, símbolos o flujos de trabajo"
     },
     {
-      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
-      "translation": "Busque cuerpos aterrizables cerca del sistema de referencia para los materiales de superficie que elija. El objetivo es la estación dentro de esa distancia que paga más."
-    },
-    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Busque cuadros de procedimientos, realice un seguimiento de cada sistema generado y elija lo que se considera completo."
     },
@@ -56077,6 +56445,10 @@
     {
       "source": "Search settings",
       "translation": "Configuración de búsqueda"
+    },
+    {
+      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
+      "translation": "La búsqueda se detuvo en su límite de solicitudes (páginas del cuerpo de {0} Spansh); reduzca la distancia para obtener más cobertura."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -56397,6 +56769,10 @@
     {
       "source": "SelectedWeapon: {0} / {1}",
       "translation": "Arma seleccionada: {0} / {1}"
+    },
+    {
+      "source": "Sell System",
+      "translation": "Vender sistema"
     },
     {
       "source": "Sell mined cargo",
@@ -56923,6 +57299,10 @@
       "translation": "Mostrar guía de puntería a señales biológicas de Canonn"
     },
     {
+      "source": "Show all Systems",
+      "translation": "Mostrar todos los sistemas"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Mostrar todos los cuadros de código masivo {0}"
     },
@@ -56985,6 +57365,10 @@
     {
       "source": "Show factions in gal-map",
       "translation": "Mostrar facciones en gal-map"
+    },
+    {
+      "source": "Show fewer Systems",
+      "translation": "Mostrar menos sistemas"
     },
     {
       "source": "Show flight warnings",
@@ -57235,6 +57619,10 @@
       "translation": "Mostrando sistemas diferidos {0}–{1} de {2} ({3})."
     },
     {
+      "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Mostrando los precios de mercado almacenados de Ardent para materiales {0} (última cotización {1} UTC; verificado {2} UTC). Las citas que faltan utilizan el informe o catálogo anterior."
+    },
+    {
       "source": "Showing systems {0}–{1} of {2} (descending).",
       "translation": "Mostrando los sistemas {0}–{1} de {2} (descendente)."
     },
@@ -57427,6 +57815,10 @@
       "translation": "Pequeño"
     },
     {
+      "source": "Small / medium pads",
+      "translation": "Almohadillas pequeñas/medianas"
+    },
+    {
       "source": "Small circles (~100 m)",
       "translation": "Círculos pequeños (~100 m)"
     },
@@ -57457,6 +57849,10 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Algunos cuerpos todavía necesitan escaneos completos de planetas o estrellas madre."
+    },
+    {
+      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
+      "translation": "Algunas búsquedas corporales alcanzaron el límite de páginas; Los precios incomparables quedaron sin marcar."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -59139,6 +59535,10 @@
       "translation": "T07"
     },
     {
+      "source": "TAF",
+      "translation": "TAF"
+    },
+    {
       "source": "TARGET",
       "translation": "OBJETIVO"
     },
@@ -59185,6 +59585,10 @@
     {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "DETALLES DEL CATÁLOGO DE ESTE SITIO"
+    },
+    {
+      "source": "THL",
+      "translation": "THL"
     },
     {
       "source": "TIME",
@@ -62659,8 +63063,8 @@
       "translation": "Usar radio de señal biológica"
     },
     {
-      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity. Prices are a community snapshot and can change.",
-      "translation": "Utilice el tipo de cuerpo, la geología y las pistas estelares para limitar la búsqueda de un producto de minería a cielo abierto. Los precios son una instantánea de la comunidad y pueden cambiar."
+      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity.",
+      "translation": "Utilice el tipo de cuerpo, la geología y las pistas estelares para limitar la búsqueda de un producto de minería a cielo abierto."
     },
     {
       "source": "Use boost on B → C",
@@ -62917,6 +63321,10 @@
     {
       "source": "VOLCANISM",
       "translation": "vulcanismo"
+    },
+    {
+      "source": "VOP",
+      "translation": "VOP"
     },
     {
       "source": "VOXSTELLAR",
@@ -64675,6 +65083,10 @@
       "translation": "datos"
     },
     {
+      "source": "dd MMM yyyy HH:mm",
+      "translation": "dd MMM aaaa HH:mm"
+    },
+    {
       "source": "de",
       "translation": "de"
     },
@@ -66159,6 +66571,14 @@
       "translation": "segundos"
     },
     {
+      "source": "sell systems, best viable price first. Best sell from",
+      "translation": "Vender sistemas, primero el mejor precio viable. Mejor venta desde"
+    },
+    {
+      "source": "sell systems, daily commodity value order. Best sell from",
+      "translation": "sistemas de venta, pedido diario de valor de productos básicos. Mejor venta desde"
+    },
+    {
       "source": "sensor",
       "translation": "sensor"
     },
@@ -67275,8 +67695,8 @@
       "translation": "{0} especies conocidas"
     },
     {
-      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
-      "translation": "{0} carrocerías aterrizables para {1}. Mejor venta de {2}.{3}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
+      "translation": "{0} carrocerías aterrizables para {1}. {2}{3}{4}.{5}{6}{7}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -67751,10 +68171,6 @@
       "translation": "{0} · {1} entradas"
     },
     {
-      "source": "{0} · {1} ly",
-      "translation": "{0} · {1} ly"
-    },
-    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} registrado · sufijo más alto {2} · {3}"
     },
@@ -67799,8 +68215,8 @@
       "translation": "{0}: {1}"
     },
     {
-      "source": "{0}: {1}{2}, {3} g, {4} ls",
-      "translation": "{0}: {1}{2}, {3} g, {4} ls"
+      "source": "{0}: {1}, {2} g, {3} ls",
+      "translation": "{0}: {1}, {2} g, {3} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -68075,10 +68491,6 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", Ruines{0} {1}"
-    },
-    {
-      "source": ", {0} reserve",
-      "translation": ", réserve {0}"
     },
     {
       "source": "-1 asteroid",
@@ -69165,6 +69577,10 @@
       "translation": "ALT {0}"
     },
     {
+      "source": "ALU",
+      "translation": "ALU"
+    },
+    {
       "source": "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
       "translation": "ALVR prend en charge Windows et Linux, mais sa configuration Linux et SteamVR sous Linux sont expérimentaux ; Elite traverse également Proton."
     },
@@ -70061,6 +70477,10 @@
       "translation": "N'importe quel nom de produit"
     },
     {
+      "source": "Any surface material",
+      "translation": "Tout matériau de surface"
+    },
+    {
       "source": "AppImage manual update",
       "translation": "Mise à jour manuelle d'AppImage"
     },
@@ -70247,6 +70667,22 @@
     {
       "source": "Ardent",
       "translation": "Ardent"
+    },
+    {
+      "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
+      "translation": "Les prix quotidiens Ardent ne sont pas disponibles. Affichage de l'instantané du catalogue."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC); some quotes could not be refreshed. Missing quotes use the older report or catalog.",
+      "translation": "Prix ​​​​de marché ardents pour les matériaux {0} (dernière cotation {1} UTC) ; certaines citations n'ont pas pu être actualisées. Les guillemets manquants utilisent l'ancien rapport ou catalogue."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Prix ​​​​de marché ardents pour les matériaux {0} (dernière cotation {1} UTC ; vérifié {2} UTC). Les guillemets manquants utilisent l'ancien rapport ou catalogue."
+    },
+    {
+      "source": "Ardent/Spansh fallback",
+      "translation": "Ardent/Spansh solution de secours"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
@@ -70825,6 +71261,10 @@
       "translation": "BAR"
     },
     {
+      "source": "BAU",
+      "translation": "BAU"
+    },
+    {
       "source": "BC3",
       "translation": "BC3"
     },
@@ -70835,6 +71275,14 @@
     {
       "source": "BEARING",
       "translation": "ROULEMENT"
+    },
+    {
+      "source": "BEN",
+      "translation": "BEN"
+    },
+    {
+      "source": "BER",
+      "translation": "BER"
     },
     {
       "source": "BEST",
@@ -70867,6 +71315,10 @@
     {
       "source": "BIOLOGY PRESENTATION",
       "translation": "PRÉSENTATION BIOLOGIE"
+    },
+    {
+      "source": "BIS",
+      "translation": "BIS"
     },
     {
       "source": "BLOCKED",
@@ -70947,6 +71399,14 @@
     {
       "source": "BOXELS · MASS CODES {0}",
       "translation": "BOÎTES · CODES DE MASSE {0}"
+    },
+    {
+      "source": "BRO",
+      "translation": "FRÈRE"
+    },
+    {
+      "source": "BRT",
+      "translation": "BHNS"
     },
     {
       "source": "BUILD TYPE",
@@ -71099,6 +71559,10 @@
     {
       "source": "Bertrandite",
       "translation": "Bertrandite"
+    },
+    {
+      "source": "Best Sell Station",
+      "translation": "Station la plus vendue"
     },
     {
       "source": "Beta",
@@ -71477,8 +71941,8 @@
       "translation": "Protectorat du corps"
     },
     {
-      "source": "Body availability follows the Surface Hunt location reference. Sell prices retain the community snapshot and can change.",
-      "translation": "La disponibilité du corps suit la référence de localisation de Surface Hunt. Les prix de vente conservent l'instantané de la communauté et peuvent changer."
+      "source": "Body availability follows the Surface Hunt location reference.",
+      "translation": "La disponibilité du corps suit la référence de localisation de Surface Hunt."
     },
     {
       "source": "Body baseline {0} K",
@@ -71901,6 +72365,10 @@
       "translation": "CLIQUEZ À TRAVERS"
     },
     {
+      "source": "CLT",
+      "translation": "CLT"
+    },
+    {
       "source": "CMD",
       "translation": "CMD"
     },
@@ -71927,6 +72395,10 @@
     {
       "source": "CMM composites",
       "translation": "Composites MMT"
+    },
+    {
+      "source": "COB",
+      "translation": "ÉPI"
     },
     {
       "source": "CODEX BINGO",
@@ -72055,6 +72527,10 @@
     {
       "source": "CREDIT VALUE",
       "translation": "VALEUR DE CRÉDIT"
+    },
+    {
+      "source": "CRY",
+      "translation": "PLEURER"
     },
     {
       "source": "CSV",
@@ -72525,6 +73001,10 @@
       "translation": "Catalogue"
     },
     {
+      "source": "Catalog prices shown while Ardent market quotes load.",
+      "translation": "Prix ​​du catalogue affichés pendant le chargement des cotations du marché Ardent."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Catalogues mis à jour cette session :"
     },
@@ -72655,6 +73135,10 @@
     {
       "source": "Checking for other running SrvSurvey instances...",
       "translation": "Recherche d'autres instances SrvSurvey en cours d'exécution..."
+    },
+    {
+      "source": "Checking sell systems {0}/{1}…",
+      "translation": "Vérification des systèmes de vente {0}/{1}…"
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -75005,6 +75489,14 @@
       "translation": "heure d'été"
     },
     {
+      "source": "DST REF",
+      "translation": "RÉF. DST"
+    },
+    {
+      "source": "DST SELL",
+      "translation": "VENTE DST"
+    },
+    {
       "source": "Danger",
       "translation": "Danger"
     },
@@ -76833,6 +77325,10 @@
       "translation": "Développez pour attribuer des entrées de clavier ou de contrôleur à des actions."
     },
     {
+      "source": "Expand window to fit mining results",
+      "translation": "Agrandir la fenêtre pour l'adapter aux résultats d'exploration de données"
+    },
+    {
       "source": "Expansion",
       "translation": "Expansion"
     },
@@ -77569,10 +78065,6 @@
       "translation": "Trouver des points chauds pour ce produit"
     },
     {
-      "source": "Find landable surface deposits",
-      "translation": "Trouver des gisements de surface exploitables"
-    },
-    {
       "source": "Find last visit",
       "translation": "Rechercher la dernière visite"
     },
@@ -78213,6 +78705,10 @@
       "translation": "Les futures captures d'écran n'auront pas de bannière intégrée"
     },
     {
+      "source": "GAL",
+      "translation": "FILLE"
+    },
+    {
       "source": "GALACTIC POSITION",
       "translation": "position galactique"
     },
@@ -78277,12 +78773,20 @@
       "translation": "GGWL"
     },
     {
+      "source": "GLM",
+      "translation": "GLM"
+    },
+    {
       "source": "GLOBAL PROGRESS",
       "translation": "PROGRÈS MONDIAL"
     },
     {
       "source": "GOAL #{0}",
       "translation": "OBJECTIF #{0}"
+    },
+    {
+      "source": "GOS",
+      "translation": "GOS"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -79021,6 +79525,10 @@
       "translation": "HAB"
     },
     {
+      "source": "HAF",
+      "translation": "HAF"
+    },
+    {
       "source": "HAVE",
       "translation": "AVOIR"
     },
@@ -79589,6 +80097,10 @@
       "translation": "IDENTIFIER LE POINT D'ENQUÊTE"
     },
     {
+      "source": "IDT",
+      "translation": "IDT"
+    },
+    {
       "source": "IMAGE X",
       "translation": "IMAGE X"
     },
@@ -79611,6 +80123,10 @@
     {
       "source": "INACTIVE",
       "translation": "INACTIF"
+    },
+    {
+      "source": "IND",
+      "translation": "INDIANA"
     },
     {
       "source": "INDEX",
@@ -80673,6 +81189,10 @@
       "translation": "LABORATOIRE"
     },
     {
+      "source": "LAN",
+      "translation": "Réseau local"
+    },
+    {
       "source": "LANDABLE",
       "translation": "ATTERRISSABLE"
     },
@@ -80719,6 +81239,14 @@
     {
       "source": "LAYOUT",
       "translation": "DISPOSITION"
+    },
+    {
+      "source": "LEP",
+      "translation": "LEP"
+    },
+    {
+      "source": "LHY",
+      "translation": "LHY"
     },
     {
       "source": "LIGHT",
@@ -81709,6 +82237,14 @@
       "translation": "MAX CR/T"
     },
     {
+      "source": "MAX SELL CR/T",
+      "translation": "VENTE MAXIMALE CR/T"
+    },
+    {
+      "source": "MCL",
+      "translation": "MCL"
+    },
+    {
       "source": "MEASURED MASTER POINT",
       "translation": "POINT MAÎTRE MESURÉ"
     },
@@ -81777,8 +82313,16 @@
       "translation": "MODULE"
     },
     {
+      "source": "MOI",
+      "translation": "Moi"
+    },
+    {
       "source": "MR",
       "translation": "M."
+    },
+    {
+      "source": "MUS",
+      "translation": "MUS"
     },
     {
       "source": "Magenta",
@@ -83701,6 +84245,14 @@
       "translation": "Aucune donnée de marché n'est disponible à partir du dernier emplacement ancré."
     },
     {
+      "source": "No matching Spansh body within the search radius",
+      "translation": "Aucun corps correspondant Spansh dans le rayon de recherche"
+    },
+    {
+      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
+      "translation": "Aucun corps correspondant n’a été trouvé après avoir vérifié les stations de vente les mieux rémunérées. Recherche arrêtée à sa limite de requêtes (pages de corps {0} Spansh) ; réduire la distance ou sélectionner un matériau."
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Aucun module équipé correspondant n’est encore disponible. Un événement Loadout complet est nécessaire ; les devoirs enregistrés restent modifiables."
     },
@@ -83867,6 +84419,14 @@
     {
       "source": "No selectable mapped object is available.",
       "translation": "Aucun objet mappé sélectionnable n’est disponible."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the distance.",
+      "translation": "Aucune station de vente ne dispose d'un organisme minier à ciel ouvert correspondant à distance."
+    },
+    {
+      "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
+      "translation": "Aucune station de vente ne correspond à l'article, à la demande et à l'aire d'atterrissage sélectionnés à distance."
     },
     {
       "source": "No session log file is available.",
@@ -85297,6 +85857,10 @@
       "translation": "VERROUILLAGE DU PAD"
     },
     {
+      "source": "PAI",
+      "translation": "PAI"
+    },
+    {
       "source": "PASS-THROUGH UNAVAILABLE",
       "translation": "PASS-THROUGH NON DISPONIBLE"
     },
@@ -85307,10 +85871,6 @@
     {
       "source": "PATH",
       "translation": "CHEMIN"
-    },
-    {
-      "source": "PEAK SELL SNAPSHOT",
-      "translation": "APERÇU DES VENTES DE POINTE"
     },
     {
       "source": "PIN",
@@ -85347,6 +85907,10 @@
     {
       "source": "POWER",
       "translation": "POUVOIR"
+    },
+    {
+      "source": "PRA",
+      "translation": "PRA"
     },
     {
       "source": "PREDICTED",
@@ -85399,6 +85963,10 @@
     {
       "source": "PROJECT NAME",
       "translation": "Nom du projet"
+    },
+    {
+      "source": "PYR",
+      "translation": "PYR"
     },
     {
       "source": "Pad 02 | 164 m",
@@ -86921,6 +87489,10 @@
       "translation": "RUINES RELIQUE TITRE"
     },
     {
+      "source": "RUT",
+      "translation": "RUT"
+    },
+    {
       "source": "Radar size (0–4)",
       "translation": "Taille du radar (0–4)"
     },
@@ -88429,6 +89001,10 @@
       "translation": "Restaurer la sauvegarde…"
     },
     {
+      "source": "Restore default window width",
+      "translation": "Restaurer la largeur de fenêtre par défaut"
+    },
+    {
       "source": "Restore defaults",
       "translation": "Restaurer les valeurs par défaut"
     },
@@ -88983,6 +89559,10 @@
     {
       "source": "R−",
       "translation": "R−"
+    },
+    {
+      "source": "S/M",
+      "translation": "P/M"
     },
     {
       "source": "S256",
@@ -90061,10 +90641,6 @@
       "translation": "Rechercher des guides, des paramètres, des symboles ou des flux de travail"
     },
     {
-      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
-      "translation": "Recherchez des corps atterrissables à proximité du système de référence pour les matériaux de surface que vous choisissez. La cible est la station située à l’intérieur de cette distance qui paie le plus."
-    },
-    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Recherchez des boîtes procédurales, suivez chaque système généré et choisissez ce qui compte comme terminé."
     },
@@ -90083,6 +90659,10 @@
     {
       "source": "Search settings",
       "translation": "Paramètres de recherche"
+    },
+    {
+      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
+      "translation": "Recherche arrêtée à sa limite de requêtes (pages de corps {0} Spansh) ; réduisez la distance pour plus de couverture."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -90403,6 +90983,10 @@
     {
       "source": "SelectedWeapon: {0} / {1}",
       "translation": "Arme sélectionnée : {0} / {1}"
+    },
+    {
+      "source": "Sell System",
+      "translation": "Système de vente"
     },
     {
       "source": "Sell mined cargo",
@@ -90929,6 +91513,10 @@
       "translation": "Afficher les conseils de visée sur les signaux biologiques de Canonn"
     },
     {
+      "source": "Show all Systems",
+      "translation": "Afficher tous les systèmes"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Afficher tous les boxels de code de masse {0}"
     },
@@ -90991,6 +91579,10 @@
     {
       "source": "Show factions in gal-map",
       "translation": "Afficher les factions dans gal-map"
+    },
+    {
+      "source": "Show fewer Systems",
+      "translation": "Afficher moins de systèmes"
     },
     {
       "source": "Show flight warnings",
@@ -91241,6 +91833,10 @@
       "translation": "Affichage des systèmes différés {0}–{1} de {2} ({3})."
     },
     {
+      "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Affichage des prix du marché Ardent stockés pour les matériaux {0} (dernière cotation {1} UTC ; vérifiée {2} UTC). Les guillemets manquants utilisent l'ancien rapport ou catalogue."
+    },
+    {
       "source": "Showing systems {0}–{1} of {2} (descending).",
       "translation": "Affichage des systèmes {0}–{1} de {2} (décroissant)."
     },
@@ -91433,6 +92029,10 @@
       "translation": "Petit"
     },
     {
+      "source": "Small / medium pads",
+      "translation": "Tampons petits/moyens"
+    },
+    {
       "source": "Small circles (~100 m)",
       "translation": "Petits cercles (~100 m)"
     },
@@ -91463,6 +92063,10 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Certains corps ont encore besoin d’analyses complètes de la planète ou de l’étoile mère."
+    },
+    {
+      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
+      "translation": "Certaines recherches corporelles ont atteint la limite de pages ; les prix inégalés n’ont pas été marqués."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -93145,6 +93749,10 @@
       "translation": "T07"
     },
     {
+      "source": "TAF",
+      "translation": "TAF"
+    },
+    {
       "source": "TARGET",
       "translation": "CIBLE"
     },
@@ -93191,6 +93799,10 @@
     {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "DÉTAILS DU CATALOGUE DE CE SITE"
+    },
+    {
+      "source": "THL",
+      "translation": "THL"
     },
     {
       "source": "TIME",
@@ -96665,8 +97277,8 @@
       "translation": "Utiliser le rayon du signal biologique"
     },
     {
-      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity. Prices are a community snapshot and can change.",
-      "translation": "Utilisez le type de corps, la géologie et les indices stellaires pour affiner la recherche d'un produit minier à ciel ouvert. Les prix sont un instantané de la communauté et peuvent changer."
+      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity.",
+      "translation": "Utilisez le type de corps, la géologie et les indices stellaires pour affiner la recherche d'un produit minier à ciel ouvert."
     },
     {
       "source": "Use boost on B → C",
@@ -96923,6 +97535,10 @@
     {
       "source": "VOLCANISM",
       "translation": "volcanisme"
+    },
+    {
+      "source": "VOP",
+      "translation": "VOP"
     },
     {
       "source": "VOXSTELLAR",
@@ -98681,6 +99297,10 @@
       "translation": "données"
     },
     {
+      "source": "dd MMM yyyy HH:mm",
+      "translation": "jj MMM aaaa HH:mm"
+    },
+    {
       "source": "de",
       "translation": "de"
     },
@@ -100165,6 +100785,14 @@
       "translation": "secondes"
     },
     {
+      "source": "sell systems, best viable price first. Best sell from",
+      "translation": "vendez des systèmes, au meilleur prix viable en premier. Meilleure vente de"
+    },
+    {
+      "source": "sell systems, daily commodity value order. Best sell from",
+      "translation": "systèmes de vente, ordre quotidien de la valeur des marchandises. Meilleure vente de"
+    },
+    {
       "source": "sensor",
       "translation": "capteur"
     },
@@ -101281,8 +101909,8 @@
       "translation": "{0} espèces connues"
     },
     {
-      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
-      "translation": "Carrosseries atterrissables {0} pour {1}. Meilleure vente de {2}.{3}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
+      "translation": "Carrosseries atterrissables {0} pour {1}. {2}{3}{4}.{5}{6}{7}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -101757,10 +102385,6 @@
       "translation": "{0} · {1} entrées"
     },
     {
-      "source": "{0} · {1} ly",
-      "translation": "{0} · {1} ly"
-    },
-    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} enregistré · suffixe le plus élevé {2} · {3}"
     },
@@ -101805,8 +102429,8 @@
       "translation": "{0} : {1} t"
     },
     {
-      "source": "{0}: {1}{2}, {3} g, {4} ls",
-      "translation": "{0} : {1}{2}, {3} g, {4} ls"
+      "source": "{0}: {1}, {2} g, {3} ls",
+      "translation": "{0} : {1}, {2} g, {3} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -102081,10 +102705,6 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", Ruínas{0} {1}"
-    },
-    {
-      "source": ", {0} reserve",
-      "translation": ", reserva {0}"
     },
     {
       "source": "-1 asteroid",
@@ -103171,6 +103791,10 @@
       "translation": "ALT {0}"
     },
     {
+      "source": "ALU",
+      "translation": "ALU"
+    },
+    {
       "source": "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
       "translation": "ALVR suporta Windows e Linux, mas sua configuração Linux e SteamVR no Linux são experimentais; Elite também passa por Proton."
     },
@@ -104067,6 +104691,10 @@
       "translation": "Qualquer nome de mercadoria"
     },
     {
+      "source": "Any surface material",
+      "translation": "Qualquer material de superfície"
+    },
+    {
       "source": "AppImage manual update",
       "translation": "Atualização manual do AppImage"
     },
@@ -104252,7 +104880,23 @@
     },
     {
       "source": "Ardent",
-      "translation": "Ardente"
+      "translation": "Ardent"
+    },
+    {
+      "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
+      "translation": "Os preços diários da Ardent não estão disponíveis. Exibindo os valores do catálogo."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC); some quotes could not be refreshed. Missing quotes use the older report or catalog.",
+      "translation": "Preços de mercado elevados para materiais {0} (última cotação {1} UTC); algumas citações não puderam ser atualizadas. As cotações ausentes usam o relatório ou catálogo mais antigo."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Preços de mercado elevados para materiais {0} (última cotação {1} UTC; verificado {2} UTC). As cotações ausentes usam o relatório ou catálogo mais antigo."
+    },
+    {
+      "source": "Ardent/Spansh fallback",
+      "translation": "Alternativa Ardent/Spansh"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
@@ -104831,6 +105475,10 @@
       "translation": "BAR"
     },
     {
+      "source": "BAU",
+      "translation": "BAU"
+    },
+    {
       "source": "BC3",
       "translation": "BC3"
     },
@@ -104841,6 +105489,14 @@
     {
       "source": "BEARING",
       "translation": "ROLAMENTO"
+    },
+    {
+      "source": "BEN",
+      "translation": "BEN"
+    },
+    {
+      "source": "BER",
+      "translation": "BER"
     },
     {
       "source": "BEST",
@@ -104873,6 +105529,10 @@
     {
       "source": "BIOLOGY PRESENTATION",
       "translation": "APRESENTAÇÃO DE BIOLOGIA"
+    },
+    {
+      "source": "BIS",
+      "translation": "BIS"
     },
     {
       "source": "BLOCKED",
@@ -104953,6 +105613,14 @@
     {
       "source": "BOXELS · MASS CODES {0}",
       "translation": "BOXELS · CÓDIGOS DE MASSA {0}"
+    },
+    {
+      "source": "BRO",
+      "translation": "IRMÃO"
+    },
+    {
+      "source": "BRT",
+      "translation": "BRT"
     },
     {
       "source": "BUILD TYPE",
@@ -105105,6 +105773,10 @@
     {
       "source": "Bertrandite",
       "translation": "Bertrandite"
+    },
+    {
+      "source": "Best Sell Station",
+      "translation": "Estação mais vendida"
     },
     {
       "source": "Beta",
@@ -105483,8 +106155,8 @@
       "translation": "Protetorado Corporal"
     },
     {
-      "source": "Body availability follows the Surface Hunt location reference. Sell prices retain the community snapshot and can change.",
-      "translation": "A disponibilidade do corpo segue a referência de localização do Surface Hunt. Os preços de venda mantêm o retrato da comunidade e podem mudar."
+      "source": "Body availability follows the Surface Hunt location reference.",
+      "translation": "A disponibilidade do corpo segue a referência de localização do Surface Hunt."
     },
     {
       "source": "Body baseline {0} K",
@@ -105907,6 +106579,10 @@
       "translation": "CLIQUE"
     },
     {
+      "source": "CLT",
+      "translation": "CLT"
+    },
+    {
       "source": "CMD",
       "translation": "DMC"
     },
@@ -105933,6 +106609,10 @@
     {
       "source": "CMM composites",
       "translation": "Compósitos CMM"
+    },
+    {
+      "source": "COB",
+      "translation": "ESPIGA"
     },
     {
       "source": "CODEX BINGO",
@@ -106061,6 +106741,10 @@
     {
       "source": "CREDIT VALUE",
       "translation": "VALOR DO CRÉDITO"
+    },
+    {
+      "source": "CRY",
+      "translation": "CHORAR"
     },
     {
       "source": "CSV",
@@ -106531,6 +107215,10 @@
       "translation": "Catálogo"
     },
     {
+      "source": "Catalog prices shown while Ardent market quotes load.",
+      "translation": "Preços de catálogo mostrados enquanto as cotações do mercado Ardent são carregadas."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Catálogos atualizados nesta sessão:"
     },
@@ -106661,6 +107349,10 @@
     {
       "source": "Checking for other running SrvSurvey instances...",
       "translation": "Verificando outras instâncias SrvSurvey em execução..."
+    },
+    {
+      "source": "Checking sell systems {0}/{1}…",
+      "translation": "Verificando sistemas de venda {0}/{1}…"
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -109011,6 +109703,14 @@
       "translation": "Horário de verão"
     },
     {
+      "source": "DST REF",
+      "translation": "REFERÊNCIA DST"
+    },
+    {
+      "source": "DST SELL",
+      "translation": "VENDA DST"
+    },
+    {
       "source": "Danger",
       "translation": "Perigo"
     },
@@ -110839,6 +111539,10 @@
       "translation": "Expanda para atribuir entradas de teclado ou controlador a ações."
     },
     {
+      "source": "Expand window to fit mining results",
+      "translation": "Expanda a janela para ajustar os resultados da mineração"
+    },
+    {
       "source": "Expansion",
       "translation": "Expansão"
     },
@@ -111575,10 +112279,6 @@
       "translation": "Encontre pontos de acesso para esta mercadoria"
     },
     {
-      "source": "Find landable surface deposits",
-      "translation": "Encontre depósitos superficiais aterrissáveis"
-    },
-    {
       "source": "Find last visit",
       "translation": "Encontrar última visita"
     },
@@ -112219,6 +112919,10 @@
       "translation": "As capturas de tela futuras não terão banner incorporado"
     },
     {
+      "source": "GAL",
+      "translation": "GAL"
+    },
+    {
       "source": "GALACTIC POSITION",
       "translation": "posição galáctica"
     },
@@ -112283,12 +112987,20 @@
       "translation": "GGWL"
     },
     {
+      "source": "GLM",
+      "translation": "GLM"
+    },
+    {
       "source": "GLOBAL PROGRESS",
       "translation": "PROGRESSO GLOBAL"
     },
     {
       "source": "GOAL #{0}",
       "translation": "META #{0}"
+    },
+    {
+      "source": "GOS",
+      "translation": "GOS"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -113027,6 +113739,10 @@
       "translation": "HAB"
     },
     {
+      "source": "HAF",
+      "translation": "HAF"
+    },
+    {
       "source": "HAVE",
       "translation": "TENHO"
     },
@@ -113595,6 +114311,10 @@
       "translation": "IDENTIFICAR O PONTO DE PESQUISA"
     },
     {
+      "source": "IDT",
+      "translation": "IDT"
+    },
+    {
       "source": "IMAGE X",
       "translation": "IMAGEM X"
     },
@@ -113617,6 +114337,10 @@
     {
       "source": "INACTIVE",
       "translation": "INATIVO"
+    },
+    {
+      "source": "IND",
+      "translation": "IND"
     },
     {
       "source": "INDEX",
@@ -114679,6 +115403,10 @@
       "translation": "LABORATÓRIO"
     },
     {
+      "source": "LAN",
+      "translation": "LAN"
+    },
+    {
       "source": "LANDABLE",
       "translation": "ATERRÁVEL"
     },
@@ -114725,6 +115453,14 @@
     {
       "source": "LAYOUT",
       "translation": "LAYOUT"
+    },
+    {
+      "source": "LEP",
+      "translation": "LEP"
+    },
+    {
+      "source": "LHY",
+      "translation": "LHY"
     },
     {
       "source": "LIGHT",
@@ -115715,6 +116451,14 @@
       "translation": "CR/T MÁX."
     },
     {
+      "source": "MAX SELL CR/T",
+      "translation": "VENDA MÁXIMA CR/T"
+    },
+    {
+      "source": "MCL",
+      "translation": "MCL"
+    },
+    {
       "source": "MEASURED MASTER POINT",
       "translation": "PONTO MESTRE MEDIDO"
     },
@@ -115783,8 +116527,16 @@
       "translation": "MÓDULO"
     },
     {
+      "source": "MOI",
+      "translation": "MOI"
+    },
+    {
       "source": "MR",
       "translation": "SR."
+    },
+    {
+      "source": "MUS",
+      "translation": "MUS"
     },
     {
       "source": "Magenta",
@@ -117707,6 +118459,14 @@
       "translation": "Nenhum dado de mercado está disponível do último local ancorado."
     },
     {
+      "source": "No matching Spansh body within the search radius",
+      "translation": "Nenhum corpo correspondente Spansh dentro do raio de pesquisa"
+    },
+    {
+      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
+      "translation": "Nenhum corpo correspondente foi encontrado depois de verificar as estações de venda mais bem pagas. A pesquisa foi interrompida no limite de solicitações (páginas do corpo {0} Spansh); reduza a distância ou selecione um material."
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Nenhum módulo equipado correspondente está disponível ainda. É necessário um evento Loadout completo; as atribuições salvas permanecem editáveis."
     },
@@ -117873,6 +118633,14 @@
     {
       "source": "No selectable mapped object is available.",
       "translation": "Nenhum objeto mapeado selecionável está disponível."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the distance.",
+      "translation": "Nenhuma estação de venda possui um corpo de mineração de superfície correspondente à distância."
+    },
+    {
+      "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
+      "translation": "Nenhuma estação de venda corresponde ao material selecionado, à demanda e ao local de pouso à distância."
     },
     {
       "source": "No session log file is available.",
@@ -119303,6 +120071,10 @@
       "translation": "BLOQUEIO DE PAD EM"
     },
     {
+      "source": "PAI",
+      "translation": "PAI"
+    },
+    {
       "source": "PASS-THROUGH UNAVAILABLE",
       "translation": "PASSAGEM INDISPONÍVEL"
     },
@@ -119313,10 +120085,6 @@
     {
       "source": "PATH",
       "translation": "CAMINHO"
-    },
-    {
-      "source": "PEAK SELL SNAPSHOT",
-      "translation": "INSTANTÂNEO DE VENDA DE PICO"
     },
     {
       "source": "PIN",
@@ -119353,6 +120121,10 @@
     {
       "source": "POWER",
       "translation": "PODER"
+    },
+    {
+      "source": "PRA",
+      "translation": "PRA"
     },
     {
       "source": "PREDICTED",
@@ -119405,6 +120177,10 @@
     {
       "source": "PROJECT NAME",
       "translation": "Nome do projeto"
+    },
+    {
+      "source": "PYR",
+      "translation": "PIR"
     },
     {
       "source": "Pad 02 | 164 m",
@@ -120927,6 +121703,10 @@
       "translation": "RUÍNAS RELÍQUIA TÍTULO"
     },
     {
+      "source": "RUT",
+      "translation": "ROTINA"
+    },
+    {
       "source": "Radar size (0–4)",
       "translation": "Tamanho do radar (0–4)"
     },
@@ -122435,6 +123215,10 @@
       "translation": "Restaurar cópia de segurança…"
     },
     {
+      "source": "Restore default window width",
+      "translation": "Restaurar largura padrão da janela"
+    },
+    {
       "source": "Restore defaults",
       "translation": "Restaurar padrões"
     },
@@ -122989,6 +123773,10 @@
     {
       "source": "R−",
       "translation": "R−"
+    },
+    {
+      "source": "S/M",
+      "translation": "S/M"
     },
     {
       "source": "S256",
@@ -124067,10 +124855,6 @@
       "translation": "Guias de pesquisa, configurações, símbolos ou fluxos de trabalho"
     },
     {
-      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
-      "translation": "Procure em corpos pousáveis ​​próximos ao sistema de referência os materiais de superfície que você escolher. O alvo é a estação dentro daquela distância que paga mais."
-    },
-    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Pesquise caixas processuais, rastreie cada sistema gerado e escolha o que é considerado completo."
     },
@@ -124089,6 +124873,10 @@
     {
       "source": "Search settings",
       "translation": "Configurações de pesquisa"
+    },
+    {
+      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
+      "translation": "A pesquisa foi interrompida no limite de solicitações (páginas do corpo {0} Spansh); estreite a distância para obter mais cobertura."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -124409,6 +125197,10 @@
     {
       "source": "SelectedWeapon: {0} / {1}",
       "translation": "Arma selecionada: {0} / {1}"
+    },
+    {
+      "source": "Sell System",
+      "translation": "Sistema de Venda"
     },
     {
       "source": "Sell mined cargo",
@@ -124935,6 +125727,10 @@
       "translation": "Mostrar orientação de mira para sinais biológicos de Canonn"
     },
     {
+      "source": "Show all Systems",
+      "translation": "Mostrar todos os sistemas"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Mostrar todos os boxels de código de massa {0}"
     },
@@ -124997,6 +125793,10 @@
     {
       "source": "Show factions in gal-map",
       "translation": "Mostrar facções no mapa gal"
+    },
+    {
+      "source": "Show fewer Systems",
+      "translation": "Mostrar menos sistemas"
     },
     {
       "source": "Show flight warnings",
@@ -125247,6 +126047,10 @@
       "translation": "Mostrando sistemas diferidos {0}–{1} de {2} ({3})."
     },
     {
+      "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Mostrando preços de mercado Ardent armazenados para materiais {0} (cotação mais recente {1} UTC; verificado {2} UTC). As cotações ausentes usam o relatório ou catálogo mais antigo."
+    },
+    {
       "source": "Showing systems {0}–{1} of {2} (descending).",
       "translation": "Mostrando sistemas {0}–{1} de {2} (descendente)."
     },
@@ -125439,6 +126243,10 @@
       "translation": "Pequeno"
     },
     {
+      "source": "Small / medium pads",
+      "translation": "Almofadas pequenas/médias"
+    },
+    {
       "source": "Small circles (~100 m)",
       "translation": "Círculos pequenos (~100 m)"
     },
@@ -125469,6 +126277,10 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Alguns corpos ainda precisam de varreduras completas de planetas ou estrelas-mãe."
+    },
+    {
+      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
+      "translation": "Algumas pesquisas corporais atingiram o limite de páginas; preços incomparáveis ​​foram deixados sem marcação."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -127151,6 +127963,10 @@
       "translation": "T07"
     },
     {
+      "source": "TAF",
+      "translation": "TAF"
+    },
+    {
       "source": "TARGET",
       "translation": "ALVO"
     },
@@ -127197,6 +128013,10 @@
     {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "DETALHES DO CATÁLOGO DESTE SITE"
+    },
+    {
+      "source": "THL",
+      "translation": "THL"
     },
     {
       "source": "TIME",
@@ -130671,8 +131491,8 @@
       "translation": "Use raio de sinal biológico"
     },
     {
-      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity. Prices are a community snapshot and can change.",
-      "translation": "Use tipo de corpo, geologia e pistas estelares para restringir a busca por uma commodity de mineração de superfície. Os preços são um instantâneo da comunidade e podem mudar."
+      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity.",
+      "translation": "Use tipo de corpo, geologia e pistas estelares para restringir a busca por uma commodity de mineração de superfície."
     },
     {
       "source": "Use boost on B → C",
@@ -130929,6 +131749,10 @@
     {
       "source": "VOLCANISM",
       "translation": "vulcanismo"
+    },
+    {
+      "source": "VOP",
+      "translation": "VOP"
     },
     {
       "source": "VOXSTELLAR",
@@ -132687,6 +133511,10 @@
       "translation": "dados"
     },
     {
+      "source": "dd MMM yyyy HH:mm",
+      "translation": "dd MMM aaaa HH:mm"
+    },
+    {
       "source": "de",
       "translation": "de"
     },
@@ -134171,6 +134999,14 @@
       "translation": "segundos"
     },
     {
+      "source": "sell systems, best viable price first. Best sell from",
+      "translation": "vender sistemas, melhor preço viável primeiro. Melhor venda de"
+    },
+    {
+      "source": "sell systems, daily commodity value order. Best sell from",
+      "translation": "sistemas de venda, ordem diária de valor de mercadoria. Melhor venda de"
+    },
+    {
       "source": "sensor",
       "translation": "sensor"
     },
@@ -135287,8 +136123,8 @@
       "translation": "{0} espécies conhecidas"
     },
     {
-      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
-      "translation": "Corpos pousáveis ​​{0} para {1}. Melhor venda de {2}.{3}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
+      "translation": "Corpos pousáveis ​​{0} para {1}. {2}{3}{4}.{5}{6}{7}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -135763,10 +136599,6 @@
       "translation": "{0} · {1} entradas"
     },
     {
-      "source": "{0} · {1} ly",
-      "translation": "{0} · {1} ly"
-    },
-    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} registrado · sufixo mais alto {2} · {3}"
     },
@@ -135811,8 +136643,8 @@
       "translation": "{0}: {1} t"
     },
     {
-      "source": "{0}: {1}{2}, {3} g, {4} ls",
-      "translation": "{0}: {1}{2}, {3} g, {4} ls"
+      "source": "{0}: {1}, {2} g, {3} ls",
+      "translation": "{0}: {1}, {2} g, {3} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -136087,10 +136919,6 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", Руины{0} {1}"
-    },
-    {
-      "source": ", {0} reserve",
-      "translation": ", {0} резерв"
     },
     {
       "source": "-1 asteroid",
@@ -137177,6 +138005,10 @@
       "translation": "АЛЬТ {0}"
     },
     {
+      "source": "ALU",
+      "translation": "АЛУ"
+    },
+    {
       "source": "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
       "translation": "ALVR поддерживает Windows и Linux, но его установка для Linux и SteamVR для Linux являются экспериментальными; Элита дополнительно проходит через Proton."
     },
@@ -138073,6 +138905,10 @@
       "translation": "Любое товарное наименование"
     },
     {
+      "source": "Any surface material",
+      "translation": "Любой материал поверхности"
+    },
+    {
       "source": "AppImage manual update",
       "translation": "Обновление AppImage вручную"
     },
@@ -138258,7 +139094,23 @@
     },
     {
       "source": "Ardent",
-      "translation": "пылкий"
+      "translation": "Ardent"
+    },
+    {
+      "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
+      "translation": "Ежедневные цены Ardent недоступны. Показываю снимок каталога."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC); some quotes could not be refreshed. Missing quotes use the older report or catalog.",
+      "translation": "Высокие рыночные цены на материалы {0} (последняя котировка {1} UTC); некоторые цитаты не удалось обновить. Для отсутствующих цитат используйте старый отчет или каталог."
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Высокие рыночные цены на материалы {0} (последняя котировка {1} UTC; проверено {2} UTC). Для отсутствующих цитат используйте старый отчет или каталог."
+    },
+    {
+      "source": "Ardent/Spansh fallback",
+      "translation": "Ardent/Spansh резервный вариант"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
@@ -138837,6 +139689,10 @@
       "translation": "БАР"
     },
     {
+      "source": "BAU",
+      "translation": "БАУ"
+    },
+    {
       "source": "BC3",
       "translation": "BC3"
     },
@@ -138847,6 +139703,14 @@
     {
       "source": "BEARING",
       "translation": "ПОДШИПНИК"
+    },
+    {
+      "source": "BEN",
+      "translation": "БЕН"
+    },
+    {
+      "source": "BER",
+      "translation": "БЕР"
     },
     {
       "source": "BEST",
@@ -138879,6 +139743,10 @@
     {
       "source": "BIOLOGY PRESENTATION",
       "translation": "ПРЕЗЕНТАЦИЯ ПО БИОЛОГИИ"
+    },
+    {
+      "source": "BIS",
+      "translation": "БИС"
     },
     {
       "source": "BLOCKED",
@@ -138959,6 +139827,14 @@
     {
       "source": "BOXELS · MASS CODES {0}",
       "translation": "КОРОБКИ · МАССОВЫЕ КОДЫ {0}"
+    },
+    {
+      "source": "BRO",
+      "translation": "БРАТАН"
+    },
+    {
+      "source": "BRT",
+      "translation": "BRT"
     },
     {
       "source": "BUILD TYPE",
@@ -139111,6 +139987,10 @@
     {
       "source": "Bertrandite",
       "translation": "Бертрандит"
+    },
+    {
+      "source": "Best Sell Station",
+      "translation": "Самая продаваемая станция"
     },
     {
       "source": "Beta",
@@ -139489,8 +140369,8 @@
       "translation": "Протекторат тела"
     },
     {
-      "source": "Body availability follows the Surface Hunt location reference. Sell prices retain the community snapshot and can change.",
-      "translation": "Доступность кузова соответствует ссылке на местоположение Surface Hunt. Цены продажи сохраняются в моментальном снимке сообщества и могут меняться."
+      "source": "Body availability follows the Surface Hunt location reference.",
+      "translation": "Доступность кузова соответствует ссылке на местоположение Surface Hunt."
     },
     {
       "source": "Body baseline {0} K",
@@ -139913,6 +140793,10 @@
       "translation": "КЛИК-ПЕРЕХОД"
     },
     {
+      "source": "CLT",
+      "translation": "ЦЛТ"
+    },
+    {
       "source": "CMD",
       "translation": "КМД"
     },
@@ -139939,6 +140823,10 @@
     {
       "source": "CMM composites",
       "translation": "Композиты ШМ"
+    },
+    {
+      "source": "COB",
+      "translation": "COB"
     },
     {
       "source": "CODEX BINGO",
@@ -140067,6 +140955,10 @@
     {
       "source": "CREDIT VALUE",
       "translation": "КРЕДИТНАЯ СТОИМОСТЬ"
+    },
+    {
+      "source": "CRY",
+      "translation": "ПЛАКАТЬ"
     },
     {
       "source": "CSV",
@@ -140537,6 +141429,10 @@
       "translation": "Каталог"
     },
     {
+      "source": "Catalog prices shown while Ardent market quotes load.",
+      "translation": "Цены по каталогу показаны во время загрузки котировок Ardent Market."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Каталоги обновлены в этой сессии:"
     },
@@ -140667,6 +141563,10 @@
     {
       "source": "Checking for other running SrvSurvey instances...",
       "translation": "Проверка наличия других работающих экземпляров SrvSurvey..."
+    },
+    {
+      "source": "Checking sell systems {0}/{1}…",
+      "translation": "Проверка систем продаж {0}/{1}…"
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -143017,6 +143917,14 @@
       "translation": "летнее время"
     },
     {
+      "source": "DST REF",
+      "translation": "НОМЕР летнего времени"
+    },
+    {
+      "source": "DST SELL",
+      "translation": "ПРОДАЖА по летнему времени"
+    },
+    {
       "source": "Danger",
       "translation": "Опасность"
     },
@@ -144845,6 +145753,10 @@
       "translation": "Разверните, чтобы назначить действиям ввод с клавиатуры или контроллера."
     },
     {
+      "source": "Expand window to fit mining results",
+      "translation": "Развернуть окно, чтобы оно соответствовало результатам майнинга"
+    },
+    {
       "source": "Expansion",
       "translation": "Расширение"
     },
@@ -145581,10 +146493,6 @@
       "translation": "Найдите горячие точки для этого товара"
     },
     {
-      "source": "Find landable surface deposits",
-      "translation": "Найдите пригодные для высадки залежи на поверхности"
-    },
-    {
       "source": "Find last visit",
       "translation": "Найти последний визит"
     },
@@ -146225,6 +147133,10 @@
       "translation": "В будущих скриншотах не будет встроенного баннера."
     },
     {
+      "source": "GAL",
+      "translation": "ГАЛ"
+    },
+    {
       "source": "GALACTIC POSITION",
       "translation": "положение в галактике"
     },
@@ -146289,12 +147201,20 @@
       "translation": "ГГВЛ"
     },
     {
+      "source": "GLM",
+      "translation": "ГЛМ"
+    },
+    {
       "source": "GLOBAL PROGRESS",
       "translation": "ГЛОБАЛЬНЫЙ ПРОГРЕСС"
     },
     {
       "source": "GOAL #{0}",
       "translation": "ЦЕЛЬ №{0}"
+    },
+    {
+      "source": "GOS",
+      "translation": "ГСН"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -147033,6 +147953,10 @@
       "translation": "жилой дом"
     },
     {
+      "source": "HAF",
+      "translation": "ХАФ"
+    },
+    {
       "source": "HAVE",
       "translation": "ИМЕТЬ"
     },
@@ -147601,6 +148525,10 @@
       "translation": "ОПРЕДЕЛИТЬ ТОЧКУ ОБСЛЕДОВАНИЯ"
     },
     {
+      "source": "IDT",
+      "translation": "ИДТ"
+    },
+    {
       "source": "IMAGE X",
       "translation": "ИЗОБРАЖЕНИЕ Х"
     },
@@ -147623,6 +148551,10 @@
     {
       "source": "INACTIVE",
       "translation": "НЕАКТИВНО"
+    },
+    {
+      "source": "IND",
+      "translation": "ИНД"
     },
     {
       "source": "INDEX",
@@ -148685,6 +149617,10 @@
       "translation": "ЛАБОРАТОРИЯ"
     },
     {
+      "source": "LAN",
+      "translation": "локальная сеть"
+    },
+    {
       "source": "LANDABLE",
       "translation": "ПОСАДОЧНЫЙ"
     },
@@ -148731,6 +149667,14 @@
     {
       "source": "LAYOUT",
       "translation": "ПЛАНИРОВКА"
+    },
+    {
+      "source": "LEP",
+      "translation": "ЛЭП"
+    },
+    {
+      "source": "LHY",
+      "translation": "ЛГИ"
     },
     {
       "source": "LIGHT",
@@ -149721,6 +150665,14 @@
       "translation": "МАКС. CR/Т"
     },
     {
+      "source": "MAX SELL CR/T",
+      "translation": "МАКС. ПРОДАЖА CR/T"
+    },
+    {
+      "source": "MCL",
+      "translation": "MCL"
+    },
+    {
       "source": "MEASURED MASTER POINT",
       "translation": "ИЗМЕРЕННАЯ МАСТЕР-ТОЧКА"
     },
@@ -149789,8 +150741,16 @@
       "translation": "МОДУЛЬ"
     },
     {
+      "source": "MOI",
+      "translation": "МВД"
+    },
+    {
       "source": "MR",
       "translation": "MR"
+    },
+    {
+      "source": "MUS",
+      "translation": "МУС"
     },
     {
       "source": "Magenta",
@@ -151713,6 +152673,14 @@
       "translation": "Никакие рыночные данные не доступны из последней пристыкованной точки."
     },
     {
+      "source": "No matching Spansh body within the search radius",
+      "translation": "Нет подходящего тела Spansh в радиусе поиска."
+    },
+    {
+      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
+      "translation": "После проверки самых высокооплачиваемых станций продажи подходящих тел обнаружено не было. Поиск остановлен на пределе запросов (страницы тела {0} Spansh); сузьте расстояние или выберите материал."
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Подходящих оборудованных модулей пока нет. Требуется полное событие Loadout; сохраненные задания остаются доступными для редактирования."
     },
@@ -151879,6 +152847,14 @@
     {
       "source": "No selectable mapped object is available.",
       "translation": "Нет доступных для выбора сопоставленных объектов."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the distance.",
+      "translation": "Ни одна станция продаж не имеет поблизости соответствующего объекта для открытых горных работ."
+    },
+    {
+      "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
+      "translation": "Ни одна станция продаж не соответствует выбранному материалу, спросу и посадочной площадке на расстоянии."
     },
     {
       "source": "No session log file is available.",
@@ -153309,6 +154285,10 @@
       "translation": "БЛОКИРОВКА Пэда"
     },
     {
+      "source": "PAI",
+      "translation": "ПАИ"
+    },
+    {
       "source": "PASS-THROUGH UNAVAILABLE",
       "translation": "ПРОХОД НЕДОСТУПЕН"
     },
@@ -153319,10 +154299,6 @@
     {
       "source": "PATH",
       "translation": "ПУТЬ"
-    },
-    {
-      "source": "PEAK SELL SNAPSHOT",
-      "translation": "Пик продаж"
     },
     {
       "source": "PIN",
@@ -153359,6 +154335,10 @@
     {
       "source": "POWER",
       "translation": "ВЛАСТЬ"
+    },
+    {
+      "source": "PRA",
+      "translation": "ПРА"
     },
     {
       "source": "PREDICTED",
@@ -153411,6 +154391,10 @@
     {
       "source": "PROJECT NAME",
       "translation": "Название проекта"
+    },
+    {
+      "source": "PYR",
+      "translation": "ПИР"
     },
     {
       "source": "Pad 02 | 164 m",
@@ -154933,6 +155917,10 @@
       "translation": "РУИНЫ РЕЛИКВИЯ ЗАГЛАВА"
     },
     {
+      "source": "RUT",
+      "translation": "РУТ"
+    },
+    {
       "source": "Radar size (0–4)",
       "translation": "Размер радара (0–4)"
     },
@@ -156441,6 +157429,10 @@
       "translation": "Восстановить резервную копию…"
     },
     {
+      "source": "Restore default window width",
+      "translation": "Восстановить ширину окна по умолчанию"
+    },
+    {
       "source": "Restore defaults",
       "translation": "Восстановить настройки по умолчанию"
     },
@@ -156995,6 +157987,10 @@
     {
       "source": "R−",
       "translation": "Р-"
+    },
+    {
+      "source": "S/M",
+      "translation": "С/М"
     },
     {
       "source": "S256",
@@ -158073,10 +159069,6 @@
       "translation": "Руководства по поиску, настройки, символы или рабочие процессы"
     },
     {
-      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
-      "translation": "Найдите приземляемые тела рядом с системой отсчета, чтобы найти материалы поверхности, которые вы выберете. Целью является станция, находящаяся на этом расстоянии и платящая больше всего."
-    },
-    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "Ищите процедурные блоки, отслеживайте каждую сгенерированную систему и выбирайте, что считать завершенным."
     },
@@ -158095,6 +159087,10 @@
     {
       "source": "Search settings",
       "translation": "Настройки поиска"
+    },
+    {
+      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
+      "translation": "Поиск остановлен на пределе запросов (страницы тела {0} Spansh); сузьте расстояние для большего охвата."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -158415,6 +159411,10 @@
     {
       "source": "SelectedWeapon: {0} / {1}",
       "translation": "Выбранное оружие: {0} / {1}"
+    },
+    {
+      "source": "Sell System",
+      "translation": "Продать систему"
     },
     {
       "source": "Sell mined cargo",
@@ -158941,6 +159941,10 @@
       "translation": "Показывать указания по прицеливанию по биосигналам от Canonn"
     },
     {
+      "source": "Show all Systems",
+      "translation": "Показать все системы"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Показать все боксели с массовым кодом {0}"
     },
@@ -159003,6 +160007,10 @@
     {
       "source": "Show factions in gal-map",
       "translation": "Показать фракции на гал-карте"
+    },
+    {
+      "source": "Show fewer Systems",
+      "translation": "Показать меньше систем"
     },
     {
       "source": "Show flight warnings",
@@ -159253,6 +160261,10 @@
       "translation": "Показаны отложенные системы {0}–{1} из {2} ({3})."
     },
     {
+      "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "Показаны сохраненные рыночные цены Ardent на материалы {0} (последняя котировка {1} UTC; проверено {2} UTC). Для отсутствующих цитат используйте старый отчет или каталог."
+    },
+    {
       "source": "Showing systems {0}–{1} of {2} (descending).",
       "translation": "Показаны системы {0}–{1} из {2} (по убыванию)."
     },
@@ -159445,6 +160457,10 @@
       "translation": "Маленький"
     },
     {
+      "source": "Small / medium pads",
+      "translation": "Маленькие/средние подушечки"
+    },
+    {
       "source": "Small circles (~100 m)",
       "translation": "Малые круги (~100 м)"
     },
@@ -159475,6 +160491,10 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Некоторым телам все еще требуется полное сканирование планет или родительских звезд."
+    },
+    {
+      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
+      "translation": "Некоторые поисковые запросы достигли предела количества страниц; несопоставленные цены остались без маркировки."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -161157,6 +162177,10 @@
       "translation": "Т07"
     },
     {
+      "source": "TAF",
+      "translation": "ТАФ"
+    },
+    {
       "source": "TARGET",
       "translation": "ЦЕЛЬ"
     },
@@ -161203,6 +162227,10 @@
     {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "ДЕТАЛИ КАТАЛОГА ЭТОГО САЙТА"
+    },
+    {
+      "source": "THL",
+      "translation": "ТХЛ"
     },
     {
       "source": "TIME",
@@ -164677,8 +165705,8 @@
       "translation": "Использовать радиус биосигнала"
     },
     {
-      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity. Prices are a community snapshot and can change.",
-      "translation": "Используйте тип телосложения, геологию и звездные подсказки, чтобы сузить круг поиска добычи полезных ископаемых. Цены являются снимком сообщества и могут измениться."
+      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity.",
+      "translation": "Используйте тип телосложения, геологию и звездные подсказки, чтобы сузить круг поиска добычи полезных ископаемых."
     },
     {
       "source": "Use boost on B → C",
@@ -164935,6 +165963,10 @@
     {
       "source": "VOLCANISM",
       "translation": "вулканизм"
+    },
+    {
+      "source": "VOP",
+      "translation": "ВОП"
     },
     {
       "source": "VOXSTELLAR",
@@ -166693,6 +167725,10 @@
       "translation": "данные"
     },
     {
+      "source": "dd MMM yyyy HH:mm",
+      "translation": "дд МММ гггг ЧЧ:мм"
+    },
+    {
       "source": "de",
       "translation": "де"
     },
@@ -168177,6 +169213,14 @@
       "translation": "секунды"
     },
     {
+      "source": "sell systems, best viable price first. Best sell from",
+      "translation": "продавать системы, сначала по лучшей приемлемой цене. Лучшие продажи от"
+    },
+    {
+      "source": "sell systems, daily commodity value order. Best sell from",
+      "translation": "системы продажи, ежедневный заказ стоимости товара. Лучшие продажи от"
+    },
+    {
       "source": "sensor",
       "translation": "датчик"
     },
@@ -169293,8 +170337,8 @@
       "translation": "{0} известный вид"
     },
     {
-      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
-      "translation": "Посадочные корпуса {0} для {1}. Лучшая продажа от {2}.{3}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
+      "translation": "Посадочные корпуса {0} для {1}. {2}{3}{4}.{5}{6}{7}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -169769,10 +170813,6 @@
       "translation": "{0} · {1} записи"
     },
     {
-      "source": "{0} · {1} ly",
-      "translation": "{0} · {1} ly"
-    },
-    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} записано · наивысший суффикс {2} · {3}"
     },
@@ -169817,8 +170857,8 @@
       "translation": "{0}: {1} т"
     },
     {
-      "source": "{0}: {1}{2}, {3} g, {4} ls",
-      "translation": "{0}: {1}{2}, {3} г, {4} ls"
+      "source": "{0}: {1}, {2} g, {3} ls",
+      "translation": "{0}: {1}, {2} г, {3} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -170093,10 +171133,6 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": ", 废墟{0} {1}"
-    },
-    {
-      "source": ", {0} reserve",
-      "translation": ",{0} 预留"
     },
     {
       "source": "-1 asteroid",
@@ -171183,6 +172219,10 @@
       "translation": "ALT {0}"
     },
     {
+      "source": "ALU",
+      "translation": "算术逻辑单元"
+    },
+    {
       "source": "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
       "translation": "ALVR 支持 Windows 和 Linux，但其 Linux 设置和 Linux 上的 SteamVR 仍处于实验阶段；精英还贯穿Proton。"
     },
@@ -172079,6 +173119,10 @@
       "translation": "任意商品名称"
     },
     {
+      "source": "Any surface material",
+      "translation": "任何表面材质"
+    },
+    {
       "source": "AppImage manual update",
       "translation": "AppImage手动更新"
     },
@@ -172264,7 +173308,23 @@
     },
     {
       "source": "Ardent",
-      "translation": "热心"
+      "translation": "Ardent"
+    },
+    {
+      "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
+      "translation": "Ardent 每日价格暂不可用。正在显示目录快照。"
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC); some quotes could not be refreshed. Missing quotes use the older report or catalog.",
+      "translation": "{0}材料的市场价格火热（最新报价{1} UTC）；一些报价无法刷新。缺少的报价使用旧的报告或目录。"
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "{0} 材料的市场价格火热（最新报价 {1} UTC；检查 {2} UTC）。缺少的报价使用旧的报告或目录。"
+    },
+    {
+      "source": "Ardent/Spansh fallback",
+      "translation": "Ardent/Spansh 后备"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
@@ -172843,6 +173903,10 @@
       "translation": "酒吧"
     },
     {
+      "source": "BAU",
+      "translation": "巴乌"
+    },
+    {
       "source": "BC3",
       "translation": "BC3"
     },
@@ -172853,6 +173917,14 @@
     {
       "source": "BEARING",
       "translation": "轴承"
+    },
+    {
+      "source": "BEN",
+      "translation": "本"
+    },
+    {
+      "source": "BER",
+      "translation": "误码率"
     },
     {
       "source": "BEST",
@@ -172885,6 +173957,10 @@
     {
       "source": "BIOLOGY PRESENTATION",
       "translation": "生物学演示"
+    },
+    {
+      "source": "BIS",
+      "translation": "国际清算银行"
     },
     {
       "source": "BLOCKED",
@@ -172965,6 +174041,14 @@
     {
       "source": "BOXELS · MASS CODES {0}",
       "translation": "盒子·质量代码 {0}"
+    },
+    {
+      "source": "BRO",
+      "translation": "兄弟"
+    },
+    {
+      "source": "BRT",
+      "translation": "快速公交系统"
     },
     {
       "source": "BUILD TYPE",
@@ -173117,6 +174201,10 @@
     {
       "source": "Bertrandite",
       "translation": "伯特兰石"
+    },
+    {
+      "source": "Best Sell Station",
+      "translation": "畅销站"
     },
     {
       "source": "Beta",
@@ -173495,8 +174583,8 @@
       "translation": "身体保护"
     },
     {
-      "source": "Body availability follows the Surface Hunt location reference. Sell prices retain the community snapshot and can change.",
-      "translation": "车身可用性遵循 Surface Hunt 位置参考。销售价格保留社区快照并且可以更改。"
+      "source": "Body availability follows the Surface Hunt location reference.",
+      "translation": "车身可用性遵循 Surface Hunt 位置参考。"
     },
     {
       "source": "Body baseline {0} K",
@@ -173919,6 +175007,10 @@
       "translation": "点击率"
     },
     {
+      "source": "CLT",
+      "translation": "交联层析法"
+    },
+    {
       "source": "CMD",
       "translation": "指令管理系统"
     },
@@ -173945,6 +175037,10 @@
     {
       "source": "CMM composites",
       "translation": "三坐标测量机复合材料"
+    },
+    {
+      "source": "COB",
+      "translation": "COB"
     },
     {
       "source": "CODEX BINGO",
@@ -174073,6 +175169,10 @@
     {
       "source": "CREDIT VALUE",
       "translation": "信用值"
+    },
+    {
+      "source": "CRY",
+      "translation": "哭"
     },
     {
       "source": "CSV",
@@ -174543,6 +175643,10 @@
       "translation": "目录"
     },
     {
+      "source": "Catalog prices shown while Ardent market quotes load.",
+      "translation": "加载 Ardent 市场报价时显示目录价格。"
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "本次会议更新了目录："
     },
@@ -174673,6 +175777,10 @@
     {
       "source": "Checking for other running SrvSurvey instances...",
       "translation": "正在检查其他正在运行的 SrvSurvey 实例..."
+    },
+    {
+      "source": "Checking sell systems {0}/{1}…",
+      "translation": "正在检查销售系统 {0}/{1}…"
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -177023,6 +178131,14 @@
       "translation": "夏令时"
     },
     {
+      "source": "DST REF",
+      "translation": "夏令时参考"
+    },
+    {
+      "source": "DST SELL",
+      "translation": "夏令时卖出"
+    },
+    {
       "source": "Danger",
       "translation": "危险"
     },
@@ -178851,6 +179967,10 @@
       "translation": "展开以将键盘或控制器输入分配给操作。"
     },
     {
+      "source": "Expand window to fit mining results",
+      "translation": "扩大窗口以适应挖掘结果"
+    },
+    {
       "source": "Expansion",
       "translation": "扩张"
     },
@@ -179587,10 +180707,6 @@
       "translation": "寻找该商品的热点"
     },
     {
-      "source": "Find landable surface deposits",
-      "translation": "寻找可登陆的地表沉积物"
-    },
-    {
       "source": "Find last visit",
       "translation": "查找上次访问"
     },
@@ -180231,6 +181347,10 @@
       "translation": "未来的屏幕截图将不会嵌入横幅"
     },
     {
+      "source": "GAL",
+      "translation": "伽蓝"
+    },
+    {
       "source": "GALACTIC POSITION",
       "translation": "银河位置"
     },
@@ -180295,12 +181415,20 @@
       "translation": "甘肃古城水利工程有限公司"
     },
     {
+      "source": "GLM",
+      "translation": "广义线性模型"
+    },
+    {
       "source": "GLOBAL PROGRESS",
       "translation": "全球进步"
     },
     {
       "source": "GOAL #{0}",
       "translation": "目标#{0}"
+    },
+    {
+      "source": "GOS",
+      "translation": "GOS"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -181039,6 +182167,10 @@
       "translation": "HAB"
     },
     {
+      "source": "HAF",
+      "translation": "氢氟酸"
+    },
+    {
       "source": "HAVE",
       "translation": "有"
     },
@@ -181607,6 +182739,10 @@
       "translation": "确定调查点"
     },
     {
+      "source": "IDT",
+      "translation": "离子交换技术"
+    },
+    {
       "source": "IMAGE X",
       "translation": "图像X"
     },
@@ -181629,6 +182765,10 @@
     {
       "source": "INACTIVE",
       "translation": "不活跃"
+    },
+    {
+      "source": "IND",
+      "translation": "临床试验"
     },
     {
       "source": "INDEX",
@@ -182691,6 +183831,10 @@
       "translation": "实验室"
     },
     {
+      "source": "LAN",
+      "translation": "局域网"
+    },
+    {
       "source": "LANDABLE",
       "translation": "登陆"
     },
@@ -182737,6 +183881,14 @@
     {
       "source": "LAYOUT",
       "translation": "布局"
+    },
+    {
+      "source": "LEP",
+      "translation": "LEP"
+    },
+    {
+      "source": "LHY",
+      "translation": "左心室"
     },
     {
       "source": "LIGHT",
@@ -183727,6 +184879,14 @@
       "translation": "最大CR/T"
     },
     {
+      "source": "MAX SELL CR/T",
+      "translation": "最大销售 CR/T"
+    },
+    {
+      "source": "MCL",
+      "translation": "中层细胞层"
+    },
+    {
       "source": "MEASURED MASTER POINT",
       "translation": "测量的主点"
     },
@@ -183795,8 +184955,16 @@
       "translation": "模块"
     },
     {
+      "source": "MOI",
+      "translation": "教学语言"
+    },
+    {
       "source": "MR",
       "translation": "先生"
+    },
+    {
+      "source": "MUS",
+      "translation": "穆斯"
     },
     {
       "source": "Magenta",
@@ -185719,6 +186887,14 @@
       "translation": "最后停靠地点没有可用的市场数据。"
     },
     {
+      "source": "No matching Spansh body within the search radius",
+      "translation": "搜索半径内没有匹配的Spansh尸体"
+    },
+    {
+      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
+      "translation": "在检查了收入最高的销售站后，没有找到匹配的尸体。搜索在其请求限制处停止（{0}Spansh正文页面）；缩小距离或选择材料。"
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "目前还没有匹配的配备模块。需要完整的 Loadout 事件；保存的作业仍然可以编辑。"
     },
@@ -185885,6 +187061,14 @@
     {
       "source": "No selectable mapped object is available.",
       "translation": "没有可用的可选映射对象。"
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the distance.",
+      "translation": "附近没有销售站有匹配的露天采矿体。"
+    },
+    {
+      "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
+      "translation": "距离内没有与所选材料、需求和着陆点相匹配的销售站。"
     },
     {
       "source": "No session log file is available.",
@@ -187315,6 +188499,10 @@
       "translation": "焊盘锁定"
     },
     {
+      "source": "PAI",
+      "translation": "帕伊"
+    },
+    {
       "source": "PASS-THROUGH UNAVAILABLE",
       "translation": "直通不可用"
     },
@@ -187325,10 +188513,6 @@
     {
       "source": "PATH",
       "translation": "小路"
-    },
-    {
-      "source": "PEAK SELL SNAPSHOT",
-      "translation": "高峰销售快照"
     },
     {
       "source": "PIN",
@@ -187365,6 +188549,10 @@
     {
       "source": "POWER",
       "translation": "力量"
+    },
+    {
+      "source": "PRA",
+      "translation": "普拉亚"
     },
     {
       "source": "PREDICTED",
@@ -187417,6 +188605,10 @@
     {
       "source": "PROJECT NAME",
       "translation": "项目名称"
+    },
+    {
+      "source": "PYR",
+      "translation": "吡咯烷酮"
     },
     {
       "source": "Pad 02 | 164 m",
@@ -188939,6 +190131,10 @@
       "translation": "废墟遗迹标题"
     },
     {
+      "source": "RUT",
+      "translation": "发情"
+    },
+    {
       "source": "Radar size (0–4)",
       "translation": "雷达尺寸 (0–4)"
     },
@@ -190447,6 +191643,10 @@
       "translation": "恢复备份..."
     },
     {
+      "source": "Restore default window width",
+      "translation": "恢复默认窗口宽度"
+    },
+    {
       "source": "Restore defaults",
       "translation": "恢复默认设置"
     },
@@ -191001,6 +192201,10 @@
     {
       "source": "R−",
       "translation": "R−"
+    },
+    {
+      "source": "S/M",
+      "translation": "短/短"
     },
     {
       "source": "S256",
@@ -192079,10 +193283,6 @@
       "translation": "搜索指南、设置、符号或工作流程"
     },
     {
-      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
-      "translation": "在参考系附近搜索可着陆物体以获取您选择的表面材料。目标是该距离内支付最多的车站。"
-    },
-    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "搜索程序框，跟踪每个生成的系统，并选择什么算完整。"
     },
@@ -192101,6 +193301,10 @@
     {
       "source": "Search settings",
       "translation": "搜索设置"
+    },
+    {
+      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
+      "translation": "搜索在其请求限制处停止（{0}Spansh正文页面）；缩小距离以获得更大的覆盖范围。"
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -192421,6 +193625,10 @@
     {
       "source": "SelectedWeapon: {0} / {1}",
       "translation": "选定武器：{0} / {1}"
+    },
+    {
+      "source": "Sell System",
+      "translation": "销售系统"
     },
     {
       "source": "Sell mined cargo",
@@ -192947,6 +194155,10 @@
       "translation": "显示来自 Canonn 的生物信号的瞄准引导"
     },
     {
+      "source": "Show all Systems",
+      "translation": "显示所有系统"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "显示所有质量代码 {0} 框"
     },
@@ -193009,6 +194221,10 @@
     {
       "source": "Show factions in gal-map",
       "translation": "在 gal-map 中显示派系"
+    },
+    {
+      "source": "Show fewer Systems",
+      "translation": "显示更少的系统"
     },
     {
       "source": "Show flight warnings",
@@ -193259,6 +194475,10 @@
       "translation": "显示 {2} ({3}) 的延迟系统 {0}–{1}。"
     },
     {
+      "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "显示 {0} 材料的存储 Ardent 市场价格（最新报价 {1} UTC；检查 {2} UTC）。缺少的报价使用旧的报告或目录。"
+    },
+    {
       "source": "Showing systems {0}–{1} of {2} (descending).",
       "translation": "显示 {2} 的系统 {0}–{1}（降序）。"
     },
@@ -193451,6 +194671,10 @@
       "translation": "小的"
     },
     {
+      "source": "Small / medium pads",
+      "translation": "小/中垫"
+    },
+    {
       "source": "Small circles (~100 m)",
       "translation": "小圆圈 (~100 m)"
     },
@@ -193481,6 +194705,10 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "有些天体仍然需要完整的行星或母星扫描。"
+    },
+    {
+      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
+      "translation": "部分人体搜索已达到页数限制；无与伦比的价格没有标记。"
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -195163,6 +196391,10 @@
       "translation": "T07"
     },
     {
+      "source": "TAF",
+      "translation": "TAF"
+    },
+    {
       "source": "TARGET",
       "translation": "目标"
     },
@@ -195209,6 +196441,10 @@
     {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "本网站的目录详细信息"
+    },
+    {
+      "source": "THL",
+      "translation": "THL"
     },
     {
       "source": "TIME",
@@ -198683,8 +199919,8 @@
       "translation": "使用生物信号半径"
     },
     {
-      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity. Prices are a community snapshot and can change.",
-      "translation": "利用体型、地质和恒星线索来缩小对露天采矿商品的搜索范围。价格是社区快照，可能会发生变化。"
+      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity.",
+      "translation": "利用体型、地质和恒星线索来缩小对露天采矿商品的搜索范围。"
     },
     {
       "source": "Use boost on B → C",
@@ -198941,6 +200177,10 @@
     {
       "source": "VOLCANISM",
       "translation": "火山活动"
+    },
+    {
+      "source": "VOP",
+      "translation": "视音频"
     },
     {
       "source": "VOXSTELLAR",
@@ -200699,6 +201939,10 @@
       "translation": "数据"
     },
     {
+      "source": "dd MMM yyyy HH:mm",
+      "translation": "日 月 日 时:分"
+    },
+    {
       "source": "de",
       "translation": "德"
     },
@@ -202183,6 +203427,14 @@
       "translation": "秒"
     },
     {
+      "source": "sell systems, best viable price first. Best sell from",
+      "translation": "销售系统，最可行的价格优先。最畅销自"
+    },
+    {
+      "source": "sell systems, daily commodity value order. Best sell from",
+      "translation": "销售系统，每日商品价值订单。最畅销自"
+    },
+    {
       "source": "sensor",
       "translation": "传感器"
     },
@@ -203299,8 +204551,8 @@
       "translation": "{0} 已知物种"
     },
     {
-      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
-      "translation": "{0} 适用于 {1} 的可着陆车身。畅销 {2}.{3}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
+      "translation": "{0} 适用于 {1} 的可着陆车身。 {2}{3}{4}.{5}{6}{7}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -203775,10 +205027,6 @@
       "translation": "{0} · {1} 条目"
     },
     {
-      "source": "{0} · {1} ly",
-      "translation": "{0} · {1} ly"
-    },
-    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "{0} · {1} 已记录 · 最高后缀 {2} · {3}"
     },
@@ -203823,8 +205071,8 @@
       "translation": "{0}: {1} t"
     },
     {
-      "source": "{0}: {1}{2}, {3} g, {4} ls",
-      "translation": "{0}：{1}{2}、{3} g、{4} ls"
+      "source": "{0}: {1}, {2} g, {3} ls",
+      "translation": "{0}：{1}、{2} g、{3} ls"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",
@@ -204099,10 +205347,6 @@
     {
       "source": ", Ruins{0} {1}",
       "translation": "* , RUINS{0} {1} >>>!"
-    },
-    {
-      "source": ", {0} reserve",
-      "translation": "* , {0} RESERVE >>>!"
     },
     {
       "source": "-1 asteroid",
@@ -205189,6 +206433,10 @@
       "translation": "* ALT {0} >>>!"
     },
     {
+      "source": "ALU",
+      "translation": "* ALU >>>!"
+    },
+    {
       "source": "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
       "translation": "* ALVR SUPPORTS WINDOWS AND LINUX, BUT ITS LINUX SETUP AND STEAMVR ON LINUX ARE EXPERIMENTAL; ELITE ADDITIONALLY RUNS THROUGH PROTON. >>>!"
     },
@@ -206085,6 +207333,10 @@
       "translation": "* ANY COMMODITY NAME >>>!"
     },
     {
+      "source": "Any surface material",
+      "translation": "* ANY SURFACE MATERIAL >>>!"
+    },
+    {
       "source": "AppImage manual update",
       "translation": "* APPIMAGE MANUAL UPDATE >>>!"
     },
@@ -206271,6 +207523,22 @@
     {
       "source": "Ardent",
       "translation": "* ARDENT >>>!"
+    },
+    {
+      "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
+      "translation": "* ARDENT DAILY PRICES ARE UNAVAILABLE. SHOWING THE CATALOG SNAPSHOT. >>>!"
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC); some quotes could not be refreshed. Missing quotes use the older report or catalog.",
+      "translation": "* ARDENT MARKET PRICES FOR {0} MATERIALS (LATEST QUOTE {1} UTC); SOME QUOTES COULD NOT BE REFRESHED. MISSING QUOTES USE THE OLDER REPORT OR CATALOG. >>>!"
+    },
+    {
+      "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "* ARDENT MARKET PRICES FOR {0} MATERIALS (LATEST QUOTE {1} UTC; CHECKED {2} UTC). MISSING QUOTES USE THE OLDER REPORT OR CATALOG. >>>!"
+    },
+    {
+      "source": "Ardent/Spansh fallback",
+      "translation": "* ARDENT/SPANSH FALLBACK >>>!"
     },
     {
       "source": "Are you sure you want to proceed? Doing so will close all instances.",
@@ -206849,6 +208117,10 @@
       "translation": "* BAR >>>!"
     },
     {
+      "source": "BAU",
+      "translation": "* BAU >>>!"
+    },
+    {
       "source": "BC3",
       "translation": "* BC3 >>>!"
     },
@@ -206859,6 +208131,14 @@
     {
       "source": "BEARING",
       "translation": "* BEARING >>>!"
+    },
+    {
+      "source": "BEN",
+      "translation": "* BEN >>>!"
+    },
+    {
+      "source": "BER",
+      "translation": "* BER >>>!"
     },
     {
       "source": "BEST",
@@ -206891,6 +208171,10 @@
     {
       "source": "BIOLOGY PRESENTATION",
       "translation": "* BIOLOGY PRESENTATION >>>!"
+    },
+    {
+      "source": "BIS",
+      "translation": "* BIS >>>!"
     },
     {
       "source": "BLOCKED",
@@ -206971,6 +208255,14 @@
     {
       "source": "BOXELS · MASS CODES {0}",
       "translation": "* BOXELS · MASS CODES {0} >>>!"
+    },
+    {
+      "source": "BRO",
+      "translation": "* BRO >>>!"
+    },
+    {
+      "source": "BRT",
+      "translation": "* BRT >>>!"
     },
     {
       "source": "BUILD TYPE",
@@ -207123,6 +208415,10 @@
     {
       "source": "Bertrandite",
       "translation": "* BERTRANDITE >>>!"
+    },
+    {
+      "source": "Best Sell Station",
+      "translation": "* BEST SELL STATION >>>!"
     },
     {
       "source": "Beta",
@@ -207501,8 +208797,8 @@
       "translation": "* BODY PROTECTORATE >>>!"
     },
     {
-      "source": "Body availability follows the Surface Hunt location reference. Sell prices retain the community snapshot and can change.",
-      "translation": "* BODY AVAILABILITY FOLLOWS THE SURFACE HUNT LOCATION REFERENCE. SELL PRICES RETAIN THE COMMUNITY SNAPSHOT AND CAN CHANGE. >>>!"
+      "source": "Body availability follows the Surface Hunt location reference.",
+      "translation": "* BODY AVAILABILITY FOLLOWS THE SURFACE HUNT LOCATION REFERENCE. >>>!"
     },
     {
       "source": "Body baseline {0} K",
@@ -207925,6 +209221,10 @@
       "translation": "* CLICK-THROUGH >>>!"
     },
     {
+      "source": "CLT",
+      "translation": "* CLT >>>!"
+    },
+    {
       "source": "CMD",
       "translation": "* CMD >>>!"
     },
@@ -207951,6 +209251,10 @@
     {
       "source": "CMM composites",
       "translation": "* CMM COMPOSITES >>>!"
+    },
+    {
+      "source": "COB",
+      "translation": "* COB >>>!"
     },
     {
       "source": "CODEX BINGO",
@@ -208079,6 +209383,10 @@
     {
       "source": "CREDIT VALUE",
       "translation": "* CREDIT VALUE >>>!"
+    },
+    {
+      "source": "CRY",
+      "translation": "* CRY >>>!"
     },
     {
       "source": "CSV",
@@ -208549,6 +209857,10 @@
       "translation": "* CATALOG >>>!"
     },
     {
+      "source": "Catalog prices shown while Ardent market quotes load.",
+      "translation": "* CATALOG PRICES SHOWN WHILE ARDENT MARKET QUOTES LOAD. >>>!"
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "* CATALOGS UPDATED THIS SESSION: >>>!"
     },
@@ -208679,6 +209991,10 @@
     {
       "source": "Checking for other running SrvSurvey instances...",
       "translation": "* CHECKING FOR OTHER RUNNING SRVSURVEY INSTANCES... >>>!"
+    },
+    {
+      "source": "Checking sell systems {0}/{1}…",
+      "translation": "* CHECKING SELL SYSTEMS {0}/{1}… >>>!"
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -211029,6 +212345,14 @@
       "translation": "* DST >>>!"
     },
     {
+      "source": "DST REF",
+      "translation": "* DST REF >>>!"
+    },
+    {
+      "source": "DST SELL",
+      "translation": "* DST SELL >>>!"
+    },
+    {
       "source": "Danger",
       "translation": "* DANGER >>>!"
     },
@@ -212857,6 +214181,10 @@
       "translation": "* EXPAND TO ASSIGN KEYBOARD OR CONTROLLER INPUTS TO ACTIONS. >>>!"
     },
     {
+      "source": "Expand window to fit mining results",
+      "translation": "* EXPAND WINDOW TO FIT MINING RESULTS >>>!"
+    },
+    {
       "source": "Expansion",
       "translation": "* EXPANSION >>>!"
     },
@@ -213593,10 +214921,6 @@
       "translation": "* FIND HOTSPOTS FOR THIS COMMODITY >>>!"
     },
     {
-      "source": "Find landable surface deposits",
-      "translation": "* FIND LANDABLE SURFACE DEPOSITS >>>!"
-    },
-    {
       "source": "Find last visit",
       "translation": "* FIND LAST VISIT >>>!"
     },
@@ -214237,6 +215561,10 @@
       "translation": "* FUTURE SCREENSHOTS WILL HAVE NO EMBEDDED BANNER >>>!"
     },
     {
+      "source": "GAL",
+      "translation": "* GAL >>>!"
+    },
+    {
       "source": "GALACTIC POSITION",
       "translation": "* GALACTIC POSITION >>>!"
     },
@@ -214301,12 +215629,20 @@
       "translation": "* GGWL >>>!"
     },
     {
+      "source": "GLM",
+      "translation": "* GLM >>>!"
+    },
+    {
       "source": "GLOBAL PROGRESS",
       "translation": "* GLOBAL PROGRESS >>>!"
     },
     {
       "source": "GOAL #{0}",
       "translation": "* GOAL #{0} >>>!"
+    },
+    {
+      "source": "GOS",
+      "translation": "* GOS >>>!"
     },
     {
       "source": "GR 504 - Beta ruins #1",
@@ -215045,6 +216381,10 @@
       "translation": "* HAB >>>!"
     },
     {
+      "source": "HAF",
+      "translation": "* HAF >>>!"
+    },
+    {
       "source": "HAVE",
       "translation": "* HAVE >>>!"
     },
@@ -215613,6 +216953,10 @@
       "translation": "* IDENTIFY SURVEY POINT >>>!"
     },
     {
+      "source": "IDT",
+      "translation": "* IDT >>>!"
+    },
+    {
       "source": "IMAGE X",
       "translation": "* IMAGE X >>>!"
     },
@@ -215635,6 +216979,10 @@
     {
       "source": "INACTIVE",
       "translation": "* INACTIVE >>>!"
+    },
+    {
+      "source": "IND",
+      "translation": "* IND >>>!"
     },
     {
       "source": "INDEX",
@@ -216697,6 +218045,10 @@
       "translation": "* LAB >>>!"
     },
     {
+      "source": "LAN",
+      "translation": "* LAN >>>!"
+    },
+    {
       "source": "LANDABLE",
       "translation": "* LANDABLE >>>!"
     },
@@ -216743,6 +218095,14 @@
     {
       "source": "LAYOUT",
       "translation": "* LAYOUT >>>!"
+    },
+    {
+      "source": "LEP",
+      "translation": "* LEP >>>!"
+    },
+    {
+      "source": "LHY",
+      "translation": "* LHY >>>!"
     },
     {
       "source": "LIGHT",
@@ -217733,6 +219093,14 @@
       "translation": "* MAX CR/T >>>!"
     },
     {
+      "source": "MAX SELL CR/T",
+      "translation": "* MAX SELL CR/T >>>!"
+    },
+    {
+      "source": "MCL",
+      "translation": "* MCL >>>!"
+    },
+    {
       "source": "MEASURED MASTER POINT",
       "translation": "* MEASURED MASTER POINT >>>!"
     },
@@ -217801,8 +219169,16 @@
       "translation": "* MODULE >>>!"
     },
     {
+      "source": "MOI",
+      "translation": "* MOI >>>!"
+    },
+    {
       "source": "MR",
       "translation": "* MR >>>!"
+    },
+    {
+      "source": "MUS",
+      "translation": "* MUS >>>!"
     },
     {
       "source": "Magenta",
@@ -219725,6 +221101,14 @@
       "translation": "* NO MARKET DATA IS AVAILABLE FROM THE LAST DOCKED LOCATION. >>>!"
     },
     {
+      "source": "No matching Spansh body within the search radius",
+      "translation": "* NO MATCHING SPANSH BODY WITHIN THE SEARCH RADIUS >>>!"
+    },
+    {
+      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
+      "translation": "* NO MATCHING BODIES WERE FOUND AFTER CHECKING THE HIGHEST-PAYING SELL STATIONS. SEARCH STOPPED AT ITS REQUEST LIMIT ({0} SPANSH BODY PAGES); NARROW THE DISTANCE OR SELECT A MATERIAL. >>>!"
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "* NO MATCHING EQUIPPED MODULES ARE AVAILABLE YET. A FULL LOADOUT EVENT IS NEEDED; SAVED ASSIGNMENTS REMAIN EDITABLE. >>>!"
     },
@@ -219891,6 +221275,14 @@
     {
       "source": "No selectable mapped object is available.",
       "translation": "* NO SELECTABLE MAPPED OBJECT IS AVAILABLE. >>>!"
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the distance.",
+      "translation": "* NO SELL STATION HAS A MATCHING SURFACE MINING BODY WITHIN THE DISTANCE. >>>!"
+    },
+    {
+      "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
+      "translation": "* NO SELL STATION MATCHES THE SELECTED MATERIAL, DEMAND, AND LANDING PAD WITHIN THE DISTANCE. >>>!"
     },
     {
       "source": "No session log file is available.",
@@ -221321,6 +222713,10 @@
       "translation": "* PAD LOCKDOWN IN >>>!"
     },
     {
+      "source": "PAI",
+      "translation": "* PAI >>>!"
+    },
+    {
       "source": "PASS-THROUGH UNAVAILABLE",
       "translation": "* PASS-THROUGH UNAVAILABLE >>>!"
     },
@@ -221331,10 +222727,6 @@
     {
       "source": "PATH",
       "translation": "* PATH >>>!"
-    },
-    {
-      "source": "PEAK SELL SNAPSHOT",
-      "translation": "* PEAK SELL SNAPSHOT >>>!"
     },
     {
       "source": "PIN",
@@ -221371,6 +222763,10 @@
     {
       "source": "POWER",
       "translation": "* POWER >>>!"
+    },
+    {
+      "source": "PRA",
+      "translation": "* PRA >>>!"
     },
     {
       "source": "PREDICTED",
@@ -221423,6 +222819,10 @@
     {
       "source": "PROJECT NAME",
       "translation": "* PROJECT NAME >>>!"
+    },
+    {
+      "source": "PYR",
+      "translation": "* PYR >>>!"
     },
     {
       "source": "Pad 02 | 164 m",
@@ -222945,6 +224345,10 @@
       "translation": "* RUINS RELIC HEADING >>>!"
     },
     {
+      "source": "RUT",
+      "translation": "* RUT >>>!"
+    },
+    {
       "source": "Radar size (0–4)",
       "translation": "* RADAR SIZE (0–4) >>>!"
     },
@@ -224453,6 +225857,10 @@
       "translation": "* RESTORE BACKUP… >>>!"
     },
     {
+      "source": "Restore default window width",
+      "translation": "* RESTORE DEFAULT WINDOW WIDTH >>>!"
+    },
+    {
       "source": "Restore defaults",
       "translation": "* RESTORE DEFAULTS >>>!"
     },
@@ -225007,6 +226415,10 @@
     {
       "source": "R−",
       "translation": "* R− >>>!"
+    },
+    {
+      "source": "S/M",
+      "translation": "* S/M >>>!"
     },
     {
       "source": "S256",
@@ -226085,10 +227497,6 @@
       "translation": "* SEARCH GUIDES, SETTINGS, SYMBOLS, OR WORKFLOWS >>>!"
     },
     {
-      "source": "Search landable bodies near the reference system for the surface materials you choose. The target is the station inside that distance paying the most.",
-      "translation": "* SEARCH LANDABLE BODIES NEAR THE REFERENCE SYSTEM FOR THE SURFACE MATERIALS YOU CHOOSE. THE TARGET IS THE STATION INSIDE THAT DISTANCE PAYING THE MOST. >>>!"
-    },
-    {
       "source": "Search procedural boxels, track every generated system, and choose what counts as complete.",
       "translation": "* SEARCH PROCEDURAL BOXELS, TRACK EVERY GENERATED SYSTEM, AND CHOOSE WHAT COUNTS AS COMPLETE. >>>!"
     },
@@ -226107,6 +227515,10 @@
     {
       "source": "Search settings",
       "translation": "* SEARCH SETTINGS >>>!"
+    },
+    {
+      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
+      "translation": "* SEARCH STOPPED AT ITS REQUEST LIMIT ({0} SPANSH BODY PAGES); NARROW THE DISTANCE FOR MORE COVERAGE. >>>!"
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -226427,6 +227839,10 @@
     {
       "source": "SelectedWeapon: {0} / {1}",
       "translation": "* SELECTEDWEAPON: {0} / {1} >>>!"
+    },
+    {
+      "source": "Sell System",
+      "translation": "* SELL SYSTEM >>>!"
     },
     {
       "source": "Sell mined cargo",
@@ -226953,6 +228369,10 @@
       "translation": "* SHOW AIMING GUIDANCE TO BIO SIGNALS FROM CANONN >>>!"
     },
     {
+      "source": "Show all Systems",
+      "translation": "* SHOW ALL SYSTEMS >>>!"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "* SHOW ALL MASS CODE {0} BOXELS >>>!"
     },
@@ -227015,6 +228435,10 @@
     {
       "source": "Show factions in gal-map",
       "translation": "* SHOW FACTIONS IN GAL-MAP >>>!"
+    },
+    {
+      "source": "Show fewer Systems",
+      "translation": "* SHOW FEWER SYSTEMS >>>!"
     },
     {
       "source": "Show flight warnings",
@@ -227265,6 +228689,10 @@
       "translation": "* SHOWING DEFERRED SYSTEMS {0}–{1} OF {2} ({3}). >>>!"
     },
     {
+      "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
+      "translation": "* SHOWING STORED ARDENT MARKET PRICES FOR {0} MATERIALS (LATEST QUOTE {1} UTC; CHECKED {2} UTC). MISSING QUOTES USE THE OLDER REPORT OR CATALOG. >>>!"
+    },
+    {
       "source": "Showing systems {0}–{1} of {2} (descending).",
       "translation": "* SHOWING SYSTEMS {0}–{1} OF {2} (DESCENDING). >>>!"
     },
@@ -227457,6 +228885,10 @@
       "translation": "* SMALL >>>!"
     },
     {
+      "source": "Small / medium pads",
+      "translation": "* SMALL / MEDIUM PADS >>>!"
+    },
+    {
       "source": "Small circles (~100 m)",
       "translation": "* SMALL CIRCLES (~100 M) >>>!"
     },
@@ -227487,6 +228919,10 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "* SOME BODIES STILL NEED COMPLETE PLANET OR PARENT-STAR SCANS. >>>!"
+    },
+    {
+      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
+      "translation": "* SOME BODY SEARCHES REACHED THE PAGE LIMIT; UNMATCHED PRICES WERE LEFT UNMARKED. >>>!"
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -229169,6 +230605,10 @@
       "translation": "* T07 >>>!"
     },
     {
+      "source": "TAF",
+      "translation": "* TAF >>>!"
+    },
+    {
       "source": "TARGET",
       "translation": "* TARGET >>>!"
     },
@@ -229215,6 +230655,10 @@
     {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "* THIS SITE'S CATALOG DETAILS >>>!"
+    },
+    {
+      "source": "THL",
+      "translation": "* THL >>>!"
     },
     {
       "source": "TIME",
@@ -232689,8 +234133,8 @@
       "translation": "* USE BIO SIGNAL RADIUS >>>!"
     },
     {
-      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity. Prices are a community snapshot and can change.",
-      "translation": "* USE BODY TYPE, GEOLOGY, AND STELLAR CLUES TO NARROW THE SEARCH FOR A SURFACE-MINING COMMODITY. PRICES ARE A COMMUNITY SNAPSHOT AND CAN CHANGE. >>>!"
+      "source": "Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity.",
+      "translation": "* USE BODY TYPE, GEOLOGY, AND STELLAR CLUES TO NARROW THE SEARCH FOR A SURFACE-MINING COMMODITY. >>>!"
     },
     {
       "source": "Use boost on B → C",
@@ -232947,6 +234391,10 @@
     {
       "source": "VOLCANISM",
       "translation": "* VOLCANISM >>>!"
+    },
+    {
+      "source": "VOP",
+      "translation": "* VOP >>>!"
     },
     {
       "source": "VOXSTELLAR",
@@ -234705,6 +236153,10 @@
       "translation": "* DATA >>>!"
     },
     {
+      "source": "dd MMM yyyy HH:mm",
+      "translation": "* DD MMM YYYY HH:MM >>>!"
+    },
+    {
       "source": "de",
       "translation": "* DE >>>!"
     },
@@ -236189,6 +237641,14 @@
       "translation": "* SECONDS >>>!"
     },
     {
+      "source": "sell systems, best viable price first. Best sell from",
+      "translation": "* SELL SYSTEMS, BEST VIABLE PRICE FIRST. BEST SELL FROM >>>!"
+    },
+    {
+      "source": "sell systems, daily commodity value order. Best sell from",
+      "translation": "* SELL SYSTEMS, DAILY COMMODITY VALUE ORDER. BEST SELL FROM >>>!"
+    },
+    {
       "source": "sensor",
       "translation": "* SENSOR >>>!"
     },
@@ -237305,8 +238765,8 @@
       "translation": "* {0} KNOWN SPECIES >>>!"
     },
     {
-      "source": "{0} landable bodies for {1}. Best sell from {2}.{3}",
-      "translation": "* {0} LANDABLE BODIES FOR {1}. BEST SELL FROM {2}.{3} >>>!"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
+      "translation": "* {0} LANDABLE BODIES FOR {1}. {2}{3}{4}.{5}{6}{7} >>>!"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -237781,10 +239241,6 @@
       "translation": "* {0} · {1} ENTRIES >>>!"
     },
     {
-      "source": "{0} · {1} ly",
-      "translation": "* {0} · {1} LY >>>!"
-    },
-    {
       "source": "{0} · {1} recorded · highest suffix {2} · {3}",
       "translation": "* {0} · {1} RECORDED · HIGHEST SUFFIX {2} · {3} >>>!"
     },
@@ -237829,8 +239285,8 @@
       "translation": "* {0}: {1} T >>>!"
     },
     {
-      "source": "{0}: {1}{2}, {3} g, {4} ls",
-      "translation": "* {0}: {1}{2}, {3} G, {4} LS >>>!"
+      "source": "{0}: {1}, {2} g, {3} ls",
+      "translation": "* {0}: {1}, {2} G, {3} LS >>>!"
     },
     {
       "source": "{0}; required header, commander, load, and location bootstrap events before the range will be added automatically. Validated Status, Cargo, ShipLocker, NavRoute, and Market snapshots retained during the most recent 24 hours will be synchronized with the journal timeline. {1} Credentials and API tokens are always removed. Replay ranges are limited to {2} days.",

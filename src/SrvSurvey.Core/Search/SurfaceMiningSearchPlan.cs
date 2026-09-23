@@ -7,7 +7,10 @@ namespace SrvSurvey.Core.Search;
 /// </summary>
 public static class SurfaceMiningSearchPlan
 {
-    public static IReadOnlyList<string> MaterialsFor(IEnumerable<string> selected)
+    public static IReadOnlyList<string> MaterialsFor(
+        IEnumerable<string> selected,
+        IReadOnlyDictionary<string, MiningCommodityPriceSummary>? dailyPrices = null
+    )
     {
         string[] named = MiningMaterialSelection.Named(selected);
         if (named.Length > 0)
@@ -17,7 +20,18 @@ public static class SurfaceMiningSearchPlan
 
         if (MiningMaterialSelection.IsAny(selected))
         {
-            return PlanetaryMiningPlan.Materials;
+            return SurfaceMiningCommodityCatalog
+                .HuntReferences.OrderByDescending(reference =>
+                    SurfaceMiningCommodityPrices.Find(reference.Material, dailyPrices)?.AverageSellPrice
+                        is > 0
+                            and var price
+                        ? price
+                        : reference.AverageGalacticPrice
+                )
+                .ThenBy(reference => reference.Material, StringComparer.Ordinal)
+                .Select(reference => reference.Material)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
         }
 
         return [MostProfitableMaterial()];
@@ -30,12 +44,31 @@ public static class SurfaceMiningSearchPlan
             .First()
             .Material;
 
-    public static string SpanshReserve(string reserve) => reserve is "All" or "Unknown" or "" ? "" : reserve.Trim();
-
     public static MiningMarketResult? BestSell(IEnumerable<MiningMarketResult> markets) =>
         markets
             .Where(market => market.Price > 0 && market.Demand > 0)
             .OrderByDescending(market => market.Price)
             .ThenBy(market => market.Distance ?? double.MaxValue)
             .FirstOrDefault();
+}
+
+public static class SurfaceMiningCommodityPrices
+{
+    public static MiningCommodityPriceSummary? Find(
+        string material,
+        IReadOnlyDictionary<string, MiningCommodityPriceSummary>? report
+    )
+    {
+        if (report is null)
+        {
+            return null;
+        }
+
+        if (report.TryGetValue(material, out MiningCommodityPriceSummary? exact))
+        {
+            return exact;
+        }
+
+        return report.Values.FirstOrDefault(item => MiningCommodityName.Same(item.Commodity, material));
+    }
 }

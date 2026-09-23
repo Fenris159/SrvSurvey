@@ -20,38 +20,50 @@ public static class JournalPowerplayPledge
                 .OrderBy(static file => file.LastWriteTimeUtc)
         )
         {
-            foreach (string line in File.ReadLines(journal.FullName))
-            {
-                if (line.Length == 0 || !line.Contains("Powerplay", StringComparison.Ordinal))
-                {
-                    continue;
-                }
+            power = ReadJournal(journal, power);
+        }
 
-                try
-                {
-                    using var document = JsonDocument.Parse(line);
-                    string eventName = Text(document.RootElement, "event");
-                    if (eventName is "PowerplayLeave" or "PowerplayDefect")
-                    {
-                        power = "";
-                    }
-                    else if (eventName is "Powerplay" or "PowerplayJoin" or "PowerplayMerits" or "PowerplayRank")
-                    {
-                        string pledged = Text(document.RootElement, "Power");
-                        if (pledged.Length > 0)
-                        {
-                            power = pledged;
-                        }
-                    }
-                }
-                catch (JsonException)
-                {
-                    // A damaged journal line does not erase a pledge already read.
-                }
+        return power;
+    }
+
+    private static string ReadJournal(FileInfo journal, string power)
+    {
+        foreach (string line in File.ReadLines(journal.FullName))
+        {
+            if (line.Length == 0 || !line.Contains("Powerplay", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            try
+            {
+                using var document = JsonDocument.Parse(line);
+                power = ApplyEvent(document.RootElement, power);
+            }
+            catch (JsonException)
+            {
+                // A damaged journal line does not erase a pledge already read.
             }
         }
 
         return power;
+    }
+
+    private static string ApplyEvent(JsonElement element, string previousPower) =>
+        Text(element, "event") switch
+        {
+            "PowerplayLeave" or "PowerplayDefect" => "",
+            "Powerplay" or "PowerplayJoin" or "PowerplayMerits" or "PowerplayRank" => PledgedPower(
+                element,
+                previousPower
+            ),
+            _ => previousPower,
+        };
+
+    private static string PledgedPower(JsonElement element, string previousPower)
+    {
+        string pledged = Text(element, "Power");
+        return pledged.Length > 0 ? pledged : previousPower;
     }
 
     private static string Text(JsonElement element, string name) =>

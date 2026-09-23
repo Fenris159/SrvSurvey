@@ -2,7 +2,12 @@ using SrvSurvey.Core.Mining;
 
 namespace SrvSurvey.Core.Search;
 
-public sealed record PlanetaryBodyCriteria(IReadOnlyList<string> BodySubtypes, IReadOnlyList<string> LandmarkSubtypes);
+public sealed record PlanetaryBodyCriteria(
+    IReadOnlyList<string> BodySubtypes,
+    IReadOnlyList<string> LandmarkSubtypes,
+    bool RequiresWhiteDwarfHost = false,
+    IReadOnlyList<string>? VolcanismTypes = null
+);
 
 /// <summary>
 /// Turns a Surface Hunt material into the Spansh body filters for landable planetary mining.
@@ -10,6 +15,12 @@ public sealed record PlanetaryBodyCriteria(IReadOnlyList<string> BodySubtypes, I
 public static class PlanetaryMiningPlan
 {
     public const string MiningType = "Planetary Mining";
+    public static IReadOnlyList<string> MetallicMagmaTypes { get; } =
+    ["Metallic Magma", "Minor Metallic Magma", "Major Metallic Magma"];
+    public static IReadOnlyList<string> RockyMagmaTypes { get; } =
+    ["Rocky Magma", "Minor Rocky Magma", "Major Rocky Magma"];
+    public static IReadOnlyList<string> SilicateVapourTypes { get; } =
+    ["Silicate Vapour Geysers", "Minor Silicate Vapour Geysers", "Major Silicate Vapour Geysers"];
 
     /// <summary>
     /// Surface Hunt materials that EDPM does not sell from rings.
@@ -35,7 +46,8 @@ public static class PlanetaryMiningPlan
     );
 
     /// <summary>Minerals and metals EDPM stores for ring stations. Other station goods stay off the list.</summary>
-    private static readonly HashSet<string> EdpmCommodities = CompactNames(
+    public static IReadOnlyList<string> EdpmCommodityNames { get; } =
+    [
         "Alexandrite",
         "Aluminium",
         "Bauxite",
@@ -85,14 +97,18 @@ public static class PlanetaryMiningPlan
         "Titanium",
         "Uraninite",
         "Uranium",
-        "Void Opal"
-    );
+        "Void Opal",
+    ];
+
+    private static readonly HashSet<string> EdpmCommodities = CompactNames(EdpmCommodityNames);
 
     public static bool IsSurfaceExclusive(string material) => SurfaceExclusiveMaterials.Contains(Compact(material));
 
     public static bool IsEdpmCommodity(string material) => EdpmCommodities.Contains(Compact(material));
 
-    private static HashSet<string> CompactNames(params string[] names)
+    private static HashSet<string> CompactNames(params string[] names) => CompactNames((IEnumerable<string>)names);
+
+    private static HashSet<string> CompactNames(IEnumerable<string> names)
     {
         HashSet<string> keys = new(StringComparer.Ordinal);
         foreach (string name in names)
@@ -103,16 +119,7 @@ public static class PlanetaryMiningPlan
         return keys;
     }
 
-    private static string Compact(string value)
-    {
-        string key = new(value.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
-        return key switch
-        {
-            "lowtemperaturediamonds" => "lowtemperaturediamond",
-            "voidopals" => "voidopal",
-            _ => key,
-        };
-    }
+    private static string Compact(string value) => MiningCommodityName.Key(value);
 
     public static IReadOnlyList<string> SpanshPowers { get; } =
     [
@@ -150,7 +157,7 @@ public static class PlanetaryMiningPlan
         SurfaceMiningHuntReference[] matches = materials
             .Select(material =>
                 SurfaceMiningCommodityCatalog.HuntReferences.FirstOrDefault(reference =>
-                    reference.Material.Equals(material, StringComparison.OrdinalIgnoreCase)
+                    MiningCommodityName.Same(reference.Material, material)
                 )
             )
             .OfType<SurfaceMiningHuntReference>()
@@ -161,15 +168,41 @@ public static class PlanetaryMiningPlan
         }
 
         string[] subtypes = matches.SelectMany(BodySubtypes).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-        bool requireGeology = matches.All(reference => !IsOpenGround(reference.Geology));
-        string[] landmarks = requireGeology
-            ? matches
-                .SelectMany(reference => LandmarkSubtypes(reference.Geology))
+        IReadOnlyList<string>?[] geologyTypes = matches
+            .Select(reference => VolcanismTypesFor(reference.Geology))
+            .ToArray();
+        IReadOnlyList<string> volcanismTypes = geologyTypes.All(types => types is { Count: > 0 })
+            ? geologyTypes
+                .OfType<IReadOnlyList<string>>()
+                .SelectMany(types => types)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray()
             : [];
-        return new PlanetaryBodyCriteria(subtypes, landmarks);
+
+        bool requiresWhiteDwarfHost = matches.All(reference =>
+            reference.SpecialClue.Contains("White-dwarf", StringComparison.OrdinalIgnoreCase)
+        );
+        return new PlanetaryBodyCriteria(subtypes, [], requiresWhiteDwarfHost, volcanismTypes);
     }
+
+    public static bool Matches(PlanetaryBodyCriteria criteria, MiningPlanetaryBody body)
+    {
+        if (!criteria.BodySubtypes.Contains(body.Subtype, StringComparer.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (criteria.VolcanismTypes is { Count: > 0 })
+        {
+            return criteria.VolcanismTypes.Contains(body.VolcanismType, StringComparer.OrdinalIgnoreCase);
+        }
+
+        return true;
+    }
+
+    public static bool IsWhiteDwarf(MiningBodyParent parent) =>
+        parent.Type.Equals("Star", StringComparison.OrdinalIgnoreCase)
+        && parent.Subtype.Contains("White Dwarf", StringComparison.OrdinalIgnoreCase);
 
     private static IEnumerable<string> BodySubtypes(SurfaceMiningHuntReference reference)
     {
@@ -204,47 +237,24 @@ public static class PlanetaryMiningPlan
         }
     }
 
-    private static bool IsOpenGround(string geology) =>
-        geology.Equals("None required", StringComparison.OrdinalIgnoreCase);
-
-    private static IEnumerable<string> LandmarkSubtypes(string geology)
+    private static IReadOnlyList<string>? VolcanismTypesFor(string geology)
     {
-        if (geology.Contains("Iron magma", StringComparison.OrdinalIgnoreCase))
+        if (geology.Equals("Iron magma", StringComparison.OrdinalIgnoreCase))
         {
-            yield return "Iron Magma Lava Spout";
+            return MetallicMagmaTypes;
         }
 
-        if (geology.Contains("Silicate magma", StringComparison.OrdinalIgnoreCase))
+        if (geology.Equals("Silicate magma or Iron magma", StringComparison.OrdinalIgnoreCase))
         {
-            yield return "Silicate Magma Lava Spout";
+            return MetallicMagmaTypes.Concat(RockyMagmaTypes).ToArray();
         }
 
-        if (geology.Contains("CO", StringComparison.OrdinalIgnoreCase))
+        if (geology.Equals("Silicate-vapour geysers", StringComparison.OrdinalIgnoreCase))
         {
-            yield return "Carbon Dioxide Ice Geyser";
+            return SilicateVapourTypes;
         }
 
-        if (geology.Contains("Ammonia", StringComparison.OrdinalIgnoreCase))
-        {
-            yield return "Ammonia Ice Geyser";
-        }
-
-        if (geology.Contains("Methane", StringComparison.OrdinalIgnoreCase))
-        {
-            yield return "Methane Ice Geyser";
-        }
-
-        if (geology.Contains("Nitrogen", StringComparison.OrdinalIgnoreCase))
-        {
-            yield return "Nitrogen Ice Geyser";
-        }
-
-        if (
-            geology.Contains("Silicate-vapour", StringComparison.OrdinalIgnoreCase)
-            || geology.Contains("Silicate vapour", StringComparison.OrdinalIgnoreCase)
-        )
-        {
-            yield return "Silicate Vapour Gas Vent";
-        }
+        // Spansh has no Helium geyser type, so Helium cannot use an exhaustive volcanism filter.
+        return null;
     }
 }

@@ -10,6 +10,9 @@ public sealed partial class MiningView : UserControl
 {
     public MiningView() => InitializeComponent();
 
+    internal (ScrollViewer Scroller, Control Table) PowerplayResultsWidthTarget =>
+        PowerplayWorkspacePage.ResultsWidthTarget;
+
     private void SearchPane_Click(object? sender, RoutedEventArgs e)
     {
         SearchPage.IsVisible = true;

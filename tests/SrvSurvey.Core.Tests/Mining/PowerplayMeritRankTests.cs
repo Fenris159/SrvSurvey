@@ -91,6 +91,35 @@ public sealed class PowerplayMeritRankTests
         Assert.Equal(1, row.ReserveRank);
     }
 
+    [Fact]
+    public void CompactMarketNameStillMatchesThePowerplayRingHotspot()
+    {
+        MiningSystemResult[] systems = [new("Sosong", 5.1, "", "", "", "", "", "", "Stronghold", 0)];
+        MiningRing[] rings =
+        [
+            new()
+            {
+                System = "Sosong",
+                Body = "Sosong 1 A Ring",
+                RingType = "Icy",
+                Reserve = "Pristine",
+                Hotspots = new() { ["Low Temperature Diamonds"] = 1 },
+            },
+        ];
+        MiningMarketResult[] markets =
+        [
+            Market("Sosong", "lowtemperaturediamond", 700_000),
+            Market("Sosong", "Diamond", 900_000),
+        ];
+
+        PowerplayMeritSystem row = Assert.Single(PowerplayMeritRank.Compose(systems, rings, markets, 10));
+
+        Assert.Equal(700_000, row.BestPrice);
+        Assert.Equal("lowtemperaturediamond", row.Stations[0].Commodity);
+        Assert.DoesNotContain(row.Stations, station => station.Commodity == "Diamond");
+        Assert.Equal(1, row.ReserveRank);
+    }
+
     private static MiningMarketResult Market(string system, string commodity, long price) =>
         new(system, "Potter Terminal", "Orbis Starport", 5.1, 1934, price, 6_000, 0, DateTimeOffset.UtcNow, 1)
         {

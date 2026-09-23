@@ -22,16 +22,33 @@ public sealed class SystemNameEntryTests
     public async Task SelectionReplacesId64WithResolvedNameAndRetainsAddress()
     {
         var client = new StubClient([new SystemNameSuggestion("Sol", 10477373803, "EDSM")]);
-        var control = new SystemNameEntry(client, TimeSpan.Zero) { Text = "10477373803" };
-        await WaitUntilAsync(() => control.HasSuggestions);
+        var control = new SystemNameEntry(client, TimeSpan.Zero);
+        var window = new Window
+        {
+            Content = control,
+            Width = 400,
+            Height = 200,
+        };
+        try
+        {
+            window.Show();
+            TextBox input = control.FindControl<TextBox>("InputBox")!;
+            Assert.True(input.Focus());
+            input.Text = "10477373803";
+            await WaitUntilAsync(() => control.HasSuggestions);
 
-        Assert.Equal("1 suggestion from EDSM.", control.Status);
-        Assert.True(control.SelectCurrentSuggestion());
+            Assert.Equal("1 suggestion from EDSM.", control.Status);
+            Assert.True(control.SelectCurrentSuggestion());
 
-        Assert.Equal("Sol", control.Text);
-        Assert.Equal(10477373803, control.SelectedSystemAddress);
-        Assert.False(control.HasSuggestions);
-        Assert.Equal("Selected Sol · id64 10477373803.", control.Status);
+            Assert.Equal("Sol", control.Text);
+            Assert.Equal(10477373803, control.SelectedSystemAddress);
+            Assert.False(control.HasSuggestions);
+            Assert.Equal("Selected Sol · id64 10477373803.", control.Status);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [AvaloniaFact]

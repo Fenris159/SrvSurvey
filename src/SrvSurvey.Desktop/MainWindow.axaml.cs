@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -25,6 +26,9 @@ public sealed partial class MainWindow : Window
     private Task? closePreparationTask;
     private bool closeReady;
     private bool applicationWindowPositionSaved;
+    private double defaultWindowWidth;
+    private double expandedMiningWidth;
+    private bool miningWidthExpanded;
     private TrayIcon? trayIcon;
 
     public MainWindow()
@@ -46,6 +50,12 @@ public sealed partial class MainWindow : Window
         PositionChanged += OnPositionChanged;
         RefreshApplicationMonitors();
         ApplyApplicationWindowPreferences(viewModel.DesktopBehavior.LastApplicationWindowPosition);
+        viewModel.PropertyChanged += OnMiningWidthContextChanged;
+        viewModel.MineMap.PropertyChanged += OnMiningWidthContextChanged;
+        viewModel.MiningWorkspace.PropertyChanged += OnMiningWidthContextChanged;
+        SurfaceMiningWorkspacePage.SurfaceResultsWidthTarget.Scroller.SizeChanged += OnMiningResultsSizeChanged;
+        MiningWorkspacePage.PowerplayResultsWidthTarget.Scroller.SizeChanged += OnMiningResultsSizeChanged;
+        SizeChanged += OnMiningResultsSizeChanged;
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(NavigateToReleaseUpdates);
         Opened += OnOpened;
         if (ownsApplicationLifetime)
@@ -72,6 +82,96 @@ public sealed partial class MainWindow : Window
     private void ToggleSidebar_Click(object? sender, RoutedEventArgs eventArgs)
     {
         viewModel.IsSidebarCollapsed = !viewModel.IsSidebarCollapsed;
+    }
+
+    private void ToggleMiningWidth_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (GetMiningResultsWidthTarget() is not { } target)
+        {
+            return;
+        }
+
+        if (MiningWidthRestoreButton.IsVisible)
+        {
+            WindowState = WindowState.Normal;
+            miningWidthExpanded = false;
+            Width = defaultWindowWidth;
+        }
+        else
+        {
+            double overflow = Math.Max(
+                0,
+                Math.Max(target.Table.Bounds.Width, target.Table.MinWidth) - target.Scroller.Viewport.Width
+            );
+            double scale = (ApplicationScaleContainer.LayoutTransform as ScaleTransform)?.ScaleX ?? 1;
+            double targetWidth = Bounds.Width + (overflow + 2) * scale;
+            if (targetWidth <= Bounds.Width + 2)
+            {
+                return;
+            }
+
+            WindowState = WindowState.Normal;
+            expandedMiningWidth = targetWidth;
+            miningWidthExpanded = true;
+            Width = targetWidth;
+        }
+
+        UpdateMiningWidthButton();
+    }
+
+    private (ScrollViewer Scroller, Control Table)? GetMiningResultsWidthTarget()
+    {
+        if (viewModel.IsMineMapSelected && viewModel.MineMap.SelectedTab == 4)
+        {
+            return SurfaceMiningWorkspacePage.SurfaceResultsWidthTarget;
+        }
+
+        if (viewModel.IsMiningSelected && viewModel.MiningWorkspace.SelectedTab == 3)
+        {
+            return MiningWorkspacePage.PowerplayResultsWidthTarget;
+        }
+
+        return null;
+    }
+
+    private void OnMiningWidthContextChanged(object? sender, PropertyChangedEventArgs eventArgs)
+    {
+        if (
+            eventArgs.PropertyName
+            is nameof(MainWindowViewModel.IsMineMapSelected)
+                or nameof(MainWindowViewModel.IsMiningSelected)
+                or nameof(MineMapViewModel.SelectedTab)
+                or nameof(MiningWorkspaceViewModel.SelectedTab)
+        )
+        {
+            UpdateMiningWidthButton();
+        }
+    }
+
+    private void OnMiningResultsSizeChanged(object? sender, SizeChangedEventArgs eventArgs) =>
+        Dispatcher.UIThread.Post(UpdateMiningWidthButton, DispatcherPriority.Loaded);
+
+    private void UpdateMiningWidthButton()
+    {
+        if (GetMiningResultsWidthTarget() is not { } target)
+        {
+            MiningWidthExpandButton.IsVisible = false;
+            MiningWidthRestoreButton.IsVisible = false;
+            return;
+        }
+
+        if (miningWidthExpanded && Bounds.Width < expandedMiningWidth - 2)
+        {
+            miningWidthExpanded = false;
+        }
+
+        double overflow = Math.Max(
+            0,
+            Math.Max(target.Table.Bounds.Width, target.Table.MinWidth) - target.Scroller.Viewport.Width
+        );
+        bool restore = Bounds.Width > defaultWindowWidth + 2 && (miningWidthExpanded || overflow <= 2);
+        MiningWidthExpandButton.IsVisible = !restore;
+        MiningWidthRestoreButton.IsVisible = restore;
     }
 
     private void SelectNavigationItem_Click(object? sender, RoutedEventArgs eventArgs)
@@ -136,6 +236,7 @@ public sealed partial class MainWindow : Window
     private void OnOpened(object? sender, EventArgs eventArgs)
     {
         Opened -= OnOpened;
+        UpdateMiningWidthButton();
         MigrateLegacyOverlayScales();
         if (WindowState == WindowState.Normal)
         {
@@ -215,6 +316,8 @@ public sealed partial class MainWindow : Window
             lastPosition
         );
         Width = placement.Width;
+        defaultWindowWidth = placement.Width;
+        miningWidthExpanded = false;
         Height = placement.Height;
         MinWidth = placement.MinimumWidth;
         MinHeight = placement.MinimumHeight;
@@ -342,6 +445,12 @@ public sealed partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        viewModel.PropertyChanged -= OnMiningWidthContextChanged;
+        viewModel.MineMap.PropertyChanged -= OnMiningWidthContextChanged;
+        viewModel.MiningWorkspace.PropertyChanged -= OnMiningWidthContextChanged;
+        SurfaceMiningWorkspacePage.SurfaceResultsWidthTarget.Scroller.SizeChanged -= OnMiningResultsSizeChanged;
+        MiningWorkspacePage.PowerplayResultsWidthTarget.Scroller.SizeChanged -= OnMiningResultsSizeChanged;
+        SizeChanged -= OnMiningResultsSizeChanged;
         ReleaseRuntimeDependents();
         base.OnClosed(e);
     }

@@ -69,10 +69,7 @@ public static class PowerplayMeritRank
                 .Where(ring => ring.System.Equals(system.System, StringComparison.OrdinalIgnoreCase))
                 .Select(DescribeRing)
                 .ToArray();
-            PowerplayMeritStation[] systemStations = OrderForHeadline(
-                StationsFor(markets, system.System),
-                systemRings
-            );
+            PowerplayMeritStation[] systemStations = OrderForHeadline(StationsFor(markets, system.System), systemRings);
             if (systemRings.Length == 0 || systemStations.Length == 0)
             {
                 continue;
@@ -151,6 +148,7 @@ public static class PowerplayMeritRank
             .Where(market => market.System.Equals(system, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(market => market.Price)
             .ThenByDescending(market => market.Demand)
+            .DistinctBy(market => market.Station + "\u001f" + MiningCommodityName.Key(market.Commodity))
             .Select(market => new PowerplayMeritStation(
                 market.Station,
                 market.Type,
@@ -172,7 +170,7 @@ public static class PowerplayMeritRank
         HashSet<string> hotspots = HotspotNames(rings);
         return stations
             .Where(station => !PlanetaryMiningPlan.IsSurfaceExclusive(station.Commodity))
-            .OrderByDescending(station => hotspots.Contains(station.Commodity))
+            .OrderByDescending(station => hotspots.Contains(MiningCommodityName.Key(station.Commodity)))
             .ThenByDescending(station => station.Price)
             .ThenByDescending(station => station.Demand)
             .ToArray();
@@ -182,10 +180,11 @@ public static class PowerplayMeritRank
     {
         HashSet<string> hotspots = HotspotNames(rings);
         return stations
-                .Where(station => hotspots.Contains(station.Commodity))
+                .Where(station => hotspots.Contains(MiningCommodityName.Key(station.Commodity)))
                 .OrderByDescending(station => station.Price)
                 .Select(station => station.Commodity)
-                .FirstOrDefault() ?? "";
+                .FirstOrDefault()
+            ?? "";
     }
 
     private static long HeadlinePrice(PowerplayMeritStation[] stations, string headline)
@@ -194,10 +193,7 @@ public static class PowerplayMeritRank
         bool matched = false;
         foreach (PowerplayMeritStation station in stations)
         {
-            if (
-                headline.Length == 0
-                || station.Commodity.Equals(headline, StringComparison.OrdinalIgnoreCase)
-            )
+            if (headline.Length == 0 || MiningCommodityName.Same(station.Commodity, headline))
             {
                 best = Math.Max(best, station.Price);
                 matched = true;
@@ -212,7 +208,8 @@ public static class PowerplayMeritRank
         IReadOnlyList<string> lines = ring.SignalLines ?? [];
         for (int index = 0; index < lines.Count; index++)
         {
-            if (lines[index].StartsWith(headline, StringComparison.OrdinalIgnoreCase))
+            string signal = lines[index].Split(':', 2)[0].Trim();
+            if (MiningCommodityName.Same(signal, headline))
             {
                 return true;
             }
@@ -258,7 +255,7 @@ public static class PowerplayMeritRank
                 string name = (split < 0 ? lines[index] : lines[index][..split]).Trim();
                 if (name.Length > 0 && !PlanetaryMiningPlan.IsSurfaceExclusive(name))
                 {
-                    names.Add(name);
+                    names.Add(MiningCommodityName.Key(name));
                 }
             }
         }
@@ -288,8 +285,7 @@ public static class PowerplayMeritRank
             ring.Body,
             detail,
             false,
-            ring.Hotspots
-                .Where(spot => PlanetaryMiningPlan.IsEdpmCommodity(spot.Key))
+            ring.Hotspots.Where(spot => PlanetaryMiningPlan.IsEdpmCommodity(spot.Key))
                 .Select(spot => $"{spot.Key}: {spot.Value} {(spot.Value == 1 ? "Hotspot" : "Hotspots")}")
                 .ToArray(),
             ring.Reserve,

@@ -16,7 +16,23 @@ public sealed class SurfaceMiningSearchPlanTests
 
         Assert.Equal(expected, Assert.Single(SurfaceMiningSearchPlan.MaterialsFor(["Default"])));
         Assert.Equal(PlanetaryMiningPlan.Materials.Count, SurfaceMiningSearchPlan.MaterialsFor(["Any"]).Count);
+        Assert.Equal(expected, SurfaceMiningSearchPlan.MaterialsFor(["Any"])[0]);
         Assert.Equal(["Diamond", "Painite"], SurfaceMiningSearchPlan.MaterialsFor(["Diamond", "Painite"]));
+    }
+
+    [Fact]
+    public void AnyRanksByDailyAverageAndKeepsDiamondDistinctFromLowTemperatureDiamonds()
+    {
+        var report = new Dictionary<string, MiningCommodityPriceSummary>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["water"] = new("water", 999_999, 1_000_000),
+            ["diamond"] = new("diamond", 136_783, 720_648),
+            ["lowtemperaturediamond"] = new("lowtemperaturediamond", 128_806, 523_200),
+        };
+
+        Assert.Equal("Water", SurfaceMiningSearchPlan.MaterialsFor(["Any"], report)[0]);
+        Assert.Equal(136_783, SurfaceMiningCommodityPrices.Find("Diamond", report)!.AverageSellPrice);
+        Assert.Equal(128_806, SurfaceMiningCommodityPrices.Find("Low Temperature Diamonds", report)!.AverageSellPrice);
     }
 
     [Fact]
@@ -32,13 +48,5 @@ public sealed class SurfaceMiningSearchPlanTests
 
         Assert.Equal("Far", best.System);
         Assert.Equal(900, best.Price);
-    }
-
-    [Fact]
-    public void AllAndUnknownDoNotSendAReserveFilter()
-    {
-        Assert.Equal("", SurfaceMiningSearchPlan.SpanshReserve("All"));
-        Assert.Equal("", SurfaceMiningSearchPlan.SpanshReserve("Unknown"));
-        Assert.Equal("Pristine", SurfaceMiningSearchPlan.SpanshReserve("Pristine"));
     }
 }

@@ -88,7 +88,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         this.resolver = resolver;
         this.bookmarks = bookmarks;
         Search = new MiningSearchViewModel(
-            new MiningSearchClient(networkClient),
+            new MiningSearchClient(networkClient, commodityReportStore: new MiningCommodityPriceReportStore(directory)),
             bookmarks,
             CacheRing,
             () => state.Data.Rings,

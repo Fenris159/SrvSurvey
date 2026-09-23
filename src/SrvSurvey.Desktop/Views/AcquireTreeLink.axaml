@@ -5,7 +5,7 @@
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch"
              MinHeight="28">
-  <Grid ColumnDefinitions="*,*" RowDefinitions="*,*">
+  <Grid x:Name="LinkGrid" ColumnDefinitions="*,*" RowDefinitions="*,*">
     <Border x:Name="VerticalLine"
             Grid.ColumnSpan="2"
             Width="2"

@@ -4,22 +4,34 @@
              x:Class="SrvSurvey.Desktop.Views.AcquireSplitRow"
              x:Name="Root"
              x:CompileBindings="False">
-  <Grid ColumnDefinitions="42*,4*,54*">
-    <Border Background="{DynamicResource RavenSurfaceBrush}"
+  <Grid x:Name="SplitGrid">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="42*"/>
+      <ColumnDefinition Width="4*"/>
+      <ColumnDefinition Width="54*"/>
+    </Grid.ColumnDefinitions>
+    <Border x:Name="TargetBorder"
+            Background="{DynamicResource RavenSurfaceBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
-            BorderThickness="1">
-      <ContentControl Content="{Binding}" ContentTemplate="{Binding TargetTemplate, ElementName=Root}"/>
+            BorderThickness="1"
+            VerticalAlignment="Top">
+      <ContentControl Content="{Binding}" ContentTemplate="{Binding TargetTemplate, ElementName=Root}" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
     </Border>
-    <ItemsControl Grid.Column="1" Grid.ColumnSpan="2" ItemsSource="{Binding Lines, ElementName=Root}">
+    <ItemsControl Grid.Column="1" Grid.ColumnSpan="2" ItemsSource="{Binding Lines, ElementName=Root}" HorizontalAlignment="Stretch">
+      <ItemsControl.Styles>
+        <Style Selector="ContentPresenter">
+          <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+      </ItemsControl.Styles>
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <Grid ColumnDefinitions="4*,54*">
-            <views:AcquireTreeLink Kind="{Binding Connector}"/>
+          <Grid ColumnDefinitions="4*,54*" HorizontalAlignment="Stretch">
+            <views:AcquireTreeLink Kind="{Binding Connector}" FirstAnchorY="{Binding FirstAnchorY, ElementName=Root}"/>
             <Border Grid.Column="1"
                     Background="{DynamicResource RavenSurfaceBrush}"
                     BorderBrush="{DynamicResource RavenBorderBrush}"
                     BorderThickness="1,0,1,1">
-              <ContentControl Content="{Binding}" ContentTemplate="{Binding $parent[views:AcquireSplitRow].LineTemplate}"/>
+              <ContentControl Content="{Binding}" ContentTemplate="{Binding LineTemplate, ElementName=Root}" HorizontalAlignment="Stretch"/>
             </Border>
           </Grid>
         </DataTemplate>

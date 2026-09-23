@@ -48,7 +48,7 @@
         <TextBlock Text="Ring type"/>
         <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Search.RingTypes}" SelectedItem="{Binding Search.RingType}" IsEnabled="{Binding Search.UsesRingFilters}"/>
       </StackPanel>
-      <StackPanel Grid.Row="2" Grid.Column="2" Spacing="4">
+      <StackPanel Grid.Row="2" Grid.Column="2" Spacing="4" IsVisible="{Binding Search.UsesRingFilters}">
         <TextBlock Text="Reserve level"/>
         <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Search.Reserves}" SelectedItem="{Binding Search.Reserve}"/>
       </StackPanel>
@@ -220,8 +220,8 @@
                     <ItemsControl ItemsSource="{Binding StationBlocks}">
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:MeritStationBlockViewModel">
-                          <Grid ColumnDefinitions="*,*" Margin="0,2,0,8">
-                            <StackPanel Spacing="2">
+                          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,2,0,8">
+                            <StackPanel Spacing="2" MaxWidth="280">
                               <StackPanel Orientation="Horizontal" Spacing="6">
                                 <views:MiningIcon Kind="{Binding Icon}" Width="14" Height="14" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding Heading}" Foreground="{DynamicResource RavenTextBrush}" TextWrapping="Wrap"/>
@@ -238,8 +238,8 @@
                                 <ItemsControl.ItemTemplate>
                                   <DataTemplate x:DataType="vm:MeritCommodityLineViewModel">
                                     <Grid ColumnDefinitions="40,*" Margin="0,1">
-                                      <Border Background="{DynamicResource RavenAccentBrush}" Padding="4,0">
-                                        <TextBlock Text="{Binding Code}" Foreground="{DynamicResource RavenAccentForegroundBrush}" FontFamily="monospace" FontSize="12" HorizontalAlignment="Center"/>
+                                      <Border Classes="commodity-code material" Width="40" Height="20" Padding="0" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Code}" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap"/>
                                       </Border>
                                       <TextBlock Grid.Column="1" Margin="6,0,0,0" Foreground="{DynamicResource RavenTextBrush}" TextWrapping="Wrap">
                                         <Run Text="{Binding Price}"/>

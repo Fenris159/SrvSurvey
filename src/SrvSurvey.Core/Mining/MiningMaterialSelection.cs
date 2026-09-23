@@ -44,7 +44,7 @@ public static class MiningMaterialSelection
             return hotspots.Count > 0 || IsAny(selected) || IsDefault(selected);
         }
 
-        return hotspots.Keys.Any(name => named.Contains(name, StringComparer.OrdinalIgnoreCase));
+        return hotspots.Keys.Any(name => named.Any(selectedName => MiningCommodityName.Same(selectedName, name)));
     }
 
     public static string HotspotText(IReadOnlyDictionary<string, int> hotspots, IEnumerable<string> selected)
@@ -53,7 +53,7 @@ public static class MiningMaterialSelection
         IEnumerable<KeyValuePair<string, int>> shown =
             named.Length == 0
                 ? hotspots
-                : hotspots.Where(pair => named.Contains(pair.Key, StringComparer.OrdinalIgnoreCase));
+                : hotspots.Where(pair => named.Any(selectedName => MiningCommodityName.Same(selectedName, pair.Key)));
         return string.Join(
             ", ",
             shown.Select(pair => pair.Key + " ×" + pair.Value.ToString(CultureInfo.InvariantCulture))
