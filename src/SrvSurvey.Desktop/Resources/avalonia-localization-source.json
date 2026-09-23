@@ -43179,7 +43179,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
   },
   {
-    "Text": "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
+    "Text": "Secure Frontier token storage is unavailable because secret-tool could not start: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
+  },
+  {
+    "Text": "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
+  },
+  {
+    "Text": "Secure Frontier token storage is unavailable because the desktop Secret Service could not be accessed. The secret-tool command is installed, but a compatible keyring must be running and unlocked in this graphical session. On KDE Plasma, enable \u0027Use KWallet for the Secret Service interface\u0027 in System Settings \u003E KDE Wallet, then unlock or reopen the wallet. On other desktops, start and unlock a Secret Service provider such as GNOME Keyring. Then try Connect to Frontier again.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

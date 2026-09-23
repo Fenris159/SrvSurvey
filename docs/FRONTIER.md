@@ -71,9 +71,9 @@ dashboard also does not request the remote `/journal` endpoint.
 ## Storage and request policy
 
 Access and refresh tokens are protected by Windows Data Protection on Windows
-and a Secret Service-compatible keyring on Linux. The required executable is
-named `secret-tool`; it is supplied by the `libsecret-tools` package on Debian
-and Ubuntu, and by the `libsecret` package on Arch Linux, Manjaro, and CachyOS:
+and a Secret Service-compatible keyring on Linux. If the `secret-tool`
+executable is missing, install `libsecret-tools` on Debian and Ubuntu or
+`libsecret` on Arch Linux, Manjaro, and CachyOS:
 
 ```bash
 # Debian and Ubuntu
@@ -84,7 +84,12 @@ sudo pacman -S --needed libsecret
 ```
 
 The application will not save tokens in plaintext when a secure store is
-unavailable. The desktop keyring must also be unlocked before linking.
+unavailable. Installing `libsecret` supplies the client command, but does not
+necessarily provide a running Secret Service keyring. On KDE Plasma, enable
+**Use KWallet for the Secret Service interface** in **System Settings > KDE
+Wallet**, then unlock or reopen the wallet. On other desktops, start and unlock
+a Secret Service provider such as GNOME Keyring. Run SrvSurvey in the same user
+graphical session as the keyring, then retry **Connect to Frontier**.
 
 Authorizations and cached snapshots are isolated by the stable Frontier ID
 from the active journal. Switching Elite accounts selects that commander's

@@ -21533,8 +21533,16 @@
       "translation": "Die sichere Frontier-Kontospeicherung wird derzeit unter Windows und Linux unterstützt."
     },
     {
-      "source": "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
-      "translation": "Der sichere Tokenspeicher Frontier ist nicht verfügbar. Installieren Sie das Paket, das secret-tool bereitstellt, entsperren Sie einen Secret Service-kompatiblen Schlüsselbund, starten Sie neu SrvSurvey und versuchen Sie es erneut. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret."
+      "source": "Secure Frontier token storage is unavailable because secret-tool could not start: {0}",
+      "translation": "Der sichere Tokenspeicher Frontier ist nicht verfügbar, da secret-tool nicht gestartet werden konnte: {0}"
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
+      "translation": "Der sichere Tokenspeicher Frontier ist nicht verfügbar, da secret-tool nicht gefunden wurde. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret."
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because the desktop Secret Service could not be accessed. The secret-tool command is installed, but a compatible keyring must be running and unlocked in this graphical session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet, then unlock or reopen the wallet. On other desktops, start and unlock a Secret Service provider such as GNOME Keyring. Then try Connect to Frontier again.",
+      "translation": "Der sichere Tokenspeicher Frontier ist nicht verfügbar, da auf den Desktop Secret Service nicht zugegriffen werden konnte. Der Befehl secret-tool ist installiert, aber in dieser grafischen Sitzung muss ein kompatibler Schlüsselbund ausgeführt und entsperrt werden. Aktivieren Sie auf KDE Plasma „KWallet für die Secret Service-Schnittstelle verwenden“ unter „Systemeinstellungen“ > „KDE Wallet“ und entsperren Sie dann die Wallet oder öffnen Sie sie erneut. Starten und entsperren Sie auf anderen Desktops einen Geheimdienstanbieter wie GNOME Keyring. Versuchen Sie dann erneut, eine Verbindung zu Frontier herzustellen."
     },
     {
       "source": "Secure door",
@@ -54559,8 +54567,16 @@
       "translation": "El almacenamiento seguro de la cuenta Frontier actualmente es compatible con Windows y Linux."
     },
     {
-      "source": "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
-      "translation": "El almacenamiento de tokens seguro Frontier no está disponible. Instale el paquete que proporciona secret-tool, desbloquee un llavero compatible con el Servicio Secreto, reinicie SrvSurvey y vuelva a intentarlo. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret."
+      "source": "Secure Frontier token storage is unavailable because secret-tool could not start: {0}",
+      "translation": "El almacenamiento de token seguro Frontier no está disponible porque secret-tool no se pudo iniciar: {0}"
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
+      "translation": "El almacenamiento de token seguro Frontier no está disponible porque no se encontró secret-tool. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret."
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because the desktop Secret Service could not be accessed. The secret-tool command is installed, but a compatible keyring must be running and unlocked in this graphical session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet, then unlock or reopen the wallet. On other desktops, start and unlock a Secret Service provider such as GNOME Keyring. Then try Connect to Frontier again.",
+      "translation": "El almacenamiento de tokens seguro Frontier no está disponible porque no se pudo acceder al Servicio Secreto de escritorio. El comando secret-tool está instalado, pero se debe ejecutar y desbloquear un conjunto de claves compatible en esta sesión gráfica. En KDE Plasma, habilite 'Usar KWallet para la interfaz del Servicio Secreto' en Configuración del sistema > KDE Wallet, luego desbloquee o vuelva a abrir la billetera. En otros escritorios, inicie y desbloquee un proveedor de Servicios Secretos como GNOME Keyring. Luego intente conectarse a Frontier nuevamente."
     },
     {
       "source": "Secure door",
@@ -87585,8 +87601,16 @@
       "translation": "Le stockage sécurisé du compte Frontier est actuellement pris en charge sous Windows et Linux."
     },
     {
-      "source": "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
-      "translation": "Le stockage sécurisé des jetons Frontier n'est pas disponible. Installez le package fourni secret-tool, déverrouillez un trousseau de clés compatible avec les services secrets, redémarrez SrvSurvey et réessayez. Debian/Ubuntu : sudo apt install libsecret-tools. Arch/Manjaro/CachyOS : sudo pacman -S --needed libsecret."
+      "source": "Secure Frontier token storage is unavailable because secret-tool could not start: {0}",
+      "translation": "Le stockage sécurisé des jetons Frontier n'est pas disponible car secret-tool n'a pas pu démarrer : {0}"
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
+      "translation": "Le stockage sécurisé des jetons Frontier n'est pas disponible car secret-tool n'a pas été trouvé. Debian/Ubuntu : sudo apt install libsecret-tools. Arch/Manjaro/CachyOS : sudo pacman -S --needed libsecret."
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because the desktop Secret Service could not be accessed. The secret-tool command is installed, but a compatible keyring must be running and unlocked in this graphical session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet, then unlock or reopen the wallet. On other desktops, start and unlock a Secret Service provider such as GNOME Keyring. Then try Connect to Frontier again.",
+      "translation": "Le stockage sécurisé des jetons Frontier n'est pas disponible car les services secrets du bureau ne sont pas accessibles. La commande secret-tool est installée, mais un trousseau de clés compatible doit être exécuté et déverrouillé dans cette session graphique. Sur KDE Plasma, activez « Utiliser KWallet pour l'interface des services secrets » dans Paramètres système > Portefeuille KDE, puis déverrouillez ou rouvrez le portefeuille. Sur d'autres bureaux, démarrez et déverrouillez un fournisseur de services secrets tel que GNOME Keyring. Essayez ensuite de vous connecter à Frontier."
     },
     {
       "source": "Secure door",
@@ -120611,8 +120635,16 @@
       "translation": "Atualmente, o armazenamento seguro da conta Frontier é compatível com Windows e Linux."
     },
     {
-      "source": "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
-      "translation": "O armazenamento seguro de token Frontier não está disponível. Instale o pacote fornecido secret-tool, desbloqueie um chaveiro compatível com o Serviço Secreto, reinicie SrvSurvey e tente novamente. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret."
+      "source": "Secure Frontier token storage is unavailable because secret-tool could not start: {0}",
+      "translation": "O armazenamento seguro de token Frontier não está disponível porque secret-tool não pôde ser iniciado: {0}"
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
+      "translation": "O armazenamento seguro de token Frontier não está disponível porque secret-tool não foi encontrado. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret."
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because the desktop Secret Service could not be accessed. The secret-tool command is installed, but a compatible keyring must be running and unlocked in this graphical session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet, then unlock or reopen the wallet. On other desktops, start and unlock a Secret Service provider such as GNOME Keyring. Then try Connect to Frontier again.",
+      "translation": "O armazenamento seguro de tokens Frontier não está disponível porque o Secret Service da área de trabalho não pôde ser acessado. O comando secret-tool está instalado, mas um chaveiro compatível deve estar em execução e desbloqueado nesta sessão gráfica. No KDE Plasma, habilite 'Usar KWallet para a interface do Serviço Secreto' em Configurações do Sistema > Carteira KDE e desbloqueie ou reabra a carteira. Em outros desktops, inicie e desbloqueie um provedor de serviços secretos, como o GNOME Keyring. Em seguida, tente Conectar-se a Frontier novamente."
     },
     {
       "source": "Secure door",
@@ -153637,8 +153669,16 @@
       "translation": "Безопасное хранилище учетных записей Frontier в настоящее время поддерживается в Windows и Linux."
     },
     {
-      "source": "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
-      "translation": "Безопасное хранилище токенов Frontier недоступно. Установите пакет, который предоставляет secret-tool, разблокируйте брелок, совместимый с Секретной службой, перезапустите SrvSurvey и повторите попытку. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret."
+      "source": "Secure Frontier token storage is unavailable because secret-tool could not start: {0}",
+      "translation": "Безопасное хранилище токенов Frontier недоступно, поскольку secret-tool не удалось запустить: {0}"
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
+      "translation": "Безопасное хранилище токенов Frontier недоступно, поскольку secret-tool не найдено. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret."
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because the desktop Secret Service could not be accessed. The secret-tool command is installed, but a compatible keyring must be running and unlocked in this graphical session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet, then unlock or reopen the wallet. On other desktops, start and unlock a Secret Service provider such as GNOME Keyring. Then try Connect to Frontier again.",
+      "translation": "Безопасное хранилище токенов Frontier недоступно, поскольку не удалось получить доступ к секретной службе рабочего стола. Команда secret-tool установлена, но в этом графическом сеансе должен быть запущен и разблокирован совместимый набор ключей. В KDE Plasma включите «Использовать KWallet для интерфейса секретной службы» в разделе «Настройки системы» > «Кошелек KDE», затем разблокируйте или снова откройте кошелек. На других настольных компьютерах запустите и разблокируйте поставщика секретных служб, например GNOME Keyring. Затем попробуйте снова подключиться к Frontier."
     },
     {
       "source": "Secure door",
@@ -186663,8 +186703,16 @@
       "translation": "Windows 和 Linux 目前支持安全的 Frontier 帐户存储。"
     },
     {
-      "source": "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
-      "translation": "安全 Frontier 令牌存储不可用。安装提供 secret-tool 的软件包，解锁与 Secret Service 兼容的密钥环，重新启动 SrvSurvey，然后重试。 Debian/Ubuntu：sudo apt install libsecret-tools。 Arch/Manjaro/CachyOS：sudo pacman -S --needed libsecret。"
+      "source": "Secure Frontier token storage is unavailable because secret-tool could not start: {0}",
+      "translation": "安全 Frontier 令牌存储不可用，因为 secret-tool 无法启动：{0}"
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
+      "translation": "安全 Frontier 令牌存储不可用，因为找不到 secret-tool。 Debian/Ubuntu：sudo apt install libsecret-tools。 Arch/Manjaro/CachyOS：sudo pacman -S --needed libsecret。"
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because the desktop Secret Service could not be accessed. The secret-tool command is installed, but a compatible keyring must be running and unlocked in this graphical session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet, then unlock or reopen the wallet. On other desktops, start and unlock a Secret Service provider such as GNOME Keyring. Then try Connect to Frontier again.",
+      "translation": "由于无法访问桌面 Secret Service，安全 Frontier 令牌存储不可用。 secret-tool 命令已安装，但兼容的密钥环必须在此图形会话中运行并解锁。在 KDE Plasma 上，在系统设置 > KDE 钱包中启用“将 KWallet 用于特勤局界面”，然后解锁或重新打开钱包。在其他桌面上，启动并解锁 Secret Service 提供程序，例如 GNOME Keyring。然后再次尝试连接到Frontier。"
     },
     {
       "source": "Secure door",
@@ -219689,8 +219737,16 @@
       "translation": "* SECURE FRONTIER ACCOUNT STORAGE IS CURRENTLY SUPPORTED ON WINDOWS AND LINUX. >>>!"
     },
     {
-      "source": "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
-      "translation": "* SECURE FRONTIER TOKEN STORAGE IS UNAVAILABLE. INSTALL THE PACKAGE THAT PROVIDES SECRET-TOOL, UNLOCK A SECRET SERVICE-COMPATIBLE KEYRING, RESTART SRVSURVEY, AND TRY AGAIN. DEBIAN/UBUNTU: SUDO APT INSTALL LIBSECRET-TOOLS. ARCH/MANJARO/CACHYOS: SUDO PACMAN -S --NEEDED LIBSECRET. >>>!"
+      "source": "Secure Frontier token storage is unavailable because secret-tool could not start: {0}",
+      "translation": "* SECURE FRONTIER TOKEN STORAGE IS UNAVAILABLE BECAUSE SECRET-TOOL COULD NOT START: {0} >>>!"
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.",
+      "translation": "* SECURE FRONTIER TOKEN STORAGE IS UNAVAILABLE BECAUSE SECRET-TOOL WAS NOT FOUND. DEBIAN/UBUNTU: SUDO APT INSTALL LIBSECRET-TOOLS. ARCH/MANJARO/CACHYOS: SUDO PACMAN -S --NEEDED LIBSECRET. >>>!"
+    },
+    {
+      "source": "Secure Frontier token storage is unavailable because the desktop Secret Service could not be accessed. The secret-tool command is installed, but a compatible keyring must be running and unlocked in this graphical session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet, then unlock or reopen the wallet. On other desktops, start and unlock a Secret Service provider such as GNOME Keyring. Then try Connect to Frontier again.",
+      "translation": "* SECURE FRONTIER TOKEN STORAGE IS UNAVAILABLE BECAUSE THE DESKTOP SECRET SERVICE COULD NOT BE ACCESSED. THE SECRET-TOOL COMMAND IS INSTALLED, BUT A COMPATIBLE KEYRING MUST BE RUNNING AND UNLOCKED IN THIS GRAPHICAL SESSION. ON KDE PLASMA, ENABLE 'USE KWALLET FOR THE SECRET SERVICE INTERFACE' IN SYSTEM SETTINGS > KDE WALLET, THEN UNLOCK OR REOPEN THE WALLET. ON OTHER DESKTOPS, START AND UNLOCK A SECRET SERVICE PROVIDER SUCH AS GNOME KEYRING. THEN TRY CONNECT TO FRONTIER AGAIN. >>>!"
     },
     {
       "source": "Secure door",

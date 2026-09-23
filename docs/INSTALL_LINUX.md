@@ -303,9 +303,10 @@ shared library rather than installing an untrusted binary manually.
 ### Secure Frontier account storage
 
 Frontier account linking additionally requires the `secret-tool` command and
-an unlocked Secret Service-compatible keyring. Full GNOME and KDE Plasma
-installations commonly already provide the keyring service. Install the package
-that supplies `secret-tool` if it is missing:
+an unlocked Secret Service-compatible keyring in the same user session.
+`libsecret` supplies `secret-tool` on Arch derivatives, but the keyring provider
+is a separate component. Install the package that supplies `secret-tool` only
+if the command is missing:
 
 ```bash
 # Ubuntu and Debian derivatives
@@ -316,9 +317,12 @@ sudo pacman -S --needed libsecret
 ```
 
 Package names vary on Fedora and openSUSE; use the distribution package search
-to find the package providing `/usr/bin/secret-tool`. SrvSurvey deliberately
-does not fall back to a plaintext token file. Linking remains unavailable until
-both `secret-tool` and an unlocked keyring service are present.
+to find the package providing `/usr/bin/secret-tool`. On KDE Plasma, enable
+**Use KWallet for the Secret Service interface** in **System Settings > KDE
+Wallet**, then unlock or reopen the wallet. On other desktops, start and unlock
+a Secret Service provider such as GNOME Keyring. SrvSurvey deliberately does
+not fall back to a plaintext token file. Retry **Connect to Frontier** after
+the keyring is available.
 
 ## Troubleshooting
 
@@ -339,10 +343,11 @@ Common launch and library problems are listed below. For a fuller set of issues
   [Overlay Troubleshooting](Overlay_Troubleshooting.md).
 - `DISPLAY` is empty in a Wayland session: enable XWayland or log into an Xorg
   session; native Wayland is not the backend used by this package.
-- Frontier linking reports that secure token storage is unavailable: install
-  `libsecret-tools` on Debian/Ubuntu or `libsecret` on
-  Arch/Manjaro/CachyOS, make sure the desktop keyring is unlocked, and restart
-  SrvSurvey. These packages provide the required `secret-tool` executable. See
+- Frontier linking reports that secure token storage is unavailable: if
+  `secret-tool` is missing, install `libsecret-tools` on Debian/Ubuntu or
+  `libsecret` on Arch/Manjaro/CachyOS. If it is already installed, check that
+  a Secret Service keyring is running and unlocked in SrvSurvey's graphical
+  session. On KDE Plasma, enable KWallet's Secret Service interface. See
   [Frontier account linking](FRONTIER.md).
 
 ## Reference documentation
