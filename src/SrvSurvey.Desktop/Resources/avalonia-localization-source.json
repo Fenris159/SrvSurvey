@@ -31736,14 +31736,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningStationList.axaml"
   },
   {
-    "Text": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
-  },
-  {
     "Text": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -44520,6 +44512,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Search canceled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
     "Text": "Search destinations",
     "IsFormat": false,
     "SourceKinds": [
@@ -44590,14 +44590,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
     "Text": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -47405,14 +47397,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyPredictionsViewModel.cs"
-  },
-  {
-    "Text": "Some body searches reached the page limit; unmatched prices were left unmarked.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
     "Text": "Sort (descending) for working results backwards.",
@@ -67120,7 +67104,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PriorScansOverlayViewModel.cs"
   },
   {
-    "Text": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
+    "Text": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

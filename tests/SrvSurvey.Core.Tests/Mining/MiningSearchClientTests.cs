@@ -322,6 +322,73 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task RadiusWideFallbackReadsEveryStationPageAndDropsStaleQuotes()
+    {
+        using var handler = new PagedSellQuoteHandler();
+        using var http = new HttpClient(handler);
+
+        IReadOnlyList<MiningSellQuote> quotes = await new MiningSearchClient(http).FindSellQuotesAsync(
+            "Sol",
+            100,
+            [],
+            ["Monazite"],
+            maximumAge: TimeSpan.FromHours(48)
+        );
+
+        Assert.Equal(20, quotes.Count);
+        Assert.DoesNotContain(quotes, quote => quote.Station == "Port 0");
+        Assert.Contains(quotes, quote => quote.Station == "Port 20");
+        Assert.Equal([0, 1], handler.Pages);
+        Assert.False(handler.HadSystemFilter);
+    }
+
+    private sealed class PagedSellQuoteHandler : HttpMessageHandler
+    {
+        public List<int> Pages { get; } = [];
+        public bool HadSystemFilter { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(cancellationToken));
+            int page = body.RootElement.GetProperty("page").GetInt32();
+            Pages.Add(page);
+            HadSystemFilter |= body.RootElement.GetProperty("filters").TryGetProperty("system_name", out _);
+            string fresh = DateTimeOffset.UtcNow.ToString("O");
+            string stale = DateTimeOffset.UtcNow.AddDays(-3).ToString("O");
+            object[] stations = Enumerable
+                .Range(page == 0 ? 0 : 20, page == 0 ? 20 : 1)
+                .Select(index =>
+                    (object)
+                        new
+                        {
+                            system_name = "Sol",
+                            name = $"Port {index}",
+                            type = "Orbis Starport",
+                            market_updated_at = index == 0 ? stale : fresh,
+                            large_pads = 1,
+                            market = new[]
+                            {
+                                new
+                                {
+                                    commodity = "Monazite",
+                                    sell_price = 500_000,
+                                    demand = 100,
+                                },
+                            },
+                        }
+                )
+                .ToArray();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JsonSerializer.Serialize(new { results = stations })),
+            };
+        }
+    }
+
+    [Fact]
     public async Task PlanetaryBodiesAskSpanshForLandableSystemsAndMagma()
     {
         using var handler = new RequestHandler(

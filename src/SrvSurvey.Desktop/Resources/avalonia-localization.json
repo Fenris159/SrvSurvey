@@ -15821,10 +15821,6 @@
       "translation": "Kein passender Spansh Körper im Suchradius"
     },
     {
-      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
-      "translation": "Bei der Überprüfung der bestbezahlten Verkaufsstellen wurden keine passenden Leichen gefunden. Die Suche wurde bei Erreichen des Anforderungslimits ({0} Spansh Textseiten) gestoppt. Verringern Sie den Abstand oder wählen Sie ein Material aus."
-    },
-    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Es sind noch keine passenden bestückten Module verfügbar. Es ist ein vollständiges Loadout-Ereignis erforderlich. Gespeicherte Aufgaben bleiben bearbeitbar."
     },
@@ -22197,6 +22193,10 @@
       "translation": "Suche abgebrochen oder Zeitüberschreitung."
     },
     {
+      "source": "Search canceled.",
+      "translation": "Suche abgebrochen."
+    },
+    {
       "source": "Search destinations",
       "translation": "Ziele suchen"
     },
@@ -22231,10 +22231,6 @@
     {
       "source": "Search settings",
       "translation": "Sucheinstellungen"
-    },
-    {
-      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
-      "translation": "Die Suche wurde bei Erreichen des Anforderungslimits ({0} Spansh Textseiten) gestoppt. Verringern Sie den Abstand für mehr Abdeckung."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -23635,10 +23631,6 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Einige Körper benötigen noch vollständige Planeten- oder Mutterstern-Scans."
-    },
-    {
-      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
-      "translation": "Bei einigen Körpersuchen wurde das Seitenlimit erreicht; Unübertroffene Preise wurden nicht gekennzeichnet."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -33481,8 +33473,8 @@
       "translation": "{0} bekannte Arten"
     },
     {
-      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
-      "translation": "{0} landbare Aufbauten für {1}. {2}{3}{4}.{5}{6}{7}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
+      "translation": "{0} landbare Aufbauten für {1}. {2}{3}{4}.{5}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -50035,10 +50027,6 @@
       "translation": "No hay ningún cuerpo coincidente Spansh dentro del radio de búsqueda"
     },
     {
-      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
-      "translation": "Después de comprobar las estaciones de venta mejor pagadas, no se encontraron organismos coincidentes. La búsqueda se detuvo en su límite de solicitudes (páginas del cuerpo de {0} Spansh); reducir la distancia o seleccionar un material."
-    },
-    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Aún no hay disponibles módulos equipados a juego. Se necesita un evento de equipamiento completo; Las tareas guardadas siguen siendo editables."
     },
@@ -56411,6 +56399,10 @@
       "translation": "Búsqueda cancelada o agotada."
     },
     {
+      "source": "Search canceled.",
+      "translation": "Búsqueda cancelada."
+    },
+    {
       "source": "Search destinations",
       "translation": "Buscar destinos"
     },
@@ -56445,10 +56437,6 @@
     {
       "source": "Search settings",
       "translation": "Configuración de búsqueda"
-    },
-    {
-      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
-      "translation": "La búsqueda se detuvo en su límite de solicitudes (páginas del cuerpo de {0} Spansh); reduzca la distancia para obtener más cobertura."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -57849,10 +57837,6 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Algunos cuerpos todavía necesitan escaneos completos de planetas o estrellas madre."
-    },
-    {
-      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
-      "translation": "Algunas búsquedas corporales alcanzaron el límite de páginas; Los precios incomparables quedaron sin marcar."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -67695,8 +67679,8 @@
       "translation": "{0} especies conocidas"
     },
     {
-      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
-      "translation": "{0} carrocerías aterrizables para {1}. {2}{3}{4}.{5}{6}{7}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
+      "translation": "{0} carrocerías aterrizables para {1}. {2}{3}{4}.{5}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -84249,10 +84233,6 @@
       "translation": "Aucun corps correspondant Spansh dans le rayon de recherche"
     },
     {
-      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
-      "translation": "Aucun corps correspondant n’a été trouvé après avoir vérifié les stations de vente les mieux rémunérées. Recherche arrêtée à sa limite de requêtes (pages de corps {0} Spansh) ; réduire la distance ou sélectionner un matériau."
-    },
-    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Aucun module équipé correspondant n’est encore disponible. Un événement Loadout complet est nécessaire ; les devoirs enregistrés restent modifiables."
     },
@@ -90625,6 +90605,10 @@
       "translation": "Recherche annulée ou expirée."
     },
     {
+      "source": "Search canceled.",
+      "translation": "Recherche annulée."
+    },
+    {
       "source": "Search destinations",
       "translation": "Rechercher des destinations"
     },
@@ -90659,10 +90643,6 @@
     {
       "source": "Search settings",
       "translation": "Paramètres de recherche"
-    },
-    {
-      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
-      "translation": "Recherche arrêtée à sa limite de requêtes (pages de corps {0} Spansh) ; réduisez la distance pour plus de couverture."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -92063,10 +92043,6 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Certains corps ont encore besoin d’analyses complètes de la planète ou de l’étoile mère."
-    },
-    {
-      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
-      "translation": "Certaines recherches corporelles ont atteint la limite de pages ; les prix inégalés n’ont pas été marqués."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -101909,8 +101885,8 @@
       "translation": "{0} espèces connues"
     },
     {
-      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
-      "translation": "Carrosseries atterrissables {0} pour {1}. {2}{3}{4}.{5}{6}{7}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
+      "translation": "Carrosseries atterrissables {0} pour {1}. {2}{3}{4}.{5}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -118463,10 +118439,6 @@
       "translation": "Nenhum corpo correspondente Spansh dentro do raio de pesquisa"
     },
     {
-      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
-      "translation": "Nenhum corpo correspondente foi encontrado depois de verificar as estações de venda mais bem pagas. A pesquisa foi interrompida no limite de solicitações (páginas do corpo {0} Spansh); reduza a distância ou selecione um material."
-    },
-    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Nenhum módulo equipado correspondente está disponível ainda. É necessário um evento Loadout completo; as atribuições salvas permanecem editáveis."
     },
@@ -124839,6 +124811,10 @@
       "translation": "A pesquisa foi cancelada ou expirou."
     },
     {
+      "source": "Search canceled.",
+      "translation": "Pesquisa cancelada."
+    },
+    {
       "source": "Search destinations",
       "translation": "Pesquisar destinos"
     },
@@ -124873,10 +124849,6 @@
     {
       "source": "Search settings",
       "translation": "Configurações de pesquisa"
-    },
-    {
-      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
-      "translation": "A pesquisa foi interrompida no limite de solicitações (páginas do corpo {0} Spansh); estreite a distância para obter mais cobertura."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -126277,10 +126249,6 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Alguns corpos ainda precisam de varreduras completas de planetas ou estrelas-mãe."
-    },
-    {
-      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
-      "translation": "Algumas pesquisas corporais atingiram o limite de páginas; preços incomparáveis ​​foram deixados sem marcação."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -136123,8 +136091,8 @@
       "translation": "{0} espécies conhecidas"
     },
     {
-      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
-      "translation": "Corpos pousáveis ​​{0} para {1}. {2}{3}{4}.{5}{6}{7}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
+      "translation": "Corpos pousáveis ​​{0} para {1}. {2}{3}{4}.{5}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -152677,10 +152645,6 @@
       "translation": "Нет подходящего тела Spansh в радиусе поиска."
     },
     {
-      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
-      "translation": "После проверки самых высокооплачиваемых станций продажи подходящих тел обнаружено не было. Поиск остановлен на пределе запросов (страницы тела {0} Spansh); сузьте расстояние или выберите материал."
-    },
-    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Подходящих оборудованных модулей пока нет. Требуется полное событие Loadout; сохраненные задания остаются доступными для редактирования."
     },
@@ -159053,6 +159017,10 @@
       "translation": "Поиск отменен или время ожидания истекло."
     },
     {
+      "source": "Search canceled.",
+      "translation": "Поиск отменен."
+    },
+    {
       "source": "Search destinations",
       "translation": "Поиск направлений"
     },
@@ -159087,10 +159055,6 @@
     {
       "source": "Search settings",
       "translation": "Настройки поиска"
-    },
-    {
-      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
-      "translation": "Поиск остановлен на пределе запросов (страницы тела {0} Spansh); сузьте расстояние для большего охвата."
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -160491,10 +160455,6 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "Некоторым телам все еще требуется полное сканирование планет или родительских звезд."
-    },
-    {
-      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
-      "translation": "Некоторые поисковые запросы достигли предела количества страниц; несопоставленные цены остались без маркировки."
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -170337,8 +170297,8 @@
       "translation": "{0} известный вид"
     },
     {
-      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
-      "translation": "Посадочные корпуса {0} для {1}. {2}{3}{4}.{5}{6}{7}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
+      "translation": "Посадочные корпуса {0} для {1}. {2}{3}{4}.{5}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -186891,10 +186851,6 @@
       "translation": "搜索半径内没有匹配的Spansh尸体"
     },
     {
-      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
-      "translation": "在检查了收入最高的销售站后，没有找到匹配的尸体。搜索在其请求限制处停止（{0}Spansh正文页面）；缩小距离或选择材料。"
-    },
-    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "目前还没有匹配的配备模块。需要完整的 Loadout 事件；保存的作业仍然可以编辑。"
     },
@@ -193267,6 +193223,10 @@
       "translation": "搜索已取消或超时。"
     },
     {
+      "source": "Search canceled.",
+      "translation": "搜索已取消。"
+    },
+    {
       "source": "Search destinations",
       "translation": "搜索目的地"
     },
@@ -193301,10 +193261,6 @@
     {
       "source": "Search settings",
       "translation": "搜索设置"
-    },
-    {
-      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
-      "translation": "搜索在其请求限制处停止（{0}Spansh正文页面）；缩小距离以获得更大的覆盖范围。"
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -194705,10 +194661,6 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "有些天体仍然需要完整的行星或母星扫描。"
-    },
-    {
-      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
-      "translation": "部分人体搜索已达到页数限制；无与伦比的价格没有标记。"
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -204551,8 +204503,8 @@
       "translation": "{0} 已知物种"
     },
     {
-      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
-      "translation": "{0} 适用于 {1} 的可着陆车身。 {2}{3}{4}.{5}{6}{7}"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
+      "translation": "{0} 适用于 {1} 的可着陆车身。 {2}{3}{4}.{5}"
     },
     {
       "source": "{0} layout - no blueprint category recorded",
@@ -221105,10 +221057,6 @@
       "translation": "* NO MATCHING SPANSH BODY WITHIN THE SEARCH RADIUS >>>!"
     },
     {
-      "source": "No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({0} Spansh body pages); narrow the distance or select a material.",
-      "translation": "* NO MATCHING BODIES WERE FOUND AFTER CHECKING THE HIGHEST-PAYING SELL STATIONS. SEARCH STOPPED AT ITS REQUEST LIMIT ({0} SPANSH BODY PAGES); NARROW THE DISTANCE OR SELECT A MATERIAL. >>>!"
-    },
-    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "* NO MATCHING EQUIPPED MODULES ARE AVAILABLE YET. A FULL LOADOUT EVENT IS NEEDED; SAVED ASSIGNMENTS REMAIN EDITABLE. >>>!"
     },
@@ -227481,6 +227429,10 @@
       "translation": "* SEARCH CANCELED OR TIMED OUT. >>>!"
     },
     {
+      "source": "Search canceled.",
+      "translation": "* SEARCH CANCELED. >>>!"
+    },
+    {
       "source": "Search destinations",
       "translation": "* SEARCH DESTINATIONS >>>!"
     },
@@ -227515,10 +227467,6 @@
     {
       "source": "Search settings",
       "translation": "* SEARCH SETTINGS >>>!"
-    },
-    {
-      "source": "Search stopped at its request limit ({0} Spansh body pages); narrow the distance for more coverage.",
-      "translation": "* SEARCH STOPPED AT ITS REQUEST LIMIT ({0} SPANSH BODY PAGES); NARROW THE DISTANCE FOR MORE COVERAGE. >>>!"
     },
     {
       "source": "Search the durable game journal record and export a bounded diagnostic replay package.",
@@ -228919,10 +228867,6 @@
     {
       "source": "Some bodies still need complete planet or parent-star scans.",
       "translation": "* SOME BODIES STILL NEED COMPLETE PLANET OR PARENT-STAR SCANS. >>>!"
-    },
-    {
-      "source": "Some body searches reached the page limit; unmatched prices were left unmarked.",
-      "translation": "* SOME BODY SEARCHES REACHED THE PAGE LIMIT; UNMATCHED PRICES WERE LEFT UNMARKED. >>>!"
     },
     {
       "source": "Sort (descending) for working results backwards.",
@@ -238765,8 +238709,8 @@
       "translation": "* {0} KNOWN SPECIES >>>!"
     },
     {
-      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}{6}{7}",
-      "translation": "* {0} LANDABLE BODIES FOR {1}. {2}{3}{4}.{5}{6}{7} >>>!"
+      "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
+      "translation": "* {0} LANDABLE BODIES FOR {1}. {2}{3}{4}.{5} >>>!"
     },
     {
       "source": "{0} layout - no blueprint category recorded",

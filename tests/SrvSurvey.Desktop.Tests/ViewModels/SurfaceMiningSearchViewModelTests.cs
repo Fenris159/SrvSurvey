@@ -293,7 +293,7 @@ public sealed class SurfaceMiningSearchViewModelTests
     }
 
     [Fact]
-    public async Task EmptyBodiesStopAtTheRequestBudget()
+    public async Task EmptyBodiesCheckEverySellSystem()
     {
         using var handler = new SurfaceHandler { Mode = "reserve-stress" };
         using SurfaceMiningSearchViewModel model = Create(handler);
@@ -303,11 +303,11 @@ public sealed class SurfaceMiningSearchViewModelTests
 
         await model.SearchAsync();
 
-        Assert.Equal(40, handler.BodyPages);
+        Assert.Equal(60, handler.BodyPages);
         Assert.Equal(0, handler.ImportRequests);
         Assert.Equal(5, model.ResultLimit);
         Assert.False(model.HasRows);
-        Assert.Contains("request limit", model.Status);
+        Assert.Contains("No sell station has a matching surface mining body", model.Status);
     }
 
     [Fact]
@@ -332,21 +332,19 @@ public sealed class SurfaceMiningSearchViewModelTests
     }
 
     [Fact]
-    public async Task SparseBodiesCanCheckBeyondTenSellSystemsWithinThePageBudget()
+    public async Task SparseBodiesCanFindASellSystemBeyondTheOldPageBudget()
     {
         using var handler = new SurfaceHandler { Mode = "reserve-stress-positive" };
         using SurfaceMiningSearchViewModel model = Create(handler);
         model.Reference = "Timbalderis";
         model.Materials.Add("Monazite");
-        model.ResultLimit = 5;
+        model.ResultLimit = 1;
 
         await model.SearchAsync();
 
-        Assert.False(model.HasRows);
-        Assert.Equal(40, handler.BodyPages);
+        Assert.Equal("Sell 41", Assert.Single(model.Rows).Target);
+        Assert.Equal(41, handler.BodyPages);
         Assert.Equal(0, handler.ImportRequests);
-        Assert.Contains("checking the highest-paying", model.Status, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("40 Spansh body pages", model.Status, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -361,11 +359,11 @@ public sealed class SurfaceMiningSearchViewModelTests
         await model.SearchAsync();
 
         Assert.Empty(model.Rows);
-        Assert.Equal(40, handler.BodyPages);
+        Assert.Equal(60, handler.BodyPages);
         Assert.True(handler.FirstBodyRequestHadDistance);
         Assert.False(handler.FirstBodyRequestHadReserve);
         Assert.Equal(0, handler.ImportRequests);
-        Assert.Contains("request limit", model.Status, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("No sell station has a matching surface mining body", model.Status);
     }
 
     [Fact]
@@ -387,7 +385,7 @@ public sealed class SurfaceMiningSearchViewModelTests
         model.Cancel();
         await search;
 
-        Assert.Equal("Search canceled or timed out.", model.Status);
+        Assert.Equal("Search canceled.", model.Status);
         Assert.False(model.IsBusy);
         model.Dispose();
     }
@@ -469,7 +467,7 @@ public sealed class SurfaceMiningSearchViewModelTests
                         )
                     );
                 }
-                if (Mode == "reserve-stress-positive" && BodyReference == "Timbalderis")
+                if (Mode == "reserve-stress-positive" && BodyReference == "Sell 41")
                 {
                     return Json(
                         """{"results":[{"name":"Viable Somewhere 1","system_name":"Viable Somewhere","subtype":"Rocky body","reserve_level":"Pristine","distance":50}]}"""

@@ -52,6 +52,10 @@ public sealed record MiningRingQuery(
 
 public sealed record MiningRingPage(IReadOnlyList<MiningRing> Rings, bool HasMore);
 
+public sealed record MiningPlanetaryBodyPage(IReadOnlyList<MiningPlanetaryBody> Bodies, bool HasMore);
+
+public sealed record MiningSystemPage(IReadOnlyList<MiningSystemResult> Systems, bool HasMore);
+
 public sealed record MiningMarketQuery(
     string ReferenceSystem,
     string Commodity,
@@ -78,7 +82,8 @@ public sealed record MiningSellQuote(
     double? ArrivalLs,
     string Commodity,
     long Price,
-    long Demand
+    long Demand,
+    DateTimeOffset? Updated = null
 );
 
 public sealed record MiningMarketResult(
@@ -433,11 +438,16 @@ public sealed class MiningSearchClient
     public async Task<IReadOnlyList<MiningPlanetaryBody>> FindPlanetaryBodiesAsync(
         MiningPlanetaryQuery query,
         CancellationToken cancellationToken = default
+    ) => (await FindPlanetaryBodyPageAsync(query, cancellationToken).ConfigureAwait(false)).Bodies;
+
+    public async Task<MiningPlanetaryBodyPage> FindPlanetaryBodyPageAsync(
+        MiningPlanetaryQuery query,
+        CancellationToken cancellationToken = default
     )
     {
         if (query.BodySubtypes.Count == 0)
         {
-            return [];
+            return new MiningPlanetaryBodyPage([], false);
         }
 
         Dictionary<string, object> filters = query.GalaxyWide ? [] : DistanceFilter(query.Radius);
@@ -482,11 +492,13 @@ public sealed class MiningSearchClient
             query.Page,
             cancellationToken: cancellationToken
         );
-        return Results(response)
+        JsonElement[] results = Results(response).ToArray();
+        MiningPlanetaryBody[] bodies = results
             .Select(ReadPlanetaryBody)
             .Where(body => body is not null)
             .Cast<MiningPlanetaryBody>()
             .ToArray();
+        return new MiningPlanetaryBodyPage(bodies, results.Length >= SpanshRoutes.PageSize(SpanshRoutes.Bodies));
     }
 
     private static MiningPlanetaryBody? ReadPlanetaryBody(JsonElement body)
@@ -1104,30 +1116,57 @@ public sealed class MiningSearchClient
         double radius,
         IReadOnlyList<string> systems,
         IReadOnlyList<string> commodities,
+        TimeSpan? maximumAge = null,
         CancellationToken cancellationToken = default
     )
     {
-        if (systems.Count == 0 || commodities.Count == 0)
+        if (commodities.Count == 0)
         {
             return [];
         }
 
         Dictionary<string, object> filters = DistanceFilter(radius);
-        filters[SystemNameField] = new { value = systems.ToArray() };
+        if (systems.Count > 0)
+        {
+            filters[SystemNameField] = new { value = systems.ToArray() };
+        }
         filters["buying_commodities"] = new { value = commodities.ToArray() };
-        using JsonDocument response = await spansh.SearchAsync(
-            SpanshRoutes.Stations,
-            reference,
-            filters,
-            0,
-            sort: MarketUpdatedSort,
-            cancellationToken: cancellationToken
-        );
-        return Results(response).SelectMany(station => ReadSellQuotes(station, commodities)).ToArray();
+        var quotes = new List<MiningSellQuote>();
+        int page = 0;
+        bool hasMore = true;
+        while (hasMore)
+        {
+            using JsonDocument response = await spansh.SearchAsync(
+                SpanshRoutes.Stations,
+                reference,
+                filters,
+                page,
+                sort: MarketUpdatedSort,
+                cancellationToken: cancellationToken
+            );
+            JsonElement[] stations = Results(response).ToArray();
+            quotes.AddRange(stations.SelectMany(station => ReadSellQuotes(station, commodities, maximumAge)));
+            hasMore = stations.Length >= SpanshRoutes.PageSize(SpanshRoutes.Stations);
+            page++;
+        }
+
+        return quotes;
     }
 
-    private static IEnumerable<MiningSellQuote> ReadSellQuotes(JsonElement station, IReadOnlyList<string> commodities)
+    private static IEnumerable<MiningSellQuote> ReadSellQuotes(
+        JsonElement station,
+        IReadOnlyList<string> commodities,
+        TimeSpan? maximumAge
+    )
     {
+        DateTimeOffset? updated = maximumAge is { } age
+            ? RecentObservation(MiningJson.Text(station, MarketUpdatedSort), age)
+            : null;
+        if (maximumAge is not null && updated is null)
+        {
+            yield break;
+        }
+
         string pad = MaxPad(station) switch
         {
             >= 3 => "Large",
@@ -1159,7 +1198,8 @@ public sealed class MiningSearchClient
                 arrival,
                 MiningCommodityName.Canonical(commodity),
                 price,
-                demand
+                demand,
+                updated
             );
         }
     }
@@ -1330,6 +1370,11 @@ public sealed class MiningSearchClient
     public async Task<IReadOnlyList<MiningSystemResult>> FindSystemsAsync(
         MiningSystemQuery query,
         CancellationToken cancellationToken = default
+    ) => (await FindSystemPageAsync(query, cancellationToken).ConfigureAwait(false)).Systems;
+
+    public async Task<MiningSystemPage> FindSystemPageAsync(
+        MiningSystemQuery query,
+        CancellationToken cancellationToken = default
     )
     {
         Dictionary<string, object> filters = DistanceFilter(query.Radius);
@@ -1365,7 +1410,8 @@ public sealed class MiningSearchClient
             query.Page,
             cancellationToken: cancellationToken
         );
-        IEnumerable<MiningSystemResult> systems = Results(response).Select(ReadSystem);
+        JsonElement[] results = Results(response).ToArray();
+        IEnumerable<MiningSystemResult> systems = results.Select(ReadSystem);
         if (spanshQuery.RequiredState.Length > 0)
         {
             systems = systems.Where(system =>
@@ -1373,7 +1419,7 @@ public sealed class MiningSearchClient
             );
         }
 
-        return systems.ToArray();
+        return new MiningSystemPage(systems.ToArray(), results.Length >= SpanshRoutes.PageSize(SpanshRoutes.Systems));
     }
 
     public async Task<IReadOnlyList<MiningSystemResult>> FindSystemsByNameAsync(

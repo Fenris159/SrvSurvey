@@ -1254,39 +1254,45 @@ public sealed class MiningSearchViewModel(
         foreach (MiningSystemResult supporter in supporters)
         {
             token.ThrowIfCancellationRequested();
-            IReadOnlyList<MiningSystemResult> bubble = await client.FindSystemsAsync(
-                new MiningSystemQuery(
-                    supporter.System,
-                    PowerplayPlan.AcquisitionReachLy(supporter.PowerState),
-                    Security.Trim(),
-                    Allegiance.Trim(),
-                    Government.Trim(),
-                    IsAny(State) ? "" : State.Trim(),
-                    Economy.Trim(),
-                    "",
-                    "",
-                    MinimumPopulation,
-                    0,
-                    PowerplayPlan.Acquire
-                ),
-                token
+            var query = new MiningSystemQuery(
+                supporter.System,
+                PowerplayPlan.AcquisitionReachLy(supporter.PowerState),
+                Security.Trim(),
+                Allegiance.Trim(),
+                Government.Trim(),
+                IsAny(State) ? "" : State.Trim(),
+                Economy.Trim(),
+                "",
+                "",
+                MinimumPopulation,
+                0,
+                PowerplayPlan.Acquire
             );
-            foreach (
-                MiningSystemResult candidate in bubble.Where(candidate =>
-                    PowerplayPlan.IsAcquisitionTarget(candidate, PowerState)
-                )
-            )
+            int pageIndex = 0;
+            bool hasMore = true;
+            while (hasMore)
             {
-                if (
-                    pairs.Any(pair =>
-                        Same(pair.Target.System, candidate.System) && Same(pair.Miner.System, supporter.System)
+                MiningSystemPage bubble = await client.FindSystemPageAsync(query with { Page = pageIndex }, token);
+                foreach (
+                    MiningSystemResult candidate in bubble.Systems.Where(candidate =>
+                        PowerplayPlan.IsAcquisitionTarget(candidate, PowerState)
                     )
                 )
                 {
-                    continue;
+                    if (
+                        pairs.Any(pair =>
+                            Same(pair.Target.System, candidate.System) && Same(pair.Miner.System, supporter.System)
+                        )
+                    )
+                    {
+                        continue;
+                    }
+
+                    pairs.Add((candidate, supporter));
                 }
 
-                pairs.Add((candidate, supporter));
+                hasMore = bubble.HasMore;
+                pageIndex++;
             }
         }
 
@@ -1545,17 +1551,19 @@ public sealed class MiningSearchViewModel(
     )
     {
         var all = new List<MiningSystemResult>();
-        for (int pageIndex = 0; pageIndex < 3; pageIndex++)
+        int pageIndex = 0;
+        bool hasMore = true;
+        while (hasMore)
         {
-            IReadOnlyList<MiningSystemResult> rows = await client.FindSystemsAsync(
+            MiningSystemPage resultPage = await client.FindSystemPageAsync(
                 new MiningSystemQuery(Reference, Radius, Power: PledgedPower, PowerState: state, Page: pageIndex),
                 token
             );
-            all.AddRange(rows.Where(system => Same(system.Power, PledgedPower) && Same(system.PowerState, state)));
-            if (rows.Count < 100)
-            {
-                break;
-            }
+            all.AddRange(
+                resultPage.Systems.Where(system => Same(system.Power, PledgedPower) && Same(system.PowerState, state))
+            );
+            hasMore = resultPage.HasMore;
+            pageIndex++;
         }
 
         return all;
@@ -1700,40 +1708,59 @@ public sealed class MiningSearchViewModel(
 
         try
         {
-            IReadOnlyList<MiningPlanetaryBody> bodies = await client.FindPlanetaryBodiesAsync(
-                new MiningPlanetaryQuery(
-                    Reference,
-                    criteria.BodySubtypes,
-                    criteria.LandmarkSubtypes,
-                    "",
-                    Radius,
-                    PlanetaryPowers,
-                    PlanetaryPowerState,
-                    VolcanismTypes: criteria.VolcanismTypes
-                ),
-                token
+            var query = new MiningPlanetaryQuery(
+                Reference,
+                criteria.BodySubtypes,
+                criteria.LandmarkSubtypes,
+                "",
+                Radius,
+                PlanetaryPowers,
+                PlanetaryPowerState,
+                VolcanismTypes: criteria.VolcanismTypes
             );
             PlanetaryBodyCriteria[] materialRules = materials
                 .Select(material => PlanetaryMiningPlan.For([material]))
                 .OfType<PlanetaryBodyCriteria>()
                 .ToArray();
-            MiningPlanetaryBody[] whiteDwarfCandidates = bodies
-                .Where(body =>
-                    materialRules.Any(rule => rule.RequiresWhiteDwarfHost && PlanetaryMiningPlan.Matches(rule, body))
-                )
-                .ToArray();
-            IReadOnlySet<string> hosted =
-                whiteDwarfCandidates.Length > 0
-                    ? await client.FindWhiteDwarfHostedBodiesAsync(Reference, whiteDwarfCandidates, token)
-                    : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            bodies = bodies
-                .Where(body =>
-                    materialRules.Any(rule =>
-                        PlanetaryMiningPlan.Matches(rule, body)
-                        && (!rule.RequiresWhiteDwarfHost || hosted.Contains(body.System + "\u001f" + body.Body))
+            var allBodies = new List<MiningPlanetaryBody>();
+            int pageIndex = 0;
+            bool hasMore = true;
+            while (hasMore)
+            {
+                MiningPlanetaryBodyPage found = await client.FindPlanetaryBodyPageAsync(
+                    query with
+                    {
+                        Page = pageIndex,
+                    },
+                    token
+                );
+                MiningPlanetaryBody[] whiteDwarfCandidates = found
+                    .Bodies.Where(body =>
+                        materialRules.Any(rule =>
+                            rule.RequiresWhiteDwarfHost && PlanetaryMiningPlan.Matches(rule, body)
+                        )
                     )
-                )
-                .ToArray();
+                    .ToArray();
+                IReadOnlySet<string> hosted =
+                    whiteDwarfCandidates.Length > 0
+                        ? await client.FindWhiteDwarfHostedBodiesAsync(Reference, whiteDwarfCandidates, token)
+                        : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                allBodies.AddRange(
+                    found.Bodies.Where(body =>
+                        materialRules.Any(rule =>
+                            PlanetaryMiningPlan.Matches(rule, body)
+                            && (!rule.RequiresWhiteDwarfHost || hosted.Contains(body.System + "\u001f" + body.Body))
+                        )
+                    )
+                );
+                hasMore =
+                    found.HasMore
+                    && allBodies.Select(body => body.System).Distinct(StringComparer.OrdinalIgnoreCase).Count()
+                        < ResultLimit;
+                pageIndex++;
+            }
+
+            IReadOnlyList<MiningPlanetaryBody> bodies = allBodies;
 
             (IReadOnlyList<MiningMarketResult> foundMarkets, _) = await ReportedStationPricesAsync(
                 bodies.Select(body => body.System).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
@@ -2016,6 +2043,7 @@ public sealed class MiningSearchViewModel(
                 Radius,
                 wantedSystems,
                 wantedCommodities,
+                MarketFreshness ?? TimeSpan.FromDays(MaximumAgeDays),
                 token
             );
             return (
@@ -2030,7 +2058,7 @@ public sealed class MiningSearchViewModel(
                         quote.Price,
                         quote.Demand,
                         0,
-                        null,
+                        quote.Updated,
                         0,
                         quote.Pad.Equals("Large", StringComparison.OrdinalIgnoreCase)
                     )

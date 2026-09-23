@@ -82,9 +82,35 @@ public sealed class MiningSearchViewModelTests
         Assert.False(filters.TryGetProperty("landmarks", out _));
     }
 
+    [Fact]
+    public async Task PlanetaryPowerplayIncludesEligibleBodiesAfterTheFirstSpanshPage()
+    {
+        using var handler = new PlanetaryFilterHandler { PagedBodies = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            ResultLimit = 2,
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal(2, handler.BodyPages);
+        Assert.Contains(model.MeritRows, row => row.Name == "Second");
+    }
+
     private sealed class PlanetaryFilterHandler : HttpMessageHandler
     {
         public string? BodyFilters { get; private set; }
+        public bool PagedBodies { get; init; }
+        public int BodyPages { get; private set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -94,11 +120,52 @@ public sealed class MiningSearchViewModelTests
             if (request.RequestUri?.AbsolutePath == "/api/bodies/search")
             {
                 BodyFilters = await request.Content!.ReadAsStringAsync(cancellationToken);
+                if (PagedBodies)
+                {
+                    using var body = System.Text.Json.JsonDocument.Parse(BodyFilters);
+                    int page = body.RootElement.GetProperty("page").GetInt32();
+                    BodyPages++;
+                    object[] results =
+                        page == 0
+                            ? Enumerable
+                                .Range(0, 100)
+                                .Select(index =>
+                                    (object)
+                                        new
+                                        {
+                                            name = $"First {index}",
+                                            system_name = "First",
+                                            subtype = "Rocky body",
+                                            volcanism_type = "Minor Metallic Magma",
+                                            distance = 1,
+                                        }
+                                )
+                                .ToArray()
+                            :
+                            [
+                                new
+                                {
+                                    name = "Second 1",
+                                    system_name = "Second",
+                                    subtype = "Rocky body",
+                                    volcanism_type = "Minor Metallic Magma",
+                                    distance = 2,
+                                },
+                            ];
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { results })),
+                    };
+                }
             }
 
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
-                Content = new StringContent("{\"results\":[]}"),
+                Content = new StringContent(
+                    request.RequestUri?.AbsolutePath.StartsWith("/api/", StringComparison.Ordinal) == true
+                        ? "{\"results\":[]}"
+                        : "[]"
+                ),
             };
         }
     }
@@ -479,7 +546,8 @@ public sealed class MiningSearchViewModelTests
         await model.SearchSystemsAsync();
 
         Assert.Equal("Own", Assert.Single(model.Systems).System);
-        Assert.Contains("Request failed. Try again.", model.Status);
+        Assert.Equal("Own", Assert.Single(model.MeritRows).Name);
+        Assert.Contains("Spansh fallback", model.Status);
         Assert.Contains(logs, line => line.Contains("failed", StringComparison.OrdinalIgnoreCase));
         model.DistanceSortCommand.Execute(null);
         Assert.Equal("Farthest first", model.DistanceSortLabel);
@@ -513,7 +581,7 @@ public sealed class MiningSearchViewModelTests
             if (path.Contains("/api/stations/search", StringComparison.Ordinal))
             {
                 return Json(
-                    """{"results":[{"system_name":"Own","name":"Market","type":"Orbis Starport","distance_to_arrival":5,"large_pads":1,"market":[{"commodity":"Platinum","sell_price":200000,"demand":1000}]}]}"""
+                    $$"""{"results":[{"system_name":"Own","name":"Market","type":"Orbis Starport","distance_to_arrival":5,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","large_pads":1,"market":[{"commodity":"Platinum","sell_price":200000,"demand":1000}]}]}"""
                 );
             }
 
@@ -553,6 +621,30 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("Claim", row.Target);
         Assert.Equal("Anchor", Assert.Single(row.Miners).Name);
         Assert.Contains("20 ly", model.Status);
+    }
+
+    [Fact]
+    public async Task AcquireReadsPastAFullBubblePageBeforeRulingOutTargets()
+    {
+        using var handler = new AcquisitionRangeHandler { PagedBubble = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Radius = 100,
+        };
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal(2, handler.BubblePages);
+        Assert.Equal("Claim", Assert.Single(model.Systems).System);
     }
 
     [Fact]
@@ -627,6 +719,9 @@ public sealed class MiningSearchViewModelTests
 
     private sealed class AcquisitionRangeHandler : HttpMessageHandler
     {
+        public bool PagedBubble { get; init; }
+        public int BubblePages { get; private set; }
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -641,11 +736,51 @@ public sealed class MiningSearchViewModelTests
                 await request.Content.ReadAsStringAsync(cancellationToken)
             );
             string reference = body.RootElement.GetProperty("reference_system").GetString() ?? "";
+            int page = body.RootElement.GetProperty("page").GetInt32();
             string state = body
                 .RootElement.GetProperty("filters")
                 .TryGetProperty("power_state", out System.Text.Json.JsonElement powerState)
                 ? powerState.GetProperty("value")[0].GetString() ?? ""
                 : "";
+            if (PagedBubble && reference == "Anchor" && request.RequestUri?.AbsolutePath == "/api/systems/search")
+            {
+                BubblePages++;
+                object[] results =
+                    page == 0
+                        ? Enumerable
+                            .Range(0, 100)
+                            .Select(index =>
+                                (object)
+                                    new
+                                    {
+                                        name = $"Owned {index}",
+                                        distance = 1,
+                                        x = 1,
+                                        y = 0,
+                                        z = 0,
+                                        controlling_power = "Yuri Grom",
+                                        power_state = "Exploited",
+                                    }
+                            )
+                            .ToArray()
+                        :
+                        [
+                            new
+                            {
+                                name = "Claim",
+                                distance = 10,
+                                x = 10,
+                                y = 0,
+                                z = 0,
+                                power_state = "Unoccupied",
+                            },
+                        ];
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { results })),
+                };
+            }
+
             string payload = (reference, state) switch
             {
                 (_, "Fortified") =>

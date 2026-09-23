@@ -205,33 +205,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     private sealed record SurfaceBodySearch(IReadOnlyList<SurfaceBodyMatch> Matches, bool Complete);
 
-    private sealed record SurfaceRankedSearch(
-        IReadOnlyList<SurfaceSellRowViewModel> Rows,
-        bool FoundBody,
-        bool Incomplete,
-        bool Limited,
-        int PagesChecked
-    );
-
-    private sealed class SurfaceRequestBudget
-    {
-        public const int MaximumBodyPages = 40;
-
-        public int BodyPagesRemaining { get; private set; } = MaximumBodyPages;
-
-        public int PagesChecked => MaximumBodyPages - BodyPagesRemaining;
-
-        public bool TryUseBodyPage()
-        {
-            if (BodyPagesRemaining == 0)
-            {
-                return false;
-            }
-
-            BodyPagesRemaining--;
-            return true;
-        }
-    }
+    private sealed record SurfaceRankedSearch(IReadOnlyList<SurfaceSellRowViewModel> Rows);
 
     private sealed record SurfaceStationCandidate(MiningMarketResult[] Quotes, MiningMarketResult Anchor, int Priority);
 
@@ -449,11 +423,6 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         bool usedFallback
     )
     {
-        if (search.Rows.Count == 0 && search.Limited)
-        {
-            return $"No matching bodies were found after checking the highest-paying sell stations. Search stopped at its request limit ({search.PagesChecked} Spansh body pages); narrow the distance or select a material.";
-        }
-
         if (search.Rows.Count == 0)
         {
             return "No sell station has a matching surface mining body within the distance.";
@@ -476,16 +445,6 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             )
             + (usedFallback ? "Ardent/Spansh fallback" : "Ardent")
             + "."
-            + (
-                search.Incomplete
-                    ? " Some body searches reached the page limit; unmatched prices were left unmarked."
-                    : ""
-            )
-            + (
-                search.Limited
-                    ? $" Search stopped at its request limit ({search.PagesChecked} Spansh body pages); narrow the distance for more coverage."
-                    : ""
-            )
             + (client.PriceMarksUnavailable ? " " + RequestFailed : "");
     }
 
@@ -538,11 +497,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     )
     {
         var bodyCache = new Dictionary<string, SurfaceBodySearch>(StringComparer.OrdinalIgnoreCase);
-        var budget = new SurfaceRequestBudget();
         var ranked = new List<SurfaceSellRowViewModel>();
-        bool foundAnyBody = false;
-        bool incomplete = false;
-        bool limited = false;
         var selectedStations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         for (int index = 0; index < candidates.Length; index++)
         {
@@ -555,22 +510,13 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                 continue;
             }
 
-            if (budget.BodyPagesRemaining == 0)
-            {
-                limited = true;
-                break;
-            }
-
             SurfaceBodySearch bodySearch = await CachedBodySearchAsync(
                 bodyCache,
                 candidate.Anchor.System,
                 criteria,
                 rules,
-                budget,
                 token
             );
-            foundAnyBody |= bodySearch.Matches.Count > 0;
-            incomplete |= !bodySearch.Complete;
             if (bodySearch.Matches.Count == 0)
             {
                 continue;
@@ -599,7 +545,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             }
         }
 
-        return new SurfaceRankedSearch(ranked, foundAnyBody, incomplete, limited, budget.PagesChecked);
+        return new SurfaceRankedSearch(ranked);
     }
 
     private async Task<SurfaceSellRowViewModel?> DescribeCandidateAsync(
@@ -641,13 +587,12 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         string system,
         PlanetaryBodyCriteria criteria,
         IReadOnlyList<SurfaceMaterialRule> rules,
-        SurfaceRequestBudget budget,
         CancellationToken token
     )
     {
         if (!cache.TryGetValue(system, out SurfaceBodySearch? result))
         {
-            result = await FindBodyMatchesAsync(system, criteria, rules, budget, token);
+            result = await FindBodyMatchesAsync(system, criteria, rules, token);
             cache.Add(system, result);
         }
 
@@ -698,7 +643,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     public async Task SearchAsync()
     {
         CancellationTokenSource? previous = pending;
-        using var current = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        using var current = new CancellationTokenSource();
         pending = current;
         IsBusy = true;
         Status = "Searching…";
@@ -717,7 +662,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         {
             if (pending == current)
             {
-                Status = "Search canceled or timed out.";
+                Status = "Search canceled.";
             }
         }
         catch (Exception ex)
@@ -819,20 +764,15 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         string system,
         PlanetaryBodyCriteria criteria,
         IReadOnlyList<SurfaceMaterialRule> rules,
-        SurfaceRequestBudget budget,
         CancellationToken token
     )
     {
         var matches = new List<SurfaceBodyMatch>();
-        bool complete = false;
-        for (int page = 0; page < 20; page++)
+        int page = 0;
+        bool hasMore = true;
+        while (hasMore)
         {
-            if (!budget.TryUseBodyPage())
-            {
-                break;
-            }
-
-            IReadOnlyList<MiningPlanetaryBody> bodies = await client.FindPlanetaryBodiesAsync(
+            MiningPlanetaryBodyPage found = await client.FindPlanetaryBodyPageAsync(
                 new MiningPlanetaryQuery(
                     system,
                     criteria.BodySubtypes,
@@ -844,6 +784,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                 ),
                 token
             );
+            IReadOnlyList<MiningPlanetaryBody> bodies = found.Bodies;
             MiningPlanetaryBody[] whiteDwarfCandidates = rules
                 .Where(rule => rule.Criteria.RequiresWhiteDwarfHost)
                 .SelectMany(rule => bodies.Where(body => PlanetaryMiningPlan.Matches(rule.Criteria, body)))
@@ -874,18 +815,15 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     )
                     .Select(match => match.Codes.Count > 0 ? match : match with { Codes = [rules[0].Code] })
             );
-            if (bodies.Count < SpanshRoutes.PageSize(SpanshRoutes.Bodies))
-            {
-                complete = true;
-                break;
-            }
+            hasMore = found.HasMore;
+            page++;
         }
 
         return new SurfaceBodySearch(
             matches
                 .DistinctBy(match => match.Body.System + "\u001f" + match.Body.Body, StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
-            complete
+            true
         );
     }
 
