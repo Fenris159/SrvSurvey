@@ -43195,7 +43195,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
   },
   {
-    "Text": "Secure Frontier token storage is unavailable because the desktop Secret Service could not be accessed. The secret-tool command is installed, but a compatible keyring must be running and unlocked in this graphical session. On KDE Plasma, enable \u0027Use KWallet for the Secret Service interface\u0027 in System Settings \u003E KDE Wallet, then unlock or reopen the wallet. On other desktops, start and unlock a Secret Service provider such as GNOME Keyring. Then try Connect to Frontier again.",
+    "Text": "Secure Frontier token storage is unavailable: Secret Service is inaccessible. secret-tool is installed, but a keyring must be running and unlocked in this login session. On KDE Plasma, enable \u0027Use KWallet for the Secret Service interface\u0027 in System Settings \u003E KDE Wallet and unlock the wallet. If activation still fails, sign out and back in, then check your distribution\u0027s KWallet login integration. On other desktops, start and unlock GNOME Keyring or another provider. Retry Connect to Frontier.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

@@ -87,9 +87,17 @@ The application will not save tokens in plaintext when a secure store is
 unavailable. Installing `libsecret` supplies the client command, but does not
 necessarily provide a running Secret Service keyring. On KDE Plasma, enable
 **Use KWallet for the Secret Service interface** in **System Settings > KDE
-Wallet**, then unlock or reopen the wallet. On other desktops, start and unlock
-a Secret Service provider such as GNOME Keyring. Run SrvSurvey in the same user
-graphical session as the keyring, then retry **Connect to Frontier**.
+Wallet**, then unlock or reopen the wallet. If `secret-tool` reports **The name
+is not activatable**, the Secret Service provider could not be started on that
+login session's D-Bus. Sign out and back in after enabling the interface; if
+it still fails, check your distribution's KWallet startup/login integration
+(for Arch derivatives, see the [KDE Wallet guidance](https://wiki.archlinux.org/title/KDE_Wallet)).
+Do not edit PAM configuration based on a generic example without checking your
+distribution's login setup. A successful probe in `dbus-run-session` uses a
+separate temporary bus and does not establish that SrvSurvey's normal session
+can access the keyring. On other desktops, start and unlock a Secret Service
+provider such as GNOME Keyring. Run SrvSurvey in the same user graphical
+session as the keyring, then retry **Connect to Frontier**.
 
 Authorizations and cached snapshots are isolated by the stable Frontier ID
 from the active journal. Switching Elite accounts selects that commander's

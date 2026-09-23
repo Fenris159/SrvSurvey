@@ -319,10 +319,15 @@ sudo pacman -S --needed libsecret
 Package names vary on Fedora and openSUSE; use the distribution package search
 to find the package providing `/usr/bin/secret-tool`. On KDE Plasma, enable
 **Use KWallet for the Secret Service interface** in **System Settings > KDE
-Wallet**, then unlock or reopen the wallet. On other desktops, start and unlock
-a Secret Service provider such as GNOME Keyring. SrvSurvey deliberately does
-not fall back to a plaintext token file. Retry **Connect to Frontier** after
-the keyring is available.
+Wallet**, then unlock or reopen the wallet. If `secret-tool` reports **The name
+is not activatable**, sign out and back in; if it still fails, check your
+distribution's KWallet startup/login integration rather than reinstalling
+`libsecret` or applying a generic PAM edit. A `dbus-run-session` probe uses a
+separate temporary bus, so it does not confirm the provider is available in
+SrvSurvey's normal login session. On other desktops, start and unlock a Secret
+Service provider such as GNOME Keyring. SrvSurvey deliberately does not fall
+back to a plaintext token file. Retry **Connect to Frontier** after the keyring
+is available.
 
 ## Troubleshooting
 
