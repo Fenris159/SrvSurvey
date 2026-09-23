@@ -306,6 +306,10 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     public IReadOnlyList<string> BodyControllingPowers { get; set; } = [];
 
+    public double? BodySearchRadius { get; set; }
+
+    public Func<string, IReadOnlySet<string>>? MiningSystemsForSell { get; set; }
+
     public string NoSellStationsMessage { get; set; } =
         "No sell station matches the selected material, demand, and landing pad within the distance.";
 
@@ -535,11 +539,18 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                 continue;
             }
 
+            IReadOnlySet<string>? miningSystems = MiningSystemsForSell?.Invoke(candidate.Anchor.System);
+            if (miningSystems is { Count: 0 })
+            {
+                continue;
+            }
+
             SurfaceBodySearch bodySearch = await CachedBodySearchAsync(
                 bodyCache,
                 candidate.Anchor.System,
                 criteria,
                 rules,
+                miningSystems,
                 token
             );
             if (bodySearch.Matches.Count == 0)
@@ -658,12 +669,13 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         string system,
         PlanetaryBodyCriteria criteria,
         IReadOnlyList<SurfaceMaterialRule> rules,
+        IReadOnlySet<string>? miningSystems,
         CancellationToken token
     )
     {
         if (!cache.TryGetValue(system, out SurfaceBodySearch? result))
         {
-            result = await FindBodyMatchesAsync(system, criteria, rules, token);
+            result = await FindBodyMatchesAsync(system, criteria, rules, miningSystems, token);
             cache.Add(system, result);
         }
 
@@ -835,6 +847,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         string system,
         PlanetaryBodyCriteria criteria,
         IReadOnlyList<SurfaceMaterialRule> rules,
+        IReadOnlySet<string>? miningSystems,
         CancellationToken token
     )
     {
@@ -849,14 +862,17 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     criteria.BodySubtypes,
                     criteria.LandmarkSubtypes,
                     "",
-                    Radius,
+                    BodySearchRadius ?? Radius,
                     BodyControllingPowers,
                     Page: page,
-                    VolcanismTypes: criteria.VolcanismTypes
+                    VolcanismTypes: criteria.VolcanismTypes,
+                    SystemNames: miningSystems?.ToArray()
                 ),
                 token
             );
-            IReadOnlyList<MiningPlanetaryBody> bodies = found.Bodies;
+            IReadOnlyList<MiningPlanetaryBody> bodies = miningSystems is null
+                ? found.Bodies
+                : found.Bodies.Where(body => miningSystems.Contains(body.System)).ToArray();
             MiningPlanetaryBody[] whiteDwarfCandidates = rules
                 .Where(rule => rule.Criteria.RequiresWhiteDwarfHost)
                 .SelectMany(rule => bodies.Where(body => PlanetaryMiningPlan.Matches(rule.Criteria, body)))

@@ -20,7 +20,8 @@ public sealed record MiningPlanetaryQuery(
     string PowerState = "",
     int Page = 0,
     bool GalaxyWide = false,
-    IReadOnlyList<string>? VolcanismTypes = null
+    IReadOnlyList<string>? VolcanismTypes = null,
+    IReadOnlyList<string>? SystemNames = null
 );
 
 public sealed record MiningPlanetaryBody(
@@ -456,6 +457,11 @@ public sealed class MiningSearchClient
         if (query.ControllingPowers is { Count: > 0 })
         {
             filters["system_controlling_power"] = new { value = query.ControllingPowers.ToArray() };
+        }
+
+        if (query.SystemNames is { Count: > 0 })
+        {
+            filters[SystemNameField] = new { value = query.SystemNames.ToArray() };
         }
 
         if (query.PowerState.Length > 0)

@@ -81,7 +81,9 @@ public sealed class MiningSearchViewModelTests
         );
         Assert.False(filters.TryGetProperty("reserve_level", out _));
         Assert.False(filters.TryGetProperty("system_power_state", out _));
+        Assert.False(filters.TryGetProperty("system_controlling_power", out _));
         Assert.False(filters.TryGetProperty("landmarks", out _));
+        Assert.Equal(1, handler.RequestedBodyRadius);
     }
 
     [Fact]
@@ -105,7 +107,10 @@ public sealed class MiningSearchViewModelTests
         await model.SearchSystemsAsync();
 
         Assert.Equal(2, handler.BodyPages);
-        Assert.Contains(Assert.Single(model.PlanetarySearch.Rows).Systems, system => system.System == "Second");
+        Assert.Contains(
+            Assert.Single(Assert.Single(model.PlanetarySearch.Rows).Systems).Bodies,
+            body => body.Details.StartsWith("101:", StringComparison.Ordinal)
+        );
     }
 
     [Fact]
@@ -131,6 +136,12 @@ public sealed class MiningSearchViewModelTests
 
         Assert.Equal("Own Sell", Assert.Single(model.PlanetarySearch.Rows).Target);
         Assert.Equal(["Own Sell"], handler.BodyReferences);
+        Assert.All(
+            Assert.Single(model.PlanetarySearch.Rows).Systems,
+            system => Assert.Equal("Own Sell", system.System)
+        );
+        Assert.Equal(["Own Sell"], handler.RequestedBodySystems);
+        Assert.Equal(1, handler.RequestedBodyRadius);
         Assert.Empty(model.MeritRows);
 
         model.Objective = "Undermine";
@@ -139,6 +150,12 @@ public sealed class MiningSearchViewModelTests
 
         Assert.Equal("Other Sell", Assert.Single(model.PlanetarySearch.Rows).Target);
         Assert.Equal(["Other Sell"], handler.BodyReferences);
+        Assert.All(
+            Assert.Single(model.PlanetarySearch.Rows).Systems,
+            system => Assert.Equal("Other Sell", system.System)
+        );
+        Assert.Equal(["Other Sell"], handler.RequestedBodySystems);
+        Assert.Equal(1, handler.RequestedBodyRadius);
     }
 
     [Fact]
@@ -164,6 +181,41 @@ public sealed class MiningSearchViewModelTests
 
         Assert.Equal("Near Target", Assert.Single(model.PlanetarySearch.Rows).Target);
         Assert.Equal(["Near Target"], handler.BodyReferences);
+        Assert.All(
+            Assert.Single(model.PlanetarySearch.Rows).Systems,
+            system => Assert.Equal("Supporter", system.System)
+        );
+        Assert.Equal(["Supporter"], handler.RequestedBodySystems);
+        Assert.Equal(30, handler.RequestedBodyRadius);
+        Assert.Equal([("Supporter", 20d)], handler.AcquisitionTargetQueries);
+    }
+
+    [Fact]
+    public async Task PlanetaryAcquireUsesThirtyLyStrongholdSourceWhenFortifiedIsTooFar()
+    {
+        using var handler = new PlanetaryFilterHandler { AcquireSellSystems = true, StrongholdReach = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            PledgedPower = "Aisling Duval",
+            Objective = "Acquire",
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        SurfaceSellRowViewModel row = Assert.Single(model.PlanetarySearch.Rows);
+        Assert.Equal("Near Target", row.Target);
+        Assert.Equal("Stronghold Source", Assert.Single(row.Systems).System);
+        Assert.Equal(["Stronghold Source"], handler.RequestedBodySystems);
+        Assert.Equal([("Stronghold Source", 30d)], handler.AcquisitionTargetQueries);
     }
 
     private sealed class PlanetaryFilterHandler : HttpMessageHandler
@@ -172,8 +224,12 @@ public sealed class MiningSearchViewModelTests
         public bool PagedBodies { get; init; }
         public bool MultipleSellSystems { get; init; }
         public bool AcquireSellSystems { get; init; }
+        public bool StrongholdReach { get; init; }
         public int BodyPages { get; private set; }
         public List<string> BodyReferences { get; } = [];
+        public string[] RequestedBodySystems { get; private set; } = [];
+        public double RequestedBodyRadius { get; private set; }
+        public List<(string Reference, double Radius)> AcquisitionTargetQueries { get; } = [];
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -191,7 +247,34 @@ public sealed class MiningSearchViewModelTests
                     if (filters.TryGetProperty("name", out _))
                     {
                         return Json(
-                            """{"results":[{"name":"Near Target","power_state":"Unoccupied","x":18,"y":0,"z":0},{"name":"Far Target","power_state":"Unoccupied","x":31,"y":0,"z":0}]}"""
+                            StrongholdReach
+                                ? """{"results":[{"name":"Near Target","power_state":"Unoccupied","x":25,"y":0,"z":0}]}"""
+                                : """{"results":[{"name":"Near Target","power_state":"Unoccupied","x":18,"y":0,"z":0},{"name":"Far Target","power_state":"Unoccupied","x":31,"y":0,"z":0}]}"""
+                        );
+                    }
+
+                    if (filters.GetProperty("power_state").GetProperty("value")[0].GetString() == "Unoccupied")
+                    {
+                        AcquisitionTargetQueries.Add(
+                            (
+                                search.RootElement.GetProperty("reference_system").GetString() ?? "",
+                                filters.GetProperty("distance").GetProperty("max").GetDouble()
+                            )
+                        );
+                        return Json(
+                            StrongholdReach
+                                ? """{"results":[{"name":"Near Target","power_state":"Unoccupied","x":25,"y":0,"z":0}]}"""
+                                : """{"results":[{"name":"Near Target","power_state":"Unoccupied","x":18,"y":0,"z":0},{"name":"Far Target","power_state":"Unoccupied","x":31,"y":0,"z":0}]}"""
+                        );
+                    }
+
+                    if (
+                        StrongholdReach
+                        && filters.GetProperty("power_state").GetProperty("value")[0].GetString() == "Stronghold"
+                    )
+                    {
+                        return Json(
+                            """{"results":[{"name":"Stronghold Source","controlling_power":"Aisling Duval","power_state":"Stronghold","x":50,"y":0,"z":0}]}"""
                         );
                     }
 
@@ -215,7 +298,9 @@ public sealed class MiningSearchViewModelTests
                 if (AcquireSellSystems)
                 {
                     return Json(
-                        $$"""[{"systemName":"Near Target","stationName":"Near Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":400000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":18,"distanceToArrival":200,"marketId":1,"commodityName":"Monazite"},{"systemName":"Far Target","stationName":"Far Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":900000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":31,"distanceToArrival":100,"marketId":2,"commodityName":"Monazite"}]"""
+                        StrongholdReach
+                            ? $$"""[{"systemName":"Near Target","stationName":"Near Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":400000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":25,"distanceToArrival":200,"marketId":1,"commodityName":"Monazite"}]"""
+                            : $$"""[{"systemName":"Near Target","stationName":"Near Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":400000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":18,"distanceToArrival":200,"marketId":1,"commodityName":"Monazite"},{"systemName":"Far Target","stationName":"Far Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":900000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":31,"distanceToArrival":100,"marketId":2,"commodityName":"Monazite"}]"""
                     );
                 }
 
@@ -234,7 +319,20 @@ public sealed class MiningSearchViewModelTests
             {
                 BodyFilters = await request.Content!.ReadAsStringAsync(cancellationToken);
                 using var query = System.Text.Json.JsonDocument.Parse(BodyFilters);
-                BodyReferences.Add(query.RootElement.GetProperty("reference_system").GetString() ?? "");
+                string reference = query.RootElement.GetProperty("reference_system").GetString() ?? "";
+                BodyReferences.Add(reference);
+                RequestedBodySystems = query
+                    .RootElement.GetProperty("filters")
+                    .GetProperty("system_name")
+                    .GetProperty("value")
+                    .EnumerateArray()
+                    .Select(value => value.GetString() ?? "")
+                    .ToArray();
+                RequestedBodyRadius = query
+                    .RootElement.GetProperty("filters")
+                    .GetProperty("distance")
+                    .GetProperty("max")
+                    .GetDouble();
                 if (PagedBodies)
                 {
                     int page = query.RootElement.GetProperty("page").GetInt32();
@@ -268,8 +366,8 @@ public sealed class MiningSearchViewModelTests
                             [
                                 new
                                 {
-                                    name = "Second 1",
-                                    system_name = "Second",
+                                    name = "Sell System 101",
+                                    system_name = "Sell System",
                                     subtype = "Rocky body",
                                     volcanism_type = "Minor Metallic Magma",
                                     distance = 2,
@@ -281,8 +379,24 @@ public sealed class MiningSearchViewModelTests
                     };
                 }
 
+                if (AcquireSellSystems)
+                {
+                    return Json(
+                        StrongholdReach
+                            ? """{"results":[{"name":"Stronghold Source 1","system_name":"Stronghold Source","subtype":"Rocky body","distance":25},{"name":"Supporter 1","system_name":"Supporter","subtype":"Rocky body","distance":25},{"name":"Near Target 1","system_name":"Near Target","subtype":"Rocky body","distance":0}]}"""
+                            : """{"results":[{"name":"Supporter 1","system_name":"Supporter","subtype":"Rocky body","distance":18},{"name":"Near Target 1","system_name":"Near Target","subtype":"Rocky body","distance":0},{"name":"Miner 1","system_name":"Miner","subtype":"Rocky body","distance":2}]}"""
+                    );
+                }
+
+                if (MultipleSellSystems)
+                {
+                    return Json(
+                        $$"""{"results":[{"name":"{{reference}} 1","system_name":"{{reference}}","subtype":"Rocky body","distance":0},{"name":"Miner 1","system_name":"Miner","subtype":"Rocky body","distance":2}]}"""
+                    );
+                }
+
                 return Json(
-                    """{"results":[{"name":"Miner 1","system_name":"Miner","subtype":"Rocky body","volcanism_type":"Minor Metallic Magma","distance":2,"parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DB) Star"}]}]}"""
+                    """{"results":[{"name":"Sell System 1","system_name":"Sell System","subtype":"Rocky body","volcanism_type":"Minor Metallic Magma","distance":0,"parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DB) Star"}]}]}"""
                 );
             }
 
