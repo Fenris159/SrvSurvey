@@ -1,0 +1,283 @@
+using System.Windows.Input;
+
+namespace SrvSurvey.Desktop.ViewModels;
+
+/// <summary>
+/// A display projection of independently scored Acquire sell systems. Shared mining
+/// systems are shown once without changing either sell system's station quotes.
+/// </summary>
+public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
+{
+    private readonly PowerplayAcquireMiningNode[] miningSystems;
+    private IReadOnlyList<PowerplayAcquireMiningNode> visibleMiningSystems = [];
+    private bool showAllSystems;
+    private bool hideIrrelevant;
+    private string selectedSellSystem = "";
+
+    private PowerplayAcquireClusterViewModel(IReadOnlyList<SurfaceSellRowViewModel> rows)
+    {
+        PrimaryRow = rows[0];
+        SellNodes = rows.Select(row => new PowerplayAcquireSellNode(row, () => Select(row))).ToArray();
+        miningSystems = BuildMiningSystems(rows);
+        ToggleAllCommand = new WorkspaceCommand(() =>
+        {
+            showAllSystems = !showAllSystems;
+            RefreshVisibleSystems();
+            Changed(nameof(ShowAllLabel));
+        });
+        Select(PrimaryRow);
+        RefreshVisibleSystems();
+    }
+
+    public SurfaceSellRowViewModel PrimaryRow { get; }
+    public bool IsShared => SellNodes.Count > 1;
+    public bool IsSingle => !IsShared;
+    public IReadOnlyList<PowerplayAcquireSellNode> SellNodes { get; }
+    public IReadOnlyList<PowerplayAcquireMiningNode> MiningSystems => miningSystems;
+    public IReadOnlyList<PowerplayAcquireMiningNode> VisibleMiningSystems => visibleMiningSystems;
+    public string SelectedSellSystem => selectedSellSystem;
+    public bool HasAdditionalSystems => miningSystems.Length > 5;
+    public string ShowAllLabel => showAllSystems ? "Show fewer Systems" : "Show all Systems";
+    public ICommand ToggleAllCommand { get; }
+
+    public void SetHideIrrelevant(bool hide)
+    {
+        hideIrrelevant = hide;
+        foreach (PowerplayAcquireMiningNode system in miningSystems)
+        {
+            system.SetHideIrrelevant(hide);
+        }
+    }
+
+    public static IReadOnlyList<PowerplayAcquireClusterViewModel> Group(IReadOnlyList<SurfaceSellRowViewModel> rows)
+    {
+        int[] parents = Enumerable.Range(0, rows.Count).ToArray();
+        var firstByMiningSystem = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        for (int index = 0; index < rows.Count; index++)
+        {
+            foreach (string system in rows[index].Systems.Select(item => item.System))
+            {
+                if (firstByMiningSystem.TryGetValue(system, out int first))
+                {
+                    Join(parents, first, index);
+                }
+                else
+                {
+                    firstByMiningSystem.Add(system, index);
+                }
+            }
+        }
+
+        return rows.Select((row, index) => (Row: row, Index: index, Root: Root(parents, index)))
+            .GroupBy(item => item.Root)
+            .OrderBy(group => group.Min(item => item.Index))
+            .Select(group => new PowerplayAcquireClusterViewModel(
+                group.OrderBy(item => item.Index).Select(item => item.Row).ToArray()
+            ))
+            .ToArray();
+    }
+
+    private static int Root(int[] parents, int index)
+    {
+        while (parents[index] != index)
+        {
+            parents[index] = parents[parents[index]];
+            index = parents[index];
+        }
+
+        return index;
+    }
+
+    private static void Join(int[] parents, int first, int second) =>
+        parents[Root(parents, second)] = Root(parents, first);
+
+    private static PowerplayAcquireMiningNode[] BuildMiningSystems(IReadOnlyList<SurfaceSellRowViewModel> rows) =>
+        rows.SelectMany((row, index) => row.Systems.Select(system => (Row: row, Index: index, System: system)))
+            .GroupBy(item => item.System.System, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new PowerplayAcquireMiningNode(group.Key, group.ToArray()))
+            .OrderBy(system => system.SellPosition)
+            .ThenBy(system => system.DistanceLy)
+            .ThenBy(system => system.System, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private void Select(SurfaceSellRowViewModel row)
+    {
+        selectedSellSystem = row.Target;
+        foreach (PowerplayAcquireSellNode sell in SellNodes)
+        {
+            sell.IsSelected = ReferenceEquals(sell.Row, row);
+        }
+
+        foreach (PowerplayAcquireMiningNode system in miningSystems)
+        {
+            system.Select(row.Target, hideIrrelevant);
+        }
+
+        Changed(nameof(SelectedSellSystem));
+    }
+
+    private void RefreshVisibleSystems()
+    {
+        if (showAllSystems || miningSystems.Length <= 5)
+        {
+            visibleMiningSystems = miningSystems;
+        }
+        else
+        {
+            visibleMiningSystems = RepresentativeSystems()
+                .Concat(miningSystems)
+                .Distinct()
+                .Take(5)
+                .OrderBy(system => system.SellPosition)
+                .ThenBy(system => system.DistanceLy)
+                .ToArray();
+        }
+
+        Changed(nameof(VisibleMiningSystems));
+    }
+
+    private List<PowerplayAcquireMiningNode> RepresentativeSystems()
+    {
+        var uncovered = SellNodes.Select(sell => sell.Row.Target).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var representatives = new List<PowerplayAcquireMiningNode>();
+        while (uncovered.Count > 0 && representatives.Count < 5)
+        {
+            PowerplayAcquireMiningNode? next = miningSystems
+                .Except(representatives)
+                .OrderByDescending(system => uncovered.Count(system.ConnectsTo))
+                .ThenByDescending(system => system.SellCount)
+                .ThenBy(system => system.SellPosition)
+                .FirstOrDefault();
+            if (next is null || !uncovered.Any(next.ConnectsTo))
+            {
+                break;
+            }
+
+            representatives.Add(next);
+            uncovered.RemoveWhere(next.ConnectsTo);
+        }
+
+        return representatives;
+    }
+}
+
+public sealed class PowerplayAcquireSellNode(SurfaceSellRowViewModel row, Action select) : WorkspaceObservable
+{
+    private bool isSelected;
+
+    public SurfaceSellRowViewModel Row { get; } = row;
+    public ICommand SelectCommand { get; } = new WorkspaceCommand(select);
+    public string SelectionGlyph => IsSelected ? "▶" : "▷";
+
+    public bool IsSelected
+    {
+        get => isSelected;
+        set
+        {
+            if (Set(ref isSelected, value))
+            {
+                Changed(nameof(SelectionGlyph));
+            }
+        }
+    }
+}
+
+public sealed class PowerplayAcquireMiningNode : WorkspaceObservable
+{
+    private readonly IReadOnlyList<(
+        SurfaceSellRowViewModel Row,
+        int Index,
+        SurfaceMiningSystemRowViewModel System
+    )> sources;
+    private bool isExpanded;
+    private SurfaceBodyLine[] bodies = [];
+    private IReadOnlyList<SurfaceBodyLine> visibleBodies = [];
+    private double emphasisOpacity = 1;
+
+    internal PowerplayAcquireMiningNode(
+        string system,
+        IReadOnlyList<(SurfaceSellRowViewModel Row, int Index, SurfaceMiningSystemRowViewModel System)> sources
+    )
+    {
+        System = system;
+        this.sources = sources;
+        SellPosition = sources.Average(source => source.Index);
+        DistanceLy = sources.Min(source => source.System.DistanceLy);
+        SellCount = sources.Select(source => source.Row.Target).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+        ToggleCommand = new WorkspaceCommand(() => IsExpanded = !IsExpanded);
+    }
+
+    public string System { get; }
+    public double SellPosition { get; }
+    public double DistanceLy { get; }
+    public int SellCount { get; }
+    public IReadOnlyList<SurfaceBodyLine> Bodies => bodies;
+    public IReadOnlyList<SurfaceBodyLine> VisibleBodies => visibleBodies;
+    public bool HasAdditionalBodies => bodies.Length > 1;
+    public string Chevron => IsExpanded ? "▾" : "▸";
+    public double EmphasisOpacity => emphasisOpacity;
+    public ICommand ToggleCommand { get; }
+
+    public bool IsExpanded
+    {
+        get => isExpanded;
+        set
+        {
+            if (HasAdditionalBodies && Set(ref isExpanded, value))
+            {
+                RefreshVisibleBodies();
+                Changed(nameof(Chevron));
+            }
+        }
+    }
+
+    public bool ConnectsTo(string sellSystem) =>
+        sources.Any(source => source.Row.Target.Equals(sellSystem, StringComparison.OrdinalIgnoreCase));
+
+    internal void Select(string sellSystem, bool hideIrrelevant)
+    {
+        emphasisOpacity = ConnectsTo(sellSystem) ? 1 : 0.5;
+        Changed(nameof(EmphasisOpacity));
+        bodies = sources
+            .SelectMany(source => source.System.Bodies.Select(body => (source.Row.Target, Body: body)))
+            .GroupBy(item => item.Body.Details, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                string[] codes = group
+                    .SelectMany(item => item.Body.Codes)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                string[] matching = group
+                    .Where(item => item.Target.Equals(sellSystem, StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(item => item.Body.Tags)
+                    .Where(tag => tag.MatchesStation)
+                    .Select(tag => tag.Code)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                var line = new SurfaceBodyLine(codes, group.Key, matching.ToHashSet(StringComparer.OrdinalIgnoreCase));
+                foreach (SurfaceBodyTag tag in line.Tags)
+                {
+                    tag.SetHideIrrelevant(hideIrrelevant);
+                }
+                return line;
+            })
+            .ToArray();
+        Changed(nameof(Bodies));
+        Changed(nameof(HasAdditionalBodies));
+        RefreshVisibleBodies();
+    }
+
+    internal void SetHideIrrelevant(bool hide)
+    {
+        foreach (SurfaceBodyTag tag in bodies.SelectMany(body => body.Tags))
+        {
+            tag.SetHideIrrelevant(hide);
+        }
+    }
+
+    private void RefreshVisibleBodies()
+    {
+        visibleBodies = isExpanded ? bodies : bodies.Take(1).ToArray();
+        Changed(nameof(VisibleBodies));
+    }
+}

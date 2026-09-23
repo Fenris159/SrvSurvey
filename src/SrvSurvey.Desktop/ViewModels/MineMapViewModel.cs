@@ -18,6 +18,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private static readonly TimeSpan SurveyGuideFeedbackDuration = TimeSpan.FromSeconds(6);
     private static readonly IReadOnlyList<string> MarkerRatingFilters = [AllMarkerRatings, "HIGH", "MEDIUM", "LOW"];
     private readonly MineMapService service;
+    private readonly MiningSearchResultCache miningSearchCache;
     private readonly MineMapSettingsStore settingsStore;
     private readonly Action<string> notify;
     private readonly Action<Guid> editBookmark;
@@ -69,6 +70,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     )
     {
         service = new MineMapService(dataDirectory, bookmarkCatalog);
+        miningSearchCache = new MiningSearchResultCache(dataDirectory);
         this.settingsStore = settingsStore;
         this.notify = notify;
         this.editBookmark = editBookmark ?? (_ => { });
@@ -145,6 +147,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         commodityPriceClient = client;
         client.DiagnosticLog = diagnosticLog;
         SurfaceSearch = new SurfaceMiningSearchViewModel(client);
+        SurfaceSearch.ConfigureCache(miningSearchCache);
         SurfaceSearch.UpdateCurrentLocation(currentSystem);
         Changed(nameof(SurfaceSearch));
         if (client.CachedCommodityPriceReport is { Count: > 0 } cached)

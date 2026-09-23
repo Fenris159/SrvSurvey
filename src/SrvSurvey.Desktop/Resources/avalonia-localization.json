@@ -11289,6 +11289,10 @@
       "translation": "Wächterzusammenfassungen und Ram Tah-Anleitung ausblenden, während Raven Colonial Build-Projekte aktiv sind"
     },
     {
+      "source": "Hide Irrelevant Material Tags:",
+      "translation": "Irrelevante Material-Tags ausblenden:"
+    },
+    {
       "source": "Hide PlotPulse (journal activity and SCO status) →→→",
       "translation": "PlotPulse (Journalaktivität und SCO-Status) ausblenden →→→"
     },
@@ -13709,6 +13713,18 @@
       "translation": "Lynx Highliner"
     },
     {
+      "source": "M 0,{0} H {1}",
+      "translation": "M 0,{0} H {1}"
+    },
+    {
+      "source": "M {0},{1} H {2}",
+      "translation": "M {0},{1} H {2}"
+    },
+    {
+      "source": "M {0},{1} V {2}",
+      "translation": "M {0},{1} V {2}"
+    },
+    {
       "source": "M0,0 L20,34.26 40,0 Z",
       "translation": "M0,0 L20,34,26 40,0 Z"
     },
@@ -14659,6 +14675,10 @@
     {
       "source": "Mining.ShouldShowRigWarning",
       "translation": "Mining.ShouldShowRigWarning"
+    },
+    {
+      "source": "MiningLinkAnchor",
+      "translation": "MiningLinkAnchor"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -22573,6 +22593,10 @@
       "translation": "Verkaufen Sie abgebauten Fracht"
     },
     {
+      "source": "SellLinkAnchor",
+      "translation": "SellLinkAnchor"
+    },
+    {
       "source": "Selling stations →",
       "translation": "Verkaufsstationen →"
     },
@@ -23073,8 +23097,16 @@
       "translation": "ShortcutBindingsExpander"
     },
     {
+      "source": "Show All",
+      "translation": "Alle anzeigen"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Gesamtzahl der Flottenbetreiber anzeigen"
+    },
+    {
+      "source": "Show Less",
+      "translation": "Weniger anzeigen"
     },
     {
       "source": "Show Marker Labels in Overview Map",
@@ -31453,6 +31485,10 @@
       "translation": "Helium"
     },
     {
+      "source": "hide-irrelevant",
+      "translation": "verstecken-irrelevant"
+    },
+    {
       "source": "high",
       "translation": "hoch"
     },
@@ -31823,6 +31859,10 @@
     {
       "source": "mining overview map",
       "translation": "Bergbau-Übersichtskarte"
+    },
+    {
+      "source": "mining-display",
+      "translation": "Bergbau-Anzeige"
     },
     {
       "source": "mining-report.{0}",
@@ -33303,6 +33343,10 @@
     {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Für die Veröffentlichung sind eine Überprüfung und Bestätigung erforderlich."
+    },
+    {
+      "source": "{0} Saved {1}; press Search to refresh.",
+      "translation": "{0} Gespeichert {1}; Drücken Sie zum Aktualisieren auf „Suchen“."
     },
     {
       "source": "{0} SrvSurvey instances are currently running.",
@@ -45523,6 +45567,10 @@
       "translation": "Ocultar resúmenes de Guardian y orientación de Ram Tah mientras los proyectos de compilación de Raven Colonial están activos"
     },
     {
+      "source": "Hide Irrelevant Material Tags:",
+      "translation": "Ocultar etiquetas de material irrelevante:"
+    },
+    {
       "source": "Hide PlotPulse (journal activity and SCO status) →→→",
       "translation": "Ocultar PlotPulse (actividad de la revista y estado de SCO) →→→"
     },
@@ -47943,6 +47991,18 @@
       "translation": "Lince Highliner"
     },
     {
+      "source": "M 0,{0} H {1}",
+      "translation": "M 0,{0} H {1}"
+    },
+    {
+      "source": "M {0},{1} H {2}",
+      "translation": "M {0},{1} H {2}"
+    },
+    {
+      "source": "M {0},{1} V {2}",
+      "translation": "M {0}, {1} V {2}"
+    },
+    {
       "source": "M0,0 L20,34.26 40,0 Z",
       "translation": "M0,0 L20,34,26 40,0 Z"
     },
@@ -48893,6 +48953,10 @@
     {
       "source": "Mining.ShouldShowRigWarning",
       "translation": "Minería.ShouldShowRigWarning"
+    },
+    {
+      "source": "MiningLinkAnchor",
+      "translation": "MineríaEnlaceAncla"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -56807,6 +56871,10 @@
       "translation": "Vender carga minada"
     },
     {
+      "source": "SellLinkAnchor",
+      "translation": "VenderEnlaceAncla"
+    },
+    {
       "source": "Selling stations →",
       "translation": "Estaciones de venta →"
     },
@@ -57307,8 +57375,16 @@
       "translation": "Acceso directoEnlacesExpansor"
     },
     {
+      "source": "Show All",
+      "translation": "Mostrar todo"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Mostrar recuentos agregados de flotas de transporte"
+    },
+    {
+      "source": "Show Less",
+      "translation": "Mostrar menos"
     },
     {
       "source": "Show Marker Labels in Overview Map",
@@ -65687,6 +65763,10 @@
       "translation": "helio"
     },
     {
+      "source": "hide-irrelevant",
+      "translation": "ocultar-irrelevante"
+    },
+    {
       "source": "high",
       "translation": "alto"
     },
@@ -66057,6 +66137,10 @@
     {
       "source": "mining overview map",
       "translation": "mapa general de minería"
+    },
+    {
+      "source": "mining-display",
+      "translation": "exhibición-minera"
     },
     {
       "source": "mining-report.{0}",
@@ -67537,6 +67621,10 @@
     {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Se requiere revisión y confirmación para publicar."
+    },
+    {
+      "source": "{0} Saved {1}; press Search to refresh.",
+      "translation": "{0} Guardado {1}; presione Buscar para actualizar."
     },
     {
       "source": "{0} SrvSurvey instances are currently running.",
@@ -79757,6 +79845,10 @@
       "translation": "Masquer les résumés du Guardian et les conseils de Ram Tah pendant que les projets de construction Raven Colonial sont actifs"
     },
     {
+      "source": "Hide Irrelevant Material Tags:",
+      "translation": "Masquer les balises matérielles non pertinentes :"
+    },
+    {
       "source": "Hide PlotPulse (journal activity and SCO status) →→→",
       "translation": "Masquer PlotPulse (activité du journal et statut SCO) →→→"
     },
@@ -82177,6 +82269,18 @@
       "translation": "Lynx Highliner"
     },
     {
+      "source": "M 0,{0} H {1}",
+      "translation": "M 0,{0} H {1}"
+    },
+    {
+      "source": "M {0},{1} H {2}",
+      "translation": "M {0},{1} H {2}"
+    },
+    {
+      "source": "M {0},{1} V {2}",
+      "translation": "M {0},{1} V {2}"
+    },
+    {
       "source": "M0,0 L20,34.26 40,0 Z",
       "translation": "M0,0 L20,34.26 40,0Z"
     },
@@ -83127,6 +83231,10 @@
     {
       "source": "Mining.ShouldShowRigWarning",
       "translation": "Exploitation minière.ShouldShowRigWarning"
+    },
+    {
+      "source": "MiningLinkAnchor",
+      "translation": "Exploitation minièreLinkAnchor"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -91041,6 +91149,10 @@
       "translation": "Vendre des marchandises minières"
     },
     {
+      "source": "SellLinkAnchor",
+      "translation": "VendreLienAnchor"
+    },
+    {
       "source": "Selling stations →",
       "translation": "Stations de vente →"
     },
@@ -91541,8 +91653,16 @@
       "translation": "RaccourciLiaisonsExpanseur"
     },
     {
+      "source": "Show All",
+      "translation": "Afficher tout"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Afficher le nombre total de transporteurs de flotte"
+    },
+    {
+      "source": "Show Less",
+      "translation": "Afficher moins"
     },
     {
       "source": "Show Marker Labels in Overview Map",
@@ -99921,6 +100041,10 @@
       "translation": "hélium"
     },
     {
+      "source": "hide-irrelevant",
+      "translation": "cacher-non pertinent"
+    },
+    {
       "source": "high",
       "translation": "haut"
     },
@@ -100291,6 +100415,10 @@
     {
       "source": "mining overview map",
       "translation": "carte d'ensemble de l'exploitation minière"
+    },
+    {
+      "source": "mining-display",
+      "translation": "affichage minier"
     },
     {
       "source": "mining-report.{0}",
@@ -101771,6 +101899,10 @@
     {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Un examen et une confirmation sont nécessaires pour la publication."
+    },
+    {
+      "source": "{0} Saved {1}; press Search to refresh.",
+      "translation": "{0} {1} enregistré ; appuyez sur Rechercher pour actualiser."
     },
     {
       "source": "{0} SrvSurvey instances are currently running.",
@@ -113991,6 +114123,10 @@
       "translation": "Ocultar resumos do Guardian e orientações de Ram Tah enquanto os projetos de construção Raven Colonial estão ativos"
     },
     {
+      "source": "Hide Irrelevant Material Tags:",
+      "translation": "Ocultar tags de materiais irrelevantes:"
+    },
+    {
       "source": "Hide PlotPulse (journal activity and SCO status) →→→",
       "translation": "Ocultar PlotPulse (atividade do diário e status SCO) →→→"
     },
@@ -116411,6 +116547,18 @@
       "translation": "Lince Highliner"
     },
     {
+      "source": "M 0,{0} H {1}",
+      "translation": "M 0,{0} H {1}"
+    },
+    {
+      "source": "M {0},{1} H {2}",
+      "translation": "M {0},{1} H {2}"
+    },
+    {
+      "source": "M {0},{1} V {2}",
+      "translation": "M {0},{1} V {2}"
+    },
+    {
       "source": "M0,0 L20,34.26 40,0 Z",
       "translation": "M0,0 L20,34,26 40,0 Z"
     },
@@ -117361,6 +117509,10 @@
     {
       "source": "Mining.ShouldShowRigWarning",
       "translation": "Mineração.ShouldShowRigWarning"
+    },
+    {
+      "source": "MiningLinkAnchor",
+      "translation": "MiningLinkAnchor"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -125275,6 +125427,10 @@
       "translation": "Vender carga minada"
     },
     {
+      "source": "SellLinkAnchor",
+      "translation": "VenderLinkAnchor"
+    },
+    {
       "source": "Selling stations →",
       "translation": "Estações de venda →"
     },
@@ -125775,8 +125931,16 @@
       "translation": "ShortcutBindingsExpander"
     },
     {
+      "source": "Show All",
+      "translation": "Mostrar tudo"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Mostrar contagens agregadas da Fleet Carrier"
+    },
+    {
+      "source": "Show Less",
+      "translation": "Mostrar menos"
     },
     {
       "source": "Show Marker Labels in Overview Map",
@@ -134155,6 +134319,10 @@
       "translation": "hélio"
     },
     {
+      "source": "hide-irrelevant",
+      "translation": "ocultar-irrelevante"
+    },
+    {
       "source": "high",
       "translation": "alto"
     },
@@ -134525,6 +134693,10 @@
     {
       "source": "mining overview map",
       "translation": "mapa geral de mineração"
+    },
+    {
+      "source": "mining-display",
+      "translation": "exibição de mineração"
     },
     {
       "source": "mining-report.{0}",
@@ -136005,6 +136177,10 @@
     {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Revisão e confirmação são necessárias para publicar."
+    },
+    {
+      "source": "{0} Saved {1}; press Search to refresh.",
+      "translation": "{0} {1} salvo; pressione Pesquisar para atualizar."
     },
     {
       "source": "{0} SrvSurvey instances are currently running.",
@@ -148225,6 +148401,10 @@
       "translation": "Скрыть сводку Guardian и рекомендации Ram Tah, пока активны проекты сборки Raven Colonial"
     },
     {
+      "source": "Hide Irrelevant Material Tags:",
+      "translation": "Скрыть ненужные теги материалов:"
+    },
+    {
       "source": "Hide PlotPulse (journal activity and SCO status) →→→",
       "translation": "Скрыть PlotPulse (активность журнала и статус SCO) →→→"
     },
@@ -150645,6 +150825,18 @@
       "translation": "Рысь Хайлайнер"
     },
     {
+      "source": "M 0,{0} H {1}",
+      "translation": "М 0,{0} Ч {1}"
+    },
+    {
+      "source": "M {0},{1} H {2}",
+      "translation": "М {0},{1} Ч {2}"
+    },
+    {
+      "source": "M {0},{1} V {2}",
+      "translation": "М {0},{1} В {2}"
+    },
+    {
       "source": "M0,0 L20,34.26 40,0 Z",
       "translation": "М0,0 L20,34,26 40,0 З"
     },
@@ -151595,6 +151787,10 @@
     {
       "source": "Mining.ShouldShowRigWarning",
       "translation": "Mining.ShouldShowRigWarning"
+    },
+    {
+      "source": "MiningLinkAnchor",
+      "translation": "МайнингСсылкаЯкорь"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -159509,6 +159705,10 @@
       "translation": "Продать добытый груз"
     },
     {
+      "source": "SellLinkAnchor",
+      "translation": "ПродатьСсылкаПривязка"
+    },
+    {
       "source": "Selling stations →",
       "translation": "Продажа станций →"
     },
@@ -160009,8 +160209,16 @@
       "translation": "ЯрлыкBindingsExpander"
     },
     {
+      "source": "Show All",
+      "translation": "Показать все"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "Показать общее количество авиаперевозчиков"
+    },
+    {
+      "source": "Show Less",
+      "translation": "Показать меньше"
     },
     {
       "source": "Show Marker Labels in Overview Map",
@@ -168389,6 +168597,10 @@
       "translation": "гелий"
     },
     {
+      "source": "hide-irrelevant",
+      "translation": "скрыть-не имеет значения"
+    },
+    {
       "source": "high",
       "translation": "высокий"
     },
@@ -168759,6 +168971,10 @@
     {
       "source": "mining overview map",
       "translation": "обзорная карта добычи полезных ископаемых"
+    },
+    {
+      "source": "mining-display",
+      "translation": "майнинг-дисплей"
     },
     {
       "source": "mining-report.{0}",
@@ -170239,6 +170455,10 @@
     {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Для публикации требуется проверка и подтверждение."
+    },
+    {
+      "source": "{0} Saved {1}; press Search to refresh.",
+      "translation": "{0} Сохранено {1}; нажмите «Поиск», чтобы обновить."
     },
     {
       "source": "{0} SrvSurvey instances are currently running.",
@@ -182459,6 +182679,10 @@
       "translation": "Raven Colonial 构建项目处于活动状态时隐藏 Guardian 摘要和 Ram Tah 指导"
     },
     {
+      "source": "Hide Irrelevant Material Tags:",
+      "translation": "隐藏不相关的材料标签："
+    },
+    {
       "source": "Hide PlotPulse (journal activity and SCO status) →→→",
       "translation": "隐藏 PlotPulse（期刊活动和 SCO 状态）→→→"
     },
@@ -184879,6 +185103,18 @@
       "translation": "山猫 Highliner"
     },
     {
+      "source": "M 0,{0} H {1}",
+      "translation": "M 0,{0} H {1}"
+    },
+    {
+      "source": "M {0},{1} H {2}",
+      "translation": "M {0},{1} H {2}"
+    },
+    {
+      "source": "M {0},{1} V {2}",
+      "translation": "M {0},{1} V {2}"
+    },
+    {
       "source": "M0,0 L20,34.26 40,0 Z",
       "translation": "M0,0 L20,34.26 40,0 Z"
     },
@@ -185829,6 +186065,10 @@
     {
       "source": "Mining.ShouldShowRigWarning",
       "translation": "Mining.ShouldShowRigWarning"
+    },
+    {
+      "source": "MiningLinkAnchor",
+      "translation": "采矿链接锚"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -193743,6 +193983,10 @@
       "translation": "出售开采的货物"
     },
     {
+      "source": "SellLinkAnchor",
+      "translation": "销售链接锚"
+    },
+    {
       "source": "Selling stations →",
       "translation": "销售站 →"
     },
@@ -194243,8 +194487,16 @@
       "translation": "快捷方式绑定扩展器"
     },
     {
+      "source": "Show All",
+      "translation": "显示全部"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "显示舰队承运商总数"
+    },
+    {
+      "source": "Show Less",
+      "translation": "显示较少"
     },
     {
       "source": "Show Marker Labels in Overview Map",
@@ -202623,6 +202875,10 @@
       "translation": "氦"
     },
     {
+      "source": "hide-irrelevant",
+      "translation": "隐藏不相关的"
+    },
+    {
       "source": "high",
       "translation": "高"
     },
@@ -202993,6 +203249,10 @@
     {
       "source": "mining overview map",
       "translation": "采矿概况图"
+    },
+    {
+      "source": "mining-display",
+      "translation": "采矿展示"
     },
     {
       "source": "mining-report.{0}",
@@ -204473,6 +204733,10 @@
     {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} 需要审核和确认才能发布。"
+    },
+    {
+      "source": "{0} Saved {1}; press Search to refresh.",
+      "translation": "{0} 已保存 {1}；按搜索刷新。"
     },
     {
       "source": "{0} SrvSurvey instances are currently running.",
@@ -216693,6 +216957,10 @@
       "translation": "* HIDE GUARDIAN SUMMARIES AND RAM TAH GUIDANCE WHILE RAVEN COLONIAL BUILD PROJECTS ARE ACTIVE >>>!"
     },
     {
+      "source": "Hide Irrelevant Material Tags:",
+      "translation": "* HIDE IRRELEVANT MATERIAL TAGS: >>>!"
+    },
+    {
       "source": "Hide PlotPulse (journal activity and SCO status) →→→",
       "translation": "* HIDE PLOTPULSE (JOURNAL ACTIVITY AND SCO STATUS) →→→ >>>!"
     },
@@ -219113,6 +219381,18 @@
       "translation": "* LYNX HIGHLINER >>>!"
     },
     {
+      "source": "M 0,{0} H {1}",
+      "translation": "* M 0,{0} H {1} >>>!"
+    },
+    {
+      "source": "M {0},{1} H {2}",
+      "translation": "* M {0},{1} H {2} >>>!"
+    },
+    {
+      "source": "M {0},{1} V {2}",
+      "translation": "* M {0},{1} V {2} >>>!"
+    },
+    {
       "source": "M0,0 L20,34.26 40,0 Z",
       "translation": "* M0,0 L20,34.26 40,0 Z >>>!"
     },
@@ -220063,6 +220343,10 @@
     {
       "source": "Mining.ShouldShowRigWarning",
       "translation": "* MINING.SHOULDSHOWRIGWARNING >>>!"
+    },
+    {
+      "source": "MiningLinkAnchor",
+      "translation": "* MININGLINKANCHOR >>>!"
     },
     {
       "source": "MiningReferenceCommodities",
@@ -227977,6 +228261,10 @@
       "translation": "* SELL MINED CARGO >>>!"
     },
     {
+      "source": "SellLinkAnchor",
+      "translation": "* SELLLINKANCHOR >>>!"
+    },
+    {
       "source": "Selling stations →",
       "translation": "* SELLING STATIONS → >>>!"
     },
@@ -228477,8 +228765,16 @@
       "translation": "* SHORTCUTBINDINGSEXPANDER >>>!"
     },
     {
+      "source": "Show All",
+      "translation": "* SHOW ALL >>>!"
+    },
+    {
       "source": "Show Fleet Carrier aggregate counts",
       "translation": "* SHOW FLEET CARRIER AGGREGATE COUNTS >>>!"
+    },
+    {
+      "source": "Show Less",
+      "translation": "* SHOW LESS >>>!"
     },
     {
       "source": "Show Marker Labels in Overview Map",
@@ -236857,6 +237153,10 @@
       "translation": "* HELIUM >>>!"
     },
     {
+      "source": "hide-irrelevant",
+      "translation": "* HIDE-IRRELEVANT >>>!"
+    },
+    {
       "source": "high",
       "translation": "* HIGH >>>!"
     },
@@ -237227,6 +237527,10 @@
     {
       "source": "mining overview map",
       "translation": "* MINING OVERVIEW MAP >>>!"
+    },
+    {
+      "source": "mining-display",
+      "translation": "* MINING-DISPLAY >>>!"
     },
     {
       "source": "mining-report.{0}",
@@ -238707,6 +239011,10 @@
     {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "* {0} REVIEW AND CONFIRMATION ARE REQUIRED TO PUBLISH. >>>!"
+    },
+    {
+      "source": "{0} Saved {1}; press Search to refresh.",
+      "translation": "* {0} SAVED {1}; PRESS SEARCH TO REFRESH. >>>!"
     },
     {
       "source": "{0} SrvSurvey instances are currently running.",

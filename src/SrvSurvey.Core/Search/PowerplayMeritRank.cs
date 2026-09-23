@@ -36,6 +36,7 @@ public sealed record PowerplayMeritSystem(
 )
 {
     public IReadOnlyList<string> NearbyPowers { get; init; } = [];
+    public IReadOnlyList<PowerplayProgress> Conflict { get; init; } = [];
     public int ReserveRank { get; init; } = 6;
 }
 
@@ -89,6 +90,7 @@ public static class PowerplayMeritRank
                 )
                 {
                     NearbyPowers = system.NearbyPowers,
+                    Conflict = system.Conflict,
                     ReserveRank = ReserveRank(systemRings, headline),
                 }
             );
@@ -274,7 +276,7 @@ public static class PowerplayMeritRank
         return new PowerplayMeritRing(body.Body, detail, true);
     }
 
-    private static PowerplayMeritRing DescribeRing(MiningRing ring)
+    public static PowerplayMeritRing DescribeRing(MiningRing ring)
     {
         string mapped = MiningMappedSpotCatalog.Describe(ring.System, ring.Body);
         string detail = string.Join(

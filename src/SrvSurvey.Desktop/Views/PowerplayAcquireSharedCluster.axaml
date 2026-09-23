@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.PowerplayAcquireSharedCluster" x:DataType="vm:PowerplayAcquireClusterViewModel">
+  <StackPanel>
+    <Grid ColumnDefinitions="42*,4*,54*">
+      <ItemsControl x:Name="SellItems" ItemsSource="{Binding SellNodes}" Grid.IsSharedSizeScope="True">
+        <ItemsControl.Styles><Style Selector="ContentPresenter"><Setter Property="HorizontalAlignment" Value="Stretch"/></Style></ItemsControl.Styles>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:PowerplayAcquireSellNode">
+            <Border x:Name="SellLinkAnchor" Background="{DynamicResource RavenSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="1" Margin="0,0,0,8">
+              <Grid ColumnDefinitions="22*,72,20*,58*">
+                <Border Classes="acquire-cell">
+                  <StackPanel VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                      <Button Classes="link" Padding="0" Content="{Binding SelectionGlyph}" Command="{Binding SelectCommand}"/>
+                      <Button Classes="link" HorizontalAlignment="Left" behaviors:ClipboardCopyBehavior.Text="{Binding Row.Target}"><TextBlock Text="{Binding Row.Target}" TextWrapping="Wrap"/></Button>
+                    </StackPanel>
+                    <TextBlock Text="{Binding Row.PowerState}" TextAlignment="Center" Foreground="{DynamicResource RavenMutedTextBrush}"/>
+                    <TextBlock Text="{Binding Row.FactionState}" TextAlignment="Center" Foreground="{DynamicResource RavenMutedTextBrush}"/>
+                  </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Classes="acquire-cell"><TextBlock Text="{Binding Row.Distance}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Top"/></Border>
+                <Border Grid.Column="2" Classes="acquire-cell"><ItemsControl ItemsSource="{Binding Row.PowerLines}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:PowerplayPowerLineViewModel"><TextBlock Text="{Binding Display}" Foreground="{Binding ColorHex}" TextWrapping="Wrap"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Border>
+                <Border Grid.Column="3" Classes="acquire-cell" Padding="0"><views:MiningStationList Stations="{Binding Row.VisibleStations}" ToggleCommand="{Binding Row.ToggleStationsCommand}" ToggleLabel="{Binding Row.StationToggleLabel}"/></Border>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <Canvas x:Name="LinkCanvas" Grid.Column="1" IsHitTestVisible="False" ClipToBounds="False">
+        <Path x:Name="InactiveLinks" Stroke="{DynamicResource RavenAccentBrush}" StrokeThickness="1.5" Opacity="0.4"/>
+        <Path x:Name="ActiveLinks" Stroke="{DynamicResource RavenAccentBrush}" StrokeThickness="2"/>
+      </Canvas>
+      <ItemsControl x:Name="MiningItems" Grid.Column="2" ItemsSource="{Binding VisibleMiningSystems}" VerticalAlignment="Center">
+        <ItemsControl.Styles><Style Selector="ContentPresenter"><Setter Property="HorizontalAlignment" Value="Stretch"/></Style></ItemsControl.Styles>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:PowerplayAcquireMiningNode">
+            <Border x:Name="MiningLinkAnchor" Background="{DynamicResource RavenSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="1,0,1,1" Opacity="{Binding EmphasisOpacity}">
+              <Grid ColumnDefinitions="28*,72*">
+                <Border Classes="acquire-cell">
+                  <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Top">
+                    <Button Classes="link" Width="18" Padding="0" FontSize="16" Content="{Binding Chevron}" Command="{Binding ToggleCommand}" IsVisible="{Binding HasAdditionalBodies}"/>
+                    <Button Classes="link" HorizontalAlignment="Left" behaviors:ClipboardCopyBehavior.Text="{Binding System}"><TextBlock Text="{Binding System}" TextWrapping="Wrap"/></Button>
+                  </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Classes="acquire-cell">
+                  <ItemsControl ItemsSource="{Binding VisibleBodies}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:SurfaceBodyLine">
+                        <StackPanel Margin="0,0,0,3">
+                          <ItemsControl ItemsSource="{Binding Tags}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:SurfaceBodyTag"><Border Classes="commodity-code" Classes.matched="{Binding MatchesStation}" Classes.extra="{Binding IsExtraMaterial}" IsVisible="{Binding IsVisible}" Margin="0,0,4,2"><TextBlock Text="{Binding Code}"/></Border></DataTemplate></ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                          <TextBlock Text="{Binding Details}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Border>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Grid>
+    <Grid IsVisible="{Binding HasAdditionalSystems}" ColumnDefinitions="42*,4*,54*"><Border Grid.Column="2" Classes="acquire-cell" BorderThickness="1,0,1,1"><Button Classes="link" Content="{Binding ShowAllLabel}" Command="{Binding ToggleAllCommand}"/></Border></Grid>
+  </StackPanel>
+</UserControl>

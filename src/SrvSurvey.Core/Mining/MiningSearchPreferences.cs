@@ -1,6 +1,6 @@
 namespace SrvSurvey.Core.Mining;
 
-/// <summary>Editable search criteria; results and in-flight requests are never persisted.</summary>
+/// <summary>Editable search criteria; completed results are cached separately from in-flight requests.</summary>
 public sealed record MiningSearchPreferences
 {
     public string CommodityCategory { get; init; } = "Mining";

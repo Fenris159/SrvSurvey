@@ -1094,6 +1094,7 @@ public sealed class MiningSearchClient
             cancellationToken: cancellationToken
         );
         return Results(response)
+            .Where(station => !MiningJson.Text(station, "type").Contains("Carrier", StringComparison.OrdinalIgnoreCase))
             .SelectMany(station =>
                 MiningJson
                     .Array(station, "market")
@@ -1185,6 +1186,11 @@ public sealed class MiningSearchClient
         TimeSpan? maximumAge
     )
     {
+        if (MiningJson.Text(station, "type").Contains("Carrier", StringComparison.OrdinalIgnoreCase))
+        {
+            yield break;
+        }
+
         DateTimeOffset? updated = maximumAge is { } age
             ? RecentObservation(MiningJson.Text(station, MarketUpdatedSort), age)
             : null;

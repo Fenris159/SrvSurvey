@@ -17,6 +17,84 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class SurfaceMiningSearchPresentationTests
 {
     [AvaloniaFact]
+    public void SharedAcquireBranchesFollowMiningRowsWhenBodiesExpand()
+    {
+        SurfaceMiningSystemRowViewModel sharedFirst = new(
+            "Terminus",
+            10,
+            [new SurfaceBodyLine(["IRI"], "A 1", new HashSet<string>(["IRI"]))]
+        );
+        SurfaceMiningSystemRowViewModel sharedSecond = new(
+            "Terminus",
+            10,
+            [
+                new SurfaceBodyLine(["MON"], "B 1", new HashSet<string>(["MON"])),
+                new SurfaceBodyLine(["MON"], "B 2", new HashSet<string>(["MON"])),
+            ]
+        );
+        SurfaceMiningSystemRowViewModel later = new(
+            "Beta",
+            15,
+            [new SurfaceBodyLine(["MON"], "C 1", new HashSet<string>(["MON"]))]
+        );
+        SurfaceSellRowViewModel first = SharedSellRow("First Sell", [sharedFirst]);
+        SurfaceSellRowViewModel second = SharedSellRow("Second Sell", [sharedSecond, later]);
+        PowerplayAcquireClusterViewModel cluster = Assert.Single(
+            PowerplayAcquireClusterViewModel.Group([first, second])
+        );
+        cluster.SellNodes[1].SelectCommand.Execute(null);
+        var view = new PowerplayAcquireSharedCluster { DataContext = cluster };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1450,
+            Height = 700,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            Avalonia.Controls.Shapes.Path active = view.FindControl<Avalonia.Controls.Shapes.Path>("ActiveLinks")!;
+            Assert.NotNull(active.Data);
+            double before = active.Data.Bounds.Bottom;
+
+            PowerplayAcquireMiningNode terminus = Assert.Single(
+                cluster.MiningSystems,
+                node => node.System == "Terminus"
+            );
+            terminus.ToggleCommand.Execute(null);
+            using WriteableBitmap? expanded = window.CaptureRenderedFrame();
+
+            Assert.True(active.Data.Bounds.Bottom > before);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static SurfaceSellRowViewModel SharedSellRow(
+        string system,
+        IReadOnlyList<SurfaceMiningSystemRowViewModel> mining
+    ) =>
+        new(
+            system,
+            "10 ly",
+            [
+                new AcquireStationViewModel(
+                    "Port",
+                    "Large",
+                    "",
+                    "",
+                    [new AcquireQuoteViewModel("MON", "1 CR", "1 Demand")]
+                ),
+            ],
+            mining,
+            10,
+            1
+        );
+
+    [AvaloniaFact]
     public async Task AcquireSplitHeadersStayAttachedAndResultsScrollInsideTheWorkspace()
     {
         using var http = new HttpClient(new SurfaceResultHandler());

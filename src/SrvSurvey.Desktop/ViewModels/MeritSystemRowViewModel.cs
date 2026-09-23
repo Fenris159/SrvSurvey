@@ -28,16 +28,44 @@ public sealed record MeritCommodityLineViewModel(string Code, string Price, stri
     public string ContrastForeground => SurfaceMaterialBadgePalette.ForegroundFor(ColorHex);
 }
 
-public sealed record MeritStationBlockViewModel(
-    string Icon,
-    string Heading,
-    string Commodity,
-    string Price,
-    string Demand,
-    string Arrival,
-    string Updated,
-    IReadOnlyList<MeritCommodityLineViewModel> OtherCommodities
-);
+public sealed class MeritStationBlockViewModel : WorkspaceObservable
+{
+    private bool showAll;
+    private readonly MeritCommodityLineViewModel[] allCommodities;
+    private readonly IReadOnlyList<MeritCommodityLineViewModel> previewCommodities;
+
+    public MeritStationBlockViewModel(MeritStationBlockSnapshot snapshot)
+    {
+        Icon = snapshot.Icon;
+        Heading = snapshot.Heading;
+        Commodity = snapshot.Commodity;
+        Price = snapshot.Price;
+        Demand = snapshot.Demand;
+        Arrival = snapshot.Arrival;
+        Updated = snapshot.Updated;
+        allCommodities = snapshot.Commodities;
+        previewCommodities = snapshot.Commodities.Take(6).ToArray();
+        ToggleCommoditiesCommand = new WorkspaceCommand(() =>
+        {
+            showAll = !showAll;
+            Changed(nameof(OtherCommodities));
+            Changed(nameof(CommodityToggleLabel));
+        });
+    }
+
+    public string Icon { get; }
+    public string Heading { get; }
+    public string Commodity { get; }
+    public string Price { get; }
+    public string Demand { get; }
+    public string Arrival { get; }
+    public string Updated { get; }
+    public IReadOnlyList<MeritCommodityLineViewModel> OtherCommodities => showAll ? allCommodities : previewCommodities;
+    public IReadOnlyList<MeritCommodityLineViewModel> AllCommodities => allCommodities;
+    public bool CanToggleCommodities => allCommodities.Length > 6;
+    public string CommodityToggleLabel => showAll ? "Show Less" : "Show All";
+    public ICommand ToggleCommoditiesCommand { get; }
+}
 
 public sealed record AcquireQuoteViewModel(
     string Code,
@@ -84,21 +112,83 @@ public static class AcquireConnector
     }
 }
 
-public sealed record AcquireMinerViewModel(
-    string Name,
-    string Rings,
-    string State,
-    string Power,
-    string Connector = "Single"
-);
+public sealed class AcquireMinerViewModel : WorkspaceObservable
+{
+    private bool showAllSignals;
+    private readonly IReadOnlyList<MeritLineViewModel> previewRingLines;
 
-public sealed record AcquireResultRowViewModel(
-    string Target,
-    string State,
-    string Distance,
-    IReadOnlyList<AcquireStationViewModel> Stations,
-    IReadOnlyList<AcquireMinerViewModel> Miners
-);
+    public AcquireMinerViewModel(
+        string name,
+        IReadOnlyList<MeritLineViewModel> ringLines,
+        string state,
+        IReadOnlyList<PowerplayPowerLineViewModel> powerLines,
+        string connector = "Single"
+    )
+    {
+        Name = name;
+        AllRingLines = ringLines;
+        previewRingLines = ringLines.Take(1).ToArray();
+        State = state;
+        PowerLines = powerLines;
+        Connector = connector;
+        ToggleSignalsCommand = new WorkspaceCommand(() =>
+        {
+            showAllSignals = !showAllSignals;
+            Changed(nameof(RingLines));
+            Changed(nameof(SignalToggleLabel));
+        });
+    }
+
+    public string Name { get; }
+    public IReadOnlyList<MeritLineViewModel> AllRingLines { get; }
+    public IReadOnlyList<MeritLineViewModel> RingLines => showAllSignals ? AllRingLines : previewRingLines;
+    public bool CanToggleSignals => AllRingLines.Count > 1;
+    public string SignalToggleLabel => showAllSignals ? "Show less" : "Show all signals";
+    public ICommand ToggleSignalsCommand { get; }
+    public string State { get; }
+    public IReadOnlyList<PowerplayPowerLineViewModel> PowerLines { get; }
+    public string Connector { get; }
+}
+
+public sealed class AcquireResultRowViewModel : WorkspaceObservable
+{
+    private bool showAllStations;
+    private readonly IReadOnlyList<MeritStationBlockViewModel> allStationBlocks;
+    private readonly IReadOnlyList<MeritStationBlockViewModel> previewStationBlocks;
+
+    public AcquireResultRowViewModel(
+        string target,
+        string state,
+        string distance,
+        IReadOnlyList<MeritStationBlockViewModel> stations,
+        IReadOnlyList<AcquireMinerViewModel> miners
+    )
+    {
+        Target = target;
+        State = state;
+        Distance = distance;
+        allStationBlocks = stations;
+        previewStationBlocks = stations.Take(1).ToArray();
+        Miners = miners;
+        ToggleStationsCommand = new WorkspaceCommand(() =>
+        {
+            showAllStations = !showAllStations;
+            Changed(nameof(StationBlocks));
+            Changed(nameof(StationToggleLabel));
+        });
+    }
+
+    public string Target { get; }
+    public string State { get; }
+    public string Distance { get; }
+    public IReadOnlyList<MeritStationBlockViewModel> StationBlocks =>
+        showAllStations ? allStationBlocks : previewStationBlocks;
+    public IReadOnlyList<MeritStationBlockViewModel> AllStationBlocks => allStationBlocks;
+    public IReadOnlyList<AcquireMinerViewModel> Miners { get; }
+    public bool CanToggleStations => allStationBlocks.Count > 1;
+    public string StationToggleLabel => showAllStations ? "Show less" : "Show all stations";
+    public ICommand ToggleStationsCommand { get; }
+}
 
 internal sealed record MeritRowContent(
     string Name,
@@ -107,6 +197,7 @@ internal sealed record MeritRowContent(
     string StateIcon,
     string StateText,
     string Power,
+    IReadOnlyList<PowerplayPowerLineViewModel> PowerLines,
     IReadOnlyList<MeritLineViewModel> AllRings,
     IReadOnlyList<MeritLineViewModel> BestRings,
     IReadOnlyList<MeritLineViewModel> AllStations,
@@ -134,6 +225,7 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
         StateIcon = content.StateIcon;
         StateText = content.StateText;
         Power = content.Power.Length == 0 ? "No controlling Power" : content.Power;
+        PowerLines = content.PowerLines;
         FactionState = content.FactionState;
         allStationBlocks = content.StationBlocks;
         bestStationBlocks = allStationBlocks.Count <= 1 ? allStationBlocks : [allStationBlocks[0]];
@@ -151,6 +243,7 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
     public string StateIcon { get; }
     public string StateText { get; }
     public string Power { get; }
+    public IReadOnlyList<PowerplayPowerLineViewModel> PowerLines { get; }
     public string FactionState { get; }
     public IReadOnlyList<MeritStationBlockViewModel> StationBlocks =>
         showAllStations ? allStationBlocks : bestStationBlocks;
@@ -162,6 +255,42 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
     public string StationToggleLabel => showAllStations ? "Show less" : "Show all stations";
     public ICommand ToggleSignalsCommand { get; }
     public ICommand ToggleStationsCommand { get; }
+
+    public MeritSystemSnapshot ExportSnapshot() =>
+        new(
+            Name,
+            Distance,
+            DistanceLy,
+            StateIcon,
+            StateText,
+            Power,
+            PowerLines.ToArray(),
+            allRings.ToArray(),
+            bestRings.ToArray(),
+            allStations.ToArray(),
+            bestStations.ToArray(),
+            allStationBlocks.Select(MeritStationBlockSnapshot.From).ToArray(),
+            FactionState
+        );
+
+    public static MeritSystemRowViewModel RestoreSnapshot(MeritSystemSnapshot snapshot) =>
+        new(
+            new MeritRowContent(
+                snapshot.Name,
+                snapshot.Distance,
+                snapshot.DistanceLy,
+                snapshot.StateIcon,
+                snapshot.StateText,
+                snapshot.Power,
+                snapshot.PowerLines,
+                snapshot.AllRings,
+                snapshot.BestRings,
+                snapshot.AllStations,
+                snapshot.BestStations,
+                snapshot.StationBlocks.Select(block => block.Restore()).ToArray(),
+                snapshot.FactionState
+            )
+        );
 
     public void ToggleSignals()
     {
@@ -183,7 +312,6 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
         string preferredCommodity = "",
         IReadOnlyDictionary<string, long>? averageSellPrices = null,
         bool revealEveryRing = false,
-        int commodityLimit = 6,
         IReadOnlyList<string>? focusMinerals = null
     )
     {
@@ -227,11 +355,15 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
                 system.PowerState,
                 system.PowerState.Length == 0 ? "Unknown" : system.PowerState,
                 system.NearbyPowers.Count > 0 ? string.Join("\n", system.NearbyPowers) : system.Power,
+                PowerplayPowerLineViewModel.From(
+                    system.NearbyPowers.Count > 0 ? system.NearbyPowers : [system.Power],
+                    system.Conflict
+                ),
                 rings,
                 focusedRings,
                 stations,
                 best,
-                BuildStationBlocks(system, bestCommodity, averageSellPrices, commodityLimit),
+                BuildStationBlocks(system, bestCommodity, averageSellPrices),
                 system.FactionState
             )
         );
@@ -248,7 +380,7 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
         return lines.ToArray();
     }
 
-    private static IEnumerable<MeritLineViewModel> LinesForRing(string systemName, PowerplayMeritRing ring)
+    public static IEnumerable<MeritLineViewModel> LinesForRing(string systemName, PowerplayMeritRing ring)
     {
         string body = ring.Body.StartsWith(systemName, StringComparison.OrdinalIgnoreCase)
             ? ring.Body[systemName.Length..].Trim()
@@ -333,14 +465,14 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
         return focused.Length == 0 ? rings : focused;
     }
 
-    private static MeritStationBlockViewModel[] BuildStationBlocks(
+    public static MeritStationBlockViewModel[] BuildStationBlocks(
         PowerplayMeritSystem system,
         string preferredCommodity,
-        IReadOnlyDictionary<string, long>? averageSellPrices,
-        int commodityLimit
+        IReadOnlyDictionary<string, long>? averageSellPrices
     )
     {
         var blocks = new List<MeritStationBlockViewModel>();
+        HashSet<string> hotspots = HotspotNames(system);
         foreach (
             IGrouping<string, PowerplayMeritStation> group in system
                 .Stations.GroupBy(station => station.Name, StringComparer.OrdinalIgnoreCase)
@@ -363,28 +495,34 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
                 ?? quotes[0];
             blocks.Add(
                 new MeritStationBlockViewModel(
-                    StationIcon(primary.Type),
-                    primary.Name + " (" + PadLetter(primary.Pad) + ")",
-                    primary.Commodity,
-                    "Price: "
-                        + primary.Price.ToString("N0", CultureInfo.CurrentCulture)
-                        + " CR "
-                        + MiningPriceMarks.For(primary.Price, Average(averageSellPrices, primary.Commodity)),
-                    "Demand: " + primary.Demand.ToString("N0", CultureInfo.CurrentCulture),
-                    primary.ArrivalLs is { } arrival
-                        ? "Distance: " + arrival.ToString("0", CultureInfo.CurrentCulture) + " Ls"
-                        : "",
-                    UpdatedLabel(primary.Updated),
-                    quotes
-                        .Take(commodityLimit)
-                        .Select(station => new MeritCommodityLineViewModel(
-                            MiningCommodityCode.Abbreviate(station.Commodity),
-                            station.Price.ToString("N0", CultureInfo.CurrentCulture)
-                                + " CR "
-                                + MiningPriceMarks.For(station.Price, Average(averageSellPrices, station.Commodity)),
-                            station.Demand.ToString("N0", CultureInfo.CurrentCulture) + " Demand"
-                        ))
-                        .ToArray()
+                    new MeritStationBlockSnapshot(
+                        StationIcon(primary.Type),
+                        primary.Name + " (" + PadLetter(primary.Pad) + ")",
+                        primary.Commodity,
+                        "Price: "
+                            + primary.Price.ToString("N0", CultureInfo.CurrentCulture)
+                            + " CR "
+                            + MiningPriceMarks.For(primary.Price, Average(averageSellPrices, primary.Commodity)),
+                        "Demand: " + primary.Demand.ToString("N0", CultureInfo.CurrentCulture),
+                        primary.ArrivalLs is { } arrival
+                            ? "Distance: " + arrival.ToString("0", CultureInfo.CurrentCulture) + " Ls"
+                            : "",
+                        UpdatedLabel(primary.Updated),
+                        quotes
+                            .OrderByDescending(station => hotspots.Contains(MiningCommodityName.Key(station.Commodity)))
+                            .ThenByDescending(station => station.Price)
+                            .Select(station => new MeritCommodityLineViewModel(
+                                MiningCommodityCode.Abbreviate(station.Commodity),
+                                station.Price.ToString("N0", CultureInfo.CurrentCulture)
+                                    + " CR "
+                                    + MiningPriceMarks.For(
+                                        station.Price,
+                                        Average(averageSellPrices, station.Commodity)
+                                    ),
+                                station.Demand.ToString("N0", CultureInfo.CurrentCulture) + " Demand"
+                            ))
+                            .ToArray()
+                    )
                 )
             );
         }

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -113,8 +114,7 @@ public sealed partial class MiningIcon : UserControl
     private static SolidColorBrush BrushFor(string state, string? power)
     {
         bool owned = state is "Stronghold" or "Fortified" or "Exploited";
-        string hex =
-            owned && power is not null && PowerColors.TryGetValue(power, out string? match) ? match : "#DDDDDD";
+        string hex = owned && power is not null ? PowerplayPowerLineViewModel.ColorFor(power) : "#DDDDDD";
         return new SolidColorBrush(Color.Parse(hex));
     }
 
@@ -174,22 +174,5 @@ public sealed partial class MiningIcon : UserControl
             "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8.92,12.68l-.64.64h-1.02l-.64-.6"
             + "4v-.9l.64-.65h1.02l.64.65v.9ZM11.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.7"
             + "6h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z",
-    };
-
-    private static readonly Dictionary<string, string> PowerColors = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["Aisling Duval"] = "#0099FF",
-        ["Edmund Mahon"] = "#019C00",
-        ["A. Lavigny-Duval"] = "#7F00FF",
-        ["Arissa Lavigny-Duval"] = "#7F00FF",
-        ["Nakato Kaine"] = "#A3F127",
-        ["Felicia Winters"] = "#FFC400",
-        ["Denton Patreus"] = "#00FFFF",
-        ["Jerome Archer"] = "#DF1DE4",
-        ["Zemina Torval"] = "#0040FF",
-        ["Pranav Antal"] = "#FFFF00",
-        ["Li Yong-Rui"] = "#33D688",
-        ["Archon Delaine"] = "#FF0000",
-        ["Yuri Grom"] = "#FF8000",
     };
 }

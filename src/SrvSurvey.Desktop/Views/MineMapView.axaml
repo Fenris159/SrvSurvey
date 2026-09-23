@@ -474,6 +474,9 @@
             </Grid>
             <StackPanel Orientation="Horizontal" Spacing="8">
               <Button Content="Search" Command="{Binding SearchCommand}"/>
+              <Button Content="Reset" Command="{Binding ResetCommand}"/>
+              <TextBlock Text="Hide Irrelevant Material Tags:" VerticalAlignment="Center" Margin="12,0,0,0"/>
+              <ToggleSwitch IsChecked="{Binding HideIrrelevantMaterialTags}" OnContent="" OffContent="" VerticalAlignment="Center"/>
               <Button Content="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
             </StackPanel>
             <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>

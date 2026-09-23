@@ -6,6 +6,56 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MeritSystemRowViewModelTests
 {
     [Fact]
+    public void StationPreviewPrioritizesHotspotsAndExpandsOnlyThatStation()
+    {
+        PowerplayMeritStation[] quotes =
+        [
+            new("Hub", "Coriolis", "Large", 1_000, 100, "", "Gold"),
+            new("Hub", "Coriolis", "Large", 900, 100, "", "Silver"),
+            new("Hub", "Coriolis", "Large", 800, 100, "", "Copper"),
+            new("Hub", "Coriolis", "Large", 700, 100, "", "Palladium"),
+            new("Hub", "Coriolis", "Large", 600, 100, "", "Platinum"),
+            new("Hub", "Coriolis", "Large", 500, 100, "", "Monazite"),
+            new("Hub", "Coriolis", "Large", 400, 100, "", "Alexandrite"),
+            new("Other", "Orbis", "Large", 350, 100, "", "Gold"),
+        ];
+        var system = new PowerplayMeritSystem(
+            "Sol",
+            1,
+            "Aisling Duval",
+            "Stronghold",
+            "",
+            1_000,
+            [new PowerplayMeritRing("Sol 1 A Ring", "Monazite", SignalLines: ["Monazite: 1 Hotspot"])],
+            quotes
+        );
+
+        var row = MeritSystemRowViewModel.From(system);
+        MeritStationBlockViewModel hub = Assert.Single(row.StationBlocks);
+        Assert.Equal("MON", hub.OtherCommodities[0].Code);
+        Assert.Equal(6, hub.OtherCommodities.Count);
+        Assert.True(hub.CanToggleCommodities);
+        hub.ToggleCommoditiesCommand.Execute(null);
+        Assert.Equal(7, hub.OtherCommodities.Count);
+        Assert.Equal("Show All", row.ExportSnapshot().StationBlocks[0].Restore().CommodityToggleLabel);
+    }
+
+    [Fact]
+    public void PowerLinesUseSpanshConflictProgressInDescendingOrder()
+    {
+        IReadOnlyList<PowerplayPowerLineViewModel> lines = PowerplayPowerLineViewModel.From(
+            ["Felicia Winters", "A. Lavigny-Duval", "Edmund Mahon"],
+            [new PowerplayProgress("Edmund Mahon", 0.3), new PowerplayProgress("Arissa Lavigny-Duval", 1.0)]
+        );
+
+        Assert.Equal(
+            ["A. Lavigny-Duval 100%", "Edmund Mahon 30%", "Felicia Winters"],
+            lines.Select(line => line.Display)
+        );
+        Assert.Equal("#7F00FF", lines[0].ColorHex);
+    }
+
+    [Fact]
     public void RowsUsePowerStateAndStationArtwork()
     {
         var row = MeritSystemRowViewModel.From(

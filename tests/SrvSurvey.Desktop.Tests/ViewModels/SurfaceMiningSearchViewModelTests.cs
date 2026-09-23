@@ -13,6 +13,160 @@ public sealed class SurfaceMiningSearchViewModelTests
     private const string Material = "Diamond";
 
     [Fact]
+    public async Task CompletedSearchAndDisplayPreferenceReturnWithoutProviderRequests()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-mining-cache-" + Guid.NewGuid());
+        try
+        {
+            var cache = new MiningSearchResultCache(directory);
+            using var firstHandler = new SurfaceHandler();
+            using (SurfaceMiningSearchViewModel first = Create(firstHandler))
+            {
+                first.ConfigureCache(cache);
+                first.Reference = "Sol";
+                first.Radius = 40;
+                first.Materials.Add(Material);
+                await first.SearchAsync();
+                Assert.Single(first.Rows);
+                first.HideIrrelevantMaterialTags = true;
+            }
+
+            using var secondHandler = new SurfaceHandler { Mode = "fail" };
+            using SurfaceMiningSearchViewModel restored = Create(secondHandler);
+            restored.ConfigureCache(cache);
+            Assert.Single(restored.Rows);
+            Assert.Equal("Sol", restored.Reference);
+            Assert.True(restored.HideIrrelevantMaterialTags);
+            Assert.Equal(0, secondHandler.Requests);
+
+            restored.Radius = 30;
+            Assert.Empty(restored.Rows);
+            restored.Radius = 40;
+            Assert.Single(restored.Rows);
+            Assert.Equal(0, secondHandler.Requests);
+
+            restored.UpdateCurrentLocation("Timbalderis");
+            restored.Reset();
+            Assert.Equal("Timbalderis", restored.Reference);
+            Assert.Equal(100, restored.Radius);
+            Assert.Equal(90_000, restored.MaximumDemand);
+            Assert.Empty(restored.Materials.Selected);
+            Assert.Empty(restored.Rows);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void IrrelevantTagsCanHideWithoutChangingStationMatchedTags()
+    {
+        var faded = new SurfaceBodyTag("DIA", false);
+        var matched = new SurfaceBodyTag("MON", true);
+        faded.SetHideIrrelevant(true);
+        matched.SetHideIrrelevant(true);
+        Assert.False(faded.IsVisible);
+        Assert.True(matched.IsVisible);
+        faded.SetHideIrrelevant(false);
+        Assert.True(faded.IsVisible);
+    }
+
+    [Fact]
+    public void AcquireClustersShareMiningSystemsWithoutSharingStationAvailability()
+    {
+        SurfaceSellRowViewModel first = ClusterSellRow(
+            "First Sell",
+            [ClusterMiningRow("Alpha", "IRI"), ClusterMiningRow("Terminus", "IRI")],
+            [
+                new AcquireQuoteViewModel("IRI", "400,000 CR", "100 Demand"),
+                new AcquireQuoteViewModel("MON", "300,000 CR", "100 Demand", true),
+            ]
+        );
+        SurfaceSellRowViewModel second = ClusterSellRow(
+            "Second Sell",
+            [ClusterMiningRow("Terminus", "MON"), ClusterMiningRow("Beta", "MON")],
+            [new AcquireQuoteViewModel("MON", "350,000 CR", "100 Demand")]
+        );
+        SurfaceSellRowViewModel third = ClusterSellRow(
+            "Separate Sell",
+            [ClusterMiningRow("Gamma", "DIA")],
+            [new AcquireQuoteViewModel("DIA", "250,000 CR", "100 Demand")]
+        );
+
+        IReadOnlyList<PowerplayAcquireClusterViewModel> clusters = PowerplayAcquireClusterViewModel.Group([
+            first,
+            second,
+            third,
+        ]);
+
+        Assert.Equal(2, clusters.Count);
+        PowerplayAcquireClusterViewModel shared = clusters[0];
+        Assert.Equal(["First Sell", "Second Sell"], shared.SellNodes.Select(node => node.Row.Target));
+        Assert.Equal(["Alpha", "Terminus", "Beta"], shared.MiningSystems.Select(node => node.System));
+        PowerplayAcquireMiningNode terminus = Assert.Single(shared.MiningSystems, node => node.System == "Terminus");
+        Assert.Equal(2, terminus.SellCount);
+        Assert.True(Assert.Single(first.Stations[0].Quotes, quote => quote.Code == "MON").IsUnavailable);
+        Assert.False(Assert.Single(terminus.Bodies[0].Tags, tag => tag.Code == "MON").MatchesStation);
+
+        shared.SellNodes[1].SelectCommand.Execute(null);
+
+        Assert.True(Assert.Single(terminus.Bodies[0].Tags, tag => tag.Code == "MON").MatchesStation);
+        shared.SetHideIrrelevant(true);
+        Assert.False(Assert.Single(terminus.Bodies[0].Tags, tag => tag.Code == "IRI").IsVisible);
+        Assert.True(Assert.Single(terminus.Bodies[0].Tags, tag => tag.Code == "MON").IsVisible);
+        Assert.True(Assert.Single(first.Stations[0].Quotes, quote => quote.Code == "MON").IsUnavailable);
+        Assert.True(shared.SellNodes[1].IsSelected);
+        Assert.True(clusters[1].IsSingle);
+    }
+
+    [Fact]
+    public void AcquireClusterKeepsEverySellSystemLinkedWhenFiveMiningRowsCanCoverThem()
+    {
+        SurfaceSellRowViewModel[] sells = Enumerable
+            .Range(0, 10)
+            .Select(index =>
+                ClusterSellRow(
+                    $"Sell {index}",
+                    Enumerable
+                        .Range(Math.Max(0, index - 1), index is 0 or 9 ? 1 : 2)
+                        .Select(edge => ClusterMiningRow($"Shared {edge}", "IRI"))
+                        .ToArray(),
+                    [new AcquireQuoteViewModel("IRI", "400,000 CR", "100 Demand")]
+                )
+            )
+            .ToArray();
+
+        PowerplayAcquireClusterViewModel cluster = Assert.Single(PowerplayAcquireClusterViewModel.Group(sells));
+
+        Assert.Equal(5, cluster.VisibleMiningSystems.Count);
+        Assert.All(
+            sells,
+            sell => Assert.Contains(cluster.VisibleMiningSystems, system => system.ConnectsTo(sell.Target))
+        );
+    }
+
+    private static SurfaceMiningSystemRowViewModel ClusterMiningRow(string system, string code) =>
+        new(system, 10, [new SurfaceBodyLine([code], "A 1: Rocky body", new HashSet<string>([code]))]);
+
+    private static SurfaceSellRowViewModel ClusterSellRow(
+        string system,
+        IReadOnlyList<SurfaceMiningSystemRowViewModel> mining,
+        IReadOnlyList<AcquireQuoteViewModel> quotes
+    ) =>
+        new(
+            system,
+            "10 ly",
+            [new AcquireStationViewModel(system + " Port", "Large", "", "", quotes)],
+            mining,
+            10,
+            400_000
+        );
+
+    [Fact]
     public void PowerplayCommodityBadgesUseMaterialColorsAcrossTheEdpmList()
     {
         Assert.Equal("#B87333", new MeritCommodityLineViewModel("COP", "", "").ColorHex);
@@ -35,6 +189,7 @@ public sealed class SurfaceMiningSearchViewModelTests
         using var handler = new SurfaceHandler();
         using SurfaceMiningSearchViewModel model = Create(handler);
         Assert.Empty(model.Materials.Selected);
+        Assert.False(model.ExcludeCarrierMarkets);
         Assert.DoesNotContain("Default", model.Materials.Suggestions);
         Assert.Equal(0, model.MinimumDemand);
         Assert.Equal(90_000, model.MaximumDemand);

@@ -322,6 +322,34 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task PowerplayFallbackQuotesExcludeFleetCarriers()
+    {
+        using var handler = new RequestHandler(
+            """{"results":[{"system_name":"Sol","name":"B5W-6VH","type":"Fleet Carrier","market":[{"commodity":"Monazite","sell_price":900000,"demand":1000}]},{"system_name":"Sol","name":"Safe Port","type":"Coriolis Starport","market":[{"commodity":"Monazite","sell_price":400000,"demand":1000}]}]}"""
+        );
+
+        IReadOnlyList<MiningSellQuote> quotes = await new MiningSearchClient(
+            new HttpClient(handler)
+        ).FindSellQuotesAsync("Sol", 50, [], ["Monazite"]);
+
+        Assert.Equal("Safe Port", Assert.Single(quotes).Station);
+    }
+
+    [Fact]
+    public async Task AcquireSystemCommodityFallbackExcludesFleetCarriers()
+    {
+        using var handler = new RequestHandler(
+            """{"results":[{"system_name":"Sol","name":"B5W-6VH","type":"Fleet Carrier","market":[{"commodity":"Monazite","sell_price":900000,"demand":1000}]},{"system_name":"Sol","name":"Safe Port","type":"Coriolis Starport","market":[{"commodity":"Monazite","sell_price":400000,"demand":1000}]}]}"""
+        );
+
+        IReadOnlyList<MiningMarketResult> quotes = await new MiningSearchClient(
+            new HttpClient(handler)
+        ).FindSpanshSystemCommoditiesAsync("Sol", "Sol");
+
+        Assert.Equal("Safe Port", Assert.Single(quotes).Station);
+    }
+
+    [Fact]
     public async Task RadiusWideFallbackReadsEveryStationPageAndDropsStaleQuotes()
     {
         using var handler = new PagedSellQuoteHandler();

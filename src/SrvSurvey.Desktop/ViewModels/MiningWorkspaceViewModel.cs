@@ -96,6 +96,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             community.Cache
         );
         RememberPledgedPower();
+        Search.ConfigureResultCache(new MiningSearchResultCache(directory));
         StartCommand = new WorkspaceCommand(
             Start,
             () => sessionAvailable && storageAvailable && state.Session.Current is null

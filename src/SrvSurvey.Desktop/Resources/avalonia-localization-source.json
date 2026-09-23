@@ -6281,7 +6281,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayPlanetaryAcquireResults.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Beta",
@@ -15612,7 +15612,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
     "Text": "DistanceFromArrivalLS",
@@ -22638,6 +22638,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Hide Irrelevant Material Tags:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Hide PlotPulse (journal activity and SCO status) \u2192\u2192\u2192",
     "IsFormat": false,
     "SourceKinds": [
@@ -27498,6 +27506,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "M 0,{0} H {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml.cs"
+  },
+  {
+    "Text": "M {0},{1} H {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml.cs"
+  },
+  {
+    "Text": "M {0},{1} V {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml.cs"
+  },
+  {
     "Text": "M0,0 L20,34.26 40,0 Z",
     "IsFormat": false,
     "SourceKinds": [
@@ -29408,6 +29440,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "MiningLinkAnchor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml.cs"
   },
   {
     "Text": "MiningReferenceCommodities",
@@ -45274,6 +45314,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "SellLinkAnchor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml.cs"
+  },
+  {
     "Text": "Selling stations \u2192",
     "IsFormat": false,
     "SourceKinds": [
@@ -46279,12 +46327,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
+    "Text": "Show All",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
     "Text": "Show Fleet Carrier aggregate counts",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Show Less",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Show Marker Labels in Overview Map",
@@ -46324,7 +46388,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayAcquireClusterViewModel.cs"
   },
   {
     "Text": "Show all bodies",
@@ -46468,7 +46532,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayAcquireClusterViewModel.cs"
   },
   {
     "Text": "Show fewer bodies",
@@ -63063,6 +63127,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "hide-irrelevant",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "high",
     "IsFormat": false,
     "SourceKinds": [
@@ -63805,6 +63877,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "mining-display",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "mining-report.{0}",
@@ -66766,6 +66846,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
+    "Text": "{0} Saved {1}; press Search to refresh.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "{0} SrvSurvey instances are currently running.",

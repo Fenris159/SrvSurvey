@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.Globalization;
+using System.Text.Json;
 using System.Windows.Input;
 using Avalonia.Media;
 using SrvSurvey.Core.Mining;
@@ -57,7 +59,7 @@ internal static class SurfaceMaterialBadgePalette
     }
 }
 
-public sealed record SurfaceBodyTag
+public sealed class SurfaceBodyTag : WorkspaceObservable
 {
     public SurfaceBodyTag(string code, bool matchesStation)
     {
@@ -70,6 +72,15 @@ public sealed record SurfaceBodyTag
     public string Code { get; }
     public bool MatchesStation { get; }
     public bool IsExtraMaterial => !MatchesStation;
+    private bool visible = true;
+    public bool IsVisible
+    {
+        get => visible;
+        private set => Set(ref visible, value);
+    }
+
+    public void SetHideIrrelevant(bool hide) => IsVisible = !hide || MatchesStation;
+
     public string ColorHex { get; }
     public string ContrastForeground { get; }
 }
@@ -161,9 +172,12 @@ public sealed class SurfaceSellRowViewModel : WorkspaceObservable
         visibleStations = stations.Take(1).ToArray();
         StationRanking = PowerplayStationRanking.FromScores(options?.StationScores ?? [bestViablePrice]);
         SurfaceSellSystemDetails? details = options?.Details;
+        Details = details;
+        StationScores = options?.StationScores?.ToArray() ?? [bestViablePrice];
         PowerState = details?.PowerState ?? "";
         FactionState = details?.FactionState ?? "";
         Powers = details?.Powers.Count > 0 ? string.Join("\n", details.Powers) : "";
+        PowerLines = PowerplayPowerLineViewModel.From(details?.Powers ?? [], details?.Conflict ?? []);
         ReferenceDistanceLy = referenceDistanceLy;
         BestViablePrice = bestViablePrice;
         this.systems = systems;
@@ -206,8 +220,11 @@ public sealed class SurfaceSellRowViewModel : WorkspaceObservable
     public ICommand ToggleBodiesCommand { get; }
     internal PowerplayStationRanking StationRanking { get; }
     public string PowerState { get; }
+    public SurfaceSellSystemDetails? Details { get; }
+    public IReadOnlyList<long> StationScores { get; }
     public string FactionState { get; }
     public string Powers { get; }
+    public IReadOnlyList<PowerplayPowerLineViewModel> PowerLines { get; }
     public double ReferenceDistanceLy { get; }
     public long BestViablePrice { get; }
     public IReadOnlyList<SurfaceMiningSystemRowViewModel> Systems => systems;
@@ -247,7 +264,10 @@ public sealed record SurfaceSellSystemDetails(
     string FactionState,
     IReadOnlyList<string> Powers,
     double? DistanceLy = null
-);
+)
+{
+    public IReadOnlyList<PowerplayProgress> Conflict { get; init; } = [];
+}
 
 public sealed record SurfaceSellRowOptions(IReadOnlyList<long>? StationScores, SurfaceSellSystemDetails? Details);
 
@@ -284,6 +304,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     }
 
     private const string RequestFailed = "Request failed. Try again.";
+    private const string IdleStatus = "Choose a reference system and a surface material.";
     private readonly MiningSearchClient client;
     private readonly int maximumResults;
     private CancellationTokenSource? pending;
@@ -295,21 +316,29 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     private string padSize = "Any";
     private long minimumDemand;
     private long maximumDemand = 90_000;
-    private string status = "Choose a reference system and a surface material.";
+    private string status = IdleStatus;
     private bool busy;
     private bool nearestFirst = true;
+    private bool hideIrrelevantMaterialTags;
     private SellRowSort sellRowSort;
     private IReadOnlyList<SurfaceSellRowViewModel> rows = [];
+    private IReadOnlyList<PowerplayAcquireClusterViewModel> acquireClusters = [];
+    private MiningSearchResultCache? resultCache;
+    private string cacheWorkspace = "surface";
+    private bool restoringCache;
 
     public SurfaceMiningSearchViewModel(MiningSearchClient client, int maximumResults = 5)
     {
         this.client = client;
         this.maximumResults = maximumResults;
         SearchCommand = new WorkspaceCommand(() => _ = SearchAsync(CancellationToken.None));
+        ResetCommand = new WorkspaceCommand(Reset);
         CancelCommand = new WorkspaceCommand(Cancel);
         DistanceSortCommand = new WorkspaceCommand(ToggleDistanceSort);
         SellDistanceSortCommand = new WorkspaceCommand(ToggleSellDistanceSort);
         BestStationSortCommand = new WorkspaceCommand(ToggleBestStationSort);
+        PropertyChanged += RestoreWhenFiltersChange;
+        Materials.Selected.CollectionChanged += (_, _) => TryRestoreCachedResults();
     }
 
     public MiningChipBoxViewModel Materials { get; } =
@@ -323,6 +352,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     public static IReadOnlyList<string> PadSizes { get; } = MiningSearchViewModel.PadSizes;
 
     public ICommand SearchCommand { get; }
+    public ICommand ResetCommand { get; }
     public ICommand CancelCommand { get; }
     public ICommand DistanceSortCommand { get; }
     public ICommand SellDistanceSortCommand { get; }
@@ -361,6 +391,172 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             {
                 Changed(nameof(Reference));
             }
+        }
+    }
+
+    public bool HideIrrelevantMaterialTags
+    {
+        get => hideIrrelevantMaterialTags;
+        set
+        {
+            if (Set(ref hideIrrelevantMaterialTags, value))
+            {
+                ApplyTagVisibility();
+                HideIrrelevantTagsChanged?.Invoke(value);
+            }
+        }
+    }
+
+    public Action<bool>? HideIrrelevantTagsChanged { get; set; }
+
+    private void ApplyTagVisibility()
+    {
+        foreach (
+            SurfaceBodyTag tag in Rows.SelectMany(row => row.Systems)
+                .SelectMany(system => system.Bodies)
+                .SelectMany(body => body.Tags)
+        )
+        {
+            tag.SetHideIrrelevant(HideIrrelevantMaterialTags);
+        }
+        foreach (PowerplayAcquireClusterViewModel cluster in acquireClusters)
+        {
+            cluster.SetHideIrrelevant(HideIrrelevantMaterialTags);
+        }
+    }
+
+    public void Reset()
+    {
+        restoringCache = true;
+        Cancel();
+        Materials.Selected.Clear();
+        Radius = 100;
+        ResultLimit = 1;
+        PadSize = "Any";
+        MinimumDemand = 0;
+        MaximumDemand = 90_000;
+        Reference = currentSystem;
+        Rows = [];
+        Status = IdleStatus;
+        restoringCache = false;
+    }
+
+    public void ClearResults()
+    {
+        Rows = [];
+        Status = IdleStatus;
+    }
+
+    public void ConfigureCache(MiningSearchResultCache cache, string workspace = "surface", bool restoreLast = true)
+    {
+        resultCache = cache;
+        cacheWorkspace = workspace;
+        HideIrrelevantTagsChanged = value => cache.Save("mining-display", "hide-irrelevant", value);
+        HideIrrelevantMaterialTags = cache.Load<bool>("mining-display", "hide-irrelevant");
+        if (restoreLast && cache.LoadLast<SurfaceMiningSearchSnapshot>(workspace) is { } last)
+        {
+            RestoreSnapshot(last, restoreFilters: true);
+        }
+    }
+
+    public SurfaceMiningSearchSnapshot ExportSnapshot() =>
+        new(
+            Reference,
+            Radius,
+            ResultLimit,
+            Materials.Selected.ToArray(),
+            PadSize,
+            MinimumDemand,
+            MaximumDemand,
+            Status,
+            Rows.Select(SurfaceSellSnapshot.From).ToArray()
+        )
+        {
+            SavedAt = DateTimeOffset.UtcNow,
+        };
+
+    public void RestoreSnapshot(SurfaceMiningSearchSnapshot snapshot, bool restoreFilters)
+    {
+        restoringCache = true;
+        try
+        {
+            if (restoreFilters)
+            {
+                Reference = snapshot.Reference;
+                Radius = snapshot.Radius;
+                ResultLimit = snapshot.ResultLimit;
+                Materials.Selected.Clear();
+                foreach (string material in snapshot.Materials)
+                {
+                    Materials.Selected.Add(material);
+                }
+                PadSize = snapshot.PadSize;
+                MinimumDemand = snapshot.MinimumDemand;
+                MaximumDemand = snapshot.MaximumDemand;
+            }
+
+            Rows = snapshot.Rows.Select(row => row.Restore()).ToArray();
+            Status = snapshot.SavedAt is { } savedAt
+                ? snapshot.Status
+                    + " Saved "
+                    + savedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)
+                    + "; press Search to refresh."
+                : snapshot.Status;
+        }
+        finally
+        {
+            restoringCache = false;
+        }
+    }
+
+    private string CacheKey() =>
+        JsonSerializer.Serialize(
+            new
+            {
+                Reference = Reference.Trim().ToUpperInvariant(),
+                Radius,
+                ResultLimit,
+                Materials = Materials
+                    .Selected.OrderBy(material => material, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                PadSize,
+                MinimumDemand,
+                MaximumDemand,
+                MaximumAge,
+            }
+        );
+
+    private void RestoreWhenFiltersChange(object? sender, PropertyChangedEventArgs args)
+    {
+        if (
+            args.PropertyName
+            is nameof(Reference)
+                or nameof(Radius)
+                or nameof(ResultLimit)
+                or nameof(PadSize)
+                or nameof(MinimumDemand)
+                or nameof(MaximumDemand)
+        )
+        {
+            TryRestoreCachedResults();
+        }
+    }
+
+    private void TryRestoreCachedResults()
+    {
+        if (restoringCache || IsBusy || resultCache is null)
+        {
+            return;
+        }
+
+        SurfaceMiningSearchSnapshot? saved = resultCache.Load<SurfaceMiningSearchSnapshot>(cacheWorkspace, CacheKey());
+        if (saved is not null)
+        {
+            RestoreSnapshot(saved, restoreFilters: false);
+        }
+        else
+        {
+            Rows = [];
         }
     }
 
@@ -408,6 +604,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     public bool GroupStationsBySystem { get; set; }
 
     public bool MarketGalaxyWide { get; set; }
+
+    public bool ExcludeCarrierMarkets { get; set; }
 
     public bool UseAdditionalMarketsOnly { get; set; }
 
@@ -468,12 +666,16 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         {
             if (Set(ref rows, value))
             {
+                acquireClusters = PowerplayAcquireClusterViewModel.Group(value);
+                ApplyTagVisibility();
                 Changed(nameof(HasRows));
+                Changed(nameof(AcquireClusters));
             }
         }
     }
 
     public bool HasRows => Rows.Count > 0;
+    public IReadOnlyList<PowerplayAcquireClusterViewModel> AcquireClusters => acquireClusters;
 
     public void UseDiagnosticLog(Action<string>? log) => client.DiagnosticLog = log;
 
@@ -482,7 +684,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         if (string.IsNullOrWhiteSpace(Reference))
         {
             Rows = [];
-            return "Choose a reference system and a surface material.";
+            return IdleStatus;
         }
 
         bool catalogOrder = MiningMaterialSelection.IsAny(Materials.Selected);
@@ -560,7 +762,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     MinimumDemand: MinimumDemand,
                     MaximumDemand: MaximumDemand,
                     MaximumAge: MaximumAge,
-                    PadSize: PadSize
+                    PadSize: PadSize,
+                    ExcludeCarriers: ExcludeCarrierMarkets
                 ),
                 token
             );
@@ -784,11 +987,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         {
             try
             {
-                imports = await client.FindSystemImportsAsync(
-                    first.Anchor.System,
-                    MaximumAge ?? TimeSpan.FromDays(3650),
-                    token
-                );
+                imports = await FindStationImportsAsync(first.Anchor.System, token);
             }
             catch (Exception ex)
                 when (ex
@@ -1053,6 +1252,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             }
 
             Status = await FindSurfaceSalesAsync(token);
+            SaveCompletedSearch(current);
         }
         catch (OperationCanceledException)
         {
@@ -1087,6 +1287,14 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         }
     }
 
+    private void SaveCompletedSearch(CancellationTokenSource current)
+    {
+        if (pending == current && resultCache is not null && Status != RequestFailed)
+        {
+            resultCache.Save(cacheWorkspace, CacheKey(), ExportSnapshot());
+        }
+    }
+
     public void Cancel() => pending?.Cancel();
 
     public void Dispose()
@@ -1114,8 +1322,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         try
         {
             IReadOnlyList<MiningMarketResult> imports =
-                cachedImports
-                ?? await client.FindSystemImportsAsync(best.System, MaximumAge ?? TimeSpan.FromDays(3650), token);
+                cachedImports ?? await FindStationImportsAsync(best.System, token);
             stationQuotes.AddRange(
                 imports.Where(market =>
                     market.Station.Equals(best.Station, StringComparison.OrdinalIgnoreCase)
@@ -1153,6 +1360,20 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
         return top;
     }
+
+    private Task<IReadOnlyList<MiningMarketResult>> FindStationImportsAsync(string system, CancellationToken token) =>
+        client.FindSystemImportsAsync(
+            system,
+            new MiningMarketQuery(
+                system,
+                "Any",
+                false,
+                ExcludeCarriers: ExcludeCarrierMarkets,
+                SystemOnly: true,
+                MaximumAge: MaximumAge ?? TimeSpan.FromDays(3650)
+            ),
+            token
+        );
 
     private async Task<SurfaceBodySearch> FindBodyMatchesAsync(
         string system,
