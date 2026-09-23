@@ -245,7 +245,8 @@ public sealed class MiningSearchViewModelTests
 
         Assert.Equal("Good Target", Assert.Single(model.PlanetarySearch.Rows).Target);
         Assert.Equal("810 ly", Assert.Single(model.PlanetarySearch.Rows).Distance);
-        Assert.Equal(["Empty Target", "Good Target"], handler.ImportSystems);
+        Assert.Equal(["Empty Target", "Good Target", "Third Target"], handler.ImportSystems);
+        Assert.Equal(1, handler.BodyReferences.Count(system => system == "Good Target"));
         Assert.False(handler.SawGalaxyMarket);
         Assert.True(handler.SawGlobalSupporterQuery);
         Assert.True(handler.Events.IndexOf("Bubble Fortress B") < handler.Events.IndexOf("Import Empty Target"));
@@ -255,6 +256,7 @@ public sealed class MiningSearchViewModelTests
     {
         public List<string> ImportSystems { get; } = [];
         public List<string> Events { get; } = [];
+        public List<string> BodyReferences { get; } = [];
         public bool SawGalaxyMarket { get; private set; }
         public bool SawGlobalSupporterQuery { get; private set; }
 
@@ -275,7 +277,7 @@ public sealed class MiningSearchViewModelTests
                 {
                     return Json(
                         reference == "Timbalderis"
-                            ? """{"results":[{"name":"Empty Target","distance":710,"power_state":"Unoccupied"},{"name":"Good Target","distance":810,"power_state":"Unoccupied"}]}"""
+                            ? """{"results":[{"name":"Empty Target","distance":710,"power_state":"Unoccupied"},{"name":"Good Target","distance":810,"power_state":"Unoccupied"},{"name":"Third Target","distance":910,"power_state":"Unoccupied"}]}"""
                             : """{"results":[]}"""
                     );
                 }
@@ -287,7 +289,7 @@ public sealed class MiningSearchViewModelTests
                 {
                     SawGlobalSupporterQuery = !filters.TryGetProperty("distance", out _);
                     return Json(
-                        """{"results":[{"name":"Fortress A","distance":700,"x":700,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Fortress B","distance":800,"x":800,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"}]}"""
+                        """{"results":[{"name":"Fortress A","distance":700,"x":700,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Fortress B","distance":800,"x":800,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Fortress C","distance":900,"x":900,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"}]}"""
                     );
                 }
 
@@ -295,9 +297,15 @@ public sealed class MiningSearchViewModelTests
                 {
                     Events.Add("Bubble " + reference);
                     return Json(
-                        reference == "Fortress A"
-                            ? """{"results":[{"name":"Empty Target","distance":10,"x":710,"y":0,"z":0,"power_state":"Unoccupied"}]}"""
-                            : """{"results":[{"name":"Good Target","distance":10,"x":810,"y":0,"z":0,"power_state":"Unoccupied"}]}"""
+                        reference switch
+                        {
+                            "Fortress A" =>
+                                """{"results":[{"name":"Empty Target","distance":10,"x":710,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                            "Fortress B" =>
+                                """{"results":[{"name":"Good Target","distance":10,"x":810,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                            _ =>
+                                """{"results":[{"name":"Third Target","distance":10,"x":910,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                        }
                     );
                 }
 
@@ -313,6 +321,10 @@ public sealed class MiningSearchViewModelTests
 
             if (path == "/api/bodies/search")
             {
+                using var body = System.Text.Json.JsonDocument.Parse(
+                    await request.Content!.ReadAsStringAsync(cancellationToken)
+                );
+                BodyReferences.Add(body.RootElement.GetProperty("reference_system").GetString() ?? "");
                 return Json(
                     """{"results":[{"name":"Fortress B 1","system_name":"Fortress B","subtype":"Rocky body","distance":10}]}"""
                 );
@@ -320,14 +332,17 @@ public sealed class MiningSearchViewModelTests
 
             if (path.EndsWith("/commodities/imports", StringComparison.Ordinal))
             {
-                string system = path.Contains("Good%20Target", StringComparison.Ordinal)
-                    ? "Good Target"
-                    : "Empty Target";
+                string system = path switch
+                {
+                    var name when name.Contains("Good%20Target", StringComparison.Ordinal) => "Good Target",
+                    var name when name.Contains("Third%20Target", StringComparison.Ordinal) => "Third Target",
+                    _ => "Empty Target",
+                };
                 ImportSystems.Add(system);
                 Events.Add("Import " + system);
                 return Json(
-                    system == "Good Target"
-                        ? $$"""[{"systemName":"Good Target","stationName":"Good Port","stationType":"Coriolis","maxLandingPadSize":3,"commodityName":"Monazite","sellPrice":400000,"demand":1000,"updatedAt":"{{DateTimeOffset.UtcNow:O}}"}]"""
+                    system is "Good Target" or "Third Target"
+                        ? $$"""[{"systemName":"{{system}}","stationName":"Good Port","stationType":"Coriolis","maxLandingPadSize":3,"commodityName":"Monazite","sellPrice":400000,"demand":1000,"updatedAt":"{{DateTimeOffset.UtcNow:O}}"}]"""
                         : "[]"
                 );
             }

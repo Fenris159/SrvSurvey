@@ -95,6 +95,22 @@ public sealed class SurfaceMiningSearchViewModelTests
     }
 
     [Fact]
+    public async Task GroupedSearchKeepsTheBestCompositeStationGroup()
+    {
+        using var handler = new SurfaceHandler { Mode = "group-rank" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Sol";
+        model.Materials.Add(Material);
+        model.GroupStationsBySystem = true;
+        model.ResultLimit = 1;
+
+        await model.SearchAsync();
+
+        Assert.Equal("Steady Sell", Assert.Single(model.Rows).Target);
+        Assert.Equal(3, Assert.Single(model.Rows).StationRanking.StationCount);
+    }
+
+    [Fact]
     public void CurrentSystemFillsAndRestoresTheReference()
     {
         using var handler = new SurfaceHandler();
@@ -564,6 +580,13 @@ public sealed class SurfaceMiningSearchViewModelTests
                     );
                 }
 
+                if (Mode == "group-rank")
+                {
+                    return Json(
+                        $$"""{"results":[{"name":"{{BodyReference}} 1","system_name":"{{BodyReference}}","subtype":"Rocky body","distance":1}]}"""
+                    );
+                }
+
                 return Json(
                     """
                     {"results":[
@@ -628,6 +651,7 @@ public sealed class SurfaceMiningSearchViewModelTests
                     "reserve-stress" => ManyMonaziteMarkets(),
                     "reserve-stress-positive" => ManyMonaziteMarkets(),
                     "batched-eligibility" => ManyMonaziteMarkets(),
+                    "group-rank" => GroupRankingMarkets(),
                     _ => Markets(extra: false),
                 }
             );
@@ -654,6 +678,57 @@ public sealed class SurfaceMiningSearchViewModelTests
                         marketId = index,
                         commodityName = "Monazite",
                     })
+            );
+        }
+
+        private static string GroupRankingMarkets()
+        {
+            string updated = DateTimeOffset.UtcNow.ToString("O");
+            return JsonSerializer.Serialize(
+                new[]
+                {
+                    new
+                    {
+                        systemName = "Peak Sell",
+                        stationName = "Peak",
+                        sellPrice = 1000,
+                        marketId = 1,
+                    },
+                    new
+                    {
+                        systemName = "Steady Sell",
+                        stationName = "One",
+                        sellPrice = 990,
+                        marketId = 2,
+                    },
+                    new
+                    {
+                        systemName = "Steady Sell",
+                        stationName = "Two",
+                        sellPrice = 980,
+                        marketId = 3,
+                    },
+                    new
+                    {
+                        systemName = "Steady Sell",
+                        stationName = "Three",
+                        sellPrice = 970,
+                        marketId = 4,
+                    },
+                }.Select(item => new
+                {
+                    item.systemName,
+                    item.stationName,
+                    stationType = "Coriolis",
+                    maxLandingPadSize = 3,
+                    item.sellPrice,
+                    demand = 1000,
+                    updatedAt = updated,
+                    distance = 10,
+                    distanceToArrival = 100,
+                    item.marketId,
+                    commodityName = "Diamond",
+                })
             );
         }
 

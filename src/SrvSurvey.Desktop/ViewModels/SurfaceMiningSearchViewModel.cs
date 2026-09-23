@@ -272,6 +272,17 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     private sealed record SurfaceStationCandidate(MiningMarketResult[] Quotes, MiningMarketResult Anchor, int Priority);
 
+    private sealed class SurfaceRankingState(bool catalogOrder)
+    {
+        public bool CatalogOrder { get; } = catalogOrder;
+        public Dictionary<string, SurfaceBodySearch> BodyCache { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, bool> SellSystemEligibility { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> ProcessedCandidates { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> SelectedStations { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public HashSet<string> SelectedSystems { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public List<SurfaceSellRowViewModel> Ranked { get; set; } = [];
+    }
+
     private const string RequestFailed = "Request failed. Try again.";
     private readonly MiningSearchClient client;
     private readonly int maximumResults;
@@ -501,13 +512,14 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         (List<MiningMarketResult> quotes, bool usedFallback) = await FindInitialSurfaceQuotesAsync(materials, token);
 
         SurfaceRankedSearch search;
+        var ranking = new SurfaceRankingState(catalogOrder);
         do
         {
             SurfaceStationCandidate[] candidates = CandidatesFor(quotes, materials, catalogOrder);
             search =
                 candidates.Length == 0
                     ? new SurfaceRankedSearch([])
-                    : await RankStationsAsync(candidates, materials, criteria, rules, catalogOrder, token);
+                    : await RankStationsAsync(candidates, materials, criteria, rules, catalogOrder, ranking, token);
             if (search.Rows.Count >= ResultLimit || AdditionalMarketQuotesAsync is null)
             {
                 break;
@@ -638,70 +650,117 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         PlanetaryBodyCriteria criteria,
         IReadOnlyList<SurfaceMaterialRule> rules,
         bool catalogOrder,
+        SurfaceRankingState ranking,
         CancellationToken token
     )
     {
-        var bodyCache = new Dictionary<string, SurfaceBodySearch>(StringComparer.OrdinalIgnoreCase);
-        var sellSystemEligibility = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-        var ranked = new List<SurfaceSellRowViewModel>();
-        var selectedStations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var selectedSystems = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<SurfaceSellRowViewModel> ranked = ranking.Ranked;
         for (int index = 0; index < candidates.Length; index++)
         {
             token.ThrowIfCancellationRequested();
             Status = $"Checking sell systems {index + 1}/{candidates.Length}…";
-            SurfaceStationCandidate candidate = candidates[index];
-            if (!await IsEligibleSellSystemAsync(candidates, index, sellSystemEligibility, token))
-            {
-                continue;
-            }
-
-            string stationKey = candidate.Anchor.System + "\u001f" + candidate.Anchor.Station;
-            if (IsAlreadyRankedCandidate(stationKey, candidate.Anchor.System, selectedStations, selectedSystems))
-            {
-                continue;
-            }
-
-            IReadOnlySet<string>? miningSystems = MiningSystemsForSell?.Invoke(candidate.Anchor.System);
-            if (miningSystems is { Count: 0 })
-            {
-                continue;
-            }
-
-            SurfaceBodySearch bodySearch = await CachedBodySearchAsync(
-                bodyCache,
-                candidate.Anchor.System,
+            SurfaceSellRowViewModel? row = await TryDescribeRankedCandidateAsync(
+                candidates,
+                index,
+                materials,
                 criteria,
                 rules,
-                miningSystems,
+                ranking,
                 token
             );
-            if (bodySearch.Matches.Count == 0)
-            {
-                continue;
-            }
-
-            SurfaceSellRowViewModel? row = GroupStationsBySystem
-                ? await DescribeSellSystemAsync(candidate, candidates, bodySearch, materials, catalogOrder, token)
-                : await DescribeCandidateAsync(candidate, bodySearch, materials, catalogOrder, token);
             if (row is null)
             {
                 continue;
             }
 
-            selectedStations.Add(stationKey);
-            selectedSystems.Add(candidate.Anchor.System);
             ranked.Add(row);
-            ranked = KeepBestRows(ranked, catalogOrder, ResultLimit);
+            ranked = KeepBestRows(ranked, catalogOrder, GroupStationsBySystem, ResultLimit);
+            ranking.Ranked = ranked;
 
             Rows = SortRows(ranked);
-            if (CanStopRanking(catalogOrder, ranked, candidates, index, ResultLimit))
+            if (
+                CanStopRanking(
+                    catalogOrder,
+                    GroupStationsBySystem,
+                    materials.Count,
+                    ranked,
+                    candidates,
+                    index,
+                    ResultLimit
+                )
+            )
             {
                 break;
             }
         }
 
         return new SurfaceRankedSearch(ranked);
+    }
+
+    private async Task<SurfaceSellRowViewModel?> TryDescribeRankedCandidateAsync(
+        SurfaceStationCandidate[] candidates,
+        int index,
+        IReadOnlyList<string> materials,
+        PlanetaryBodyCriteria criteria,
+        IReadOnlyList<SurfaceMaterialRule> rules,
+        SurfaceRankingState ranking,
+        CancellationToken token
+    )
+    {
+        SurfaceStationCandidate candidate = candidates[index];
+        string stationKey = candidate.Anchor.System + "\u001f" + candidate.Anchor.Station;
+        string candidateKey = stationKey + "\u001f" + MiningCommodityName.Key(candidate.Anchor.Commodity);
+        if (!ranking.ProcessedCandidates.Add(candidateKey))
+        {
+            return null;
+        }
+
+        if (!await IsEligibleSellSystemAsync(candidates, index, ranking.SellSystemEligibility, token))
+        {
+            return null;
+        }
+
+        if (
+            IsAlreadyRankedCandidate(
+                stationKey,
+                candidate.Anchor.System,
+                ranking.SelectedStations,
+                ranking.SelectedSystems
+            )
+        )
+        {
+            return null;
+        }
+
+        IReadOnlySet<string>? miningSystems = MiningSystemsForSell?.Invoke(candidate.Anchor.System);
+        if (miningSystems is { Count: 0 })
+        {
+            return null;
+        }
+
+        SurfaceBodySearch bodySearch = await CachedBodySearchAsync(
+            ranking.BodyCache,
+            candidate.Anchor.System,
+            criteria,
+            rules,
+            miningSystems,
+            token
+        );
+        if (bodySearch.Matches.Count == 0)
+        {
+            return null;
+        }
+
+        SurfaceSellRowViewModel? row = GroupStationsBySystem
+            ? await DescribeSellSystemAsync(candidate, candidates, bodySearch, materials, ranking.CatalogOrder, token)
+            : await DescribeCandidateAsync(candidate, bodySearch, materials, ranking.CatalogOrder, token);
+        if (row is not null)
+        {
+            ranking.SelectedStations.Add(stationKey);
+            ranking.SelectedSystems.Add(candidate.Anchor.System);
+        }
+
+        return row;
     }
 
     private bool IsAlreadyRankedCandidate(
@@ -907,15 +966,35 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     private static List<SurfaceSellRowViewModel> KeepBestRows(
         List<SurfaceSellRowViewModel> ranked,
         bool catalogOrder,
+        bool groupStations,
         int resultLimit
-    ) =>
-        catalogOrder
-            ? ranked
-            : ranked
-                .OrderByDescending(item => item.BestViablePrice)
-                .ThenBy(item => item.ReferenceDistanceLy)
+    )
+    {
+        if (catalogOrder)
+        {
+            return ranked;
+        }
+
+        if (groupStations)
+        {
+            return ranked
+                .OrderBy(
+                    item => item,
+                    Comparer<SurfaceSellRowViewModel>.Create(
+                        (left, right) =>
+                            PowerplayStationRanking.CompareDescending(left.StationRanking, right.StationRanking)
+                    )
+                )
                 .Take(resultLimit)
                 .ToList();
+        }
+
+        return ranked
+            .OrderByDescending(item => item.BestViablePrice)
+            .ThenBy(item => item.ReferenceDistanceLy)
+            .Take(resultLimit)
+            .ToList();
+    }
 
     private static bool IsViableCandidate(
         bool catalogOrder,
@@ -934,16 +1013,28 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     private static bool CanStopRanking(
         bool catalogOrder,
+        bool groupStations,
+        int materialCount,
         List<SurfaceSellRowViewModel> ranked,
         IReadOnlyList<SurfaceStationCandidate> candidates,
         int index,
         int resultLimit
-    ) =>
-        ranked.Count == resultLimit
-        && (
-            catalogOrder
-            || (index + 1 < candidates.Count && candidates[index + 1].Anchor.Price < ranked[^1].BestViablePrice)
-        );
+    )
+    {
+        if (ranked.Count < resultLimit || catalogOrder)
+        {
+            return ranked.Count == resultLimit && catalogOrder;
+        }
+
+        if (!groupStations)
+        {
+            return index + 1 < candidates.Count && candidates[index + 1].Anchor.Price < ranked[^1].BestViablePrice;
+        }
+
+        return materialCount == 1
+            && index + 1 < candidates.Count
+            && candidates[index + 1].Anchor.Price < ranked[^1].StationRanking.Median * 0.92;
+    }
 
     public async Task SearchAsync(CancellationToken cancellationToken = default)
     {
