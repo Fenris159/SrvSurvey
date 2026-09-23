@@ -437,6 +437,10 @@ public sealed class MiningWorkspacePresentationTests
                 candidate => candidate.IsEffectivelyVisible
             );
             Assert.Same(model.MiningWorkspace.Search.PlanetarySearch, planetaryResults.DataContext);
+            Assert.DoesNotContain(
+                powerplay.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.IsEffectivelyVisible && text.Text == "Reserve level"
+            );
             model.MiningWorkspace.SelectedTab = 4;
             using WriteableBitmap? findFrame = window.CaptureRenderedFrame();
             MiningSearchView search = view.FindControl<MiningSearchView>("SearchPane")!;

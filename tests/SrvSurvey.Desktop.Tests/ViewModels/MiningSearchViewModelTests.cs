@@ -60,6 +60,7 @@ public sealed class MiningSearchViewModelTests
         {
             Reference = "Timbalderis",
             Reserve = "Pristine",
+            PowerState = "Stronghold",
         };
         model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
         model.MineralChips.Add("Periclase Dunite");
@@ -79,6 +80,7 @@ public sealed class MiningSearchViewModelTests
                 .Select(value => value.GetString())
         );
         Assert.False(filters.TryGetProperty("reserve_level", out _));
+        Assert.False(filters.TryGetProperty("system_power_state", out _));
         Assert.False(filters.TryGetProperty("landmarks", out _));
     }
 
@@ -203,7 +205,7 @@ public sealed class MiningSearchViewModelTests
                 return Json(
                     MultipleSellSystems
                         ? """{"results":[{"name":"Own Sell","controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Other Sell","controlling_power":"Jerome Archer","power_state":"Fortified"}]}"""
-                        : """{"results":[{"name":"Sell System","power_state":"Fortified"}]}"""
+                        : """{"results":[{"name":"Sell System","power_state":"Stronghold"}]}"""
                 );
             }
 

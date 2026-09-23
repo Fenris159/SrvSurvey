@@ -306,8 +306,6 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     public IReadOnlyList<string> BodyControllingPowers { get; set; } = [];
 
-    public string BodyPowerState { get; set; } = "";
-
     public string NoSellStationsMessage { get; set; } =
         "No sell station matches the selected material, demand, and landing pad within the distance.";
 
@@ -853,7 +851,6 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     "",
                     Radius,
                     BodyControllingPowers,
-                    BodyPowerState,
                     Page: page,
                     VolcanismTypes: criteria.VolcanismTypes
                 ),

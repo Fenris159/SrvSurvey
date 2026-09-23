@@ -1720,7 +1720,6 @@ public sealed class MiningSearchViewModel(
         PlanetarySearch.PadSize = PadSize;
         PlanetarySearch.MaximumAge = MarketFreshness;
         PlanetarySearch.BodyControllingPowers = PlanetaryPowers;
-        PlanetarySearch.BodyPowerState = PlanetaryPowerState;
         PlanetarySearch.NoSellStationsMessage =
             "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.";
         MiningSystemResult[]? supporterCache = null;
@@ -2113,9 +2112,6 @@ public sealed class MiningSearchViewModel(
 
     private IReadOnlyList<string> PlanetaryPowers =>
         IsChosenPower(PledgedPower) ? PlanetaryMiningPlan.OtherPowers(PledgedPower) : [];
-
-    private string PlanetaryPowerState =>
-        PowerplayPlan.UsesLiveConflict(Objective, PowerState) || IsAny(PowerState) ? "" : PowerState.Trim();
 
     private bool nearestFirst = true;
     public string DistanceSortLabel => nearestFirst ? "Nearest first" : "Farthest first";
