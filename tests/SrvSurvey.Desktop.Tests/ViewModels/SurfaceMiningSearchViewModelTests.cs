@@ -180,7 +180,11 @@ public sealed class SurfaceMiningSearchViewModelTests
                 $$"""{"systemName":"Sell System","stationName":"Gold Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":200000,"demand":1000,"stock":10,"updatedAt":"{{updated}}","distance":12.4,"distanceToArrival":150,"marketId":9,"commodityName":"Diamond"}""";
             if (!extra)
             {
-                return "[" + quote + "]";
+                return "["
+                    + $$"""{"systemName":"Sell System","stationName":"Cheap Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":100000,"demand":800,"stock":10,"updatedAt":"{{updated}}","distance":8,"distanceToArrival":40,"marketId":4,"commodityName":"Diamond"}"""
+                    + ","
+                    + quote
+                    + "]";
             }
 
             return "["
