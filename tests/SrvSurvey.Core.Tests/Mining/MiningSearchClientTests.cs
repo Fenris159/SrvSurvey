@@ -783,6 +783,32 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task GlobalAcquireSearchesKeepPowerAndSystemNamesWithoutDistanceFilters()
+    {
+        using var handler = new RequestHandler("""{"results":[]}""");
+        using var http = new HttpClient(handler);
+        var client = new MiningSearchClient(http);
+
+        await client.FindSystemsAsync(
+            new MiningSystemQuery("Sol", 1, Power: "Aisling Duval", PowerState: "Fortified") { GalaxyWide = true }
+        );
+        using (var systems = System.Text.Json.JsonDocument.Parse(handler.Body!))
+        {
+            System.Text.Json.JsonElement filters = systems.RootElement.GetProperty("filters");
+            Assert.False(filters.TryGetProperty("distance", out _));
+            Assert.Equal("Aisling Duval", filters.GetProperty("controlling_power").GetProperty("value")[0].GetString());
+        }
+
+        await client.FindRingsAsync(
+            new MiningRingQuery("Sol", "Monazite", "All", 1, SystemNames: ["Anchor"]) { GalaxyWide = true }
+        );
+        using var rings = System.Text.Json.JsonDocument.Parse(handler.Body!);
+        System.Text.Json.JsonElement ringFilters = rings.RootElement.GetProperty("filters");
+        Assert.False(ringFilters.TryGetProperty("distance", out _));
+        Assert.Equal("Anchor", ringFilters.GetProperty("system_name").GetProperty("value")[0].GetString());
+    }
+
+    [Fact]
     public async Task RingSearchCanNameSeveralMinerals()
     {
         using var handler = new RequestHandler("""{"results":[]}""");

@@ -126,6 +126,8 @@ public sealed class SurfaceMiningSearchPresentationTests
             double linkY = horizontalLink.TranslatePoint(new Point(0, 0), row)!.Value.Y;
             double targetBottom = sellCell.TranslatePoint(new Point(0, sellCell.Bounds.Height), row)!.Value.Y;
             Assert.True(linkY <= targetBottom + 1, $"Link at {linkY}, sell box ends at {targetBottom}");
+            Assert.True(double.IsFinite(firstLink.FirstAnchorY));
+            Assert.InRange(Math.Abs(firstLink.FirstAnchorY - sellCell.Bounds.Height / 2), 0, 2);
             sell.ToggleAllCommand.Execute(null);
             using WriteableBitmap? expandedFrame = window.CaptureRenderedFrame();
             Assert.Equal(29, sell.VisibleSystems.Count);

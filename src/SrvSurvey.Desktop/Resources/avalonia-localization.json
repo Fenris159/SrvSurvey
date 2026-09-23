@@ -15429,8 +15429,8 @@
       "translation": "Mit diesem Konto ist kein Flottenbetreiber verknüpft."
     },
     {
-      "source": "No Fortified or Stronghold systems for {0} within {1} ly. Acquire needs one of those in range.",
-      "translation": "Keine befestigten oder Festungssysteme für {0} innerhalb der {1}-Liga. Acquire benötigt eines davon in Reichweite."
+      "source": "No Fortified or Stronghold systems for {0} were found.",
+      "translation": "Es wurden keine befestigten oder Festungssysteme für {0} gefunden."
     },
     {
       "source": "No Frontier authorization is waiting for this callback.",
@@ -15905,6 +15905,10 @@
       "translation": "Keine Projekte geladen."
     },
     {
+      "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
+      "translation": "Für die überprüften Verkaufssysteme wurde in der Nähe eines Fortified- oder Stronghold-Unterstützers kein qualifizierter Grundbesitz gefunden."
+    },
+    {
       "source": "No reference image is available for this entry.",
       "translation": "Für diesen Eintrag ist kein Referenzbild verfügbar."
     },
@@ -16087,6 +16091,10 @@
     {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Für diesen Körper sind keine ungefilterten Canonn-Biologiekoordinaten übrig."
+    },
+    {
+      "source": "No unoccupied sell station matches the selected demand, landing pad, and supporter reach.",
+      "translation": "Keine unbesetzte Verkaufsstation entspricht der ausgewählten Nachfrage, dem Landeplatz und der Unterstützerreichweite."
     },
     {
       "source": "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow.",
@@ -23089,6 +23097,10 @@
       "translation": "Alle Systeme anzeigen"
     },
     {
+      "source": "Show all bodies",
+      "translation": "Alle Körper anzeigen"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Alle Massencode-{0}-Boxel anzeigen"
     },
@@ -23155,6 +23167,14 @@
     {
       "source": "Show fewer Systems",
       "translation": "Weniger Systeme anzeigen"
+    },
+    {
+      "source": "Show fewer bodies",
+      "translation": "Weniger Körper anzeigen"
+    },
+    {
+      "source": "Show fewer stations",
+      "translation": "Weniger Sender anzeigen"
     },
     {
       "source": "Show flight warnings",
@@ -49639,8 +49659,8 @@
       "translation": "Ningún transportista de flota está asociado con esta cuenta."
     },
     {
-      "source": "No Fortified or Stronghold systems for {0} within {1} ly. Acquire needs one of those in range.",
-      "translation": "No hay sistemas Fortificados o Fortalezas para {0} dentro de {1} ly. Adquirir necesita uno de los que están al alcance."
+      "source": "No Fortified or Stronghold systems for {0} were found.",
+      "translation": "No se encontraron sistemas fortificados o fortalezas para {0}."
     },
     {
       "source": "No Frontier authorization is waiting for this callback.",
@@ -50115,6 +50135,10 @@
       "translation": "No hay proyectos cargados."
     },
     {
+      "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
+      "translation": "No se encontró ningún cuerpo apto para aterrizar alrededor de un partidario Fortificado o Fortaleza para los sistemas de venta verificados."
+    },
+    {
       "source": "No reference image is available for this entry.",
       "translation": "No hay ninguna imagen de referencia disponible para esta entrada."
     },
@@ -50297,6 +50321,10 @@
     {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "No quedan coordenadas biológicas Canonn sin filtrar para este cuerpo."
+    },
+    {
+      "source": "No unoccupied sell station matches the selected demand, landing pad, and supporter reach.",
+      "translation": "Ninguna estación de venta desocupada coincide con la demanda, la plataforma de aterrizaje y el alcance de los seguidores seleccionados."
     },
     {
       "source": "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow.",
@@ -57299,6 +57327,10 @@
       "translation": "Mostrar todos los sistemas"
     },
     {
+      "source": "Show all bodies",
+      "translation": "Mostrar todos los cuerpos"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Mostrar todos los cuadros de código masivo {0}"
     },
@@ -57365,6 +57397,14 @@
     {
       "source": "Show fewer Systems",
       "translation": "Mostrar menos sistemas"
+    },
+    {
+      "source": "Show fewer bodies",
+      "translation": "Mostrar menos cuerpos"
+    },
+    {
+      "source": "Show fewer stations",
+      "translation": "Mostrar menos estaciones"
     },
     {
       "source": "Show flight warnings",
@@ -83849,8 +83889,8 @@
       "translation": "Aucun Fleet Carrier n'est associé à ce compte."
     },
     {
-      "source": "No Fortified or Stronghold systems for {0} within {1} ly. Acquire needs one of those in range.",
-      "translation": "Aucun système fortifié ou bastion pour {0} au sein de {1} ly. Acquérir a besoin de l’un de ceux à portée."
+      "source": "No Fortified or Stronghold systems for {0} were found.",
+      "translation": "Aucun système fortifié ou bastion pour {0} n’a été trouvé."
     },
     {
       "source": "No Frontier authorization is waiting for this callback.",
@@ -84325,6 +84365,10 @@
       "translation": "Aucun projet chargé."
     },
     {
+      "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
+      "translation": "Aucun corps débarquable qualifié n'a été trouvé autour d'un partisan d'une Fortification ou d'une Forteresse pour les systèmes de vente vérifiés."
+    },
+    {
       "source": "No reference image is available for this entry.",
       "translation": "Aucune image de référence n’est disponible pour cette entrée."
     },
@@ -84507,6 +84551,10 @@
     {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Il ne reste aucune coordonnée biologique Canonn non filtrée pour ce corps."
+    },
+    {
+      "source": "No unoccupied sell station matches the selected demand, landing pad, and supporter reach.",
+      "translation": "Aucune station de vente inoccupée ne correspond à la demande, à la zone d'atterrissage et à la portée des supporters sélectionnés."
     },
     {
       "source": "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow.",
@@ -91509,6 +91557,10 @@
       "translation": "Afficher tous les systèmes"
     },
     {
+      "source": "Show all bodies",
+      "translation": "Afficher tous les corps"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Afficher tous les boxels de code de masse {0}"
     },
@@ -91575,6 +91627,14 @@
     {
       "source": "Show fewer Systems",
       "translation": "Afficher moins de systèmes"
+    },
+    {
+      "source": "Show fewer bodies",
+      "translation": "Afficher moins de corps"
+    },
+    {
+      "source": "Show fewer stations",
+      "translation": "Afficher moins de stations"
     },
     {
       "source": "Show flight warnings",
@@ -118059,8 +118119,8 @@
       "translation": "Nenhuma transportadora de frota está associada a esta conta."
     },
     {
-      "source": "No Fortified or Stronghold systems for {0} within {1} ly. Acquire needs one of those in range.",
-      "translation": "Nenhum sistema Fortificado ou Fortaleza para {0} dentro de {1}. Adquirir precisa de um daqueles ao alcance."
+      "source": "No Fortified or Stronghold systems for {0} were found.",
+      "translation": "Nenhum sistema Fortificado ou Fortaleza para {0} foi encontrado."
     },
     {
       "source": "No Frontier authorization is waiting for this callback.",
@@ -118535,6 +118595,10 @@
       "translation": "Nenhum projeto carregado."
     },
     {
+      "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
+      "translation": "Nenhum corpo qualificado para desembarque foi encontrado perto de um apoiador de Fortificado ou Fortaleza para os sistemas de venda verificados."
+    },
+    {
       "source": "No reference image is available for this entry.",
       "translation": "Nenhuma imagem de referência está disponível para esta entrada."
     },
@@ -118717,6 +118781,10 @@
     {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Nenhuma coordenada biológica Canonn não filtrada permanece para este corpo."
+    },
+    {
+      "source": "No unoccupied sell station matches the selected demand, landing pad, and supporter reach.",
+      "translation": "Nenhuma estação de venda desocupada corresponde à demanda, área de pouso e alcance de torcedores selecionados."
     },
     {
       "source": "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow.",
@@ -125719,6 +125787,10 @@
       "translation": "Mostrar todos os sistemas"
     },
     {
+      "source": "Show all bodies",
+      "translation": "Mostrar todos os corpos"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Mostrar todos os boxels de código de massa {0}"
     },
@@ -125785,6 +125857,14 @@
     {
       "source": "Show fewer Systems",
       "translation": "Mostrar menos sistemas"
+    },
+    {
+      "source": "Show fewer bodies",
+      "translation": "Mostrar menos corpos"
+    },
+    {
+      "source": "Show fewer stations",
+      "translation": "Mostrar menos estações"
     },
     {
       "source": "Show flight warnings",
@@ -152269,8 +152349,8 @@
       "translation": "С этой учетной записью не связан ни один перевозчик флота."
     },
     {
-      "source": "No Fortified or Stronghold systems for {0} within {1} ly. Acquire needs one of those in range.",
-      "translation": "В пределах {1} нет укрепленных систем или систем крепостей для {0}. Для приобретения необходимо одно из тех, что находятся в пределах досягаемости."
+      "source": "No Fortified or Stronghold systems for {0} were found.",
+      "translation": "Никаких укрепленных систем или систем-крепостей для {0} обнаружено не было."
     },
     {
       "source": "No Frontier authorization is waiting for this callback.",
@@ -152745,6 +152825,10 @@
       "translation": "Ни один проект не загружен."
     },
     {
+      "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
+      "translation": "Рядом с сторонником Укрепления или Крепости для проверенных систем продажи не было обнаружено подходящего для посадки тела."
+    },
+    {
       "source": "No reference image is available for this entry.",
       "translation": "Для этой записи не существует эталонного изображения."
     },
@@ -152927,6 +153011,10 @@
     {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "Для этого тела не осталось нефильтрованных биологических координат Canonn ."
+    },
+    {
+      "source": "No unoccupied sell station matches the selected demand, landing pad, and supporter reach.",
+      "translation": "Ни одна незанятая станция продаж не соответствует выбранному спросу, посадочной площадке и охвату сторонников."
     },
     {
       "source": "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow.",
@@ -159929,6 +160017,10 @@
       "translation": "Показать все системы"
     },
     {
+      "source": "Show all bodies",
+      "translation": "Показать все тела"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "Показать все боксели с массовым кодом {0}"
     },
@@ -159995,6 +160087,14 @@
     {
       "source": "Show fewer Systems",
       "translation": "Показать меньше систем"
+    },
+    {
+      "source": "Show fewer bodies",
+      "translation": "Показать меньше тел"
+    },
+    {
+      "source": "Show fewer stations",
+      "translation": "Показать меньше станций"
     },
     {
       "source": "Show flight warnings",
@@ -186479,8 +186579,8 @@
       "translation": "没有车队承运商与此帐户关联。"
     },
     {
-      "source": "No Fortified or Stronghold systems for {0} within {1} ly. Acquire needs one of those in range.",
-      "translation": "{1} 内没有针对 {0} 的强化或要塞系统。获取需要范围内的其中之一。"
+      "source": "No Fortified or Stronghold systems for {0} were found.",
+      "translation": "未找到 {0} 的强化或要塞系统。"
     },
     {
       "source": "No Frontier authorization is waiting for this callback.",
@@ -186955,6 +187055,10 @@
       "translation": "没有加载项目。"
     },
     {
+      "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
+      "translation": "在检查的销售系统的强化或要塞支持者周围没有发现合格的可登陆机构。"
+    },
+    {
       "source": "No reference image is available for this entry.",
       "translation": "此条目没有可用的参考图像。"
     },
@@ -187137,6 +187241,10 @@
     {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "该机构不存在未过滤的 Canonn 生物坐标。"
+    },
+    {
+      "source": "No unoccupied sell station matches the selected demand, landing pad, and supporter reach.",
+      "translation": "没有空闲的销售站符合选定的需求、登陆平台和支持者范围。"
     },
     {
       "source": "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow.",
@@ -194139,6 +194247,10 @@
       "translation": "显示所有系统"
     },
     {
+      "source": "Show all bodies",
+      "translation": "显示所有尸体"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "显示所有质量代码 {0} 框"
     },
@@ -194205,6 +194317,14 @@
     {
       "source": "Show fewer Systems",
       "translation": "显示更少的系统"
+    },
+    {
+      "source": "Show fewer bodies",
+      "translation": "显示更少的尸体"
+    },
+    {
+      "source": "Show fewer stations",
+      "translation": "显示更少的电台"
     },
     {
       "source": "Show flight warnings",
@@ -220689,8 +220809,8 @@
       "translation": "* NO FLEET CARRIER IS ASSOCIATED WITH THIS ACCOUNT. >>>!"
     },
     {
-      "source": "No Fortified or Stronghold systems for {0} within {1} ly. Acquire needs one of those in range.",
-      "translation": "* NO FORTIFIED OR STRONGHOLD SYSTEMS FOR {0} WITHIN {1} LY. ACQUIRE NEEDS ONE OF THOSE IN RANGE. >>>!"
+      "source": "No Fortified or Stronghold systems for {0} were found.",
+      "translation": "* NO FORTIFIED OR STRONGHOLD SYSTEMS FOR {0} WERE FOUND. >>>!"
     },
     {
       "source": "No Frontier authorization is waiting for this callback.",
@@ -221165,6 +221285,10 @@
       "translation": "* NO PROJECTS LOADED. >>>!"
     },
     {
+      "source": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
+      "translation": "* NO QUALIFYING LANDABLE BODY WAS FOUND AROUND A FORTIFIED OR STRONGHOLD SUPPORTER FOR THE SELL SYSTEMS CHECKED. >>>!"
+    },
+    {
       "source": "No reference image is available for this entry.",
       "translation": "* NO REFERENCE IMAGE IS AVAILABLE FOR THIS ENTRY. >>>!"
     },
@@ -221347,6 +221471,10 @@
     {
       "source": "No unfiltered Canonn biology coordinates remain for this body.",
       "translation": "* NO UNFILTERED CANONN BIOLOGY COORDINATES REMAIN FOR THIS BODY. >>>!"
+    },
+    {
+      "source": "No unoccupied sell station matches the selected demand, landing pad, and supporter reach.",
+      "translation": "* NO UNOCCUPIED SELL STATION MATCHES THE SELECTED DEMAND, LANDING PAD, AND SUPPORTER REACH. >>>!"
     },
     {
       "source": "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow.",
@@ -228349,6 +228477,10 @@
       "translation": "* SHOW ALL SYSTEMS >>>!"
     },
     {
+      "source": "Show all bodies",
+      "translation": "* SHOW ALL BODIES >>>!"
+    },
+    {
       "source": "Show all mass code {0} boxels",
       "translation": "* SHOW ALL MASS CODE {0} BOXELS >>>!"
     },
@@ -228415,6 +228547,14 @@
     {
       "source": "Show fewer Systems",
       "translation": "* SHOW FEWER SYSTEMS >>>!"
+    },
+    {
+      "source": "Show fewer bodies",
+      "translation": "* SHOW FEWER BODIES >>>!"
+    },
+    {
+      "source": "Show fewer stations",
+      "translation": "* SHOW FEWER STATIONS >>>!"
     },
     {
       "source": "Show flight warnings",

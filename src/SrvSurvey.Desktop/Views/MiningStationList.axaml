@@ -7,12 +7,15 @@
     <ItemsControl.ItemTemplate>
       <DataTemplate x:DataType="vm:AcquireStationViewModel">
         <StackPanel Spacing="2" Margin="0,0,0,8">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}">
-            <Run Text="{Binding Name}"/>
-            <Run Text=" ("/>
-            <Run Text="{Binding PadBadge}"/>
-            <Run Text=")"/>
-          </TextBlock>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap">
+              <Run Text="{Binding Name}"/>
+              <Run Text=" ("/>
+              <Run Text="{Binding PadBadge}"/>
+              <Run Text=")"/>
+            </TextBlock>
+            <Button Grid.Column="1" Classes="link" Content="{Binding ToggleLabel, ElementName=StationList}" Command="{Binding ToggleCommand, ElementName=StationList}" IsVisible="{Binding CanToggle}" Padding="2,0" VerticalAlignment="Top"/>
+          </Grid>
           <TextBlock Text="{Binding Arrival}" Foreground="{DynamicResource RavenMutedTextBrush}" FontSize="12"/>
           <TextBlock Text="{Binding Updated}" IsVisible="{Binding HasUpdated}" Foreground="{DynamicResource RavenMutedTextBrush}" FontSize="12" FontStyle="Italic"/>
           <ItemsControl ItemsSource="{Binding Quotes}">

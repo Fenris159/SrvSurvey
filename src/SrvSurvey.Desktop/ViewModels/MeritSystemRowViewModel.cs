@@ -59,6 +59,8 @@ public sealed record AcquireStationViewModel(
     IReadOnlyList<AcquireQuoteViewModel> Quotes
 )
 {
+    public bool CanToggle { get; init; }
+
     public bool HasUpdated => Updated.Length > 0;
 
     public string PadBadge => Pad == "Small / medium pads" ? "S/M" : Pad;

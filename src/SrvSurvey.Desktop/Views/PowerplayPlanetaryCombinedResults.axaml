@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.PowerplayPlanetaryCombinedResults" x:DataType="vm:SurfaceMiningSearchViewModel">
+  <StackPanel MinWidth="1280">
+    <Grid IsVisible="{Binding HasRows}" ColumnDefinitions="16*,72,28*,30*,14*,12*">
+      <Border Classes="acquire-header first"><TextBlock Text="System"/></Border>
+      <Border Grid.Column="1" Classes="acquire-header"><Button Classes="link" Padding="0" Command="{Binding SellDistanceSortCommand}"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Text="DST"/><TextBlock Text="{Binding SellDistanceSortIndicator}"/></StackPanel></Button></Border>
+      <Border Grid.Column="2" Classes="acquire-header"><Button Classes="link" Padding="0" Command="{Binding BestStationSortCommand}"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Text="Best Sell Station"/><TextBlock Text="{Binding BestStationSortIndicator}"/></StackPanel></Button></Border>
+      <Border Grid.Column="3" Classes="acquire-header"><TextBlock Text="Body Details"/></Border>
+      <Border Grid.Column="4" Classes="acquire-header"><TextBlock Text="State"/></Border>
+      <Border Grid.Column="5" Classes="acquire-header"><TextBlock Text="Power"/></Border>
+    </Grid>
+    <ItemsControl ItemsSource="{Binding Rows}" IsVisible="{Binding HasRows}" HorizontalAlignment="Stretch">
+      <ItemsControl.Styles><Style Selector="ContentPresenter"><Setter Property="HorizontalAlignment" Value="Stretch"/></Style></ItemsControl.Styles>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:SurfaceSellRowViewModel">
+          <Grid ColumnDefinitions="16*,72,28*,30*,14*,12*">
+            <Border Classes="acquire-cell"><Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Top" behaviors:ClipboardCopyBehavior.Text="{Binding Target}"><TextBlock Text="{Binding Target}" TextWrapping="Wrap"/></Button></Border>
+            <Border Grid.Column="1" Classes="acquire-cell"><TextBlock Text="{Binding Distance}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Top"/></Border>
+            <Border Grid.Column="2" Classes="acquire-cell" Padding="0"><views:MiningStationList Stations="{Binding VisibleStations}" ToggleCommand="{Binding ToggleStationsCommand}" ToggleLabel="{Binding StationToggleLabel}"/></Border>
+            <Border Grid.Column="3" Classes="acquire-cell">
+              <StackPanel>
+                <ItemsControl ItemsSource="{Binding VisibleBodyLines}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SurfaceBodyLine">
+                      <StackPanel Margin="0,0,0,3">
+                        <ItemsControl ItemsSource="{Binding Tags}">
+                          <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                          <ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:SurfaceBodyTag"><Border Classes="commodity-code" Classes.matched="{Binding MatchesStation}" Classes.extra="{Binding IsExtraMaterial}" Margin="0,0,4,2"><TextBlock Text="{Binding Code}"/></Border></DataTemplate></ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding Details}" TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Classes="link" HorizontalAlignment="Left" Content="{Binding BodyToggleLabel}" Command="{Binding ToggleBodiesCommand}" IsVisible="{Binding HasAdditionalBodies}"/>
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="4" Classes="acquire-cell"><StackPanel VerticalAlignment="Top"><TextBlock Text="{Binding PowerState}" TextWrapping="Wrap"/><TextBlock Text="{Binding FactionState}" TextWrapping="Wrap"/></StackPanel></Border>
+            <Border Grid.Column="5" Classes="acquire-cell"><TextBlock Text="{Binding Powers}" TextWrapping="Wrap" VerticalAlignment="Top"/></Border>
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+</UserControl>

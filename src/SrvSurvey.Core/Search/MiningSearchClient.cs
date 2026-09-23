@@ -49,7 +49,10 @@ public sealed record MiningRingQuery(
     bool SystemOnly = false,
     IReadOnlyList<string>? Minerals = null,
     IReadOnlyList<string>? SystemNames = null
-);
+)
+{
+    public bool GalaxyWide { get; init; }
+}
 
 public sealed record MiningRingPage(IReadOnlyList<MiningRing> Rings, bool HasMore);
 
@@ -128,7 +131,10 @@ public sealed record MiningSystemQuery(
     long MinimumPopulation = 0,
     int Page = 0,
     string Objective = ""
-);
+)
+{
+    public bool GalaxyWide { get; init; }
+}
 
 public sealed record MiningSystemResult(
     string System,
@@ -318,7 +324,7 @@ public sealed class MiningSearchClient
         CancellationToken cancellationToken = default
     )
     {
-        Dictionary<string, object> filters = DistanceFilter(query.Radius);
+        Dictionary<string, object> filters = InitialFilters(query.Radius, query.GalaxyWide);
         if (query.SystemNames is { Count: > 0 })
         {
             filters[SystemNameField] = new { value = query.SystemNames.ToArray() };
@@ -704,9 +710,21 @@ public sealed class MiningSearchClient
         string system,
         TimeSpan maximumAge,
         CancellationToken cancellationToken = default
+    ) =>
+        await FindSystemImportsAsync(
+                system,
+                new MiningMarketQuery(system, "Any", false, MaximumAge: maximumAge),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+    public async Task<IReadOnlyList<MiningMarketResult>> FindSystemImportsAsync(
+        string system,
+        MiningMarketQuery query,
+        CancellationToken cancellationToken = default
     )
     {
-        int maximumDays = Math.Clamp((int)Math.Ceiling(maximumAge.TotalDays), 1, 3650);
+        int maximumDays = Math.Clamp((int)Math.Ceiling(MarketAge(query).TotalDays), 1, 3650);
         using JsonDocument document = await ardent
             .GetAsync(
                 ArdentRoutes.SystemImports(system, maximumDays),
@@ -720,7 +738,6 @@ public sealed class MiningSearchClient
             return [];
         }
 
-        var query = new MiningMarketQuery(system, "Any", false, MaximumAge: maximumAge);
         return document
             .RootElement.EnumerateArray()
             .Select(item => ReadArdentMarket(item, query))
@@ -1383,7 +1400,7 @@ public sealed class MiningSearchClient
         CancellationToken cancellationToken = default
     )
     {
-        Dictionary<string, object> filters = DistanceFilter(query.Radius);
+        Dictionary<string, object> filters = query.GalaxyWide ? [] : DistanceFilter(query.Radius);
         PowerplaySpanshQuery spanshQuery = PowerplayPlan.SpanshFilter(query.Objective, query.PowerState);
         foreach (
             (string? name, string? value, bool array) in new[]
@@ -1622,6 +1639,9 @@ public sealed class MiningSearchClient
 
         return new() { [DistanceField] = new { min = 0, max = radius } };
     }
+
+    private static Dictionary<string, object> InitialFilters(double radius, bool galaxyWide) =>
+        galaxyWide ? [] : DistanceFilter(radius);
 
     private static IEnumerable<JsonElement> Results(JsonDocument document) =>
         MiningJson.Array(document.RootElement, "results");

@@ -432,11 +432,20 @@ public sealed class MiningWorkspacePresentationTests
             Assert.NotNull(powerplay.FindControl<ItemsControl>("PowerplayResults"));
             model.MiningWorkspace.Search.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
             using WriteableBitmap? planetaryFrame = window.CaptureRenderedFrame();
-            SurfaceMiningSplitResults planetaryResults = Assert.Single(
-                powerplay.GetVisualDescendants().OfType<SurfaceMiningSplitResults>(),
+            PowerplayPlanetaryCombinedResults planetaryResults = Assert.Single(
+                powerplay.GetVisualDescendants().OfType<PowerplayPlanetaryCombinedResults>(),
                 candidate => candidate.IsEffectivelyVisible
             );
             Assert.Same(model.MiningWorkspace.Search.PlanetarySearch, planetaryResults.DataContext);
+            model.MiningWorkspace.Search.Objective = "Acquire";
+            using WriteableBitmap? acquireFrame = window.CaptureRenderedFrame();
+            PowerplayPlanetaryAcquireResults acquireResults = Assert.Single(
+                powerplay.GetVisualDescendants().OfType<PowerplayPlanetaryAcquireResults>(),
+                candidate => candidate.IsEffectivelyVisible
+            );
+            Assert.Same(model.MiningWorkspace.Search.PlanetarySearch, acquireResults.DataContext);
+            Assert.False(powerplay.FindControl<Slider>("PowerplayDistanceSlider")!.IsEnabled);
+            Assert.Equal(10, powerplay.FindControl<Slider>("PowerplayResultsSlider")!.Maximum);
             Assert.DoesNotContain(
                 powerplay.GetVisualDescendants().OfType<TextBlock>(),
                 text => text.IsEffectivelyVisible && text.Text == "Reserve level"

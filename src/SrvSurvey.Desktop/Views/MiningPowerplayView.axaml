@@ -17,14 +17,14 @@
       <StackPanel Grid.Column="1" Spacing="4">
         <TextBlock Text="Distance"/>
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-          <Slider Minimum="1" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Search.Radius}"/>
+          <Slider x:Name="PowerplayDistanceSlider" Minimum="1" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" IsEnabled="{Binding Search.CanChooseDistance}" Value="{Binding Search.Radius}"/>
           <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="52" Text="{Binding Search.Radius, StringFormat={}{0:0} ly}"/>
         </Grid>
       </StackPanel>
       <StackPanel Grid.Column="2" Spacing="4">
         <TextBlock Text="Search results"/>
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-          <Slider Minimum="1" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Search.ResultLimit}"/>
+          <Slider x:Name="PowerplayResultsSlider" Minimum="1" Maximum="{Binding Search.MaximumResultLimit}" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Search.ResultLimit}"/>
           <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="28" Text="{Binding Search.ResultLimit, StringFormat={}{0:0}}"/>
         </Grid>
       </StackPanel>
@@ -107,8 +107,11 @@
 
     <ScrollViewer x:Name="ResultsScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
       <StackPanel x:Name="ResultsTable" MinWidth="1280">
-          <Grid IsVisible="{Binding Search.IsPlanetaryMining}">
-            <views:SurfaceMiningSplitResults DataContext="{Binding Search.PlanetarySearch}"/>
+          <Grid IsVisible="{Binding Search.IsPlanetaryAcquire}">
+            <views:PowerplayPlanetaryAcquireResults DataContext="{Binding Search.PlanetarySearch}"/>
+          </Grid>
+          <Grid IsVisible="{Binding Search.IsPlanetaryCombined}">
+            <views:PowerplayPlanetaryCombinedResults DataContext="{Binding Search.PlanetarySearch}"/>
           </Grid>
           <Grid IsVisible="{Binding Search.HasAcquireRows}" ColumnDefinitions="42*,4*,54*">
             <Grid ColumnDefinitions="20*,20*,10*,48*">

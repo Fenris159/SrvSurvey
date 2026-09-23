@@ -6281,7 +6281,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SurfaceMiningSplitResults.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayPlanetaryAcquireResults.axaml"
   },
   {
     "Text": "Beta",
@@ -7029,7 +7029,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SurfaceMiningSplitResults.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayPlanetaryAcquireResults.axaml"
   },
   {
     "Text": "Body Protectorate",
@@ -30952,7 +30952,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "No Fortified or Stronghold systems for {0} within {1} ly. Acquire needs one of those in range.",
+    "Text": "No Fortified or Stronghold systems for {0} were found.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -31904,6 +31904,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "No reference image is available for this entry.",
     "IsFormat": false,
     "SourceKinds": [
@@ -32078,7 +32086,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
@@ -32271,6 +32279,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PriorScansOverlayViewModel.cs"
+  },
+  {
+    "Text": "No unoccupied sell station matches the selected demand, landing pad, and supporter reach.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow.",
@@ -45247,7 +45263,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SurfaceMiningSplitResults.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayPlanetaryAcquireResults.axaml"
   },
   {
     "Text": "Sell mined cargo",
@@ -46311,6 +46327,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
+    "Text": "Show all bodies",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
     "Text": "Show all mass code {0} boxels",
     "IsFormat": true,
     "SourceKinds": [
@@ -46440,6 +46464,22 @@
   },
   {
     "Text": "Show fewer Systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Show fewer bodies",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Show fewer stations",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
