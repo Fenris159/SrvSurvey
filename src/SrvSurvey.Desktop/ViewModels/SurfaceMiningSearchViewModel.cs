@@ -211,6 +211,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     private const string RequestFailed = "Request failed. Try again.";
     private readonly MiningSearchClient client;
+    private readonly int maximumResults;
     private CancellationTokenSource? pending;
     private string reference = "";
     private string currentSystem = "";
@@ -225,10 +226,11 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     private bool nearestFirst = true;
     private IReadOnlyList<SurfaceSellRowViewModel> rows = [];
 
-    public SurfaceMiningSearchViewModel(MiningSearchClient client)
+    public SurfaceMiningSearchViewModel(MiningSearchClient client, int maximumResults = 5)
     {
         this.client = client;
-        SearchCommand = new WorkspaceCommand(() => _ = SearchAsync());
+        this.maximumResults = maximumResults;
+        SearchCommand = new WorkspaceCommand(() => _ = SearchAsync(CancellationToken.None));
         CancelCommand = new WorkspaceCommand(Cancel);
         DistanceSortCommand = new WorkspaceCommand(ToggleDistanceSort);
     }
@@ -297,8 +299,23 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     public int ResultLimit
     {
         get => resultLimit;
-        set => Set(ref resultLimit, Math.Clamp(value, 1, 5));
+        set => Set(ref resultLimit, Math.Clamp(value, 1, maximumResults));
     }
+
+    public TimeSpan? MaximumAge { get; set; } = TimeSpan.FromDays(2);
+
+    public IReadOnlyList<string> BodyControllingPowers { get; set; } = [];
+
+    public string BodyPowerState { get; set; } = "";
+
+    public string NoSellStationsMessage { get; set; } =
+        "No sell station matches the selected material, demand, and landing pad within the distance.";
+
+    public Func<
+        IReadOnlyList<string>,
+        CancellationToken,
+        Task<IReadOnlySet<string>>
+    >? EligibleSellSystemsAsync { get; set; }
 
     public string PadSize
     {
@@ -386,8 +403,12 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     material,
                     false,
                     Radius,
+                    MaximumAgeDays: MaximumAge is null
+                        ? 3650
+                        : Math.Clamp((int)Math.Ceiling(MaximumAge.Value.TotalDays), 1, 3650),
                     MinimumDemand: MinimumDemand,
                     MaximumDemand: MaximumDemand,
+                    MaximumAge: MaximumAge,
                     PadSize: PadSize
                 ),
                 token
@@ -401,7 +422,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         SurfaceStationCandidate[] candidates = CandidatesFor(quotes, materials, catalogOrder);
         if (candidates.Length == 0)
         {
-            return "No sell station matches the selected material, demand, and landing pad within the distance.";
+            return NoSellStationsMessage;
         }
 
         SurfaceRankedSearch search = await RankStationsAsync(
@@ -497,6 +518,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     )
     {
         var bodyCache = new Dictionary<string, SurfaceBodySearch>(StringComparer.OrdinalIgnoreCase);
+        var sellSystemEligibility = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         var ranked = new List<SurfaceSellRowViewModel>();
         var selectedStations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         for (int index = 0; index < candidates.Length; index++)
@@ -504,6 +526,11 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             token.ThrowIfCancellationRequested();
             Status = $"Checking sell systems {index + 1}/{candidates.Length}…";
             SurfaceStationCandidate candidate = candidates[index];
+            if (!await IsEligibleSellSystemAsync(candidates, index, sellSystemEligibility, token))
+            {
+                continue;
+            }
+
             string stationKey = candidate.Anchor.System + "\u001f" + candidate.Anchor.Station;
             if (selectedStations.Contains(stationKey))
             {
@@ -546,6 +573,52 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         }
 
         return new SurfaceRankedSearch(ranked);
+    }
+
+    private async Task<bool> IsEligibleSellSystemAsync(
+        SurfaceStationCandidate[] candidates,
+        int index,
+        Dictionary<string, bool> eligibility,
+        CancellationToken token
+    )
+    {
+        if (EligibleSellSystemsAsync is null)
+        {
+            return true;
+        }
+
+        string system = candidates[index].Anchor.System;
+        if (!eligibility.TryGetValue(system, out bool eligible))
+        {
+            await CheckSellSystemsAsync(candidates, index, eligibility, token);
+            eligible = eligibility[system];
+        }
+
+        return eligible;
+    }
+
+    private async Task CheckSellSystemsAsync(
+        SurfaceStationCandidate[] candidates,
+        int start,
+        Dictionary<string, bool> eligibility,
+        CancellationToken token
+    )
+    {
+        SurfaceStationCandidate[] batch = candidates
+            .Skip(start)
+            .Where(candidate => !eligibility.ContainsKey(candidate.Anchor.System))
+            .DistinctBy(candidate => candidate.Anchor.System, StringComparer.OrdinalIgnoreCase)
+            .Take(50)
+            .ToArray();
+        Status = "Checking sell-system eligibility…";
+        IReadOnlySet<string> names = await EligibleSellSystemsAsync!(
+            batch.Select(candidate => candidate.Anchor.System).ToArray(),
+            token
+        );
+        foreach (string system in batch.Select(candidate => candidate.Anchor.System))
+        {
+            eligibility[system] = names.Contains(system);
+        }
     }
 
     private async Task<SurfaceSellRowViewModel?> DescribeCandidateAsync(
@@ -640,10 +713,10 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             || (index + 1 < candidates.Count && candidates[index + 1].Anchor.Price < ranked[^1].BestViablePrice)
         );
 
-    public async Task SearchAsync()
+    public async Task SearchAsync(CancellationToken cancellationToken = default)
     {
         CancellationTokenSource? previous = pending;
-        using var current = new CancellationTokenSource();
+        using var current = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         pending = current;
         IsBusy = true;
         Status = "Searching…";
@@ -719,7 +792,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         {
             IReadOnlyList<MiningMarketResult> imports = await client.FindSystemImportsAsync(
                 best.System,
-                TimeSpan.FromDays(2),
+                MaximumAge ?? TimeSpan.FromDays(3650),
                 token
             );
             stationQuotes.AddRange(
@@ -779,6 +852,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     criteria.LandmarkSubtypes,
                     "",
                     Radius,
+                    BodyControllingPowers,
+                    BodyPowerState,
                     Page: page,
                     VolcanismTypes: criteria.VolcanismTypes
                 ),
@@ -844,7 +919,11 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             )
             .OfType<SurfaceBodyMatch>()
             .ToArray();
+        SurfaceBodyMatch[] systemRepresentatives = eligible
+            .DistinctBy(match => match.Body.System, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         return representatives
+            .Concat(systemRepresentatives)
             .Concat(eligible)
             .DistinctBy(match => match.Body.System + "\u001f" + match.Body.Body, StringComparer.OrdinalIgnoreCase)
             .Take(30)

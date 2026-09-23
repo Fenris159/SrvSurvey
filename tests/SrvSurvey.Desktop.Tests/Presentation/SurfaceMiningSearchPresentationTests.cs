@@ -43,9 +43,10 @@ public sealed class SurfaceMiningSearchPresentationTests
         {
             window.Show();
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
-            Grid header = view.FindControl<Grid>("SurfaceSearchSplitHeader")!;
+            SurfaceMiningSplitResults split = view.FindControl<SurfaceMiningSplitResults>("SurfaceSearchSplitResults")!;
+            Grid header = split.FindControl<Grid>("SplitHeader")!;
             ScrollViewer results = view.FindControl<ScrollViewer>("SurfaceSearchResultsScroller")!;
-            StackPanel table = view.FindControl<StackPanel>("SurfaceSearchResultsTable")!;
+            StackPanel table = split.ResultsTableControl;
             AcquireSplitRow row = Assert.Single(view.GetVisualDescendants().OfType<AcquireSplitRow>());
             Grid rowGrid = Assert.IsType<Grid>(row.Content);
             Grid sellHeader = Assert.IsType<Grid>(header.Children[0]);

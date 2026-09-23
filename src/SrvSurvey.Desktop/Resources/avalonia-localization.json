@@ -4717,6 +4717,10 @@
       "translation": "Überprüfung der Verkaufssysteme {0}/{1}…"
     },
     {
+      "source": "Checking sell-system eligibility…",
+      "translation": "Prüfung der Berechtigung zum Verkaufssystem …"
+    },
+    {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
       "translation": "Überprüfung, ob vor dem Update eine weitere SrvSurvey-Instanz geschlossen werden muss."
     },
@@ -4823,10 +4827,6 @@
     {
       "source": "Choose a PNG background image before saving a new map draft.",
       "translation": "Wählen Sie ein PNG-Hintergrundbild, bevor Sie einen neuen Kartenentwurf speichern."
-    },
-    {
-      "source": "Choose a Surface Hunt material.",
-      "translation": "Wählen Sie ein Surface Hunt-Material."
     },
     {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
@@ -12909,10 +12909,6 @@
       "translation": "Landbar"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
-      "translation": "Landbare Planeten für {0} innerhalb der {1}-Linie von {2}.{3}"
-    },
-    {
       "source": "Landing pad",
       "translation": "Landeplatz"
     },
@@ -15995,6 +15991,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Keine Verkaufsstation verfügt in der Entfernung über einen entsprechenden Tagebaustandort."
+    },
+    {
+      "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
+      "translation": "Keine Verkaufsstation entspricht dem ausgewählten Powerplay-Ziel, der Leistung, dem Zustand, der Nachfrage und dem Landeplatz innerhalb der Entfernung."
     },
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
@@ -38927,6 +38927,10 @@
       "translation": "Comprobando los sistemas de venta {0}/{1}…"
     },
     {
+      "source": "Checking sell-system eligibility…",
+      "translation": "Comprobando la elegibilidad del sistema de venta..."
+    },
+    {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
       "translation": "Comprobando si otra instancia SrvSurvey debe cerrarse antes de la actualización."
     },
@@ -39033,10 +39037,6 @@
     {
       "source": "Choose a PNG background image before saving a new map draft.",
       "translation": "Elija una imagen de fondo PNG antes de guardar un nuevo borrador de mapa."
-    },
-    {
-      "source": "Choose a Surface Hunt material.",
-      "translation": "Elija un material de Surface Hunt."
     },
     {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
@@ -47119,10 +47119,6 @@
       "translation": "Aterrizable"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
-      "translation": "Planetas aterrizables para {0} dentro de {1} ly de {2}.{3}"
-    },
-    {
       "source": "Landing pad",
       "translation": "Pista de aterrizaje"
     },
@@ -50205,6 +50201,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Ninguna estación de venta tiene un cuerpo de minería a cielo abierto correspondiente en la distancia."
+    },
+    {
+      "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
+      "translation": "Ninguna estación de venta coincide con el objetivo, la potencia, el estado, la demanda y la plataforma de aterrizaje de Powerplay seleccionados dentro de la distancia."
     },
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
@@ -73137,6 +73137,10 @@
       "translation": "Vérification des systèmes de vente {0}/{1}…"
     },
     {
+      "source": "Checking sell-system eligibility…",
+      "translation": "Vérification de l'éligibilité du système de vente…"
+    },
+    {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
       "translation": "Vérifier si une autre instance SrvSurvey doit se fermer avant la mise à jour."
     },
@@ -73243,10 +73247,6 @@
     {
       "source": "Choose a PNG background image before saving a new map draft.",
       "translation": "Choisissez une image d’arrière-plan PNG avant d’enregistrer un nouveau brouillon de carte."
-    },
-    {
-      "source": "Choose a Surface Hunt material.",
-      "translation": "Choisissez un matériau Surface Hunt."
     },
     {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
@@ -81329,10 +81329,6 @@
       "translation": "Atterrissable"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
-      "translation": "Planètes atterrissables pour {0} dans {1} à proximité de {2}.{3}"
-    },
-    {
       "source": "Landing pad",
       "translation": "Aire d'atterrissage"
     },
@@ -84415,6 +84411,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Aucune station de vente ne dispose d'un organisme minier à ciel ouvert correspondant à distance."
+    },
+    {
+      "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
+      "translation": "Aucune station de vente ne correspond à l'objectif, à la puissance, à l'état, à la demande et à l'aire d'atterrissage sélectionnés à distance."
     },
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
@@ -107347,6 +107347,10 @@
       "translation": "Verificando sistemas de venda {0}/{1}…"
     },
     {
+      "source": "Checking sell-system eligibility…",
+      "translation": "Verificando a elegibilidade do sistema de vendas…"
+    },
+    {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
       "translation": "Verificando se outra instância SrvSurvey deve ser fechada antes da atualização."
     },
@@ -107453,10 +107457,6 @@
     {
       "source": "Choose a PNG background image before saving a new map draft.",
       "translation": "Escolha uma imagem de fundo PNG antes de salvar um novo rascunho de mapa."
-    },
-    {
-      "source": "Choose a Surface Hunt material.",
-      "translation": "Escolha um material Surface Hunt."
     },
     {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
@@ -115539,10 +115539,6 @@
       "translation": "Landable"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
-      "translation": "Planetas pousáveis ​​para {0} dentro de {1} ano de {2}.{3}"
-    },
-    {
       "source": "Landing pad",
       "translation": "Plataforma de pouso"
     },
@@ -118625,6 +118621,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Nenhuma estação de venda possui um corpo de mineração de superfície correspondente à distância."
+    },
+    {
+      "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
+      "translation": "Nenhuma estação de venda corresponde ao objetivo, potência, estado, demanda e plataforma de pouso selecionados do Powerplay dentro da distância."
     },
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
@@ -141557,6 +141557,10 @@
       "translation": "Проверка систем продаж {0}/{1}…"
     },
     {
+      "source": "Checking sell-system eligibility…",
+      "translation": "Проверка соответствия системе продаж…"
+    },
+    {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
       "translation": "Проверка того, должен ли закрыться другой экземпляр SrvSurvey перед обновлением."
     },
@@ -141663,10 +141667,6 @@
     {
       "source": "Choose a PNG background image before saving a new map draft.",
       "translation": "Прежде чем сохранять новый черновик карты, выберите фоновое изображение PNG."
-    },
-    {
-      "source": "Choose a Surface Hunt material.",
-      "translation": "Выберите материал Surface Hunt."
     },
     {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
@@ -149749,10 +149749,6 @@
       "translation": "Пригодный для посадки"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
-      "translation": "Планеты, пригодные для посадки для {0} в пределах {1} от {2}.{3}"
-    },
-    {
       "source": "Landing pad",
       "translation": "Посадочная площадка"
     },
@@ -152835,6 +152831,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Ни одна станция продаж не имеет поблизости соответствующего объекта для открытых горных работ."
+    },
+    {
+      "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
+      "translation": "Ни одна станция продаж не соответствует выбранной цели Powerplay, силе, состоянию, спросу и посадочной площадке на расстоянии."
     },
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
@@ -175767,6 +175767,10 @@
       "translation": "正在检查销售系统 {0}/{1}…"
     },
     {
+      "source": "Checking sell-system eligibility…",
+      "translation": "检查销售系统资格..."
+    },
+    {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
       "translation": "检查更新之前是否必须关闭另一个 SrvSurvey 实例。"
     },
@@ -175873,10 +175877,6 @@
     {
       "source": "Choose a PNG background image before saving a new map draft.",
       "translation": "在保存新地图草稿之前选择 PNG 背景图像。"
-    },
-    {
-      "source": "Choose a Surface Hunt material.",
-      "translation": "选择 Surface Hunt 材质。"
     },
     {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
@@ -183959,10 +183959,6 @@
       "translation": "可登陆"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
-      "translation": "{0} 的可登陆行星位于 {2}.{3} 内的 {1} ly"
-    },
-    {
       "source": "Landing pad",
       "translation": "停机坪"
     },
@@ -187045,6 +187041,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "附近没有销售站有匹配的露天采矿体。"
+    },
+    {
+      "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
+      "translation": "距离内没有与所选 Powerplay 目标、功率、状态、需求和着陆场相匹配的销售站。"
     },
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
@@ -209977,6 +209977,10 @@
       "translation": "* CHECKING SELL SYSTEMS {0}/{1}… >>>!"
     },
     {
+      "source": "Checking sell-system eligibility…",
+      "translation": "* CHECKING SELL-SYSTEM ELIGIBILITY… >>>!"
+    },
+    {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
       "translation": "* CHECKING WHETHER ANOTHER SRVSURVEY INSTANCE MUST CLOSE BEFORE THE UPDATE. >>>!"
     },
@@ -210083,10 +210087,6 @@
     {
       "source": "Choose a PNG background image before saving a new map draft.",
       "translation": "* CHOOSE A PNG BACKGROUND IMAGE BEFORE SAVING A NEW MAP DRAFT. >>>!"
-    },
-    {
-      "source": "Choose a Surface Hunt material.",
-      "translation": "* CHOOSE A SURFACE HUNT MATERIAL. >>>!"
     },
     {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
@@ -218169,10 +218169,6 @@
       "translation": "* LANDABLE >>>!"
     },
     {
-      "source": "Landable planets for {0} within {1} ly of {2}.{3}",
-      "translation": "* LANDABLE PLANETS FOR {0} WITHIN {1} LY OF {2}.{3} >>>!"
-    },
-    {
       "source": "Landing pad",
       "translation": "* LANDING PAD >>>!"
     },
@@ -221255,6 +221251,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "* NO SELL STATION HAS A MATCHING SURFACE MINING BODY WITHIN THE DISTANCE. >>>!"
+    },
+    {
+      "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
+      "translation": "* NO SELL STATION MATCHES THE SELECTED POWERPLAY GOAL, POWER, STATE, DEMAND, AND LANDING PAD WITHIN THE DISTANCE. >>>!"
     },
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",

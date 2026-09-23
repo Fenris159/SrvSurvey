@@ -1,0 +1,112 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:views="using:SrvSurvey.Desktop.Views" x:Class="SrvSurvey.Desktop.Views.SurfaceMiningSplitResults" x:DataType="vm:SurfaceMiningSearchViewModel">
+              <StackPanel x:Name="ResultsTable" MinWidth="1280" Grid.IsSharedSizeScope="True">
+                <Grid x:Name="SplitHeader" IsVisible="{Binding HasRows}" ColumnDefinitions="42*,4*,54*">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="22*"/>
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceSearchSellDistance"/>
+                      <ColumnDefinition Width="62*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Classes="acquire-header first"><TextBlock Text="Sell System"/></Border>
+                    <Border Grid.Column="1" Classes="acquire-header"><TextBlock Text="DST REF"/></Border>
+                    <Border Grid.Column="2" Classes="acquire-header"><TextBlock Text="Best Sell Station"/></Border>
+                  </Grid>
+                  <Grid Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="24*"/>
+                      <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceSearchMiningDistance"/>
+                      <ColumnDefinition Width="60*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Classes="acquire-header first"><TextBlock Text="Mining System"/></Border>
+                    <Border Grid.Column="1" Classes="acquire-header">
+                      <Button Classes="link" Padding="0" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding DistanceSortCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                          <TextBlock Text="DST SELL" Foreground="{DynamicResource RavenAccentBrush}"/>
+                          <TextBlock Text="{Binding DistanceSortIndicator}" Foreground="{DynamicResource RavenAccentBrush}"/>
+                        </StackPanel>
+                      </Button>
+                    </Border>
+                    <Border Grid.Column="2" Classes="acquire-header"><TextBlock Text="Body Details"/></Border>
+                  </Grid>
+                </Grid>
+                <ItemsControl x:Name="SplitResults" ItemsSource="{Binding Rows}" IsVisible="{Binding HasRows}" HorizontalAlignment="Stretch">
+                  <ItemsControl.Styles>
+                    <Style Selector="ContentPresenter">
+                      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    </Style>
+                  </ItemsControl.Styles>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SurfaceSellRowViewModel">
+                      <StackPanel>
+                        <views:AcquireSplitRow Lines="{Binding VisibleSystems}" LockColumnWidths="True">
+                          <views:AcquireSplitRow.TargetTemplate>
+                            <DataTemplate x:DataType="vm:SurfaceSellRowViewModel">
+                              <Grid>
+                                <Grid.ColumnDefinitions>
+                                  <ColumnDefinition Width="22*"/>
+                                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceSearchSellDistance"/>
+                                  <ColumnDefinition Width="62*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Classes="acquire-cell">
+                                  <Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Top" behaviors:ClipboardCopyBehavior.Text="{Binding Target}">
+                                    <TextBlock Text="{Binding Target}" TextWrapping="Wrap"/>
+                                  </Button>
+                                </Border>
+                                <Border Grid.Column="1" Classes="acquire-cell"><TextBlock Text="{Binding Distance}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Top"/></Border>
+                                <Border Grid.Column="2" Classes="acquire-cell" Padding="0"><views:MiningStationList Stations="{Binding Stations}"/></Border>
+                              </Grid>
+                            </DataTemplate>
+                          </views:AcquireSplitRow.TargetTemplate>
+                          <views:AcquireSplitRow.LineTemplate>
+                            <DataTemplate x:DataType="vm:SurfaceMiningSystemRowViewModel">
+                              <Grid>
+                                <Grid.ColumnDefinitions>
+                                  <ColumnDefinition Width="24*"/>
+                                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceSearchMiningDistance"/>
+                                  <ColumnDefinition Width="60*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Classes="acquire-cell">
+                                  <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Top">
+                                    <Button Classes="link" Width="18" Padding="0" FontSize="16" Content="{Binding Chevron}" Command="{Binding ToggleCommand}" IsVisible="{Binding HasAdditionalBodies}"/>
+                                    <Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Center" behaviors:ClipboardCopyBehavior.Text="{Binding System}">
+                                      <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
+                                    </Button>
+                                  </StackPanel>
+                                </Border>
+                                <Border Grid.Column="1" Classes="acquire-cell"><TextBlock Text="{Binding Distance}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Top"/></Border>
+                                <Border Grid.Column="2" Classes="acquire-cell">
+                                  <ItemsControl ItemsSource="{Binding VisibleBodies}">
+                                    <ItemsControl.ItemTemplate>
+                                      <DataTemplate x:DataType="vm:SurfaceBodyLine">
+                                        <StackPanel Margin="0,0,0,3">
+                                          <ItemsControl ItemsSource="{Binding Tags}">
+                                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                              <DataTemplate x:DataType="vm:SurfaceBodyTag">
+                                                <Border Classes="commodity-code" Classes.matched="{Binding MatchesStation}" Classes.extra="{Binding IsExtraMaterial}" Margin="0,0,4,2">
+                                                  <TextBlock Text="{Binding Code}"/>
+                                                </Border>
+                                              </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                          </ItemsControl>
+                                          <TextBlock Text="{Binding Details}" TextWrapping="Wrap" Foreground="{DynamicResource RavenTextBrush}"/>
+                                        </StackPanel>
+                                      </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                  </ItemsControl>
+                                </Border>
+                              </Grid>
+                            </DataTemplate>
+                          </views:AcquireSplitRow.LineTemplate>
+                        </views:AcquireSplitRow>
+                        <Grid IsVisible="{Binding HasAdditionalSystems}" ColumnDefinitions="42*,4*,54*">
+                          <Border Grid.Column="2" Classes="acquire-cell" Background="{DynamicResource RavenSurfaceBrush}" BorderThickness="1,0,1,1">
+                            <Button Classes="link" HorizontalAlignment="Left" Content="{Binding ShowAllLabel}" Command="{Binding ToggleAllCommand}"/>
+                          </Border>
+                        </Grid>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+</UserControl>

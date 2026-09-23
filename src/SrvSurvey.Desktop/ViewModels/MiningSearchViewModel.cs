@@ -29,6 +29,8 @@ public sealed class MiningSearchViewModel(
     private const string HotspotRing = "Hotspots";
     private const string WithoutHotspotsRing = "Without Hotspots";
     private const string IdleStatus = "Choose a reference system to search.";
+    private bool planetaryStatusHooked;
+    public SurfaceMiningSearchViewModel PlanetarySearch { get; } = new(client, 100);
     private CancellationTokenSource? pending;
     private string status = IdleStatus;
     private MiningSearchPreferences options = new();
@@ -651,7 +653,7 @@ public sealed class MiningSearchViewModel(
         }
     }
     public bool HasAcquireRows => AcquireRows.Count > 0;
-    public bool HasMeritRows => !HasAcquireRows && meritRows.Count > 0;
+    public bool HasMeritRows => !IsPlanetaryMining && !HasAcquireRows && meritRows.Count > 0;
     public bool ShowMeritRows => !HasAcquireRows;
     public IReadOnlyList<MeritSystemRowViewModel> MeritRows
     {
@@ -1694,101 +1696,87 @@ public sealed class MiningSearchViewModel(
 
     private async Task PublishPlanetaryRowsAsync(CancellationToken token)
     {
-        string[] materials = SelectedMinerals.Length == 0 ? PlanetaryMiningPlan.Materials.ToArray() : SelectedMinerals;
-        PlanetaryBodyCriteria? criteria = PlanetaryMiningPlan.For(materials);
         AcquireRows = [];
+        MeritRows = [];
         Changed(nameof(HasAcquireRows));
         Changed(nameof(ShowMeritRows));
-        if (criteria is null)
+        if (!planetaryStatusHooked)
         {
-            MeritRows = [];
-            Status = "Choose a Surface Hunt material.";
-            return;
+            PlanetarySearch.PropertyChanged += (_, args) =>
+            {
+                if (IsPlanetaryMining && args.PropertyName == nameof(SurfaceMiningSearchViewModel.Status))
+                {
+                    Status = PlanetarySearch.Status;
+                }
+            };
+            planetaryStatusHooked = true;
         }
 
-        try
+        PlanetarySearch.Reference = Reference;
+        PlanetarySearch.Radius = Radius;
+        PlanetarySearch.ResultLimit = ResultLimit;
+        PlanetarySearch.MinimumDemand = MinimumDemand;
+        PlanetarySearch.MaximumDemand = MaximumDemand;
+        PlanetarySearch.PadSize = PadSize;
+        PlanetarySearch.MaximumAge = MarketFreshness;
+        PlanetarySearch.BodyControllingPowers = PlanetaryPowers;
+        PlanetarySearch.BodyPowerState = PlanetaryPowerState;
+        PlanetarySearch.NoSellStationsMessage =
+            "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.";
+        MiningSystemResult[]? supporterCache = null;
+        PlanetarySearch.EligibleSellSystemsAsync = async (systems, filterToken) =>
         {
-            var query = new MiningPlanetaryQuery(
-                Reference,
-                criteria.BodySubtypes,
-                criteria.LandmarkSubtypes,
-                "",
-                Radius,
-                PlanetaryPowers,
-                PlanetaryPowerState,
-                VolcanismTypes: criteria.VolcanismTypes
-            );
-            PlanetaryBodyCriteria[] materialRules = materials
-                .Select(material => PlanetaryMiningPlan.For([material]))
-                .OfType<PlanetaryBodyCriteria>()
-                .ToArray();
-            var allBodies = new List<MiningPlanetaryBody>();
-            int pageIndex = 0;
-            bool hasMore = true;
-            while (hasMore)
+            if (Objective == AcquireObjective && supporterCache is null)
             {
-                MiningPlanetaryBodyPage found = await client.FindPlanetaryBodyPageAsync(
-                    query with
-                    {
-                        Page = pageIndex,
-                    },
-                    token
-                );
-                MiningPlanetaryBody[] whiteDwarfCandidates = found
-                    .Bodies.Where(body =>
-                        materialRules.Any(rule =>
-                            rule.RequiresWhiteDwarfHost && PlanetaryMiningPlan.Matches(rule, body)
-                        )
-                    )
+                supporterCache = (await CollectPowerSystemsAsync("Fortified", filterToken))
+                    .Concat(await CollectPowerSystemsAsync("Stronghold", filterToken))
+                    .Where(system => system.Position is not null)
                     .ToArray();
-                IReadOnlySet<string> hosted =
-                    whiteDwarfCandidates.Length > 0
-                        ? await client.FindWhiteDwarfHostedBodiesAsync(Reference, whiteDwarfCandidates, token)
-                        : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                allBodies.AddRange(
-                    found.Bodies.Where(body =>
-                        materialRules.Any(rule =>
-                            PlanetaryMiningPlan.Matches(rule, body)
-                            && (!rule.RequiresWhiteDwarfHost || hosted.Contains(body.System + "\u001f" + body.Body))
-                        )
-                    )
-                );
-                hasMore =
-                    found.HasMore
-                    && allBodies.Select(body => body.System).Distinct(StringComparer.OrdinalIgnoreCase).Count()
-                        < ResultLimit;
-                pageIndex++;
             }
 
-            IReadOnlyList<MiningPlanetaryBody> bodies = allBodies;
-
-            (IReadOnlyList<MiningMarketResult> foundMarkets, _) = await ReportedStationPricesAsync(
-                bodies.Select(body => body.System).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
-                materials,
-                token
-            );
-            MeritRows = OrderByDistance(
-                await PresentRowsAsync(
-                    PowerplayMeritRank.ComposePlanets(Systems, bodies, foundMarkets, ResultLimit),
-                    materials.FirstOrDefault() ?? "",
-                    token
-                )
-            );
-            Status =
-                "Landable planets for "
-                + string.Join(", ", materials)
-                + " within "
-                + Radius.ToString("0", CultureInfo.CurrentCulture)
-                + " ly of "
-                + Reference
-                + "."
-                + PriceMarkNote;
-        }
-        catch (Exception ex) when (IsProviderFailure(ex))
+            return await EligiblePlanetarySellSystemsAsync(systems, supporterCache ?? [], filterToken);
+        };
+        string[] named = SelectedMinerals;
+        string[] materials = named;
+        if (materials.Length == 0)
         {
-            MeritRows = [];
-            Status = RequestFailed;
+            materials = PlanetaryMiningPlan.Materials.Contains(Mineral, StringComparer.OrdinalIgnoreCase)
+                ? [Mineral]
+                : [MiningMaterialSelection.Any];
         }
+        PlanetarySearch.Materials.Selected.Clear();
+        foreach (string material in materials)
+        {
+            PlanetarySearch.Materials.Add(material);
+        }
+
+        await PlanetarySearch.SearchAsync(token);
+        Status = PlanetarySearch.Status;
+    }
+
+    private async Task<IReadOnlySet<string>> EligiblePlanetarySellSystemsAsync(
+        IReadOnlyList<string> names,
+        IReadOnlyList<MiningSystemResult> supporters,
+        CancellationToken token
+    )
+    {
+        IReadOnlyList<MiningSystemResult> found = await client.FindSystemsByNameAsync(Reference, names, token);
+        string[] states = StateChips.Selected.Where(state => !IsAny(state)).ToArray();
+        return found
+            .Where(system =>
+                (
+                    Objective == AcquireObjective
+                        ? PowerplayPlan.IsAcquisitionTarget(system, PowerState)
+                            && system.Position is { } position
+                            && supporters.Any(supporter =>
+                                supporter.Position is { } origin
+                                && origin.DistanceTo(position) <= PowerplayPlan.AcquisitionReachLy(supporter.PowerState)
+                            )
+                        : MatchesPowerplaySystem(system) && (IsAny(PowerState) || Same(system.PowerState, PowerState))
+                ) && (states.Length == 0 || states.Any(state => Same(state, system.State)))
+            )
+            .Select(system => system.System)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     private async Task<MeritSystemRowViewModel[]> PresentRowsAsync(
@@ -2189,6 +2177,7 @@ public sealed class MiningSearchViewModel(
 
         Changed(nameof(UsesRingFilters));
         Changed(nameof(IsPlanetaryMining));
+        Changed(nameof(HasMeritRows));
         Changed(nameof(ResultOrderLabel));
     }
 
@@ -2351,6 +2340,7 @@ public sealed class MiningSearchViewModel(
         Markets = [];
         MeritRows = [];
         AcquireRows = [];
+        PlanetarySearch.Cancel();
         RestoreChip(MiningTypeChips, "All");
         RestoreChip(MineralChips, MiningMaterialSelection.Default);
         RestoreChip(StateChips, AnyPower);
@@ -2441,19 +2431,24 @@ public sealed class MiningSearchViewModel(
 
     public void UseDiagnosticLog(Action<string>? log) => client.DiagnosticLog = log;
 
-    public void Cancel() => pending?.Cancel();
+    public void Cancel()
+    {
+        pending?.Cancel();
+        PlanetarySearch.Cancel();
+    }
 
     public void Dispose()
     {
         pending?.Cancel();
         pending?.Dispose();
         pending = null;
+        PlanetarySearch.Dispose();
     }
 
     private async Task Run(Func<CancellationToken, Task> action)
     {
         CancellationTokenSource? previous = pending;
-        using var current = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        using var current = new CancellationTokenSource(TimeSpan.FromMinutes(IsPlanetaryMining ? 8 : 2));
         pending = current;
         IsBusy = true;
         Status = "Searching…";

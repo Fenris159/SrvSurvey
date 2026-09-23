@@ -17,14 +17,14 @@ public sealed partial class MineMapView : UserControl
     }
 
     internal (ScrollViewer Scroller, Control Table) SurfaceResultsWidthTarget =>
-        (SurfaceSearchResultsScroller, SurfaceSearchResultsTable);
+        (SurfaceSearchResultsScroller, SurfaceSearchSplitResults.ResultsTableControl);
 
     private void FitSurfaceSearchResults()
     {
         double width = SurfaceSearchResultsScroller.Bounds.Width;
         if (width > 0)
         {
-            SurfaceSearchResultsTable.Width = Math.Max(1280, width);
+            SurfaceSearchSplitResults.ResultsTableControl.Width = Math.Max(1280, width);
         }
     }
 

@@ -103,27 +103,139 @@ public sealed class MiningSearchViewModelTests
         await model.SearchSystemsAsync();
 
         Assert.Equal(2, handler.BodyPages);
-        Assert.Contains(model.MeritRows, row => row.Name == "Second");
+        Assert.Contains(Assert.Single(model.PlanetarySearch.Rows).Systems, system => system.System == "Second");
+    }
+
+    [Fact]
+    public async Task PlanetaryPowerplayChoosesSellSystemsByGoalBeforeSearchingBodies()
+    {
+        using var handler = new PlanetaryFilterHandler { MultipleSellSystems = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            PledgedPower = "Aisling Duval",
+            Objective = "Reinforce",
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Own Sell", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Equal(["Own Sell"], handler.BodyReferences);
+        Assert.Empty(model.MeritRows);
+
+        model.Objective = "Undermine";
+        handler.BodyReferences.Clear();
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Other Sell", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Equal(["Other Sell"], handler.BodyReferences);
+    }
+
+    [Fact]
+    public async Task PlanetaryAcquireOnlyOffersUnownedSellSystemsInsideSupporterReach()
+    {
+        using var handler = new PlanetaryFilterHandler { AcquireSellSystems = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            PledgedPower = "Aisling Duval",
+            Objective = "Acquire",
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Near Target", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Equal(["Near Target"], handler.BodyReferences);
     }
 
     private sealed class PlanetaryFilterHandler : HttpMessageHandler
     {
         public string? BodyFilters { get; private set; }
         public bool PagedBodies { get; init; }
+        public bool MultipleSellSystems { get; init; }
+        public bool AcquireSellSystems { get; init; }
         public int BodyPages { get; private set; }
+        public List<string> BodyReferences { get; } = [];
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
         )
         {
+            if (request.RequestUri?.AbsolutePath == "/api/systems/search")
+            {
+                if (AcquireSellSystems)
+                {
+                    using var search = System.Text.Json.JsonDocument.Parse(
+                        await request.Content!.ReadAsStringAsync(cancellationToken)
+                    );
+                    System.Text.Json.JsonElement filters = search.RootElement.GetProperty("filters");
+                    if (filters.TryGetProperty("name", out _))
+                    {
+                        return Json(
+                            """{"results":[{"name":"Near Target","power_state":"Unoccupied","x":18,"y":0,"z":0},{"name":"Far Target","power_state":"Unoccupied","x":31,"y":0,"z":0}]}"""
+                        );
+                    }
+
+                    return Json(
+                        filters.GetProperty("power_state").GetProperty("value")[0].GetString() == "Fortified"
+                            ? """{"results":[{"name":"Supporter","controlling_power":"Aisling Duval","power_state":"Fortified","x":0,"y":0,"z":0}]}"""
+                            : """{"results":[]}"""
+                    );
+                }
+
+                return Json(
+                    MultipleSellSystems
+                        ? """{"results":[{"name":"Own Sell","controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Other Sell","controlling_power":"Jerome Archer","power_state":"Fortified"}]}"""
+                        : """{"results":[{"name":"Sell System","power_state":"Fortified"}]}"""
+                );
+            }
+
+            if (request.RequestUri?.AbsolutePath.Contains("/nearby/imports", StringComparison.Ordinal) == true)
+            {
+                string updated = DateTimeOffset.UtcNow.ToString("O");
+                if (AcquireSellSystems)
+                {
+                    return Json(
+                        $$"""[{"systemName":"Near Target","stationName":"Near Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":400000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":18,"distanceToArrival":200,"marketId":1,"commodityName":"Monazite"},{"systemName":"Far Target","stationName":"Far Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":900000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":31,"distanceToArrival":100,"marketId":2,"commodityName":"Monazite"}]"""
+                    );
+                }
+
+                if (MultipleSellSystems)
+                {
+                    return Json(
+                        $$"""[{"systemName":"Own Sell","stationName":"Own Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":400000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":12,"distanceToArrival":200,"marketId":1,"commodityName":"Monazite"},{"systemName":"Other Sell","stationName":"Other Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":900000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":15,"distanceToArrival":100,"marketId":2,"commodityName":"Monazite"}]"""
+                    );
+                }
+                return Json(
+                    $$"""[{"systemName":"Sell System","stationName":"Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":500000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":12,"distanceToArrival":200,"marketId":1,"commodityName":"{{(PagedBodies ? "Monazite" : "Periclase Dunite")}}"}]"""
+                );
+            }
+
             if (request.RequestUri?.AbsolutePath == "/api/bodies/search")
             {
                 BodyFilters = await request.Content!.ReadAsStringAsync(cancellationToken);
+                using var query = System.Text.Json.JsonDocument.Parse(BodyFilters);
+                BodyReferences.Add(query.RootElement.GetProperty("reference_system").GetString() ?? "");
                 if (PagedBodies)
                 {
-                    using var body = System.Text.Json.JsonDocument.Parse(BodyFilters);
-                    int page = body.RootElement.GetProperty("page").GetInt32();
+                    int page = query.RootElement.GetProperty("page").GetInt32();
                     BodyPages++;
                     object[] results =
                         page == 0
@@ -138,6 +250,15 @@ public sealed class MiningSearchViewModelTests
                                             subtype = "Rocky body",
                                             volcanism_type = "Minor Metallic Magma",
                                             distance = 1,
+                                            parents = new[]
+                                            {
+                                                new
+                                                {
+                                                    id64 = 42,
+                                                    type = "Star",
+                                                    subtype = "White Dwarf (DB) Star",
+                                                },
+                                            },
                                         }
                                 )
                                 .ToArray()
@@ -157,6 +278,15 @@ public sealed class MiningSearchViewModelTests
                         Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { results })),
                     };
                 }
+
+                return Json(
+                    """{"results":[{"name":"Miner 1","system_name":"Miner","subtype":"Rocky body","volcanism_type":"Minor Metallic Magma","distance":2,"parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DB) Star"}]}]}"""
+                );
+            }
+
+            if (request.RequestUri?.AbsolutePath.EndsWith("/commodities", StringComparison.Ordinal) == true)
+            {
+                return Json("[]");
             }
 
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -168,6 +298,9 @@ public sealed class MiningSearchViewModelTests
                 ),
             };
         }
+
+        private static HttpResponseMessage Json(string value) =>
+            new(System.Net.HttpStatusCode.OK) { Content = new StringContent(value) };
     }
 
     [Fact]

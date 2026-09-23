@@ -44,7 +44,7 @@
         <TextBlock Text="Mineral / metal"/>
         <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Search.RingMinerals}" SelectedItem="{Binding Search.Mineral}"/>
       </StackPanel>
-      <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4">
+      <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4" IsVisible="{Binding Search.UsesRingFilters}">
         <TextBlock Text="Ring type"/>
         <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Search.RingTypes}" SelectedItem="{Binding Search.RingType}" IsEnabled="{Binding Search.UsesRingFilters}"/>
       </StackPanel>
@@ -88,7 +88,7 @@
       <Button Content="Reset" Click="Reset_Click"/>
       <Button Content="Cancel" Click="Cancel_Click" IsVisible="{Binding Search.IsBusy}"/>
     </StackPanel>
-    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" IsVisible="{Binding Search.UsesRingFilters}">
       <StackPanel Orientation="Horizontal" Spacing="14">
         <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="Planet" Width="14" Height="14" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="New ring"/></StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="RingIcy" Width="14" Height="14" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Icy"/></StackPanel>
@@ -107,6 +107,9 @@
 
     <ScrollViewer x:Name="ResultsScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
       <StackPanel x:Name="ResultsTable" MinWidth="1280">
+          <Grid IsVisible="{Binding Search.IsPlanetaryMining}">
+            <views:SurfaceMiningSplitResults DataContext="{Binding Search.PlanetarySearch}"/>
+          </Grid>
           <Grid IsVisible="{Binding Search.HasAcquireRows}" ColumnDefinitions="42*,4*,54*">
             <Grid ColumnDefinitions="20*,20*,10*,48*">
               <Border Classes="acquire-header first"><TextBlock Text="Target System"/></Border>

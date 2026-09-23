@@ -348,6 +348,29 @@ public sealed class SurfaceMiningSearchViewModelTests
     }
 
     [Fact]
+    public async Task SellSystemEligibilityLooksUpCandidatesInBoundedBatches()
+    {
+        using var handler = new SurfaceHandler { Mode = "batched-eligibility" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Materials.Add("Monazite");
+        var batches = new List<int>();
+        model.EligibleSellSystemsAsync = (systems, _) =>
+        {
+            batches.Add(systems.Count);
+            return Task.FromResult<IReadOnlySet<string>>(
+                systems.Where(system => system == "Sell 60").ToHashSet(StringComparer.OrdinalIgnoreCase)
+            );
+        };
+
+        await model.SearchAsync();
+
+        Assert.Equal([50, 10], batches);
+        Assert.Equal("Sell 60", Assert.Single(model.Rows).Target);
+        Assert.Equal(1, handler.BodyPages);
+    }
+
+    [Fact]
     public async Task SurfaceSearchNeverSendsReserveFilterAtFiveHundredLightYears()
     {
         using var handler = new SurfaceHandler { Mode = "reserve-stress" };
@@ -467,14 +490,17 @@ public sealed class SurfaceMiningSearchViewModelTests
                         )
                     );
                 }
-                if (Mode == "reserve-stress-positive" && BodyReference == "Sell 41")
+                if (
+                    Mode == "reserve-stress-positive" && BodyReference == "Sell 41"
+                    || Mode == "batched-eligibility" && BodyReference == "Sell 60"
+                )
                 {
                     return Json(
                         """{"results":[{"name":"Viable Somewhere 1","system_name":"Viable Somewhere","subtype":"Rocky body","reserve_level":"Pristine","distance":50}]}"""
                     );
                 }
 
-                if (Mode is "no-bodies" or "reserve-stress" or "reserve-stress-positive")
+                if (Mode is "no-bodies" or "reserve-stress" or "reserve-stress-positive" or "batched-eligibility")
                 {
                     return Json("""{"results":[]}""");
                 }
@@ -601,6 +627,7 @@ public sealed class SurfaceMiningSearchViewModelTests
                     "no-bodies" => MonaziteMarket(),
                     "reserve-stress" => ManyMonaziteMarkets(),
                     "reserve-stress-positive" => ManyMonaziteMarkets(),
+                    "batched-eligibility" => ManyMonaziteMarkets(),
                     _ => Markets(extra: false),
                 }
             );

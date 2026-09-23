@@ -6281,7 +6281,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SurfaceMiningSplitResults.axaml"
   },
   {
     "Text": "Beta",
@@ -7029,7 +7029,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SurfaceMiningSplitResults.axaml"
   },
   {
     "Text": "Body Protectorate",
@@ -9453,6 +9453,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
+    "Text": "Checking sell-system eligibility\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
     "Text": "Checking whether another SrvSurvey instance must close before the update.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9667,14 +9675,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
-  },
-  {
-    "Text": "Choose a Surface Hunt material.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
@@ -14167,7 +14167,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SurfaceMiningSplitResults.axaml"
   },
   {
     "Text": "DST SELL",
@@ -14175,7 +14175,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SurfaceMiningSplitResults.axaml"
   },
   {
     "Text": "Danger",
@@ -25893,14 +25893,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Landable planets for {0} within {1} ly of {2}.{3}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
-  },
-  {
     "Text": "Landing pad",
     "IsFormat": false,
     "SourceKinds": [
@@ -29190,7 +29182,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Mining announcements",
@@ -32087,6 +32079,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
+    "Text": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "No sell station matches the selected material, demand, and landing pad within the distance.",
@@ -45247,7 +45247,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SurfaceMiningSplitResults.axaml"
   },
   {
     "Text": "Sell mined cargo",

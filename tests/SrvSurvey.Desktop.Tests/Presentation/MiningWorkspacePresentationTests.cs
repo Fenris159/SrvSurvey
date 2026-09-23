@@ -12,6 +12,7 @@ using Avalonia.VisualTree;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
@@ -429,6 +430,13 @@ public sealed class MiningWorkspacePresentationTests
             Assert.Equal("Harma", powerplay.FindControl<SystemNameEntry>("PowerplayReference")!.Text);
             Assert.Equal("Archon Delaine", powerplay.FindControl<ComboBox>("PowerplayPledgedPower")!.SelectedItem);
             Assert.NotNull(powerplay.FindControl<ItemsControl>("PowerplayResults"));
+            model.MiningWorkspace.Search.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+            using WriteableBitmap? planetaryFrame = window.CaptureRenderedFrame();
+            SurfaceMiningSplitResults planetaryResults = Assert.Single(
+                powerplay.GetVisualDescendants().OfType<SurfaceMiningSplitResults>(),
+                candidate => candidate.IsEffectivelyVisible
+            );
+            Assert.Same(model.MiningWorkspace.Search.PlanetarySearch, planetaryResults.DataContext);
             model.MiningWorkspace.SelectedTab = 4;
             using WriteableBitmap? findFrame = window.CaptureRenderedFrame();
             MiningSearchView search = view.FindControl<MiningSearchView>("SearchPane")!;
