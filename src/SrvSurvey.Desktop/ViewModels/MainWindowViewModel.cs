@@ -518,6 +518,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 firegroups: Firegroups
             );
             MiningWorkspace.Search.UseDiagnosticLog(message => resolvedApplicationLogService?.Append(message));
+            FrontierProfile.PropertyChanged += (_, args) =>
+            {
+                if (
+                    args.PropertyName
+                    is nameof(CommanderProfileViewModel.Snapshot)
+                        or nameof(CommanderProfileViewModel.CurrentLocation)
+                        or null
+                        or ""
+                )
+                {
+                    MiningWorkspace.UseCommanderSystem(FrontierProfile.Snapshot?.LastSystem);
+                }
+            };
+            MiningWorkspace.UseCommanderSystem(FrontierProfile.Snapshot?.LastSystem);
             rollback.Add(MiningWorkspace.Dispose);
             ExobiologyReferenceCatalog sharedExobiologyCatalog = legacyReferences.Exobiology;
             string defaultCodexImageCache = Path.Combine(AppDataPaths.CacheDirectory, "codex-images");

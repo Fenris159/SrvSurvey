@@ -19,7 +19,9 @@ public sealed record PowerplayMeritRing(
     string Body,
     string Detail,
     bool Planetary = false,
-    IReadOnlyList<string>? SignalLines = null
+    IReadOnlyList<string>? SignalLines = null,
+    string Reserve = "",
+    string RingType = ""
 );
 
 public sealed record PowerplayMeritSystem(
@@ -34,11 +36,25 @@ public sealed record PowerplayMeritSystem(
 )
 {
     public IReadOnlyList<string> NearbyPowers { get; init; } = [];
+    public int ReserveRank { get; init; } = 6;
 }
 
 /// <summary>Joins a Powerplay system list with rings and station prices, best sell price first.</summary>
 public static class PowerplayMeritRank
 {
+    public static bool MorePricesCanRank(int kept, int limit, long weakestKept, long nextCeiling) =>
+        kept < Math.Max(1, limit) || nextCeiling >= weakestKept;
+
+    public static long WeakestRankedPrice(IReadOnlyList<long> prices, int limit)
+    {
+        if (prices.Count < Math.Max(1, limit))
+        {
+            return 0;
+        }
+
+        return prices.OrderByDescending(price => price).ElementAt(Math.Max(1, limit) - 1);
+    }
+
     public static IReadOnlyList<PowerplayMeritSystem> Compose(
         IReadOnlyList<MiningSystemResult> systems,
         IReadOnlyList<MiningRing> rings,
@@ -53,12 +69,16 @@ public static class PowerplayMeritRank
                 .Where(ring => ring.System.Equals(system.System, StringComparison.OrdinalIgnoreCase))
                 .Select(DescribeRing)
                 .ToArray();
-            PowerplayMeritStation[] systemStations = StationsFor(markets, system.System);
+            PowerplayMeritStation[] systemStations = OrderForHeadline(
+                StationsFor(markets, system.System),
+                systemRings
+            );
             if (systemRings.Length == 0 || systemStations.Length == 0)
             {
                 continue;
             }
 
+            string headline = HeadlineCommodity(systemStations, systemRings);
             rows.Add(
                 new PowerplayMeritSystem(
                     system.System,
@@ -66,12 +86,13 @@ public static class PowerplayMeritRank
                     system.Power,
                     system.PowerState,
                     system.State,
-                    systemStations[0].Price,
+                    HeadlinePrice(systemStations, headline),
                     systemRings,
                     systemStations
                 )
                 {
                     NearbyPowers = system.NearbyPowers,
+                    ReserveRank = ReserveRank(systemRings, headline),
                 }
             );
         }
@@ -129,6 +150,7 @@ public static class PowerplayMeritRank
         markets
             .Where(market => market.System.Equals(system, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(market => market.Price)
+            .ThenByDescending(market => market.Demand)
             .Select(market => new PowerplayMeritStation(
                 market.Station,
                 market.Type,
@@ -141,6 +163,108 @@ public static class PowerplayMeritRank
                 market.Updated
             ))
             .ToArray();
+
+    private static PowerplayMeritStation[] OrderForHeadline(
+        PowerplayMeritStation[] stations,
+        PowerplayMeritRing[] rings
+    )
+    {
+        HashSet<string> hotspots = HotspotNames(rings);
+        return stations
+            .Where(station => !PlanetaryMiningPlan.IsSurfaceExclusive(station.Commodity))
+            .OrderByDescending(station => hotspots.Contains(station.Commodity))
+            .ThenByDescending(station => station.Price)
+            .ThenByDescending(station => station.Demand)
+            .ToArray();
+    }
+
+    private static string HeadlineCommodity(PowerplayMeritStation[] stations, PowerplayMeritRing[] rings)
+    {
+        HashSet<string> hotspots = HotspotNames(rings);
+        return stations
+                .Where(station => hotspots.Contains(station.Commodity))
+                .OrderByDescending(station => station.Price)
+                .Select(station => station.Commodity)
+                .FirstOrDefault() ?? "";
+    }
+
+    private static long HeadlinePrice(PowerplayMeritStation[] stations, string headline)
+    {
+        long best = 0;
+        bool matched = false;
+        foreach (PowerplayMeritStation station in stations)
+        {
+            if (
+                headline.Length == 0
+                || station.Commodity.Equals(headline, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                best = Math.Max(best, station.Price);
+                matched = true;
+            }
+        }
+
+        return matched ? best : stations[0].Price;
+    }
+
+    private static bool NamesHotspot(PowerplayMeritRing ring, string headline)
+    {
+        IReadOnlyList<string> lines = ring.SignalLines ?? [];
+        for (int index = 0; index < lines.Count; index++)
+        {
+            if (lines[index].StartsWith(headline, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static int ReserveRank(PowerplayMeritRing[] rings, string headline)
+    {
+        string reserve = rings.Length == 0 ? "" : rings[0].Reserve;
+        for (int index = 0; index < rings.Length && headline.Length > 0; index++)
+        {
+            if (!NamesHotspot(rings[index], headline))
+            {
+                continue;
+            }
+
+            reserve = rings[index].Reserve;
+            break;
+        }
+
+        return reserve.ToLowerInvariant() switch
+        {
+            "pristine" => 1,
+            "major" => 2,
+            "common" => 3,
+            "low" => 4,
+            "depleted" => 5,
+            _ => 6,
+        };
+    }
+
+    private static HashSet<string> HotspotNames(PowerplayMeritRing[] rings)
+    {
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (PowerplayMeritRing ring in rings)
+        {
+            IReadOnlyList<string> lines = ring.SignalLines ?? [];
+            for (int index = 0; index < lines.Count; index++)
+            {
+                int split = lines[index].IndexOf(':');
+                string name = (split < 0 ? lines[index] : lines[index][..split]).Trim();
+                if (name.Length > 0 && !PlanetaryMiningPlan.IsSurfaceExclusive(name))
+                {
+                    names.Add(name);
+                }
+            }
+        }
+
+        return names;
+    }
 
     private static PowerplayMeritRing DescribePlanet(MiningPlanetaryBody body)
     {
@@ -164,7 +288,12 @@ public static class PowerplayMeritRank
             ring.Body,
             detail,
             false,
-            ring.Hotspots.Select(spot => $"{spot.Key}: {spot.Value} Hotspot").ToArray()
+            ring.Hotspots
+                .Where(spot => PlanetaryMiningPlan.IsEdpmCommodity(spot.Key))
+                .Select(spot => $"{spot.Key}: {spot.Value} {(spot.Value == 1 ? "Hotspot" : "Hotspots")}")
+                .ToArray(),
+            ring.Reserve,
+            ring.RingType
         );
     }
 }

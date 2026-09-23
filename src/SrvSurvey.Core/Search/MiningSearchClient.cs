@@ -36,8 +36,11 @@ public sealed record MiningRingQuery(
     int MinimumHotspots = 1,
     int Page = 0,
     bool SystemOnly = false,
-    IReadOnlyList<string>? Minerals = null
+    IReadOnlyList<string>? Minerals = null,
+    IReadOnlyList<string>? SystemNames = null
 );
+
+public sealed record MiningRingPage(IReadOnlyList<MiningRing> Rings, bool HasMore);
 
 public sealed record MiningMarketQuery(
     string ReferenceSystem,
@@ -196,8 +199,53 @@ public sealed class MiningSearchClient
         CancellationToken cancellationToken = default
     )
     {
+        MiningRingPage page = await FindRingPageAsync(query, cancellationToken).ConfigureAwait(false);
+        return page.Rings;
+    }
+
+    public async Task<IReadOnlyList<MiningRing>> FindRingsForSystemsAsync(
+        MiningRingQuery query,
+        IReadOnlyList<string> systems,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var rings = new List<MiningRing>();
+        foreach (string[] names in systems.Distinct(StringComparer.OrdinalIgnoreCase).Chunk(20))
+        {
+            for (int page = 0; page < 10; page++)
+            {
+                MiningRingPage batch = await FindRingPageAsync(
+                        query with
+                        {
+                            Page = page,
+                            SystemOnly = false,
+                            SystemNames = names,
+                        },
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+                rings.AddRange(batch.Rings);
+                if (!batch.HasMore)
+                {
+                    break;
+                }
+            }
+        }
+
+        return rings;
+    }
+
+    public async Task<MiningRingPage> FindRingPageAsync(
+        MiningRingQuery query,
+        CancellationToken cancellationToken = default
+    )
+    {
         Dictionary<string, object> filters = DistanceFilter(query.Radius);
-        if (query.SystemOnly)
+        if (query.SystemNames is { Count: > 0 })
+        {
+            filters[SystemNameField] = new { value = query.SystemNames.ToArray() };
+        }
+        else if (query.SystemOnly)
         {
             filters[SystemNameField] = new { value = new[] { query.ReferenceSystem } };
         }
@@ -211,7 +259,7 @@ public sealed class MiningSearchClient
             minerals = [query.Mineral];
         }
 
-        if (minerals.Length > 0)
+        if (minerals.Length is > 0 and <= 8)
         {
             filters["ring_signals"] = new[]
             {
@@ -220,6 +268,19 @@ public sealed class MiningSearchClient
                     comparison = "<=>",
                     count = new[] { query.MinimumHotspots, 9999 },
                     name = minerals,
+                },
+            };
+        }
+        else if (query.MinimumHotspots > 0)
+        {
+            // A long name list is treated as "any of these hotspots", which Spansh cannot express
+            // as one OR filter. Ask for any hotspot and keep the mineral check while reading.
+            filters["ring_signals"] = new[]
+            {
+                new
+                {
+                    comparison = ">=",
+                    count = query.MinimumHotspots,
                 },
             };
         }
@@ -236,25 +297,22 @@ public sealed class MiningSearchClient
             query.Page,
             cancellationToken: cancellationToken
         );
-        return ReadRings(response, query);
-    }
-
-    private static List<MiningRing> ReadRings(JsonDocument response, MiningRingQuery query)
-    {
-        var output = new List<MiningRing>();
+        var rings = new List<MiningRing>();
+        int bodies = 0;
         foreach (JsonElement body in Results(response))
         {
+            bodies++;
             foreach (JsonElement ring in MiningJson.Array(body, "rings"))
             {
                 MiningRing? read = ReadRing(body, ring, query);
                 if (read is not null)
                 {
-                    output.Add(read);
+                    rings.Add(read);
                 }
             }
         }
 
-        return output;
+        return new MiningRingPage(rings, bodies >= SpanshRoutes.PageSize(SpanshRoutes.Bodies));
     }
 
     private static MiningRing? ReadRing(JsonElement body, JsonElement ring, MiningRingQuery query)
@@ -281,6 +339,16 @@ public sealed class MiningSearchClient
             return null;
         }
 
+        if (
+            query.Minerals is { Count: > 8 } wanted
+            && !signals.Any(pair =>
+                wanted.Contains(pair.Key, StringComparer.OrdinalIgnoreCase) && pair.Value >= query.MinimumHotspots
+            )
+        )
+        {
+            return null;
+        }
+
         return new MiningRing
         {
             System = MiningJson.Text(body, SystemNameField),
@@ -293,6 +361,8 @@ public sealed class MiningSearchClient
             Source = "Spansh",
             Scanned = DateTimeOffset.UtcNow,
             DistanceLy = Number(body, DistanceField),
+            Power = MiningJson.Text(body, "system_controlling_power"),
+            PowerState = MiningJson.Text(body, "system_power_state"),
         };
     }
 
@@ -889,6 +959,25 @@ public sealed class MiningSearchClient
         }
 
         return systems.ToArray();
+    }
+
+    public async Task<IReadOnlyList<MiningSystemResult>> FindSystemsByNameAsync(
+        string reference,
+        IReadOnlyList<string> names,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var found = new List<MiningSystemResult>();
+        foreach (string[] chunk in names.Where(name => name.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).Chunk(50))
+        {
+            Dictionary<string, object> filters = new() { ["name"] = new { value = chunk } };
+            using JsonDocument response = await spansh
+                .SearchAsync(SpanshRoutes.Systems, reference, filters, 0, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            found.AddRange(Results(response).Select(ReadSystem));
+        }
+
+        return found;
     }
 
     private static MiningSystemResult ReadSystem(JsonElement system)

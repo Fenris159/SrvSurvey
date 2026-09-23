@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:views="using:SrvSurvey.Desktop.Views" x:Class="SrvSurvey.Desktop.Views.MiningPowerplayView" x:DataType="vm:MiningWorkspaceViewModel" Grid.IsSharedSizeScope="True">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:controls="using:SrvSurvey.Desktop.Controls" xmlns:views="using:SrvSurvey.Desktop.Views" x:Class="SrvSurvey.Desktop.Views.MiningPowerplayView" x:DataType="vm:MiningWorkspaceViewModel" Grid.IsSharedSizeScope="True">
   <UserControl.Styles>
     <Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style>
     <Style Selector="Border.highlight">
@@ -8,71 +8,105 @@
       <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}"/>
     </Style>
   </UserControl.Styles>
-  <StackPanel Spacing="14" Margin="4,12,4,16">
-    <StackPanel Spacing="5">
-      <TextBlock Text="Powerplay mining planner" Classes="card-title"/>
-      <TextBlock Text="Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material." TextWrapping="Wrap" Classes="muted"/>
-      <TextBlock Text="{Binding Search.PowerplaySummary}" Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap"/>
-    </StackPanel>
-
-    <Border Classes="card raised">
-      <StackPanel Spacing="10">
-        <TextBlock Text="1 · Choose the Powerplay goal" Classes="card-title"/>
-        <WrapPanel>
-          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Reference system"/><TextBox x:Name="PowerplayReference" Text="{Binding Search.Reference}"/></StackPanel>
-          <StackPanel Spacing="4" Width="130" Margin="0,0,12,10"><TextBlock Text="Distance (ly)"/><NumericUpDown Minimum="1" Maximum="500" Value="{Binding Search.Radius}"/></StackPanel>
-          <StackPanel Spacing="4" Width="130" Margin="0,0,12,10"><TextBlock Text="Search results"/><NumericUpDown Minimum="1" Maximum="100" Value="{Binding Search.ResultLimit}"/></StackPanel>
-          <Button Content="Use current" Click="Current_Click" VerticalAlignment="Bottom" Margin="0,0,12,10"/>
-        </WrapPanel>
-        <WrapPanel>
-          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Your Power"/><ComboBox x:Name="PowerplayPledgedPower" ItemsSource="{Binding Search.Powers}" SelectedItem="{Binding Search.PledgedPower}"/></StackPanel>
-          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Power goal"/><ComboBox x:Name="PowerplayGoal" IsEnabled="{Binding Search.CanChoosePowerGoal}" ItemsSource="{Binding Search.Objectives}" SelectedItem="{Binding Search.Objective}"/></StackPanel>
-          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Opposing Power"/><ComboBox x:Name="PowerplayOpposingPower" IsEnabled="{Binding Search.CanChoosePowerGoal}" ItemsSource="{Binding Search.OpposingChoices}" SelectedItem="{Binding Search.OpposingPower}"/></StackPanel>
-        </WrapPanel>
-        <WrapPanel>
-          <views:MiningChipBox DataContext="{Binding Search.MineralChips}"/>
-          <views:MiningChipBox DataContext="{Binding Search.MiningTypeChips}"/>
-          <views:MiningChipBox DataContext="{Binding Search.StateChips}"/>
-          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Ring type"/><ComboBox ItemsSource="{Binding Search.RingTypes}" SelectedItem="{Binding Search.RingType}" IsEnabled="{Binding Search.UsesRingFilters}"/></StackPanel>
-          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Reserve level"/><ComboBox ItemsSource="{Binding Search.Reserves}" SelectedItem="{Binding Search.Reserve}"/></StackPanel>
-          <StackPanel Spacing="4" Width="150" Margin="0,0,12,10"><TextBlock Text="Minimum hotspots"/><NumericUpDown Minimum="0" Maximum="20" Value="{Binding Search.MinimumHotspots}" IsEnabled="{Binding Search.UsesRingFilters}"/></StackPanel>
-        </WrapPanel>
-        <WrapPanel>
-          <StackPanel Spacing="4" Width="160" Margin="0,0,12,10"><TextBlock Text="Landing pad"/><ComboBox ItemsSource="{Binding Search.PadSizes}" SelectedItem="{Binding Search.PadSize}"/></StackPanel>
-          <StackPanel Spacing="4" Width="150" Margin="0,0,12,10"><TextBlock Text="Minimum demand"/><NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding Search.MinimumDemand}"/></StackPanel>
-          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Maximum demand (0 = any)"/><NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding Search.MaximumDemand}"/></StackPanel>
-          <CheckBox Content="Limit market age" IsChecked="{Binding Search.LimitMarketAge}" VerticalAlignment="Bottom" Margin="0,0,12,10"/>
-          <StackPanel Spacing="4" Width="120" Margin="0,0,12,10"><TextBlock Text="Max age"/><NumericUpDown Minimum="1" Maximum="9999" Value="{Binding Search.MarketAge}"/></StackPanel>
-          <StackPanel Spacing="4" Width="130" Margin="0,0,12,10"><TextBlock Text="Age unit"/><ComboBox ItemsSource="{Binding Search.MarketAgeUnits}" SelectedItem="{Binding Search.MarketAgeUnit}"/></StackPanel>
-        </WrapPanel>
-        <Expander Header="More system filters">
-          <WrapPanel Margin="8">
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Power state"/><ComboBox ItemsSource="{Binding Search.PowerStates}" SelectedItem="{Binding Search.PowerState}"/></StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Security"/><TextBox Text="{Binding Search.Security}"/></StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Economy"/><TextBox Text="{Binding Search.Economy}"/></StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Government"/><TextBox Text="{Binding Search.Government}"/></StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Allegiance"/><TextBox Text="{Binding Search.Allegiance}"/></StackPanel>
-            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Minimum population"/><NumericUpDown Minimum="0" Maximum="1000000000000" Value="{Binding Search.MinimumPopulation}"/></StackPanel>
-          </WrapPanel>
-        </Expander>
-        <WrapPanel>
-          <Button Content="Find target systems" Click="SearchSystems_Click" Margin="0,0,8,4"/>
-          <Button Content="Reset" Click="Reset_Click" Margin="0,0,8,4"/>
-          <Button Content="Cancel" Click="Cancel_Click" IsVisible="{Binding Search.IsBusy}" Margin="0,0,8,4"/>
-        </WrapPanel>
-        <TextBlock Text="Any or None for Your Power locks the goal on Reinforce and Opposing Power on Any. None in Opposing Power is only available for Reinforce. One, Two, and Multiple count other Powers in the live conflict. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power's Fortified systems or 30 ly of its Stronghold systems. Target distance is from the reference system. Default minerals keep the highest prices, and Any shows every hotspot and commodity." TextWrapping="Wrap" Classes="muted"/>
+  <StackPanel Spacing="16" Margin="4,12,4,16">
+    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="14">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Reference system"/>
+        <controls:SystemNameEntry x:Name="PowerplayReference" Text="{Binding Search.Reference, Mode=TwoWay}"/>
       </StackPanel>
-    </Border>
+      <StackPanel Grid.Column="1" Spacing="4">
+        <TextBlock Text="Distance"/>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <Slider Minimum="1" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Search.Radius}"/>
+          <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="52" Text="{Binding Search.Radius, StringFormat={}{0:0} ly}"/>
+        </Grid>
+      </StackPanel>
+      <StackPanel Grid.Column="2" Spacing="4">
+        <TextBlock Text="Search results"/>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <Slider Minimum="1" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Search.ResultLimit}"/>
+          <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="28" Text="{Binding Search.ResultLimit, StringFormat={}{0:0}}"/>
+        </Grid>
+      </StackPanel>
+      <StackPanel Grid.Row="1" Spacing="4">
+        <TextBlock Text="Your Power"/>
+        <ComboBox x:Name="PowerplayPledgedPower" HorizontalAlignment="Stretch" ItemsSource="{Binding Search.Powers}" SelectedItem="{Binding Search.PledgedPower}"/>
+      </StackPanel>
+      <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+        <TextBlock Text="Power goal"/>
+        <ComboBox x:Name="PowerplayGoal" HorizontalAlignment="Stretch" IsEnabled="{Binding Search.CanChoosePowerGoal}" ItemsSource="{Binding Search.PowerplayObjectives}" SelectedItem="{Binding Search.Objective}"/>
+      </StackPanel>
+      <StackPanel Grid.Row="1" Grid.Column="2" Spacing="4">
+        <TextBlock Text="Opposing Power"/>
+        <ComboBox x:Name="PowerplayOpposingPower" HorizontalAlignment="Stretch" IsEnabled="{Binding Search.CanChoosePowerGoal}" ItemsSource="{Binding Search.OpposingChoices}" SelectedItem="{Binding Search.OpposingPower}"/>
+      </StackPanel>
+      <StackPanel Grid.Row="2" Spacing="4">
+        <TextBlock Text="Mineral / metal"/>
+        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Search.RingMinerals}" SelectedItem="{Binding Search.Mineral}"/>
+      </StackPanel>
+      <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4">
+        <TextBlock Text="Ring type"/>
+        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Search.RingTypes}" SelectedItem="{Binding Search.RingType}" IsEnabled="{Binding Search.UsesRingFilters}"/>
+      </StackPanel>
+      <StackPanel Grid.Row="2" Grid.Column="2" Spacing="4">
+        <TextBlock Text="Reserve level"/>
+        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Search.Reserves}" SelectedItem="{Binding Search.Reserve}"/>
+      </StackPanel>
+      <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="8">
+        <TextBlock Text="Max age" VerticalAlignment="Center"/>
+        <ToggleSwitch IsChecked="{Binding Search.LimitMarketAge}" OnContent="" OffContent="" MinWidth="44" VerticalAlignment="Center"/>
+        <controls:RestoringNumberBox Number="{Binding Search.MarketAge}" Minimum="1" Maximum="9999" Width="88" MinHeight="32" VerticalAlignment="Center"/>
+        <ComboBox Width="120" VerticalAlignment="Center" ItemsSource="{Binding Search.MarketAgeUnits}" SelectedItem="{Binding Search.MarketAgeUnit}"/>
+      </StackPanel>
+      <StackPanel Grid.Row="4" Spacing="4">
+        <TextBlock Text="Mining type"/>
+        <views:MiningChipBox DataContext="{Binding Search.MiningTypeChips}" MinWidth="0" Margin="0" HorizontalAlignment="Stretch"/>
+      </StackPanel>
+      <StackPanel Grid.Row="4" Grid.Column="1" Spacing="4">
+        <TextBlock Text="Min. demand"/>
+        <controls:RestoringNumberBox Number="{Binding Search.MinimumDemand}" Minimum="0" Maximum="1000000000" MinHeight="32" HorizontalAlignment="Stretch"/>
+      </StackPanel>
+      <StackPanel Grid.Row="4" Grid.Column="2" Spacing="4">
+        <TextBlock Text="Landing pad"/>
+        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Search.PadSizes}" SelectedItem="{Binding Search.PadSize}"/>
+      </StackPanel>
+      <StackPanel Grid.Row="5" Spacing="4">
+        <TextBlock Text="Add mineral/metal"/>
+        <views:MiningChipBox DataContext="{Binding Search.MineralChips}" MinWidth="0" Margin="0" HorizontalAlignment="Stretch"/>
+      </StackPanel>
+      <StackPanel Grid.Row="5" Grid.Column="1" Spacing="4">
+        <TextBlock Text="Max. demand"/>
+        <controls:RestoringNumberBox Number="{Binding Search.MaximumDemand}" Minimum="0" Maximum="1000000000" MinHeight="32" HorizontalAlignment="Stretch"/>
+      </StackPanel>
+      <StackPanel Grid.Row="5" Grid.Column="2" Spacing="4">
+        <TextBlock Text="System state"/>
+        <views:MiningChipBox DataContext="{Binding Search.StateChips}" MinWidth="0" Margin="0" HorizontalAlignment="Stretch"/>
+      </StackPanel>
+    </Grid>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Content="Search" Click="SearchSystems_Click"/>
+      <Button Content="Reset" Click="Reset_Click"/>
+      <Button Content="Cancel" Click="Cancel_Click" IsVisible="{Binding Search.IsBusy}"/>
+    </StackPanel>
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+      <StackPanel Orientation="Horizontal" Spacing="14">
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="Planet" Width="14" Height="14" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="New ring"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="RingIcy" Width="14" Height="14" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Icy"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="RingRocky" Width="14" Height="14" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Rocky"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="RingMetallic" Width="14" Height="14" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Metallic"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="RingMetalRich" Width="14" Height="14" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Metal-rich"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="ReservePristine" Width="14" Height="13" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Pristine"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="ReserveMajor" Width="14" Height="13" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Major"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="ReserveCommon" Width="14" Height="13" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Common"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="ReserveLow" Width="14" Height="13" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Low"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="ReserveDepleted" Width="14" Height="13" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Depleted"/></StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4"><views:MiningIcon Kind="Hotspot" Width="12" Height="12" VerticalAlignment="Center"/><TextBlock Classes="muted" VerticalAlignment="Center" Text="Hotspot"/></StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+    <TextBlock Text="{Binding Search.Status}" Classes="muted" TextWrapping="Wrap" IsVisible="{Binding Search.ShowSearchStatus}"/>
 
-    <Border Classes="card raised">
-      <StackPanel Spacing="8">
-        <StackPanel Orientation="Horizontal" Spacing="12">
-          <TextBlock Text="{Binding Search.ResultOrderLabel}" Classes="card-title" VerticalAlignment="Center"/>
-          <Button Content="{Binding Search.DistanceSortLabel}" Command="{Binding Search.DistanceSortCommand}" Padding="8,2"/>
-        </StackPanel>
-        <TextBlock Text="Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates." Classes="muted" TextWrapping="Wrap"/>
-        <ScrollViewer Width="1040" HorizontalAlignment="Left" MaxHeight="640" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-          <StackPanel>
+    <ScrollViewer x:Name="ResultsScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+      <StackPanel x:Name="ResultsTable" MinWidth="1280">
           <Grid IsVisible="{Binding Search.HasAcquireRows}" ColumnDefinitions="42*,4*,54*">
             <Grid ColumnDefinitions="20*,20*,10*,48*">
               <Border Classes="acquire-header first"><TextBlock Text="Target System"/></Border>
@@ -87,7 +121,12 @@
               <Border Grid.Column="3" Classes="acquire-header"><TextBlock Text="Power"/></Border>
             </Grid>
           </Grid>
-          <ItemsControl ItemsSource="{Binding Search.AcquireRows}" IsVisible="{Binding Search.HasAcquireRows}" Margin="0,0,0,16">
+          <ItemsControl ItemsSource="{Binding Search.AcquireRows}" IsVisible="{Binding Search.HasAcquireRows}" Margin="0,0,0,16" HorizontalAlignment="Stretch">
+            <ItemsControl.Styles>
+              <Style Selector="ContentPresenter">
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+              </Style>
+            </ItemsControl.Styles>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:AcquireResultRowViewModel">
                 <views:AcquireSplitRow Lines="{Binding Miners}" Margin="0,0,0,16">
@@ -123,18 +162,30 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <Grid IsVisible="{Binding Search.ShowMeritRows}" ColumnDefinitions="11*,5*,25*,35*,9*,10*" Margin="0,8,0,0">
+          <Grid IsVisible="{Binding Search.HasMeritRows}" ColumnDefinitions="12*,6*,22*,42*,8*,10*" Margin="0,8,0,0">
             <Border Background="{DynamicResource RavenRaisedSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="1" Padding="6,4"><TextBlock Text="System" Foreground="{DynamicResource RavenAccentBrush}"/></Border>
-            <Border Grid.Column="1" Background="{DynamicResource RavenRaisedSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,1,1" Padding="6,4"><TextBlock Text="DST" Foreground="{DynamicResource RavenAccentBrush}"/></Border>
+            <Border Grid.Column="1" Background="{DynamicResource RavenRaisedSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,1,1" Padding="6,4">
+              <Button Classes="link" Padding="0" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding Search.DistanceSortCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <TextBlock Text="DST" Foreground="{DynamicResource RavenAccentBrush}"/>
+                  <TextBlock Text="{Binding Search.DistanceSortIndicator}" Foreground="{DynamicResource RavenAccentBrush}"/>
+                </StackPanel>
+              </Button>
+            </Border>
             <Border Grid.Column="2" Background="{DynamicResource RavenRaisedSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,1,1" Padding="6,4"><TextBlock Text="Ring Details" Foreground="{DynamicResource RavenAccentBrush}"/></Border>
             <Border Grid.Column="3" Background="{DynamicResource RavenRaisedSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,1,1" Padding="6,4"><TextBlock Text="Stations" Foreground="{DynamicResource RavenAccentBrush}"/></Border>
             <Border Grid.Column="4" Background="{DynamicResource RavenRaisedSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,1,1" Padding="6,4"><TextBlock Text="State" Foreground="{DynamicResource RavenAccentBrush}" HorizontalAlignment="Center"/></Border>
             <Border Grid.Column="5" Background="{DynamicResource RavenRaisedSurfaceBrush}" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,1,1" Padding="6,4"><TextBlock Text="Power" Foreground="{DynamicResource RavenAccentBrush}"/></Border>
           </Grid>
-          <ItemsControl x:Name="PowerplayResults" ItemsSource="{Binding Search.MeritRows}" IsVisible="{Binding Search.ShowMeritRows}">
+          <ItemsControl x:Name="PowerplayResults" ItemsSource="{Binding Search.MeritRows}" IsVisible="{Binding Search.HasMeritRows}" HorizontalAlignment="Stretch">
+            <ItemsControl.Styles>
+              <Style Selector="ContentPresenter">
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+              </Style>
+            </ItemsControl.Styles>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:MeritSystemRowViewModel">
-                <Grid ColumnDefinitions="11*,5*,25*,35*,9*,10*" Background="{DynamicResource RavenSurfaceBrush}">
+                <Grid ColumnDefinitions="12*,6*,22*,42*,8*,10*" Background="{DynamicResource RavenSurfaceBrush}">
                   <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="1,0,1,1" Padding="6">
                     <Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Center" behaviors:ClipboardCopyBehavior.Text="{Binding Name}">
                       <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
@@ -148,9 +199,15 @@
                     <ItemsControl ItemsSource="{Binding Rings}">
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:MeritLineViewModel">
-                          <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
-                            <views:MiningIcon Kind="{Binding Icon}" Width="14" Height="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" Foreground="{DynamicResource RavenTextBrush}" VerticalAlignment="Center"/>
+                          <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,2">
+                            <views:MiningIcon Kind="{Binding Icon}" Width="14" Height="14" VerticalAlignment="Center" IsVisible="{Binding ShowPlanet}"/>
+                            <Border Width="14" IsVisible="{Binding ShowSpacer}"/>
+                            <TextBlock Text="{Binding RingName}" TextWrapping="Wrap" Foreground="{DynamicResource RavenTextBrush}" VerticalAlignment="Center" IsVisible="{Binding ShowMineral}"/>
+                            <views:MiningIcon Kind="{Binding RingTypeIcon}" Width="14" Height="14" VerticalAlignment="Center" IsVisible="{Binding ShowRingType}"/>
+                            <views:MiningIcon Kind="{Binding ReserveIcon}" Width="14" Height="13" VerticalAlignment="Center" IsVisible="{Binding ShowReserve}"/>
+                            <views:MiningIcon Kind="Hotspot" Width="12" Height="12" VerticalAlignment="Center" IsVisible="{Binding ShowMineral}"/>
+                            <TextBlock Text="{Binding Mineral}" TextWrapping="Wrap" Foreground="{DynamicResource RavenTextBrush}" VerticalAlignment="Center" IsVisible="{Binding ShowMineral}"/>
+                            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" Foreground="{DynamicResource RavenTextBrush}" VerticalAlignment="Center" IsVisible="{Binding ShowPlainText}"/>
                           </StackPanel>
                         </DataTemplate>
                       </ItemsControl.ItemTemplate>
@@ -158,7 +215,8 @@
                     <Button Content="{Binding SignalToggleLabel}" Command="{Binding ToggleSignalsCommand}" IsVisible="{Binding CanToggleSignals}" Margin="0,6,0,0" Padding="6,2" HorizontalAlignment="Left"/>
                     </StackPanel>
                   </Border>
-                  <Border Grid.Column="3" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,1,1" Padding="6">
+                  <Border Grid.Column="3" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,1,1" Padding="6" ClipToBounds="True">
+                    <StackPanel>
                     <ItemsControl ItemsSource="{Binding StationBlocks}">
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:MeritStationBlockViewModel">
@@ -166,7 +224,7 @@
                             <StackPanel Spacing="2">
                               <StackPanel Orientation="Horizontal" Spacing="6">
                                 <views:MiningIcon Kind="{Binding Icon}" Width="14" Height="14" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding Heading}" Foreground="{DynamicResource RavenTextBrush}"/>
+                                <TextBlock Text="{Binding Heading}" Foreground="{DynamicResource RavenTextBrush}" TextWrapping="Wrap"/>
                               </StackPanel>
                               <TextBlock Text="{Binding Commodity}" Foreground="{DynamicResource RavenAccentBrush}"/>
                               <TextBlock Text="{Binding Price}" Foreground="{DynamicResource RavenAccentBrush}"/>
@@ -183,7 +241,7 @@
                                       <Border Background="{DynamicResource RavenAccentBrush}" Padding="4,0">
                                         <TextBlock Text="{Binding Code}" Foreground="{DynamicResource RavenAccentForegroundBrush}" FontFamily="monospace" FontSize="12" HorizontalAlignment="Center"/>
                                       </Border>
-                                      <TextBlock Grid.Column="1" Margin="6,0,0,0" Foreground="{DynamicResource RavenTextBrush}">
+                                      <TextBlock Grid.Column="1" Margin="6,0,0,0" Foreground="{DynamicResource RavenTextBrush}" TextWrapping="Wrap">
                                         <Run Text="{Binding Price}"/>
                                         <Run Text="  "/>
                                         <Run Text="{Binding Demand}"/>
@@ -197,6 +255,8 @@
                         </DataTemplate>
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    <Button Content="{Binding StationToggleLabel}" Command="{Binding ToggleStationsCommand}" IsVisible="{Binding CanToggleStations}" Margin="0,6,0,0" Padding="6,2" HorizontalAlignment="Left"/>
+                    </StackPanel>
                   </Border>
                   <Border Grid.Column="4" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,1,1" Padding="6">
                     <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -214,10 +274,7 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          </StackPanel>
-        </ScrollViewer>
       </StackPanel>
-    </Border>
-    <TextBlock Text="{Binding Search.Status}" Classes="muted" TextWrapping="Wrap"/>
+    </ScrollViewer>
   </StackPanel>
 </UserControl>

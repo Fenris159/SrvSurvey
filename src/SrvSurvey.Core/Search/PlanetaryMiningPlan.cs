@@ -11,6 +11,109 @@ public static class PlanetaryMiningPlan
 {
     public const string MiningType = "Planetary Mining";
 
+    /// <summary>
+    /// Surface Hunt materials that EDPM does not sell from rings.
+    /// Shared names stay, including Monazite. Low Temperature Diamonds is a ring
+    /// hotspot and is not the same commodity as Diamond.
+    /// Names are compacted so Ardent's "periclasedunite" matches "Periclase Dunite".
+    /// </summary>
+    private static readonly HashSet<string> SurfaceExclusiveMaterials = CompactNames(
+        "Bastnasite",
+        "Deuterium",
+        "Diamond",
+        "Haematite",
+        "Helium",
+        "Helium-3",
+        "Iridium",
+        "Magnesite",
+        "Olivine",
+        "Periclase Dunite",
+        "Quartz Pyroxenite",
+        "Ruby",
+        "Sapphire",
+        "Thortveitite"
+    );
+
+    /// <summary>Minerals and metals EDPM stores for ring stations. Other station goods stay off the list.</summary>
+    private static readonly HashSet<string> EdpmCommodities = CompactNames(
+        "Alexandrite",
+        "Aluminium",
+        "Bauxite",
+        "Benitoite",
+        "Bertrandite",
+        "Beryllium",
+        "Bismuth",
+        "Bromellite",
+        "Cobalt",
+        "Coltan",
+        "Copper",
+        "Cryolite",
+        "Gallite",
+        "Gallium",
+        "Gold",
+        "Goslarite",
+        "Grandidierite",
+        "Hafnium 178",
+        "Indite",
+        "Indium",
+        "Jadeite",
+        "Lanthanum",
+        "Lepidolite",
+        "Lithium",
+        "Lithium Hydroxide",
+        "Low Temperature Diamonds",
+        "Methane Clathrate",
+        "Methanol Monohydrate Crystals",
+        "Moissanite",
+        "Monazite",
+        "Musgravite",
+        "Osmium",
+        "Painite",
+        "Palladium",
+        "Platinum",
+        "Praseodymium",
+        "Pyrophyllite",
+        "Rhodplumsite",
+        "Rutile",
+        "Samarium",
+        "Serendibite",
+        "Silver",
+        "Taaffeite",
+        "Tantalum",
+        "Thallium",
+        "Thorium",
+        "Titanium",
+        "Uraninite",
+        "Uranium",
+        "Void Opal"
+    );
+
+    public static bool IsSurfaceExclusive(string material) => SurfaceExclusiveMaterials.Contains(Compact(material));
+
+    public static bool IsEdpmCommodity(string material) => EdpmCommodities.Contains(Compact(material));
+
+    private static HashSet<string> CompactNames(params string[] names)
+    {
+        HashSet<string> keys = new(StringComparer.Ordinal);
+        foreach (string name in names)
+        {
+            keys.Add(Compact(name));
+        }
+
+        return keys;
+    }
+
+    private static string Compact(string value)
+    {
+        string key = new(value.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+        return key switch
+        {
+            "lowtemperaturediamonds" => "lowtemperaturediamond",
+            "voidopals" => "voidopal",
+            _ => key,
+        };
+    }
+
     public static IReadOnlyList<string> SpanshPowers { get; } =
     [
         "A. Lavigny-Duval",

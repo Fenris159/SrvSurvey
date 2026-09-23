@@ -61,6 +61,43 @@ public sealed class PowerplayMeritRankTests
     }
 
     [Fact]
+    public void HeadlinePriceFollowsTheRingHotspotNotAHigherPricedOtherCommodity()
+    {
+        MiningSystemResult[] systems = [new("Sosong", 5.1, "", "", "", "", "", "", "Stronghold", 0)];
+        MiningRing[] rings =
+        [
+            new()
+            {
+                System = "Sosong",
+                Body = "Sosong ABC 1 A Ring",
+                RingType = "Icy",
+                Reserve = "Pristine",
+                Hotspots = new() { ["Musgravite"] = 2 },
+            },
+        ];
+        MiningMarketResult[] markets =
+        [
+            Market("Sosong", "Monazite", 743_334),
+            Market("Sosong", "Musgravite", 411_452),
+            Market("Sosong", "Diamond", 900_000),
+        ];
+
+        PowerplayMeritSystem row = Assert.Single(PowerplayMeritRank.Compose(systems, rings, markets, 10));
+
+        Assert.Equal(411_452, row.BestPrice);
+        Assert.Equal("Musgravite", row.Stations[0].Commodity);
+        Assert.DoesNotContain(row.Stations, station => station.Commodity == "Diamond");
+        Assert.Contains(row.Stations, station => station.Commodity == "Monazite");
+        Assert.Equal(1, row.ReserveRank);
+    }
+
+    private static MiningMarketResult Market(string system, string commodity, long price) =>
+        new(system, "Potter Terminal", "Orbis Starport", 5.1, 1934, price, 6_000, 0, DateTimeOffset.UtcNow, 1)
+        {
+            Commodity = commodity,
+        };
+
+    [Fact]
     public void PlanetsKeepGravityArrivalAndBodyName()
     {
         MiningSystemResult[] systems = [];

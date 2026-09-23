@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
@@ -11,8 +12,44 @@ namespace SrvSurvey.Desktop.Views;
 public sealed partial class MiningChipBox : UserControl
 {
     private MiningChipBoxViewModel? subscribed;
+    private TopLevel? openTopLevel;
 
     public MiningChipBox() => InitializeComponent();
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        DetachOutsidePointerHandler();
+        openTopLevel = TopLevel.GetTopLevel(this);
+        openTopLevel?.AddHandler(PointerPressedEvent, CloseWhenPressedOutside, RoutingStrategies.Tunnel, true);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        DetachOutsidePointerHandler();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void DetachOutsidePointerHandler()
+    {
+        openTopLevel?.RemoveHandler(PointerPressedEvent, CloseWhenPressedOutside);
+        openTopLevel = null;
+    }
+
+    private void CloseWhenPressedOutside(object? sender, PointerPressedEventArgs e)
+    {
+        if (Model is not { Open: true })
+        {
+            return;
+        }
+
+        if (e.Source is Visual source && (ReferenceEquals(source, this) || this.IsVisualAncestorOf(source)))
+        {
+            return;
+        }
+
+        Model.Open = false;
+    }
 
     protected override void OnDataContextChanged(EventArgs e)
     {
@@ -77,14 +114,17 @@ public sealed partial class MiningChipBox : UserControl
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        double width = availableSize.Width;
-        if (!double.IsFinite(width) || width > 520)
+        double cap = availableSize.Width;
+        if (!double.IsFinite(cap) || cap > 520)
         {
-            width = 520;
+            cap = 520;
         }
 
-        Size desired = base.MeasureOverride(new Size(width, availableSize.Height));
-        return new Size(width, desired.Height);
+        Size desired = base.MeasureOverride(new Size(Math.Max(0, cap), availableSize.Height));
+        double width = double.IsFinite(availableSize.Width)
+            ? Math.Min(cap, availableSize.Width)
+            : Math.Min(cap, desired.Width);
+        return new Size(Math.Max(0, width), desired.Height);
     }
 
     private MiningChipBoxViewModel? Model => DataContext as MiningChipBoxViewModel;

@@ -313,7 +313,7 @@
         <TabItem.Header>
           <TextBlock Text="Powerplay"/>
         </TabItem.Header>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <views:MiningPowerplayView DataContext="{Binding}" Margin="4,12,4,16"/>
         </ScrollViewer>
       </TabItem>

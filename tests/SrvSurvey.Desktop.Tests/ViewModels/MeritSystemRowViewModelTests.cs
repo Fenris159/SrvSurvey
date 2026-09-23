@@ -37,8 +37,11 @@ public sealed class MeritSystemRowViewModelTests
         Assert.Equal("Unknown", row.StateText);
         Assert.Equal("", row.StateIcon);
         Assert.Contains("ly", row.Distance, StringComparison.Ordinal);
+        Assert.Equal("Planet", Assert.Single(row.Rings).Icon);
+        row.ToggleSignals();
         Assert.Equal("Planet", row.Rings[0].Icon);
-        Assert.Equal("", row.Rings[1].Icon);
+        Assert.Equal("Planet", row.Rings[1].Icon);
+        Assert.Equal("Show less", row.SignalToggleLabel);
         Assert.Equal(
             ["Coriolis", "Orbis", "Ocellus", "Asteroid", "Settlement", "SurfacePort", "SurfacePort", "Outpost"],
             row.Stations.Select(station => station.Icon)
@@ -66,6 +69,8 @@ public sealed class MeritSystemRowViewModelTests
                 []
             )
         );
+        Assert.Equal("Planet", Assert.Single(planet.Rings).Icon);
+        planet.ToggleSignals();
         Assert.Equal(["Planet", "Planet"], planet.Rings.Select(line => line.Icon));
     }
 
@@ -161,6 +166,58 @@ public sealed class MeritSystemRowViewModelTests
         Assert.Equal(2, row.Stations.Count);
         Assert.Equal(2, row.Rings.Count);
         Assert.Equal("Show less", row.SignalToggleLabel);
+    }
+
+    [Fact]
+    public void StationHeadlineFollowsTheRingHotspotWhenAnotherCommodityPaysMore()
+    {
+        var row = MeritSystemRowViewModel.From(
+            new PowerplayMeritSystem(
+                "Sosong",
+                5.1,
+                "",
+                "Stronghold",
+                "",
+                411_452,
+                [
+                    new PowerplayMeritRing(
+                        "ABC 1 A Ring",
+                        "Musgravite ×2",
+                        SignalLines: ["Musgravite: 2 Hotspots", "Bromellite: 1 Hotspot"],
+                        Reserve: "Major",
+                        RingType: "Rocky"
+                    ),
+                ],
+                [
+                    new PowerplayMeritStation("Potter Terminal", "Orbis Starport", "L", 900_000, 1, "", "Diamond"),
+                    new PowerplayMeritStation(
+                        "Potter Terminal",
+                        "Orbis Starport",
+                        "L",
+                        463_527,
+                        150_826,
+                        "",
+                        "periclasedunite"
+                    ),
+                    new PowerplayMeritStation("Potter Terminal", "Orbis Starport", "L", 743_334, 6, "", "Monazite"),
+                    new PowerplayMeritStation("Potter Terminal", "Orbis Starport", "L", 411_452, 17, "", "Musgravite"),
+                ]
+            )
+        );
+
+        MeritStationBlockViewModel station = Assert.Single(row.StationBlocks);
+        Assert.Equal("Musgravite", station.Commodity);
+        Assert.Contains("411,452", station.Price, StringComparison.Ordinal);
+        Assert.DoesNotContain(station.OtherCommodities, line => line.Code == "DIA");
+        Assert.DoesNotContain(station.OtherCommodities, line => line.Code == "PER");
+        Assert.Contains(station.OtherCommodities, line => line.Code == "MON");
+        MeritLineViewModel primary = Assert.Single(row.Rings);
+        Assert.Equal("Planet", primary.Icon);
+        Assert.Equal("RingRocky", primary.RingTypeIcon);
+        Assert.Equal("ReserveMajor", primary.ReserveIcon);
+        row.ToggleSignals();
+        Assert.Equal("", row.Rings[1].Icon);
+        Assert.True(row.Rings[1].ShowSpacer);
     }
 
     private static PowerplayMeritStation Station(string name, string type) => new(name, type, "L", 1, 1, name);

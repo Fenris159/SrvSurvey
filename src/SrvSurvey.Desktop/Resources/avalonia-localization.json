@@ -185,10 +185,6 @@
       "translation": "1 · WÄHLEN SIE IHRE HEADSET-ROUTE"
     },
     {
-      "source": "1 · Choose the Powerplay goal",
-      "translation": "1 · Wählen Sie das Powerplay-Ziel"
-    },
-    {
       "source": "1,000 t",
       "translation": "1.000 t"
     },
@@ -1473,6 +1469,10 @@
       "translation": "Gemessenen Punkt hinzufügen"
     },
     {
+      "source": "Add mineral/metal",
+      "translation": "Mineral/Metall hinzufügen"
+    },
+    {
       "source": "Add notes about this visit...",
       "translation": "Fügen Sie Notizen zu diesem Besuch hinzu..."
     },
@@ -1645,10 +1645,6 @@
       "translation": "Nach der Erstellung liest SrvSurvey die Sites erneut. Wenn das neue Projekt den ursprünglichen ersten Standort verdrängt hat, wird zuerst eine Nur-Bestell-Korrektur mit dem ursprünglichen Standort gesendet."
     },
     {
-      "source": "Age unit",
-      "translation": "Alterseinheit"
-    },
-    {
       "source": "Aggregate completion",
       "translation": "Gesamtabschluss"
     },
@@ -1755,10 +1751,6 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Alle {0} Systeme erreicht."
-    },
-    {
-      "source": "Allegiance",
-      "translation": "Treue"
     },
     {
       "source": "Alliance Challenger",
@@ -8141,10 +8133,6 @@
       "translation": "Jedes Live-Panel behält seine eigene Standardplatzierung und kann auch Schiffs-, SRV-, Kampfflugzeug-, Taxi- oder Fuß-Overrides haben."
     },
     {
-      "source": "Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates.",
-      "translation": "Jeder Standort listet seine Ringe auf, dann die Stationen, die das ausgewählte Mineral kaufen. Bei Preisen und Nachfrage handelt es sich um aktuelle Beobachtungen und nicht um fundierte Schätzungen."
-    },
-    {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Jedes Overlay verfügt über einen bestimmten Spielstatusauslöser und kann auch über eine manuelle Verknüpfung verfügen."
     },
@@ -9609,10 +9597,6 @@
       "translation": "System finden"
     },
     {
-      "source": "Find target systems",
-      "translation": "Zielsysteme finden"
-    },
-    {
       "source": "Find the last recorded FSD jump into {0}.",
       "translation": "Finden Sie den letzten aufgezeichneten FSD-Sprung in {0}."
     },
@@ -10601,10 +10585,6 @@
       "translation": "GoldDim"
     },
     {
-      "source": "Government",
-      "translation": "Regierung"
-    },
-    {
       "source": "Grade {0}",
       "translation": "Note {0}"
     },
@@ -11439,6 +11419,10 @@
     {
       "source": "Horizons",
       "translation": "Horizonte"
+    },
+    {
+      "source": "Hotspot",
+      "translation": "Hotspot"
     },
     {
       "source": "Hotspot List",
@@ -13105,10 +13089,6 @@
       "translation": "Kalk"
     },
     {
-      "source": "Limit market age",
-      "translation": "Marktalter begrenzen"
-    },
-    {
       "source": "Limpets",
       "translation": "Napfschnecken"
     },
@@ -13641,6 +13621,14 @@
       "translation": "M20,0 L25,61,14,39 40,20 25,61,25,61 20,40 14,39,25,61 0,20 14,39,14,39 Z"
     },
     {
+      "source": "M7,1 A6,6 0 1 1 6.99,1 Z",
+      "translation": "M7,1 A6,6 0 1 1 6,99,1 Z"
+    },
+    {
+      "source": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8.92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM11.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z",
+      "translation": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8. 92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM1 1,48,6,61l-2,73,2,64v1,21h-1,98v-1,84l2,7-2,61v-.67l-.77-.76 h-1,96l-.71,71v.85h-2,01v-1,47l1,83-1,83h3,74l1,89,1,89v1,89Z"
+    },
+    {
       "source": "MANUAL - {0}x",
       "translation": "HANDBUCH - {0}x"
     },
@@ -14145,16 +14133,16 @@
       "translation": "Höchstalter"
     },
     {
+      "source": "Max. demand",
+      "translation": "Max. Nachfrage"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "MaxJumpRange"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Höchstalter (Tage)"
-    },
-    {
-      "source": "Maximum demand (0 = any)",
-      "translation": "Maximaler Bedarf (0 = beliebig)"
     },
     {
       "source": "Med kits",
@@ -14245,6 +14233,10 @@
       "translation": "Metallreicher Körper"
     },
     {
+      "source": "Metal-rich",
+      "translation": "Metallreich"
+    },
+    {
       "source": "Metal-rich body",
       "translation": "Metallreicher Körper"
     },
@@ -14311,6 +14303,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Militärische Siedlung – Bedrohung 2"
+    },
+    {
+      "source": "Min. demand",
+      "translation": "Min. Nachfrage"
     },
     {
       "source": "MinSystemsForAverages",
@@ -14393,10 +14389,6 @@
       "translation": "Mindest-DSS-Wert (Credits)"
     },
     {
-      "source": "Minimum demand",
-      "translation": "Mindestbedarf"
-    },
-    {
       "source": "Minimum displayed body value (credits)",
       "translation": "Mindestwert des angezeigten Körpers (Credits)"
     },
@@ -14407,10 +14399,6 @@
     {
       "source": "Minimum percentage",
       "translation": "Mindestprozentsatz"
-    },
-    {
-      "source": "Minimum population",
-      "translation": "Mindestbevölkerung"
     },
     {
       "source": "Minimum reward (credits)",
@@ -14659,10 +14647,6 @@
     {
       "source": "Months",
       "translation": "Monate"
-    },
-    {
-      "source": "More system filters",
-      "translation": "Weitere Systemfilter"
     },
     {
       "source": "More than one SrvSurvey instance is running",
@@ -15167,6 +15151,10 @@
     {
       "source": "New release available",
       "translation": "Neue Version verfügbar"
+    },
+    {
+      "source": "New ring",
+      "translation": "Neuer Ring"
     },
     {
       "source": "New route",
@@ -17545,10 +17533,6 @@
       "translation": "Piratenangriff"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
-      "translation": "Planen Sie einen Powerplay-Mining-Lauf vom Zielsystem zum Ring und zur Verkaufsstation. SrvSurvey kombiniert Journalkontext, integrierte Ringreferenzen, Live-Beobachtungen EDDN und gezielte API-Suchen Spansh; Es ist kein heruntergeladener Galaxy Dump erforderlich. Planetary Mining kann nicht mit anderen Bergbauarten kombiniert werden. Es ignoriert den Ringtyp und listet landbare Planeten für ein Oberflächenjagdmaterial auf."
-    },
-    {
       "source": "Plan a mining trip",
       "translation": "Planen Sie eine Bergbaureise"
     },
@@ -17905,10 +17889,6 @@
       "translation": "Stromposten"
     },
     {
-      "source": "Power state",
-      "translation": "Energiezustand"
-    },
-    {
       "source": "Powered",
       "translation": "Angetrieben"
     },
@@ -17927,10 +17907,6 @@
     {
       "source": "Powerplay mining filters reset to commander defaults.",
       "translation": "Powerplay-Mining-Filter wurden auf die Commander-Standardeinstellungen zurückgesetzt."
-    },
-    {
-      "source": "Powerplay mining planner",
-      "translation": "Powerplay-Bergbauplaner"
     },
     {
       "source": "PowerplayJoin",
@@ -20297,6 +20273,30 @@
       "translation": "Reserveniveau"
     },
     {
+      "source": "ReserveCommon",
+      "translation": "ReserveCommon"
+    },
+    {
+      "source": "ReserveDepleted",
+      "translation": "ReserveAufgebraucht"
+    },
+    {
+      "source": "ReserveLow",
+      "translation": "ReserveNiedrig"
+    },
+    {
+      "source": "ReserveMajor",
+      "translation": "ReserveMajor"
+    },
+    {
+      "source": "ReservePristine",
+      "translation": "ReservierenUnberührt"
+    },
+    {
+      "source": "ReserveUnknown",
+      "translation": "ReserveUnbekannt"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Reservierter Restbetrag"
     },
@@ -20751,6 +20751,22 @@
     {
       "source": "Ring type",
       "translation": "Ringtyp"
+    },
+    {
+      "source": "RingIcy",
+      "translation": "RingIcy"
+    },
+    {
+      "source": "RingMetalRich",
+      "translation": "RingMetalRich"
+    },
+    {
+      "source": "RingMetallic",
+      "translation": "RingMetallisch"
+    },
+    {
+      "source": "RingRocky",
+      "translation": "RingRocky"
     },
     {
       "source": "Rings",
@@ -22907,6 +22923,10 @@
     {
       "source": "Show all signals",
       "translation": "Alle Signale anzeigen"
+    },
+    {
+      "source": "Show all stations",
+      "translation": "Alle Sender anzeigen"
     },
     {
       "source": "Show bio signals from Canonn on the radar",
@@ -27661,6 +27681,30 @@
       "translation": "Schalten Sie die Sichtbarkeit von {0} um"
     },
     {
+      "source": "ToggleSwitchFillOn",
+      "translation": "ToggleSwitchFillOn"
+    },
+    {
+      "source": "ToggleSwitchFillOnPointerOver",
+      "translation": "ToggleSwitchFillOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchFillOnPressed",
+      "translation": "ToggleSwitchFillOnPressed"
+    },
+    {
+      "source": "ToggleSwitchStrokeOn",
+      "translation": "ToggleSwitchStrokeOn"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPointerOver",
+      "translation": "ToggleSwitchStrokeOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPressed",
+      "translation": "ToggleSwitchStrokeOnPressed"
+    },
+    {
       "source": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read its bearing from the visible game compass for the .mine command. Turret mode does not show the required bearing. Run the command again to hide the guide.",
       "translation": "Schaltet eine dünne rote vertikale Hilfslinie genau in der Mitte des Elite-Fensters ein. Verwenden Sie die Rhino-Fahransicht, platzieren Sie einen entfernten Bergbaustandortkreis unter der Führung und lesen Sie dann seine Peilung vom sichtbaren Wildkompass für den Befehl .mine ab. Der Revolvermodus zeigt nicht die erforderliche Peilung an. Führen Sie den Befehl erneut aus, um die Anleitung auszublenden."
     },
@@ -30641,6 +30685,10 @@
       "translation": "Standard"
     },
     {
+      "source": "depleted",
+      "translation": "erschöpft"
+    },
+    {
       "source": "descending",
       "translation": "absteigend"
     },
@@ -31441,6 +31489,10 @@
       "translation": "Hauptmotoren"
     },
     {
+      "source": "major",
+      "translation": "wesentlich"
+    },
+    {
       "source": "male 1",
       "translation": "männlich 1"
     },
@@ -31514,6 +31566,14 @@
     },
     {
       "source": "metal rich",
+      "translation": "metallreich"
+    },
+    {
+      "source": "metallic",
+      "translation": "metallisch"
+    },
+    {
+      "source": "metalrich",
       "translation": "metallreich"
     },
     {
@@ -31895,6 +31955,10 @@
     {
       "source": "prior-scans",
       "translation": "vorherige Scans"
+    },
+    {
+      "source": "pristine",
+      "translation": "makellos"
     },
     {
       "source": "privacy",
@@ -34127,10 +34191,6 @@
       "translation": "1 · ELIGE TU RUTA DE AURICULARES"
     },
     {
-      "source": "1 · Choose the Powerplay goal",
-      "translation": "1 · Elige el objetivo de Powerplay"
-    },
-    {
       "source": "1,000 t",
       "translation": "1.000 toneladas"
     },
@@ -35415,6 +35475,10 @@
       "translation": "Agregar punto medido"
     },
     {
+      "source": "Add mineral/metal",
+      "translation": "Añadir mineral/metal"
+    },
+    {
       "source": "Add notes about this visit...",
       "translation": "Añadir notas sobre esta visita..."
     },
@@ -35587,10 +35651,6 @@
       "translation": "Después de la creación, SrvSurvey vuelve a leer los sitios. Si el nuevo proyecto desplazó el primer sitio original, envía una corrección de solo pedido con el sitio original primero."
     },
     {
-      "source": "Age unit",
-      "translation": "unidad de edad"
-    },
-    {
       "source": "Aggregate completion",
       "translation": "Finalización agregada"
     },
@@ -35697,10 +35757,6 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Todos los {0} sistemas alcanzados."
-    },
-    {
-      "source": "Allegiance",
-      "translation": "Lealtad"
     },
     {
       "source": "Alliance Challenger",
@@ -42083,10 +42139,6 @@
       "translation": "Cada panel en vivo mantiene su propia ubicación predeterminada y también puede tener anulaciones de barcos, SRV, cazas, taxis o a pie."
     },
     {
-      "source": "Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates.",
-      "translation": "Cada ubicación enumera sus anillos y luego las estaciones que compran el mineral seleccionado. Los precios y la demanda son observaciones recientes, no estimaciones de mérito."
-    },
-    {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Cada superposición tiene un activador de estado de juego específico y también puede tener un acceso directo manual."
     },
@@ -43551,10 +43603,6 @@
       "translation": "Buscar sistema"
     },
     {
-      "source": "Find target systems",
-      "translation": "Encuentra sistemas de destino"
-    },
-    {
       "source": "Find the last recorded FSD jump into {0}.",
       "translation": "Encuentre el último salto FSD registrado en {0}."
     },
@@ -44543,10 +44591,6 @@
       "translation": "DoradoDim"
     },
     {
-      "source": "Government",
-      "translation": "Gobierno"
-    },
-    {
       "source": "Grade {0}",
       "translation": "Calificación {0}"
     },
@@ -45381,6 +45425,10 @@
     {
       "source": "Horizons",
       "translation": "Horizontes"
+    },
+    {
+      "source": "Hotspot",
+      "translation": "Punto de acceso"
     },
     {
       "source": "Hotspot List",
@@ -47047,10 +47095,6 @@
       "translation": "Cal"
     },
     {
-      "source": "Limit market age",
-      "translation": "Limitar la edad del mercado"
-    },
-    {
       "source": "Limpets",
       "translation": "lapas"
     },
@@ -47583,6 +47627,14 @@
       "translation": "M20,0 L25,61,14,39 40,20 25,61,25,61 20,40 14,39,25,61 0,20 14,39,14,39 Z"
     },
     {
+      "source": "M7,1 A6,6 0 1 1 6.99,1 Z",
+      "translation": "M7,1 A6,6 0 1 1 6,99,1Z"
+    },
+    {
+      "source": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8.92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM11.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z",
+      "translation": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8. 92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM1 1.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76 h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z"
+    },
+    {
       "source": "MANUAL - {0}x",
       "translation": "MANUAL - {0}x"
     },
@@ -48087,16 +48139,16 @@
       "translation": "edad máxima"
     },
     {
+      "source": "Max. demand",
+      "translation": "Máx. demanda"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "Rango máximo de salto"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Edad máxima (días)"
-    },
-    {
-      "source": "Maximum demand (0 = any)",
-      "translation": "Demanda máxima (0 = cualquiera)"
     },
     {
       "source": "Med kits",
@@ -48187,6 +48239,10 @@
       "translation": "Cuerpo rico en metal"
     },
     {
+      "source": "Metal-rich",
+      "translation": "Rico en metales"
+    },
+    {
       "source": "Metal-rich body",
       "translation": "Cuerpo rico en metales"
     },
@@ -48253,6 +48309,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Acuerdo militar - amenaza 2"
+    },
+    {
+      "source": "Min. demand",
+      "translation": "Mín. demanda"
     },
     {
       "source": "MinSystemsForAverages",
@@ -48335,10 +48395,6 @@
       "translation": "Valor mínimo de DSS (créditos)"
     },
     {
-      "source": "Minimum demand",
-      "translation": "Demanda mínima"
-    },
-    {
       "source": "Minimum displayed body value (credits)",
       "translation": "Valor corporal mínimo mostrado (créditos)"
     },
@@ -48349,10 +48405,6 @@
     {
       "source": "Minimum percentage",
       "translation": "Porcentaje mínimo"
-    },
-    {
-      "source": "Minimum population",
-      "translation": "Población mínima"
     },
     {
       "source": "Minimum reward (credits)",
@@ -48601,10 +48653,6 @@
     {
       "source": "Months",
       "translation": "Meses"
-    },
-    {
-      "source": "More system filters",
-      "translation": "Más filtros del sistema"
     },
     {
       "source": "More than one SrvSurvey instance is running",
@@ -49109,6 +49157,10 @@
     {
       "source": "New release available",
       "translation": "Nueva versión disponible"
+    },
+    {
+      "source": "New ring",
+      "translation": "nuevo anillo"
     },
     {
       "source": "New route",
@@ -51487,10 +51539,6 @@
       "translation": "Ataque pirata"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
-      "translation": "Planifique una ejecución de minería Powerplay desde el sistema objetivo hasta el anillo y la estación de venta. SrvSurvey combina contexto de revista, referencias de anillo integradas, observaciones en vivo EDDN y búsquedas API enfocadas Spansh; no se requiere ningún volcado de galaxia descargado. La Minería Planetaria no se puede combinar con otros tipos de minería. Ignora el tipo de anillo y enumera los planetas en los que se puede aterrizar para un material de Surface Hunt."
-    },
-    {
       "source": "Plan a mining trip",
       "translation": "Planifica un viaje minero"
     },
@@ -51847,10 +51895,6 @@
       "translation": "puesto de energía"
     },
     {
-      "source": "Power state",
-      "translation": "Estado de energía"
-    },
-    {
       "source": "Powered",
       "translation": "Desarrollado"
     },
@@ -51869,10 +51913,6 @@
     {
       "source": "Powerplay mining filters reset to commander defaults.",
       "translation": "Los filtros de minería de Powerplay se restablecen a los valores predeterminados del comandante."
-    },
-    {
-      "source": "Powerplay mining planner",
-      "translation": "Planificador de minería Powerplay"
     },
     {
       "source": "PowerplayJoin",
@@ -54239,6 +54279,30 @@
       "translation": "Nivel de reserva"
     },
     {
+      "source": "ReserveCommon",
+      "translation": "ReservaComún"
+    },
+    {
+      "source": "ReserveDepleted",
+      "translation": "Reserva Agotada"
+    },
+    {
+      "source": "ReserveLow",
+      "translation": "ReservaBaja"
+    },
+    {
+      "source": "ReserveMajor",
+      "translation": "ReservaMayor"
+    },
+    {
+      "source": "ReservePristine",
+      "translation": "ReservaPrístina"
+    },
+    {
+      "source": "ReserveUnknown",
+      "translation": "ReservaDesconocido"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Saldo reservado"
     },
@@ -54693,6 +54757,22 @@
     {
       "source": "Ring type",
       "translation": "Tipo de anillo"
+    },
+    {
+      "source": "RingIcy",
+      "translation": "anillohelado"
+    },
+    {
+      "source": "RingMetalRich",
+      "translation": "AnilloMetalRicos"
+    },
+    {
+      "source": "RingMetallic",
+      "translation": "AnilloMetálico"
+    },
+    {
+      "source": "RingRocky",
+      "translation": "AnilloRocky"
     },
     {
       "source": "Rings",
@@ -56849,6 +56929,10 @@
     {
       "source": "Show all signals",
       "translation": "Mostrar todas las señales"
+    },
+    {
+      "source": "Show all stations",
+      "translation": "Mostrar todas las estaciones"
     },
     {
       "source": "Show bio signals from Canonn on the radar",
@@ -61603,6 +61687,30 @@
       "translation": "Alternar {0} visibilidad"
     },
     {
+      "source": "ToggleSwitchFillOn",
+      "translation": "AlternarSwitchFillOn"
+    },
+    {
+      "source": "ToggleSwitchFillOnPointerOver",
+      "translation": "ToggleSwitchFillOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchFillOnPressed",
+      "translation": "ToggleSwitchFillOnPressed"
+    },
+    {
+      "source": "ToggleSwitchStrokeOn",
+      "translation": "AlternarSwitchStrokeOn"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPointerOver",
+      "translation": "ToggleSwitchStrokeOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPressed",
+      "translation": "ToggleSwitchStrokeOnPresionado"
+    },
+    {
       "source": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read its bearing from the visible game compass for the .mine command. Turret mode does not show the required bearing. Run the command again to hide the guide.",
       "translation": "Alterna una delgada guía vertical roja en el centro exacto de la ventana Elite. Utilice la vista de conducción de Rhino, coloque un círculo de ubicación minera distante debajo de la guía y luego lea su rumbo en la brújula visible del juego para el comando .mine. El modo torreta no muestra el rumbo requerido. Ejecute el comando nuevamente para ocultar la guía."
     },
@@ -64583,6 +64691,10 @@
       "translation": "predeterminado"
     },
     {
+      "source": "depleted",
+      "translation": "agotado"
+    },
+    {
       "source": "descending",
       "translation": "descendiendo"
     },
@@ -65383,6 +65495,10 @@
       "translation": "motores principales"
     },
     {
+      "source": "major",
+      "translation": "importante"
+    },
+    {
       "source": "male 1",
       "translation": "macho 1"
     },
@@ -65456,6 +65572,14 @@
     },
     {
       "source": "metal rich",
+      "translation": "rico en metales"
+    },
+    {
+      "source": "metallic",
+      "translation": "metálico"
+    },
+    {
+      "source": "metalrich",
       "translation": "rico en metales"
     },
     {
@@ -65837,6 +65961,10 @@
     {
       "source": "prior-scans",
       "translation": "escaneos previos"
+    },
+    {
+      "source": "pristine",
+      "translation": "prístino"
     },
     {
       "source": "privacy",
@@ -68069,10 +68197,6 @@
       "translation": "1 · CHOISISSEZ L'ITINÉRAIRE DE VOTRE CASQUE"
     },
     {
-      "source": "1 · Choose the Powerplay goal",
-      "translation": "1 · Choisissez l'objectif Powerplay"
-    },
-    {
       "source": "1,000 t",
       "translation": "1 000 tonnes"
     },
@@ -69357,6 +69481,10 @@
       "translation": "Ajouter un point mesuré"
     },
     {
+      "source": "Add mineral/metal",
+      "translation": "Ajouter du minéral/métal"
+    },
+    {
       "source": "Add notes about this visit...",
       "translation": "Ajouter des notes sur cette visite..."
     },
@@ -69529,10 +69657,6 @@
       "translation": "Après création, SrvSurvey relit les sites. Si le nouveau projet a déplacé le premier site d'origine, il envoie d'abord une correction de commande uniquement avec le site d'origine."
     },
     {
-      "source": "Age unit",
-      "translation": "Unité d'âge"
-    },
-    {
       "source": "Aggregate completion",
       "translation": "Achèvement global"
     },
@@ -69639,10 +69763,6 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Tous les systèmes {0} atteints."
-    },
-    {
-      "source": "Allegiance",
-      "translation": "Allégeance"
     },
     {
       "source": "Alliance Challenger",
@@ -76025,10 +76145,6 @@
       "translation": "Chaque panneau en direct conserve son propre emplacement par défaut et peut également avoir des remplacements de navire, de SRV, de chasseur, de taxi ou à pied."
     },
     {
-      "source": "Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates.",
-      "translation": "Chaque emplacement répertorie ses bagues, puis les stations achetant le minéral sélectionné. Les prix et la demande sont des observations récentes et ne méritent pas d’être estimés."
-    },
-    {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Chaque superposition possède un déclencheur d'état de jeu spécifique et peut également avoir un raccourci manuel."
     },
@@ -77493,10 +77609,6 @@
       "translation": "Rechercher un système"
     },
     {
-      "source": "Find target systems",
-      "translation": "Trouver des systèmes cibles"
-    },
-    {
       "source": "Find the last recorded FSD jump into {0}.",
       "translation": "Recherchez le dernier saut FSD enregistré dans {0}."
     },
@@ -78485,10 +78597,6 @@
       "translation": "OrDim"
     },
     {
-      "source": "Government",
-      "translation": "Gouvernement"
-    },
-    {
       "source": "Grade {0}",
       "translation": "Note {0}"
     },
@@ -79323,6 +79431,10 @@
     {
       "source": "Horizons",
       "translation": "Horizons"
+    },
+    {
+      "source": "Hotspot",
+      "translation": "Point chaud"
     },
     {
       "source": "Hotspot List",
@@ -80989,10 +81101,6 @@
       "translation": "Citron vert"
     },
     {
-      "source": "Limit market age",
-      "translation": "Limiter l’âge du marché"
-    },
-    {
       "source": "Limpets",
       "translation": "Patelles"
     },
@@ -81525,6 +81633,14 @@
       "translation": "M20,0 L25.61,14.39 40,20 25.61,25.61 20,40 14.39,25.61 0,20 14.39,14.39 Z"
     },
     {
+      "source": "M7,1 A6,6 0 1 1 6.99,1 Z",
+      "translation": "M7,1 A6,6 0 1 1 6,99,1Z"
+    },
+    {
+      "source": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8.92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM11.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z",
+      "translation": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8. 92,12,68l-.64,64h-1,02l-.64-.64v-.9l.64-.65h1,02l.64,65v.9ZM1 1.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76 h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z"
+    },
+    {
       "source": "MANUAL - {0}x",
       "translation": "MANUEL - {0}x"
     },
@@ -82029,16 +82145,16 @@
       "translation": "Âge maximum"
     },
     {
+      "source": "Max. demand",
+      "translation": "Max. demande"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "Plage de saut maximale"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Âge maximum (jours)"
-    },
-    {
-      "source": "Maximum demand (0 = any)",
-      "translation": "Demande maximale (0 = quelconque)"
     },
     {
       "source": "Med kits",
@@ -82129,6 +82245,10 @@
       "translation": "Corps riche en métal"
     },
     {
+      "source": "Metal-rich",
+      "translation": "Riche en métaux"
+    },
+    {
       "source": "Metal-rich body",
       "translation": "Corps riche en métaux"
     },
@@ -82195,6 +82315,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Colonie militaire - menace 2"
+    },
+    {
+      "source": "Min. demand",
+      "translation": "Min. demande"
     },
     {
       "source": "MinSystemsForAverages",
@@ -82277,10 +82401,6 @@
       "translation": "Valeur DSS minimale (crédits)"
     },
     {
-      "source": "Minimum demand",
-      "translation": "Demande minimale"
-    },
-    {
       "source": "Minimum displayed body value (credits)",
       "translation": "Valeur corporelle minimale affichée (crédits)"
     },
@@ -82291,10 +82411,6 @@
     {
       "source": "Minimum percentage",
       "translation": "Pourcentage minimum"
-    },
-    {
-      "source": "Minimum population",
-      "translation": "Population minimale"
     },
     {
       "source": "Minimum reward (credits)",
@@ -82543,10 +82659,6 @@
     {
       "source": "Months",
       "translation": "Mois"
-    },
-    {
-      "source": "More system filters",
-      "translation": "Plus de filtres système"
     },
     {
       "source": "More than one SrvSurvey instance is running",
@@ -83051,6 +83163,10 @@
     {
       "source": "New release available",
       "translation": "Nouvelle version disponible"
+    },
+    {
+      "source": "New ring",
+      "translation": "Nouvelle bague"
     },
     {
       "source": "New route",
@@ -85429,10 +85545,6 @@
       "translation": "Attaque de pirates"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
-      "translation": "Planifiez une exploitation minière Powerplay depuis le système cible jusqu'à l'anneau et la station de vente. SrvSurvey combine le contexte du journal, les références d'anneaux intégrées, les observations en direct EDDN et les recherches API ciblées Spansh ; aucun dump de galaxie téléchargé n'est requis. L’exploitation minière planétaire ne peut pas être combinée avec d’autres types d’exploitation minière. Il ignore le type d'anneau et répertorie les planètes atterrissables pour un matériau Surface Hunt."
-    },
-    {
       "source": "Plan a mining trip",
       "translation": "Planifier un voyage minier"
     },
@@ -85789,10 +85901,6 @@
       "translation": "Poste de puissance"
     },
     {
-      "source": "Power state",
-      "translation": "État de puissance"
-    },
-    {
       "source": "Powered",
       "translation": "Alimenté"
     },
@@ -85811,10 +85919,6 @@
     {
       "source": "Powerplay mining filters reset to commander defaults.",
       "translation": "Les filtres miniers Powerplay sont réinitialisés aux valeurs par défaut du commandant."
-    },
-    {
-      "source": "Powerplay mining planner",
-      "translation": "Planificateur minier Powerplay"
     },
     {
       "source": "PowerplayJoin",
@@ -88181,6 +88285,30 @@
       "translation": "Niveau de réserve"
     },
     {
+      "source": "ReserveCommon",
+      "translation": "RéserveCommun"
+    },
+    {
+      "source": "ReserveDepleted",
+      "translation": "RéserveÉpuisée"
+    },
+    {
+      "source": "ReserveLow",
+      "translation": "RéserveFaible"
+    },
+    {
+      "source": "ReserveMajor",
+      "translation": "RéserveMajeure"
+    },
+    {
+      "source": "ReservePristine",
+      "translation": "RéservePristine"
+    },
+    {
+      "source": "ReserveUnknown",
+      "translation": "RéserveInconnue"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Solde réservé"
     },
@@ -88635,6 +88763,22 @@
     {
       "source": "Ring type",
       "translation": "Type de bague"
+    },
+    {
+      "source": "RingIcy",
+      "translation": "BagueIcy"
+    },
+    {
+      "source": "RingMetalRich",
+      "translation": "BagueMétalRiche"
+    },
+    {
+      "source": "RingMetallic",
+      "translation": "BagueMétallique"
+    },
+    {
+      "source": "RingRocky",
+      "translation": "BagueRocky"
     },
     {
       "source": "Rings",
@@ -90791,6 +90935,10 @@
     {
       "source": "Show all signals",
       "translation": "Afficher tous les signaux"
+    },
+    {
+      "source": "Show all stations",
+      "translation": "Afficher toutes les stations"
     },
     {
       "source": "Show bio signals from Canonn on the radar",
@@ -95545,6 +95693,30 @@
       "translation": "Activer/désactiver la visibilité de {0}"
     },
     {
+      "source": "ToggleSwitchFillOn",
+      "translation": "ToggleSwitchFillOn"
+    },
+    {
+      "source": "ToggleSwitchFillOnPointerOver",
+      "translation": "ToggleSwitchFillOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchFillOnPressed",
+      "translation": "ToggleSwitchFillOnPressed"
+    },
+    {
+      "source": "ToggleSwitchStrokeOn",
+      "translation": "ToggleSwitchStrokeOn"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPointerOver",
+      "translation": "ToggleSwitchStrokeOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPressed",
+      "translation": "ToggleSwitchStrokeOnPressed"
+    },
+    {
       "source": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read its bearing from the visible game compass for the .mine command. Turret mode does not show the required bearing. Run the command again to hide the guide.",
       "translation": "Bascule un fin guide vertical rouge au centre exact de la fenêtre Elite. Utilisez la vue de conduite de Rhino, placez un cercle de localisation minière distant sous le guide, puis lisez son relèvement à partir de la boussole de jeu visible pour la commande .mine. Le mode tourelle n'affiche pas le relèvement requis. Exécutez à nouveau la commande pour masquer le guide."
     },
@@ -98525,6 +98697,10 @@
       "translation": "par défaut"
     },
     {
+      "source": "depleted",
+      "translation": "épuisé"
+    },
+    {
       "source": "descending",
       "translation": "descendant"
     },
@@ -99325,6 +99501,10 @@
       "translation": "moteurs principaux"
     },
     {
+      "source": "major",
+      "translation": "majeur"
+    },
+    {
       "source": "male 1",
       "translation": "mâle 1"
     },
@@ -99399,6 +99579,14 @@
     {
       "source": "metal rich",
       "translation": "riche en métal"
+    },
+    {
+      "source": "metallic",
+      "translation": "métallique"
+    },
+    {
+      "source": "metalrich",
+      "translation": "métalriche"
     },
     {
       "source": "middle",
@@ -99779,6 +99967,10 @@
     {
       "source": "prior-scans",
       "translation": "analyses préalables"
+    },
+    {
+      "source": "pristine",
+      "translation": "parfait"
     },
     {
       "source": "privacy",
@@ -102011,10 +102203,6 @@
       "translation": "1 · ESCOLHA SUA ROTA DE HEADSET"
     },
     {
-      "source": "1 · Choose the Powerplay goal",
-      "translation": "1 · Escolha o objetivo do Powerplay"
-    },
-    {
       "source": "1,000 t",
       "translation": "1.000 toneladas"
     },
@@ -103299,6 +103487,10 @@
       "translation": "Adicionar ponto medido"
     },
     {
+      "source": "Add mineral/metal",
+      "translation": "Adicionar mineral/metal"
+    },
+    {
       "source": "Add notes about this visit...",
       "translation": "Adicione notas sobre esta visita..."
     },
@@ -103471,10 +103663,6 @@
       "translation": "Após a criação, SrvSurvey lê os sites novamente. Se o novo projeto substituiu o primeiro local original, ele envia primeiro uma correção somente de pedido com o local original."
     },
     {
-      "source": "Age unit",
-      "translation": "Unidade de idade"
-    },
-    {
       "source": "Aggregate completion",
       "translation": "Conclusão agregada"
     },
@@ -103581,10 +103769,6 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Todos os sistemas {0} alcançados."
-    },
-    {
-      "source": "Allegiance",
-      "translation": "Fidelidade"
     },
     {
       "source": "Alliance Challenger",
@@ -109967,10 +110151,6 @@
       "translation": "Cada painel ativo mantém seu próprio posicionamento padrão e também pode ter substituições de navio, SRV, caça, táxi ou a pé."
     },
     {
-      "source": "Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates.",
-      "translation": "Cada local lista seus anéis e depois as estações que compram o mineral selecionado. Os preços e a procura são observações recentes e não estimativas de mérito."
-    },
-    {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Cada sobreposição possui um gatilho de estado de jogo específico e também pode ter um atalho manual."
     },
@@ -111435,10 +111615,6 @@
       "translation": "Encontrar sistema"
     },
     {
-      "source": "Find target systems",
-      "translation": "Encontre sistemas alvo"
-    },
-    {
       "source": "Find the last recorded FSD jump into {0}.",
       "translation": "Encontre o último salto FSD gravado em {0}."
     },
@@ -112427,10 +112603,6 @@
       "translation": "OuroDim"
     },
     {
-      "source": "Government",
-      "translation": "Governo"
-    },
-    {
       "source": "Grade {0}",
       "translation": "Nota {0}"
     },
@@ -113265,6 +113437,10 @@
     {
       "source": "Horizons",
       "translation": "Horizontes"
+    },
+    {
+      "source": "Hotspot",
+      "translation": "Ponto de acesso"
     },
     {
       "source": "Hotspot List",
@@ -114931,10 +115107,6 @@
       "translation": "Lima"
     },
     {
-      "source": "Limit market age",
-      "translation": "Limitar a idade do mercado"
-    },
-    {
       "source": "Limpets",
       "translation": "Lapas"
     },
@@ -115467,6 +115639,14 @@
       "translation": "M20,0 L25,61,14,39 40,20 25,61,25,61 20,40 14,39,25,61 0,20 14,39,14,39 Z"
     },
     {
+      "source": "M7,1 A6,6 0 1 1 6.99,1 Z",
+      "translation": "M7,1 A6,6 0 1 1 6,99,1 Z"
+    },
+    {
+      "source": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8.92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM11.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z",
+      "translation": "M8,0C3,58,0,0,3,58,0,8s3,58,8,8,8,8-3,58,8-8S12,42,0,8,0ZM8. 92,12,68l-.64,64h-1,02l-.64-.64v-.9l.64-.65h1,02l.64,65v.9ZM1 1,48,6,61l-2,73,2,64v1,21h-1,98v-1,84l2,7-2,61v-0,67l-0,77-0,76 h-1,96l-.71,71v.85h-2,01v-1,47l1,83-1,83h3,74l1,89,1,89v1,89Z"
+    },
+    {
       "source": "MANUAL - {0}x",
       "translation": "MANUAL - {0}x"
     },
@@ -115971,16 +116151,16 @@
       "translation": "Idade máxima"
     },
     {
+      "source": "Max. demand",
+      "translation": "Máx. demanda"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "Alcance máximo de salto"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Idade máxima (dias)"
-    },
-    {
-      "source": "Maximum demand (0 = any)",
-      "translation": "Demanda máxima (0 = qualquer)"
     },
     {
       "source": "Med kits",
@@ -116071,6 +116251,10 @@
       "translation": "Corpo rico em metal"
     },
     {
+      "source": "Metal-rich",
+      "translation": "Rico em metais"
+    },
+    {
       "source": "Metal-rich body",
       "translation": "Corpo rico em metal"
     },
@@ -116137,6 +116321,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Assentamento militar - ameaça 2"
+    },
+    {
+      "source": "Min. demand",
+      "translation": "Min. demanda"
     },
     {
       "source": "MinSystemsForAverages",
@@ -116219,10 +116407,6 @@
       "translation": "Valor mínimo de DSS (créditos)"
     },
     {
-      "source": "Minimum demand",
-      "translation": "Demanda mínima"
-    },
-    {
       "source": "Minimum displayed body value (credits)",
       "translation": "Valor mínimo do corpo exibido (créditos)"
     },
@@ -116233,10 +116417,6 @@
     {
       "source": "Minimum percentage",
       "translation": "Porcentagem mínima"
-    },
-    {
-      "source": "Minimum population",
-      "translation": "População mínima"
     },
     {
       "source": "Minimum reward (credits)",
@@ -116485,10 +116665,6 @@
     {
       "source": "Months",
       "translation": "Meses"
-    },
-    {
-      "source": "More system filters",
-      "translation": "Mais filtros do sistema"
     },
     {
       "source": "More than one SrvSurvey instance is running",
@@ -116993,6 +117169,10 @@
     {
       "source": "New release available",
       "translation": "Novo lançamento disponível"
+    },
+    {
+      "source": "New ring",
+      "translation": "Novo anel"
     },
     {
       "source": "New route",
@@ -119371,10 +119551,6 @@
       "translation": "Ataque pirata"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
-      "translation": "Planeje uma execução de mineração Powerplay do sistema de destino até o anel e a estação de venda. SrvSurvey combina contexto de diário, referências de anel integradas, observações ao vivo EDDN e pesquisas de API focadas Spansh; nenhum dump de galáxia baixado é necessário. A Mineração Planetária não pode ser combinada com outros tipos de mineração. Ele ignora o tipo de anel e lista os planetas pousáveis ​​para um material Surface Hunt."
-    },
-    {
       "source": "Plan a mining trip",
       "translation": "Planeje uma viagem de mineração"
     },
@@ -119731,10 +119907,6 @@
       "translation": "Posto de energia"
     },
     {
-      "source": "Power state",
-      "translation": "Estado de energia"
-    },
-    {
       "source": "Powered",
       "translation": "Alimentado"
     },
@@ -119753,10 +119925,6 @@
     {
       "source": "Powerplay mining filters reset to commander defaults.",
       "translation": "Os filtros de mineração do Powerplay foram redefinidos para os padrões do comandante."
-    },
-    {
-      "source": "Powerplay mining planner",
-      "translation": "Planejador de mineração Powerplay"
     },
     {
       "source": "PowerplayJoin",
@@ -122123,6 +122291,30 @@
       "translation": "Nível de reserva"
     },
     {
+      "source": "ReserveCommon",
+      "translation": "ReservaComum"
+    },
+    {
+      "source": "ReserveDepleted",
+      "translation": "Reserva esgotada"
+    },
+    {
+      "source": "ReserveLow",
+      "translation": "Reserva Baixa"
+    },
+    {
+      "source": "ReserveMajor",
+      "translation": "Reserva Maior"
+    },
+    {
+      "source": "ReservePristine",
+      "translation": "ReservaPristine"
+    },
+    {
+      "source": "ReserveUnknown",
+      "translation": "ReservaDesconhecido"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Saldo reservado"
     },
@@ -122577,6 +122769,22 @@
     {
       "source": "Ring type",
       "translation": "Tipo de anel"
+    },
+    {
+      "source": "RingIcy",
+      "translation": "RingIcy"
+    },
+    {
+      "source": "RingMetalRich",
+      "translation": "AnelMetalRico"
+    },
+    {
+      "source": "RingMetallic",
+      "translation": "AnelMetálico"
+    },
+    {
+      "source": "RingRocky",
+      "translation": "RingRocky"
     },
     {
       "source": "Rings",
@@ -124733,6 +124941,10 @@
     {
       "source": "Show all signals",
       "translation": "Mostrar todos os sinais"
+    },
+    {
+      "source": "Show all stations",
+      "translation": "Mostrar todas as estações"
     },
     {
       "source": "Show bio signals from Canonn on the radar",
@@ -129487,6 +129699,30 @@
       "translation": "Alternar visibilidade {0}"
     },
     {
+      "source": "ToggleSwitchFillOn",
+      "translation": "ToggleSwitchFillOn"
+    },
+    {
+      "source": "ToggleSwitchFillOnPointerOver",
+      "translation": "ToggleSwitchFillOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchFillOnPressed",
+      "translation": "ToggleSwitchFillOnPressed"
+    },
+    {
+      "source": "ToggleSwitchStrokeOn",
+      "translation": "ToggleSwitchStrokeOn"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPointerOver",
+      "translation": "ToggleSwitchStrokeOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPressed",
+      "translation": "ToggleSwitchStrokeOnPressed"
+    },
+    {
       "source": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read its bearing from the visible game compass for the .mine command. Turret mode does not show the required bearing. Run the command again to hide the guide.",
       "translation": "Alterna uma guia vertical vermelha fina exatamente no centro da janela Elite. Use a visualização de direção do Rhino, coloque um círculo distante de localização de mineração sob o guia e, em seguida, leia sua direção na bússola de jogo visível para o comando .mine. O modo torre não mostra o rumo necessário. Execute o comando novamente para ocultar o guia."
     },
@@ -132467,6 +132703,10 @@
       "translation": "padrão"
     },
     {
+      "source": "depleted",
+      "translation": "esgotado"
+    },
+    {
       "source": "descending",
       "translation": "descendo"
     },
@@ -133267,6 +133507,10 @@
       "translation": "motores principais"
     },
     {
+      "source": "major",
+      "translation": "principal"
+    },
+    {
       "source": "male 1",
       "translation": "masculino 1"
     },
@@ -133340,6 +133584,14 @@
     },
     {
       "source": "metal rich",
+      "translation": "rico em metal"
+    },
+    {
+      "source": "metallic",
+      "translation": "metálico"
+    },
+    {
+      "source": "metalrich",
       "translation": "rico em metal"
     },
     {
@@ -133721,6 +133973,10 @@
     {
       "source": "prior-scans",
       "translation": "varreduras anteriores"
+    },
+    {
+      "source": "pristine",
+      "translation": "imaculado"
     },
     {
       "source": "privacy",
@@ -135953,10 +136209,6 @@
       "translation": "1 · ВЫБЕРИТЕ МАРШРУТ СВОЕЙ ГАРНИТУРЫ"
     },
     {
-      "source": "1 · Choose the Powerplay goal",
-      "translation": "1 · Выберите цель игры в большинстве"
-    },
-    {
       "source": "1,000 t",
       "translation": "1000 т"
     },
@@ -137241,6 +137493,10 @@
       "translation": "Добавить измеренную точку"
     },
     {
+      "source": "Add mineral/metal",
+      "translation": "Добавить минерал/металл"
+    },
+    {
       "source": "Add notes about this visit...",
       "translation": "Добавить заметки об этом визите..."
     },
@@ -137413,10 +137669,6 @@
       "translation": "После создания SrvSurvey снова читает сайты. Если новый проект заменил исходный первый сайт, он сначала отправляет исправление только для заказа с исходным сайтом."
     },
     {
-      "source": "Age unit",
-      "translation": "Возрастная единица"
-    },
-    {
       "source": "Aggregate completion",
       "translation": "Совокупное завершение"
     },
@@ -137523,10 +137775,6 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Достигнуты все системы {0} ."
-    },
-    {
-      "source": "Allegiance",
-      "translation": "Верность"
     },
     {
       "source": "Alliance Challenger",
@@ -143909,10 +144157,6 @@
       "translation": "Каждая живая панель сохраняет свое собственное расположение по умолчанию, а также может иметь переопределения для корабля, SRV, истребителя, такси или пешего передвижения."
     },
     {
-      "source": "Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates.",
-      "translation": "В каждой локации указаны свои кольца, а затем станции, покупающие выбранный минерал. Цены и спрос являются недавними наблюдениями, а не оценками."
-    },
-    {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "Каждое наложение имеет определенный триггер игрового состояния, а также может иметь ручной ярлык."
     },
@@ -145377,10 +145621,6 @@
       "translation": "Найти систему"
     },
     {
-      "source": "Find target systems",
-      "translation": "Найти целевые системы"
-    },
-    {
       "source": "Find the last recorded FSD jump into {0}.",
       "translation": "Найдите последний записанный переход FSD в {0}."
     },
@@ -146369,10 +146609,6 @@
       "translation": "GoldDim"
     },
     {
-      "source": "Government",
-      "translation": "Правительство"
-    },
-    {
       "source": "Grade {0}",
       "translation": "Оценка {0}"
     },
@@ -147207,6 +147443,10 @@
     {
       "source": "Horizons",
       "translation": "Горизонты"
+    },
+    {
+      "source": "Hotspot",
+      "translation": "Точка доступа"
     },
     {
       "source": "Hotspot List",
@@ -148873,10 +149113,6 @@
       "translation": "Лайм"
     },
     {
-      "source": "Limit market age",
-      "translation": "Ограничить возраст рынка"
-    },
-    {
       "source": "Limpets",
       "translation": "Блюдечки"
     },
@@ -149409,6 +149645,14 @@
       "translation": "M20,0 L25.61,14.39 40,20 25.61,25.61 20,40 14.39,25.61 0,20 14.39,14.39 Z"
     },
     {
+      "source": "M7,1 A6,6 0 1 1 6.99,1 Z",
+      "translation": "М7,1 А6,6 0 1 1 6,99,1 З"
+    },
+    {
+      "source": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8.92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM11.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z",
+      "translation": "М8,0С3.58,0,0,3.58,0,8с3.58,8,8,8,8-3.58,8-8С12.42,0,8,0ЗМ8. 92,12.68л-.64.64х-1,02л-.64-.64в-.9л.64-.65х1.02л.64.65в.9ЗМ1 1.48,6.61л-2.73,2.64в1.21ч-1.98в-1.84л2.7-2.61в-.67л-.77-.76 х-1.96л-.71.71в.85х-2.01в-1.47л1.83-1.83х3.74л1.89,1.89в1.89З"
+    },
+    {
       "source": "MANUAL - {0}x",
       "translation": "ВРУЧНУЮ - {0}x"
     },
@@ -149913,16 +150157,16 @@
       "translation": "Максимальный возраст"
     },
     {
+      "source": "Max. demand",
+      "translation": "Макс. требовать"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "MaxJumpRange"
     },
     {
       "source": "Maximum age (days)",
       "translation": "Максимальный возраст (дни)"
-    },
-    {
-      "source": "Maximum demand (0 = any)",
-      "translation": "Максимальная потребность (0 = любая)"
     },
     {
       "source": "Med kits",
@@ -150013,6 +150257,10 @@
       "translation": "Металлический корпус"
     },
     {
+      "source": "Metal-rich",
+      "translation": "Богатый металлом"
+    },
+    {
       "source": "Metal-rich body",
       "translation": "Металлический корпус"
     },
@@ -150079,6 +150327,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Военное поселение - угроза 2"
+    },
+    {
+      "source": "Min. demand",
+      "translation": "Мин. требовать"
     },
     {
       "source": "MinSystemsForAverages",
@@ -150161,10 +150413,6 @@
       "translation": "Минимальная стоимость DSS (кредиты)"
     },
     {
-      "source": "Minimum demand",
-      "translation": "Минимальный спрос"
-    },
-    {
       "source": "Minimum displayed body value (credits)",
       "translation": "Минимальная отображаемая стоимость тела (кредиты)"
     },
@@ -150175,10 +150423,6 @@
     {
       "source": "Minimum percentage",
       "translation": "Минимальный процент"
-    },
-    {
-      "source": "Minimum population",
-      "translation": "Минимальное население"
     },
     {
       "source": "Minimum reward (credits)",
@@ -150427,10 +150671,6 @@
     {
       "source": "Months",
       "translation": "Месяцы"
-    },
-    {
-      "source": "More system filters",
-      "translation": "Больше системных фильтров"
     },
     {
       "source": "More than one SrvSurvey instance is running",
@@ -150935,6 +151175,10 @@
     {
       "source": "New release available",
       "translation": "Доступен новый выпуск"
+    },
+    {
+      "source": "New ring",
+      "translation": "Новое кольцо"
     },
     {
       "source": "New route",
@@ -153313,10 +153557,6 @@
       "translation": "Пиратская атака"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
-      "translation": "Спланируйте запуск майнинга Powerplay от целевой системы до кольцевой и продающей станции. SrvSurvey сочетает в себе контекст журнала, встроенные кольцевые ссылки, наблюдения в реальном времени EDDN и целенаправленный поиск Spansh через API; скачанный дамп галактики не требуется. Планетарный майнинг нельзя совмещать с другими видами майнинга. Он игнорирует тип кольца и перечисляет планеты, на которые можно приземлиться, для материала Surface Hunt."
-    },
-    {
       "source": "Plan a mining trip",
       "translation": "Запланируйте поездку на добычу полезных ископаемых"
     },
@@ -153673,10 +153913,6 @@
       "translation": "Силовой пост"
     },
     {
-      "source": "Power state",
-      "translation": "Состояние питания"
-    },
-    {
       "source": "Powered",
       "translation": "Работает"
     },
@@ -153695,10 +153931,6 @@
     {
       "source": "Powerplay mining filters reset to commander defaults.",
       "translation": "Фильтры майнинга Powerplay сбрасываются до настроек командира по умолчанию."
-    },
-    {
-      "source": "Powerplay mining planner",
-      "translation": "Планировщик майнинга Powerplay"
     },
     {
       "source": "PowerplayJoin",
@@ -156065,6 +156297,30 @@
       "translation": "Уровень резерва"
     },
     {
+      "source": "ReserveCommon",
+      "translation": "РезервОбщий"
+    },
+    {
+      "source": "ReserveDepleted",
+      "translation": "РезервИсчерпан"
+    },
+    {
+      "source": "ReserveLow",
+      "translation": "РезервНизкий"
+    },
+    {
+      "source": "ReserveMajor",
+      "translation": "РезервМайор"
+    },
+    {
+      "source": "ReservePristine",
+      "translation": "РезервPristine"
+    },
+    {
+      "source": "ReserveUnknown",
+      "translation": "РезервНеизвестно"
+    },
+    {
       "source": "Reserved balance",
       "translation": "Зарезервированный баланс"
     },
@@ -156519,6 +156775,22 @@
     {
       "source": "Ring type",
       "translation": "Тип кольца"
+    },
+    {
+      "source": "RingIcy",
+      "translation": "КольцоЛедяной"
+    },
+    {
+      "source": "RingMetalRich",
+      "translation": "КольцоМеталлБогатый"
+    },
+    {
+      "source": "RingMetallic",
+      "translation": "КольцоМеталлик"
+    },
+    {
+      "source": "RingRocky",
+      "translation": "КольцоРокки"
     },
     {
       "source": "Rings",
@@ -158675,6 +158947,10 @@
     {
       "source": "Show all signals",
       "translation": "Показать все сигналы"
+    },
+    {
+      "source": "Show all stations",
+      "translation": "Показать все станции"
     },
     {
       "source": "Show bio signals from Canonn on the radar",
@@ -163429,6 +163705,30 @@
       "translation": "Переключить видимость {0}"
     },
     {
+      "source": "ToggleSwitchFillOn",
+      "translation": "ToggleSwitchFillOn"
+    },
+    {
+      "source": "ToggleSwitchFillOnPointerOver",
+      "translation": "ToggleSwitchFillOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchFillOnPressed",
+      "translation": "ToggleSwitchFillOnPressed"
+    },
+    {
+      "source": "ToggleSwitchStrokeOn",
+      "translation": "ToggleSwitchStrokeOn"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPointerOver",
+      "translation": "ToggleSwitchStrokeOnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPressed",
+      "translation": "ToggleSwitchStrokeOnPressed"
+    },
+    {
       "source": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read its bearing from the visible game compass for the .mine command. Turret mode does not show the required bearing. Run the command again to hide the guide.",
       "translation": "Переключает тонкую красную вертикальную направляющую точно по центру окна Elite. Используйте вид вождения Rhino, поместите удаленный круг с местом добычи полезных ископаемых под направляющую, затем считайте его направление по видимому игровому компасу для команды .mine. Режим турели не показывает нужный пеленг. Запустите команду еще раз, чтобы скрыть руководство."
     },
@@ -166409,6 +166709,10 @@
       "translation": "по умолчанию"
     },
     {
+      "source": "depleted",
+      "translation": "истощенный"
+    },
+    {
       "source": "descending",
       "translation": "нисходящий"
     },
@@ -167209,6 +167513,10 @@
       "translation": "главные двигатели"
     },
     {
+      "source": "major",
+      "translation": "главный"
+    },
+    {
       "source": "male 1",
       "translation": "мужчина 1"
     },
@@ -167283,6 +167591,14 @@
     {
       "source": "metal rich",
       "translation": "богатый металлом"
+    },
+    {
+      "source": "metallic",
+      "translation": "металлический"
+    },
+    {
+      "source": "metalrich",
+      "translation": "богатый металлистами"
     },
     {
       "source": "middle",
@@ -167663,6 +167979,10 @@
     {
       "source": "prior-scans",
       "translation": "предварительное сканирование"
+    },
+    {
+      "source": "pristine",
+      "translation": "нетронутый"
     },
     {
       "source": "privacy",
@@ -169895,10 +170215,6 @@
       "translation": "1 · 选择您的耳机路线"
     },
     {
-      "source": "1 · Choose the Powerplay goal",
-      "translation": "1 · 选择 Powerplay 目标"
-    },
-    {
       "source": "1,000 t",
       "translation": "1,000吨"
     },
@@ -171183,6 +171499,10 @@
       "translation": "添加测量点"
     },
     {
+      "source": "Add mineral/metal",
+      "translation": "添加矿物质/金属"
+    },
+    {
       "source": "Add notes about this visit...",
       "translation": "添加有关此访问的注释..."
     },
@@ -171355,10 +171675,6 @@
       "translation": "创建后，SrvSurvey 再次读取站点。如果新项目取代了原来的第一个站点，它会首先向原始站点发送仅订单更正。"
     },
     {
-      "source": "Age unit",
-      "translation": "年龄单位"
-    },
-    {
       "source": "Aggregate completion",
       "translation": "聚合完成度"
     },
@@ -171465,10 +171781,6 @@
     {
       "source": "All {0} systems reached.",
       "translation": "已到达所有 {0} 系统。"
-    },
-    {
-      "source": "Allegiance",
-      "translation": "忠诚"
     },
     {
       "source": "Alliance Challenger",
@@ -177851,10 +178163,6 @@
       "translation": "每个实时面板都保留其自己的默认位置，并且还可以具有船舶、SRV、战斗机、出租车或步行覆盖。"
     },
     {
-      "source": "Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates.",
-      "translation": "每个地点都会列出其环，然后是购买所选矿物的站点。价格和需求是最近的观察结果，不值得估计。"
-    },
-    {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "每个叠加层都有一个特定的游戏状态触发器，也可以有一个手动快捷方式。"
     },
@@ -179319,10 +179627,6 @@
       "translation": "查找系统"
     },
     {
-      "source": "Find target systems",
-      "translation": "查找目标系统"
-    },
-    {
       "source": "Find the last recorded FSD jump into {0}.",
       "translation": "找到最后记录的 FSD 跳转到 {0}。"
     },
@@ -180311,10 +180615,6 @@
       "translation": "金点"
     },
     {
-      "source": "Government",
-      "translation": "政府"
-    },
-    {
       "source": "Grade {0}",
       "translation": "等级 {0}"
     },
@@ -181149,6 +181449,10 @@
     {
       "source": "Horizons",
       "translation": "地平线"
+    },
+    {
+      "source": "Hotspot",
+      "translation": "热点"
     },
     {
       "source": "Hotspot List",
@@ -182815,10 +183119,6 @@
       "translation": "酸橙"
     },
     {
-      "source": "Limit market age",
-      "translation": "限制市场年龄"
-    },
-    {
       "source": "Limpets",
       "translation": "帽贝"
     },
@@ -183351,6 +183651,14 @@
       "translation": "M20,0 L25.61,14.39 40,20 25.61,25.61 20,40 14.39,25.61 0,20 14.39,14.39 Z"
     },
     {
+      "source": "M7,1 A6,6 0 1 1 6.99,1 Z",
+      "translation": "M7,1 A6,6 0 1 1 6.99,1 Z"
+    },
+    {
+      "source": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8.92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM11.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z",
+      "translation": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8。 92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM1 1.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76 h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z"
+    },
+    {
       "source": "MANUAL - {0}x",
       "translation": "手动 - {0}x"
     },
@@ -183855,16 +184163,16 @@
       "translation": "最大年龄"
     },
     {
+      "source": "Max. demand",
+      "translation": "最大限度。要求"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "最大跳跃范围"
     },
     {
       "source": "Maximum age (days)",
       "translation": "最大年龄（天）"
-    },
-    {
-      "source": "Maximum demand (0 = any)",
-      "translation": "最大需求（0 = 任意）"
     },
     {
       "source": "Med kits",
@@ -183955,6 +184263,10 @@
       "translation": "金属丰富的机身"
     },
     {
+      "source": "Metal-rich",
+      "translation": "富含金属"
+    },
+    {
       "source": "Metal-rich body",
       "translation": "富含金属的机身"
     },
@@ -184021,6 +184333,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "军事定居点 - 威胁 2"
+    },
+    {
+      "source": "Min. demand",
+      "translation": "分钟。要求"
     },
     {
       "source": "MinSystemsForAverages",
@@ -184103,10 +184419,6 @@
       "translation": "最低 DSS 值（学分）"
     },
     {
-      "source": "Minimum demand",
-      "translation": "最低需求"
-    },
-    {
       "source": "Minimum displayed body value (credits)",
       "translation": "最低显示身体价值（学分）"
     },
@@ -184117,10 +184429,6 @@
     {
       "source": "Minimum percentage",
       "translation": "最低百分比"
-    },
-    {
-      "source": "Minimum population",
-      "translation": "最低人口数"
     },
     {
       "source": "Minimum reward (credits)",
@@ -184369,10 +184677,6 @@
     {
       "source": "Months",
       "translation": "几个月"
-    },
-    {
-      "source": "More system filters",
-      "translation": "更多系统过滤器"
     },
     {
       "source": "More than one SrvSurvey instance is running",
@@ -184877,6 +185181,10 @@
     {
       "source": "New release available",
       "translation": "新版本可用"
+    },
+    {
+      "source": "New ring",
+      "translation": "新戒指"
     },
     {
       "source": "New route",
@@ -187255,10 +187563,6 @@
       "translation": "海盗袭击"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
-      "translation": "规划从目标系统到环站和销售站的 Powerplay 挖矿运行。 SrvSurvey 结合了期刊上下文、内置环引用、实时 EDDN 观察和重点 Spansh API 搜索；不需要下载 Galaxy 转储。行星采矿不能与其他采矿类型结合使用。它忽略环类型并列出表面狩猎材料的可着陆行星。"
-    },
-    {
       "source": "Plan a mining trip",
       "translation": "计划一次采矿之旅"
     },
@@ -187615,10 +187919,6 @@
       "translation": "电源柱"
     },
     {
-      "source": "Power state",
-      "translation": "电源状态"
-    },
-    {
       "source": "Powered",
       "translation": "供电"
     },
@@ -187637,10 +187937,6 @@
     {
       "source": "Powerplay mining filters reset to commander defaults.",
       "translation": "Powerplay 挖掘过滤器重置为指挥官默认值。"
-    },
-    {
-      "source": "Powerplay mining planner",
-      "translation": "Powerplay 采矿规划器"
     },
     {
       "source": "PowerplayJoin",
@@ -190007,6 +190303,30 @@
       "translation": "储备水平"
     },
     {
+      "source": "ReserveCommon",
+      "translation": "保留普通"
+    },
+    {
+      "source": "ReserveDepleted",
+      "translation": "储备耗尽"
+    },
+    {
+      "source": "ReserveLow",
+      "translation": "储备低"
+    },
+    {
+      "source": "ReserveMajor",
+      "translation": "预备役专业"
+    },
+    {
+      "source": "ReservePristine",
+      "translation": "保留原始"
+    },
+    {
+      "source": "ReserveUnknown",
+      "translation": "储备未知"
+    },
+    {
       "source": "Reserved balance",
       "translation": "预留余额"
     },
@@ -190461,6 +190781,22 @@
     {
       "source": "Ring type",
       "translation": "环型"
+    },
+    {
+      "source": "RingIcy",
+      "translation": "环冰"
+    },
+    {
+      "source": "RingMetalRich",
+      "translation": "戒指金属丰富"
+    },
+    {
+      "source": "RingMetallic",
+      "translation": "戒指金属"
+    },
+    {
+      "source": "RingRocky",
+      "translation": "环洛基"
     },
     {
       "source": "Rings",
@@ -192617,6 +192953,10 @@
     {
       "source": "Show all signals",
       "translation": "显示所有信号"
+    },
+    {
+      "source": "Show all stations",
+      "translation": "显示所有电台"
     },
     {
       "source": "Show bio signals from Canonn on the radar",
@@ -197371,6 +197711,30 @@
       "translation": "切换 {0} 可见性"
     },
     {
+      "source": "ToggleSwitchFillOn",
+      "translation": "切换开关填充"
+    },
+    {
+      "source": "ToggleSwitchFillOnPointerOver",
+      "translation": "切换开关填充指针上方"
+    },
+    {
+      "source": "ToggleSwitchFillOnPressed",
+      "translation": "按下时切换开关填充"
+    },
+    {
+      "source": "ToggleSwitchStrokeOn",
+      "translation": "切换开关行程开启"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPointerOver",
+      "translation": "切换开关笔划OnPointerOver"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPressed",
+      "translation": "切换开关StrokeOnPressed"
+    },
+    {
       "source": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read its bearing from the visible game compass for the .mine command. Turret mode does not show the required bearing. Run the command again to hide the guide.",
       "translation": "切换精英窗口正中心的细红色垂直参考线。使用 Rhino 驾驶视图，在指南下方放置一个远处的采矿位置圆圈，然后从可见的游戏指南针中读取其方位以执行 .mine 命令。炮塔模式不显示所需的方位。再次运行该命令以隐藏指南。"
     },
@@ -200351,6 +200715,10 @@
       "translation": "默认"
     },
     {
+      "source": "depleted",
+      "translation": "耗尽的"
+    },
+    {
       "source": "descending",
       "translation": "下降"
     },
@@ -201151,6 +201519,10 @@
       "translation": "主机"
     },
     {
+      "source": "major",
+      "translation": "主要的"
+    },
+    {
       "source": "male 1",
       "translation": "男 1"
     },
@@ -201225,6 +201597,14 @@
     {
       "source": "metal rich",
       "translation": "富含金属"
+    },
+    {
+      "source": "metallic",
+      "translation": "金属的"
+    },
+    {
+      "source": "metalrich",
+      "translation": "富含金属的"
     },
     {
       "source": "middle",
@@ -201605,6 +201985,10 @@
     {
       "source": "prior-scans",
       "translation": "事先扫描"
+    },
+    {
+      "source": "pristine",
+      "translation": "原始的"
     },
     {
       "source": "privacy",
@@ -203837,10 +204221,6 @@
       "translation": "* 1 · CHOOSE YOUR HEADSET ROUTE >>>!"
     },
     {
-      "source": "1 · Choose the Powerplay goal",
-      "translation": "* 1 · CHOOSE THE POWERPLAY GOAL >>>!"
-    },
-    {
       "source": "1,000 t",
       "translation": "* 1,000 T >>>!"
     },
@@ -205125,6 +205505,10 @@
       "translation": "* ADD MEASURED POINT >>>!"
     },
     {
+      "source": "Add mineral/metal",
+      "translation": "* ADD MINERAL/METAL >>>!"
+    },
+    {
       "source": "Add notes about this visit...",
       "translation": "* ADD NOTES ABOUT THIS VISIT... >>>!"
     },
@@ -205297,10 +205681,6 @@
       "translation": "* AFTER CREATION, SRVSURVEY READS THE SITES AGAIN. IF THE NEW PROJECT DISPLACED THE ORIGINAL FIRST SITE, IT SENDS AN ORDER-ONLY CORRECTION WITH THE ORIGINAL SITE FIRST. >>>!"
     },
     {
-      "source": "Age unit",
-      "translation": "* AGE UNIT >>>!"
-    },
-    {
       "source": "Aggregate completion",
       "translation": "* AGGREGATE COMPLETION >>>!"
     },
@@ -205407,10 +205787,6 @@
     {
       "source": "All {0} systems reached.",
       "translation": "* ALL {0} SYSTEMS REACHED. >>>!"
-    },
-    {
-      "source": "Allegiance",
-      "translation": "* ALLEGIANCE >>>!"
     },
     {
       "source": "Alliance Challenger",
@@ -211793,10 +212169,6 @@
       "translation": "* EACH LIVE PANEL KEEPS ITS OWN DEFAULT PLACEMENT AND CAN ALSO HAVE SHIP, SRV, FIGHTER, TAXI, OR ON-FOOT OVERRIDES. >>>!"
     },
     {
-      "source": "Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates.",
-      "translation": "* EACH LOCATION LISTS ITS RINGS, THEN THE STATIONS BUYING THE SELECTED MINERAL. PRICES AND DEMAND ARE RECENT OBSERVATIONS, NOT MERIT ESTIMATES. >>>!"
-    },
-    {
       "source": "Each overlay has a specific game-state trigger and can also have a manual shortcut.",
       "translation": "* EACH OVERLAY HAS A SPECIFIC GAME-STATE TRIGGER AND CAN ALSO HAVE A MANUAL SHORTCUT. >>>!"
     },
@@ -213261,10 +213633,6 @@
       "translation": "* FIND SYSTEM >>>!"
     },
     {
-      "source": "Find target systems",
-      "translation": "* FIND TARGET SYSTEMS >>>!"
-    },
-    {
       "source": "Find the last recorded FSD jump into {0}.",
       "translation": "* FIND THE LAST RECORDED FSD JUMP INTO {0}. >>>!"
     },
@@ -214253,10 +214621,6 @@
       "translation": "* GOLDDIM >>>!"
     },
     {
-      "source": "Government",
-      "translation": "* GOVERNMENT >>>!"
-    },
-    {
       "source": "Grade {0}",
       "translation": "* GRADE {0} >>>!"
     },
@@ -215091,6 +215455,10 @@
     {
       "source": "Horizons",
       "translation": "* HORIZONS >>>!"
+    },
+    {
+      "source": "Hotspot",
+      "translation": "* HOTSPOT >>>!"
     },
     {
       "source": "Hotspot List",
@@ -216757,10 +217125,6 @@
       "translation": "* LIME >>>!"
     },
     {
-      "source": "Limit market age",
-      "translation": "* LIMIT MARKET AGE >>>!"
-    },
-    {
       "source": "Limpets",
       "translation": "* LIMPETS >>>!"
     },
@@ -217293,6 +217657,14 @@
       "translation": "* M20,0 L25.61,14.39 40,20 25.61,25.61 20,40 14.39,25.61 0,20 14.39,14.39 Z >>>!"
     },
     {
+      "source": "M7,1 A6,6 0 1 1 6.99,1 Z",
+      "translation": "* M7,1 A6,6 0 1 1 6.99,1 Z >>>!"
+    },
+    {
+      "source": "M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8.92,12.68l-.64.64h-1.02l-.64-.64v-.9l.64-.65h1.02l.64.65v.9ZM11.48,6.61l-2.73,2.64v1.21h-1.98v-1.84l2.7-2.61v-.67l-.77-.76h-1.96l-.71.71v.85h-2.01v-1.47l1.83-1.83h3.74l1.89,1.89v1.89Z",
+      "translation": "* M8,0C3.58,0,0,3.58,0,8S3.58,8,8,8,8-3.58,8-8S12.42,0,8,0ZM8.92,12.68L-.64.64H-1.02L-.64-.64V-.9L.64-.65H1.02L.64.65V.9ZM11.48,6.61L-2.73,2.64V1.21H-1.98V-1.84L2.7-2.61V-.67L-.77-.76H-1.96L-.71.71V.85H-2.01V-1.47L1.83-1.83H3.74L1.89,1.89V1.89Z >>>!"
+    },
+    {
       "source": "MANUAL - {0}x",
       "translation": "* MANUAL - {0}X >>>!"
     },
@@ -217797,16 +218169,16 @@
       "translation": "* MAX AGE >>>!"
     },
     {
+      "source": "Max. demand",
+      "translation": "* MAX. DEMAND >>>!"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "* MAXJUMPRANGE >>>!"
     },
     {
       "source": "Maximum age (days)",
       "translation": "* MAXIMUM AGE (DAYS) >>>!"
-    },
-    {
-      "source": "Maximum demand (0 = any)",
-      "translation": "* MAXIMUM DEMAND (0 = ANY) >>>!"
     },
     {
       "source": "Med kits",
@@ -217897,6 +218269,10 @@
       "translation": "* METAL RICH BODY >>>!"
     },
     {
+      "source": "Metal-rich",
+      "translation": "* METAL-RICH >>>!"
+    },
+    {
       "source": "Metal-rich body",
       "translation": "* METAL-RICH BODY >>>!"
     },
@@ -217963,6 +218339,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "* MILITARY SETTLEMENT - THREAT 2 >>>!"
+    },
+    {
+      "source": "Min. demand",
+      "translation": "* MIN. DEMAND >>>!"
     },
     {
       "source": "MinSystemsForAverages",
@@ -218045,10 +218425,6 @@
       "translation": "* MINIMUM DSS VALUE (CREDITS) >>>!"
     },
     {
-      "source": "Minimum demand",
-      "translation": "* MINIMUM DEMAND >>>!"
-    },
-    {
       "source": "Minimum displayed body value (credits)",
       "translation": "* MINIMUM DISPLAYED BODY VALUE (CREDITS) >>>!"
     },
@@ -218059,10 +218435,6 @@
     {
       "source": "Minimum percentage",
       "translation": "* MINIMUM PERCENTAGE >>>!"
-    },
-    {
-      "source": "Minimum population",
-      "translation": "* MINIMUM POPULATION >>>!"
     },
     {
       "source": "Minimum reward (credits)",
@@ -218311,10 +218683,6 @@
     {
       "source": "Months",
       "translation": "* MONTHS >>>!"
-    },
-    {
-      "source": "More system filters",
-      "translation": "* MORE SYSTEM FILTERS >>>!"
     },
     {
       "source": "More than one SrvSurvey instance is running",
@@ -218819,6 +219187,10 @@
     {
       "source": "New release available",
       "translation": "* NEW RELEASE AVAILABLE >>>!"
+    },
+    {
+      "source": "New ring",
+      "translation": "* NEW RING >>>!"
     },
     {
       "source": "New route",
@@ -221197,10 +221569,6 @@
       "translation": "* PIRATE ATTACK >>>!"
     },
     {
-      "source": "Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required. Planetary Mining cannot be combined with other mining types. It ignores ring type and lists landable planets for a Surface Hunt material.",
-      "translation": "* PLAN A POWERPLAY MINING RUN FROM TARGET SYSTEM TO RING AND SELLING STATION. SRVSURVEY COMBINES JOURNAL CONTEXT, BUILT-IN RING REFERENCES, LIVE EDDN OBSERVATIONS, AND FOCUSED SPANSH API SEARCHES; NO DOWNLOADED GALAXY DUMP IS REQUIRED. PLANETARY MINING CANNOT BE COMBINED WITH OTHER MINING TYPES. IT IGNORES RING TYPE AND LISTS LANDABLE PLANETS FOR A SURFACE HUNT MATERIAL. >>>!"
-    },
-    {
       "source": "Plan a mining trip",
       "translation": "* PLAN A MINING TRIP >>>!"
     },
@@ -221557,10 +221925,6 @@
       "translation": "* POWER POST >>>!"
     },
     {
-      "source": "Power state",
-      "translation": "* POWER STATE >>>!"
-    },
-    {
       "source": "Powered",
       "translation": "* POWERED >>>!"
     },
@@ -221579,10 +221943,6 @@
     {
       "source": "Powerplay mining filters reset to commander defaults.",
       "translation": "* POWERPLAY MINING FILTERS RESET TO COMMANDER DEFAULTS. >>>!"
-    },
-    {
-      "source": "Powerplay mining planner",
-      "translation": "* POWERPLAY MINING PLANNER >>>!"
     },
     {
       "source": "PowerplayJoin",
@@ -223949,6 +224309,30 @@
       "translation": "* RESERVE LEVEL >>>!"
     },
     {
+      "source": "ReserveCommon",
+      "translation": "* RESERVECOMMON >>>!"
+    },
+    {
+      "source": "ReserveDepleted",
+      "translation": "* RESERVEDEPLETED >>>!"
+    },
+    {
+      "source": "ReserveLow",
+      "translation": "* RESERVELOW >>>!"
+    },
+    {
+      "source": "ReserveMajor",
+      "translation": "* RESERVEMAJOR >>>!"
+    },
+    {
+      "source": "ReservePristine",
+      "translation": "* RESERVEPRISTINE >>>!"
+    },
+    {
+      "source": "ReserveUnknown",
+      "translation": "* RESERVEUNKNOWN >>>!"
+    },
+    {
       "source": "Reserved balance",
       "translation": "* RESERVED BALANCE >>>!"
     },
@@ -224403,6 +224787,22 @@
     {
       "source": "Ring type",
       "translation": "* RING TYPE >>>!"
+    },
+    {
+      "source": "RingIcy",
+      "translation": "* RINGICY >>>!"
+    },
+    {
+      "source": "RingMetalRich",
+      "translation": "* RINGMETALRICH >>>!"
+    },
+    {
+      "source": "RingMetallic",
+      "translation": "* RINGMETALLIC >>>!"
+    },
+    {
+      "source": "RingRocky",
+      "translation": "* RINGROCKY >>>!"
     },
     {
       "source": "Rings",
@@ -226559,6 +226959,10 @@
     {
       "source": "Show all signals",
       "translation": "* SHOW ALL SIGNALS >>>!"
+    },
+    {
+      "source": "Show all stations",
+      "translation": "* SHOW ALL STATIONS >>>!"
     },
     {
       "source": "Show bio signals from Canonn on the radar",
@@ -231313,6 +231717,30 @@
       "translation": "* TOGGLE {0} VISIBILITY >>>!"
     },
     {
+      "source": "ToggleSwitchFillOn",
+      "translation": "* TOGGLESWITCHFILLON >>>!"
+    },
+    {
+      "source": "ToggleSwitchFillOnPointerOver",
+      "translation": "* TOGGLESWITCHFILLONPOINTEROVER >>>!"
+    },
+    {
+      "source": "ToggleSwitchFillOnPressed",
+      "translation": "* TOGGLESWITCHFILLONPRESSED >>>!"
+    },
+    {
+      "source": "ToggleSwitchStrokeOn",
+      "translation": "* TOGGLESWITCHSTROKEON >>>!"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPointerOver",
+      "translation": "* TOGGLESWITCHSTROKEONPOINTEROVER >>>!"
+    },
+    {
+      "source": "ToggleSwitchStrokeOnPressed",
+      "translation": "* TOGGLESWITCHSTROKEONPRESSED >>>!"
+    },
+    {
       "source": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read its bearing from the visible game compass for the .mine command. Turret mode does not show the required bearing. Run the command again to hide the guide.",
       "translation": "* TOGGLES A THIN RED VERTICAL GUIDE AT THE EXACT CENTER OF THE ELITE WINDOW. USE THE RHINO DRIVING VIEW, PLACE A DISTANT MINING-LOCATION CIRCLE UNDER THE GUIDE, THEN READ ITS BEARING FROM THE VISIBLE GAME COMPASS FOR THE .MINE COMMAND. TURRET MODE DOES NOT SHOW THE REQUIRED BEARING. RUN THE COMMAND AGAIN TO HIDE THE GUIDE. >>>!"
     },
@@ -234293,6 +234721,10 @@
       "translation": "* DEFAULT >>>!"
     },
     {
+      "source": "depleted",
+      "translation": "* DEPLETED >>>!"
+    },
+    {
       "source": "descending",
       "translation": "* DESCENDING >>>!"
     },
@@ -235093,6 +235525,10 @@
       "translation": "* MAINENGINES >>>!"
     },
     {
+      "source": "major",
+      "translation": "* MAJOR >>>!"
+    },
+    {
       "source": "male 1",
       "translation": "* MALE 1 >>>!"
     },
@@ -235167,6 +235603,14 @@
     {
       "source": "metal rich",
       "translation": "* METAL RICH >>>!"
+    },
+    {
+      "source": "metallic",
+      "translation": "* METALLIC >>>!"
+    },
+    {
+      "source": "metalrich",
+      "translation": "* METALRICH >>>!"
     },
     {
       "source": "middle",
@@ -235547,6 +235991,10 @@
     {
       "source": "prior-scans",
       "translation": "* PRIOR-SCANS >>>!"
+    },
+    {
+      "source": "pristine",
+      "translation": "* PRISTINE >>>!"
     },
     {
       "source": "privacy",

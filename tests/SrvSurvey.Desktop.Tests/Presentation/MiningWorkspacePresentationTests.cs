@@ -12,6 +12,7 @@ using Avalonia.VisualTree;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Views;
@@ -422,7 +423,7 @@ public sealed class MiningWorkspacePresentationTests
                 view.GetVisualDescendants().OfType<MiningPowerplayView>(),
                 candidate => candidate.IsEffectivelyVisible
             );
-            Assert.Equal("Harma", powerplay.FindControl<TextBox>("PowerplayReference")!.Text);
+            Assert.Equal("Harma", powerplay.FindControl<SystemNameEntry>("PowerplayReference")!.Text);
             Assert.Equal("Archon Delaine", powerplay.FindControl<ComboBox>("PowerplayPledgedPower")!.SelectedItem);
             Assert.NotNull(powerplay.FindControl<ItemsControl>("PowerplayResults"));
             model.MiningWorkspace.SelectedTab = 4;

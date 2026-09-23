@@ -449,6 +449,55 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task AFullBodyPageAsksForAnotherAndNamedSystemsStayInTheFilter()
+    {
+        using var handler = new PageHandler();
+        using var http = new HttpClient(handler);
+        var client = new MiningSearchClient(http);
+        MiningRingPage first = await client.FindRingPageAsync(new("Timbalderis", "", "All", 200));
+        Assert.True(first.HasMore);
+        Assert.Equal(100, handler.Bodies);
+
+        IReadOnlyList<MiningRing> rings = await client.FindRingsForSystemsAsync(
+            new("Timbalderis", "", "All", 200),
+            ["LHS 3802"]
+        );
+        Assert.Equal(2, handler.Pages);
+        Assert.Contains("LHS 3802", handler.BodiesRequest, StringComparison.Ordinal);
+        Assert.Contains("Platinum", rings[0].Hotspots.Keys);
+    }
+
+    [Fact]
+    public void FartherHighPricesStayInRangeUntilThirtyAreKept()
+    {
+        Assert.True(PowerplayMeritRank.MorePricesCanRank(3, 30, 0, 100));
+        Assert.Equal(0, PowerplayMeritRank.WeakestRankedPrice([900, 800], 30));
+        Assert.Equal(700, PowerplayMeritRank.WeakestRankedPrice([900, 800, 700, 100], 3));
+        Assert.False(PowerplayMeritRank.MorePricesCanRank(3, 3, 700, 650));
+        Assert.True(PowerplayMeritRank.MorePricesCanRank(3, 3, 700, 700));
+    }
+
+    [Fact]
+    public async Task NamedSystemLookupKeepsEveryPowerAndTheFactionState()
+    {
+        using var handler = new RequestHandler(
+            """
+            {"results":[{"name":"LHS 3802","distance":79.6,"controlling_power":"Yuri Grom","power_state":"Fortified","controlling_minor_faction_state":"Boom","power":["Yuri Grom","Aisling Duval","Denton Patreus"]}]}
+            """
+        );
+        using var http = new HttpClient(handler);
+        MiningSystemResult system = Assert.Single(
+            await new MiningSearchClient(http).FindSystemsByNameAsync("Timbalderis", ["LHS 3802"])
+        );
+
+        Assert.Equal("Boom", system.State);
+        Assert.Equal("Fortified", system.PowerState);
+        Assert.Equal(["Yuri Grom", "Aisling Duval", "Denton Patreus"], system.NearbyPowers);
+        Assert.Contains("LHS 3802", handler.Body, StringComparison.Ordinal);
+        Assert.Contains("systems/search", handler.Uri!.AbsolutePath, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task RingSearchCanNameSeveralMinerals()
     {
         using var handler = new RequestHandler("""{"results":[]}""");
@@ -456,6 +505,50 @@ public sealed class MiningSearchClientTests
         await new MiningSearchClient(http).FindRingsAsync(new("Sol", "", "All", 20, Minerals: ["Platinum", "Painite"]));
         Assert.Contains("Painite", handler.Body, StringComparison.Ordinal);
         Assert.Contains("Platinum", handler.Body, StringComparison.Ordinal);
+    }
+
+    private sealed class PageHandler : HttpMessageHandler
+    {
+        public int Pages { get; private set; }
+        public int Bodies { get; private set; }
+        public string BodiesRequest { get; private set; } = "";
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            string body = request.Content is null
+                ? ""
+                : await request.Content.ReadAsStringAsync(cancellationToken);
+            Pages++;
+            BodiesRequest = body;
+            using var document = JsonDocument.Parse(body);
+            int page = document.RootElement.GetProperty("page").GetInt32();
+            if (page == 0 && !body.Contains("LHS 3802", StringComparison.Ordinal))
+            {
+                Bodies = 100;
+                string results = string.Join(
+                    ',',
+                    Enumerable.Range(0, 100).Select(index =>
+                        "{\"name\":\"Body " + index + "\",\"system_name\":\"Near\",\"distance\":1,\"rings\":[]}"
+                    )
+                );
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("{\"results\":[" + results + "]}"),
+                };
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """
+                    {"results":[{"name":"LHS 3802 A","system_name":"LHS 3802","distance":79.6,"rings":[{"name":"A Ring","type":"Rocky","signals":[{"name":"Platinum","count":1}]}]}]}
+                    """
+                ),
+            };
+        }
     }
 
     private sealed class StatusHandler(System.Net.HttpStatusCode status) : HttpMessageHandler

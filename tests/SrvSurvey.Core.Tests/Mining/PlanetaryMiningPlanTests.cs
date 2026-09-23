@@ -5,6 +5,25 @@ namespace SrvSurvey.Core.Tests.Mining;
 public sealed class PlanetaryMiningPlanTests
 {
     [Fact]
+    public void SurfaceExclusiveMaterialsLeaveSharedRingMineralsAlone()
+    {
+        Assert.True(PlanetaryMiningPlan.IsSurfaceExclusive("Diamond"));
+        Assert.True(PlanetaryMiningPlan.IsSurfaceExclusive("Iridium"));
+        Assert.True(PlanetaryMiningPlan.IsSurfaceExclusive("Periclase Dunite"));
+        Assert.True(PlanetaryMiningPlan.IsSurfaceExclusive("periclasedunite"));
+        Assert.False(PlanetaryMiningPlan.IsEdpmCommodity("periclasedunite"));
+        Assert.False(PlanetaryMiningPlan.IsEdpmCommodity("diamond"));
+        Assert.True(PlanetaryMiningPlan.IsEdpmCommodity("Monazite"));
+        Assert.True(PlanetaryMiningPlan.IsEdpmCommodity("lowtemperaturediamond"));
+        Assert.True(PlanetaryMiningPlan.IsSurfaceExclusive("Helium-3"));
+        Assert.False(PlanetaryMiningPlan.IsSurfaceExclusive("Low Temperature Diamonds"));
+        Assert.False(PlanetaryMiningPlan.IsSurfaceExclusive("Monazite"));
+        Assert.False(PlanetaryMiningPlan.IsSurfaceExclusive("Musgravite"));
+        Assert.False(PlanetaryMiningPlan.IsSurfaceExclusive("Thorium"));
+        Assert.False(PlanetaryMiningPlan.IsSurfaceExclusive("Jadeite"));
+    }
+
+    [Fact]
     public void DiamondUsesLandableVolcanicBodyTypesAndMagmaLandmarks()
     {
         PlanetaryBodyCriteria criteria = PlanetaryMiningPlan.For(["Diamond"])!;

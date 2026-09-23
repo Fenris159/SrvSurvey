@@ -3,7 +3,6 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.MiningChipBox"
              x:DataType="vm:MiningChipBoxViewModel"
-             MinWidth="320"
              Margin="0,0,12,10"
              LostFocus="Box_LostFocus">
   <UserControl.Styles>

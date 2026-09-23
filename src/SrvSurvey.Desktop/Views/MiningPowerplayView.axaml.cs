@@ -16,11 +16,22 @@ public sealed partial class MiningPowerplayView : UserControl
         .Uri
         .AbsoluteUri;
 
-    public MiningPowerplayView() => InitializeComponent();
+    public MiningPowerplayView()
+    {
+        InitializeComponent();
+        ResultsScroller.SizeChanged += (_, _) => FitResultsToWorkspace();
+    }
+
+    private void FitResultsToWorkspace()
+    {
+        double width = ResultsScroller.Bounds.Width;
+        if (width > 0)
+        {
+            ResultsTable.Width = Math.Max(1280, width);
+        }
+    }
 
     private MiningWorkspaceViewModel? Model => DataContext as MiningWorkspaceViewModel;
-
-    private void Current_Click(object? sender, RoutedEventArgs e) => Model?.Search.UseCurrentLocation();
 
     private async void SearchSystems_Click(object? sender, RoutedEventArgs e)
     {
