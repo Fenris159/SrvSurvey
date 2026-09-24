@@ -161,6 +161,10 @@
     <Setter Property="BorderThickness" Value="0,0,1,0" />
     <Setter Property="Padding" Value="6" />
   </Style>
+  <Style Selector="Border.acquire-sell.selected">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
   <Style Selector="Border.commodity-code">
     <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
     <Setter Property="Padding" Value="4,0" />

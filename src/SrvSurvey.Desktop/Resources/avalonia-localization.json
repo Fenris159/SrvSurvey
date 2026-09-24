@@ -22589,6 +22589,10 @@
       "translation": "Verkaufssystem"
     },
     {
+      "source": "Sell Systems • Progress • State",
+      "translation": "Verkaufssysteme • Fortschritt • Status"
+    },
+    {
       "source": "Sell mined cargo",
       "translation": "Verkaufen Sie abgebauten Fracht"
     },
@@ -56857,6 +56861,10 @@
     {
       "source": "Sell System",
       "translation": "Vender sistema"
+    },
+    {
+      "source": "Sell Systems • Progress • State",
+      "translation": "Sistemas de venta • Progreso • Estado"
     },
     {
       "source": "Sell mined cargo",
@@ -91129,6 +91137,10 @@
       "translation": "Système de vente"
     },
     {
+      "source": "Sell Systems • Progress • State",
+      "translation": "Systèmes de vente • Progression • État"
+    },
+    {
       "source": "Sell mined cargo",
       "translation": "Vendre des marchandises minières"
     },
@@ -125397,6 +125409,10 @@
     {
       "source": "Sell System",
       "translation": "Sistema de Venda"
+    },
+    {
+      "source": "Sell Systems • Progress • State",
+      "translation": "Sistemas de venda • Progresso • Estado"
     },
     {
       "source": "Sell mined cargo",
@@ -159669,6 +159685,10 @@
       "translation": "Продать систему"
     },
     {
+      "source": "Sell Systems • Progress • State",
+      "translation": "Системы продажи • Прогресс • Состояние"
+    },
+    {
       "source": "Sell mined cargo",
       "translation": "Продать добытый груз"
     },
@@ -193939,6 +193959,10 @@
       "translation": "销售系统"
     },
     {
+      "source": "Sell Systems • Progress • State",
+      "translation": "出售星系 • 进度 • 状态"
+    },
+    {
       "source": "Sell mined cargo",
       "translation": "出售开采的货物"
     },
@@ -228207,6 +228231,10 @@
     {
       "source": "Sell System",
       "translation": "* SELL SYSTEM >>>!"
+    },
+    {
+      "source": "Sell Systems • Progress • State",
+      "translation": "* SELL SYSTEMS • PROGRESS • STATE >>>!"
     },
     {
       "source": "Sell mined cargo",

@@ -7029,7 +7029,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayPlanetaryAcquireResults.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml"
   },
   {
     "Text": "Body Protectorate",
@@ -45303,7 +45303,15 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayPlanetaryAcquireResults.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SurfaceMiningSplitResults.axaml"
+  },
+  {
+    "Text": "Sell Systems \u2022 Progress \u2022 State",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml"
   },
   {
     "Text": "Sell mined cargo",
@@ -46388,7 +46396,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayAcquireClusterViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
     "Text": "Show all bodies",
@@ -46532,7 +46540,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayAcquireClusterViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
     "Text": "Show fewer bodies",

@@ -3,6 +3,8 @@ using System.Globalization;
 using System.Text;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.ViewModels;
@@ -18,6 +20,7 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
     public PowerplayAcquireSharedCluster()
     {
         InitializeComponent();
+        SellItems.AddHandler(InputElement.PointerPressedEvent, OnSellPointerPressed, RoutingStrategies.Tunnel, true);
         DataContextChanged += (_, _) => ChangeCluster();
         LayoutUpdated += (_, _) => UpdateLinks();
     }
@@ -50,6 +53,11 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
         {
             ActiveLinks.Data = null;
             InactiveLinks.Data = null;
+            return;
+        }
+
+        if (AlignMiningToSelectedSell())
+        {
             return;
         }
 
@@ -87,6 +95,47 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
 
         SetPath(ActiveLinks, active.ToString(), ref lastActivePath);
         SetPath(InactiveLinks, inactive.ToString(), ref lastInactivePath);
+    }
+
+    private static void OnSellPointerPressed(object? sender, PointerPressedEventArgs args)
+    {
+        for (var current = args.Source as Control; current is not null; current = current.GetVisualParent() as Control)
+        {
+            if (current is Border { Name: "SellLinkAnchor", DataContext: PowerplayAcquireSellNode sell })
+            {
+                sell.SelectCommand.Execute(null);
+                return;
+            }
+
+            if (ReferenceEquals(current, sender))
+            {
+                return;
+            }
+        }
+    }
+
+    private bool AlignMiningToSelectedSell()
+    {
+        Border? selected = SellItems
+            .GetVisualDescendants()
+            .OfType<Border>()
+            .FirstOrDefault(border =>
+                border.Name == "SellLinkAnchor" && border.DataContext is PowerplayAcquireSellNode { IsSelected: true }
+            );
+        Point? top = selected?.TranslatePoint(new Point(0, 0), ClusterGrid);
+        if (top is not { } position)
+        {
+            return false;
+        }
+
+        double offset = Math.Max(0, position.Y);
+        if (Math.Abs(MiningColumn.Margin.Top - offset) <= 1)
+        {
+            return false;
+        }
+
+        MiningColumn.Margin = new Thickness(0, offset, 0, 0);
+        return true;
     }
 
     private Dictionary<T, double> AnchorPositions<T>(ItemsControl items, string name)

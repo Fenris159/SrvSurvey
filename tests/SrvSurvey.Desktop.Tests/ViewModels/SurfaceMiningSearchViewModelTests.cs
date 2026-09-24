@@ -131,7 +131,7 @@ public sealed class SurfaceMiningSearchViewModelTests
     }
 
     [Fact]
-    public void AcquireClusterKeepsEverySellSystemLinkedWhenFiveMiningRowsCanCoverThem()
+    public void AcquireClusterShowsEveryMiningSystemAndPrioritizesSelectedConnections()
     {
         SurfaceSellRowViewModel[] sells = Enumerable
             .Range(0, 10)
@@ -149,11 +149,16 @@ public sealed class SurfaceMiningSearchViewModelTests
 
         PowerplayAcquireClusterViewModel cluster = Assert.Single(PowerplayAcquireClusterViewModel.Group(sells));
 
-        Assert.Equal(5, cluster.VisibleMiningSystems.Count);
+        Assert.Equal(9, cluster.VisibleMiningSystems.Count);
         Assert.All(
             sells,
             sell => Assert.Contains(cluster.VisibleMiningSystems, system => system.ConnectsTo(sell.Target))
         );
+        cluster.SellNodes[^1].SelectCommand.Execute(null);
+        Assert.Equal("Sell 9", cluster.SelectedSellSystem);
+        Assert.True(cluster.VisibleMiningSystems[0].ConnectsTo("Sell 9"));
+        Assert.Equal(1, cluster.VisibleMiningSystems[0].EmphasisOpacity);
+        Assert.Equal(0.28, cluster.VisibleMiningSystems[^1].EmphasisOpacity);
     }
 
     private static SurfaceMiningSystemRowViewModel ClusterMiningRow(string system, string code) =>

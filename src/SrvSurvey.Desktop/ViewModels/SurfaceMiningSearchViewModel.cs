@@ -672,7 +672,13 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         {
             if (Set(ref rows, value))
             {
-                acquireClusters = PowerplayAcquireClusterViewModel.Group(value);
+                acquireClusters = PowerplayAcquireClusterViewModel.Group(
+                    value,
+                    SellDistanceSortCommand,
+                    BestStationSortCommand,
+                    SellDistanceSortIndicator,
+                    BestStationSortIndicator
+                );
                 ApplyTagVisibility();
                 Changed(nameof(HasRows));
                 Changed(nameof(AcquireClusters));

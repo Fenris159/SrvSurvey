@@ -10,23 +10,29 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
 {
     private readonly PowerplayAcquireMiningNode[] miningSystems;
     private IReadOnlyList<PowerplayAcquireMiningNode> visibleMiningSystems = [];
-    private bool showAllSystems;
     private bool hideIrrelevant;
     private string selectedSellSystem = "";
 
-    private PowerplayAcquireClusterViewModel(IReadOnlyList<SurfaceSellRowViewModel> rows)
+    private PowerplayAcquireClusterViewModel(
+        IReadOnlyList<SurfaceSellRowViewModel> rows,
+        ICommand? sellDistanceSortCommand,
+        ICommand? bestStationSortCommand,
+        string sellDistanceSortIndicator,
+        string bestStationSortIndicator
+    )
     {
         PrimaryRow = rows[0];
-        SellNodes = rows.Select(row => new PowerplayAcquireSellNode(row, () => Select(row))).ToArray();
+        SellNodes = rows.Select(row => new PowerplayAcquireSellNode(
+                row,
+                () => Select(row),
+                sellDistanceSortCommand,
+                bestStationSortCommand,
+                sellDistanceSortIndicator,
+                bestStationSortIndicator
+            ))
+            .ToArray();
         miningSystems = BuildMiningSystems(rows);
-        ToggleAllCommand = new WorkspaceCommand(() =>
-        {
-            showAllSystems = !showAllSystems;
-            RefreshVisibleSystems();
-            Changed(nameof(ShowAllLabel));
-        });
         Select(PrimaryRow);
-        RefreshVisibleSystems();
     }
 
     public SurfaceSellRowViewModel PrimaryRow { get; }
@@ -36,9 +42,6 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
     public IReadOnlyList<PowerplayAcquireMiningNode> MiningSystems => miningSystems;
     public IReadOnlyList<PowerplayAcquireMiningNode> VisibleMiningSystems => visibleMiningSystems;
     public string SelectedSellSystem => selectedSellSystem;
-    public bool HasAdditionalSystems => miningSystems.Length > 5;
-    public string ShowAllLabel => showAllSystems ? "Show fewer Systems" : "Show all Systems";
-    public ICommand ToggleAllCommand { get; }
 
     public void SetHideIrrelevant(bool hide)
     {
@@ -49,7 +52,13 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
         }
     }
 
-    public static IReadOnlyList<PowerplayAcquireClusterViewModel> Group(IReadOnlyList<SurfaceSellRowViewModel> rows)
+    public static IReadOnlyList<PowerplayAcquireClusterViewModel> Group(
+        IReadOnlyList<SurfaceSellRowViewModel> rows,
+        ICommand? sellDistanceSortCommand = null,
+        ICommand? bestStationSortCommand = null,
+        string sellDistanceSortIndicator = "",
+        string bestStationSortIndicator = ""
+    )
     {
         int[] parents = Enumerable.Range(0, rows.Count).ToArray();
         var firstByMiningSystem = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -72,7 +81,11 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
             .GroupBy(item => item.Root)
             .OrderBy(group => group.Min(item => item.Index))
             .Select(group => new PowerplayAcquireClusterViewModel(
-                group.OrderBy(item => item.Index).Select(item => item.Row).ToArray()
+                group.OrderBy(item => item.Index).Select(item => item.Row).ToArray(),
+                sellDistanceSortCommand,
+                bestStationSortCommand,
+                sellDistanceSortIndicator,
+                bestStationSortIndicator
             ))
             .ToArray();
     }
@@ -113,61 +126,39 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
             system.Select(row.Target, hideIrrelevant);
         }
 
-        Changed(nameof(SelectedSellSystem));
-    }
-
-    private void RefreshVisibleSystems()
-    {
-        if (showAllSystems || miningSystems.Length <= 5)
-        {
-            visibleMiningSystems = miningSystems;
-        }
-        else
-        {
-            visibleMiningSystems = RepresentativeSystems()
-                .Concat(miningSystems)
-                .Distinct()
-                .Take(5)
-                .OrderBy(system => system.SellPosition)
-                .ThenBy(system => system.DistanceLy)
-                .ToArray();
-        }
-
+        visibleMiningSystems = miningSystems
+            .OrderByDescending(system => system.ConnectsTo(row.Target))
+            .ThenBy(system => system.ConnectsTo(row.Target) ? system.DistanceLy : system.SellPosition)
+            .ThenBy(system => system.System, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         Changed(nameof(VisibleMiningSystems));
-    }
-
-    private List<PowerplayAcquireMiningNode> RepresentativeSystems()
-    {
-        var uncovered = SellNodes.Select(sell => sell.Row.Target).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var representatives = new List<PowerplayAcquireMiningNode>();
-        while (uncovered.Count > 0 && representatives.Count < 5)
-        {
-            PowerplayAcquireMiningNode? next = miningSystems
-                .Except(representatives)
-                .OrderByDescending(system => uncovered.Count(system.ConnectsTo))
-                .ThenByDescending(system => system.SellCount)
-                .ThenBy(system => system.SellPosition)
-                .FirstOrDefault();
-            if (next is null || !uncovered.Any(next.ConnectsTo))
-            {
-                break;
-            }
-
-            representatives.Add(next);
-            uncovered.RemoveWhere(next.ConnectsTo);
-        }
-
-        return representatives;
+        Changed(nameof(SelectedSellSystem));
     }
 }
 
-public sealed class PowerplayAcquireSellNode(SurfaceSellRowViewModel row, Action select) : WorkspaceObservable
+public sealed class PowerplayAcquireSellNode(
+    SurfaceSellRowViewModel row,
+    Action select,
+    ICommand? sellDistanceSortCommand,
+    ICommand? bestStationSortCommand,
+    string sellDistanceSortIndicator,
+    string bestStationSortIndicator
+) : WorkspaceObservable
 {
     private bool isSelected;
 
     public SurfaceSellRowViewModel Row { get; } = row;
     public ICommand SelectCommand { get; } = new WorkspaceCommand(select);
     public string SelectionGlyph => IsSelected ? "▶" : "▷";
+    public ICommand? SellDistanceSortCommand { get; } = sellDistanceSortCommand;
+    public ICommand? BestStationSortCommand { get; } = bestStationSortCommand;
+    public string SellDistanceSortIndicator { get; } = sellDistanceSortIndicator;
+    public string BestStationSortIndicator { get; } = bestStationSortIndicator;
+    public string Title =>
+        string.Join(
+            " • ",
+            new[] { Row.Target, Row.PowerState, Row.FactionState }.Where(value => !string.IsNullOrWhiteSpace(value))
+        );
 
     public bool IsSelected
     {
@@ -236,7 +227,7 @@ public sealed class PowerplayAcquireMiningNode : WorkspaceObservable
 
     internal void Select(string sellSystem, bool hideIrrelevant)
     {
-        emphasisOpacity = ConnectsTo(sellSystem) ? 1 : 0.5;
+        emphasisOpacity = ConnectsTo(sellSystem) ? 1 : 0.28;
         Changed(nameof(EmphasisOpacity));
         bodies = sources
             .SelectMany(source => source.System.Bodies.Select(body => (source.Row.Target, Body: body)))
