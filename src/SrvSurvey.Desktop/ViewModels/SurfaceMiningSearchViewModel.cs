@@ -312,6 +312,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     private const string RequestFailed = "Request failed. Try again.";
     private const string IdleStatus = "Choose a reference system and a surface material.";
+    private static readonly int[] NearbyMarketRadiusStages = [50, 100, 200];
     private readonly MiningSearchClient client;
     private readonly int maximumResults;
     private CancellationTokenSource? pending;
@@ -321,6 +322,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     private bool referenceTracksCommander;
     private bool preserveRestoredReference;
     private double radius = 100;
+    private double mineSellRadius = 50;
     private int resultLimit = 1;
     private string padSize = "Any";
     private long minimumDemand;
@@ -456,6 +458,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         preserveRestoredReference = false;
         Radius = 100;
         ResultLimit = 1;
+        MineSellRadius = 50;
         PadSize = "Any";
         MinimumDemand = 0;
         MaximumDemand = 90_000;
@@ -482,6 +485,10 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         if (restoreLast && cache.LoadLast<SurfaceMiningSearchSnapshot>(workspace) is { } last)
         {
             RestoreSnapshot(last, restoreFilters: true);
+            if (workspace == "surface" && last.SurfaceSearchVersion != 1)
+            {
+                ClearResults();
+            }
         }
     }
 
@@ -502,6 +509,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         {
             SavedAt = DateTimeOffset.UtcNow,
             ForceIncludeReference = ForceIncludeReference,
+            MineSellRadius = MineSellRadius,
+            SurfaceSearchVersion = 1,
         };
 
     public void RestoreSnapshot(SurfaceMiningSearchSnapshot snapshot, bool restoreFilters)
@@ -514,6 +523,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                 Reference = snapshot.Reference;
                 ForceIncludeReference = snapshot.ForceIncludeReference;
                 Radius = snapshot.Radius;
+                MineSellRadius = snapshot.MineSellRadius;
                 ResultLimit = snapshot.ResultLimit;
                 Materials.Selected.Clear();
                 foreach (string material in snapshot.Materials)
@@ -552,6 +562,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                 Reference = Reference.Trim().ToUpperInvariant(),
                 ForceIncludeReference,
                 Radius,
+                MineSellRadius,
                 ResultLimit,
                 Materials = Materials
                     .Selected.OrderBy(material => material, StringComparer.OrdinalIgnoreCase)
@@ -570,6 +581,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             is nameof(Reference)
                 or nameof(ForceIncludeReference)
                 or nameof(Radius)
+                or nameof(MineSellRadius)
                 or nameof(ResultLimit)
                 or nameof(PadSize)
                 or nameof(MinimumDemand)
@@ -628,6 +640,12 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         set => Set(ref radius, value);
     }
 
+    public double MineSellRadius
+    {
+        get => mineSellRadius;
+        set => Set(ref mineSellRadius, Math.Clamp(value, 1, 500));
+    }
+
     public int ResultLimit
     {
         get => resultLimit;
@@ -664,7 +682,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         "No sell station matches the selected material, demand, and landing pad within the distance.";
 
     public string NoMatchingBodiesMessage { get; set; } =
-        "No sell station has a matching surface mining body within the distance.";
+        "No sell station has a matching surface mining body within the mine–sell distance.";
 
     public Func<
         IReadOnlyList<string>,
@@ -756,10 +774,27 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             .Where(rule => rule.Criteria is not null)
             .ToArray();
 
+        bool proximityFirst = !catalogOrder && !GroupStationsBySystem && !UseAdditionalMarketsOnly;
         Rows = [];
-        sellRowSort = DefaultSellDistanceSort ? SellRowSort.DistanceAscending : SellRowSort.Value;
+        sellRowSort = DefaultSellDistanceSort || proximityFirst ? SellRowSort.DistanceAscending : SellRowSort.Value;
         Changed(nameof(SellDistanceSortIndicator));
         Changed(nameof(BestStationSortIndicator));
+        if (proximityFirst)
+        {
+            return await FindNearbySurfaceSalesAsync(materials, criteria, rules, token);
+        }
+
+        return await FindRankedSurfaceSalesAsync(materials, criteria, rules, catalogOrder, token);
+    }
+
+    private async Task<string> FindRankedSurfaceSalesAsync(
+        IReadOnlyList<string> materials,
+        PlanetaryBodyCriteria criteria,
+        IReadOnlyList<SurfaceMaterialRule> rules,
+        bool catalogOrder,
+        CancellationToken token
+    )
+    {
         (List<MiningMarketResult> quotes, bool usedFallback) = await FindInitialSurfaceQuotesAsync(materials, token);
         usedFallback |= await AddReferenceQuotesIfNeededAsync(quotes, materials, token);
 
@@ -771,7 +806,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             search =
                 candidates.Length == 0
                     ? new SurfaceRankedSearch([])
-                    : await RankStationsAsync(candidates, materials, criteria, rules, catalogOrder, ranking, token);
+                    : await RankStationsAsync(candidates, materials, criteria, rules, ranking, token);
             if (search.Rows.Count >= ResultLimit || AdditionalMarketQuotesAsync is null)
             {
                 break;
@@ -787,6 +822,71 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         } while (true);
 
         return quotes.Count == 0 ? NoSellStationsMessage : ResultMessage(search, materials, catalogOrder, usedFallback);
+    }
+
+    private async Task<string> FindNearbySurfaceSalesAsync(
+        IReadOnlyList<string> materials,
+        PlanetaryBodyCriteria criteria,
+        IReadOnlyList<SurfaceMaterialRule> rules,
+        CancellationToken token
+    )
+    {
+        var quotes = new List<MiningMarketResult>();
+        var ranking = new SurfaceRankingState(catalogOrder: false);
+        var search = new SurfaceRankedSearch([]);
+        bool usedFallback = false;
+        foreach (double marketRadius in NearbyMarketRadii(Radius))
+        {
+            (List<MiningMarketResult> found, bool fallback) = await FindInitialSurfaceQuotesAsync(
+                materials,
+                token,
+                marketRadius
+            );
+            usedFallback |= fallback;
+            quotes = found
+                .Concat(quotes)
+                .DistinctBy(
+                    quote => quote.System + "\u001f" + quote.Station + "\u001f" + quote.Commodity,
+                    StringComparer.OrdinalIgnoreCase
+                )
+                .ToList();
+            usedFallback |= await AddReferenceQuotesIfNeededAsync(quotes, materials, token);
+            SurfaceStationCandidate[] candidates = PrioritizeReference(
+                CandidatesFor(quotes, materials, catalogOrder: false, proximityFirst: true)
+            );
+            if (candidates.Length == 0)
+            {
+                continue;
+            }
+
+            search = await RankStationsAsync(
+                candidates,
+                materials,
+                criteria,
+                rules,
+                ranking,
+                token,
+                proximityFirst: true
+            );
+            if (search.Rows.Count >= ResultLimit)
+            {
+                break;
+            }
+        }
+
+        return quotes.Count == 0
+            ? NoSellStationsMessage
+            : ResultMessage(search, materials, false, usedFallback, proximityFirst: true);
+    }
+
+    private static IEnumerable<double> NearbyMarketRadii(double radius)
+    {
+        foreach (int stage in NearbyMarketRadiusStages.Where(stage => stage < radius))
+        {
+            yield return stage;
+        }
+
+        yield return radius;
     }
 
     private async Task<bool> AddReferenceQuotesIfNeededAsync(
@@ -819,7 +919,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     private async Task<(List<MiningMarketResult> Quotes, bool UsedFallback)> FindInitialSurfaceQuotesAsync(
         IReadOnlyList<string> materials,
-        CancellationToken token
+        CancellationToken token,
+        double? marketRadius = null
     )
     {
         List<MiningMarketResult> quotes = [];
@@ -832,7 +933,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     Reference.Trim(),
                     material,
                     false,
-                    Radius,
+                    marketRadius ?? Radius,
                     GalaxyWide: MarketGalaxyWide,
                     MaximumAgeDays: MaximumAge is null
                         ? 3650
@@ -927,7 +1028,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         SurfaceRankedSearch search,
         IReadOnlyList<string> materials,
         bool catalogOrder,
-        bool usedFallback
+        bool usedFallback,
+        bool proximityFirst = false
     )
     {
         if (search.Rows.Count == 0)
@@ -936,6 +1038,14 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         }
 
         int bodyCount = search.Rows.Sum(row => row.Systems.Sum(system => system.Bodies.Count));
+        string rankingDescription = catalogOrder
+            ? " sell systems, daily commodity value order. Best sell from "
+            : " sell systems, best viable price first. Best sell from ";
+        if (proximityFirst)
+        {
+            rankingDescription = " nearby sell systems with short mining loops. Best sell from ";
+        }
+
         return bodyCount
             + " landable bodies for "
             + (
@@ -945,11 +1055,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             )
             + ". "
             + search.Rows.Count
-            + (
-                catalogOrder
-                    ? " sell systems, daily commodity value order. Best sell from "
-                    : " sell systems, best viable price first. Best sell from "
-            )
+            + rankingDescription
             + (usedFallback ? "Ardent/Spansh fallback" : "Ardent")
             + "."
             + (client.PriceMarksUnavailable ? " " + RequestFailed : "");
@@ -958,7 +1064,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     private static SurfaceStationCandidate[] CandidatesFor(
         IReadOnlyList<MiningMarketResult> quotes,
         IReadOnlyList<string> materials,
-        bool catalogOrder
+        bool catalogOrder,
+        bool proximityFirst = false
     )
     {
         var candidates = new List<SurfaceStationCandidate>();
@@ -987,11 +1094,18 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             }
         }
 
-        return candidates
-            .OrderBy(candidate => candidate.Priority)
-            .ThenByDescending(candidate => candidate.Anchor.Price)
-            .ThenBy(candidate => candidate.Anchor.Distance ?? double.MaxValue)
-            .ToArray();
+        return proximityFirst
+            ? candidates
+                .GroupBy(candidate => candidate.Anchor.System, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.OrderByDescending(candidate => candidate.Anchor.Price).First())
+                .OrderByDescending(candidate => candidate.Anchor.Price)
+                .ThenBy(candidate => candidate.Anchor.Distance ?? double.MaxValue)
+                .ToArray()
+            : candidates
+                .OrderBy(candidate => candidate.Priority)
+                .ThenByDescending(candidate => candidate.Anchor.Price)
+                .ThenBy(candidate => candidate.Anchor.Distance ?? double.MaxValue)
+                .ToArray();
     }
 
     private async Task<SurfaceRankedSearch> RankStationsAsync(
@@ -999,15 +1113,19 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         IReadOnlyList<string> materials,
         PlanetaryBodyCriteria criteria,
         IReadOnlyList<SurfaceMaterialRule> rules,
-        bool catalogOrder,
         SurfaceRankingState ranking,
-        CancellationToken token
+        CancellationToken token,
+        bool proximityFirst = false
     )
     {
         List<SurfaceSellRowViewModel> ranked = ranking.Ranked;
         for (int index = 0; index < candidates.Length; index++)
         {
             token.ThrowIfCancellationRequested();
+            if (proximityFirst && ranking.SelectedSystems.Contains(candidates[index].Anchor.System))
+            {
+                continue;
+            }
             Status = $"Checking sell systems {index + 1}/{candidates.Length}…";
             SurfaceSellRowViewModel? row = await TryDescribeRankedCandidateAsync(
                 candidates,
@@ -1026,15 +1144,19 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             ranked.Add(row);
             ranked = KeepBestRows(
                 ranked,
-                catalogOrder,
+                ranking.CatalogOrder,
                 GroupStationsBySystem,
                 ResultLimit,
-                ForceIncludeReference ? Reference : ""
+                ForceIncludeReference ? Reference : "",
+                proximityFirst
             );
             ranking.Ranked = ranked;
 
             Rows = SortRows(ranked);
-            if (CanStopRanking(catalogOrder, materials.Count, ranked, candidates, index))
+            if (
+                ranked.Count >= ResultLimit
+                && (proximityFirst || CanStopRanking(ranking.CatalogOrder, materials.Count, ranked, candidates, index))
+            )
             {
                 break;
             }
@@ -1310,11 +1432,16 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         bool catalogOrder,
         bool groupStations,
         int resultLimit,
-        string pinnedSystem
+        string pinnedSystem,
+        bool proximityFirst = false
     )
     {
         IEnumerable<SurfaceSellRowViewModel> ordered;
         if (catalogOrder)
+        {
+            ordered = ranked;
+        }
+        else if (proximityFirst)
         {
             ordered = ranked;
         }
@@ -1544,6 +1671,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     )
     {
         var matches = new List<SurfaceBodyMatch>();
+        double bodyRadius = BodySearchRadius ?? MineSellRadius;
         int page = 0;
         double minimumDistance = 0;
         bool hasMore = true;
@@ -1555,7 +1683,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     criteria.BodySubtypes,
                     criteria.LandmarkSubtypes,
                     "",
-                    BodySearchRadius ?? Radius,
+                    bodyRadius,
                     BodyControllingPowers,
                     Page: page,
                     VolcanismTypes: criteria.VolcanismTypes,
@@ -1564,9 +1692,12 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                 ),
                 token
             );
-            IReadOnlyList<MiningPlanetaryBody> bodies = miningSystems is null
-                ? found.Bodies
-                : found.Bodies.Where(body => miningSystems.Contains(body.System)).ToArray();
+            MiningPlanetaryBody[] bodies = found
+                .Bodies.Where(body =>
+                    (miningSystems is null || miningSystems.Contains(body.System))
+                    && (body.DistanceLy is null || body.DistanceLy <= bodyRadius)
+                )
+                .ToArray();
             MiningPlanetaryBody[] whiteDwarfCandidates = rules
                 .Where(rule => rule.Criteria.RequiresWhiteDwarfHost)
                 .SelectMany(rule => bodies.Where(body => PlanetaryMiningPlan.Matches(rule.Criteria, body)))

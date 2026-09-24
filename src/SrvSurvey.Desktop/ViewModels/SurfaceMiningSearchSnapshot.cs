@@ -14,6 +14,8 @@ public sealed record SurfaceMiningSearchSnapshot(
 {
     public DateTimeOffset? SavedAt { get; init; }
     public bool ForceIncludeReference { get; init; }
+    public double MineSellRadius { get; init; } = 50;
+    public int SurfaceSearchVersion { get; init; }
 }
 
 public sealed record SurfaceSellSnapshot(

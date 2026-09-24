@@ -939,7 +939,7 @@ public sealed class MiningSearchViewModelTests
                                     system_name = "Sell System",
                                     subtype = "Rocky body",
                                     volcanism_type = "Minor Metallic Magma",
-                                    distance = 2,
+                                    distance = 0,
                                 },
                             ];
                     return new HttpResponseMessage(System.Net.HttpStatusCode.OK)

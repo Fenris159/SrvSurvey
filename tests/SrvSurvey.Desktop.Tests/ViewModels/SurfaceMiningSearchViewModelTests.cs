@@ -25,6 +25,7 @@ public sealed class SurfaceMiningSearchViewModelTests
                 first.ConfigureCache(cache);
                 first.Reference = "Sol";
                 first.Radius = 40;
+                first.MineSellRadius = 75;
                 first.Materials.Add(Material);
                 await first.SearchAsync();
                 Assert.Single(first.Rows);
@@ -45,6 +46,7 @@ public sealed class SurfaceMiningSearchViewModelTests
             Assert.Single(restored.Rows);
             Assert.Equal("Sol", restored.Reference);
             Assert.Equal(40, restored.Radius);
+            Assert.Equal(75, restored.MineSellRadius);
             Assert.Contains(Material, restored.Materials.Selected);
             Assert.True(restored.HideIrrelevantMaterialTags);
             Assert.Equal(0, secondHandler.Requests);
@@ -59,6 +61,7 @@ public sealed class SurfaceMiningSearchViewModelTests
             restored.Reset();
             Assert.Equal("Timbalderis", restored.Reference);
             Assert.Equal(100, restored.Radius);
+            Assert.Equal(50, restored.MineSellRadius);
             Assert.Equal(90_000, restored.MaximumDemand);
             Assert.Empty(restored.Materials.Selected);
             Assert.Empty(restored.Rows);
@@ -398,6 +401,7 @@ public sealed class SurfaceMiningSearchViewModelTests
         using var handler = new SurfaceHandler { Mode = "paged" };
         using SurfaceMiningSearchViewModel model = Create(handler);
         model.Reference = "Sol";
+        model.MineSellRadius = 100;
         model.Materials.Add("Any");
 
         await model.SearchAsync();
@@ -533,7 +537,7 @@ public sealed class SurfaceMiningSearchViewModelTests
         Assert.Equal("PER", Assert.Single(Assert.Single(row.Stations).Quotes).Code);
         Assert.Contains(Assert.Single(row.Systems).Bodies, body => body.Codes.Contains("PER"));
         Assert.Contains("/commodity/name/periclasedunite/nearby/imports", handler.MarketPath, StringComparison.Ordinal);
-        Assert.Contains("maxDistance=214", handler.MarketQuery, StringComparison.Ordinal);
+        Assert.Contains("maxDistance=100", handler.MarketQuery, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -601,6 +605,7 @@ public sealed class SurfaceMiningSearchViewModelTests
         using SurfaceMiningSearchViewModel model = Create(handler);
         model.Reference = "Timbalderis";
         model.Radius = 500;
+        model.MineSellRadius = 500;
         model.ResultLimit = 5;
         model.Materials.Add("Periclase Dunite");
         model.MaximumDemand = 90_000;
@@ -612,6 +617,45 @@ public sealed class SurfaceMiningSearchViewModelTests
         Assert.True(handler.SawAnnulus);
         Assert.Equal(21, handler.BodyPages);
         Assert.DoesNotContain("Request failed", model.Status);
+    }
+
+    [Fact]
+    public async Task PericlaseSearchPrefersAProfitableNearLoopToADistantQuoteOrCheaperNearbyStation()
+    {
+        using var handler = new SurfaceHandler { Mode = "tight-loop" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Radius = 500;
+        model.ResultLimit = 1;
+        model.Materials.Add("Periclase Dunite");
+        model.PadSize = "L";
+
+        await model.SearchAsync();
+
+        SurfaceSellRowViewModel row = Assert.Single(model.Rows);
+        Assert.Equal("Crucis Sector FM-V b2-4", row.Target);
+        Assert.Equal("LHS 2661", Assert.Single(row.Systems).System);
+        Assert.Equal(46.8, row.Systems[0].DistanceLy, 1);
+        Assert.Contains("maxDistance=50", handler.MarketQuery);
+        Assert.Equal(50, handler.FirstBodyRequestMaximumDistance);
+        Assert.Equal("Crucis Sector FM-V b2-4", handler.BodyReference);
+    }
+
+    [Fact]
+    public async Task MineSellRadiusRejectsBodiesOutsideTheLoopEvenIfTheProviderReturnsThem()
+    {
+        using var handler = new SurfaceHandler { Mode = "over-radius" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Radius = 500;
+        model.Materials.Add("Periclase Dunite");
+
+        await model.SearchAsync();
+        Assert.Empty(model.Rows);
+
+        model.MineSellRadius = 200;
+        await model.SearchAsync();
+        Assert.Equal("NLTT 55164", Assert.Single(Assert.Single(model.Rows).Systems).System);
     }
 
     [Fact]
@@ -648,6 +692,7 @@ public sealed class SurfaceMiningSearchViewModelTests
         public string BodyReference { get; private set; } = "";
         public int BodyPages { get; private set; }
         public bool FirstBodyRequestHadDistance { get; private set; }
+        public double? FirstBodyRequestMaximumDistance { get; private set; }
         public bool FirstBodyRequestHadReserve { get; private set; }
         public int ImportRequests { get; private set; }
         public bool SawAnnulus { get; private set; }
@@ -684,11 +729,39 @@ public sealed class SurfaceMiningSearchViewModelTests
                     FirstBodyRequestHadDistance = bodyRequest
                         .RootElement.GetProperty("filters")
                         .TryGetProperty("distance", out _);
+                    if (FirstBodyRequestHadDistance)
+                    {
+                        FirstBodyRequestMaximumDistance = bodyRequest
+                            .RootElement.GetProperty("filters")
+                            .GetProperty("distance")
+                            .GetProperty("max")
+                            .GetDouble();
+                    }
                     FirstBodyRequestHadReserve = bodyRequest
                         .RootElement.GetProperty("filters")
                         .TryGetProperty("reserve_level", out _);
                 }
                 BodyPages++;
+                if (Mode == "over-radius")
+                {
+                    return Json(
+                        """{"results":[{"name":"NLTT 55164 1 b","system_name":"NLTT 55164","subtype":"Rocky body","distance":194.4,"volcanism_type":"Minor Metallic Magma","parents":[{"id64":43,"type":"Star","subtype":"White Dwarf (D) Star"}]}]}"""
+                    );
+                }
+                if (Mode == "tight-loop")
+                {
+                    return Json(
+                        BodyReference switch
+                        {
+                            "Crucis Sector FM-V b2-4" =>
+                                """{"results":[{"name":"LHS 2661 1 b","system_name":"LHS 2661","subtype":"Rocky body","distance":46.8,"volcanism_type":"Minor Metallic Magma","parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DA) Star"}]}]}""",
+                            "LFT 926" =>
+                                """{"results":[{"name":"LHS 2661 1 b","system_name":"LHS 2661","subtype":"Rocky body","distance":48.7,"volcanism_type":"Minor Metallic Magma","parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DA) Star"}]}]}""",
+                            _ =>
+                                """{"results":[{"name":"NLTT 55164 1 b","system_name":"NLTT 55164","subtype":"Rocky body","distance":194.4,"volcanism_type":"Minor Metallic Magma","parents":[{"id64":43,"type":"Star","subtype":"White Dwarf (D) Star"}]}]}""",
+                        }
+                    );
+                }
                 if (Mode == "spansh-window")
                 {
                     JsonElement filters = bodyRequest.RootElement.GetProperty("filters");
@@ -887,8 +960,32 @@ public sealed class SurfaceMiningSearchViewModelTests
                 MarketPath = path;
                 MarketQuery = request.RequestUri.Query;
             }
+            if (Mode == "tight-loop")
+            {
+                string updated = DateTimeOffset.UtcNow.ToString("O");
+                bool includeFar = MarketQuery.Contains("maxDistance=500", StringComparison.Ordinal);
+                string close =
+                    $$"""{"systemName":"LFT 926","stationName":"Meredith City","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":320972,"demand":16302,"stock":0,"updatedAt":"{{updated}}","distance":23,"distanceToArrival":100,"marketId":3,"commodityName":"periclasedunite"}""";
+                string near =
+                    $$"""{"systemName":"Crucis Sector FM-V b2-4","stationName":"Stefansson Vision","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":571149,"demand":645,"stock":0,"updatedAt":"{{updated}}","distance":30,"distanceToArrival":100,"marketId":1,"commodityName":"periclasedunite"}""";
+                string far =
+                    $$"""{"systemName":"Hyades Sector MC-V c2-15","stationName":"Dents Pleasure Palace","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":582783,"demand":7000,"stock":0,"updatedAt":"{{updated}}","distance":219,"distanceToArrival":100,"marketId":2,"commodityName":"periclasedunite"}""";
+                return Json(includeFar ? "[" + close + "," + near + "," + far + "]" : "[" + close + "," + near + "]");
+            }
+            if (Mode == "over-radius")
+            {
+                string updated = DateTimeOffset.UtcNow.ToString("O");
+                return Json(
+                    $$"""[{"systemName":"Nearby Sell","stationName":"Market","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":500000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":30,"distanceToArrival":100,"marketId":4,"commodityName":"periclasedunite"}]"""
+                );
+            }
             if (Mode is "compact-periclase" or "spansh-window")
             {
+                if (MarketQuery.Contains("maxDistance=50", StringComparison.Ordinal))
+                {
+                    return Json("[]");
+                }
+
                 string updated = DateTimeOffset.UtcNow.ToString("O");
                 return Json(
                     $$"""[{"systemName":"Barnard's Star","stationName":"Boston Base","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":925152,"demand":3784,"stock":0,"updatedAt":"{{updated}}","distance":74,"distanceToArrival":100,"marketId":1,"commodityName":"periclasedunite"}]"""

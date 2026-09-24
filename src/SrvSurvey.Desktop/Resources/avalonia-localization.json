@@ -14289,6 +14289,10 @@
       "translation": "Max. Nachfrage"
     },
     {
+      "source": "Max. mine–sell distance",
+      "translation": "Max. Mine–Verkaufsdistanz"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "MaxJumpRange"
     },
@@ -16031,6 +16035,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Keine Verkaufsstation verfügt in der Entfernung über einen entsprechenden Tagebaustandort."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the mine–sell distance.",
+      "translation": "Keine Verkaufsstation verfügt innerhalb der Entfernung zwischen Mine und Verkauf über einen passenden Tagebaukörper."
     },
     {
       "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
@@ -31955,6 +31963,10 @@
     {
       "source": "navigation",
       "translation": "Navigation"
+    },
+    {
+      "source": "nearby sell systems with short mining loops. Best sell from",
+      "translation": "nahe gelegene Verkaufssysteme mit kurzen Bergbauschleifen. Bester Verkauf von"
     },
     {
       "source": "network publication journal upload privacy consent",
@@ -48587,6 +48599,10 @@
       "translation": "Máx. demanda"
     },
     {
+      "source": "Max. mine–sell distance",
+      "translation": "Máx. mina-vender distancia"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "Rango máximo de salto"
     },
@@ -50329,6 +50345,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Ninguna estación de venta tiene un cuerpo de minería a cielo abierto correspondiente en la distancia."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the mine–sell distance.",
+      "translation": "Ninguna estación de venta tiene un cuerpo de minería a cielo abierto coincidente dentro de la distancia mina-venta."
     },
     {
       "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
@@ -66253,6 +66273,10 @@
     {
       "source": "navigation",
       "translation": "navegación"
+    },
+    {
+      "source": "nearby sell systems with short mining loops. Best sell from",
+      "translation": "sistemas de venta cercanos con circuitos de minería cortos. Mejor venta desde"
     },
     {
       "source": "network publication journal upload privacy consent",
@@ -82885,6 +82909,10 @@
       "translation": "Max. demande"
     },
     {
+      "source": "Max. mine–sell distance",
+      "translation": "Max. distance mine-vente"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "Plage de saut maximale"
     },
@@ -84627,6 +84655,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Aucune station de vente ne dispose d'un organisme minier à ciel ouvert correspondant à distance."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the mine–sell distance.",
+      "translation": "Aucune station de vente ne dispose d'un organisme minier à ciel ouvert correspondant dans la distance entre la mine et la vente."
     },
     {
       "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
@@ -100551,6 +100583,10 @@
     {
       "source": "navigation",
       "translation": "navigation"
+    },
+    {
+      "source": "nearby sell systems with short mining loops. Best sell from",
+      "translation": "systèmes de vente à proximité avec des boucles minières courtes. Meilleure vente de"
     },
     {
       "source": "network publication journal upload privacy consent",
@@ -117183,6 +117219,10 @@
       "translation": "Máx. demanda"
     },
     {
+      "source": "Max. mine–sell distance",
+      "translation": "Máx. distância minha-venda"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "Alcance máximo de salto"
     },
@@ -118925,6 +118965,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Nenhuma estação de venda possui um corpo de mineração de superfície correspondente à distância."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the mine–sell distance.",
+      "translation": "Nenhuma estação de venda possui um corpo de mineração de superfície correspondente dentro da distância de venda da mina."
     },
     {
       "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
@@ -134849,6 +134893,10 @@
     {
       "source": "navigation",
       "translation": "navegação"
+    },
+    {
+      "source": "nearby sell systems with short mining loops. Best sell from",
+      "translation": "nas proximidades vendem sistemas com circuitos de mineração curtos. Melhor venda de"
     },
     {
       "source": "network publication journal upload privacy consent",
@@ -151481,6 +151529,10 @@
       "translation": "Макс. требовать"
     },
     {
+      "source": "Max. mine–sell distance",
+      "translation": "Макс. расстояние добыча-продажа"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "MaxJumpRange"
     },
@@ -153223,6 +153275,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "Ни одна станция продаж не имеет поблизости соответствующего объекта для открытых горных работ."
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the mine–sell distance.",
+      "translation": "Ни одна станция продаж не имеет соответствующего органа для открытых горных работ на расстоянии от шахты до продажи."
     },
     {
       "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
@@ -169147,6 +169203,10 @@
     {
       "source": "navigation",
       "translation": "навигация"
+    },
+    {
+      "source": "nearby sell systems with short mining loops. Best sell from",
+      "translation": "близлежащие системы продажи с короткими петлями добычи. Лучшие продажи от"
     },
     {
       "source": "network publication journal upload privacy consent",
@@ -185779,6 +185839,10 @@
       "translation": "最大限度。要求"
     },
     {
+      "source": "Max. mine–sell distance",
+      "translation": "最大限度。矿-卖距离"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "最大跳跃范围"
     },
@@ -187521,6 +187585,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "附近没有销售站有匹配的露天采矿体。"
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the mine–sell distance.",
+      "translation": "在矿山-销售距离内，没有销售站拥有匹配的露天采矿体。"
     },
     {
       "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
@@ -203445,6 +203513,10 @@
     {
       "source": "navigation",
       "translation": "导航"
+    },
+    {
+      "source": "nearby sell systems with short mining loops. Best sell from",
+      "translation": "附近的销售系统具有较短的采矿循环。最畅销自"
     },
     {
       "source": "network publication journal upload privacy consent",
@@ -220077,6 +220149,10 @@
       "translation": "* MAX. DEMAND >>>!"
     },
     {
+      "source": "Max. mine–sell distance",
+      "translation": "* MAX. MINE–SELL DISTANCE >>>!"
+    },
+    {
       "source": "MaxJumpRange",
       "translation": "* MAXJUMPRANGE >>>!"
     },
@@ -221819,6 +221895,10 @@
     {
       "source": "No sell station has a matching surface mining body within the distance.",
       "translation": "* NO SELL STATION HAS A MATCHING SURFACE MINING BODY WITHIN THE DISTANCE. >>>!"
+    },
+    {
+      "source": "No sell station has a matching surface mining body within the mine–sell distance.",
+      "translation": "* NO SELL STATION HAS A MATCHING SURFACE MINING BODY WITHIN THE MINE–SELL DISTANCE. >>>!"
     },
     {
       "source": "No sell station matches the selected Powerplay goal, power, state, demand, and landing pad within the distance.",
@@ -237743,6 +237823,10 @@
     {
       "source": "navigation",
       "translation": "* NAVIGATION >>>!"
+    },
+    {
+      "source": "nearby sell systems with short mining loops. Best sell from",
+      "translation": "* NEARBY SELL SYSTEMS WITH SHORT MINING LOOPS. BEST SELL FROM >>>!"
     },
     {
       "source": "network publication journal upload privacy consent",
