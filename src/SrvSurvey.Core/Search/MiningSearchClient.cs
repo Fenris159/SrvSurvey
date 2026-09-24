@@ -21,7 +21,8 @@ public sealed record MiningPlanetaryQuery(
     int Page = 0,
     bool GalaxyWide = false,
     IReadOnlyList<string>? VolcanismTypes = null,
-    IReadOnlyList<string>? SystemNames = null
+    IReadOnlyList<string>? SystemNames = null,
+    double MinimumDistance = 0
 );
 
 public sealed record MiningPlanetaryBody(
@@ -56,7 +57,11 @@ public sealed record MiningRingQuery(
 
 public sealed record MiningRingPage(IReadOnlyList<MiningRing> Rings, bool HasMore);
 
-public sealed record MiningPlanetaryBodyPage(IReadOnlyList<MiningPlanetaryBody> Bodies, bool HasMore);
+public sealed record MiningPlanetaryBodyPage(
+    IReadOnlyList<MiningPlanetaryBody> Bodies,
+    bool HasMore,
+    double? ResumeDistance = null
+);
 
 public sealed record MiningSystemPage(IReadOnlyList<MiningSystemResult> Systems, bool HasMore)
 {
@@ -467,6 +472,10 @@ public sealed class MiningSearchClient
         }
 
         Dictionary<string, object> filters = query.GalaxyWide ? [] : DistanceFilter(query.Radius);
+        if (!query.GalaxyWide && query.MinimumDistance > 0)
+        {
+            filters[DistanceField] = new { min = query.MinimumDistance, max = query.Radius };
+        }
         filters["is_landable"] = new { value = true };
         filters[SubtypeField] = new { value = query.BodySubtypes.ToArray() };
         if (query.ControllingPowers is { Count: > 0 })
@@ -516,13 +525,36 @@ public sealed class MiningSearchClient
             query.Page,
             cancellationToken: cancellationToken
         );
+        return ReadPlanetaryBodyPage(response, query);
+    }
+
+    private static MiningPlanetaryBodyPage ReadPlanetaryBodyPage(JsonDocument response, MiningPlanetaryQuery query)
+    {
         JsonElement[] results = Results(response).ToArray();
         MiningPlanetaryBody[] bodies = results
             .Select(ReadPlanetaryBody)
             .Where(body => body is not null)
             .Cast<MiningPlanetaryBody>()
             .ToArray();
-        return new MiningPlanetaryBodyPage(bodies, results.Length >= SpanshRoutes.PageSize(SpanshRoutes.Bodies));
+        int pageSize = SpanshRoutes.PageSize(SpanshRoutes.Bodies);
+        int? reportedCount =
+            response.RootElement.TryGetProperty("count", out JsonElement count) && count.TryGetInt32(out int total)
+                ? total
+                : null;
+        bool reportedEnd = reportedCount is { } countValue && (query.Page + 1) * pageSize >= countValue;
+        bool hasMore = results.Length >= pageSize && !reportedEnd;
+        double? lastDistance = bodies.LastOrDefault()?.DistanceLy;
+        double? resumeDistance =
+            reportedCount == SpanshRoutes.SearchResultLimit
+            && reportedEnd
+            && results.Length >= pageSize
+            && !query.GalaxyWide
+            && lastDistance is { } distance
+            && distance > query.MinimumDistance + 0.000001
+            && distance < query.Radius
+                ? Math.BitDecrement(distance)
+                : null;
+        return new MiningPlanetaryBodyPage(bodies, hasMore, resumeDistance);
     }
 
     private static MiningPlanetaryBody? ReadPlanetaryBody(JsonElement body)

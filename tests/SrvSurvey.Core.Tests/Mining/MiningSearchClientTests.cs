@@ -464,6 +464,39 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task PlanetaryBodiesDoNotRequestPastSpanshsTenThousandResultWindow()
+    {
+        string payload = JsonSerializer.Serialize(
+            new
+            {
+                count = 10_000,
+                from = 9_500,
+                results = Enumerable
+                    .Range(0, 500)
+                    .Select(index => new
+                    {
+                        system_name = "Hyades Sector MC-V c2-15",
+                        name = "Hyades Sector MC-V c2-15 " + index,
+                        subtype = "Rocky body",
+                        distance = 297.69,
+                    }),
+            }
+        );
+        using var handler = new RequestHandler(payload);
+        using var http = new HttpClient(handler);
+
+        MiningPlanetaryBodyPage page = await new MiningSearchClient(http).FindPlanetaryBodyPageAsync(
+            new MiningPlanetaryQuery("Hyades Sector MC-V c2-15", ["Rocky body"], [], Radius: 500, Page: 19)
+        );
+
+        Assert.Equal(500, page.Bodies.Count);
+        Assert.False(page.HasMore);
+        Assert.Equal(Math.BitDecrement(297.69), page.ResumeDistance);
+        using var request = JsonDocument.Parse(handler.Body!);
+        Assert.Equal(500, request.RootElement.GetProperty("size").GetInt32());
+    }
+
+    [Fact]
     public async Task ArdentFailureFallsBackToSpanshStationPrices()
     {
         using var http = new HttpClient(new ArdentThenSpanshHandler());
@@ -771,7 +804,7 @@ public sealed class MiningSearchClientTests
         var client = new MiningSearchClient(http);
         MiningRingPage first = await client.FindRingPageAsync(new("Timbalderis", "", "All", 200));
         Assert.True(first.HasMore);
-        Assert.Equal(100, handler.Bodies);
+        Assert.Equal(SpanshRoutes.PageSize(SpanshRoutes.Bodies), handler.Bodies);
 
         IReadOnlyList<MiningRing> rings = await client.FindRingsForSystemsAsync(
             new("Timbalderis", "", "All", 200),
@@ -866,11 +899,11 @@ public sealed class MiningSearchClientTests
             int page = document.RootElement.GetProperty("page").GetInt32();
             if (page == 0 && !body.Contains("LHS 3802", StringComparison.Ordinal))
             {
-                Bodies = 100;
+                Bodies = SpanshRoutes.PageSize(SpanshRoutes.Bodies);
                 string results = string.Join(
                     ',',
                     Enumerable
-                        .Range(0, 100)
+                        .Range(0, Bodies)
                         .Select(index =>
                             "{\"name\":\"Body " + index + "\",\"system_name\":\"Near\",\"distance\":1,\"rings\":[]}"
                         )

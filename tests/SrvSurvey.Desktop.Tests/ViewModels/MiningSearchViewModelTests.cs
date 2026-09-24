@@ -909,7 +909,7 @@ public sealed class MiningSearchViewModelTests
                     object[] results =
                         page == 0
                             ? Enumerable
-                                .Range(0, 100)
+                                .Range(0, 500)
                                 .Select(index =>
                                     (object)
                                         new

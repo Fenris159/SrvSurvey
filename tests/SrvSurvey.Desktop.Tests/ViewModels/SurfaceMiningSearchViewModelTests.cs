@@ -595,6 +595,26 @@ public sealed class SurfaceMiningSearchViewModelTests
     }
 
     [Fact]
+    public async Task FiveHundredLightYearPericlaseSearchContinuesAfterSpanshsResultWindow()
+    {
+        using var handler = new SurfaceHandler { Mode = "spansh-window" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Radius = 500;
+        model.ResultLimit = 5;
+        model.Materials.Add("Periclase Dunite");
+        model.MaximumDemand = 90_000;
+        model.PadSize = "L";
+
+        await model.SearchAsync();
+
+        Assert.Single(model.Rows);
+        Assert.True(handler.SawAnnulus);
+        Assert.Equal(21, handler.BodyPages);
+        Assert.DoesNotContain("Request failed", model.Status);
+    }
+
+    [Fact]
     public async Task ProviderFailureAndCancellationUpdateStatus()
     {
         using var handler = new SurfaceHandler { Mode = "fail" };
@@ -630,6 +650,7 @@ public sealed class SurfaceMiningSearchViewModelTests
         public bool FirstBodyRequestHadDistance { get; private set; }
         public bool FirstBodyRequestHadReserve { get; private set; }
         public int ImportRequests { get; private set; }
+        public bool SawAnnulus { get; private set; }
         public string MarketPath { get; private set; } = "";
         public string MarketQuery { get; private set; } = "";
         public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -668,6 +689,43 @@ public sealed class SurfaceMiningSearchViewModelTests
                         .TryGetProperty("reserve_level", out _);
                 }
                 BodyPages++;
+                if (Mode == "spansh-window")
+                {
+                    JsonElement filters = bodyRequest.RootElement.GetProperty("filters");
+                    double minimum = filters.GetProperty("distance").GetProperty("min").GetDouble();
+                    SawAnnulus |= minimum > 0;
+                    int page = bodyRequest.RootElement.GetProperty("page").GetInt32();
+                    if (minimum > 0)
+                    {
+                        return Json(
+                            """{"count":1,"results":[{"name":"Miner 1","system_name":"Miner","subtype":"Rocky body","distance":320,"volcanism_type":"Major Metallic Magma","parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DC) Star"}]}]}"""
+                        );
+                    }
+
+                    if (page >= 20)
+                    {
+                        return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                    }
+
+                    return Json(
+                        JsonSerializer.Serialize(
+                            new
+                            {
+                                count = 10_000,
+                                results = Enumerable
+                                    .Range(0, 500)
+                                    .Select(index => new
+                                    {
+                                        name = $"Unhosted {page}-{index}",
+                                        system_name = $"Unhosted {page}",
+                                        subtype = "Rocky body",
+                                        distance = 297.69 * (page + 1) / 20,
+                                        volcanism_type = "Major Metallic Magma",
+                                    }),
+                            }
+                        )
+                    );
+                }
                 if (Mode == "paged")
                 {
                     int page = bodyRequest.RootElement.GetProperty("page").GetInt32();
@@ -683,7 +741,7 @@ public sealed class SurfaceMiningSearchViewModelTests
                             new
                             {
                                 results = Enumerable
-                                    .Range(1, 100)
+                                    .Range(1, 500)
                                     .Select(index => new
                                     {
                                         name = $"Gold Miner {index}",
@@ -829,7 +887,7 @@ public sealed class SurfaceMiningSearchViewModelTests
                 MarketPath = path;
                 MarketQuery = request.RequestUri.Query;
             }
-            if (Mode == "compact-periclase")
+            if (Mode is "compact-periclase" or "spansh-window")
             {
                 string updated = DateTimeOffset.UtcNow.ToString("O");
                 return Json(

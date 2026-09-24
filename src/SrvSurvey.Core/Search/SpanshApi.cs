@@ -10,8 +10,15 @@ public static class SpanshRoutes
     public const string Bodies = "bodies/search";
     public const string Systems = "systems/search";
     public const string Stations = "stations/search";
+    public const int SearchResultLimit = 10_000;
 
-    public static int PageSize(string route) => route == Stations ? 20 : 100;
+    public static int PageSize(string route) =>
+        route switch
+        {
+            Stations => 20,
+            Bodies => 500,
+            _ => 100,
+        };
 }
 
 public sealed class SpanshApi

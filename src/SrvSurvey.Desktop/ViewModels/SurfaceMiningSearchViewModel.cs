@@ -1545,6 +1545,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     {
         var matches = new List<SurfaceBodyMatch>();
         int page = 0;
+        double minimumDistance = 0;
         bool hasMore = true;
         while (hasMore)
         {
@@ -1558,7 +1559,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     BodyControllingPowers,
                     Page: page,
                     VolcanismTypes: criteria.VolcanismTypes,
-                    SystemNames: miningSystems?.ToArray()
+                    SystemNames: miningSystems?.ToArray(),
+                    MinimumDistance: minimumDistance
                 ),
                 token
             );
@@ -1574,27 +1576,21 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                 whiteDwarfCandidates.Length > 0
                     ? await client.FindWhiteDwarfHostedBodiesAsync(system, whiteDwarfCandidates, token)
                     : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            matches.AddRange(
-                bodies
-                    .Select(body => new SurfaceBodyMatch(
-                        body,
-                        rules
-                            .Where(rule =>
-                                PlanetaryMiningPlan.Matches(rule.Criteria, body)
-                                && (
-                                    !rule.Criteria.RequiresWhiteDwarfHost
-                                    || whiteDwarfHosted.Contains(body.System + "\u001f" + body.Body)
-                                )
-                            )
-                            .Select(rule => rule.Code)
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
-                            .ToArray()
-                    ))
-                    .Where(match =>
-                        rules.Count == 1 && !rules[0].Criteria.RequiresWhiteDwarfHost || match.Codes.Count > 0
-                    )
-                    .Select(match => match.Codes.Count > 0 ? match : match with { Codes = [rules[0].Code] })
-            );
+            matches.AddRange(MatchSurfaceBodies(bodies, rules, whiteDwarfHosted));
+            // The table displays at most 30 mining systems for one selected material.
+            // Once the nearest 30 systems are known, deeper pages cannot change the result.
+            if (HasCompleteSingleMaterialResult(rules, matches))
+            {
+                break;
+            }
+
+            if (found.ResumeDistance is { } nextMinimum)
+            {
+                minimumDistance = nextMinimum;
+                page = 0;
+                continue;
+            }
+
             hasMore = found.HasMore;
             page++;
         }
@@ -1606,6 +1602,36 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             true
         );
     }
+
+    private static bool HasCompleteSingleMaterialResult(
+        IReadOnlyList<SurfaceMaterialRule> rules,
+        IReadOnlyList<SurfaceBodyMatch> matches
+    ) =>
+        rules.Count == 1
+        && matches.Select(match => match.Body.System).Distinct(StringComparer.OrdinalIgnoreCase).Take(30).Count() == 30;
+
+    private static IEnumerable<SurfaceBodyMatch> MatchSurfaceBodies(
+        IReadOnlyList<MiningPlanetaryBody> bodies,
+        IReadOnlyList<SurfaceMaterialRule> rules,
+        IReadOnlySet<string> whiteDwarfHosted
+    ) =>
+        bodies
+            .Select(body => new SurfaceBodyMatch(
+                body,
+                rules
+                    .Where(rule =>
+                        PlanetaryMiningPlan.Matches(rule.Criteria, body)
+                        && (
+                            !rule.Criteria.RequiresWhiteDwarfHost
+                            || whiteDwarfHosted.Contains(body.System + "\u001f" + body.Body)
+                        )
+                    )
+                    .Select(rule => rule.Code)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray()
+            ))
+            .Where(match => rules.Count == 1 && !rules[0].Criteria.RequiresWhiteDwarfHost || match.Codes.Count > 0)
+            .Select(match => match.Codes.Count > 0 ? match : match with { Codes = [rules[0].Code] });
 
     private static SurfaceBodyMatch[] RelevantBodies(
         IReadOnlyList<SurfaceBodyMatch> bodies,
