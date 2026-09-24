@@ -44,7 +44,7 @@ public sealed partial class MiningSearchView : UserControl
     {
         if (Model is { } vm)
         {
-            await vm.SearchMarketsAsync();
+            await vm.SearchAllMarketsAsync();
         }
     }
 

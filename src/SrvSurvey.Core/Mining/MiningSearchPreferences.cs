@@ -30,6 +30,7 @@ public sealed record MiningSearchPreferences
     public int ResultLimit { get; init; } = 30;
     public string PlatinumMode { get; init; } = "Spots++";
     public string StationType { get; init; } = "";
+    public IReadOnlyList<string> MarketStationTypes { get; init; } = [];
     public string Security { get; init; } = "";
     public string Allegiance { get; init; } = "";
     public string Government { get; init; } = "";

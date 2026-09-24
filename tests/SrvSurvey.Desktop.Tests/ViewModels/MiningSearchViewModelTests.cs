@@ -1891,6 +1891,121 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal(["Periclase Dunite", "Monazite"], model.SaveOptions().MarketCommodities);
     }
 
+    [Fact]
+    public async Task GalaxyWideMarketShowsStationDistanceFromReferenceAndExcludesCarriers()
+    {
+        using var handler = new GalaxyMarketHandler();
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new GalaxyMarketResolver()
+        )
+        {
+            Reference = "Timbalderis",
+            GalaxyWide = true,
+            ExcludeCarriers = true,
+            MarketPadSize = "L",
+        };
+        model.MarketCategoryChips.Add("Planetary Mining");
+        model.MarketCommodityChips.Remove("Platinum");
+        model.MarketCommodityChips.Add("Alexandrite");
+
+        await model.SearchMarketsAsync();
+
+        MiningMarketResult station = Assert.Single(model.Markets);
+        Assert.Equal("Coriolis", station.Type);
+        Assert.Equal(5, station.Distance);
+        Assert.Contains("fleetCarriers=false", handler.Request!.Query);
+    }
+
+    [Fact]
+    public async Task MarketsFindPricesClearsHiddenSystemOnlyScope()
+    {
+        using var handler = new GalaxyMarketHandler();
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new GalaxyMarketResolver()
+        )
+        {
+            Reference = "Timbalderis",
+            ExcludeCarriers = true,
+            MarketPadSize = "L",
+            SystemOnly = true,
+        };
+        model.MarketCategoryChips.Add("Planetary Mining");
+        model.MarketCommodityChips.Remove("Platinum");
+        model.MarketCommodityChips.Add("Alexandrite");
+
+        await model.SearchAllMarketsAsync();
+
+        Assert.False(model.SystemOnly);
+        Assert.Contains("/nearby/imports", handler.Request!.AbsolutePath);
+        Assert.Single(model.Markets);
+    }
+
+    [Fact]
+    public async Task MarketStationTypeChipsFilterResultsAndSurviveSavedOptions()
+    {
+        using var handler = new GalaxyMarketHandler();
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new GalaxyMarketResolver()
+        )
+        {
+            Reference = "Timbalderis",
+            GalaxyWide = true,
+        };
+        model.MarketCategoryChips.Add("Planetary Mining");
+        model.MarketCommodityChips.Remove("Platinum");
+        model.MarketCommodityChips.Add("Alexandrite");
+        model.MarketStationTypeChips.Add("Coriolis");
+
+        await model.SearchMarketsAsync();
+
+        Assert.Equal("Orbital", Assert.Single(model.Markets).Station);
+        Assert.Equal(["Coriolis"], model.SaveOptions().MarketStationTypes);
+        model.LoadOptions(model.SaveOptions());
+        Assert.Equal(["Coriolis"], model.MarketStationTypeChips.Selected);
+    }
+
+    private sealed class GalaxyMarketHandler : HttpMessageHandler
+    {
+        public Uri? Request { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            Request = request.RequestUri;
+            string timestamp = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+            string payload =
+                $$"""[{"systemName":"Target","stationName":"Orbital","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":800000,"demand":100,"updatedAt":"{{timestamp}}","systemX":3,"systemY":4,"systemZ":0,"commodityName":"alexandrite"},{"systemName":"Target","stationName":"Carrier","stationType":"FleetCarrier","maxLandingPadSize":3,"sellPrice":900000,"demand":100,"updatedAt":"{{timestamp}}","systemX":3,"systemY":4,"systemZ":0,"commodityName":"alexandrite"}]""";
+            return Task.FromResult(
+                new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) }
+            );
+        }
+    }
+
+    private sealed class GalaxyMarketResolver : IStarSystemResolver
+    {
+        public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
+            string query,
+            CancellationToken cancellationToken = default
+        ) =>
+            Task.FromResult<IReadOnlyList<StarSystemReference>>([
+                new StarSystemReference("Timbalderis", 1, new GalacticCoordinate(0, 0, 0)),
+            ]);
+    }
+
     private sealed class MultiCommodityMarketHandler : HttpMessageHandler
     {
         public List<Uri> Requests { get; } = [];

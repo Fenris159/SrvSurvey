@@ -130,15 +130,15 @@
                     <TextBlock Text="Maximum age (days)" TextWrapping="Wrap"/>
                     <NumericUpDown Minimum="1" Maximum="3650" Value="{Binding MarketMaximumAgeDays}"/>
                   </StackPanel>
-                  <StackPanel Spacing="4" Width="210" Margin="0,0,12,10">
-                    <TextBlock Text="Station type contains (optional)" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding StationType}"/>
+                  <StackPanel Spacing="4" Width="300" Margin="0,0,12,10">
+                    <TextBlock Text="Station types (empty = any)" TextWrapping="Wrap"/>
+                    <views:MiningChipBox DataContext="{Binding MarketStationTypeChips}" HorizontalAlignment="Stretch" Margin="0"/>
                   </StackPanel>
                   <CheckBox Content="Galaxy-wide" IsChecked="{Binding GalaxyWide}" Margin="0,0,16,4"/>
                   <CheckBox Content="Exclude carriers" IsChecked="{Binding ExcludeCarriers}" Margin="0,0,16,4"/>
                 </WrapPanel>
               </Expander>
-              <TextBlock Text="Galaxy-wide search ignores the reference distance." IsVisible="{Binding GalaxyWide}" TextWrapping="Wrap" Classes="muted"/>
+              <TextBlock Text="Galaxy-wide searches all prices and shows distances from the reference system when its location is known." IsVisible="{Binding GalaxyWide}" TextWrapping="Wrap" Classes="muted"/>
             </StackPanel>
           </Border>
           <ScrollViewer x:Name="MarketResultsHorizontalScroller" Grid.Row="2" Grid.RowSpan="2"

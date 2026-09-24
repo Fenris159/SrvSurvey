@@ -84,7 +84,10 @@ public sealed record MiningMarketQuery(
     long MaximumDemand = 0,
     TimeSpan? MaximumAge = null,
     string PadSize = "Any"
-);
+)
+{
+    public IReadOnlyList<string> StationTypes { get; init; } = [];
+}
 
 public sealed record MiningSellQuote(
     string System,
@@ -113,6 +116,8 @@ public sealed record MiningMarketResult(
 )
 {
     public string Commodity { get; init; } = "";
+
+    public GalacticCoordinate? Position { get; init; }
 
     public string? QuotedPad { get; init; }
 
@@ -1118,6 +1123,10 @@ public sealed class MiningSearchClient
             Commodity = MiningCommodityName.Canonical(
                 MiningJson.Text(item, "commodityName") is { Length: > 0 } name ? name : query.Commodity
             ),
+            Position =
+                Number(item, "systemX") is { } x && Number(item, "systemY") is { } y && Number(item, "systemZ") is { } z
+                    ? new GalacticCoordinate(x, y, z)
+                    : null,
         };
     }
 
@@ -1349,6 +1358,7 @@ public sealed class MiningSearchClient
             )
             {
                 Commodity = MiningCommodityName.Canonical(MiningJson.Text(item, CommodityField)),
+                Position = Position(station),
             };
         }
     }
@@ -1357,7 +1367,8 @@ public sealed class MiningSearchClient
         (!query.ExcludeCarriers || !type.Contains("Carrier", StringComparison.OrdinalIgnoreCase))
         && (!query.LargePads || largePad == true)
         && MatchesPad(maxPad, largePad, query.PadSize)
-        && (query.StationType.Length == 0 || type.Contains(query.StationType, StringComparison.OrdinalIgnoreCase));
+        && (query.StationType.Length == 0 || type.Contains(query.StationType, StringComparison.OrdinalIgnoreCase))
+        && (query.StationTypes.Count == 0 || query.StationTypes.Contains(type, StringComparer.OrdinalIgnoreCase));
 
     private static bool MatchesPad(int? maxPad, bool? largePad, string pad)
     {
@@ -1370,8 +1381,8 @@ public sealed class MiningSearchClient
         return pad switch
         {
             "L" => size >= 3,
-            "M" => size == 2,
-            "S" => size == 1,
+            "M" => size >= 2,
+            "S" => size >= 1,
             _ => true,
         };
     }

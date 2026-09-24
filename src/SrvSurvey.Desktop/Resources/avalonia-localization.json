@@ -2353,6 +2353,10 @@
       "translation": "Asteroidenhaufen"
     },
     {
+      "source": "AsteroidBase",
+      "translation": "AsteroidBase"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "Bei einer Einzahlung senden Sie .mine <commodity> <l|m|h>/<l|m|h> here. Verwenden Sie l, m oder h für Niedrig, Mittel oder Hoch; Ganze Wörter funktionieren auch. Bei einer präzisen Platzierung kann es sein, dass eine vorhandene Markierung überlappt. Beispiel: .mine ruby m/l here. Entfernen Sie die nächstgelegene kartierte Lagerstätte im Umkreis von 0,5 km mit .mine delete here."
     },
@@ -3143,6 +3147,10 @@
     {
       "source": "Benitoite",
       "translation": "Benitoit"
+    },
+    {
+      "source": "Bernal",
+      "translation": "Bernal"
     },
     {
       "source": "Bertrandite",
@@ -6741,6 +6749,14 @@
       "translation": "Absturzpakete werden zur Überprüfung bereitgestellt und laden keine Benutzerdaten stillschweigend hoch."
     },
     {
+      "source": "CraterOutpost",
+      "translation": "CraterOutpost"
+    },
+    {
+      "source": "CraterPort",
+      "translation": "CraterPort"
+    },
+    {
       "source": "Create a project",
       "translation": "Erstellen Sie ein Projekt"
     },
@@ -7939,6 +7955,10 @@
     {
       "source": "DockingGranted",
       "translation": "DockingGranted"
+    },
+    {
+      "source": "Dodec",
+      "translation": "Dodez"
     },
     {
       "source": "Dolphin",
@@ -10549,8 +10569,8 @@
       "translation": "Galaxieweit"
     },
     {
-      "source": "Galaxy-wide search ignores the reference distance.",
-      "translation": "Bei der galaxienweiten Suche wird die Referenzentfernung ignoriert."
+      "source": "Galaxy-wide searches all prices and shows distances from the reference system when its location is known.",
+      "translation": "Galaxy-wide durchsucht alle Preise und zeigt Entfernungen vom Referenzsystem an, wenn dessen Standort bekannt ist."
     },
     {
       "source": "GalaxyMap",
@@ -14361,6 +14381,10 @@
       "translation": "Medkit"
     },
     {
+      "source": "MegaShip",
+      "translation": "MegaSchiff"
+    },
+    {
       "source": "Menu gold",
       "translation": "Menü Gold"
     },
@@ -17819,6 +17843,10 @@
     {
       "source": "Planetary Mining",
       "translation": "Planetarischer Bergbau"
+    },
+    {
+      "source": "PlanetaryConstructionDepot",
+      "translation": "PlanetaryConstructionDepot"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -23821,6 +23849,10 @@
       "translation": "Quellordner"
     },
     {
+      "source": "SpaceConstructionDepot",
+      "translation": "SpaceConstructionDepot"
+    },
+    {
       "source": "Spansh",
       "translation": "Spansh"
     },
@@ -24625,8 +24657,12 @@
       "translation": "Die Einstellungen der Stationsinformationen konnten nicht gespeichert werden: {0}"
     },
     {
-      "source": "Station type contains (optional)",
-      "translation": "Stationstyp enthält (optional)"
+      "source": "Station types",
+      "translation": "Stationstypen"
+    },
+    {
+      "source": "Station types (empty = any)",
+      "translation": "Stationstypen (leer = beliebig)"
     },
     {
       "source": "StationInfo",
@@ -24783,6 +24819,10 @@
     {
       "source": "Stronghold",
       "translation": "Hochburg"
+    },
+    {
+      "source": "StrongholdCarrier",
+      "translation": "StrongholdCarrier"
     },
     {
       "source": "Structures",
@@ -25071,6 +25111,10 @@
     {
       "source": "SurfaceRadarSize",
       "translation": "SurfaceRadarSize"
+    },
+    {
+      "source": "SurfaceStation",
+      "translation": "SurfaceStation"
     },
     {
       "source": "Surplus",
@@ -28367,6 +28411,10 @@
     {
       "source": "Type to add mining types...",
       "translation": "Geben Sie ein, um Mining-Typen hinzuzufügen..."
+    },
+    {
+      "source": "Type to add station types...",
+      "translation": "Geben Sie ein, um Stationstypen hinzuzufügen..."
     },
     {
       "source": "Type to add system states...",
@@ -36735,6 +36783,10 @@
       "translation": "Cúmulo de asteroides"
     },
     {
+      "source": "AsteroidBase",
+      "translation": "Base de asteroides"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "En un depósito, envíe .mine <commodity> <l|m|h>/<l|m|h> here. Utilice l, m o h para Bajo, Medio o Alto; Las palabras completas también funcionan. La colocación precisa aquí puede superponerse a un marcador existente. Ejemplo: .mine ruby m/l here. Elimine el depósito mapeado más cercano dentro de 0,5 km con .mine delete here."
     },
@@ -37525,6 +37577,10 @@
     {
       "source": "Benitoite",
       "translation": "benitoita"
+    },
+    {
+      "source": "Bernal",
+      "translation": "bernal"
     },
     {
       "source": "Bertrandite",
@@ -41123,6 +41179,14 @@
       "translation": "Los paquetes de fallas se preparan para su revisión y no cargan datos de usuario de manera silenciosa."
     },
     {
+      "source": "CraterOutpost",
+      "translation": "CráterAvanzada"
+    },
+    {
+      "source": "CraterPort",
+      "translation": "CráterPuerto"
+    },
+    {
       "source": "Create a project",
       "translation": "Crear un proyecto"
     },
@@ -42321,6 +42385,10 @@
     {
       "source": "DockingGranted",
       "translation": "AtraqueConcedido"
+    },
+    {
+      "source": "Dodec",
+      "translation": "Dodec"
     },
     {
       "source": "Dolphin",
@@ -44931,8 +44999,8 @@
       "translation": "En toda la galaxia"
     },
     {
-      "source": "Galaxy-wide search ignores the reference distance.",
-      "translation": "La búsqueda en toda la galaxia ignora la distancia de referencia."
+      "source": "Galaxy-wide searches all prices and shows distances from the reference system when its location is known.",
+      "translation": "Galaxy-wide busca todos los precios y muestra distancias desde el sistema de referencia cuando se conoce su ubicación."
     },
     {
       "source": "GalaxyMap",
@@ -48743,6 +48811,10 @@
       "translation": "botiquín"
     },
     {
+      "source": "MegaShip",
+      "translation": "megabarco"
+    },
+    {
       "source": "Menu gold",
       "translation": "Menú oro"
     },
@@ -52201,6 +52273,10 @@
     {
       "source": "Planetary Mining",
       "translation": "Minería planetaria"
+    },
+    {
+      "source": "PlanetaryConstructionDepot",
+      "translation": "PlanetarioConstrucciónDepósito"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -58203,6 +58279,10 @@
       "translation": "Carpeta de origen"
     },
     {
+      "source": "SpaceConstructionDepot",
+      "translation": "EspacioConstrucciónDepot"
+    },
+    {
       "source": "Spansh",
       "translation": "Spansh"
     },
@@ -59007,8 +59087,12 @@
       "translation": "No se pudo guardar la configuración de información de la estación: {0}"
     },
     {
-      "source": "Station type contains (optional)",
-      "translation": "El tipo de estación contiene (opcional)"
+      "source": "Station types",
+      "translation": "Tipos de estaciones"
+    },
+    {
+      "source": "Station types (empty = any)",
+      "translation": "Tipos de estación (vacío = cualquiera)"
     },
     {
       "source": "StationInfo",
@@ -59165,6 +59249,10 @@
     {
       "source": "Stronghold",
       "translation": "Fortaleza"
+    },
+    {
+      "source": "StrongholdCarrier",
+      "translation": "Portador de fortaleza"
     },
     {
       "source": "Structures",
@@ -59453,6 +59541,10 @@
     {
       "source": "SurfaceRadarSize",
       "translation": "SuperficieRadarTamaño"
+    },
+    {
+      "source": "SurfaceStation",
+      "translation": "Estación de superficie"
     },
     {
       "source": "Surplus",
@@ -62749,6 +62841,10 @@
     {
       "source": "Type to add mining types...",
       "translation": "Escriba para agregar tipos de minería..."
+    },
+    {
+      "source": "Type to add station types...",
+      "translation": "Escriba para agregar tipos de estaciones..."
     },
     {
       "source": "Type to add system states...",
@@ -71117,6 +71213,10 @@
       "translation": "Amas d'astéroïdes"
     },
     {
+      "source": "AsteroidBase",
+      "translation": "Base d'astéroïdes"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "Lors d'un dépôt, envoyez .mine <commodity> <l|m|h>/<l|m|h> here. Utilisez l, m ou h pour Faible, Moyen ou Élevé ; les mots complets fonctionnent également. Un placement précis ici peut chevaucher un marqueur existant. Exemple : .mine ruby m/l here. Supprimez le gisement cartographié le plus proche dans un rayon de 0,5 km avec .mine delete here."
     },
@@ -71907,6 +72007,10 @@
     {
       "source": "Benitoite",
       "translation": "Benitoïte"
+    },
+    {
+      "source": "Bernal",
+      "translation": "Bernal"
     },
     {
       "source": "Bertrandite",
@@ -75505,6 +75609,14 @@
       "translation": "Les packages de crash sont préparés pour examen et ne téléchargent pas silencieusement les données utilisateur."
     },
     {
+      "source": "CraterOutpost",
+      "translation": "CratèreAvant-poste"
+    },
+    {
+      "source": "CraterPort",
+      "translation": "CratèrePort"
+    },
+    {
       "source": "Create a project",
       "translation": "Créer un projet"
     },
@@ -76703,6 +76815,10 @@
     {
       "source": "DockingGranted",
       "translation": "Amarrage Accordé"
+    },
+    {
+      "source": "Dodec",
+      "translation": "Dodéc"
     },
     {
       "source": "Dolphin",
@@ -79313,8 +79429,8 @@
       "translation": "À l'échelle de la galaxie"
     },
     {
-      "source": "Galaxy-wide search ignores the reference distance.",
-      "translation": "La recherche à l'échelle de la galaxie ignore la distance de référence."
+      "source": "Galaxy-wide searches all prices and shows distances from the reference system when its location is known.",
+      "translation": "Galaxy-wide recherche tous les prix et affiche les distances par rapport au système de référence lorsque son emplacement est connu."
     },
     {
       "source": "GalaxyMap",
@@ -83125,6 +83241,10 @@
       "translation": "Kit médical"
     },
     {
+      "source": "MegaShip",
+      "translation": "Méganavire"
+    },
+    {
       "source": "Menu gold",
       "translation": "Menus dorés"
     },
@@ -86583,6 +86703,10 @@
     {
       "source": "Planetary Mining",
       "translation": "Exploitation minière planétaire"
+    },
+    {
+      "source": "PlanetaryConstructionDepot",
+      "translation": "PlanétaireConstructionDépôt"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -92585,6 +92709,10 @@
       "translation": "Dossier Source"
     },
     {
+      "source": "SpaceConstructionDepot",
+      "translation": "EspaceConstructionDépôt"
+    },
+    {
       "source": "Spansh",
       "translation": "Spansh"
     },
@@ -93389,8 +93517,12 @@
       "translation": "Les paramètres des informations sur la station n'ont pas pu être enregistrés : {0}"
     },
     {
-      "source": "Station type contains (optional)",
-      "translation": "Le type de station contient (facultatif)"
+      "source": "Station types",
+      "translation": "Types de stations"
+    },
+    {
+      "source": "Station types (empty = any)",
+      "translation": "Types de stations (vide = n'importe lequel)"
     },
     {
       "source": "StationInfo",
@@ -93547,6 +93679,10 @@
     {
       "source": "Stronghold",
       "translation": "Bastion"
+    },
+    {
+      "source": "StrongholdCarrier",
+      "translation": "StrongholdCarrier"
     },
     {
       "source": "Structures",
@@ -93835,6 +93971,10 @@
     {
       "source": "SurfaceRadarSize",
       "translation": "SurfaceRadarTaille"
+    },
+    {
+      "source": "SurfaceStation",
+      "translation": "Station Surface"
     },
     {
       "source": "Surplus",
@@ -97131,6 +97271,10 @@
     {
       "source": "Type to add mining types...",
       "translation": "Tapez pour ajouter des types d'exploration de données..."
+    },
+    {
+      "source": "Type to add station types...",
+      "translation": "Tapez pour ajouter des types de stations..."
     },
     {
       "source": "Type to add system states...",
@@ -105499,6 +105643,10 @@
       "translation": "Aglomerado de asteróides"
     },
     {
+      "source": "AsteroidBase",
+      "translation": "AsteroidBase"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "Em um depósito, envie .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m ou h para Baixo, Médio ou Alto; palavras completas também funcionam. O posicionamento preciso aqui pode sobrepor um marcador existente. Exemplo: .mine ruby m/l here. Remova o depósito mapeado mais próximo dentro de 0,5 km com .mine delete here."
     },
@@ -106289,6 +106437,10 @@
     {
       "source": "Benitoite",
       "translation": "Benitoita"
+    },
+    {
+      "source": "Bernal",
+      "translation": "Bernardo"
     },
     {
       "source": "Bertrandite",
@@ -109887,6 +110039,14 @@
       "translation": "Os pacotes de falhas são preparados para revisão e não carregam silenciosamente os dados do usuário."
     },
     {
+      "source": "CraterOutpost",
+      "translation": "Posto Avançado da Cratera"
+    },
+    {
+      "source": "CraterPort",
+      "translation": "CraterPort"
+    },
+    {
       "source": "Create a project",
       "translation": "Crie um projeto"
     },
@@ -111085,6 +111245,10 @@
     {
       "source": "DockingGranted",
       "translation": "Ancoragem concedida"
+    },
+    {
+      "source": "Dodec",
+      "translation": "Dodec"
     },
     {
       "source": "Dolphin",
@@ -113695,8 +113859,8 @@
       "translation": "Em toda a galáxia"
     },
     {
-      "source": "Galaxy-wide search ignores the reference distance.",
-      "translation": "A pesquisa em toda a galáxia ignora a distância de referência."
+      "source": "Galaxy-wide searches all prices and shows distances from the reference system when its location is known.",
+      "translation": "O Galaxy-wide pesquisa todos os preços e mostra as distâncias do sistema de referência quando sua localização é conhecida."
     },
     {
       "source": "GalaxyMap",
@@ -117507,6 +117671,10 @@
       "translation": "Kit médico"
     },
     {
+      "source": "MegaShip",
+      "translation": "MegaNavio"
+    },
+    {
       "source": "Menu gold",
       "translation": "Menu ouro"
     },
@@ -120965,6 +121133,10 @@
     {
       "source": "Planetary Mining",
       "translation": "Mineração Planetária"
+    },
+    {
+      "source": "PlanetaryConstructionDepot",
+      "translation": "Depósito de Construção Planetária"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -126967,6 +127139,10 @@
       "translation": "Pasta Fonte"
     },
     {
+      "source": "SpaceConstructionDepot",
+      "translation": "EspaçoConstruçãoDepot"
+    },
+    {
       "source": "Spansh",
       "translation": "Spansh"
     },
@@ -127771,8 +127947,12 @@
       "translation": "As configurações de informações da estação não puderam ser salvas: {0}"
     },
     {
-      "source": "Station type contains (optional)",
-      "translation": "O tipo de estação contém (opcional)"
+      "source": "Station types",
+      "translation": "Tipos de estação"
+    },
+    {
+      "source": "Station types (empty = any)",
+      "translation": "Tipos de estação (vazio = qualquer)"
     },
     {
       "source": "StationInfo",
@@ -127929,6 +128109,10 @@
     {
       "source": "Stronghold",
       "translation": "Fortaleza"
+    },
+    {
+      "source": "StrongholdCarrier",
+      "translation": "Porta-fortaleza"
     },
     {
       "source": "Structures",
@@ -128217,6 +128401,10 @@
     {
       "source": "SurfaceRadarSize",
       "translation": "SurfaceRadarSize"
+    },
+    {
+      "source": "SurfaceStation",
+      "translation": "Estação de Superfície"
     },
     {
       "source": "Surplus",
@@ -131513,6 +131701,10 @@
     {
       "source": "Type to add mining types...",
       "translation": "Digite para adicionar tipos de mineração..."
+    },
+    {
+      "source": "Type to add station types...",
+      "translation": "Digite para adicionar tipos de estação..."
     },
     {
       "source": "Type to add system states...",
@@ -139881,6 +140073,10 @@
       "translation": "Скопление астероидов"
     },
     {
+      "source": "AsteroidBase",
+      "translation": "АстероидБаза"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "При депозите отправьте .mine <commodity> <l|m|h>/<l|m|h> here. Используйте l, m или h для обозначения «Низкий», «Средний» или «Высокий»; полные слова также работают. Точное размещение здесь может перекрывать существующий маркер. Пример: .mine ruby m/l here. Удалите ближайшее обнаруженное месторождение в радиусе 0,5 км с помощью .mine delete here."
     },
@@ -140671,6 +140867,10 @@
     {
       "source": "Benitoite",
       "translation": "Бенитоит"
+    },
+    {
+      "source": "Bernal",
+      "translation": "Берналь"
     },
     {
       "source": "Bertrandite",
@@ -144269,6 +144469,14 @@
       "translation": "Аварийные пакеты отправляются на проверку и не загружают пользовательские данные автоматически."
     },
     {
+      "source": "CraterOutpost",
+      "translation": "КратерЗастава"
+    },
+    {
+      "source": "CraterPort",
+      "translation": "КратерПорт"
+    },
+    {
       "source": "Create a project",
       "translation": "Создать проект"
     },
@@ -145467,6 +145675,10 @@
     {
       "source": "DockingGranted",
       "translation": "Стыковка предоставлена"
+    },
+    {
+      "source": "Dodec",
+      "translation": "Додек"
     },
     {
       "source": "Dolphin",
@@ -148077,8 +148289,8 @@
       "translation": "по всей Галактике"
     },
     {
-      "source": "Galaxy-wide search ignores the reference distance.",
-      "translation": "Поиск по всей галактике игнорирует эталонное расстояние."
+      "source": "Galaxy-wide searches all prices and shows distances from the reference system when its location is known.",
+      "translation": "По всей Галактике ищет все цены и показывает расстояния от базовой системы, когда ее местоположение известно."
     },
     {
       "source": "GalaxyMap",
@@ -151889,6 +152101,10 @@
       "translation": "Аптечка"
     },
     {
+      "source": "MegaShip",
+      "translation": "МегаШип"
+    },
+    {
       "source": "Menu gold",
       "translation": "Меню золотое"
     },
@@ -155347,6 +155563,10 @@
     {
       "source": "Planetary Mining",
       "translation": "Планетарная добыча полезных ископаемых"
+    },
+    {
+      "source": "PlanetaryConstructionDepot",
+      "translation": "ПланетарныйСтроительствоДепо"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -161349,6 +161569,10 @@
       "translation": "Исходная папка"
     },
     {
+      "source": "SpaceConstructionDepot",
+      "translation": "КосмосСтроительствоДепо"
+    },
+    {
       "source": "Spansh",
       "translation": "Spansh"
     },
@@ -162153,8 +162377,12 @@
       "translation": "Не удалось сохранить настройки информации о станции: {0}"
     },
     {
-      "source": "Station type contains (optional)",
-      "translation": "Тип станции содержит (необязательно)"
+      "source": "Station types",
+      "translation": "Типы станций"
+    },
+    {
+      "source": "Station types (empty = any)",
+      "translation": "Типы станций (пусто = любые)"
     },
     {
       "source": "StationInfo",
@@ -162311,6 +162539,10 @@
     {
       "source": "Stronghold",
       "translation": "Крепость"
+    },
+    {
+      "source": "StrongholdCarrier",
+      "translation": "КрепостьПеревозчик"
     },
     {
       "source": "Structures",
@@ -162599,6 +162831,10 @@
     {
       "source": "SurfaceRadarSize",
       "translation": "ПоверхностьРадарРазмер"
+    },
+    {
+      "source": "SurfaceStation",
+      "translation": "Поверхностная станция"
     },
     {
       "source": "Surplus",
@@ -165895,6 +166131,10 @@
     {
       "source": "Type to add mining types...",
       "translation": "Введите, чтобы добавить типы добычи..."
+    },
+    {
+      "source": "Type to add station types...",
+      "translation": "Введите, чтобы добавить типы станций..."
     },
     {
       "source": "Type to add system states...",
@@ -174263,6 +174503,10 @@
       "translation": "小行星团"
     },
     {
+      "source": "AsteroidBase",
+      "translation": "小行星基地"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "存款后，发送.mine <commodity> <l|m|h>/<l|m|h> here。使用 l、m 或 h 表示低、中或高；完整的单词也有效。此处的精确放置可能会与现有标记重叠。示例：.mine ruby m/l here。使用 .mine delete here 移除 0.5 公里内最近的地图沉积物。"
     },
@@ -175053,6 +175297,10 @@
     {
       "source": "Benitoite",
       "translation": "蓝锥矿"
+    },
+    {
+      "source": "Bernal",
+      "translation": "伯纳尔"
     },
     {
       "source": "Bertrandite",
@@ -178651,6 +178899,14 @@
       "translation": "崩溃包会被暂存以供审核，并且不会默默上传用户数据。"
     },
     {
+      "source": "CraterOutpost",
+      "translation": "陨石坑前哨站"
+    },
+    {
+      "source": "CraterPort",
+      "translation": "火山口港"
+    },
+    {
       "source": "Create a project",
       "translation": "创建一个项目"
     },
@@ -179849,6 +180105,10 @@
     {
       "source": "DockingGranted",
       "translation": "对接准许"
+    },
+    {
+      "source": "Dodec",
+      "translation": "多德克"
     },
     {
       "source": "Dolphin",
@@ -182459,8 +182719,8 @@
       "translation": "银河系范围内"
     },
     {
-      "source": "Galaxy-wide search ignores the reference distance.",
-      "translation": "全银河系搜索忽略参考距离。"
+      "source": "Galaxy-wide searches all prices and shows distances from the reference system when its location is known.",
+      "translation": "Galaxy-wide 搜索所有价格，并在已知其位置时显示距参考系统的距离。"
     },
     {
       "source": "GalaxyMap",
@@ -186271,6 +186531,10 @@
       "translation": "医疗包"
     },
     {
+      "source": "MegaShip",
+      "translation": "巨型船"
+    },
+    {
       "source": "Menu gold",
       "translation": "菜单金色"
     },
@@ -189729,6 +189993,10 @@
     {
       "source": "Planetary Mining",
       "translation": "行星采矿"
+    },
+    {
+      "source": "PlanetaryConstructionDepot",
+      "translation": "行星建设基地"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -195731,6 +195999,10 @@
       "translation": "源文件夹"
     },
     {
+      "source": "SpaceConstructionDepot",
+      "translation": "空间建筑仓库"
+    },
+    {
       "source": "Spansh",
       "translation": "Spansh"
     },
@@ -196535,8 +196807,12 @@
       "translation": "无法保存电台信息设置：{0}"
     },
     {
-      "source": "Station type contains (optional)",
-      "translation": "站类型包含（可选）"
+      "source": "Station types",
+      "translation": "车站类型"
+    },
+    {
+      "source": "Station types (empty = any)",
+      "translation": "站点类型（空=任意）"
     },
     {
       "source": "StationInfo",
@@ -196693,6 +196969,10 @@
     {
       "source": "Stronghold",
       "translation": "据点"
+    },
+    {
+      "source": "StrongholdCarrier",
+      "translation": "要塞航母"
     },
     {
       "source": "Structures",
@@ -196981,6 +197261,10 @@
     {
       "source": "SurfaceRadarSize",
       "translation": "表面雷达尺寸"
+    },
+    {
+      "source": "SurfaceStation",
+      "translation": "地面站"
     },
     {
       "source": "Surplus",
@@ -200277,6 +200561,10 @@
     {
       "source": "Type to add mining types...",
       "translation": "输入以添加采矿类型..."
+    },
+    {
+      "source": "Type to add station types...",
+      "translation": "输入以添加电台类型..."
     },
     {
       "source": "Type to add system states...",
@@ -208645,6 +208933,10 @@
       "translation": "* ASTEROID CLUSTER >>>!"
     },
     {
+      "source": "AsteroidBase",
+      "translation": "* ASTEROIDBASE >>>!"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "* AT A DEPOSIT, SEND .MINE <COMMODITY> <L|M|H>/<L|M|H> HERE. USE L, M, OR H FOR LOW, MEDIUM, OR HIGH; FULL WORDS ALSO WORK. PRECISE HERE PLACEMENT MAY OVERLAP AN EXISTING MARKER. EXAMPLE: .MINE RUBY M/L HERE. REMOVE THE NEAREST MAPPED DEPOSIT WITHIN 0.5 KM WITH .MINE DELETE HERE. >>>!"
     },
@@ -209435,6 +209727,10 @@
     {
       "source": "Benitoite",
       "translation": "* BENITOITE >>>!"
+    },
+    {
+      "source": "Bernal",
+      "translation": "* BERNAL >>>!"
     },
     {
       "source": "Bertrandite",
@@ -213033,6 +213329,14 @@
       "translation": "* CRASH PACKAGES ARE STAGED FOR REVIEW AND DO NOT SILENTLY UPLOAD USER DATA. >>>!"
     },
     {
+      "source": "CraterOutpost",
+      "translation": "* CRATEROUTPOST >>>!"
+    },
+    {
+      "source": "CraterPort",
+      "translation": "* CRATERPORT >>>!"
+    },
+    {
       "source": "Create a project",
       "translation": "* CREATE A PROJECT >>>!"
     },
@@ -214231,6 +214535,10 @@
     {
       "source": "DockingGranted",
       "translation": "* DOCKINGGRANTED >>>!"
+    },
+    {
+      "source": "Dodec",
+      "translation": "* DODEC >>>!"
     },
     {
       "source": "Dolphin",
@@ -216841,8 +217149,8 @@
       "translation": "* GALAXY-WIDE >>>!"
     },
     {
-      "source": "Galaxy-wide search ignores the reference distance.",
-      "translation": "* GALAXY-WIDE SEARCH IGNORES THE REFERENCE DISTANCE. >>>!"
+      "source": "Galaxy-wide searches all prices and shows distances from the reference system when its location is known.",
+      "translation": "* GALAXY-WIDE SEARCHES ALL PRICES AND SHOWS DISTANCES FROM THE REFERENCE SYSTEM WHEN ITS LOCATION IS KNOWN. >>>!"
     },
     {
       "source": "GalaxyMap",
@@ -220653,6 +220961,10 @@
       "translation": "* MEDKIT >>>!"
     },
     {
+      "source": "MegaShip",
+      "translation": "* MEGASHIP >>>!"
+    },
+    {
       "source": "Menu gold",
       "translation": "* MENU GOLD >>>!"
     },
@@ -224111,6 +224423,10 @@
     {
       "source": "Planetary Mining",
       "translation": "* PLANETARY MINING >>>!"
+    },
+    {
+      "source": "PlanetaryConstructionDepot",
+      "translation": "* PLANETARYCONSTRUCTIONDEPOT >>>!"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -230113,6 +230429,10 @@
       "translation": "* SOURCEFOLDER >>>!"
     },
     {
+      "source": "SpaceConstructionDepot",
+      "translation": "* SPACECONSTRUCTIONDEPOT >>>!"
+    },
+    {
       "source": "Spansh",
       "translation": "* SPANSH >>>!"
     },
@@ -230917,8 +231237,12 @@
       "translation": "* STATION INFORMATION SETTINGS COULD NOT BE SAVED: {0} >>>!"
     },
     {
-      "source": "Station type contains (optional)",
-      "translation": "* STATION TYPE CONTAINS (OPTIONAL) >>>!"
+      "source": "Station types",
+      "translation": "* STATION TYPES >>>!"
+    },
+    {
+      "source": "Station types (empty = any)",
+      "translation": "* STATION TYPES (EMPTY = ANY) >>>!"
     },
     {
       "source": "StationInfo",
@@ -231075,6 +231399,10 @@
     {
       "source": "Stronghold",
       "translation": "* STRONGHOLD >>>!"
+    },
+    {
+      "source": "StrongholdCarrier",
+      "translation": "* STRONGHOLDCARRIER >>>!"
     },
     {
       "source": "Structures",
@@ -231363,6 +231691,10 @@
     {
       "source": "SurfaceRadarSize",
       "translation": "* SURFACERADARSIZE >>>!"
+    },
+    {
+      "source": "SurfaceStation",
+      "translation": "* SURFACESTATION >>>!"
     },
     {
       "source": "Surplus",
@@ -234659,6 +234991,10 @@
     {
       "source": "Type to add mining types...",
       "translation": "* TYPE TO ADD MINING TYPES... >>>!"
+    },
+    {
+      "source": "Type to add station types...",
+      "translation": "* TYPE TO ADD STATION TYPES... >>>!"
     },
     {
       "source": "Type to add system states...",

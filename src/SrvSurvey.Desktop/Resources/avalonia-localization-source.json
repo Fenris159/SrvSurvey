@@ -4707,6 +4707,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
   },
   {
+    "Text": "AsteroidBase",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "At a deposit, send .mine \u003Ccommodity\u003E \u003Cl|m|h\u003E/\u003Cl|m|h\u003E here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
     "IsFormat": false,
     "SourceKinds": [
@@ -6285,6 +6293,14 @@
   },
   {
     "Text": "Benitoite",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Bernal",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -13510,6 +13526,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "CraterOutpost",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "CraterPort",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "Create a project",
     "IsFormat": false,
     "SourceKinds": [
@@ -15917,6 +15949,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Dodec",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Dolphin",
@@ -21149,7 +21189,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
-    "Text": "Galaxy-wide search ignores the reference distance.",
+    "Text": "Galaxy-wide searches all prices and shows distances from the reference system when its location is known.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -28804,6 +28844,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/HumanSiteMapControl.cs"
   },
   {
+    "Text": "MegaShip",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "Menu gold",
     "IsFormat": false,
     "SourceKinds": [
@@ -35738,6 +35786,14 @@
   },
   {
     "Text": "Planetary Mining",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "PlanetaryConstructionDepot",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -47775,6 +47831,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
+    "Text": "SpaceConstructionDepot",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "Spansh",
     "IsFormat": false,
     "SourceKinds": [
@@ -49386,7 +49450,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
-    "Text": "Station type contains (optional)",
+    "Text": "Station types",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
+  },
+  {
+    "Text": "Station types (empty = any)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -49699,6 +49771,14 @@
   },
   {
     "Text": "Stronghold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "StrongholdCarrier",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -50281,6 +50361,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "SurfaceStation",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Surplus",
@@ -56881,6 +56969,14 @@
   },
   {
     "Text": "Type to add mining types...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
+  },
+  {
+    "Text": "Type to add station types...",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

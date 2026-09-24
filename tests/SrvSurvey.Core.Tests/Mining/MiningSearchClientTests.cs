@@ -171,6 +171,40 @@ public sealed class MiningSearchClientTests
         );
     }
 
+    [Theory]
+    [InlineData("L", "Large")]
+    [InlineData("M", "Large,Medium")]
+    [InlineData("S", "Large,Medium,Small")]
+    [InlineData("Any", "Large,Medium,Small")]
+    public async Task MarketPadFilterIncludesStationsCompatibleWithChosenShipSize(string pad, string expected)
+    {
+        string timestamp = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+        string payload =
+            $$"""[{"systemName":"Sol","stationName":"Large","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":300,"demand":100,"updatedAt":"{{timestamp}}"},{"systemName":"Sol","stationName":"Medium","stationType":"Outpost","maxLandingPadSize":2,"sellPrice":200,"demand":100,"updatedAt":"{{timestamp}}"},{"systemName":"Sol","stationName":"Small","stationType":"OnFootSettlement","maxLandingPadSize":1,"sellPrice":100,"demand":100,"updatedAt":"{{timestamp}}"}]""";
+        using var http = new HttpClient(new Handler(payload));
+
+        IReadOnlyList<MiningMarketResult> markets = await new MiningSearchClient(http).FindMarketsAsync(
+            new MiningMarketQuery("Sol", "Alexandrite", false, PadSize: pad)
+        );
+
+        Assert.Equal(expected.Split(','), markets.Select(market => market.Station));
+    }
+
+    [Fact]
+    public async Task MarketStationTypesMatchSelectedProviderTypes()
+    {
+        string timestamp = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+        string payload =
+            $$"""[{"systemName":"Sol","stationName":"Orbital","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":300,"demand":100,"updatedAt":"{{timestamp}}"},{"systemName":"Sol","stationName":"Surface","stationType":"CraterPort","maxLandingPadSize":3,"sellPrice":200,"demand":100,"updatedAt":"{{timestamp}}"},{"systemName":"Sol","stationName":"Carrier","stationType":"FleetCarrier","maxLandingPadSize":3,"sellPrice":400,"demand":100,"updatedAt":"{{timestamp}}"}]""";
+        using var http = new HttpClient(new Handler(payload));
+
+        IReadOnlyList<MiningMarketResult> markets = await new MiningSearchClient(http).FindMarketsAsync(
+            new MiningMarketQuery("Sol", "Alexandrite", false) { StationTypes = ["Coriolis", "CraterPort"] }
+        );
+
+        Assert.Equal(["Orbital", "Surface"], markets.Select(market => market.Station).ToArray());
+    }
+
     [Fact]
     public async Task MissingAndMalformedMarketDatesCannotLookLikeFreshPrices()
     {

@@ -73,6 +73,25 @@ public sealed class MiningSearchViewModel(
     private const string PlanetaryCommodityCategory = "Planetary Mining";
     private const string MiningCommodityCategory = "Mining";
     private const int MaximumMarketCommodities = 5;
+    public static IReadOnlyList<string> MarketStationTypeOptions { get; } =
+    [
+        "Coriolis",
+        "Orbis",
+        "Ocellus",
+        "Outpost",
+        "CraterPort",
+        "CraterOutpost",
+        "SurfaceStation",
+        "AsteroidBase",
+        "MegaShip",
+        "Bernal",
+        "Dodec",
+        "OnFootSettlement",
+        "FleetCarrier",
+        "StrongholdCarrier",
+        "PlanetaryConstructionDepot",
+        "SpaceConstructionDepot",
+    ];
     private bool marketChipsHooked;
     private bool syncingMarketChips;
     public static IReadOnlyList<string> CommodityCategories { get; } =
@@ -102,6 +121,20 @@ public sealed class MiningSearchViewModel(
             AllowEmpty: true
         )
     );
+    private readonly MiningChipBoxViewModel marketStationTypeChips = new(
+        "Station types",
+        MarketStationTypeOptions,
+        "",
+        options: new(ShowFullNames: true, AllowEmpty: true)
+    );
+    public MiningChipBoxViewModel MarketStationTypeChips
+    {
+        get
+        {
+            HookMarketChips();
+            return marketStationTypeChips;
+        }
+    }
     public MiningChipBoxViewModel MarketCategoryChips
     {
         get
@@ -139,6 +172,13 @@ public sealed class MiningSearchViewModel(
             if (!syncingMarketChips)
             {
                 SyncMarketCommodities();
+            }
+        };
+        marketStationTypeChips.Selected.CollectionChanged += (_, _) =>
+        {
+            if (!syncingMarketChips)
+            {
+                options = options with { MarketStationTypes = marketStationTypeChips.Selected.ToArray() };
             }
         };
     }
@@ -1532,6 +1572,12 @@ public sealed class MiningSearchViewModel(
     private static bool IsProviderFailure(Exception ex) =>
         ex is HttpRequestException or System.Text.Json.JsonException or IOException or InvalidDataException;
 
+    public Task SearchAllMarketsAsync()
+    {
+        SystemOnly = false;
+        return SearchMarketsAsync();
+    }
+
     public Task SearchMarketsAsync() =>
         Run(async token =>
         {
@@ -1542,7 +1588,8 @@ public sealed class MiningSearchViewModel(
 
             var quotes = new List<MiningMarketResult>();
             var sources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            GalacticCoordinate? origin = community is not null && !GalaxyWide ? await ResolveOriginAsync(token) : null;
+            GalacticCoordinate? origin =
+                (community is not null || GalaxyWide) && Reference.Length > 0 ? await ResolveOriginAsync(token) : null;
             DateTimeOffset now = DateTimeOffset.UtcNow;
             foreach (string commodity in commodities)
             {
@@ -1557,18 +1604,30 @@ public sealed class MiningSearchViewModel(
                     ExcludeCarriers,
                     false,
                     MarketMaximumAgeDays,
-                    StationType.Trim(),
+                    "",
                     Page,
                     SystemOnly,
                     MarketMinimumVolume,
                     MarketMaximumVolume,
                     TimeSpan.FromDays(MarketMaximumAgeDays),
                     MarketPadSize
-                );
+                )
+                {
+                    StationTypes = MarketStationTypeChips.Selected.ToArray(),
+                };
                 (IReadOnlyList<MiningMarketResult> found, string source) =
                     await client.FindMarketsPreferringArdentAsync(query, token);
                 sources.Add(source);
-                quotes.AddRange(found);
+                quotes.AddRange(
+                    found.Select(quote =>
+                        quote.Distance is null && origin is { } from && quote.Position is { } at
+                            ? quote with
+                            {
+                                Distance = from.DistanceTo(at),
+                            }
+                            : quote
+                    )
+                );
                 quotes.AddRange(community?.Markets(query, origin, now) ?? []);
             }
 
@@ -3701,7 +3760,23 @@ public sealed class MiningSearchViewModel(
         ResultLimit = values.ResultLimit;
         ForceIncludeReference = values.ForceIncludeReference;
         PlatinumMode = values.PlatinumMode;
-        StationType = values.StationType;
+        syncingMarketChips = true;
+        marketStationTypeChips.Selected.Clear();
+        foreach (string type in values.MarketStationTypes ?? [])
+        {
+            marketStationTypeChips.Add(type);
+        }
+
+        if (
+            marketStationTypeChips.Selected.Count == 0
+            && MarketStationTypeOptions.Contains(values.StationType, StringComparer.OrdinalIgnoreCase)
+        )
+        {
+            marketStationTypeChips.Add(values.StationType);
+        }
+
+        syncingMarketChips = false;
+        options = options with { MarketStationTypes = marketStationTypeChips.Selected.ToArray(), StationType = "" };
         Security = values.Security;
         Allegiance = values.Allegiance;
         Government = values.Government;

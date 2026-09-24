@@ -178,6 +178,7 @@ public sealed class MiningCommunityCache
                 query.LargePads
                 || query.ExcludeCarriers
                 || query.StationType.Length > 0
+                || query.StationTypes.Count > 0
                 || (query.PadSize.Length > 0 && !query.PadSize.Equals("Any", StringComparison.OrdinalIgnoreCase))
             )
             {
