@@ -103,7 +103,7 @@
                   <TextBlock Text="Trade objective" TextWrapping="Wrap"/>
                   <ComboBox ItemsSource="{Binding TradeModes}" SelectedItem="{Binding TradeMode}" HorizontalAlignment="Stretch"/>
                 </StackPanel>
-                <StackPanel Spacing="4" Width="240" Margin="0,0,16,8">
+                <StackPanel Spacing="4" Width="280" Margin="0,0,16,8">
                   <TextBlock Text="Commodity category" TextWrapping="Wrap"/>
                   <views:MiningChipBox DataContext="{Binding MarketCategoryChips}" HorizontalAlignment="Stretch" Margin="0"/>
                 </StackPanel>
