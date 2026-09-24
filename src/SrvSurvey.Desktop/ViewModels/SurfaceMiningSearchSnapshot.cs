@@ -13,6 +13,7 @@ public sealed record SurfaceMiningSearchSnapshot(
 )
 {
     public DateTimeOffset? SavedAt { get; init; }
+    public bool ForceIncludeReference { get; init; }
 }
 
 public sealed record SurfaceSellSnapshot(

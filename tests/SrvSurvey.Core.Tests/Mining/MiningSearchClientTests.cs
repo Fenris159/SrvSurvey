@@ -237,14 +237,14 @@ public sealed class MiningSearchClientTests
         const string payload = """
             {"results":[
               {"name":"Alrai Sector FG-X b1-6","distance":12,"power_state":"Unoccupied","power_conflict_progress":[
-                {"power":"Nakato Kaine","progress":0.392558},
-                {"power":"Jerome Archer","progress":1.439767}
+                {"name":"Nakato Kaine","progress":0.392558},
+                {"name":"Jerome Archer","progress":1.439767}
               ]},
               {"name":"Quiet","distance":4,"power_state":"Unoccupied","power_conflict_progress":[
                 {"power":"Aisling Duval","progress":0.39}
               ]},
               {"name":"Empty","distance":8,"power_state":"Unoccupied"},
-              {"name":"Owned","distance":1,"controlling_power":"Jerome Archer","power_state":"Exploited"}
+              {"name":"Owned","distance":1,"controlling_power":"Jerome Archer","power":["Aisling Duval","Jerome Archer"],"power_state":"Exploited","power_state_control_progress":0.835221}
             ]}
             """;
         using var handler = new RequestHandler(payload);
@@ -261,6 +261,7 @@ public sealed class MiningSearchClientTests
         Assert.Equal("Alrai Sector FG-X b1-6", alrai.System);
         Assert.Equal("", alrai.Power);
         Assert.Equal("Contested", alrai.PowerState);
+        Assert.Equal(1.439767, alrai.Conflict.Single(entry => entry.Power == "Jerome Archer").Progress);
 
         IReadOnlyList<MiningSystemResult> open = await new MiningSearchClient(http).FindSystemsAsync(
             new("Sol", 80, Objective: PowerplayPlan.Acquire)
@@ -269,6 +270,7 @@ public sealed class MiningSearchClientTests
         Assert.Contains(open, system => system.System == "Quiet" && system.PowerState == "Expansion");
         Assert.Contains(open, system => system.System == "Empty" && system.PowerState == "Unoccupied");
         Assert.Contains(open, system => system.System == "Owned" && system.PowerState == "Exploited");
+        Assert.Equal(0.835221, open.Single(system => system.System == "Owned").ControlProgress);
     }
 
     [Theory]

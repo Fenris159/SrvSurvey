@@ -5,6 +5,7 @@ public sealed record MiningSearchPreferences
 {
     public string CommodityCategory { get; init; } = "Mining";
     public string Reference { get; init; } = "";
+    public bool ForceIncludeReference { get; init; }
     public string Mineral { get; init; } = "Platinum";
     public string RingType { get; init; } = "All";
     public string Reserve { get; init; } = "All";

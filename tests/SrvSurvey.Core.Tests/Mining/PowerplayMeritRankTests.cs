@@ -61,6 +61,83 @@ public sealed class PowerplayMeritRankTests
     }
 
     [Fact]
+    public void RingResultsCarryTheControllingPowersProgress()
+    {
+        MiningSystemResult[] systems =
+        [
+            new("Deciat", 85, "", "", "", "", "", "A. Lavigny-Duval", "Stronghold", 0)
+            {
+                NearbyPowers = ["Zemina Torval", "A. Lavigny-Duval"],
+                ControlProgress = 0.835221,
+            },
+        ];
+        MiningRing[] rings =
+        [
+            new()
+            {
+                System = "Deciat",
+                Body = "Deciat A Ring",
+                RingType = "Rocky",
+                Hotspots = new() { ["Monazite"] = 1 },
+            },
+        ];
+        MiningMarketResult[] markets =
+        [
+            new("Deciat", "Port", "Starport", 85, 10, 250_000, 800, 0, DateTimeOffset.UtcNow, 1)
+            {
+                Commodity = "Monazite",
+            },
+        ];
+
+        PowerplayMeritSystem row = Assert.Single(PowerplayMeritRank.Compose(systems, rings, markets, 1));
+        Assert.Equal(0.835221, row.ControlProgress);
+        Assert.Equal(systems[0].NearbyPowers, row.NearbyPowers);
+    }
+
+    [Fact]
+    public void ViableReferenceKeepsOneResultSlotWithoutBypassingEligibility()
+    {
+        MiningSystemResult[] systems =
+        [
+            new("Reference", 0, "", "", "", "", "", "", "Fortified", 0),
+            new("Rich", 8, "", "", "", "", "", "", "Fortified", 0),
+            new("NoBuyer", 0, "", "", "", "", "", "", "Fortified", 0),
+        ];
+        MiningRing[] rings =
+        [
+            new()
+            {
+                System = "Reference",
+                Body = "Reference A Ring",
+                RingType = "Metallic",
+                Hotspots = new() { ["Platinum"] = 1 },
+            },
+            new()
+            {
+                System = "Rich",
+                Body = "Rich A Ring",
+                RingType = "Metallic",
+                Hotspots = new() { ["Platinum"] = 1 },
+            },
+            new()
+            {
+                System = "NoBuyer",
+                Body = "NoBuyer A Ring",
+                RingType = "Metallic",
+                Hotspots = new() { ["Platinum"] = 1 },
+            },
+        ];
+        MiningMarketResult[] markets = [Market("Reference", "Platinum", 100_000), Market("Rich", "Platinum", 300_000)];
+
+        Assert.Equal("Rich", Assert.Single(PowerplayMeritRank.Compose(systems, rings, markets, 1)).Name);
+        Assert.Equal(
+            "Reference",
+            Assert.Single(PowerplayMeritRank.Compose(systems, rings, markets, 1, "Reference")).Name
+        );
+        Assert.Equal("Rich", Assert.Single(PowerplayMeritRank.Compose(systems, rings, markets, 1, "NoBuyer")).Name);
+    }
+
+    [Fact]
     public void HeadlinePriceFollowsTheRingHotspotNotAHigherPricedOtherCommodity()
     {
         MiningSystemResult[] systems = [new("Sosong", 5.1, "", "", "", "", "", "", "Stronghold", 0)];

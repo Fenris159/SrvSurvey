@@ -108,12 +108,16 @@ public sealed class SpanshApi
                 or HttpStatusCode.ServiceUnavailable
                 or HttpStatusCode.GatewayTimeout;
 
-    private static TimeSpan RetryDelay(HttpResponseMessage response, int attempt)
+    internal static TimeSpan RetryDelay(HttpResponseMessage response, int attempt)
     {
-        TimeSpan requested =
-            response.Headers.RetryAfter?.Delta
-            ?? (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow)
-            ?? (attempt == 1 ? TimeSpan.FromMilliseconds(250) : TimeSpan.FromSeconds(1));
-        return TimeSpan.FromTicks(Math.Clamp(requested.Ticks, 0, MaximumRetryDelay.Ticks));
+        TimeSpan? requested =
+            response.Headers.RetryAfter?.Delta ?? (response.Headers.RetryAfter?.Date - DateTimeOffset.UtcNow);
+        if (requested is { } serverDelay && serverDelay > TimeSpan.Zero)
+        {
+            return serverDelay;
+        }
+
+        double seconds = Math.Min(0.5 * Math.Pow(2, attempt - 1), MaximumRetryDelay.TotalSeconds);
+        return TimeSpan.FromSeconds(seconds * (0.8 + Random.Shared.NextDouble() * 0.4));
     }
 }

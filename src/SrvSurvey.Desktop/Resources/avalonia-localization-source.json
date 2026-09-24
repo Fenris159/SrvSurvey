@@ -6281,7 +6281,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml"
   },
   {
     "Text": "Beta",
@@ -14699,6 +14699,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
   },
   {
+    "Text": "Demand:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayRingAcquireClusterViewModel.cs"
+  },
+  {
     "Text": "Demand: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -20091,6 +20099,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Force Include if viable:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Former ship location",
@@ -29214,7 +29230,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml"
   },
   {
     "Text": "Mining announcements",
@@ -31144,6 +31160,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "No active Guardian map is available.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31774,6 +31798,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningStationList.axaml"
+  },
+  {
+    "Text": "No matching Spansh ring within acquisition reach",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayRingAcquireSharedCluster.axaml"
   },
   {
     "Text": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
@@ -36804,6 +36836,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+  },
+  {
+    "Text": "Price:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayRingAcquireClusterViewModel.cs"
   },
   {
     "Text": "Price: {0} CR {1}",
@@ -46391,6 +46431,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Show all",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayRingAcquireClusterViewModel.cs"
+  },
+  {
     "Text": "Show all Systems",
     "IsFormat": false,
     "SourceKinds": [
@@ -46613,6 +46661,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
+    "Text": "Show less stations",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayRingAcquireClusterViewModel.cs"
   },
   {
     "Text": "Show list in system map",
@@ -51168,14 +51224,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianOverlayPreviewState.cs"
-  },
-  {
-    "Text": "Target System",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
     "Text": "Target not supplied",
@@ -66888,7 +66936,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
-    "Text": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
+    "Text": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

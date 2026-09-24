@@ -16,7 +16,7 @@ public sealed class MiningSearchViewModelTests
             var cache = new MiningSearchResultCache(directory);
             var snapshot = new PowerplaySearchSnapshot(
                 new MiningSearchPreferences { Reference = "Sol", PledgedPower = "Archon Delaine" },
-                "Reinforce",
+                "Undermine",
                 ["All"],
                 ["Default"],
                 ["Any"],
@@ -54,7 +54,10 @@ public sealed class MiningSearchViewModelTests
                 ],
                 [],
                 null
-            );
+            )
+            {
+                PledgedPower = "Felicia Winters",
+            };
             using (
                 var keyModel = new MiningSearchViewModel(
                     new MiningSearchClient(),
@@ -66,6 +69,7 @@ public sealed class MiningSearchViewModelTests
             )
             {
                 keyModel.LoadOptions(snapshot.Options);
+                keyModel.PledgedPower = snapshot.PledgedPower;
                 keyModel.Objective = snapshot.Objective;
                 cache.Save("powerplay", keyModel.PowerplayCacheKey(), snapshot);
             }
@@ -78,9 +82,14 @@ public sealed class MiningSearchViewModelTests
                 new Resolver()
             );
             model.ConfigureResultCache(cache);
+            model.LoadOptions(new MiningSearchPreferences { Reference = "Other" });
+            model.RestoreLastCompletedPowerplaySearch();
+            model.UpdateCurrentLocation("Timbalderis");
+            model.PreparePowerplay();
 
             Assert.Equal("Sol", model.Reference);
-            Assert.Equal("Reinforce", model.Objective);
+            Assert.Equal("Undermine", model.Objective);
+            Assert.Equal("Felicia Winters", model.PledgedPower);
             Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
             Assert.Equal("Archon Delaine 30%", Assert.Single(Assert.Single(model.MeritRows).PowerLines).Display);
             MeritStationBlockViewModel station = Assert.Single(Assert.Single(model.MeritRows).StationBlocks);
@@ -92,6 +101,115 @@ public sealed class MiningSearchViewModelTests
             Assert.Empty(model.MeritRows);
             model.Radius = 100;
             Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
+
+            model.PledgedPower = "Any";
+            cache.Save(
+                "powerplay",
+                model.PowerplayCacheKey(),
+                snapshot with
+                {
+                    PledgedPower = "Any",
+                    Objective = "Reinforce",
+                }
+            );
+            model.RestoreLastCompletedPowerplaySearch();
+            string restoredKey = model.PowerplayCacheKey();
+            model.NoteDetectedPower("Arissa Lavigny-Duval");
+            Assert.Equal("Any", model.PledgedPower);
+            Assert.Equal(restoredKey, model.PowerplayCacheKey());
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void CachedRingAcquireRowsRestoreAndSortByDistanceOrStationScore()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-ring-acquire-cache-" + Guid.NewGuid());
+        try
+        {
+            var cache = new MiningSearchResultCache(directory);
+            var options = new MiningSearchPreferences { Reference = "Sol", PledgedPower = "Archon Delaine" };
+            AcquireResultSnapshot Row(string target, double distance, long score) =>
+                new(
+                    target,
+                    "Unoccupied",
+                    distance + " ly",
+                    [
+                        new MeritStationBlockSnapshot(
+                            "Station",
+                            target + " Port (L)",
+                            "Monazite",
+                            "Price: 500 CR",
+                            "Demand: 10",
+                            "",
+                            "",
+                            []
+                        ),
+                    ],
+                    [
+                        new AcquireMinerSnapshot(
+                            target + " Mine",
+                            [
+                                new MeritLineViewModel(
+                                    "Planet",
+                                    "A Ring: Monazite",
+                                    "A Ring",
+                                    "RingRocky",
+                                    "",
+                                    "Monazite"
+                                ),
+                            ],
+                            "Fortified",
+                            [],
+                            "Single"
+                        ),
+                    ]
+                )
+                {
+                    DistanceLy = distance,
+                    StationScores = [score],
+                };
+            var snapshot = new PowerplaySearchSnapshot(
+                options,
+                "Acquire",
+                ["All"],
+                ["Any"],
+                ["Any"],
+                "2 saved targets",
+                [],
+                [Row("Near", 10, 500), Row("Far", 30, 800)],
+                null
+            )
+            {
+                PledgedPower = "Archon Delaine",
+            };
+            using var model = new MiningSearchViewModel(
+                new MiningSearchClient(),
+                new BookmarksViewModel(directory),
+                _ => { },
+                () => [],
+                new Resolver()
+            );
+            model.LoadOptions(options);
+            model.PledgedPower = "Archon Delaine";
+            model.Objective = "Acquire";
+            cache.Save("powerplay", model.PowerplayCacheKey(), snapshot);
+            model.ConfigureResultCache(new MiningSearchResultCache(directory));
+
+            Assert.Equal("Near", model.AcquireRows[0].Target);
+            Assert.Equal(2, model.RingAcquireClusters.Count);
+            model.AcquireBestStationSortCommand.Execute(null);
+            Assert.Equal("Far", model.AcquireRows[0].Target);
+            model.AcquireBestStationSortCommand.Execute(null);
+            Assert.Equal("Near", model.AcquireRows[0].Target);
+            model.AcquireDistanceSortCommand.Execute(null);
+            Assert.Equal("Far", model.AcquireRows[0].Target);
         }
         finally
         {
@@ -230,6 +348,7 @@ public sealed class MiningSearchViewModelTests
         await model.SearchSystemsAsync();
 
         Assert.Equal("Own Sell", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Equal("Aisling Duval 42%", Assert.Single(model.PlanetarySearch.Rows).PowerLines[0].Display);
         Assert.Equal(["Own Sell"], handler.BodyReferences);
         Assert.All(
             Assert.Single(model.PlanetarySearch.Rows).Systems,
@@ -244,6 +363,7 @@ public sealed class MiningSearchViewModelTests
         await model.SearchSystemsAsync();
 
         Assert.Equal("Other Sell", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Equal("Jerome Archer 67%", Assert.Single(model.PlanetarySearch.Rows).PowerLines[0].Display);
         Assert.Equal(["Other Sell"], handler.BodyReferences);
         Assert.All(
             Assert.Single(model.PlanetarySearch.Rows).Systems,
@@ -730,7 +850,7 @@ public sealed class MiningSearchViewModelTests
 
                 return Json(
                     MultipleSellSystems
-                        ? """{"results":[{"name":"Own Sell","controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Other Sell","controlling_power":"Jerome Archer","power_state":"Fortified"}]}"""
+                        ? """{"results":[{"name":"Own Sell","controlling_power":"Aisling Duval","power":["Felicia Winters","Aisling Duval"],"power_state":"Fortified","power_state_control_progress":0.42},{"name":"Other Sell","controlling_power":"Jerome Archer","power":["Felicia Winters","Jerome Archer"],"power_state":"Fortified","power_state_control_progress":0.67}]}"""
                         : """{"results":[{"name":"Sell System","power_state":"Stronghold"}]}"""
                 );
             }
@@ -1342,7 +1462,7 @@ public sealed class MiningSearchViewModelTests
     [Fact]
     public async Task AcquireKeepsUnownedSystemsInsideFortifiedOrStrongholdRange()
     {
-        using var http = new HttpClient(new AcquisitionRangeHandler());
+        using var http = new HttpClient(new AcquisitionRangeHandler { HasSpanshMarket = true });
         using var model = new MiningSearchViewModel(
             new(http),
             new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
@@ -1354,6 +1474,7 @@ public sealed class MiningSearchViewModelTests
             Reference = "Sol",
             PledgedPower = "Archon Delaine",
             Objective = "Acquire",
+            Mineral = "Any",
             Radius = 100,
         };
 
@@ -1366,6 +1487,28 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("Claim", row.Target);
         Assert.Equal("Anchor", Assert.Single(row.Miners).Name);
         Assert.Contains("20 ly", model.Status);
+    }
+
+    [Fact]
+    public async Task AcquireDoesNotPresentEmptyStationAndRingCells()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(new AcquisitionRangeHandler())),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Mineral = "Any",
+        };
+
+        await model.SearchSystemsAsync();
+
+        Assert.Empty(model.AcquireRows);
     }
 
     [Fact]
@@ -1383,6 +1526,7 @@ public sealed class MiningSearchViewModelTests
             Reference = "Sol",
             PledgedPower = "Archon Delaine",
             Objective = "Acquire",
+            Mineral = "Any",
         };
 
         await model.SearchSystemsAsync();
@@ -1392,6 +1536,33 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("Monazite", Assert.Single(row.StationBlocks).Commodity);
         Assert.Equal("RingRocky", Assert.Single(Assert.Single(row.Miners).RingLines).RingTypeIcon);
         Assert.True(handler.SpanshMarketRequested);
+    }
+
+    [Fact]
+    public async Task AcquireUsesTheNextCandidateWhenTheNearestHasNoSellStation()
+    {
+        using var handler = new AcquisitionRangeHandler { HasSpanshMarket = true, SecondTargetHasMarket = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Mineral = "Any",
+            ResultLimit = 1,
+        };
+
+        await model.SearchSystemsAsync();
+
+        AcquireResultRowViewModel row = Assert.Single(model.AcquireRows);
+        Assert.Equal("Claim 2", row.Target);
+        Assert.NotEmpty(row.StationBlocks);
+        Assert.NotEmpty(Assert.Single(row.Miners).RingLines);
     }
 
     [Fact]
@@ -1516,6 +1687,7 @@ public sealed class MiningSearchViewModelTests
     private sealed class AcquisitionRangeHandler : HttpMessageHandler
     {
         public bool HasSpanshMarket { get; init; }
+        public bool SecondTargetHasMarket { get; init; }
         public bool SpanshMarketRequested { get; private set; }
         public bool PagedBubble { get; init; }
         public bool DistantSupporter { get; init; }
@@ -1551,8 +1723,9 @@ public sealed class MiningSearchViewModelTests
             if (request.RequestUri?.AbsolutePath == "/api/stations/search" && HasSpanshMarket)
             {
                 SpanshMarketRequested = true;
+                string marketSystem = SecondTargetHasMarket ? "Claim 2" : "Claim";
                 string market =
-                    $$"""{"results":[{"system_name":"Claim","name":"Fallback Port","type":"Coriolis Starport","large_pads":1,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","market":[{"commodity":"Monazite","sell_price":600000,"demand":1000}]}]}""";
+                    $$"""{"results":[{"system_name":"{{marketSystem}}","name":"Fallback Port","type":"Coriolis Starport","large_pads":1,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","market":[{"commodity":"Monazite","sell_price":600000,"demand":1000}]}]}""";
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(market) };
             }
 
@@ -1615,6 +1788,8 @@ public sealed class MiningSearchViewModelTests
                 (_, "Stronghold") => """{"results":[]}""",
                 ("Anchor", _) when DistantSupporter =>
                     """{"results":[{"name":"Claim","distance":10,"x":710,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                ("Anchor", _) when SecondTargetHasMarket =>
+                    """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Claim 2","distance":11,"x":11,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
                 ("Anchor", _) =>
                     """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Owned","distance":5,"x":5,"y":0,"z":0,"controlling_power":"Yuri Grom","power_state":"Exploited"}]}""",
                 _ => """{"results":[]}""",

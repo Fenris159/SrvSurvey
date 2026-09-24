@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests.Search;
@@ -16,6 +17,15 @@ public sealed class SpanshApiTests
 
         Assert.Equal(2, handler.RequestCount);
         Assert.Single(result.RootElement.GetProperty("results").EnumerateArray());
+    }
+
+    [Fact]
+    public void RetryAfterIsNotCappedAtTheLocalFallbackDelay()
+    {
+        using var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        response.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(45));
+
+        Assert.Equal(TimeSpan.FromSeconds(45), SpanshApi.RetryDelay(response, 1));
     }
 
     private sealed class OneBadGatewayHandler : HttpMessageHandler

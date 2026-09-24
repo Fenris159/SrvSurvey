@@ -131,6 +131,102 @@ public sealed class AcquireSplitRowPresentationTests
         }
     }
 
+    [AvaloniaFact]
+    public void RingAcquireSharesMiningSystemsAndKeepsHeadersAttachedToTheirCards()
+    {
+        PowerplayRingAcquireClusterViewModel cluster = Assert.Single(
+            PowerplayRingAcquireClusterViewModel.Group(
+                [RingSell("Sell A", ["Mine 1", "Shared"]), RingSell("Sell B", ["Shared", "Mine 2"])],
+                new WorkspaceCommand(() => { }),
+                new WorkspaceCommand(() => { }),
+                "↑",
+                ""
+            )
+        );
+        var view = new PowerplayRingAcquireSharedCluster { DataContext = cluster };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1600,
+            Height = 900,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+
+            Assert.NotNull(frame);
+            string? renderOutput = Environment.GetEnvironmentVariable("SRVSURVEY_RING_ACQUIRE_RENDER_OUTPUT");
+            if (!string.IsNullOrWhiteSpace(renderOutput))
+            {
+                using FileStream stream = File.Create(renderOutput);
+                frame.Save(stream, PngBitmapEncoderOptions.Default);
+            }
+
+            Assert.Equal(3, cluster.VisibleMiningSystems.Count);
+            Assert.Contains(view.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == "Ring Details");
+            Assert.Contains(view.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == "A Ring");
+            Assert.Contains(view.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == "Sell A Port (L)");
+            Border firstSell = view.GetVisualDescendants()
+                .OfType<Border>()
+                .First(border => border.Name == "SellLinkAnchor");
+            Border firstMining = view.GetVisualDescendants()
+                .OfType<Border>()
+                .First(border => border.Name == "MiningLinkAnchor");
+            Assert.InRange(
+                firstMining.TranslatePoint(new Point(0, 0), view)!.Value.Y
+                    - firstSell.TranslatePoint(new Point(0, 0), view)!.Value.Y,
+                -1,
+                60
+            );
+
+            cluster.SellNodes[1].SelectCommand.Execute(null);
+            using WriteableBitmap? selected = window.CaptureRenderedFrame();
+            Assert.Equal("Sell B", cluster.SelectedSellSystem);
+            Assert.Equal("Shared", cluster.VisibleMiningSystems[0].System);
+            Assert.Contains(
+                "selected",
+                view.GetVisualDescendants()
+                    .OfType<Border>()
+                    .Where(border => border.Name == "SellLinkAnchor")
+                    .ElementAt(1)
+                    .Classes
+            );
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static AcquireResultRowViewModel RingSell(string target, string[] mines) =>
+        new(
+            target,
+            "Unoccupied",
+            "10 ly",
+            [
+                new MeritStationBlockSnapshot(
+                    "Station",
+                    target + " Port (L)",
+                    "Monazite",
+                    "Price: 500,000 CR",
+                    "Demand: 100",
+                    "Distance: 10 Ls",
+                    "",
+                    []
+                ).Restore(),
+            ],
+            mines
+                .Select(name => new AcquireMinerViewModel(
+                    name,
+                    [new MeritLineViewModel("Planet", "A Ring: Monazite", "A Ring", "RingRocky", "", "Monazite")],
+                    "Fortified",
+                    []
+                ))
+                .ToArray(),
+            new AcquireResultMetadata("None", [], 10, [500_000])
+        );
+
     private static SurfaceSellRowViewModel Sell(string target, string[] mines) =>
         new(
             target,

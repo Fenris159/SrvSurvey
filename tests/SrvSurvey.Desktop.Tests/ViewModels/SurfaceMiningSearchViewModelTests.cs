@@ -40,9 +40,12 @@ public sealed class SurfaceMiningSearchViewModelTests
 
             using var secondHandler = new SurfaceHandler { Mode = "fail" };
             using SurfaceMiningSearchViewModel restored = Create(secondHandler);
-            restored.ConfigureCache(cache);
+            restored.ConfigureCache(new MiningSearchResultCache(directory));
+            restored.UpdateCurrentLocation("Timbalderis");
             Assert.Single(restored.Rows);
             Assert.Equal("Sol", restored.Reference);
+            Assert.Equal(40, restored.Radius);
+            Assert.Contains(Material, restored.Materials.Selected);
             Assert.True(restored.HideIrrelevantMaterialTags);
             Assert.Equal(0, secondHandler.Requests);
 
@@ -476,6 +479,25 @@ public sealed class SurfaceMiningSearchViewModelTests
     }
 
     [Fact]
+    public async Task ForceIncludeReferenceChecksItsMarketAndKeepsItWithinTheResultLimit()
+    {
+        using var handler = new SurfaceHandler { Mode = "force-reference" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Sol";
+        model.Materials.Add(Material);
+
+        await model.SearchAsync();
+        Assert.Equal("Rich Sell", Assert.Single(model.Rows).Target);
+
+        model.ForceIncludeReference = true;
+        await model.SearchAsync();
+
+        Assert.Equal("Sol", Assert.Single(model.Rows).Target);
+        Assert.True(handler.ImportRequests > 0);
+        Assert.Equal(0, model.Rows[0].ReferenceDistanceLy);
+    }
+
+    [Fact]
     public async Task EmptyBodiesCheckEverySellSystem()
     {
         using var handler = new SurfaceHandler { Mode = "reserve-stress" };
@@ -768,6 +790,13 @@ public sealed class SurfaceMiningSearchViewModelTests
             if (path.Contains("/commodities/imports", StringComparison.Ordinal))
             {
                 ImportRequests++;
+                if (Mode == "force-reference")
+                {
+                    string updated = DateTimeOffset.UtcNow.ToString("O");
+                    return Json(
+                        $$"""[{"systemName":"Sol","stationName":"Sol Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":100000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":0,"distanceToArrival":100,"marketId":2,"commodityName":"Diamond"}]"""
+                    );
+                }
                 if (Mode == "ranked")
                 {
                     return Json("[]");
@@ -805,6 +834,14 @@ public sealed class SurfaceMiningSearchViewModelTests
                 string updated = DateTimeOffset.UtcNow.ToString("O");
                 return Json(
                     $$"""[{"systemName":"Barnard's Star","stationName":"Boston Base","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":925152,"demand":3784,"stock":0,"updatedAt":"{{updated}}","distance":74,"distanceToArrival":100,"marketId":1,"commodityName":"periclasedunite"}]"""
+                );
+            }
+
+            if (Mode == "force-reference")
+            {
+                string updated = DateTimeOffset.UtcNow.ToString("O");
+                return Json(
+                    $$"""[{"systemName":"Rich Sell","stationName":"Rich Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":900000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":10,"distanceToArrival":100,"marketId":1,"commodityName":"Diamond"}]"""
                 );
             }
 

@@ -71,6 +71,11 @@ public sealed record AcquireResultSnapshot(
     AcquireMinerSnapshot[] Miners
 )
 {
+    public string FactionState { get; init; } = "";
+    public PowerplayPowerLineViewModel[] PowerLines { get; init; } = [];
+    public double? DistanceLy { get; init; }
+    public long[] StationScores { get; init; } = [];
+
     public static AcquireResultSnapshot From(AcquireResultRowViewModel row) =>
         new(
             row.Target,
@@ -78,7 +83,13 @@ public sealed record AcquireResultSnapshot(
             row.Distance,
             row.AllStationBlocks.Select(MeritStationBlockSnapshot.From).ToArray(),
             row.Miners.Select(AcquireMinerSnapshot.From).ToArray()
-        );
+        )
+        {
+            FactionState = row.FactionState,
+            PowerLines = row.PowerLines.ToArray(),
+            DistanceLy = row.DistanceLy,
+            StationScores = row.StationScores.ToArray(),
+        };
 
     public AcquireResultRowViewModel Restore() =>
         new(
@@ -86,7 +97,8 @@ public sealed record AcquireResultSnapshot(
             State,
             Distance,
             Stations.Select(station => station.Restore()).ToArray(),
-            Miners.Select(miner => miner.Restore()).ToArray()
+            Miners.Select(miner => miner.Restore()).ToArray(),
+            new AcquireResultMetadata(FactionState, PowerLines, DistanceLy, StationScores)
         );
 }
 
@@ -103,4 +115,5 @@ public sealed record PowerplaySearchSnapshot(
 )
 {
     public DateTimeOffset? SavedAt { get; init; }
+    public string PledgedPower { get; init; } = "";
 }

@@ -153,6 +153,13 @@ public sealed class AcquireMinerViewModel : WorkspaceObservable
     public string Connector { get; }
 }
 
+public sealed record AcquireResultMetadata(
+    string FactionState,
+    IReadOnlyList<PowerplayPowerLineViewModel> PowerLines,
+    double? DistanceLy,
+    IReadOnlyList<long> StationScores
+);
+
 public sealed class AcquireResultRowViewModel : WorkspaceObservable
 {
     private bool showAllStations;
@@ -164,12 +171,18 @@ public sealed class AcquireResultRowViewModel : WorkspaceObservable
         string state,
         string distance,
         IReadOnlyList<MeritStationBlockViewModel> stations,
-        IReadOnlyList<AcquireMinerViewModel> miners
+        IReadOnlyList<AcquireMinerViewModel> miners,
+        AcquireResultMetadata? metadata = null
     )
     {
         Target = target;
         State = state;
         Distance = distance;
+        FactionState = metadata?.FactionState ?? "";
+        PowerLines = metadata?.PowerLines ?? [];
+        DistanceLy = metadata?.DistanceLy;
+        StationScores = metadata?.StationScores ?? [];
+        StationRanking = PowerplayStationRanking.FromScores(StationScores);
         allStationBlocks = stations;
         previewStationBlocks = stations.Take(1).ToArray();
         Miners = miners;
@@ -184,6 +197,11 @@ public sealed class AcquireResultRowViewModel : WorkspaceObservable
     public string Target { get; }
     public string State { get; }
     public string Distance { get; }
+    public string FactionState { get; }
+    public IReadOnlyList<PowerplayPowerLineViewModel> PowerLines { get; }
+    public double? DistanceLy { get; }
+    public IReadOnlyList<long> StationScores { get; }
+    internal PowerplayStationRanking StationRanking { get; }
     public IReadOnlyList<MeritStationBlockViewModel> StationBlocks =>
         showAllStations ? allStationBlocks : previewStationBlocks;
     public IReadOnlyList<MeritStationBlockViewModel> AllStationBlocks => allStationBlocks;
@@ -360,7 +378,9 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
                 system.NearbyPowers.Count > 0 ? string.Join("\n", system.NearbyPowers) : system.Power,
                 PowerplayPowerLineViewModel.From(
                     system.NearbyPowers.Count > 0 ? system.NearbyPowers : [system.Power],
-                    system.Conflict
+                    system.Conflict,
+                    system.Power,
+                    system.ControlProgress
                 ),
                 rings,
                 focusedRings,

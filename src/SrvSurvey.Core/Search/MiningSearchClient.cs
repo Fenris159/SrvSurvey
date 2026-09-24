@@ -152,6 +152,7 @@ public sealed record MiningSystemResult(
 {
     public IReadOnlyList<string> NearbyPowers { get; init; } = [];
     public IReadOnlyList<PowerplayProgress> Conflict { get; init; } = [];
+    public double? ControlProgress { get; init; }
 }
 
 /// <summary>Mining searches extend the shared Spansh pathway and use the application's network/privacy client.</summary>
@@ -170,6 +171,7 @@ public sealed class MiningSearchClient
     private const int MaximumResponseBytes = 8 * 1024 * 1024;
     private static readonly TimeSpan CommodityReportCheckInterval = TimeSpan.FromHours(1);
     private static readonly TimeSpan CommodityReportRetryDelay = TimeSpan.FromHours(1);
+    private static readonly TimeSpan MarketResponseCacheAge = TimeSpan.FromMinutes(10);
     private static readonly IReadOnlyDictionary<string, MiningCommodityPriceSummary> EmptyCommodityReport =
         new Dictionary<string, MiningCommodityPriceSummary>(StringComparer.OrdinalIgnoreCase);
     private static readonly HttpClient SharedClient = new() { Timeout = TimeSpan.FromSeconds(35) };
@@ -179,6 +181,7 @@ public sealed class MiningSearchClient
     private readonly SemaphoreSlim commodityReportGate = new(1, 1);
     private readonly TimeProvider timeProvider;
     private readonly MiningCommodityPriceReportStore? commodityReportStore;
+    private readonly MiningProviderResponseCache? providerResponseCache;
     private IReadOnlyDictionary<string, MiningCommodityPriceSummary>? commodityReport;
     private DateTimeOffset nextCommodityReportRefresh;
     private string? lastCommodityName;
@@ -192,15 +195,18 @@ public sealed class MiningSearchClient
     public MiningSearchClient(
         HttpClient? httpClient = null,
         TimeProvider? timeProvider = null,
-        MiningCommodityPriceReportStore? commodityReportStore = null
+        MiningCommodityPriceReportStore? commodityReportStore = null,
+        MiningProviderResponseCache? providerResponseCache = null
     )
     {
         HttpClient http = httpClient ?? SharedClient;
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.commodityReportStore = commodityReportStore;
+        this.providerResponseCache = providerResponseCache;
         ardent = new ArdentApi(
             http,
-            onFailure: (route, exception) => diagnostics.Record(ArdentProvider, route, exception)
+            onFailure: (route, exception) => diagnostics.Record(ArdentProvider, route, exception),
+            cache: providerResponseCache
         );
         spansh = new SpanshApi(
             http,
@@ -693,7 +699,7 @@ public sealed class MiningSearchClient
             );
         }
         using JsonDocument document = await ardent
-            .GetAsync(route, MaximumResponseBytes, MarketResponse, cancellationToken)
+            .GetAsync(route, MaximumResponseBytes, MarketResponse, MarketResponseCacheAge, cancellationToken)
             .ConfigureAwait(false);
         if (document.RootElement.ValueKind != JsonValueKind.Array)
         {
@@ -733,6 +739,7 @@ public sealed class MiningSearchClient
                 ArdentRoutes.SystemImports(system, maximumDays),
                 MaximumResponseBytes,
                 MarketResponse,
+                MarketResponseCacheAge,
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -872,7 +879,7 @@ public sealed class MiningSearchClient
             try
             {
                 using JsonDocument document = await ardent
-                    .GetAsync(route, MaximumResponseBytes, MarketResponse, cancellationToken)
+                    .GetAsync(route, MaximumResponseBytes, MarketResponse, MarketResponseCacheAge, cancellationToken)
                     .ConfigureAwait(false);
                 if (document.RootElement.ValueKind != JsonValueKind.Array)
                 {
@@ -1404,6 +1411,76 @@ public sealed class MiningSearchClient
         CancellationToken cancellationToken = default
     ) => (await FindSystemPageAsync(query, cancellationToken).ConfigureAwait(false)).Systems;
 
+    /// <summary>Acquisition source geometry is stable within a Powerplay cycle; progress is fetched separately.</summary>
+    public async Task<IReadOnlyList<MiningSystemResult>> FindAcquireSupportersAsync(
+        string reference,
+        string power,
+        string state,
+        CancellationToken cancellationToken = default
+    )
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        DateTimeOffset cycle = PowerplayCycleStart(now);
+        bool settling = now - cycle < TimeSpan.FromHours(1);
+        string key =
+            $"spansh-acquire-supporters:v1:{cycle:O}:{(settling ? "settling" : "settled")}:{reference.Trim()}:{PowerplayPlan.SpanshPowerName(power)}:{state}";
+        using JsonDocument? cached = providerResponseCache?.Load(
+            key,
+            settling ? TimeSpan.FromMinutes(5) : TimeSpan.FromDays(7)
+        );
+        if (cached is not null)
+        {
+            try
+            {
+                MiningSystemResult[]? systems = cached.Deserialize<MiningSystemResult[]>();
+                if (systems is not null)
+                {
+                    return systems;
+                }
+            }
+            catch (JsonException)
+            {
+                // A stale cache schema must never prevent a live search.
+            }
+        }
+
+        var found = new List<MiningSystemResult>();
+        int page = 0;
+        bool hasMore;
+        do
+        {
+            MiningSystemPage response = await FindSystemPageAsync(
+                    new MiningSystemQuery(reference, Power: power, PowerState: state, Page: page) { GalaxyWide = true },
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            found.AddRange(
+                response.Systems.Where(system =>
+                    PowerplayPlan.SamePower(system.Power, power)
+                    && system.PowerState.Equals(state, StringComparison.OrdinalIgnoreCase)
+                )
+            );
+            hasMore = response.HasMore;
+            page++;
+        } while (hasMore);
+
+        MiningSystemResult[] geometry = found
+            .Select(system => system with { Conflict = [], ControlProgress = null })
+            .ToArray();
+        using JsonDocument snapshot = JsonSerializer.SerializeToDocument(geometry);
+        providerResponseCache?.Save(key, snapshot);
+        return geometry;
+    }
+
+    internal static DateTimeOffset PowerplayCycleStart(DateTimeOffset utcNow)
+    {
+        DateTimeOffset now = utcNow.ToUniversalTime();
+        int daysSinceThursday = ((int)now.DayOfWeek - (int)DayOfWeek.Thursday + 7) % 7;
+        DateTimeOffset thursday = new(now.UtcDateTime.Date.AddHours(7), TimeSpan.Zero);
+        DateTimeOffset start = thursday.AddDays(-daysSinceThursday);
+        return start > now ? start.AddDays(-7) : start;
+    }
+
     public async Task<MiningSystemPage> FindSystemPageAsync(
         MiningSystemQuery query,
         CancellationToken cancellationToken = default
@@ -1482,7 +1559,7 @@ public sealed class MiningSearchClient
         IReadOnlyList<PowerplayProgress> progress = MiningJson
             .Array(system, "power_conflict_progress")
             .Select(entry => new PowerplayProgress(
-                MiningJson.Text(entry, "power"),
+                MiningJson.Text(entry, "name") is { Length: > 0 } name ? name : MiningJson.Text(entry, "power"),
                 MiningJson.Number(entry, "progress")
             ))
             .Where(entry => entry.Power.Length > 0 && double.IsFinite(entry.Progress))
@@ -1510,6 +1587,7 @@ public sealed class MiningSearchClient
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
             Conflict = progress,
+            ControlProgress = Number(system, "power_state_control_progress"),
         };
     }
 

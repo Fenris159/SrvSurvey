@@ -37,6 +37,7 @@ public sealed record PowerplayMeritSystem(
 {
     public IReadOnlyList<string> NearbyPowers { get; init; } = [];
     public IReadOnlyList<PowerplayProgress> Conflict { get; init; } = [];
+    public double? ControlProgress { get; init; }
     public int ReserveRank { get; init; } = 6;
 }
 
@@ -60,7 +61,8 @@ public static class PowerplayMeritRank
         IReadOnlyList<MiningSystemResult> systems,
         IReadOnlyList<MiningRing> rings,
         IReadOnlyList<MiningMarketResult> markets,
-        int limit
+        int limit,
+        string pinnedSystem = ""
     )
     {
         var rows = new List<PowerplayMeritSystem>();
@@ -91,14 +93,29 @@ public static class PowerplayMeritRank
                 {
                     NearbyPowers = system.NearbyPowers,
                     Conflict = system.Conflict,
+                    ControlProgress = system.ControlProgress,
                     ReserveRank = ReserveRank(systemRings, headline),
                 }
             );
         }
 
-        return rows.OrderByDescending(row => row.BestPrice)
+        PowerplayMeritSystem[] ordered = rows.OrderByDescending(row => row.BestPrice)
             .ThenBy(row => row.DistanceLy ?? double.MaxValue)
-            .Take(Math.Max(1, limit))
+            .ToArray();
+        int count = Math.Max(1, limit);
+        PowerplayMeritSystem[] best = ordered.Take(count).ToArray();
+        PowerplayMeritSystem? pinned = ordered.FirstOrDefault(row =>
+            pinnedSystem.Length > 0 && row.Name.Equals(pinnedSystem, StringComparison.OrdinalIgnoreCase)
+        );
+        if (pinned is null || best.Contains(pinned))
+        {
+            return best;
+        }
+
+        return best.Take(count - 1)
+            .Append(pinned)
+            .OrderByDescending(row => row.BestPrice)
+            .ThenBy(row => row.DistanceLy ?? double.MaxValue)
             .ToArray();
     }
 
@@ -136,6 +153,11 @@ public static class PowerplayMeritRank
                     planets,
                     systemStations
                 )
+                {
+                    NearbyPowers = system?.NearbyPowers ?? [],
+                    Conflict = system?.Conflict ?? [],
+                    ControlProgress = system?.ControlProgress,
+                }
             );
         }
 

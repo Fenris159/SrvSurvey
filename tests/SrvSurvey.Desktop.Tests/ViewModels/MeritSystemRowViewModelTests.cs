@@ -56,10 +56,60 @@ public sealed class MeritSystemRowViewModelTests
         );
 
         Assert.Equal(
-            ["A. Lavigny-Duval 100%", "Edmund Mahon 30%", "Felicia Winters"],
+            ["A. Lavigny-Duval 100%", "Edmund Mahon 30%", "Felicia Winters —"],
             lines.Select(line => line.Display)
         );
         Assert.Equal("#7F00FF", lines[0].ColorHex);
+    }
+
+    [Fact]
+    public void OwnedPowerUsesControlProgressAndBothMiningLayoutsOrderPowers()
+    {
+        var system = new PowerplayMeritSystem("Deciat", 85, "A. Lavigny-Duval", "Stronghold", "Boom", 0, [], [])
+        {
+            NearbyPowers = ["Zemina Torval", "A. Lavigny-Duval", "Edmund Mahon"],
+            Conflict = [new PowerplayProgress("Edmund Mahon", 0.1)],
+            ControlProgress = 0.835221,
+        };
+
+        var ring = MeritSystemRowViewModel.From(system);
+        Assert.Equal(
+            ["A. Lavigny-Duval 83.5%", "Edmund Mahon 10%", "Zemina Torval —"],
+            ring.PowerLines.Select(line => line.Display)
+        );
+
+        var details = new SurfaceSellSystemDetails("Stronghold", "Boom", system.NearbyPowers)
+        {
+            ControllingPower = system.Power,
+            ControlProgress = system.ControlProgress,
+            Conflict = system.Conflict,
+        };
+        var planetary = new SurfaceSellRowViewModel(
+            "Deciat",
+            "85 ly",
+            [],
+            [],
+            85,
+            0,
+            new SurfaceSellRowOptions([], details)
+        );
+        Assert.Equal(ring.PowerLines.Select(line => line.Display), planetary.PowerLines.Select(line => line.Display));
+    }
+
+    [Fact]
+    public void UnreportedPowerProgressRemainsDistinctFromReportedZero()
+    {
+        IReadOnlyList<PowerplayPowerLineViewModel> lines = PowerplayPowerLineViewModel.From(
+            ["Zemina Torval", "Felicia Winters"],
+            [new PowerplayProgress("Felicia Winters", 0)]
+        );
+
+        Assert.Equal(["Felicia Winters 0%", "Zemina Torval —"], lines.Select(line => line.Display));
+        IReadOnlyList<PowerplayPowerLineViewModel> extra = PowerplayPowerLineViewModel.From(
+            ["Zemina Torval"],
+            [new PowerplayProgress("Jerome Archer", 0.6)]
+        );
+        Assert.Equal(["Jerome Archer 60%", "Zemina Torval —"], extra.Select(line => line.Display));
     }
 
     [Fact]

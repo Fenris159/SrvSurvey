@@ -177,7 +177,12 @@ public sealed class SurfaceSellRowViewModel : WorkspaceObservable
         PowerState = details?.PowerState ?? "";
         FactionState = details?.FactionState ?? "";
         Powers = details?.Powers.Count > 0 ? string.Join("\n", details.Powers) : "";
-        PowerLines = PowerplayPowerLineViewModel.From(details?.Powers ?? [], details?.Conflict ?? []);
+        PowerLines = PowerplayPowerLineViewModel.From(
+            details?.Powers ?? [],
+            details?.Conflict ?? [],
+            details?.ControllingPower ?? "",
+            details?.ControlProgress
+        );
         ReferenceDistanceLy = referenceDistanceLy;
         BestViablePrice = bestViablePrice;
         this.systems = systems;
@@ -267,6 +272,8 @@ public sealed record SurfaceSellSystemDetails(
 )
 {
     public IReadOnlyList<PowerplayProgress> Conflict { get; init; } = [];
+    public string ControllingPower { get; init; } = "";
+    public double? ControlProgress { get; init; }
 }
 
 public sealed record SurfaceSellRowOptions(IReadOnlyList<long>? StationScores, SurfaceSellSystemDetails? Details);
@@ -309,8 +316,10 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     private readonly int maximumResults;
     private CancellationTokenSource? pending;
     private string reference = "";
+    private bool forceIncludeReference;
     private string currentSystem = "";
     private bool referenceTracksCommander;
+    private bool preserveRestoredReference;
     private double radius = 100;
     private int resultLimit = 1;
     private string padSize = "Any";
@@ -379,6 +388,11 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         get => reference;
         set
         {
+            if (!restoringCache)
+            {
+                preserveRestoredReference = false;
+            }
+
             string next = value ?? "";
             if (next.Length == 0 && currentSystem.Length > 0)
             {
@@ -392,6 +406,12 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                 Changed(nameof(Reference));
             }
         }
+    }
+
+    public bool ForceIncludeReference
+    {
+        get => forceIncludeReference;
+        set => Set(ref forceIncludeReference, value);
     }
 
     public bool HideIrrelevantMaterialTags
@@ -432,6 +452,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         pending = null;
         IsBusy = false;
         Materials.Selected.Clear();
+        ForceIncludeReference = false;
+        preserveRestoredReference = false;
         Radius = 100;
         ResultLimit = 1;
         PadSize = "Any";
@@ -479,6 +501,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         )
         {
             SavedAt = DateTimeOffset.UtcNow,
+            ForceIncludeReference = ForceIncludeReference,
         };
 
     public void RestoreSnapshot(SurfaceMiningSearchSnapshot snapshot, bool restoreFilters)
@@ -489,6 +512,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             if (restoreFilters)
             {
                 Reference = snapshot.Reference;
+                ForceIncludeReference = snapshot.ForceIncludeReference;
                 Radius = snapshot.Radius;
                 ResultLimit = snapshot.ResultLimit;
                 Materials.Selected.Clear();
@@ -511,6 +535,12 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         }
         finally
         {
+            if (restoreFilters)
+            {
+                preserveRestoredReference = true;
+                referenceTracksCommander = false;
+            }
+
             restoringCache = false;
         }
     }
@@ -520,6 +550,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             new
             {
                 Reference = Reference.Trim().ToUpperInvariant(),
+                ForceIncludeReference,
                 Radius,
                 ResultLimit,
                 Materials = Materials
@@ -537,6 +568,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         if (
             args.PropertyName
             is nameof(Reference)
+                or nameof(ForceIncludeReference)
                 or nameof(Radius)
                 or nameof(ResultLimit)
                 or nameof(PadSize)
@@ -571,6 +603,11 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         string next = system ?? "";
         string previous = currentSystem;
         currentSystem = next;
+        if (preserveRestoredReference)
+        {
+            return;
+        }
+
         if (
             next.Length > 0
             && (
@@ -724,12 +761,13 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         Changed(nameof(SellDistanceSortIndicator));
         Changed(nameof(BestStationSortIndicator));
         (List<MiningMarketResult> quotes, bool usedFallback) = await FindInitialSurfaceQuotesAsync(materials, token);
+        usedFallback |= await AddReferenceQuotesIfNeededAsync(quotes, materials, token);
 
         SurfaceRankedSearch search;
         var ranking = new SurfaceRankingState(catalogOrder);
         do
         {
-            SurfaceStationCandidate[] candidates = CandidatesFor(quotes, materials, catalogOrder);
+            SurfaceStationCandidate[] candidates = PrioritizeReference(CandidatesFor(quotes, materials, catalogOrder));
             search =
                 candidates.Length == 0
                     ? new SurfaceRankedSearch([])
@@ -750,6 +788,34 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
         return quotes.Count == 0 ? NoSellStationsMessage : ResultMessage(search, materials, catalogOrder, usedFallback);
     }
+
+    private async Task<bool> AddReferenceQuotesIfNeededAsync(
+        List<MiningMarketResult> quotes,
+        IReadOnlyList<string> materials,
+        CancellationToken token
+    )
+    {
+        if (
+            !ForceIncludeReference
+            || UseAdditionalMarketsOnly
+            || quotes.Any(quote => SameSystem(quote.System, Reference))
+        )
+        {
+            return false;
+        }
+
+        (IReadOnlyList<MiningMarketResult> referenceQuotes, bool usedFallback) = await FindReferenceQuotesAsync(
+            materials,
+            token
+        );
+        quotes.AddRange(referenceQuotes);
+        return usedFallback;
+    }
+
+    private SurfaceStationCandidate[] PrioritizeReference(SurfaceStationCandidate[] candidates) =>
+        ForceIncludeReference
+            ? candidates.OrderByDescending(candidate => SameSystem(candidate.Anchor.System, Reference)).ToArray()
+            : candidates;
 
     private async Task<(List<MiningMarketResult> Quotes, bool UsedFallback)> FindInitialSurfaceQuotesAsync(
         IReadOnlyList<string> materials,
@@ -787,6 +853,75 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
         return (quotes, usedFallback);
     }
+
+    private async Task<(IReadOnlyList<MiningMarketResult> Quotes, bool UsedFallback)> FindReferenceQuotesAsync(
+        IReadOnlyList<string> materials,
+        CancellationToken token
+    )
+    {
+        var query = new MiningMarketQuery(
+            Reference,
+            "Any",
+            false,
+            Radius,
+            ExcludeCarriers: ExcludeCarrierMarkets,
+            SystemOnly: true,
+            MinimumDemand: MinimumDemand,
+            MaximumDemand: MaximumDemand,
+            MaximumAge: MaximumAge ?? TimeSpan.FromDays(3650),
+            PadSize: PadSize
+        );
+        IReadOnlyList<MiningMarketResult> imports;
+        try
+        {
+            imports = await client.FindSystemImportsAsync(Reference, query, token);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+        {
+            imports = [];
+        }
+
+        MiningMarketResult[] matching = imports
+            .Where(quote => materials.Any(material => MiningCommodityName.Same(material, quote.Commodity)))
+            .Select(quote => quote with { Distance = 0 })
+            .ToArray();
+        if (matching.Length > 0)
+        {
+            return (matching, false);
+        }
+
+        IReadOnlyList<MiningMarketResult> fallback = await client.FindSpanshSystemCommoditiesAsync(
+            Reference,
+            Reference,
+            token
+        );
+        return (
+            fallback
+                .Where(quote =>
+                    materials.Any(material => MiningCommodityName.Same(material, quote.Commodity))
+                    && quote.Price > 0
+                    && quote.Demand > 0
+                    && quote.Demand >= MinimumDemand
+                    && (MaximumDemand == 0 || quote.Demand <= MaximumDemand)
+                    && (MaximumAge is null || quote.Updated >= DateTimeOffset.UtcNow - MaximumAge)
+                    && MatchesPad(quote)
+                )
+                .Select(quote => quote with { Distance = 0 })
+                .ToArray(),
+            true
+        );
+    }
+
+    private bool MatchesPad(MiningMarketResult quote) =>
+        PadSize switch
+        {
+            "L" => quote.LargePad == true,
+            "M" => quote.QuotedPad is "Medium",
+            "S" => quote.QuotedPad is "Small",
+            _ => true,
+        };
+
+    private static bool SameSystem(string left, string right) => left.Equals(right, StringComparison.OrdinalIgnoreCase);
 
     private string ResultMessage(
         SurfaceRankedSearch search,
@@ -889,21 +1024,17 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             }
 
             ranked.Add(row);
-            ranked = KeepBestRows(ranked, catalogOrder, GroupStationsBySystem, ResultLimit);
+            ranked = KeepBestRows(
+                ranked,
+                catalogOrder,
+                GroupStationsBySystem,
+                ResultLimit,
+                ForceIncludeReference ? Reference : ""
+            );
             ranking.Ranked = ranked;
 
             Rows = SortRows(ranked);
-            if (
-                CanStopRanking(
-                    catalogOrder,
-                    GroupStationsBySystem,
-                    materials.Count,
-                    ranked,
-                    candidates,
-                    index,
-                    ResultLimit
-                )
-            )
+            if (CanStopRanking(catalogOrder, materials.Count, ranked, candidates, index))
             {
                 break;
             }
@@ -1178,33 +1309,40 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         List<SurfaceSellRowViewModel> ranked,
         bool catalogOrder,
         bool groupStations,
-        int resultLimit
+        int resultLimit,
+        string pinnedSystem
     )
     {
+        IEnumerable<SurfaceSellRowViewModel> ordered;
         if (catalogOrder)
         {
-            return ranked;
+            ordered = ranked;
         }
-
-        if (groupStations)
+        else if (groupStations)
         {
-            return ranked
-                .OrderBy(
-                    item => item,
-                    Comparer<SurfaceSellRowViewModel>.Create(
-                        (left, right) =>
-                            PowerplayStationRanking.CompareDescending(left.StationRanking, right.StationRanking)
-                    )
+            ordered = ranked.OrderBy(
+                item => item,
+                Comparer<SurfaceSellRowViewModel>.Create(
+                    (left, right) =>
+                        PowerplayStationRanking.CompareDescending(left.StationRanking, right.StationRanking)
                 )
-                .Take(resultLimit)
-                .ToList();
+            );
+        }
+        else
+        {
+            ordered = ranked.OrderByDescending(item => item.BestViablePrice).ThenBy(item => item.ReferenceDistanceLy);
+        }
+        SurfaceSellRowViewModel[] sorted = ordered.ToArray();
+        SurfaceSellRowViewModel[] best = sorted.Take(resultLimit).ToArray();
+        SurfaceSellRowViewModel? pinned = sorted.FirstOrDefault(row =>
+            pinnedSystem.Length > 0 && SameSystem(row.Target, pinnedSystem)
+        );
+        if (pinned is null || best.Contains(pinned))
+        {
+            return best.ToList();
         }
 
-        return ranked
-            .OrderByDescending(item => item.BestViablePrice)
-            .ThenBy(item => item.ReferenceDistanceLy)
-            .Take(resultLimit)
-            .ToList();
+        return sorted.Where(row => best.Take(resultLimit - 1).Contains(row) || ReferenceEquals(row, pinned)).ToList();
     }
 
     private static bool IsViableCandidate(
@@ -1222,29 +1360,38 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         return relevant.Any(body => body.Codes.Contains(code, StringComparer.OrdinalIgnoreCase));
     }
 
-    private static bool CanStopRanking(
+    private bool CanStopRanking(
         bool catalogOrder,
-        bool groupStations,
         int materialCount,
         List<SurfaceSellRowViewModel> ranked,
         IReadOnlyList<SurfaceStationCandidate> candidates,
-        int index,
-        int resultLimit
+        int index
     )
     {
-        if (ranked.Count < resultLimit || catalogOrder)
+        if (ranked.Count < ResultLimit || catalogOrder)
         {
-            return ranked.Count == resultLimit && catalogOrder;
+            return ranked.Count == ResultLimit && catalogOrder;
         }
 
-        if (!groupStations)
+        string pinnedSystem = ForceIncludeReference ? Reference : "";
+        bool hasPinned = pinnedSystem.Length > 0 && ranked.Any(row => SameSystem(row.Target, pinnedSystem));
+        if (hasPinned && ResultLimit == 1)
         {
-            return index + 1 < candidates.Count && candidates[index + 1].Anchor.Price < ranked[^1].BestViablePrice;
+            return true;
+        }
+
+        SurfaceSellRowViewModel weakest = hasPinned
+            ? ranked.LastOrDefault(row => !SameSystem(row.Target, pinnedSystem)) ?? ranked[^1]
+            : ranked[^1];
+
+        if (!GroupStationsBySystem)
+        {
+            return index + 1 < candidates.Count && candidates[index + 1].Anchor.Price < weakest.BestViablePrice;
         }
 
         return materialCount == 1
             && index + 1 < candidates.Count
-            && candidates[index + 1].Anchor.Price < ranked[^1].StationRanking.Median * 0.92;
+            && candidates[index + 1].Anchor.Price < weakest.StationRanking.Median * 0.92;
     }
 
     public async Task SearchAsync(CancellationToken cancellationToken = default)

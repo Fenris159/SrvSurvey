@@ -696,7 +696,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             MineMap.UseSurfaceSearch(
                 new MiningSearchClient(
                     externalNetworkClient,
-                    commodityReportStore: new MiningCommodityPriceReportStore(AppDataPaths.DataDirectory)
+                    commodityReportStore: new MiningCommodityPriceReportStore(AppDataPaths.DataDirectory),
+                    providerResponseCache: new MiningProviderResponseCache(AppDataPaths.DataDirectory)
                 ),
                 message => resolvedApplicationLogService?.Append(message)
             );

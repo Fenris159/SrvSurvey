@@ -438,7 +438,11 @@
           <StackPanel Spacing="16" DataContext="{Binding SurfaceSearch}" x:DataType="vm:SurfaceMiningSearchViewModel">
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18" RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
               <StackPanel Spacing="4">
-                <TextBlock Text="Reference system"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="Reference system" VerticalAlignment="Center"/>
+                  <TextBlock Text="Force Include if viable:" VerticalAlignment="Center"/>
+                  <ToggleSwitch IsChecked="{Binding ForceIncludeReference}" OnContent="" OffContent="" VerticalAlignment="Center"/>
+                </StackPanel>
                 <controls:SystemNameEntry x:Name="SurfaceSearchReference" Text="{Binding Reference, Mode=TwoWay}"/>
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="4">

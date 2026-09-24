@@ -27,7 +27,7 @@ public sealed record PowerplayPowerLineViewModel(string Name, double? Progress)
     public string Display =>
         Progress is { } progress
             ? Name + " " + (progress * 100).ToString("0.#", CultureInfo.CurrentCulture) + "%"
-            : Name;
+            : Name + " —";
 
     public string ColorHex => ColorFor(Name);
 
@@ -35,17 +35,23 @@ public sealed record PowerplayPowerLineViewModel(string Name, double? Progress)
 
     public static IReadOnlyList<PowerplayPowerLineViewModel> From(
         IReadOnlyList<string> powers,
-        IReadOnlyList<PowerplayProgress> progress
+        IReadOnlyList<PowerplayProgress> progress,
+        string controllingPower = "",
+        double? controlProgress = null
     ) =>
         powers
+            .Concat(progress.Select(entry => entry.Power))
+            .Append(controllingPower)
             .Where(power => !string.IsNullOrWhiteSpace(power))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .DistinctBy(PowerplayPlan.SpanshPowerName, StringComparer.OrdinalIgnoreCase)
             .Select(power => new PowerplayPowerLineViewModel(
                 power,
-                progress.FirstOrDefault(entry => PowerplayPlan.SamePower(entry.Power, power))
-                    is { Power.Length: > 0 } match
-                    ? match.Progress
-                    : null
+                controlProgress is { } control && PowerplayPlan.SamePower(power, controllingPower)
+                    ? control
+                    : progress
+                        .Where(entry => PowerplayPlan.SamePower(entry.Power, power))
+                        .Select(entry => (double?)entry.Progress)
+                        .Max()
             ))
             .OrderByDescending(power => power.Progress ?? -1)
             .ThenBy(power => power.Name, StringComparer.OrdinalIgnoreCase)

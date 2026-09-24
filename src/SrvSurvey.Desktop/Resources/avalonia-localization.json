@@ -7333,6 +7333,10 @@
       "translation": "Lieferung und lokale Lagerung"
     },
     {
+      "source": "Demand:",
+      "translation": "Nachfrage:"
+    },
+    {
       "source": "Demand: {0}",
       "translation": "Nachfrage: {0}"
     },
@@ -10019,6 +10023,10 @@
     {
       "source": "For streaming: use joined overlay",
       "translation": "Für Streaming: Verbundenes Overlay verwenden"
+    },
+    {
+      "source": "Force Include if viable:",
+      "translation": "Einbeziehen erzwingen, wenn möglich:"
     },
     {
       "source": "Former ship location",
@@ -15525,6 +15533,10 @@
       "translation": "Es war keine absolute Konvertierung der Overlay-Platzierung erforderlich."
     },
     {
+      "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
+      "translation": "Kein Akquisitionsziel verfügte sowohl über einen passenden Ring als auch über eine qualifizierte Verkaufsstation.{0}"
+    },
+    {
       "source": "No active Guardian map is available.",
       "translation": "Es ist keine aktive Guardian-Karte verfügbar."
     },
@@ -15839,6 +15851,10 @@
     {
       "source": "No matching Spansh body within the search radius",
       "translation": "Kein passender Spansh Körper im Suchradius"
+    },
+    {
+      "source": "No matching Spansh ring within acquisition reach",
+      "translation": "Kein passender Spansh Ring in Erfassungsreichweite"
     },
     {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
@@ -18347,6 +18363,10 @@
     {
       "source": "Previously selected controller",
       "translation": "Zuvor ausgewählter Controller"
+    },
+    {
+      "source": "Price:",
+      "translation": "Preis:"
     },
     {
       "source": "Price: {0} CR {1}",
@@ -23129,6 +23149,10 @@
       "translation": "Zielführung für Biosignale von Canonn anzeigen"
     },
     {
+      "source": "Show all",
+      "translation": "Alle anzeigen"
+    },
+    {
       "source": "Show all Systems",
       "translation": "Alle Systeme anzeigen"
     },
@@ -23239,6 +23263,10 @@
     {
       "source": "Show less",
       "translation": "Weniger anzeigen"
+    },
+    {
+      "source": "Show less stations",
+      "translation": "Weniger Sender anzeigen"
     },
     {
       "source": "Show list in system map",
@@ -25511,10 +25539,6 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Zielen Sie auf A01 und scannen Sie es mit den erforderlichen Artefakten an Bord."
-    },
-    {
-      "source": "Target System",
-      "translation": "Zielsystem"
     },
     {
       "source": "Target not supplied",
@@ -33365,8 +33389,8 @@
       "translation": "{0} Win32-Fehler {1}."
     },
     {
-      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
-      "translation": "{0} Erfassungsziele innerhalb von 20 Lichtpunkten um ein befestigtes System oder 30 Lichtpunkte um eine Festung. {1}{2}"
+      "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
+      "translation": "{0} Erwerbsziele mit passenden Ringen und Verkaufsstationen innerhalb von 20 Luftlinien von einem befestigten System oder 30 Luftlinien von einer Festung.{1}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -41607,6 +41631,10 @@
       "translation": "Entrega y almacenamiento local."
     },
     {
+      "source": "Demand:",
+      "translation": "Demanda:"
+    },
+    {
       "source": "Demand: {0}",
       "translation": "Demanda: {0}"
     },
@@ -44293,6 +44321,10 @@
     {
       "source": "For streaming: use joined overlay",
       "translation": "Para streaming: use superposición unida"
+    },
+    {
+      "source": "Force Include if viable:",
+      "translation": "Forzar Incluir si es viable:"
     },
     {
       "source": "Former ship location",
@@ -49799,6 +49831,10 @@
       "translation": "No se requirió ninguna conversión absoluta de ubicación de superposición."
     },
     {
+      "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
+      "translation": "Ningún objetivo de adquisición tenía un anillo coincidente y una estación de venta calificada.{0}"
+    },
+    {
       "source": "No active Guardian map is available.",
       "translation": "No hay ningún mapa de Guardian activo disponible."
     },
@@ -50113,6 +50149,10 @@
     {
       "source": "No matching Spansh body within the search radius",
       "translation": "No hay ningún cuerpo coincidente Spansh dentro del radio de búsqueda"
+    },
+    {
+      "source": "No matching Spansh ring within acquisition reach",
+      "translation": "No hay ningún anillo coincidente Spansh al alcance de la adquisición"
     },
     {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
@@ -52621,6 +52661,10 @@
     {
       "source": "Previously selected controller",
       "translation": "Controlador previamente seleccionado"
+    },
+    {
+      "source": "Price:",
+      "translation": "Precio:"
     },
     {
       "source": "Price: {0} CR {1}",
@@ -57403,6 +57447,10 @@
       "translation": "Mostrar guía de puntería a señales biológicas de Canonn"
     },
     {
+      "source": "Show all",
+      "translation": "Mostrar todo"
+    },
+    {
       "source": "Show all Systems",
       "translation": "Mostrar todos los sistemas"
     },
@@ -57513,6 +57561,10 @@
     {
       "source": "Show less",
       "translation": "Mostrar menos"
+    },
+    {
+      "source": "Show less stations",
+      "translation": "Mostrar menos estaciones"
     },
     {
       "source": "Show list in system map",
@@ -59785,10 +59837,6 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Apunte a A01 y escanee con los artefactos requeridos a bordo."
-    },
-    {
-      "source": "Target System",
-      "translation": "Sistema de destino"
     },
     {
       "source": "Target not supplied",
@@ -67639,8 +67687,8 @@
       "translation": "{0} Error de Win32 {1}."
     },
     {
-      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
-      "translation": "Objetivos de adquisición {0} dentro de 20 ly de un sistema fortificado o 30 ly de una fortaleza. {1}{2}"
+      "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
+      "translation": "{0} objetivos de adquisición con anillos coincidentes y estaciones de venta dentro de 20 ly de un sistema Fortificado o 30 ly de una Fortaleza.{1}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -75881,6 +75929,10 @@
       "translation": "Livraison et stockage local"
     },
     {
+      "source": "Demand:",
+      "translation": "Demande:"
+    },
+    {
       "source": "Demand: {0}",
       "translation": "Demande : {0}"
     },
@@ -78567,6 +78619,10 @@
     {
       "source": "For streaming: use joined overlay",
       "translation": "Pour le streaming : utilisez la superposition jointe"
+    },
+    {
+      "source": "Force Include if viable:",
+      "translation": "Forcer l'inclusion si viable :"
     },
     {
       "source": "Former ship location",
@@ -84073,6 +84129,10 @@
       "translation": "Aucune conversion absolue de placement de superposition n’était requise."
     },
     {
+      "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
+      "translation": "Aucune cible d'acquisition ne disposait à la fois d'un anneau correspondant et d'une station de vente éligible.{0}"
+    },
+    {
       "source": "No active Guardian map is available.",
       "translation": "Aucune carte Gardien active n’est disponible."
     },
@@ -84387,6 +84447,10 @@
     {
       "source": "No matching Spansh body within the search radius",
       "translation": "Aucun corps correspondant Spansh dans le rayon de recherche"
+    },
+    {
+      "source": "No matching Spansh ring within acquisition reach",
+      "translation": "Aucune bague correspondante Spansh à portée d'acquisition"
     },
     {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
@@ -86895,6 +86959,10 @@
     {
       "source": "Previously selected controller",
       "translation": "Contrôleur précédemment sélectionné"
+    },
+    {
+      "source": "Price:",
+      "translation": "Prix:"
     },
     {
       "source": "Price: {0} CR {1}",
@@ -91677,6 +91745,10 @@
       "translation": "Afficher les conseils de visée sur les signaux biologiques de Canonn"
     },
     {
+      "source": "Show all",
+      "translation": "Afficher tout"
+    },
+    {
       "source": "Show all Systems",
       "translation": "Afficher tous les systèmes"
     },
@@ -91787,6 +91859,10 @@
     {
       "source": "Show less",
       "translation": "Afficher moins"
+    },
+    {
+      "source": "Show less stations",
+      "translation": "Afficher moins de stations"
     },
     {
       "source": "Show list in system map",
@@ -94059,10 +94135,6 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Ciblez A01 et scannez avec les artefacts requis à bord."
-    },
-    {
-      "source": "Target System",
-      "translation": "Système cible"
     },
     {
       "source": "Target not supplied",
@@ -101913,8 +101985,8 @@
       "translation": "{0} Erreur Win32 {1}."
     },
     {
-      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
-      "translation": "L'acquisition {0} cible à moins de 20 ly d'un système fortifié ou de 30 ly d'une forteresse. {1}{2}"
+      "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
+      "translation": "Cibles d'acquisition {0} avec anneaux correspondants et stations de vente à moins de 20 ly d'un système fortifié ou de 30 ly d'une forteresse.{1}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -110155,6 +110227,10 @@
       "translation": "Entrega e armazenamento local"
     },
     {
+      "source": "Demand:",
+      "translation": "Demanda:"
+    },
+    {
       "source": "Demand: {0}",
       "translation": "Demanda: {0}"
     },
@@ -112841,6 +112917,10 @@
     {
       "source": "For streaming: use joined overlay",
       "translation": "Para streaming: use sobreposição unida"
+    },
+    {
+      "source": "Force Include if viable:",
+      "translation": "Forçar inclusão se viável:"
     },
     {
       "source": "Former ship location",
@@ -118347,6 +118427,10 @@
       "translation": "Nenhuma conversão absoluta de posicionamento de sobreposição foi necessária."
     },
     {
+      "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
+      "translation": "Nenhum alvo de aquisição tinha um anel correspondente e uma estação de venda qualificada.{0}"
+    },
+    {
       "source": "No active Guardian map is available.",
       "translation": "Nenhum mapa Guardião ativo está disponível."
     },
@@ -118661,6 +118745,10 @@
     {
       "source": "No matching Spansh body within the search radius",
       "translation": "Nenhum corpo correspondente Spansh dentro do raio de pesquisa"
+    },
+    {
+      "source": "No matching Spansh ring within acquisition reach",
+      "translation": "Nenhum anel correspondente Spansh ao alcance da aquisição"
     },
     {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
@@ -121169,6 +121257,10 @@
     {
       "source": "Previously selected controller",
       "translation": "Controlador previamente selecionado"
+    },
+    {
+      "source": "Price:",
+      "translation": "Preço:"
     },
     {
       "source": "Price: {0} CR {1}",
@@ -125951,6 +126043,10 @@
       "translation": "Mostrar orientação de mira para sinais biológicos de Canonn"
     },
     {
+      "source": "Show all",
+      "translation": "Mostrar tudo"
+    },
+    {
       "source": "Show all Systems",
       "translation": "Mostrar todos os sistemas"
     },
@@ -126061,6 +126157,10 @@
     {
       "source": "Show less",
       "translation": "Mostrar menos"
+    },
+    {
+      "source": "Show less stations",
+      "translation": "Mostrar menos estações"
     },
     {
       "source": "Show list in system map",
@@ -128333,10 +128433,6 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Alvo A01 e escaneie com os artefatos necessários a bordo."
-    },
-    {
-      "source": "Target System",
-      "translation": "Sistema de destino"
     },
     {
       "source": "Target not supplied",
@@ -136187,8 +136283,8 @@
       "translation": "{0} Erro Win32 {1}."
     },
     {
-      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
-      "translation": "Alvos de aquisição {0} dentro de 20 anos de um sistema fortificado ou 30 anos de uma fortaleza. {1}{2}"
+      "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
+      "translation": "{0} alvos de aquisição com anéis correspondentes e estações de venda dentro de 20 anos de um sistema fortificado ou 30 anos de uma fortaleza.{1}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -144429,6 +144525,10 @@
       "translation": "Доставка и локальное хранение"
     },
     {
+      "source": "Demand:",
+      "translation": "Требовать:"
+    },
+    {
       "source": "Demand: {0}",
       "translation": "Спрос: {0}"
     },
@@ -147115,6 +147215,10 @@
     {
       "source": "For streaming: use joined overlay",
       "translation": "Для потоковой передачи: используйте объединенное наложение."
+    },
+    {
+      "source": "Force Include if viable:",
+      "translation": "Принудительно включить, если это возможно:"
     },
     {
       "source": "Former ship location",
@@ -152621,6 +152725,10 @@
       "translation": "Никакого абсолютного преобразования размещения наложения не требовалось."
     },
     {
+      "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
+      "translation": "Ни одна цель приобретения не имела как соответствующего кольца, так и подходящей станции продажи.{0}"
+    },
+    {
       "source": "No active Guardian map is available.",
       "translation": "Активная карта Guardian недоступна."
     },
@@ -152935,6 +153043,10 @@
     {
       "source": "No matching Spansh body within the search radius",
       "translation": "Нет подходящего тела Spansh в радиусе поиска."
+    },
+    {
+      "source": "No matching Spansh ring within acquisition reach",
+      "translation": "В пределах досягаемости обнаружения нет соответствующего кольца Spansh."
     },
     {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
@@ -155443,6 +155555,10 @@
     {
       "source": "Previously selected controller",
       "translation": "Ранее выбранный контроллер"
+    },
+    {
+      "source": "Price:",
+      "translation": "Цена:"
     },
     {
       "source": "Price: {0} CR {1}",
@@ -160225,6 +160341,10 @@
       "translation": "Показывать указания по прицеливанию по биосигналам от Canonn"
     },
     {
+      "source": "Show all",
+      "translation": "Показать все"
+    },
+    {
       "source": "Show all Systems",
       "translation": "Показать все системы"
     },
@@ -160335,6 +160455,10 @@
     {
       "source": "Show less",
       "translation": "Показать меньше"
+    },
+    {
+      "source": "Show less stations",
+      "translation": "Показать меньше станций"
     },
     {
       "source": "Show list in system map",
@@ -162607,10 +162731,6 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "Нацельтесь на А01 и просканируйте его, имея на борту необходимые артефакты."
-    },
-    {
-      "source": "Target System",
-      "translation": "Целевая система"
     },
     {
       "source": "Target not supplied",
@@ -170461,8 +170581,8 @@
       "translation": "{0} Ошибка Win32 {1}."
     },
     {
-      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
-      "translation": "Цели захвата {0} находятся в пределах 20 миль от укрепленной системы или 30 миль от крепости. {1}{2}"
+      "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
+      "translation": "{0} Цели приобретения с соответствующими кольцами и станциями продажи в пределах 20 лет от укрепленной системы или 30 лет от крепости.{1}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -178703,6 +178823,10 @@
       "translation": "交付和本地存储"
     },
     {
+      "source": "Demand:",
+      "translation": "要求："
+    },
+    {
       "source": "Demand: {0}",
       "translation": "需求：{0}"
     },
@@ -181389,6 +181513,10 @@
     {
       "source": "For streaming: use joined overlay",
       "translation": "对于流式传输：使用连接叠加"
+    },
+    {
+      "source": "Force Include if viable:",
+      "translation": "强制包含（如果可行）："
     },
     {
       "source": "Former ship location",
@@ -186895,6 +187023,10 @@
       "translation": "不需要绝对的叠加放置转换。"
     },
     {
+      "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
+      "translation": "没有收购目标同时拥有匹配环和合格销售站。{0}"
+    },
+    {
       "source": "No active Guardian map is available.",
       "translation": "没有可用的活动守护者地图。"
     },
@@ -187209,6 +187341,10 @@
     {
       "source": "No matching Spansh body within the search radius",
       "translation": "搜索半径内没有匹配的Spansh尸体"
+    },
+    {
+      "source": "No matching Spansh ring within acquisition reach",
+      "translation": "采集范围内没有匹配的 Spansh 环"
     },
     {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
@@ -189717,6 +189853,10 @@
     {
       "source": "Previously selected controller",
       "translation": "先前选择的控制器"
+    },
+    {
+      "source": "Price:",
+      "translation": "价格："
     },
     {
       "source": "Price: {0} CR {1}",
@@ -194499,6 +194639,10 @@
       "translation": "显示来自 Canonn 的生物信号的瞄准引导"
     },
     {
+      "source": "Show all",
+      "translation": "显示全部"
+    },
+    {
       "source": "Show all Systems",
       "translation": "显示所有系统"
     },
@@ -194609,6 +194753,10 @@
     {
       "source": "Show less",
       "translation": "显示较少"
+    },
+    {
+      "source": "Show less stations",
+      "translation": "显示更少的电台"
     },
     {
       "source": "Show list in system map",
@@ -196881,10 +197029,6 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "瞄准 A01 并扫描船上所需的工件。"
-    },
-    {
-      "source": "Target System",
-      "translation": "目标系统"
     },
     {
       "source": "Target not supplied",
@@ -204735,8 +204879,8 @@
       "translation": "{0} Win32 错误 {1}。"
     },
     {
-      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
-      "translation": "{0} 采集目标为强化系统 20 里以内或要塞 30 里以内。 {1}{2}"
+      "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
+      "translation": "{0} 在要塞系统 20 里或要塞 30 里内收购具有匹配环和销售站的目标。{1}"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",
@@ -212977,6 +213121,10 @@
       "translation": "* DELIVERY AND LOCAL STORAGE >>>!"
     },
     {
+      "source": "Demand:",
+      "translation": "* DEMAND: >>>!"
+    },
+    {
       "source": "Demand: {0}",
       "translation": "* DEMAND: {0} >>>!"
     },
@@ -215663,6 +215811,10 @@
     {
       "source": "For streaming: use joined overlay",
       "translation": "* FOR STREAMING: USE JOINED OVERLAY >>>!"
+    },
+    {
+      "source": "Force Include if viable:",
+      "translation": "* FORCE INCLUDE IF VIABLE: >>>!"
     },
     {
       "source": "Former ship location",
@@ -221169,6 +221321,10 @@
       "translation": "* NO ABSOLUTE OVERLAY PLACEMENT CONVERSION WAS REQUIRED. >>>!"
     },
     {
+      "source": "No acquisition target had both a matching ring and a qualifying sell station.{0}",
+      "translation": "* NO ACQUISITION TARGET HAD BOTH A MATCHING RING AND A QUALIFYING SELL STATION.{0} >>>!"
+    },
+    {
       "source": "No active Guardian map is available.",
       "translation": "* NO ACTIVE GUARDIAN MAP IS AVAILABLE. >>>!"
     },
@@ -221483,6 +221639,10 @@
     {
       "source": "No matching Spansh body within the search radius",
       "translation": "* NO MATCHING SPANSH BODY WITHIN THE SEARCH RADIUS >>>!"
+    },
+    {
+      "source": "No matching Spansh ring within acquisition reach",
+      "translation": "* NO MATCHING SPANSH RING WITHIN ACQUISITION REACH >>>!"
     },
     {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
@@ -223991,6 +224151,10 @@
     {
       "source": "Previously selected controller",
       "translation": "* PREVIOUSLY SELECTED CONTROLLER >>>!"
+    },
+    {
+      "source": "Price:",
+      "translation": "* PRICE: >>>!"
     },
     {
       "source": "Price: {0} CR {1}",
@@ -228773,6 +228937,10 @@
       "translation": "* SHOW AIMING GUIDANCE TO BIO SIGNALS FROM CANONN >>>!"
     },
     {
+      "source": "Show all",
+      "translation": "* SHOW ALL >>>!"
+    },
+    {
       "source": "Show all Systems",
       "translation": "* SHOW ALL SYSTEMS >>>!"
     },
@@ -228883,6 +229051,10 @@
     {
       "source": "Show less",
       "translation": "* SHOW LESS >>>!"
+    },
+    {
+      "source": "Show less stations",
+      "translation": "* SHOW LESS STATIONS >>>!"
     },
     {
       "source": "Show list in system map",
@@ -231155,10 +231327,6 @@
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
       "translation": "* TARGET A01 AND SCAN WITH THE REQUIRED ARTIFACTS ABOARD. >>>!"
-    },
-    {
-      "source": "Target System",
-      "translation": "* TARGET SYSTEM >>>!"
     },
     {
       "source": "Target not supplied",
@@ -239009,8 +239177,8 @@
       "translation": "* {0} WIN32 ERROR {1}. >>>!"
     },
     {
-      "source": "{0} acquisition targets within 20 ly of a Fortified system or 30 ly of a Stronghold. {1}{2}",
-      "translation": "* {0} ACQUISITION TARGETS WITHIN 20 LY OF A FORTIFIED SYSTEM OR 30 LY OF A STRONGHOLD. {1}{2} >>>!"
+      "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
+      "translation": "* {0} ACQUISITION TARGETS WITH MATCHING RINGS AND SELL STATIONS WITHIN 20 LY OF A FORTIFIED SYSTEM OR 30 LY OF A STRONGHOLD.{1} >>>!"
     },
     {
       "source": "{0} active ({1} Frontier, {2} Inara) · {3} recently completed or ended",

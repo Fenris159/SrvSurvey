@@ -88,7 +88,11 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         this.resolver = resolver;
         this.bookmarks = bookmarks;
         Search = new MiningSearchViewModel(
-            new MiningSearchClient(networkClient, commodityReportStore: new MiningCommodityPriceReportStore(directory)),
+            new MiningSearchClient(
+                networkClient,
+                commodityReportStore: new MiningCommodityPriceReportStore(directory),
+                providerResponseCache: new MiningProviderResponseCache(directory)
+            ),
             bookmarks,
             CacheRing,
             () => state.Data.Rings,
@@ -1335,6 +1339,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
         Search.LoadOptions(Settings.SearchOptions);
         RememberPledgedPower();
+        Search.RestoreLastCompletedPowerplaySearch();
         community.SetEnabled(Settings.ReceiveCommunityData);
         Changed(nameof(Settings));
     }

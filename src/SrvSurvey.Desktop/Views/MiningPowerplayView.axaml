@@ -11,7 +11,11 @@
   <StackPanel Spacing="16" Margin="4,12,4,16">
     <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="14">
       <StackPanel Spacing="4">
-        <TextBlock Text="Reference system"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="Reference system" VerticalAlignment="Center"/>
+          <TextBlock Text="Force Include if viable:" VerticalAlignment="Center"/>
+          <ToggleSwitch IsChecked="{Binding Search.ForceIncludeReference}" OnContent="" OffContent="" VerticalAlignment="Center"/>
+        </StackPanel>
         <controls:SystemNameEntry x:Name="PowerplayReference" Text="{Binding Search.Reference, Mode=TwoWay}"/>
       </StackPanel>
       <StackPanel Grid.Column="1" Spacing="4">
@@ -115,102 +119,11 @@
           <Grid IsVisible="{Binding Search.IsPlanetaryCombined}">
             <views:PowerplayPlanetaryCombinedResults DataContext="{Binding Search.PlanetarySearch}"/>
           </Grid>
-          <Grid IsVisible="{Binding Search.HasAcquireRows}" ColumnDefinitions="42*,4*,54*">
-            <Grid ColumnDefinitions="20*,20*,10*,48*">
-              <Border Classes="acquire-header first"><TextBlock Text="Target System"/></Border>
-              <Border Grid.Column="1" Classes="acquire-header"><TextBlock Text="State"/></Border>
-              <Border Grid.Column="2" Classes="acquire-header"><TextBlock Text="DST"/></Border>
-              <Border Grid.Column="3" Classes="acquire-header"><TextBlock Text="Best Sell Station"/></Border>
-            </Grid>
-            <Grid Grid.Column="2" ColumnDefinitions="20*,38*,14*,18*">
-              <Border Classes="acquire-header first"><TextBlock Text="Mining System"/></Border>
-              <Border Grid.Column="1" Classes="acquire-header"><TextBlock Text="Ring Details"/></Border>
-              <Border Grid.Column="2" Classes="acquire-header"><TextBlock Text="State"/></Border>
-              <Border Grid.Column="3" Classes="acquire-header"><TextBlock Text="Power"/></Border>
-            </Grid>
-          </Grid>
-          <ItemsControl ItemsSource="{Binding Search.AcquireRows}" IsVisible="{Binding Search.HasAcquireRows}" Margin="0,0,0,16" HorizontalAlignment="Stretch">
-            <ItemsControl.Styles>
-              <Style Selector="ContentPresenter">
-                <Setter Property="HorizontalAlignment" Value="Stretch"/>
-              </Style>
-            </ItemsControl.Styles>
+          <ItemsControl ItemsSource="{Binding Search.RingAcquireClusters}" IsVisible="{Binding Search.HasAcquireRows}" HorizontalAlignment="Stretch">
+            <ItemsControl.Styles><Style Selector="ContentPresenter"><Setter Property="HorizontalAlignment" Value="Stretch"/></Style></ItemsControl.Styles>
             <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:AcquireResultRowViewModel">
-                <views:AcquireSplitRow Lines="{Binding Miners}" Margin="0,0,0,16">
-                  <views:AcquireSplitRow.TargetTemplate>
-                    <DataTemplate x:DataType="vm:AcquireResultRowViewModel">
-                      <Grid ColumnDefinitions="20*,20*,10*,48*">
-                        <Border Classes="acquire-cell">
-                          <Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Center" behaviors:ClipboardCopyBehavior.Text="{Binding Target}">
-                            <TextBlock Text="{Binding Target}" TextWrapping="Wrap"/>
-                          </Button>
-                        </Border>
-                        <Border Grid.Column="1" Classes="acquire-cell"><TextBlock Text="{Binding State}" Foreground="{DynamicResource RavenMutedTextBrush}" VerticalAlignment="Center"/></Border>
-                        <Border Grid.Column="2" Classes="acquire-cell"><TextBlock Text="{Binding Distance}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Center"/></Border>
-                        <Border Grid.Column="3" Classes="acquire-cell" Padding="6">
-                          <StackPanel>
-                            <ItemsControl ItemsSource="{Binding StationBlocks}">
-                              <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:MeritStationBlockViewModel">
-                                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,2,0,8">
-                                    <StackPanel Spacing="2" MaxWidth="280">
-                                      <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <views:MiningIcon Kind="{Binding Icon}" Width="14" Height="14" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding Heading}" TextWrapping="Wrap"/>
-                                      </StackPanel>
-                                      <TextBlock Text="{Binding Commodity}" Foreground="{DynamicResource RavenAccentBrush}"/>
-                                      <TextBlock Text="{Binding Price}" Foreground="{DynamicResource RavenAccentBrush}"/>
-                                      <TextBlock Text="{Binding Demand}"/>
-                                      <TextBlock Text="{Binding Arrival}" Foreground="{DynamicResource RavenMutedTextBrush}"/>
-                                      <TextBlock Text="{Binding Updated}" Foreground="{DynamicResource RavenMutedTextBrush}" FontStyle="Italic"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Spacing="2">
-                                      <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="Other Commodities:"/>
-                                        <Button Classes="link" Content="{Binding CommodityToggleLabel}" Command="{Binding ToggleCommoditiesCommand}" IsVisible="{Binding CanToggleCommodities}" Padding="2,0"/>
-                                      </StackPanel>
-                                      <ItemsControl ItemsSource="{Binding OtherCommodities}">
-                                        <ItemsControl.ItemTemplate>
-                                          <DataTemplate x:DataType="vm:MeritCommodityLineViewModel">
-                                            <Grid ColumnDefinitions="40,*" Margin="0,1">
-                                              <Border Classes="commodity-code material" Width="40" Height="20" Padding="0"><TextBlock Text="{Binding Code}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                              <TextBlock Grid.Column="1" Margin="6,0,0,0" TextWrapping="Wrap"><Run Text="{Binding Price}"/><Run Text="  "/><Run Text="{Binding Demand}"/></TextBlock>
-                                            </Grid>
-                                          </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                      </ItemsControl>
-                                    </StackPanel>
-                                  </Grid>
-                                </DataTemplate>
-                              </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <Button Content="{Binding StationToggleLabel}" Command="{Binding ToggleStationsCommand}" IsVisible="{Binding CanToggleStations}" Margin="0,6,0,0" Padding="6,2" HorizontalAlignment="Left"/>
-                          </StackPanel>
-                        </Border>
-                      </Grid>
-                    </DataTemplate>
-                  </views:AcquireSplitRow.TargetTemplate>
-                  <views:AcquireSplitRow.LineTemplate>
-                    <DataTemplate x:DataType="vm:AcquireMinerViewModel">
-                      <Grid ColumnDefinitions="20*,38*,14*,18*">
-                        <Border Classes="acquire-cell">
-                          <Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Center" behaviors:ClipboardCopyBehavior.Text="{Binding Name}">
-                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
-                          </Button>
-                        </Border>
-                        <Border Grid.Column="1" Classes="acquire-cell">
-                          <StackPanel>
-                            <ItemsControl ItemsSource="{Binding RingLines}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:MeritLineViewModel"><StackPanel Orientation="Horizontal" Spacing="4" Margin="0,2"><views:MiningIcon Kind="{Binding Icon}" Width="14" Height="14" IsVisible="{Binding ShowPlanet}"/><Border Width="14" IsVisible="{Binding ShowSpacer}"/><TextBlock Text="{Binding RingName}" IsVisible="{Binding ShowMineral}"/><views:MiningIcon Kind="{Binding RingTypeIcon}" Width="14" Height="14" IsVisible="{Binding ShowRingType}"/><views:MiningIcon Kind="{Binding ReserveIcon}" Width="14" Height="13" IsVisible="{Binding ShowReserve}"/><views:MiningIcon Kind="Hotspot" Width="12" Height="12" IsVisible="{Binding ShowMineral}"/><TextBlock Text="{Binding Mineral}" TextWrapping="Wrap" IsVisible="{Binding ShowMineral}"/></StackPanel></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-                            <Button Content="{Binding SignalToggleLabel}" Command="{Binding ToggleSignalsCommand}" IsVisible="{Binding CanToggleSignals}" Padding="6,2" HorizontalAlignment="Left"/>
-                          </StackPanel>
-                        </Border>
-                        <Border Grid.Column="2" Classes="acquire-cell"><StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"><views:MiningIcon Kind="{Binding State}" Width="14" Height="14"/><TextBlock Text="{Binding State}" Foreground="{DynamicResource RavenMutedTextBrush}"/></StackPanel></Border>
-                        <Border Grid.Column="3" Padding="6"><ItemsControl ItemsSource="{Binding PowerLines}" VerticalAlignment="Center"><ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:PowerplayPowerLineViewModel"><TextBlock Text="{Binding Display}" Foreground="{Binding ColorHex}" TextWrapping="Wrap"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Border>
-                      </Grid>
-                    </DataTemplate>
-                  </views:AcquireSplitRow.LineTemplate>
-                </views:AcquireSplitRow>
+              <DataTemplate x:DataType="vm:PowerplayRingAcquireClusterViewModel">
+                <views:PowerplayRingAcquireSharedCluster/>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
