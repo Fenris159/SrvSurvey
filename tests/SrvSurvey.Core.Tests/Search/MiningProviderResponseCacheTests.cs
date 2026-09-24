@@ -61,6 +61,34 @@ public sealed class MiningProviderResponseCacheTests
     }
 
     [Fact]
+    public async Task EmptyArdentResponseIsReusedBrieflyAcrossInstances()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "ardent-empty-cache-" + Guid.NewGuid().ToString("N"));
+        var clock = new MutableClock(new DateTimeOffset(2026, 9, 24, 12, 0, 0, TimeSpan.Zero));
+        using var handler = new EmptyHandler();
+        using var http = new HttpClient(handler);
+        try
+        {
+            const string route = "system/name/Sol/commodities/imports?maxDaysAgo=2";
+            var first = new ArdentApi(http, cache: new MiningProviderResponseCache(directory, clock));
+            using JsonDocument initial = await first.GetAsync(route, 1024, "test", TimeSpan.FromMinutes(10));
+            Assert.Equal(0, initial.RootElement.GetArrayLength());
+
+            var second = new ArdentApi(http, cache: new MiningProviderResponseCache(directory, clock));
+            using JsonDocument reused = await second.GetAsync(route, 1024, "test", TimeSpan.FromMinutes(10));
+            Assert.Equal(1, handler.RequestCount);
+
+            clock.Advance(TimeSpan.FromMinutes(2));
+            using JsonDocument refreshed = await second.GetAsync(route, 1024, "test", TimeSpan.FromMinutes(10));
+            Assert.Equal(2, handler.RequestCount);
+        }
+        finally
+        {
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [Fact]
     public async Task SystemImportsReuseStationDataAndApplyNewDemandLocally()
     {
         string directory = Path.Combine(Path.GetTempPath(), "station-import-cache-" + Guid.NewGuid().ToString("N"));
@@ -152,6 +180,49 @@ public sealed class MiningProviderResponseCacheTests
     }
 
     [Fact]
+    public async Task AcquisitionCandidateCoordinatesSurviveRestartWithoutKeepingProgress()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "acquire-candidate-cache-" + Guid.NewGuid().ToString("N"));
+        var clock = new MutableClock(new DateTimeOffset(2026, 9, 24, 12, 0, 0, TimeSpan.Zero));
+        using var handler = new CandidateHandler();
+        using var http = new HttpClient(handler);
+        var query = new MiningSystemQuery("Deciat", 20, Objective: PowerplayPlan.Acquire);
+        try
+        {
+            var first = new MiningSearchClient(
+                http,
+                clock,
+                providerResponseCache: new MiningProviderResponseCache(directory, clock)
+            );
+            MiningSystemPage initial = await first.FindAcquireCandidatePageAsync(query);
+            Assert.Single(initial.Systems);
+            Assert.False(initial.FromCache);
+            Assert.NotEmpty(initial.Systems[0].Conflict);
+
+            var reopened = new MiningSearchClient(
+                http,
+                clock,
+                providerResponseCache: new MiningProviderResponseCache(directory, clock)
+            );
+            MiningSystemPage saved = await reopened.FindAcquireCandidatePageAsync(query);
+            Assert.Single(saved.Systems);
+            Assert.True(saved.FromCache);
+            Assert.Equal(1, saved.Systems[0].Position?.X);
+            Assert.Equal(PowerplayStanding.Unoccupied, saved.Systems[0].PowerState);
+            Assert.Empty(saved.Systems[0].Conflict);
+            Assert.Equal(1, handler.RequestCount);
+
+            clock.Advance(TimeSpan.FromDays(7));
+            await reopened.FindAcquireCandidatePageAsync(query);
+            Assert.Equal(2, handler.RequestCount);
+        }
+        finally
+        {
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [Fact]
     public async Task IncompatibleAcquisitionCacheFallsBackToSpansh()
     {
         string directory = Path.Combine(Path.GetTempPath(), "acquire-invalid-cache-" + Guid.NewGuid().ToString("N"));
@@ -229,6 +300,20 @@ public sealed class MiningProviderResponseCacheTests
         }
     }
 
+    private sealed class EmptyHandler : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            RequestCount++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("[]") });
+        }
+    }
+
     private sealed class SupporterHandler : HttpMessageHandler
     {
         public int RequestCount { get; private set; }
@@ -244,6 +329,27 @@ public sealed class MiningProviderResponseCacheTests
                 {
                     Content = new StringContent(
                         """{"results":[{"name":"Deciat","distance":85,"x":1,"y":2,"z":3,"controlling_power":"A. Lavigny-Duval","power_state":"Fortified","power_conflict_progress":[{"name":"A. Lavigny-Duval","progress":0.8}]}]}"""
+                    ),
+                }
+            );
+        }
+    }
+
+    private sealed class CandidateHandler : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            RequestCount++;
+            return Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """{"results":[{"name":"Open Target","distance":5,"x":1,"y":2,"z":3,"power_state":"Unoccupied","power_conflict_progress":[{"name":"A. Lavigny-Duval","progress":0.8}]}]}"""
                     ),
                 }
             );

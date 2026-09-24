@@ -18,7 +18,7 @@ public sealed class SpanshApi
 {
     public const int MaximumResponseBytes = 8 * 1024 * 1024;
     private const int MaximumAttempts = 3;
-    private static readonly TimeSpan MaximumRetryDelay = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan MaximumRetryDelay = TimeSpan.FromSeconds(30);
     public static readonly Uri Origin = new("https://spansh.co.uk/api/");
 
     private readonly HttpClient client;
@@ -117,7 +117,7 @@ public sealed class SpanshApi
             return serverDelay;
         }
 
-        double seconds = Math.Min(0.5 * Math.Pow(2, attempt - 1), MaximumRetryDelay.TotalSeconds);
+        double seconds = Math.Min(2 * Math.Pow(2, attempt - 1), MaximumRetryDelay.TotalSeconds);
         return TimeSpan.FromSeconds(seconds * (0.8 + Random.Shared.NextDouble() * 0.4));
     }
 }

@@ -14,6 +14,11 @@ public sealed record MeritLineViewModel(
     string Mineral = ""
 )
 {
+    public string CommodityCode { get; init; } = "";
+
+    // Older saved searches predate the typed code; keep their badges usable until the next search.
+    public string EffectiveCommodityCode =>
+        CommodityCode.Length > 0 ? CommodityCode : MiningCommodityCode.Abbreviate(Mineral.Split(':')[0]);
     public bool ShowPlanet => Icon.Length > 0;
     public bool ShowSpacer => Mineral.Length > 0 && Icon.Length == 0;
     public bool ShowRingType => RingTypeIcon.Length > 0;
@@ -45,6 +50,13 @@ public sealed class MeritStationBlockViewModel : WorkspaceObservable
         UpdatedAt = snapshot.UpdatedAt;
         cachedUpdated = snapshot.Updated;
         allCommodities = snapshot.Commodities;
+        PrimaryQuote =
+            snapshot.PrimaryQuote
+            ?? new MeritCommodityLineViewModel(
+                MiningCommodityCode.Abbreviate(snapshot.Commodity),
+                snapshot.Price.Replace("Price: ", "", StringComparison.Ordinal),
+                snapshot.Demand.Replace("Demand: ", "", StringComparison.Ordinal) + " Demand"
+            );
         previewCommodities = snapshot.Commodities.Take(6).ToArray();
         ToggleCommoditiesCommand = new WorkspaceCommand(() =>
         {
@@ -65,6 +77,7 @@ public sealed class MeritStationBlockViewModel : WorkspaceObservable
     public string Updated => UpdatedAt is { } updated ? MeritSystemRowViewModel.UpdatedLabel(updated) : cachedUpdated;
     public IReadOnlyList<MeritCommodityLineViewModel> OtherCommodities => showAll ? allCommodities : previewCommodities;
     public IReadOnlyList<MeritCommodityLineViewModel> AllCommodities => allCommodities;
+    public MeritCommodityLineViewModel PrimaryQuote { get; }
     public bool CanToggleCommodities => allCommodities.Length > 6;
     public string CommodityToggleLabel => showAll ? "Show Less" : "Show All";
     public ICommand ToggleCommoditiesCommand { get; }
@@ -420,7 +433,10 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
                 RingTypeKind(ring.RingType),
                 ReserveKind(ring.Reserve),
                 ring.Planetary ? "" : mineral
-            );
+            )
+            {
+                CommodityCode = MiningCommodityCode.Abbreviate(mineral.Split(':')[0]),
+            };
         }
     }
 
@@ -549,6 +565,13 @@ public sealed class MeritSystemRowViewModel : WorkspaceObservable
                     )
                     {
                         UpdatedAt = primary.Updated,
+                        PrimaryQuote = new MeritCommodityLineViewModel(
+                            MiningCommodityCode.Abbreviate(primary.Commodity),
+                            primary.Price.ToString("N0", CultureInfo.CurrentCulture)
+                                + " CR "
+                                + MiningPriceMarks.For(primary.Price, Average(averageSellPrices, primary.Commodity)),
+                            primary.Demand.ToString("N0", CultureInfo.CurrentCulture) + " Demand"
+                        ),
                     }
                 )
             );

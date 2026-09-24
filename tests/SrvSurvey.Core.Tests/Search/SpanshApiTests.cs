@@ -28,6 +28,15 @@ public sealed class SpanshApiTests
         Assert.Equal(TimeSpan.FromSeconds(45), SpanshApi.RetryDelay(response, 1));
     }
 
+    [Fact]
+    public void MissingRetryAfterUsesARespectfulIncreasingFallback()
+    {
+        using var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+
+        Assert.InRange(SpanshApi.RetryDelay(response, 1), TimeSpan.FromSeconds(1.6), TimeSpan.FromSeconds(2.4));
+        Assert.InRange(SpanshApi.RetryDelay(response, 2), TimeSpan.FromSeconds(3.2), TimeSpan.FromSeconds(4.8));
+    }
+
     private sealed class OneBadGatewayHandler : HttpMessageHandler
     {
         public int RequestCount { get; private set; }

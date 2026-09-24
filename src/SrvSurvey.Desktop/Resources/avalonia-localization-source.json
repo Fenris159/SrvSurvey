@@ -14704,7 +14704,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayRingAcquireClusterViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Demand: {0}",
@@ -36843,7 +36843,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PowerplayRingAcquireClusterViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
   },
   {
     "Text": "Price: {0} CR {1}",

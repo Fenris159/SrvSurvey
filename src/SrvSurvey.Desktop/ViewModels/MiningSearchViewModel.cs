@@ -21,7 +21,8 @@ public sealed class MiningSearchViewModel(
     {
         public MiningSystemResult[] Supporters { get; } = supporters;
         public GalacticCoordinate? Origin { get; } = origin;
-        public Queue<(MiningSystemResult Target, MiningSystemResult Supporter)> Targets { get; } = new();
+        public Queue<(MiningSystemResult Target, MiningSystemResult Supporter, bool FromCache)> Targets { get; } =
+            new();
         public HashSet<string> Seen { get; } = new(StringComparer.OrdinalIgnoreCase);
         public int SupporterIndex { get; set; }
         public MiningSystemResult? CurrentSupporter { get; set; }
@@ -1476,7 +1477,7 @@ public sealed class MiningSearchViewModel(
         bool hasMore = true;
         while (hasMore)
         {
-            MiningSystemPage bubble = await client.FindSystemPageAsync(query with { Page = pageIndex }, token);
+            MiningSystemPage bubble = await LoadAcquireBubbleAsync(query with { Page = pageIndex }, token);
             foreach (
                 MiningSystemResult candidate in bubble.Systems.Where(candidate =>
                     PowerplayPlan.IsAcquisitionTarget(candidate, PowerState)
@@ -1612,16 +1613,24 @@ public sealed class MiningSearchViewModel(
         IReadOnlyDictionary<string, long> averages = await AverageSellPricesAsync(token);
         try
         {
-            IReadOnlyList<MiningSystemResult> liveMiners = await client.FindSystemsByNameAsync(
+            IReadOnlyList<MiningSystemResult> liveSystems = await client.FindSystemsByNameAsync(
                 Reference,
-                pairs.Select(pair => pair.Miner.System).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+                pairs
+                    .SelectMany(pair => new[] { pair.Target.System, pair.Miner.System })
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
                 token
             );
-            var liveByName = liveMiners.ToDictionary(system => system.System, StringComparer.OrdinalIgnoreCase);
+            var liveByName = liveSystems.ToDictionary(system => system.System, StringComparer.OrdinalIgnoreCase);
             pairs = pairs
                 .Select(pair =>
                     (
-                        pair.Target,
+                        liveByName.TryGetValue(pair.Target.System, out MiningSystemResult? liveTarget)
+                            ? liveTarget with
+                            {
+                                Distance = pair.Target.Distance,
+                            }
+                            : pair.Target,
                         liveByName.TryGetValue(pair.Miner.System, out MiningSystemResult? liveMiner)
                             ? liveMiner with
                             {
@@ -2281,9 +2290,10 @@ public sealed class MiningSearchViewModel(
     )
     {
         var candidates = new List<MiningSystemResult>();
+        var cachedCandidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         while (candidates.Count < ResultLimit && await FillAcquireTargetQueueAsync(cursor, token))
         {
-            (MiningSystemResult target, MiningSystemResult supporter) = cursor.Targets.Dequeue();
+            (MiningSystemResult target, MiningSystemResult supporter, bool fromCache) = cursor.Targets.Dequeue();
             if (!MatchesSelectedAcquisitionStates(target))
             {
                 continue;
@@ -2322,9 +2332,70 @@ public sealed class MiningSearchViewModel(
                 ControlProgress = target.ControlProgress,
             };
             candidates.Add(target);
+            if (fromCache)
+            {
+                cachedCandidates.Add(target.System);
+            }
         }
 
+        await RefreshAcquireCandidatesAsync(candidates, cachedCandidates, acquisitionSources, sellSystemDetails, token);
         return candidates;
+    }
+
+    private async Task RefreshAcquireCandidatesAsync(
+        List<MiningSystemResult> candidates,
+        HashSet<string> cachedCandidates,
+        Dictionary<string, HashSet<string>> acquisitionSources,
+        Dictionary<string, SurfaceSellSystemDetails> sellSystemDetails,
+        CancellationToken token
+    )
+    {
+        if (cachedCandidates.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            IReadOnlyList<MiningSystemResult> live = await client.FindSystemsByNameAsync(
+                Reference,
+                cachedCandidates.ToArray(),
+                token
+            );
+            var liveByName = live.ToDictionary(system => system.System, StringComparer.OrdinalIgnoreCase);
+            for (int index = candidates.Count - 1; index >= 0; index--)
+            {
+                MiningSystemResult candidate = candidates[index];
+                if (!liveByName.TryGetValue(candidate.System, out MiningSystemResult? current))
+                {
+                    continue;
+                }
+
+                if (!PowerplayPlan.IsAcquisitionTarget(current, PowerState))
+                {
+                    acquisitionSources.Remove(candidate.System);
+                    sellSystemDetails.Remove(candidate.System);
+                    candidates.RemoveAt(index);
+                    continue;
+                }
+
+                candidates[index] = current with { Distance = candidate.Distance };
+                SurfaceSellSystemDetails details = sellSystemDetails[candidate.System];
+                sellSystemDetails[candidate.System] = details with
+                {
+                    PowerState = current.PowerState,
+                    FactionState = current.State,
+                    Powers = current.NearbyPowers.Count > 0 ? current.NearbyPowers : [current.Power],
+                    Conflict = current.Conflict,
+                    ControllingPower = current.Power,
+                    ControlProgress = current.ControlProgress,
+                };
+            }
+        }
+        catch (Exception ex) when (IsProviderFailure(ex))
+        {
+            // Candidate geometry remains useful when a live progress lookup fails.
+        }
     }
 
     private bool MatchesSelectedAcquisitionStates(MiningSystemResult target) =>
@@ -2346,23 +2417,21 @@ public sealed class MiningSearchViewModel(
             }
 
             MiningSystemResult supporter = cursor.CurrentSupporter;
-            MiningSystemPage bubble = await client.FindSystemPageAsync(
-                new MiningSystemQuery(
-                    supporter.System,
-                    PowerplayPlan.AcquisitionReachLy(supporter.PowerState),
-                    Security.Trim(),
-                    Allegiance.Trim(),
-                    Government.Trim(),
-                    IsAny(State) ? "" : State.Trim(),
-                    Economy.Trim(),
-                    "",
-                    "",
-                    MinimumPopulation,
-                    cursor.BubblePage,
-                    AcquireObjective
-                ),
-                token
+            var query = new MiningSystemQuery(
+                supporter.System,
+                PowerplayPlan.AcquisitionReachLy(supporter.PowerState),
+                Security.Trim(),
+                Allegiance.Trim(),
+                Government.Trim(),
+                IsAny(State) ? "" : State.Trim(),
+                Economy.Trim(),
+                "",
+                "",
+                MinimumPopulation,
+                cursor.BubblePage,
+                AcquireObjective
             );
+            MiningSystemPage bubble = await LoadAcquireBubbleAsync(query, token);
             foreach (
                 MiningSystemResult target in bubble.Systems.Where(target =>
                     PowerplayPlan.IsAcquisitionTarget(target, PowerState)
@@ -2372,7 +2441,7 @@ public sealed class MiningSearchViewModel(
                 )
             )
             {
-                cursor.Targets.Enqueue((target, supporter));
+                cursor.Targets.Enqueue((target, supporter, bubble.FromCache));
             }
 
             cursor.BubblePage++;
@@ -2384,6 +2453,11 @@ public sealed class MiningSearchViewModel(
 
         return true;
     }
+
+    private Task<MiningSystemPage> LoadAcquireBubbleAsync(MiningSystemQuery query, CancellationToken token) =>
+        IsAny(PowerState) && !StateChips.Selected.Any(state => !IsAny(state))
+            ? client.FindAcquireCandidatePageAsync(query, token)
+            : client.FindSystemPageAsync(query, token);
 
     private async Task<MiningMarketResult[]> AcquireImportsAsync(
         string system,

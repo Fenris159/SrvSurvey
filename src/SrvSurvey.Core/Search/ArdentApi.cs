@@ -110,13 +110,13 @@ public sealed class ArdentApi
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            if (
-                cacheLifetime is not null
-                && document.RootElement.ValueKind == JsonValueKind.Array
-                && document.RootElement.GetArrayLength() > 0
-            )
+            if (cacheLifetime is not null && document.RootElement.ValueKind == JsonValueKind.Array)
             {
-                cache?.Save(cacheKey, document);
+                cache?.Save(
+                    cacheKey,
+                    document,
+                    document.RootElement.GetArrayLength() == 0 ? TimeSpan.FromMinutes(2) : null
+                );
             }
 
             return document;

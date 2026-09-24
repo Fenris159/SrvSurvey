@@ -14,6 +14,7 @@ public sealed record MeritStationBlockSnapshot(
 )
 {
     public DateTimeOffset? UpdatedAt { get; init; }
+    public MeritCommodityLineViewModel? PrimaryQuote { get; init; }
 
     public static MeritStationBlockSnapshot From(MeritStationBlockViewModel block) =>
         new(
@@ -28,6 +29,7 @@ public sealed record MeritStationBlockSnapshot(
         )
         {
             UpdatedAt = block.UpdatedAt,
+            PrimaryQuote = block.PrimaryQuote,
         };
 
     public MeritStationBlockViewModel Restore() => new(this);

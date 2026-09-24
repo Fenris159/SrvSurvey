@@ -7,8 +7,8 @@ namespace SrvSurvey.Core.Search;
 /// <summary>Short-lived provider responses shared by mining workspaces and retained across launches.</summary>
 public sealed class MiningProviderResponseCache(string dataDirectory, TimeProvider? clock = null)
 {
-    private const int SchemaVersion = 1;
-    private const int MaximumEntries = 128;
+    private const int SchemaVersion = 2;
+    private const int MaximumEntries = 1024;
     private const long MaximumBytes = 128L * 1024 * 1024;
     private readonly string directory = Path.Combine(dataDirectory, "mining-provider-cache");
     private readonly TimeProvider clock = clock ?? TimeProvider.System;
@@ -25,7 +25,8 @@ public sealed class MiningProviderResponseCache(string dataDirectory, TimeProvid
 
             CacheEntry? entry = JsonSerializer.Deserialize<CacheEntry>(File.ReadAllText(path));
             DateTimeOffset age = clock.GetUtcNow();
-            return entry is { Version: SchemaVersion } && entry.FetchedAt <= age && age - entry.FetchedAt < maximumAge
+            TimeSpan lifetime = entry?.MaximumAge is { } savedAge && savedAge < maximumAge ? savedAge : maximumAge;
+            return entry is { Version: SchemaVersion } && entry.FetchedAt <= age && age - entry.FetchedAt < lifetime
                 ? JsonDocument.Parse(entry.Body)
                 : null;
         }
@@ -36,7 +37,7 @@ public sealed class MiningProviderResponseCache(string dataDirectory, TimeProvid
         }
     }
 
-    public void Save(string key, JsonDocument response)
+    public void Save(string key, JsonDocument response, TimeSpan? maximumAge = null)
     {
         try
         {
@@ -48,7 +49,7 @@ public sealed class MiningProviderResponseCache(string dataDirectory, TimeProvid
                 File.WriteAllText(
                     temporary,
                     JsonSerializer.Serialize(
-                        new CacheEntry(SchemaVersion, clock.GetUtcNow(), response.RootElement.GetRawText())
+                        new CacheEntry(SchemaVersion, clock.GetUtcNow(), response.RootElement.GetRawText(), maximumAge)
                     )
                 );
                 File.Move(temporary, path, true);
@@ -88,5 +89,5 @@ public sealed class MiningProviderResponseCache(string dataDirectory, TimeProvid
     private string EntryPath(string key) =>
         Path.Combine(directory, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key))) + ".json");
 
-    private sealed record CacheEntry(int Version, DateTimeOffset FetchedAt, string Body);
+    private sealed record CacheEntry(int Version, DateTimeOffset FetchedAt, string Body, TimeSpan? MaximumAge);
 }

@@ -58,7 +58,10 @@ public sealed record MiningRingPage(IReadOnlyList<MiningRing> Rings, bool HasMor
 
 public sealed record MiningPlanetaryBodyPage(IReadOnlyList<MiningPlanetaryBody> Bodies, bool HasMore);
 
-public sealed record MiningSystemPage(IReadOnlyList<MiningSystemResult> Systems, bool HasMore);
+public sealed record MiningSystemPage(IReadOnlyList<MiningSystemResult> Systems, bool HasMore)
+{
+    public bool FromCache { get; init; }
+}
 
 public sealed record MiningMarketQuery(
     string ReferenceSystem,
@@ -1479,6 +1482,64 @@ public sealed class MiningSearchClient
         DateTimeOffset thursday = new(now.UtcDateTime.Date.AddHours(7), TimeSpan.Zero);
         DateTimeOffset start = thursday.AddDays(-daysSinceThursday);
         return start > now ? start.AddDays(-7) : start;
+    }
+
+    /// <summary>Reuses the Unoccupied index and coordinates for an Acquire bubble; callers refresh displayed progress by name.</summary>
+    public async Task<MiningSystemPage> FindAcquireCandidatePageAsync(
+        MiningSystemQuery query,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (
+            query.Objective != PowerplayPlan.Acquire
+            || query.State.Length > 0
+            || query.PowerState.Length > 0
+            || query.GalaxyWide
+        )
+        {
+            return await FindSystemPageAsync(query, cancellationToken).ConfigureAwait(false);
+        }
+
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        DateTimeOffset cycle = PowerplayCycleStart(now);
+        bool settling = now - cycle < TimeSpan.FromHours(1);
+        TimeSpan lifetime = settling ? TimeSpan.FromMinutes(5) : TimeSpan.FromDays(7);
+        string key =
+            $"spansh-acquire-candidates:v1:{cycle:O}:{(settling ? "settling" : "settled")}:{JsonSerializer.Serialize(query)}";
+        using JsonDocument? cached = providerResponseCache?.Load(key, lifetime);
+        if (cached is not null)
+        {
+            try
+            {
+                MiningSystemPage? page = cached.Deserialize<MiningSystemPage>();
+                if (page is not null)
+                {
+                    return page with { FromCache = true };
+                }
+            }
+            catch (JsonException)
+            {
+                // An old schema must not prevent a live search.
+            }
+        }
+
+        MiningSystemPage fresh = await FindSystemPageAsync(query, cancellationToken).ConfigureAwait(false);
+        MiningSystemPage geometry = fresh with
+        {
+            Systems = fresh
+                .Systems.Select(system =>
+                    system with
+                    {
+                        PowerState = PowerplayStanding.Unoccupied,
+                        Conflict = [],
+                        ControlProgress = null,
+                    }
+                )
+                .ToArray(),
+        };
+        using JsonDocument snapshot = JsonSerializer.SerializeToDocument(geometry);
+        providerResponseCache?.Save(key, snapshot);
+        return fresh;
     }
 
     public async Task<MiningSystemPage> FindSystemPageAsync(

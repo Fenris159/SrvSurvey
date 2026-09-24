@@ -185,7 +185,7 @@ public sealed class PowerplayRingAcquireSellNode : WorkspaceObservable
         Row = row;
         var available = row
             .Miners.SelectMany(miner => miner.AllRingLines)
-            .Select(line => MiningCommodityCode.Abbreviate(line.Mineral.Split(':')[0]))
+            .Select(line => line.EffectiveCommodityCode)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         stations = row
             .AllStationBlocks.Select(block => new PowerplayRingAcquireStationNode(block, available))
@@ -251,10 +251,10 @@ public sealed class PowerplayRingAcquireStationNode : WorkspaceObservable
         quotes = new[]
         {
             new AcquireQuoteViewModel(
-                MiningCommodityCode.Abbreviate(block.Commodity),
-                block.Price.Replace("Price: ", "", StringComparison.Ordinal),
-                block.Demand.Replace("Demand: ", "", StringComparison.Ordinal) + " Demand",
-                !available.Contains(MiningCommodityCode.Abbreviate(block.Commodity)),
+                block.PrimaryQuote.Code,
+                block.PrimaryQuote.Price,
+                block.PrimaryQuote.Demand,
+                !available.Contains(block.PrimaryQuote.Code),
                 true
             ),
         }
@@ -355,7 +355,7 @@ public sealed class PowerplayRingAcquireMiningNode : WorkspaceObservable
         orderedRingLines = ringLines
             .OrderBy(line =>
             {
-                string code = MiningCommodityCode.Abbreviate(line.Mineral.Split(':')[0]);
+                string code = line.EffectiveCommodityCode;
                 int rank = Array.FindIndex(
                     stationCodes,
                     candidate => candidate.Equals(code, StringComparison.OrdinalIgnoreCase)
