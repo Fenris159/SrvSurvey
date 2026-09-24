@@ -14,6 +14,27 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class AcquireSplitRowPresentationTests
 {
+    [Fact]
+    public void SelectingADifferentAcquireClusterClearsThePreviousHighlight()
+    {
+        PowerplayAcquireClusterViewModel[] clusters = PowerplayAcquireClusterViewModel
+            .Group([Sell("Sell A", ["Mine 1"]), Sell("Sell B", ["Mine 2"])])
+            .ToArray();
+
+        Assert.Equal("Sell A", clusters[0].SelectedSellSystem);
+        Assert.Empty(clusters[1].SelectedSellSystem);
+        Assert.Equal(0.28, clusters[1].VisibleMiningSystems[0].EmphasisOpacity);
+
+        clusters[1].SellNodes[0].SelectCommand.Execute(null);
+
+        Assert.Empty(clusters[0].SelectedSellSystem);
+        Assert.False(clusters[0].SellNodes[0].IsSelected);
+        Assert.Equal(0.28, clusters[0].VisibleMiningSystems[0].EmphasisOpacity);
+        Assert.Equal("Sell B", clusters[1].SelectedSellSystem);
+        Assert.True(clusters[1].SellNodes[0].IsSelected);
+        Assert.Equal(1, clusters[1].VisibleMiningSystems[0].EmphasisOpacity);
+    }
+
     [AvaloniaFact]
     public void SharedAcquireMiningRowsStayAlignedWithSellCardsWhenAllSystemsAreVisible()
     {

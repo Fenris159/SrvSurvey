@@ -123,12 +123,7 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
                 border.Name == "SellLinkAnchor" && border.DataContext is PowerplayAcquireSellNode { IsSelected: true }
             );
         Point? top = selected?.TranslatePoint(new Point(0, 0), ClusterGrid);
-        if (top is not { } position)
-        {
-            return false;
-        }
-
-        double offset = Math.Max(0, position.Y);
+        double offset = top is { } position ? Math.Max(0, position.Y) : 0;
         if (Math.Abs(MiningColumn.Margin.Top - offset) <= 1)
         {
             return false;

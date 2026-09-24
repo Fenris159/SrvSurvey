@@ -12,6 +12,7 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
     private IReadOnlyList<PowerplayAcquireMiningNode> visibleMiningSystems = [];
     private bool hideIrrelevant;
     private string selectedSellSystem = "";
+    private Action<PowerplayAcquireClusterViewModel>? onSelected;
 
     private PowerplayAcquireClusterViewModel(
         IReadOnlyList<SurfaceSellRowViewModel> rows,
@@ -77,7 +78,9 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
             }
         }
 
-        return rows.Select((row, index) => (Row: row, Index: index, Root: Root(parents, index)))
+        PowerplayAcquireClusterViewModel[] clusters = rows.Select(
+                (row, index) => (Row: row, Index: index, Root: Root(parents, index))
+            )
             .GroupBy(item => item.Root)
             .OrderBy(group => group.Min(item => item.Index))
             .Select(group => new PowerplayAcquireClusterViewModel(
@@ -88,6 +91,25 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
                 bestStationSortIndicator
             ))
             .ToArray();
+        foreach (PowerplayAcquireClusterViewModel cluster in clusters)
+        {
+            cluster.onSelected = selected =>
+            {
+                foreach (
+                    PowerplayAcquireClusterViewModel other in clusters.Where(other => !ReferenceEquals(other, selected))
+                )
+                {
+                    other.Deselect();
+                }
+            };
+        }
+
+        foreach (PowerplayAcquireClusterViewModel cluster in clusters.Skip(1))
+        {
+            cluster.Deselect();
+        }
+
+        return clusters;
     }
 
     private static int Root(int[] parents, int index)
@@ -131,6 +153,30 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
             .ThenBy(system => system.ConnectsTo(row.Target) ? system.DistanceLy : system.SellPosition)
             .ThenBy(system => system.System, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        Changed(nameof(VisibleMiningSystems));
+        Changed(nameof(SelectedSellSystem));
+        onSelected?.Invoke(this);
+    }
+
+    private void Deselect()
+    {
+        if (selectedSellSystem.Length == 0)
+        {
+            return;
+        }
+
+        selectedSellSystem = "";
+        foreach (PowerplayAcquireSellNode sell in SellNodes)
+        {
+            sell.IsSelected = false;
+        }
+
+        foreach (PowerplayAcquireMiningNode system in miningSystems)
+        {
+            system.Select("", hideIrrelevant);
+        }
+
+        visibleMiningSystems = miningSystems;
         Changed(nameof(VisibleMiningSystems));
         Changed(nameof(SelectedSellSystem));
     }
