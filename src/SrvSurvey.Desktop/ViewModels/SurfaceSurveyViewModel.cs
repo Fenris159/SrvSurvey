@@ -1053,6 +1053,8 @@ public sealed class SurfaceRadarMarkerViewModel
 
     public string Name { get; init; } = string.Empty;
 
+    public int? RigCount { get; init; }
+
     public SurfaceRadarMarkerKind Kind { get; init; }
 
     public string Status { get; init; } = string.Empty;
