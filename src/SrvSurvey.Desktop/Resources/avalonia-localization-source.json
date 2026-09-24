@@ -744,6 +744,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "200\u002B ly: expect a longer search and more data requests.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningDistanceWarning.cs"
+  },
+  {
     "Text": "209 mapped objects - 32 of 50 survey points confirmed",
     "IsFormat": false,
     "SourceKinds": [
@@ -864,6 +872,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "300\u002B ly: this search may take several minutes in a dense region.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningDistanceWarning.cs"
+  },
+  {
     "Text": "320 / 500 m",
     "IsFormat": false,
     "SourceKinds": [
@@ -902,6 +918,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "400\u002B ly: the broad search may be slow or reach a provider request limit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningDistanceWarning.cs"
   },
   {
     "Text": "412 m",
@@ -998,6 +1022,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "500 ly: this is the widest search. Allow extra time or narrow the filters if it fails.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningDistanceWarning.cs"
   },
   {
     "Text": "529 T REMAINING",
@@ -4089,14 +4121,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
-  },
-  {
-    "Text": "Any commodity name",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Any surface material",
@@ -9199,10 +9223,9 @@
     "Text": "Category",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
     "Text": "Caught up {0} Journey journal events.",
@@ -9443,6 +9466,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Checking market prices for {0}\u2026",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Checking sell systems {0}/{1}\u2026",
@@ -9709,6 +9740,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
   },
   {
+    "Text": "Choose a commodity category...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
+  },
+  {
     "Text": "Choose a connection route, complete its pairing steps, then enable VR overlays.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9788,6 +9827,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Choose a reference system or enable galaxy-wide search.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Choose a reference system to search.",
@@ -9916,6 +9963,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
+  },
+  {
+    "Text": "Choose at least one commodity.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Choose at least one primary or secondary module.",
@@ -11537,18 +11592,34 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Commodity",
+    "Text": "Commodities",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
+  },
+  {
+    "Text": "Commodities (up to 5)",
+    "IsFormat": false,
+    "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
-    "Text": "Commodity name, station and freshness filters",
+    "Text": "Commodity",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Commodity category",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
@@ -19322,6 +19393,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
     "Text": "Find hotspots",
     "IsFormat": false,
     "SourceKinds": [
@@ -21063,6 +21142,14 @@
   },
   {
     "Text": "Galaxy-wide",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Galaxy-wide search ignores the reference distance.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -25991,14 +26078,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
-    "Text": "Large pads",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
-  },
-  {
     "Text": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
     "IsFormat": false,
     "SourceKinds": [
@@ -28661,12 +28740,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
+    "Text": "Max. demand (0 = no limit)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "Max. mine\u2013sell distance",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Max. supply (0 = no limit)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "MaxJumpRange",
@@ -29010,9 +29105,18 @@
     "Text": "Min. demand",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Min. supply",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "MinSystemsForAverages",
@@ -29206,6 +29310,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Minimum volume cannot exceed maximum volume.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Mining",
@@ -34302,6 +34414,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Over 100 ly: more systems may make this search noticeably slower.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningDistanceWarning.cs"
+  },
+  {
     "Text": "Overlaps",
     "IsFormat": false,
     "SourceKinds": [
@@ -35615,6 +35735,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+  },
+  {
+    "Text": "Planetary Mining",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "Platform: {0} ({1})",
@@ -49225,6 +49353,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Station and data filters",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
     "Text": "Station information",
     "IsFormat": false,
     "SourceKinds": [
@@ -49250,7 +49386,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
-    "Text": "Station type contains",
+    "Text": "Station type contains (optional)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -56753,6 +56889,14 @@
   },
   {
     "Text": "Type to add system states...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
+  },
+  {
+    "Text": "Type to add up to five commodities...",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -67560,14 +67704,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "{0} markets \u00B7 {1}. Prices and quantities are observations, not guarantees.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
-  },
-  {
     "Text": "{0} matching failure reports were suppressed.",
     "IsFormat": true,
     "SourceKinds": [
@@ -67782,6 +67918,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/OverlayCategorySettingsWindow.axaml.cs"
+  },
+  {
+    "Text": "{0} prices for {1} commodities \u00B7 {2}. Prices and quantities are observations, not guarantees.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
     "Text": "{0} prices for {1}.{2}",

@@ -642,6 +642,24 @@ public sealed class SurfaceMiningSearchViewModelTests
     }
 
     [Fact]
+    public void DistanceWarningChangesAtEachLargeRadiusBand()
+    {
+        using SurfaceMiningSearchViewModel model = Create(new SurfaceHandler());
+        Assert.False(model.HasDistanceWarning);
+        foreach (int radius in new[] { 101, 200, 300, 400, 500 })
+        {
+            model.Radius = radius;
+            Assert.Contains(
+                radius == 101 ? "100" : radius.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                model.DistanceWarning
+            );
+        }
+
+        model.Radius = 100;
+        Assert.False(model.HasDistanceWarning);
+    }
+
+    [Fact]
     public async Task MineSellRadiusRejectsBodiesOutsideTheLoopEvenIfTheProviderReturnsThem()
     {
         using var handler = new SurfaceHandler { Mode = "over-radius" };

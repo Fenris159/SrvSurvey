@@ -70,16 +70,105 @@ public sealed class MiningSearchViewModel(
     private readonly WorkspaceTableSorter platinumSorter = new();
     private ICommand? sortCommand;
     public WorkspaceSortIndicators SortIndicators => new(ActiveSorter.Indicator);
-    public static IReadOnlyList<string> CommodityCategories { get; } = MiningReferenceData.Commodities.Keys.ToArray();
+    private const string PlanetaryCommodityCategory = "Planetary Mining";
+    private const string MiningCommodityCategory = "Mining";
+    private const int MaximumMarketCommodities = 5;
+    private bool marketChipsHooked;
+    private bool syncingMarketChips;
+    public static IReadOnlyList<string> CommodityCategories { get; } =
+    [
+        MiningCommodityCategory,
+        PlanetaryCommodityCategory,
+        .. MiningReferenceData.Commodities.Keys.Where(category => category != MiningCommodityCategory),
+    ];
     public IReadOnlyList<string> CommodityOptions =>
-        MiningReferenceData.Commodities.GetValueOrDefault(CommodityCategory) ?? [];
+        CommodityCategory == PlanetaryCommodityCategory
+            ? PlanetaryMiningPlan.Materials
+            : MiningReferenceData.Commodities.GetValueOrDefault(CommodityCategory) ?? [];
+    private readonly MiningChipBoxViewModel marketCategoryChips = new(
+        "Commodity category",
+        CommodityCategories,
+        MiningCommodityCategory,
+        options: new(MaximumSelections: 1, ShowFullNames: true)
+    );
+    private readonly MiningChipBoxViewModel marketCommodityChips = new(
+        "Commodities",
+        MiningReferenceData.Commodities.GetValueOrDefault(MiningCommodityCategory) ?? [],
+        PlatinumMineral,
+        options: new(
+            MaximumSelections: MaximumMarketCommodities,
+            ShowFullNames: true,
+            AllowCustom: true,
+            AllowEmpty: true
+        )
+    );
+    public MiningChipBoxViewModel MarketCategoryChips
+    {
+        get
+        {
+            HookMarketChips();
+            return marketCategoryChips;
+        }
+    }
+    public MiningChipBoxViewModel MarketCommodityChips
+    {
+        get
+        {
+            HookMarketChips();
+            return marketCommodityChips;
+        }
+    }
+
+    private void HookMarketChips()
+    {
+        if (marketChipsHooked)
+        {
+            return;
+        }
+
+        marketChipsHooked = true;
+        marketCategoryChips.Selected.CollectionChanged += (_, _) =>
+        {
+            if (!syncingMarketChips && marketCategoryChips.Selected.FirstOrDefault() is { } category)
+            {
+                CommodityCategory = category;
+            }
+        };
+        marketCommodityChips.Selected.CollectionChanged += (_, _) =>
+        {
+            if (!syncingMarketChips)
+            {
+                SyncMarketCommodities();
+            }
+        };
+    }
+
+    private void SyncMarketCommodities()
+    {
+        string[] selected = marketCommodityChips.Selected.ToArray();
+        options = options with { MarketCommodities = selected, Commodity = selected.FirstOrDefault() ?? "" };
+        Changed(nameof(Commodity));
+    }
+
     public string CommodityCategory
     {
         get => options.CommodityCategory;
         set
         {
-            Set(ref options, options with { CommodityCategory = value ?? "Mining" });
+            string category =
+                CommodityCategories.FirstOrDefault(choice => choice.Equals(value, StringComparison.OrdinalIgnoreCase))
+                ?? MiningCommodityCategory;
+            Set(ref options, options with { CommodityCategory = category });
             Changed(nameof(CommodityOptions));
+            syncingMarketChips = true;
+            if (!marketCategoryChips.Selected.Contains(category, StringComparer.OrdinalIgnoreCase))
+            {
+                marketCategoryChips.Add(category);
+            }
+
+            marketCommodityChips.ReplaceChoices(CommodityOptions, "");
+            syncingMarketChips = false;
+            SyncMarketCommodities();
         }
     }
     public string Reference
@@ -123,6 +212,15 @@ public sealed class MiningSearchViewModel(
             if (Set(ref options, options with { Mineral = value ?? PlatinumMineral }))
             {
                 Changed(nameof(PowerplaySummary));
+                if (
+                    !syncingPrimaryMineral
+                    && !primaryMineralChips.Selected.Contains(options.Mineral, StringComparer.OrdinalIgnoreCase)
+                )
+                {
+                    syncingPrimaryMineral = true;
+                    primaryMineralChips.Add(options.Mineral);
+                    syncingPrimaryMineral = false;
+                }
             }
         }
     }
@@ -151,7 +249,19 @@ public sealed class MiningSearchViewModel(
     public string Commodity
     {
         get => options.Commodity;
-        set { Set(ref options, options with { Commodity = value ?? PlatinumMineral }); }
+        set
+        {
+            string next = value?.Trim() ?? "";
+            syncingMarketChips = true;
+            marketCommodityChips.Selected.Clear();
+            if (next.Length > 0)
+            {
+                marketCommodityChips.Add(next);
+            }
+
+            syncingMarketChips = false;
+            SyncMarketCommodities();
+        }
     }
     public double Radius
     {
@@ -161,9 +271,13 @@ public sealed class MiningSearchViewModel(
             if (Set(ref options, options with { Radius = double.IsFinite(value) ? Math.Clamp(value, 1, 500) : 100 }))
             {
                 Changed(nameof(PowerplaySummary));
+                Changed(nameof(DistanceWarning));
+                Changed(nameof(HasDistanceWarning));
             }
         }
     }
+    public string DistanceWarning => CanChooseDistance ? MiningDistanceWarning.For(Radius) : "";
+    public bool HasDistanceWarning => DistanceWarning.Length > 0;
     public int MinimumHotspots
     {
         get => options.MinimumHotspots;
@@ -187,7 +301,37 @@ public sealed class MiningSearchViewModel(
     public bool Buying
     {
         get => options.Buying;
-        set { Set(ref options, options with { Buying = value }); }
+        set
+        {
+            if (Set(ref options, options with { Buying = value }))
+            {
+                Changed(nameof(TradeMode));
+                Changed(nameof(MarketMinimumVolumeLabel));
+                Changed(nameof(MarketMaximumVolumeLabel));
+            }
+        }
+    }
+    public string MarketMinimumVolumeLabel => Buying ? "Min. supply" : "Min. demand";
+    public string MarketMaximumVolumeLabel => Buying ? "Max. supply (0 = no limit)" : "Max. demand (0 = no limit)";
+    public string MarketPadSize
+    {
+        get => options.MarketPadSize;
+        set { Set(ref options, options with { MarketPadSize = value ?? AnyPower }); }
+    }
+    public long MarketMinimumVolume
+    {
+        get => options.MarketMinimumVolume;
+        set { Set(ref options, options with { MarketMinimumVolume = Math.Max(0, value) }); }
+    }
+    public long MarketMaximumVolume
+    {
+        get => options.MarketMaximumVolume;
+        set { Set(ref options, options with { MarketMaximumVolume = Math.Max(0, value) }); }
+    }
+    public int MarketMaximumAgeDays
+    {
+        get => options.MarketMaximumAgeDays;
+        set { Set(ref options, options with { MarketMaximumAgeDays = Math.Clamp(value, 1, 3650) }); }
     }
     public bool GalaxyWide
     {
@@ -462,6 +606,8 @@ public sealed class MiningSearchViewModel(
                 Changed(nameof(IsPlanetaryAcquire));
                 Changed(nameof(IsPlanetaryCombined));
                 Changed(nameof(CanChooseDistance));
+                Changed(nameof(DistanceWarning));
+                Changed(nameof(HasDistanceWarning));
                 Changed(nameof(MaximumResultLimit));
                 ResultLimit = Math.Min(ResultLimit, MaximumResultLimit);
             }
@@ -504,6 +650,8 @@ public sealed class MiningSearchViewModel(
                 Changed(nameof(Objective));
                 Changed(nameof(OpposingPower));
                 Changed(nameof(CanChooseDistance));
+                Changed(nameof(DistanceWarning));
+                Changed(nameof(HasDistanceWarning));
                 Changed(nameof(MaximumResultLimit));
                 Changed(nameof(IsPlanetaryAcquire));
                 Changed(nameof(IsPlanetaryCombined));
@@ -615,7 +763,7 @@ public sealed class MiningSearchViewModel(
     private static readonly string[] RingMineralChoices =
     [
         AnyPower,
-        .. (MiningReferenceData.Commodities.GetValueOrDefault("Mining") ?? []).Where(name =>
+        .. (MiningReferenceData.Commodities.GetValueOrDefault(MiningCommodityCategory) ?? []).Where(name =>
             !PlanetaryMiningPlan.IsSurfaceExclusive(name)
         ),
     ];
@@ -624,11 +772,38 @@ public sealed class MiningSearchViewModel(
     [
         MiningMaterialSelection.Default,
         MiningMaterialSelection.Any,
-        .. (MiningReferenceData.Commodities.GetValueOrDefault("Mining") ?? []).Where(name =>
+        .. (MiningReferenceData.Commodities.GetValueOrDefault(MiningCommodityCategory) ?? []).Where(name =>
             PlanetaryMiningPlan.IsEdpmCommodity(name)
         ),
     ];
     public IReadOnlyList<string> RingMinerals => IsPlanetaryMining ? PlanetaryMineralChoices : RingMineralChoices;
+    private bool primaryMineralHooked;
+    private bool syncingPrimaryMineral;
+    private readonly MiningChipBoxViewModel primaryMineralChips = new(
+        "Mineral / metal",
+        RingMineralChoices,
+        PlatinumMineral,
+        options: new(MaximumSelections: 1, ShowFullNames: true)
+    );
+    public MiningChipBoxViewModel PrimaryMineralChips
+    {
+        get
+        {
+            if (!primaryMineralHooked)
+            {
+                primaryMineralHooked = true;
+                primaryMineralChips.Selected.CollectionChanged += (_, _) =>
+                {
+                    if (!syncingPrimaryMineral && primaryMineralChips.Selected.FirstOrDefault() is { } material)
+                    {
+                        Mineral = material;
+                    }
+                };
+            }
+
+            return primaryMineralChips;
+        }
+    }
     public static IReadOnlyList<string> PowerplayMinerals => PowerplayMineralChoices;
     public static IReadOnlyList<string> Reserves { get; } =
     ["All", "Pristine", "Major", "Common", "Low", "Depleted", UnknownState];
@@ -1032,6 +1207,7 @@ public sealed class MiningSearchViewModel(
 
         SelectedRing = spot.Ring;
         Mineral = PlatinumMineral;
+        CommodityCategory = MiningCommodityCategory;
         Commodity = PlatinumMineral;
         Reference = spot.System;
         SystemOnly = false;
@@ -1359,45 +1535,97 @@ public sealed class MiningSearchViewModel(
     public Task SearchMarketsAsync() =>
         Run(async token =>
         {
-            var query = new MiningMarketQuery(
-                Reference,
-                Commodity.Trim(),
-                Buying,
-                Radius,
-                GalaxyWide,
-                ExcludeCarriers,
-                LargePads,
-                MaximumAgeDays,
-                StationType.Trim(),
-                Page,
-                SystemOnly,
-                MinimumDemand,
-                MaximumDemand,
-                MarketFreshness,
-                PadSize
-            );
-            (IReadOnlyList<MiningMarketResult> result, string source) = await client.FindMarketsPreferringArdentAsync(
-                query,
-                token
-            );
-            GalacticCoordinate? origin =
-                community is not null && !query.GalaxyWide ? await ResolveOriginAsync(token) : null;
-            IEnumerable<MiningMarketResult> merged = result
-                .Concat(community?.Markets(query, origin, DateTimeOffset.UtcNow) ?? [])
-                .GroupBy(r => (r.System, r.Station))
-                .Select(g => g.OrderByDescending(r => r.Updated).First());
-            if (query.SystemOnly && !query.GalaxyWide)
+            if (!TryGetMarketCommodities(out string[] commodities))
             {
-                merged = merged.Where(r => Same(r.System, query.ReferenceSystem));
+                return;
             }
 
-            result = query.Buying
-                ? merged.OrderBy(r => r.Price).ToArray()
-                : merged.OrderByDescending(r => r.Price).ToArray();
+            var quotes = new List<MiningMarketResult>();
+            var sources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            GalacticCoordinate? origin = community is not null && !GalaxyWide ? await ResolveOriginAsync(token) : null;
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            foreach (string commodity in commodities)
+            {
+                token.ThrowIfCancellationRequested();
+                Status = $"Checking market prices for {commodity}…";
+                var query = new MiningMarketQuery(
+                    Reference,
+                    commodity,
+                    Buying,
+                    Radius,
+                    GalaxyWide,
+                    ExcludeCarriers,
+                    false,
+                    MarketMaximumAgeDays,
+                    StationType.Trim(),
+                    Page,
+                    SystemOnly,
+                    MarketMinimumVolume,
+                    MarketMaximumVolume,
+                    TimeSpan.FromDays(MarketMaximumAgeDays),
+                    MarketPadSize
+                );
+                (IReadOnlyList<MiningMarketResult> found, string source) =
+                    await client.FindMarketsPreferringArdentAsync(query, token);
+                sources.Add(source);
+                quotes.AddRange(found);
+                quotes.AddRange(community?.Markets(query, origin, now) ?? []);
+            }
+
+            MiningMarketResult[] result = SortMarketQuotes(quotes);
             token.ThrowIfCancellationRequested();
             Markets = result;
-            Status = $"{result.Count} markets · {source}. Prices and quantities are observations, not guarantees.";
+            Status =
+                $"{result.Length} prices for {commodities.Length} commodities · {string.Join("/", sources.OrderBy(source => source))}. Prices and quantities are observations, not guarantees.";
         });
+
+    private bool TryGetMarketCommodities(out string[] commodities)
+    {
+        commodities = MarketCommodityChips
+            .Selected.Where(commodity => !string.IsNullOrWhiteSpace(commodity))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(MaximumMarketCommodities)
+            .ToArray();
+        if (commodities.Length == 0)
+        {
+            Markets = [];
+            Status = "Choose at least one commodity.";
+            return false;
+        }
+
+        if (!GalaxyWide && string.IsNullOrWhiteSpace(Reference))
+        {
+            Markets = [];
+            Status = "Choose a reference system or enable galaxy-wide search.";
+            return false;
+        }
+
+        if (MarketMaximumVolume > 0 && MarketMinimumVolume > MarketMaximumVolume)
+        {
+            Markets = [];
+            Status = "Minimum volume cannot exceed maximum volume.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private MiningMarketResult[] SortMarketQuotes(IEnumerable<MiningMarketResult> quotes)
+    {
+        IEnumerable<MiningMarketResult> merged = quotes
+            .GroupBy(
+                quote => quote.System + "\u001f" + quote.Station + "\u001f" + MiningCommodityName.Key(quote.Commodity),
+                StringComparer.OrdinalIgnoreCase
+            )
+            .Select(group => group.OrderByDescending(quote => quote.Updated).First())
+            .Where(quote => !SystemOnly || GalaxyWide || Same(quote.System, Reference));
+        return Buying
+            ? merged.OrderBy(quote => quote.Price).ThenBy(quote => quote.Distance ?? double.MaxValue).ToArray()
+            : merged
+                .OrderByDescending(quote => quote.Price)
+                .ThenBy(quote => quote.Distance ?? double.MaxValue)
+                .ToArray();
+    }
 
     private async Task SearchAcquisitionTargetsAsync(CancellationToken token)
     {
@@ -3032,6 +3260,13 @@ public sealed class MiningSearchViewModel(
             }
 
             Changed(nameof(RingMinerals));
+            syncingPrimaryMineral = true;
+            primaryMineralChips.ReplaceChoices(RingMinerals, AnyPower);
+            syncingPrimaryMineral = false;
+            if (primaryMineralChips.Selected.FirstOrDefault() is { } current && !Same(current, Mineral))
+            {
+                Mineral = current;
+            }
             if (surface)
             {
                 MineralChips.ReplaceChoices(SurfaceMinerals, MiningMaterialSelection.Any);
@@ -3158,6 +3393,7 @@ public sealed class MiningSearchViewModel(
         Changed(nameof(HasPlan));
         if (Mineral.Length > 0 && !IsAny(Mineral))
         {
+            CommodityCategory = MiningCommodityCategory;
             Commodity = Mineral;
         }
 
@@ -3430,6 +3666,18 @@ public sealed class MiningSearchViewModel(
         RingType = values.RingType;
         Reserve = values.Reserve;
         Commodity = values.Commodity;
+        if (values.MarketCommodities is { Count: > 0 })
+        {
+            syncingMarketChips = true;
+            marketCommodityChips.Selected.Clear();
+            foreach (string commodity in values.MarketCommodities.Take(MaximumMarketCommodities))
+            {
+                marketCommodityChips.Add(commodity);
+            }
+
+            syncingMarketChips = false;
+            SyncMarketCommodities();
+        }
         Radius = values.Radius;
         MinimumHotspots = values.MinimumHotspots;
         Source = values.Source;
@@ -3440,6 +3688,10 @@ public sealed class MiningSearchViewModel(
         ExcludeCarriers = values.ExcludeCarriers;
         LargePads = values.LargePads;
         MaximumAgeDays = values.MaximumAgeDays;
+        MarketPadSize = values.MarketPadSize;
+        MarketMinimumVolume = values.MarketMinimumVolume;
+        MarketMaximumVolume = values.MarketMaximumVolume;
+        MarketMaximumAgeDays = values.MarketMaximumAgeDays;
         MinimumDemand = values.MinimumDemand;
         MaximumDemand = values.MaximumDemand == 0 ? 90_000 : values.MaximumDemand;
         if (!string.IsNullOrWhiteSpace(values.PledgedPower))
@@ -3489,7 +3741,7 @@ public sealed class MiningSearchViewModel(
     private async Task Run(Func<CancellationToken, Task> action, bool cacheSearch = false)
     {
         CancellationTokenSource? previous = pending;
-        using var current = new CancellationTokenSource(TimeSpan.FromMinutes(IsPlanetaryMining ? 8 : 2));
+        using var current = new CancellationTokenSource(SearchTimeout());
         pending = current;
         IsBusy = true;
         Status = "Searching…";
@@ -3546,6 +3798,16 @@ public sealed class MiningSearchViewModel(
                 IsBusy = false;
             }
         }
+    }
+
+    private TimeSpan SearchTimeout()
+    {
+        if (IsPlanetaryMining)
+        {
+            return TimeSpan.FromMinutes(8);
+        }
+
+        return TimeSpan.FromMinutes(Destination == 1 ? 5 : 2);
     }
 }
 

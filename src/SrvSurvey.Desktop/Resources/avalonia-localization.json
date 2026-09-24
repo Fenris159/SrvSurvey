@@ -373,6 +373,10 @@
       "translation": "200 brauchen | 30 FC | 12 Schiff"
     },
     {
+      "source": "200+ ly: expect a longer search and more data requests.",
+      "translation": "200+ ly: Rechnen Sie mit einer längeren Suche und mehr Datenanfragen."
+    },
+    {
       "source": "209 mapped objects - 32 of 50 survey points confirmed",
       "translation": "209 kartierte Objekte – 32 von 50 Vermessungspunkten bestätigt"
     },
@@ -433,6 +437,10 @@
       "translation": "300 brauchen | 80 FC | 12 Schiff"
     },
     {
+      "source": "300+ ly: this search may take several minutes in a dense region.",
+      "translation": "300+ Lichtjahre: Diese Suche kann in einer dicht besiedelten Region mehrere Minuten dauern."
+    },
+    {
       "source": "320 / 500 m",
       "translation": "320 / 500 m"
     },
@@ -451,6 +459,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "4.820 t VERBLEIBEND | FC 1.240 T | SCHIFF 192 T"
+    },
+    {
+      "source": "400+ ly: the broad search may be slow or reach a provider request limit.",
+      "translation": "400+ ly: Die umfassende Suche ist möglicherweise langsam oder erreicht ein Limit für Anbieteranfragen."
     },
     {
       "source": "412 m",
@@ -499,6 +511,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 LY | 21.502,09 LY verbleibend"
+    },
+    {
+      "source": "500 ly: this is the widest search. Allow extra time or narrow the filters if it fails.",
+      "translation": "500 ly: Dies ist die umfassendste Suche. Planen Sie zusätzliche Zeit ein oder schränken Sie die Filter ein, wenn dies fehlschlägt."
     },
     {
       "source": "529 T REMAINING",
@@ -2043,10 +2059,6 @@
     {
       "source": "Any Power",
       "translation": "Jede Macht"
-    },
-    {
-      "source": "Any commodity name",
-      "translation": "Beliebiger Warenname"
     },
     {
       "source": "Any surface material",
@@ -4713,6 +4725,10 @@
       "translation": "Suche nach anderen laufenden SrvSurvey-Instanzen ..."
     },
     {
+      "source": "Checking market prices for {0}…",
+      "translation": "Überprüfen Sie die Marktpreise für {0}…"
+    },
+    {
       "source": "Checking sell systems {0}/{1}…",
       "translation": "Überprüfung der Verkaufssysteme {0}/{1}…"
     },
@@ -4845,6 +4861,10 @@
       "translation": "Wählen Sie einen Kommandanten, ein Referenzsystem und die Datei VisitedStarsCache.dat."
     },
     {
+      "source": "Choose a commodity category...",
+      "translation": "Wählen Sie eine Warenkategorie..."
+    },
+    {
       "source": "Choose a connection route, complete its pairing steps, then enable VR overlays.",
       "translation": "Wählen Sie eine Verbindungsroute, führen Sie die Kopplungsschritte durch und aktivieren Sie dann VR-Overlays."
     },
@@ -4883,6 +4903,10 @@
     {
       "source": "Choose a reference system and a surface material.",
       "translation": "Wählen Sie ein Bezugssystem und ein Oberflächenmaterial."
+    },
+    {
+      "source": "Choose a reference system or enable galaxy-wide search.",
+      "translation": "Wählen Sie ein Referenzsystem oder aktivieren Sie die galaxienweite Suche."
     },
     {
       "source": "Choose a reference system to search.",
@@ -4947,6 +4971,10 @@
     {
       "source": "Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays.",
       "translation": "Wählen Sie ein beliebiges Farbfeld aus, um dessen visuelle Auswahl zu öffnen, oder verwenden Sie das Hexadezimalfeld für genaue Werte. Alpha wird für durchscheinende Overlays unterstützt."
+    },
+    {
+      "source": "Choose at least one commodity.",
+      "translation": "Wählen Sie mindestens eine Ware aus."
     },
     {
       "source": "Choose at least one primary or secondary module.",
@@ -5757,12 +5785,20 @@
       "translation": "Übertragen Sie das Gebäude auf den Entwurf"
     },
     {
+      "source": "Commodities",
+      "translation": "Rohstoffe"
+    },
+    {
+      "source": "Commodities (up to 5)",
+      "translation": "Rohstoffe (bis zu 5)"
+    },
+    {
       "source": "Commodity",
       "translation": "Ware"
     },
     {
-      "source": "Commodity name, station and freshness filters",
-      "translation": "Warenname, Station und Frischefilter"
+      "source": "Commodity category",
+      "translation": "Warenkategorie"
     },
     {
       "source": "Commodity row fill (colour + alpha)",
@@ -9637,6 +9673,10 @@
       "translation": "Käufer für ausgewählte Stelle finden →"
     },
     {
+      "source": "Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable.",
+      "translation": "Finden Sie aktuelle Stationspreise für abgebaute Fracht oder Vorräte. Heiße Preise werden bevorzugt; Spansh wird verwendet, wenn ein Preis nicht verfügbar ist."
+    },
+    {
       "source": "Find hotspots",
       "translation": "Finden Sie Hotspots"
     },
@@ -10507,6 +10547,10 @@
     {
       "source": "Galaxy-wide",
       "translation": "Galaxieweit"
+    },
+    {
+      "source": "Galaxy-wide search ignores the reference distance.",
+      "translation": "Bei der galaxienweiten Suche wird die Referenzentfernung ignoriert."
     },
     {
       "source": "GalaxyMap",
@@ -12957,10 +13001,6 @@
       "translation": "Groß"
     },
     {
-      "source": "Large pads",
-      "translation": "Große Polster"
-    },
-    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "Die Überprüfung großer Profile über eine Netzwerkfreigabe kann mehrere Minuten dauern. Der Datei- und Byte-Fortschritt wird oben angezeigt. Ein erfolgreicher Import wird automatisch neu gestartet SrvSurvey, sodass kein In-Memory-Status vor dem Import migrierte Daten überschreiben kann."
     },
@@ -14289,8 +14329,16 @@
       "translation": "Max. Nachfrage"
     },
     {
+      "source": "Max. demand (0 = no limit)",
+      "translation": "Max. Nachfrage (0 = keine Begrenzung)"
+    },
+    {
       "source": "Max. mine–sell distance",
       "translation": "Max. Mine–Verkaufsdistanz"
+    },
+    {
+      "source": "Max. supply (0 = no limit)",
+      "translation": "Max. Versorgung (0 = keine Begrenzung)"
     },
     {
       "source": "MaxJumpRange",
@@ -14465,6 +14513,10 @@
       "translation": "Min. Nachfrage"
     },
     {
+      "source": "Min. supply",
+      "translation": "Min. liefern"
+    },
+    {
       "source": "MinSystemsForAverages",
       "translation": "MinSystemsForAverages"
     },
@@ -14559,6 +14611,10 @@
     {
       "source": "Minimum reward (credits)",
       "translation": "Mindestprämie (Credits)"
+    },
+    {
+      "source": "Minimum volume cannot exceed maximum volume.",
+      "translation": "Die minimale Lautstärke darf die maximale Lautstärke nicht überschreiten."
     },
     {
       "source": "Mining",
@@ -17101,6 +17157,10 @@
       "translation": "Außerhalb der Körpervorhersage-Entdeckungsmarker identifiziert dieses Symbol einen Stern-/Körperkontext oder ein ungelöstes biologisches Signal entsprechend dem Zeilentitel."
     },
     {
+      "source": "Over 100 ly: more systems may make this search noticeably slower.",
+      "translation": "Über 100 ly: Mehr Systeme können diese Suche merklich langsamer machen."
+    },
+    {
       "source": "Overlaps",
       "translation": "Überschneidungen"
     },
@@ -17755,6 +17815,10 @@
     {
       "source": "Planetary",
       "translation": "Planetarisch"
+    },
+    {
+      "source": "Planetary Mining",
+      "translation": "Planetarischer Bergbau"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -24545,6 +24609,10 @@
       "translation": "Bahnhof"
     },
     {
+      "source": "Station and data filters",
+      "translation": "Stations- und Datenfilter"
+    },
+    {
       "source": "Station information",
       "translation": "Informationen zum Bahnhof"
     },
@@ -24557,8 +24625,8 @@
       "translation": "Die Einstellungen der Stationsinformationen konnten nicht gespeichert werden: {0}"
     },
     {
-      "source": "Station type contains",
-      "translation": "Stationstyp enthält"
+      "source": "Station type contains (optional)",
+      "translation": "Stationstyp enthält (optional)"
     },
     {
       "source": "StationInfo",
@@ -28303,6 +28371,10 @@
     {
       "source": "Type to add system states...",
       "translation": "Geben Sie Folgendes ein, um Systemzustände hinzuzufügen..."
+    },
+    {
+      "source": "Type to add up to five commodities...",
+      "translation": "Geben Sie ein, um bis zu fünf Waren hinzuzufügen..."
     },
     {
       "source": "Type-10 Defender",
@@ -33701,10 +33773,6 @@
       "translation": "{0} markiert mit {1} {2}."
     },
     {
-      "source": "{0} markets · {1}. Prices and quantities are observations, not guarantees.",
-      "translation": "{0} Märkte · {1}. Bei Preisen und Mengen handelt es sich um Richtwerte, nicht um Garantien."
-    },
-    {
       "source": "{0} matching failure reports were suppressed.",
       "translation": "{0} Matching-Fehlerberichte wurden unterdrückt."
     },
@@ -33811,6 +33879,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "{0} Overlay-Einstellungen"
+    },
+    {
+      "source": "{0} prices for {1} commodities · {2}. Prices and quantities are observations, not guarantees.",
+      "translation": "{0} Preise für {1} Waren · {2}. Bei Preisen und Mengen handelt es sich um Richtwerte, nicht um Garantien."
     },
     {
       "source": "{0} prices for {1}.{2}",
@@ -34683,6 +34755,10 @@
       "translation": "200 necesidad | 30FC | 12 barco"
     },
     {
+      "source": "200+ ly: expect a longer search and more data requests.",
+      "translation": "Más de 200 veces: espere una búsqueda más larga y más solicitudes de datos."
+    },
+    {
       "source": "209 mapped objects - 32 of 50 survey points confirmed",
       "translation": "209 objetos mapeados - 32 de 50 puntos de estudio confirmados"
     },
@@ -34743,6 +34819,10 @@
       "translation": "300 necesidad | 80FC | 12 barco"
     },
     {
+      "source": "300+ ly: this search may take several minutes in a dense region.",
+      "translation": "300+ ly: esta búsqueda puede tardar varios minutos en una región densa."
+    },
+    {
       "source": "320 / 500 m",
       "translation": "320 / 500 metros"
     },
@@ -34761,6 +34841,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "4.820 T RESTANTE | 1.240 FC | BARCO 192 T"
+    },
+    {
+      "source": "400+ ly: the broad search may be slow or reach a provider request limit.",
+      "translation": "400+ ly: la búsqueda amplia puede ser lenta o alcanzar un límite de solicitudes del proveedor."
     },
     {
       "source": "412 m",
@@ -34809,6 +34893,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 años anuales | 21.502,09 años anuales restantes"
+    },
+    {
+      "source": "500 ly: this is the widest search. Allow extra time or narrow the filters if it fails.",
+      "translation": "500 ly: esta es la búsqueda más amplia. Deje más tiempo o reduzca los filtros si falla."
     },
     {
       "source": "529 T REMAINING",
@@ -36353,10 +36441,6 @@
     {
       "source": "Any Power",
       "translation": "Cualquier poder"
-    },
-    {
-      "source": "Any commodity name",
-      "translation": "Cualquier nombre de producto"
     },
     {
       "source": "Any surface material",
@@ -39023,6 +39107,10 @@
       "translation": "Comprobando otras instancias SrvSurvey en ejecución..."
     },
     {
+      "source": "Checking market prices for {0}…",
+      "translation": "Consultando precios de mercado para {0}…"
+    },
+    {
       "source": "Checking sell systems {0}/{1}…",
       "translation": "Comprobando los sistemas de venta {0}/{1}…"
     },
@@ -39155,6 +39243,10 @@
       "translation": "Elija un comandante, un sistema de referencia y un archivo VisitedStarsCache.dat."
     },
     {
+      "source": "Choose a commodity category...",
+      "translation": "Elija una categoría de producto..."
+    },
+    {
       "source": "Choose a connection route, complete its pairing steps, then enable VR overlays.",
       "translation": "Elija una ruta de conexión, complete sus pasos de emparejamiento y luego habilite las superposiciones de realidad virtual."
     },
@@ -39193,6 +39285,10 @@
     {
       "source": "Choose a reference system and a surface material.",
       "translation": "Elija un sistema de referencia y un material de superficie."
+    },
+    {
+      "source": "Choose a reference system or enable galaxy-wide search.",
+      "translation": "Elija un sistema de referencia o habilite la búsqueda en toda la galaxia."
     },
     {
       "source": "Choose a reference system to search.",
@@ -39257,6 +39353,10 @@
     {
       "source": "Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays.",
       "translation": "Elija cualquier muestra de color para abrir su selector visual o utilice el campo hexadecimal para obtener valores exactos. Alpha es compatible con superposiciones translúcidas."
+    },
+    {
+      "source": "Choose at least one commodity.",
+      "translation": "Elija al menos un producto."
     },
     {
       "source": "Choose at least one primary or secondary module.",
@@ -40067,12 +40167,20 @@
       "translation": "Comprometer el edificio al borrador"
     },
     {
+      "source": "Commodities",
+      "translation": "Materias primas"
+    },
+    {
+      "source": "Commodities (up to 5)",
+      "translation": "Materias primas (hasta 5)"
+    },
+    {
       "source": "Commodity",
       "translation": "Producto"
     },
     {
-      "source": "Commodity name, station and freshness filters",
-      "translation": "Nombre del producto, estación y filtros de frescura."
+      "source": "Commodity category",
+      "translation": "categoría de productos básicos"
     },
     {
       "source": "Commodity row fill (colour + alpha)",
@@ -43947,6 +44055,10 @@
       "translation": "Encuentre compradores para el lugar seleccionado →"
     },
     {
+      "source": "Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable.",
+      "translation": "Encuentre los precios actuales de las estaciones para carga o suministros extraídos. Se prefieren los precios ardientes; Spansh se utiliza cuando un precio no está disponible."
+    },
+    {
       "source": "Find hotspots",
       "translation": "encontrar puntos de acceso"
     },
@@ -44817,6 +44929,10 @@
     {
       "source": "Galaxy-wide",
       "translation": "En toda la galaxia"
+    },
+    {
+      "source": "Galaxy-wide search ignores the reference distance.",
+      "translation": "La búsqueda en toda la galaxia ignora la distancia de referencia."
     },
     {
       "source": "GalaxyMap",
@@ -47267,10 +47383,6 @@
       "translation": "Grande"
     },
     {
-      "source": "Large pads",
-      "translation": "Almohadillas grandes"
-    },
-    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "Los perfiles grandes pueden tardar varios minutos en verificarse en un recurso compartido de red. El progreso del archivo y del byte aparece arriba. Una importación exitosa se reinicia SrvSurvey automáticamente para que ningún estado en memoria previo a la importación pueda sobrescribir los datos migrados."
     },
@@ -48599,8 +48711,16 @@
       "translation": "Máx. demanda"
     },
     {
+      "source": "Max. demand (0 = no limit)",
+      "translation": "Máx. demanda (0 = sin límite)"
+    },
+    {
       "source": "Max. mine–sell distance",
       "translation": "Máx. mina-vender distancia"
+    },
+    {
+      "source": "Max. supply (0 = no limit)",
+      "translation": "Máx. suministro (0 = sin límite)"
     },
     {
       "source": "MaxJumpRange",
@@ -48775,6 +48895,10 @@
       "translation": "Mín. demanda"
     },
     {
+      "source": "Min. supply",
+      "translation": "Mín. suministrar"
+    },
+    {
       "source": "MinSystemsForAverages",
       "translation": "Sistemas mínimos para promedios"
     },
@@ -48869,6 +48993,10 @@
     {
       "source": "Minimum reward (credits)",
       "translation": "Recompensa mínima (créditos)"
+    },
+    {
+      "source": "Minimum volume cannot exceed maximum volume.",
+      "translation": "El volumen mínimo no puede exceder el volumen máximo."
     },
     {
       "source": "Mining",
@@ -51411,6 +51539,10 @@
       "translation": "Fuera de los marcadores de descubrimiento de predicción corporal, este símbolo identifica un contexto estelar/corporal o una señal biológica no resuelta según el título de la fila."
     },
     {
+      "source": "Over 100 ly: more systems may make this search noticeably slower.",
+      "translation": "Más de 100 ly: más sistemas pueden hacer que esta búsqueda sea notablemente más lenta."
+    },
+    {
       "source": "Overlaps",
       "translation": "Superposiciones"
     },
@@ -52065,6 +52197,10 @@
     {
       "source": "Planetary",
       "translation": "Planetario"
+    },
+    {
+      "source": "Planetary Mining",
+      "translation": "Minería planetaria"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -58855,6 +58991,10 @@
       "translation": "Estación"
     },
     {
+      "source": "Station and data filters",
+      "translation": "Filtros de estaciones y datos."
+    },
+    {
       "source": "Station information",
       "translation": "Información de la estación"
     },
@@ -58867,8 +59007,8 @@
       "translation": "No se pudo guardar la configuración de información de la estación: {0}"
     },
     {
-      "source": "Station type contains",
-      "translation": "El tipo de estación contiene"
+      "source": "Station type contains (optional)",
+      "translation": "El tipo de estación contiene (opcional)"
     },
     {
       "source": "StationInfo",
@@ -62613,6 +62753,10 @@
     {
       "source": "Type to add system states...",
       "translation": "Escriba para agregar estados del sistema..."
+    },
+    {
+      "source": "Type to add up to five commodities...",
+      "translation": "Escriba para agregar hasta cinco productos..."
     },
     {
       "source": "Type-10 Defender",
@@ -68011,10 +68155,6 @@
       "translation": "{0} marcado como {1} {2}."
     },
     {
-      "source": "{0} markets · {1}. Prices and quantities are observations, not guarantees.",
-      "translation": "Mercados {0} · {1}. Los precios y las cantidades son observaciones, no garantías."
-    },
-    {
       "source": "{0} matching failure reports were suppressed.",
       "translation": "Se suprimieron los informes de fallas coincidentes {0}."
     },
@@ -68121,6 +68261,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "Configuración de superposición {0}"
+    },
+    {
+      "source": "{0} prices for {1} commodities · {2}. Prices and quantities are observations, not guarantees.",
+      "translation": "Precios {0} para productos básicos {1} · {2}. Los precios y las cantidades son observaciones, no garantías."
     },
     {
       "source": "{0} prices for {1}.{2}",
@@ -68993,6 +69137,10 @@
       "translation": "200 besoins | 30 FC | 12 navires"
     },
     {
+      "source": "200+ ly: expect a longer search and more data requests.",
+      "translation": "200+ ly : attendez-vous à une recherche plus longue et à davantage de demandes de données."
+    },
+    {
       "source": "209 mapped objects - 32 of 50 survey points confirmed",
       "translation": "209 objets cartographiés - 32 des 50 points d'enquête confirmés"
     },
@@ -69053,6 +69201,10 @@
       "translation": "300 besoins | 80 FC | 12 navires"
     },
     {
+      "source": "300+ ly: this search may take several minutes in a dense region.",
+      "translation": "300+ ly : cette recherche peut prendre plusieurs minutes dans une région dense."
+    },
+    {
       "source": "320 / 500 m",
       "translation": "320 / 500 m"
     },
@@ -69071,6 +69223,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "4 820 T RESTANTES | FC 1 240 T | NAVIRE 192 T"
+    },
+    {
+      "source": "400+ ly: the broad search may be slow or reach a provider request limit.",
+      "translation": "400+ ly : la recherche large peut être lente ou atteindre une limite de demande du fournisseur."
     },
     {
       "source": "412 m",
@@ -69119,6 +69275,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 AL | 21 502,09 LY restants"
+    },
+    {
+      "source": "500 ly: this is the widest search. Allow extra time or narrow the filters if it fails.",
+      "translation": "500 ly : c'est la recherche la plus large. Prévoyez plus de temps ou réduisez les filtres en cas d'échec."
     },
     {
       "source": "529 T REMAINING",
@@ -70663,10 +70823,6 @@
     {
       "source": "Any Power",
       "translation": "N'importe quelle puissance"
-    },
-    {
-      "source": "Any commodity name",
-      "translation": "N'importe quel nom de produit"
     },
     {
       "source": "Any surface material",
@@ -73333,6 +73489,10 @@
       "translation": "Recherche d'autres instances SrvSurvey en cours d'exécution..."
     },
     {
+      "source": "Checking market prices for {0}…",
+      "translation": "Vérification des prix du marché pour {0}…"
+    },
+    {
       "source": "Checking sell systems {0}/{1}…",
       "translation": "Vérification des systèmes de vente {0}/{1}…"
     },
@@ -73465,6 +73625,10 @@
       "translation": "Choisissez un commandant, un système de référence et un fichier VisitedStarsCache.dat."
     },
     {
+      "source": "Choose a commodity category...",
+      "translation": "Choisissez une catégorie de produits..."
+    },
+    {
       "source": "Choose a connection route, complete its pairing steps, then enable VR overlays.",
       "translation": "Choisissez un itinéraire de connexion, effectuez ses étapes de couplage, puis activez les superpositions VR."
     },
@@ -73503,6 +73667,10 @@
     {
       "source": "Choose a reference system and a surface material.",
       "translation": "Choisissez un système de référence et un matériau de surface."
+    },
+    {
+      "source": "Choose a reference system or enable galaxy-wide search.",
+      "translation": "Choisissez un système de référence ou activez la recherche à l’échelle de la galaxie."
     },
     {
       "source": "Choose a reference system to search.",
@@ -73567,6 +73735,10 @@
     {
       "source": "Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays.",
       "translation": "Choisissez n’importe quel échantillon de couleur pour ouvrir son sélecteur visuel ou utilisez le champ hexadécimal pour les valeurs exactes. Alpha est pris en charge pour les superpositions translucides."
+    },
+    {
+      "source": "Choose at least one commodity.",
+      "translation": "Choisissez au moins un produit."
     },
     {
       "source": "Choose at least one primary or secondary module.",
@@ -74377,12 +74549,20 @@
       "translation": "Engager le bâtiment à rédiger"
     },
     {
+      "source": "Commodities",
+      "translation": "Matières premières"
+    },
+    {
+      "source": "Commodities (up to 5)",
+      "translation": "Produits (jusqu'à 5)"
+    },
+    {
       "source": "Commodity",
       "translation": "Marchandise"
     },
     {
-      "source": "Commodity name, station and freshness filters",
-      "translation": "Filtres de nom de marchandise, de station et de fraîcheur"
+      "source": "Commodity category",
+      "translation": "Catégorie de produit"
     },
     {
       "source": "Commodity row fill (colour + alpha)",
@@ -78257,6 +78437,10 @@
       "translation": "Trouver des acheteurs pour le spot sélectionné →"
     },
     {
+      "source": "Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable.",
+      "translation": "Trouvez les prix actuels des stations pour les marchandises ou les fournitures minières. Les prix ardents sont préférés ; Spansh est utilisé lorsqu'un prix n'est pas disponible."
+    },
+    {
       "source": "Find hotspots",
       "translation": "Trouver des points chauds"
     },
@@ -79127,6 +79311,10 @@
     {
       "source": "Galaxy-wide",
       "translation": "À l'échelle de la galaxie"
+    },
+    {
+      "source": "Galaxy-wide search ignores the reference distance.",
+      "translation": "La recherche à l'échelle de la galaxie ignore la distance de référence."
     },
     {
       "source": "GalaxyMap",
@@ -81577,10 +81765,6 @@
       "translation": "Grand"
     },
     {
-      "source": "Large pads",
-      "translation": "Grands coussinets"
-    },
-    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "La vérification des profils volumineux peut prendre plusieurs minutes sur un partage réseau. La progression des fichiers et des octets apparaît ci-dessus. Une importation réussie redémarre automatiquement SrvSurvey afin qu'aucun état en mémoire préalable à l'importation ne puisse écraser les données migrées."
     },
@@ -82909,8 +83093,16 @@
       "translation": "Max. demande"
     },
     {
+      "source": "Max. demand (0 = no limit)",
+      "translation": "Max. demande (0 = pas de limite)"
+    },
+    {
       "source": "Max. mine–sell distance",
       "translation": "Max. distance mine-vente"
+    },
+    {
+      "source": "Max. supply (0 = no limit)",
+      "translation": "Max. approvisionnement (0 = pas de limite)"
     },
     {
       "source": "MaxJumpRange",
@@ -83085,6 +83277,10 @@
       "translation": "Min. demande"
     },
     {
+      "source": "Min. supply",
+      "translation": "Min. fournir"
+    },
+    {
       "source": "MinSystemsForAverages",
       "translation": "MinSystemsForAverages"
     },
@@ -83179,6 +83375,10 @@
     {
       "source": "Minimum reward (credits)",
       "translation": "Récompense minimale (crédits)"
+    },
+    {
+      "source": "Minimum volume cannot exceed maximum volume.",
+      "translation": "Le volume minimum ne peut pas dépasser le volume maximum."
     },
     {
       "source": "Mining",
@@ -85721,6 +85921,10 @@
       "translation": "En dehors des marqueurs de découverte de prédiction corporelle, ce symbole identifie un contexte stellaire/corps ou un signal biologique non résolu selon le titre de la ligne."
     },
     {
+      "source": "Over 100 ly: more systems may make this search noticeably slower.",
+      "translation": "Plus de 100 ly : davantage de systèmes peuvent rendre cette recherche sensiblement plus lente."
+    },
+    {
       "source": "Overlaps",
       "translation": "Chevauchements"
     },
@@ -86375,6 +86579,10 @@
     {
       "source": "Planetary",
       "translation": "Planétaire"
+    },
+    {
+      "source": "Planetary Mining",
+      "translation": "Exploitation minière planétaire"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -93165,6 +93373,10 @@
       "translation": "Gare"
     },
     {
+      "source": "Station and data filters",
+      "translation": "Filtres de stations et de données"
+    },
+    {
       "source": "Station information",
       "translation": "Informations sur la gare"
     },
@@ -93177,8 +93389,8 @@
       "translation": "Les paramètres des informations sur la station n'ont pas pu être enregistrés : {0}"
     },
     {
-      "source": "Station type contains",
-      "translation": "Le type de station contient"
+      "source": "Station type contains (optional)",
+      "translation": "Le type de station contient (facultatif)"
     },
     {
       "source": "StationInfo",
@@ -96923,6 +97135,10 @@
     {
       "source": "Type to add system states...",
       "translation": "Tapez pour ajouter des états système..."
+    },
+    {
+      "source": "Type to add up to five commodities...",
+      "translation": "Tapez pour ajouter jusqu'à cinq produits..."
     },
     {
       "source": "Type-10 Defender",
@@ -102321,10 +102537,6 @@
       "translation": "{0} marqué {1} {2}."
     },
     {
-      "source": "{0} markets · {1}. Prices and quantities are observations, not guarantees.",
-      "translation": "Marchés {0} · {1}. Les prix et les quantités sont des observations et non des garanties."
-    },
-    {
       "source": "{0} matching failure reports were suppressed.",
       "translation": "Les rapports d’échec de correspondance {0} ont été supprimés."
     },
@@ -102431,6 +102643,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "Paramètres de superposition {0}"
+    },
+    {
+      "source": "{0} prices for {1} commodities · {2}. Prices and quantities are observations, not guarantees.",
+      "translation": "Prix ​​{0} pour les produits {1} · {2}. Les prix et les quantités sont des observations et non des garanties."
     },
     {
       "source": "{0} prices for {1}.{2}",
@@ -103303,6 +103519,10 @@
       "translation": "200 necessidades | 30 FC | 12 navio"
     },
     {
+      "source": "200+ ly: expect a longer search and more data requests.",
+      "translation": "Mais de 200 anos: espere uma pesquisa mais longa e mais solicitações de dados."
+    },
+    {
       "source": "209 mapped objects - 32 of 50 survey points confirmed",
       "translation": "209 objetos mapeados - 32 dos 50 pontos de pesquisa confirmados"
     },
@@ -103363,6 +103583,10 @@
       "translation": "300 necessidade | 80 FC | 12 navio"
     },
     {
+      "source": "300+ ly: this search may take several minutes in a dense region.",
+      "translation": "Mais de 300 anos: esta busca pode levar vários minutos em uma região densa."
+    },
+    {
       "source": "320 / 500 m",
       "translation": "320/500 metros"
     },
@@ -103381,6 +103605,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "4.820 T RESTANTES | FC 1.240 toneladas | NAVIO 192T"
+    },
+    {
+      "source": "400+ ly: the broad search may be slow or reach a provider request limit.",
+      "translation": "Mais de 400 anos: a pesquisa ampla pode ser lenta ou atingir um limite de solicitações do provedor."
     },
     {
       "source": "412 m",
@@ -103429,6 +103657,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 AL | 21.502,09 anos restantes"
+    },
+    {
+      "source": "500 ly: this is the widest search. Allow extra time or narrow the filters if it fails.",
+      "translation": "500 anos: esta é a pesquisa mais ampla. Reserve mais tempo ou restrinja os filtros se falhar."
     },
     {
       "source": "529 T REMAINING",
@@ -104973,10 +105205,6 @@
     {
       "source": "Any Power",
       "translation": "Qualquer poder"
-    },
-    {
-      "source": "Any commodity name",
-      "translation": "Qualquer nome de mercadoria"
     },
     {
       "source": "Any surface material",
@@ -107643,6 +107871,10 @@
       "translation": "Verificando outras instâncias SrvSurvey em execução..."
     },
     {
+      "source": "Checking market prices for {0}…",
+      "translation": "Verificando preços de mercado para {0}…"
+    },
+    {
       "source": "Checking sell systems {0}/{1}…",
       "translation": "Verificando sistemas de venda {0}/{1}…"
     },
@@ -107775,6 +108007,10 @@
       "translation": "Escolha um comandante, um sistema de referência e um arquivo VisitedStarsCache.dat."
     },
     {
+      "source": "Choose a commodity category...",
+      "translation": "Escolha uma categoria de mercadoria..."
+    },
+    {
       "source": "Choose a connection route, complete its pairing steps, then enable VR overlays.",
       "translation": "Escolha uma rota de conexão, conclua as etapas de emparelhamento e ative as sobreposições de VR."
     },
@@ -107813,6 +108049,10 @@
     {
       "source": "Choose a reference system and a surface material.",
       "translation": "Escolha um sistema de referência e um material de superfície."
+    },
+    {
+      "source": "Choose a reference system or enable galaxy-wide search.",
+      "translation": "Escolha um sistema de referência ou ative a pesquisa em toda a galáxia."
     },
     {
       "source": "Choose a reference system to search.",
@@ -107877,6 +108117,10 @@
     {
       "source": "Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays.",
       "translation": "Escolha qualquer amostra de cor para abrir seu seletor visual ou use o campo hexadecimal para valores exatos. Alpha é compatível com sobreposições translúcidas."
+    },
+    {
+      "source": "Choose at least one commodity.",
+      "translation": "Escolha pelo menos uma mercadoria."
     },
     {
       "source": "Choose at least one primary or secondary module.",
@@ -108687,12 +108931,20 @@
       "translation": "Confirmar construção para rascunho"
     },
     {
+      "source": "Commodities",
+      "translation": "Mercadorias"
+    },
+    {
+      "source": "Commodities (up to 5)",
+      "translation": "Mercadorias (até 5)"
+    },
+    {
       "source": "Commodity",
       "translation": "Mercadoria"
     },
     {
-      "source": "Commodity name, station and freshness filters",
-      "translation": "Nome da mercadoria, estação e filtros de atualização"
+      "source": "Commodity category",
+      "translation": "Categoria de mercadoria"
     },
     {
       "source": "Commodity row fill (colour + alpha)",
@@ -112567,6 +112819,10 @@
       "translation": "Encontre compradores para o local selecionado →"
     },
     {
+      "source": "Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable.",
+      "translation": "Encontre os preços atuais das estações para cargas ou suprimentos extraídos. Preços ardentes são preferidos; Spansh é usado quando um preço não está disponível."
+    },
+    {
       "source": "Find hotspots",
       "translation": "Encontre pontos de acesso"
     },
@@ -113437,6 +113693,10 @@
     {
       "source": "Galaxy-wide",
       "translation": "Em toda a galáxia"
+    },
+    {
+      "source": "Galaxy-wide search ignores the reference distance.",
+      "translation": "A pesquisa em toda a galáxia ignora a distância de referência."
     },
     {
       "source": "GalaxyMap",
@@ -115887,10 +116147,6 @@
       "translation": "Grande"
     },
     {
-      "source": "Large pads",
-      "translation": "Almofadas grandes"
-    },
-    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "Perfis grandes podem levar vários minutos para serem verificados em um compartilhamento de rede. O progresso de arquivos e bytes aparece acima. Uma importação bem-sucedida é reiniciada SrvSurvey automaticamente para que nenhum estado de pré-importação na memória possa substituir os dados migrados."
     },
@@ -117219,8 +117475,16 @@
       "translation": "Máx. demanda"
     },
     {
+      "source": "Max. demand (0 = no limit)",
+      "translation": "Máx. demanda (0 = sem limite)"
+    },
+    {
       "source": "Max. mine–sell distance",
       "translation": "Máx. distância minha-venda"
+    },
+    {
+      "source": "Max. supply (0 = no limit)",
+      "translation": "Máx. fornecimento (0 = sem limite)"
     },
     {
       "source": "MaxJumpRange",
@@ -117395,6 +117659,10 @@
       "translation": "Min. demanda"
     },
     {
+      "source": "Min. supply",
+      "translation": "Min. fornecer"
+    },
+    {
       "source": "MinSystemsForAverages",
       "translation": "MinSystemsForAverages"
     },
@@ -117489,6 +117757,10 @@
     {
       "source": "Minimum reward (credits)",
       "translation": "Recompensa mínima (créditos)"
+    },
+    {
+      "source": "Minimum volume cannot exceed maximum volume.",
+      "translation": "O volume mínimo não pode exceder o volume máximo."
     },
     {
       "source": "Mining",
@@ -120031,6 +120303,10 @@
       "translation": "Fora dos marcadores de descoberta de previsão corporal, este símbolo identifica um contexto estelar/corporal ou um sinal biológico não resolvido de acordo com o título da linha."
     },
     {
+      "source": "Over 100 ly: more systems may make this search noticeably slower.",
+      "translation": "Mais de 100 anos: mais sistemas podem tornar essa pesquisa visivelmente mais lenta."
+    },
+    {
       "source": "Overlaps",
       "translation": "Sobreposições"
     },
@@ -120685,6 +120961,10 @@
     {
       "source": "Planetary",
       "translation": "Planetário"
+    },
+    {
+      "source": "Planetary Mining",
+      "translation": "Mineração Planetária"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -127475,6 +127755,10 @@
       "translation": "Estação"
     },
     {
+      "source": "Station and data filters",
+      "translation": "Filtros de estações e dados"
+    },
+    {
       "source": "Station information",
       "translation": "Informações da estação"
     },
@@ -127487,8 +127771,8 @@
       "translation": "As configurações de informações da estação não puderam ser salvas: {0}"
     },
     {
-      "source": "Station type contains",
-      "translation": "O tipo de estação contém"
+      "source": "Station type contains (optional)",
+      "translation": "O tipo de estação contém (opcional)"
     },
     {
       "source": "StationInfo",
@@ -131233,6 +131517,10 @@
     {
       "source": "Type to add system states...",
       "translation": "Digite para adicionar estados do sistema..."
+    },
+    {
+      "source": "Type to add up to five commodities...",
+      "translation": "Digite para adicionar até cinco mercadorias..."
     },
     {
       "source": "Type-10 Defender",
@@ -136631,10 +136919,6 @@
       "translation": "{0} marcado como {1} {2}."
     },
     {
-      "source": "{0} markets · {1}. Prices and quantities are observations, not guarantees.",
-      "translation": "Mercados {0} · {1}. Preços e quantidades são observações, não garantias."
-    },
-    {
       "source": "{0} matching failure reports were suppressed.",
       "translation": "Os relatórios de falha correspondentes {0} foram suprimidos."
     },
@@ -136741,6 +137025,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "Configurações de sobreposição {0}"
+    },
+    {
+      "source": "{0} prices for {1} commodities · {2}. Prices and quantities are observations, not guarantees.",
+      "translation": "Preços {0} para commodities {1} · {2}. Preços e quantidades são observações, não garantias."
     },
     {
       "source": "{0} prices for {1}.{2}",
@@ -137613,6 +137901,10 @@
       "translation": "200 нужно | 30 ФК | 12 корабль"
     },
     {
+      "source": "200+ ly: expect a longer search and more data requests.",
+      "translation": "200+ лет: ожидайте более длительного поиска и большего количества запросов данных."
+    },
+    {
       "source": "209 mapped objects - 32 of 50 survey points confirmed",
       "translation": "Нанесено на карту 209 объектов - подтверждено 32 из 50 точек съемки."
     },
@@ -137673,6 +137965,10 @@
       "translation": "300 нужно | 80 ФК | 12 корабль"
     },
     {
+      "source": "300+ ly: this search may take several minutes in a dense region.",
+      "translation": "300+ лет: этот поиск может занять несколько минут в густонаселенном регионе."
+    },
+    {
       "source": "320 / 500 m",
       "translation": "320/500 м"
     },
@@ -137691,6 +137987,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "ОСТАЛОСЬ 4820 Т | ФК 1240 Т | КОРАБЛЬ 192 Т"
+    },
+    {
+      "source": "400+ ly: the broad search may be slow or reach a provider request limit.",
+      "translation": "400+ ly: широкий поиск может быть медленным или достигать лимита запросов провайдера."
     },
     {
       "source": "412 m",
@@ -137739,6 +138039,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499,76 св. лет | осталось 21 502,09 LY"
+    },
+    {
+      "source": "500 ly: this is the widest search. Allow extra time or narrow the filters if it fails.",
+      "translation": "500 лир: это самый широкий поиск. Если это не помогло, дайте дополнительное время или сузьте фильтры."
     },
     {
       "source": "529 T REMAINING",
@@ -139283,10 +139587,6 @@
     {
       "source": "Any Power",
       "translation": "Любая сила"
-    },
-    {
-      "source": "Any commodity name",
-      "translation": "Любое товарное наименование"
     },
     {
       "source": "Any surface material",
@@ -141953,6 +142253,10 @@
       "translation": "Проверка наличия других работающих экземпляров SrvSurvey..."
     },
     {
+      "source": "Checking market prices for {0}…",
+      "translation": "Проверка рыночных цен на {0}…"
+    },
+    {
       "source": "Checking sell systems {0}/{1}…",
       "translation": "Проверка систем продаж {0}/{1}…"
     },
@@ -142085,6 +142389,10 @@
       "translation": "Выберите командира, систему отсчета и файл VisitedStarsCache.dat."
     },
     {
+      "source": "Choose a commodity category...",
+      "translation": "Выберите категорию товара..."
+    },
+    {
       "source": "Choose a connection route, complete its pairing steps, then enable VR overlays.",
       "translation": "Выберите маршрут подключения, выполните действия по сопряжению, а затем включите наложения VR."
     },
@@ -142123,6 +142431,10 @@
     {
       "source": "Choose a reference system and a surface material.",
       "translation": "Выберите систему отсчета и материал поверхности."
+    },
+    {
+      "source": "Choose a reference system or enable galaxy-wide search.",
+      "translation": "Выберите систему отсчета или включите поиск по всей галактике."
     },
     {
       "source": "Choose a reference system to search.",
@@ -142187,6 +142499,10 @@
     {
       "source": "Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays.",
       "translation": "Выберите любой образец цвета, чтобы открыть его визуальное средство выбора, или используйте шестнадцатеричное поле для точных значений. Альфа поддерживается для полупрозрачных наложений."
+    },
+    {
+      "source": "Choose at least one commodity.",
+      "translation": "Выберите хотя бы один товар."
     },
     {
       "source": "Choose at least one primary or secondary module.",
@@ -142997,12 +143313,20 @@
       "translation": "Принять строительство к проекту"
     },
     {
+      "source": "Commodities",
+      "translation": "Товары"
+    },
+    {
+      "source": "Commodities (up to 5)",
+      "translation": "Товары (до 5)"
+    },
+    {
       "source": "Commodity",
       "translation": "Товар"
     },
     {
-      "source": "Commodity name, station and freshness filters",
-      "translation": "Название товара, станция и фильтры свежести"
+      "source": "Commodity category",
+      "translation": "Категория товара"
     },
     {
       "source": "Commodity row fill (colour + alpha)",
@@ -146877,6 +147201,10 @@
       "translation": "Найти покупателей на выбранное место →"
     },
     {
+      "source": "Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable.",
+      "translation": "Узнайте текущие цены станций на минированный груз или припасы. Яркие цены являются предпочтительными; Spansh используется, когда цена недоступна."
+    },
+    {
       "source": "Find hotspots",
       "translation": "Найти точки доступа"
     },
@@ -147747,6 +148075,10 @@
     {
       "source": "Galaxy-wide",
       "translation": "по всей Галактике"
+    },
+    {
+      "source": "Galaxy-wide search ignores the reference distance.",
+      "translation": "Поиск по всей галактике игнорирует эталонное расстояние."
     },
     {
       "source": "GalaxyMap",
@@ -150197,10 +150529,6 @@
       "translation": "Большой"
     },
     {
-      "source": "Large pads",
-      "translation": "Большие подушечки"
-    },
-    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "Проверка больших профилей в общей сетевой папке может занять несколько минут. Ход выполнения файлов и байтов отображается выше. Успешный импорт перезапускается SrvSurvey автоматически, поэтому никакое состояние предварительного импорта в памяти не может перезаписать перенесенные данные."
     },
@@ -151529,8 +151857,16 @@
       "translation": "Макс. требовать"
     },
     {
+      "source": "Max. demand (0 = no limit)",
+      "translation": "Макс. спрос (0 = нет ограничений)"
+    },
+    {
       "source": "Max. mine–sell distance",
       "translation": "Макс. расстояние добыча-продажа"
+    },
+    {
+      "source": "Max. supply (0 = no limit)",
+      "translation": "Макс. поставка (0 = без ограничений)"
     },
     {
       "source": "MaxJumpRange",
@@ -151705,6 +152041,10 @@
       "translation": "Мин. требовать"
     },
     {
+      "source": "Min. supply",
+      "translation": "Мин. поставлять"
+    },
+    {
       "source": "MinSystemsForAverages",
       "translation": "Минсистемсфорасредс"
     },
@@ -151799,6 +152139,10 @@
     {
       "source": "Minimum reward (credits)",
       "translation": "Минимальное вознаграждение (кредиты)"
+    },
+    {
+      "source": "Minimum volume cannot exceed maximum volume.",
+      "translation": "Минимальная громкость не может превышать максимальную громкость."
     },
     {
       "source": "Mining",
@@ -154341,6 +154685,10 @@
       "translation": "За пределами маркеров обнаружения предсказания тела этот символ обозначает контекст звезды/тела или неразрешенный биологический сигнал в соответствии с заголовком строки."
     },
     {
+      "source": "Over 100 ly: more systems may make this search noticeably slower.",
+      "translation": "Более 100 св. лет: большее количество систем может заметно замедлить этот поиск."
+    },
+    {
       "source": "Overlaps",
       "translation": "Перекрытия"
     },
@@ -154995,6 +155343,10 @@
     {
       "source": "Planetary",
       "translation": "Планетарный"
+    },
+    {
+      "source": "Planetary Mining",
+      "translation": "Планетарная добыча полезных ископаемых"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -161785,6 +162137,10 @@
       "translation": "Станция"
     },
     {
+      "source": "Station and data filters",
+      "translation": "Фильтры станций и данных"
+    },
+    {
       "source": "Station information",
       "translation": "Информация о станции"
     },
@@ -161797,8 +162153,8 @@
       "translation": "Не удалось сохранить настройки информации о станции: {0}"
     },
     {
-      "source": "Station type contains",
-      "translation": "Тип станции содержит"
+      "source": "Station type contains (optional)",
+      "translation": "Тип станции содержит (необязательно)"
     },
     {
       "source": "StationInfo",
@@ -165543,6 +165899,10 @@
     {
       "source": "Type to add system states...",
       "translation": "Введите, чтобы добавить состояния системы..."
+    },
+    {
+      "source": "Type to add up to five commodities...",
+      "translation": "Введите, чтобы добавить до пяти товаров..."
     },
     {
       "source": "Type-10 Defender",
@@ -170941,10 +171301,6 @@
       "translation": "{0} имеет маркировку {1} {2}."
     },
     {
-      "source": "{0} markets · {1}. Prices and quantities are observations, not guarantees.",
-      "translation": "Рынки {0} · {1}. Цены и количества являются наблюдениями, а не гарантиями."
-    },
-    {
       "source": "{0} matching failure reports were suppressed.",
       "translation": "Отчеты об ошибках сопоставления {0} были подавлены."
     },
@@ -171051,6 +171407,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "Настройки наложения {0}"
+    },
+    {
+      "source": "{0} prices for {1} commodities · {2}. Prices and quantities are observations, not guarantees.",
+      "translation": "Цены {0} на товары {1} · {2}. Цены и количества являются наблюдениями, а не гарантиями."
     },
     {
       "source": "{0} prices for {1}.{2}",
@@ -171923,6 +172283,10 @@
       "translation": "200 需要 | 30 足球俱乐部 | 12艘"
     },
     {
+      "source": "200+ ly: expect a longer search and more data requests.",
+      "translation": "200+ ly：预计更长的搜索和更多的数据请求。"
+    },
+    {
       "source": "209 mapped objects - 32 of 50 survey points confirmed",
       "translation": "209 个映射对象 - 50 个测量点中的 32 个已确认"
     },
@@ -171983,6 +172347,10 @@
       "translation": "300 需要 | 80 足球俱乐部 | 12艘"
     },
     {
+      "source": "300+ ly: this search may take several minutes in a dense region.",
+      "translation": "300+ ly：在密集区域中此搜索可能需要几分钟。"
+    },
+    {
       "source": "320 / 500 m",
       "translation": "320 / 500 米"
     },
@@ -172001,6 +172369,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "剩余 4,820 吨 | FC 1,240 T |船 192 T"
+    },
+    {
+      "source": "400+ ly: the broad search may be slow or reach a provider request limit.",
+      "translation": "400+ ly：广泛搜索可能会很慢或达到提供商请求限制。"
     },
     {
       "source": "412 m",
@@ -172049,6 +172421,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "499.76 LY |剩余 21,502.09 LY"
+    },
+    {
+      "source": "500 ly: this is the widest search. Allow extra time or narrow the filters if it fails.",
+      "translation": "500 ly：这是最广泛的搜索。如果失败，请留出额外的时间或缩小过滤范围。"
     },
     {
       "source": "529 T REMAINING",
@@ -173593,10 +173969,6 @@
     {
       "source": "Any Power",
       "translation": "任何力量"
-    },
-    {
-      "source": "Any commodity name",
-      "translation": "任意商品名称"
     },
     {
       "source": "Any surface material",
@@ -176263,6 +176635,10 @@
       "translation": "正在检查其他正在运行的 SrvSurvey 实例..."
     },
     {
+      "source": "Checking market prices for {0}…",
+      "translation": "检查 {0} 的市场价格..."
+    },
+    {
       "source": "Checking sell systems {0}/{1}…",
       "translation": "正在检查销售系统 {0}/{1}…"
     },
@@ -176395,6 +176771,10 @@
       "translation": "选择指挥官、参考系统和 VisitedStarsCache.dat 文件。"
     },
     {
+      "source": "Choose a commodity category...",
+      "translation": "选择商品类别..."
+    },
+    {
       "source": "Choose a connection route, complete its pairing steps, then enable VR overlays.",
       "translation": "选择连接路由，完成配对步骤，然后启用 VR 叠加。"
     },
@@ -176433,6 +176813,10 @@
     {
       "source": "Choose a reference system and a surface material.",
       "translation": "选择参考系统和表面材料。"
+    },
+    {
+      "source": "Choose a reference system or enable galaxy-wide search.",
+      "translation": "选择参考系统或启用银河范围内的搜索。"
     },
     {
       "source": "Choose a reference system to search.",
@@ -176497,6 +176881,10 @@
     {
       "source": "Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays.",
       "translation": "选择任何颜色样本以打开其视觉选择器，或使用十六进制字段获取精确值。 Alpha 支持半透明叠加。"
+    },
+    {
+      "source": "Choose at least one commodity.",
+      "translation": "至少选择一种商品。"
     },
     {
       "source": "Choose at least one primary or secondary module.",
@@ -177307,12 +177695,20 @@
       "translation": "提交建筑草案"
     },
     {
+      "source": "Commodities",
+      "translation": "商品"
+    },
+    {
+      "source": "Commodities (up to 5)",
+      "translation": "商品（最多 5 种）"
+    },
+    {
       "source": "Commodity",
       "translation": "商品"
     },
     {
-      "source": "Commodity name, station and freshness filters",
-      "translation": "商品名称、站点和新鲜度过滤器"
+      "source": "Commodity category",
+      "translation": "商品类别"
     },
     {
       "source": "Commodity row fill (colour + alpha)",
@@ -181187,6 +181583,10 @@
       "translation": "寻找选定地点的买家 →"
     },
     {
+      "source": "Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable.",
+      "translation": "查找采矿货物或补给品的当前车站价格。价格优惠者优先； Spansh 在价格不可用时使用。"
+    },
+    {
       "source": "Find hotspots",
       "translation": "寻找热点"
     },
@@ -182057,6 +182457,10 @@
     {
       "source": "Galaxy-wide",
       "translation": "银河系范围内"
+    },
+    {
+      "source": "Galaxy-wide search ignores the reference distance.",
+      "translation": "全银河系搜索忽略参考距离。"
     },
     {
       "source": "GalaxyMap",
@@ -184507,10 +184911,6 @@
       "translation": "大号"
     },
     {
-      "source": "Large pads",
-      "translation": "大垫"
-    },
-    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "通过网络共享验证大型配置文件可能需要几分钟的时间。文件和字节进度显示在上方。成功导入会自动重新启动 SrvSurvey，因此导入前的内存状态不会覆盖已迁移的数据。"
     },
@@ -185839,8 +186239,16 @@
       "translation": "最大限度。要求"
     },
     {
+      "source": "Max. demand (0 = no limit)",
+      "translation": "最大限度。需求（0 = 无限制）"
+    },
+    {
       "source": "Max. mine–sell distance",
       "translation": "最大限度。矿-卖距离"
+    },
+    {
+      "source": "Max. supply (0 = no limit)",
+      "translation": "最大限度。供应（0 = 无限制）"
     },
     {
       "source": "MaxJumpRange",
@@ -186015,6 +186423,10 @@
       "translation": "分钟。要求"
     },
     {
+      "source": "Min. supply",
+      "translation": "分钟。供应"
+    },
+    {
       "source": "MinSystemsForAverages",
       "translation": "平均最小系统"
     },
@@ -186109,6 +186521,10 @@
     {
       "source": "Minimum reward (credits)",
       "translation": "最低奖励（学分）"
+    },
+    {
+      "source": "Minimum volume cannot exceed maximum volume.",
+      "translation": "最小音量不能超过最大音量。"
     },
     {
       "source": "Mining",
@@ -188651,6 +189067,10 @@
       "translation": "在身体预测发现标记之外，该符号根据行标题标识恒星/身体背景或未解析的生物信号。"
     },
     {
+      "source": "Over 100 ly: more systems may make this search noticeably slower.",
+      "translation": "超过 100 ly：更多系统可能会使搜索速度明显变慢。"
+    },
+    {
       "source": "Overlaps",
       "translation": "重叠"
     },
@@ -189305,6 +189725,10 @@
     {
       "source": "Planetary",
       "translation": "行星式"
+    },
+    {
+      "source": "Planetary Mining",
+      "translation": "行星采矿"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -196095,6 +196519,10 @@
       "translation": "车站"
     },
     {
+      "source": "Station and data filters",
+      "translation": "站和数据过滤器"
+    },
+    {
       "source": "Station information",
       "translation": "车站信息"
     },
@@ -196107,8 +196535,8 @@
       "translation": "无法保存电台信息设置：{0}"
     },
     {
-      "source": "Station type contains",
-      "translation": "站类型包含"
+      "source": "Station type contains (optional)",
+      "translation": "站类型包含（可选）"
     },
     {
       "source": "StationInfo",
@@ -199853,6 +200281,10 @@
     {
       "source": "Type to add system states...",
       "translation": "键入以添加系统状态..."
+    },
+    {
+      "source": "Type to add up to five commodities...",
+      "translation": "输入最多可添加五种商品..."
     },
     {
       "source": "Type-10 Defender",
@@ -205251,10 +205683,6 @@
       "translation": "{0} 标记为 {1} {2}。"
     },
     {
-      "source": "{0} markets · {1}. Prices and quantities are observations, not guarantees.",
-      "translation": "{0} 市场 · {1}。价格和数量只是观察结果，并非保证。"
-    },
-    {
       "source": "{0} matching failure reports were suppressed.",
       "translation": "{0} 匹配失败报告已被抑制。"
     },
@@ -205361,6 +205789,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "{0} 叠加设置"
+    },
+    {
+      "source": "{0} prices for {1} commodities · {2}. Prices and quantities are observations, not guarantees.",
+      "translation": "{0} {1} 商品的价格 · {2}。价格和数量只是观察结果，并非保证。"
     },
     {
       "source": "{0} prices for {1}.{2}",
@@ -206233,6 +206665,10 @@
       "translation": "* 200 NEED | 30 FC | 12 SHIP >>>!"
     },
     {
+      "source": "200+ ly: expect a longer search and more data requests.",
+      "translation": "* 200+ LY: EXPECT A LONGER SEARCH AND MORE DATA REQUESTS. >>>!"
+    },
+    {
       "source": "209 mapped objects - 32 of 50 survey points confirmed",
       "translation": "* 209 MAPPED OBJECTS - 32 OF 50 SURVEY POINTS CONFIRMED >>>!"
     },
@@ -206293,6 +206729,10 @@
       "translation": "* 300 NEED | 80 FC | 12 SHIP >>>!"
     },
     {
+      "source": "300+ ly: this search may take several minutes in a dense region.",
+      "translation": "* 300+ LY: THIS SEARCH MAY TAKE SEVERAL MINUTES IN A DENSE REGION. >>>!"
+    },
+    {
       "source": "320 / 500 m",
       "translation": "* 320 / 500 M >>>!"
     },
@@ -206311,6 +206751,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "* 4,820 T REMAINING | FC 1,240 T | SHIP 192 T >>>!"
+    },
+    {
+      "source": "400+ ly: the broad search may be slow or reach a provider request limit.",
+      "translation": "* 400+ LY: THE BROAD SEARCH MAY BE SLOW OR REACH A PROVIDER REQUEST LIMIT. >>>!"
     },
     {
       "source": "412 m",
@@ -206359,6 +206803,10 @@
     {
       "source": "499.76 LY | 21,502.09 LY remaining",
       "translation": "* 499.76 LY | 21,502.09 LY REMAINING >>>!"
+    },
+    {
+      "source": "500 ly: this is the widest search. Allow extra time or narrow the filters if it fails.",
+      "translation": "* 500 LY: THIS IS THE WIDEST SEARCH. ALLOW EXTRA TIME OR NARROW THE FILTERS IF IT FAILS. >>>!"
     },
     {
       "source": "529 T REMAINING",
@@ -207903,10 +208351,6 @@
     {
       "source": "Any Power",
       "translation": "* ANY POWER >>>!"
-    },
-    {
-      "source": "Any commodity name",
-      "translation": "* ANY COMMODITY NAME >>>!"
     },
     {
       "source": "Any surface material",
@@ -210573,6 +211017,10 @@
       "translation": "* CHECKING FOR OTHER RUNNING SRVSURVEY INSTANCES... >>>!"
     },
     {
+      "source": "Checking market prices for {0}…",
+      "translation": "* CHECKING MARKET PRICES FOR {0}… >>>!"
+    },
+    {
       "source": "Checking sell systems {0}/{1}…",
       "translation": "* CHECKING SELL SYSTEMS {0}/{1}… >>>!"
     },
@@ -210705,6 +211153,10 @@
       "translation": "* CHOOSE A COMMANDER, REFERENCE SYSTEM, AND VISITEDSTARSCACHE.DAT FILE. >>>!"
     },
     {
+      "source": "Choose a commodity category...",
+      "translation": "* CHOOSE A COMMODITY CATEGORY... >>>!"
+    },
+    {
       "source": "Choose a connection route, complete its pairing steps, then enable VR overlays.",
       "translation": "* CHOOSE A CONNECTION ROUTE, COMPLETE ITS PAIRING STEPS, THEN ENABLE VR OVERLAYS. >>>!"
     },
@@ -210743,6 +211195,10 @@
     {
       "source": "Choose a reference system and a surface material.",
       "translation": "* CHOOSE A REFERENCE SYSTEM AND A SURFACE MATERIAL. >>>!"
+    },
+    {
+      "source": "Choose a reference system or enable galaxy-wide search.",
+      "translation": "* CHOOSE A REFERENCE SYSTEM OR ENABLE GALAXY-WIDE SEARCH. >>>!"
     },
     {
       "source": "Choose a reference system to search.",
@@ -210807,6 +211263,10 @@
     {
       "source": "Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays.",
       "translation": "* CHOOSE ANY COLOUR SWATCH TO OPEN ITS VISUAL PICKER, OR USE THE HEX FIELD FOR EXACT VALUES. ALPHA IS SUPPORTED FOR TRANSLUCENT OVERLAYS. >>>!"
+    },
+    {
+      "source": "Choose at least one commodity.",
+      "translation": "* CHOOSE AT LEAST ONE COMMODITY. >>>!"
     },
     {
       "source": "Choose at least one primary or secondary module.",
@@ -211617,12 +212077,20 @@
       "translation": "* COMMIT BUILDING TO DRAFT >>>!"
     },
     {
+      "source": "Commodities",
+      "translation": "* COMMODITIES >>>!"
+    },
+    {
+      "source": "Commodities (up to 5)",
+      "translation": "* COMMODITIES (UP TO 5) >>>!"
+    },
+    {
       "source": "Commodity",
       "translation": "* COMMODITY >>>!"
     },
     {
-      "source": "Commodity name, station and freshness filters",
-      "translation": "* COMMODITY NAME, STATION AND FRESHNESS FILTERS >>>!"
+      "source": "Commodity category",
+      "translation": "* COMMODITY CATEGORY >>>!"
     },
     {
       "source": "Commodity row fill (colour + alpha)",
@@ -215497,6 +215965,10 @@
       "translation": "* FIND BUYERS FOR SELECTED SPOT → >>>!"
     },
     {
+      "source": "Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable.",
+      "translation": "* FIND CURRENT STATION PRICES FOR MINED CARGO OR SUPPLIES. ARDENT PRICES ARE PREFERRED; SPANSH IS USED WHEN A PRICE IS UNAVAILABLE. >>>!"
+    },
+    {
       "source": "Find hotspots",
       "translation": "* FIND HOTSPOTS >>>!"
     },
@@ -216367,6 +216839,10 @@
     {
       "source": "Galaxy-wide",
       "translation": "* GALAXY-WIDE >>>!"
+    },
+    {
+      "source": "Galaxy-wide search ignores the reference distance.",
+      "translation": "* GALAXY-WIDE SEARCH IGNORES THE REFERENCE DISTANCE. >>>!"
     },
     {
       "source": "GalaxyMap",
@@ -218817,10 +219293,6 @@
       "translation": "* LARGE >>>!"
     },
     {
-      "source": "Large pads",
-      "translation": "* LARGE PADS >>>!"
-    },
-    {
       "source": "Large profiles can take several minutes to verify over a network share. File and byte progress appears above. A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data.",
       "translation": "* LARGE PROFILES CAN TAKE SEVERAL MINUTES TO VERIFY OVER A NETWORK SHARE. FILE AND BYTE PROGRESS APPEARS ABOVE. A SUCCESSFUL IMPORT RESTARTS SRVSURVEY AUTOMATICALLY SO NO PRE-IMPORT IN-MEMORY STATE CAN OVERWRITE MIGRATED DATA. >>>!"
     },
@@ -220149,8 +220621,16 @@
       "translation": "* MAX. DEMAND >>>!"
     },
     {
+      "source": "Max. demand (0 = no limit)",
+      "translation": "* MAX. DEMAND (0 = NO LIMIT) >>>!"
+    },
+    {
       "source": "Max. mine–sell distance",
       "translation": "* MAX. MINE–SELL DISTANCE >>>!"
+    },
+    {
+      "source": "Max. supply (0 = no limit)",
+      "translation": "* MAX. SUPPLY (0 = NO LIMIT) >>>!"
     },
     {
       "source": "MaxJumpRange",
@@ -220325,6 +220805,10 @@
       "translation": "* MIN. DEMAND >>>!"
     },
     {
+      "source": "Min. supply",
+      "translation": "* MIN. SUPPLY >>>!"
+    },
+    {
       "source": "MinSystemsForAverages",
       "translation": "* MINSYSTEMSFORAVERAGES >>>!"
     },
@@ -220419,6 +220903,10 @@
     {
       "source": "Minimum reward (credits)",
       "translation": "* MINIMUM REWARD (CREDITS) >>>!"
+    },
+    {
+      "source": "Minimum volume cannot exceed maximum volume.",
+      "translation": "* MINIMUM VOLUME CANNOT EXCEED MAXIMUM VOLUME. >>>!"
     },
     {
       "source": "Mining",
@@ -222961,6 +223449,10 @@
       "translation": "* OUTSIDE THE BODY-PREDICTION DISCOVERY MARKERS, THIS SYMBOL IDENTIFIES A STELLAR/BODY CONTEXT OR AN UNRESOLVED BIOLOGICAL SIGNAL ACCORDING TO THE ROW TITLE. >>>!"
     },
     {
+      "source": "Over 100 ly: more systems may make this search noticeably slower.",
+      "translation": "* OVER 100 LY: MORE SYSTEMS MAY MAKE THIS SEARCH NOTICEABLY SLOWER. >>>!"
+    },
+    {
       "source": "Overlaps",
       "translation": "* OVERLAPS >>>!"
     },
@@ -223615,6 +224107,10 @@
     {
       "source": "Planetary",
       "translation": "* PLANETARY >>>!"
+    },
+    {
+      "source": "Planetary Mining",
+      "translation": "* PLANETARY MINING >>>!"
     },
     {
       "source": "Platform: {0} ({1})",
@@ -230405,6 +230901,10 @@
       "translation": "* STATION >>>!"
     },
     {
+      "source": "Station and data filters",
+      "translation": "* STATION AND DATA FILTERS >>>!"
+    },
+    {
       "source": "Station information",
       "translation": "* STATION INFORMATION >>>!"
     },
@@ -230417,8 +230917,8 @@
       "translation": "* STATION INFORMATION SETTINGS COULD NOT BE SAVED: {0} >>>!"
     },
     {
-      "source": "Station type contains",
-      "translation": "* STATION TYPE CONTAINS >>>!"
+      "source": "Station type contains (optional)",
+      "translation": "* STATION TYPE CONTAINS (OPTIONAL) >>>!"
     },
     {
       "source": "StationInfo",
@@ -234163,6 +234663,10 @@
     {
       "source": "Type to add system states...",
       "translation": "* TYPE TO ADD SYSTEM STATES... >>>!"
+    },
+    {
+      "source": "Type to add up to five commodities...",
+      "translation": "* TYPE TO ADD UP TO FIVE COMMODITIES... >>>!"
     },
     {
       "source": "Type-10 Defender",
@@ -239561,10 +240065,6 @@
       "translation": "* {0} MARKED {1} {2}. >>>!"
     },
     {
-      "source": "{0} markets · {1}. Prices and quantities are observations, not guarantees.",
-      "translation": "* {0} MARKETS · {1}. PRICES AND QUANTITIES ARE OBSERVATIONS, NOT GUARANTEES. >>>!"
-    },
-    {
       "source": "{0} matching failure reports were suppressed.",
       "translation": "* {0} MATCHING FAILURE REPORTS WERE SUPPRESSED. >>>!"
     },
@@ -239671,6 +240171,10 @@
     {
       "source": "{0} overlay settings",
       "translation": "* {0} OVERLAY SETTINGS >>>!"
+    },
+    {
+      "source": "{0} prices for {1} commodities · {2}. Prices and quantities are observations, not guarantees.",
+      "translation": "* {0} PRICES FOR {1} COMMODITIES · {2}. PRICES AND QUANTITIES ARE OBSERVATIONS, NOT GUARANTEES. >>>!"
     },
     {
       "source": "{0} prices for {1}.{2}",

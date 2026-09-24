@@ -244,6 +244,23 @@ public sealed class MeritSystemRowViewModelTests
     }
 
     [Fact]
+    public void SingleSelectChipCanReplaceItsInitialChoice()
+    {
+        var chips = new MiningChipBoxViewModel(
+            "Commodity category",
+            ["Mining", "Planetary Mining"],
+            "Mining",
+            options: new(MaximumSelections: 1)
+        );
+
+        Assert.Contains("Planetary Mining", chips.Suggestions);
+        chips.Query = "planetary";
+        chips.AddQuery();
+
+        Assert.Equal("Planetary Mining", Assert.Single(chips.Selected));
+    }
+
+    [Fact]
     public void ChipBoxPromptsMatchTheEntryAndListEveryRemainingChoice()
     {
         string[] minerals =

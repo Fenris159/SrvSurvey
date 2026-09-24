@@ -447,6 +447,7 @@
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="4">
                 <TextBlock Text="Distance"/>
+                <TextBlock Text="{Binding DistanceWarning}" IsVisible="{Binding HasDistanceWarning}" TextWrapping="Wrap" Classes="muted"/>
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                   <Slider Minimum="1" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Radius}"/>
                   <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="52" Text="{Binding Radius, StringFormat={}{0:0} ly}"/>

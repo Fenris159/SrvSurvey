@@ -5,9 +5,19 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed record MiningChipTag(string Name, string Label);
 
+public sealed record MiningChipBoxOptions(
+    int MaximumSelections = int.MaxValue,
+    bool ShowFullNames = false,
+    bool AllowCustom = false,
+    bool AllowEmpty = false
+);
+
 public sealed class MiningChipBoxViewModel : WorkspaceObservable
 {
     private readonly HashSet<string> exclusive;
+    private readonly int maximumSelections;
+    private readonly bool showFullNames;
+    private readonly bool allowCustom;
     private IReadOnlyList<string> choices;
     private string fallback;
     private string query = "";
@@ -18,12 +28,17 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
         string title,
         IReadOnlyList<string> choices,
         string initial,
-        IReadOnlyList<string>? exclusive = null
+        IReadOnlyList<string>? exclusive = null,
+        MiningChipBoxOptions? options = null
     )
     {
+        options ??= new MiningChipBoxOptions();
         Title = title;
         this.choices = choices;
-        fallback = initial;
+        fallback = options.AllowEmpty ? "" : initial;
+        maximumSelections = Math.Max(1, options.MaximumSelections);
+        showFullNames = options.ShowFullNames;
+        allowCustom = options.AllowCustom;
         this.exclusive = new HashSet<string>(exclusive ?? ["Any", "All"], StringComparer.OrdinalIgnoreCase);
         Selected.CollectionChanged += (_, _) => PublishTags();
         if (initial.Length > 0)
@@ -41,6 +56,8 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
         {
             "Mining type" => "Type to add mining types...",
             "System state" => "Type to add system states...",
+            "Commodity category" => "Choose a commodity category...",
+            "Commodities" => "Type to add up to five commodities...",
             _ => "Type to add minerals/metals...",
         };
     public ObservableCollection<string> Selected { get; } = [];
@@ -65,27 +82,31 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
 
     private void RefreshSuggestions()
     {
-        suggestions = choices
-            .Where(choice =>
-                !Selected.Contains(choice, StringComparer.OrdinalIgnoreCase)
-                && (
-                    query.Length == 0
-                    || choice.Contains(query, StringComparison.OrdinalIgnoreCase)
-                    || ChipLabel(choice).Contains(query, StringComparison.OrdinalIgnoreCase)
-                )
-            )
-            .ToArray();
+        suggestions =
+            Selected.Count >= maximumSelections && maximumSelections != 1
+                ? []
+                : choices
+                    .Where(choice =>
+                        !Selected.Contains(choice, StringComparer.OrdinalIgnoreCase)
+                        && (
+                            query.Length == 0
+                            || choice.Contains(query, StringComparison.OrdinalIgnoreCase)
+                            || ChipLabel(choice).Contains(query, StringComparison.OrdinalIgnoreCase)
+                        )
+                    )
+                    .ToArray();
         Changed(nameof(Suggestions));
     }
 
     public void Add(string value)
     {
-        if (!choices.Contains(value, StringComparer.OrdinalIgnoreCase))
+        value = value.Trim();
+        if (value.Length == 0 || (!allowCustom && !choices.Contains(value, StringComparer.OrdinalIgnoreCase)))
         {
             return;
         }
 
-        if (exclusive.Contains(value))
+        if (maximumSelections == 1 || exclusive.Contains(value))
         {
             Selected.Clear();
         }
@@ -97,6 +118,11 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
             }
         }
 
+        if (Selected.Count >= maximumSelections && !Selected.Contains(value, StringComparer.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
         if (!Selected.Contains(value, StringComparer.OrdinalIgnoreCase))
         {
             Selected.Add(value);
@@ -106,6 +132,17 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
         Open = false;
         RefreshSuggestions();
         Changed(nameof(Selected));
+    }
+
+    public void AddQuery()
+    {
+        string requested = Query.Trim();
+        string? exact = choices.FirstOrDefault(choice => choice.Equals(requested, StringComparison.OrdinalIgnoreCase));
+        string? choice = exact ?? (Suggestions.Count == 1 ? Suggestions[0] : null);
+        if (choice is not null || (allowCustom && Suggestions.Count == 0))
+        {
+            Add(choice ?? requested);
+        }
     }
 
     public void ReplaceChoices(IReadOnlyList<string> next, string nextFallback)
@@ -144,7 +181,7 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
 
     public string ChipLabel(string name)
     {
-        if (Title is "Mining type" or "System state" || IsWordToken(name))
+        if (showFullNames || Title is "Mining type" or "System state" || IsWordToken(name))
         {
             return name;
         }

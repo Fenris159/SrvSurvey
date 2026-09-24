@@ -10,6 +10,11 @@ public sealed record MiningSearchPreferences
     public string RingType { get; init; } = "All";
     public string Reserve { get; init; } = "All";
     public string Commodity { get; init; } = "Platinum";
+    public IReadOnlyList<string> MarketCommodities { get; init; } = [];
+    public string MarketPadSize { get; init; } = "Any";
+    public long MarketMinimumVolume { get; init; }
+    public long MarketMaximumVolume { get; init; }
+    public int MarketMaximumAgeDays { get; init; } = 2;
     public double Radius { get; init; } = 100;
     public int MinimumHotspots { get; init; } = 1;
     public string Source { get; init; } = "Both";

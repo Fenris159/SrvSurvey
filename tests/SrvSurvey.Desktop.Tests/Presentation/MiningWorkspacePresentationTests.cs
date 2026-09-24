@@ -243,6 +243,7 @@ public sealed class MiningWorkspacePresentationTests
                     {
                         "SYSTEM",
                         "STATION",
+                        "COMMODITY",
                         "TYPE",
                         "PAD",
                         "DISTANCE",
@@ -321,9 +322,14 @@ public sealed class MiningWorkspacePresentationTests
                     .FirstOrDefault(e => e.IsEffectivelyVisible);
                 if (filters is not null)
                 {
-                    filters.IsExpanded = true;
+                    bool initiallyExpanded = filters.IsExpanded;
+                    filters.IsExpanded = !initiallyExpanded;
                     using WriteableBitmap? expanded = window.CaptureRenderedFrame();
-                    Assert.True(search.Bounds.Height > collapsedHeight);
+                    Assert.True(
+                        initiallyExpanded
+                            ? search.Bounds.Height < collapsedHeight
+                            : search.Bounds.Height > collapsedHeight
+                    );
                     Assert.True(inner.Extent.Height <= inner.Viewport.Height + 1);
                 }
                 double top = results.TranslatePoint(default, page)!.Value.Y;

@@ -51,7 +51,8 @@
                  Foreground="{DynamicResource RavenAccentBrush}"
                  PlaceholderForeground="{DynamicResource RavenMutedTextBrush}"
                  VerticalAlignment="Center"
-                 GotFocus="Query_GotFocus"/>
+                 GotFocus="Query_GotFocus"
+                 KeyDown="Query_KeyDown"/>
       </WrapPanel>
     </Border>
     <Border IsVisible="{Binding Open}"

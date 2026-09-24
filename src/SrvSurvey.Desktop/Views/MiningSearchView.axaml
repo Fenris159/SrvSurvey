@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:converters="using:Avalonia.Data.Converters" Grid.IsSharedSizeScope="True" x:Class="SrvSurvey.Desktop.Views.MiningSearchView" x:DataType="vm:MiningSearchViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:converters="using:Avalonia.Data.Converters" Grid.IsSharedSizeScope="True" x:Class="SrvSurvey.Desktop.Views.MiningSearchView" x:DataType="vm:MiningSearchViewModel">
   <UserControl.Styles>
     <Style Selector="ListBoxItem">
       <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -95,41 +95,50 @@
       </TabItem>
       <TabItem Header="Markets">
         <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,12,0,0">
-          <Border>
-            <StackPanel Spacing="8">
+          <Border Classes="card raised">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable." TextWrapping="Wrap" Classes="muted"/>
               <WrapPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                <StackPanel Spacing="4" Width="190" Margin="0,0,16,8">
                   <TextBlock Text="Trade objective" TextWrapping="Wrap"/>
                   <ComboBox ItemsSource="{Binding TradeModes}" SelectedItem="{Binding TradeMode}" HorizontalAlignment="Stretch"/>
                 </StackPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                  <TextBlock Text="Category" TextWrapping="Wrap"/>
-                  <ComboBox ItemsSource="{Binding CommodityCategories}" SelectedItem="{Binding CommodityCategory}" HorizontalAlignment="Stretch"/>
+                <StackPanel Spacing="4" Width="240" Margin="0,0,16,8">
+                  <TextBlock Text="Commodity category" TextWrapping="Wrap"/>
+                  <views:MiningChipBox DataContext="{Binding MarketCategoryChips}" HorizontalAlignment="Stretch" Margin="0"/>
                 </StackPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                  <TextBlock Text="Commodity" TextWrapping="Wrap"/>
-                  <ComboBox ItemsSource="{Binding CommodityOptions}" SelectedItem="{Binding Commodity}" HorizontalAlignment="Stretch"/>
+                <StackPanel Spacing="4" Width="490" Margin="0,0,16,8">
+                  <TextBlock Text="Commodities (up to 5)" TextWrapping="Wrap"/>
+                  <views:MiningChipBox DataContext="{Binding MarketCommodityChips}" HorizontalAlignment="Stretch" Margin="0"/>
                 </StackPanel>
               </WrapPanel>
-              <Expander Header="Commodity name, station and freshness filters">
+              <Expander Header="Station and data filters" IsExpanded="True">
                 <WrapPanel>
                   <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Any commodity name" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding Commodity}"/>
+                    <TextBlock Text="Landing pad" TextWrapping="Wrap"/>
+                    <ComboBox ItemsSource="{Binding PadSizes}" SelectedItem="{Binding MarketPadSize}" HorizontalAlignment="Stretch"/>
                   </StackPanel>
                   <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Station type contains" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding StationType}"/>
+                    <TextBlock Text="{Binding MarketMinimumVolumeLabel}" TextWrapping="Wrap"/>
+                    <NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding MarketMinimumVolume}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="225" Margin="0,0,12,10">
+                    <TextBlock Text="{Binding MarketMaximumVolumeLabel}" TextWrapping="Wrap"/>
+                    <NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding MarketMaximumVolume}"/>
                   </StackPanel>
                   <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
                     <TextBlock Text="Maximum age (days)" TextWrapping="Wrap"/>
-                    <NumericUpDown Minimum="1" Maximum="30" Value="{Binding MaximumAgeDays}"/>
+                    <NumericUpDown Minimum="1" Maximum="3650" Value="{Binding MarketMaximumAgeDays}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="210" Margin="0,0,12,10">
+                    <TextBlock Text="Station type contains (optional)" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding StationType}"/>
                   </StackPanel>
                   <CheckBox Content="Galaxy-wide" IsChecked="{Binding GalaxyWide}" Margin="0,0,16,4"/>
                   <CheckBox Content="Exclude carriers" IsChecked="{Binding ExcludeCarriers}" Margin="0,0,16,4"/>
-                  <CheckBox Content="Large pads" IsChecked="{Binding LargePads}" Margin="0,0,16,4"/>
                 </WrapPanel>
               </Expander>
+              <TextBlock Text="Galaxy-wide search ignores the reference distance." IsVisible="{Binding GalaxyWide}" TextWrapping="Wrap" Classes="muted"/>
             </StackPanel>
           </Border>
           <ScrollViewer x:Name="MarketResultsHorizontalScroller" Grid.Row="2" Grid.RowSpan="2"
@@ -137,10 +146,10 @@
             VerticalScrollBarVisibility="Disabled"
             IsScrollChainingEnabled="True">
             <Grid RowDefinitions="Auto,*">
-              <Grid x:Name="MarketResultsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults9" /></Grid.ColumnDefinitions>
-            <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="System"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=System}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Station"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STATION" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Station}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Type"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TYPE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Type}" /></StackPanel></Button><Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="PadDescription"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="PAD" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=PadDescription}" /></StackPanel></Button>
-            <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Distance"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DISTANCE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Distance}" /></StackPanel></Button><Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="ArrivalLs"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ARRIVAL" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ArrivalLs}" /></StackPanel></Button><Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Price"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="PRICE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Price}" /></StackPanel></Button><Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Demand"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DEMAND" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Demand}" /></StackPanel></Button>
-            <Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Supply"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STOCK" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Supply}" /></StackPanel></Button><Button Grid.Column="9" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Updated"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="OBSERVED" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Updated}" /></StackPanel></Button>
+              <Grid x:Name="MarketResultsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults9" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults10" /></Grid.ColumnDefinitions>
+            <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="System"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=System}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Station"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STATION" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Station}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Commodity"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="COMMODITY" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Commodity}" /></StackPanel></Button><Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Type"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TYPE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Type}" /></StackPanel></Button><Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="PadDescription"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="PAD" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=PadDescription}" /></StackPanel></Button>
+            <Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Distance"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DISTANCE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Distance}" /></StackPanel></Button><Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="ArrivalLs"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ARRIVAL" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ArrivalLs}" /></StackPanel></Button><Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Price"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="PRICE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Price}" /></StackPanel></Button><Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Demand"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DEMAND" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Demand}" /></StackPanel></Button>
+            <Button Grid.Column="9" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Supply"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STOCK" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Supply}" /></StackPanel></Button><Button Grid.Column="10" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Updated"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="OBSERVED" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Updated}" /></StackPanel></Button>
           </Grid>
               <ListBox x:Name="MarketResults" Grid.Row="1" Classes="table-rows" ItemsSource="{Binding Markets}" SelectedItem="{Binding SelectedMarket}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,0,0,10">
             <ListBox.ContextMenu>
@@ -153,12 +162,12 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="search:MiningMarketResult">
-                <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults9" /></Grid.ColumnDefinitions>
+                <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults9" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults10" /></Grid.ColumnDefinitions>
                   <TextBlock Text="{Binding System}" ToolTip.Tip="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Station}" ToolTip.Tip="{Binding Station}"/>
-                  <TextBlock Grid.Column="2" Text="{Binding Type}"/><TextBlock Grid.Column="3" Text="{Binding PadDescription}"/>
-                  <TextBlock Grid.Column="4" Text="{Binding Distance, StringFormat='{}{0:N1} ly'}"/><TextBlock Grid.Column="5" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
-                  <TextBlock Grid.Column="6" Text="{Binding Price, StringFormat='{}{0:N0} CR/t'}"/><TextBlock Grid.Column="7" Text="{Binding Demand, StringFormat='{}{0:N0} t'}"/>
-                  <TextBlock Grid.Column="8" Text="{Binding Supply, StringFormat='{}{0:N0} t'}"/><TextBlock Grid.Column="9" Text="{Binding Updated, StringFormat='{}{0:g}'}"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Commodity}" ToolTip.Tip="{Binding Commodity}"/><TextBlock Grid.Column="3" Text="{Binding Type}"/><TextBlock Grid.Column="4" Text="{Binding PadDescription}"/>
+                  <TextBlock Grid.Column="5" Text="{Binding Distance, StringFormat='{}{0:N1} ly'}"/><TextBlock Grid.Column="6" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
+                  <TextBlock Grid.Column="7" Text="{Binding Price, StringFormat='{}{0:N0} CR/t'}"/><TextBlock Grid.Column="8" Text="{Binding Demand, StringFormat='{}{0:N0} t'}"/>
+                  <TextBlock Grid.Column="9" Text="{Binding Supply, StringFormat='{}{0:N0} t'}"/><TextBlock Grid.Column="10" Text="{Binding Updated, StringFormat='{}{0:g}'}"/>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>

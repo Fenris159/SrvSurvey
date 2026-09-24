@@ -174,7 +174,12 @@ public sealed class MiningCommunityCache
         lock (gate)
         {
             // Commodity messages do not certify station type or pad size. Keep these results out of such filtered searches.
-            if (query.LargePads || query.ExcludeCarriers || query.StationType.Length > 0)
+            if (
+                query.LargePads
+                || query.ExcludeCarriers
+                || query.StationType.Length > 0
+                || (query.PadSize.Length > 0 && !query.PadSize.Equals("Any", StringComparison.OrdinalIgnoreCase))
+            )
             {
                 return [];
             }
@@ -197,10 +202,15 @@ public sealed class MiningCommunityCache
                     m.Stock,
                     m.Time,
                     m.Id
-                ))
+                )
+                {
+                    Commodity = MiningCommodityName.Canonical(m.Commodity),
+                })
                 .Where(m =>
                     m.Price > 0
                     && (query.Buying ? m.Supply : m.Demand) > 0
+                    && (query.Buying ? m.Supply : m.Demand) >= query.MinimumDemand
+                    && (query.MaximumDemand == 0 || (query.Buying ? m.Supply : m.Demand) <= query.MaximumDemand)
                     && (query.GalaxyWide || m.Distance is { } distance && distance <= query.Radius)
                 )
                 .ToArray();

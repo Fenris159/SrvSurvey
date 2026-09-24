@@ -637,8 +637,18 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     public double Radius
     {
         get => radius;
-        set => Set(ref radius, value);
+        set
+        {
+            if (Set(ref radius, value))
+            {
+                Changed(nameof(DistanceWarning));
+                Changed(nameof(HasDistanceWarning));
+            }
+        }
     }
+
+    public string DistanceWarning => MiningDistanceWarning.For(Radius);
+    public bool HasDistanceWarning => DistanceWarning.Length > 0;
 
     public double MineSellRadius
     {

@@ -20,6 +20,7 @@
       </StackPanel>
       <StackPanel Grid.Column="1" Spacing="4">
         <TextBlock Text="Distance"/>
+        <TextBlock Text="{Binding Search.DistanceWarning}" IsVisible="{Binding Search.HasDistanceWarning}" TextWrapping="Wrap" Classes="muted"/>
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
           <Slider x:Name="PowerplayDistanceSlider" Minimum="1" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" IsEnabled="{Binding Search.CanChooseDistance}" Value="{Binding Search.Radius}"/>
           <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="52" Text="{Binding Search.Radius, StringFormat={}{0:0} ly}"/>
@@ -46,7 +47,7 @@
       </StackPanel>
       <StackPanel Grid.Row="2" Spacing="4">
         <TextBlock Text="Mineral / metal"/>
-        <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding Search.RingMinerals}" SelectedItem="{Binding Search.Mineral}"/>
+        <views:MiningChipBox DataContext="{Binding Search.PrimaryMineralChips}" MinWidth="0" Margin="0" HorizontalAlignment="Stretch"/>
       </StackPanel>
       <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4" IsVisible="{Binding Search.UsesRingFilters}">
         <TextBlock Text="Ring type"/>

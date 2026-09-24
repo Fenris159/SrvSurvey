@@ -1831,6 +1831,88 @@ public sealed class MiningSearchViewModelTests
         }
     }
 
+    [Fact]
+    public void DistanceWarningEscalatesAndAcquireDoesNotWarnAboutAnUnusedRadius()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        );
+        Assert.False(model.HasDistanceWarning);
+        foreach (int radius in new[] { 101, 200, 300, 400, 500 })
+        {
+            model.Radius = radius;
+            Assert.Contains(
+                radius == 101 ? "100" : radius.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                model.DistanceWarning
+            );
+        }
+
+        model.PledgedPower = "Aisling Duval";
+        model.Objective = "Acquire";
+        Assert.False(model.HasDistanceWarning);
+    }
+
+    [Fact]
+    public async Task PlanetaryMarketCategorySearchesEverySelectedCommodityAndKeepsBothStationQuotes()
+    {
+        using var handler = new MultiCommodityMarketHandler();
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            MarketPadSize = "L",
+            MarketMinimumVolume = 100,
+            MarketMaximumVolume = 1_000,
+            MarketMaximumAgeDays = 7,
+            MaximumDemand = 1,
+        };
+        model.MarketCategoryChips.Add("Planetary Mining");
+        Assert.Contains("Periclase Dunite", model.MarketCommodityChips.Suggestions);
+        model.MarketCommodityChips.Remove("Platinum");
+        model.MarketCommodityChips.Add("Periclase Dunite");
+        model.MarketCommodityChips.Add("Monazite");
+
+        await model.SearchMarketsAsync();
+
+        Assert.Equal(2, model.Markets.Count);
+        Assert.Equal(["Periclase Dunite", "Monazite"], model.Markets.Select(market => market.Commodity).ToArray());
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, uri => Assert.Contains("minVolume=100", uri.Query));
+        Assert.All(handler.Requests, uri => Assert.Contains("maxDaysAgo=7", uri.Query));
+        Assert.Equal(["Periclase Dunite", "Monazite"], model.SaveOptions().MarketCommodities);
+    }
+
+    private sealed class MultiCommodityMarketHandler : HttpMessageHandler
+    {
+        public List<Uri> Requests { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            Uri uri = request.RequestUri!;
+            Requests.Add(uri);
+            bool periclase = uri.AbsolutePath.Contains("periclasedunite", StringComparison.Ordinal);
+            string commodity = periclase ? "periclasedunite" : "monazite";
+            int price = periclase ? 500_000 : 400_000;
+            string payload =
+                $$"""[{"systemName":"Timbalderis","stationName":"Shared Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":{{price}},"demand":500,"updatedAt":"{{DateTimeOffset.UtcNow:O}}","distance":0,"commodityName":"{{commodity}}"}]""";
+            return Task.FromResult(
+                new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) }
+            );
+        }
+    }
+
     private sealed class DeferredCancellationHandler : HttpMessageHandler
     {
         public ManualResetEventSlim Release { get; } = new();
