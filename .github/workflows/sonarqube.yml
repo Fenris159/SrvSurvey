@@ -26,6 +26,15 @@ on:
       # Draft → Ready for review without a new push would otherwise skip Sonar.
       - ready_for_review
   workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: "PR number to analyze against a stacked base (leave empty for branch analysis)"
+        required: false
+        type: string
+      pull_request_base:
+        description: "PR base branch for stacked PR analysis"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -118,9 +127,9 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_HEAD_REF: ${{ github.head_ref }}
-          PR_BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pull_request_number }}
+          PR_HEAD_REF: ${{ github.head_ref || github.ref_name }}
+          PR_BASE_REF: ${{ github.base_ref || inputs.pull_request_base }}
           BRANCH_NAME: ${{ github.ref_name }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
@@ -151,7 +160,10 @@ jobs:
 
           # Explicit PR / branch metadata so SonarCloud decorates the right GitHub PR
           # even when CI auto-detection is incomplete.
-          if ($env:EVENT_NAME -eq "pull_request") {
+          if ($env:EVENT_NAME -eq "workflow_dispatch" -and ([bool]$env:PR_NUMBER -ne [bool]$env:PR_BASE_REF)) {
+            throw "Manual PR analysis requires both pull_request_number and pull_request_base."
+          }
+          if ($env:EVENT_NAME -eq "pull_request" -or ($env:EVENT_NAME -eq "workflow_dispatch" -and $env:PR_NUMBER)) {
             $args += "/d:sonar.pullrequest.key=$env:PR_NUMBER"
             $args += "/d:sonar.pullrequest.branch=$env:PR_HEAD_REF"
             $args += "/d:sonar.pullrequest.base=$env:PR_BASE_REF"
