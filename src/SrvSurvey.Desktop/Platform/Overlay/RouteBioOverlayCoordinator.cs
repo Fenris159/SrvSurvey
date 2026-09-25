@@ -149,10 +149,22 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
             return;
         }
 
+        PixelRect workingArea = OverlayWindowPlacement.GetReliableBottomWorkingArea(
+            new OverlayScreenGeometry(screen.Bounds, screen.WorkingArea),
+            target
+                .Screens.All.Select(current => new OverlayScreenGeometry(current.Bounds, current.WorkingArea))
+                .ToArray()
+        );
+        PixelRect visibleBounds = OverlayWindowPlacement.GetUsableBounds(gameBounds, workingArea);
+        target.MaxHeight = Math.Max(target.MinHeight, Math.Min(680, (visibleBounds.Height - 16) / screen.Scaling));
         PixelSize size = OverlayWindowMetrics.PrepareForPlacement(target, overlayLayout, PlotterName, screen.Scaling);
         PixelPoint position =
             overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopRight(gameBounds, size, margin: 8);
+        position = new PixelPoint(
+            position.X,
+            Math.Clamp(position.Y, visibleBounds.Y, Math.Max(visibleBounds.Y, visibleBounds.Bottom - size.Height - 8))
+        );
         if (target.Position != position)
         {
             target.Position = position;

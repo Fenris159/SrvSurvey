@@ -138,8 +138,8 @@ public sealed class MiningWorkspaceViewModelTests
             Feed(
                 """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:00:30Z","Materials":[{"Name":"Bertrandite","Proportion":25}],"Remaining":100}"""
             );
-            Assert.False(vm.HasPersistentProspects);
-            Assert.False(vm.ShouldShowNotifications);
+            Assert.True(vm.HasPersistentProspects);
+            Assert.True(vm.ShouldShowNotifications);
 
             Feed(
                 """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:01:00Z","Materials":[{"Name":"Platinum","Proportion":35}],"Remaining":100}"""
@@ -164,9 +164,11 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.Contains(vm.PersistentProspects, result => result.Qualifies && result.Summary.Contains("Osmium"));
             Assert.Contains(vm.PersistentProspects, result => result.Summary.Contains("Core: Monazite"));
             using var activityOverlay = new MiningActivityOverlayViewModel(vm, false);
-            MiningProspectOverlayRowViewModel visibleProspect = Assert.Single(activityOverlay.Prospects);
-            Assert.Contains("Core: Monazite", visibleProspect.Summary);
-            Assert.DoesNotContain(activityOverlay.Prospects, result => result.Summary.Contains("Bertrandite"));
+            Assert.Equal(2, activityOverlay.Prospects.Count);
+            Assert.Contains("Bertrandite", activityOverlay.Prospects[0].Summary);
+            Assert.False(activityOverlay.Prospects[0].Qualifies);
+            Assert.Contains("Core: Monazite", activityOverlay.Prospects[1].Summary);
+            Assert.True(activityOverlay.Prospects[1].Qualifies);
             Assert.Equal(2, chime.PlayedVolumes.Length);
             Assert.Equal(2, speech.Messages.Count);
             Assert.True(vm.ShouldShowCargo);
@@ -175,6 +177,63 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.Equal("550 T REMAINING", cargoOverlay.Remaining);
             Assert.Equal("Limpets", cargoOverlay.Items[0].Name);
             Assert.True(cargoOverlay.Items.Single(item => item.Name == "Platinum").IsTarget);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ActiveProspectorOverlayShowsFourLatestEvenWithoutNotifications()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            using var vm = new MiningWorkspaceViewModel(
+                directory,
+                new Resolver(),
+                new BookmarksViewModel(directory),
+                clock: new Clock()
+            );
+            var context = new JournalSessionState();
+            var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+            JournalEventEnvelope login = FiregroupsWorkspaceViewModelTests.Event(
+                """{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}"""
+            );
+            context.Apply(login);
+            vm.Apply(new(null, [login], ship, null, null, null, [], true), context, null, ship);
+            vm.StartCommand.Execute(null);
+            vm.Settings.Thresholds["platinum"] = 30;
+            using var overlay = new MiningActivityOverlayViewModel(vm, false);
+
+            for (int index = 1; index <= 5; index++)
+            {
+                JournalEventEnvelope prospect = FiregroupsWorkspaceViewModelTests.Event(
+                    $$"""{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:00:0{{index}}Z","Materials":[{"Name":"Bertrandite","Proportion":{{index}}}],"Remaining":100}"""
+                );
+                vm.Apply(new(null, [prospect], ship, null, null, null, [], false), context, null, ship);
+            }
+
+            Assert.True(vm.ShouldShowNotifications);
+            Assert.False(overlay.HasQualifyingProspect);
+            Assert.Equal(4, overlay.Prospects.Count);
+            Assert.Contains("Bertrandite 5.0%", overlay.Prospects[0].Summary);
+            Assert.Contains("Bertrandite 2.0%", overlay.Prospects[^1].Summary);
+
+            JournalEventEnvelope matchingProspect = FiregroupsWorkspaceViewModelTests.Event(
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:00:06Z","Materials":[{"Name":"Platinum","Proportion":35},{"Name":"Bertrandite","Proportion":20}],"Remaining":100}"""
+            );
+            vm.Apply(new(null, [matchingProspect], ship, null, null, null, [], false), context, null, ship);
+
+            Assert.True(overlay.HasQualifyingProspect);
+            Assert.Equal(4, overlay.Prospects.Count);
+            Assert.True(overlay.Prospects[0].Materials[0].IsHighlighted);
+            Assert.False(overlay.Prospects[0].Materials[1].IsHighlighted);
+            Assert.False(overlay.Prospects[1].Qualifies);
         }
         finally
         {
@@ -577,6 +636,23 @@ public sealed class MiningWorkspaceViewModelTests
         Assert.True(overlay.HasProspectReport);
         Assert.True(overlay.HasQualifyingProspect);
         Assert.Contains("Remaining", overlay.ProspectReport);
+        Assert.Collection(
+            overlay.Prospects,
+            prospect =>
+            {
+                Assert.Equal("Platinum 34.8%", prospect.Materials[0].Text);
+                Assert.True(prospect.Materials[0].IsHighlighted);
+                Assert.Equal("Osmium 12.4%", prospect.Materials[1].Text);
+                Assert.False(prospect.Materials[1].IsHighlighted);
+            },
+            prospect =>
+            {
+                Assert.Equal("Platinum 22.1%", prospect.Materials[0].Text);
+                Assert.False(prospect.Materials[0].IsHighlighted);
+                Assert.Equal("Bertrandite 8.5%", prospect.Materials[1].Text);
+                Assert.False(prospect.Materials[1].IsHighlighted);
+            }
+        );
     }
 
     [Fact]

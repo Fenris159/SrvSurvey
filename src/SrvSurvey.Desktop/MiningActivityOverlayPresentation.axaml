@@ -22,8 +22,17 @@
          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
           <TextBlock Classes="muted type-detail" Text="{Binding Time}" />
           <StackPanel Grid.Column="1" Spacing="1">
-           <TextBlock IsVisible="{Binding Qualifies}" Classes="type-value" Foreground="{DynamicResource RavenSuccessBrush}" Text="{Binding Summary}" TextWrapping="Wrap" />
-           <TextBlock IsVisible="{Binding !Qualifies}" Classes="type-body" Text="{Binding Summary}" TextWrapping="Wrap" />
+           <ItemsControl ItemsSource="{Binding Materials}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+             <DataTemplate x:DataType="vm:MiningProspectMaterialViewModel">
+              <Panel Margin="0,0,6,0">
+               <TextBlock IsVisible="{Binding IsHighlighted}" Classes="type-value" Foreground="{DynamicResource RavenSuccessBrush}" Text="{Binding Text}" />
+               <TextBlock IsVisible="{Binding !IsHighlighted}" Classes="type-body" Text="{Binding Text}" />
+              </Panel>
+             </DataTemplate>
+            </ItemsControl.ItemTemplate>
+           </ItemsControl>
            <TextBlock Classes="muted type-detail" Text="{Binding RemainingLabel}" />
           </StackPanel>
          </Grid>

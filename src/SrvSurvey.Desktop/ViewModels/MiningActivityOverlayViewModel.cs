@@ -7,7 +7,7 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
 {
     private readonly MiningWorkspaceViewModel? workspace;
     private readonly FiregroupsWorkspaceViewModel? firegroupsWorkspace;
-    private IReadOnlyList<MiningProspectOverlayRowViewModel>? qualifyingProspects;
+    private IReadOnlyList<MiningProspectOverlayRowViewModel>? recentProspects;
 
     public MiningActivityOverlayViewModel(
         MiningWorkspaceViewModel? workspace,
@@ -76,10 +76,10 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
 
     public IReadOnlyList<MiningNotice> Refined { get; private set; } = [];
     public IReadOnlyList<MiningNotice> Collected { get; private set; } = [];
-    public IReadOnlyList<MiningProspectOverlayRowViewModel> Prospects => qualifyingProspects ??= ReadProspects();
+    public IReadOnlyList<MiningProspectOverlayRowViewModel> Prospects => recentProspects ??= ReadProspects();
 
     private MiningProspectOverlayRowViewModel[] ReadProspects() =>
-        (workspace?.PersistentProspects ?? PreviewProspects).Where(prospect => prospect.Qualifies).ToArray();
+        (workspace?.PersistentProspects ?? PreviewProspects).ToArray();
 
     public string ProspectReport =>
         Prospects.Count > 0 ? $"{Prospects[0].Summary} · Remaining {Prospects[0].Remaining:0.#}%" : "";
@@ -103,9 +103,25 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
     ];
     private static readonly MiningProspectOverlayRowViewModel[] PreviewProspects =
     [
-        new("21:14:08", "Platinum 34.8% · Osmium 12.4%", 100, true),
-        new("21:13:42", "Platinum 22.1% · Bertrandite 8.5%", 64, false),
+        CreatePreviewProspect("21:14:08", "Platinum 34.8% · Osmium 12.4%", 100, true),
+        CreatePreviewProspect("21:13:42", "Platinum 22.1% · Bertrandite 8.5%", 64, false),
     ];
+
+    private static MiningProspectOverlayRowViewModel CreatePreviewProspect(
+        string time,
+        string summary,
+        double remaining,
+        bool qualifies
+    ) =>
+        new(time, summary, remaining, qualifies)
+        {
+            Materials =
+            [
+                .. summary
+                    .Split('·', StringSplitOptions.TrimEntries)
+                    .Select((text, index) => new MiningProspectMaterialViewModel(text, qualifies && index == 0)),
+            ],
+        };
 
     public void Dispose()
     {
@@ -131,7 +147,7 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
         }
 
         RefreshNotices();
-        qualifyingProspects = null;
+        recentProspects = null;
         foreach (
             string? name in new[]
             {

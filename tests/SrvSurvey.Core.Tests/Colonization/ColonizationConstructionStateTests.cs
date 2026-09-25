@@ -83,6 +83,31 @@ public sealed class ColonizationConstructionStateTests
     }
 
     [Fact]
+    public void StartingDockedAtConstructionSiteRestoresLiveDepotContext()
+    {
+        var state = new ColonizationConstructionState();
+        Assert.True(
+            state.Apply(
+                Event(
+                    "Location",
+                    """
+                    "Docked":true,"MarketID":10,"SystemAddress":20,"StarSystem":"Test",
+                    "StationName":"Orbital Construction Site: Hope",
+                    "StationServices":["dock","colonisationcontribution"]
+                    """
+                )
+            )
+        );
+        Assert.True(state.Apply(Event("ColonisationConstructionDepot", "\"MarketID\":10,\"ResourcesRequired\":[]")));
+
+        Assert.True(state.CurrentDock?.IsConstructionSite);
+        Assert.Equal(10, state.CurrentDepot?.MarketId);
+        Assert.True(state.Apply(Event("Location", "\"Docked\":false")));
+        Assert.Null(state.CurrentDock);
+        Assert.Null(state.CurrentDepot);
+    }
+
+    [Fact]
     public void ContributionsRequireMatchingConstructionDock()
     {
         var state = new ColonizationConstructionState();
@@ -261,6 +286,8 @@ public sealed class ColonizationConstructionStateTests
     [Theory]
     [InlineData("$EXT_PANEL_ColonisationShip; Test", "Primary port")]
     [InlineData("System Colonisation Ship", "Primary port")]
+    [InlineData("System Colonisation Ship Alpha", "Primary port")]
+    [InlineData("System Colonisation Ship Beta", "Primary port")]
     [InlineData("Planetary Construction Site: Far Reach", "Far Reach")]
     [InlineData("Orbital Construction Site: High Hope", "High Hope")]
     public void PreservesLegacyDefaultProjectNames(string stationName, string expected)
@@ -268,6 +295,7 @@ public sealed class ColonizationConstructionStateTests
         var dock = new ColonizationDockingSnapshot(1, 2, "Test", stationName, null, ["colonisationcontribution"]);
 
         Assert.Equal(expected, dock.DefaultProjectName);
+        Assert.True(dock.IsConstructionSite);
     }
 
     private static JournalEventEnvelope Contribution(long marketId)

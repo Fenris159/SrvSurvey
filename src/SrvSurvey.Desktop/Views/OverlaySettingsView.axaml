@@ -83,6 +83,30 @@
                       Command="{Binding OverlayInteraction.ToggleCommand}"
                       Content="{Binding OverlayInteraction.ToggleButtonText}" />
             </Grid>
+            <Grid ColumnDefinitions="*,240" ColumnSpacing="18">
+              <StackPanel Spacing="3">
+                <TextBlock FontWeight="SemiBold" Text="Adjust editor controls height" />
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           Text="Move the editor controls above a dock or lower them when the automatic position is too high. Positive values move up; negative values move down." />
+              </StackPanel>
+              <Grid Grid.Column="1" ColumnDefinitions="*,72,Auto" ColumnSpacing="6">
+                <Slider Minimum="-100"
+                        Maximum="100"
+                        TickFrequency="0.1"
+                        IsSnapToTickEnabled="True"
+                        Value="{Binding OverlayInteraction.EditorControlsHeightPercent, Mode=TwoWay}" />
+                <controls:OverlayEditorHeightEntry x:Name="EditorControlsHeightInput"
+                                                   Grid.Column="1"
+                                                   VerticalAlignment="Center"
+                                                   Value="{Binding OverlayInteraction.EditorControlsHeightPercent, Mode=TwoWay}" />
+                <TextBlock Grid.Column="2"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Text="%" />
+              </Grid>
+            </Grid>
             <Grid ColumnDefinitions="*,220" ColumnSpacing="18">
               <StackPanel Spacing="3">
                 <TextBlock FontWeight="SemiBold" Text="Live-overlay interaction shortcut" />
