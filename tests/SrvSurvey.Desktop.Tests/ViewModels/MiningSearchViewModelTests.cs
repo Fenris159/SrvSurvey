@@ -89,6 +89,12 @@ public sealed class MiningSearchViewModelTests
         model.Radius = 240;
         model.OnlyRes = true;
         model.TraderType = "Encoded";
+        model.Reserve = "Pristine";
+        model.MinimumDemand = 500;
+        model.MaximumDemand = 5000;
+        model.ResultLimit = 42;
+        model.PlatinumMode = "Overlaps";
+        model.OpposingPower = "Jerome Archer";
         MiningCommanderData restored = MiningStore.Parse(
             MiningStore.Export(
                 new MiningCommanderData { Settings = new MiningPreferences { SearchOptions = model.SaveOptions() } }
@@ -103,6 +109,64 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal(240, model.Radius);
         Assert.True(model.OnlyRes);
         Assert.Equal("Encoded", model.TraderType);
+        Assert.Equal("Pristine", model.Reserve);
+        Assert.Equal(500, model.MinimumDemand);
+        Assert.Equal(5000, model.MaximumDemand);
+        Assert.Equal(42, model.ResultLimit);
+        Assert.Equal("Overlaps", model.PlatinumMode);
+        Assert.Equal("Jerome Archer", model.OpposingPower);
+    }
+
+    [Fact]
+    public async Task PlatinumSpotsRanksUsefulLocalRingsAndCanShowAllPlatinumRings()
+    {
+        const string system = "Platinum Spots Test";
+        MiningRing[] rings =
+        [
+            Spot("Mapped A Ring", 1, resourceExtractionSites: "High"),
+            Spot("Overlap B Ring", 1, overlaps: "Platinum x2"),
+            Spot("Double C Ring", 2),
+            Spot("Plain D Ring", 1),
+            Spot("Wrong E Ring", 2) with
+            {
+                RingType = "Icy",
+            },
+        ];
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => rings,
+            new Resolver()
+        )
+        {
+            Reference = system,
+            Source = "Local",
+            Radius = 1,
+            ResultLimit = 10,
+        };
+
+        await model.SearchPlatinumAsync();
+
+        Assert.Equal(3, model.PlatinumSpots.Count);
+        Assert.Equal("Mapped A Ring", model.PlatinumSpots[0].Body);
+        Assert.DoesNotContain(model.PlatinumSpots, spot => spot.Body == "Plain D Ring");
+        model.PlatinumMode = "All platinum";
+        await model.SearchPlatinumAsync();
+        Assert.Equal(4, model.PlatinumSpots.Count);
+        Assert.Contains(model.PlatinumSpots, spot => spot.Body == "Plain D Ring");
+
+        static MiningRing Spot(string body, int hotspots, string overlaps = "", string resourceExtractionSites = "") =>
+            new()
+            {
+                System = system,
+                Body = body,
+                RingType = "Metallic",
+                Reserve = "Pristine",
+                Hotspots = new() { ["Platinum"] = hotspots },
+                Overlaps = overlaps,
+                ResourceExtractionSites = resourceExtractionSites,
+            };
     }
 
     [Fact]
@@ -181,16 +245,25 @@ public sealed class MiningSearchViewModelTests
             Objective = "Reinforce",
         };
         await model.SearchSystemsAsync();
-        Assert.Contains("Choose your pledged Power", model.Status);
+        Assert.Equal("Any", model.PledgedPower);
+        Assert.DoesNotContain("Choose your pledged Power", model.Status);
+        Assert.Equal(2, model.Systems.Count);
         model.PledgedPower = "Aisling Duval";
         await model.SearchSystemsAsync();
         Assert.Equal("Own", Assert.Single(model.Systems).System);
         model.Objective = "Undermine";
         await model.SearchSystemsAsync();
         Assert.Equal("Other", Assert.Single(model.Systems).System);
+        model.OpposingPower = "Aisling Duval";
+        await model.SearchSystemsAsync();
+        Assert.Empty(model.Systems);
+        model.OpposingPower = "Jerome Archer";
+        await model.SearchSystemsAsync();
+        Assert.Equal("Other", Assert.Single(model.Systems).System);
         model.Objective = "Acquire";
         await model.SearchSystemsAsync();
-        Assert.Equal("Open", Assert.Single(model.Systems).System);
+        Assert.Empty(model.Systems);
+        Assert.Contains("Fortified or Stronghold", model.Status);
     }
 
     [Fact]
@@ -205,6 +278,7 @@ public sealed class MiningSearchViewModelTests
             new Resolver()
         )
         {
+            PledgedPower = "Archon Delaine",
             Objective = "Acquire",
             SelectedSystem = new("Acquisition target", 1, "", "", "", "", "", "", "Unoccupied", 0),
         };
@@ -218,6 +292,56 @@ public sealed class MiningSearchViewModelTests
         Assert.Contains("Acquire destination: Acquisition target", model.PlanningContext);
         model.ClearPlan();
         Assert.Empty(model.PlanningContext);
+    }
+
+    [Fact]
+    public void AnyPowerLocksTheGoalOnReinforceAndOpposingPowerOnAny()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        );
+        model.PledgedPower = "Archon Delaine";
+        model.Objective = "Acquire";
+        model.OpposingPower = "Yuri Grom";
+        Assert.True(model.CanChoosePowerGoal);
+
+        model.PledgedPower = "Any";
+
+        Assert.False(model.CanChoosePowerGoal);
+        Assert.Equal("Reinforce", model.Objective);
+        Assert.Equal("Any", model.OpposingPower);
+        model.Objective = "Acquire";
+        Assert.Equal("Reinforce", model.Objective);
+    }
+
+    [Fact]
+    public async Task AcquireKeepsUnownedSystemsInsideFortifiedOrStrongholdRange()
+    {
+        using var http = new HttpClient(new AcquisitionRangeHandler());
+        using var model = new MiningSearchViewModel(
+            new(http),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Radius = 100,
+        };
+
+        await model.SearchSystemsAsync();
+
+        MiningSystemResult claim = Assert.Single(model.Systems);
+        Assert.Equal("Claim", claim.System);
+        Assert.Equal("Unoccupied", claim.PowerState);
+        Assert.Contains("20 ly", model.Status);
     }
 
     [Fact]
@@ -252,8 +376,8 @@ public sealed class MiningSearchViewModelTests
         Assert.Empty(model.Systems);
         model.Objective = "Acquire";
         await model.SearchSystemsAsync();
-        Assert.Equal("Wille", Assert.Single(model.Systems).System);
-        Assert.Contains("Local Powerplay observations", model.Status);
+        Assert.Empty(model.Systems);
+        Assert.Contains("Fortified or Stronghold", model.Status);
         model.Security = "High";
         await model.SearchSystemsAsync();
         Assert.Empty(model.Systems); // The journal cannot certify security.
@@ -279,6 +403,40 @@ public sealed class MiningSearchViewModelTests
             return Task.FromResult(
                 new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) }
             );
+        }
+    }
+
+    private sealed class AcquisitionRangeHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request.Content is null)
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("[]") };
+            }
+
+            using var body = System.Text.Json.JsonDocument.Parse(
+                await request.Content.ReadAsStringAsync(cancellationToken)
+            );
+            string reference = body.RootElement.GetProperty("reference_system").GetString() ?? "";
+            string state = body
+                .RootElement.GetProperty("filters")
+                .TryGetProperty("power_state", out System.Text.Json.JsonElement powerState)
+                ? powerState.GetProperty("value")[0].GetString() ?? ""
+                : "";
+            string payload = (reference, state) switch
+            {
+                (_, "Fortified") =>
+                    """{"results":[{"name":"Anchor","distance":0,"x":0,"y":0,"z":0,"controlling_power":"Archon Delaine","power_state":"Fortified"}]}""",
+                (_, "Stronghold") => """{"results":[]}""",
+                ("Anchor", _) =>
+                    """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Owned","distance":5,"x":5,"y":0,"z":0,"controlling_power":"Yuri Grom","power_state":"Exploited"}]}""",
+                _ => """{"results":[]}""",
+            };
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) };
         }
     }
 

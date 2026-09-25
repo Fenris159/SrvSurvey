@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.Views.MiningIcon"
+             Width="16"
+             Height="16">
+  <Panel>
+    <Path x:Name="Shape" Stretch="Uniform" IsVisible="False"/>
+    <Image x:Name="Picture" Stretch="Uniform" IsVisible="False"/>
+  </Panel>
+</UserControl>

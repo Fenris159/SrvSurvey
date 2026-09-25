@@ -27,7 +27,11 @@ public sealed record MiningMarketQuery(
     int MaximumAgeDays = 2,
     string StationType = "",
     int Page = 0,
-    bool SystemOnly = false
+    bool SystemOnly = false,
+    long MinimumDemand = 0,
+    long MaximumDemand = 0,
+    TimeSpan? MaximumAge = null,
+    string PadSize = "Any"
 );
 
 public sealed record MiningMarketResult(
@@ -64,7 +68,8 @@ public sealed record MiningSystemQuery(
     string Power = "",
     string PowerState = "",
     long MinimumPopulation = 0,
-    int Page = 0
+    int Page = 0,
+    bool OpenAcquisition = false
 );
 
 public sealed record MiningSystemResult(
@@ -77,7 +82,8 @@ public sealed record MiningSystemResult(
     string State,
     string Power,
     string PowerState,
-    long Population
+    long Population,
+    GalacticCoordinate? Position = null
 );
 
 /// <summary>Mining searches extend the shared Spansh pathway and use the application's network/privacy client.</summary>
@@ -191,8 +197,10 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         string path = query.GalaxyWide
             ? $"commodity/name/{Uri.EscapeDataString(commodity)}/{direction}"
             : $"system/name/{Uri.EscapeDataString(query.ReferenceSystem)}/commodity/name/{Uri.EscapeDataString(commodity)}/nearby/{direction}";
+        long minimumVolume = Math.Max(1, query.MinimumDemand);
+        int maximumDays = Math.Clamp((int)Math.Ceiling(MarketAge(query).TotalDays), 1, 3650);
         string uri =
-            $"https://api.ardent-insight.com/v2/{path}?minVolume=1&maxDaysAgo={query.MaximumAgeDays}&maxDistance={query.Radius.ToString(System.Globalization.CultureInfo.InvariantCulture)}&fleetCarriers={!query.ExcludeCarriers}";
+            $"https://api.ardent-insight.com/v2/{path}?minVolume={minimumVolume}&maxDaysAgo={maximumDays}&maxDistance={query.Radius.ToString(System.Globalization.CultureInfo.InvariantCulture)}&fleetCarriers={!query.ExcludeCarriers}";
         using HttpResponseMessage response = await client
             .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
@@ -217,8 +225,9 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
     private static MiningMarketResult? ReadArdentMarket(JsonElement item, MiningMarketQuery query)
     {
         string type = MiningJson.Text(item, "stationType");
-        bool? largePad = Number(item, "maxLandingPadSize") is { } pad ? pad >= 3 : (bool?)null;
-        if (!MatchesStation(type, largePad, query))
+        int? maxPad = Number(item, "maxLandingPadSize") is { } pad ? (int)pad : null;
+        bool? largePad = maxPad is { } size ? size >= 3 : null;
+        if (!MatchesStation(type, largePad, maxPad, query))
         {
             return null;
         }
@@ -226,8 +235,8 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         long price = (long)MiningJson.Number(item, query.Buying ? "buyPrice" : "sellPrice");
         long demand = (long)MiningJson.Number(item, "demand");
         long supply = (long)MiningJson.Number(item, "stock");
-        DateTimeOffset? updated = RecentObservation(MiningJson.Text(item, "updatedAt"), query.MaximumAgeDays);
-        if (!HasTradeVolume(price, demand, supply, query.Buying) || updated is null)
+        DateTimeOffset? updated = RecentObservation(MiningJson.Text(item, "updatedAt"), MarketAge(query));
+        if (!HasTradeVolume(price, demand, supply, query) || updated is null)
         {
             return null;
         }
@@ -276,16 +285,14 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
     private static IEnumerable<MiningMarketResult> ReadSpanshMarkets(JsonElement station, MiningMarketQuery query)
     {
         string type = MiningJson.Text(station, "type");
-        bool? largePad = HasLargePad(station);
-        if (!MatchesStation(type, largePad, query))
+        int? maxPad = MaxPad(station);
+        bool? largePad = maxPad is { } size ? size >= 3 : HasLargePad(station);
+        if (!MatchesStation(type, largePad, maxPad, query))
         {
             yield break;
         }
 
-        DateTimeOffset? updated = RecentObservation(
-            MiningJson.Text(station, "market_updated_at"),
-            query.MaximumAgeDays
-        );
+        DateTimeOffset? updated = RecentObservation(MiningJson.Text(station, "market_updated_at"), MarketAge(query));
         if (updated is null)
         {
             yield break;
@@ -300,7 +307,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             long price = (long)MiningJson.Number(item, query.Buying ? "buy_price" : "sell_price");
             long supply = (long)(Number(item, "supply") ?? Number(item, "stock") ?? 0);
             long demand = (long)MiningJson.Number(item, "demand");
-            if (!HasTradeVolume(price, demand, supply, query.Buying))
+            if (!HasTradeVolume(price, demand, supply, query))
             {
                 continue;
             }
@@ -321,25 +328,72 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         }
     }
 
-    private static bool MatchesStation(string type, bool? largePad, MiningMarketQuery query) =>
+    private static bool MatchesStation(string type, bool? largePad, int? maxPad, MiningMarketQuery query) =>
         (!query.ExcludeCarriers || !type.Contains("Carrier", StringComparison.OrdinalIgnoreCase))
         && (!query.LargePads || largePad == true)
+        && MatchesPad(maxPad, largePad, query.PadSize)
         && (query.StationType.Length == 0 || type.Contains(query.StationType, StringComparison.OrdinalIgnoreCase));
 
-    private static bool HasTradeVolume(long price, long demand, long supply, bool buying) =>
-        price > 0 && (buying ? supply : demand) > 0;
+    private static bool MatchesPad(int? maxPad, bool? largePad, string pad)
+    {
+        if (pad.Length == 0 || pad.Equals("Any", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        int? size = maxPad ?? (largePad == true ? 3 : null);
+        return pad switch
+        {
+            "L" => size >= 3,
+            "M" => size == 2,
+            "S" => size == 1,
+            _ => true,
+        };
+    }
+
+    private static TimeSpan MarketAge(MiningMarketQuery query) =>
+        query.MaximumAge ?? TimeSpan.FromDays(query.MaximumAgeDays);
+
+    private static int? MaxPad(JsonElement station)
+    {
+        if (Number(station, "large_pads") is > 0)
+        {
+            return 3;
+        }
+
+        if (Number(station, "medium_pads") is > 0)
+        {
+            return 2;
+        }
+
+        if (Number(station, "small_pads") is > 0)
+        {
+            return 1;
+        }
+
+        return HasLargePad(station) == true ? 3 : null;
+    }
+
+    private static bool HasTradeVolume(long price, long demand, long supply, MiningMarketQuery query)
+    {
+        long volume = query.Buying ? supply : demand;
+        return price > 0
+            && volume > 0
+            && volume >= query.MinimumDemand
+            && (query.MaximumDemand == 0 || volume <= query.MaximumDemand);
+    }
 
     private static MiningMarketResult[] SortMarkets(IEnumerable<MiningMarketResult> results, bool buying) =>
         buying ? results.OrderBy(r => r.Price).ToArray() : results.OrderByDescending(r => r.Price).ToArray();
 
-    private static DateTimeOffset? RecentObservation(string value, int maximumAgeDays) =>
+    private static DateTimeOffset? RecentObservation(string value, TimeSpan maximumAge) =>
         DateTimeOffset.TryParse(
             value,
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal,
             out DateTimeOffset time
         )
-        && DateTimeOffset.UtcNow - time <= TimeSpan.FromDays(maximumAgeDays)
+        && DateTimeOffset.UtcNow - time <= maximumAge
         && time <= DateTimeOffset.UtcNow.AddMinutes(5)
             ? time
             : null;
@@ -368,6 +422,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
     )
     {
         Dictionary<string, object> filters = DistanceFilter(query.Radius);
+        string indexedPowerState = IndexedPowerState(query);
         foreach (
             (string? name, string? value, bool array) in new[]
             {
@@ -377,7 +432,7 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
                 ("primary_economy", query.Economy, false),
                 ("controlling_minor_faction_state", query.State, true),
                 ("controlling_power", query.Power, true),
-                ("power_state", query.PowerState, true),
+                ("power_state", indexedPowerState, true),
             }
         )
         {
@@ -399,20 +454,52 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
             query.Page,
             cancellationToken
         );
-        return Results(response)
-            .Select(s => new MiningSystemResult(
-                MiningJson.Text(s, "name"),
-                Number(s, DistanceField),
-                MiningJson.Text(s, "security"),
-                MiningJson.Text(s, "allegiance"),
-                MiningJson.Text(s, "government"),
-                MiningJson.Text(s, "primary_economy"),
-                MiningJson.Text(s, "controlling_minor_faction_state"),
-                MiningJson.Text(s, "controlling_power"),
-                MiningJson.Text(s, "power_state"),
-                (long)MiningJson.Number(s, "population")
+        IEnumerable<MiningSystemResult> systems = Results(response).Select(ReadSystem);
+        if (NarrowsAcquisitionState(query))
+        {
+            systems = systems.Where(system =>
+                system.PowerState.Equals(query.PowerState, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+
+        return systems.ToArray();
+    }
+
+    private static string IndexedPowerState(MiningSystemQuery query) =>
+        query.OpenAcquisition || NarrowsAcquisitionState(query) ? PowerplayStanding.Unoccupied : query.PowerState;
+
+    private static bool NarrowsAcquisitionState(MiningSystemQuery query) =>
+        !query.OpenAcquisition
+        && query.PowerState
+            is PowerplayStanding.Unoccupied
+                or PowerplayStanding.Expansion
+                or PowerplayStanding.Contested;
+
+    private static MiningSystemResult ReadSystem(JsonElement system)
+    {
+        string controllingPower = MiningJson.Text(system, "controlling_power");
+        string reportedState = MiningJson.Text(system, "power_state");
+        IReadOnlyList<PowerplayProgress> progress = MiningJson
+            .Array(system, "power_conflict_progress")
+            .Select(entry => new PowerplayProgress(
+                MiningJson.Text(entry, "power"),
+                MiningJson.Number(entry, "progress")
             ))
+            .Where(entry => entry.Power.Length > 0 && double.IsFinite(entry.Progress))
             .ToArray();
+        return new MiningSystemResult(
+            MiningJson.Text(system, "name"),
+            Number(system, DistanceField),
+            MiningJson.Text(system, "security"),
+            MiningJson.Text(system, "allegiance"),
+            MiningJson.Text(system, "government"),
+            MiningJson.Text(system, "primary_economy"),
+            MiningJson.Text(system, "controlling_minor_faction_state"),
+            controllingPower,
+            PowerplayStanding.Infer(controllingPower, reportedState, progress),
+            (long)MiningJson.Number(system, "population"),
+            Coordinates(system)
+        );
     }
 
     public async Task<IReadOnlyList<MiningMarketResult>> FindTradersAsync(
@@ -500,6 +587,11 @@ public sealed class MiningSearchClient(HttpClient? httpClient = null)
         && value.TryGetDouble(out double number)
         && double.IsFinite(number)
             ? number
+            : null;
+
+    private static GalacticCoordinate? Coordinates(JsonElement system) =>
+        Number(system, "x") is { } x && Number(system, "y") is { } y && Number(system, "z") is { } z
+            ? new GalacticCoordinate(x, y, z)
             : null;
 
     private static GalacticCoordinate? Position(JsonElement data) =>

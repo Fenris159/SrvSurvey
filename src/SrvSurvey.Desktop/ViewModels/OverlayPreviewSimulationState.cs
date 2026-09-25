@@ -108,6 +108,14 @@ internal static class OverlayPreviewSimulationProjector
                 "Refined Platinum ×1",
                 Row("Collected", "Iron ×3")
             ),
+            "PlotMiningCargo" => Content(
+                "CARGO HOLD",
+                "431 / 960 T",
+                "529 T REMAINING",
+                Row("Limpets", "167"),
+                Row("Platinum", "243", 45),
+                Row("Osmium", "21", 18)
+            ),
             "PlotMiningFiregroups" => Content(
                 "FIREGROUPS",
                 "Group A",

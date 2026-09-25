@@ -8,15 +8,15 @@ This checklist maps the implemented workspace to the pinned reference. Validatio
 | --- | --- | --- |
 | Start, stop, pause, resume, automatic prospector start | `MiningSessionTracker`, Mining → Session | Accounting and bootstrap tests pass |
 | Persistent session recovery per commander | `MiningStore`, paused recovery | Restart and isolation tested |
-| Prospector results, core hits, yields, quality thresholds | Session statistics and announcement filters | Manual asteroid and mineral quality-hit corrections retain source observations |
-| Cargo and limpet counts | Existing `CargoInventoryState` snapshot | Shares main application inventory |
+| Prospector results, core hits, yields, quality thresholds | Session statistics, persistent multi-prospector overlay and announcement filters | Configurable visible-result limit; only a matching depletion report retires an active asteroid |
+| Cargo and limpet counts | Dedicated Mining cargo overlay backed by the existing `CargoInventoryState` snapshot | Shows used/capacity/remaining, limpets and all cargo; configured target minerals are highlighted |
 | Refined and collected notifications | `MiningWorkspaceState`, dedicated Mining panel | Separate groups; ship-only gate tested |
 | Engineering raw materials and grades | Raw collection totals and grades 1–4 | Connected to collection events |
 | Refinery bins | Manual refinery estimates, matching reference input | Kept separate from proven refined tonnage |
 | Cargo-full idle reminder | One-minute full and idle check | One-minute delay, no repetition and commander-loss test passes |
 | Auto-switch mining tabs | Session preference | Connected |
-| Voice announcements and voice/rate/volume | Optional Windows SAPI worker and installed voice selector | Platform-limited; audible output not tested during development |
-| Announcement presets and core/non-core filters | Commander-scoped settings and named presets | Separate from excluded ship presets |
+| Chime and voice announcements, voice/rate/volume | Generated two-tone chime; Windows SAPI plus Linux Speech Dispatcher/eSpeak support | Audio failures cannot interrupt journal processing; generated chime and Linux command construction are tested |
+| Announcement presets and core/non-core filters | Commander-scoped settings with independently selectable, renameable and deletable named presets | Thresholds use their own selectable multi-row editor; separate from excluded ship presets |
 | Firegroup configuration / overlay | Sidebar → Firegroups; Status & utilities overlay | Named ship configurations; no game inputs |
 | Reports, notes, CSV, HTML, print/PDF | `MiningReport`, Mining → Reports | Encoding and totals tested |
 | Material graphs, yield timeline, history comparison | Observed-yield and cumulative-refining SVG charts; per-material session comparison | Timed observations, encoded labels, totals and summary-only imports tested |
@@ -60,7 +60,7 @@ Individual red/green tests cover session accounting, mission delivery/cargo allo
 
 The following records describe the initial implementation checkpoint. Current crash, search, Powerplay, and scrolling changes and their validation are recorded in [the September 7 UX review](mining-workspace-ux-review.md). That follow-up also refactors existing Rhino detection helpers without changing their thresholds or bar-state policy.
 
-Spansh systems/traders, Ardent prices and the receive-only EDDN adapter were checked against live public endpoints. Workspace/theme and shared overlay rendering used headless Avalonia; journal transitions and persistence used fixtures. A complete in-game ship-mining session and audible Windows speech have not yet been exercised. The offline HTML fixture was generated and chart data was tested, but browser policy blocked opening its local file URL for visual inspection. Existing Rhino overlay source files were not modified.
+Spansh systems/traders, Ardent prices and the receive-only EDDN adapter were checked against live public endpoints. Workspace/theme and shared overlay rendering used headless Avalonia; journal transitions and persistence used fixtures. A complete in-game ship-mining session and audible Windows or Linux speech have not yet been exercised. The offline HTML fixture was generated and chart data was tested, but browser policy blocked opening its local file URL for visual inspection. Existing Rhino overlay source files were not modified.
 
 Final full solution validation: **3,453 passed, 0 failed, 0 skipped** — Core 1,447; Desktop 1,993; ReplayController 13. The initial run identified two inventory updates and the review added functional regression coverage; the final run includes those corrections. Release builds compile with warnings treated as errors. Both independent review axes report no unresolved findings. The navigation follow-up and startup fixes are recorded in [the navigation review](mining-workspace-navigation-review.md); the Desktop suite was rerun after those changes, while the unchanged Core and ReplayController results remain from this task's full solution run.
 

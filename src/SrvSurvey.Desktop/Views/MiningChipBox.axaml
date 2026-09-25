@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.MiningChipBox"
+             x:DataType="vm:MiningChipBoxViewModel"
+             Width="280"
+             Margin="0,0,12,10">
+  <StackPanel Spacing="4">
+    <TextBlock Text="{Binding Title}"/>
+    <Border Classes="card" Padding="6">
+      <StackPanel Spacing="4">
+        <ItemsControl ItemsSource="{Binding Selected}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <Border Background="{DynamicResource RavenAccentBrush}" CornerRadius="4" Margin="0,0,4,4" Padding="6,2">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                  <Button Content="×" Padding="2,0" Tag="{Binding}" Click="Remove_Click"/>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBox PlaceholderText="Click to add" Text="{Binding Query}" GotFocus="Query_GotFocus"/>
+        <ItemsControl ItemsSource="{Binding Suggestions}" IsVisible="{Binding Open}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="Transparent" Content="{Binding}" Tag="{Binding}" Click="Add_Click"/>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:views="using:SrvSurvey.Desktop.Views" x:Class="SrvSurvey.Desktop.Views.MiningPowerplayView" x:DataType="vm:MiningWorkspaceViewModel" Grid.IsSharedSizeScope="True">
+  <UserControl.Styles><Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style></UserControl.Styles>
+  <StackPanel Spacing="14" Margin="4,12,4,16">
+    <StackPanel Spacing="5">
+      <TextBlock Text="Powerplay mining planner" Classes="card-title"/>
+      <TextBlock Text="Plan a Powerplay mining run from target system to ring and selling station. SrvSurvey combines journal context, built-in ring references, live EDDN observations, and focused Spansh API searches; no downloaded galaxy dump is required." TextWrapping="Wrap" Classes="muted"/>
+      <TextBlock Text="{Binding Search.PowerplaySummary}" Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap"/>
+    </StackPanel>
+
+    <Border Classes="card raised">
+      <StackPanel Spacing="10">
+        <TextBlock Text="1 · Choose the Powerplay goal" Classes="card-title"/>
+        <WrapPanel>
+          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Reference system"/><TextBox x:Name="PowerplayReference" Text="{Binding Search.Reference}"/></StackPanel>
+          <StackPanel Spacing="4" Width="130" Margin="0,0,12,10"><TextBlock Text="Distance (ly)"/><NumericUpDown Minimum="1" Maximum="500" Value="{Binding Search.Radius}"/></StackPanel>
+          <StackPanel Spacing="4" Width="130" Margin="0,0,12,10"><TextBlock Text="Search results"/><NumericUpDown Minimum="1" Maximum="100" Value="{Binding Search.ResultLimit}"/></StackPanel>
+          <Button Content="Use current" Click="Current_Click" VerticalAlignment="Bottom" Margin="0,0,12,10"/>
+        </WrapPanel>
+        <WrapPanel>
+          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Your Power"/><ComboBox x:Name="PowerplayPledgedPower" ItemsSource="{Binding Search.Powers}" SelectedItem="{Binding Search.PledgedPower}"/></StackPanel>
+          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Power goal"/><ComboBox x:Name="PowerplayGoal" IsEnabled="{Binding Search.CanChoosePowerGoal}" ItemsSource="{Binding Search.Objectives}" SelectedItem="{Binding Search.Objective}"/></StackPanel>
+          <StackPanel Spacing="4" Width="250" Margin="0,0,12,10"><TextBlock Text="Opposing Power"/><ComboBox x:Name="PowerplayOpposingPower" IsEnabled="{Binding Search.CanChoosePowerGoal}" ItemsSource="{Binding Search.Powers}" SelectedItem="{Binding Search.OpposingPower}"/></StackPanel>
+        </WrapPanel>
+        <WrapPanel>
+          <views:MiningChipBox DataContext="{Binding Search.MineralChips}"/>
+          <views:MiningChipBox DataContext="{Binding Search.MiningTypeChips}"/>
+          <views:MiningChipBox DataContext="{Binding Search.StateChips}"/>
+          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Ring type"/><ComboBox ItemsSource="{Binding Search.RingTypes}" SelectedItem="{Binding Search.RingType}"/></StackPanel>
+          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Reserve level"/><ComboBox ItemsSource="{Binding Search.Reserves}" SelectedItem="{Binding Search.Reserve}"/></StackPanel>
+          <StackPanel Spacing="4" Width="150" Margin="0,0,12,10"><TextBlock Text="Minimum hotspots"/><NumericUpDown Minimum="0" Maximum="20" Value="{Binding Search.MinimumHotspots}"/></StackPanel>
+        </WrapPanel>
+        <WrapPanel>
+          <StackPanel Spacing="4" Width="160" Margin="0,0,12,10"><TextBlock Text="Landing pad"/><ComboBox ItemsSource="{Binding Search.PadSizes}" SelectedItem="{Binding Search.PadSize}"/></StackPanel>
+          <StackPanel Spacing="4" Width="150" Margin="0,0,12,10"><TextBlock Text="Minimum demand"/><NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding Search.MinimumDemand}"/></StackPanel>
+          <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Maximum demand (0 = any)"/><NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding Search.MaximumDemand}"/></StackPanel>
+          <CheckBox Content="Limit market age" IsChecked="{Binding Search.LimitMarketAge}" VerticalAlignment="Bottom" Margin="0,0,12,10"/>
+          <StackPanel Spacing="4" Width="120" Margin="0,0,12,10"><TextBlock Text="Max age"/><NumericUpDown Minimum="1" Maximum="9999" Value="{Binding Search.MarketAge}"/></StackPanel>
+          <StackPanel Spacing="4" Width="130" Margin="0,0,12,10"><TextBlock Text="Age unit"/><ComboBox ItemsSource="{Binding Search.MarketAgeUnits}" SelectedItem="{Binding Search.MarketAgeUnit}"/></StackPanel>
+        </WrapPanel>
+        <Expander Header="More system filters">
+          <WrapPanel Margin="8">
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Power state"/><ComboBox ItemsSource="{Binding Search.PowerStates}" SelectedItem="{Binding Search.PowerState}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Security"/><TextBox Text="{Binding Search.Security}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Economy"/><TextBox Text="{Binding Search.Economy}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Government"/><TextBox Text="{Binding Search.Government}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Allegiance"/><TextBox Text="{Binding Search.Allegiance}"/></StackPanel>
+            <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Minimum population"/><NumericUpDown Minimum="0" Maximum="1000000000000" Value="{Binding Search.MinimumPopulation}"/></StackPanel>
+          </WrapPanel>
+        </Expander>
+        <WrapPanel>
+          <Button Content="Find target systems" Click="SearchSystems_Click" Margin="0,0,8,4"/>
+          <Button Content="Reset" Click="Reset_Click" Margin="0,0,8,4"/>
+          <Button Content="Cancel" Click="Cancel_Click" IsVisible="{Binding Search.IsBusy}" Margin="0,0,8,4"/>
+        </WrapPanel>
+        <TextBlock Text="Any or None locks the goal on Reinforce and Opposing Power on Any. A chosen Power can Reinforce its settled systems, Undermine other Powers, or Acquire. Acquire keeps unowned systems within 20 ly of that Power's Fortified systems or 30 ly of its Stronghold systems, and reads Expansion and Contested from conflict progress until the Thursday tick." TextWrapping="Wrap" Classes="muted"/>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card raised">
+      <StackPanel Spacing="8">
+        <TextBlock Text="Results, best sell price first" Classes="card-title"/>
+        <TextBlock Text="Each location lists its rings, then the stations buying the selected mineral. Prices and demand are recent observations, not merit estimates." Classes="muted" TextWrapping="Wrap"/>
+        <ScrollViewer MaxHeight="640" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <ItemsControl x:Name="PowerplayResults" ItemsSource="{Binding Search.MeritRows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:MeritSystemRowViewModel">
+                <Expander IsExpanded="True" Margin="0,0,0,8">
+                  <Expander.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <views:MiningIcon Kind="{Binding StateIcon}" Accent="{Binding Power}" Width="14" Height="14" VerticalAlignment="Center"/>
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                      <TextBlock Text="{Binding Distance}" Classes="muted"/>
+                      <TextBlock Text="{Binding StateText}"/>
+                      <TextBlock Text="{Binding Power}" Classes="muted"/>
+                    </StackPanel>
+                  </Expander.Header>
+                  <StackPanel Spacing="4" Margin="24,4,0,0">
+                    <ItemsControl ItemsSource="{Binding Rings}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MeritLineViewModel">
+                          <StackPanel Orientation="Horizontal" Spacing="8"><views:MiningIcon Kind="{Binding Icon}" Width="14" Height="14"/><TextBlock Text="{Binding Text}" TextWrapping="Wrap"/></StackPanel>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding Stations}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MeritLineViewModel">
+                          <StackPanel Orientation="Horizontal" Spacing="8" Margin="16,0,0,0"><views:MiningIcon Kind="{Binding Icon}" Width="14" Height="14"/><TextBlock Text="{Binding Text}" TextWrapping="Wrap"/></StackPanel>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Expander>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </StackPanel>
+    </Border>
+    <TextBlock Text="{Binding Search.Status}" Classes="muted" TextWrapping="Wrap"/>
+  </StackPanel>
+</UserControl>

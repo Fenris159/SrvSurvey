@@ -87,6 +87,7 @@
     <AvaloniaResource Include="Assets\GuardianGuidance\*.png" />
     <AvaloniaResource Include="Assets\SettingsVisualAids\*.png" />
     <AvaloniaResource Include="Assets\SurfaceMining\*.png" />
+    <AvaloniaResource Include="Assets\Mining\*.png" />
     <AvaloniaResource Include="Assets\VoxStellar\*.png" />
     <AvaloniaResource Include="Assets\Fonts\**\*.ttf" />
     <Content Include="Assets\Fonts\**\OFL.txt"

@@ -79,6 +79,8 @@ public sealed class MiningSearchClientTests
             ("Wrong type", "Outpost", true, now, 300L, 100L, 100L),
             ("Zero price", "Coriolis", true, now, 0L, 100L, 100L),
             ("No trade volume", "Coriolis", true, now, 300L, 0L, 0L),
+            ("Below selected volume", "Coriolis", true, now, 300L, 80L, 80L),
+            ("Above selected volume", "Coriolis", true, now, 300L, 120L, 120L),
         };
         object[] rows = candidates
             .Select(c =>
@@ -132,7 +134,9 @@ public sealed class MiningSearchClientTests
             buying,
             ExcludeCarriers: true,
             LargePads: true,
-            StationType: "Coriolis"
+            StationType: "Coriolis",
+            MinimumDemand: 90,
+            MaximumDemand: 110
         );
         IReadOnlyList<MiningMarketResult> results = spansh
             ? await client.FindSpanshMarketsAsync(query)
@@ -192,6 +196,64 @@ public sealed class MiningSearchClientTests
         Assert.Equal(1000, filters.GetProperty("population").GetProperty("min").GetInt64());
     }
 
+    [Fact]
+    public void ConflictProgressInfersAcquisitionStateUntilControlIsSettled()
+    {
+        PowerplayProgress[] alrai =
+        [
+            new("Nakato Kaine", 0.392558),
+            new("Yuri Grom", 0.044717),
+            new("Aisling Duval", 0.019533),
+            new("Edmund Mahon", 0.017),
+            new("Jerome Archer", 1.439767),
+        ];
+        Assert.Equal("Contested", PowerplayStanding.Infer("", "Unoccupied", alrai));
+        Assert.Equal("Expansion", PowerplayStanding.Infer("", "Unoccupied", [new("Nakato Kaine", 0.392558)]));
+        Assert.Equal("Unoccupied", PowerplayStanding.Infer("", "Unoccupied", [new("Yuri Grom", 0.044717)]));
+        Assert.Equal("", PowerplayStanding.Infer("", "", []));
+        Assert.Equal("Fortified", PowerplayStanding.Infer("Jerome Archer", "Fortified", alrai));
+    }
+
+    [Fact]
+    public async Task ContestedSearchReadsTheUnoccupiedIndexAndKeepsThresholdCrossings()
+    {
+        const string payload = """
+            {"results":[
+              {"name":"Alrai Sector FG-X b1-6","distance":12,"power_state":"Unoccupied","power_conflict_progress":[
+                {"power":"Nakato Kaine","progress":0.392558},
+                {"power":"Jerome Archer","progress":1.439767}
+              ]},
+              {"name":"Quiet","distance":4,"power_state":"Unoccupied","power_conflict_progress":[
+                {"power":"Aisling Duval","progress":0.39}
+              ]},
+              {"name":"Empty","distance":8,"power_state":"Unoccupied"},
+              {"name":"Owned","distance":1,"controlling_power":"Jerome Archer","power_state":"Exploited"}
+            ]}
+            """;
+        using var handler = new RequestHandler(payload);
+        using var http = new HttpClient(handler);
+        IReadOnlyList<MiningSystemResult> contested = await new MiningSearchClient(http).FindSystemsAsync(
+            new("Sol", 80, PowerState: "Contested")
+        );
+        using var body = System.Text.Json.JsonDocument.Parse(handler.Body!);
+        Assert.Equal(
+            "Unoccupied",
+            body.RootElement.GetProperty("filters").GetProperty("power_state").GetProperty("value")[0].GetString()
+        );
+        MiningSystemResult alrai = Assert.Single(contested);
+        Assert.Equal("Alrai Sector FG-X b1-6", alrai.System);
+        Assert.Equal("", alrai.Power);
+        Assert.Equal("Contested", alrai.PowerState);
+
+        IReadOnlyList<MiningSystemResult> open = await new MiningSearchClient(http).FindSystemsAsync(
+            new("Sol", 80, OpenAcquisition: true)
+        );
+        Assert.Equal(4, open.Count);
+        Assert.Contains(open, system => system.System == "Quiet" && system.PowerState == "Expansion");
+        Assert.Contains(open, system => system.System == "Empty" && system.PowerState == "Unoccupied");
+        Assert.Contains(open, system => system.System == "Owned" && system.PowerState == "Exploited");
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(501)]
@@ -220,7 +282,7 @@ public sealed class MiningSearchClientTests
         Assert.Equal(2, request.RootElement.GetProperty("page").GetInt32());
     }
 
-    private sealed class RequestHandler : HttpMessageHandler
+    private sealed class RequestHandler(string payload = "{\"results\":[]}") : HttpMessageHandler
     {
         public string? Body { get; private set; }
 
@@ -230,7 +292,7 @@ public sealed class MiningSearchClientTests
         )
         {
             Body = await request.Content!.ReadAsStringAsync(cancellationToken);
-            return new(HttpStatusCode.OK) { Content = new StringContent("{\"results\":[]}") };
+            return new(HttpStatusCode.OK) { Content = new StringContent(payload) };
         }
     }
 

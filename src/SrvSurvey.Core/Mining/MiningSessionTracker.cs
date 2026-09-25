@@ -49,6 +49,7 @@ public sealed record MiningSession
     public Dictionary<string, double> RefineryEstimates { get; init; } = [];
     public List<string> Screenshots { get; init; } = [];
     public List<MiningProspect> Prospects { get; init; } = [];
+    public List<MiningProspect> ActiveProspects { get; init; } = [];
     public MiningProspect? ActiveProspect { get; set; }
     public List<MiningCollectionEntry> Collections { get; init; } = [];
     public int ProspectorLimpets { get; set; }
@@ -131,7 +132,14 @@ public sealed class MiningSessionTracker
 {
     public MiningSession? Current { get; private set; }
 
-    public void Restore(MiningSession? session) => Current = session is { Ended: null } ? session : null;
+    public void Restore(MiningSession? session)
+    {
+        Current = session is { Ended: null } ? session : null;
+        if (Current is { ActiveProspects.Count: 0, ActiveProspect: { } active })
+        {
+            Current.ActiveProspects.Add(active);
+        }
+    }
 
     public void Start(DateTimeOffset now, string system, string ring, string ship)
     {
@@ -246,31 +254,110 @@ public sealed class MiningSessionTracker
         {
             Remaining = remaining,
         };
-        // Re-targeting the asteroid reports its updated depletion. Keep the
-        // original prospect identity so progress does not inflate session totals.
-        if (remaining < 100 && session.Prospects.Count > 0)
+        // Depletion reports do not include an asteroid id. Match the newest
+        // compatible active result instead of assuming the last launched
+        // prospector is the asteroid being mined.
+        if (remaining < 100 && FindMatchingActiveProspect(session, prospect) is { } match)
         {
-            MiningProspect original = session.Prospects[^1];
+            MiningProspect original = session.ActiveProspects[match.ActiveIndex];
             prospect = prospect with { Time = original.Time };
-            session.Prospects[^1] = prospect;
+            if (match.HistoryIndex >= 0)
+            {
+                session.Prospects[match.HistoryIndex] = prospect;
+            }
+
+            if (remaining > 0)
+            {
+                session.ActiveProspects[match.ActiveIndex] = prospect;
+            }
+            else
+            {
+                session.ActiveProspects.RemoveAt(match.ActiveIndex);
+            }
         }
         else
         {
             session.Prospects.Add(prospect);
+            if (remaining > 0)
+            {
+                session.ActiveProspects.Add(prospect);
+            }
         }
 
-        session.ActiveProspect = remaining > 0 ? prospect : null;
+        session.ActiveProspect = session.ActiveProspects.LastOrDefault();
         return true;
+    }
+
+    private readonly record struct ActiveProspectMatch(int ActiveIndex, int HistoryIndex);
+
+    private static ActiveProspectMatch? FindMatchingActiveProspect(MiningSession session, MiningProspect update)
+    {
+        for (int index = session.ActiveProspects.Count - 1; index >= 0; index--)
+        {
+            MiningProspect candidate = session.ActiveProspects[index];
+            if (candidate.Remaining >= update.Remaining && SameAsteroidReport(candidate, update))
+            {
+                return new ActiveProspectMatch(index, FindHistoryIndex(session, index));
+            }
+        }
+
+        return null;
+    }
+
+    private static int FindHistoryIndex(MiningSession session, int activeIndex)
+    {
+        MiningProspect active = session.ActiveProspects[activeIndex];
+        int referenceIndex = session.Prospects.FindIndex(item => ReferenceEquals(item, active));
+        if (referenceIndex >= 0)
+        {
+            return referenceIndex;
+        }
+
+        int occurrence = session
+            .ActiveProspects.Take(activeIndex + 1)
+            .Count(item => SameProspectSnapshot(item, active));
+        for (int index = 0; index < session.Prospects.Count; index++)
+        {
+            if (SameProspectSnapshot(session.Prospects[index], active) && --occurrence == 0)
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    private static bool SameProspectSnapshot(MiningProspect left, MiningProspect right) =>
+        left.Time == right.Time && Math.Abs(left.Remaining - right.Remaining) < 0.05 && SameAsteroidReport(left, right);
+
+    private static bool SameAsteroidReport(MiningProspect left, MiningProspect right)
+    {
+        if (
+            !left.Core.Equals(right.Core, StringComparison.OrdinalIgnoreCase)
+            || !left.Content.Equals(right.Content, StringComparison.OrdinalIgnoreCase)
+            || left.Materials.Count != right.Materials.Count
+        )
+        {
+            return false;
+        }
+
+        return left.Materials.All(leftMaterial =>
+            right.Materials.Any(rightMaterial =>
+                leftMaterial.Name.Equals(rightMaterial.Name, StringComparison.OrdinalIgnoreCase)
+                && Math.Abs(leftMaterial.Percentage - rightMaterial.Percentage) < 0.05
+            )
+        );
     }
 
     private static bool ReleaseProspect(MiningSession session)
     {
-        if (session.ActiveProspect is null)
+        if (session.ActiveProspect is null && session.ActiveProspects.Count == 0)
         {
             return false;
         }
 
         session.ActiveProspect = null;
+        session.ActiveProspects.Clear();
         return true;
     }
 

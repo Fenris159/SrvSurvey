@@ -10,6 +10,9 @@ public sealed record MiningPreferences
     public MiningSearchPreferences SearchOptions { get; set; } = new();
     public bool AutoStart { get; set; } = true;
     public bool SpeakAnnouncements { get; set; }
+    public bool PlayProspectChime { get; set; }
+    public string Chime { get; set; } = "Two-tone";
+    public int ChimeVolume { get; set; } = 70;
     public string Voice { get; set; } = "";
     public int SpeechVolume { get; set; } = 70;
     public int SpeechRate { get; set; }
@@ -25,6 +28,7 @@ public sealed record MiningPreferences
     public bool HideInSupercruise { get; set; } = true;
     public bool OverlaysOnlyDuringSession { get; set; } = true;
     public int NotificationSeconds { get; set; } = 15;
+    public int PersistentProspectSlots { get; set; } = 4;
     public string HomeSystem { get; set; } = "";
     public Dictionary<string, double> Thresholds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public List<MiningFiregroup> Firegroups { get; set; } = [];
@@ -174,6 +178,8 @@ public sealed class MiningStore(string directory)
                 || p.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100)
             )
             || settings.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100)
+            || settings.ChimeVolume is < 0 or > 100
+            || settings.PersistentProspectSlots is < 1 or > 8
             || settings.Firegroups.Any(g =>
                 g is null || g.Group is < 0 or > 7 || g.Primary is null || g.Secondary is null
             )
@@ -191,6 +197,7 @@ public sealed class MiningStore(string directory)
         || s.Thresholds is null
         || s.QualityAdjustments is null
         || s.Prospects is null
+        || s.ActiveProspects is null
         || s.Collections is null
         || s.Screenshots is null
         || s.RefineryEstimates is null
@@ -200,6 +207,7 @@ public sealed class MiningStore(string directory)
         )
         || s.Screenshots.Any(string.IsNullOrWhiteSpace)
         || s.Prospects.Any(InvalidProspect)
+        || s.ActiveProspects.Any(InvalidProspect)
         || (s.ActiveProspect is { } activeProspect && InvalidProspect(activeProspect))
         || s.Collections.Any(c => c is null || c.Name is null || c.Count < 0)
         || s.RefineryEstimates.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 16);
