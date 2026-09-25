@@ -890,7 +890,7 @@ public sealed class MiningSearchClient : IDisposable
 
             return prices;
         }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+        catch (Exception ex) when (IsProviderFailure(ex, cancellationToken))
         {
             PriceMarksUnavailable = true;
             nextCommodityReportRefresh = timeProvider.GetUtcNow() + CommodityReportRetryDelay;
@@ -1076,7 +1076,7 @@ public sealed class MiningSearchClient : IDisposable
         {
             markets = await FindMarketsAsync(query, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+        catch (Exception ex) when (IsProviderFailure(ex, cancellationToken))
         {
             markets = [];
         }
@@ -1711,7 +1711,7 @@ public sealed class MiningSearchClient : IDisposable
         {
             return (await FindArdentTradersAsync(reference, radius, minimumPadSize, cancellationToken), ArdentProvider);
         }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+        catch (Exception ex) when (IsProviderFailure(ex, cancellationToken))
         {
             return (await FindTradersAsync(reference, trader, radius, page, cancellationToken), "Spansh fallback");
         }
@@ -1835,6 +1835,10 @@ public sealed class MiningSearchClient : IDisposable
 
     private static Dictionary<string, object> InitialFilters(double radius, bool galaxyWide) =>
         galaxyWide ? [] : DistanceFilter(radius);
+
+    private static bool IsProviderFailure(Exception exception, CancellationToken cancellationToken) =>
+        exception is HttpRequestException or JsonException or IOException or InvalidDataException
+        || exception is OperationCanceledException && !cancellationToken.IsCancellationRequested;
 
     private static IEnumerable<JsonElement> Results(JsonDocument document) =>
         MiningJson.Array(document.RootElement, "results");

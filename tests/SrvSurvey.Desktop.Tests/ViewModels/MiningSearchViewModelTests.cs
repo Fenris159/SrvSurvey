@@ -1155,6 +1155,9 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal(10, model.ResultLimit);
         Assert.Equal("Overlaps", model.PlatinumMode);
         Assert.Equal("Jerome Archer", model.OpposingPower);
+        model.LoadOptions(new() { MaximumDemand = 0 });
+        model.PreparePowerplay();
+        Assert.Equal(0, model.MaximumDemand);
     }
 
     [Fact]
@@ -1590,6 +1593,7 @@ public sealed class MiningSearchViewModelTests
         AcquireResultRowViewModel row = Assert.Single(model.AcquireRows);
         Assert.Equal("Fallback Port (L)", Assert.Single(row.StationBlocks).Heading);
         Assert.Equal("Monazite", Assert.Single(row.StationBlocks).Commodity);
+        Assert.Empty(Assert.Single(row.StationBlocks).OtherCommodities);
         Assert.Equal("RingRocky", Assert.Single(Assert.Single(row.Miners).RingLines).RingTypeIcon);
         Assert.True(handler.SpanshMarketRequested);
     }
@@ -1671,6 +1675,29 @@ public sealed class MiningSearchViewModelTests
     }
 
     [Fact]
+    public async Task AcquisitionRetainsProviderFailureInItsFinalStatus()
+    {
+        using var http = new HttpClient(new AcquisitionRangeHandler(failBodies: true));
+        using var model = new MiningSearchViewModel(
+            new(http),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+        };
+
+        await model.SearchSystemsAsync();
+
+        Assert.Contains("Request failed. Try again.", model.Status, StringComparison.Ordinal);
+        Assert.DoesNotContain("Searching", model.Status, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ExpansionUsesLocalObservationsAndIsOnlyAnAcquisitionCandidate()
     {
         var cache = new MiningCommunityCache();
@@ -1740,7 +1767,7 @@ public sealed class MiningSearchViewModelTests
         }
     }
 
-    private sealed class AcquisitionRangeHandler : HttpMessageHandler
+    private sealed class AcquisitionRangeHandler(bool failBodies = false) : HttpMessageHandler
     {
         public bool HasSpanshMarket { get; init; }
         public bool SecondTargetHasMarket { get; init; }
@@ -1759,6 +1786,11 @@ public sealed class MiningSearchViewModelTests
             if (request.Content is null)
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("[]") };
+            }
+
+            if (failBodies && request.RequestUri!.AbsolutePath.EndsWith("/bodies/search", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
             }
 
             using var body = System.Text.Json.JsonDocument.Parse(
@@ -1781,7 +1813,7 @@ public sealed class MiningSearchViewModelTests
                 SpanshMarketRequested = true;
                 string marketSystem = SecondTargetHasMarket ? "Claim 2" : "Claim";
                 string market =
-                    $$"""{"results":[{"system_name":"{{marketSystem}}","name":"Fallback Port","type":"Coriolis Starport","large_pads":1,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","market":[{"commodity":"Monazite","sell_price":600000,"demand":1000}]}]}""";
+                    $$"""{"results":[{"system_name":"{{marketSystem}}","name":"Fallback Port","type":"Coriolis Starport","large_pads":1,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","market":[{"commodity":"Monazite","sell_price":600000,"demand":1000},{"commodity":"Tea","sell_price":800000,"demand":1000}]}]}""";
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(market) };
             }
 

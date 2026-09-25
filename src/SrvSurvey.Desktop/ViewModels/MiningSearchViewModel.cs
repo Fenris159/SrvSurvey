@@ -587,11 +587,6 @@ public sealed class MiningSearchViewModel(
             Mineral = AnyPower;
         }
 
-        if (MaximumDemand == 0)
-        {
-            MaximumDemand = 90_000;
-        }
-
         if (currentSystem.Length > 0)
         {
             referenceTracksCommander = true;
@@ -1760,6 +1755,7 @@ public sealed class MiningSearchViewModel(
             .ToArray();
         token.ThrowIfCancellationRequested();
         Systems = result;
+        Status = "";
         await PublishAcquisitionRowsAsync(
             pairs.Where(pair => result.Any(system => Same(system.System, pair.Target.System))).ToArray(),
             token
@@ -2166,25 +2162,13 @@ public sealed class MiningSearchViewModel(
         string[] named = SelectedMinerals;
         string[] materials =
             named.Length > 0 ? named : PowerplayMinerals.Where(PlanetaryMiningPlan.IsEdpmCommodity).ToArray();
+        int stationLimit = MiningMaterialSelection.StationLimit(MineralChips.Selected, acquire: true);
         foreach (string system in systems.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             try
             {
                 IReadOnlyList<MiningMarketResult> imports = await AcquireImportsAsync(system, materials, token);
-                quotes.AddRange(
-                    imports
-                        .Where(market =>
-                            market.Price > 0
-                            && market.Demand > 0
-                            && PlanetaryMiningPlan.IsEdpmCommodity(market.Commodity)
-                        )
-                        .GroupBy(market => market.Station, StringComparer.OrdinalIgnoreCase)
-                        .SelectMany(group =>
-                            group
-                                .OrderByDescending(market => market.Price)
-                                .DistinctBy(market => MiningCommodityName.Key(market.Commodity), StringComparer.Ordinal)
-                        )
-                );
+                quotes.AddRange(FilterStationQuotes(imports, named, stationLimit));
             }
             catch (Exception ex) when (IsProviderFailure(ex))
             {
@@ -2194,6 +2178,32 @@ public sealed class MiningSearchViewModel(
 
         return quotes;
     }
+
+    private IEnumerable<MiningMarketResult> FilterStationQuotes(
+        IEnumerable<MiningMarketResult> markets,
+        string[] named,
+        int stationLimit
+    ) =>
+        markets
+            .Where(market =>
+                market.Price > 0
+                && market.Demand > 0
+                && (
+                    IsPlanetaryMining
+                        ? PlanetaryMiningPlan.Materials.Any(material =>
+                            MiningCommodityName.Same(material, market.Commodity)
+                        )
+                        : PlanetaryMiningPlan.IsEdpmCommodity(market.Commodity)
+                )
+                && (named.Length == 0 || named.Any(name => MiningCommodityName.Same(name, market.Commodity)))
+            )
+            .GroupBy(market => market.Station, StringComparer.OrdinalIgnoreCase)
+            .SelectMany(group =>
+                group
+                    .OrderByDescending(market => market.Price)
+                    .DistinctBy(market => MiningCommodityName.Key(market.Commodity), StringComparer.Ordinal)
+                    .Take(stationLimit)
+            );
 
     private async Task<IReadOnlyList<MiningSystemResult>> CollectPowerSystemsAsync(
         string state,
@@ -3793,7 +3803,7 @@ public sealed class MiningSearchViewModel(
         MarketMaximumVolume = values.MarketMaximumVolume;
         MarketMaximumAgeDays = values.MarketMaximumAgeDays;
         MinimumDemand = values.MinimumDemand;
-        MaximumDemand = values.MaximumDemand == 0 ? 90_000 : values.MaximumDemand;
+        MaximumDemand = values.MaximumDemand;
         if (!string.IsNullOrWhiteSpace(values.PledgedPower))
         {
             NoteDetectedPower(values.PledgedPower);

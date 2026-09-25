@@ -7,8 +7,13 @@ namespace SrvSurvey.Core.Journal;
 /// </summary>
 public static class JournalPowerplayPledge
 {
-    public static string ReadLatest(IEnumerable<string> journalDirectories)
+    public static string ReadLatest(
+        IEnumerable<string> journalDirectories,
+        string frontierId,
+        string? commanderName = null
+    )
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         string power = "";
         foreach (
             FileInfo journal in journalDirectories
@@ -20,33 +25,94 @@ public static class JournalPowerplayPledge
                 .OrderBy(static file => file.LastWriteTimeUtc)
         )
         {
-            power = ReadJournal(journal, power);
+            power = ReadJournal(journal, power, frontierId, commanderName);
         }
 
         return power;
     }
 
-    private static string ReadJournal(FileInfo journal, string power)
+    private static string ReadJournal(FileInfo journal, string power, string frontierId, string? commanderName)
     {
-        foreach (string line in File.ReadLines(journal.FullName))
+        string currentFrontierId = "";
+        string currentCommanderName = "";
+        try
         {
-            if (line.Length == 0 || !line.Contains("Powerplay", StringComparison.Ordinal))
+            using var stream = new FileStream(
+                journal.FullName,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete
+            );
+            using var reader = new StreamReader(stream);
+            while (reader.ReadLine() is { } line)
             {
-                continue;
-            }
+                if (
+                    line.Length == 0
+                    || !line.Contains("Powerplay", StringComparison.Ordinal)
+                        && !line.Contains("\"Commander\"", StringComparison.Ordinal)
+                        && !line.Contains("\"LoadGame\"", StringComparison.Ordinal)
+                )
+                {
+                    continue;
+                }
 
-            try
-            {
-                using var document = JsonDocument.Parse(line);
-                power = ApplyEvent(document.RootElement, power);
+                ApplyLine(line, frontierId, commanderName, ref currentFrontierId, ref currentCommanderName, ref power);
             }
-            catch (JsonException)
-            {
-                // A damaged journal line does not erase a pledge already read.
-            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // A journal can be replaced or locked while the game is writing it.
         }
 
         return power;
+    }
+
+    private static void ApplyLine(
+        string line,
+        string frontierId,
+        string? commanderName,
+        ref string currentFrontierId,
+        ref string currentCommanderName,
+        ref string power
+    )
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(line);
+            JsonElement entry = document.RootElement;
+            if (entry.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            switch (Text(entry, "event"))
+            {
+                case "Commander":
+                    currentFrontierId = Text(entry, "FID");
+                    currentCommanderName = Text(entry, "Name");
+                    break;
+                case "LoadGame":
+                    currentFrontierId = Text(entry, "FID");
+                    currentCommanderName = Text(entry, "Commander");
+                    break;
+                default:
+                    if (
+                        currentFrontierId.Equals(frontierId, StringComparison.OrdinalIgnoreCase)
+                        || currentFrontierId.Length == 0
+                            && commanderName is not null
+                            && currentCommanderName.Equals(commanderName, StringComparison.OrdinalIgnoreCase)
+                    )
+                    {
+                        power = ApplyEvent(entry, power);
+                    }
+
+                    break;
+            }
+        }
+        catch (JsonException)
+        {
+            // A damaged journal line does not erase a pledge already read.
+        }
     }
 
     private static string ApplyEvent(JsonElement element, string previousPower) =>

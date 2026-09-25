@@ -13,6 +13,7 @@ public sealed record MiningAnnouncementOutputs(Platform.IMiningSpeechOutput Spee
 public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 {
     private readonly MiningStore store;
+    private IReadOnlyList<string> journalDirectories = [];
     private readonly FiregroupsWorkspaceViewModel? firegroups;
     private readonly TimeProvider clock;
     private DateTimeOffset lastRecoverySave;
@@ -104,7 +105,6 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             resolver,
             community.Cache
         );
-        RememberPledgedPower();
         Search.ConfigureResultCache(MiningSearchResultCache.ForDirectory(directory));
         if (miningSearchClient.CachedCommodityPriceReport is { Count: > 0 } cachedPrices)
         {
@@ -157,6 +157,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public string CommunityStatus => community.Status;
     public MiningSearchViewModel Search { get; }
+
+    public void UseJournalDirectories(IReadOnlyList<string> paths) => journalDirectories = paths.ToArray();
+
     public IReadOnlyList<string> Voices
     {
         get => voices;
@@ -623,7 +626,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
         if (commander != context.FrontierId)
         {
-            Load(context.FrontierId!);
+            Load(context.FrontierId!, context.CommanderName);
         }
 
         if (!storageAvailable)
@@ -1375,7 +1378,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
     }
 
-    private void Load(string id)
+    private void Load(string id, string? commanderName)
     {
         commander = id;
         capacity = 0;
@@ -1403,15 +1406,15 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             Status = "Mining data could not be loaded: " + ex.Message;
         }
         Search.LoadOptions(Settings.SearchOptions);
-        RememberPledgedPower();
+        RememberPledgedPower(id, commanderName);
         Search.RestoreLastCompletedPowerplaySearch();
         community.SetEnabled(Settings.ReceiveCommunityData);
         Changed(nameof(Settings));
     }
 
-    private void RememberPledgedPower()
+    private void RememberPledgedPower(string frontierId, string? commanderName)
     {
-        string pledged = JournalPowerplayPledge.ReadLatest(JournalFolderLocator.ResolveCurrent().AvailablePaths);
+        string pledged = JournalPowerplayPledge.ReadLatest(journalDirectories, frontierId, commanderName);
         if (pledged.Length > 0)
         {
             Search.NoteDetectedPower(pledged);

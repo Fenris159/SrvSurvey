@@ -61,7 +61,7 @@ public sealed class ArdentApi
 {
     public const int MaximumResponseBytes = 8 * 1024 * 1024;
     public static readonly Uri Origin = new("https://api.ardent-insight.com/v2/");
-    private static readonly SemaphoreSlim Gate = new(1, 1);
+    private readonly SemaphoreSlim gate = new(1, 1);
 
     private readonly HttpClient client;
     private readonly Uri origin;
@@ -89,7 +89,7 @@ public sealed class ArdentApi
         CancellationToken cancellationToken = default
     )
     {
-        await Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             string cacheKey = new Uri(origin, relativePath).AbsoluteUri;
@@ -121,14 +121,17 @@ public sealed class ArdentApi
 
             return document;
         }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+        catch (Exception ex)
+            when (ex is HttpRequestException or JsonException or IOException or InvalidDataException
+                || ex is OperationCanceledException && !cancellationToken.IsCancellationRequested
+            )
         {
             Report(relativePath, ex);
             throw;
         }
         finally
         {
-            Gate.Release();
+            gate.Release();
         }
     }
 
