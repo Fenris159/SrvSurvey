@@ -55,6 +55,7 @@ public sealed partial class SystemNameEntry : UserControl
 
     private readonly ISystemNameSuggestionClient suggestionClient;
     private readonly TimeSpan suggestionDelay;
+    private TopLevel? openTopLevel;
     private IReadOnlyList<SystemNameSuggestion> suggestions = [];
     private int selectedIndex = -1;
     private string status = string.Empty;
@@ -141,10 +142,39 @@ public sealed partial class SystemNameEntry : UserControl
 
     public bool HasStatus => !string.IsNullOrWhiteSpace(Status);
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        DetachOutsidePointerHandler();
+        openTopLevel = TopLevel.GetTopLevel(this);
+        openTopLevel?.AddHandler(PointerPressedEvent, ReleaseWhenPressedOutside, RoutingStrategies.Tunnel, true);
+    }
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        DetachOutsidePointerHandler();
         CancelSuggestions();
         base.OnDetachedFromVisualTree(e);
+    }
+
+    private void DetachOutsidePointerHandler()
+    {
+        openTopLevel?.RemoveHandler(PointerPressedEvent, ReleaseWhenPressedOutside);
+        openTopLevel = null;
+    }
+
+    private void ReleaseWhenPressedOutside(object? sender, PointerPressedEventArgs eventArgs)
+    {
+        if (eventArgs.Source is Visual source && (ReferenceEquals(source, this) || this.IsVisualAncestorOf(source)))
+        {
+            return;
+        }
+
+        DismissSuggestions();
+        if (IsKeyboardFocusWithin)
+        {
+            TopLevel.GetTopLevel(this)?.FocusManager?.Focus(null);
+        }
     }
 
     private void OnTextChanged(string? value)
@@ -154,6 +184,15 @@ public sealed partial class SystemNameEntry : UserControl
         {
             selectedSystemName = null;
             SelectedSystemAddress = null;
+        }
+
+        if (!IsKeyboardFocusWithin)
+        {
+            selectedSystemName = query;
+            Suggestions = [];
+            SelectedIndex = -1;
+            Status = string.Empty;
+            return;
         }
 
         ScheduleSuggestions(query);

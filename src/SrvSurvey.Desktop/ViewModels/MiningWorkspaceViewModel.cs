@@ -13,6 +13,7 @@ public sealed record MiningAnnouncementOutputs(Platform.IMiningSpeechOutput Spee
 public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 {
     private readonly MiningStore store;
+    private IReadOnlyList<string> journalDirectories = [];
     private readonly FiregroupsWorkspaceViewModel? firegroups;
     private readonly TimeProvider clock;
     private DateTimeOffset lastRecoverySave;
@@ -88,7 +89,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         this.resolver = resolver;
         this.bookmarks = bookmarks;
         Search = new MiningSearchViewModel(
-            new MiningSearchClient(networkClient),
+            new MiningSearchClient(networkClient, commodityReportStore: new MiningCommodityPriceReportStore(directory)),
             bookmarks,
             CacheRing,
             () => state.Data.Rings,
@@ -139,6 +140,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public string CommunityStatus => community.Status;
     public MiningSearchViewModel Search { get; }
+
+    public void UseJournalDirectories(IReadOnlyList<string> paths) => journalDirectories = paths.ToArray();
+
     public IReadOnlyList<string> Voices
     {
         get => voices;
@@ -383,6 +387,15 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         get => status;
         set => Set(ref status, value);
     }
+
+    public void UseCommanderSystem(string? system)
+    {
+        if (!string.IsNullOrWhiteSpace(system))
+        {
+            Search.UpdateCurrentLocation(system);
+        }
+    }
+
     public int SelectedTab
     {
         get => selectedTab;
@@ -528,6 +541,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         EliteStatus? currentStatus
     )
     {
+        NotePledgedPower(currentStatus);
         sessionAvailable =
             !update.IsAwaitingCommanderIdentity
             && !context.IsShutdown
@@ -544,7 +558,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
         if (commander != context.FrontierId)
         {
-            Load(context.FrontierId!);
+            Load(context.FrontierId!, context.CommanderName);
         }
 
         if (!storageAvailable)
@@ -617,14 +631,28 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
         if (entry.EventName is "Powerplay" or "PowerplayJoin")
         {
-            string power = Text(entry.Payload, "Power");
-            Search.PledgedPower = MiningSearchViewModel.Powers.Contains(power) ? power : "Any";
+            Search.NoteDetectedPower(Text(entry.Payload, "Power"));
         }
 
         if (entry.EventName == "PowerplayLeave")
         {
-            Search.PledgedPower = "Any";
+            Search.NoteDetectedPower("");
         }
+    }
+
+    private void NotePledgedPower(EliteStatus? status)
+    {
+        if (status?.AdditionalProperties is not { } extra)
+        {
+            return;
+        }
+
+        if (!extra.TryGetValue("Powerplay", out JsonElement powerplay) || powerplay.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        Search.NoteDetectedPower(powerplay.TryGetProperty("Power", out JsonElement power) ? power.GetString() : "");
     }
 
     private void UpdatePosition(JsonElement json)
@@ -1280,7 +1308,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
     }
 
-    private void Load(string id)
+    private void Load(string id, string? commanderName)
     {
         commander = id;
         capacity = 0;
@@ -1308,8 +1336,18 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             Status = "Mining data could not be loaded: " + ex.Message;
         }
         Search.LoadOptions(Settings.SearchOptions);
+        RememberPledgedPower(id, commanderName);
         community.SetEnabled(Settings.ReceiveCommunityData);
         Changed(nameof(Settings));
+    }
+
+    private void RememberPledgedPower(string frontierId, string? commanderName)
+    {
+        string pledged = JournalPowerplayPledge.ReadLatest(journalDirectories, frontierId, commanderName);
+        if (pledged.Length > 0)
+        {
+            Search.NoteDetectedPower(pledged);
+        }
     }
 
     private void PauseRecoveredSession()

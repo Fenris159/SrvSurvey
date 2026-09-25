@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SrvSurvey.Desktop.Views.AcquireTreeLink"
+             x:Name="LinkRoot"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             MinHeight="28">
+  <Grid x:Name="LinkGrid" ColumnDefinitions="*,*" RowDefinitions="*,*">
+    <Border x:Name="VerticalLine"
+            Grid.ColumnSpan="2"
+            Width="2"
+            HorizontalAlignment="Center"
+            Background="{DynamicResource RavenAccentBrush}"/>
+    <Border x:Name="HorizontalLine"
+            Grid.ColumnSpan="2"
+            Grid.RowSpan="2"
+            Height="2"
+            VerticalAlignment="Center"
+            Background="{DynamicResource RavenAccentBrush}"/>
+  </Grid>
+</UserControl>

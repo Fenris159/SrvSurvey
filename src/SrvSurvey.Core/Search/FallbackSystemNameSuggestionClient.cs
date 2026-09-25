@@ -5,8 +5,14 @@ namespace SrvSurvey.Core.Search;
 public sealed class FallbackSystemNameSuggestionClient(
     ISystemNameSuggestionClient primary,
     ISystemNameSuggestionClient fallback
-) : ISystemNameSuggestionClient
+) : ISystemNameSuggestionClient, IDisposable
 {
+    public void Dispose()
+    {
+        (primary as IDisposable)?.Dispose();
+        (fallback as IDisposable)?.Dispose();
+    }
+
     public async Task<IReadOnlyList<SystemNameSuggestion>> SearchAsync(
         string query,
         CancellationToken cancellationToken = default

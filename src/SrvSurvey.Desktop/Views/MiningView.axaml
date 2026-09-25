@@ -314,7 +314,7 @@
           <TextBlock Text="Powerplay"/>
         </TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-          <views:MiningPowerplayView DataContext="{Binding}" Margin="4,12,4,16"/>
+          <views:MiningPowerplayView x:Name="PowerplayWorkspacePage" DataContext="{Binding}" Margin="4,12,4,16"/>
         </ScrollViewer>
       </TabItem>
       <TabItem Classes="mining-workspace-tab">

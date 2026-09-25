@@ -10,7 +10,23 @@ namespace SrvSurvey.Desktop.Views;
 
 public sealed partial class MineMapView : UserControl
 {
-    public MineMapView() => InitializeComponent();
+    public MineMapView()
+    {
+        InitializeComponent();
+        SurfaceSearchResultsScroller.SizeChanged += (_, _) => FitSurfaceSearchResults();
+    }
+
+    internal (ScrollViewer Scroller, Control Table) SurfaceResultsWidthTarget =>
+        (SurfaceSearchResultsScroller, SurfaceSearchResultsTable);
+
+    private void FitSurfaceSearchResults()
+    {
+        double width = SurfaceSearchResultsScroller.Bounds.Width;
+        if (width > 0)
+        {
+            SurfaceSearchResultsTable.Width = Math.Max(1280, width);
+        }
+    }
 
     private void OnSurveyRowTapped(object? sender, TappedEventArgs eventArgs)
     {

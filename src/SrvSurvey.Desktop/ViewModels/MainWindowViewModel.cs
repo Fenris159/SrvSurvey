@@ -204,6 +204,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private DateTimeOffset lastIdleHousekeepingAt;
     private bool isAwaitingCommanderIdentity;
     private bool disposed;
+    private readonly FallbackSystemNameSuggestionClient boxelNameSuggestions;
 
     public MainWindowViewModel(string? configuredJournalDirectory)
         : this(configuredJournalDirectory, new MainWindowViewModelConstructionContext()) { }
@@ -517,6 +518,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 externalNetworkClient,
                 firegroups: Firegroups
             );
+            MiningWorkspace.UseJournalDirectories(IsDiagnosticReplay ? [] : folderResolution.AvailablePaths);
+            MiningWorkspace.Search.UseDiagnosticLog(message => resolvedApplicationLogService?.Append(message));
+            FrontierProfile.PropertyChanged += OnFrontierProfileMiningLocationChanged;
+            rollback.Add(() => FrontierProfile.PropertyChanged -= OnFrontierProfileMiningLocationChanged);
+            MiningWorkspace.UseCommanderSystem(FrontierProfile.Snapshot?.LastSystem);
             rollback.Add(MiningWorkspace.Dispose);
             ExobiologyReferenceCatalog sharedExobiologyCatalog = legacyReferences.Exobiology;
             string defaultCodexImageCache = Path.Combine(AppDataPaths.CacheDirectory, "codex-images");
@@ -563,13 +569,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 }
             );
             rollback.Add(boxelSearchSession.DisposeAsync);
+            boxelNameSuggestions = new FallbackSystemNameSuggestionClient(
+                new EdsmSystemNameSuggestionClient(externalNetworkClient),
+                new ArdentSystemNameSuggestionClient(externalNetworkClient)
+            );
+            rollback.Add(boxelNameSuggestions.Dispose);
             BoxelSearch = new BoxelSearchViewModel(
                 boxelSearchSession,
                 knownSystems: knownSystems,
-                systemNameSuggestionClient: new FallbackSystemNameSuggestionClient(
-                    new EdsmSystemNameSuggestionClient(externalNetworkClient),
-                    new ArdentSystemNameSuggestionClient(externalNetworkClient)
-                ),
+                systemNameSuggestionClient: boxelNameSuggestions,
                 surveyStats: boxelSurveyStats
             );
             rollback.Add(BoxelSearch.CancelPendingOperations);
@@ -677,6 +685,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 ShowBookmarkEditor,
                 Bookmarks.Catalog,
                 requestOverviewMapVisibility: () => OverlayPanelVisibility.EnsureVisible("PlotMineMap")
+            );
+            MineMap.UseSurfaceSearch(
+                new MiningSearchClient(
+                    externalNetworkClient,
+                    commodityReportStore: new MiningCommodityPriceReportStore(AppDataPaths.DataDirectory)
+                ),
+                message => resolvedApplicationLogService?.Append(message)
             );
             rollback.Add(MineMap.Dispose);
             MineMap.PropertyChanged += OnMineMapPropertyChanged;
@@ -2910,6 +2925,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private async Task UpdateFeatureSystemContextsAsync(bool forceCodexBingoRefresh)
     {
         Search.UpdateCurrentSystem(journalState.SystemName, journalState.StarPosition, journalState.SystemAddress);
+        MineMap.UpdateCurrentSystem(journalState.SystemName);
         NearestSystems.UpdateContext(
             journalState.SystemName,
             journalState.StarPosition,
@@ -5321,7 +5337,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public void Dispose()
     {
-        Task.Run(() => DisposeAsync().AsTask(), CancellationToken.None).GetAwaiter().GetResult();
+        try
+        {
+            Task.Run(() => DisposeAsync().AsTask(), CancellationToken.None).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            boxelNameSuggestions.Dispose();
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -5361,6 +5384,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(routeAutoCopyCoordinator.Dispose);
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
         TryDispose(BoxelSearch.CancelPendingOperations);
+        TryDispose(boxelNameSuggestions.Dispose);
         await TryDisposeAsync(boxelSearchSession.DisposeAsync);
         TryDispose(JournalPostProcessor.Cancel);
         TryDispose(CancelSystemBodyDataRequest);
@@ -5375,6 +5399,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);
         MineMap.PropertyChanged -= OnMineMapPropertyChanged;
+        FrontierProfile.PropertyChanged -= OnFrontierProfileMiningLocationChanged;
         TryDispose(Mining.Dispose);
         TryDispose(MineMap.Dispose);
         TryDispose(SurfaceSurvey.Dispose);
@@ -5498,6 +5523,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         if (eventArgs.PropertyName == nameof(BiologyRewardSettingsViewModel.Thresholds))
         {
             SystemSurvey.UpdateBiologyRewardThresholds(BiologyRewards.Thresholds);
+        }
+    }
+
+    private void OnFrontierProfileMiningLocationChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (
+            args.PropertyName
+            is nameof(CommanderProfileViewModel.Snapshot)
+                or nameof(CommanderProfileViewModel.CurrentLocation)
+                or null
+                or ""
+        )
+        {
+            MiningWorkspace.UseCommanderSystem(FrontierProfile.Snapshot?.LastSystem);
         }
     }
 

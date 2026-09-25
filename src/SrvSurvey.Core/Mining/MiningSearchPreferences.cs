@@ -20,7 +20,7 @@ public sealed record MiningSearchPreferences
     public bool LargePads { get; init; }
     public int MaximumAgeDays { get; init; } = 2;
     public long MinimumDemand { get; init; }
-    public long MaximumDemand { get; init; }
+    public long MaximumDemand { get; init; } = 90_000;
     public int ResultLimit { get; init; } = 30;
     public string PlatinumMode { get; init; } = "Spots++";
     public string StationType { get; init; } = "";
@@ -40,4 +40,5 @@ public sealed record MiningSearchPreferences
     public string MarketAgeUnit { get; init; } = "Hours";
     public long MinimumPopulation { get; init; }
     public string TraderType { get; init; } = "Raw";
+    public string PledgedPower { get; init; } = "";
 }

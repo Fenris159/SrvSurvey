@@ -14,7 +14,6 @@ public sealed class MiningWorkspaceViewModelTests
         try
         {
             using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory));
-            Assert.Equal("Any", vm.Search.PledgedPower);
             var context = new JournalSessionState();
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             JournalEventEnvelope[] entries =
@@ -56,6 +55,50 @@ public sealed class MiningWorkspaceViewModelTests
             {
                 Directory.Delete(directory, true);
             }
+        }
+    }
+
+    [Fact]
+    public void PledgeRecoveryUsesSuppliedJournalsForTheActiveCommander()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        string journals = Path.Combine(directory, "journals");
+        Directory.CreateDirectory(journals);
+        try
+        {
+            File.WriteAllLines(
+                Path.Combine(journals, "Journal.2026-09-20T000000.01.log"),
+                [
+                    """{"event":"Commander","Name":"Test","FID":"F1"}""",
+                    """{"event":"Powerplay","Power":"Archon Delaine"}""",
+                    """{"event":"Commander","Name":"Other","FID":"F2"}""",
+                    """{"event":"Powerplay","Power":"Felicia Winters"}""",
+                ]
+            );
+            var context = new JournalSessionState();
+            JournalEventEnvelope login = FiregroupsWorkspaceViewModelTests.Event(
+                """{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}"""
+            );
+            context.Apply(login);
+            var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+
+            using var live = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory));
+            live.UseJournalDirectories([journals]);
+            live.Apply(new(null, [login], ship, null, null, null, [], true), context, null, ship);
+            Assert.Equal("Archon Delaine", live.Search.PledgedPower);
+
+            using var replay = new MiningWorkspaceViewModel(
+                directory,
+                new Resolver(),
+                new BookmarksViewModel(directory)
+            );
+            replay.UseJournalDirectories([]);
+            replay.Apply(new(null, [login], ship, null, null, null, [], true), context, null, ship);
+            Assert.Equal("Any", replay.Search.PledgedPower);
+        }
+        finally
+        {
+            Directory.Delete(directory, true);
         }
     }
 

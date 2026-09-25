@@ -16,7 +16,7 @@ public sealed class MineMapViewMarkupTests
             .Select(item => item.Attribute("Header")?.Value ?? string.Empty)
             .ToArray();
 
-        Assert.Equal(["Surface Maps", "Survey map", "Hotspot List", "Surface Hunt", "Instructions"], headers);
+        Assert.Equal(["Surface Maps", "Survey map", "Hotspot List", "Surface Hunt", "Search", "Instructions"], headers);
         XElement map = Assert.Single(document.Descendants(), element => element.Name.LocalName == "MineMapControl");
         Assert.Equal("True", map.Attribute("AllowViewportInteraction")?.Value);
         Assert.Contains("ViewportZoom", map.Attribute("ViewportZoom")?.Value);
@@ -35,7 +35,10 @@ public sealed class MineMapViewMarkupTests
             activationBindings,
             binding => Assert.Equal("{Binding ActivateSelectedSurveyCommand}", binding.Attribute("Command")?.Value)
         );
-        XElement slider = Assert.Single(document.Descendants(avalonia + "Slider"));
+        XElement slider = Assert.Single(
+            document.Descendants(avalonia + "Slider"),
+            candidate => candidate.Attribute("Value")?.Value.Contains("ViewportZoom", StringComparison.Ordinal) == true
+        );
         Assert.Equal("1", slider.Attribute("Minimum")?.Value);
         Assert.Equal("15", slider.Attribute("Maximum")?.Value);
         Assert.Contains(
@@ -267,7 +270,7 @@ public sealed class MineMapViewMarkupTests
                 "GEOLOGY TO LOOK FOR",
                 "SPECIAL CLUE",
                 "AVG GALACTIC PRICE",
-                "PEAK SELL SNAPSHOT",
+                "MAX SELL CR/T",
             ],
             surfaceHuntHeader
                 .Descendants(avalonia + "TextBlock")

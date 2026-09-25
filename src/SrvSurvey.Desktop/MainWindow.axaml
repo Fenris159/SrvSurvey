@@ -210,8 +210,8 @@
       <views:ExplorationView IsVisible="{Binding IsExplorationSelected}" />
       <views:FleetCarrierWorkspaceView IsVisible="{Binding IsFleetCarrierSelected}" />
       <views:FiregroupsView IsVisible="{Binding IsFiregroupsSelected}" />
-      <views:MiningView IsVisible="{Binding IsMiningSelected}" />
-      <views:MineMapView IsVisible="{Binding IsMineMapSelected}" />
+      <views:MiningView x:Name="MiningWorkspacePage" IsVisible="{Binding IsMiningSelected}" />
+      <views:MineMapView x:Name="SurfaceMiningWorkspacePage" IsVisible="{Binding IsMineMapSelected}" />
       <views:ExobiologyView IsVisible="{Binding IsExobiologySelected}" />
       <views:TravelView IsVisible="{Binding IsTravelSelected}" />
       <views:BoxelView IsVisible="{Binding IsBoxelSelected}" />
@@ -225,6 +225,42 @@
       <views:SettingsView IsVisible="{Binding IsSettingsSelected}" />
       <views:ThemeView IsVisible="{Binding IsThemeSelected}" />
       <views:GuidesView IsVisible="{Binding IsGuidesSelected}" />
+      <Button x:Name="MiningWidthExpandButton"
+              Classes="nav-overlay-settings"
+              Width="28" Height="28" Padding="4"
+              HorizontalAlignment="Right" VerticalAlignment="Top"
+              Margin="0,16,16,0"
+              ZIndex="10"
+              IsVisible="False"
+              Click="ToggleMiningWidth_Click"
+              ToolTip.Tip="Expand window to fit mining results"
+              AutomationProperties.Name="Expand window to fit mining results">
+        <Grid Width="20" Height="20">
+          <Path Data="M4,2 H16 A2,2 0 0 1 18,4 V16 A2,2 0 0 1 16,18 H4 A2,2 0 0 1 2,16 V4 A2,2 0 0 1 4,2 Z M13,2 V18"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.5" StrokeJoin="Round" />
+          <Path Data="M8,6.5 L11.5,10 L8,13.5"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.5"
+                StrokeLineCap="Round" StrokeJoin="Round" />
+        </Grid>
+      </Button>
+      <Button x:Name="MiningWidthRestoreButton"
+              Classes="nav-overlay-settings"
+              Width="28" Height="28" Padding="4"
+              HorizontalAlignment="Right" VerticalAlignment="Top"
+              Margin="0,16,16,0"
+              ZIndex="10"
+              IsVisible="False"
+              Click="ToggleMiningWidth_Click"
+              ToolTip.Tip="Restore default window width"
+              AutomationProperties.Name="Restore default window width">
+        <Grid Width="20" Height="20">
+          <Path Data="M4,2 H16 A2,2 0 0 1 18,4 V16 A2,2 0 0 1 16,18 H4 A2,2 0 0 1 2,16 V4 A2,2 0 0 1 4,2 Z M13,2 V18"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.5" StrokeJoin="Round" />
+          <Path Data="M11.5,6.5 L8,10 L11.5,13.5"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1.5"
+                StrokeLineCap="Round" StrokeJoin="Round" />
+        </Grid>
+      </Button>
     </Grid>
 
     <Border Grid.ColumnSpan="2"

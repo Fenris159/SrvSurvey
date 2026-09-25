@@ -64,6 +64,7 @@ public sealed record MiningRing
     public string Overlaps { get; init; } = "";
     public string ResourceExtractionSites { get; init; } = "";
     public string Power { get; init; } = "";
+    public string PowerState { get; init; } = "";
     public string Minerals => string.Join(", ", Hotspots.Select(p => $"{p.Key} ×{p.Value}"));
 }
 

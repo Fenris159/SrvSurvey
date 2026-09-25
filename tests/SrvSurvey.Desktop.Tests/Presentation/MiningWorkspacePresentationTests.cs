@@ -12,6 +12,7 @@ using Avalonia.VisualTree;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Views;
@@ -284,7 +285,10 @@ public sealed class MiningWorkspacePresentationTests
                     search.GetVisualDescendants().OfType<ListBox>(),
                     l => l.IsEffectivelyVisible
                 );
-                Assert.NotEmpty(results.Items);
+                Assert.True(
+                    results.Items.Cast<object>().Any(),
+                    $"{prefix} results are empty. Search status: {model.MiningWorkspace.Search.Status}"
+                );
                 Assert.DoesNotContain(header.GetVisualAncestors(), ancestor => ReferenceEquals(ancestor, results));
                 Grid[] rows = results
                     .GetVisualDescendants()
@@ -422,7 +426,7 @@ public sealed class MiningWorkspacePresentationTests
                 view.GetVisualDescendants().OfType<MiningPowerplayView>(),
                 candidate => candidate.IsEffectivelyVisible
             );
-            Assert.Equal("Harma", powerplay.FindControl<TextBox>("PowerplayReference")!.Text);
+            Assert.Equal("Harma", powerplay.FindControl<SystemNameEntry>("PowerplayReference")!.Text);
             Assert.Equal("Archon Delaine", powerplay.FindControl<ComboBox>("PowerplayPledgedPower")!.SelectedItem);
             Assert.NotNull(powerplay.FindControl<ItemsControl>("PowerplayResults"));
             model.MiningWorkspace.SelectedTab = 4;
@@ -492,7 +496,7 @@ public sealed class MiningWorkspacePresentationTests
                             stationName = $"Long commodity market station name {i}",
                             stationType = "Coriolis Starport",
                             sellPrice = 250000,
-                            demand = 500000,
+                            demand = 50000,
                             updatedAt = DateTimeOffset.UtcNow,
                             maxLandingPadSize = 3,
                             distance = i * 1.2,

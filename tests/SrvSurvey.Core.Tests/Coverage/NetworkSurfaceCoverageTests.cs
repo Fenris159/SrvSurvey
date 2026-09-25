@@ -18,10 +18,12 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Network/VoxStellarPublisher.cs",
         "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
         "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
+        "src/SrvSurvey.Core/Search/ArdentApi.cs",
         "src/SrvSurvey.Core/Search/ArdentSystemNameSuggestionClient.cs",
         "src/SrvSurvey.Core/Search/EdsmSystemNameSuggestionClient.cs",
         "src/SrvSurvey.Core/Search/MiningSearchClient.cs",
         "src/SrvSurvey.Core/Search/NearestSystemsClient.cs",
+        "src/SrvSurvey.Core/Search/SpanshApi.cs",
         "src/SrvSurvey.Core/Search/SpanshBoxelClient.cs",
         "src/SrvSurvey.Core/Search/SpanshStarSystemResolver.cs",
         "src/SrvSurvey.Core/Settlements/CanonnHumanSiteClient.cs",
@@ -44,6 +46,8 @@ public sealed class NetworkSurfaceCoverageTests
         .Where(path =>
             !path.EndsWith("MainWindowViewModel.cs", StringComparison.Ordinal)
             && !path.EndsWith("MiningWorkspaceViewModel.cs", StringComparison.Ordinal)
+            && !path.EndsWith("MiningSearchClient.cs", StringComparison.Ordinal)
+            && !path.EndsWith("ArdentSystemNameSuggestionClient.cs", StringComparison.Ordinal)
             && !path.EndsWith("EddnPublisher.cs", StringComparison.Ordinal)
             && !path.EndsWith("VoxStellarPublisher.cs", StringComparison.Ordinal)
             && !path.EndsWith("DiagnosticReplayContext.cs", StringComparison.Ordinal)
