@@ -143,7 +143,7 @@ public sealed record MiningSystemResult(
 }
 
 /// <summary>Mining searches extend the shared Spansh pathway and use the application's network/privacy client.</summary>
-public sealed class MiningSearchClient
+public sealed class MiningSearchClient : IDisposable
 {
     private const string SystemNameField = "system_name";
     private const string DistanceField = "distance";
@@ -223,6 +223,12 @@ public sealed class MiningSearchClient
                     );
             }
         }
+    }
+
+    public void Dispose()
+    {
+        ardent.Dispose();
+        commodityReportGate.Dispose();
     }
 
     public bool PriceMarksUnavailable { get; private set; }

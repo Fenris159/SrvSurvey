@@ -459,7 +459,10 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             return "No sell station has a matching surface mining body within the distance.";
         }
 
-        int bodyCount = search.Rows.Sum(row => row.Systems.Sum(system => system.Bodies.Count));
+        int bodyCount = search.Rows.Sum(
+            (SurfaceSellRowViewModel row) =>
+                row.Systems.Sum((SurfaceMiningSystemRowViewModel system) => system.Bodies.Count)
+        );
         return bodyCount
             + " landable bodies for "
             + (

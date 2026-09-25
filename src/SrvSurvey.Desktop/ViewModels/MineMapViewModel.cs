@@ -142,7 +142,13 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public void UseSurfaceSearch(MiningSearchClient client, Action<string>? diagnosticLog = null)
     {
         SurfaceSearch.Dispose();
+        MiningSearchClient previous = commodityPriceClient;
         commodityPriceClient = client;
+        if (!ReferenceEquals(previous, client))
+        {
+            previous.Dispose();
+        }
+
         client.DiagnosticLog = diagnosticLog;
         SurfaceSearch = new SurfaceMiningSearchViewModel(client);
         SurfaceSearch.UpdateCurrentLocation(currentSystem);
@@ -270,6 +276,10 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         catch (OperationCanceledException) when (commodityPriceCancellation.IsCancellationRequested)
         {
             // The workspace is closing.
+        }
+        catch (ObjectDisposedException) when (disposed || !ReferenceEquals(client, commodityPriceClient))
+        {
+            // A replaced client can finish its pending refresh after disposal.
         }
     }
 
@@ -778,6 +788,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         service.Changed -= OnServiceChanged;
         service.NotificationRequested -= OnServiceNotificationRequested;
         SurfaceSearch.Dispose();
+        commodityPriceClient.Dispose();
         service.Dispose();
     }
 

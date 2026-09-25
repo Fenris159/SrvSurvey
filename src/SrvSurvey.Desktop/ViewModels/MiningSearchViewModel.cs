@@ -1571,12 +1571,7 @@ public sealed class MiningSearchViewModel(
     public Task SearchSystemsAsync() =>
         Run(async token =>
         {
-            string powerFilter = Objective switch
-            {
-                ReinforceObjective when IsChosenPower(PledgedPower) => PledgedPower,
-                UndermineObjective when IsChosenPower(OpposingPower) => OpposingPower,
-                _ => "",
-            };
+            string powerFilter = SearchPowerFilter();
             if (IsPlanetaryMining)
             {
                 await PublishPlanetaryRowsAsync(token);
@@ -1636,6 +1631,14 @@ public sealed class MiningSearchViewModel(
             await PublishMeritRowsAsync(token);
             Status = MeritRows.Count + " locations, best sell price first. " + source + ". " + Status;
         });
+
+    private string SearchPowerFilter() =>
+        Objective switch
+        {
+            ReinforceObjective when IsChosenPower(PledgedPower) => PledgedPower,
+            UndermineObjective when IsChosenPower(OpposingPower) => OpposingPower,
+            _ => "",
+        };
 
     private async Task PublishMeritRowsAsync(CancellationToken token)
     {
@@ -2401,6 +2404,7 @@ public sealed class MiningSearchViewModel(
         pending?.Cancel();
         pending?.Dispose();
         pending = null;
+        client.Dispose();
     }
 
     private async Task Run(Func<CancellationToken, Task> action)

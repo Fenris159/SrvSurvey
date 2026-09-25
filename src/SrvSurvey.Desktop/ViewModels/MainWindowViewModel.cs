@@ -204,6 +204,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private DateTimeOffset lastIdleHousekeepingAt;
     private bool isAwaitingCommanderIdentity;
     private bool disposed;
+    private readonly FallbackSystemNameSuggestionClient boxelNameSuggestions;
 
     public MainWindowViewModel(string? configuredJournalDirectory)
         : this(configuredJournalDirectory, new MainWindowViewModelConstructionContext()) { }
@@ -519,19 +520,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             );
             MiningWorkspace.UseJournalDirectories(IsDiagnosticReplay ? [] : folderResolution.AvailablePaths);
             MiningWorkspace.Search.UseDiagnosticLog(message => resolvedApplicationLogService?.Append(message));
-            FrontierProfile.PropertyChanged += (_, args) =>
-            {
-                if (
-                    args.PropertyName
-                    is nameof(CommanderProfileViewModel.Snapshot)
-                        or nameof(CommanderProfileViewModel.CurrentLocation)
-                        or null
-                        or ""
-                )
-                {
-                    MiningWorkspace.UseCommanderSystem(FrontierProfile.Snapshot?.LastSystem);
-                }
-            };
+            FrontierProfile.PropertyChanged += OnFrontierProfileMiningLocationChanged;
+            rollback.Add(() => FrontierProfile.PropertyChanged -= OnFrontierProfileMiningLocationChanged);
             MiningWorkspace.UseCommanderSystem(FrontierProfile.Snapshot?.LastSystem);
             rollback.Add(MiningWorkspace.Dispose);
             ExobiologyReferenceCatalog sharedExobiologyCatalog = legacyReferences.Exobiology;
@@ -579,13 +569,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 }
             );
             rollback.Add(boxelSearchSession.DisposeAsync);
+            boxelNameSuggestions = new FallbackSystemNameSuggestionClient(
+                new EdsmSystemNameSuggestionClient(externalNetworkClient),
+                new ArdentSystemNameSuggestionClient(externalNetworkClient)
+            );
+            rollback.Add(boxelNameSuggestions.Dispose);
             BoxelSearch = new BoxelSearchViewModel(
                 boxelSearchSession,
                 knownSystems: knownSystems,
-                systemNameSuggestionClient: new FallbackSystemNameSuggestionClient(
-                    new EdsmSystemNameSuggestionClient(externalNetworkClient),
-                    new ArdentSystemNameSuggestionClient(externalNetworkClient)
-                ),
+                systemNameSuggestionClient: boxelNameSuggestions,
                 surveyStats: boxelSurveyStats
             );
             rollback.Add(BoxelSearch.CancelPendingOperations);
@@ -5385,6 +5377,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(routeAutoCopyCoordinator.Dispose);
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
         TryDispose(BoxelSearch.CancelPendingOperations);
+        TryDispose(boxelNameSuggestions.Dispose);
         await TryDisposeAsync(boxelSearchSession.DisposeAsync);
         TryDispose(JournalPostProcessor.Cancel);
         TryDispose(CancelSystemBodyDataRequest);
@@ -5399,6 +5392,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);
         MineMap.PropertyChanged -= OnMineMapPropertyChanged;
+        FrontierProfile.PropertyChanged -= OnFrontierProfileMiningLocationChanged;
         TryDispose(Mining.Dispose);
         TryDispose(MineMap.Dispose);
         TryDispose(SurfaceSurvey.Dispose);
@@ -5522,6 +5516,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         if (eventArgs.PropertyName == nameof(BiologyRewardSettingsViewModel.Thresholds))
         {
             SystemSurvey.UpdateBiologyRewardThresholds(BiologyRewards.Thresholds);
+        }
+    }
+
+    private void OnFrontierProfileMiningLocationChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (
+            args.PropertyName
+            is nameof(CommanderProfileViewModel.Snapshot)
+                or nameof(CommanderProfileViewModel.CurrentLocation)
+                or null
+                or ""
+        )
+        {
+            MiningWorkspace.UseCommanderSystem(FrontierProfile.Snapshot?.LastSystem);
         }
     }
 

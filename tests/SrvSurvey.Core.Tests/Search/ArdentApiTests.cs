@@ -10,8 +10,8 @@ public sealed class ArdentApiTests
     {
         using var handler = new GatedHandler();
         using var http = new HttpClient(handler);
-        var first = new ArdentApi(http);
-        var second = new ArdentApi(http);
+        using var first = new ArdentApi(http);
+        using var second = new ArdentApi(http);
 
         Task<System.Text.Json.JsonDocument> held = first.GetAsync("commodities", 1024, "test");
         await handler.FirstEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));

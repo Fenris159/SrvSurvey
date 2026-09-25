@@ -91,7 +91,7 @@ public sealed class SurfaceMiningSearchPresentationTests
                 );
             Assert.Equal(
                 Color.Parse("#E8FFFF"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(matchedBadge.Background).Color
+                Assert.IsType<ISolidColorBrush>(matchedBadge.Background, exactMatch: false).Color
             );
             Assert.True(sellCell.Bounds.Height < row.Bounds.Height);
             Assert.Contains(
@@ -192,10 +192,13 @@ public sealed class SurfaceMiningSearchPresentationTests
                     && border.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == "THR")
                 );
             Assert.Equal("#7FA86B", Assert.IsType<AcquireQuoteViewModel>(thorium.DataContext).ColorHex);
-            Assert.Equal(Color.Parse("#7FA86B"), Assert.IsAssignableFrom<ISolidColorBrush>(thorium.Background).Color);
+            Assert.Equal(
+                Color.Parse("#7FA86B"),
+                Assert.IsType<ISolidColorBrush>(thorium.Background, exactMatch: false).Color
+            );
             Assert.NotEqual(
                 Color.Parse("#8BC34A"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(unavailable.Background).Color
+                Assert.IsType<ISolidColorBrush>(unavailable.Background, exactMatch: false).Color
             );
             Assert.Contains(
                 unavailable.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>(),

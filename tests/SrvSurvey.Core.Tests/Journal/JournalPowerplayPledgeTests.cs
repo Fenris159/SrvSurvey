@@ -56,18 +56,14 @@ public sealed class JournalPowerplayPledgeTests
                     """{"event":"Powerplay","Power":"Felicia Winters"}""",
                 ]
             );
-            using (
-                var writer = new FileStream(
-                    journal,
-                    FileMode.Open,
-                    FileAccess.Write,
-                    FileShare.ReadWrite | FileShare.Delete
-                )
-            )
-            {
-                Assert.Equal("A. Lavigny-Duval", JournalPowerplayPledge.ReadLatest([directory], "F123"));
-                Assert.Equal("Felicia Winters", JournalPowerplayPledge.ReadLatest([directory], "F456"));
-            }
+            using var writer = new FileStream(
+                journal,
+                FileMode.Open,
+                FileAccess.Write,
+                FileShare.ReadWrite | FileShare.Delete
+            );
+            Assert.Equal("A. Lavigny-Duval", JournalPowerplayPledge.ReadLatest([directory], "F123"));
+            Assert.Equal("Felicia Winters", JournalPowerplayPledge.ReadLatest([directory], "F456"));
         }
         finally
         {
