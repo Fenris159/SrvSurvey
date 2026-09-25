@@ -75,6 +75,26 @@ public sealed class CargoInventoryStateTests
     }
 
     [Fact]
+    public void MiningEventsUpdateCargoBeforeTheNextAuthoritativeSnapshot()
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot("Ship", new CargoItem("drones", "Limpets", 5, 0)));
+
+        Assert.True(state.Apply(Event("MiningRefined", "\"Type\":\"platinum\",\"Type_Localised\":\"Platinum\"")));
+        Assert.True(state.Apply(Event("LaunchDrone", "\"Type\":\"Prospector\"")));
+        Assert.True(state.Apply(Event("BuyDrones", "\"Count\":2")));
+        Assert.True(state.Apply(Event("SellDrones", "\"Count\":1")));
+        Assert.Equal(1, state.CreateSnapshot()!.GetCount("platinum"));
+        Assert.Equal(5, state.CreateSnapshot()!.GetCount("drones"));
+
+        state.Reset(
+            Snapshot("Ship", new CargoItem("drones", "Limpets", 4, 0), new CargoItem("platinum", "Platinum", 2, 0))
+        );
+        Assert.Equal(2, state.CreateSnapshot()!.GetCount("platinum"));
+        Assert.Equal(4, state.CreateSnapshot()!.GetCount("drones"));
+    }
+
+    [Fact]
     public void CargoEventMergesDuplicatesAndClampsHostileCounts()
     {
         var state = new CargoInventoryState();

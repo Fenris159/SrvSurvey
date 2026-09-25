@@ -399,19 +399,32 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private MiningProspectOverlayRowViewModel ToOverlayProspect(MiningProspect prospect)
     {
         bool core = !string.IsNullOrEmpty(prospect.Core);
-        MiningMaterial[] matches = prospect
-            .Materials.Where(material =>
-                Settings.Thresholds.Count == 0
-                || Settings.Thresholds.TryGetValue(material.Name, out double threshold)
-                    && material.Percentage >= threshold
-            )
+        bool notificationsEnabled =
+            Settings.NotifyProspecting && (core ? Settings.AnnounceCores : Settings.AnnounceNonCores);
+        MiningProspectMaterialViewModel[] materials = prospect
+            .Materials.Select(material => new MiningProspectMaterialViewModel(
+                $"{material.Name} {material.Percentage:0.0}%",
+                notificationsEnabled
+                    && (
+                        Settings.Thresholds.Count == 0
+                        || Settings.Thresholds.Any(threshold =>
+                            threshold.Key.Equals(material.Name, StringComparison.OrdinalIgnoreCase)
+                            && material.Percentage >= threshold.Value
+                        )
+                    )
+            ))
             .ToArray();
-        bool kindEnabled = core ? Settings.AnnounceCores : Settings.AnnounceNonCores;
-        bool qualifies = kindEnabled && (matches.Length > 0 || core);
-        string summary = string.Join(" · ", prospect.Materials.Select(item => $"{item.Name} {item.Percentage:0.0}%"));
+        bool qualifies = notificationsEnabled && (materials.Any(material => material.IsHighlighted) || core);
+        string summary = string.Join(" · ", materials.Select(material => material.Text));
         if (core)
         {
             summary += (summary.Length == 0 ? "" : " · ") + $"Core: {prospect.Core}";
+        }
+
+        var details = new List<MiningProspectMaterialViewModel>(materials);
+        if (core)
+        {
+            details.Add(new MiningProspectMaterialViewModel($"Core: {prospect.Core}", qualifies));
         }
 
         return new MiningProspectOverlayRowViewModel(
@@ -419,7 +432,10 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             summary,
             prospect.Remaining,
             qualifies
-        );
+        )
+        {
+            Materials = details,
+        };
     }
 
     private static string FormatPresetSummary(MiningAnnouncementPreset preset)
@@ -555,7 +571,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public string CurrentProspectText => state.CurrentProspectText ?? "";
     public bool HasCurrentProspect => CurrentProspectText.Length > 0;
-    public bool HasPersistentProspects => PersistentProspects.Any(prospect => prospect.Qualifies);
+    public bool HasPersistentProspects => PersistentProspects.Count > 0;
     public bool ShouldShowNotifications => CanShowShipOverlays && (HasPersistentProspects || VisibleNotices.Count > 0);
     public bool ShouldShowCargo => CanShowShipOverlays && cargo is not null;
     private bool CanShowShipOverlays =>
@@ -1645,7 +1661,10 @@ public sealed record MiningAnnouncementPresetRowViewModel(string Name, string Su
 public sealed record MiningProspectOverlayRowViewModel(string Time, string Summary, double Remaining, bool Qualifies)
 {
     public string RemainingLabel => Remaining <= 0 ? "DEPLETED" : $"{Remaining:0.#}% remaining";
+    public IReadOnlyList<MiningProspectMaterialViewModel> Materials { get; init; } = [];
 }
+
+public sealed record MiningProspectMaterialViewModel(string Text, bool IsHighlighted);
 
 public sealed record MiningReferenceCommodityRowViewModel(string Name, int AverageSellPrice, int MaximumSellPrice = 0)
 {

@@ -6601,6 +6601,10 @@
       "translation": "Kernkosten"
     },
     {
+      "source": "Core: {0}",
+      "translation": "Kern: {0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -41053,6 +41057,10 @@
     {
       "source": "Core cost",
       "translation": "Costo básico"
+    },
+    {
+      "source": "Core: {0}",
+      "translation": "Núcleo: {0}"
     },
     {
       "source": "Coriolis",
@@ -75509,6 +75517,10 @@
       "translation": "Coût de base"
     },
     {
+      "source": "Core: {0}",
+      "translation": "Noyau : {0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -109961,6 +109973,10 @@
     {
       "source": "Core cost",
       "translation": "Custo principal"
+    },
+    {
+      "source": "Core: {0}",
+      "translation": "Núcleo: {0}"
     },
     {
       "source": "Coriolis",
@@ -144417,6 +144433,10 @@
       "translation": "Основная стоимость"
     },
     {
+      "source": "Core: {0}",
+      "translation": "Ядро: {0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "Кориолис"
     },
@@ -178871,6 +178891,10 @@
       "translation": "核心成本"
     },
     {
+      "source": "Core: {0}",
+      "translation": "核心：{0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "科里奥利"
     },
@@ -213323,6 +213347,10 @@
     {
       "source": "Core cost",
       "translation": "* CORE COST >>>!"
+    },
+    {
+      "source": "Core: {0}",
+      "translation": "* CORE: {0} >>>!"
     },
     {
       "source": "Coriolis",
