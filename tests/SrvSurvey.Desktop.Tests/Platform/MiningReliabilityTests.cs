@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -68,6 +69,7 @@ public sealed class MiningReliabilityTests
         );
         Assert.False(dispatcher.UseShellExecute);
         Assert.False(dispatcher.RedirectStandardInput);
+        Assert.False(dispatcher.RedirectStandardError);
         Assert.Equal(
             ["--wait", "--rate", "-100", "--volume", "100", "--voice-type", "female2", "Platinum; do not execute this"],
             dispatcher.ArgumentList
@@ -134,6 +136,138 @@ public sealed class MiningReliabilityTests
         finally
         {
             Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task LinuxVoiceLoadingHandlesStartFailuresAndStopsTimedOutProcesses()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        string root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            string invalid = Path.Combine(root, "not-executable");
+            await File.WriteAllTextAsync(invalid, "not an executable");
+            Assert.Empty(await MiningSpeechOutput.ReadEspeakVoicesAsync(invalid, TimeSpan.FromMilliseconds(200)));
+
+            string listing = WriteLinuxExecutable(
+                root,
+                "voice-list",
+                "printf 'header\\n'\ni=0\nwhile [ \"$i\" -lt 3000 ]; do printf ' 5 en-us M english-us en-us\\n'; i=$((i+1)); done\n"
+            );
+            Assert.Equal(
+                ["System default", "english-us"],
+                await MiningSpeechOutput.ReadEspeakVoicesAsync(listing, TimeSpan.FromSeconds(2))
+            );
+
+            string backend = WriteLinuxExecutable(
+                root,
+                "espeak-ng",
+                "printf '%s' $$ > \"$(dirname \"$0\")/pid\"\nwhile :; do sleep 1; done\n"
+            );
+            var timer = Stopwatch.StartNew();
+            Assert.Empty(await MiningSpeechOutput.ReadEspeakVoicesAsync(backend, TimeSpan.FromMilliseconds(300)));
+            Assert.True(timer.Elapsed < TimeSpan.FromSeconds(2));
+            int processId = int.Parse(
+                await File.ReadAllTextAsync(Path.Combine(root, "pid")),
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
+            Assert.True(
+                await WaitUntilAsync(() => Task.FromResult(!IsProcessRunning(processId)), TimeSpan.FromSeconds(2))
+            );
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task LinuxSpeechUsesOneWorkerAndBoundsPendingUtterances()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        string root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            string backend = WriteLinuxExecutable(
+                root,
+                "spd-say",
+                "log=\"$(dirname \"$0\")/speech.log\"\nprintf 'start\\n' >> \"$log\"\nsleep 0.3\nprintf 'end\\n' >> \"$log\"\n"
+            );
+            string log = Path.Combine(root, "speech.log");
+            using var speech = new MiningSpeechOutput(backend);
+            speech.Speak("first", "", 50, 0);
+            Assert.True(await WaitUntilAsync(() => Task.FromResult(File.Exists(log)), TimeSpan.FromSeconds(2)));
+            for (int index = 0; index < 30; index++)
+            {
+                speech.Speak($"notice {index}", "", 50, 0);
+            }
+
+            Assert.Equal(10, speech.PendingLinuxUtterances);
+            Assert.True(
+                await WaitUntilAsync(
+                    async () => (await File.ReadAllLinesAsync(log)).Length == 22,
+                    TimeSpan.FromSeconds(6)
+                )
+            );
+            string[] lines = await File.ReadAllLinesAsync(log);
+            for (int index = 0; index < lines.Length; index += 2)
+            {
+                Assert.Equal("start", lines[index]);
+                Assert.Equal("end", lines[index + 1]);
+            }
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [SupportedOSPlatform("linux")]
+    private static string WriteLinuxExecutable(string root, string name, string script)
+    {
+        string path = Path.Combine(root, name);
+        File.WriteAllText(path, "#!/bin/sh\n" + script);
+        File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        return path;
+    }
+
+    private static async Task<bool> WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout)
+    {
+        var timer = Stopwatch.StartNew();
+        while (timer.Elapsed < timeout)
+        {
+            if (await condition())
+            {
+                return true;
+            }
+
+            await Task.Delay(20);
+        }
+
+        return await condition();
+    }
+
+    private static bool IsProcessRunning(int processId)
+    {
+        try
+        {
+            using var process = Process.GetProcessById(processId);
+            return !process.HasExited;
+        }
+        catch (ArgumentException)
+        {
+            return false;
         }
     }
 

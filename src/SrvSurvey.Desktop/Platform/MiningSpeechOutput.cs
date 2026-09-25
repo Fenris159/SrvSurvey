@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -18,17 +19,29 @@ public sealed class MiningSpeechOutput : IMiningSpeechOutput
 {
     private const string SpeechDispatcherExecutable = "spd-say";
     private readonly BlockingCollection<Action<object>> queue = new(10);
+    private readonly BlockingCollection<LinuxSpeechRequest> linuxQueue = new(10);
     private readonly Lock sync = new();
+    private readonly string? linuxBackendOverride;
     private Thread? worker;
+    private Task? linuxWorker;
     private volatile bool disposed;
+
+    private sealed record LinuxSpeechRequest(string Backend, string Text, string Voice, int Volume, int Rate);
+
+    public MiningSpeechOutput() { }
+
+    internal MiningSpeechOutput(string linuxBackend) => linuxBackendOverride = linuxBackend;
+
     private static string? LinuxBackend =>
         FindOnPath(SpeechDispatcherExecutable) ?? FindOnPath("espeak-ng") ?? FindOnPath("espeak");
+    private string? SelectedLinuxBackend => linuxBackendOverride ?? LinuxBackend;
     public static bool IsSupported => OperatingSystem.IsWindows() || LinuxBackend is not null;
-    bool IMiningSpeechOutput.IsSupported => IsSupported;
+    bool IMiningSpeechOutput.IsSupported => OperatingSystem.IsWindows() || SelectedLinuxBackend is not null;
+    internal int PendingLinuxUtterances => linuxQueue.Count;
     public string ProviderName =>
         OperatingSystem.IsWindows()
             ? "Windows Speech API"
-            : Path.GetFileName(LinuxBackend) switch
+            : Path.GetFileName(SelectedLinuxBackend) switch
             {
                 SpeechDispatcherExecutable => "Speech Dispatcher",
                 "espeak-ng" => "eSpeak NG",
@@ -104,7 +117,7 @@ public sealed class MiningSpeechOutput : IMiningSpeechOutput
 
     private Task<IReadOnlyList<string>> GetLinuxVoicesAsync()
     {
-        if (disposed || LinuxBackend is not { } backend)
+        if (disposed || SelectedLinuxBackend is not { } backend)
         {
             return Task.FromResult<IReadOnlyList<string>>([]);
         }
@@ -123,13 +136,17 @@ public sealed class MiningSpeechOutput : IMiningSpeechOutput
             ]);
         }
 
-        return Task.Run<IReadOnlyList<string>>(() =>
+        return Task.Run(() => ReadEspeakVoicesAsync(backend, TimeSpan.FromSeconds(5)));
+    }
+
+    internal static async Task<IReadOnlyList<string>> ReadEspeakVoicesAsync(string backend, TimeSpan timeout)
+    {
+        try
         {
             using var process = Process.Start(
                 new ProcessStartInfo(backend, "--voices")
                 {
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                 }
@@ -139,10 +156,24 @@ public sealed class MiningSpeechOutput : IMiningSpeechOutput
                 return [];
             }
 
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit(5000);
-            return ParseEspeakVoices(output);
-        });
+            using var deadline = new CancellationTokenSource(timeout);
+            try
+            {
+                Task<string> output = process.StandardOutput.ReadToEndAsync(deadline.Token);
+                await process.WaitForExitAsync(deadline.Token).ConfigureAwait(false);
+                return ParseEspeakVoices(await output.WaitAsync(deadline.Token).ConfigureAwait(false));
+            }
+            catch (OperationCanceledException) when (deadline.IsCancellationRequested)
+            {
+                StopProcess(process);
+                return [];
+            }
+        }
+        catch (Exception ex)
+            when (ex is Win32Exception or InvalidOperationException or IOException or UnauthorizedAccessException)
+        {
+            return [];
+        }
     }
 
     internal static IReadOnlyList<string> ParseEspeakVoices(string output) =>
@@ -158,33 +189,102 @@ public sealed class MiningSpeechOutput : IMiningSpeechOutput
 
     private void SpeakOnLinux(string text, string voice, int volume, int rate)
     {
-        if (disposed || string.IsNullOrWhiteSpace(text) || LinuxBackend is not { } backend)
+        if (string.IsNullOrWhiteSpace(text) || SelectedLinuxBackend is not { } backend)
         {
             return;
         }
 
-        _ = Task.Run(() =>
+        lock (sync)
         {
-            try
+            if (disposed)
             {
-                ProcessStartInfo start = CreateLinuxStartInfo(backend, text, voice, volume, rate);
-                using var process = Process.Start(start);
-                if (process is null)
-                {
-                    return;
-                }
-                if (start.RedirectStandardInput)
-                {
-                    process.StandardInput.WriteLine(text);
-                    process.StandardInput.Close();
-                }
-                process.WaitForExit(10000);
+                return;
             }
-            catch (Exception ex)
-                when (ex is InvalidOperationException or IOException or System.ComponentModel.Win32Exception)
-            { /* Speech failure must not interrupt journal processing. */
+
+            linuxWorker ??= Task.Run(RunLinuxSpeechAsync);
+            linuxQueue.TryAdd(new(backend, text, voice, volume, rate));
+        }
+    }
+
+    private async Task RunLinuxSpeechAsync()
+    {
+        try
+        {
+            foreach (LinuxSpeechRequest request in linuxQueue.GetConsumingEnumerable())
+            {
+                if (disposed)
+                {
+                    break;
+                }
+
+                await SpeakLinuxRequestAsync(request).ConfigureAwait(false);
             }
-        });
+        }
+        finally
+        {
+            linuxQueue.Dispose();
+        }
+    }
+
+    private static async Task SpeakLinuxRequestAsync(LinuxSpeechRequest request)
+    {
+        Process? process = null;
+        try
+        {
+            ProcessStartInfo start = CreateLinuxStartInfo(
+                request.Backend,
+                request.Text,
+                request.Voice,
+                request.Volume,
+                request.Rate
+            );
+            process = Process.Start(start);
+            if (process is null)
+            {
+                return;
+            }
+
+            using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            if (start.RedirectStandardInput)
+            {
+                await process
+                    .StandardInput.WriteLineAsync(request.Text.AsMemory(), deadline.Token)
+                    .ConfigureAwait(false);
+                await process.StandardInput.FlushAsync(deadline.Token).ConfigureAwait(false);
+                process.StandardInput.Close();
+            }
+
+            await process.WaitForExitAsync(deadline.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            if (process is not null)
+            {
+                StopProcess(process);
+            }
+        }
+        catch (Exception ex)
+            when (ex is InvalidOperationException or IOException or Win32Exception or UnauthorizedAccessException)
+        { /* Speech failure must not interrupt journal processing. */
+        }
+        finally
+        {
+            process?.Dispose();
+        }
+    }
+
+    private static void StopProcess(Process process)
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+        { /* The process already exited or could not be terminated. */
+        }
     }
 
     internal static ProcessStartInfo CreateLinuxStartInfo(
@@ -195,12 +295,7 @@ public sealed class MiningSpeechOutput : IMiningSpeechOutput
         int rate
     )
     {
-        var start = new ProcessStartInfo(backend)
-        {
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-        };
+        var start = new ProcessStartInfo(backend) { UseShellExecute = false, CreateNoWindow = true };
         if (Path.GetFileName(backend) == SpeechDispatcherExecutable)
         {
             ConfigureSpeechDispatcher(start, text, voice, volume, rate);
@@ -384,9 +479,14 @@ public sealed class MiningSpeechOutput : IMiningSpeechOutput
 
             disposed = true;
             queue.CompleteAdding();
+            linuxQueue.CompleteAdding();
             if (worker is null)
             {
                 queue.Dispose();
+            }
+            if (linuxWorker is null)
+            {
+                linuxQueue.Dispose();
             }
         }
     }
