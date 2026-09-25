@@ -103,9 +103,25 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
     ];
     private static readonly MiningProspectOverlayRowViewModel[] PreviewProspects =
     [
-        new("21:14:08", "Platinum 34.8% · Osmium 12.4%", 100, true),
-        new("21:13:42", "Platinum 22.1% · Bertrandite 8.5%", 64, false),
+        CreatePreviewProspect("21:14:08", "Platinum 34.8% · Osmium 12.4%", 100, true),
+        CreatePreviewProspect("21:13:42", "Platinum 22.1% · Bertrandite 8.5%", 64, false),
     ];
+
+    private static MiningProspectOverlayRowViewModel CreatePreviewProspect(
+        string time,
+        string summary,
+        double remaining,
+        bool qualifies
+    ) =>
+        new(time, summary, remaining, qualifies)
+        {
+            Materials =
+            [
+                .. summary
+                    .Split('·', StringSplitOptions.TrimEntries)
+                    .Select((text, index) => new MiningProspectMaterialViewModel(text, qualifies && index == 0)),
+            ],
+        };
 
     public void Dispose()
     {

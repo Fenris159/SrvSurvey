@@ -636,6 +636,23 @@ public sealed class MiningWorkspaceViewModelTests
         Assert.True(overlay.HasProspectReport);
         Assert.True(overlay.HasQualifyingProspect);
         Assert.Contains("Remaining", overlay.ProspectReport);
+        Assert.Collection(
+            overlay.Prospects,
+            prospect =>
+            {
+                Assert.Equal("Platinum 34.8%", prospect.Materials[0].Text);
+                Assert.True(prospect.Materials[0].IsHighlighted);
+                Assert.Equal("Osmium 12.4%", prospect.Materials[1].Text);
+                Assert.False(prospect.Materials[1].IsHighlighted);
+            },
+            prospect =>
+            {
+                Assert.Equal("Platinum 22.1%", prospect.Materials[0].Text);
+                Assert.False(prospect.Materials[0].IsHighlighted);
+                Assert.Equal("Bertrandite 8.5%", prospect.Materials[1].Text);
+                Assert.False(prospect.Materials[1].IsHighlighted);
+            }
+        );
     }
 
     [Fact]
