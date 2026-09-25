@@ -66,12 +66,19 @@ public sealed class ArdentApi : IDisposable
     private readonly HttpClient client;
     private readonly Uri origin;
     private readonly Action<string, Exception>? onFailure;
+    private readonly MiningProviderResponseCache? cache;
 
-    public ArdentApi(HttpClient client, Uri? origin = null, Action<string, Exception>? onFailure = null)
+    public ArdentApi(
+        HttpClient client,
+        Uri? origin = null,
+        Action<string, Exception>? onFailure = null,
+        MiningProviderResponseCache? cache = null
+    )
     {
         this.client = client;
         this.origin = origin ?? Origin;
         this.onFailure = onFailure;
+        this.cache = cache;
     }
 
     public void Dispose() => gate.Dispose();
@@ -80,17 +87,24 @@ public sealed class ArdentApi : IDisposable
         string relativePath,
         int maximumBytes,
         string responseLabel,
+        TimeSpan? cacheLifetime,
         CancellationToken cancellationToken = default
     )
     {
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            string cacheKey = new Uri(origin, relativePath).AbsoluteUri;
+            if (cacheLifetime is { } lifetime && cache?.Load(cacheKey, lifetime) is { } cached)
+            {
+                return cached;
+            }
+
             using HttpResponseMessage response = await client
                 .GetAsync(new Uri(origin, relativePath), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            return await BoundedHttpContent
+            JsonDocument document = await BoundedHttpContent
                 .ReadJsonDocumentAsync(
                     response.Content,
                     Math.Min(maximumBytes, MaximumResponseBytes),
@@ -98,6 +112,16 @@ public sealed class ArdentApi : IDisposable
                     cancellationToken
                 )
                 .ConfigureAwait(false);
+            if (cacheLifetime is not null && document.RootElement.ValueKind == JsonValueKind.Array)
+            {
+                cache?.Save(
+                    cacheKey,
+                    document,
+                    document.RootElement.GetArrayLength() == 0 ? TimeSpan.FromMinutes(2) : null
+                );
+            }
+
+            return document;
         }
         catch (Exception ex)
             when (ex is HttpRequestException or JsonException or IOException or InvalidDataException
@@ -112,6 +136,13 @@ public sealed class ArdentApi : IDisposable
             gate.Release();
         }
     }
+
+    public Task<JsonDocument> GetAsync(
+        string relativePath,
+        int maximumBytes,
+        string responseLabel,
+        CancellationToken cancellationToken = default
+    ) => GetAsync(relativePath, maximumBytes, responseLabel, null, cancellationToken);
 
     private void Report(string route, Exception exception)
     {

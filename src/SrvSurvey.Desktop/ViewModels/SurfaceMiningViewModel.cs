@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -686,6 +687,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         return new SurfaceRadarMarkerViewModel
         {
             Name = marker.Material,
+            RigCount = marker.RigCount,
             Kind = SurfaceRadarMarkerKind.Bookmark,
             Location = marker.Location,
             DistanceMeters = distance,
@@ -728,6 +730,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             .Zip(second)
             .All(pair =>
                 pair.First.Name == pair.Second.Name
+                && pair.First.RigCount == pair.Second.RigCount
                 && pair.First.Kind == pair.Second.Kind
                 && pair.First.Status == pair.Second.Status
                 && pair.First.Location == pair.Second.Location
@@ -805,7 +808,10 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
 public sealed record MiningResourceViewModel(SurfaceRadarMarkerViewModel Marker)
 {
-    public string Name => Marker.Name;
+    public string Name =>
+        Marker.RigCount is { } rigCount
+            ? $"{Marker.Name} [{rigCount.ToString(CultureInfo.InvariantCulture)}]"
+            : Marker.Name;
     public string DistanceText => Marker.DistanceText;
     public double Bearing => Marker.RelativeBearingDegrees;
     public bool IsNear => Marker.DistanceMeters < 150;

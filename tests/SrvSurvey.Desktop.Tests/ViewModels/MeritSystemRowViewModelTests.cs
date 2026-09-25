@@ -6,6 +6,149 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MeritSystemRowViewModelTests
 {
     [Fact]
+    public void StationPreviewPrioritizesHotspotsAndExpandsOnlyThatStation()
+    {
+        PowerplayMeritStation[] quotes =
+        [
+            new("Hub", "Coriolis", "Large", 1_000, 100, "", "Gold"),
+            new("Hub", "Coriolis", "Large", 900, 100, "", "Silver"),
+            new("Hub", "Coriolis", "Large", 800, 100, "", "Copper"),
+            new("Hub", "Coriolis", "Large", 700, 100, "", "Palladium"),
+            new("Hub", "Coriolis", "Large", 600, 100, "", "Platinum"),
+            new("Hub", "Coriolis", "Large", 500, 100, "", "Monazite"),
+            new("Hub", "Coriolis", "Large", 400, 100, "", "Alexandrite"),
+            new("Hub", "Coriolis", "Large", 300, 100, "", "Painite"),
+            new("Other", "Orbis", "Large", 350, 100, "", "Gold"),
+        ];
+        var system = new PowerplayMeritSystem(
+            "Sol",
+            1,
+            "Aisling Duval",
+            "Stronghold",
+            "",
+            1_000,
+            [
+                new PowerplayMeritRing(
+                    "Sol 1 A Ring",
+                    "Monazite",
+                    SignalLines: ["Monazite: 1 Hotspot", "Alexandrite: 1 Hotspot"]
+                ),
+            ],
+            quotes
+        );
+
+        var row = MeritSystemRowViewModel.From(system);
+        MeritStationBlockViewModel hub = Assert.Single(row.StationBlocks);
+        Assert.Equal("ALE", hub.OtherCommodities[0].Code);
+        Assert.Equal(6, hub.OtherCommodities.Count);
+        Assert.True(hub.CanToggleCommodities);
+        hub.ToggleCommoditiesCommand.Execute(null);
+        Assert.Equal(7, hub.OtherCommodities.Count);
+        Assert.Equal("Show All", row.ExportSnapshot().StationBlocks[0].Restore().CommodityToggleLabel);
+    }
+
+    [Fact]
+    public void PowerLinesUseSpanshConflictProgressInDescendingOrder()
+    {
+        IReadOnlyList<PowerplayPowerLineViewModel> lines = PowerplayPowerLineViewModel.From(
+            ["Felicia Winters", "A. Lavigny-Duval", "Edmund Mahon"],
+            [new PowerplayProgress("Edmund Mahon", 0.3), new PowerplayProgress("Arissa Lavigny-Duval", 1.0)]
+        );
+
+        Assert.Equal(
+            ["A. Lavigny-Duval 100%", "Edmund Mahon 30%", "Felicia Winters —"],
+            lines.Select(line => line.Display)
+        );
+        Assert.Equal("#7F00FF", lines[0].ColorHex);
+    }
+
+    [Fact]
+    public void OwnedPowerUsesControlProgressAndBothMiningLayoutsOrderPowers()
+    {
+        var system = new PowerplayMeritSystem("Deciat", 85, "A. Lavigny-Duval", "Stronghold", "Boom", 0, [], [])
+        {
+            NearbyPowers = ["Zemina Torval", "A. Lavigny-Duval", "Edmund Mahon"],
+            Conflict = [new PowerplayProgress("Edmund Mahon", 0.1)],
+            ControlProgress = 0.835221,
+        };
+
+        var ring = MeritSystemRowViewModel.From(system);
+        Assert.Equal(
+            ["A. Lavigny-Duval 83.5%", "Edmund Mahon 10%", "Zemina Torval —"],
+            ring.PowerLines.Select(line => line.Display)
+        );
+
+        var details = new SurfaceSellSystemDetails("Stronghold", "Boom", system.NearbyPowers)
+        {
+            ControllingPower = system.Power,
+            ControlProgress = system.ControlProgress,
+            Conflict = system.Conflict,
+        };
+        var planetary = new SurfaceSellRowViewModel(
+            "Deciat",
+            "85 ly",
+            [],
+            [],
+            85,
+            0,
+            new SurfaceSellRowOptions([], details)
+        );
+        Assert.Equal(ring.PowerLines.Select(line => line.Display), planetary.PowerLines.Select(line => line.Display));
+    }
+
+    [Fact]
+    public void UnreportedPowerProgressRemainsDistinctFromReportedZero()
+    {
+        IReadOnlyList<PowerplayPowerLineViewModel> lines = PowerplayPowerLineViewModel.From(
+            ["Zemina Torval", "Felicia Winters"],
+            [new PowerplayProgress("Felicia Winters", 0)]
+        );
+
+        Assert.Equal(["Felicia Winters 0%", "Zemina Torval —"], lines.Select(line => line.Display));
+        IReadOnlyList<PowerplayPowerLineViewModel> extra = PowerplayPowerLineViewModel.From(
+            ["Zemina Torval"],
+            [new PowerplayProgress("Jerome Archer", 0.6)]
+        );
+        Assert.Equal(["Jerome Archer 60%", "Zemina Torval —"], extra.Select(line => line.Display));
+    }
+
+    [Fact]
+    public void StationPadIsCompactAndSavedQuoteAgeIsRecomputed()
+    {
+        DateTimeOffset updated = DateTimeOffset.UtcNow.AddHours(-2);
+        var system = new PowerplayMeritSystem(
+            "Sol",
+            2,
+            "Aisling Duval",
+            "Fortified",
+            "",
+            1_000,
+            [],
+            [
+                new PowerplayMeritStation(
+                    "Hub",
+                    "Outpost",
+                    "Small / medium pads",
+                    1_000,
+                    10,
+                    "",
+                    "Gold",
+                    Updated: updated
+                ),
+            ]
+        );
+
+        MeritStationBlockViewModel station = Assert.Single(MeritSystemRowViewModel.From(system).StationBlocks);
+        Assert.Equal("Hub (S/M)", station.Heading);
+        Assert.Equal(updated, station.UpdatedAt);
+        Assert.Contains("2h", station.Updated, StringComparison.Ordinal);
+
+        MeritStationBlockViewModel restored = MeritStationBlockSnapshot.From(station).Restore();
+        Assert.Equal(updated, restored.UpdatedAt);
+        Assert.Contains("2h", restored.Updated, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void RowsUsePowerStateAndStationArtwork()
     {
         var row = MeritSystemRowViewModel.From(
@@ -101,6 +244,23 @@ public sealed class MeritSystemRowViewModelTests
     }
 
     [Fact]
+    public void SingleSelectChipCanReplaceItsInitialChoice()
+    {
+        var chips = new MiningChipBoxViewModel(
+            "Commodity category",
+            ["Mining", "Planetary Mining"],
+            "Mining",
+            options: new(MaximumSelections: 1)
+        );
+
+        Assert.Contains("Planetary Mining", chips.Suggestions);
+        chips.Query = "planetary";
+        chips.AddQuery();
+
+        Assert.Equal("Planetary Mining", Assert.Single(chips.Selected));
+    }
+
+    [Fact]
     public void ChipBoxPromptsMatchTheEntryAndListEveryRemainingChoice()
     {
         string[] minerals =
@@ -160,7 +320,7 @@ public sealed class MeritSystemRowViewModelTests
         );
 
         Assert.Equal("Platinum", Assert.Single(row.StationBlocks).Commodity);
-        Assert.Equal(2, Assert.Single(row.StationBlocks).OtherCommodities.Count);
+        Assert.Equal("MON", Assert.Single(Assert.Single(row.StationBlocks).OtherCommodities).Code);
         Assert.Contains("Platinum", Assert.Single(row.Rings).Text, StringComparison.Ordinal);
         row.ToggleSignals();
         Assert.Equal(2, row.Stations.Count);

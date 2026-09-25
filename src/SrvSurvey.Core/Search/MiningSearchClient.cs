@@ -20,7 +20,9 @@ public sealed record MiningPlanetaryQuery(
     string PowerState = "",
     int Page = 0,
     bool GalaxyWide = false,
-    IReadOnlyList<string>? VolcanismTypes = null
+    IReadOnlyList<string>? VolcanismTypes = null,
+    IReadOnlyList<string>? SystemNames = null,
+    double MinimumDistance = 0
 );
 
 public sealed record MiningPlanetaryBody(
@@ -48,9 +50,23 @@ public sealed record MiningRingQuery(
     bool SystemOnly = false,
     IReadOnlyList<string>? Minerals = null,
     IReadOnlyList<string>? SystemNames = null
-);
+)
+{
+    public bool GalaxyWide { get; init; }
+}
 
 public sealed record MiningRingPage(IReadOnlyList<MiningRing> Rings, bool HasMore);
+
+public sealed record MiningPlanetaryBodyPage(
+    IReadOnlyList<MiningPlanetaryBody> Bodies,
+    bool HasMore,
+    double? ResumeDistance = null
+);
+
+public sealed record MiningSystemPage(IReadOnlyList<MiningSystemResult> Systems, bool HasMore)
+{
+    public bool FromCache { get; init; }
+}
 
 public sealed record MiningMarketQuery(
     string ReferenceSystem,
@@ -68,7 +84,10 @@ public sealed record MiningMarketQuery(
     long MaximumDemand = 0,
     TimeSpan? MaximumAge = null,
     string PadSize = "Any"
-);
+)
+{
+    public IReadOnlyList<string> StationTypes { get; init; } = [];
+}
 
 public sealed record MiningSellQuote(
     string System,
@@ -78,7 +97,8 @@ public sealed record MiningSellQuote(
     double? ArrivalLs,
     string Commodity,
     long Price,
-    long Demand
+    long Demand,
+    DateTimeOffset? Updated = null
 );
 
 public sealed record MiningMarketResult(
@@ -96,6 +116,8 @@ public sealed record MiningMarketResult(
 )
 {
     public string Commodity { get; init; } = "";
+
+    public GalacticCoordinate? Position { get; init; }
 
     public string? QuotedPad { get; init; }
 
@@ -122,7 +144,10 @@ public sealed record MiningSystemQuery(
     long MinimumPopulation = 0,
     int Page = 0,
     string Objective = ""
-);
+)
+{
+    public bool GalaxyWide { get; init; }
+}
 
 public sealed record MiningSystemResult(
     string System,
@@ -140,6 +165,7 @@ public sealed record MiningSystemResult(
 {
     public IReadOnlyList<string> NearbyPowers { get; init; } = [];
     public IReadOnlyList<PowerplayProgress> Conflict { get; init; } = [];
+    public double? ControlProgress { get; init; }
 }
 
 /// <summary>Mining searches extend the shared Spansh pathway and use the application's network/privacy client.</summary>
@@ -158,6 +184,7 @@ public sealed class MiningSearchClient : IDisposable
     private const int MaximumResponseBytes = 8 * 1024 * 1024;
     private static readonly TimeSpan CommodityReportCheckInterval = TimeSpan.FromHours(1);
     private static readonly TimeSpan CommodityReportRetryDelay = TimeSpan.FromHours(1);
+    private static readonly TimeSpan MarketResponseCacheAge = TimeSpan.FromMinutes(10);
     private static readonly IReadOnlyDictionary<string, MiningCommodityPriceSummary> EmptyCommodityReport =
         new Dictionary<string, MiningCommodityPriceSummary>(StringComparer.OrdinalIgnoreCase);
     private static readonly HttpClient SharedClient = new() { Timeout = TimeSpan.FromSeconds(35) };
@@ -167,6 +194,7 @@ public sealed class MiningSearchClient : IDisposable
     private readonly SemaphoreSlim commodityReportGate = new(1, 1);
     private readonly TimeProvider timeProvider;
     private readonly MiningCommodityPriceReportStore? commodityReportStore;
+    private readonly MiningProviderResponseCache? providerResponseCache;
     private IReadOnlyDictionary<string, MiningCommodityPriceSummary>? commodityReport;
     private DateTimeOffset nextCommodityReportRefresh;
     private string? lastCommodityName;
@@ -180,15 +208,18 @@ public sealed class MiningSearchClient : IDisposable
     public MiningSearchClient(
         HttpClient? httpClient = null,
         TimeProvider? timeProvider = null,
-        MiningCommodityPriceReportStore? commodityReportStore = null
+        MiningCommodityPriceReportStore? commodityReportStore = null,
+        MiningProviderResponseCache? providerResponseCache = null
     )
     {
         HttpClient http = httpClient ?? SharedClient;
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.commodityReportStore = commodityReportStore;
+        this.providerResponseCache = providerResponseCache;
         ardent = new ArdentApi(
             http,
-            onFailure: (route, exception) => diagnostics.Record(ArdentProvider, route, exception)
+            onFailure: (route, exception) => diagnostics.Record(ArdentProvider, route, exception),
+            cache: providerResponseCache
         );
         spansh = new SpanshApi(
             http,
@@ -318,7 +349,7 @@ public sealed class MiningSearchClient : IDisposable
         CancellationToken cancellationToken = default
     )
     {
-        Dictionary<string, object> filters = DistanceFilter(query.Radius);
+        Dictionary<string, object> filters = InitialFilters(query.Radius, query.GalaxyWide);
         if (query.SystemNames is { Count: > 0 })
         {
             filters[SystemNameField] = new { value = query.SystemNames.ToArray() };
@@ -439,19 +470,36 @@ public sealed class MiningSearchClient : IDisposable
     public async Task<IReadOnlyList<MiningPlanetaryBody>> FindPlanetaryBodiesAsync(
         MiningPlanetaryQuery query,
         CancellationToken cancellationToken = default
+    ) => (await FindPlanetaryBodyPageAsync(query, cancellationToken).ConfigureAwait(false)).Bodies;
+
+    public async Task<MiningPlanetaryBodyPage> FindPlanetaryBodyPageAsync(
+        MiningPlanetaryQuery query,
+        CancellationToken cancellationToken = default
     )
     {
         if (query.BodySubtypes.Count == 0)
         {
-            return [];
+            return new MiningPlanetaryBodyPage([], false);
         }
 
         Dictionary<string, object> filters = query.GalaxyWide ? [] : DistanceFilter(query.Radius);
+        if (!query.GalaxyWide && query.MinimumDistance > 0)
+        {
+            filters[DistanceField] = new { min = query.MinimumDistance, max = query.Radius };
+        }
         filters["is_landable"] = new { value = true };
         filters[SubtypeField] = new { value = query.BodySubtypes.ToArray() };
         if (query.ControllingPowers is { Count: > 0 })
         {
-            filters["system_controlling_power"] = new { value = query.ControllingPowers.ToArray() };
+            filters["system_controlling_power"] = new
+            {
+                value = query.ControllingPowers.Select(PowerplayPlan.SpanshPowerName).ToArray(),
+            };
+        }
+
+        if (query.SystemNames is { Count: > 0 })
+        {
+            filters[SystemNameField] = new { value = query.SystemNames.ToArray() };
         }
 
         if (query.PowerState.Length > 0)
@@ -488,11 +536,36 @@ public sealed class MiningSearchClient : IDisposable
             query.Page,
             cancellationToken: cancellationToken
         );
-        return Results(response)
+        return ReadPlanetaryBodyPage(response, query);
+    }
+
+    private static MiningPlanetaryBodyPage ReadPlanetaryBodyPage(JsonDocument response, MiningPlanetaryQuery query)
+    {
+        JsonElement[] results = Results(response).ToArray();
+        MiningPlanetaryBody[] bodies = results
             .Select(ReadPlanetaryBody)
             .Where(body => body is not null)
             .Cast<MiningPlanetaryBody>()
             .ToArray();
+        int pageSize = SpanshRoutes.PageSize(SpanshRoutes.Bodies);
+        int? reportedCount =
+            response.RootElement.TryGetProperty("count", out JsonElement count) && count.TryGetInt32(out int total)
+                ? total
+                : null;
+        bool reportedEnd = reportedCount is { } countValue && (query.Page + 1) * pageSize >= countValue;
+        bool hasMore = results.Length >= pageSize && !reportedEnd;
+        double? lastDistance = bodies.LastOrDefault()?.DistanceLy;
+        double? resumeDistance =
+            reportedCount == SpanshRoutes.SearchResultLimit
+            && reportedEnd
+            && results.Length >= pageSize
+            && !query.GalaxyWide
+            && lastDistance is { } distance
+            && distance > query.MinimumDistance + 0.000001
+            && distance < query.Radius
+                ? Math.BitDecrement(distance)
+                : null;
+        return new MiningPlanetaryBodyPage(bodies, hasMore, resumeDistance);
     }
 
     private static MiningPlanetaryBody? ReadPlanetaryBody(JsonElement body)
@@ -672,7 +745,7 @@ public sealed class MiningSearchClient : IDisposable
             );
         }
         using JsonDocument document = await ardent
-            .GetAsync(route, MaximumResponseBytes, MarketResponse, cancellationToken)
+            .GetAsync(route, MaximumResponseBytes, MarketResponse, MarketResponseCacheAge, cancellationToken)
             .ConfigureAwait(false);
         if (document.RootElement.ValueKind != JsonValueKind.Array)
         {
@@ -692,14 +765,27 @@ public sealed class MiningSearchClient : IDisposable
         string system,
         TimeSpan maximumAge,
         CancellationToken cancellationToken = default
+    ) =>
+        await FindSystemImportsAsync(
+                system,
+                new MiningMarketQuery(system, "Any", false, MaximumAge: maximumAge),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+    public async Task<IReadOnlyList<MiningMarketResult>> FindSystemImportsAsync(
+        string system,
+        MiningMarketQuery query,
+        CancellationToken cancellationToken = default
     )
     {
-        int maximumDays = Math.Clamp((int)Math.Ceiling(maximumAge.TotalDays), 1, 3650);
+        int maximumDays = Math.Clamp((int)Math.Ceiling(MarketAge(query).TotalDays), 1, 3650);
         using JsonDocument document = await ardent
             .GetAsync(
                 ArdentRoutes.SystemImports(system, maximumDays),
                 MaximumResponseBytes,
                 MarketResponse,
+                MarketResponseCacheAge,
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -708,7 +794,6 @@ public sealed class MiningSearchClient : IDisposable
             return [];
         }
 
-        var query = new MiningMarketQuery(system, "Any", false, MaximumAge: maximumAge);
         return document
             .RootElement.EnumerateArray()
             .Select(item => ReadArdentMarket(item, query))
@@ -840,7 +925,7 @@ public sealed class MiningSearchClient : IDisposable
             try
             {
                 using JsonDocument document = await ardent
-                    .GetAsync(route, MaximumResponseBytes, MarketResponse, cancellationToken)
+                    .GetAsync(route, MaximumResponseBytes, MarketResponse, MarketResponseCacheAge, cancellationToken)
                     .ConfigureAwait(false);
                 if (document.RootElement.ValueKind != JsonValueKind.Array)
                 {
@@ -1000,7 +1085,7 @@ public sealed class MiningSearchClient : IDisposable
             markets = [];
         }
 
-        if (markets.Count > 0)
+        if (markets.Count > 0 || string.IsNullOrWhiteSpace(query.ReferenceSystem))
         {
             return (markets, ArdentProvider);
         }
@@ -1044,6 +1129,10 @@ public sealed class MiningSearchClient : IDisposable
             Commodity = MiningCommodityName.Canonical(
                 MiningJson.Text(item, "commodityName") is { Length: > 0 } name ? name : query.Commodity
             ),
+            Position =
+                Number(item, "systemX") is { } x && Number(item, "systemY") is { } y && Number(item, "systemZ") is { } z
+                    ? new GalacticCoordinate(x, y, z)
+                    : null,
         };
     }
 
@@ -1062,6 +1151,7 @@ public sealed class MiningSearchClient : IDisposable
             cancellationToken: cancellationToken
         );
         return Results(response)
+            .Where(station => !MiningJson.Text(station, "type").Contains("Carrier", StringComparison.OrdinalIgnoreCase))
             .SelectMany(station =>
                 MiningJson
                     .Array(station, "market")
@@ -1110,30 +1200,62 @@ public sealed class MiningSearchClient : IDisposable
         double radius,
         IReadOnlyList<string> systems,
         IReadOnlyList<string> commodities,
+        TimeSpan? maximumAge = null,
         CancellationToken cancellationToken = default
     )
     {
-        if (systems.Count == 0 || commodities.Count == 0)
+        if (commodities.Count == 0)
         {
             return [];
         }
 
         Dictionary<string, object> filters = DistanceFilter(radius);
-        filters[SystemNameField] = new { value = systems.ToArray() };
+        if (systems.Count > 0)
+        {
+            filters[SystemNameField] = new { value = systems.ToArray() };
+        }
         filters["buying_commodities"] = new { value = commodities.ToArray() };
-        using JsonDocument response = await spansh.SearchAsync(
-            SpanshRoutes.Stations,
-            reference,
-            filters,
-            0,
-            sort: MarketUpdatedSort,
-            cancellationToken: cancellationToken
-        );
-        return Results(response).SelectMany(station => ReadSellQuotes(station, commodities)).ToArray();
+        var quotes = new List<MiningSellQuote>();
+        int page = 0;
+        bool hasMore = true;
+        while (hasMore)
+        {
+            using JsonDocument response = await spansh.SearchAsync(
+                SpanshRoutes.Stations,
+                reference,
+                filters,
+                page,
+                sort: MarketUpdatedSort,
+                cancellationToken: cancellationToken
+            );
+            JsonElement[] stations = Results(response).ToArray();
+            quotes.AddRange(stations.SelectMany(station => ReadSellQuotes(station, commodities, maximumAge)));
+            hasMore = stations.Length >= SpanshRoutes.PageSize(SpanshRoutes.Stations);
+            page++;
+        }
+
+        return quotes;
     }
 
-    private static IEnumerable<MiningSellQuote> ReadSellQuotes(JsonElement station, IReadOnlyList<string> commodities)
+    private static IEnumerable<MiningSellQuote> ReadSellQuotes(
+        JsonElement station,
+        IReadOnlyList<string> commodities,
+        TimeSpan? maximumAge
+    )
     {
+        if (MiningJson.Text(station, "type").Contains("Carrier", StringComparison.OrdinalIgnoreCase))
+        {
+            yield break;
+        }
+
+        DateTimeOffset? updated = maximumAge is { } age
+            ? RecentObservation(MiningJson.Text(station, MarketUpdatedSort), age)
+            : null;
+        if (maximumAge is not null && updated is null)
+        {
+            yield break;
+        }
+
         string pad = MaxPad(station) switch
         {
             >= 3 => "Large",
@@ -1165,7 +1287,8 @@ public sealed class MiningSearchClient : IDisposable
                 arrival,
                 MiningCommodityName.Canonical(commodity),
                 price,
-                demand
+                demand,
+                updated
             );
         }
     }
@@ -1241,6 +1364,7 @@ public sealed class MiningSearchClient : IDisposable
             )
             {
                 Commodity = MiningCommodityName.Canonical(MiningJson.Text(item, CommodityField)),
+                Position = Position(station),
             };
         }
     }
@@ -1249,7 +1373,8 @@ public sealed class MiningSearchClient : IDisposable
         (!query.ExcludeCarriers || !type.Contains("Carrier", StringComparison.OrdinalIgnoreCase))
         && (!query.LargePads || largePad == true)
         && MatchesPad(maxPad, largePad, query.PadSize)
-        && (query.StationType.Length == 0 || type.Contains(query.StationType, StringComparison.OrdinalIgnoreCase));
+        && (query.StationType.Length == 0 || type.Contains(query.StationType, StringComparison.OrdinalIgnoreCase))
+        && (query.StationTypes.Count == 0 || query.StationTypes.Contains(type, StringComparer.OrdinalIgnoreCase));
 
     private static bool MatchesPad(int? maxPad, bool? largePad, string pad)
     {
@@ -1262,8 +1387,8 @@ public sealed class MiningSearchClient : IDisposable
         return pad switch
         {
             "L" => size >= 3,
-            "M" => size == 2,
-            "S" => size == 1,
+            "M" => size >= 2,
+            "S" => size >= 1,
             _ => true,
         };
     }
@@ -1336,9 +1461,142 @@ public sealed class MiningSearchClient : IDisposable
     public async Task<IReadOnlyList<MiningSystemResult>> FindSystemsAsync(
         MiningSystemQuery query,
         CancellationToken cancellationToken = default
+    ) => (await FindSystemPageAsync(query, cancellationToken).ConfigureAwait(false)).Systems;
+
+    /// <summary>Acquisition source geometry is stable within a Powerplay cycle; progress is fetched separately.</summary>
+    public async Task<IReadOnlyList<MiningSystemResult>> FindAcquireSupportersAsync(
+        string reference,
+        string power,
+        string state,
+        CancellationToken cancellationToken = default
     )
     {
-        Dictionary<string, object> filters = DistanceFilter(query.Radius);
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        DateTimeOffset cycle = PowerplayCycleStart(now);
+        bool settling = now - cycle < TimeSpan.FromHours(1);
+        string key =
+            $"spansh-acquire-supporters:v1:{cycle:O}:{(settling ? "settling" : "settled")}:{reference.Trim()}:{PowerplayPlan.SpanshPowerName(power)}:{state}";
+        using JsonDocument? cached = providerResponseCache?.Load(
+            key,
+            settling ? TimeSpan.FromMinutes(5) : TimeSpan.FromDays(7)
+        );
+        if (cached is not null)
+        {
+            try
+            {
+                MiningSystemResult[]? systems = cached.Deserialize<MiningSystemResult[]>();
+                if (systems is not null)
+                {
+                    return systems;
+                }
+            }
+            catch (JsonException)
+            {
+                // A stale cache schema must never prevent a live search.
+            }
+        }
+
+        var found = new List<MiningSystemResult>();
+        int page = 0;
+        bool hasMore;
+        do
+        {
+            MiningSystemPage response = await FindSystemPageAsync(
+                    new MiningSystemQuery(reference, Power: power, PowerState: state, Page: page) { GalaxyWide = true },
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            found.AddRange(
+                response.Systems.Where(system =>
+                    PowerplayPlan.SamePower(system.Power, power)
+                    && system.PowerState.Equals(state, StringComparison.OrdinalIgnoreCase)
+                )
+            );
+            hasMore = response.HasMore;
+            page++;
+        } while (hasMore);
+
+        MiningSystemResult[] geometry = found
+            .Select(system => system with { Conflict = [], ControlProgress = null })
+            .ToArray();
+        using JsonDocument snapshot = JsonSerializer.SerializeToDocument(geometry);
+        providerResponseCache?.Save(key, snapshot);
+        return geometry;
+    }
+
+    internal static DateTimeOffset PowerplayCycleStart(DateTimeOffset utcNow)
+    {
+        DateTimeOffset now = utcNow.ToUniversalTime();
+        int daysSinceThursday = ((int)now.DayOfWeek - (int)DayOfWeek.Thursday + 7) % 7;
+        DateTimeOffset thursday = new(now.UtcDateTime.Date.AddHours(7), TimeSpan.Zero);
+        DateTimeOffset start = thursday.AddDays(-daysSinceThursday);
+        return start > now ? start.AddDays(-7) : start;
+    }
+
+    /// <summary>Reuses the Unoccupied index and coordinates for an Acquire bubble; callers refresh displayed progress by name.</summary>
+    public async Task<MiningSystemPage> FindAcquireCandidatePageAsync(
+        MiningSystemQuery query,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (
+            query.Objective != PowerplayPlan.Acquire
+            || query.State.Length > 0
+            || query.PowerState.Length > 0
+            || query.GalaxyWide
+        )
+        {
+            return await FindSystemPageAsync(query, cancellationToken).ConfigureAwait(false);
+        }
+
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        DateTimeOffset cycle = PowerplayCycleStart(now);
+        bool settling = now - cycle < TimeSpan.FromHours(1);
+        TimeSpan lifetime = settling ? TimeSpan.FromMinutes(5) : TimeSpan.FromDays(7);
+        string key =
+            $"spansh-acquire-candidates:v1:{cycle:O}:{(settling ? "settling" : "settled")}:{JsonSerializer.Serialize(query)}";
+        using JsonDocument? cached = providerResponseCache?.Load(key, lifetime);
+        if (cached is not null)
+        {
+            try
+            {
+                MiningSystemPage? page = cached.Deserialize<MiningSystemPage>();
+                if (page is not null)
+                {
+                    return page with { FromCache = true };
+                }
+            }
+            catch (JsonException)
+            {
+                // An old schema must not prevent a live search.
+            }
+        }
+
+        MiningSystemPage fresh = await FindSystemPageAsync(query, cancellationToken).ConfigureAwait(false);
+        MiningSystemPage geometry = fresh with
+        {
+            Systems = fresh
+                .Systems.Select(system =>
+                    system with
+                    {
+                        PowerState = PowerplayStanding.Unoccupied,
+                        Conflict = [],
+                        ControlProgress = null,
+                    }
+                )
+                .ToArray(),
+        };
+        using JsonDocument snapshot = JsonSerializer.SerializeToDocument(geometry);
+        providerResponseCache?.Save(key, snapshot);
+        return fresh;
+    }
+
+    public async Task<MiningSystemPage> FindSystemPageAsync(
+        MiningSystemQuery query,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Dictionary<string, object> filters = query.GalaxyWide ? [] : DistanceFilter(query.Radius);
         PowerplaySpanshQuery spanshQuery = PowerplayPlan.SpanshFilter(query.Objective, query.PowerState);
         foreach (
             (string? name, string? value, bool array) in new[]
@@ -1348,7 +1606,7 @@ public sealed class MiningSearchClient : IDisposable
                 ("government", query.Government, false),
                 ("primary_economy", query.Economy, false),
                 ("controlling_minor_faction_state", query.State, true),
-                ("controlling_power", query.Power, true),
+                ("controlling_power", PowerplayPlan.SpanshPowerName(query.Power), true),
                 ("power_state", spanshQuery.IndexedState, true),
             }
         )
@@ -1371,7 +1629,8 @@ public sealed class MiningSearchClient : IDisposable
             query.Page,
             cancellationToken: cancellationToken
         );
-        IEnumerable<MiningSystemResult> systems = Results(response).Select(ReadSystem);
+        JsonElement[] results = Results(response).ToArray();
+        IEnumerable<MiningSystemResult> systems = results.Select(ReadSystem);
         if (spanshQuery.RequiredState.Length > 0)
         {
             systems = systems.Where(system =>
@@ -1379,7 +1638,7 @@ public sealed class MiningSearchClient : IDisposable
             );
         }
 
-        return systems.ToArray();
+        return new MiningSystemPage(systems.ToArray(), results.Length >= SpanshRoutes.PageSize(SpanshRoutes.Systems));
     }
 
     public async Task<IReadOnlyList<MiningSystemResult>> FindSystemsByNameAsync(
@@ -1410,7 +1669,7 @@ public sealed class MiningSearchClient : IDisposable
         IReadOnlyList<PowerplayProgress> progress = MiningJson
             .Array(system, "power_conflict_progress")
             .Select(entry => new PowerplayProgress(
-                MiningJson.Text(entry, "power"),
+                MiningJson.Text(entry, "name") is { Length: > 0 } name ? name : MiningJson.Text(entry, "power"),
                 MiningJson.Number(entry, "progress")
             ))
             .Where(entry => entry.Power.Length > 0 && double.IsFinite(entry.Progress))
@@ -1438,6 +1697,7 @@ public sealed class MiningSearchClient : IDisposable
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
             Conflict = progress,
+            ControlProgress = Number(system, "power_state_control_progress"),
         };
     }
 
@@ -1576,6 +1836,9 @@ public sealed class MiningSearchClient : IDisposable
 
         return new() { [DistanceField] = new { min = 0, max = radius } };
     }
+
+    private static Dictionary<string, object> InitialFilters(double radius, bool galaxyWide) =>
+        galaxyWide ? [] : DistanceFilter(radius);
 
     private static bool IsProviderFailure(Exception exception, CancellationToken cancellationToken) =>
         exception is HttpRequestException or JsonException or IOException or InvalidDataException

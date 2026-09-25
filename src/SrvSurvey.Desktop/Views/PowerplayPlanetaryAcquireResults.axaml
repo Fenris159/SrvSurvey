@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:views="using:SrvSurvey.Desktop.Views" x:Class="SrvSurvey.Desktop.Views.PowerplayPlanetaryAcquireResults" x:DataType="vm:SurfaceMiningSearchViewModel">
+  <StackPanel MinWidth="1280">
+    <ItemsControl ItemsSource="{Binding AcquireClusters}" IsVisible="{Binding HasRows}" HorizontalAlignment="Stretch">
+      <ItemsControl.Styles><Style Selector="ContentPresenter"><Setter Property="HorizontalAlignment" Value="Stretch"/></Style></ItemsControl.Styles>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:PowerplayAcquireClusterViewModel">
+          <views:PowerplayAcquireSharedCluster/>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+</UserControl>

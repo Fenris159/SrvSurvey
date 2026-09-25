@@ -23,7 +23,12 @@ public sealed class MiningCommunityCacheTests
             """{"$schemaRef":"https://eddn.edcd.io/schemas/journal/1","message":{"timestamp":"2026-09-06T11:59:00Z","event":"FSDJump","StarSystem":"Sol","StarPos":[0,0,0],"ControllingPower":"Aisling Duval","PowerplayState":"Exploited"}}""",
             now
         );
-        Assert.Equal(200, Assert.Single(cache.Markets(query, new GalacticCoordinate(0, 0, 0), now)).Price);
+        MiningMarketResult market = Assert.Single(cache.Markets(query, new GalacticCoordinate(0, 0, 0), now));
+        Assert.Equal(200, market.Price);
+        Assert.Equal("Platinum", market.Commodity);
+        Assert.Empty(cache.Markets(query with { PadSize = "L" }, new GalacticCoordinate(0, 0, 0), now));
+        Assert.Empty(cache.Markets(query with { MinimumDemand = 11 }, new GalacticCoordinate(0, 0, 0), now));
+        Assert.Empty(cache.Markets(query with { MaximumDemand = 9 }, new GalacticCoordinate(0, 0, 0), now));
         Assert.Equal(
             250,
             Assert.Single(cache.Markets(query with { Buying = true }, new GalacticCoordinate(0, 0, 0), now)).Price

@@ -139,9 +139,7 @@ public static class PlanetaryMiningPlan
 
     public static IReadOnlyList<string> OtherPowers(string power)
     {
-        string spansh = power.Equals("Arissa Lavigny-Duval", StringComparison.OrdinalIgnoreCase)
-            ? "A. Lavigny-Duval"
-            : power;
+        string spansh = PowerplayPlan.SpanshPowerName(power);
         return SpanshPowers.Where(candidate => !candidate.Equals(spansh, StringComparison.OrdinalIgnoreCase)).ToArray();
     }
 

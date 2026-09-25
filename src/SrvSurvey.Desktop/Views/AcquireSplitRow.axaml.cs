@@ -2,6 +2,7 @@ using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.VisualTree;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -37,12 +38,17 @@ public sealed partial class AcquireSplitRow : UserControl
     public AcquireSplitRow()
     {
         InitializeComponent();
-        SizeChanged += (_, _) => UpdateColumnWidths();
+        SizeChanged += (_, _) =>
+        {
+            UpdateColumnWidths();
+            UpdateLinkAnchors();
+        };
         TargetBorder.SizeChanged += (_, _) =>
         {
             if (TargetBorder.Bounds.Height > 0)
             {
                 FirstAnchorY = TargetBorder.Bounds.Height / 2;
+                UpdateLinkAnchors();
             }
         };
     }
@@ -98,5 +104,18 @@ public sealed partial class AcquireSplitRow : UserControl
         SplitGrid.ColumnDefinitions[0].Width = new GridLength(width * 0.42);
         SplitGrid.ColumnDefinitions[1].Width = new GridLength(width * 0.04);
         SplitGrid.ColumnDefinitions[2].Width = new GridLength(width * 0.54);
+    }
+
+    private void UpdateLinkAnchors()
+    {
+        if (!double.IsFinite(FirstAnchorY))
+        {
+            return;
+        }
+
+        foreach (AcquireTreeLink link in this.GetVisualDescendants().OfType<AcquireTreeLink>())
+        {
+            link.FirstAnchorY = FirstAnchorY;
+        }
     }
 }

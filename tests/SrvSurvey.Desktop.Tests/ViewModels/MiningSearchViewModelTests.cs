@@ -8,6 +8,238 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MiningSearchViewModelTests
 {
     [Fact]
+    public void PowerplaySearchRowsReturnFromDiskWithoutAProviderRequest()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-powerplay-cache-" + Guid.NewGuid());
+        try
+        {
+            var cache = new MiningSearchResultCache(directory);
+            var snapshot = new PowerplaySearchSnapshot(
+                new MiningSearchPreferences { Reference = "Sol", PledgedPower = "Archon Delaine" },
+                "Undermine",
+                ["All"],
+                ["Default"],
+                ["Any"],
+                "1 saved location",
+                [
+                    new MeritSystemSnapshot(
+                        "Achenar",
+                        "10.0 ly",
+                        10,
+                        "Stronghold",
+                        "Stronghold",
+                        "Archon Delaine",
+                        [new PowerplayPowerLineViewModel("Archon Delaine", 0.3)],
+                        [],
+                        [],
+                        [],
+                        [],
+                        [
+                            new MeritStationBlockSnapshot(
+                                "Coriolis",
+                                "Port (L)",
+                                "Monazite",
+                                "Price: 100 CR",
+                                "Demand: 10",
+                                "",
+                                "",
+                                Enumerable
+                                    .Range(1, 7)
+                                    .Select(index => new MeritCommodityLineViewModel("MON", index + " CR", "10 Demand"))
+                                    .ToArray()
+                            ),
+                        ],
+                        ""
+                    ),
+                ],
+                [],
+                null
+            )
+            {
+                PledgedPower = "Felicia Winters",
+            };
+            using (
+                var keyModel = new MiningSearchViewModel(
+                    new MiningSearchClient(),
+                    new BookmarksViewModel(directory),
+                    _ => { },
+                    () => [],
+                    new Resolver()
+                )
+            )
+            {
+                keyModel.LoadOptions(snapshot.Options);
+                keyModel.PledgedPower = snapshot.PledgedPower;
+                keyModel.Objective = snapshot.Objective;
+                cache.Save("powerplay", keyModel.PowerplayCacheKey(), snapshot);
+            }
+
+            using var model = new MiningSearchViewModel(
+                new MiningSearchClient(),
+                new BookmarksViewModel(directory),
+                _ => { },
+                () => [],
+                new Resolver()
+            );
+            model.ConfigureResultCache(cache);
+            model.LoadOptions(new MiningSearchPreferences { Reference = "Other" });
+            model.RestoreLastCompletedPowerplaySearch();
+            model.UpdateCurrentLocation("Timbalderis");
+            model.PreparePowerplay();
+
+            Assert.Equal("Sol", model.Reference);
+            Assert.Equal("Undermine", model.Objective);
+            Assert.Equal("Felicia Winters", model.PledgedPower);
+            Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
+            Assert.Equal("Archon Delaine 30%", Assert.Single(Assert.Single(model.MeritRows).PowerLines).Display);
+            MeritStationBlockViewModel station = Assert.Single(Assert.Single(model.MeritRows).StationBlocks);
+            Assert.Equal(6, station.OtherCommodities.Count);
+            station.ToggleCommoditiesCommand.Execute(null);
+            Assert.Equal(7, station.OtherCommodities.Count);
+            Assert.Equal("1 saved location", model.Status);
+            model.Radius = 101;
+            Assert.Empty(model.MeritRows);
+            model.Radius = 100;
+            Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
+
+            (Action Change, Action Restore)[] resultFilters =
+            [
+                (() => model.Security = "High", () => model.Security = ""),
+                (() => model.Allegiance = "Empire", () => model.Allegiance = ""),
+                (() => model.Government = "Democracy", () => model.Government = ""),
+                (() => model.Economy = "Industrial", () => model.Economy = ""),
+                (() => model.State = "Boom", () => model.State = ""),
+                (() => model.PowerState = "Stronghold", () => model.PowerState = ""),
+                (() => model.MinimumPopulation = 1, () => model.MinimumPopulation = 0),
+                (() => model.MinimumHotspots = 2, () => model.MinimumHotspots = 1),
+            ];
+            foreach ((Action change, Action restore) in resultFilters)
+            {
+                change();
+                Assert.Empty(model.MeritRows);
+                restore();
+                Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
+            }
+
+            model.PledgedPower = "Any";
+            cache.Save(
+                "powerplay",
+                model.PowerplayCacheKey(),
+                snapshot with
+                {
+                    PledgedPower = "Any",
+                    Objective = "Reinforce",
+                }
+            );
+            model.RestoreLastCompletedPowerplaySearch();
+            string restoredKey = model.PowerplayCacheKey();
+            model.NoteDetectedPower("Arissa Lavigny-Duval");
+            Assert.Equal("Any", model.PledgedPower);
+            Assert.Equal(restoredKey, model.PowerplayCacheKey());
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void CachedRingAcquireRowsRestoreAndSortByDistanceOrStationScore()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-ring-acquire-cache-" + Guid.NewGuid());
+        try
+        {
+            var cache = new MiningSearchResultCache(directory);
+            var options = new MiningSearchPreferences { Reference = "Sol", PledgedPower = "Archon Delaine" };
+            AcquireResultSnapshot Row(string target, double distance, long score) =>
+                new(
+                    target,
+                    "Unoccupied",
+                    distance + " ly",
+                    [
+                        new MeritStationBlockSnapshot(
+                            "Station",
+                            target + " Port (L)",
+                            "Monazite",
+                            "Price: 500 CR",
+                            "Demand: 10",
+                            "",
+                            "",
+                            []
+                        ),
+                    ],
+                    [
+                        new AcquireMinerSnapshot(
+                            target + " Mine",
+                            [
+                                new MeritLineViewModel(
+                                    "Planet",
+                                    "A Ring: Monazite",
+                                    "A Ring",
+                                    "RingRocky",
+                                    "",
+                                    "Monazite"
+                                ),
+                            ],
+                            "Fortified",
+                            [],
+                            "Single"
+                        ),
+                    ]
+                )
+                {
+                    DistanceLy = distance,
+                    StationScores = [score],
+                };
+            var snapshot = new PowerplaySearchSnapshot(
+                options,
+                "Acquire",
+                ["All"],
+                ["Any"],
+                ["Any"],
+                "2 saved targets",
+                [],
+                [Row("Near", 10, 500), Row("Far", 30, 800)],
+                null
+            )
+            {
+                PledgedPower = "Archon Delaine",
+            };
+            using var model = new MiningSearchViewModel(
+                new MiningSearchClient(),
+                new BookmarksViewModel(directory),
+                _ => { },
+                () => [],
+                new Resolver()
+            );
+            model.LoadOptions(options);
+            model.PledgedPower = "Archon Delaine";
+            model.Objective = "Acquire";
+            cache.Save("powerplay", model.PowerplayCacheKey(), snapshot);
+            model.ConfigureResultCache(new MiningSearchResultCache(directory));
+
+            Assert.Equal("Near", model.AcquireRows[0].Target);
+            Assert.Equal(2, model.RingAcquireClusters.Count);
+            model.AcquireBestStationSortCommand.Execute(null);
+            Assert.Equal("Far", model.AcquireRows[0].Target);
+            model.AcquireBestStationSortCommand.Execute(null);
+            Assert.Equal("Near", model.AcquireRows[0].Target);
+            model.AcquireDistanceSortCommand.Execute(null);
+            Assert.Equal("Far", model.AcquireRows[0].Target);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
     public void PowerplayPickerOnlyOffersRingCommoditiesThatTheSearchCanPrice()
     {
         Assert.All(
@@ -60,6 +292,7 @@ public sealed class MiningSearchViewModelTests
         {
             Reference = "Timbalderis",
             Reserve = "Pristine",
+            PowerState = "Stronghold",
         };
         model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
         model.MineralChips.Add("Periclase Dunite");
@@ -79,28 +312,699 @@ public sealed class MiningSearchViewModelTests
                 .Select(value => value.GetString())
         );
         Assert.False(filters.TryGetProperty("reserve_level", out _));
+        Assert.False(filters.TryGetProperty("system_power_state", out _));
+        Assert.False(filters.TryGetProperty("system_controlling_power", out _));
         Assert.False(filters.TryGetProperty("landmarks", out _));
+        Assert.Equal(1, handler.RequestedBodyRadius);
     }
 
-    private sealed class PlanetaryFilterHandler : HttpMessageHandler
+    [Fact]
+    public async Task PlanetaryPowerplayIncludesEligibleBodiesAfterTheFirstSpanshPage()
     {
-        public string? BodyFilters { get; private set; }
+        using var handler = new PlanetaryFilterHandler { PagedBodies = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            ResultLimit = 2,
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal(2, handler.BodyPages);
+        Assert.Contains(
+            Assert.Single(Assert.Single(model.PlanetarySearch.Rows).Systems).Bodies,
+            body => body.Details.StartsWith("101:", StringComparison.Ordinal)
+        );
+    }
+
+    [Fact]
+    public async Task PlanetaryPowerplayChoosesSellSystemsByGoalBeforeSearchingBodies()
+    {
+        using var handler = new PlanetaryFilterHandler { MultipleSellSystems = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            PledgedPower = "Aisling Duval",
+            Objective = "Reinforce",
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Own Sell", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Equal("Aisling Duval 42%", Assert.Single(model.PlanetarySearch.Rows).PowerLines[0].Display);
+        Assert.Equal(["Own Sell"], handler.BodyReferences);
+        Assert.All(
+            Assert.Single(model.PlanetarySearch.Rows).Systems,
+            system => Assert.Equal("Own Sell", system.System)
+        );
+        Assert.Equal(["Own Sell"], handler.RequestedBodySystems);
+        Assert.Equal(1, handler.RequestedBodyRadius);
+        Assert.Empty(model.MeritRows);
+
+        model.Objective = "Undermine";
+        handler.BodyReferences.Clear();
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Other Sell", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Equal("Jerome Archer 67%", Assert.Single(model.PlanetarySearch.Rows).PowerLines[0].Display);
+        Assert.Equal(["Other Sell"], handler.BodyReferences);
+        Assert.All(
+            Assert.Single(model.PlanetarySearch.Rows).Systems,
+            system => Assert.Equal("Other Sell", system.System)
+        );
+        Assert.Equal(["Other Sell"], handler.RequestedBodySystems);
+        Assert.Equal(1, handler.RequestedBodyRadius);
+    }
+
+    [Fact]
+    public async Task PlanetaryAcquireOnlyOffersUnownedSellSystemsInsideSupporterReach()
+    {
+        using var handler = new PlanetaryFilterHandler { AcquireSellSystems = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            PledgedPower = "Aisling Duval",
+            Objective = "Acquire",
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Near Target", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Equal("18 ly", Assert.Single(model.PlanetarySearch.Rows).Distance);
+        Assert.Equal("↑", model.PlanetarySearch.SellDistanceSortIndicator);
+        Assert.Equal(["Near Target"], handler.BodyReferences);
+        Assert.All(
+            Assert.Single(model.PlanetarySearch.Rows).Systems,
+            system => Assert.Equal("Supporter", system.System)
+        );
+        Assert.Equal(["Supporter"], handler.RequestedBodySystems);
+        Assert.Equal(30, handler.RequestedBodyRadius);
+        Assert.Contains(("Supporter", 20d), handler.AcquisitionTargetQueries);
+    }
+
+    [Fact]
+    public async Task PlanetaryAcquireUsesThirtyLyStrongholdSourceWhenFortifiedIsTooFar()
+    {
+        using var handler = new PlanetaryFilterHandler { AcquireSellSystems = true, StrongholdReach = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            PledgedPower = "Aisling Duval",
+            Objective = "Acquire",
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        SurfaceSellRowViewModel row = Assert.Single(model.PlanetarySearch.Rows);
+        Assert.Equal("Near Target", row.Target);
+        Assert.Equal("Stronghold Source", Assert.Single(row.Systems).System);
+        Assert.Equal(["Stronghold Source"], handler.RequestedBodySystems);
+        Assert.Contains(("Stronghold Source", 30d), handler.AcquisitionTargetQueries);
+    }
+
+    [Fact]
+    public async Task PlanetaryAcquireContinuesPastUnpricedTargetAroundDistantSupporters()
+    {
+        using var handler = new DistantPlanetaryAcquireHandler();
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            Radius = 1,
+            PledgedPower = "Aisling Duval",
+            Objective = "Acquire",
+            ResultLimit = 2,
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Good Target", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Equal("810 ly", Assert.Single(model.PlanetarySearch.Rows).Distance);
+        Assert.Equal(["Empty Target", "Good Target", "Third Target"], handler.ImportSystems);
+        Assert.Equal(1, handler.BodyReferences.Count(system => system == "Good Target"));
+        Assert.False(handler.SawGalaxyMarket);
+        Assert.True(handler.SawGlobalSupporterQuery);
+        Assert.True(handler.Events.IndexOf("Bubble Fortress B") < handler.Events.IndexOf("Import Empty Target"));
+    }
+
+    [Fact]
+    public async Task PlanetaryAcquireUsesSpanshShortNameForArissaWithoutAReferenceRadius()
+    {
+        using var handler = new DistantPlanetaryAcquireHandler { UseArissaAlias = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            Radius = 1,
+            PledgedPower = "Arissa Lavigny-Duval",
+            Objective = "Acquire",
+            ResultLimit = 1,
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Good Target", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.True(handler.SawGlobalSupporterQuery);
+    }
+
+    [Fact]
+    public async Task PlanetaryAcquireAnySearchesEverySurfaceMaterialInsteadOfTheRingMineral()
+    {
+        using var handler = new DistantPlanetaryAcquireHandler { IncludeMonaziteVolcanism = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            PledgedPower = "Aisling Duval",
+            Objective = "Acquire",
+            Mineral = "Platinum",
+            ResultLimit = 1,
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Any");
+
+        await model.SearchSystemsAsync();
+
+        Assert.True(model.PlanetarySearch.Rows.Count > 0, model.Status);
+        Assert.Equal("Good Target", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Contains("Any surface material", model.Status, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PlanetaryAcquireKeepsFoundRowsWhenASecondBodySearchFails()
+    {
+        using var handler = new DistantPlanetaryAcquireHandler { FailLaterBodySearch = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            PledgedPower = "Aisling Duval",
+            Objective = "Acquire",
+            ResultLimit = 2,
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Monazite");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Good Target", Assert.Single(model.PlanetarySearch.Rows).Target);
+        Assert.Contains("partial results", model.Status, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed class DistantPlanetaryAcquireHandler : HttpMessageHandler
+    {
+        public bool UseArissaAlias { get; init; }
+        public bool FailLaterBodySearch { get; init; }
+        public bool IncludeMonaziteVolcanism { get; init; }
+        public List<string> ImportSystems { get; } = [];
+        public List<string> Events { get; } = [];
+        public List<string> BodyReferences { get; } = [];
+        public bool SawGalaxyMarket { get; private set; }
+        public bool SawGlobalSupporterQuery { get; private set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
         )
         {
+            string path = request.RequestUri?.AbsolutePath ?? "";
+            if (path == "/api/systems/search")
+            {
+                using var body = System.Text.Json.JsonDocument.Parse(
+                    await request.Content!.ReadAsStringAsync(cancellationToken)
+                );
+                System.Text.Json.JsonElement filters = body.RootElement.GetProperty("filters");
+                string reference = body.RootElement.GetProperty("reference_system").GetString() ?? "";
+                if (filters.TryGetProperty("name", out _))
+                {
+                    return Json(
+                        reference == "Timbalderis"
+                            ? """{"results":[{"name":"Empty Target","distance":710,"power_state":"Unoccupied"},{"name":"Good Target","distance":810,"power_state":"Unoccupied"},{"name":"Third Target","distance":910,"power_state":"Unoccupied"}]}"""
+                            : """{"results":[]}"""
+                    );
+                }
+
+                string state = filters.TryGetProperty("power_state", out System.Text.Json.JsonElement power)
+                    ? power.GetProperty("value")[0].GetString() ?? ""
+                    : "";
+                if (filters.TryGetProperty("controlling_power", out _) && state == "Fortified")
+                {
+                    SawGlobalSupporterQuery = !filters.TryGetProperty("distance", out _);
+                    string filteredPower =
+                        filters.GetProperty("controlling_power").GetProperty("value")[0].GetString() ?? "";
+                    if (UseArissaAlias && filteredPower != "A. Lavigny-Duval")
+                    {
+                        return Json("""{"results":[]}""");
+                    }
+
+                    string response =
+                        """{"results":[{"name":"Fortress A","distance":700,"x":700,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Fortress B","distance":800,"x":800,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"},{"name":"Fortress C","distance":900,"x":900,"y":0,"z":0,"controlling_power":"Aisling Duval","power_state":"Fortified"}]}""";
+                    return Json(
+                        UseArissaAlias
+                            ? response.Replace("Aisling Duval", "A. Lavigny-Duval", StringComparison.Ordinal)
+                            : response
+                    );
+                }
+
+                if (state == "Unoccupied")
+                {
+                    Events.Add("Bubble " + reference);
+                    return Json(
+                        reference switch
+                        {
+                            "Fortress A" =>
+                                """{"results":[{"name":"Empty Target","distance":10,"x":710,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                            "Fortress B" =>
+                                """{"results":[{"name":"Good Target","distance":10,"x":810,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                            _ =>
+                                """{"results":[{"name":"Third Target","distance":10,"x":910,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                        }
+                    );
+                }
+
+                if (reference is "Empty Target" or "Good Target")
+                {
+                    return Json(
+                        """{"results":[{"name":"Supporter","distance":10,"controlling_power":"Aisling Duval","power_state":"Fortified"}]}"""
+                    );
+                }
+
+                return Json("""{"results":[]}""");
+            }
+
+            if (path == "/api/bodies/search")
+            {
+                using var body = System.Text.Json.JsonDocument.Parse(
+                    await request.Content!.ReadAsStringAsync(cancellationToken)
+                );
+                string reference = body.RootElement.GetProperty("reference_system").GetString() ?? "";
+                BodyReferences.Add(reference);
+                if (FailLaterBodySearch && reference == "Third Target")
+                {
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.BadGateway);
+                }
+
+                return Json(
+                    IncludeMonaziteVolcanism
+                        ? """{"results":[{"name":"Fortress B 1","system_name":"Fortress B","subtype":"Rocky body","volcanism_type":"Metallic Magma","distance":10}]}"""
+                        : """{"results":[{"name":"Fortress B 1","system_name":"Fortress B","subtype":"Rocky body","distance":10}]}"""
+                );
+            }
+
+            if (path.EndsWith("/commodities/imports", StringComparison.Ordinal))
+            {
+                string system = path switch
+                {
+                    var name when name.Contains("Good%20Target", StringComparison.Ordinal) => "Good Target",
+                    var name when name.Contains("Third%20Target", StringComparison.Ordinal) => "Third Target",
+                    _ => "Empty Target",
+                };
+                ImportSystems.Add(system);
+                Events.Add("Import " + system);
+                return Json(
+                    system is "Good Target" or "Third Target"
+                        ? $$"""[{"systemName":"{{system}}","stationName":"Good Port","stationType":"Coriolis","maxLandingPadSize":3,"commodityName":"Monazite","sellPrice":400000,"demand":1000,"updatedAt":"{{DateTimeOffset.UtcNow:O}}"}]"""
+                        : "[]"
+                );
+            }
+
+            if (path.StartsWith("/v2/commodity/name/", StringComparison.Ordinal))
+            {
+                SawGalaxyMarket = true;
+            }
+
+            return Json(path.StartsWith("/api/", StringComparison.Ordinal) ? """{"results":[]}""" : "[]");
+        }
+
+        private static HttpResponseMessage Json(string value) =>
+            new(System.Net.HttpStatusCode.OK) { Content = new StringContent(value) };
+    }
+
+    [Fact]
+    public async Task PlanetaryPowerplayRanksViableStationsInsideOneSellSystem()
+    {
+        using var handler = new PlanetaryFilterHandler { MultipleStations = true, IncludeCarrier = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+        };
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.MineralChips.Add("Periclase Dunite");
+
+        await model.SearchSystemsAsync();
+
+        SurfaceSellRowViewModel row = Assert.Single(model.PlanetarySearch.Rows);
+        Assert.True(model.PlanetarySearch.ExcludeCarrierMarkets);
+        Assert.Equal(["High Port", "Middle Port", "Low Port"], row.Stations.Select(station => station.Name));
+        Assert.Equal("High Port", Assert.Single(row.VisibleStations).Name);
+        Assert.Equal(550_000, row.BestViablePrice);
+        Assert.Equal(3, row.StationRanking.StationCount);
+        row.ToggleStationsCommand.Execute(null);
+        Assert.Equal(3, row.VisibleStations.Count);
+        row.ToggleStationsCommand.Execute(null);
+        Assert.Single(row.VisibleStations);
+    }
+
+    [Fact]
+    public void PlanetaryMiningReplacesDefaultMineralWithAnyAndBlocksDefaultSelection()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        );
+        Assert.Equal([MiningMaterialSelection.Default], model.MineralChips.Selected);
+
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+
+        Assert.Equal([MiningMaterialSelection.Any], model.MineralChips.Selected);
+        Assert.DoesNotContain(MiningMaterialSelection.Default, model.MineralChips.Suggestions);
+        model.MineralChips.Add(MiningMaterialSelection.Default);
+        Assert.Equal([MiningMaterialSelection.Any], model.MineralChips.Selected);
+        model.MiningTypeChips.Add("All");
+        Assert.Equal([MiningMaterialSelection.Any], model.MineralChips.Selected);
+        Assert.Contains(MiningMaterialSelection.Default, model.MineralChips.Suggestions);
+    }
+
+    [Fact]
+    public void AcquireDisablesRadiusAndCapsResultsAtTen()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        );
+        model.ResultLimit = 100;
+        Assert.Equal(30, model.ResultLimit);
+        model.PledgedPower = "Aisling Duval";
+        model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+        model.Objective = "Acquire";
+        Assert.False(model.CanChooseDistance);
+        Assert.True(model.IsPlanetaryAcquire);
+        Assert.Equal(10, model.MaximumResultLimit);
+        Assert.Equal(10, model.ResultLimit);
+        model.ResultLimit = 100;
+        Assert.Equal(10, model.ResultLimit);
+        model.Objective = "Reinforce";
+        Assert.True(model.CanChooseDistance);
+        Assert.Equal(30, model.MaximumResultLimit);
+        model.Objective = "Acquire";
+        model.PledgedPower = "Any";
+        Assert.Equal("Reinforce", model.Objective);
+        Assert.True(model.IsPlanetaryCombined);
+    }
+
+    private sealed class PlanetaryFilterHandler : HttpMessageHandler
+    {
+        public string? BodyFilters { get; private set; }
+        public bool PagedBodies { get; init; }
+        public bool MultipleSellSystems { get; init; }
+        public bool AcquireSellSystems { get; init; }
+        public bool StrongholdReach { get; init; }
+        public bool MultipleStations { get; init; }
+        public bool IncludeCarrier { get; init; }
+        public int BodyPages { get; private set; }
+        public List<string> BodyReferences { get; } = [];
+        public string[] RequestedBodySystems { get; private set; } = [];
+        public double RequestedBodyRadius { get; private set; }
+        public List<(string Reference, double Radius)> AcquisitionTargetQueries { get; } = [];
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request.RequestUri?.AbsolutePath == "/api/systems/search")
+            {
+                if (AcquireSellSystems)
+                {
+                    using var search = System.Text.Json.JsonDocument.Parse(
+                        await request.Content!.ReadAsStringAsync(cancellationToken)
+                    );
+                    System.Text.Json.JsonElement filters = search.RootElement.GetProperty("filters");
+                    if (filters.TryGetProperty("name", out _))
+                    {
+                        return Json(
+                            StrongholdReach
+                                ? """{"results":[{"name":"Near Target","distance":25,"power_state":"Unoccupied","x":25,"y":0,"z":0}]}"""
+                                : """{"results":[{"name":"Near Target","distance":18,"power_state":"Unoccupied","x":18,"y":0,"z":0},{"name":"Far Target","distance":31,"power_state":"Unoccupied","x":31,"y":0,"z":0}]}"""
+                        );
+                    }
+
+                    if (!filters.TryGetProperty("power_state", out _))
+                    {
+                        string target = search.RootElement.GetProperty("reference_system").GetString() ?? "";
+                        AcquisitionTargetQueries.Add(
+                            (target, filters.GetProperty("distance").GetProperty("max").GetDouble())
+                        );
+                        if (target != "Near Target")
+                        {
+                            return Json("""{"results":[]}""");
+                        }
+
+                        return Json(
+                            StrongholdReach
+                                ? """{"results":[{"name":"Stronghold Source","distance":25,"controlling_power":"Aisling Duval","power_state":"Stronghold","x":50,"y":0,"z":0}]}"""
+                                : """{"results":[{"name":"Supporter","distance":18,"controlling_power":"Aisling Duval","power_state":"Fortified","x":0,"y":0,"z":0}]}"""
+                        );
+                    }
+
+                    if (filters.GetProperty("power_state").GetProperty("value")[0].GetString() == "Unoccupied")
+                    {
+                        AcquisitionTargetQueries.Add(
+                            (
+                                search.RootElement.GetProperty("reference_system").GetString() ?? "",
+                                filters.GetProperty("distance").GetProperty("max").GetDouble()
+                            )
+                        );
+                        return Json(
+                            StrongholdReach
+                                ? """{"results":[{"name":"Near Target","power_state":"Unoccupied","x":25,"y":0,"z":0}]}"""
+                                : """{"results":[{"name":"Near Target","power_state":"Unoccupied","x":18,"y":0,"z":0},{"name":"Far Target","power_state":"Unoccupied","x":31,"y":0,"z":0}]}"""
+                        );
+                    }
+
+                    if (
+                        StrongholdReach
+                        && filters.GetProperty("power_state").GetProperty("value")[0].GetString() == "Stronghold"
+                    )
+                    {
+                        return Json(
+                            """{"results":[{"name":"Stronghold Source","controlling_power":"Aisling Duval","power_state":"Stronghold","x":50,"y":0,"z":0}]}"""
+                        );
+                    }
+
+                    return Json(
+                        filters.GetProperty("power_state").GetProperty("value")[0].GetString() == "Fortified"
+                            ? """{"results":[{"name":"Supporter","controlling_power":"Aisling Duval","power_state":"Fortified","x":0,"y":0,"z":0}]}"""
+                            : """{"results":[]}"""
+                    );
+                }
+
+                return Json(
+                    MultipleSellSystems
+                        ? """{"results":[{"name":"Own Sell","controlling_power":"Aisling Duval","power":["Felicia Winters","Aisling Duval"],"power_state":"Fortified","power_state_control_progress":0.42},{"name":"Other Sell","controlling_power":"Jerome Archer","power":["Felicia Winters","Jerome Archer"],"power_state":"Fortified","power_state_control_progress":0.67}]}"""
+                        : """{"results":[{"name":"Sell System","power_state":"Stronghold"}]}"""
+                );
+            }
+
+            if (request.RequestUri?.AbsolutePath.EndsWith("/imports", StringComparison.Ordinal) == true)
+            {
+                string updated = DateTimeOffset.UtcNow.ToString("O");
+                if (AcquireSellSystems)
+                {
+                    return Json(
+                        StrongholdReach
+                            ? $$"""[{"systemName":"Near Target","stationName":"Near Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":400000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":999,"distanceToArrival":200,"marketId":1,"commodityName":"Monazite"}]"""
+                            : $$"""[{"systemName":"Near Target","stationName":"Near Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":400000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":999,"distanceToArrival":200,"marketId":1,"commodityName":"Monazite"},{"systemName":"Far Target","stationName":"Far Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":900000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":999,"distanceToArrival":100,"marketId":2,"commodityName":"Monazite"}]"""
+                    );
+                }
+
+                if (MultipleSellSystems)
+                {
+                    return Json(
+                        $$"""[{"systemName":"Own Sell","stationName":"Own Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":400000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":12,"distanceToArrival":200,"marketId":1,"commodityName":"Monazite"},{"systemName":"Other Sell","stationName":"Other Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":900000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":15,"distanceToArrival":100,"marketId":2,"commodityName":"Monazite"}]"""
+                    );
+                }
+                if (MultipleStations)
+                {
+                    return Json(
+                        $$"""[{"systemName":"Sell System","stationName":"Low Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":400000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":12,"distanceToArrival":100,"marketId":1,"commodityName":"Periclase Dunite"},{"systemName":"Sell System","stationName":"High Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":550000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":12,"distanceToArrival":200,"marketId":2,"commodityName":"Periclase Dunite"},{"systemName":"Sell System","stationName":"Middle Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":450000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":12,"distanceToArrival":300,"marketId":3,"commodityName":"Periclase Dunite"}{{(IncludeCarrier ? $$""",{"systemName":"Sell System","stationName":"B5W-6VH","stationType":"Fleet Carrier","maxLandingPadSize":3,"sellPrice":900000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":12,"distanceToArrival":10,"marketId":4,"commodityName":"Periclase Dunite"}""" : "")}}]"""
+                    );
+                }
+                return Json(
+                    $$"""[{"systemName":"Sell System","stationName":"Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":500000,"demand":1000,"stock":0,"updatedAt":"{{updated}}","distance":12,"distanceToArrival":200,"marketId":1,"commodityName":"{{(PagedBodies ? "Monazite" : "Periclase Dunite")}}"}]"""
+                );
+            }
+
             if (request.RequestUri?.AbsolutePath == "/api/bodies/search")
             {
                 BodyFilters = await request.Content!.ReadAsStringAsync(cancellationToken);
+                using var query = System.Text.Json.JsonDocument.Parse(BodyFilters);
+                string reference = query.RootElement.GetProperty("reference_system").GetString() ?? "";
+                BodyReferences.Add(reference);
+                RequestedBodySystems = query
+                    .RootElement.GetProperty("filters")
+                    .GetProperty("system_name")
+                    .GetProperty("value")
+                    .EnumerateArray()
+                    .Select(value => value.GetString() ?? "")
+                    .ToArray();
+                RequestedBodyRadius = query
+                    .RootElement.GetProperty("filters")
+                    .GetProperty("distance")
+                    .GetProperty("max")
+                    .GetDouble();
+                if (PagedBodies)
+                {
+                    int page = query.RootElement.GetProperty("page").GetInt32();
+                    BodyPages++;
+                    object[] results =
+                        page == 0
+                            ? Enumerable
+                                .Range(0, 500)
+                                .Select(index =>
+                                    (object)
+                                        new
+                                        {
+                                            name = $"First {index}",
+                                            system_name = "First",
+                                            subtype = "Rocky body",
+                                            volcanism_type = "Minor Metallic Magma",
+                                            distance = 1,
+                                            parents = new[]
+                                            {
+                                                new
+                                                {
+                                                    id64 = 42,
+                                                    type = "Star",
+                                                    subtype = "White Dwarf (DB) Star",
+                                                },
+                                            },
+                                        }
+                                )
+                                .ToArray()
+                            :
+                            [
+                                new
+                                {
+                                    name = "Sell System 101",
+                                    system_name = "Sell System",
+                                    subtype = "Rocky body",
+                                    volcanism_type = "Minor Metallic Magma",
+                                    distance = 0,
+                                },
+                            ];
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { results })),
+                    };
+                }
+
+                if (AcquireSellSystems)
+                {
+                    return Json(
+                        StrongholdReach
+                            ? """{"results":[{"name":"Stronghold Source 1","system_name":"Stronghold Source","subtype":"Rocky body","distance":25},{"name":"Supporter 1","system_name":"Supporter","subtype":"Rocky body","distance":25},{"name":"Near Target 1","system_name":"Near Target","subtype":"Rocky body","distance":0}]}"""
+                            : """{"results":[{"name":"Supporter 1","system_name":"Supporter","subtype":"Rocky body","distance":18},{"name":"Near Target 1","system_name":"Near Target","subtype":"Rocky body","distance":0},{"name":"Miner 1","system_name":"Miner","subtype":"Rocky body","distance":2}]}"""
+                    );
+                }
+
+                if (MultipleSellSystems)
+                {
+                    return Json(
+                        $$"""{"results":[{"name":"{{reference}} 1","system_name":"{{reference}}","subtype":"Rocky body","distance":0},{"name":"Miner 1","system_name":"Miner","subtype":"Rocky body","distance":2}]}"""
+                    );
+                }
+
+                return Json(
+                    """{"results":[{"name":"Sell System 1","system_name":"Sell System","subtype":"Rocky body","volcanism_type":"Minor Metallic Magma","distance":0,"parents":[{"id64":42,"type":"Star","subtype":"White Dwarf (DB) Star"}]}]}"""
+                );
+            }
+
+            if (request.RequestUri?.AbsolutePath.EndsWith("/commodities", StringComparison.Ordinal) == true)
+            {
+                return Json("[]");
             }
 
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
-                Content = new StringContent("{\"results\":[]}"),
+                Content = new StringContent(
+                    request.RequestUri?.AbsolutePath.StartsWith("/api/", StringComparison.Ordinal) == true
+                        ? "{\"results\":[]}"
+                        : "[]"
+                ),
             };
         }
+
+        private static HttpResponseMessage Json(string value) =>
+            new(System.Net.HttpStatusCode.OK) { Content = new StringContent(value) };
     }
 
     [Fact]
@@ -172,6 +1076,61 @@ public sealed class MiningSearchViewModelTests
     }
 
     [Fact]
+    public async Task RingMineralChipUsesRingCatalogAndFiltersLocalResults()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var ring = new MiningRing
+            {
+                System = "Ring Chip Test",
+                Body = "Ring Chip Test A Ring",
+                Position = new GalacticCoordinate(0, 0, 0),
+                Hotspots = new() { ["Monazite"] = 2 },
+            };
+            using var model = new MiningSearchViewModel(
+                new MiningSearchClient(),
+                new BookmarksViewModel(directory),
+                _ => { },
+                () => [ring],
+                new Resolver()
+            )
+            {
+                Source = "Local",
+                Reference = ring.System,
+                Radius = 1,
+            };
+
+            Assert.Contains("Any", model.RingMineralChips.Suggestions);
+            Assert.Contains("Monazite", model.RingMineralChips.Suggestions);
+            Assert.DoesNotContain("Periclase Dunite", model.RingMineralChips.Suggestions);
+
+            model.RingMineralChips.Add("Monazite");
+            await model.SearchRingsAsync();
+            Assert.Single(model.Rings);
+            Assert.Equal("Platinum", model.Mineral);
+            Assert.Equal("Monazite", model.SaveOptions().RingSearchMineral);
+
+            model.RingMineralChips.Add("Platinum");
+            await model.SearchRingsAsync();
+            Assert.Empty(model.Rings);
+
+            model.RingMineralChips.Add("Any");
+            await model.SearchRingsAsync();
+            Assert.Single(model.Rings);
+            model.LoadOptions(model.SaveOptions());
+            Assert.Equal("Any", Assert.Single(model.RingMineralChips.Selected));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
     public void SearchPreferencesRoundTripAndResetForAnotherCommander()
     {
         using var model = new MiningSearchViewModel(
@@ -212,7 +1171,7 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("Pristine", model.Reserve);
         Assert.Equal(500, model.MinimumDemand);
         Assert.Equal(5000, model.MaximumDemand);
-        Assert.Equal(42, model.ResultLimit);
+        Assert.Equal(10, model.ResultLimit);
         Assert.Equal("Overlaps", model.PlatinumMode);
         Assert.Equal("Jerome Archer", model.OpposingPower);
         model.LoadOptions(new() { MaximumDemand = 0 });
@@ -261,6 +1220,7 @@ public sealed class MiningSearchViewModelTests
         model.SelectedPlatinumSpot = model.PlatinumSpots[0];
         model.UseSelectedPlatinumSpot();
         Assert.Equal(system, model.Reference);
+        Assert.Equal("Platinum", Assert.Single(model.RingMineralChips.Selected));
         model.BookmarkSelectedPlatinumSpot();
         model.SelectedPlatinumSpot = null;
         model.UseSelectedPlatinumSpot();
@@ -482,7 +1442,8 @@ public sealed class MiningSearchViewModelTests
         await model.SearchSystemsAsync();
 
         Assert.Equal("Own", Assert.Single(model.Systems).System);
-        Assert.Contains("Request failed. Try again.", model.Status);
+        Assert.Equal("Own", Assert.Single(model.MeritRows).Name);
+        Assert.Contains("Spansh fallback", model.Status);
         Assert.Contains(logs, line => line.Contains("failed", StringComparison.OrdinalIgnoreCase));
         model.DistanceSortCommand.Execute(null);
         Assert.Equal("Farthest first", model.DistanceSortLabel);
@@ -491,9 +1452,38 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("Any", model.OpposingPower);
     }
 
+    [Fact]
+    public async Task RingSearchFallsBackOnlyForTheCommodityMissingFromArdent()
+    {
+        using var handler = new ArdentFailureHandler { PartialArdent = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Wille",
+            Radius = 50,
+        };
+        model.MineralChips.Add("Gold");
+        model.MineralChips.Add("Platinum");
+
+        await model.SearchSystemsAsync();
+
+        Assert.Equal("Own", Assert.Single(model.MeritRows).Name);
+        Assert.Contains("Ardent/Spansh fallback", model.Status);
+        Assert.Contains("Platinum", handler.FallbackFilter);
+        Assert.DoesNotContain("Gold", handler.FallbackFilter);
+    }
+
     private sealed class ArdentFailureHandler : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(
+        public bool PartialArdent { get; init; }
+        public string? FallbackFilter { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
         )
@@ -501,26 +1491,44 @@ public sealed class MiningSearchViewModelTests
             string path = request.RequestUri?.AbsolutePath ?? "";
             if (path.Contains("/api/systems/search", StringComparison.Ordinal))
             {
-                return Json(
+                return await Json(
                     """{"results":[{"name":"Own","distance":12,"x":1,"y":2,"z":3,"controlling_power":"Aisling Duval","power_state":"Fortified","power_conflict_progress":[{"power":"Jerome Archer","progress":0.1}]}]}"""
                 );
             }
 
             if (path.Contains("/api/bodies/search", StringComparison.Ordinal))
             {
-                return Json(
+                return await Json(
                     """{"results":[{"system_name":"Own","name":"Own A","rings":[{"name":"Own A Ring","type":"Metallic","signals":[{"name":"Platinum","count":2}]}]}]}"""
                 );
             }
 
             if (path.Contains("/api/stations/search", StringComparison.Ordinal))
             {
-                return Json(
-                    """{"results":[{"system_name":"Own","name":"Market","type":"Orbis Starport","distance_to_arrival":5,"large_pads":1,"market":[{"commodity":"Platinum","sell_price":200000,"demand":1000}]}]}"""
+                string filter = await request.Content!.ReadAsStringAsync(cancellationToken);
+                if (filter.Contains("buying_commodities", StringComparison.Ordinal))
+                {
+                    FallbackFilter = filter;
+                }
+
+                return await Json(
+                    $$"""{"results":[{"system_name":"Own","name":"Market","type":"Orbis Starport","distance_to_arrival":5,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","large_pads":1,"market":[{"commodity":"Platinum","sell_price":200000,"demand":1000}]}]}"""
                 );
             }
 
-            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable));
+            if (PartialArdent && path.Contains("/commodity/name/gold/nearby/imports", StringComparison.Ordinal))
+            {
+                return await Json(
+                    $$"""[{"systemName":"Own","stationName":"Market","stationType":"Orbis Starport","maxLandingPadSize":3,"sellPrice":250000,"demand":1000,"updatedAt":"{{DateTimeOffset.UtcNow:O}}","distance":12,"commodityName":"Gold"}]"""
+                );
+            }
+
+            if (PartialArdent && path.Contains("/commodity/name/platinum/nearby/imports", StringComparison.Ordinal))
+            {
+                return await Json("[]");
+            }
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
         }
 
         private static Task<HttpResponseMessage> Json(string payload) =>
@@ -532,9 +1540,144 @@ public sealed class MiningSearchViewModelTests
     [Fact]
     public async Task AcquireKeepsUnownedSystemsInsideFortifiedOrStrongholdRange()
     {
-        using var http = new HttpClient(new AcquisitionRangeHandler());
+        using var http = new HttpClient(new AcquisitionRangeHandler { HasSpanshMarket = true });
         using var model = new MiningSearchViewModel(
             new(http),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Mineral = "Any",
+            Radius = 100,
+        };
+
+        await model.SearchSystemsAsync();
+
+        MiningSystemResult claim = Assert.Single(model.Systems);
+        Assert.Equal("Claim", claim.System);
+        Assert.Equal("Unoccupied", claim.PowerState);
+        AcquireResultRowViewModel row = Assert.Single(model.AcquireRows);
+        Assert.Equal("Claim", row.Target);
+        Assert.Equal("Anchor", Assert.Single(row.Miners).Name);
+        Assert.Contains("20 ly", model.Status);
+    }
+
+    [Fact]
+    public async Task AcquireDoesNotPresentEmptyStationAndRingCells()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(new AcquisitionRangeHandler())),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Mineral = "Any",
+        };
+
+        await model.SearchSystemsAsync();
+
+        Assert.Empty(model.AcquireRows);
+    }
+
+    [Fact]
+    public async Task AcquireUsesSpanshStationFallbackAfterEmptyArdentImports()
+    {
+        using var handler = new AcquisitionRangeHandler { HasSpanshMarket = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Mineral = "Any",
+        };
+
+        await model.SearchSystemsAsync();
+
+        AcquireResultRowViewModel row = Assert.Single(model.AcquireRows);
+        Assert.Equal("Fallback Port (L)", Assert.Single(row.StationBlocks).Heading);
+        Assert.Equal("Monazite", Assert.Single(row.StationBlocks).Commodity);
+        Assert.Empty(Assert.Single(row.StationBlocks).OtherCommodities);
+        Assert.Equal("RingRocky", Assert.Single(Assert.Single(row.Miners).RingLines).RingTypeIcon);
+        Assert.True(handler.SpanshMarketRequested);
+    }
+
+    [Fact]
+    public async Task AcquireUsesTheNextCandidateWhenTheNearestHasNoSellStation()
+    {
+        using var handler = new AcquisitionRangeHandler { HasSpanshMarket = true, SecondTargetHasMarket = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Mineral = "Any",
+            ResultLimit = 1,
+        };
+
+        await model.SearchSystemsAsync();
+
+        AcquireResultRowViewModel row = Assert.Single(model.AcquireRows);
+        Assert.Equal("Claim 2", row.Target);
+        Assert.NotEmpty(row.StationBlocks);
+        Assert.NotEmpty(Assert.Single(row.Miners).RingLines);
+    }
+
+    [Fact]
+    public async Task AcquireContinuesPastUnviableCandidatesBeforeApplyingResultLimit()
+    {
+        using var handler = new AcquisitionRangeHandler { HasSpanshMarket = true, FourCandidates = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Mineral = "Any",
+            ResultLimit = 1,
+        };
+
+        await model.SearchSystemsAsync();
+
+        Assert.True(
+            model.AcquireRows.Count == 1,
+            $"{model.Status}; candidates={string.Join(',', model.Systems.Select(system => system.System))}; marketRequested={handler.SpanshMarketRequested}"
+        );
+        Assert.Equal("Claim 4", Assert.Single(model.AcquireRows).Target);
+    }
+
+    [Fact]
+    public async Task AcquireReadsPastAFullBubblePageBeforeRulingOutTargets()
+    {
+        using var handler = new AcquisitionRangeHandler { PagedBubble = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
             new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
             _ => { },
             () => [],
@@ -549,22 +1692,16 @@ public sealed class MiningSearchViewModelTests
 
         await model.SearchSystemsAsync();
 
-        MiningSystemResult claim = Assert.Single(model.Systems);
-        Assert.Equal("Claim", claim.System);
-        Assert.Equal("Unoccupied", claim.PowerState);
-        AcquireResultRowViewModel row = Assert.Single(model.AcquireRows);
-        Assert.Equal("Claim", row.Target);
-        Assert.Equal("Anchor", Assert.Single(row.Miners).Name);
-        Assert.Contains("20 ly", model.Status);
-        Assert.DoesNotContain("Searching", model.Status, StringComparison.Ordinal);
+        Assert.Equal(2, handler.BubblePages);
+        Assert.Equal("Claim", Assert.Single(model.Systems).System);
     }
 
     [Fact]
-    public async Task AcquisitionFiltersFallbackQuotesLikeArdentQuotes()
+    public async Task AcquireFindsSupportersBeyondTheConfiguredDistance()
     {
-        using var http = new HttpClient(new AcquisitionRangeHandler(failImports: true));
+        using var handler = new AcquisitionRangeHandler { DistantSupporter = true };
         using var model = new MiningSearchViewModel(
-            new(http),
+            new MiningSearchClient(new HttpClient(handler)),
             new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
             _ => { },
             () => [],
@@ -574,15 +1711,14 @@ public sealed class MiningSearchViewModelTests
             Reference = "Sol",
             PledgedPower = "Archon Delaine",
             Objective = "Acquire",
+            Radius = 1,
         };
-        model.MineralChips.Add("Platinum");
 
         await model.SearchSystemsAsync();
 
-        AcquireStationViewModel station = Assert.Single(Assert.Single(model.AcquireRows).Stations);
-        Assert.Equal("Trade Dock", station.Name);
-        Assert.Equal("PLA", Assert.Single(station.Quotes).Code);
-        Assert.DoesNotContain("Searching", model.Status, StringComparison.Ordinal);
+        Assert.True(handler.SawGlobalSupporterQuery);
+        Assert.True(handler.SawGlobalBodyQuery);
+        Assert.Equal("Claim", Assert.Single(model.Systems).System);
     }
 
     [Fact]
@@ -604,7 +1740,6 @@ public sealed class MiningSearchViewModelTests
 
         await model.SearchSystemsAsync();
 
-        Assert.Single(model.AcquireRows);
         Assert.Contains("Request failed. Try again.", model.Status, StringComparison.Ordinal);
         Assert.DoesNotContain("Searching", model.Status, StringComparison.Ordinal);
     }
@@ -679,8 +1814,18 @@ public sealed class MiningSearchViewModelTests
         }
     }
 
-    private sealed class AcquisitionRangeHandler(bool failImports = false, bool failBodies = false) : HttpMessageHandler
+    private sealed class AcquisitionRangeHandler(bool failBodies = false) : HttpMessageHandler
     {
+        public bool HasSpanshMarket { get; init; }
+        public bool SecondTargetHasMarket { get; init; }
+        public bool FourCandidates { get; init; }
+        public bool SpanshMarketRequested { get; private set; }
+        public bool PagedBubble { get; init; }
+        public bool DistantSupporter { get; init; }
+        public bool SawGlobalSupporterQuery { get; private set; }
+        public bool SawGlobalBodyQuery { get; private set; }
+        public int BubblePages { get; private set; }
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -688,24 +1833,10 @@ public sealed class MiningSearchViewModelTests
         {
             if (request.Content is null)
             {
-                return
-                    failImports
-                    && request.RequestUri!.AbsolutePath.Contains("/commodities/imports", StringComparison.Ordinal)
-                    ? new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable)
-                    : new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("[]") };
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("[]") };
             }
 
-            if (request.RequestUri!.AbsolutePath.EndsWith("/stations/search", StringComparison.Ordinal))
-            {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-                {
-                    Content = new StringContent(
-                        """{"results":[{"system_name":"Claim","name":"Trade Dock","market":[{"commodity":"Platinum","sell_price":100,"demand":10},{"commodity":"Platinum","sell_price":90,"demand":10},{"commodity":"Gold","sell_price":80,"demand":10},{"commodity":"Tea","sell_price":1000,"demand":10}]}]}"""
-                    ),
-                };
-            }
-
-            if (failBodies && request.RequestUri.AbsolutePath.EndsWith("/bodies/search", StringComparison.Ordinal))
+            if (failBodies && request.RequestUri!.AbsolutePath.EndsWith("/bodies/search", StringComparison.Ordinal))
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
             }
@@ -713,17 +1844,98 @@ public sealed class MiningSearchViewModelTests
             using var body = System.Text.Json.JsonDocument.Parse(
                 await request.Content.ReadAsStringAsync(cancellationToken)
             );
+            if (request.RequestUri?.AbsolutePath == "/api/bodies/search")
+            {
+                SawGlobalBodyQuery = !body.RootElement.GetProperty("filters").TryGetProperty("distance", out _);
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        HasSpanshMarket
+                            ? """{"results":[{"system_name":"Anchor","name":"Anchor 1","rings":[{"name":"Anchor 1 A Ring","type":"Rocky","reserve_level":"Pristine","signals":[{"name":"Monazite","count":2}]}]}]}"""
+                            : """{"results":[]}"""
+                    ),
+                };
+            }
+            if (request.RequestUri?.AbsolutePath == "/api/stations/search" && HasSpanshMarket)
+            {
+                SpanshMarketRequested = true;
+                string marketSystem = "Claim";
+                if (FourCandidates)
+                {
+                    marketSystem = "Claim 4";
+                }
+                else if (SecondTargetHasMarket)
+                {
+                    marketSystem = "Claim 2";
+                }
+                string market =
+                    $$"""{"results":[{"system_name":"{{marketSystem}}","name":"Fallback Port","type":"Coriolis Starport","large_pads":1,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","market":[{"commodity":"Monazite","sell_price":600000,"demand":1000},{"commodity":"Tea","sell_price":800000,"demand":1000}]}]}""";
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(market) };
+            }
+
             string reference = body.RootElement.GetProperty("reference_system").GetString() ?? "";
+            int page = body.RootElement.GetProperty("page").GetInt32();
             string state = body
                 .RootElement.GetProperty("filters")
                 .TryGetProperty("power_state", out System.Text.Json.JsonElement powerState)
                 ? powerState.GetProperty("value")[0].GetString() ?? ""
                 : "";
+            if (state == "Fortified")
+            {
+                SawGlobalSupporterQuery = !body.RootElement.GetProperty("filters").TryGetProperty("distance", out _);
+            }
+            if (PagedBubble && reference == "Anchor" && request.RequestUri?.AbsolutePath == "/api/systems/search")
+            {
+                BubblePages++;
+                object[] results =
+                    page == 0
+                        ? Enumerable
+                            .Range(0, 100)
+                            .Select(index =>
+                                (object)
+                                    new
+                                    {
+                                        name = $"Owned {index}",
+                                        distance = 1,
+                                        x = 1,
+                                        y = 0,
+                                        z = 0,
+                                        controlling_power = "Yuri Grom",
+                                        power_state = "Exploited",
+                                    }
+                            )
+                            .ToArray()
+                        :
+                        [
+                            new
+                            {
+                                name = "Claim",
+                                distance = 10,
+                                x = 10,
+                                y = 0,
+                                z = 0,
+                                power_state = "Unoccupied",
+                            },
+                        ];
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { results })),
+                };
+            }
+
             string payload = (reference, state) switch
             {
+                (_, "Fortified") when DistantSupporter =>
+                    """{"results":[{"name":"Anchor","distance":700,"x":700,"y":0,"z":0,"controlling_power":"Archon Delaine","power_state":"Fortified"}]}""",
                 (_, "Fortified") =>
                     """{"results":[{"name":"Anchor","distance":0,"x":0,"y":0,"z":0,"controlling_power":"Archon Delaine","power_state":"Fortified"}]}""",
                 (_, "Stronghold") => """{"results":[]}""",
+                ("Anchor", _) when DistantSupporter =>
+                    """{"results":[{"name":"Claim","distance":10,"x":710,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                ("Anchor", _) when SecondTargetHasMarket =>
+                    """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Claim 2","distance":11,"x":11,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                ("Anchor", _) when FourCandidates =>
+                    """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Claim 2","distance":11,"x":11,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Claim 3","distance":12,"x":12,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Claim 4","distance":13,"x":13,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
                 ("Anchor", _) =>
                     """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Owned","distance":5,"x":5,"y":0,"z":0,"controlling_power":"Yuri Grom","power_state":"Exploited"}]}""",
                 _ => """{"results":[]}""",
@@ -762,6 +1974,203 @@ public sealed class MiningSearchViewModelTests
         finally
         {
             handler.Release.Set();
+        }
+    }
+
+    [Fact]
+    public void DistanceWarningEscalatesAndAcquireDoesNotWarnAboutAnUnusedRadius()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        );
+        Assert.False(model.HasDistanceWarning);
+        foreach (int radius in new[] { 101, 200, 300, 400, 500 })
+        {
+            model.Radius = radius;
+            Assert.Contains(
+                radius == 101 ? "100" : radius.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                model.DistanceWarning
+            );
+        }
+
+        model.PledgedPower = "Aisling Duval";
+        model.Objective = "Acquire";
+        Assert.False(model.HasDistanceWarning);
+    }
+
+    [Fact]
+    public async Task PlanetaryMarketCategorySearchesEverySelectedCommodityAndKeepsBothStationQuotes()
+    {
+        using var handler = new MultiCommodityMarketHandler();
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Timbalderis",
+            MarketPadSize = "L",
+            MarketMinimumVolume = 100,
+            MarketMaximumVolume = 1_000,
+            MarketMaximumAgeDays = 7,
+            MaximumDemand = 1,
+        };
+        model.MarketCategoryChips.Add("Planetary Mining");
+        Assert.Contains("Periclase Dunite", model.MarketCommodityChips.Suggestions);
+        model.MarketCommodityChips.Remove("Platinum");
+        model.MarketCommodityChips.Add("Periclase Dunite");
+        model.MarketCommodityChips.Add("Monazite");
+
+        await model.SearchMarketsAsync();
+
+        Assert.Equal(2, model.Markets.Count);
+        Assert.Equal(["Periclase Dunite", "Monazite"], model.Markets.Select(market => market.Commodity).ToArray());
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.All(handler.Requests, uri => Assert.Contains("minVolume=100", uri.Query));
+        Assert.All(handler.Requests, uri => Assert.Contains("maxDaysAgo=7", uri.Query));
+        Assert.Equal(["Periclase Dunite", "Monazite"], model.SaveOptions().MarketCommodities);
+    }
+
+    [Fact]
+    public async Task GalaxyWideMarketShowsStationDistanceFromReferenceAndExcludesCarriers()
+    {
+        using var handler = new GalaxyMarketHandler();
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new GalaxyMarketResolver()
+        )
+        {
+            Reference = "Timbalderis",
+            GalaxyWide = true,
+            ExcludeCarriers = true,
+            MarketPadSize = "L",
+        };
+        model.MarketCategoryChips.Add("Planetary Mining");
+        model.MarketCommodityChips.Remove("Platinum");
+        model.MarketCommodityChips.Add("Alexandrite");
+
+        await model.SearchMarketsAsync();
+
+        MiningMarketResult station = Assert.Single(model.Markets);
+        Assert.Equal("Coriolis", station.Type);
+        Assert.Equal(5, station.Distance);
+        Assert.Contains("fleetCarriers=false", handler.Request!.Query);
+    }
+
+    [Fact]
+    public async Task MarketsFindPricesClearsHiddenSystemOnlyScope()
+    {
+        using var handler = new GalaxyMarketHandler();
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new GalaxyMarketResolver()
+        )
+        {
+            Reference = "Timbalderis",
+            ExcludeCarriers = true,
+            MarketPadSize = "L",
+            SystemOnly = true,
+        };
+        model.MarketCategoryChips.Add("Planetary Mining");
+        model.MarketCommodityChips.Remove("Platinum");
+        model.MarketCommodityChips.Add("Alexandrite");
+
+        await model.SearchAllMarketsAsync();
+
+        Assert.False(model.SystemOnly);
+        Assert.Contains("/nearby/imports", handler.Request!.AbsolutePath);
+        Assert.Single(model.Markets);
+    }
+
+    [Fact]
+    public async Task MarketStationTypeChipsFilterResultsAndSurviveSavedOptions()
+    {
+        using var handler = new GalaxyMarketHandler();
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new GalaxyMarketResolver()
+        )
+        {
+            Reference = "Timbalderis",
+            GalaxyWide = true,
+        };
+        model.MarketCategoryChips.Add("Planetary Mining");
+        model.MarketCommodityChips.Remove("Platinum");
+        model.MarketCommodityChips.Add("Alexandrite");
+        model.MarketStationTypeChips.Add("Coriolis");
+
+        await model.SearchMarketsAsync();
+
+        Assert.Equal("Orbital", Assert.Single(model.Markets).Station);
+        Assert.Equal(["Coriolis"], model.SaveOptions().MarketStationTypes);
+        model.LoadOptions(model.SaveOptions());
+        Assert.Equal(["Coriolis"], model.MarketStationTypeChips.Selected);
+    }
+
+    private sealed class GalaxyMarketHandler : HttpMessageHandler
+    {
+        public Uri? Request { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            Request = request.RequestUri;
+            string timestamp = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+            string payload =
+                $$"""[{"systemName":"Target","stationName":"Orbital","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":800000,"demand":100,"updatedAt":"{{timestamp}}","systemX":3,"systemY":4,"systemZ":0,"commodityName":"alexandrite"},{"systemName":"Target","stationName":"Carrier","stationType":"FleetCarrier","maxLandingPadSize":3,"sellPrice":900000,"demand":100,"updatedAt":"{{timestamp}}","systemX":3,"systemY":4,"systemZ":0,"commodityName":"alexandrite"}]""";
+            return Task.FromResult(
+                new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) }
+            );
+        }
+    }
+
+    private sealed class GalaxyMarketResolver : IStarSystemResolver
+    {
+        public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
+            string query,
+            CancellationToken cancellationToken = default
+        ) =>
+            Task.FromResult<IReadOnlyList<StarSystemReference>>([
+                new StarSystemReference("Timbalderis", 1, new GalacticCoordinate(0, 0, 0)),
+            ]);
+    }
+
+    private sealed class MultiCommodityMarketHandler : HttpMessageHandler
+    {
+        public List<Uri> Requests { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            Uri uri = request.RequestUri!;
+            Requests.Add(uri);
+            bool periclase = uri.AbsolutePath.Contains("periclasedunite", StringComparison.Ordinal);
+            string commodity = periclase ? "periclasedunite" : "monazite";
+            int price = periclase ? 500_000 : 400_000;
+            string payload =
+                $$"""[{"systemName":"Timbalderis","stationName":"Shared Port","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":{{price}},"demand":500,"updatedAt":"{{DateTimeOffset.UtcNow:O}}","distance":0,"commodityName":"{{commodity}}"}]""";
+            return Task.FromResult(
+                new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(payload) }
+            );
         }
     }
 

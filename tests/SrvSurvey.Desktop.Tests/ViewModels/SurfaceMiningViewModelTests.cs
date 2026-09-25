@@ -650,6 +650,7 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             };
         MineMapMarker marker = Marker("Ruby", 0, 50) with
         {
+            RigCount = 4,
             SplatBoundary =
             [
                 MineMapService.GetDestination(center, 0, 100, 1_000_000),
@@ -686,7 +687,7 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.Equal(3, boundary.Points.Count);
         Assert.Single(mining.SuggestedRigLocations);
         Assert.Equal(4, mining.RadarScale);
-        Assert.Equal(["Ruby", "Second", "Third", "Fourth"], mining.Resources.Select(resource => resource.Name));
+        Assert.Equal(["Ruby [4]", "Second", "Third", "Fourth"], mining.Resources.Select(resource => resource.Name));
         Assert.Equal(4, mining.Resources.Count);
         Assert.True(
             mining
@@ -694,6 +695,15 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
                 .SequenceEqual(mining.Resources.Select(resource => resource.Marker.DistanceMeters).Order())
         );
         Assert.Contains(mining.RadarMarkers, candidate => candidate.Name == "Ruby");
+        await mining.ApplyMineMapSurveyAsync(
+            map with
+            {
+                Markers = map
+                    .Markers.Select(saved => saved.Id == marker.Id ? saved with { RigCount = 2 } : saved)
+                    .ToArray(),
+            }
+        );
+        Assert.Equal("Ruby [2]", mining.Resources[0].Name);
     }
 
     [Fact]

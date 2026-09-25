@@ -499,6 +499,7 @@ try {
             --configuration Release `
             --no-restore `
             -t:Rebuild `
+            -m:1 `
             "-p:TreatWarningsAsErrors=false" `
             "-p:WarningsAsErrors=" `
             "-p:CodeAnalysisRuleSet=$ruleSetPath" `

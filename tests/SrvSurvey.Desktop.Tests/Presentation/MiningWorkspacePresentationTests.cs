@@ -12,6 +12,7 @@ using Avalonia.VisualTree;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
@@ -242,6 +243,7 @@ public sealed class MiningWorkspacePresentationTests
                     {
                         "SYSTEM",
                         "STATION",
+                        "COMMODITY",
                         "TYPE",
                         "PAD",
                         "DISTANCE",
@@ -320,9 +322,14 @@ public sealed class MiningWorkspacePresentationTests
                     .FirstOrDefault(e => e.IsEffectivelyVisible);
                 if (filters is not null)
                 {
-                    filters.IsExpanded = true;
+                    bool initiallyExpanded = filters.IsExpanded;
+                    filters.IsExpanded = !initiallyExpanded;
                     using WriteableBitmap? expanded = window.CaptureRenderedFrame();
-                    Assert.True(search.Bounds.Height > collapsedHeight);
+                    Assert.True(
+                        initiallyExpanded
+                            ? search.Bounds.Height < collapsedHeight
+                            : search.Bounds.Height > collapsedHeight
+                    );
                     Assert.True(inner.Extent.Height <= inner.Viewport.Height + 1);
                 }
                 double top = results.TranslatePoint(default, page)!.Value.Y;
@@ -429,6 +436,26 @@ public sealed class MiningWorkspacePresentationTests
             Assert.Equal("Harma", powerplay.FindControl<SystemNameEntry>("PowerplayReference")!.Text);
             Assert.Equal("Archon Delaine", powerplay.FindControl<ComboBox>("PowerplayPledgedPower")!.SelectedItem);
             Assert.NotNull(powerplay.FindControl<ItemsControl>("PowerplayResults"));
+            model.MiningWorkspace.Search.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+            using WriteableBitmap? planetaryFrame = window.CaptureRenderedFrame();
+            PowerplayPlanetaryCombinedResults planetaryResults = Assert.Single(
+                powerplay.GetVisualDescendants().OfType<PowerplayPlanetaryCombinedResults>(),
+                candidate => candidate.IsEffectivelyVisible
+            );
+            Assert.Same(model.MiningWorkspace.Search.PlanetarySearch, planetaryResults.DataContext);
+            model.MiningWorkspace.Search.Objective = "Acquire";
+            using WriteableBitmap? acquireFrame = window.CaptureRenderedFrame();
+            PowerplayPlanetaryAcquireResults acquireResults = Assert.Single(
+                powerplay.GetVisualDescendants().OfType<PowerplayPlanetaryAcquireResults>(),
+                candidate => candidate.IsEffectivelyVisible
+            );
+            Assert.Same(model.MiningWorkspace.Search.PlanetarySearch, acquireResults.DataContext);
+            Assert.False(powerplay.FindControl<Slider>("PowerplayDistanceSlider")!.IsEnabled);
+            Assert.Equal(10, powerplay.FindControl<Slider>("PowerplayResultsSlider")!.Maximum);
+            Assert.DoesNotContain(
+                powerplay.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.IsEffectivelyVisible && text.Text == "Reserve level"
+            );
             model.MiningWorkspace.SelectedTab = 4;
             using WriteableBitmap? findFrame = window.CaptureRenderedFrame();
             MiningSearchView search = view.FindControl<MiningSearchView>("SearchPane")!;

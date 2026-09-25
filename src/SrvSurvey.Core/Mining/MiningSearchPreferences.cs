@@ -1,14 +1,21 @@
 namespace SrvSurvey.Core.Mining;
 
-/// <summary>Editable search criteria; results and in-flight requests are never persisted.</summary>
+/// <summary>Editable search criteria; completed results are cached separately from in-flight requests.</summary>
 public sealed record MiningSearchPreferences
 {
     public string CommodityCategory { get; init; } = "Mining";
     public string Reference { get; init; } = "";
+    public bool ForceIncludeReference { get; init; }
     public string Mineral { get; init; } = "Platinum";
+    public string RingSearchMineral { get; init; } = "";
     public string RingType { get; init; } = "All";
     public string Reserve { get; init; } = "All";
     public string Commodity { get; init; } = "Platinum";
+    public IReadOnlyList<string> MarketCommodities { get; init; } = [];
+    public string MarketPadSize { get; init; } = "Any";
+    public long MarketMinimumVolume { get; init; }
+    public long MarketMaximumVolume { get; init; }
+    public int MarketMaximumAgeDays { get; init; } = 2;
     public double Radius { get; init; } = 100;
     public int MinimumHotspots { get; init; } = 1;
     public string Source { get; init; } = "Both";
@@ -24,6 +31,7 @@ public sealed record MiningSearchPreferences
     public int ResultLimit { get; init; } = 30;
     public string PlatinumMode { get; init; } = "Spots++";
     public string StationType { get; init; } = "";
+    public IReadOnlyList<string> MarketStationTypes { get; init; } = [];
     public string Security { get; init; } = "";
     public string Allegiance { get; init; } = "";
     public string Government { get; init; } = "";

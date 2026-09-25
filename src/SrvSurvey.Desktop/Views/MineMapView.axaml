@@ -438,11 +438,16 @@
           <StackPanel Spacing="16" DataContext="{Binding SurfaceSearch}" x:DataType="vm:SurfaceMiningSearchViewModel">
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18" RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
               <StackPanel Spacing="4">
-                <TextBlock Text="Reference system"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="Reference system" VerticalAlignment="Center"/>
+                  <TextBlock Text="Force Include if viable:" VerticalAlignment="Center"/>
+                  <ToggleSwitch IsChecked="{Binding ForceIncludeReference}" OnContent="" OffContent="" VerticalAlignment="Center"/>
+                </StackPanel>
                 <controls:SystemNameEntry x:Name="SurfaceSearchReference" Text="{Binding Reference, Mode=TwoWay}"/>
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="4">
                 <TextBlock Text="Distance"/>
+                <TextBlock Text="{Binding DistanceWarning}" IsVisible="{Binding HasDistanceWarning}" TextWrapping="Wrap" Classes="muted"/>
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                   <Slider Minimum="1" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Radius}"/>
                   <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="52" Text="{Binding Radius, StringFormat={}{0:0} ly}"/>
@@ -471,123 +476,24 @@
                 <TextBlock Text="Landing pad"/>
                 <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding PadSizes}" SelectedItem="{Binding PadSize}"/>
               </StackPanel>
+              <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4">
+                <TextBlock Text="Max. mine–sell distance"/>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                  <Slider Minimum="1" Maximum="500" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding MineSellRadius}"/>
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="52" Text="{Binding MineSellRadius, StringFormat={}{0:0} ly}"/>
+                </Grid>
+              </StackPanel>
             </Grid>
             <StackPanel Orientation="Horizontal" Spacing="8">
               <Button Content="Search" Command="{Binding SearchCommand}"/>
+              <Button Content="Reset" Command="{Binding ResetCommand}"/>
+              <TextBlock Text="Hide Irrelevant Material Tags:" VerticalAlignment="Center" Margin="12,0,0,0"/>
+              <ToggleSwitch IsChecked="{Binding HideIrrelevantMaterialTags}" OnContent="" OffContent="" VerticalAlignment="Center"/>
               <Button Content="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
             </StackPanel>
             <TextBlock Text="{Binding Status}" Classes="muted" TextWrapping="Wrap"/>
             <ScrollViewer x:Name="SurfaceSearchResultsScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-              <StackPanel x:Name="SurfaceSearchResultsTable" MinWidth="1280" Grid.IsSharedSizeScope="True">
-                <Grid x:Name="SurfaceSearchSplitHeader" IsVisible="{Binding HasRows}" ColumnDefinitions="42*,4*,54*">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="22*"/>
-                      <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceSearchSellDistance"/>
-                      <ColumnDefinition Width="62*"/>
-                    </Grid.ColumnDefinitions>
-                    <Border Classes="acquire-header first"><TextBlock Text="Sell System"/></Border>
-                    <Border Grid.Column="1" Classes="acquire-header"><TextBlock Text="DST REF"/></Border>
-                    <Border Grid.Column="2" Classes="acquire-header"><TextBlock Text="Best Sell Station"/></Border>
-                  </Grid>
-                  <Grid Grid.Column="2">
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="24*"/>
-                      <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceSearchMiningDistance"/>
-                      <ColumnDefinition Width="60*"/>
-                    </Grid.ColumnDefinitions>
-                    <Border Classes="acquire-header first"><TextBlock Text="Mining System"/></Border>
-                    <Border Grid.Column="1" Classes="acquire-header">
-                      <Button Classes="link" Padding="0" HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding DistanceSortCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                          <TextBlock Text="DST SELL" Foreground="{DynamicResource RavenAccentBrush}"/>
-                          <TextBlock Text="{Binding DistanceSortIndicator}" Foreground="{DynamicResource RavenAccentBrush}"/>
-                        </StackPanel>
-                      </Button>
-                    </Border>
-                    <Border Grid.Column="2" Classes="acquire-header"><TextBlock Text="Body Details"/></Border>
-                  </Grid>
-                </Grid>
-                <ItemsControl x:Name="SurfaceSearchResults" ItemsSource="{Binding Rows}" IsVisible="{Binding HasRows}" HorizontalAlignment="Stretch">
-                  <ItemsControl.Styles>
-                    <Style Selector="ContentPresenter">
-                      <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                    </Style>
-                  </ItemsControl.Styles>
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:SurfaceSellRowViewModel">
-                      <StackPanel>
-                        <views:AcquireSplitRow Lines="{Binding VisibleSystems}" LockColumnWidths="True">
-                          <views:AcquireSplitRow.TargetTemplate>
-                            <DataTemplate x:DataType="vm:SurfaceSellRowViewModel">
-                              <Grid>
-                                <Grid.ColumnDefinitions>
-                                  <ColumnDefinition Width="22*"/>
-                                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceSearchSellDistance"/>
-                                  <ColumnDefinition Width="62*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Classes="acquire-cell">
-                                  <Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Top" behaviors:ClipboardCopyBehavior.Text="{Binding Target}">
-                                    <TextBlock Text="{Binding Target}" TextWrapping="Wrap"/>
-                                  </Button>
-                                </Border>
-                                <Border Grid.Column="1" Classes="acquire-cell"><TextBlock Text="{Binding Distance}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Top"/></Border>
-                                <Border Grid.Column="2" Classes="acquire-cell" Padding="0"><views:MiningStationList Stations="{Binding Stations}"/></Border>
-                              </Grid>
-                            </DataTemplate>
-                          </views:AcquireSplitRow.TargetTemplate>
-                          <views:AcquireSplitRow.LineTemplate>
-                            <DataTemplate x:DataType="vm:SurfaceMiningSystemRowViewModel">
-                              <Grid>
-                                <Grid.ColumnDefinitions>
-                                  <ColumnDefinition Width="24*"/>
-                                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceSearchMiningDistance"/>
-                                  <ColumnDefinition Width="60*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Classes="acquire-cell">
-                                  <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Top">
-                                    <Button Classes="link" Width="18" Padding="0" FontSize="16" Content="{Binding Chevron}" Command="{Binding ToggleCommand}" IsVisible="{Binding HasAdditionalBodies}"/>
-                                    <Button Classes="link" HorizontalAlignment="Left" VerticalAlignment="Center" behaviors:ClipboardCopyBehavior.Text="{Binding System}">
-                                      <TextBlock Text="{Binding System}" TextWrapping="Wrap"/>
-                                    </Button>
-                                  </StackPanel>
-                                </Border>
-                                <Border Grid.Column="1" Classes="acquire-cell"><TextBlock Text="{Binding Distance}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Top"/></Border>
-                                <Border Grid.Column="2" Classes="acquire-cell">
-                                  <ItemsControl ItemsSource="{Binding VisibleBodies}">
-                                    <ItemsControl.ItemTemplate>
-                                      <DataTemplate x:DataType="vm:SurfaceBodyLine">
-                                        <StackPanel Margin="0,0,0,3">
-                                          <ItemsControl ItemsSource="{Binding Tags}">
-                                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                              <DataTemplate x:DataType="vm:SurfaceBodyTag">
-                                                <Border Classes="commodity-code" Classes.matched="{Binding MatchesStation}" Classes.extra="{Binding IsExtraMaterial}" Margin="0,0,4,2">
-                                                  <TextBlock Text="{Binding Code}"/>
-                                                </Border>
-                                              </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                          </ItemsControl>
-                                          <TextBlock Text="{Binding Details}" TextWrapping="Wrap" Foreground="{DynamicResource RavenTextBrush}"/>
-                                        </StackPanel>
-                                      </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                  </ItemsControl>
-                                </Border>
-                              </Grid>
-                            </DataTemplate>
-                          </views:AcquireSplitRow.LineTemplate>
-                        </views:AcquireSplitRow>
-                        <Grid IsVisible="{Binding HasAdditionalSystems}" ColumnDefinitions="42*,4*,54*">
-                          <Border Grid.Column="2" Classes="acquire-cell" Background="{DynamicResource RavenSurfaceBrush}" BorderThickness="1,0,1,1">
-                            <Button Classes="link" HorizontalAlignment="Left" Content="{Binding ShowAllLabel}" Command="{Binding ToggleAllCommand}"/>
-                          </Border>
-                        </Grid>
-                      </StackPanel>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-              </StackPanel>
+              <views:SurfaceMiningSplitResults x:Name="SurfaceSearchSplitResults" DataContext="{Binding}"/>
             </ScrollViewer>
           </StackPanel>
         </ScrollViewer>

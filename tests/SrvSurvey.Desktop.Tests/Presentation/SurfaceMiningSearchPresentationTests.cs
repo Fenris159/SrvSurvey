@@ -17,6 +17,84 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class SurfaceMiningSearchPresentationTests
 {
     [AvaloniaFact]
+    public void SharedAcquireBranchesFollowMiningRowsWhenBodiesExpand()
+    {
+        SurfaceMiningSystemRowViewModel sharedFirst = new(
+            "Terminus",
+            10,
+            [new SurfaceBodyLine(["IRI"], "A 1", new HashSet<string>(["IRI"]))]
+        );
+        SurfaceMiningSystemRowViewModel sharedSecond = new(
+            "Terminus",
+            10,
+            [
+                new SurfaceBodyLine(["MON"], "B 1", new HashSet<string>(["MON"])),
+                new SurfaceBodyLine(["MON"], "B 2", new HashSet<string>(["MON"])),
+            ]
+        );
+        SurfaceMiningSystemRowViewModel later = new(
+            "Beta",
+            15,
+            [new SurfaceBodyLine(["MON"], "C 1", new HashSet<string>(["MON"]))]
+        );
+        SurfaceSellRowViewModel first = SharedSellRow("First Sell", [sharedFirst]);
+        SurfaceSellRowViewModel second = SharedSellRow("Second Sell", [sharedSecond, later]);
+        PowerplayAcquireClusterViewModel cluster = Assert.Single(
+            PowerplayAcquireClusterViewModel.Group([first, second])
+        );
+        cluster.SellNodes[1].SelectCommand.Execute(null);
+        var view = new PowerplayAcquireSharedCluster { DataContext = cluster };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1450,
+            Height = 700,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            Avalonia.Controls.Shapes.Path active = view.FindControl<Avalonia.Controls.Shapes.Path>("ActiveLinks")!;
+            Assert.NotNull(active.Data);
+            double before = active.Data.Bounds.Bottom;
+
+            PowerplayAcquireMiningNode terminus = Assert.Single(
+                cluster.MiningSystems,
+                node => node.System == "Terminus"
+            );
+            terminus.ToggleCommand.Execute(null);
+            using WriteableBitmap? expanded = window.CaptureRenderedFrame();
+
+            Assert.True(active.Data.Bounds.Bottom > before);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static SurfaceSellRowViewModel SharedSellRow(
+        string system,
+        IReadOnlyList<SurfaceMiningSystemRowViewModel> mining
+    ) =>
+        new(
+            system,
+            "10 ly",
+            [
+                new AcquireStationViewModel(
+                    "Port",
+                    "Large",
+                    "",
+                    "",
+                    [new AcquireQuoteViewModel("MON", "1 CR", "1 Demand")]
+                ),
+            ],
+            mining,
+            10,
+            1
+        );
+
+    [AvaloniaFact]
     public async Task AcquireSplitHeadersStayAttachedAndResultsScrollInsideTheWorkspace()
     {
         using var http = new HttpClient(new SurfaceResultHandler());
@@ -43,9 +121,10 @@ public sealed class SurfaceMiningSearchPresentationTests
         {
             window.Show();
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
-            Grid header = view.FindControl<Grid>("SurfaceSearchSplitHeader")!;
+            SurfaceMiningSplitResults split = view.FindControl<SurfaceMiningSplitResults>("SurfaceSearchSplitResults")!;
+            Grid header = split.FindControl<Grid>("SplitHeader")!;
             ScrollViewer results = view.FindControl<ScrollViewer>("SurfaceSearchResultsScroller")!;
-            StackPanel table = view.FindControl<StackPanel>("SurfaceSearchResultsTable")!;
+            StackPanel table = split.ResultsTableControl;
             AcquireSplitRow row = Assert.Single(view.GetVisualDescendants().OfType<AcquireSplitRow>());
             Grid rowGrid = Assert.IsType<Grid>(row.Content);
             Grid sellHeader = Assert.IsType<Grid>(header.Children[0]);
@@ -125,6 +204,8 @@ public sealed class SurfaceMiningSearchPresentationTests
             double linkY = horizontalLink.TranslatePoint(new Point(0, 0), row)!.Value.Y;
             double targetBottom = sellCell.TranslatePoint(new Point(0, sellCell.Bounds.Height), row)!.Value.Y;
             Assert.True(linkY <= targetBottom + 1, $"Link at {linkY}, sell box ends at {targetBottom}");
+            Assert.True(double.IsFinite(firstLink.FirstAnchorY));
+            Assert.InRange(Math.Abs(firstLink.FirstAnchorY - sellCell.Bounds.Height / 2), 0, 2);
             sell.ToggleAllCommand.Execute(null);
             using WriteableBitmap? expandedFrame = window.CaptureRenderedFrame();
             Assert.Equal(29, sell.VisibleSystems.Count);

@@ -1,140 +1,82 @@
-# SrvSurvey-XP 2.1.3.0-rc.54
+# SrvSurvey-XP 2.1.3.0-rc.55
 
-RC54 modernizes SrvSurvey's SteamVR overlays for Windows and Linux. It adds a
-guided headset connection workflow, clearer runtime status, per-platform setup
-profiles, controller-pointer interaction, safer runtime recovery, and a new VR
-guide inside the application. This release also includes Linux update and UI
-placement fixes found during RC53 testing.
+RC55 expands Mining and Surface Mining with Powerplay planning, planetary
+prospecting, clearer sell routes, and cockpit overlays. It also improves market
+searches and keeps Ardent price data available across sessions. These changes
+follow the published [RC54 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.54).
 
-## Bug fixes in RC54
+## Mining in the cockpit
 
-- Linux AppImage updates now launch their handoff helper in an isolated systemd
-  user service when needed, so closing the old instance does not also terminate
-  the helper before it can install and start the replacement.
-- Resized overlay panels now retain their saved top-left position when the
-  overlay editor is closed and reopened on Windows and Linux.
-- Linux dropdowns now open against their controls in every workspace, including
-  Guardian, while keeping embedded popups enabled for reliable hover, input,
-  and focus behavior.
-- Left-navigation destinations no longer show redundant category tooltips.
-  Tooltips retained for contextual controls are mouse-transparent and no longer
-  block clicks on controls behind them.
+- The Mining activity overlay can keep several recent prospector results visible
+  and retires an asteroid when its matching depletion report arrives. A separate
+  cargo overlay shows capacity, remaining space, limpets, and cargo, with target
+  minerals highlighted.
+- Mineral thresholds and announcement presets have separate editors. Prospector
+  announcements can use a chime or local speech on Windows and Linux.
+- Platinum Spots ranks useful RES, overlap, and multi-hotspot rings, combining
+  known ring references with commander discoveries and bookmarks.
+- The Surface Mining deposit tracker shows saved rig capacity beside nearby
+  material markers when a count is available.
 
-> [!IMPORTANT]
-> SrvSurvey VR panels use the SteamVR/OpenVR overlay compositor. OpenXR-only
-> Elite Dangerous sessions cannot host these external overlays. Meta Quest and
-> Rift users must connect through a route that presents the headset to SteamVR.
+## Powerplay mining
 
-## Connect a headset
+- The Powerplay tab can search ring and planetary mining opportunities for
+  Acquire, Reinforce, and Undermine. Results pair mining sources with sell
+  systems and stations according to the selected goal.
+- Acquire searches work outward from eligible Fortified and Stronghold systems
+  to find Unoccupied sell targets within their 20 or 30 ly reach. Reinforce and
+  Undermine keep mining and selling in the same eligible system.
+- Result tables show station prices and demand, colored material tags, power
+  progress, expandable station and mining details, and connections between
+  related systems. Fleet carriers are excluded from Powerplay sell stations.
+- Searches support mineral, mining type, power, station pad, demand, freshness,
+  state, and result-count controls. Saved settings and results return after a
+  restart. Wider searches show increasing time warnings.
 
-- Open **Settings > Global overlays > VR overlays** and choose the route that
-  matches the active headset connection.
-- Native SteamVR headsets can use **SteamVR headset**. Meta users can choose
-  **Link / Air Link**, **Steam Link**, **Virtual Desktop**, or experimental
-  **ALVR**, then follow the route-specific pairing guidance in the panel.
-- Meta Link, Air Link, Steam Link, and Virtual Desktop PC-VR are Windows routes.
-  ALVR can bridge a Meta headset on Windows or Linux, but its Linux path,
-  SteamVR on Linux, and Elite through Proton remain experimental.
-- Windows Mixed Reality is offered only as a legacy Windows route for systems
-  where the headset and SteamVR bridge still work.
-- A custom OpenVR runtime can be selected when its compositor implements the
-  OpenVR overlay API. OpenComposite is not an overlay compatibility path.
+## Surface Mining and markets
 
-The selected profile supplies the expected runtime process and concise pairing
-steps. Changing profiles does not erase saved panel placement or vehicle-mode
-calibration.
+- Surface Mining > Search finds landable body candidates and nearby sell systems
+  for a selected material or Any. Body candidates use material-specific ground,
+  volcanism, and host-star clues where available; surface reserve levels no
+  longer hide otherwise suitable bodies.
+- Sell and mining systems are shown in linked, expandable tables. Material tags
+  use survey colors, while unrelated tags can be faded or hidden. Search results
+  favor shorter mine-to-sell loops and can be restored after a restart.
+- Mining > Find > Markets now offers clearer commodity and station-type choices,
+  includes planetary materials, filters stations by landing pad and market
+  criteria, and shows distance from the reference system in galaxy-wide results.
+  Mining > Find > Rings has a ring-mineral chip selector with an Any option.
 
-## Windows and Linux packaging
+## Prices and search reliability
 
-- Windows and Linux packages include the native OpenVR client library used by
-  SrvSurvey. Users do not need to locate SteamVR's library or configure a
-  custom library path.
-- If packaged OpenVR support is reported unavailable, reinstall the package for
-  the correct architecture rather than pointing SrvSurvey into the Steam
-  installation.
-- The same overlay publisher, calibration model, and connection states are used
-  on both operating systems.
+- Hotspot List, Surface Hunt, and Mining > Reference use refreshed Ardent
+  average and maximum sell prices when available. The catalog is stored on disk
+  so it can appear immediately after a restart; older catalog values remain
+  available if a quote is missing.
+- Station and provider responses are cached across searches where appropriate.
+  Search requests use bounded retries, recover from intermittent body-search
+  failures, and continue through paged results instead of stopping at an early
+  request window.
+- Commodity and Powerplay names are normalized across provider responses, and
+  the planetary search checks the body's host star so a secondary white dwarf
+  can qualify.
 
-## Runtime status and recovery
-
-- Enabling VR overlays now follows explicit **Waiting**, **Connecting**,
-  **Connected**, and **Needs attention** states.
-- **Check connection** retries after starting SteamVR, changing a headset
-  bridge, or repairing a headset connection.
-- SrvSurvey distinguishes a missing runtime or headset from an individual
-  overlay rejected by the compositor and provides an appropriate recovery
-  action for each case.
-- Runtime or profile changes reconnect through the explicit connection check;
-  disabling VR still shuts down and removes overlays immediately.
-- Interaction-mode changes are transactional across every live panel. If one
-  update fails, panels already changed are restored to their previous input
-  mode. A failed rollback shuts down OpenVR instead of leaving mixed interactive
-  and click-through panels behind.
-
-## Panel calibration
-
-- **Adjust overlays** opens the existing per-panel VR calibration workflow once
-  the runtime is connected.
-- Each panel retains its own default placement plus ship, SRV, fighter, taxi,
-  and on-foot overrides.
-- Scale, position, pitch, yaw, and roll update the headset preview. Save verifies
-  and preserves the calibration; Cancel restores saved values; Reset selected
-  restores the shipped placement for that target.
-- **Reset VR orientation** captures the current headset yaw without changing
-  saved panel placement.
-- Desktop overlay placement and VR calibration remain independent.
-
-## Controller-pointer interaction
-
-- Assign **Toggle VR overlay interaction** in **Settings > Global overlays**.
-  It appears directly below the existing live-overlay interaction shortcut.
-- With VR overlays connected, the shortcut enables SteamVR controller-pointer
-  movement, clicks, and scrolling for controls already visible inside live
-  SrvSurvey panels.
-- Use the shortcut again to restore passive click-through behavior. Interaction
-  is also cleared automatically when VR overlays are disabled, disconnected,
-  or disposed.
-- Desktop live-overlay interaction remains a separate shortcut for desktop
-  dragging and does not enable VR controller input.
-
-## In-app VR guide
-
-The new **VR & headset overlays** category under **Guides** covers:
-
-- choosing and pairing the correct SteamVR connection route;
-- Meta headset compatibility and the limitations of OpenXR-only sessions;
-- Windows and Linux package behavior;
-- panel calibration and orientation reset;
-- assigning and using controller-pointer interaction; and
-- troubleshooting missing runtimes, rejected overlays, and panels hidden by
-  normal game-context visibility rules.
-
-## Update channel
+## Update channel and packages
 
 - RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge for older
-  clients.
-- RC54 publishes as `xp2-v2.1.3.0-rc.54` with the schema-2 Windows, Linux
-  portable, and Linux AppImage package index.
-- RC51 and later clients scan the `xp2-v` namespace and can move directly to
-  RC54. No release above RC51 may use the legacy `xp-v` namespace.
+  clients. RC55 uses the schema-2 `xp2-v` release channel.
+- Version: `2.1.3.0-rc.55`
+- Tag: `xp2-v2.1.3.0-rc.55`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.55-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.55-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.55-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.55-x86_64.AppImage.zsync`
 
-## Packaging
-
-- Version: `2.1.3.0-rc.54`
-- Tag: `xp2-v2.1.3.0-rc.54`
-- Release-index schema: `2` (`win-x64`, `linux-x64`, and
-  `linux-x64-appimage`)
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.54-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.54-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.54-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.54-x86_64.AppImage.zsync`
-
-Windows and Linux packages remain self-contained. The numeric Windows
-`FileVersion` remains `2.1.3.0`.
+Packages remain self-contained. The numeric Windows `FileVersion` remains
+`2.1.3.0`.
 
 ## Testing notice
 
 > [!IMPORTANT]
-> This remains a work-in-progress preview for testing. Keep a backup of your
-> existing SrvSurvey data and report unexpected behavior through the project
-> issue tracker.
+> This remains a preview for testing. Keep a backup of existing SrvSurvey data
+> and report unexpected behavior through the project issue tracker.

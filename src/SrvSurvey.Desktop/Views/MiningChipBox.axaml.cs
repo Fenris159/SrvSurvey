@@ -137,6 +137,15 @@ public sealed partial class MiningChipBox : UserControl
         }
     }
 
+    private void Query_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && Model is { } model)
+        {
+            model.AddQuery();
+            e.Handled = true;
+        }
+    }
+
     private void Add_Click(object? sender, RoutedEventArgs e)
     {
         if (Model is { } model && sender is Button { Tag: string value })

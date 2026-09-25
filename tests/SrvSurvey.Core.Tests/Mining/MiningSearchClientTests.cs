@@ -171,6 +171,40 @@ public sealed class MiningSearchClientTests
         );
     }
 
+    [Theory]
+    [InlineData("L", "Large")]
+    [InlineData("M", "Large,Medium")]
+    [InlineData("S", "Large,Medium,Small")]
+    [InlineData("Any", "Large,Medium,Small")]
+    public async Task MarketPadFilterIncludesStationsCompatibleWithChosenShipSize(string pad, string expected)
+    {
+        string timestamp = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+        string payload =
+            $$"""[{"systemName":"Sol","stationName":"Large","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":300,"demand":100,"updatedAt":"{{timestamp}}"},{"systemName":"Sol","stationName":"Medium","stationType":"Outpost","maxLandingPadSize":2,"sellPrice":200,"demand":100,"updatedAt":"{{timestamp}}"},{"systemName":"Sol","stationName":"Small","stationType":"OnFootSettlement","maxLandingPadSize":1,"sellPrice":100,"demand":100,"updatedAt":"{{timestamp}}"}]""";
+        using var http = new HttpClient(new Handler(payload));
+
+        IReadOnlyList<MiningMarketResult> markets = await new MiningSearchClient(http).FindMarketsAsync(
+            new MiningMarketQuery("Sol", "Alexandrite", false, PadSize: pad)
+        );
+
+        Assert.Equal(expected.Split(','), markets.Select(market => market.Station));
+    }
+
+    [Fact]
+    public async Task MarketStationTypesMatchSelectedProviderTypes()
+    {
+        string timestamp = DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+        string payload =
+            $$"""[{"systemName":"Sol","stationName":"Orbital","stationType":"Coriolis","maxLandingPadSize":3,"sellPrice":300,"demand":100,"updatedAt":"{{timestamp}}"},{"systemName":"Sol","stationName":"Surface","stationType":"CraterPort","maxLandingPadSize":3,"sellPrice":200,"demand":100,"updatedAt":"{{timestamp}}"},{"systemName":"Sol","stationName":"Carrier","stationType":"FleetCarrier","maxLandingPadSize":3,"sellPrice":400,"demand":100,"updatedAt":"{{timestamp}}"}]""";
+        using var http = new HttpClient(new Handler(payload));
+
+        IReadOnlyList<MiningMarketResult> markets = await new MiningSearchClient(http).FindMarketsAsync(
+            new MiningMarketQuery("Sol", "Alexandrite", false) { StationTypes = ["Coriolis", "CraterPort"] }
+        );
+
+        Assert.Equal(["Orbital", "Surface"], markets.Select(market => market.Station).ToArray());
+    }
+
     [Fact]
     public async Task MissingAndMalformedMarketDatesCannotLookLikeFreshPrices()
     {
@@ -237,14 +271,14 @@ public sealed class MiningSearchClientTests
         const string payload = """
             {"results":[
               {"name":"Alrai Sector FG-X b1-6","distance":12,"power_state":"Unoccupied","power_conflict_progress":[
-                {"power":"Nakato Kaine","progress":0.392558},
-                {"power":"Jerome Archer","progress":1.439767}
+                {"name":"Nakato Kaine","progress":0.392558},
+                {"name":"Jerome Archer","progress":1.439767}
               ]},
               {"name":"Quiet","distance":4,"power_state":"Unoccupied","power_conflict_progress":[
                 {"power":"Aisling Duval","progress":0.39}
               ]},
               {"name":"Empty","distance":8,"power_state":"Unoccupied"},
-              {"name":"Owned","distance":1,"controlling_power":"Jerome Archer","power_state":"Exploited"}
+              {"name":"Owned","distance":1,"controlling_power":"Jerome Archer","power":["Aisling Duval","Jerome Archer"],"power_state":"Exploited","power_state_control_progress":0.835221}
             ]}
             """;
         using var handler = new RequestHandler(payload);
@@ -261,6 +295,7 @@ public sealed class MiningSearchClientTests
         Assert.Equal("Alrai Sector FG-X b1-6", alrai.System);
         Assert.Equal("", alrai.Power);
         Assert.Equal("Contested", alrai.PowerState);
+        Assert.Equal(1.439767, alrai.Conflict.Single(entry => entry.Power == "Jerome Archer").Progress);
 
         IReadOnlyList<MiningSystemResult> open = await new MiningSearchClient(http).FindSystemsAsync(
             new("Sol", 80, Objective: PowerplayPlan.Acquire)
@@ -269,6 +304,7 @@ public sealed class MiningSearchClientTests
         Assert.Contains(open, system => system.System == "Quiet" && system.PowerState == "Expansion");
         Assert.Contains(open, system => system.System == "Empty" && system.PowerState == "Unoccupied");
         Assert.Contains(open, system => system.System == "Owned" && system.PowerState == "Exploited");
+        Assert.Equal(0.835221, open.Single(system => system.System == "Owned").ControlProgress);
     }
 
     [Theory]
@@ -322,6 +358,101 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task PowerplayFallbackQuotesExcludeFleetCarriers()
+    {
+        using var handler = new RequestHandler(
+            """{"results":[{"system_name":"Sol","name":"B5W-6VH","type":"Fleet Carrier","market":[{"commodity":"Monazite","sell_price":900000,"demand":1000}]},{"system_name":"Sol","name":"Safe Port","type":"Coriolis Starport","market":[{"commodity":"Monazite","sell_price":400000,"demand":1000}]}]}"""
+        );
+
+        IReadOnlyList<MiningSellQuote> quotes = await new MiningSearchClient(
+            new HttpClient(handler)
+        ).FindSellQuotesAsync("Sol", 50, [], ["Monazite"]);
+
+        Assert.Equal("Safe Port", Assert.Single(quotes).Station);
+    }
+
+    [Fact]
+    public async Task AcquireSystemCommodityFallbackExcludesFleetCarriers()
+    {
+        using var handler = new RequestHandler(
+            """{"results":[{"system_name":"Sol","name":"B5W-6VH","type":"Fleet Carrier","market":[{"commodity":"Monazite","sell_price":900000,"demand":1000}]},{"system_name":"Sol","name":"Safe Port","type":"Coriolis Starport","market":[{"commodity":"Monazite","sell_price":400000,"demand":1000}]}]}"""
+        );
+
+        IReadOnlyList<MiningMarketResult> quotes = await new MiningSearchClient(
+            new HttpClient(handler)
+        ).FindSpanshSystemCommoditiesAsync("Sol", "Sol");
+
+        Assert.Equal("Safe Port", Assert.Single(quotes).Station);
+    }
+
+    [Fact]
+    public async Task RadiusWideFallbackReadsEveryStationPageAndDropsStaleQuotes()
+    {
+        using var handler = new PagedSellQuoteHandler();
+        using var http = new HttpClient(handler);
+
+        IReadOnlyList<MiningSellQuote> quotes = await new MiningSearchClient(http).FindSellQuotesAsync(
+            "Sol",
+            100,
+            [],
+            ["Monazite"],
+            maximumAge: TimeSpan.FromHours(48)
+        );
+
+        Assert.Equal(20, quotes.Count);
+        Assert.DoesNotContain(quotes, quote => quote.Station == "Port 0");
+        Assert.Contains(quotes, quote => quote.Station == "Port 20");
+        Assert.Equal([0, 1], handler.Pages);
+        Assert.False(handler.HadSystemFilter);
+    }
+
+    private sealed class PagedSellQuoteHandler : HttpMessageHandler
+    {
+        public List<int> Pages { get; } = [];
+        public bool HadSystemFilter { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(cancellationToken));
+            int page = body.RootElement.GetProperty("page").GetInt32();
+            Pages.Add(page);
+            HadSystemFilter |= body.RootElement.GetProperty("filters").TryGetProperty("system_name", out _);
+            string fresh = DateTimeOffset.UtcNow.ToString("O");
+            string stale = DateTimeOffset.UtcNow.AddDays(-3).ToString("O");
+            object[] stations = Enumerable
+                .Range(page == 0 ? 0 : 20, page == 0 ? 20 : 1)
+                .Select(index =>
+                    (object)
+                        new
+                        {
+                            system_name = "Sol",
+                            name = $"Port {index}",
+                            type = "Orbis Starport",
+                            market_updated_at = index == 0 ? stale : fresh,
+                            large_pads = 1,
+                            market = new[]
+                            {
+                                new
+                                {
+                                    commodity = "Monazite",
+                                    sell_price = 500_000,
+                                    demand = 100,
+                                },
+                            },
+                        }
+                )
+                .ToArray();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JsonSerializer.Serialize(new { results = stations })),
+            };
+        }
+    }
+
+    [Fact]
     public async Task PlanetaryBodiesAskSpanshForLandableSystemsAndMagma()
     {
         using var handler = new RequestHandler(
@@ -364,6 +495,39 @@ public sealed class MiningSearchClientTests
             "Silicate Magma Lava Spout",
             filters.GetProperty("landmarks")[0].GetProperty("subtype")[1].GetString()
         );
+    }
+
+    [Fact]
+    public async Task PlanetaryBodiesDoNotRequestPastSpanshsTenThousandResultWindow()
+    {
+        string payload = JsonSerializer.Serialize(
+            new
+            {
+                count = 10_000,
+                from = 9_500,
+                results = Enumerable
+                    .Range(0, 500)
+                    .Select(index => new
+                    {
+                        system_name = "Hyades Sector MC-V c2-15",
+                        name = "Hyades Sector MC-V c2-15 " + index,
+                        subtype = "Rocky body",
+                        distance = 297.69,
+                    }),
+            }
+        );
+        using var handler = new RequestHandler(payload);
+        using var http = new HttpClient(handler);
+
+        MiningPlanetaryBodyPage page = await new MiningSearchClient(http).FindPlanetaryBodyPageAsync(
+            new MiningPlanetaryQuery("Hyades Sector MC-V c2-15", ["Rocky body"], [], Radius: 500, Page: 19)
+        );
+
+        Assert.Equal(500, page.Bodies.Count);
+        Assert.False(page.HasMore);
+        Assert.Equal(Math.BitDecrement(297.69), page.ResumeDistance);
+        using var request = JsonDocument.Parse(handler.Body!);
+        Assert.Equal(500, request.RootElement.GetProperty("size").GetInt32());
     }
 
     [Fact]
@@ -458,6 +622,22 @@ public sealed class MiningSearchClientTests
         Assert.Equal("Spansh fallback", source);
         Assert.Equal(420_153, Assert.Single(quotes).Price);
         Assert.Equal(1, handler.SpanshRequests);
+    }
+
+    [Fact]
+    public async Task GalaxyWideMarketSearchWithNoReferenceDoesNotSendAnEmptySpanshReference()
+    {
+        using var handler = new ArdentThenSpanshHandler { ArdentResponse = "empty" };
+        using var http = new HttpClient(handler);
+        var client = new MiningSearchClient(http);
+
+        (IReadOnlyList<MiningMarketResult> markets, string source) = await client.FindMarketsPreferringArdentAsync(
+            new MiningMarketQuery("", "Platinum", false, GalaxyWide: true)
+        );
+
+        Assert.Empty(markets);
+        Assert.Equal("Ardent", source);
+        Assert.Equal(0, handler.SpanshRequests);
     }
 
     private sealed class ArdentThenSpanshHandler : HttpMessageHandler
@@ -732,7 +912,7 @@ public sealed class MiningSearchClientTests
         var client = new MiningSearchClient(http);
         MiningRingPage first = await client.FindRingPageAsync(new("Timbalderis", "", "All", 200));
         Assert.True(first.HasMore);
-        Assert.Equal(100, handler.Bodies);
+        Assert.Equal(SpanshRoutes.PageSize(SpanshRoutes.Bodies), handler.Bodies);
 
         IReadOnlyList<MiningRing> rings = await client.FindRingsForSystemsAsync(
             new("Timbalderis", "", "All", 200),
@@ -774,6 +954,32 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task GlobalAcquireSearchesKeepPowerAndSystemNamesWithoutDistanceFilters()
+    {
+        using var handler = new RequestHandler("""{"results":[]}""");
+        using var http = new HttpClient(handler);
+        var client = new MiningSearchClient(http);
+
+        await client.FindSystemsAsync(
+            new MiningSystemQuery("Sol", 1, Power: "Aisling Duval", PowerState: "Fortified") { GalaxyWide = true }
+        );
+        using (var systems = System.Text.Json.JsonDocument.Parse(handler.Body!))
+        {
+            System.Text.Json.JsonElement filters = systems.RootElement.GetProperty("filters");
+            Assert.False(filters.TryGetProperty("distance", out _));
+            Assert.Equal("Aisling Duval", filters.GetProperty("controlling_power").GetProperty("value")[0].GetString());
+        }
+
+        await client.FindRingsAsync(
+            new MiningRingQuery("Sol", "Monazite", "All", 1, SystemNames: ["Anchor"]) { GalaxyWide = true }
+        );
+        using var rings = System.Text.Json.JsonDocument.Parse(handler.Body!);
+        System.Text.Json.JsonElement ringFilters = rings.RootElement.GetProperty("filters");
+        Assert.False(ringFilters.TryGetProperty("distance", out _));
+        Assert.Equal("Anchor", ringFilters.GetProperty("system_name").GetProperty("value")[0].GetString());
+    }
+
+    [Fact]
     public async Task RingSearchCanNameSeveralMinerals()
     {
         using var handler = new RequestHandler("""{"results":[]}""");
@@ -801,11 +1007,11 @@ public sealed class MiningSearchClientTests
             int page = document.RootElement.GetProperty("page").GetInt32();
             if (page == 0 && !body.Contains("LHS 3802", StringComparison.Ordinal))
             {
-                Bodies = 100;
+                Bodies = SpanshRoutes.PageSize(SpanshRoutes.Bodies);
                 string results = string.Join(
                     ',',
                     Enumerable
-                        .Range(0, 100)
+                        .Range(0, Bodies)
                         .Select(index =>
                             "{\"name\":\"Body " + index + "\",\"system_name\":\"Near\",\"distance\":1,\"rings\":[]}"
                         )
