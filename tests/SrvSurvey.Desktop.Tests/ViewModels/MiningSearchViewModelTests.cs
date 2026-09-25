@@ -1057,6 +1057,61 @@ public sealed class MiningSearchViewModelTests
     }
 
     [Fact]
+    public async Task RingMineralChipUsesRingCatalogAndFiltersLocalResults()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var ring = new MiningRing
+            {
+                System = "Ring Chip Test",
+                Body = "Ring Chip Test A Ring",
+                Position = new GalacticCoordinate(0, 0, 0),
+                Hotspots = new() { ["Monazite"] = 2 },
+            };
+            using var model = new MiningSearchViewModel(
+                new MiningSearchClient(),
+                new BookmarksViewModel(directory),
+                _ => { },
+                () => [ring],
+                new Resolver()
+            )
+            {
+                Source = "Local",
+                Reference = ring.System,
+                Radius = 1,
+            };
+
+            Assert.Contains("Any", model.RingMineralChips.Suggestions);
+            Assert.Contains("Monazite", model.RingMineralChips.Suggestions);
+            Assert.DoesNotContain("Periclase Dunite", model.RingMineralChips.Suggestions);
+
+            model.RingMineralChips.Add("Monazite");
+            await model.SearchRingsAsync();
+            Assert.Single(model.Rings);
+            Assert.Equal("Platinum", model.Mineral);
+            Assert.Equal("Monazite", model.SaveOptions().RingSearchMineral);
+
+            model.RingMineralChips.Add("Platinum");
+            await model.SearchRingsAsync();
+            Assert.Empty(model.Rings);
+
+            model.RingMineralChips.Add("Any");
+            await model.SearchRingsAsync();
+            Assert.Single(model.Rings);
+            model.LoadOptions(model.SaveOptions());
+            Assert.Equal("Any", Assert.Single(model.RingMineralChips.Selected));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
     public void SearchPreferencesRoundTripAndResetForAnotherCommander()
     {
         using var model = new MiningSearchViewModel(
@@ -1143,6 +1198,7 @@ public sealed class MiningSearchViewModelTests
         model.SelectedPlatinumSpot = model.PlatinumSpots[0];
         model.UseSelectedPlatinumSpot();
         Assert.Equal(system, model.Reference);
+        Assert.Equal("Platinum", Assert.Single(model.RingMineralChips.Selected));
         model.BookmarkSelectedPlatinumSpot();
         model.SelectedPlatinumSpot = null;
         model.UseSelectedPlatinumSpot();

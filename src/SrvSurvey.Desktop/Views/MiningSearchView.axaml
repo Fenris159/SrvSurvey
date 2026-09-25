@@ -20,9 +20,9 @@
           <Border>
             <StackPanel Spacing="8">
               <WrapPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                  <TextBlock Text="Mineral (blank = any)" TextWrapping="Wrap"/>
-                  <TextBox Text="{Binding Mineral}"/>
+                <StackPanel Spacing="4" Width="300" Margin="0,0,12,10">
+                  <TextBlock Text="Ring mineral" TextWrapping="Wrap"/>
+                  <views:MiningChipBox DataContext="{Binding RingMineralChips}" HorizontalAlignment="Stretch" Margin="0"/>
                 </StackPanel>
                 <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
                   <TextBlock Text="Ring type" TextWrapping="Wrap"/>

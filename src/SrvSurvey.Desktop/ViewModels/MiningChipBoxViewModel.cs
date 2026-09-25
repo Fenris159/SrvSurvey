@@ -59,6 +59,7 @@ public sealed class MiningChipBoxViewModel : WorkspaceObservable
             "Commodity category" => "Choose a commodity category...",
             "Commodities" => "Type to add up to five commodities...",
             "Station types" => "Type to add station types...",
+            "Ring mineral" => "Choose a ring mineral or Any...",
             _ => "Type to add minerals/metals...",
         };
     public ObservableCollection<string> Selected { get; } = [];

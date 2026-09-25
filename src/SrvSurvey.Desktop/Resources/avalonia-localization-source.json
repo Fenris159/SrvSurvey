@@ -4507,6 +4507,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Ardent catalog prices. Market prices may vary by station.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
     "IsFormat": false,
     "SourceKinds": [
@@ -4529,6 +4537,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "Ardent prices are unavailable. Showing stored or catalog prices.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "Ardent/Spansh fallback",
@@ -9220,6 +9236,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
+    "Text": "Catalog prices shown while Ardent prices load.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Catalogs updated this session:",
     "IsFormat": false,
     "SourceKinds": [
@@ -9859,6 +9883,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Choose a ring mineral or Any...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningChipBoxViewModel.cs"
   },
   {
     "Text": "Choose a saved commander",
@@ -27865,6 +27897,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
+    "Text": "MAX SELL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "MAX SELL CR/T",
     "IsFormat": false,
     "SourceKinds": [
@@ -29223,14 +29263,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
-    "Text": "Mineral (blank = any)",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
-  },
-  {
     "Text": "Mineral / metal",
     "IsFormat": false,
     "SourceKinds": [
@@ -29256,7 +29288,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
+    "Text": "Mineral availability follows ring composition. Prices use the Ardent catalog when available; check current station quotes before selling.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -42213,6 +42245,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
+    "Text": "Ring mineral",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
     "Text": "Ring mining reference",
     "IsFormat": false,
     "SourceKinds": [
@@ -47325,6 +47366,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "Showing stored Ardent prices; checking for updates when Reference opens.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "Showing systems {0}\u2013{1} of {2} (descending).",

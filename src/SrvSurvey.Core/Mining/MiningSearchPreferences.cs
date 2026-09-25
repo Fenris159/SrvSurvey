@@ -7,6 +7,7 @@ public sealed record MiningSearchPreferences
     public string Reference { get; init; } = "";
     public bool ForceIncludeReference { get; init; }
     public string Mineral { get; init; } = "Platinum";
+    public string RingSearchMineral { get; init; } = "";
     public string RingType { get; init; } = "All";
     public string Reserve { get; init; } = "All";
     public string Commodity { get; init; } = "Platinum";

@@ -174,6 +174,66 @@ public sealed class MiningWorkspaceViewModelTests
     }
 
     [Fact]
+    public void StoredArdentPricesAppearInRingReferenceOnWorkspaceCreation()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var store = new MiningCommodityPriceReportStore(directory);
+            store.Save(
+                new MiningCommodityPriceReportSnapshot(
+                    DateTimeOffset.UtcNow,
+                    null,
+                    "Platinum",
+                    [new MiningCommodityPriceSummary("Platinum", 65_000, 280_000)],
+                    Version: 2
+                )
+            );
+
+            using var vm = new MiningWorkspaceViewModel(directory, new Resolver(), new BookmarksViewModel(directory));
+
+            MiningReferenceCommodityRowViewModel platinum = vm
+                .RingReferences.Single(ring => ring.Name == "Metallic rings")
+                .Laser.Single(item => item.Name == "Platinum");
+            Assert.Equal(65_000, platinum.AverageSellPrice);
+            Assert.Equal(280_000, platinum.MaximumSellPrice);
+            Assert.Contains("stored Ardent", vm.ReferencePriceStatus, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void RingReferenceUsesArdentAverageAndMaximumPricesForLaserAndCore()
+    {
+        IReadOnlyDictionary<string, MiningCommodityPriceSummary> report = new Dictionary<
+            string,
+            MiningCommodityPriceSummary
+        >(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Platinum"] = new("Platinum", 65_000, 280_000),
+            ["Monazite"] = new("Monazite", 250_000, 900_000),
+        };
+
+        MiningRingReferenceViewModel metallic = MiningRingReferenceViewModel
+            .All.Single(ring => ring.Name == "Metallic rings")
+            .WithPrices(report);
+
+        MiningReferenceCommodityRowViewModel platinum = metallic.Laser.Single(item => item.Name == "Platinum");
+        MiningReferenceCommodityRowViewModel monazite = metallic.Core.Single(item => item.Name == "Monazite");
+        Assert.Equal("65,000 CR/t", platinum.AverageSellPriceLabel);
+        Assert.Equal("280,000 CR/t", platinum.MaximumSellPriceLabel);
+        Assert.Equal("250,000 CR/t", monazite.AverageSellPriceLabel);
+        Assert.Equal("900,000 CR/t", monazite.MaximumSellPriceLabel);
+        Assert.Equal("—", metallic.Laser.Single(item => item.Name == "Gold").MaximumSellPriceLabel);
+    }
+
+    [Fact]
     public void RingReferenceProvidesLaserAndCorePricesForEveryRingType()
     {
         string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

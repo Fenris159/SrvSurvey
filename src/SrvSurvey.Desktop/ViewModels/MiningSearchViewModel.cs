@@ -808,6 +808,30 @@ public sealed class MiningSearchViewModel(
         ),
     ];
     private static readonly string[] PlanetaryMineralChoices = [AnyPower, .. PlanetaryMiningPlan.Materials];
+    private readonly MiningChipBoxViewModel ringMineralChips = new(
+        "Ring mineral",
+        RingMineralChoices,
+        PlatinumMineral,
+        options: new(MaximumSelections: 1, ShowFullNames: true)
+    );
+    private bool ringMineralHooked;
+    public MiningChipBoxViewModel RingMineralChips
+    {
+        get
+        {
+            if (!ringMineralHooked)
+            {
+                ringMineralHooked = true;
+                ringMineralChips.Selected.CollectionChanged += (_, _) =>
+                {
+                    options = options with { RingSearchMineral = SelectedRingMineral };
+                };
+            }
+
+            return ringMineralChips;
+        }
+    }
+    private string SelectedRingMineral => ringMineralChips.Selected.FirstOrDefault() ?? AnyPower;
     private static readonly string[] PowerplayMineralChoices =
     [
         MiningMaterialSelection.Default,
@@ -1158,13 +1182,21 @@ public sealed class MiningSearchViewModel(
             }
             if (Source != SpanshSource)
             {
-                await AddLocalRingsAsync(candidates, Mineral, RingType, MinimumHotspots, Reserve, token, true);
+                await AddLocalRingsAsync(
+                    candidates,
+                    SelectedRingMineral,
+                    RingType,
+                    MinimumHotspots,
+                    Reserve,
+                    token,
+                    true
+                );
             }
 
             MiningRing[] annotated = candidates
                 .Select(AnnotateRing)
                 .Where(r =>
-                    MatchesRing(r, Mineral, RingType, MinimumHotspots, Reserve, true)
+                    MatchesRing(r, SelectedRingMineral, RingType, MinimumHotspots, Reserve, true)
                     && (!OnlyOverlaps || r.Overlaps.Length > 0)
                     && (!OnlyRes || r.ResourceExtractionSites.Length > 0)
                 )
@@ -1247,6 +1279,7 @@ public sealed class MiningSearchViewModel(
 
         SelectedRing = spot.Ring;
         Mineral = PlatinumMineral;
+        RingMineralChips.Add(PlatinumMineral);
         CommodityCategory = MiningCommodityCategory;
         Commodity = PlatinumMineral;
         Reference = spot.System;
@@ -1426,7 +1459,8 @@ public sealed class MiningSearchViewModel(
         return RingMineralChoices.Where(name => !name.Equals(AnyPower, StringComparison.OrdinalIgnoreCase)).ToArray();
     }
 
-    private string OnlineMineral => Mineral is AnyPower || RingType == WithoutHotspotsRing ? "" : Mineral.Trim();
+    private string OnlineMineral =>
+        SelectedRingMineral is AnyPower || RingType == WithoutHotspotsRing ? "" : SelectedRingMineral.Trim();
 
     private string OnlineRingType => RingType is HotspotRing or WithoutHotspotsRing ? "All" : RingType;
 
@@ -3450,10 +3484,10 @@ public sealed class MiningSearchViewModel(
         SystemOnly = hasPlan;
         Changed(nameof(PlanningContext));
         Changed(nameof(HasPlan));
-        if (Mineral.Length > 0 && !IsAny(Mineral))
+        if (SelectedRingMineral.Length > 0 && !IsAny(SelectedRingMineral))
         {
             CommodityCategory = MiningCommodityCategory;
-            Commodity = Mineral;
+            Commodity = SelectedRingMineral;
         }
 
         Buying = false;
@@ -3530,7 +3564,7 @@ public sealed class MiningSearchViewModel(
         chips.Add(token);
     }
 
-    public MiningSearchPreferences SaveOptions() => options;
+    public MiningSearchPreferences SaveOptions() => options with { RingSearchMineral = SelectedRingMineral };
 
     public void ConfigureResultCache(MiningSearchResultCache cache)
     {
@@ -3722,6 +3756,11 @@ public sealed class MiningSearchViewModel(
         CommodityCategory = values.CommodityCategory;
         Reference = values.Reference;
         Mineral = values.Mineral;
+        string savedRingMineral = string.IsNullOrWhiteSpace(values.RingSearchMineral)
+            ? values.Mineral
+            : values.RingSearchMineral;
+        string ringMineral = RingMineralChoices.FirstOrDefault(choice => Same(choice, savedRingMineral)) ?? AnyPower;
+        RestoreChip(RingMineralChips, ringMineral);
         RingType = values.RingType;
         Reserve = values.Reserve;
         Commodity = values.Commodity;

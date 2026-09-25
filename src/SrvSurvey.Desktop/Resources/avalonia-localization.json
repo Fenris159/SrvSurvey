@@ -2253,6 +2253,10 @@
       "translation": "Ardent"
     },
     {
+      "source": "Ardent catalog prices. Market prices may vary by station.",
+      "translation": "Heiße Katalogpreise. Die Marktpreise können je nach Station variieren."
+    },
+    {
       "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
       "translation": "Ardent-Tagespreise sind nicht verfügbar. Der Katalog-Snapshot wird angezeigt."
     },
@@ -2263,6 +2267,10 @@
     {
       "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Heiße Marktpreise für {0}-Materialien (aktueller Kurs {1} UTC; überprüft {2} UTC). Für fehlende Zitate verwenden Sie den älteren Bericht oder Katalog."
+    },
+    {
+      "source": "Ardent prices are unavailable. Showing stored or catalog prices.",
+      "translation": "Heiße Preise sind nicht verfügbar. Anzeige gespeicherter oder Katalogpreise."
     },
     {
       "source": "Ardent/Spansh fallback",
@@ -4601,6 +4609,10 @@
       "translation": "Die Katalogpreise werden angezeigt, während die Marktangebote von Ardent geladen werden."
     },
     {
+      "source": "Catalog prices shown while Ardent prices load.",
+      "translation": "Katalogpreise werden angezeigt, während Ardent-Preise geladen werden."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Kataloge haben diese Sitzung aktualisiert:"
     },
@@ -4919,6 +4931,10 @@
     {
       "source": "Choose a reference system to search.",
       "translation": "Wählen Sie ein Referenzsystem für die Suche aus."
+    },
+    {
+      "source": "Choose a ring mineral or Any...",
+      "translation": "Wählen Sie ein Ringmineral oder ein beliebiges..."
     },
     {
       "source": "Choose a saved commander",
@@ -13893,6 +13909,10 @@
       "translation": "MAX CR/T"
     },
     {
+      "source": "MAX SELL",
+      "translation": "MAX VERKAUFEN"
+    },
+    {
       "source": "MAX SELL CR/T",
       "translation": "MAX SELL CR/T"
     },
@@ -14569,10 +14589,6 @@
       "translation": "Mineral"
     },
     {
-      "source": "Mineral (blank = any)",
-      "translation": "Mineral (leer = beliebig)"
-    },
-    {
       "source": "Mineral / metal",
       "translation": "Mineralisch / Metall"
     },
@@ -14585,8 +14601,8 @@
       "translation": "Mineralmenge und -dichte beschreiben jede Lagerstätte und akzeptieren l, m oder h als Abkürzung für niedrig, mittel oder hoch. Lagerstättennamen müssen mit einem Rohstoff in Aktivitäten > Tagebau > Hotspot-Liste übereinstimmen; Abgelehnte Befehle erklären das Problem in den Statusbenachrichtigungen."
     },
     {
-      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
-      "translation": "Die Mineralverfügbarkeit richtet sich nach der Ringzusammensetzung. Die durchschnittlichen Verkaufspreise sind Richtwerte und die Marktpreise variieren. Überprüfen Sie daher vor dem Verkauf die aktuellen Beobachtungen."
+      "source": "Mineral availability follows ring composition. Prices use the Ardent catalog when available; check current station quotes before selling.",
+      "translation": "Die Mineralverfügbarkeit richtet sich nach der Ringzusammensetzung. Für die Preise wird der Ardent-Katalog verwendet, sofern verfügbar. Überprüfen Sie vor dem Verkauf die aktuellen Senderangebote."
     },
     {
       "source": "Mineral thresholds",
@@ -21049,6 +21065,10 @@
       "translation": "Ringdetails"
     },
     {
+      "source": "Ring mineral",
+      "translation": "Ringmineral"
+    },
+    {
       "source": "Ring mining reference",
       "translation": "Ring-Mining-Referenz"
     },
@@ -23595,6 +23615,10 @@
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Zeigt gespeicherte Ardent-Marktpreise für {0}-Materialien an (aktuellstes Angebot {1} UTC; geprüftes {2} UTC). Für fehlende Zitate verwenden Sie den älteren Bericht oder Katalog."
+    },
+    {
+      "source": "Showing stored Ardent prices; checking for updates when Reference opens.",
+      "translation": "Zeigt gespeicherte Ardent-Preise an; Beim Öffnen der Referenz wird nach Updates gesucht."
     },
     {
       "source": "Showing systems {0}–{1} of {2} (descending).",
@@ -36683,6 +36707,10 @@
       "translation": "Ardent"
     },
     {
+      "source": "Ardent catalog prices. Market prices may vary by station.",
+      "translation": "Precios de catálogo ardientes. Los precios del mercado pueden variar según la estación."
+    },
+    {
       "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
       "translation": "Los precios diarios de Ardent no están disponibles. Se muestra la instantánea del catálogo."
     },
@@ -36693,6 +36721,10 @@
     {
       "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Precios de mercado ardientes para materiales {0} (última cotización {1} UTC; verificado {2} UTC). Las citas que faltan utilizan el informe o catálogo anterior."
+    },
+    {
+      "source": "Ardent prices are unavailable. Showing stored or catalog prices.",
+      "translation": "Los precios ardientes no están disponibles. Mostrando precios almacenados o de catálogo."
     },
     {
       "source": "Ardent/Spansh fallback",
@@ -39031,6 +39063,10 @@
       "translation": "Los precios del catálogo se muestran mientras se cargan las cotizaciones del mercado Ardent."
     },
     {
+      "source": "Catalog prices shown while Ardent prices load.",
+      "translation": "Los precios del catálogo se muestran mientras se cargan los precios de Ardent."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Catálogos actualizados esta sesión:"
     },
@@ -39349,6 +39385,10 @@
     {
       "source": "Choose a reference system to search.",
       "translation": "Elija un sistema de referencia para buscar."
+    },
+    {
+      "source": "Choose a ring mineral or Any...",
+      "translation": "Elige un anillo mineral o Cualquiera..."
     },
     {
       "source": "Choose a saved commander",
@@ -48323,6 +48363,10 @@
       "translation": "CR/T MÁX."
     },
     {
+      "source": "MAX SELL",
+      "translation": "VENTA MÁXIMA"
+    },
+    {
       "source": "MAX SELL CR/T",
       "translation": "VENTA MÁXIMA CR/T"
     },
@@ -48999,10 +49043,6 @@
       "translation": "Mineral"
     },
     {
-      "source": "Mineral (blank = any)",
-      "translation": "Mineral (en blanco = cualquiera)"
-    },
-    {
       "source": "Mineral / metal",
       "translation": "minerales/metales"
     },
@@ -49015,8 +49055,8 @@
       "translation": "La cantidad y densidad del mineral describen cada depósito y aceptan l, m o h como abreviatura de bajo, medio o alto. Los nombres de los depósitos deben coincidir con un producto en Actividades > Minería a cielo abierto > Lista de puntos críticos; Los comandos rechazados explican el problema en Notificaciones de estado."
     },
     {
-      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
-      "translation": "La disponibilidad de minerales sigue la composición del anillo. Los precios de venta promedio son valores de referencia y los precios de mercado varían, así que verifique las observaciones actuales antes de vender."
+      "source": "Mineral availability follows ring composition. Prices use the Ardent catalog when available; check current station quotes before selling.",
+      "translation": "La disponibilidad de minerales sigue la composición del anillo. Los precios utilizan el catálogo de Ardent cuando esté disponible; consulte las cotizaciones actuales de las estaciones antes de vender."
     },
     {
       "source": "Mineral thresholds",
@@ -55479,6 +55519,10 @@
       "translation": "Detalles del anillo"
     },
     {
+      "source": "Ring mineral",
+      "translation": "Anillo mineral"
+    },
+    {
       "source": "Ring mining reference",
       "translation": "Referencia de minería de anillos"
     },
@@ -58025,6 +58069,10 @@
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Mostrando los precios de mercado almacenados de Ardent para materiales {0} (última cotización {1} UTC; verificado {2} UTC). Las citas que faltan utilizan el informe o catálogo anterior."
+    },
+    {
+      "source": "Showing stored Ardent prices; checking for updates when Reference opens.",
+      "translation": "Mostrando precios Ardent almacenados; buscando actualizaciones cuando se abre la Referencia."
     },
     {
       "source": "Showing systems {0}–{1} of {2} (descending).",
@@ -71113,6 +71161,10 @@
       "translation": "Ardent"
     },
     {
+      "source": "Ardent catalog prices. Market prices may vary by station.",
+      "translation": "Prix ​​catalogue ardents. Les prix du marché peuvent varier selon les stations."
+    },
+    {
       "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
       "translation": "Les prix quotidiens Ardent ne sont pas disponibles. Affichage de l'instantané du catalogue."
     },
@@ -71123,6 +71175,10 @@
     {
       "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Prix ​​​​de marché ardents pour les matériaux {0} (dernière cotation {1} UTC ; vérifié {2} UTC). Les guillemets manquants utilisent l'ancien rapport ou catalogue."
+    },
+    {
+      "source": "Ardent prices are unavailable. Showing stored or catalog prices.",
+      "translation": "Les prix Ardent ne sont pas disponibles. Affichage des prix stockés ou catalogue."
     },
     {
       "source": "Ardent/Spansh fallback",
@@ -73461,6 +73517,10 @@
       "translation": "Prix ​​du catalogue affichés pendant le chargement des cotations du marché Ardent."
     },
     {
+      "source": "Catalog prices shown while Ardent prices load.",
+      "translation": "Prix ​​du catalogue affichés pendant le chargement des prix Ardent."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Catalogues mis à jour cette session :"
     },
@@ -73779,6 +73839,10 @@
     {
       "source": "Choose a reference system to search.",
       "translation": "Choisissez un système de référence à rechercher."
+    },
+    {
+      "source": "Choose a ring mineral or Any...",
+      "translation": "Choisissez un anneau minéral ou N'importe lequel..."
     },
     {
       "source": "Choose a saved commander",
@@ -82753,6 +82817,10 @@
       "translation": "MAX CR/T"
     },
     {
+      "source": "MAX SELL",
+      "translation": "VENTE MAXIMALE"
+    },
+    {
       "source": "MAX SELL CR/T",
       "translation": "VENTE MAXIMALE CR/T"
     },
@@ -83429,10 +83497,6 @@
       "translation": "Minéral"
     },
     {
-      "source": "Mineral (blank = any)",
-      "translation": "Minéral (vierge = n'importe lequel)"
-    },
-    {
       "source": "Mineral / metal",
       "translation": "Minéral / métal"
     },
@@ -83445,8 +83509,8 @@
       "translation": "La quantité et la densité minérales décrivent chaque gisement et acceptent l, m ou h comme raccourci pour faible, moyen ou élevé. Les noms de gisements doivent correspondre à une matière première dans Activités > Surface Mining > Hotspot List ; les commandes rejetées expliquent le problème dans les notifications d'état."
     },
     {
-      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
-      "translation": "La disponibilité des minéraux suit la composition des anneaux. Les prix de vente moyens sont des valeurs de référence et les prix du marché varient, alors vérifiez les observations actuelles avant de vendre."
+      "source": "Mineral availability follows ring composition. Prices use the Ardent catalog when available; check current station quotes before selling.",
+      "translation": "La disponibilité des minéraux suit la composition des anneaux. Les prix utilisent le catalogue Ardent lorsqu'il est disponible ; vérifiez les cotations actuelles des stations avant de vendre."
     },
     {
       "source": "Mineral thresholds",
@@ -89909,6 +89973,10 @@
       "translation": "Détails de la bague"
     },
     {
+      "source": "Ring mineral",
+      "translation": "Anneau minéral"
+    },
+    {
       "source": "Ring mining reference",
       "translation": "Référence sur l'exploitation minière en anneau"
     },
@@ -92455,6 +92523,10 @@
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Affichage des prix du marché Ardent stockés pour les matériaux {0} (dernière cotation {1} UTC ; vérifiée {2} UTC). Les guillemets manquants utilisent l'ancien rapport ou catalogue."
+    },
+    {
+      "source": "Showing stored Ardent prices; checking for updates when Reference opens.",
+      "translation": "Affichage des prix Ardent stockés ; vérifier les mises à jour lorsque la référence s'ouvre."
     },
     {
       "source": "Showing systems {0}–{1} of {2} (descending).",
@@ -105543,6 +105615,10 @@
       "translation": "Ardent"
     },
     {
+      "source": "Ardent catalog prices. Market prices may vary by station.",
+      "translation": "Preços de catálogo ardentes. Os preços de mercado podem variar de acordo com a estação."
+    },
+    {
       "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
       "translation": "Os preços diários da Ardent não estão disponíveis. Exibindo os valores do catálogo."
     },
@@ -105553,6 +105629,10 @@
     {
       "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Preços de mercado elevados para materiais {0} (última cotação {1} UTC; verificado {2} UTC). As cotações ausentes usam o relatório ou catálogo mais antigo."
+    },
+    {
+      "source": "Ardent prices are unavailable. Showing stored or catalog prices.",
+      "translation": "Preços ardentes não estão disponíveis. Mostrando preços armazenados ou de catálogo."
     },
     {
       "source": "Ardent/Spansh fallback",
@@ -107891,6 +107971,10 @@
       "translation": "Preços de catálogo mostrados enquanto as cotações do mercado Ardent são carregadas."
     },
     {
+      "source": "Catalog prices shown while Ardent prices load.",
+      "translation": "Preços de catálogo mostrados enquanto os preços Ardent são carregados."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Catálogos atualizados nesta sessão:"
     },
@@ -108209,6 +108293,10 @@
     {
       "source": "Choose a reference system to search.",
       "translation": "Escolha um sistema de referência para pesquisar."
+    },
+    {
+      "source": "Choose a ring mineral or Any...",
+      "translation": "Escolha um mineral de anel ou qualquer..."
     },
     {
       "source": "Choose a saved commander",
@@ -117183,6 +117271,10 @@
       "translation": "CR/T MÁX."
     },
     {
+      "source": "MAX SELL",
+      "translation": "VENDA MÁXIMA"
+    },
+    {
       "source": "MAX SELL CR/T",
       "translation": "VENDA MÁXIMA CR/T"
     },
@@ -117859,10 +117951,6 @@
       "translation": "Mineral"
     },
     {
-      "source": "Mineral (blank = any)",
-      "translation": "Mineral (em branco = qualquer)"
-    },
-    {
       "source": "Mineral / metal",
       "translation": "Minerais / metálicos"
     },
@@ -117875,8 +117963,8 @@
       "translation": "A quantidade e densidade mineral descrevem cada depósito e aceitam l, m ou h como abreviatura para baixo, médio ou alto. Os nomes dos depósitos devem corresponder a uma mercadoria em Atividades > Mineração de Superfície > Lista de Pontos de Acesso; comandos rejeitados explicam o problema nas notificações de status."
     },
     {
-      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
-      "translation": "A disponibilidade mineral segue a composição do anel. Os preços médios de venda são valores de referência e os preços de mercado variam, portanto verifique as observações atuais antes de vender."
+      "source": "Mineral availability follows ring composition. Prices use the Ardent catalog when available; check current station quotes before selling.",
+      "translation": "A disponibilidade mineral segue a composição do anel. Os preços usam o catálogo da Ardent quando disponível; verifique as cotações atuais da estação antes de vender."
     },
     {
       "source": "Mineral thresholds",
@@ -124339,6 +124427,10 @@
       "translation": "Detalhes do anel"
     },
     {
+      "source": "Ring mineral",
+      "translation": "Anel mineral"
+    },
+    {
       "source": "Ring mining reference",
       "translation": "Referência de mineração de anel"
     },
@@ -126885,6 +126977,10 @@
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Mostrando preços de mercado Ardent armazenados para materiais {0} (cotação mais recente {1} UTC; verificado {2} UTC). As cotações ausentes usam o relatório ou catálogo mais antigo."
+    },
+    {
+      "source": "Showing stored Ardent prices; checking for updates when Reference opens.",
+      "translation": "Mostrando preços Ardent armazenados; verificando se há atualizações quando a Referência é aberta."
     },
     {
       "source": "Showing systems {0}–{1} of {2} (descending).",
@@ -139973,6 +140069,10 @@
       "translation": "Ardent"
     },
     {
+      "source": "Ardent catalog prices. Market prices may vary by station.",
+      "translation": "Цены по каталогу Ardent. Рыночные цены могут варьироваться в зависимости от станции."
+    },
+    {
       "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
       "translation": "Ежедневные цены Ardent недоступны. Показываю снимок каталога."
     },
@@ -139983,6 +140083,10 @@
     {
       "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Высокие рыночные цены на материалы {0} (последняя котировка {1} UTC; проверено {2} UTC). Для отсутствующих цитат используйте старый отчет или каталог."
+    },
+    {
+      "source": "Ardent prices are unavailable. Showing stored or catalog prices.",
+      "translation": "Ярых цен нет. Показаны сохраненные или каталожные цены."
     },
     {
       "source": "Ardent/Spansh fallback",
@@ -142321,6 +142425,10 @@
       "translation": "Цены по каталогу показаны во время загрузки котировок Ardent Market."
     },
     {
+      "source": "Catalog prices shown while Ardent prices load.",
+      "translation": "Цены по каталогу отображаются при загрузке цен Ardent."
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "Каталоги обновлены в этой сессии:"
     },
@@ -142639,6 +142747,10 @@
     {
       "source": "Choose a reference system to search.",
       "translation": "Выберите систему отсчета для поиска."
+    },
+    {
+      "source": "Choose a ring mineral or Any...",
+      "translation": "Выберите кольцевой минерал или любой..."
     },
     {
       "source": "Choose a saved commander",
@@ -151613,6 +151725,10 @@
       "translation": "МАКС. CR/Т"
     },
     {
+      "source": "MAX SELL",
+      "translation": "МАКС ПРОДАВАТЬ"
+    },
+    {
       "source": "MAX SELL CR/T",
       "translation": "МАКС. ПРОДАЖА CR/T"
     },
@@ -152289,10 +152405,6 @@
       "translation": "Минерал"
     },
     {
-      "source": "Mineral (blank = any)",
-      "translation": "Минерал (пусто = любой)"
-    },
-    {
       "source": "Mineral / metal",
       "translation": "Минерал/металл"
     },
@@ -152305,8 +152417,8 @@
       "translation": "Количество и плотность минералов описывают каждое месторождение и принимают l, m или h как сокращение для низких, средних или высоких значений. Названия месторождений должны соответствовать товару в разделе «Действия» > «Поверхностная добыча» > «Список горячих точек»; отклоненные команды объясняют проблему в уведомлениях о состоянии."
     },
     {
-      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
-      "translation": "Доступность минералов зависит от кольцевого состава. Средние цены продажи являются справочными значениями, а рыночные цены варьируются, поэтому перед продажей проверяйте текущие наблюдения."
+      "source": "Mineral availability follows ring composition. Prices use the Ardent catalog when available; check current station quotes before selling.",
+      "translation": "Наличие минералов зависит от кольцевого состава. В ценах указан каталог Ardent, если он доступен; проверьте текущие котировки станций перед продажей."
     },
     {
       "source": "Mineral thresholds",
@@ -158769,6 +158881,10 @@
       "translation": "Детали кольца"
     },
     {
+      "source": "Ring mineral",
+      "translation": "Кольцо минерал"
+    },
+    {
       "source": "Ring mining reference",
       "translation": "Справочник по кольцевому майнингу"
     },
@@ -161315,6 +161431,10 @@
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "Показаны сохраненные рыночные цены Ardent на материалы {0} (последняя котировка {1} UTC; проверено {2} UTC). Для отсутствующих цитат используйте старый отчет или каталог."
+    },
+    {
+      "source": "Showing stored Ardent prices; checking for updates when Reference opens.",
+      "translation": "Показаны сохраненные цены Ardent; проверка обновлений при открытии ссылки."
     },
     {
       "source": "Showing systems {0}–{1} of {2} (descending).",
@@ -174403,6 +174523,10 @@
       "translation": "Ardent"
     },
     {
+      "source": "Ardent catalog prices. Market prices may vary by station.",
+      "translation": "热心的目录价格。市场价格可能因车站而异。"
+    },
+    {
       "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
       "translation": "Ardent 每日价格暂不可用。正在显示目录快照。"
     },
@@ -174413,6 +174537,10 @@
     {
       "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "{0} 材料的市场价格火热（最新报价 {1} UTC；检查 {2} UTC）。缺少的报价使用旧的报告或目录。"
+    },
+    {
+      "source": "Ardent prices are unavailable. Showing stored or catalog prices.",
+      "translation": "热心的价格是无法获得的。显示存储价格或目录价格。"
     },
     {
       "source": "Ardent/Spansh fallback",
@@ -176751,6 +176879,10 @@
       "translation": "加载 Ardent 市场报价时显示目录价格。"
     },
     {
+      "source": "Catalog prices shown while Ardent prices load.",
+      "translation": "加载 Ardent 价格时显示目录价格。"
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "本次会议更新了目录："
     },
@@ -177069,6 +177201,10 @@
     {
       "source": "Choose a reference system to search.",
       "translation": "选择要搜索的参考系统。"
+    },
+    {
+      "source": "Choose a ring mineral or Any...",
+      "translation": "选择环形矿物或任何..."
     },
     {
       "source": "Choose a saved commander",
@@ -186043,6 +186179,10 @@
       "translation": "最大CR/T"
     },
     {
+      "source": "MAX SELL",
+      "translation": "最大卖出"
+    },
+    {
       "source": "MAX SELL CR/T",
       "translation": "最大销售 CR/T"
     },
@@ -186719,10 +186859,6 @@
       "translation": "矿物"
     },
     {
-      "source": "Mineral (blank = any)",
-      "translation": "矿物质（空白=任意）"
-    },
-    {
       "source": "Mineral / metal",
       "translation": "矿物/金属"
     },
@@ -186735,8 +186871,8 @@
       "translation": "矿物量和密度描述了每个矿床，并接受 l、m 或 h 作为低、中或高的简写。矿床名称必须与“活动”>“露天采矿”>“热点列表”中的商品匹配；被拒绝的命令解释了状态通知中的问题。"
     },
     {
-      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
-      "translation": "矿物的可用性取决于环的组成。平均售价为参考值，市场价格各不相同，因此在出售前请检查当前观察结果。"
+      "source": "Mineral availability follows ring composition. Prices use the Ardent catalog when available; check current station quotes before selling.",
+      "translation": "矿物的可用性取决于环的组成。价格使用 Ardent 目录（如有）；出售前检查当前电台报价。"
     },
     {
       "source": "Mineral thresholds",
@@ -193199,6 +193335,10 @@
       "translation": "戒指细节"
     },
     {
+      "source": "Ring mineral",
+      "translation": "环形矿物"
+    },
+    {
       "source": "Ring mining reference",
       "translation": "环形采矿参考"
     },
@@ -195745,6 +195885,10 @@
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "显示 {0} 材料的存储 Ardent 市场价格（最新报价 {1} UTC；检查 {2} UTC）。缺少的报价使用旧的报告或目录。"
+    },
+    {
+      "source": "Showing stored Ardent prices; checking for updates when Reference opens.",
+      "translation": "显示存储的 Ardent 价格；当参考打开时检查更新。"
     },
     {
       "source": "Showing systems {0}–{1} of {2} (descending).",
@@ -208833,6 +208977,10 @@
       "translation": "* ARDENT >>>!"
     },
     {
+      "source": "Ardent catalog prices. Market prices may vary by station.",
+      "translation": "* ARDENT CATALOG PRICES. MARKET PRICES MAY VARY BY STATION. >>>!"
+    },
+    {
       "source": "Ardent daily prices are unavailable. Showing the catalog snapshot.",
       "translation": "* ARDENT DAILY PRICES ARE UNAVAILABLE. SHOWING THE CATALOG SNAPSHOT. >>>!"
     },
@@ -208843,6 +208991,10 @@
     {
       "source": "Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "* ARDENT MARKET PRICES FOR {0} MATERIALS (LATEST QUOTE {1} UTC; CHECKED {2} UTC). MISSING QUOTES USE THE OLDER REPORT OR CATALOG. >>>!"
+    },
+    {
+      "source": "Ardent prices are unavailable. Showing stored or catalog prices.",
+      "translation": "* ARDENT PRICES ARE UNAVAILABLE. SHOWING STORED OR CATALOG PRICES. >>>!"
     },
     {
       "source": "Ardent/Spansh fallback",
@@ -211181,6 +211333,10 @@
       "translation": "* CATALOG PRICES SHOWN WHILE ARDENT MARKET QUOTES LOAD. >>>!"
     },
     {
+      "source": "Catalog prices shown while Ardent prices load.",
+      "translation": "* CATALOG PRICES SHOWN WHILE ARDENT PRICES LOAD. >>>!"
+    },
+    {
       "source": "Catalogs updated this session:",
       "translation": "* CATALOGS UPDATED THIS SESSION: >>>!"
     },
@@ -211499,6 +211655,10 @@
     {
       "source": "Choose a reference system to search.",
       "translation": "* CHOOSE A REFERENCE SYSTEM TO SEARCH. >>>!"
+    },
+    {
+      "source": "Choose a ring mineral or Any...",
+      "translation": "* CHOOSE A RING MINERAL OR ANY... >>>!"
     },
     {
       "source": "Choose a saved commander",
@@ -220473,6 +220633,10 @@
       "translation": "* MAX CR/T >>>!"
     },
     {
+      "source": "MAX SELL",
+      "translation": "* MAX SELL >>>!"
+    },
+    {
       "source": "MAX SELL CR/T",
       "translation": "* MAX SELL CR/T >>>!"
     },
@@ -221149,10 +221313,6 @@
       "translation": "* MINERAL >>>!"
     },
     {
-      "source": "Mineral (blank = any)",
-      "translation": "* MINERAL (BLANK = ANY) >>>!"
-    },
-    {
       "source": "Mineral / metal",
       "translation": "* MINERAL / METAL >>>!"
     },
@@ -221165,8 +221325,8 @@
       "translation": "* MINERAL AMOUNT AND DENSITY DESCRIBE EACH DEPOSIT AND ACCEPT L, M, OR H AS SHORTHAND FOR LOW, MEDIUM, OR HIGH. DEPOSIT NAMES MUST MATCH A COMMODITY IN ACTIVITIES > SURFACE MINING > HOTSPOT LIST; REJECTED COMMANDS EXPLAIN THE PROBLEM IN STATUS NOTIFICATIONS. >>>!"
     },
     {
-      "source": "Mineral availability follows ring composition. Average sell prices are reference values and market prices vary, so check current observations before selling.",
-      "translation": "* MINERAL AVAILABILITY FOLLOWS RING COMPOSITION. AVERAGE SELL PRICES ARE REFERENCE VALUES AND MARKET PRICES VARY, SO CHECK CURRENT OBSERVATIONS BEFORE SELLING. >>>!"
+      "source": "Mineral availability follows ring composition. Prices use the Ardent catalog when available; check current station quotes before selling.",
+      "translation": "* MINERAL AVAILABILITY FOLLOWS RING COMPOSITION. PRICES USE THE ARDENT CATALOG WHEN AVAILABLE; CHECK CURRENT STATION QUOTES BEFORE SELLING. >>>!"
     },
     {
       "source": "Mineral thresholds",
@@ -227629,6 +227789,10 @@
       "translation": "* RING DETAILS >>>!"
     },
     {
+      "source": "Ring mineral",
+      "translation": "* RING MINERAL >>>!"
+    },
+    {
       "source": "Ring mining reference",
       "translation": "* RING MINING REFERENCE >>>!"
     },
@@ -230175,6 +230339,10 @@
     {
       "source": "Showing stored Ardent market prices for {0} materials (latest quote {1} UTC; checked {2} UTC). Missing quotes use the older report or catalog.",
       "translation": "* SHOWING STORED ARDENT MARKET PRICES FOR {0} MATERIALS (LATEST QUOTE {1} UTC; CHECKED {2} UTC). MISSING QUOTES USE THE OLDER REPORT OR CATALOG. >>>!"
+    },
+    {
+      "source": "Showing stored Ardent prices; checking for updates when Reference opens.",
+      "translation": "* SHOWING STORED ARDENT PRICES; CHECKING FOR UPDATES WHEN REFERENCE OPENS. >>>!"
     },
     {
       "source": "Showing systems {0}–{1} of {2} (descending).",

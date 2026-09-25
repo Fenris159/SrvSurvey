@@ -28,6 +28,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private string presetName = "Laser mining";
     private readonly IStarSystemResolver resolver;
     private readonly BookmarksViewModel bookmarks;
+    private readonly MiningSearchClient miningSearchClient;
     private readonly WorkspaceTableSorter cargoSorter = new();
     private readonly WorkspaceTableSorter materialsSorter = new();
     private readonly WorkspaceTableSorter prospectsSorter = new();
@@ -67,6 +68,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private DateTimeOffset? fullSince;
     private bool fullNotified;
     private DateTimeOffset lastAutoSearch;
+    private bool disposed;
+    private IReadOnlyList<MiningRingReferenceViewModel> ringReferences = MiningRingReferenceViewModel.All;
+    private string referencePriceStatus = "Catalog prices shown while Ardent prices load.";
 
     public MiningWorkspaceViewModel(
         string directory,
@@ -87,12 +91,13 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         attachmentDirectory = Path.Combine(directory, "mining", "attachments");
         this.resolver = resolver;
         this.bookmarks = bookmarks;
+        miningSearchClient = new MiningSearchClient(
+            networkClient,
+            commodityReportStore: new MiningCommodityPriceReportStore(directory),
+            providerResponseCache: new MiningProviderResponseCache(directory)
+        );
         Search = new MiningSearchViewModel(
-            new MiningSearchClient(
-                networkClient,
-                commodityReportStore: new MiningCommodityPriceReportStore(directory),
-                providerResponseCache: new MiningProviderResponseCache(directory)
-            ),
+            miningSearchClient,
             bookmarks,
             CacheRing,
             () => state.Data.Rings,
@@ -101,6 +106,11 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         );
         RememberPledgedPower();
         Search.ConfigureResultCache(MiningSearchResultCache.ForDirectory(directory));
+        if (miningSearchClient.CachedCommodityPriceReport is { Count: > 0 } cachedPrices)
+        {
+            ApplyRingReferencePrices(cachedPrices);
+            ReferencePriceStatus = "Showing stored Ardent prices; checking for updates when Reference opens.";
+        }
         StartCommand = new WorkspaceCommand(
             Start,
             () => sessionAvailable && storageAvailable && state.Session.Current is null
@@ -123,7 +133,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             if (SelectedMission is { } mission)
             {
                 Filter = mission.Commodity;
-                Search.Mineral = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(mission.Commodity);
+                string mineral = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(mission.Commodity);
+                Search.Mineral = mineral;
+                Search.RingMineralChips.Add(mineral);
                 SelectedTab = 4;
             }
         });
@@ -151,7 +163,49 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         private set => Set(ref voices, value);
     }
     public IReadOnlyList<string> ChimeOptions => chimeOptions;
-    public IReadOnlyList<MiningRingReferenceViewModel> RingReferences { get; } = MiningRingReferenceViewModel.All;
+    public IReadOnlyList<MiningRingReferenceViewModel> RingReferences => ringReferences;
+    public string ReferencePriceStatus
+    {
+        get => referencePriceStatus;
+        private set => Set(ref referencePriceStatus, value);
+    }
+
+    public async Task RefreshRingReferencePricesAsync()
+    {
+        try
+        {
+            IReadOnlyDictionary<string, MiningCommodityPriceSummary> report =
+                await miningSearchClient.CommodityPriceReportAsync();
+            if (disposed)
+            {
+                return;
+            }
+
+            if (report.Count == 0)
+            {
+                ReferencePriceStatus = "Ardent prices are unavailable. Showing stored or catalog prices.";
+                return;
+            }
+
+            ApplyRingReferencePrices(report);
+            ReferencePriceStatus = "Ardent catalog prices. Market prices may vary by station.";
+        }
+        catch (Exception ex)
+            when (ex is HttpRequestException or InvalidDataException or JsonException or OperationCanceledException)
+        {
+            if (!disposed)
+            {
+                ReferencePriceStatus = "Ardent prices are unavailable. Showing stored or catalog prices.";
+            }
+        }
+    }
+
+    private void ApplyRingReferencePrices(IReadOnlyDictionary<string, MiningCommodityPriceSummary> report)
+    {
+        ringReferences = MiningRingReferenceViewModel.All.Select(ring => ring.WithPrices(report)).ToArray();
+        Changed(nameof(RingReferences));
+    }
+
     public string PresetName
     {
         get => presetName;
@@ -403,9 +457,18 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         get => selectedTab;
         set
         {
-            if (Set(ref selectedTab, value) && value == 3)
+            if (!Set(ref selectedTab, value))
+            {
+                return;
+            }
+
+            if (value == 3)
             {
                 Search.PreparePowerplay();
+            }
+            else if (value == 6)
+            {
+                _ = RefreshRingReferencePricesAsync();
             }
         }
     }
@@ -868,6 +931,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public void Dispose()
     {
+        disposed = true;
         Search.Dispose();
         speech.Dispose();
         chime.Dispose();
@@ -1579,9 +1643,21 @@ public sealed record MiningProspectOverlayRowViewModel(string Time, string Summa
     public string RemainingLabel => Remaining <= 0 ? "DEPLETED" : $"{Remaining:0.#}% remaining";
 }
 
-public sealed record MiningReferenceCommodityRowViewModel(string Name, int AverageSellPrice)
+public sealed record MiningReferenceCommodityRowViewModel(string Name, int AverageSellPrice, int MaximumSellPrice = 0)
 {
     public string AverageSellPriceLabel => $"{AverageSellPrice:N0} CR/t";
+    public string MaximumSellPriceLabel => MaximumSellPrice > 0 ? $"{MaximumSellPrice:N0} CR/t" : "—";
+
+    public MiningReferenceCommodityRowViewModel WithPrice(MiningCommodityPriceSummary? summary) =>
+        summary is null
+            ? this
+            : this with
+            {
+                AverageSellPrice = ValidPrice(summary.AverageSellPrice, AverageSellPrice),
+                MaximumSellPrice = ValidPrice(summary.MaximumSellPrice, MaximumSellPrice),
+            };
+
+    private static int ValidPrice(long price, int fallback) => price is > 0 and <= int.MaxValue ? (int)price : fallback;
 }
 
 public sealed record MiningRingReferenceViewModel(
@@ -1590,6 +1666,13 @@ public sealed record MiningRingReferenceViewModel(
     IReadOnlyList<MiningReferenceCommodityRowViewModel> Core
 )
 {
+    public MiningRingReferenceViewModel WithPrices(IReadOnlyDictionary<string, MiningCommodityPriceSummary> report) =>
+        this with
+        {
+            Laser = Laser.Select(row => row.WithPrice(SurfaceMiningCommodityPrices.Find(row.Name, report))).ToArray(),
+            Core = Core.Select(row => row.WithPrice(SurfaceMiningCommodityPrices.Find(row.Name, report))).ToArray(),
+        };
+
     public static IReadOnlyList<MiningRingReferenceViewModel> All { get; } =
     [
         Ring(
