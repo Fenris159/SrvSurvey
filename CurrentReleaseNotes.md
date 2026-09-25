@@ -48,6 +48,12 @@ These changes follow the published [RC55 release](https://github.com/Fenris159/S
 - Overlay previews keep their placement while switching settings categories.
   Route Bodies stays within the visible screen area on short displays.
 
+## Construction depots
+
+- Starting SrvSurvey while already docked at a construction ship restores the
+  live depot view from the `Location` journal event, including construction ship
+  names with a suffix.
+
 ## Update channel and packages
 
 - RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge for older
