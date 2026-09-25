@@ -140,6 +140,33 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void HeightSettingMovesTheOpenEditorToolbarWithoutMovingPreviews()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            registry,
+            host
+        );
+
+        Assert.True(viewModel.Begin());
+        Assert.NotNull(host.EditorToolbar);
+        PixelPoint original = host.EditorToolbar.Position;
+        PixelPoint previewPosition = host.PreviewWindows[0].Position;
+
+        viewModel.EditorControlsHeightPercent = 10;
+
+        Assert.True(host.EditorToolbar.Position.Y < original.Y);
+        Assert.Equal(previewPosition, host.PreviewWindows[0].Position);
+    }
+
+    [AvaloniaFact]
     public void EditorPreviewTracksPointerDragWhenNativeWindowMoveIsIgnored()
     {
         var platform = new FakeOverlayPlatform();
@@ -176,6 +203,139 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Equal(new PixelPoint(initialPosition.X + 30, initialPosition.Y + 45), preview.Position);
 
         viewModel.Cancel();
+    }
+
+    [AvaloniaFact]
+    public void CategorySwitchIgnoresUnrequestedPreviewMovesFromAnOlderLayout()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotJumpInfo\":\"center:0, top:8\",\"PlotBioSystem\":\"right:8, top:8\"}"
+        );
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout activeLayout = store.Load();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var hostBounds = new PixelRect(100, 200, 1200, 800);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, hostBounds, true, true)),
+            store,
+            activeLayout,
+            registry,
+            host
+        );
+
+        Assert.True(viewModel.Begin());
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotJumpInfo"
+        );
+        PixelPoint jumpOrigin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+        PixelSize jumpSize = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+        int moveCount = 0;
+        host.PreviewMoved += (_, _) => moveCount++;
+        preview.Position = new PixelPoint(preview.Position.X + 30, preview.Position.Y + 40);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.BiologyAndSurface
+        );
+        preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == "PlotBioSystem");
+        PixelPoint bioOrigin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+        PixelSize bioSize = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+        preview.Position = new PixelPoint(preview.Position.X + 20, preview.Position.Y + 30);
+        viewModel.SelectedCategory = viewModel.Categories.Single(candidate =>
+            candidate.Category == OverlayLayoutCategory.ExplorationAndNavigation
+        );
+
+        Assert.Equal(0, moveCount);
+        viewModel.Save();
+        LegacyOverlayLayout saved = store.Load();
+        Assert.Equal(jumpOrigin, saved.GetPosition("PlotJumpInfo", hostBounds, jumpSize));
+        Assert.Equal(bioOrigin, saved.GetPosition("PlotBioSystem", hostBounds, bioSize));
+    }
+
+    [AvaloniaFact]
+    public void RouteBodiesPreviewFitsTheAvailableEditorHeight()
+    {
+        var hostBounds = new PixelRect(100, 200, 600, 360);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, hostBounds, true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        );
+
+        Assert.True(viewModel.Begin());
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotRouteBio"
+        );
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.True(preview.MaxHeight < 680);
+        Assert.True(preview.Bounds.Height <= preview.MaxHeight);
+        Assert.True(preview.Position.Y + preview.Bounds.Height <= hostBounds.Bottom - 8);
+        Point? previewBodyBottom = preview.PreviewBodyControl.TranslatePoint(
+            new Point(0, preview.PreviewBodyControl.Bounds.Height),
+            preview
+        );
+        Assert.NotNull(previewBodyBottom);
+        Assert.True(previewBodyBottom.Value.Y <= preview.Bounds.Height);
+
+        viewModel.Cancel();
+    }
+
+    [AvaloniaFact]
+    public void EditorPreviewsStayOnScreenWhenSwitchingCategoriesOnAShortDisplay()
+    {
+        var hostBounds = new PixelRect(100, 200, 900, 550);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, hostBounds, true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        );
+        Assert.True(viewModel.Begin());
+        var overflowing = new List<string>();
+        foreach (OverlayLayoutCategoryDefinition category in viewModel.Categories)
+        {
+            viewModel.SelectedCategory = category;
+            Dispatcher.UIThread.RunJobs();
+            foreach (OverlayPositionPreviewWindow preview in host.PreviewWindows)
+            {
+                for (int state = 0; state < preview.EditorPreviewStateCount; state++)
+                {
+                    if (state > 0)
+                    {
+                        Assert.True(preview.CycleEditorPreviewState());
+                        Dispatcher.UIThread.RunJobs();
+                    }
+
+                    if (preview.Position.Y + preview.Bounds.Height > hostBounds.Bottom)
+                    {
+                        overflowing.Add(
+                            $"{preview.Definition.Name} ({preview.CurrentEditorPreviewStateName}): "
+                                + $"{preview.Position.Y + preview.Bounds.Height}"
+                        );
+                    }
+                }
+            }
+        }
+
+        viewModel.Cancel();
+        Assert.Empty(overflowing);
     }
 
     [AvaloniaFact]
@@ -291,9 +451,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         host.PreviewMoved += (_, eventArgs) => moved = eventArgs;
         OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var movedPanelOrigin = new PixelPoint(510, 430);
-        preview.Position = new PixelPoint(
-            movedPanelOrigin.X - metrics.OriginOffset.X,
-            movedPanelOrigin.Y - metrics.OriginOffset.Y
+        DragPreviewToWindowPosition(
+            preview,
+            new PixelPoint(movedPanelOrigin.X - metrics.OriginOffset.X, movedPanelOrigin.Y - metrics.OriginOffset.Y)
         );
 
         Assert.NotNull(moved);
@@ -481,9 +641,12 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.Equal(2d, preview.RenderScaling);
         Assert.NotEqual(openingDisplayMetrics.OriginOffset, currentMetrics.OriginOffset);
 
-        preview.Position = new PixelPoint(
-            movedPanelOrigin.X - currentMetrics.OriginOffset.X,
-            movedPanelOrigin.Y - currentMetrics.OriginOffset.Y
+        DragPreviewToWindowPosition(
+            preview,
+            new PixelPoint(
+                movedPanelOrigin.X - currentMetrics.OriginOffset.X,
+                movedPanelOrigin.Y - currentMetrics.OriginOffset.Y
+            )
         );
         viewModel.Save();
 
@@ -557,9 +720,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             using WriteableBitmap? scaledFrame = preview.CaptureRenderedFrame();
             OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
             var placedTopLeft = new PixelPoint(510, 430);
-            preview.Position = new PixelPoint(
-                placedTopLeft.X - metrics.OriginOffset.X,
-                placedTopLeft.Y - metrics.OriginOffset.Y
+            DragPreviewToWindowPosition(
+                preview,
+                new PixelPoint(placedTopLeft.X - metrics.OriginOffset.X, placedTopLeft.Y - metrics.OriginOffset.Y)
             );
             viewModel.Save();
             using WriteableBitmap? savedFrame = runtimeWindow.CaptureRenderedFrame();
@@ -618,9 +781,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         );
         OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var movedPanelOrigin = new PixelPoint(510, 430);
-        preview.Position = new PixelPoint(
-            movedPanelOrigin.X - metrics.OriginOffset.X,
-            movedPanelOrigin.Y - metrics.OriginOffset.Y
+        DragPreviewToWindowPosition(
+            preview,
+            new PixelPoint(movedPanelOrigin.X - metrics.OriginOffset.X, movedPanelOrigin.Y - metrics.OriginOffset.Y)
         );
 
         viewModel.Save();
@@ -749,6 +912,20 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         {
             Directory.Delete(temporaryDirectory, true);
         }
+    }
+
+    private static void DragPreviewToWindowPosition(OverlayPositionPreviewWindow preview, PixelPoint destination)
+    {
+        PixelPoint start = preview.Position;
+        var pointerOrigin = new Point(12, 12);
+        var pointerDestination = new Point(
+            pointerOrigin.X + ((destination.X - start.X) / preview.RenderScaling),
+            pointerOrigin.Y + ((destination.Y - start.Y) / preview.RenderScaling)
+        );
+        preview.MouseMove(pointerOrigin, RawInputModifiers.None);
+        preview.MouseDown(pointerOrigin, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+        preview.MouseMove(pointerDestination, RawInputModifiers.LeftMouseButton);
+        preview.MouseUp(pointerDestination, MouseButton.Left, RawInputModifiers.None);
     }
 
     private sealed class FakeOverlayPlatform : IOverlayPlatformService

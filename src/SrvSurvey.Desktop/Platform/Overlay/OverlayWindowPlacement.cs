@@ -147,6 +147,30 @@ public static class OverlayWindowPlacement
         );
     }
 
+    public static PixelPoint BottomCenterWithHeightAdjustment(
+        PixelRect usableBounds,
+        PixelRect screenBounds,
+        PixelSize overlaySize,
+        double heightPercent,
+        int margin = 20
+    )
+    {
+        Validate(screenBounds, overlaySize, margin);
+        if (!double.IsFinite(heightPercent))
+        {
+            throw new ArgumentOutOfRangeException(nameof(heightPercent));
+        }
+
+        PixelPoint automatic = BottomCenter(usableBounds, overlaySize, margin);
+        int top = screenBounds.Y + margin;
+        int bottom = Math.Max(top, screenBounds.Bottom - overlaySize.Height - margin);
+        int origin = Math.Clamp(automatic.Y, top, bottom);
+        double normalized = Math.Clamp(heightPercent, -100, 100) / 100d;
+        int travel = normalized >= 0 ? origin - top : bottom - origin;
+        int offset = (int)Math.Round(travel * normalized);
+        return new PixelPoint(automatic.X, Math.Clamp(origin - offset, top, bottom));
+    }
+
     private static void Validate(PixelRect hostBounds, PixelSize overlaySize, int margin)
     {
         ValidateBounds(hostBounds, nameof(hostBounds));

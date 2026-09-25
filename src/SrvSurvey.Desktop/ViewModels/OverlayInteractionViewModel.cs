@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 
@@ -17,6 +18,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private readonly LegacyOverlayLayout? activeLayout;
     private readonly IOverlayPositionEditorHost? editorHost;
     private readonly OverlayWindowRegistry? registry;
+    private readonly OverlayEditorControlsSettingsStore? editorControlsSettingsStore;
+    private readonly DispatcherTimer? editorControlsSaveTimer;
     private readonly Dictionary<Window, LiveOverlayWindowState> liveWindows = [];
     private readonly HashSet<Window> interactiveWindows = [];
     private readonly DelegateCommand toggleCommand;
@@ -46,6 +49,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private double selectedOverlayScalePercent;
     private bool isCategoryMenuOpen;
     private bool isTypographySettingsOpen;
+    private double editorControlsHeightPercent;
 
     public OverlayInteractionViewModel(OverlayPlatformCapabilities capabilities)
     {
@@ -82,7 +86,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         LegacyOverlayLayoutStore layoutStore,
         LegacyOverlayLayout activeLayout,
         OverlayWindowRegistry? registry = null,
-        IOverlayPositionEditorHost? editorHost = null
+        IOverlayPositionEditorHost? editorHost = null,
+        OverlayEditorControlsSettingsStore? editorControlsSettingsStore = null
     )
     {
         this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
@@ -91,6 +96,13 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         this.activeLayout = activeLayout ?? throw new ArgumentNullException(nameof(activeLayout));
         this.registry = registry ?? OverlayWindowRegistry.Shared;
         this.editorHost = editorHost ?? new AvaloniaOverlayPositionEditorHost(platform, this.registry);
+        this.editorControlsSettingsStore = editorControlsSettingsStore;
+        editorControlsHeightPercent = editorControlsSettingsStore?.LoadHeightPercent() ?? 0;
+        if (editorControlsSettingsStore is not null)
+        {
+            editorControlsSaveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
+            editorControlsSaveTimer.Tick += OnEditorControlsSaveTimerTick;
+        }
         Capabilities = platform.Capabilities;
         Categories = OverlayLayoutCatalog.Categories;
         selectedCategory = Categories[0];
@@ -247,6 +259,47 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     }
 
     public string GlobalOpacityLabel => $"{GlobalOpacityPercent:N0}%";
+
+    public double EditorControlsHeightPercent
+    {
+        get => editorControlsHeightPercent;
+        set
+        {
+            if (!double.IsFinite(value))
+            {
+                return;
+            }
+
+            double normalized = Math.Clamp(Math.Round(value, 1), -100, 100);
+            if (Math.Abs(editorControlsHeightPercent - normalized) < 0.001d)
+            {
+                return;
+            }
+
+            editorControlsHeightPercent = normalized;
+            OnPropertyChanged();
+            editorControlsSaveTimer?.Stop();
+            editorControlsSaveTimer?.Start();
+        }
+    }
+
+    private void OnEditorControlsSaveTimerTick(object? sender, EventArgs eventArgs)
+    {
+        editorControlsSaveTimer?.Stop();
+        SaveEditorControlsHeight();
+    }
+
+    private void SaveEditorControlsHeight()
+    {
+        try
+        {
+            editorControlsSettingsStore?.SaveHeightPercent(editorControlsHeightPercent);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            StatusMessage = "Editor controls height could not be saved: " + exception.Message;
+        }
+    }
 
     public bool IsOverlaySettingsOpen => selectedOverlaySettingsPlotterName is not null;
 
@@ -1046,6 +1099,16 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         disposed = true;
+        if (editorControlsSaveTimer is not null)
+        {
+            bool savePending = editorControlsSaveTimer.IsEnabled;
+            editorControlsSaveTimer.Stop();
+            editorControlsSaveTimer.Tick -= OnEditorControlsSaveTimerTick;
+            if (savePending)
+            {
+                SaveEditorControlsHeight();
+            }
+        }
         if (IsLiveInteractionEnabled)
         {
             EndLiveInteraction(saveChanges: false);

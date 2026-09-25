@@ -3226,6 +3226,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Adjust editor controls height",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Adjust overlays",
     "IsFormat": false,
     "SourceKinds": [
@@ -16843,6 +16851,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Editor controls height could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "Edmund Mahon",
     "IsFormat": false,
     "SourceKinds": [
@@ -22763,6 +22779,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MiningCalibrationWindow.cs"
+  },
+  {
+    "Text": "HeightPercent",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayEditorControlsSettingsStore.cs"
   },
   {
     "Text": "Height\u2212",
@@ -29954,6 +29978,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MiningCalibrationWindow.cs"
   },
   {
+    "Text": "Move the editor controls above a dock or lower them when the automatic position is too high. Positive values move up; negative values move down.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Move to a body surface to begin guidance",
     "IsFormat": false,
     "SourceKinds": [
@@ -35109,6 +35141,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "OverlayEditorControls",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayEditorControlsSettingsStore.cs"
   },
   {
     "Text": "OverlayPanelVisibility",

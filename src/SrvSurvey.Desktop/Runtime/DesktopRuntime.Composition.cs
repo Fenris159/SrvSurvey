@@ -145,7 +145,8 @@ internal sealed partial class DesktopRuntime
             overlayPresentation.CreatePlatformService(),
             CreateRawGameWindowTracker(),
             overlayLayoutStore,
-            overlayLayout
+            overlayLayout,
+            editorControlsSettingsStore: new OverlayEditorControlsSettingsStore(appDataPaths.UiSettingsPath)
         );
         using var overlayInteractionOwnership = new MainWindowViewModelStartupResource<OverlayInteractionViewModel>(
             overlayInteraction,
