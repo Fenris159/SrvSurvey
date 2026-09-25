@@ -3748,6 +3748,22 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
             Assert.Single(viewModel.FrontierProfile.CurrentShipCargo);
             Assert.Single(viewModel.FrontierProfile.CurrentShipLocker);
+            using var cargoOverlay = new MiningCargoOverlayViewModel(viewModel.MiningWorkspace);
+            var cargoChanges = new List<string?>();
+            cargoOverlay.PropertyChanged += (_, args) => cargoChanges.Add(args.PropertyName);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                """
+                {"timestamp":"2026-07-25T12:00:02Z","event":"MiningRefined","Type":"platinum","Type_Localised":"Platinum"}
+
+                """
+            );
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(1, viewModel.CurrentCargo?.GetCount("platinum"));
+            Assert.Equal(1, Assert.Single(cargoOverlay.Items, item => item.Name == "Platinum").Count);
+            Assert.Contains(nameof(MiningCargoOverlayViewModel.Items), cargoChanges);
 
             await File.AppendAllTextAsync(
                 journalPath,

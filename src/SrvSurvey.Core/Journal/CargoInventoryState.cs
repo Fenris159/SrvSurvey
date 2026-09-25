@@ -144,6 +144,14 @@ public sealed class CargoInventoryState
             bool changed = journalEvent.EventName switch
             {
                 "CollectCargo" => ApplyDelta(GetString(root, "Type"), GetString(root, TypeLocalisedProperty), 1),
+                "MiningRefined" => ApplyDelta(GetString(root, "Type"), GetString(root, TypeLocalisedProperty), 1),
+                "LaunchDrone" when GetString(root, "Type") is "Prospector" or "Collection" => ApplyDelta(
+                    "drones",
+                    null,
+                    -1
+                ),
+                "BuyDrones" => ApplyDelta("drones", null, Math.Max(0, GetInt32(root, CountProperty) ?? 0)),
+                "SellDrones" => ApplyDelta("drones", null, -Math.Max(0, GetInt32(root, CountProperty) ?? 0)),
                 "EjectCargo" => ApplyDelta(
                     GetString(root, "Type"),
                     GetString(root, TypeLocalisedProperty),

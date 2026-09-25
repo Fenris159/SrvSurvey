@@ -16,7 +16,11 @@ internal sealed class ManagedOverlayWindowDragSession
     private readonly PendingWindowMove pendingMove;
     private bool stopped;
 
-    private ManagedOverlayWindowDragSession(Window window, PointerPressedEventArgs eventArgs)
+    private ManagedOverlayWindowDragSession(
+        Window window,
+        PointerPressedEventArgs eventArgs,
+        Action<PixelPoint>? positionApplied
+    )
     {
         this.window = window;
         pointer = eventArgs.Pointer;
@@ -28,13 +32,18 @@ internal sealed class ManagedOverlayWindowDragSession
                 if (window.Position != position)
                 {
                     window.Position = position;
+                    positionApplied?.Invoke(window.Position);
                 }
             },
             callback => DispatcherTimer.RunOnce(callback, TimeSpan.FromMilliseconds(16), DispatcherPriority.Input)
         );
     }
 
-    internal static void Begin(Window window, PointerPressedEventArgs eventArgs)
+    internal static void Begin(
+        Window window,
+        PointerPressedEventArgs eventArgs,
+        Action<PixelPoint>? positionApplied = null
+    )
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(eventArgs);
@@ -44,7 +53,7 @@ internal sealed class ManagedOverlayWindowDragSession
             current.Stop(releasePointer: true);
         }
 
-        var session = new ManagedOverlayWindowDragSession(window, eventArgs);
+        var session = new ManagedOverlayWindowDragSession(window, eventArgs, positionApplied);
         ActiveSessions.Add(window, session);
         window.PointerMoved += session.OnPointerMoved;
         window.PointerReleased += session.OnPointerReleased;

@@ -1621,6 +1621,10 @@
       "translation": "VR-Overlay anpassen"
     },
     {
+      "source": "Adjust editor controls height",
+      "translation": "Passen Sie die Höhe der Editor-Steuerelemente an"
+    },
+    {
       "source": "Adjust overlays",
       "translation": "Überlagerungen anpassen"
     },
@@ -6617,6 +6621,10 @@
       "translation": "Kernkosten"
     },
     {
+      "source": "Core: {0}",
+      "translation": "Kern: {0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -8423,6 +8431,10 @@
     {
       "source": "Editing {0}. Use the top ✓ to save all changes and close the editor.",
       "translation": "Bearbeiten von {0}. Mit dem oberen ✓ speichern Sie alle Änderungen und schließen den Editor."
+    },
+    {
+      "source": "Editor controls height could not be saved: {0}",
+      "translation": "Die Höhe der Editor-Steuerelemente konnte nicht gespeichert werden: {0}"
     },
     {
       "source": "Edmund Mahon",
@@ -11383,6 +11395,10 @@
     {
       "source": "Height+",
       "translation": "Höhe+"
+    },
+    {
+      "source": "HeightPercent",
+      "translation": "HöheProzent"
     },
     {
       "source": "Height−",
@@ -14965,6 +14981,10 @@
       "translation": "Bewegen Sie die Stangenführungen weiter unter die Kreise"
     },
     {
+      "source": "Move the editor controls above a dock or lower them when the automatic position is too high. Positive values move up; negative values move down.",
+      "translation": "Verschieben Sie die Editor-Steuerelemente über ein Dock oder senken Sie sie ab, wenn die automatische Position zu hoch ist. Positive Werte steigen; negative Werte bewegen sich nach unten."
+    },
+    {
       "source": "Move to a body surface to begin guidance",
       "translation": "Gehen Sie zu einer Körperoberfläche, um mit der Führung zu beginnen"
     },
@@ -17531,6 +17551,10 @@
     {
       "source": "OverlayBehavior.HideMultiGameCommanderOverlay",
       "translation": "OverlayBehavior.HideMultiGameCommanderOverlay"
+    },
+    {
+      "source": "OverlayEditorControls",
+      "translation": "OverlayEditorControls"
     },
     {
       "source": "OverlayPanelVisibility",
@@ -36115,6 +36139,10 @@
       "translation": "Ajustar la superposición de realidad virtual"
     },
     {
+      "source": "Adjust editor controls height",
+      "translation": "Ajustar la altura de los controles del editor"
+    },
+    {
       "source": "Adjust overlays",
       "translation": "Ajustar superposiciones"
     },
@@ -41111,6 +41139,10 @@
       "translation": "Costo básico"
     },
     {
+      "source": "Core: {0}",
+      "translation": "Núcleo: {0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -42917,6 +42949,10 @@
     {
       "source": "Editing {0}. Use the top ✓ to save all changes and close the editor.",
       "translation": "Editando {0}. Utilice la parte superior ✓ para guardar todos los cambios y cerrar el editor."
+    },
+    {
+      "source": "Editor controls height could not be saved: {0}",
+      "translation": "No se pudo guardar la altura de los controles del editor: {0}"
     },
     {
       "source": "Edmund Mahon",
@@ -45877,6 +45913,10 @@
     {
       "source": "Height+",
       "translation": "Altura+"
+    },
+    {
+      "source": "HeightPercent",
+      "translation": "AlturaPorcentaje"
     },
     {
       "source": "Height−",
@@ -49459,6 +49499,10 @@
       "translation": "Mueva las guías de la barra más abajo de los círculos."
     },
     {
+      "source": "Move the editor controls above a dock or lower them when the automatic position is too high. Positive values move up; negative values move down.",
+      "translation": "Mueva los controles del editor sobre un muelle o bájelos cuando la posición automática sea demasiado alta. Los valores positivos suben; los valores negativos bajan."
+    },
+    {
       "source": "Move to a body surface to begin guidance",
       "translation": "Muévase a una superficie del cuerpo para comenzar a guiarse."
     },
@@ -52025,6 +52069,10 @@
     {
       "source": "OverlayBehavior.HideMultiGameCommanderOverlay",
       "translation": "OverlayBehavior.HideMultiGameCommanderOverlay"
+    },
+    {
+      "source": "OverlayEditorControls",
+      "translation": "Controles del editor de superposición"
     },
     {
       "source": "OverlayPanelVisibility",
@@ -70609,6 +70657,10 @@
       "translation": "Ajuster la superposition VR"
     },
     {
+      "source": "Adjust editor controls height",
+      "translation": "Ajuster la hauteur des contrôles de l'éditeur"
+    },
+    {
       "source": "Adjust overlays",
       "translation": "Ajuster les superpositions"
     },
@@ -75605,6 +75657,10 @@
       "translation": "Coût de base"
     },
     {
+      "source": "Core: {0}",
+      "translation": "Noyau : {0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -77411,6 +77467,10 @@
     {
       "source": "Editing {0}. Use the top ✓ to save all changes and close the editor.",
       "translation": "Modification de {0}. Utilisez le haut ✓ pour enregistrer toutes les modifications et fermer l'éditeur."
+    },
+    {
+      "source": "Editor controls height could not be saved: {0}",
+      "translation": "La hauteur des contrôles de l'éditeur n'a pas pu être enregistrée : {0}"
     },
     {
       "source": "Edmund Mahon",
@@ -80371,6 +80431,10 @@
     {
       "source": "Height+",
       "translation": "Hauteur+"
+    },
+    {
+      "source": "HeightPercent",
+      "translation": "Pourcentage de hauteur"
     },
     {
       "source": "Height−",
@@ -83953,6 +84017,10 @@
       "translation": "Déplacez les guides de barre plus en dessous des cercles"
     },
     {
+      "source": "Move the editor controls above a dock or lower them when the automatic position is too high. Positive values move up; negative values move down.",
+      "translation": "Déplacez les contrôles de l'éditeur au-dessus d'un dock ou abaissez-les lorsque la position automatique est trop élevée. Les valeurs positives augmentent ; les valeurs négatives diminuent."
+    },
+    {
       "source": "Move to a body surface to begin guidance",
       "translation": "Déplacez-vous vers une surface corporelle pour commencer le guidage"
     },
@@ -86519,6 +86587,10 @@
     {
       "source": "OverlayBehavior.HideMultiGameCommanderOverlay",
       "translation": "OverlayBehavior.HideMultiGameCommanderOverlay"
+    },
+    {
+      "source": "OverlayEditorControls",
+      "translation": "OverlayEditorControls"
     },
     {
       "source": "OverlayPanelVisibility",
@@ -105103,6 +105175,10 @@
       "translation": "Ajustar a sobreposição de VR"
     },
     {
+      "source": "Adjust editor controls height",
+      "translation": "Ajustar a altura dos controles do editor"
+    },
+    {
       "source": "Adjust overlays",
       "translation": "Ajustar sobreposições"
     },
@@ -110099,6 +110175,10 @@
       "translation": "Custo principal"
     },
     {
+      "source": "Core: {0}",
+      "translation": "Núcleo: {0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -111905,6 +111985,10 @@
     {
       "source": "Editing {0}. Use the top ✓ to save all changes and close the editor.",
       "translation": "Editando {0}. Use o ✓ superior para salvar todas as alterações e fechar o editor."
+    },
+    {
+      "source": "Editor controls height could not be saved: {0}",
+      "translation": "A altura dos controles do editor não pôde ser salva: {0}"
     },
     {
       "source": "Edmund Mahon",
@@ -114865,6 +114949,10 @@
     {
       "source": "Height+",
       "translation": "Altura+"
+    },
+    {
+      "source": "HeightPercent",
+      "translation": "AlturaPorcentagem"
     },
     {
       "source": "Height−",
@@ -118447,6 +118535,10 @@
       "translation": "Mova as guias da barra mais abaixo dos círculos"
     },
     {
+      "source": "Move the editor controls above a dock or lower them when the automatic position is too high. Positive values move up; negative values move down.",
+      "translation": "Mova os controles do editor acima de um encaixe ou abaixe-os quando a posição automática estiver muito alta. Os valores positivos sobem; valores negativos descem."
+    },
+    {
       "source": "Move to a body surface to begin guidance",
       "translation": "Mova-se para uma superfície corporal para iniciar a orientação"
     },
@@ -121013,6 +121105,10 @@
     {
       "source": "OverlayBehavior.HideMultiGameCommanderOverlay",
       "translation": "OverlayBehavior.HideMultiGameCommanderOverlay"
+    },
+    {
+      "source": "OverlayEditorControls",
+      "translation": "OverlayEditorControls"
     },
     {
       "source": "OverlayPanelVisibility",
@@ -139597,6 +139693,10 @@
       "translation": "Настройка наложения VR"
     },
     {
+      "source": "Adjust editor controls height",
+      "translation": "Отрегулируйте высоту элементов управления редактора"
+    },
+    {
       "source": "Adjust overlays",
       "translation": "Настройка наложений"
     },
@@ -144593,6 +144693,10 @@
       "translation": "Основная стоимость"
     },
     {
+      "source": "Core: {0}",
+      "translation": "Ядро: {0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "Кориолис"
     },
@@ -146399,6 +146503,10 @@
     {
       "source": "Editing {0}. Use the top ✓ to save all changes and close the editor.",
       "translation": "Редактируем {0}. Используйте верхний ✓, чтобы сохранить все изменения и закрыть редактор."
+    },
+    {
+      "source": "Editor controls height could not be saved: {0}",
+      "translation": "Не удалось сохранить высоту элементов управления редактора: {0}."
     },
     {
       "source": "Edmund Mahon",
@@ -149359,6 +149467,10 @@
     {
       "source": "Height+",
       "translation": "Высота+"
+    },
+    {
+      "source": "HeightPercent",
+      "translation": "ВысотаПроцент"
     },
     {
       "source": "Height−",
@@ -152941,6 +153053,10 @@
       "translation": "Переместите направляющие стержня дальше под круги."
     },
     {
+      "source": "Move the editor controls above a dock or lower them when the automatic position is too high. Positive values move up; negative values move down.",
+      "translation": "Переместите элементы управления редактора над доком или опустите их, если автоматическое положение слишком высокое. Положительные значения перемещаются вверх; отрицательные значения перемещаются вниз."
+    },
+    {
       "source": "Move to a body surface to begin guidance",
       "translation": "Подойдите к поверхности тела, чтобы начать наведение."
     },
@@ -155507,6 +155623,10 @@
     {
       "source": "OverlayBehavior.HideMultiGameCommanderOverlay",
       "translation": "OverlayBehavior.HideMultiGameCommanderOverlay"
+    },
+    {
+      "source": "OverlayEditorControls",
+      "translation": "Элементы управления редактором наложения"
     },
     {
       "source": "OverlayPanelVisibility",
@@ -174091,6 +174211,10 @@
       "translation": "调整 VR 叠加"
     },
     {
+      "source": "Adjust editor controls height",
+      "translation": "调整编辑器控件高度"
+    },
+    {
       "source": "Adjust overlays",
       "translation": "调整叠加"
     },
@@ -179087,6 +179211,10 @@
       "translation": "核心成本"
     },
     {
+      "source": "Core: {0}",
+      "translation": "核心：{0}"
+    },
+    {
       "source": "Coriolis",
       "translation": "科里奥利"
     },
@@ -180893,6 +181021,10 @@
     {
       "source": "Editing {0}. Use the top ✓ to save all changes and close the editor.",
       "translation": "编辑 {0}。使用顶部 ✓ 保存所有更改并关闭编辑器。"
+    },
+    {
+      "source": "Editor controls height could not be saved: {0}",
+      "translation": "无法保存编辑器控件高度：{0}"
     },
     {
       "source": "Edmund Mahon",
@@ -183853,6 +183985,10 @@
     {
       "source": "Height+",
       "translation": "身高+"
+    },
+    {
+      "source": "HeightPercent",
+      "translation": "身高百分比"
     },
     {
       "source": "Height−",
@@ -187435,6 +187571,10 @@
       "translation": "将导杆移至圆圈下方更远的位置"
     },
     {
+      "source": "Move the editor controls above a dock or lower them when the automatic position is too high. Positive values move up; negative values move down.",
+      "translation": "当自动位置太高时，将编辑器控件移至停靠栏上方或降低它们。正值向上移动；负值向下移动。"
+    },
+    {
       "source": "Move to a body surface to begin guidance",
       "translation": "移动到身体表面开始引导"
     },
@@ -190001,6 +190141,10 @@
     {
       "source": "OverlayBehavior.HideMultiGameCommanderOverlay",
       "translation": "OverlayBehavior.HideMultiGameCommanderOverlay"
+    },
+    {
+      "source": "OverlayEditorControls",
+      "translation": "叠加编辑器控件"
     },
     {
       "source": "OverlayPanelVisibility",
@@ -208585,6 +208729,10 @@
       "translation": "* ADJUST VR OVERLAY >>>!"
     },
     {
+      "source": "Adjust editor controls height",
+      "translation": "* ADJUST EDITOR CONTROLS HEIGHT >>>!"
+    },
+    {
       "source": "Adjust overlays",
       "translation": "* ADJUST OVERLAYS >>>!"
     },
@@ -213581,6 +213729,10 @@
       "translation": "* CORE COST >>>!"
     },
     {
+      "source": "Core: {0}",
+      "translation": "* CORE: {0} >>>!"
+    },
+    {
       "source": "Coriolis",
       "translation": "* CORIOLIS >>>!"
     },
@@ -215387,6 +215539,10 @@
     {
       "source": "Editing {0}. Use the top ✓ to save all changes and close the editor.",
       "translation": "* EDITING {0}. USE THE TOP ✓ TO SAVE ALL CHANGES AND CLOSE THE EDITOR. >>>!"
+    },
+    {
+      "source": "Editor controls height could not be saved: {0}",
+      "translation": "* EDITOR CONTROLS HEIGHT COULD NOT BE SAVED: {0} >>>!"
     },
     {
       "source": "Edmund Mahon",
@@ -218347,6 +218503,10 @@
     {
       "source": "Height+",
       "translation": "* HEIGHT+ >>>!"
+    },
+    {
+      "source": "HeightPercent",
+      "translation": "* HEIGHTPERCENT >>>!"
     },
     {
       "source": "Height−",
@@ -221929,6 +222089,10 @@
       "translation": "* MOVE THE BAR GUIDES FARTHER BELOW THE CIRCLES >>>!"
     },
     {
+      "source": "Move the editor controls above a dock or lower them when the automatic position is too high. Positive values move up; negative values move down.",
+      "translation": "* MOVE THE EDITOR CONTROLS ABOVE A DOCK OR LOWER THEM WHEN THE AUTOMATIC POSITION IS TOO HIGH. POSITIVE VALUES MOVE UP; NEGATIVE VALUES MOVE DOWN. >>>!"
+    },
+    {
       "source": "Move to a body surface to begin guidance",
       "translation": "* MOVE TO A BODY SURFACE TO BEGIN GUIDANCE >>>!"
     },
@@ -224495,6 +224659,10 @@
     {
       "source": "OverlayBehavior.HideMultiGameCommanderOverlay",
       "translation": "* OVERLAYBEHAVIOR.HIDEMULTIGAMECOMMANDEROVERLAY >>>!"
+    },
+    {
+      "source": "OverlayEditorControls",
+      "translation": "* OVERLAYEDITORCONTROLS >>>!"
     },
     {
       "source": "OverlayPanelVisibility",
