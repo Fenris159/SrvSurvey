@@ -193,6 +193,42 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [Fact]
+    public void EditorControlsHeightIsSavedAndRestoredAcrossSessions()
+    {
+        var settingsStore = new OverlayEditorControlsSettingsStore(
+            Path.Combine(temporaryDirectory, "ui-settings.json")
+        );
+        var layoutStore = new LegacyOverlayLayoutStore(temporaryDirectory);
+        using (
+            var viewModel = new OverlayInteractionViewModel(
+                new FakeOverlayPlatform(),
+                new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+                layoutStore,
+                layoutStore.Load(),
+                new OverlayWindowRegistry(),
+                new FakeEditorHost(),
+                settingsStore
+            )
+        )
+        {
+            viewModel.EditorControlsHeightPercent = 12.34;
+            Assert.Equal(12.3, viewModel.EditorControlsHeightPercent);
+        }
+
+        Assert.Equal(12.3, settingsStore.LoadHeightPercent());
+        using var restored = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            layoutStore,
+            layoutStore.Load(),
+            new OverlayWindowRegistry(),
+            new FakeEditorHost(),
+            settingsStore
+        );
+        Assert.Equal(12.3, restored.EditorControlsHeightPercent);
+    }
+
+    [Fact]
     public void CategoryMenuOpensBeforeAnyPanelEditAndClosesAfterSelection()
     {
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);

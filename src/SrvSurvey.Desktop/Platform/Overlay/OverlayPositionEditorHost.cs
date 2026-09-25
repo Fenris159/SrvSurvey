@@ -100,6 +100,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     public event EventHandler? Closed;
 
     internal IReadOnlyList<OverlayPositionPreviewWindow> PreviewWindows => previews;
+    internal OverlayPositionEditorWindow? EditorToolbar => editor;
     internal MiningCalibrationWindow? MiningCalibration => miningCalibration;
 
     public bool Open(
@@ -121,6 +122,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         toolbar.Closed += OnEditorClosed;
         editor = toolbar;
         this.viewModel = viewModel;
+        viewModel.PropertyChanged += OnEditorControlsHeightChanged;
         toolbar.Show();
 
         PixelRect? preferred = preferredHostBounds is { Width: > 0, Height: > 0 }
@@ -180,6 +182,27 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.ConfigureSize(session.GetSizeOverride(definition.Name));
             PixelSize previewSize = preview.GetExpectedPixelSize(hostScaling);
             preview.Position = session.GetPosition(definition.Name, hostBounds, previewSize);
+            if (definition.Name == "PlotRouteBio")
+            {
+                Screen? screen = editor.Screens.ScreenFromBounds(hostBounds) ?? editor.Screens.Primary;
+                if (screen is not null)
+                {
+                    PixelRect workingArea = OverlayWindowPlacement.GetReliableBottomWorkingArea(
+                        new OverlayScreenGeometry(screen.Bounds, screen.WorkingArea),
+                        editor
+                            .Screens.All.Select(current => new OverlayScreenGeometry(
+                                current.Bounds,
+                                current.WorkingArea
+                            ))
+                            .ToArray()
+                    );
+                    PixelRect visibleBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, workingArea);
+                    preview.MaxHeight = Math.Max(
+                        1,
+                        Math.Min(680, (visibleBounds.Bottom - preview.Position.Y - 8) / screen.Scaling)
+                    );
+                }
+            }
             preview.ConfigureOpacity(session.DefaultOpacity, session.GetPlacement(definition.Name).Opacity);
             preview.PointerPressed += OnPreviewPointerPressed;
             preview.SettingsRequested += OnPreviewSettingsRequested;
@@ -188,7 +211,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             previews.Add(preview);
             preview.Show();
             PositionPreview(preview, session);
-            preview.PositionChanged += OnPreviewPositionChanged;
             if (session.GetSizeOverride(definition.Name) is not null)
             {
                 Dispatcher.UIThread.Post(() => PositionPreviewAfterOpening(preview, session));
@@ -360,6 +382,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             toolbar.Close();
         }
 
+        viewModel?.PropertyChanged -= OnEditorControlsHeightChanged;
+
         if (restoreRuntimeWindows)
         {
             registry.SetEditorSuppressed(suppressed: false);
@@ -382,7 +406,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         Close(restoreRuntimeWindows: false);
     }
 
-    private static void OnPreviewPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
+    private void OnPreviewPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
         if (
             sender is not OverlayPositionPreviewWindow preview
@@ -395,27 +419,19 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         // GNOME can ignore native move requests for the notification-style X11
         // windows used by editor previews. Track the pointer directly so every
         // desktop can reposition previews and cross display edges consistently.
-        ManagedOverlayWindowDragSession.Begin(preview, eventArgs);
+        ManagedOverlayWindowDragSession.Begin(preview, eventArgs, position => OnPreviewDragged(preview, position));
         eventArgs.Handled = true;
     }
 
-    private void OnPreviewPositionChanged(object? sender, PixelPointEventArgs eventArgs)
+    private void OnPreviewDragged(OverlayPositionPreviewWindow preview, PixelPoint position)
     {
-        if (sender is not OverlayPositionPreviewWindow preview)
-        {
-            return;
-        }
-
-        if (updatingPreviewLayout)
+        if (updatingPreviewLayout || !previews.Contains(preview))
         {
             return;
         }
 
         OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
-        var panelPosition = new PixelPoint(
-            eventArgs.Point.X + metrics.OriginOffset.X,
-            eventArgs.Point.Y + metrics.OriginOffset.Y
-        );
+        var panelPosition = new PixelPoint(position.X + metrics.OriginOffset.X, position.Y + metrics.OriginOffset.Y);
         PreviewMoved?.Invoke(
             this,
             new OverlayPreviewMovedEventArgs(
@@ -483,7 +499,6 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         foreach (OverlayPositionPreviewWindow preview in previews)
         {
             preview.PointerPressed -= OnPreviewPointerPressed;
-            preview.PositionChanged -= OnPreviewPositionChanged;
             preview.SettingsRequested -= OnPreviewSettingsRequested;
             preview.PanelSizeChanged -= OnPreviewSizeChanged;
             preview.Opened -= OnPreviewOpened;
@@ -528,6 +543,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             toolbar.Screens.Changed -= OnScreensChanged;
         }
 
+        viewModel?.PropertyChanged -= OnEditorControlsHeightChanged;
+
         editor = null;
         viewModel = null;
         editSession = null;
@@ -566,6 +583,17 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
     }
 
+    private void OnEditorControlsHeightChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs eventArgs)
+    {
+        if (
+            eventArgs.PropertyName == nameof(OverlayInteractionViewModel.EditorControlsHeightPercent)
+            && editor is { } toolbar
+        )
+        {
+            PositionEditorToolbar(toolbar);
+        }
+    }
+
     private void PositionEditorToolbar(Window toolbar, Size? measuredSize = null)
     {
         if (hostBounds.Width <= 0 || hostBounds.Height <= 0)
@@ -594,7 +622,13 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling)),
             Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling))
         );
-        toolbar.Position = OverlayWindowPlacement.BottomCenter(usableBounds, toolbarSize, margin: 12);
+        toolbar.Position = OverlayWindowPlacement.BottomCenterWithHeightAdjustment(
+            usableBounds,
+            screen.Bounds,
+            toolbarSize,
+            viewModel?.EditorControlsHeightPercent ?? 0,
+            margin: 12
+        );
     }
 
     private void OnRegistryChanged(object? sender, EventArgs eventArgs)

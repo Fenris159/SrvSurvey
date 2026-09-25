@@ -39,6 +39,39 @@ public sealed class OverlayWindowPlacementTests
         Assert.Equal(new PixelPoint(650, 912), position);
     }
 
+    [Theory]
+    [InlineData(0, 912)]
+    [InlineData(100, 12)]
+    [InlineData(-100, 952)]
+    [InlineData(50, 462)]
+    [InlineData(-50, 932)]
+    public void EditorHeightAdjustmentCoversBothSidesOfTheAutomaticPosition(int percent, int expectedY)
+    {
+        PixelPoint position = OverlayWindowPlacement.BottomCenterWithHeightAdjustment(
+            new PixelRect(0, 0, 1920, 1040),
+            new PixelRect(0, 0, 1920, 1080),
+            new PixelSize(620, 116),
+            percent,
+            margin: 12
+        );
+
+        Assert.Equal(new PixelPoint(650, expectedY), position);
+    }
+
+    [Fact]
+    public void EditorHeightAdjustmentCanClearAnUnreportedDock()
+    {
+        PixelPoint position = OverlayWindowPlacement.BottomCenterWithHeightAdjustment(
+            new PixelRect(0, 0, 1920, 1080),
+            new PixelRect(0, 0, 1920, 1080),
+            new PixelSize(620, 116),
+            10,
+            margin: 12
+        );
+
+        Assert.True(position.Y + 116 < 1030);
+    }
+
     [Fact]
     public void CorrectsDesktopWideBottomReservationProjectedFromShorterMonitor()
     {
