@@ -102,6 +102,25 @@ public sealed class MiningSearchViewModelTests
             model.Radius = 100;
             Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
 
+            (Action Change, Action Restore)[] resultFilters =
+            [
+                (() => model.Security = "High", () => model.Security = ""),
+                (() => model.Allegiance = "Empire", () => model.Allegiance = ""),
+                (() => model.Government = "Democracy", () => model.Government = ""),
+                (() => model.Economy = "Industrial", () => model.Economy = ""),
+                (() => model.State = "Boom", () => model.State = ""),
+                (() => model.PowerState = "Stronghold", () => model.PowerState = ""),
+                (() => model.MinimumPopulation = 1, () => model.MinimumPopulation = 0),
+                (() => model.MinimumHotspots = 2, () => model.MinimumHotspots = 1),
+            ];
+            foreach ((Action change, Action restore) in resultFilters)
+            {
+                change();
+                Assert.Empty(model.MeritRows);
+                restore();
+                Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
+            }
+
             model.PledgedPower = "Any";
             cache.Save(
                 "powerplay",
@@ -1626,6 +1645,34 @@ public sealed class MiningSearchViewModelTests
     }
 
     [Fact]
+    public async Task AcquireContinuesPastUnviableCandidatesBeforeApplyingResultLimit()
+    {
+        using var handler = new AcquisitionRangeHandler { HasSpanshMarket = true, FourCandidates = true };
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(new HttpClient(handler)),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+            Mineral = "Any",
+            ResultLimit = 1,
+        };
+
+        await model.SearchSystemsAsync();
+
+        Assert.True(
+            model.AcquireRows.Count == 1,
+            $"{model.Status}; candidates={string.Join(',', model.Systems.Select(system => system.System))}; marketRequested={handler.SpanshMarketRequested}"
+        );
+        Assert.Equal("Claim 4", Assert.Single(model.AcquireRows).Target);
+    }
+
+    [Fact]
     public async Task AcquireReadsPastAFullBubblePageBeforeRulingOutTargets()
     {
         using var handler = new AcquisitionRangeHandler { PagedBubble = true };
@@ -1771,6 +1818,7 @@ public sealed class MiningSearchViewModelTests
     {
         public bool HasSpanshMarket { get; init; }
         public bool SecondTargetHasMarket { get; init; }
+        public bool FourCandidates { get; init; }
         public bool SpanshMarketRequested { get; private set; }
         public bool PagedBubble { get; init; }
         public bool DistantSupporter { get; init; }
@@ -1811,7 +1859,15 @@ public sealed class MiningSearchViewModelTests
             if (request.RequestUri?.AbsolutePath == "/api/stations/search" && HasSpanshMarket)
             {
                 SpanshMarketRequested = true;
-                string marketSystem = SecondTargetHasMarket ? "Claim 2" : "Claim";
+                string marketSystem = "Claim";
+                if (FourCandidates)
+                {
+                    marketSystem = "Claim 4";
+                }
+                else if (SecondTargetHasMarket)
+                {
+                    marketSystem = "Claim 2";
+                }
                 string market =
                     $$"""{"results":[{"system_name":"{{marketSystem}}","name":"Fallback Port","type":"Coriolis Starport","large_pads":1,"market_updated_at":"{{DateTimeOffset.UtcNow:O}}","market":[{"commodity":"Monazite","sell_price":600000,"demand":1000},{"commodity":"Tea","sell_price":800000,"demand":1000}]}]}""";
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(market) };
@@ -1878,6 +1934,8 @@ public sealed class MiningSearchViewModelTests
                     """{"results":[{"name":"Claim","distance":10,"x":710,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
                 ("Anchor", _) when SecondTargetHasMarket =>
                     """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Claim 2","distance":11,"x":11,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
+                ("Anchor", _) when FourCandidates =>
+                    """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Claim 2","distance":11,"x":11,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Claim 3","distance":12,"x":12,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Claim 4","distance":13,"x":13,"y":0,"z":0,"power_state":"Unoccupied"}]}""",
                 ("Anchor", _) =>
                     """{"results":[{"name":"Claim","distance":10,"x":10,"y":0,"z":0,"power_state":"Unoccupied"},{"name":"Owned","distance":5,"x":5,"y":0,"z":0,"controlling_power":"Yuri Grom","power_state":"Exploited"}]}""",
                 _ => """{"results":[]}""",

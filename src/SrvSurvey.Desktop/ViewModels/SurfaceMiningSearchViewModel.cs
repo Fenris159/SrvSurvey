@@ -312,6 +312,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     private const string RequestFailed = "Request failed. Try again.";
     private const string IdleStatus = "Choose a reference system and a surface material.";
+    private const int MaximumBodyPageRequests = 40;
     private static readonly int[] NearbyMarketRadiusStages = [50, 100, 200];
     private readonly MiningSearchClient client;
     private readonly int maximumResults;
@@ -607,6 +608,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         else
         {
             Rows = [];
+            Status = IdleStatus;
         }
     }
 
@@ -1692,7 +1694,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         int page = 0;
         double minimumDistance = 0;
         bool hasMore = true;
-        while (hasMore)
+        bool complete = false;
+        for (int requests = 0; hasMore && requests < MaximumBodyPageRequests; requests++)
         {
             MiningPlanetaryBodyPage found = await client.FindPlanetaryBodyPageAsync(
                 new MiningPlanetaryQuery(
@@ -1729,10 +1732,11 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             // Once the nearest 30 systems are known, deeper pages cannot change the result.
             if (HasCompleteSingleMaterialResult(rules, matches))
             {
+                complete = true;
                 break;
             }
 
-            if (found.ResumeDistance is { } nextMinimum)
+            if (found.ResumeDistance is { } nextMinimum && nextMinimum > minimumDistance)
             {
                 minimumDistance = nextMinimum;
                 page = 0;
@@ -1747,7 +1751,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             matches
                 .DistinctBy(match => match.Body.System + "\u001f" + match.Body.Body, StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
-            true
+            complete || !hasMore
         );
     }
 

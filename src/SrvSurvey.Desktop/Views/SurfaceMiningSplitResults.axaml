@@ -53,7 +53,7 @@
                                   </Button>
                                 </Border>
                                 <Border Grid.Column="1" Classes="acquire-cell"><TextBlock Text="{Binding Distance}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Top"/></Border>
-                                <Border Grid.Column="2" Classes="acquire-cell" Padding="0"><views:MiningStationList Stations="{Binding Stations}"/></Border>
+                                <Border Grid.Column="2" Classes="acquire-cell" Padding="0"><views:MiningStationList Stations="{Binding VisibleStations}" ToggleCommand="{Binding ToggleStationsCommand}" ToggleLabel="{Binding StationToggleLabel}"/></Border>
                               </Grid>
                             </DataTemplate>
                           </views:AcquireSplitRow.TargetTemplate>

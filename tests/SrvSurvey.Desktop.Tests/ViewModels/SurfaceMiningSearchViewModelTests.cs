@@ -53,6 +53,7 @@ public sealed class SurfaceMiningSearchViewModelTests
 
             restored.Radius = 30;
             Assert.Empty(restored.Rows);
+            Assert.Equal("Choose a reference system and a surface material.", restored.Status);
             restored.Radius = 40;
             Assert.Single(restored.Rows);
             Assert.Equal(0, secondHandler.Requests);
@@ -620,6 +621,21 @@ public sealed class SurfaceMiningSearchViewModelTests
     }
 
     [Fact]
+    public async Task BodySearchStopsAfterItsPageBudget()
+    {
+        using var handler = new SurfaceHandler { Mode = "endless-body-pages" };
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Timbalderis";
+        model.Materials.Add("Monazite");
+
+        await model.SearchAsync();
+
+        Assert.Equal(40, handler.BodyPages);
+        Assert.Single(model.Rows);
+        Assert.DoesNotContain("Request failed", model.Status);
+    }
+
+    [Fact]
     public async Task PericlaseSearchPrefersAProfitableNearLoopToADistantQuoteOrCheaperNearbyStation()
     {
         using var handler = new SurfaceHandler { Mode = "tight-loop" };
@@ -760,6 +776,26 @@ public sealed class SurfaceMiningSearchViewModelTests
                         .TryGetProperty("reserve_level", out _);
                 }
                 BodyPages++;
+                if (Mode == "endless-body-pages")
+                {
+                    return Json(
+                        JsonSerializer.Serialize(
+                            new
+                            {
+                                count = 100_000,
+                                results = Enumerable
+                                    .Range(0, 500)
+                                    .Select(index => new
+                                    {
+                                        name = $"Icy {index}",
+                                        system_name = "Icy",
+                                        subtype = "Icy body",
+                                        distance = 1,
+                                    }),
+                            }
+                        )
+                    );
+                }
                 if (Mode == "over-radius")
                 {
                     return Json(
@@ -1025,6 +1061,7 @@ public sealed class SurfaceMiningSearchViewModelTests
                     "ranked" => RankedMarkets(),
                     "paged" => CoverageMarkets(),
                     "no-bodies" => MonaziteMarket(),
+                    "endless-body-pages" => MonaziteMarket(),
                     "reserve-stress" => ManyMonaziteMarkets(),
                     "reserve-stress-positive" => ManyMonaziteMarkets(),
                     "batched-eligibility" => ManyMonaziteMarkets(),

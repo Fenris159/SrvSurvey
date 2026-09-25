@@ -1735,31 +1735,36 @@ public sealed class MiningSearchViewModel(
         GalacticCoordinate? origin = await ResolveOriginAsync(token);
         var pairs = new List<(MiningSystemResult Target, MiningSystemResult Miner)>();
         int candidateLimit = Math.Min(30, ResultLimit * 3);
+        int evaluatedPairCount = -1;
         await AddViableReferenceAcquisitionPairsAsync(supporters, pairs, token);
         foreach (MiningSystemResult supporter in supporters)
         {
             token.ThrowIfCancellationRequested();
             await AddAcquisitionPairsForSupporterAsync(supporter, origin, pairs, token);
 
-            if (HasEnoughNearestAcquisitionTargets(pairs, supporter.Distance, candidateLimit))
+            if (
+                pairs.Count == evaluatedPairCount
+                || !HasEnoughNearestAcquisitionTargets(pairs, supporter.Distance, candidateLimit)
+            )
+            {
+                continue;
+            }
+
+            await PublishAcquisitionCandidatesAsync(pairs, candidateLimit, token);
+            evaluatedPairCount = pairs.Count;
+            if (AcquireRows.Count >= ResultLimit)
             {
                 break;
             }
+
+            candidateLimit += Math.Max(10, ResultLimit * 3);
         }
 
-        MiningSystemResult[] result = pairs
-            .Select(pair => pair.Target)
-            .DistinctBy(system => system.System, StringComparer.OrdinalIgnoreCase)
-            .OrderBy(system => system.Distance ?? double.MaxValue)
-            .Take(candidateLimit)
-            .ToArray();
-        token.ThrowIfCancellationRequested();
-        Systems = result;
-        Status = "";
-        await PublishAcquisitionRowsAsync(
-            pairs.Where(pair => result.Any(system => Same(system.System, pair.Target.System))).ToArray(),
-            token
-        );
+        if (pairs.Count != evaluatedPairCount || AcquireRows.Count < ResultLimit)
+        {
+            await PublishAcquisitionCandidatesAsync(pairs, int.MaxValue, token);
+        }
+
         if (!Status.Contains(RequestFailed, StringComparison.Ordinal))
         {
             Status =
@@ -1769,6 +1774,30 @@ public sealed class MiningSearchViewModel(
                         + PriceMarkNote
                     : "No acquisition target had both a matching ring and a qualifying sell station." + PriceMarkNote;
         }
+    }
+
+    private async Task PublishAcquisitionCandidatesAsync(
+        IReadOnlyList<(MiningSystemResult Target, MiningSystemResult Miner)> pairs,
+        int candidateLimit,
+        CancellationToken token
+    )
+    {
+        MiningSystemResult[] result = pairs
+            .Select(pair => pair.Target)
+            .DistinctBy(system => system.System, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(system => system.Distance ?? double.MaxValue)
+            .Take(candidateLimit)
+            .ToArray();
+        token.ThrowIfCancellationRequested();
+        Systems = result;
+        if (!Status.Contains(RequestFailed, StringComparison.Ordinal))
+        {
+            Status = "";
+        }
+        await PublishAcquisitionRowsAsync(
+            pairs.Where(pair => result.Any(system => Same(system.System, pair.Target.System))).ToArray(),
+            token
+        );
     }
 
     private async Task AddAcquisitionPairsForSupporterAsync(
@@ -1839,7 +1868,7 @@ public sealed class MiningSearchViewModel(
         MiningSystemResult? target = found.FirstOrDefault(system =>
             Same(system.System, Reference)
             && PowerplayPlan.IsAcquisitionTarget(system, PowerState)
-            && MatchesSelectedAcquisitionStates(system)
+            && MatchesForcedAcquisitionFilters(system)
         );
         if (target?.Position is not { } position)
         {
@@ -2328,7 +2357,7 @@ public sealed class MiningSearchViewModel(
         && MatchesOptional(query.Government, system.Government)
         && MatchesOptional(query.State, system.State)
         && MatchesOptional(query.Economy, system.Economy)
-        && MatchesOptional(query.Power, system.Power)
+        && (IsAny(query.Power) || PowerplayPlan.SamePower(query.Power, system.Power))
         && MatchesOptional(query.PowerState, system.PowerState)
         && system.Population >= query.MinimumPopulation;
 
@@ -2546,7 +2575,7 @@ public sealed class MiningSearchViewModel(
         MiningSystemResult? target = found.FirstOrDefault(system =>
             Same(system.System, Reference)
             && PowerplayPlan.IsAcquisitionTarget(system, PowerState)
-            && MatchesSelectedAcquisitionStates(system)
+            && MatchesForcedAcquisitionFilters(system)
         );
         if (target is null)
         {
@@ -2733,6 +2762,14 @@ public sealed class MiningSearchViewModel(
 
     private bool MatchesSelectedAcquisitionStates(MiningSystemResult target) =>
         !StateChips.Selected.Any(state => !IsAny(state)) || StateChips.Selected.Any(state => Same(state, target.State));
+
+    private bool MatchesForcedAcquisitionFilters(MiningSystemResult target) =>
+        MatchesSelectedAcquisitionStates(target)
+        && MatchesOptional(Security, target.Security)
+        && MatchesOptional(Allegiance, target.Allegiance)
+        && MatchesOptional(Government, target.Government)
+        && MatchesOptional(Economy, target.Economy)
+        && target.Population >= MinimumPopulation;
 
     private async Task<bool> FillAcquireTargetQueueAsync(AcquireMarketCursor cursor, CancellationToken token)
     {
@@ -3710,6 +3747,14 @@ public sealed class MiningSearchViewModel(
                 or nameof(Mineral)
                 or nameof(RingType)
                 or nameof(Reserve)
+                or nameof(Security)
+                or nameof(Allegiance)
+                or nameof(Government)
+                or nameof(Economy)
+                or nameof(State)
+                or nameof(PowerState)
+                or nameof(MinimumPopulation)
+                or nameof(MinimumHotspots)
                 or nameof(LimitMarketAge)
                 or nameof(MarketAge)
                 or nameof(MarketAgeUnit)

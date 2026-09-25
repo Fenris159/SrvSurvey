@@ -16,6 +16,10 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
     private PowerplayAcquireClusterViewModel? cluster;
     private string lastActivePath = "";
     private string lastInactivePath = "";
+    private Dictionary<PowerplayAcquireSellNode, double>? lastSellAnchors;
+    private Dictionary<PowerplayAcquireMiningNode, double>? lastMiningAnchors;
+    private double lastCanvasWidth;
+    private bool linksDirty = true;
 
     public PowerplayAcquireSharedCluster()
     {
@@ -32,17 +36,19 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
         cluster = DataContext as PowerplayAcquireClusterViewModel;
         cluster?.PropertyChanged += OnClusterChanged;
 
-        lastActivePath = "";
-        lastInactivePath = "";
+        linksDirty = true;
         UpdateLinks();
     }
 
     private void OnClusterChanged(object? sender, PropertyChangedEventArgs args)
     {
-        if (args.PropertyName is nameof(PowerplayAcquireClusterViewModel.SelectedSellSystem))
+        if (
+            args.PropertyName
+            is nameof(PowerplayAcquireClusterViewModel.SelectedSellSystem)
+                or nameof(PowerplayAcquireClusterViewModel.VisibleMiningSystems)
+        )
         {
-            lastActivePath = "";
-            lastInactivePath = "";
+            linksDirty = true;
             UpdateLinks();
         }
     }
@@ -51,8 +57,9 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
     {
         if (cluster is null || LinkCanvas.Bounds.Width <= 0)
         {
-            ActiveLinks.Data = null;
-            InactiveLinks.Data = null;
+            SetPath(ActiveLinks, "", ref lastActivePath);
+            SetPath(InactiveLinks, "", ref lastInactivePath);
+            linksDirty = true;
             return;
         }
 
@@ -69,6 +76,21 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
             MiningItems,
             "MiningLinkAnchor"
         );
+        double width = LinkCanvas.Bounds.Width;
+        if (
+            !linksDirty
+            && Math.Abs(width - lastCanvasWidth) < 0.000001
+            && SameAnchors(sells, lastSellAnchors)
+            && SameAnchors(mining, lastMiningAnchors)
+        )
+        {
+            return;
+        }
+
+        linksDirty = false;
+        lastCanvasWidth = width;
+        lastSellAnchors = sells;
+        lastMiningAnchors = mining;
         var active = new StringBuilder();
         var inactive = new StringBuilder();
         for (int index = 0; index < cluster.SellNodes.Count; index++)
@@ -89,13 +111,21 @@ public sealed partial class PowerplayAcquireSharedCluster : UserControl
                 continue;
             }
 
-            double lane = LinkCanvas.Bounds.Width * (0.25 + 0.5 * index / Math.Max(cluster.SellNodes.Count - 1, 1));
-            AppendBranch(sell.IsSelected ? active : inactive, sourceY, destinations, lane, LinkCanvas.Bounds.Width);
+            double lane = width * (0.25 + 0.5 * index / Math.Max(cluster.SellNodes.Count - 1, 1));
+            AppendBranch(sell.IsSelected ? active : inactive, sourceY, destinations, lane, width);
         }
 
         SetPath(ActiveLinks, active.ToString(), ref lastActivePath);
         SetPath(InactiveLinks, inactive.ToString(), ref lastInactivePath);
     }
+
+    private static bool SameAnchors<T>(IReadOnlyDictionary<T, double> current, IReadOnlyDictionary<T, double>? previous)
+        where T : notnull =>
+        previous is not null
+        && current.Count == previous.Count
+        && current.All(anchor =>
+            previous.TryGetValue(anchor.Key, out double y) && Math.Abs(y - anchor.Value) < 0.000001
+        );
 
     private static void OnSellPointerPressed(object? sender, PointerPressedEventArgs args)
     {

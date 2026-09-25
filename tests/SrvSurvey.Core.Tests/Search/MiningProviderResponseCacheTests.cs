@@ -234,17 +234,21 @@ public sealed class MiningProviderResponseCacheTests
             var cache = new MiningProviderResponseCache(directory, clock);
             DateTimeOffset cycle = MiningSearchClient.PowerplayCycleStart(clock.GetUtcNow());
             string key = $"spansh-acquire-supporters:v1:{cycle:O}:settled:Timbalderis:A. Lavigny-Duval:Fortified";
+            var client = new MiningSearchClient(http, clock, providerResponseCache: cache);
+            Assert.Single(await client.FindAcquireSupportersAsync("Timbalderis", "Arissa Lavigny-Duval", "Fortified"));
+            using JsonDocument? populated = cache.Load(key, TimeSpan.FromDays(7));
+            Assert.NotNull(populated);
+            int requestsBeforeFallback = handler.RequestCount;
             using var incompatible = JsonDocument.Parse("""{"old":"schema"}""");
             cache.Save(key, incompatible);
 
-            var client = new MiningSearchClient(http, clock, providerResponseCache: cache);
             IReadOnlyList<MiningSystemResult> systems = await client.FindAcquireSupportersAsync(
                 "Timbalderis",
                 "Arissa Lavigny-Duval",
                 "Fortified"
             );
             Assert.Single(systems);
-            Assert.Equal(1, handler.RequestCount);
+            Assert.Equal(requestsBeforeFallback + 1, handler.RequestCount);
         }
         finally
         {

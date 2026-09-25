@@ -1081,7 +1081,7 @@ public sealed class MiningSearchClient : IDisposable
             markets = [];
         }
 
-        if (markets.Count > 0)
+        if (markets.Count > 0 || string.IsNullOrWhiteSpace(query.ReferenceSystem))
         {
             return (markets, ArdentProvider);
         }

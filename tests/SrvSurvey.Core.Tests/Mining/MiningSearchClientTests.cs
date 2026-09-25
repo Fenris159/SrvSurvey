@@ -624,6 +624,22 @@ public sealed class MiningSearchClientTests
         Assert.Equal(1, handler.SpanshRequests);
     }
 
+    [Fact]
+    public async Task GalaxyWideMarketSearchWithNoReferenceDoesNotSendAnEmptySpanshReference()
+    {
+        using var handler = new ArdentThenSpanshHandler { ArdentResponse = "empty" };
+        using var http = new HttpClient(handler);
+        var client = new MiningSearchClient(http);
+
+        (IReadOnlyList<MiningMarketResult> markets, string source) = await client.FindMarketsPreferringArdentAsync(
+            new MiningMarketQuery("", "Platinum", false, GalaxyWide: true)
+        );
+
+        Assert.Empty(markets);
+        Assert.Equal("Ardent", source);
+        Assert.Equal(0, handler.SpanshRequests);
+    }
+
     private sealed class ArdentThenSpanshHandler : HttpMessageHandler
     {
         public string ArdentResponse { get; set; } = "failure";
