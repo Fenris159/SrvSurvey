@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.MiningStationList"
+             x:Name="StationList">
+  <ItemsControl ItemsSource="{Binding Stations, ElementName=StationList}" Margin="6,4">
+    <ItemsControl.ItemTemplate>
+      <DataTemplate x:DataType="vm:AcquireStationViewModel">
+        <StackPanel Spacing="2" Margin="0,0,0,8">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap">
+              <Run Text="{Binding Name}"/>
+              <Run Text=" ("/>
+              <Run Text="{Binding PadBadge}"/>
+              <Run Text=")"/>
+            </TextBlock>
+            <Button Grid.Column="1" Classes="link" Content="{Binding ToggleLabel, ElementName=StationList}" Command="{Binding ToggleCommand, ElementName=StationList}" IsVisible="{Binding CanToggle}" Padding="2,0" VerticalAlignment="Top"/>
+          </Grid>
+          <TextBlock Text="{Binding Arrival}" Foreground="{DynamicResource RavenMutedTextBrush}" FontSize="12"/>
+          <TextBlock Text="{Binding Updated}" IsVisible="{Binding HasUpdated}" Foreground="{DynamicResource RavenMutedTextBrush}" FontSize="12" FontStyle="Italic"/>
+          <ItemsControl ItemsSource="{Binding Quotes}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:AcquireQuoteViewModel">
+                <Grid ColumnDefinitions="40,140,*" Margin="0,1">
+                  <Border Classes="commodity-code" Classes.material="{Binding UseMaterialColor}" Classes.unavailable="{Binding IsUnavailable}" Padding="0">
+                    <Grid Width="38" Height="18" ClipToBounds="True">
+                      <Path Data="M -8,18 L 10,0 M 0,18 L 18,0 M 8,18 L 26,0 M 16,18 L 34,0 M 24,18 L 42,0 M 32,18 L 50,0"
+                            Stroke="{DynamicResource RavenDangerBrush}" StrokeThickness="2" Opacity="0.5" IsVisible="{Binding IsUnavailable}"
+                            ToolTip.Tip="No matching Spansh body within the search radius"/>
+                      <TextBlock Text="{Binding Code}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                  </Border>
+                  <TextBlock Grid.Column="1" Text="{Binding Price}" Foreground="{DynamicResource RavenAccentBrush}" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Demand}" Foreground="{DynamicResource RavenTextBrush}" VerticalAlignment="Center"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+  </ItemsControl>
+</UserControl>

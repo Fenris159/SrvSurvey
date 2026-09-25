@@ -44,15 +44,7 @@ public sealed partial class MiningSearchView : UserControl
     {
         if (Model is { } vm)
         {
-            await vm.SearchMarketsAsync();
-        }
-    }
-
-    private async void SearchSystems_Click(object? sender, RoutedEventArgs e)
-    {
-        if (Model is { } vm)
-        {
-            await vm.SearchSystemsAsync();
+            await vm.SearchAllMarketsAsync();
         }
     }
 
@@ -68,17 +60,7 @@ public sealed partial class MiningSearchView : UserControl
 
     private void Cache_Click(object? sender, RoutedEventArgs e) => Model?.CacheSelectedRing();
 
-    private void ClearPlan_Click(object? sender, RoutedEventArgs e) => Model?.ClearPlan();
-
     private void Cancel_Click(object? sender, RoutedEventArgs e) => Model?.Cancel();
-
-    private async void UseSystem_Click(object? sender, RoutedEventArgs e)
-    {
-        if (Model is { } vm)
-        {
-            await vm.FindSelectedSystemRingsAsync();
-        }
-    }
 
     private async void SellingStations_Click(object? sender, RoutedEventArgs e)
     {
@@ -90,11 +72,26 @@ public sealed partial class MiningSearchView : UserControl
 
     private void Current_Click(object? sender, RoutedEventArgs e)
     {
-        if (Model is { } vm && TopLevel.GetTopLevel(this)?.DataContext is MainWindowViewModel main)
+        Model?.UseCurrentLocation();
+    }
+
+    private async void SearchPlatinum_Click(object? sender, RoutedEventArgs e)
+    {
+        if (Model is { } vm)
         {
-            vm.Reference = main.MiningWorkspace.CurrentSystem;
+            await vm.SearchPlatinumAsync();
         }
     }
+
+    private async void PlatinumMarkets_Click(object? sender, RoutedEventArgs e)
+    {
+        if (Model is { } vm)
+        {
+            await vm.FindSelectedPlatinumMarketsAsync();
+        }
+    }
+
+    private void BookmarkPlatinum_Click(object? sender, RoutedEventArgs e) => Model?.BookmarkSelectedPlatinumSpot();
 
     private async void OpenSystem_Click(object? sender, RoutedEventArgs e)
     {

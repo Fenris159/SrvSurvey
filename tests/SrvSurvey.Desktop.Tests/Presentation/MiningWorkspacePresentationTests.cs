@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -11,6 +12,8 @@ using Avalonia.VisualTree;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Search;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Views;
@@ -207,20 +210,20 @@ public sealed class MiningWorkspacePresentationTests
         };
         try
         {
-            model.MiningWorkspace.SelectedTab = 3;
+            model.MiningWorkspace.SelectedTab = 4;
             model.MiningWorkspace.Search.Reference = "Wille";
             model.MiningWorkspace.Search.Source = "Spansh";
             await model.MiningWorkspace.Search.SearchRingsAsync();
             await model.MiningWorkspace.Search.SearchMarketsAsync();
             await model.MiningWorkspace.Search.SearchTradersAsync();
-            await model.MiningWorkspace.Search.SearchSystemsAsync();
+            await model.MiningWorkspace.Search.SearchPlatinumAsync();
             window.Show();
             foreach (int destination in Enumerable.Range(0, 4))
             {
                 model.MiningWorkspace.Search.Destination = destination;
                 using WriteableBitmap? frame = window.CaptureRenderedFrame();
                 MiningSearchView search = view.FindControl<Views.MiningSearchView>("SearchPane")!;
-                string prefix = new[] { "Ring", "Market", "Trader", "System" }[destination];
+                string prefix = new[] { "Ring", "Market", "Trader", "Platinum" }[destination];
                 string[] expectedHeaders = new[]
                 {
                     new[]
@@ -240,6 +243,7 @@ public sealed class MiningWorkspacePresentationTests
                     {
                         "SYSTEM",
                         "STATION",
+                        "COMMODITY",
                         "TYPE",
                         "PAD",
                         "DISTANCE",
@@ -253,15 +257,14 @@ public sealed class MiningWorkspacePresentationTests
                     new[]
                     {
                         "SYSTEM",
+                        "RING",
+                        "WHY IT RANKS",
+                        "RES",
+                        "OVERLAP",
+                        "RESERVE",
                         "POWER",
-                        "POWER STATE",
-                        "SECURITY",
-                        "ECONOMY",
-                        "GOVERNMENT",
-                        "ALLEGIANCE",
-                        "FACTION STATE",
-                        "POPULATION",
                         "DISTANCE",
+                        "ARRIVAL",
                     },
                 }[destination];
                 Grid? header = search.FindControl<Grid>($"{prefix}ResultsHeader");
@@ -284,7 +287,10 @@ public sealed class MiningWorkspacePresentationTests
                     search.GetVisualDescendants().OfType<ListBox>(),
                     l => l.IsEffectivelyVisible
                 );
-                Assert.NotEmpty(results.Items);
+                Assert.True(
+                    results.Items.Cast<object>().Any(),
+                    $"{prefix} results are empty. Search status: {model.MiningWorkspace.Search.Status}"
+                );
                 Assert.DoesNotContain(header.GetVisualAncestors(), ancestor => ReferenceEquals(ancestor, results));
                 Grid[] rows = results
                     .GetVisualDescendants()
@@ -316,9 +322,14 @@ public sealed class MiningWorkspacePresentationTests
                     .FirstOrDefault(e => e.IsEffectivelyVisible);
                 if (filters is not null)
                 {
-                    filters.IsExpanded = true;
+                    bool initiallyExpanded = filters.IsExpanded;
+                    filters.IsExpanded = !initiallyExpanded;
                     using WriteableBitmap? expanded = window.CaptureRenderedFrame();
-                    Assert.True(search.Bounds.Height > collapsedHeight);
+                    Assert.True(
+                        initiallyExpanded
+                            ? search.Bounds.Height < collapsedHeight
+                            : search.Bounds.Height > collapsedHeight
+                    );
                     Assert.True(inner.Extent.Height <= inner.Viewport.Height + 1);
                 }
                 double top = results.TranslatePoint(default, page)!.Value.Y;
@@ -337,6 +348,122 @@ public sealed class MiningWorkspacePresentationTests
                     wheeled!.Save(stream, PngBitmapEncoderOptions.Default);
                 }
             }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void UseCurrentPopulatesTheFindReferenceFromMiningContext()
+    {
+        using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        var context = new JournalSessionState();
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""",
+                out JournalEventEnvelope? load,
+                out _
+            )
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"Location","StarSystem":"Harma","StarPos":[1,2,3]}""",
+                out JournalEventEnvelope? location,
+                out _
+            )
+        );
+        context.Apply(load!);
+        context.Apply(location!);
+        var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
+        model.MiningWorkspace.Apply(
+            new JournalMonitorUpdate(null, [load!, location!], ship, null, null, null, [], true),
+            context,
+            null,
+            ship
+        );
+        model.MiningWorkspace.Search.Reference = "";
+        model.MiningWorkspace.SelectedTab = 4;
+        var mining = new Views.MiningView { DataContext = model };
+        var window = new Window
+        {
+            Content = mining,
+            Width = 900,
+            Height = 700,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Button useCurrent = mining
+                .GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => Equals(button.Content, "Use current"));
+
+            useCurrent.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+            Assert.Equal("Harma", model.MiningWorkspace.Search.Reference);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void PowerplayWorkspaceUsesCommanderDefaultsAndFindContainsPlatinumSpots()
+    {
+        using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        model.MiningWorkspace.Search.UpdateCurrentLocation("Harma");
+        model.MiningWorkspace.Search.PledgedPower = "Archon Delaine";
+        model.MiningWorkspace.SelectedTab = 3;
+        var view = new Views.MiningView { DataContext = model };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1200,
+            Height = 800,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            MiningPowerplayView powerplay = Assert.Single(
+                view.GetVisualDescendants().OfType<MiningPowerplayView>(),
+                candidate => candidate.IsEffectivelyVisible
+            );
+            Assert.Equal("Harma", powerplay.FindControl<SystemNameEntry>("PowerplayReference")!.Text);
+            Assert.Equal("Archon Delaine", powerplay.FindControl<ComboBox>("PowerplayPledgedPower")!.SelectedItem);
+            Assert.NotNull(powerplay.FindControl<ItemsControl>("PowerplayResults"));
+            model.MiningWorkspace.Search.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+            using WriteableBitmap? planetaryFrame = window.CaptureRenderedFrame();
+            PowerplayPlanetaryCombinedResults planetaryResults = Assert.Single(
+                powerplay.GetVisualDescendants().OfType<PowerplayPlanetaryCombinedResults>(),
+                candidate => candidate.IsEffectivelyVisible
+            );
+            Assert.Same(model.MiningWorkspace.Search.PlanetarySearch, planetaryResults.DataContext);
+            model.MiningWorkspace.Search.Objective = "Acquire";
+            using WriteableBitmap? acquireFrame = window.CaptureRenderedFrame();
+            PowerplayPlanetaryAcquireResults acquireResults = Assert.Single(
+                powerplay.GetVisualDescendants().OfType<PowerplayPlanetaryAcquireResults>(),
+                candidate => candidate.IsEffectivelyVisible
+            );
+            Assert.Same(model.MiningWorkspace.Search.PlanetarySearch, acquireResults.DataContext);
+            Assert.False(powerplay.FindControl<Slider>("PowerplayDistanceSlider")!.IsEnabled);
+            Assert.Equal(10, powerplay.FindControl<Slider>("PowerplayResultsSlider")!.Maximum);
+            Assert.DoesNotContain(
+                powerplay.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.IsEffectivelyVisible && text.Text == "Reserve level"
+            );
+            model.MiningWorkspace.SelectedTab = 4;
+            using WriteableBitmap? findFrame = window.CaptureRenderedFrame();
+            MiningSearchView search = view.FindControl<MiningSearchView>("SearchPane")!;
+            TabControl destinations = search.FindControl<TabControl>("SearchDestinations")!;
+            Assert.Equal(
+                ["Rings", "Markets", "Traders", "Platinum"],
+                destinations.Items.Cast<TabItem>().Select(t => t.Header)
+            );
         }
         finally
         {
@@ -396,7 +523,7 @@ public sealed class MiningWorkspacePresentationTests
                             stationName = $"Long commodity market station name {i}",
                             stationType = "Coriolis Starport",
                             sellPrice = 250000,
-                            demand = 500000,
+                            demand = 50000,
                             updatedAt = DateTimeOffset.UtcNow,
                             maxLandingPadSize = 3,
                             distance = i * 1.2,
@@ -431,7 +558,7 @@ public sealed class MiningWorkspacePresentationTests
             TabControl tabs = mining.FindControl<TabControl>("MiningTabs")!;
             TabItem[] items = tabs.Items.OfType<TabItem>().ToArray();
             Assert.Equal(
-                ["Session", "Reports", "Missions", "Find", "Bookmarks", "Reference", "Settings"],
+                ["Session", "Reports", "Missions", "Powerplay", "Find", "Bookmarks", "Reference", "Settings"],
                 items.Select(t => ((TextBlock)t.Header!).Text)
             );
             Assert.All(items, t => Assert.Equal(22, ((TextBlock)t.Header!).FontSize));
@@ -484,6 +611,63 @@ public sealed class MiningWorkspacePresentationTests
                     .Where(button => button.Classes.Contains("workspace-tab"))
                     .Select(button => button.Content)
             );
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void AnnouncementEditorsUseBoundedStandardControlsAtNarrowWidths()
+    {
+        using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        model.MiningWorkspace.SelectedTab = 7;
+        model.MiningWorkspace.Settings.Thresholds["platinum"] = 30;
+        model.MiningWorkspace.Settings.AnnouncementPresets["Laser mining"] = new MiningAnnouncementPreset(
+            new Dictionary<string, double> { ["platinum"] = 30 },
+            true,
+            true
+        );
+        var mining = new Views.MiningView { DataContext = model };
+        var window = new Window
+        {
+            Content = mining,
+            Width = 660,
+            Height = 760,
+        };
+        try
+        {
+            window.Show();
+            TabControl settings = mining.FindControl<TabControl>("MiningSettingsTabs")!;
+            settings.SelectedIndex = 1;
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+
+            NumericUpDown slots = mining.FindControl<NumericUpDown>("PersistentProspectSlotsInput")!;
+            ListBox thresholds = mining.FindControl<ListBox>("ThresholdRows")!;
+            ListBox presets = mining.FindControl<ListBox>("AnnouncementPresetRows")!;
+            ComboBox chimes = mining.FindControl<ComboBox>("ChimeSelector")!;
+            ComboBox voices = mining.FindControl<ComboBox>("LocalVoiceSelector")!;
+            Assert.True(slots.IsEffectivelyVisible);
+            Assert.True(thresholds.IsEffectivelyVisible);
+            Assert.True(presets.IsEffectivelyVisible);
+            Assert.True(chimes.IsEffectivelyVisible);
+            Assert.True(voices.IsEffectivelyVisible);
+            Assert.Equal(3, chimes.ItemCount);
+            Assert.Equal(1, thresholds.ItemCount);
+            Assert.Equal(1, presets.ItemCount);
+            Assert.Equal(
+                ScrollBarVisibility.Disabled,
+                Assert.Single(thresholds.GetVisualDescendants().OfType<ScrollViewer>()).HorizontalScrollBarVisibility
+            );
+            Assert.Equal(
+                ScrollBarVisibility.Disabled,
+                Assert.Single(presets.GetVisualDescendants().OfType<ScrollViewer>()).HorizontalScrollBarVisibility
+            );
+
+            voices.IsDropDownOpen = true;
+            using WriteableBitmap? openPopup = window.CaptureRenderedFrame();
+            Assert.True(voices.IsDropDownOpen);
         }
         finally
         {
@@ -625,7 +809,7 @@ public sealed class MiningWorkspacePresentationTests
                     ["COMMODITY", "REQUIRED", "DELIVERED", "ON BOARD", "NEEDED", "DESTINATION", "STATUS"]
                 );
 
-                model.MiningWorkspace.SelectedTab = 3;
+                model.MiningWorkspace.SelectedTab = 4;
                 miningView.FindControl<ScrollViewer>("SearchPage")!.IsVisible = false;
                 miningView.FindControl<Border>("LocalPane")!.IsVisible = true;
                 using WriteableBitmap? localFrame = window.CaptureRenderedFrame();
@@ -639,7 +823,7 @@ public sealed class MiningWorkspacePresentationTests
             foreach (RavenThemeDefinition theme in RavenThemeCatalog.All)
             {
                 themes.Select(theme.Key);
-                foreach (int tab in new[] { 0, 1, 2, 3, 4, 5, 6 })
+                foreach (int tab in new[] { 0, 1, 2, 3, 4, 5, 6, 7 })
                 {
                     model.MiningWorkspace.SelectedTab = tab;
                     using WriteableBitmap? frame = window.CaptureRenderedFrame();

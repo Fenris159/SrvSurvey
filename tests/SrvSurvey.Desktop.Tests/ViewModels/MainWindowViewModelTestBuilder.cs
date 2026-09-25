@@ -13,6 +13,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 internal sealed class MainWindowViewModelTestBuilder
 {
+    private static readonly HttpClient OfflineNetwork = new(new OfflineNetworkHandler());
     private AppDataPaths? appDataPaths;
     private ApplicationLogService? applicationLogService;
     private IBoxelSystemResolver? boxelSystemResolver;
@@ -65,7 +66,7 @@ internal sealed class MainWindowViewModelTestBuilder
                     ApplicationLogService = applicationLogService,
                     TargetFrontierId = targetFrontierId,
                     FrontierProfile = frontierProfile,
-                    ExternalNetworkClient = externalNetworkClient,
+                    ExternalNetworkClient = externalNetworkClient ?? OfflineNetwork,
                     IsDiagnosticReplay = isDiagnosticReplay,
                     DiagnosticReplayStatus = diagnosticReplayStatus,
                 },
@@ -118,6 +119,14 @@ internal sealed class MainWindowViewModelTestBuilder
 
     public MainWindowViewModelTestBuilder WithExternalNetworkClient(HttpClient value) =>
         Set(ref externalNetworkClient, value);
+
+    private sealed class OfflineNetworkHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        ) => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable));
+    }
 
     public MainWindowViewModelTestBuilder WithFirstFootfallInferenceService(IFirstFootfallInferenceService value) =>
         Set(ref firstFootfallInferenceService, value);

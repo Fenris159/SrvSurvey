@@ -297,6 +297,9 @@
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="{Binding ReferenceDataUpdates.StatusMessage}" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding MineMap.CommodityPriceStatus}" />
           <TextBlock Classes="monospace muted"
                      FontSize="11"
                      TextWrapping="Wrap"

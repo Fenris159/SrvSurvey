@@ -169,6 +169,12 @@ public sealed class RavenThemeService
         SetBrush("RavenRaisedSurfaceBrush", theme.RaisedSurfaceColor);
         SetBrush("RavenHighestSurfaceBrush", theme.HighestSurfaceColor);
         SetBrush("RavenAccentBrush", theme.AccentColor);
+        SetBrush("ToggleSwitchFillOn", theme.AccentColor);
+        SetBrush("ToggleSwitchFillOnPointerOver", theme.AccentHoverColor);
+        SetBrush("ToggleSwitchFillOnPressed", theme.AccentHoverColor);
+        SetBrush("ToggleSwitchStrokeOn", theme.AccentColor);
+        SetBrush("ToggleSwitchStrokeOnPointerOver", theme.AccentHoverColor);
+        SetBrush("ToggleSwitchStrokeOnPressed", theme.AccentHoverColor);
         SetBrush("RavenAccentHoverBrush", theme.AccentHoverColor);
         SetBrush("RavenControlAccentBrush", theme.ControlAccentColor);
         SetBrush("RavenControlAccentHoverBrush", theme.ControlAccentHoverColor);

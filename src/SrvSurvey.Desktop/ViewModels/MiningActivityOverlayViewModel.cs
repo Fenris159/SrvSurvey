@@ -7,6 +7,7 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
 {
     private readonly MiningWorkspaceViewModel? workspace;
     private readonly FiregroupsWorkspaceViewModel? firegroupsWorkspace;
+    private IReadOnlyList<MiningProspectOverlayRowViewModel>? qualifyingProspects;
 
     public MiningActivityOverlayViewModel(
         MiningWorkspaceViewModel? workspace,
@@ -75,8 +76,15 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
 
     public IReadOnlyList<MiningNotice> Refined { get; private set; } = [];
     public IReadOnlyList<MiningNotice> Collected { get; private set; } = [];
-    public string ProspectReport => workspace?.CurrentProspectText ?? "Platinum 34.8% · Painite 12.4% · Remaining 73%";
-    public bool HasProspectReport => ProspectReport.Length > 0;
+    public IReadOnlyList<MiningProspectOverlayRowViewModel> Prospects => qualifyingProspects ??= ReadProspects();
+
+    private MiningProspectOverlayRowViewModel[] ReadProspects() =>
+        (workspace?.PersistentProspects ?? PreviewProspects).Where(prospect => prospect.Qualifies).ToArray();
+
+    public string ProspectReport =>
+        Prospects.Count > 0 ? $"{Prospects[0].Summary} · Remaining {Prospects[0].Remaining:0.#}%" : "";
+    public bool HasProspectReport => Prospects.Count > 0;
+    public bool HasQualifyingProspect => Prospects.Any(prospect => prospect.Qualifies);
 
     private void RefreshNotices()
     {
@@ -92,6 +100,11 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
     [
         new(default, "Refined", "Platinum ×1"),
         new(default, "Collected", "Iron ×3"),
+    ];
+    private static readonly MiningProspectOverlayRowViewModel[] PreviewProspects =
+    [
+        new("21:14:08", "Platinum 34.8% · Osmium 12.4%", 100, true),
+        new("21:13:42", "Platinum 22.1% · Bertrandite 8.5%", 64, false),
     ];
 
     public void Dispose()
@@ -109,6 +122,8 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
                 or nameof(MiningWorkspaceViewModel.CargoSummary)
                 or nameof(MiningWorkspaceViewModel.CurrentProspectText)
                 or nameof(MiningWorkspaceViewModel.HasCurrentProspect)
+                or nameof(MiningWorkspaceViewModel.PersistentProspects)
+                or nameof(MiningWorkspaceViewModel.HasPersistentProspects)
             )
         )
         {
@@ -116,6 +131,7 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
         }
 
         RefreshNotices();
+        qualifyingProspects = null;
         foreach (
             string? name in new[]
             {
@@ -126,6 +142,8 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
                 nameof(Collected),
                 nameof(ProspectReport),
                 nameof(HasProspectReport),
+                nameof(Prospects),
+                nameof(HasQualifyingProspect),
                 nameof(HasRefined),
                 nameof(HasCollected),
                 nameof(Cargo),

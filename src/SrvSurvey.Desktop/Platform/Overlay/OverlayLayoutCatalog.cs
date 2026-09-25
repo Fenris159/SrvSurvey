@@ -133,13 +133,22 @@ public static class OverlayLayoutCatalog
             new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 100)
         ),
         Define(
+            "PlotMiningCargo",
+            "Mining cargo hold",
+            "MiningWorkspace.ShouldShowCargo",
+            OverlayLayoutCategory.Mining,
+            OverlaySettingsCategory.Mining,
+            new(300, 260),
+            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 100)
+        ),
+        Define(
             "PlotMiningReference",
             "Mining Ref",
             "MineMap.ShouldShowMiningReference",
             OverlayLayoutCategory.Mining,
             OverlaySettingsCategory.Mining,
             new(360, 160),
-            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 100)
+            new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 380)
         ),
         Define(
             "PlotMiningFiregroups",

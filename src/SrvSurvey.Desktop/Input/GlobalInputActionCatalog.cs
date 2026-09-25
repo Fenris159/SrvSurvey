@@ -65,6 +65,7 @@ public enum GlobalInputAction
     ToggleSurfaceMiningVisibility,
     ToggleMiningWarningVisibility,
     ToggleMiningNotificationsVisibility,
+    ToggleMiningCargoVisibility,
     ToggleMiningReferenceVisibility,
     ToggleMiningFiregroupsVisibility,
     ToggleMineMapVisibility,
@@ -232,6 +233,12 @@ public static class GlobalInputActionCatalog
             "toggleMiningNotificationsVisibility",
             "Mining notifications",
             "PlotMiningNotifications"
+        ),
+        DefineOverlayToggle(
+            GlobalInputAction.ToggleMiningCargoVisibility,
+            "toggleMiningCargoVisibility",
+            "Mining cargo hold",
+            "PlotMiningCargo"
         ),
         DefineOverlayToggle(
             GlobalInputAction.ToggleMiningReferenceVisibility,

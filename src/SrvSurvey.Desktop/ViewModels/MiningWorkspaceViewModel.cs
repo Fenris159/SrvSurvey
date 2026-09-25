@@ -8,19 +8,28 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+public sealed record MiningAnnouncementOutputs(Platform.IMiningSpeechOutput Speech, Platform.IMiningChimeOutput Chime);
+
 public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 {
     private readonly MiningStore store;
+    private IReadOnlyList<string> journalDirectories = [];
     private readonly FiregroupsWorkspaceViewModel? firegroups;
     private readonly TimeProvider clock;
     private DateTimeOffset lastRecoverySave;
     private readonly Platform.MiningCommunityListener community;
     private readonly string attachmentDirectory;
-    private readonly Platform.MiningSpeechOutput speech = new();
+    private readonly Platform.IMiningSpeechOutput speech;
+    private readonly Platform.IMiningChimeOutput chime;
+    private readonly IReadOnlyList<string> chimeOptions = Platform.MiningChimeOutput.Chimes;
     private IReadOnlyList<string> voices = [];
+    private IReadOnlyList<MiningAnnouncementPresetRowViewModel>? cachedAnnouncementPresets;
+    private IReadOnlyList<MiningThresholdRowViewModel>? cachedThresholdRows;
+    private IReadOnlyList<MiningProspectOverlayRowViewModel>? cachedPersistentProspects;
     private string presetName = "Laser mining";
     private readonly IStarSystemResolver resolver;
     private readonly BookmarksViewModel bookmarks;
+    private readonly MiningSearchClient miningSearchClient;
     private readonly WorkspaceTableSorter cargoSorter = new();
     private readonly WorkspaceTableSorter materialsSorter = new();
     private readonly WorkspaceTableSorter prospectsSorter = new();
@@ -55,9 +64,14 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private string origin = "";
     private MiningRing? selectedRing;
     private MiningMission? selectedMission;
+    private MiningThresholdRowViewModel? selectedThreshold;
+    private MiningAnnouncementPresetRowViewModel? selectedPreset;
     private DateTimeOffset? fullSince;
     private bool fullNotified;
     private DateTimeOffset lastAutoSearch;
+    private bool disposed;
+    private IReadOnlyList<MiningRingReferenceViewModel> ringReferences = MiningRingReferenceViewModel.All;
+    private string referencePriceStatus = "Catalog prices shown while Ardent prices load.";
 
     public MiningWorkspaceViewModel(
         string directory,
@@ -65,24 +79,38 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         BookmarksViewModel bookmarks,
         HttpClient? networkClient = null,
         TimeProvider? clock = null,
-        FiregroupsWorkspaceViewModel? firegroups = null
+        FiregroupsWorkspaceViewModel? firegroups = null,
+        MiningAnnouncementOutputs? announcementOutputs = null
     )
     {
         this.clock = clock ?? TimeProvider.System;
         this.firegroups = firegroups;
+        speech = announcementOutputs?.Speech ?? new Platform.MiningSpeechOutput();
+        chime = announcementOutputs?.Chime ?? new Platform.MiningChimeOutput();
         store = new MiningStore(directory);
         community = new Platform.MiningCommunityListener(directory);
         attachmentDirectory = Path.Combine(directory, "mining", "attachments");
         this.resolver = resolver;
         this.bookmarks = bookmarks;
+        miningSearchClient = new MiningSearchClient(
+            networkClient,
+            commodityReportStore: new MiningCommodityPriceReportStore(directory),
+            providerResponseCache: new MiningProviderResponseCache(directory)
+        );
         Search = new MiningSearchViewModel(
-            new MiningSearchClient(networkClient),
+            miningSearchClient,
             bookmarks,
             CacheRing,
             () => state.Data.Rings,
             resolver,
             community.Cache
         );
+        Search.ConfigureResultCache(MiningSearchResultCache.ForDirectory(directory));
+        if (miningSearchClient.CachedCommodityPriceReport is { Count: > 0 } cachedPrices)
+        {
+            ApplyRingReferencePrices(cachedPrices);
+            ReferencePriceStatus = "Showing stored Ardent prices; checking for updates when Reference opens.";
+        }
         StartCommand = new WorkspaceCommand(
             Start,
             () => sessionAvailable && storageAvailable && state.Session.Current is null
@@ -105,8 +133,10 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             if (SelectedMission is { } mission)
             {
                 Filter = mission.Commodity;
-                Search.Mineral = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(mission.Commodity);
-                SelectedTab = 3;
+                string mineral = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(mission.Commodity);
+                Search.Mineral = mineral;
+                Search.RingMineralChips.Add(mineral);
+                SelectedTab = 4;
             }
         });
         AddAsteroidCommand = new WorkspaceCommand(() => AdjustAsteroids(1));
@@ -127,11 +157,58 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public string CommunityStatus => community.Status;
     public MiningSearchViewModel Search { get; }
+
+    public void UseJournalDirectories(IReadOnlyList<string> paths) => journalDirectories = paths.ToArray();
+
     public IReadOnlyList<string> Voices
     {
         get => voices;
         private set => Set(ref voices, value);
     }
+    public IReadOnlyList<string> ChimeOptions => chimeOptions;
+    public IReadOnlyList<MiningRingReferenceViewModel> RingReferences => ringReferences;
+    public string ReferencePriceStatus
+    {
+        get => referencePriceStatus;
+        private set => Set(ref referencePriceStatus, value);
+    }
+
+    public async Task RefreshRingReferencePricesAsync()
+    {
+        try
+        {
+            IReadOnlyDictionary<string, MiningCommodityPriceSummary> report =
+                await miningSearchClient.CommodityPriceReportAsync();
+            if (disposed)
+            {
+                return;
+            }
+
+            if (report.Count == 0)
+            {
+                ReferencePriceStatus = "Ardent prices are unavailable. Showing stored or catalog prices.";
+                return;
+            }
+
+            ApplyRingReferencePrices(report);
+            ReferencePriceStatus = "Ardent catalog prices. Market prices may vary by station.";
+        }
+        catch (Exception ex)
+            when (ex is HttpRequestException or InvalidDataException or JsonException or OperationCanceledException)
+        {
+            if (!disposed)
+            {
+                ReferencePriceStatus = "Ardent prices are unavailable. Showing stored or catalog prices.";
+            }
+        }
+    }
+
+    private void ApplyRingReferencePrices(IReadOnlyDictionary<string, MiningCommodityPriceSummary> report)
+    {
+        ringReferences = MiningRingReferenceViewModel.All.Select(ring => ring.WithPrices(report)).ToArray();
+        Changed(nameof(RingReferences));
+    }
+
     public string PresetName
     {
         get => presetName;
@@ -140,7 +217,72 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private IReadOnlyList<string>? cachedPresetNames;
     public IReadOnlyList<string> PresetNames => cachedPresetNames ??= ReadPresetNames();
 
+    public IReadOnlyList<MiningAnnouncementPresetRowViewModel> AnnouncementPresets =>
+        cachedAnnouncementPresets ??= ReadAnnouncementPresets();
+
+    private MiningAnnouncementPresetRowViewModel[] ReadAnnouncementPresets() =>
+        Settings
+            .AnnouncementPresets.OrderBy(pair => pair.Key, StringComparer.CurrentCultureIgnoreCase)
+            .Select(pair => new MiningAnnouncementPresetRowViewModel(pair.Key, FormatPresetSummary(pair.Value)))
+            .ToArray();
+
+    public MiningAnnouncementPresetRowViewModel? SelectedAnnouncementPreset
+    {
+        get => selectedPreset;
+        set
+        {
+            if (Set(ref selectedPreset, value) && value is not null)
+            {
+                PresetName = value.Name;
+            }
+        }
+    }
+
     private string[] ReadPresetNames() => Settings.AnnouncementPresets.Keys.Order().ToArray();
+
+    public IReadOnlyList<MiningThresholdRowViewModel> Thresholds => cachedThresholdRows ??= ReadThresholds();
+    public IReadOnlyList<MiningThresholdGroupViewModel> ThresholdGroups => thresholdGroups ??= ReadThresholdGroups();
+    private MiningThresholdGroupViewModel[]? thresholdGroups;
+    public MiningChipBoxViewModel ThresholdMinerals { get; } =
+        new("Mineral / metal", MiningReferenceData.Commodities.GetValueOrDefault("Mining") ?? [], "");
+    private MiningThresholdGroupViewModel? selectedThresholdGroup;
+    public MiningThresholdGroupViewModel? SelectedThresholdGroup
+    {
+        get => selectedThresholdGroup;
+        set => Set(ref selectedThresholdGroup, value);
+    }
+
+    private MiningThresholdRowViewModel[] ReadThresholds() =>
+        Settings
+            .Thresholds.OrderBy(pair => pair.Key, StringComparer.CurrentCultureIgnoreCase)
+            .Select(pair => new MiningThresholdRowViewModel(pair.Key, pair.Value))
+            .ToArray();
+
+    private MiningThresholdGroupViewModel[] ReadThresholdGroups() =>
+        Settings
+            .Thresholds.GroupBy(pair => pair.Value)
+            .OrderBy(group => group.Key)
+            .Select(group => new MiningThresholdGroupViewModel(
+                group
+                    .OrderBy(pair => pair.Key, StringComparer.CurrentCultureIgnoreCase)
+                    .Select(pair => pair.Key)
+                    .ToArray(),
+                group.Key
+            ))
+            .ToArray();
+
+    public MiningThresholdRowViewModel? SelectedThreshold
+    {
+        get => selectedThreshold;
+        set
+        {
+            if (Set(ref selectedThreshold, value) && value is not null)
+            {
+                TargetMaterial = value.Name;
+                ThresholdText = value.MinimumPercentage.ToString("0.0", CultureInfo.CurrentCulture);
+            }
+        }
+    }
 
     public ICommand StartCommand { get; }
     public ICommand PauseCommand { get; }
@@ -200,6 +342,10 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             ? "Cargo unavailable"
             : $"Cargo: {cargo.Count:N0} / {CapacityLabel} t · Limpets: {cargo.GetCount("drones")}";
     public IReadOnlyList<CargoItem> Cargo => cargoSorter.Apply(cargo?.Inventory ?? []);
+    public int CargoUsed => cargo?.Count ?? 0;
+    public int CargoCapacity => capacity;
+    public int CargoRemaining => Math.Max(0, capacity - CargoUsed);
+    public double CargoFillPercentage => capacity > 0 ? Math.Clamp(CargoUsed * 100d / capacity, 0, 100) : 0;
     public IReadOnlyList<MiningMaterialSummary> Materials =>
         materialsSorter.Apply(Current?.Summarize(Settings.Thresholds) ?? []);
     private IReadOnlyList<MiningCollectionEntry>? cachedEngineeringMaterials;
@@ -211,6 +357,16 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     private IReadOnlyList<MiningProspect>? cachedProspects;
     public IReadOnlyList<MiningProspect> Prospects => prospectsSorter.Apply(cachedProspects ??= ReadProspects());
+
+    public IReadOnlyList<MiningProspectOverlayRowViewModel> PersistentProspects =>
+        cachedPersistentProspects ??= ReadPersistentProspects();
+
+    private MiningProspectOverlayRowViewModel[] ReadPersistentProspects() =>
+        (Current?.ActiveProspects ?? [])
+            .TakeLast(Math.Clamp(Settings.PersistentProspectSlots, 1, 8))
+            .Reverse()
+            .Select(ToOverlayProspect)
+            .ToArray();
 
     private MiningProspect[] ReadProspects() => Current?.Prospects.AsEnumerable().Reverse().ToArray() ?? [];
 
@@ -239,15 +395,85 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         Settings.Thresholds.Count == 0
             ? "All minerals are announced."
             : string.Join(" · ", Settings.Thresholds.Select(p => $"{p.Key} ≥ {p.Value:0.0}%"));
+
+    private MiningProspectOverlayRowViewModel ToOverlayProspect(MiningProspect prospect)
+    {
+        bool core = !string.IsNullOrEmpty(prospect.Core);
+        MiningMaterial[] matches = prospect
+            .Materials.Where(material =>
+                Settings.Thresholds.Count == 0
+                || Settings.Thresholds.TryGetValue(material.Name, out double threshold)
+                    && material.Percentage >= threshold
+            )
+            .ToArray();
+        bool kindEnabled = core ? Settings.AnnounceCores : Settings.AnnounceNonCores;
+        bool qualifies = kindEnabled && (matches.Length > 0 || core);
+        string summary = string.Join(" · ", prospect.Materials.Select(item => $"{item.Name} {item.Percentage:0.0}%"));
+        if (core)
+        {
+            summary += (summary.Length == 0 ? "" : " · ") + $"Core: {prospect.Core}";
+        }
+
+        return new MiningProspectOverlayRowViewModel(
+            prospect.Time.ToLocalTime().ToString("HH:mm:ss", CultureInfo.CurrentCulture),
+            summary,
+            prospect.Remaining,
+            qualifies
+        );
+    }
+
+    private static string FormatPresetSummary(MiningAnnouncementPreset preset)
+    {
+        string targets =
+            preset.Thresholds.Count == 0
+                ? "all minerals"
+                : string.Join(
+                    ", ",
+                    preset.Thresholds.OrderBy(pair => pair.Key).Select(pair => $"{pair.Key} ≥ {pair.Value:0.#}%")
+                );
+        string asteroidTypes = (preset.Cores, preset.NonCores) switch
+        {
+            (true, true) => "core + laser",
+            (true, false) => "core only",
+            (false, true) => "laser only",
+            _ => "muted",
+        };
+        return $"{targets} · {asteroidTypes}";
+    }
+
     public string Status
     {
         get => status;
         set => Set(ref status, value);
     }
+
+    public void UseCommanderSystem(string? system)
+    {
+        if (!string.IsNullOrWhiteSpace(system))
+        {
+            Search.UpdateCurrentLocation(system);
+        }
+    }
+
     public int SelectedTab
     {
         get => selectedTab;
-        set => Set(ref selectedTab, value);
+        set
+        {
+            if (!Set(ref selectedTab, value))
+            {
+                return;
+            }
+
+            if (value == 3)
+            {
+                Search.PreparePowerplay();
+            }
+            else if (value == 6)
+            {
+                _ = RefreshRingReferencePricesAsync();
+            }
+        }
     }
     public string Notes
     {
@@ -329,7 +555,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public string CurrentProspectText => state.CurrentProspectText ?? "";
     public bool HasCurrentProspect => CurrentProspectText.Length > 0;
-    public bool ShouldShowNotifications => CanShowShipOverlays && (HasCurrentProspect || VisibleNotices.Count > 0);
+    public bool HasPersistentProspects => PersistentProspects.Any(prospect => prospect.Qualifies);
+    public bool ShouldShowNotifications => CanShowShipOverlays && (HasPersistentProspects || VisibleNotices.Count > 0);
+    public bool ShouldShowCargo => CanShowShipOverlays && cargo is not null;
     private bool CanShowShipOverlays =>
         sessionAvailable
         && storageAvailable
@@ -381,6 +609,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         EliteStatus? currentStatus
     )
     {
+        NotePledgedPower(currentStatus);
         sessionAvailable =
             !update.IsAwaitingCommanderIdentity
             && !context.IsShutdown
@@ -397,7 +626,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
         if (commander != context.FrontierId)
         {
-            Load(context.FrontierId!);
+            Load(context.FrontierId!, context.CommanderName);
         }
 
         if (!storageAvailable)
@@ -420,10 +649,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         body = context.BodyName ?? body;
         ship = context.ShipType ?? ship;
         position = context.StarPosition ?? position;
-        if (Search.Reference.Length == 0)
-        {
-            Search.Reference = system;
-        }
+        Search.UpdateCurrentLocation(system);
 
         state.Missions.UpdateCargo(Cargo);
         if (dirty)
@@ -457,7 +683,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         if (entry.EventName == "Loadout")
         {
             ship = Text(json, "Ship");
-            if (json.TryGetProperty("CargoCapacity", out JsonElement c) && c.TryGetInt32(out int count))
+            if (json.TryGetProperty(nameof(CargoCapacity), out JsonElement c) && c.TryGetInt32(out int count))
             {
                 capacity = count;
             }
@@ -473,13 +699,28 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
         if (entry.EventName is "Powerplay" or "PowerplayJoin")
         {
-            Search.PledgedPower = Text(entry.Payload, "Power");
+            Search.NoteDetectedPower(Text(entry.Payload, "Power"));
         }
 
         if (entry.EventName == "PowerplayLeave")
         {
-            Search.PledgedPower = "";
+            Search.NoteDetectedPower("");
         }
+    }
+
+    private void NotePledgedPower(EliteStatus? status)
+    {
+        if (status?.AdditionalProperties is not { } extra)
+        {
+            return;
+        }
+
+        if (!extra.TryGetValue("Powerplay", out JsonElement powerplay) || powerplay.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        Search.NoteDetectedPower(powerplay.TryGetProperty("Power", out JsonElement power) ? power.GetString() : "");
     }
 
     private void UpdatePosition(JsonElement json)
@@ -496,15 +737,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     private void ApplyAutomation(JournalMonitorUpdate update, MiningNotice? previousNotice)
     {
-        if (Settings.SpeakAnnouncements && !update.IsBootstrapRead && Runtime.DesktopExternalEffectPolicy.IsAllowed)
-        {
-            foreach (
-                MiningNotice? notice in state.Notices.TakeWhile(n => !ReferenceEquals(n, previousNotice)).Reverse()
-            )
-            {
-                speech.Speak(notice.Text, Settings.Voice, Settings.SpeechVolume, Settings.SpeechRate);
-            }
-        }
+        ApplyAnnouncements(update, previousNotice);
 
         if (
             Settings.AutoSearch
@@ -528,6 +761,32 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         {
             SelectedTab = 0;
         }
+    }
+
+    private void ApplyAnnouncements(JournalMonitorUpdate update, MiningNotice? previousNotice)
+    {
+        if (update.IsBootstrapRead || !Runtime.DesktopExternalEffectPolicy.IsAllowed)
+        {
+            return;
+        }
+
+        foreach (MiningNotice? notice in state.Notices.TakeWhile(n => !ReferenceEquals(n, previousNotice)).Reverse())
+        {
+            if (Settings.SpeakAnnouncements)
+            {
+                speech.Speak(notice.Text, Settings.Voice, Settings.SpeechVolume, Settings.SpeechRate);
+            }
+            if (Settings.PlayProspectChime && notice.Kind == "Prospected")
+            {
+                chime.Play(Settings.Chime, Settings.ChimeVolume);
+            }
+        }
+    }
+
+    public void PreviewChime()
+    {
+        chime.Play(Settings.Chime, Settings.ChimeVolume);
+        Status = $"Played the {Settings.Chime} chime at {Settings.ChimeVolume}% volume.";
     }
 
     public void Tick()
@@ -570,15 +829,18 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public async Task LoadVoicesAsync()
     {
-        if (!Platform.MiningSpeechOutput.IsSupported)
+        if (!speech.IsSupported)
         {
-            Status = "Local mining speech currently uses Windows voices.";
+            Status = "No local speech service was found. Install Speech Dispatcher or eSpeak NG on Linux.";
             return;
         }
         try
         {
             Voices = await speech.GetVoicesAsync();
-            Status = Voices.Count > 0 ? "Local voices loaded." : "No local voices are available.";
+            Status =
+                Voices.Count > 0
+                    ? $"Local voices loaded from {speech.ProviderName}."
+                    : "No local voices are available.";
         }
         catch (Exception ex)
             when (ex
@@ -598,14 +860,20 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             return;
         }
 
-        Settings.AnnouncementPresets[PresetName.Trim()] = new MiningAnnouncementPreset(
+        string name = PresetName.Trim();
+        if (SelectedAnnouncementPreset is { } selected && !selected.Name.Equals(name, StringComparison.Ordinal))
+        {
+            Settings.AnnouncementPresets.Remove(selected.Name);
+        }
+        Settings.AnnouncementPresets[name] = new MiningAnnouncementPreset(
             new Dictionary<string, double>(Settings.Thresholds),
             Settings.AnnounceCores,
             Settings.AnnounceNonCores
         );
         Save();
-        cachedPresetNames = null;
-        Changed(nameof(PresetNames));
+        RefreshAnnouncementEditors();
+        SelectedAnnouncementPreset = AnnouncementPresets.Single(row => row.Name == name);
+        Status = "Announcement preset saved.";
     }
 
     public void LoadAnnouncementPreset()
@@ -620,13 +888,57 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         Settings.AnnounceNonCores = preset.NonCores;
         Changed(nameof(Settings));
         Save();
+        SelectedThreshold = null;
+        RefreshAnnouncementEditors();
         Refresh();
+        Status = $"Announcement preset '{PresetName}' applied.";
+    }
+
+    private void RefreshAnnouncementEditors()
+    {
+        cachedPresetNames = null;
+        cachedAnnouncementPresets = null;
+        cachedThresholdRows = null;
+        cachedPersistentProspects = null;
+        thresholdGroups = null;
+        Changed(nameof(PresetNames));
+        Changed(nameof(AnnouncementPresets));
+        Changed(nameof(Thresholds));
+        Changed(nameof(ThresholdGroups));
+        Changed(nameof(ThresholdSummary));
+        Changed(nameof(PersistentProspects));
+    }
+
+    public void NewAnnouncementPreset()
+    {
+        SelectedAnnouncementPreset = null;
+        PresetName = "";
+        Status = "Enter a preset name, then save the current announcement filters.";
+    }
+
+    public void DeleteAnnouncementPreset()
+    {
+        string name = SelectedAnnouncementPreset?.Name ?? PresetName.Trim();
+        if (name.Length == 0 || !Settings.AnnouncementPresets.Remove(name))
+        {
+            Status = "Select an announcement preset to delete.";
+            return;
+        }
+
+        SelectedAnnouncementPreset = null;
+        PresetName = "";
+        Save();
+        RefreshAnnouncementEditors();
+        Status = $"Announcement preset '{name}' deleted.";
     }
 
     public void Dispose()
     {
+        disposed = true;
         Search.Dispose();
+        miningSearchClient.Dispose();
         speech.Dispose();
+        chime.Dispose();
         community.Dispose();
     }
 
@@ -655,7 +967,82 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             }
             Settings.Thresholds[name] = threshold;
         }
+        Changed(nameof(Settings));
         SaveSettings();
+        RefreshAnnouncementEditors();
+        SelectedThreshold = Thresholds.FirstOrDefault(row => row.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        Status = remove ? $"Threshold for {name} removed." : $"Threshold for {name} saved.";
+    }
+
+    public void AddThresholdGroup()
+    {
+        if (ThresholdMinerals.Selected.Count == 0)
+        {
+            Status = "Choose one or more minerals.";
+            return;
+        }
+
+        if (
+            !double.TryParse(ThresholdText, NumberStyles.Number, CultureInfo.CurrentCulture, out double threshold)
+            || !double.IsFinite(threshold)
+            || threshold is < 0 or > 100
+        )
+        {
+            Status = "Enter a percentage from 0 to 100.";
+            return;
+        }
+
+        foreach (string mineral in ThresholdMinerals.Selected.ToArray())
+        {
+            Settings.Thresholds[mineral.Trim().ToLowerInvariant()] = threshold;
+            ThresholdMinerals.Remove(mineral);
+        }
+
+        Changed(nameof(Settings));
+        SaveSettings();
+        RefreshAnnouncementEditors();
+        Status = "Threshold group saved at " + threshold.ToString("0.#", CultureInfo.CurrentCulture) + "%.";
+    }
+
+    public void DeleteThresholdGroup()
+    {
+        if (SelectedThresholdGroup is not { } group)
+        {
+            Status = "Select a threshold group to delete.";
+            return;
+        }
+
+        foreach (string name in group.Names)
+        {
+            Settings.Thresholds.Remove(name);
+        }
+
+        SelectedThresholdGroup = null;
+        Changed(nameof(Settings));
+        SaveSettings();
+        RefreshAnnouncementEditors();
+        Status = "Threshold group removed.";
+    }
+
+    public void NewThreshold()
+    {
+        SelectedThreshold = null;
+        TargetMaterial = "";
+        ThresholdText = "20";
+        Status = "Enter a mineral and minimum percentage.";
+    }
+
+    public void DeleteSelectedThreshold()
+    {
+        if (SelectedThreshold is null)
+        {
+            Status = "Select a mineral threshold to delete.";
+            return;
+        }
+
+        TargetMaterial = SelectedThreshold.Name;
+        SetThreshold(true);
+        SelectedThreshold = null;
     }
 
     public void AdjustQuality(int delta)
@@ -991,7 +1378,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         }
     }
 
-    private void Load(string id)
+    private void Load(string id, string? commanderName)
     {
         commander = id;
         capacity = 0;
@@ -1019,8 +1406,19 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             Status = "Mining data could not be loaded: " + ex.Message;
         }
         Search.LoadOptions(Settings.SearchOptions);
+        RememberPledgedPower(id, commanderName);
+        Search.RestoreLastCompletedPowerplaySearch();
         community.SetEnabled(Settings.ReceiveCommunityData);
         Changed(nameof(Settings));
+    }
+
+    private void RememberPledgedPower(string frontierId, string? commanderName)
+    {
+        string pledged = JournalPowerplayPledge.ReadLatest(journalDirectories, frontierId, commanderName);
+        if (pledged.Length > 0)
+        {
+            Search.NoteDetectedPower(pledged);
+        }
     }
 
     private void PauseRecoveredSession()
@@ -1054,7 +1452,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         SelectedSession = History.Count > 0 ? History[0] : null;
         if (Settings.AutoSwitchTabs)
         {
-            SelectedTab = 3;
+            SelectedTab = 4;
         }
         Refresh();
     }
@@ -1150,9 +1548,16 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
                     nameof(CommunityStatus),
                     nameof(SessionSummary),
                     nameof(ShouldShowNotifications),
+                    nameof(ShouldShowCargo),
                     nameof(VisibleNotices),
                     nameof(CurrentProspectText),
                     nameof(HasCurrentProspect),
+                    nameof(PersistentProspects),
+                    nameof(HasPersistentProspects),
+                    nameof(CargoUsed),
+                    nameof(CargoCapacity),
+                    nameof(CargoRemaining),
+                    nameof(CargoFillPercentage),
                 }
             )
             {
@@ -1162,6 +1567,9 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             return;
         }
         cachedPresetNames = null;
+        cachedAnnouncementPresets = null;
+        cachedThresholdRows = null;
+        cachedPersistentProspects = null;
         cachedEngineeringMaterials = null;
         cachedProspects = null;
         cachedMissions = null;
@@ -1176,6 +1584,10 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
                 nameof(SessionSummary),
                 nameof(CargoSummary),
                 nameof(Cargo),
+                nameof(CargoUsed),
+                nameof(CargoCapacity),
+                nameof(CargoRemaining),
+                nameof(CargoFillPercentage),
                 nameof(Materials),
                 nameof(EngineeringMaterials),
                 nameof(Prospects),
@@ -1187,10 +1599,16 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
                 nameof(RefinerySummary),
                 nameof(Rings),
                 nameof(ThresholdSummary),
+                nameof(Thresholds),
+                nameof(ThresholdGroups),
+                nameof(AnnouncementPresets),
                 nameof(ShouldShowNotifications),
+                nameof(ShouldShowCargo),
                 nameof(VisibleNotices),
                 nameof(CurrentProspectText),
                 nameof(HasCurrentProspect),
+                nameof(PersistentProspects),
+                nameof(HasPersistentProspects),
             }
         )
         {
@@ -1207,4 +1625,155 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         json.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString() ?? ""
             : "";
+}
+
+public sealed record MiningThresholdRowViewModel(string Name, double MinimumPercentage)
+{
+    public string DisplayName => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Name);
+    public string MinimumLabel => $"≥ {MinimumPercentage:0.0}%";
+}
+
+public sealed record MiningThresholdGroupViewModel(IReadOnlyList<string> Names, double MinimumPercentage)
+{
+    public string Minerals =>
+        string.Join(" · ", Names.Select(name => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name)));
+    public string MinimumLabel => $"≥ {MinimumPercentage:0.0}%";
+}
+
+public sealed record MiningAnnouncementPresetRowViewModel(string Name, string Summary);
+
+public sealed record MiningProspectOverlayRowViewModel(string Time, string Summary, double Remaining, bool Qualifies)
+{
+    public string RemainingLabel => Remaining <= 0 ? "DEPLETED" : $"{Remaining:0.#}% remaining";
+}
+
+public sealed record MiningReferenceCommodityRowViewModel(string Name, int AverageSellPrice, int MaximumSellPrice = 0)
+{
+    public string AverageSellPriceLabel => $"{AverageSellPrice:N0} CR/t";
+    public string MaximumSellPriceLabel => MaximumSellPrice > 0 ? $"{MaximumSellPrice:N0} CR/t" : "—";
+
+    public MiningReferenceCommodityRowViewModel WithPrice(MiningCommodityPriceSummary? summary) =>
+        summary is null
+            ? this
+            : this with
+            {
+                AverageSellPrice = ValidPrice(summary.AverageSellPrice, AverageSellPrice),
+                MaximumSellPrice = ValidPrice(summary.MaximumSellPrice, MaximumSellPrice),
+            };
+
+    private static int ValidPrice(long price, int fallback) => price is > 0 and <= int.MaxValue ? (int)price : fallback;
+}
+
+public sealed record MiningRingReferenceViewModel(
+    string Name,
+    IReadOnlyList<MiningReferenceCommodityRowViewModel> Laser,
+    IReadOnlyList<MiningReferenceCommodityRowViewModel> Core
+)
+{
+    public MiningRingReferenceViewModel WithPrices(IReadOnlyDictionary<string, MiningCommodityPriceSummary> report) =>
+        this with
+        {
+            Laser = Laser.Select(row => row.WithPrice(SurfaceMiningCommodityPrices.Find(row.Name, report))).ToArray(),
+            Core = Core.Select(row => row.WithPrice(SurfaceMiningCommodityPrices.Find(row.Name, report))).ToArray(),
+        };
+
+    public static IReadOnlyList<MiningRingReferenceViewModel> All { get; } =
+    [
+        Ring(
+            "Icy rings",
+            [
+                Item("Low Temperature Diamonds", 131607),
+                Item("Bromellite", 33414),
+                Item("Hydrogen Peroxide", 3119),
+                Item("Liquid Oxygen", 1639),
+                Item("Lithium Hydroxide", 5655),
+                Item("Methane Clathrate", 1597),
+                Item("Methanol Monohydrate Crystals", 2522),
+                Item("Tritium", 53425),
+                Item("Water", 496),
+            ],
+            [
+                Item("Alexandrite", 227771),
+                Item("Grandidierite", 211582),
+                Item("Low Temperature Diamonds", 131607),
+                Item("Void Opals", 150964),
+                Item("Bromellite", 33414),
+            ]
+        ),
+        Ring(
+            "Metallic rings",
+            [
+                Item("Osmium", 55698),
+                Item("Painite", 57890),
+                Item("Platinum", 70136),
+                Item("Bertrandite", 18476),
+                Item("Gold", 47900),
+                Item("Indite", 11268),
+                Item("Palladium", 52064),
+                Item("Praseodymium", 8636),
+                Item("Samarium", 28658),
+                Item("Silver", 37628),
+            ],
+            [
+                Item("Monazite", 273262),
+                Item("Rhodplumsite", 186345),
+                Item("Serendibite", 186953),
+                Item("Painite", 57890),
+                Item("Platinum", 70136),
+            ]
+        ),
+        Ring(
+            "Metal-rich rings",
+            [
+                Item("Osmium", 55698),
+                Item("Bertrandite", 18476),
+                Item("Coltan", 6144),
+                Item("Gallite", 12235),
+                Item("Gold", 47900),
+                Item("Indite", 11268),
+                Item("Lepidolite", 1796),
+                Item("Praseodymium", 8636),
+                Item("Samarium", 28658),
+                Item("Silver", 37628),
+                Item("Uraninite", 3004),
+            ],
+            [
+                Item("Alexandrite", 227771),
+                Item("Benitoite", 164647),
+                Item("Monazite", 273262),
+                Item("Rhodplumsite", 186345),
+                Item("Serendibite", 186953),
+                Item("Painite", 57890),
+                Item("Platinum", 70136),
+            ]
+        ),
+        Ring(
+            "Rocky rings",
+            [
+                Item("Bertrandite", 18476),
+                Item("Bauxite", 2092),
+                Item("Coltan", 6144),
+                Item("Gallite", 12235),
+                Item("Indite", 11268),
+                Item("Lepidolite", 1796),
+                Item("Rutile", 3084),
+            ],
+            [
+                Item("Alexandrite", 227771),
+                Item("Benitoite", 164647),
+                Item("Monazite", 273262),
+                Item("Musgravite", 220251),
+                Item("Serendibite", 186953),
+            ]
+        ),
+    ];
+
+    private static MiningRingReferenceViewModel Ring(
+        string name,
+        IReadOnlyList<MiningReferenceCommodityRowViewModel> laser,
+        IReadOnlyList<MiningReferenceCommodityRowViewModel> core
+    ) => new(name, laser, core);
+
+    private static MiningReferenceCommodityRowViewModel Item(string name, int averageSellPrice) =>
+        new(name, averageSellPrice);
 }

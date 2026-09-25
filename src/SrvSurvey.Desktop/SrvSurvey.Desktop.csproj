@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SrvSurvey.Desktop</RootNamespace>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-    <Version>2.1.3.0-rc.54</Version>
+    <Version>2.1.3.0-rc.55</Version>
     <FileVersion>2.1.3.0</FileVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -87,6 +87,7 @@
     <AvaloniaResource Include="Assets\GuardianGuidance\*.png" />
     <AvaloniaResource Include="Assets\SettingsVisualAids\*.png" />
     <AvaloniaResource Include="Assets\SurfaceMining\*.png" />
+    <AvaloniaResource Include="Assets\Mining\*.png" />
     <AvaloniaResource Include="Assets\VoxStellar\*.png" />
     <AvaloniaResource Include="Assets\Fonts\**\*.ttf" />
     <Content Include="Assets\Fonts\**\OFL.txt"

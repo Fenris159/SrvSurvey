@@ -1,4 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:journal="using:SrvSurvey.Core.Journal" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:controls="using:SrvSurvey.Desktop.Controls" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" Grid.IsSharedSizeScope="True" x:Class="SrvSurvey.Desktop.Views.MiningView" x:Name="MiningRoot" x:DataType="vm:MainWindowViewModel">
+  <UserControl.Styles>
+    <Style Selector="TabItem.mining-workspace-tab">
+      <Setter Property="Padding" Value="8,6"/>
+    </Style>
+  </UserControl.Styles>
   <Grid DataContext="{Binding MiningWorkspace}" x:DataType="vm:MiningWorkspaceViewModel" RowDefinitions="Auto,*,Auto" Margin="24">
     <StackPanel Spacing="6" Margin="0,0,0,16">
       <TextBlock Classes="eyebrow" Text="ACTIVITIES"/>
@@ -11,7 +16,7 @@
           <controls:AdaptiveTabHeaderPanel/>
         </ItemsPanelTemplate>
       </TabControl.ItemsPanel>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Session"/>
         </TabItem.Header>
@@ -183,7 +188,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Reports"/>
         </TabItem.Header>
@@ -265,7 +270,7 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Missions"/>
         </TabItem.Header>
@@ -304,7 +309,15 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
+        <TabItem.Header>
+          <TextBlock Text="Powerplay"/>
+        </TabItem.Header>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <views:MiningPowerplayView x:Name="PowerplayWorkspacePage" DataContext="{Binding}" Margin="4,12,4,16"/>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Find"/>
         </TabItem.Header>
@@ -357,40 +370,71 @@
           </Border>
         </Grid>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Bookmarks"/>
         </TabItem.Header>
         <views:BookmarksView DataContext="{Binding #MiningRoot.DataContext.Bookmarks}"/>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Reference"/>
         </TabItem.Header>
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto">
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <TextBlock Text="Ring mining reference" TextWrapping="Wrap" Classes="card-title"/>
-            <TextBlock Text="Mineral availability follows ring composition. Prices vary; check current market observations before selling." TextWrapping="Wrap" Classes="muted"/>
-            <Expander Header="Icy rings">
-              <StackPanel Spacing="8">
-                <TextBlock Text="Laser: Low Temperature Diamonds, Bromellite, Hydrogen Peroxide, Liquid Oxygen, Lithium Hydroxide, Methane Clathrate, Methanol Monohydrate Crystals, Tritium, Water. Core: Alexandrite, Grandidierite, Low Temperature Diamonds, Void Opals, Bromellite." TextWrapping="Wrap"/>
-              </StackPanel>
-            </Expander>
-            <Expander Header="Metallic rings">
-              <StackPanel Spacing="8">
-                <TextBlock Text="Laser: Osmium, Painite, Platinum, Bertrandite, Gold, Indite, Palladium, Praseodymium, Samarium, Silver. Core: Monazite, Rhodplumsite, Serendibite, Painite, Platinum." TextWrapping="Wrap"/>
-              </StackPanel>
-            </Expander>
-            <Expander Header="Metal-rich rings">
-              <StackPanel Spacing="8">
-                <TextBlock Text="Laser: Osmium, Bertrandite, Coltan, Gallite, Gold, Indite, Lepidolite, Praseodymium, Samarium, Silver, Uraninite. Core: Alexandrite, Benitoite, Monazite, Rhodplumsite, Serendibite, Painite, Platinum." TextWrapping="Wrap"/>
-              </StackPanel>
-            </Expander>
-            <Expander Header="Rocky rings">
-              <StackPanel Spacing="8">
-                <TextBlock Text="Laser: Bertrandite, Bauxite, Coltan, Gallite, Indite, Lepidolite, Rutile. Core: Alexandrite, Benitoite, Monazite, Musgravite, Serendibite." TextWrapping="Wrap"/>
-              </StackPanel>
-            </Expander>
+            <TextBlock Text="Mineral availability follows ring composition. Prices use the Ardent catalog when available; check current station quotes before selling." TextWrapping="Wrap" Classes="muted"/>
+            <TextBlock Text="{Binding ReferencePriceStatus}" TextWrapping="Wrap" Classes="muted"/>
+            <ItemsControl x:Name="RingReferenceRows" ItemsSource="{Binding RingReferences}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:MiningRingReferenceViewModel">
+                  <Expander Header="{Binding Name}" Margin="0,0,0,8">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="16" Margin="8">
+                      <StackPanel Spacing="4" Grid.IsSharedSizeScope="True">
+                        <Grid Classes="table-header" ColumnSpacing="8">
+                          <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingAverage"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingMaximum"/></Grid.ColumnDefinitions>
+                          <TextBlock Classes="table-heading" Text="LASER"/>
+                          <TextBlock Grid.Column="1" Classes="table-heading" Text="AVG SELL"/>
+                          <TextBlock Grid.Column="2" Classes="table-heading" Text="MAX SELL"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Laser}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MiningReferenceCommodityRowViewModel">
+                              <Grid Classes="table-row" ColumnSpacing="8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingAverage"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingMaximum"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Column="1" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding AverageSellPriceLabel}"/>
+                                <TextBlock Grid.Column="2" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding MaximumSellPriceLabel}"/>
+                              </Grid>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Spacing="4" Grid.IsSharedSizeScope="True">
+                        <Grid Classes="table-header" ColumnSpacing="8">
+                          <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingAverage"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingMaximum"/></Grid.ColumnDefinitions>
+                          <TextBlock Classes="table-heading" Text="CORE"/>
+                          <TextBlock Grid.Column="1" Classes="table-heading" Text="AVG SELL"/>
+                          <TextBlock Grid.Column="2" Classes="table-heading" Text="MAX SELL"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Core}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MiningReferenceCommodityRowViewModel">
+                              <Grid Classes="table-row" ColumnSpacing="8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingAverage"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingMaximum"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Column="1" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding AverageSellPriceLabel}"/>
+                                <TextBlock Grid.Column="2" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding MaximumSellPriceLabel}"/>
+                              </Grid>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                    </Grid>
+                  </Expander>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <Expander Header="Resource Extraction Sites (RES)">
               <StackPanel Spacing="8">
                 <TextBlock Text="Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap." TextWrapping="Wrap"/>
@@ -399,13 +443,13 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      <TabItem>
+      <TabItem Classes="mining-workspace-tab">
         <TabItem.Header>
           <TextBlock Text="Settings"/>
         </TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="14" Margin="4,20,4,16">
-            <TabControl>
+            <TabControl x:Name="MiningSettingsTabs">
               <TabItem Header="Session">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                   <StackPanel Spacing="14" Margin="4,20,4,16">
@@ -423,37 +467,87 @@
               <TabItem Header="Announcements">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                   <StackPanel Spacing="14" Margin="4,20,4,16">
-                    <CheckBox Content="Core asteroid announcements" IsChecked="{Binding Settings.AnnounceCores}"/>
-                    <CheckBox Content="Non-core asteroid announcements" IsChecked="{Binding Settings.AnnounceNonCores}"/>
-                    <CheckBox Content="Prospecting results" IsChecked="{Binding Settings.NotifyProspecting}"/>
-                    <CheckBox Content="Refined commodities" IsChecked="{Binding Settings.NotifyRefined}"/>
-                    <CheckBox Content="Collected engineering materials" IsChecked="{Binding Settings.NotifyMaterials}"/>
-                    <CheckBox Content="Cargo full reminder after one minute idle" IsChecked="{Binding Settings.NotifyCargoFull}"/>
-                    <TextBlock Text="Set mineral thresholds for prospecting announcements. Remove all filters to announce all minerals." TextWrapping="Wrap"/>
-                    <TextBlock Text="Mineral" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding TargetMaterial}"/>
-                    <TextBlock Text="Minimum percentage" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding ThresholdText}"/>
-                    <WrapPanel>
-                      <Button Content="Set filter" Click="Threshold_Click" Margin="0,0,8,8"/>
-                      <Button Content="Remove filter" Click="RemoveThreshold_Click" Margin="0,0,8,8"/>
-                    </WrapPanel>
-                    <TextBlock Text="{Binding ThresholdSummary}" TextWrapping="Wrap"/>
-                    <TextBlock Text="Announcement presets" TextWrapping="Wrap"/>
-                    <ComboBox ItemsSource="{Binding PresetNames}" SelectedItem="{Binding PresetName}" HorizontalAlignment="Stretch"/>
-                    <TextBlock Text="Preset name" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding PresetName}"/>
-                    <WrapPanel>
-                      <Button Content="Save preset" Click="SavePreset_Click" Margin="0,0,8,8"/>
-                      <Button Content="Load preset" Click="LoadPreset_Click" Margin="0,0,8,8"/>
-                    </WrapPanel>
-                    <CheckBox Content="Speak announcements using local Windows voices" IsChecked="{Binding Settings.SpeakAnnouncements}"/>
-                    <Button Content="Load installed voices" Click="LoadVoices_Click" Margin="0,0,8,8"/>
-                    <ComboBox ItemsSource="{Binding Voices}" SelectedItem="{Binding Settings.Voice}" HorizontalAlignment="Stretch"/>
-                    <TextBlock Text="Speech volume" TextWrapping="Wrap"/>
-                    <Slider Minimum="0" Maximum="100" Value="{Binding Settings.SpeechVolume}"/>
-                    <TextBlock Text="Speech rate" TextWrapping="Wrap"/>
-                    <Slider Minimum="-10" Maximum="10" Value="{Binding Settings.SpeechRate}"/>
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="card-title" Text="Announcement events"/>
+                        <CheckBox Content="Core asteroid announcements" IsChecked="{Binding Settings.AnnounceCores}"/>
+                        <CheckBox Content="Non-core asteroid announcements" IsChecked="{Binding Settings.AnnounceNonCores}"/>
+                        <CheckBox Content="Prospecting results" IsChecked="{Binding Settings.NotifyProspecting}"/>
+                        <CheckBox Content="Refined commodities" IsChecked="{Binding Settings.NotifyRefined}"/>
+                        <CheckBox Content="Collected engineering materials" IsChecked="{Binding Settings.NotifyMaterials}"/>
+                        <CheckBox Content="Cargo full reminder after one minute idle" IsChecked="{Binding Settings.NotifyCargoFull}"/>
+                        <TextBlock Text="Persistent prospector results shown in the overlay"/>
+                        <NumericUpDown x:Name="PersistentProspectSlotsInput" Minimum="1" Maximum="8" Value="{Binding Settings.PersistentProspectSlots}" FormatString="0" HorizontalAlignment="Left" Width="100"/>
+                      </StackPanel>
+                    </Border>
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="card-title" Text="Mineral thresholds"/>
+                        <TextBlock Classes="muted" Text="Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect." TextWrapping="Wrap"/>
+                        <ListBox x:Name="ThresholdRows" ItemsSource="{Binding ThresholdGroups}" SelectedItem="{Binding SelectedThresholdGroup}" MinHeight="70" MaxHeight="210" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                          <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MiningThresholdGroupViewModel">
+                              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="8,5">
+                                <TextBlock Text="{Binding Minerals}" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Column="1" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding MinimumLabel}"/>
+                              </Grid>
+                            </DataTemplate>
+                          </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Grid ColumnDefinitions="2*,*" ColumnSpacing="12">
+                          <views:MiningChipBox DataContext="{Binding ThresholdMinerals}"/>
+                          <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Minimum percentage"/><TextBox Text="{Binding ThresholdText}"/></StackPanel>
+                        </Grid>
+                        <WrapPanel>
+                          <Button Content="Add threshold group" Click="AddThresholdGroup_Click" Margin="0,0,8,8"/>
+                          <Button Content="Delete selected group" Click="DeleteThresholdGroup_Click" Margin="0,0,8,8"/>
+                        </WrapPanel>
+                        <TextBlock Classes="muted" Text="{Binding ThresholdSummary}" TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </Border>
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="card-title" Text="Announcement presets"/>
+                        <TextBlock Classes="muted" Text="Save the complete threshold and asteroid-type configuration, then select a preset to apply, rename, or delete it." TextWrapping="Wrap"/>
+                        <ListBox x:Name="AnnouncementPresetRows" ItemsSource="{Binding AnnouncementPresets}" SelectedItem="{Binding SelectedAnnouncementPreset}" MinHeight="70" MaxHeight="210" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                          <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MiningAnnouncementPresetRowViewModel">
+                              <Grid ColumnDefinitions="160,*" ColumnSpacing="12" Margin="8,5">
+                                <TextBlock Classes="type-value" Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Summary}" TextTrimming="CharacterEllipsis"/>
+                              </Grid>
+                            </DataTemplate>
+                          </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock Text="Preset name"/>
+                        <TextBox Text="{Binding PresetName}"/>
+                        <WrapPanel>
+                          <Button Content="New preset" Click="NewPreset_Click" Margin="0,0,8,8"/>
+                          <Button Content="Save preset" Click="SavePreset_Click" Margin="0,0,8,8"/>
+                          <Button Content="Apply selected" Click="LoadPreset_Click" Margin="0,0,8,8"/>
+                          <Button Content="Delete selected" Click="DeletePreset_Click" Margin="0,0,8,8"/>
+                        </WrapPanel>
+                      </StackPanel>
+                    </Border>
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="card-title" Text="Audio announcements"/>
+                        <CheckBox Content="Play a chime for qualifying prospects" IsChecked="{Binding Settings.PlayProspectChime}"/>
+                        <TextBlock Text="Chime sound"/>
+                        <ComboBox x:Name="ChimeSelector" ItemsSource="{Binding ChimeOptions}" SelectedItem="{Binding Settings.Chime}" HorizontalAlignment="Stretch"/>
+                        <TextBlock Text="Chime volume"/>
+                        <Slider Minimum="0" Maximum="100" Value="{Binding Settings.ChimeVolume}"/>
+                        <Button Content="Preview chime" Click="PreviewChime_Click" Margin="0,0,8,8" HorizontalAlignment="Left"/>
+                        <CheckBox Content="Speak announcements using a local voice" IsChecked="{Binding Settings.SpeakAnnouncements}"/>
+                        <Button Content="Refresh local voices" Click="LoadVoices_Click" Margin="0,0,8,8" HorizontalAlignment="Left"/>
+                        <ComboBox x:Name="LocalVoiceSelector" ItemsSource="{Binding Voices}" SelectedItem="{Binding Settings.Voice}" HorizontalAlignment="Stretch"/>
+                        <TextBlock Classes="muted" Text="Windows uses installed SAPI voices. Linux uses Speech Dispatcher or eSpeak NG when available." TextWrapping="Wrap"/>
+                        <TextBlock Text="Speech volume" TextWrapping="Wrap"/>
+                        <Slider Minimum="0" Maximum="100" Value="{Binding Settings.SpeechVolume}"/>
+                        <TextBlock Text="Speech rate" TextWrapping="Wrap"/>
+                        <Slider Minimum="-10" Maximum="10" Value="{Binding Settings.SpeechRate}"/>
+                      </StackPanel>
+                    </Border>
                     <Button Content="Save announcements" Command="{Binding SaveSettingsCommand}" Margin="0,0,8,8"/>
                   </StackPanel>
                 </ScrollViewer>

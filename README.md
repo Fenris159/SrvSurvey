@@ -103,8 +103,11 @@ The images stay compact on this page. Select any tile to open the full screensho
   notes, screenshots and CSV history import.
 - Produces offline HTML reports suitable for printing or saving as PDF, plus ZIP
   backups containing mining data, shared bookmarks and screenshot attachments.
-- Provides ship-only mining notifications, configurable announcements and
-  optional Windows speech output.
+- Provides ship-only mining notifications with several persistent prospector
+  results, a dedicated cargo-capacity overlay and highlighted mineral targets.
+- Configurable mineral thresholds and named announcement presets use separate
+  selectable lists, including rename/delete workflows. Announcements can use a
+  built-in chime or local Windows/Linux speech services.
 - Includes a Firegroups workspace and reference overlay so mining equipment and
   active groups remain visible in the cockpit.
 

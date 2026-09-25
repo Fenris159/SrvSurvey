@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:converters="using:Avalonia.Data.Converters" Grid.IsSharedSizeScope="True" x:Class="SrvSurvey.Desktop.Views.MiningSearchView" x:DataType="vm:MiningSearchViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:search="using:SrvSurvey.Core.Search" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:converters="using:Avalonia.Data.Converters" Grid.IsSharedSizeScope="True" x:Class="SrvSurvey.Desktop.Views.MiningSearchView" x:DataType="vm:MiningSearchViewModel">
   <UserControl.Styles>
     <Style Selector="ListBoxItem">
       <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -20,9 +20,9 @@
           <Border>
             <StackPanel Spacing="8">
               <WrapPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                  <TextBlock Text="Mineral (blank = any)" TextWrapping="Wrap"/>
-                  <TextBox Text="{Binding Mineral}"/>
+                <StackPanel Spacing="4" Width="300" Margin="0,0,12,10">
+                  <TextBlock Text="Ring mineral" TextWrapping="Wrap"/>
+                  <views:MiningChipBox DataContext="{Binding RingMineralChips}" HorizontalAlignment="Stretch" Margin="0"/>
                 </StackPanel>
                 <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
                   <TextBlock Text="Ring type" TextWrapping="Wrap"/>
@@ -95,41 +95,50 @@
       </TabItem>
       <TabItem Header="Markets">
         <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,12,0,0">
-          <Border>
-            <StackPanel Spacing="8">
+          <Border Classes="card raised">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Find current station prices for mined cargo or supplies. Ardent prices are preferred; Spansh is used when a price is unavailable." TextWrapping="Wrap" Classes="muted"/>
               <WrapPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
+                <StackPanel Spacing="4" Width="190" Margin="0,0,16,8">
                   <TextBlock Text="Trade objective" TextWrapping="Wrap"/>
                   <ComboBox ItemsSource="{Binding TradeModes}" SelectedItem="{Binding TradeMode}" HorizontalAlignment="Stretch"/>
                 </StackPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                  <TextBlock Text="Category" TextWrapping="Wrap"/>
-                  <ComboBox ItemsSource="{Binding CommodityCategories}" SelectedItem="{Binding CommodityCategory}" HorizontalAlignment="Stretch"/>
+                <StackPanel Spacing="4" Width="280" Margin="0,0,16,8">
+                  <TextBlock Text="Commodity category" TextWrapping="Wrap"/>
+                  <views:MiningChipBox DataContext="{Binding MarketCategoryChips}" HorizontalAlignment="Stretch" Margin="0"/>
                 </StackPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                  <TextBlock Text="Commodity" TextWrapping="Wrap"/>
-                  <ComboBox ItemsSource="{Binding CommodityOptions}" SelectedItem="{Binding Commodity}" HorizontalAlignment="Stretch"/>
+                <StackPanel Spacing="4" Width="490" Margin="0,0,16,8">
+                  <TextBlock Text="Commodities (up to 5)" TextWrapping="Wrap"/>
+                  <views:MiningChipBox DataContext="{Binding MarketCommodityChips}" HorizontalAlignment="Stretch" Margin="0"/>
                 </StackPanel>
               </WrapPanel>
-              <Expander Header="Commodity name, station and freshness filters">
+              <Expander Header="Station and data filters" IsExpanded="True">
                 <WrapPanel>
                   <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Any commodity name" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding Commodity}"/>
+                    <TextBlock Text="Landing pad" TextWrapping="Wrap"/>
+                    <ComboBox ItemsSource="{Binding PadSizes}" SelectedItem="{Binding MarketPadSize}" HorizontalAlignment="Stretch"/>
                   </StackPanel>
                   <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Station type contains" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding StationType}"/>
+                    <TextBlock Text="{Binding MarketMinimumVolumeLabel}" TextWrapping="Wrap"/>
+                    <NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding MarketMinimumVolume}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="225" Margin="0,0,12,10">
+                    <TextBlock Text="{Binding MarketMaximumVolumeLabel}" TextWrapping="Wrap"/>
+                    <NumericUpDown Minimum="0" Maximum="1000000000" Value="{Binding MarketMaximumVolume}"/>
                   </StackPanel>
                   <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
                     <TextBlock Text="Maximum age (days)" TextWrapping="Wrap"/>
-                    <NumericUpDown Minimum="1" Maximum="30" Value="{Binding MaximumAgeDays}"/>
+                    <NumericUpDown Minimum="1" Maximum="3650" Value="{Binding MarketMaximumAgeDays}"/>
+                  </StackPanel>
+                  <StackPanel Spacing="4" Width="300" Margin="0,0,12,10">
+                    <TextBlock Text="Station types (empty = any)" TextWrapping="Wrap"/>
+                    <views:MiningChipBox DataContext="{Binding MarketStationTypeChips}" HorizontalAlignment="Stretch" Margin="0"/>
                   </StackPanel>
                   <CheckBox Content="Galaxy-wide" IsChecked="{Binding GalaxyWide}" Margin="0,0,16,4"/>
                   <CheckBox Content="Exclude carriers" IsChecked="{Binding ExcludeCarriers}" Margin="0,0,16,4"/>
-                  <CheckBox Content="Large pads" IsChecked="{Binding LargePads}" Margin="0,0,16,4"/>
                 </WrapPanel>
               </Expander>
+              <TextBlock Text="Galaxy-wide searches all prices and shows distances from the reference system when its location is known." IsVisible="{Binding GalaxyWide}" TextWrapping="Wrap" Classes="muted"/>
             </StackPanel>
           </Border>
           <ScrollViewer x:Name="MarketResultsHorizontalScroller" Grid.Row="2" Grid.RowSpan="2"
@@ -137,10 +146,10 @@
             VerticalScrollBarVisibility="Disabled"
             IsScrollChainingEnabled="True">
             <Grid RowDefinitions="Auto,*">
-              <Grid x:Name="MarketResultsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults9" /></Grid.ColumnDefinitions>
-            <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="System"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=System}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Station"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STATION" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Station}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Type"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TYPE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Type}" /></StackPanel></Button><Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="PadDescription"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="PAD" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=PadDescription}" /></StackPanel></Button>
-            <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Distance"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DISTANCE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Distance}" /></StackPanel></Button><Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="ArrivalLs"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ARRIVAL" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ArrivalLs}" /></StackPanel></Button><Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Price"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="PRICE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Price}" /></StackPanel></Button><Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Demand"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DEMAND" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Demand}" /></StackPanel></Button>
-            <Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Supply"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STOCK" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Supply}" /></StackPanel></Button><Button Grid.Column="9" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Updated"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="OBSERVED" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Updated}" /></StackPanel></Button>
+              <Grid x:Name="MarketResultsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults9" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults10" /></Grid.ColumnDefinitions>
+            <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="System"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=System}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Station"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STATION" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Station}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Commodity"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="COMMODITY" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Commodity}" /></StackPanel></Button><Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Type"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TYPE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Type}" /></StackPanel></Button><Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="PadDescription"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="PAD" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=PadDescription}" /></StackPanel></Button>
+            <Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Distance"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DISTANCE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Distance}" /></StackPanel></Button><Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="ArrivalLs"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ARRIVAL" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ArrivalLs}" /></StackPanel></Button><Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Price"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="PRICE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Price}" /></StackPanel></Button><Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Demand"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DEMAND" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Demand}" /></StackPanel></Button>
+            <Button Grid.Column="9" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Supply"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STOCK" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Supply}" /></StackPanel></Button><Button Grid.Column="10" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Updated"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="OBSERVED" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Updated}" /></StackPanel></Button>
           </Grid>
               <ListBox x:Name="MarketResults" Grid.Row="1" Classes="table-rows" ItemsSource="{Binding Markets}" SelectedItem="{Binding SelectedMarket}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,0,0,10">
             <ListBox.ContextMenu>
@@ -153,12 +162,12 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="search:MiningMarketResult">
-                <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults9" /></Grid.ColumnDefinitions>
+                <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults9" /><ColumnDefinition Width="Auto" SharedSizeGroup="MarketResults10" /></Grid.ColumnDefinitions>
                   <TextBlock Text="{Binding System}" ToolTip.Tip="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Station}" ToolTip.Tip="{Binding Station}"/>
-                  <TextBlock Grid.Column="2" Text="{Binding Type}"/><TextBlock Grid.Column="3" Text="{Binding PadDescription}"/>
-                  <TextBlock Grid.Column="4" Text="{Binding Distance, StringFormat='{}{0:N1} ly'}"/><TextBlock Grid.Column="5" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
-                  <TextBlock Grid.Column="6" Text="{Binding Price, StringFormat='{}{0:N0} CR/t'}"/><TextBlock Grid.Column="7" Text="{Binding Demand, StringFormat='{}{0:N0} t'}"/>
-                  <TextBlock Grid.Column="8" Text="{Binding Supply, StringFormat='{}{0:N0} t'}"/><TextBlock Grid.Column="9" Text="{Binding Updated, StringFormat='{}{0:g}'}"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Commodity}" ToolTip.Tip="{Binding Commodity}"/><TextBlock Grid.Column="3" Text="{Binding Type}"/><TextBlock Grid.Column="4" Text="{Binding PadDescription}"/>
+                  <TextBlock Grid.Column="5" Text="{Binding Distance, StringFormat='{}{0:N1} ly'}"/><TextBlock Grid.Column="6" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
+                  <TextBlock Grid.Column="7" Text="{Binding Price, StringFormat='{}{0:N0} CR/t'}"/><TextBlock Grid.Column="8" Text="{Binding Demand, StringFormat='{}{0:N0} t'}"/>
+                  <TextBlock Grid.Column="9" Text="{Binding Supply, StringFormat='{}{0:N0} t'}"/><TextBlock Grid.Column="10" Text="{Binding Updated, StringFormat='{}{0:g}'}"/>
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -216,101 +225,56 @@
           </WrapPanel>
         </Grid>
       </TabItem>
-      <TabItem Header="Powerplay">
+      <TabItem Header="Platinum">
         <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,12,0,0">
-          <Border>
+          <Border Classes="card raised">
             <StackPanel Spacing="8">
+              <TextBlock Text="Platinum Spots++" Classes="card-title"/>
+              <TextBlock Text="Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump." TextWrapping="Wrap" Classes="muted"/>
               <WrapPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                  <TextBlock Text="Objective" TextWrapping="Wrap"/>
-                  <ComboBox ItemsSource="{Binding Objectives}" SelectedItem="{Binding Objective}" HorizontalAlignment="Stretch"/>
-                </StackPanel>
-                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                  <TextBlock Text="Your pledged Power" TextWrapping="Wrap"/>
-                  <ComboBox ItemsSource="{Binding Powers}" SelectedItem="{Binding PledgedPower}" HorizontalAlignment="Stretch"/>
-                </StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Result set"/><ComboBox ItemsSource="{Binding PlatinumModes}" SelectedItem="{Binding PlatinumMode}"/></StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Reserve level"/><ComboBox ItemsSource="{Binding Reserves}" SelectedItem="{Binding Reserve}"/></StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Minimum hotspots"/><NumericUpDown Minimum="1" Maximum="20" Value="{Binding MinimumHotspots}"/></StackPanel>
+                <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Source"/><ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding Source}"/></StackPanel>
+                <StackPanel Spacing="4" Width="150" Margin="0,0,12,10"><TextBlock Text="Results"/><NumericUpDown Minimum="1" Maximum="100" Value="{Binding ResultLimit}"/></StackPanel>
               </WrapPanel>
-              <TextBlock Text="Choose an objective and Power, find a system, then find its rings. Use selling stations from a ring to complete the plan. Acquisition candidates still need support-range checks in the game; prices are not merit estimates." TextWrapping="Wrap" Classes="muted"/>
-              <Expander Header="System filters">
-                <WrapPanel>
-                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Security" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding Security}"/>
-                  </StackPanel>
-                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Allegiance" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding Allegiance}"/>
-                  </StackPanel>
-                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Government" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding Government}"/>
-                  </StackPanel>
-                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Economy" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding Economy}"/>
-                  </StackPanel>
-                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Faction state" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding State}"/>
-                  </StackPanel>
-                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Controlling Power" TextWrapping="Wrap"/>
-                    <ComboBox ItemsSource="{Binding Powers}" SelectedItem="{Binding Power}" HorizontalAlignment="Stretch"/>
-                  </StackPanel>
-                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Power state" TextWrapping="Wrap"/>
-                    <ComboBox ItemsSource="{Binding PowerStates}" SelectedItem="{Binding PowerState}" HorizontalAlignment="Stretch"/>
-                  </StackPanel>
-                  <StackPanel Spacing="4" Width="190" Margin="0,0,12,10">
-                    <TextBlock Text="Minimum population" TextWrapping="Wrap"/>
-                    <NumericUpDown Minimum="0" Maximum="1000000000000" Value="{Binding MinimumPopulation}"/>
-                  </StackPanel>
-                </WrapPanel>
-              </Expander>
             </StackPanel>
           </Border>
-          <ScrollViewer x:Name="SystemResultsHorizontalScroller" Grid.Row="2" Grid.RowSpan="2"
-            HorizontalScrollBarVisibility="Auto"
-            VerticalScrollBarVisibility="Disabled"
-            IsScrollChainingEnabled="True">
+          <WrapPanel Grid.Row="1" Margin="0,8,0,0">
+            <Button Content="Find Platinum spots" Click="SearchPlatinum_Click" Margin="0,0,8,4"/>
+            <Button Content="Find buyers for selected spot →" Click="PlatinumMarkets_Click" Margin="0,0,8,4"/>
+            <Button Content="Bookmark selected spot" Click="BookmarkPlatinum_Click" Margin="0,0,8,4"/>
+          </WrapPanel>
+          <ScrollViewer x:Name="PlatinumResultsHorizontalScroller" Grid.Row="2" Grid.RowSpan="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" IsScrollChainingEnabled="True">
             <Grid RowDefinitions="Auto,*">
-              <Grid x:Name="SystemResultsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults9" /></Grid.ColumnDefinitions>
-            <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="System"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=System}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Power"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="POWER" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Power}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="PowerState"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="POWER STATE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=PowerState}" /></StackPanel></Button><Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Security"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SECURITY" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Security}" /></StackPanel></Button>
-            <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Economy"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ECONOMY" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Economy}" /></StackPanel></Button><Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Government"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="GOVERNMENT" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Government}" /></StackPanel></Button><Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Allegiance"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ALLEGIANCE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Allegiance}" /></StackPanel></Button>
-            <Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="State"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="FACTION STATE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=State}" /></StackPanel></Button><Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Population"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="POPULATION" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Population}" /></StackPanel></Button><Button Grid.Column="9" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Distance"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DISTANCE" /><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Distance}" /></StackPanel></Button>
-          </Grid>
-              <ListBox x:Name="SystemResults" Grid.Row="1" Classes="table-rows" ItemsSource="{Binding Systems}" SelectedItem="{Binding SelectedSystem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsScrollChainingEnabled="True" Margin="0,0,0,10">
-            <ListBox.ContextMenu>
-              <ContextMenu>
-                <MenuItem Header="Use for hotspot search" Click="UseSystem_Click"/>
-                <MenuItem Header="Open system in Inara" Click="OpenSystem_Click" Tag="system"/>
-                <MenuItem Header="Copy system" behaviors:ClipboardCopyBehavior.Text="{Binding SelectedSystem.System}"/>
-              </ContextMenu>
-            </ListBox.ContextMenu>
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="search:MiningSystemResult">
-                <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults0" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults1" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults2" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults3" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults4" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults5" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults6" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults7" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults8" /><ColumnDefinition Width="Auto" SharedSizeGroup="SystemResults9" /></Grid.ColumnDefinitions>
-                  <TextBlock Text="{Binding System}" ToolTip.Tip="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Power}"/>
-                  <TextBlock Grid.Column="2" Text="{Binding PowerState}"/><TextBlock Grid.Column="3" Text="{Binding Security}"/>
-                  <TextBlock Grid.Column="4" Text="{Binding Economy}"/><TextBlock Grid.Column="5" Text="{Binding Government}"/>
-                  <TextBlock Grid.Column="6" Text="{Binding Allegiance}"/><TextBlock Grid.Column="7" Text="{Binding State}"/>
-                  <TextBlock Grid.Column="8" Text="{Binding Population, StringFormat='{}{0:N0}'}"/><TextBlock Grid.Column="9" Text="{Binding Distance, StringFormat='{}{0:N1} ly'}"/>
-                </Grid>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
+              <Grid x:Name="PlatinumResultsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults0"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults1"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults2"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults3"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults4"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults5"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults6"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults7"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults8"/></Grid.ColumnDefinitions>
+                <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="System"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM"/><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=System}"/></StackPanel></Button>
+                <Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Body"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="RING"/><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Body}"/></StackPanel></Button>
+                <Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Features"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="WHY IT RANKS"/><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Features}"/></StackPanel></Button>
+                <Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="ResourceExtractionSites"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="RES"/><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ResourceExtractionSites}"/></StackPanel></Button>
+                <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Overlaps"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="OVERLAP"/><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Overlaps}"/></StackPanel></Button>
+                <Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Reserve"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="RESERVE"/><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Reserve}"/></StackPanel></Button>
+                <Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="Power"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="POWER"/><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Power}"/></StackPanel></Button>
+                <Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="DistanceLy"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DISTANCE"/><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=DistanceLy}"/></StackPanel></Button>
+                <Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="ArrivalLs"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ARRIVAL"/><TextBlock Classes="table-heading" Text="{Binding SortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ArrivalLs}"/></StackPanel></Button>
+              </Grid>
+              <ListBox x:Name="PlatinumResults" Grid.Row="1" Classes="table-rows" ItemsSource="{Binding PlatinumSpots}" SelectedItem="{Binding SelectedPlatinumSpot}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="0,0,0,10">
+                <ListBox.ContextMenu><ContextMenu><MenuItem Header="Find buyers" Click="PlatinumMarkets_Click"/><MenuItem Header="Bookmark ring" Click="BookmarkPlatinum_Click"/><MenuItem Header="Copy system" behaviors:ClipboardCopyBehavior.Text="{Binding SelectedPlatinumSpot.System}"/></ContextMenu></ListBox.ContextMenu>
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:PlatinumSpotRowViewModel">
+                    <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults0"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults1"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults2"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults3"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults4"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults5"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults6"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults7"/><ColumnDefinition Width="Auto" SharedSizeGroup="PlatinumResults8"/></Grid.ColumnDefinitions>
+                      <TextBlock Text="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Body}"/><TextBlock Grid.Column="2" Text="{Binding Features}"/><TextBlock Grid.Column="3" Text="{Binding ResourceExtractionSites}"/><TextBlock Grid.Column="4" Text="{Binding Overlaps}"/><TextBlock Grid.Column="5" Text="{Binding Reserve}"/><TextBlock Grid.Column="6" Text="{Binding Power}"/><TextBlock Grid.Column="7" Text="{Binding DistanceLy, StringFormat='{}{0:N1} ly'}"/><TextBlock Grid.Column="8" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
             </Grid>
           </ScrollViewer>
-          <WrapPanel Grid.Row="1" Margin="0,8,0,0">
-            <Button Content="Find systems" Click="SearchSystems_Click" Margin="0,0,8,4"/>
-            <Button Content="Find rings in selected system →" Click="UseSystem_Click" Margin="0,0,8,4"/>
-          </WrapPanel>
         </Grid>
       </TabItem>
     </TabControl>
     <Grid Grid.Row="2" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
       <WrapPanel Grid.ColumnSpan="2" Margin="0,0,0,6">
-        <Button Content="Clear Powerplay plan" IsVisible="{Binding HasPlan}" Click="ClearPlan_Click" Margin="0,0,8,0"/>
         <CheckBox Content="Only this system (rings / markets)" IsChecked="{Binding SystemOnly}" Margin="0,0,12,0"/>
         <TextBlock Text="Provider page (0 first)" VerticalAlignment="Center" Margin="0,0,8,0"/>
         <NumericUpDown Minimum="0" Maximum="99" Value="{Binding Page}" Width="110"/>

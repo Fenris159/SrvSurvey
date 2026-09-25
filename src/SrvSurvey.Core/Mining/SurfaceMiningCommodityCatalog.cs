@@ -226,7 +226,7 @@ public static class SurfaceMiningCommodityCatalog
             RockyBodyType,
             "—",
             IronMagma,
-            "White-dwarf primary (D–DX)",
+            "White-dwarf host (any type)",
             204_168,
             1_038_104
         ),
@@ -268,7 +268,7 @@ public static class SurfaceMiningCommodityCatalog
         new(RockyGround, "Magnesite", RockyBodyType, "—", NoGeologyRequired, "—", 38_198, 255_880),
         new(RockyGround, "Uraninite", RockyBodyType, "—", NoGeologyRequired, "—", 3_006, 17_166),
         new(IcyGround, LowTemperatureDiamonds, "Icy", "Rocky or Rocky ice", NoGeologyRequired, "—", 130_184, 384_562),
-        new(IcyGround, "Helium-3", "Icy", "—", NoGeologyRequired, "White-dwarf primary (D–DX)", 96_223, 553_040),
+        new(IcyGround, "Helium-3", "Icy", "—", NoGeologyRequired, "White-dwarf host (any type)", 96_223, 553_040),
         new(IcyGround, "Tritium", "Icy", "—", NoGeologyRequired, "—", 53_311, 61_894),
         new(IcyGround, "Deuterium", "Icy", "Rocky or Rocky ice", NoGeologyRequired, "—", 40_762, 273_368),
         new(IcyGround, MethanolMonohydrateCrystals, RockyIceBodyType, "Icy", NoGeologyRequired, "—", 2_525, 3_794),
@@ -283,9 +283,7 @@ public static class SurfaceMiningCommodityCatalog
             normalized = canonical;
         }
 
-        commodity = All.FirstOrDefault(candidate =>
-            string.Equals(candidate.Name, normalized, StringComparison.OrdinalIgnoreCase)
-        )!;
+        commodity = All.FirstOrDefault(candidate => MiningCommodityName.Same(candidate.Name, normalized))!;
         return commodity is not null;
     }
 

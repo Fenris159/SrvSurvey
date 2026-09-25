@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
@@ -10,6 +11,105 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class MineMapViewModelTests
 {
+    [Fact]
+    public async Task ArdentPricesUpdateBothReferenceTablesAndKeepDiamondSeparate()
+    {
+        using var directory = new TemporaryDirectory();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+        using var handler = new DailyPriceHandler();
+        using var http = new HttpClient(handler);
+        viewModel.UseSurfaceSearch(new MiningSearchClient(http));
+
+        await viewModel.RefreshCommodityPricesAsync();
+
+        Assert.Equal(90_081, Assert.Single(viewModel.HotspotRows, row => row.Name == "Diamond").AverageSellPriceValue);
+        Assert.Equal(
+            83_000,
+            Assert.Single(viewModel.HotspotRows, row => row.Name == "Low Temperature Diamonds").AverageSellPriceValue
+        );
+        Assert.Equal(
+            608_583,
+            Assert.Single(viewModel.SurfaceHuntRows, row => row.Material == "Diamond").PeakSellPriceValue
+        );
+        Assert.Equal(
+            500_000,
+            Assert
+                .Single(viewModel.SurfaceHuntRows, row => row.Material == "Low Temperature Diamonds")
+                .PeakSellPriceValue
+        );
+        Assert.Contains(
+            "Ardent market prices for 2/37 materials",
+            viewModel.CommodityPriceStatus,
+            StringComparison.Ordinal
+        );
+        Assert.Equal(1, handler.ReportRequests);
+
+        await viewModel.RefreshCommodityPricesAsync();
+        Assert.Equal(1, handler.ReportRequests);
+    }
+
+    [Fact]
+    public async Task StoredArdentPricesAppearInBothTablesOnWorkspaceCreation()
+    {
+        using var directory = new TemporaryDirectory();
+        var store = new MiningCommodityPriceReportStore(directory.Path);
+        using var handler = new DailyPriceHandler();
+        using var http = new HttpClient(handler);
+        await new MiningSearchClient(http, commodityReportStore: store).CommodityPriceReportAsync();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+
+        viewModel.UseSurfaceSearch(new MiningSearchClient(http, commodityReportStore: store));
+
+        Assert.Equal(90_081, Assert.Single(viewModel.HotspotRows, row => row.Name == "Diamond").AverageSellPriceValue);
+        Assert.Equal(
+            608_583,
+            Assert.Single(viewModel.SurfaceHuntRows, row => row.Material == "Diamond").PeakSellPriceValue
+        );
+        Assert.Contains(
+            "Ardent market prices for 2/37 materials",
+            viewModel.CommodityPriceStatus,
+            StringComparison.Ordinal
+        );
+        Assert.Equal(1, handler.ReportRequests);
+    }
+
+    [Fact]
+    public async Task MissingArdentPriceCacheRefreshesAndPersistsOnWorkspaceCreation()
+    {
+        using var directory = new TemporaryDirectory();
+        var store = new MiningCommodityPriceReportStore(directory.Path);
+        using var handler = new DailyPriceHandler();
+        using var http = new HttpClient(handler);
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+
+        Assert.Null(store.Load());
+        viewModel.UseSurfaceSearch(new MiningSearchClient(http, commodityReportStore: store));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (store.Load() is null)
+        {
+            await Task.Delay(20, timeout.Token);
+        }
+
+        Assert.Equal(90_081, Assert.Single(viewModel.HotspotRows, row => row.Name == "Diamond").AverageSellPriceValue);
+        Assert.Equal(
+            608_583,
+            Assert.Single(viewModel.SurfaceHuntRows, row => row.Material == "Diamond").PeakSellPriceValue
+        );
+        Assert.Equal(1, handler.ReportRequests);
+    }
+
     [Fact]
     public void EmptyCatalogDoesNotWriteFabricatedBookmarks()
     {
@@ -1043,6 +1143,46 @@ public sealed class MineMapViewModelTests
                 },
             }
         );
+    }
+
+    private sealed class DailyPriceHandler : HttpMessageHandler
+    {
+        public int ReportRequests { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            string payload;
+            if (request.RequestUri?.AbsolutePath.EndsWith("/commodities", StringComparison.Ordinal) == true)
+            {
+                ReportRequests++;
+                payload =
+                    """[{"commodityName":"Diamond","avgSellPrice":136783,"maxSellPrice":720648},{"commodityName":"lowtemperaturediamond","avgSellPrice":128806,"maxSellPrice":523200}]""";
+            }
+            else if (request.RequestUri?.AbsolutePath.EndsWith("/diamond/imports", StringComparison.Ordinal) == true)
+            {
+                payload = """[{"meanPrice":90081,"sellPrice":608583,"updatedAt":"2026-09-23T10:00:00Z"}]""";
+            }
+            else if (
+                request.RequestUri?.AbsolutePath.EndsWith("/lowtemperaturediamond/imports", StringComparison.Ordinal)
+                == true
+            )
+            {
+                payload = """[{"meanPrice":83000,"sellPrice":500000,"updatedAt":"2026-09-23T09:00:00Z"}]""";
+            }
+            else if (request.RequestUri?.AbsolutePath.EndsWith("/imports", StringComparison.Ordinal) == true)
+            {
+                payload = "[]";
+            }
+            else
+            {
+                payload = """{"timestamp":"2026-09-07T09:19:53Z"}""";
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(payload) });
+        }
     }
 
     private sealed class TemporaryDirectory : IDisposable

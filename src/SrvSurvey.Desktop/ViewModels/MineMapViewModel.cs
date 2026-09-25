@@ -1,9 +1,11 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Windows.Input;
+using Avalonia.Threading;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Controls;
 
@@ -16,6 +18,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private static readonly TimeSpan SurveyGuideFeedbackDuration = TimeSpan.FromSeconds(6);
     private static readonly IReadOnlyList<string> MarkerRatingFilters = [AllMarkerRatings, "HIGH", "MEDIUM", "LOW"];
     private readonly MineMapService service;
+    private readonly MiningSearchResultCache miningSearchCache;
     private readonly MineMapSettingsStore settingsStore;
     private readonly Action<string> notify;
     private readonly Action<Guid> editBookmark;
@@ -24,7 +27,10 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private readonly WorkspaceTableSorter hotspotSorter = new();
     private readonly WorkspaceTableSorter surfaceHuntSorter = new();
     private readonly IReadOnlyList<SurfaceMiningCommodityRowViewModel> hotspotRows;
-    private readonly IReadOnlyList<SurfaceMiningHuntRowViewModel> surfaceHuntRows;
+    private readonly CancellationTokenSource commodityPriceCancellation = new();
+    private readonly DispatcherTimer commodityPriceTimer = new() { Interval = TimeSpan.FromHours(1) };
+    private MiningSearchClient commodityPriceClient = new();
+    private IReadOnlyList<SurfaceMiningHuntRowViewModel> surfaceHuntRows;
     private IReadOnlyList<SurfaceMiningCommodityRowViewModel> miningReferenceRows;
     private MineMapCommandContext? context;
     private EliteStatus? status;
@@ -46,6 +52,9 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private SurfaceCoordinate? planningCircleCenter;
     private Guid? planningCircleSurveyId;
     private string statusText = string.Empty;
+    private string currentSystem = string.Empty;
+    private string commodityPriceStatus = "Catalog prices shown while Ardent market quotes load.";
+    private bool disposed;
     private bool isAlignmentHelperVisible;
     private string surveyGuideFeedback = string.Empty;
     private DateTimeOffset? surveyGuideFeedbackExpiresAt;
@@ -61,6 +70,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     )
     {
         service = new MineMapService(dataDirectory, bookmarkCatalog);
+        miningSearchCache = MiningSearchResultCache.ForDirectory(dataDirectory);
         this.settingsStore = settingsStore;
         this.notify = notify;
         this.editBookmark = editBookmark ?? (_ => { });
@@ -86,6 +96,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         surfaceHuntRows = SurfaceMiningCommodityCatalog
             .HuntReferences.Select(reference => new SurfaceMiningHuntRowViewModel(reference))
             .ToArray();
+        commodityPriceTimer.Tick += OnCommodityPriceTimerTick;
         service.Changed += OnServiceChanged;
         service.NotificationRequested += OnServiceNotificationRequested;
         ZoomInCommand = new WorkspaceCommand(() => ViewportZoom = Math.Min(15, ViewportZoom + 0.5));
@@ -117,6 +128,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 this.editBookmark(row.Id);
             }
         });
+        SurfaceSearch = new SurfaceMiningSearchViewModel(commodityPriceClient);
         ActivateSelectedSurveyCommand = new WorkspaceCommand(() =>
         {
             if (SelectedSurveyRow is { } row)
@@ -127,11 +139,59 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         RefreshCatalog();
     }
 
+    public SurfaceMiningSearchViewModel SurfaceSearch { get; private set; }
+
+    public void UseSurfaceSearch(MiningSearchClient client, Action<string>? diagnosticLog = null)
+    {
+        SurfaceSearch.Dispose();
+        MiningSearchClient previous = commodityPriceClient;
+        commodityPriceClient = client;
+        if (!ReferenceEquals(previous, client))
+        {
+            previous.Dispose();
+        }
+
+        client.DiagnosticLog = diagnosticLog;
+        SurfaceSearch = new SurfaceMiningSearchViewModel(client);
+        SurfaceSearch.ConfigureCache(miningSearchCache);
+        SurfaceSearch.UpdateCurrentLocation(currentSystem);
+        Changed(nameof(SurfaceSearch));
+        if (client.CachedCommodityPriceReport is { Count: > 0 } cached)
+        {
+            ApplyCommodityPrices(client, cached, stored: true);
+        }
+
+        _ = RefreshCommodityPricesAsync();
+    }
+
+    public void UpdateCurrentSystem(string? system)
+    {
+        currentSystem = system ?? string.Empty;
+        SurfaceSearch.UpdateCurrentLocation(currentSystem);
+    }
+
     public int SelectedTab
     {
         get => selectedTab;
-        set => Set(ref selectedTab, value);
+        set
+        {
+            if (Set(ref selectedTab, value))
+            {
+                Changed(nameof(WorkspaceMaxWidth));
+                if (value is 2 or 3)
+                {
+                    commodityPriceTimer.Start();
+                    _ = RefreshCommodityPricesAsync();
+                }
+                else
+                {
+                    commodityPriceTimer.Stop();
+                }
+            }
+        }
     }
+
+    public double WorkspaceMaxWidth => SelectedTab == 4 ? double.PositiveInfinity : 1050;
 
     public string SearchText
     {
@@ -188,6 +248,88 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public IReadOnlyList<SurfaceMiningCommodityRowViewModel> HotspotRows => hotspotSorter.Apply(hotspotRows);
 
     public IReadOnlyList<SurfaceMiningHuntRowViewModel> SurfaceHuntRows => surfaceHuntSorter.Apply(surfaceHuntRows);
+
+    public string CommodityPriceStatus
+    {
+        get => commodityPriceStatus;
+        private set => Set(ref commodityPriceStatus, value);
+    }
+
+    public async Task RefreshCommodityPricesAsync()
+    {
+        MiningSearchClient client = commodityPriceClient;
+        try
+        {
+            IReadOnlyDictionary<string, MiningCommodityPriceSummary> report = await client.CommodityPriceReportAsync(
+                commodityPriceCancellation.Token
+            );
+            if (disposed || client != commodityPriceClient)
+            {
+                return;
+            }
+
+            if (report.Count == 0)
+            {
+                CommodityPriceStatus = "Ardent daily prices are unavailable. Showing the catalog snapshot.";
+                return;
+            }
+
+            ApplyCommodityPrices(client, report, stored: false);
+        }
+        catch (OperationCanceledException) when (commodityPriceCancellation.IsCancellationRequested)
+        {
+            // The workspace is closing.
+        }
+        catch (ObjectDisposedException) when (disposed || !ReferenceEquals(client, commodityPriceClient))
+        {
+            // A replaced client can finish its pending refresh after disposal.
+        }
+    }
+
+    private void ApplyCommodityPrices(
+        MiningSearchClient client,
+        IReadOnlyDictionary<string, MiningCommodityPriceSummary> report,
+        bool stored
+    )
+    {
+        foreach (SurfaceMiningCommodityRowViewModel row in hotspotRows)
+        {
+            row.ApplyDailyPrice(SurfaceMiningCommodityPrices.Find(row.Name, report));
+        }
+
+        surfaceHuntRows = SurfaceMiningCommodityCatalog
+            .HuntReferences.Select(reference => new SurfaceMiningHuntRowViewModel(
+                reference,
+                SurfaceMiningCommodityPrices.Find(reference.Material, report)
+            ))
+            .ToArray();
+        Changed(nameof(HotspotRows));
+        Changed(nameof(SurfaceHuntRows));
+        string checkedAt =
+            client.CommodityReportFetchedAt?.UtcDateTime.ToString("dd MMM yyyy HH:mm", CultureInfo.CurrentCulture)
+            ?? "unknown";
+        string sourceAt =
+            client.CommodityLiveQuoteUpdatedAt?.UtcDateTime.ToString("dd MMM yyyy HH:mm", CultureInfo.CurrentCulture)
+            ?? "unknown";
+        string coverage = $"{client.LiveSurfaceQuoteCount}/{MiningSearchClient.SurfaceQuoteCount}";
+        if (stored)
+        {
+            CommodityPriceStatus =
+                $"Showing stored Ardent market prices for {coverage} materials (latest quote {sourceAt} UTC; checked {checkedAt} UTC). Missing quotes use the older report or catalog.";
+        }
+        else if (client.PriceMarksUnavailable)
+        {
+            CommodityPriceStatus =
+                $"Ardent market prices for {coverage} materials (latest quote {sourceAt} UTC); some quotes could not be refreshed. Missing quotes use the older report or catalog.";
+        }
+        else
+        {
+            CommodityPriceStatus =
+                $"Ardent market prices for {coverage} materials (latest quote {sourceAt} UTC; checked {checkedAt} UTC). Missing quotes use the older report or catalog.";
+        }
+    }
+
+    private void OnCommodityPriceTimerTick(object? sender, EventArgs e) => _ = RefreshCommodityPricesAsync();
 
     public IReadOnlyList<SurfaceMiningCommodityRowViewModel> MiningReferenceRows => miningReferenceRows;
 
@@ -641,8 +783,15 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public void Dispose()
     {
+        disposed = true;
+        commodityPriceTimer.Stop();
+        commodityPriceTimer.Tick -= OnCommodityPriceTimerTick;
+        commodityPriceCancellation.Cancel();
+        commodityPriceCancellation.Dispose();
         service.Changed -= OnServiceChanged;
         service.NotificationRequested -= OnServiceNotificationRequested;
+        SurfaceSearch.Dispose();
+        commodityPriceClient.Dispose();
         service.Dispose();
     }
 
@@ -1147,6 +1296,8 @@ public sealed record MineMapDepositRowViewModel(string Material, string MineralA
 public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
 {
     private readonly Action selectionChanged;
+    private int averageSellPriceValue;
+    private int maximumSellPriceValue;
     private bool isInOverlay;
 
     public SurfaceMiningCommodityRowViewModel(
@@ -1163,8 +1314,8 @@ public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
         Rocky = Available(commodity.Rocky);
         RockyIce = Available(commodity.RockyIce);
         Icy = Available(commodity.Icy);
-        AverageSellPrice = $"{commodity.AverageSellPrice:N0} CR/t";
-        MaximumSellPrice = $"{commodity.MaximumSellPrice:N0} CR/t";
+        averageSellPriceValue = commodity.AverageSellPrice;
+        maximumSellPriceValue = commodity.MaximumSellPrice;
         BodyTypes = string.Join(
             ", ",
             new[]
@@ -1188,8 +1339,8 @@ public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
     public string Rocky { get; }
     public string RockyIce { get; }
     public string Icy { get; }
-    public string AverageSellPrice { get; }
-    public string MaximumSellPrice { get; }
+    public string AverageSellPrice => $"{averageSellPriceValue:N0} CR/t";
+    public string MaximumSellPrice => $"{maximumSellPriceValue:N0} CR/t";
     public string BodyTypes { get; }
 
     public bool IsInOverlay
@@ -1206,14 +1357,37 @@ public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
         }
     }
 
-    public int AverageSellPriceValue => ParsePrice(AverageSellPrice);
+    public int AverageSellPriceValue => averageSellPriceValue;
 
-    public int MaximumSellPriceValue => ParsePrice(MaximumSellPrice);
+    public int MaximumSellPriceValue => maximumSellPriceValue;
+
+    public void ApplyDailyPrice(MiningCommodityPriceSummary? summary)
+    {
+        if (summary is null)
+        {
+            return;
+        }
+
+        if (
+            summary.AverageSellPrice is > 0 and <= int.MaxValue
+            && Set(ref averageSellPriceValue, (int)summary.AverageSellPrice)
+        )
+        {
+            Changed(nameof(AverageSellPrice));
+            Changed(nameof(AverageSellPriceValue));
+        }
+
+        if (
+            summary.MaximumSellPrice is > 0 and <= int.MaxValue
+            && Set(ref maximumSellPriceValue, (int)summary.MaximumSellPrice)
+        )
+        {
+            Changed(nameof(MaximumSellPrice));
+            Changed(nameof(MaximumSellPriceValue));
+        }
+    }
 
     private static string Available(bool available) => available ? "✓" : "—";
-
-    private static int ParsePrice(string value) =>
-        int.Parse(value[..value.IndexOf(' ')], NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
 }
 
 public sealed record SurfaceMiningHuntRowViewModel(
@@ -1229,7 +1403,10 @@ public sealed record SurfaceMiningHuntRowViewModel(
     int PeakSellPriceValue
 )
 {
-    public SurfaceMiningHuntRowViewModel(SurfaceMiningHuntReference reference)
+    public SurfaceMiningHuntRowViewModel(
+        SurfaceMiningHuntReference reference,
+        MiningCommodityPriceSummary? summary = null
+    )
         : this(
             reference.SearchGroup,
             reference.Material,
@@ -1237,11 +1414,14 @@ public sealed record SurfaceMiningHuntRowViewModel(
             reference.AlsoPossibleOn,
             reference.Geology,
             reference.SpecialClue,
-            $"{reference.AverageGalacticPrice:N0} CR/t",
-            $"{reference.PeakSellPrice:N0} CR/t",
-            reference.AverageGalacticPrice,
-            reference.PeakSellPrice
+            $"{UseDailyPrice(summary?.AverageSellPrice, reference.AverageGalacticPrice):N0} CR/t",
+            $"{UseDailyPrice(summary?.MaximumSellPrice, reference.PeakSellPrice):N0} CR/t",
+            UseDailyPrice(summary?.AverageSellPrice, reference.AverageGalacticPrice),
+            UseDailyPrice(summary?.MaximumSellPrice, reference.PeakSellPrice)
         ) { }
+
+    private static int UseDailyPrice(long? daily, int snapshot) =>
+        daily is > 0 and <= int.MaxValue ? (int)daily : snapshot;
 }
 
 public sealed class MineMapMarkerFilterViewModel : WorkspaceObservable

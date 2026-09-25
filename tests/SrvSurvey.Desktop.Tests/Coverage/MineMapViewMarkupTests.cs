@@ -16,7 +16,7 @@ public sealed class MineMapViewMarkupTests
             .Select(item => item.Attribute("Header")?.Value ?? string.Empty)
             .ToArray();
 
-        Assert.Equal(["Surface Maps", "Survey map", "Hotspot List", "Surface Hunt", "Instructions"], headers);
+        Assert.Equal(["Surface Maps", "Survey map", "Hotspot List", "Surface Hunt", "Search", "Instructions"], headers);
         XElement map = Assert.Single(document.Descendants(), element => element.Name.LocalName == "MineMapControl");
         Assert.Equal("True", map.Attribute("AllowViewportInteraction")?.Value);
         Assert.Contains("ViewportZoom", map.Attribute("ViewportZoom")?.Value);
@@ -29,12 +29,16 @@ public sealed class MineMapViewMarkupTests
                     .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "SurfaceMapsResults")
         );
         XElement[] activationBindings = surfaceMapsResults.Descendants(avalonia + "KeyBinding").ToArray();
+        Assert.Equal("Auto", surfaceMapsResults.Attribute("ScrollViewer.VerticalScrollBarVisibility")?.Value);
         Assert.Equal(["Enter", "Space"], activationBindings.Select(binding => binding.Attribute("Gesture")?.Value));
         Assert.All(
             activationBindings,
             binding => Assert.Equal("{Binding ActivateSelectedSurveyCommand}", binding.Attribute("Command")?.Value)
         );
-        XElement slider = Assert.Single(document.Descendants(avalonia + "Slider"));
+        XElement slider = Assert.Single(
+            document.Descendants(avalonia + "Slider"),
+            candidate => candidate.Attribute("Value")?.Value.Contains("ViewportZoom", StringComparison.Ordinal) == true
+        );
         Assert.Equal("1", slider.Attribute("Minimum")?.Value);
         Assert.Equal("15", slider.Attribute("Maximum")?.Value);
         Assert.Contains(
@@ -266,7 +270,7 @@ public sealed class MineMapViewMarkupTests
                 "GEOLOGY TO LOOK FOR",
                 "SPECIAL CLUE",
                 "AVG GALACTIC PRICE",
-                "PEAK SELL SNAPSHOT",
+                "MAX SELL CR/T",
             ],
             surfaceHuntHeader
                 .Descendants(avalonia + "TextBlock")
@@ -397,6 +401,9 @@ public sealed class MineMapViewMarkupTests
             element => element.Attribute("PointerPressed")?.Value == "BookmarkRow_PointerPressed"
         );
         Assert.Equal("{Binding Selected}", rows.Attribute("SelectedItem")?.Value);
+        Assert.Equal("180", rows.Attribute("Height")?.Value);
+        Assert.Equal("Auto", rows.Attribute("ScrollViewer.VerticalScrollBarVisibility")?.Value);
+        Assert.Equal("Disabled", rows.Attribute("ScrollViewer.HorizontalScrollBarVisibility")?.Value);
         Assert.Contains(
             rows.Descendants(avalonia + "MenuItem"),
             item => item.Attribute("Header")?.Value == "Open in Workspace"
@@ -566,6 +573,39 @@ public sealed class MineMapViewMarkupTests
         );
         Assert.Equal("Center", toggle.Attribute("VerticalAlignment")?.Value);
         Assert.Equal("0,-4,0,4", toggle.Attribute("Margin")?.Value);
+    }
+
+    [Fact]
+    public void MiningWorkspaceReferenceUsesTwoColumnPricedCommodityTables()
+    {
+        var document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "MiningView.axaml")
+        );
+        XNamespace avalonia = "https://github.com/avaloniaui";
+        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
+
+        XElement rows = Assert.Single(
+            document.Descendants(avalonia + "ItemsControl"),
+            control => control.Attribute(x + "Name")?.Value == "RingReferenceRows"
+        );
+        Assert.Equal("{Binding RingReferences}", rows.Attribute("ItemsSource")?.Value);
+        Assert.Contains(
+            rows.Descendants(avalonia + "ItemsControl"),
+            control => control.Attribute("ItemsSource")?.Value == "{Binding Laser}"
+        );
+        Assert.Contains(
+            rows.Descendants(avalonia + "ItemsControl"),
+            control => control.Attribute("ItemsSource")?.Value == "{Binding Core}"
+        );
+        Assert.Equal(
+            2,
+            rows.Descendants(avalonia + "TextBlock").Count(text => text.Attribute("Text")?.Value == "AVG SELL")
+        );
+        Assert.Equal(
+            2,
+            rows.Descendants(avalonia + "TextBlock")
+                .Count(text => text.Attribute("Text")?.Value == "{Binding AverageSellPriceLabel}")
+        );
     }
 
     [Theory]

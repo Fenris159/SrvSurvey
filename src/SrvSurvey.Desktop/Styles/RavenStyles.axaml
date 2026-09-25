@@ -144,6 +144,60 @@
     <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
     <Setter Property="Padding" Value="10,6" />
   </Style>
+  <Style Selector="Border.acquire-header">
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,1,1,1" />
+    <Setter Property="Padding" Value="6,4" />
+  </Style>
+  <Style Selector="Border.acquire-header.first">
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Border.acquire-header TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Border.acquire-cell">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,1,0" />
+    <Setter Property="Padding" Value="6" />
+  </Style>
+  <Style Selector="Border.acquire-sell.selected">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="Border.commodity-code">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="Padding" Value="4,0" />
+  </Style>
+  <Style Selector="Border.commodity-code TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    <Setter Property="FontFamily" Value="monospace" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="Border.commodity-code.matched" x:CompileBindings="False">
+    <Setter Property="Background" Value="{Binding ColorHex}" />
+  </Style>
+  <Style Selector="Border.commodity-code.matched TextBlock" x:CompileBindings="False">
+    <Setter Property="Foreground" Value="{Binding ContrastForeground}" />
+  </Style>
+  <Style Selector="Border.commodity-code.material" x:CompileBindings="False">
+    <Setter Property="Background" Value="{Binding ColorHex}" />
+  </Style>
+  <Style Selector="Border.commodity-code.material TextBlock" x:CompileBindings="False">
+    <Setter Property="Foreground" Value="{Binding ContrastForeground}" />
+  </Style>
+  <Style Selector="Border.commodity-code.extra">
+    <Setter Property="Opacity" Value="0.5" />
+  </Style>
+  <Style Selector="Border.commodity-code.unavailable">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Border.commodity-code.unavailable TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+    <Setter Property="TextDecorations" Value="Strikethrough" />
+  </Style>
   <Style Selector="Button.link">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />

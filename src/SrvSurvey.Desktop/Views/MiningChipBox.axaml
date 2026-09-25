@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.MiningChipBox"
+             x:DataType="vm:MiningChipBoxViewModel"
+             Margin="0,0,12,10"
+             LostFocus="Box_LostFocus">
+  <UserControl.Styles>
+    <Style Selector="Button.chip-choice">
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Setter Property="Padding" Value="10,6"/>
+      <Setter Property="Margin" Value="0,0,6,6"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.chip-choice:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RavenInteractiveHoverBrush}"/>
+    </Style>
+    <Style Selector="Button.chip-remove">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="4,0,0,0"/>
+      <Setter Property="MinWidth" Value="16"/>
+    </Style>
+    <Style Selector="Button.chip-remove:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+  </UserControl.Styles>
+  <StackPanel Spacing="0">
+    <Border Background="{DynamicResource RavenSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenAccentBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="6,4"
+            MinHeight="40"
+            HorizontalAlignment="Stretch"
+            PointerPressed="Field_PointerPressed">
+      <WrapPanel x:Name="FieldWrap" Orientation="Horizontal">
+        <TextBox x:Name="QueryInput"
+                 Text="{Binding Query}"
+                 PlaceholderText="{Binding Prompt}"
+                 MinWidth="160"
+                 Margin="0,2"
+                 Padding="2,4"
+                 BorderThickness="0"
+                 Background="Transparent"
+                 Foreground="{DynamicResource RavenAccentBrush}"
+                 PlaceholderForeground="{DynamicResource RavenMutedTextBrush}"
+                 VerticalAlignment="Center"
+                 GotFocus="Query_GotFocus"
+                 KeyDown="Query_KeyDown"/>
+      </WrapPanel>
+    </Border>
+    <Border IsVisible="{Binding Open}"
+            Background="{DynamicResource RavenSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenAccentBrush}"
+            BorderThickness="1,0,1,1"
+            MaxHeight="220">
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Suggestions}" Margin="6,6,6,0">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <Button Classes="chip-choice" Content="{Binding}" Tag="{Binding}" Click="Add_Click"/>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+  </StackPanel>
+</UserControl>

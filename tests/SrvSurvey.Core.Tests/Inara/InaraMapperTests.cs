@@ -107,6 +107,28 @@ public sealed class InaraMapperTests
     }
 
     [Fact]
+    public void PowerplayJoinUsesTheFullPowerNameForInara()
+    {
+        var mapper = new InaraEventMapper();
+        IReadOnlyList<InaraEvent> mapped = mapper.Process(
+            JObject.Parse(
+                """
+                {
+                  "timestamp": "2026-09-23T12:00:00Z",
+                  "event": "PowerplayJoin",
+                  "Power": "A. Lavigny-Duval"
+                }
+                """
+            ),
+            Context,
+            true
+        );
+
+        InaraEvent rank = Assert.Single(mapped, item => item.Name == "setCommanderRankPower");
+        Assert.Equal("Arissa Lavigny-Duval", rank.Data.Value<string>("powerName"));
+    }
+
+    [Fact]
     public void ReputationEventsMapAllNumericEntries()
     {
         var mapper = new InaraEventMapper();

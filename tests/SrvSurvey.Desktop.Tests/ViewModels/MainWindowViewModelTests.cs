@@ -80,8 +80,9 @@ public sealed class MainWindowViewModelTests
         IReadOnlyList<OverlayPanelVisibilityEntryViewModel> panels = viewModel.OverlayPanelVisibility.ForCategory(
             OverlaySettingsCategory.Mining
         );
-        Assert.Equal(2, panels.Count);
+        Assert.Equal(3, panels.Count);
         Assert.Contains(panels, item => item.PlotterName == "PlotMiningNotifications");
+        Assert.Contains(panels, item => item.PlotterName == "PlotMiningCargo");
         Assert.Contains(panels, item => item.PlotterName == "PlotMiningReference");
         Assert.DoesNotContain(panels, item => item.PlotterName == "PlotMiningWarning");
         Assert.DoesNotContain(panels, item => item.PlotterName == "PlotSurfaceMining");
