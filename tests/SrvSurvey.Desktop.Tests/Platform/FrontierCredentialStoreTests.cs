@@ -65,11 +65,6 @@ public sealed class FrontierCredentialStoreTests
     [Fact]
     public async Task MissingSecretToolExplainsWhichPackageProvidesIt()
     {
-        if (!OperatingSystem.IsLinux())
-        {
-            return;
-        }
-
         var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", ["/nonexistent/secret-tool"]);
 
         InvalidOperationException error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
