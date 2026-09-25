@@ -97,15 +97,10 @@
                         TickFrequency="0.1"
                         IsSnapToTickEnabled="True"
                         Value="{Binding OverlayInteraction.EditorControlsHeightPercent, Mode=TwoWay}" />
-                <NumericUpDown x:Name="EditorControlsHeightInput"
-                               Grid.Column="1"
-                               Minimum="-100"
-                               Maximum="100"
-                               Increment="0.1"
-                               FormatString="0.0"
-                               ShowButtonSpinner="False"
-                               ClipValueToMinMax="True"
-                               Value="{Binding OverlayInteraction.EditorControlsHeightPercent, Mode=TwoWay}" />
+                <controls:OverlayEditorHeightEntry x:Name="EditorControlsHeightInput"
+                                                   Grid.Column="1"
+                                                   VerticalAlignment="Center"
+                                                   Value="{Binding OverlayInteraction.EditorControlsHeightPercent, Mode=TwoWay}" />
                 <TextBlock Grid.Column="2"
                            VerticalAlignment="Center"
                            FontWeight="SemiBold"
