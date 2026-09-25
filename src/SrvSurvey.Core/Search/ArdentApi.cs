@@ -57,7 +57,7 @@ public static class ArdentRoutes
     private static string Escape(string value) => Uri.EscapeDataString(value.Trim());
 }
 
-public sealed class ArdentApi
+public sealed class ArdentApi : IDisposable
 {
     public const int MaximumResponseBytes = 8 * 1024 * 1024;
     public static readonly Uri Origin = new("https://api.ardent-insight.com/v2/");
@@ -80,6 +80,8 @@ public sealed class ArdentApi
         this.onFailure = onFailure;
         this.cache = cache;
     }
+
+    public void Dispose() => gate.Dispose();
 
     public async Task<JsonDocument> GetAsync(
         string relativePath,

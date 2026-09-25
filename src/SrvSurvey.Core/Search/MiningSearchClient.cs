@@ -256,7 +256,11 @@ public sealed class MiningSearchClient : IDisposable
         }
     }
 
-    public void Dispose() => commodityReportGate.Dispose();
+    public void Dispose()
+    {
+        ardent.Dispose();
+        commodityReportGate.Dispose();
+    }
 
     public bool PriceMarksUnavailable { get; private set; }
 

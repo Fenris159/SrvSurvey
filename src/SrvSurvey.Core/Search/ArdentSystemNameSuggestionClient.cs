@@ -10,7 +10,7 @@ public interface ISystemNameSuggestionClient
 
 public sealed record SystemNameSuggestion(string Name, long SystemAddress, string Source);
 
-public sealed class ArdentSystemNameSuggestionClient : ISystemNameSuggestionClient
+public sealed class ArdentSystemNameSuggestionClient : ISystemNameSuggestionClient, IDisposable
 {
     private const int MaximumResponseBytes = 2 * 1024 * 1024;
     private const int MaximumSuggestions = 15;
@@ -22,6 +22,8 @@ public sealed class ArdentSystemNameSuggestionClient : ISystemNameSuggestionClie
     {
         api = new ArdentApi(client ?? SharedClient, apiBaseUri);
     }
+
+    public void Dispose() => api.Dispose();
 
     public async Task<IReadOnlyList<SystemNameSuggestion>> SearchAsync(
         string query,
