@@ -5337,7 +5337,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public void Dispose()
     {
-        Task.Run(() => DisposeAsync().AsTask(), CancellationToken.None).GetAwaiter().GetResult();
+        try
+        {
+            Task.Run(() => DisposeAsync().AsTask(), CancellationToken.None).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            boxelNameSuggestions.Dispose();
+        }
     }
 
     public async ValueTask DisposeAsync()
