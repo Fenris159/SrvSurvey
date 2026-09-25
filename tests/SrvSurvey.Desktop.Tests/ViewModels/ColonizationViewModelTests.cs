@@ -138,6 +138,34 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ProjectsLiveColonisationShipAfterStartingAlreadyDocked()
+    {
+        ColonizationViewModel viewModel = Create(new StubRavenColonialClient());
+
+        viewModel.ApplyJournalEvents([
+            Event(
+                "Location",
+                """
+                "Docked":true,"MarketID":10,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"System Colonisation Ship Example Site",
+                "StationServices":["dock","colonisationcontribution"]
+                """
+            ),
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":0.25,
+                "ResourcesRequired":[{"Name":"$steel_name;","RequiredAmount":100,"ProvidedAmount":25}]
+                """
+            ),
+        ]);
+
+        Assert.Equal("System Colonisation Ship Example Site", viewModel.ConstructionTitle);
+        Assert.Single(viewModel.ConstructionResources);
+        Assert.Contains("75 cargo remaining", viewModel.ConstructionStatus);
+    }
+
+    [Fact]
     public async Task FeedsConsentedLiveContextIntoProjectEditor()
     {
         ColonizationViewModel viewModel = Create(new StubRavenColonialClient());

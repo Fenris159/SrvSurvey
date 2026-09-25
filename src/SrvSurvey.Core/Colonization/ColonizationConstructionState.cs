@@ -35,6 +35,7 @@ public sealed class ColonizationConstructionState
         bool changed = journalEvent.EventName switch
         {
             "Docked" => ApplyDocked(journalEvent.Payload, journalEvent.Timestamp),
+            "Location" => ApplyLocation(journalEvent.Payload, journalEvent.Timestamp),
             "Undocked" => ClearDocking(),
             "StartJump" => ClearDocking(),
             "ColonisationConstructionDepot" => ApplyDepot(journalEvent.Payload, journalEvent.Timestamp),
@@ -117,6 +118,16 @@ public sealed class ColonizationConstructionState
         currentDock = updated;
         currentDepot = null;
         return changed;
+    }
+
+    private bool ApplyLocation(JsonElement root, DateTimeOffset? timestamp)
+    {
+        return GetBoolean(root, "Docked") switch
+        {
+            true => ApplyDocked(root, timestamp),
+            false => ClearDocking(),
+            null => false,
+        };
     }
 
     private bool ClearDocking()
@@ -430,7 +441,7 @@ public sealed record ColonizationDockingSnapshot(
 
     public bool IsPrimaryPortShip =>
         StationName.StartsWith(ExternalPanelColonisationShip, StringComparison.OrdinalIgnoreCase)
-        || string.Equals(StationName, SystemColonisationShip, StringComparison.OrdinalIgnoreCase);
+        || StationName.StartsWith(SystemColonisationShip, StringComparison.OrdinalIgnoreCase);
 
     public bool IsConstructionSite =>
         IsConstructionSiteName(StationName)
@@ -452,6 +463,7 @@ public sealed record ColonizationDockingSnapshot(
                 stationName.StartsWith(PlanetaryConstructionSite, StringComparison.OrdinalIgnoreCase)
                 || stationName.StartsWith(OrbitalConstructionSite, StringComparison.OrdinalIgnoreCase)
                 || stationName.StartsWith(ExternalPanelColonisationShip, StringComparison.OrdinalIgnoreCase)
+                || stationName.StartsWith(SystemColonisationShip, StringComparison.OrdinalIgnoreCase)
             );
     }
 }
