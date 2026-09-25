@@ -644,11 +644,13 @@ public sealed class MiningWorkspacePresentationTests
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
 
             NumericUpDown slots = mining.FindControl<NumericUpDown>("PersistentProspectSlotsInput")!;
+            CheckBox hideBelowThreshold = mining.FindControl<CheckBox>("HideBelowThresholdInput")!;
             ListBox thresholds = mining.FindControl<ListBox>("ThresholdRows")!;
             ListBox presets = mining.FindControl<ListBox>("AnnouncementPresetRows")!;
             ComboBox chimes = mining.FindControl<ComboBox>("ChimeSelector")!;
             ComboBox voices = mining.FindControl<ComboBox>("LocalVoiceSelector")!;
             Assert.True(slots.IsEffectivelyVisible);
+            Assert.True(hideBelowThreshold.IsEffectivelyVisible);
             Assert.True(thresholds.IsEffectivelyVisible);
             Assert.True(presets.IsEffectivelyVisible);
             Assert.True(chimes.IsEffectivelyVisible);

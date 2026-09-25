@@ -478,12 +478,13 @@
                         <CheckBox Content="Cargo full reminder after one minute idle" IsChecked="{Binding Settings.NotifyCargoFull}"/>
                         <TextBlock Text="Persistent prospector results shown in the overlay"/>
                         <NumericUpDown x:Name="PersistentProspectSlotsInput" Minimum="1" Maximum="8" Value="{Binding Settings.PersistentProspectSlots}" FormatString="0" HorizontalAlignment="Left" Width="100"/>
+                        <CheckBox x:Name="HideBelowThresholdInput" Content="Hide results that don't meet Mineral Thresholds" IsChecked="{Binding HideProspectsBelowThreshold, Mode=TwoWay}"/>
                       </StackPanel>
                     </Border>
                     <Border Classes="card raised">
                       <StackPanel Spacing="10">
                         <TextBlock Classes="card-title" Text="Mineral thresholds"/>
-                        <TextBlock Classes="muted" Text="Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect." TextWrapping="Wrap"/>
+                        <TextBlock Classes="muted" Text="Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match; core asteroids can still announce even when hidden. With no thresholds, all recent results remain visible." TextWrapping="Wrap"/>
                         <ListBox x:Name="ThresholdRows" ItemsSource="{Binding ThresholdGroups}" SelectedItem="{Binding SelectedThresholdGroup}" MinHeight="70" MaxHeight="210" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                           <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:MiningThresholdGroupViewModel">

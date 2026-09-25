@@ -234,6 +234,20 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.True(overlay.Prospects[0].Materials[0].IsHighlighted);
             Assert.False(overlay.Prospects[0].Materials[1].IsHighlighted);
             Assert.False(overlay.Prospects[1].Qualifies);
+
+            Assert.False(vm.HideProspectsBelowThreshold);
+            vm.HideProspectsBelowThreshold = true;
+            Assert.Contains("Platinum 35.0%", Assert.Single(overlay.Prospects).Summary);
+            Assert.True(new MiningStore(directory).Load("F1").Settings.HideProspectsBelowThreshold);
+
+            vm.Settings.NotifyProspecting = false;
+            vm.SaveSettingsCommand.Execute(null);
+            Assert.Single(overlay.Prospects);
+            Assert.False(overlay.Prospects[0].Qualifies);
+
+            vm.HideProspectsBelowThreshold = false;
+            Assert.Equal(4, overlay.Prospects.Count);
+            Assert.False(new MiningStore(directory).Load("F1").Settings.HideProspectsBelowThreshold);
         }
         finally
         {
