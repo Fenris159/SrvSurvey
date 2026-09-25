@@ -164,6 +164,30 @@ public sealed partial class SettingsView : UserControl
         }
     }
 
+    private void ClearJournalFolder_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.JournalSettings.ClearSelection();
+        }
+    }
+
+    private void EditJournalFolder_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (sender is Button { DataContext: string path } && DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.JournalSettings.EditFolder(path);
+        }
+    }
+
+    private void RemoveJournalFolder_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (sender is Button { DataContext: string path } && DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.JournalSettings.RemoveFolder(path);
+        }
+    }
+
     private async void ChooseScreenshotSourceFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
         string? folder = await ChooseFolderAsync("Choose the Elite Dangerous screenshot folder");

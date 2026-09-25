@@ -277,7 +277,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
             var sharedJournalSettingsStore = new JournalSettingsStore(AppDataPaths.UiSettingsPath);
             folderResolution = ResolveJournalFolder(
-                configuredJournalDirectory ?? sharedJournalSettingsStore.Load().Directory,
+                sharedJournalSettingsStore.Load().Directories,
+                configuredJournalDirectory,
                 IsDiagnosticReplay
             );
             FrontierProfile =
@@ -2278,13 +2279,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         ResolvePrimaryJournalPath(resolution) ?? Path.Combine(dataDirectory, "journals");
 
     private static JournalFolderResolution ResolveJournalFolder(
+        IReadOnlyList<string> savedJournalDirectories,
         string? configuredJournalDirectory,
         bool isDiagnosticReplay
     )
     {
         if (!isDiagnosticReplay)
         {
-            return JournalFolderLocator.ResolveCurrent(configuredJournalDirectory);
+            return JournalFolderLocator.ResolveCurrentWithSettings(savedJournalDirectories, configuredJournalDirectory);
         }
 
         string? replayDirectory = configuredJournalDirectory?.Trim().Trim('"');

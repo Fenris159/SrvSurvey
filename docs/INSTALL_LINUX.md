@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.55**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.56**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -44,7 +44,7 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.55-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.56-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/SrvSurvey.AppImage"
 cd "$HOME/Applications/SrvSurvey"
 chmod +x SrvSurvey.AppImage
@@ -58,7 +58,7 @@ pass its explicit dispatcher option:
 ./SrvSurvey.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.55` with the downloaded version. Keeping the installed name
+Replace `2.1.3.0-rc.56` with the downloaded version. Keeping the installed name
 as `SrvSurvey.AppImage` gives launchers and the in-application updater a stable
 path. Keep it in this folder instead of moving internal files out of the
 AppImage.
@@ -95,7 +95,7 @@ point to the same location. Keep all files together and run
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey/portable"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.55-linux-x64.tar.gz" \
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.56-linux-x64.tar.gz" \
     -C "$HOME/Applications/SrvSurvey/portable"
 cd "$HOME/Applications/SrvSurvey/portable"
 chmod +x SrvSurvey.Desktop
@@ -227,10 +227,12 @@ SrvSurvey detects every existing Elite journal folder it can find, rather than
 stopping at the first Steam prefix. The automatic Linux search covers:
 
 - Steam and Flatpak Steam's default `359320` Proton prefixes, plus additional
-  Steam libraries listed in `libraryfolders.vdf`;
+  Steam libraries listed in `libraryfolders.vdf` (including libraries such as
+  `~/personal/SteamLibrary` on any distribution);
 - Heroic's native and Flatpak game configuration, including its usual
   `~/Games/Heroic/Prefixes` tree;
-- Lutris game configuration and the usual prefixes under `~/Games`;
+- Lutris game configuration in `~/.local/share/lutris/games`, native and Flatpak
+  configuration directories, and the usual prefixes under `~/Games`;
 - native and Flatpak Bottles prefixes; and
 - a conventional `~/.wine` prefix.
 
@@ -247,9 +249,12 @@ open the replacement. Only **Launch instance** from the Multiple commanders card
 authorizes an intentional parallel SrvSurvey process.
 
 Launcher prefixes remain configurable and can live elsewhere. If an unusual
-layout is not detected, set `SRVSURVEY_JOURNAL_DIR` or pass
-`--journal-directory` with the folder containing `Journal.*.log` and
-`Status.json`.
+layout is not detected, add each folder containing `Journal.*.log` and
+`Status.json` under **Settings → Data → Elite journal source**, then restart.
+Saved folders join the automatically discovered folders. The
+`SRVSURVEY_JOURNAL_DIR` environment variable also adds a folder. Use
+`--journal-directory` to limit one SrvSurvey instance to a specific folder,
+as the Multiple commanders launcher does for each selected commander.
 
 ## Distribution prerequisites
 
@@ -303,9 +308,10 @@ shared library rather than installing an untrusted binary manually.
 ### Secure Frontier account storage
 
 Frontier account linking additionally requires the `secret-tool` command and
-an unlocked Secret Service-compatible keyring. Full GNOME and KDE Plasma
-installations commonly already provide the keyring service. Install the package
-that supplies `secret-tool` if it is missing:
+an unlocked Secret Service-compatible keyring in the same user session.
+`libsecret` supplies `secret-tool` on Arch derivatives, but the keyring provider
+is a separate component. Install the package that supplies `secret-tool` only
+if the command is missing:
 
 ```bash
 # Ubuntu and Debian derivatives
@@ -316,9 +322,18 @@ sudo pacman -S --needed libsecret
 ```
 
 Package names vary on Fedora and openSUSE; use the distribution package search
-to find the package providing `/usr/bin/secret-tool`. SrvSurvey deliberately
-does not fall back to a plaintext token file. Linking remains unavailable until
-both `secret-tool` and an unlocked keyring service are present.
+to find the package providing `/usr/bin/secret-tool`. On KDE Plasma, enable
+**Use KWallet for the Secret Service interface** in **System Settings > KDE
+Wallet**, then unlock or reopen the wallet. If `secret-tool` reports **The name
+is not activatable**, sign out and back in; if it still fails, check your
+distribution's KWallet startup/login integration rather than reinstalling
+`libsecret` or applying a generic PAM edit. On SDDM systems, check whether that
+integration starts `ksecretd` in the Plasma session. A `dbus-run-session` probe
+uses a separate temporary bus, so it does not confirm the provider is available
+in SrvSurvey's normal login session. On other desktops, start and unlock a
+Secret Service provider such as GNOME Keyring. SrvSurvey deliberately does not fall
+back to a plaintext token file. Retry **Connect to Frontier** after the keyring
+is available.
 
 ## Troubleshooting
 
@@ -339,10 +354,11 @@ Common launch and library problems are listed below. For a fuller set of issues
   [Overlay Troubleshooting](Overlay_Troubleshooting.md).
 - `DISPLAY` is empty in a Wayland session: enable XWayland or log into an Xorg
   session; native Wayland is not the backend used by this package.
-- Frontier linking reports that secure token storage is unavailable: install
-  `libsecret-tools` on Debian/Ubuntu or `libsecret` on
-  Arch/Manjaro/CachyOS, make sure the desktop keyring is unlocked, and restart
-  SrvSurvey. These packages provide the required `secret-tool` executable. See
+- Frontier linking reports that secure token storage is unavailable: if
+  `secret-tool` is missing, install `libsecret-tools` on Debian/Ubuntu or
+  `libsecret` on Arch/Manjaro/CachyOS. If it is already installed, check that
+  a Secret Service keyring is running and unlocked in SrvSurvey's graphical
+  session. On KDE Plasma, enable KWallet's Secret Service interface. See
   [Frontier account linking](FRONTIER.md).
 
 ## Reference documentation

@@ -1,76 +1,69 @@
-# SrvSurvey-XP 2.1.3.0-rc.55
+# SrvSurvey-XP 2.1.3.0-rc.56
 
-RC55 expands Mining and Surface Mining with Powerplay planning, planetary
-prospecting, clearer sell routes, and cockpit overlays. It also improves market
-searches and keeps Ardent price data available across sessions. These changes
-follow the published [RC54 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.54).
+RC56 brings multiple Elite journal sources together for commanders who play
+through Steam and Epic, and improves the Mining and overlay editor experience.
+These changes follow the published [RC55 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.55).
+
+## Multiple commanders and journal folders
+
+- **Settings > Data > Elite journal source** now lets you choose a journal
+  folder, add it to a saved list, edit or delete saved entries, and clear the
+  picker to choose another folder. Existing single-folder settings carry over.
+- Saved folders join automatic discovery instead of replacing it. Steam and
+  Epic/Heroic commanders can both appear in **Multiple commanders**, and a
+  launched companion instance reads the selected commander's own journal
+  folder.
+- On Linux, SrvSurvey reads additional Steam libraries from Steam's library
+  metadata, including libraries outside the home directory's default Steam
+  location. It also reads Lutris game configuration in
+  `~/.local/share/lutris/games` alongside its existing Heroic, Bottles, Wine,
+  and Flatpak searches. Unusual launcher locations can still be added manually.
+- A `--journal-directory` startup option continues to select one folder for
+  that particular SrvSurvey instance.
+
+## Linux Frontier connection
+
+- When `secret-tool` is installed but the desktop keyring is unavailable,
+  SrvSurvey distinguishes that session problem from a missing command and gives
+  KDE Plasma and other desktop recovery guidance.
+- The Linux guide identifies the package that supplies `secret-tool` on
+  Debian/Ubuntu and Arch derivatives. A Linux Homebrew installation in its
+  standard prefix is recognized as well. Frontier tokens still require a
+  secure keyring.
 
 ## Mining in the cockpit
 
-- The Mining activity overlay can keep several recent prospector results visible
-  and retires an asteroid when its matching depletion report arrives. A separate
-  cargo overlay shows capacity, remaining space, limpets, and cargo, with target
-  minerals highlighted.
-- Mineral thresholds and announcement presets have separate editors. Prospector
-  announcements can use a chime or local speech on Windows and Linux.
-- Platinum Spots ranks useful RES, overlap, and multi-hotspot rings, combining
-  known ring references with commander discoveries and bookmarks.
-- The Surface Mining deposit tracker shows saved rig capacity beside nearby
-  material markers when a count is available.
+- The Mining activity overlay keeps the latest four active prospector results
+  visible even if none qualifies for an announcement. Materials are highlighted
+  only when they meet the configured notification criteria.
+- Refined minerals and limpet changes update the live cargo projection as
+  journal events arrive. The next `Cargo.json` snapshot reconciles the display
+  with the game's full inventory.
 
-## Powerplay mining
+## Overlay editor and layout
 
-- The Powerplay tab can search ring and planetary mining opportunities for
-  Acquire, Reinforce, and Undermine. Results pair mining sources with sell
-  systems and stations according to the selected goal.
-- Acquire searches work outward from eligible Fortified and Stronghold systems
-  to find Unoccupied sell targets within their 20 or 30 ly reach. Reinforce and
-  Undermine keep mining and selling in the same eligible system.
-- Result tables show station prices and demand, colored material tags, power
-  progress, expandable station and mining details, and connections between
-  related systems. Fleet carriers are excluded from Powerplay sell stations.
-- Searches support mineral, mining type, power, station pad, demand, freshness,
-  state, and result-count controls. Saved settings and results return after a
-  restart. Wider searches show increasing time warnings.
+- **Settings > Game overlays** has a saved editor controls height adjustment
+  from -100% to +100%. Use the slider or type a value; typed values apply on
+  Enter or when the field loses focus.
+- Overlay previews keep their placement while switching settings categories.
+  Route Bodies stays within the visible screen area on short displays.
 
-## Surface Mining and markets
+## Construction depots
 
-- Surface Mining > Search finds landable body candidates and nearby sell systems
-  for a selected material or Any. Body candidates use material-specific ground,
-  volcanism, and host-star clues where available; surface reserve levels no
-  longer hide otherwise suitable bodies.
-- Sell and mining systems are shown in linked, expandable tables. Material tags
-  use survey colors, while unrelated tags can be faded or hidden. Search results
-  favor shorter mine-to-sell loops and can be restored after a restart.
-- Mining > Find > Markets now offers clearer commodity and station-type choices,
-  includes planetary materials, filters stations by landing pad and market
-  criteria, and shows distance from the reference system in galaxy-wide results.
-  Mining > Find > Rings has a ring-mineral chip selector with an Any option.
-
-## Prices and search reliability
-
-- Hotspot List, Surface Hunt, and Mining > Reference use refreshed Ardent
-  average and maximum sell prices when available. The catalog is stored on disk
-  so it can appear immediately after a restart; older catalog values remain
-  available if a quote is missing.
-- Station and provider responses are cached across searches where appropriate.
-  Search requests use bounded retries, recover from intermittent body-search
-  failures, and continue through paged results instead of stopping at an early
-  request window.
-- Commodity and Powerplay names are normalized across provider responses, and
-  the planetary search checks the body's host star so a secondary white dwarf
-  can qualify.
+- Starting SrvSurvey while already docked at a construction ship restores the
+  live depot view from the `Location` journal event, including construction ship
+  names with a suffix.
 
 ## Update channel and packages
 
 - RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge for older
-  clients. RC55 uses the schema-2 `xp2-v` release channel.
-- Version: `2.1.3.0-rc.55`
-- Tag: `xp2-v2.1.3.0-rc.55`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.55-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.55-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.55-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.55-x86_64.AppImage.zsync`
+  clients. RC56 uses the schema-2 `xp2-v` release channel.
+- Version: `2.1.3.0-rc.56`
+- Tag: `xp2-v2.1.3.0-rc.56`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.56-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.56-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.56-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.56-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

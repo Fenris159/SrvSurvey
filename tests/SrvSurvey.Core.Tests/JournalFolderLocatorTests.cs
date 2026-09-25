@@ -21,7 +21,7 @@ public sealed class JournalFolderLocatorTests
         Assert.Equal(configured, result.SelectedPath);
         Assert.Equal(configured, result.CandidatePaths[0]);
         Assert.Equal(environment, result.CandidatePaths[1]);
-        Assert.Equal([configured], result.AvailablePaths);
+        Assert.Equal([configured, environment], result.AvailablePaths);
     }
 
     [Fact]
@@ -237,6 +237,69 @@ public sealed class JournalFolderLocatorTests
         );
 
         Assert.Equal([steam, heroic], result.AvailablePaths);
+    }
+
+    [Fact]
+    public void ConfiguredSteamFolderDoesNotHideDiscoveredEpicFolder()
+    {
+        const string steam =
+            "/home/cmdr/personal/SteamLibrary/steamapps/compatdata/359320/pfx/drive_c/users/steamuser/Saved Games/Frontier Developments/Elite Dangerous";
+        const string epic =
+            "/home/cmdr/Games/Heroic/Prefixes/Elite Dangerous/drive_c/users/steamuser/Saved Games/Frontier Developments/Elite Dangerous";
+        var existing = new HashSet<string>([steam, epic], StringComparer.Ordinal);
+
+        JournalFolderResolution result = JournalFolderLocator.Resolve(
+            configuredPath: steam,
+            environmentPath: null,
+            userProfile: "/home/cmdr",
+            platform: DesktopPlatform.Linux,
+            directoryExists: existing.Contains,
+            platformCandidates: [steam, epic]
+        );
+
+        Assert.Equal([steam, epic], result.AvailablePaths);
+    }
+
+    [Fact]
+    public void CommandLineFolderIsExclusiveToItsInstance()
+    {
+        const string steam = "/home/cmdr/steam";
+        const string epic = "/home/cmdr/epic";
+
+        JournalFolderResolution result = JournalFolderLocator.ResolveWithSettings(
+            [steam],
+            null,
+            "/home/cmdr",
+            DesktopPlatform.Linux,
+            path => path is steam or epic,
+            [epic],
+            exclusiveConfiguredPath: true
+        );
+
+        Assert.Equal([steam], result.AvailablePaths);
+    }
+
+    [Fact]
+    public async Task LinuxCandidatesReadLutrisShareGameConfiguration()
+    {
+        string home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-lutris-share-{Guid.NewGuid():N}");
+        try
+        {
+            string prefix = Path.Combine(home, "custom", "epic-prefix");
+            string epic = CreateJournalDirectory(prefix, "drive_c", "users", "cmdr");
+            string config = Path.Combine(home, ".local", "share", "lutris", "games");
+            Directory.CreateDirectory(config);
+            await File.WriteAllTextAsync(Path.Combine(config, "elite.yml"), $"game:\n  prefix: '{prefix}'\n");
+
+            Assert.Contains(epic, JournalFolderLocator.GetPlatformCandidates(home, DesktopPlatform.Linux));
+        }
+        finally
+        {
+            if (Directory.Exists(home))
+            {
+                Directory.Delete(home, true);
+            }
+        }
     }
 
     private static string CreateJournalDirectory(string home, params string[] prefixSegments)

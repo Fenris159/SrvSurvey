@@ -194,15 +194,21 @@ internal sealed class WindowsFrontierCredentialStore(string path) : IFrontierCre
         CredentialStoreLease.AcquireAsync(path + ".lock", cancellationToken);
 }
 
-internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath) : IFrontierCredentialStore
+internal sealed class LinuxSecretServiceFrontierCredentialStore(
+    string leasePath,
+    IReadOnlyList<string>? secretToolPaths = null
+) : IFrontierCredentialStore
 {
     internal const string UnavailableMessage =
-        "Secure Frontier token storage is unavailable. Install the package that provides secret-tool, unlock a Secret Service-compatible keyring, restart SrvSurvey, and try again. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.";
+        "Secure Frontier token storage is unavailable: Secret Service is inaccessible. secret-tool is installed, but a keyring must run and be unlocked in this login session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet and unlock the wallet. If activation still fails, sign out and back in; on SDDM systems, check KWallet/ksecretd login integration. On other desktops, start and unlock GNOME Keyring or another provider. Retry Connect to Frontier.";
+    internal const string MissingSecretToolMessage =
+        "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.";
     private static readonly string[] SecretToolPaths =
     [
         "/usr/bin/secret-tool",
         "/bin/secret-tool",
         "/usr/local/bin/secret-tool",
+        "/home/linuxbrew/.linuxbrew/bin/secret-tool",
         "/run/current-system/sw/bin/secret-tool",
     ];
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -287,7 +293,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
     public Task<IAsyncDisposable> AcquireLeaseAsync(CancellationToken cancellationToken = default) =>
         CredentialStoreLease.AcquireAsync(leasePath, cancellationToken);
 
-    private static async Task<ProcessResult> RunAsync(
+    private async Task<ProcessResult> RunAsync(
         IReadOnlyList<string> arguments,
         string? standardInput,
         CancellationToken cancellationToken
@@ -310,32 +316,48 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
         try
         {
             using Process process = Process.Start(startInfo) ?? throw new InvalidOperationException(UnavailableMessage);
-            if (standardInput is not null)
-            {
-                await process
-                    .StandardInput.WriteAsync(standardInput.AsMemory(), cancellationToken)
-                    .ConfigureAwait(false);
-                process.StandardInput.Close();
-            }
-
             Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
             Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+            bool inputFailed = false;
+            if (standardInput is not null)
+            {
+                try
+                {
+                    await process
+                        .StandardInput.WriteAsync(standardInput.AsMemory(), cancellationToken)
+                        .ConfigureAwait(false);
+                    process.StandardInput.Close();
+                }
+                catch (IOException)
+                {
+                    // secret-tool can exit before reading input when the keyring is unavailable.
+                    inputFailed = true;
+                }
+            }
+
             await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
             return new ProcessResult(
-                process.ExitCode,
+                inputFailed && process.ExitCode == 0 ? -1 : process.ExitCode,
                 await outputTask.ConfigureAwait(false),
                 await errorTask.ConfigureAwait(false)
             );
         }
         catch (Win32Exception exception)
         {
-            throw new InvalidOperationException(UnavailableMessage, exception);
+            throw new InvalidOperationException(
+                $"Secure Frontier token storage is unavailable because secret-tool could not start: {exception.Message}",
+                exception
+            );
         }
     }
 
-    private static string ResolveSecretToolPath()
+    private string ResolveSecretToolPath() => ResolveSecretToolPath(secretToolPaths, File.Exists);
+
+    internal static string ResolveSecretToolPath(IReadOnlyList<string>? paths, Func<string, bool> fileExists)
     {
-        return SecretToolPaths.FirstOrDefault(File.Exists) ?? SecretToolPaths[0];
+        ArgumentNullException.ThrowIfNull(fileExists);
+        return (paths ?? SecretToolPaths).FirstOrDefault(fileExists)
+            ?? throw new InvalidOperationException(MissingSecretToolMessage);
     }
 
     private sealed record ProcessResult(int ExitCode, string Output, string Error);

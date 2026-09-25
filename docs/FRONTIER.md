@@ -71,9 +71,9 @@ dashboard also does not request the remote `/journal` endpoint.
 ## Storage and request policy
 
 Access and refresh tokens are protected by Windows Data Protection on Windows
-and a Secret Service-compatible keyring on Linux. The required executable is
-named `secret-tool`; it is supplied by the `libsecret-tools` package on Debian
-and Ubuntu, and by the `libsecret` package on Arch Linux, Manjaro, and CachyOS:
+and a Secret Service-compatible keyring on Linux. If the `secret-tool`
+executable is missing, install `libsecret-tools` on Debian and Ubuntu or
+`libsecret` on Arch Linux, Manjaro, and CachyOS:
 
 ```bash
 # Debian and Ubuntu
@@ -84,7 +84,24 @@ sudo pacman -S --needed libsecret
 ```
 
 The application will not save tokens in plaintext when a secure store is
-unavailable. The desktop keyring must also be unlocked before linking.
+unavailable. On Arch derivatives, `libsecret` supplies `secret-tool`; on
+Debian and Ubuntu, `libsecret-tools` supplies it. Neither package necessarily
+provides a running Secret Service keyring. On KDE Plasma, enable
+**Use KWallet for the Secret Service interface** in **System Settings > KDE
+Wallet**, then unlock or reopen the wallet. If `secret-tool` reports **The name
+is not activatable**, the Secret Service provider could not be started on that
+login session's D-Bus. Sign out and back in after enabling the interface; if
+it still fails, check your distribution's KWallet startup/login integration
+(for Arch derivatives, see the [KDE Wallet guidance](https://wiki.archlinux.org/title/KDE_Wallet)).
+On systems using SDDM, check whether the KWallet login integration starts
+`ksecretd` in your Plasma session; this was relevant to the reported CachyOS
+case, but the exact configuration depends on the distribution.
+Do not edit PAM configuration based on a generic example without checking your
+distribution's login setup. A successful probe in `dbus-run-session` uses a
+separate temporary bus and does not establish that SrvSurvey's normal session
+can access the keyring. On other desktops, start and unlock a Secret Service
+provider such as GNOME Keyring. Run SrvSurvey in the same user graphical
+session as the keyring, then retry **Connect to Frontier**.
 
 Authorizations and cached snapshots are isolated by the stable Frontier ID
 from the active journal. Switching Elite accounts selects that commander's

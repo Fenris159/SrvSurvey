@@ -26,6 +26,15 @@ public static class JournalFolderLocator
 
     public static JournalFolderResolution ResolveCurrent(string? configuredPath = null)
     {
+        return ResolveCurrentWithSettings(configuredPath is null ? [] : [configuredPath], null);
+    }
+
+    public static JournalFolderResolution ResolveCurrentWithSettings(
+        IReadOnlyList<string> configuredPaths,
+        string? commandLineOverride
+    )
+    {
+        ArgumentNullException.ThrowIfNull(configuredPaths);
         DesktopPlatform platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? DesktopPlatform.Windows
             : (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) switch
@@ -35,13 +44,15 @@ public static class JournalFolderLocator
             };
 
         string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        return Resolve(
-            configuredPath,
+        bool hasOverride = !string.IsNullOrWhiteSpace(commandLineOverride);
+        return ResolveWithSettings(
+            hasOverride ? [commandLineOverride!] : configuredPaths,
             Environment.GetEnvironmentVariable(EnvironmentVariableName),
             userProfile,
             platform,
             Directory.Exists,
-            string.IsNullOrWhiteSpace(userProfile) ? null : GetPlatformCandidates(userProfile, platform)
+            string.IsNullOrWhiteSpace(userProfile) ? null : GetPlatformCandidates(userProfile, platform),
+            exclusiveConfiguredPath: hasOverride
         );
     }
 
@@ -52,8 +63,27 @@ public static class JournalFolderLocator
         DesktopPlatform platform,
         Func<string, bool> directoryExists,
         IReadOnlyList<string>? platformCandidates = null
+    ) =>
+        ResolveWithSettings(
+            configuredPath is null ? [] : [configuredPath],
+            environmentPath,
+            userProfile,
+            platform,
+            directoryExists,
+            platformCandidates
+        );
+
+    public static JournalFolderResolution ResolveWithSettings(
+        IReadOnlyList<string> configuredPaths,
+        string? environmentPath,
+        string? userProfile,
+        DesktopPlatform platform,
+        Func<string, bool> directoryExists,
+        IReadOnlyList<string>? platformCandidates = null,
+        bool exclusiveConfiguredPath = false
     )
     {
+        ArgumentNullException.ThrowIfNull(configuredPaths);
         ArgumentNullException.ThrowIfNull(directoryExists);
 
         StringComparer comparer =
@@ -61,47 +91,39 @@ public static class JournalFolderLocator
         var candidates = new List<string>();
         var seen = new HashSet<string>(comparer);
 
-        string? configuredCandidate = AddCandidate(configuredPath);
-        string? environmentCandidate = AddCandidate(environmentPath);
-
-        if (!string.IsNullOrWhiteSpace(userProfile))
+        foreach (string path in configuredPaths)
         {
-            foreach (string candidate in platformCandidates ?? GetPlatformDefaults(userProfile.Trim(), platform))
+            AddResolvedCandidate(path, candidates, seen);
+        }
+
+        if (!exclusiveConfiguredPath)
+        {
+            AddResolvedCandidate(environmentPath, candidates, seen);
+
+            if (!string.IsNullOrWhiteSpace(userProfile))
             {
-                _ = AddCandidate(candidate);
+                foreach (string candidate in platformCandidates ?? GetPlatformDefaults(userProfile.Trim(), platform))
+                {
+                    AddResolvedCandidate(candidate, candidates, seen);
+                }
             }
         }
 
-        string[] available = SelectAvailableCandidates();
+        string[] available = exclusiveConfiguredPath
+            ? candidates.Take(1).Where(directoryExists).ToArray()
+            : candidates.Where(directoryExists).ToArray();
         return new JournalFolderResolution(available.FirstOrDefault(), candidates.AsReadOnly())
         {
             AvailablePaths = available,
         };
+    }
 
-        string? AddCandidate(string? path)
+    private static void AddResolvedCandidate(string? path, List<string> candidates, HashSet<string> seen)
+    {
+        string? candidate = path?.Trim().Trim('"');
+        if (!string.IsNullOrWhiteSpace(candidate) && seen.Add(candidate))
         {
-            string? candidate = path?.Trim().Trim('"');
-            if (!string.IsNullOrWhiteSpace(candidate) && seen.Add(candidate))
-            {
-                candidates.Add(candidate);
-            }
-
-            return string.IsNullOrWhiteSpace(candidate) ? null : candidate;
-        }
-
-        string[] SelectAvailableCandidates()
-        {
-            if (configuredCandidate is not null && directoryExists(configuredCandidate))
-            {
-                return [configuredCandidate];
-            }
-
-            if (environmentCandidate is not null && directoryExists(environmentCandidate))
-            {
-                return [environmentCandidate];
-            }
-
-            return candidates.Where(directoryExists).ToArray();
+            candidates.Add(candidate);
         }
     }
 
@@ -439,6 +461,7 @@ public static class JournalFolderLocator
         string[] configRoots = new[]
         {
             Path.Combine(home, ".config", "lutris", "games"),
+            Path.Combine(home, LocalDirectoryName, ShareDirectoryName, "lutris", "games"),
             Path.Combine(home, ".var", "app", "net.lutris.Lutris", "config", "lutris", "games"),
         };
         foreach (string? configRoot in configRoots)

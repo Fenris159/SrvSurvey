@@ -1504,7 +1504,48 @@ public sealed class MainWindowViewModelTests
             );
 
             Assert.Equal(journals, viewModel.JournalFolderPath);
-            Assert.Equal(journals, viewModel.JournalSettings.DirectoryPath);
+            Assert.Equal([journals], viewModel.JournalSettings.SavedFolders);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SavedSteamAndEpicFoldersPopulateMultipleCommanders()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-multiple-journals-{Guid.NewGuid():N}");
+        try
+        {
+            string steam = Path.Combine(root, "steam");
+            string epic = Path.Combine(root, "epic");
+            string config = Path.Combine(root, "config");
+            Directory.CreateDirectory(steam);
+            Directory.CreateDirectory(epic);
+            Directory.CreateDirectory(config);
+            await File.WriteAllTextAsync(
+                Path.Combine(steam, "Journal.2026-09-01T100000.01.log"),
+                "{\"event\":\"Commander\",\"Name\":\"Steam Cmdr\",\"FID\":\"F123\"}\n"
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(epic, "Journal.2026-09-01T110000.01.log"),
+                "{\"event\":\"Commander\",\"Name\":\"Epic Cmdr\",\"FID\":\"F456\"}\n"
+            );
+            var paths = new AppDataPaths(config, Path.Combine(root, "data"), Path.Combine(root, "cache"), []);
+            new JournalSettingsStore(paths.UiSettingsPath).Save(new JournalPreferences(steam, [epic]));
+
+            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                null,
+                builder => builder.WithAppDataPaths(paths)
+            );
+            await viewModel.CommanderInstances.RefreshAsync();
+
+            Assert.Contains(viewModel.CommanderInstances.Commanders, commander => commander.JournalDirectory == steam);
+            Assert.Contains(viewModel.CommanderInstances.Commanders, commander => commander.JournalDirectory == epic);
         }
         finally
         {
