@@ -29,6 +29,21 @@ public sealed class JournalSettingsStoreTests : IDisposable
         Assert.Contains("\"Keep\": 42", File.ReadAllText(path));
     }
 
+    [Fact]
+    public void LegacySingleFolderMigratesWhenMultipleFoldersAreSaved()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        File.WriteAllText(path, "{\"Journal\":{\"Directory\":\"/steam\"},\"Future\":{\"Keep\":42}}");
+        var store = new JournalSettingsStore(path);
+
+        Assert.Equal(["/steam"], store.Load().Directories);
+        store.Save(new JournalPreferences("/steam", ["/epic", "/steam"]));
+
+        Assert.Equal(["/steam", "/epic"], store.Load().Directories);
+        Assert.Contains("\"Keep\": 42", File.ReadAllText(path));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

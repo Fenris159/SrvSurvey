@@ -2866,6 +2866,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Add folder",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
+  },
+  {
     "Text": "Add group",
     "IsFormat": false,
     "SourceKinds": [
@@ -2880,6 +2888,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Add journal folders for Steam, Epic/Heroic, other Proton prefixes, and copied profiles. Automatic discovery is also used.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Add local site",
@@ -9340,6 +9356,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FiregroupsView.axaml"
   },
   {
+    "Text": "Choose a journal folder, then add it to the saved list. Automatic discovery is also used.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
+  },
+  {
     "Text": "Choose a journey from the history list or begin a new one.",
     "IsFormat": false,
     "SourceKinds": [
@@ -9819,6 +9843,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Clear",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Clear Decoding the Ancient Ruins progress?",
@@ -14731,6 +14763,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Directories",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/JournalSettingsStore.cs"
+  },
+  {
     "Text": "Directory",
     "IsFormat": false,
     "SourceKinds": [
@@ -16024,6 +16064,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/NetworkPrivacySettingsStore.cs"
+  },
+  {
+    "Text": "Edit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Edit Current Map",
@@ -19377,6 +19425,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderInstancesViewModel.cs"
+  },
+  {
+    "Text": "Folders saved. Remove --journal-directory to use them when starting SrvSurvey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
+  },
+  {
+    "Text": "Folders saved. Restart SrvSurvey to scan them.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
   },
   {
     "Text": "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
@@ -24254,7 +24318,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Journal folder saved, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
+    "Text": "Journal folders saved, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -24262,7 +24326,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
   },
   {
-    "Text": "Journal folder saved. Restart SrvSurvey to use it.",
+    "Text": "Journal folders saved. Restart SrvSurvey to use them.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -24270,7 +24334,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
   },
   {
-    "Text": "Journal folder saved; restarting SrvSurvey...",
+    "Text": "Journal folders saved; restarting SrvSurvey...",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -30804,14 +30868,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
-  },
-  {
-    "Text": "No persisted override is set; platform defaults and SRVSURVEY_JOURNAL_DIR will be checked.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
   },
   {
     "Text": "No planned Raven site is available; choose a build layout manually.",
@@ -39815,6 +39871,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Restart to apply saved folders",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Restock",
     "IsFormat": false,
     "SourceKinds": [
@@ -40906,6 +40970,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
   },
   {
+    "Text": "SAVED JOURNAL FOLDERS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "SAVED LOCALLY",
     "IsFormat": false,
     "SourceKinds": [
@@ -41926,6 +41998,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Save change",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
+  },
+  {
     "Text": "Save changes",
     "IsFormat": false,
     "SourceKinds": [
@@ -41940,14 +42020,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DistanceView.axaml"
-  },
-  {
-    "Text": "Save journal folder and restart",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Save key",
@@ -49587,7 +49659,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs"
   },
   {
-    "Text": "The --journal-directory startup option controls this instance. Remove that option to use the persisted folder.",
+    "Text": "The --journal-directory startup option controls this instance. Saved folders apply when it is removed.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -51388,7 +51460,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
-    "Text": "The journal folder could not be saved: {0}",
+    "Text": "The journal folders could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -53637,7 +53709,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
-    "Text": "This Elite Dangerous journal folder is available.",
+    "Text": "This Elite Dangerous journal folder is available. Add it to the list below.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -55900,14 +55972,6 @@
   },
   {
     "Text": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Use a persisted folder for non-default Windows installations, Proton prefixes, and copied profiles.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"

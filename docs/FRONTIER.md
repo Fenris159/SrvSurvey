@@ -84,8 +84,9 @@ sudo pacman -S --needed libsecret
 ```
 
 The application will not save tokens in plaintext when a secure store is
-unavailable. Installing `libsecret` supplies the client command, but does not
-necessarily provide a running Secret Service keyring. On KDE Plasma, enable
+unavailable. On Arch derivatives, `libsecret` supplies `secret-tool`; on
+Debian and Ubuntu, `libsecret-tools` supplies it. Neither package necessarily
+provides a running Secret Service keyring. On KDE Plasma, enable
 **Use KWallet for the Secret Service interface** in **System Settings > KDE
 Wallet**, then unlock or reopen the wallet. If `secret-tool` reports **The name
 is not activatable**, the Secret Service provider could not be started on that

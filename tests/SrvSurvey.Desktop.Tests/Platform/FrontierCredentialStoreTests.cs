@@ -20,6 +20,19 @@ public sealed class FrontierCredentialStoreTests
     }
 
     [Fact]
+    public void DefaultResolverRecognizesLinuxHomebrewSecretTool()
+    {
+        const string homebrewTool = "/home/linuxbrew/.linuxbrew/bin/secret-tool";
+
+        string resolved = LinuxSecretServiceFrontierCredentialStore.ResolveSecretToolPath(
+            paths: null,
+            fileExists: path => path == homebrewTool
+        );
+
+        Assert.Equal(homebrewTool, resolved);
+    }
+
+    [Fact]
     public async Task InstalledSecretToolWithFailedStoreExplainsTheKeyringService()
     {
         if (!OperatingSystem.IsLinux())

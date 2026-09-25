@@ -208,6 +208,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         "/usr/bin/secret-tool",
         "/bin/secret-tool",
         "/usr/local/bin/secret-tool",
+        "/home/linuxbrew/.linuxbrew/bin/secret-tool",
         "/run/current-system/sw/bin/secret-tool",
     ];
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -350,9 +351,12 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         }
     }
 
-    private string ResolveSecretToolPath()
+    private string ResolveSecretToolPath() => ResolveSecretToolPath(secretToolPaths, File.Exists);
+
+    internal static string ResolveSecretToolPath(IReadOnlyList<string>? paths, Func<string, bool> fileExists)
     {
-        return (secretToolPaths ?? SecretToolPaths).FirstOrDefault(File.Exists)
+        ArgumentNullException.ThrowIfNull(fileExists);
+        return (paths ?? SecretToolPaths).FirstOrDefault(fileExists)
             ?? throw new InvalidOperationException(MissingSecretToolMessage);
     }
 

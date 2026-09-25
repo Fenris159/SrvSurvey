@@ -59,6 +59,38 @@ public sealed class JournalSettingsViewModelTests : IDisposable
         Assert.Contains("--journal-directory", viewModel.StatusMessage);
     }
 
+    [Fact]
+    public void AddEditAndDeletePersistMultipleJournalFolders()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string steam = Path.Combine(temporaryDirectory, "steam");
+        string epic = Path.Combine(temporaryDirectory, "epic");
+        string movedEpic = Path.Combine(temporaryDirectory, "moved-epic");
+        Directory.CreateDirectory(steam);
+        Directory.CreateDirectory(epic);
+        Directory.CreateDirectory(movedEpic);
+        JournalSettingsStore store = CreateStore();
+        var viewModel = new JournalSettingsViewModel(store);
+
+        viewModel.DirectoryPath = steam;
+        viewModel.AddOrUpdateCommand.Execute(null);
+        viewModel.DirectoryPath = epic;
+        viewModel.AddOrUpdateCommand.Execute(null);
+        Assert.Equal([steam, epic], store.Load().Directories);
+        Assert.Equal(string.Empty, viewModel.DirectoryPath);
+
+        viewModel.EditFolder(epic);
+        Assert.Equal("Save change", viewModel.AddButtonLabel);
+        viewModel.ClearSelection();
+        viewModel.DirectoryPath = movedEpic;
+        viewModel.AddOrUpdateCommand.Execute(null);
+        Assert.Equal([steam, movedEpic], store.Load().Directories);
+
+        viewModel.RemoveFolder(steam);
+        Assert.Equal([movedEpic], store.Load().Directories);
+        Assert.True(viewModel.RestartCommand.CanExecute(null));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

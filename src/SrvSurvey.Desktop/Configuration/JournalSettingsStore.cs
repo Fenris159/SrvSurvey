@@ -14,6 +14,16 @@ public sealed class JournalSettingsStore
     public JournalPreferences Load()
     {
         var settings = documentStore.Load()["Journal"] as JsonObject;
+        if (settings?["Directories"] is JsonArray directories)
+        {
+            string[] paths = NormalizePaths(
+                directories.Select(node =>
+                    node is JsonValue value && value.TryGetValue<string>(out string? path) ? path : null
+                )
+            );
+            return new JournalPreferences(paths.FirstOrDefault(), paths.Length > 1 ? paths[1..] : null);
+        }
+
         return new JournalPreferences(GetString(settings, "Directory"));
     }
 
@@ -30,7 +40,9 @@ public sealed class JournalSettingsStore
             }
 
             root["Version"] = 1;
-            settings["Directory"] = Normalize(preferences.Directory);
+            string[] paths = NormalizePaths(preferences.Directories);
+            settings["Directory"] = paths.FirstOrDefault();
+            settings["Directories"] = new JsonArray(paths.Select(path => (JsonNode?)JsonValue.Create(path)).ToArray());
         });
     }
 
@@ -46,6 +58,18 @@ public sealed class JournalSettingsStore
         string? normalized = path?.Trim().Trim('"');
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
+
+    private static string[] NormalizePaths(IEnumerable<string?> paths)
+    {
+        StringComparer comparer = OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+        return paths.Select(Normalize).OfType<string>().Distinct(comparer).ToArray();
+    }
 }
 
-public sealed record JournalPreferences(string? Directory);
+public sealed record JournalPreferences(string? Directory, IReadOnlyList<string>? AdditionalDirectories = null)
+{
+    public IReadOnlyList<string> Directories =>
+        Directory is null ? AdditionalDirectories ?? [] : [Directory, .. AdditionalDirectories ?? []];
+}

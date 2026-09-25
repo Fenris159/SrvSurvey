@@ -910,23 +910,44 @@
             <TextBlock Classes="card-title" Text="Elite journal source" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Use a persisted folder for non-default Windows installations, Proton prefixes, and copied profiles." />
+                       Text="Add journal folders for Steam, Epic/Heroic, other Proton prefixes, and copied profiles. Automatic discovery is also used." />
           </StackPanel>
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
             <TextBox x:Name="JournalDirectoryTextBox"
                      Text="{Binding JournalSettings.DirectoryPath, Mode=TwoWay}"
-                     IsEnabled="{Binding !JournalSettings.IsCommandLineOverride}"
                      PlaceholderText="Elite Dangerous journal folder" />
             <Button Grid.Column="1"
                     Classes="secondary"
-                    IsEnabled="{Binding !JournalSettings.IsCommandLineOverride}"
                     Click="ChooseJournalFolder_Click"
                     Content="Choose folder" />
+            <Button Grid.Column="2"
+                    Classes="secondary"
+                    Click="ClearJournalFolder_Click"
+                    Content="Clear" />
           </Grid>
           <Button Classes="primary"
                   HorizontalAlignment="Left"
-                  Command="{Binding JournalSettings.SaveAndRestartCommand}"
-                  Content="Save journal folder and restart" />
+                  Command="{Binding JournalSettings.AddOrUpdateCommand}"
+                  Content="{Binding JournalSettings.AddButtonLabel}" />
+          <TextBlock Classes="eyebrow" Text="SAVED JOURNAL FOLDERS" />
+          <ItemsControl ItemsSource="{Binding JournalSettings.SavedFolders}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,6">
+                  <TextBlock VerticalAlignment="Center"
+                             TextTrimming="CharacterEllipsis"
+                             ToolTip.Tip="{Binding}"
+                             Text="{Binding}" />
+                  <Button Grid.Column="1" Classes="secondary" Click="EditJournalFolder_Click" Content="Edit" />
+                  <Button Grid.Column="2" Classes="secondary" Click="RemoveJournalFolder_Click" Content="Delete" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Button Classes="secondary"
+                  HorizontalAlignment="Left"
+                  Command="{Binding JournalSettings.RestartCommand}"
+                  Content="Restart to apply saved folders" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="{Binding JournalSettings.StatusMessage}" />

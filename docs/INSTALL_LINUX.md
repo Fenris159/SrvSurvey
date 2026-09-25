@@ -227,10 +227,12 @@ SrvSurvey detects every existing Elite journal folder it can find, rather than
 stopping at the first Steam prefix. The automatic Linux search covers:
 
 - Steam and Flatpak Steam's default `359320` Proton prefixes, plus additional
-  Steam libraries listed in `libraryfolders.vdf`;
+  Steam libraries listed in `libraryfolders.vdf` (including libraries such as
+  `~/personal/SteamLibrary` on any distribution);
 - Heroic's native and Flatpak game configuration, including its usual
   `~/Games/Heroic/Prefixes` tree;
-- Lutris game configuration and the usual prefixes under `~/Games`;
+- Lutris game configuration in `~/.local/share/lutris/games`, native and Flatpak
+  configuration directories, and the usual prefixes under `~/Games`;
 - native and Flatpak Bottles prefixes; and
 - a conventional `~/.wine` prefix.
 
@@ -247,9 +249,12 @@ open the replacement. Only **Launch instance** from the Multiple commanders card
 authorizes an intentional parallel SrvSurvey process.
 
 Launcher prefixes remain configurable and can live elsewhere. If an unusual
-layout is not detected, set `SRVSURVEY_JOURNAL_DIR` or pass
-`--journal-directory` with the folder containing `Journal.*.log` and
-`Status.json`.
+layout is not detected, add each folder containing `Journal.*.log` and
+`Status.json` under **Settings → Data → Elite journal source**, then restart.
+Saved folders join the automatically discovered folders. The
+`SRVSURVEY_JOURNAL_DIR` environment variable also adds a folder. Use
+`--journal-directory` to limit one SrvSurvey instance to a specific folder,
+as the Multiple commanders launcher does for each selected commander.
 
 ## Distribution prerequisites
 
