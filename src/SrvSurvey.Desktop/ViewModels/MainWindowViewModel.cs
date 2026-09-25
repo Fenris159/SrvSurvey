@@ -517,6 +517,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 externalNetworkClient,
                 firegroups: Firegroups
             );
+            MiningWorkspace.UseJournalDirectories(IsDiagnosticReplay ? [] : folderResolution.AvailablePaths);
             MiningWorkspace.Search.UseDiagnosticLog(message => resolvedApplicationLogService?.Append(message));
             FrontierProfile.PropertyChanged += (_, args) =>
             {

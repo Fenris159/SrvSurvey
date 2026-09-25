@@ -9,12 +9,13 @@ namespace SrvSurvey.Core.Diagnostics;
 /// </summary>
 public sealed class ProviderFailureLog
 {
+    private readonly Lock sync = new();
     private readonly Dictionary<string, Failure> pending = new(StringComparer.Ordinal);
 
     public void Record(string provider, string route, Exception exception)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(provider);
-        if (exception is OperationCanceledException)
+        if (exception is OperationCanceledException { InnerException: not TimeoutException })
         {
             return;
         }
@@ -22,19 +23,28 @@ public sealed class ProviderFailureLog
         string operation = Classify(route);
         string key = provider + "|" + operation;
         string detail = (route.Length == 0 ? operation : route) + " " + Describe(exception);
-        if (pending.TryGetValue(key, out Failure? existing))
+        lock (sync)
         {
-            pending[key] = existing with { Count = existing.Count + 1, Detail = detail };
-            return;
+            if (pending.TryGetValue(key, out Failure? existing))
+            {
+                pending[key] = existing with { Count = existing.Count + 1, Detail = detail };
+            }
+            else
+            {
+                pending[key] = new Failure(provider, operation, 1, detail);
+            }
         }
-
-        pending[key] = new Failure(provider, operation, 1, detail);
     }
 
     public IReadOnlyList<string> Drain()
     {
-        Failure[] ready = pending.Values.ToArray();
-        pending.Clear();
+        Failure[] ready;
+        lock (sync)
+        {
+            ready = pending.Values.ToArray();
+            pending.Clear();
+        }
+
         return ready.Select(Format).ToArray();
     }
 

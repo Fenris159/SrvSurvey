@@ -381,6 +381,64 @@ public sealed class MiningSearchClientTests
     }
 
     [Fact]
+    public async Task ArdentTimeoutsFallBackAndAreLoggedWithoutSwallowingCallerCancellation()
+    {
+        using var handler = new ArdentTimeoutHandler();
+        using var http = new HttpClient(handler);
+        var client = new MiningSearchClient(http);
+        var failures = new List<string>();
+        client.DiagnosticLog = failures.Add;
+
+        (_, string marketSource) = await client.FindMarketsPreferringArdentAsync(new("Sol", "Platinum", false));
+        (_, string traderSource) = await client.FindTradersPreferringArdentAsync("Sol", "Raw");
+        Assert.Equal("Spansh fallback", marketSource);
+        Assert.Equal("Spansh fallback", traderSource);
+        Assert.Empty(await client.CommodityPriceReportAsync());
+        Assert.True(client.PriceMarksUnavailable);
+        client.FlushDiagnostics();
+        Assert.Contains(failures, failure => failure.Contains("station prices", StringComparison.Ordinal));
+        Assert.Contains(failures, failure => failure.Contains("material traders", StringComparison.Ordinal));
+        Assert.Contains(failures, failure => failure.Contains("commodity averages", StringComparison.Ordinal));
+
+        using var canceled = new CancellationTokenSource();
+        await canceled.CancelAsync();
+        int spanshBeforeCancellation = handler.SpanshRequests;
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            client.FindMarketsPreferringArdentAsync(new("Sol", "Platinum", false), canceled.Token)
+        );
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            client.FindTradersPreferringArdentAsync("Sol", "Raw", cancellationToken: canceled.Token)
+        );
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            new MiningSearchClient(http).CommodityPriceReportAsync(canceled.Token)
+        );
+        Assert.Equal(spanshBeforeCancellation, handler.SpanshRequests);
+    }
+
+    private sealed class ArdentTimeoutHandler : HttpMessageHandler
+    {
+        public int SpanshRequests { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request.RequestUri?.Host.Contains("ardent", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return Task.FromException<HttpResponseMessage>(
+                    new OperationCanceledException("Timed out", new TimeoutException("Provider timeout"))
+                );
+            }
+
+            SpanshRequests++;
+            return Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"results\":[]}") }
+            );
+        }
+    }
+
+    [Fact]
     public async Task ArdentQuotesAvoidSpanshAndEmptyArdentResultsUseTheFallback()
     {
         using var handler = new ArdentThenSpanshHandler { ArdentResponse = "quote" };

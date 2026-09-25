@@ -215,6 +215,9 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal(42, model.ResultLimit);
         Assert.Equal("Overlaps", model.PlatinumMode);
         Assert.Equal("Jerome Archer", model.OpposingPower);
+        model.LoadOptions(new() { MaximumDemand = 0 });
+        model.PreparePowerplay();
+        Assert.Equal(0, model.MaximumDemand);
     }
 
     [Fact]
@@ -553,6 +556,57 @@ public sealed class MiningSearchViewModelTests
         Assert.Equal("Claim", row.Target);
         Assert.Equal("Anchor", Assert.Single(row.Miners).Name);
         Assert.Contains("20 ly", model.Status);
+        Assert.DoesNotContain("Searching", model.Status, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AcquisitionFiltersFallbackQuotesLikeArdentQuotes()
+    {
+        using var http = new HttpClient(new AcquisitionRangeHandler(failImports: true));
+        using var model = new MiningSearchViewModel(
+            new(http),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+        };
+        model.MineralChips.Add("Platinum");
+
+        await model.SearchSystemsAsync();
+
+        AcquireStationViewModel station = Assert.Single(Assert.Single(model.AcquireRows).Stations);
+        Assert.Equal("Trade Dock", station.Name);
+        Assert.Equal("PLA", Assert.Single(station.Quotes).Code);
+        Assert.DoesNotContain("Searching", model.Status, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AcquisitionRetainsProviderFailureInItsFinalStatus()
+    {
+        using var http = new HttpClient(new AcquisitionRangeHandler(failBodies: true));
+        using var model = new MiningSearchViewModel(
+            new(http),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver()
+        )
+        {
+            Reference = "Sol",
+            PledgedPower = "Archon Delaine",
+            Objective = "Acquire",
+        };
+
+        await model.SearchSystemsAsync();
+
+        Assert.Single(model.AcquireRows);
+        Assert.Contains("Request failed. Try again.", model.Status, StringComparison.Ordinal);
+        Assert.DoesNotContain("Searching", model.Status, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -625,7 +679,7 @@ public sealed class MiningSearchViewModelTests
         }
     }
 
-    private sealed class AcquisitionRangeHandler : HttpMessageHandler
+    private sealed class AcquisitionRangeHandler(bool failImports = false, bool failBodies = false) : HttpMessageHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -634,7 +688,26 @@ public sealed class MiningSearchViewModelTests
         {
             if (request.Content is null)
             {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("[]") };
+                return
+                    failImports
+                    && request.RequestUri!.AbsolutePath.Contains("/commodities/imports", StringComparison.Ordinal)
+                    ? new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable)
+                    : new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("[]") };
+            }
+
+            if (request.RequestUri!.AbsolutePath.EndsWith("/stations/search", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """{"results":[{"system_name":"Claim","name":"Trade Dock","market":[{"commodity":"Platinum","sell_price":100,"demand":10},{"commodity":"Platinum","sell_price":90,"demand":10},{"commodity":"Gold","sell_price":80,"demand":10},{"commodity":"Tea","sell_price":1000,"demand":10}]}]}"""
+                    ),
+                };
+            }
+
+            if (failBodies && request.RequestUri.AbsolutePath.EndsWith("/bodies/search", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
             }
 
             using var body = System.Text.Json.JsonDocument.Parse(

@@ -803,7 +803,7 @@ public sealed class MiningSearchClient
 
             return prices;
         }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+        catch (Exception ex) when (IsProviderFailure(ex, cancellationToken))
         {
             PriceMarksUnavailable = true;
             nextCommodityReportRefresh = timeProvider.GetUtcNow() + CommodityReportRetryDelay;
@@ -989,7 +989,7 @@ public sealed class MiningSearchClient
         {
             markets = await FindMarketsAsync(query, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+        catch (Exception ex) when (IsProviderFailure(ex, cancellationToken))
         {
             markets = [];
         }
@@ -1449,7 +1449,7 @@ public sealed class MiningSearchClient
         {
             return (await FindArdentTradersAsync(reference, radius, minimumPadSize, cancellationToken), ArdentProvider);
         }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or InvalidDataException)
+        catch (Exception ex) when (IsProviderFailure(ex, cancellationToken))
         {
             return (await FindTradersAsync(reference, trader, radius, page, cancellationToken), "Spansh fallback");
         }
@@ -1570,6 +1570,10 @@ public sealed class MiningSearchClient
 
         return new() { [DistanceField] = new { min = 0, max = radius } };
     }
+
+    private static bool IsProviderFailure(Exception exception, CancellationToken cancellationToken) =>
+        exception is HttpRequestException or JsonException or IOException or InvalidDataException
+        || exception is OperationCanceledException && !cancellationToken.IsCancellationRequested;
 
     private static IEnumerable<JsonElement> Results(JsonDocument document) =>
         MiningJson.Array(document.RootElement, "results");

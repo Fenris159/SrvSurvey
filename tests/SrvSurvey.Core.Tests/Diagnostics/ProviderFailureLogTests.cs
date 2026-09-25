@@ -43,4 +43,20 @@ public sealed class ProviderFailureLogTests
 
         Assert.Empty(log.Drain());
     }
+
+    [Fact]
+    public void TimedOutCancellationIsRecordedAndConcurrentFailuresAreCounted()
+    {
+        var log = new ProviderFailureLog();
+        Parallel.For(
+            0,
+            100,
+            _ =>
+                log.Record("Ardent", "commodities", new OperationCanceledException("timed out", new TimeoutException()))
+        );
+
+        string line = Assert.Single(log.Drain());
+        Assert.Contains("failed 100 times", line, StringComparison.Ordinal);
+        Assert.Contains("TimeoutException", line, StringComparison.Ordinal);
+    }
 }
