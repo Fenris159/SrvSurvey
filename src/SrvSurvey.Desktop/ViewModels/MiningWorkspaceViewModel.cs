@@ -933,6 +933,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     {
         disposed = true;
         Search.Dispose();
+        miningSearchClient.Dispose();
         speech.Dispose();
         chime.Dispose();
         community.Dispose();

@@ -884,16 +884,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             NavigationWorkspaceItems = NavigationItems
                 .Where(item => item.Key is TravelNavigationKey or SearchNavigationKey or BookmarksNavigationKey)
                 .ToArray();
-            ActivityNavigationItems = NavigationItems
-                .Where(item =>
-                    item.Key
-                        is MiningNavigationKey
-                            or MineMapNavigationKey
-                            or GuardianNavigationKey
-                            or QuestsNavigationKey
-                            or ColonisationNavigationKey
-                )
-                .ToArray();
+            ActivityNavigationItems = NavigationItems.Where(IsActivityNavigationItem).ToArray();
             UtilityNavigationItems = new[]
             {
                 SettingsNavigationKey,
@@ -921,6 +912,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             throw;
         }
     }
+
+    private static bool IsActivityNavigationItem(NavigationItemViewModel item) =>
+        item.Key
+            is MiningNavigationKey
+                or MineMapNavigationKey
+                or GuardianNavigationKey
+                or QuestsNavigationKey
+                or ColonisationNavigationKey;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

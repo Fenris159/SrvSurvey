@@ -1047,7 +1047,14 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             return NoMatchingBodiesMessage;
         }
 
-        int bodyCount = search.Rows.Sum(row => row.Systems.Sum(system => system.Bodies.Count));
+        int bodyCount = 0;
+        foreach (SurfaceSellRowViewModel row in search.Rows)
+        {
+            foreach (SurfaceMiningSystemRowViewModel system in row.Systems)
+            {
+                bodyCount += system.Bodies.Count;
+            }
+        }
         string rankingDescription = catalogOrder
             ? " sell systems, daily commodity value order. Best sell from "
             : " sell systems, best viable price first. Best sell from ";

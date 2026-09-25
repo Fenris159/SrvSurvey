@@ -171,20 +171,14 @@ public sealed class MiningCommunityCache
         DateTimeOffset now
     )
     {
+        // Commodity messages do not certify station type or pad size.
+        if (!CanUseCommunityMarkets(query))
+        {
+            return [];
+        }
+
         lock (gate)
         {
-            // Commodity messages do not certify station type or pad size. Keep these results out of such filtered searches.
-            if (
-                query.LargePads
-                || query.ExcludeCarriers
-                || query.StationType.Length > 0
-                || query.StationTypes.Count > 0
-                || (query.PadSize.Length > 0 && !query.PadSize.Equals("Any", StringComparison.OrdinalIgnoreCase))
-            )
-            {
-                return [];
-            }
-
             return markets
                 .Values.Where(m =>
                     m.Commodity == MiningCommodityName.Normalize(query.Commodity)
@@ -207,15 +201,26 @@ public sealed class MiningCommunityCache
                 {
                     Commodity = MiningCommodityName.Canonical(m.Commodity),
                 })
-                .Where(m =>
-                    m.Price > 0
-                    && (query.Buying ? m.Supply : m.Demand) > 0
-                    && (query.Buying ? m.Supply : m.Demand) >= query.MinimumDemand
-                    && (query.MaximumDemand == 0 || (query.Buying ? m.Supply : m.Demand) <= query.MaximumDemand)
-                    && (query.GalaxyWide || m.Distance is { } distance && distance <= query.Radius)
-                )
+                .Where(m => MatchesMarketQuery(m, query))
                 .ToArray();
         }
+    }
+
+    private static bool CanUseCommunityMarkets(MiningMarketQuery query) =>
+        !query.LargePads
+        && !query.ExcludeCarriers
+        && query.StationType.Length == 0
+        && query.StationTypes.Count == 0
+        && (query.PadSize.Length == 0 || query.PadSize.Equals("Any", StringComparison.OrdinalIgnoreCase));
+
+    private static bool MatchesMarketQuery(MiningMarketResult market, MiningMarketQuery query)
+    {
+        long volume = query.Buying ? market.Supply : market.Demand;
+        return market.Price > 0
+            && volume > 0
+            && volume >= query.MinimumDemand
+            && (query.MaximumDemand == 0 || volume <= query.MaximumDemand)
+            && (query.GalaxyWide || market.Distance is { } distance && distance <= query.Radius);
     }
 
     public IReadOnlyList<MiningSystemResult> FindSystems(MiningSystemQuery query, DateTimeOffset now)

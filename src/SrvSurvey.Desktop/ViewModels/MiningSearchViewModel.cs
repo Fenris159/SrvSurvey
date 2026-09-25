@@ -36,6 +36,8 @@ public sealed class MiningSearchViewModel(
     private const string UndermineObjective = "Undermine";
     private const string AcquireObjective = "Acquire";
     private const string ExpansionState = "Expansion";
+    private const string FortifiedState = "Fortified";
+    private const string StrongholdState = "Stronghold";
     private const string AnyPower = "Any";
     private const string NoPower = "None";
     private const string RequestFailed = "Request failed. Try again.";
@@ -776,7 +778,7 @@ public sealed class MiningSearchViewModel(
         NoPower,
     ];
     public static IReadOnlyList<string> PowerStates { get; } =
-    ["", "Exploited", "Fortified", "Stronghold", "Unoccupied", ExpansionState, "Contested"];
+    ["", "Exploited", FortifiedState, StrongholdState, "Unoccupied", ExpansionState, "Contested"];
     public IReadOnlyList<MiningMarketResult> Traders
     {
         get => traderSorter.Apply(traders);
@@ -1722,8 +1724,8 @@ public sealed class MiningSearchViewModel(
 
     private async Task SearchAcquisitionTargetsAsync(CancellationToken token)
     {
-        MiningSystemResult[] supporters = (await CollectPowerSystemsAsync("Fortified", token, galaxyWide: true))
-            .Concat(await CollectPowerSystemsAsync("Stronghold", token, galaxyWide: true))
+        MiningSystemResult[] supporters = (await CollectPowerSystemsAsync(FortifiedState, token, galaxyWide: true))
+            .Concat(await CollectPowerSystemsAsync(StrongholdState, token, galaxyWide: true))
             .Where(system => system.Position is not null)
             .OrderBy(system => system.Distance ?? double.MaxValue)
             .DistinctBy(system => system.System, StringComparer.OrdinalIgnoreCase)
@@ -2503,8 +2505,8 @@ public sealed class MiningSearchViewModel(
 
     private async Task<AcquireMarketCursor> CreateAcquireMarketCursorAsync(CancellationToken token)
     {
-        MiningSystemResult[] supporters = (await CollectPowerSystemsAsync("Fortified", token, galaxyWide: true))
-            .Concat(await CollectPowerSystemsAsync("Stronghold", token, galaxyWide: true))
+        MiningSystemResult[] supporters = (await CollectPowerSystemsAsync(FortifiedState, token, galaxyWide: true))
+            .Concat(await CollectPowerSystemsAsync(StrongholdState, token, galaxyWide: true))
             .OrderBy(system => system.Distance ?? double.MaxValue)
             .DistinctBy(system => system.System, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -2928,7 +2930,7 @@ public sealed class MiningSearchViewModel(
             {
                 if (
                     PowerplayPlan.SamePower(supporter.Power, PledgedPower)
-                    && supporter.PowerState is "Fortified" or "Stronghold"
+                    && supporter.PowerState is FortifiedState or StrongholdState
                     && supporter.Distance <= PowerplayPlan.AcquisitionReachLy(supporter.PowerState)
                 )
                 {

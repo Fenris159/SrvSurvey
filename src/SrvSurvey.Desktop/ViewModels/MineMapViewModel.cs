@@ -144,6 +144,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public void UseSurfaceSearch(MiningSearchClient client, Action<string>? diagnosticLog = null)
     {
         SurfaceSearch.Dispose();
+        if (!ReferenceEquals(commodityPriceClient, client))
+        {
+            commodityPriceClient.Dispose();
+        }
+
         commodityPriceClient = client;
         client.DiagnosticLog = diagnosticLog;
         SurfaceSearch = new SurfaceMiningSearchViewModel(client);
@@ -781,6 +786,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         service.Changed -= OnServiceChanged;
         service.NotificationRequested -= OnServiceNotificationRequested;
         SurfaceSearch.Dispose();
+        commodityPriceClient.Dispose();
         service.Dispose();
     }
 
