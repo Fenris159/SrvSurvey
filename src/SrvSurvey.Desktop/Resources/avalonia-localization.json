@@ -8325,8 +8325,8 @@
       "translation": "Jede Rolle wächst oder schrumpft unabhängig voneinander. Zero verwendet die Grundgröße des Themes."
     },
     {
-      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match; core asteroids can still announce even when hidden. With no thresholds, all recent results remain visible.",
-      "translation": "Jede Zeile legt ein Minimum für ein Mineral fest. Standardmäßig zeigt das Overlay die neuesten Prospektor-Ergebnisse auch unterhalb dieser Schwellenwerte an. Bei aktivierten Prospektionsbenachrichtigungen wird der passende Mineraltext hervorgehoben und qualifizierte Funde können klingeln oder sprechen. Die Option „Ausblenden“ entfernt Ergebnisse ohne Schwellenwertübereinstimmung. Kernasteroiden können auch dann noch Ankündigungen machen, wenn sie verborgen sind. Ohne Schwellenwerte bleiben alle aktuellen Ergebnisse sichtbar."
+      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match, except core asteroids with announcements enabled. With no thresholds, all recent results remain visible.",
+      "translation": "Jede Zeile legt ein Minimum für ein Mineral fest. Standardmäßig zeigt das Overlay die neuesten Prospektor-Ergebnisse auch unterhalb dieser Schwellenwerte an. Bei aktivierten Prospektionsbenachrichtigungen wird der passende Mineraltext hervorgehoben und qualifizierte Funde können klingeln oder sprechen. Die Option „Ausblenden“ entfernt Ergebnisse ohne Schwellenwertübereinstimmung, mit Ausnahme von Kernasteroiden mit aktivierten Ankündigungen. Ohne Schwellenwerte bleiben alle aktuellen Ergebnisse sichtbar."
     },
     {
       "source": "Eagle",
@@ -42847,8 +42847,8 @@
       "translation": "Cada rol crece o se reduce de forma independiente. Zero utiliza el tamaño de referencia del tema."
     },
     {
-      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match; core asteroids can still announce even when hidden. With no thresholds, all recent results remain visible.",
-      "translation": "Cada fila establece un mínimo para un mineral. De forma predeterminada, la superposición muestra los resultados más recientes del prospector incluso por debajo de estos umbrales. Con las notificaciones de prospección habilitadas, el texto mineral coincidente se resalta y los hallazgos calificados pueden sonar o hablar. La opción ocultar elimina los resultados sin coincidencia de umbral; Los asteroides centrales aún pueden anunciar incluso cuando están ocultos. Sin umbrales, todos los resultados recientes siguen siendo visibles."
+      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match, except core asteroids with announcements enabled. With no thresholds, all recent results remain visible.",
+      "translation": "Cada fila establece un mínimo para un mineral. De forma predeterminada, la superposición muestra los resultados más recientes del prospector incluso por debajo de estos umbrales. Con las notificaciones de prospección habilitadas, el texto mineral coincidente se resalta y los hallazgos calificados pueden sonar o hablar. La opción de ocultar elimina los resultados sin coincidencia de umbral, excepto los asteroides centrales con anuncios habilitados. Sin umbrales, todos los resultados recientes siguen siendo visibles."
     },
     {
       "source": "Eagle",
@@ -77369,8 +77369,8 @@
       "translation": "Chaque rôle grandit ou diminue indépendamment. Zero utilise la taille de base du thème."
     },
     {
-      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match; core asteroids can still announce even when hidden. With no thresholds, all recent results remain visible.",
-      "translation": "Chaque ligne définit un minimum pour un minéral. Par défaut, la superposition affiche les derniers résultats du prospecteur même en dessous de ces seuils. Lorsque les notifications de prospection sont activées, le texte minéral correspondant est mis en surbrillance et les découvertes éligibles peuvent sonner ou parler. L'option Masquer supprime les résultats sans correspondance de seuil ; les astéroïdes principaux peuvent toujours annoncer même lorsqu'ils sont cachés. Sans seuil, tous les résultats récents restent visibles."
+      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match, except core asteroids with announcements enabled. With no thresholds, all recent results remain visible.",
+      "translation": "Chaque ligne définit un minimum pour un minéral. Par défaut, la superposition affiche les derniers résultats du prospecteur même en dessous de ces seuils. Lorsque les notifications de prospection sont activées, le texte minéral correspondant est mis en surbrillance et les découvertes éligibles peuvent sonner ou parler. L'option Masquer supprime les résultats sans correspondance de seuil, à l'exception des astéroïdes principaux pour lesquels les annonces sont activées. Sans seuil, tous les résultats récents restent visibles."
     },
     {
       "source": "Eagle",
@@ -111891,8 +111891,8 @@
       "translation": "Cada função cresce ou diminui de forma independente. Zero usa o tamanho da linha de base do tema."
     },
     {
-      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match; core asteroids can still announce even when hidden. With no thresholds, all recent results remain visible.",
-      "translation": "Cada linha define um mínimo para um mineral. Por padrão, a sobreposição mostra os resultados mais recentes do prospector, mesmo abaixo desses limites. Com as notificações de prospecção habilitadas, o texto mineral correspondente é destacado e as descobertas qualificadas podem soar ou falar. A opção ocultar remove resultados sem correspondência de limite; os asteróides centrais ainda podem anunciar mesmo quando ocultos. Sem limites, todos os resultados recentes permanecem visíveis."
+      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match, except core asteroids with announcements enabled. With no thresholds, all recent results remain visible.",
+      "translation": "Cada linha define um mínimo para um mineral. Por padrão, a sobreposição mostra os resultados mais recentes do prospector, mesmo abaixo desses limites. Com as notificações de prospecção habilitadas, o texto mineral correspondente é destacado e as descobertas qualificadas podem soar ou falar. A opção ocultar remove resultados sem correspondência de limite, exceto asteroides centrais com anúncios ativados. Sem limites, todos os resultados recentes permanecem visíveis."
     },
     {
       "source": "Eagle",
@@ -146413,8 +146413,8 @@
       "translation": "Каждая роль увеличивается или уменьшается независимо. Zero использует базовый размер темы."
     },
     {
-      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match; core asteroids can still announce even when hidden. With no thresholds, all recent results remain visible.",
-      "translation": "Каждая строка устанавливает минимум для одного минерала. По умолчанию наложение показывает последние результаты поиска даже ниже этих пороговых значений. Если включены уведомления о поиске, соответствующий текст о минералах выделяется, а соответствующие находки могут издавать звон или говорить. Опция «Скрыть» удаляет результаты, не соответствующие пороговому значению; ядра астероидов все еще могут объявлять, даже если они скрыты. Без пороговых значений все последние результаты остаются видимыми."
+      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match, except core asteroids with announcements enabled. With no thresholds, all recent results remain visible.",
+      "translation": "Каждая строка устанавливает минимум для одного минерала. По умолчанию наложение показывает последние результаты поиска даже ниже этих пороговых значений. Если включены уведомления о поиске, соответствующий текст о минералах выделяется, а соответствующие находки могут издавать звон или говорить. Опция «Скрыть» удаляет результаты без соответствия пороговому значению, за исключением основных астероидов с включенными объявлениями. Без пороговых значений все последние результаты остаются видимыми."
     },
     {
       "source": "Eagle",
@@ -180935,8 +180935,8 @@
       "translation": "每个角色独立地增长或缩小。零使用主题的基线大小。"
     },
     {
-      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match; core asteroids can still announce even when hidden. With no thresholds, all recent results remain visible.",
-      "translation": "每行设置一种矿物的最小值。默认情况下，即使低于这些阈值，叠加层也会显示最新的探矿者结果。启用勘探通知后，匹配的矿物文本会突出显示，合格的发现可以发出声音或说话。隐藏选项会删除没有阈值匹配的结果；即使隐藏起来，核心小行星仍然可以宣布。由于没有门槛，所有最近的结果仍然可见。"
+      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match, except core asteroids with announcements enabled. With no thresholds, all recent results remain visible.",
+      "translation": "每行设置一种矿物的最小值。默认情况下，即使低于这些阈值，叠加层也会显示最新的探矿者结果。启用勘探通知后，匹配的矿物文本会突出显示，合格的发现可以发出声音或说话。隐藏选项会删除没有阈值匹配的结果，启用公告的核心小行星除外。由于没有门槛，所有最近的结果仍然可见。"
     },
     {
       "source": "Eagle",
@@ -215457,8 +215457,8 @@
       "translation": "* EACH ROLE GROWS OR SHRINKS INDEPENDENTLY. ZERO USES THE THEME'S BASELINE SIZE. >>>!"
     },
     {
-      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match; core asteroids can still announce even when hidden. With no thresholds, all recent results remain visible.",
-      "translation": "* EACH ROW SETS A MINIMUM FOR ONE MINERAL. BY DEFAULT, THE OVERLAY SHOWS THE LATEST PROSPECTOR RESULTS EVEN BELOW THESE THRESHOLDS. WITH PROSPECTING NOTIFICATIONS ENABLED, MATCHING MINERAL TEXT IS HIGHLIGHTED AND QUALIFYING FINDS CAN CHIME OR SPEAK. THE HIDE OPTION REMOVES RESULTS WITHOUT A THRESHOLD MATCH; CORE ASTEROIDS CAN STILL ANNOUNCE EVEN WHEN HIDDEN. WITH NO THRESHOLDS, ALL RECENT RESULTS REMAIN VISIBLE. >>>!"
+      "source": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match, except core asteroids with announcements enabled. With no thresholds, all recent results remain visible.",
+      "translation": "* EACH ROW SETS A MINIMUM FOR ONE MINERAL. BY DEFAULT, THE OVERLAY SHOWS THE LATEST PROSPECTOR RESULTS EVEN BELOW THESE THRESHOLDS. WITH PROSPECTING NOTIFICATIONS ENABLED, MATCHING MINERAL TEXT IS HIGHLIGHTED AND QUALIFYING FINDS CAN CHIME OR SPEAK. THE HIDE OPTION REMOVES RESULTS WITHOUT A THRESHOLD MATCH, EXCEPT CORE ASTEROIDS WITH ANNOUNCEMENTS ENABLED. WITH NO THRESHOLDS, ALL RECENT RESULTS REMAIN VISIBLE. >>>!"
     },
     {
       "source": "Eagle",

@@ -383,6 +383,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             .Where(prospect =>
                 !Settings.HideProspectsBelowThreshold
                 || Settings.Thresholds.Count == 0
+                || (!string.IsNullOrEmpty(prospect.Core) && Settings.NotifyProspecting && Settings.AnnounceCores)
                 || prospect.Materials.Any(MaterialMeetsThreshold)
             )
             .Select(ToOverlayProspect)

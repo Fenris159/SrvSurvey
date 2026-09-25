@@ -38,7 +38,8 @@ the published [RC56 release](https://github.com/Fenris159/SrvSurvey/releases/tag
   only when they meet the configured notification criteria.
 - Mining overlay settings now offer **Hide results that don't meet Mineral
   Thresholds**. Turn it on to show only recent prospectors with a mineral at or
-  above a configured threshold. Leave it off to keep all recent results visible.
+  above a configured threshold, plus announced core asteroids. Leave it off to
+  keep all recent results visible.
 - Refined minerals and limpet changes update the live cargo projection as
   journal events arrive. The next `Cargo.json` snapshot reconciles the display
   with the game's full inventory.
