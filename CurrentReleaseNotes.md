@@ -2,8 +2,9 @@
 
 RC58.5 keeps the RC58 multi-commander, journal, and settings work and fixes
 Linux Frontier linking when a second commander is added beside an existing
-login. It also includes the journal source, Mining, and overlay editor
-improvements from RC57 and the published
+login. Creating a colonization project now records the journal body and the
+Raven architect before anything is published. It also includes the journal
+source, Mining, and overlay editor improvements from RC57 and the published
 [RC56 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.56).
 
 ## Multiple commanders and journal folders
@@ -80,6 +81,28 @@ improvements from RC57 and the published
   Enter or when the field loses focus.
 - Overlay previews keep their placement while switching settings categories.
   Route Bodies stays within the visible screen area on short displays.
+
+## New colonization project
+
+- **Prepare new project** opens the create form from the live construction
+  depot and Raven's planned sites. It does not publish anything. **Review
+  project** checks the form, and the project is sent to Raven only after you
+  confirm.
+- **Body ID** is the journal `BodyID` for the body you are on. It is not the
+  system map label, such as 4 or 4 a. The circled help icon explains how to
+  read `BodyID` from the latest journal if the field has to be typed.
+- **Body name** is the full journal body name, such as `Peralta 4 a`. A known
+  body is published with both the id and that name, so a moon stays distinct
+  from its planet.
+- The project name starts from the dock: the station name, or "Primary port"
+  at the system colonisation ship. Choosing a planned Raven site replaces it
+  with that site's Raven name only while docked at the colonisation ship.
+- The architect is the system architect saved in Raven Colonial, and that
+  field is read-only. If Raven has no architect, the field uses your current
+  commander name, stays editable, and warns that the name can lock the system
+  to that commander.
+- Project name, architect, body id, and body name must be filled before
+  review. An empty field is highlighted with "This field is required."
 
 ## Construction depots
 
