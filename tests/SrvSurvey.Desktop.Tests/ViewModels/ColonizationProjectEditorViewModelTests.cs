@@ -372,6 +372,36 @@ public sealed class ColonizationProjectEditorViewModelTests
     }
 
     [Fact]
+    public async Task CurrentBodyUpdatesNameWithoutReplacingManuallyEditedId()
+    {
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext() with { CurrentBodyId = 12, CurrentBodyName = "Peralta 4 a" });
+        await editor.PrepareAsync();
+        editor.BodyNumberText = "77";
+
+        editor.UpdateContext(ReadyContext() with { CurrentBodyId = 13, CurrentBodyName = "Peralta 5 b" });
+
+        Assert.Equal("77", editor.BodyNumberText);
+        Assert.Equal("Peralta 5 b", editor.BodyName);
+    }
+
+    [Fact]
+    public async Task CurrentBodyUpdatesIdWithoutReplacingManuallyEditedName()
+    {
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext() with { CurrentBodyId = 12, CurrentBodyName = "Peralta 4 a" });
+        await editor.PrepareAsync();
+        editor.BodyName = "Manual body name";
+
+        editor.UpdateContext(ReadyContext() with { CurrentBodyId = 13, CurrentBodyName = "Peralta 5 b" });
+
+        Assert.Equal("13", editor.BodyNumberText);
+        Assert.Equal("Manual body name", editor.BodyName);
+    }
+
+    [Fact]
     public async Task CurrentBodyPublishesBodyIdAndFullName()
     {
         var client = new StubRavenColonialClient { Architect = "Test Cmdr" };

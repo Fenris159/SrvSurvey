@@ -722,6 +722,10 @@
                 <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
                            IsVisible="{Binding Colonization.ProjectEditor.IsBodyIdMissing}"
                            Text="This field is required." />
+                <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                           IsVisible="{Binding Colonization.ProjectEditor.IsBodyIdFormatInvalid}"
+                           Text="Body ID must be -1 for unknown or a non-negative integer."
+                           TextWrapping="Wrap" />
               </StackPanel>
               <StackPanel Grid.Column="2" Spacing="6">
                 <TextBlock Classes="muted" Text="BODY NAME: i.e. Peralta 4 a" TextWrapping="Wrap" />

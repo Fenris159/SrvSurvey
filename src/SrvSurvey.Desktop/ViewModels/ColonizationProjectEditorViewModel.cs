@@ -406,7 +406,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         }
         else if (
             IsPrepared
-            && bodyNumberFollowsContext
+            && (bodyNumberFollowsContext || bodyNameFollowsContext)
             && (
                 previousBodyId != updatedContext.CurrentBodyId
                 || !string.Equals(previousBodyName, updatedContext.CurrentBodyName, StringComparison.Ordinal)
@@ -918,7 +918,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
     {
         if (context.CurrentBodyId is >= 0)
         {
-            AssignBodyNumber(context.CurrentBodyId.Value.ToString(CultureInfo.InvariantCulture));
+            if (bodyNumberFollowsContext)
+            {
+                AssignBodyNumber(context.CurrentBodyId.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
             if (bodyNameFollowsContext)
             {
                 AssignBodyName(context.CurrentBodyName ?? string.Empty);
@@ -929,7 +933,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
 
         if (site?.BodyNumber is >= 0)
         {
-            AssignBodyNumber(site.BodyNumber.ToString(CultureInfo.InvariantCulture));
+            if (bodyNumberFollowsContext)
+            {
+                AssignBodyNumber(site.BodyNumber.ToString(CultureInfo.InvariantCulture));
+            }
+
             if (bodyNameFollowsContext)
             {
                 AssignBodyName(site.BodyName?.Trim() ?? string.Empty);
@@ -938,7 +946,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        AssignBodyNumber("-1");
+        if (bodyNumberFollowsContext)
+        {
+            AssignBodyNumber("-1");
+        }
+
         if (bodyNameFollowsContext)
         {
             AssignBodyName(string.Empty);
