@@ -98,7 +98,9 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
                 startInfo = SystemdProcessIsolation.CreateTransientServiceStartInfo(
                     startInfo,
                     $"--unit=srvsurvey-update-{currentProcess.Id}",
-                    preparation.Kind == ReleaseInstallationKind.AppImage ? ["APPIMAGE_EXTRACT_AND_RUN=1"] : []
+                    preparation.Kind == ReleaseInstallationKind.AppImage
+                        ? ["APPIMAGE_EXTRACT_AND_RUN=1", $"TMPDIR={Path.GetDirectoryName(helperPath)!}"]
+                        : []
                 );
             }
 
@@ -157,6 +159,9 @@ internal sealed class ApplicationUpdateHandoffService : IApplicationUpdateHandof
         if (extractAppImage)
         {
             startInfo.Environment["APPIMAGE_EXTRACT_AND_RUN"] = "1";
+            // AppImage extraction needs much more space than a quota-limited /tmp may allow.
+            // The staged image was already written to this installation directory.
+            startInfo.Environment["TMPDIR"] = Path.GetDirectoryName(fullEntryPoint)!;
         }
 
         return startInfo;

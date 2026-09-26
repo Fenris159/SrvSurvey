@@ -25693,6 +25693,10 @@
       "translation": "ZEIT"
     },
     {
+      "source": "TMPDIR",
+      "translation": "TMPDIR"
+    },
+    {
       "source": "TO",
       "translation": "ZU"
     },
@@ -60233,6 +60237,10 @@
     {
       "source": "TIME",
       "translation": "TIEMPO"
+    },
+    {
+      "source": "TMPDIR",
+      "translation": "TMPDIR"
     },
     {
       "source": "TO",
@@ -94777,6 +94785,10 @@
       "translation": "TEMPS"
     },
     {
+      "source": "TMPDIR",
+      "translation": "TMPDIR"
+    },
+    {
       "source": "TO",
       "translation": "À"
     },
@@ -129317,6 +129329,10 @@
     {
       "source": "TIME",
       "translation": "TEMPO"
+    },
+    {
+      "source": "TMPDIR",
+      "translation": "TMPDIR"
     },
     {
       "source": "TO",
@@ -163861,6 +163877,10 @@
       "translation": "ВРЕМЯ"
     },
     {
+      "source": "TMPDIR",
+      "translation": "TMPDIR"
+    },
+    {
       "source": "TO",
       "translation": "ТО"
     },
@@ -198403,6 +198423,10 @@
       "translation": "时间"
     },
     {
+      "source": "TMPDIR",
+      "translation": "TMPDIR"
+    },
+    {
       "source": "TO",
       "translation": "至"
     },
@@ -232943,6 +232967,10 @@
     {
       "source": "TIME",
       "translation": "* TIME >>>!"
+    },
+    {
+      "source": "TMPDIR",
+      "translation": "* TMPDIR >>>!"
     },
     {
       "source": "TO",

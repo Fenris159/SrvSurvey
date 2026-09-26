@@ -132,6 +132,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         );
 
         Assert.Equal("1", helper.Environment["APPIMAGE_EXTRACT_AND_RUN"]);
+        Assert.Equal(Path.GetFullPath(temporaryDirectory), helper.Environment["TMPDIR"]);
         Assert.Equal(
             [
                 ApplicationUpdateBootstrap.ApplyArgument,
@@ -295,6 +296,10 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         Assert.Contains($"--unit=srvsurvey-update-{plan.ParentProcessId}", captured.ArgumentList);
         Assert.Contains("--property=ExitType=cgroup", captured.ArgumentList);
         Assert.Contains("--setenv=APPIMAGE_EXTRACT_AND_RUN=1", captured.ArgumentList);
+        Assert.Contains(
+            $"--setenv=TMPDIR={Path.GetDirectoryName(Path.GetFullPath(stagedEntryPoint))}",
+            captured.ArgumentList
+        );
         Assert.Contains(Path.GetFullPath(stagedEntryPoint), captured.ArgumentList);
         Assert.Contains(ApplicationUpdateBootstrap.ApplyArgument, captured.ArgumentList);
         Assert.Contains(plan.PlanPath, captured.ArgumentList);
