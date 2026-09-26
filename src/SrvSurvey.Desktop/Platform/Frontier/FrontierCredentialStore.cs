@@ -250,7 +250,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         }
 
         await StoreAsync(json, cancellationToken).ConfigureAwait(false);
-        await CollapseDuplicateSecretsAsync(json, revision, cancellationToken).ConfigureAwait(false);
+        await ConfirmStoredRevisionAsync(revision, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task ClearAsync(CancellationToken cancellationToken = default)
@@ -342,46 +342,10 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         return now > revision ? now : revision + 1;
     }
 
-    private async Task CollapseDuplicateSecretsAsync(string json, long revision, CancellationToken cancellationToken)
+    private async Task ConfirmStoredRevisionAsync(long revision, CancellationToken cancellationToken)
     {
         IReadOnlyList<string> secrets = await SearchSecretsAsync(cancellationToken).ConfigureAwait(false);
-        if (secrets.Count <= 1 && SecretMatchesRevision(SelectPreferredSecret(secrets), revision))
-        {
-            return;
-        }
-
         if (!SecretMatchesRevision(SelectPreferredSecret(secrets), revision))
-        {
-            throw new InvalidOperationException(UnavailableMessage);
-        }
-
-        await RemoveMatchingSecretsAsync(cancellationToken).ConfigureAwait(false);
-        await StoreAsync(json, cancellationToken).ConfigureAwait(false);
-        IReadOnlyList<string> remaining = await SearchSecretsAsync(cancellationToken).ConfigureAwait(false);
-        if (remaining.Count != 1 || !SecretMatchesRevision(SelectPreferredSecret(remaining), revision))
-        {
-            throw new InvalidOperationException(UnavailableMessage);
-        }
-    }
-
-    private async Task RemoveMatchingSecretsAsync(CancellationToken cancellationToken)
-    {
-        for (int attempt = 0; attempt < 8; attempt++)
-        {
-            if ((await SearchSecretsAsync(cancellationToken).ConfigureAwait(false)).Count == 0)
-            {
-                return;
-            }
-
-            ProcessResult result = await RunAsync(ClearArguments(), standardInput: null, cancellationToken)
-                .ConfigureAwait(false);
-            if (result.ExitCode != 0 && !string.IsNullOrWhiteSpace(result.Error))
-            {
-                throw new InvalidOperationException($"{UnavailableMessage} {result.Error.Trim()}");
-            }
-        }
-
-        if ((await SearchSecretsAsync(cancellationToken).ConfigureAwait(false)).Count > 0)
         {
             throw new InvalidOperationException(UnavailableMessage);
         }
@@ -448,7 +412,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
     }
 
     private static string[] SearchArguments() =>
-        ["search", "--all", "application", "SrvSurvey", "service", "frontier-capi"];
+        ["search", "--all", "--unlock", "application", "SrvSurvey", "service", "frontier-capi"];
 
     private static string[] StoreArguments() =>
         ["store", "--label=SrvSurvey Frontier authorization", "application", "SrvSurvey", "service", "frontier-capi"];
