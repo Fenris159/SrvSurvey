@@ -896,6 +896,64 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task JournalOnlyCommanderCanBeSelectedForFrontierConnectionWithoutChangingJournalCommander()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-selector-{Guid.NewGuid():N}");
+        string journals = Path.Combine(root, "journals");
+        string otherJournals = Path.Combine(root, "other-journals");
+        Directory.CreateDirectory(journals);
+        Directory.CreateDirectory(otherJournals);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-09-12T120000.01.log"),
+                """
+                {"timestamp":"2026-09-12T12:00:00Z","event":"Fileheader","Odyssey":true}
+                {"timestamp":"2026-09-12T12:00:01Z","event":"Commander","Name":"Second","FID":"F456"}
+
+                """
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(otherJournals, "Journal.2026-09-12T120000.02.log"),
+                """
+                {"timestamp":"2026-09-12T12:00:00Z","event":"Commander","Name":"Third","FID":"F789"}
+
+                """
+            );
+            var account = new StubAccountService(new FrontierAccountState(false, null, null));
+            using var viewModel = new CommanderProfileViewModel(
+                account,
+                profileCatalog: new CommanderProfileCatalog(Path.Combine(root, "profiles"), [journals, otherJournals])
+            );
+            await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
+
+            Assert.Contains(viewModel.CommanderSelectionOptions, option => option.FrontierId == "F789");
+
+            FrontierCommanderSelectionOption second = Assert.Single(
+                viewModel.CommanderSelectionOptions,
+                option => option.FrontierId == "F456"
+            );
+            await viewModel.SelectCommanderAsync(second);
+
+            Assert.Equal("F456", account.ActiveFrontierId);
+            Assert.Equal("Fenris (F123)", viewModel.DetectedCommanderDescription);
+            Assert.False(viewModel.IsViewingJournalCommander);
+            Assert.True(viewModel.IsUnlinked);
+            Assert.True(viewModel.ConnectCommand.CanExecute(null));
+
+            await viewModel.SelectCommanderAsync(
+                viewModel.CommanderSelectionOptions.Single(option => option.IsAutomatic)
+            );
+            Assert.Equal("F123", account.ActiveFrontierId);
+            Assert.True(viewModel.IsViewingJournalCommander);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ManualCommanderSelectionSurvivesJournalCommanderDetection()
     {
         DateTimeOffset fetchedAt = DateTimeOffset.UtcNow;

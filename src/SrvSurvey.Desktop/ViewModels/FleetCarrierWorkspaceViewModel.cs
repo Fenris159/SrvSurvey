@@ -21,6 +21,7 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
     private string? personalCallsign;
     private string? squadronCallsign;
     private long? detectedMarketId;
+    private bool viewingJournalCommander;
 
     public FleetCarrierWorkspaceViewModel(CommanderProfileViewModel profile, ColonizationViewModel colonization)
     {
@@ -143,6 +144,7 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
         if (
             e.PropertyName
             is nameof(CommanderProfileViewModel.Snapshot)
+                or nameof(CommanderProfileViewModel.IsViewingJournalCommander)
                 or nameof(CommanderProfileViewModel.PersonalCarrier)
                 or nameof(CommanderProfileViewModel.SquadronCarrier)
                 or nameof(CommanderProfileViewModel.Carrier)
@@ -155,13 +157,16 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
 
     private async Task SeedCapiCargoAsync()
     {
-        await colonization.SeedLinkedCarrierCargoFromCapiAsync(profile.Snapshot).ConfigureAwait(true);
+        if (profile.IsViewingJournalCommander)
+        {
+            await colonization.SeedLinkedCarrierCargoFromCapiAsync(profile.Snapshot).ConfigureAwait(true);
+        }
     }
 
     private void Refresh(bool force = false)
     {
-        string? nextPersonalCallsign = profile.PersonalCarrier?.Callsign;
-        string? nextSquadronCallsign = profile.SquadronCarrier?.Callsign;
+        string? nextPersonalCallsign = profile.IsViewingJournalCommander ? profile.PersonalCarrier?.Callsign : null;
+        string? nextSquadronCallsign = profile.IsViewingJournalCommander ? profile.SquadronCarrier?.Callsign : null;
         if (
             !force
             && ReferenceEquals(observedCarriers, colonization.LinkedFleetCarriers)
@@ -169,6 +174,7 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
             && personalCallsign == nextPersonalCallsign
             && squadronCallsign == nextSquadronCallsign
             && detectedMarketId == colonization.DetectedSquadronCarrierMarketId
+            && viewingJournalCommander == profile.IsViewingJournalCommander
         )
         {
             return;
@@ -178,6 +184,7 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
         personalCallsign = nextPersonalCallsign;
         squadronCallsign = nextSquadronCallsign;
         detectedMarketId = colonization.DetectedSquadronCarrierMarketId;
+        viewingJournalCommander = profile.IsViewingJournalCommander;
         candidates = observedCarriers.Where(c => !IsOwnedCarrierCallsign(c.Name)).ToArray();
         if (commander != colonization.CommanderName)
         {
@@ -199,7 +206,10 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
             selectedMarketId = id;
         }
 
-        profile.UpdateLinkedFleetCarriers(commander, colonization.LinkedFleetCarriers);
+        profile.UpdateLinkedFleetCarriers(
+            profile.IsViewingJournalCommander ? commander : null,
+            profile.IsViewingJournalCommander ? colonization.LinkedFleetCarriers : []
+        );
         Changed(nameof(SquadronCandidates));
         RaiseSquadron();
     }

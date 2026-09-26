@@ -13,7 +13,19 @@ public sealed record AppDataPaths(
     private const string LegacyVersionDirectoryName = "1.1.0.0";
     private const string StorePackageDirectoryName = "35333NosmohtSoftware.142860789C73F_p4c193bsm1z5a";
 
-    public string UiSettingsPath => Path.Combine(ConfigDirectory, "cross-platform-ui.json");
+    public string? SettingsFrontierId { get; init; }
+
+    public string SharedUiSettingsPath => Path.Combine(ConfigDirectory, "cross-platform-ui.json");
+
+    public string UiSettingsPath =>
+        SettingsFrontierId is null
+            ? SharedUiSettingsPath
+            : Path.Combine(ConfigDirectory, "commanders", SettingsFrontierId, "cross-platform-ui.json");
+
+    public string OverlaySettingsDirectory =>
+        SettingsFrontierId is null
+            ? DataDirectory
+            : Path.Combine(DataDirectory, "commanders", SettingsFrontierId, "overlays");
 
     public static AppDataPaths ResolveCurrent()
     {

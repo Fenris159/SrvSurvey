@@ -629,8 +629,8 @@
       "translation": "Bevor Gattungs- und Artenzeilen verfügbar sind, ist ein DSS-Scan erforderlich."
     },
     {
-      "source": "A Frontier connection is already waiting for browser authorization.",
-      "translation": "Eine Frontier-Verbindung wartet bereits auf die Browser-Autorisierung."
+      "source": "A Frontier connection for this commander is already waiting for browser authorization.",
+      "translation": "Eine Frontier-Verbindung für diesen Commander wartet bereits auf die Browser-Autorisierung."
     },
     {
       "source": "A Guardian beacon scan could not be recorded.",
@@ -5773,6 +5773,10 @@
       "translation": "Kommandeur der Region zuerst"
     },
     {
+      "source": "Commander settings could not be initialized: {0}",
+      "translation": "Commander-Einstellungen konnten nicht initialisiert werden: {0}"
+    },
+    {
       "source": "Commander survey states and raw POIs are overlaid on the reference map.",
       "translation": "Commander-Vermessungszustände und Roh-POIs werden auf der Referenzkarte überlagert."
     },
@@ -10089,8 +10093,8 @@
       "translation": "Das nächste Elite Dangerous-Fenster fokussiert; Es folgen Overlays."
     },
     {
-      "source": "Folders saved. Remove --journal-directory to use them when starting SrvSurvey.",
-      "translation": "Ordner gespeichert. Entfernen Sie --journal-directory, um sie beim Starten zu verwenden SrvSurvey."
+      "source": "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory.",
+      "translation": "Ordner gespeichert. Aktualisieren Sie die Kommandantenlisten, um darin Profile zu finden. Live-Journaldaten bleiben an --journal-directory angeheftet."
     },
     {
       "source": "Folders saved. Restart SrvSurvey to scan them.",
@@ -10339,10 +10343,6 @@
     {
       "source": "Frontier response exceeded the {0}-byte safety limit.",
       "translation": "Die Antwort von Frontier hat die {0}-Byte-Sicherheitsgrenze überschritten."
-    },
-    {
-      "source": "Frontier returned an invalid authorization state. No account was linked.",
-      "translation": "Frontier hat einen ungültigen Autorisierungsstatus zurückgegeben. Es war kein Konto verknüpft."
     },
     {
       "source": "Frontier shipyard data could not be read: {0}",
@@ -25905,8 +25905,8 @@
       "translation": "Die Option --diagnostic-replay erfordert einen Manifestpfad für die Wiedergabesitzung."
     },
     {
-      "source": "The --journal-directory startup option controls this instance. Saved folders apply when it is removed.",
-      "translation": "Die Startoption --journal-directory steuert diese Instanz. Beim Entfernen werden die gespeicherten Ordner übernommen."
+      "source": "The --journal-directory startup option controls live journal data for this instance. Saved folders can still populate commander choices.",
+      "translation": "Die Startoption --journal-directory steuert Live-Journaldaten für diese Instanz. Gespeicherte Ordner können weiterhin die Auswahlmöglichkeiten des Kommandanten füllen."
     },
     {
       "source": "The /proc command line was empty.",
@@ -27595,6 +27595,10 @@
     {
       "source": "The session log could not be copied: {0}",
       "translation": "Das Sitzungsprotokoll konnte nicht kopiert werden: {0}"
+    },
+    {
+      "source": "The settings commander ID is invalid.",
+      "translation": "Die Commander-ID der Einstellungen ist ungültig."
     },
     {
       "source": "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
@@ -35151,8 +35155,8 @@
       "translation": "Se requiere un escaneo DSS antes de que las filas de género y especie estén disponibles."
     },
     {
-      "source": "A Frontier connection is already waiting for browser authorization.",
-      "translation": "Una conexión Frontier ya está esperando la autorización del navegador."
+      "source": "A Frontier connection for this commander is already waiting for browser authorization.",
+      "translation": "Una conexión Frontier para este comandante ya está esperando la autorización del navegador."
     },
     {
       "source": "A Guardian beacon scan could not be recorded.",
@@ -40295,6 +40299,10 @@
       "translation": "Comandante regional primero"
     },
     {
+      "source": "Commander settings could not be initialized: {0}",
+      "translation": "No se pudieron inicializar la configuración del Commander: {0}"
+    },
+    {
       "source": "Commander survey states and raw POIs are overlaid on the reference map.",
       "translation": "Los estados de reconocimiento de Commander y los puntos de interés sin procesar se superponen en el mapa de referencia."
     },
@@ -44611,8 +44619,8 @@
       "translation": "Se centró en la siguiente ventana Elite Dangerous; las superposiciones lo seguirán."
     },
     {
-      "source": "Folders saved. Remove --journal-directory to use them when starting SrvSurvey.",
-      "translation": "Carpetas guardadas. Elimine --journal-directory para usarlos al iniciar SrvSurvey."
+      "source": "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory.",
+      "translation": "Carpetas guardadas. Actualiza las listas de comandantes para encontrar perfiles en ellas. Los datos del diario en vivo permanecen anclados en --journal-directory."
     },
     {
       "source": "Folders saved. Restart SrvSurvey to scan them.",
@@ -44861,10 +44869,6 @@
     {
       "source": "Frontier response exceeded the {0}-byte safety limit.",
       "translation": "La respuesta de Frontier superó el límite de seguridad de {0} bytes."
-    },
-    {
-      "source": "Frontier returned an invalid authorization state. No account was linked.",
-      "translation": "Frontier devolvió un estado de autorización no válido. No se vinculó ninguna cuenta."
     },
     {
       "source": "Frontier shipyard data could not be read: {0}",
@@ -60427,8 +60431,8 @@
       "translation": "La opción --diagnostic-replay requiere una ruta de manifiesto de la sesión de reproducción."
     },
     {
-      "source": "The --journal-directory startup option controls this instance. Saved folders apply when it is removed.",
-      "translation": "La opción de inicio --journal-directory controla esta instancia. Las carpetas guardadas se aplican cuando se eliminan."
+      "source": "The --journal-directory startup option controls live journal data for this instance. Saved folders can still populate commander choices.",
+      "translation": "La opción de inicio --journal-directory controla los datos del diario en vivo para esta instancia. Las carpetas guardadas aún pueden completar las opciones del comandante."
     },
     {
       "source": "The /proc command line was empty.",
@@ -62117,6 +62121,10 @@
     {
       "source": "The session log could not be copied: {0}",
       "translation": "No se pudo copiar el registro de sesión: {0}"
+    },
+    {
+      "source": "The settings commander ID is invalid.",
+      "translation": "El ID del comandante de configuración no es válido."
     },
     {
       "source": "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
@@ -69673,8 +69681,8 @@
       "translation": "Une analyse DSS est requise avant que les lignes de genre et d’espèce soient disponibles."
     },
     {
-      "source": "A Frontier connection is already waiting for browser authorization.",
-      "translation": "Une connexion Frontier est déjà en attente de l'autorisation du navigateur."
+      "source": "A Frontier connection for this commander is already waiting for browser authorization.",
+      "translation": "Une connexion Frontier pour ce commandant est déjà en attente de l'autorisation du navigateur."
     },
     {
       "source": "A Guardian beacon scan could not be recorded.",
@@ -74817,6 +74825,10 @@
       "translation": "Commandant régional d'abord"
     },
     {
+      "source": "Commander settings could not be initialized: {0}",
+      "translation": "Les paramètres du contrôleur n'ont pas pu être initialisés : {0}"
+    },
+    {
       "source": "Commander survey states and raw POIs are overlaid on the reference map.",
       "translation": "Les états d'enquête du commandant et les POI bruts sont superposés sur la carte de référence."
     },
@@ -79133,8 +79145,8 @@
       "translation": "Focus sur la fenêtre Elite Dangerous suivante ; les superpositions le suivront."
     },
     {
-      "source": "Folders saved. Remove --journal-directory to use them when starting SrvSurvey.",
-      "translation": "Dossiers enregistrés. Supprimez --journal-directory pour les utiliser au démarrage SrvSurvey."
+      "source": "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory.",
+      "translation": "Dossiers enregistrés. Actualisez les listes de commandants pour y trouver des profils. Les données du journal en direct restent épinglées dans --journal-directory."
     },
     {
       "source": "Folders saved. Restart SrvSurvey to scan them.",
@@ -79383,10 +79395,6 @@
     {
       "source": "Frontier response exceeded the {0}-byte safety limit.",
       "translation": "La réponse de Frontier a dépassé la limite de sécurité de {0} octets."
-    },
-    {
-      "source": "Frontier returned an invalid authorization state. No account was linked.",
-      "translation": "Frontier a renvoyé un état d'autorisation non valide. Aucun compte n'était lié."
     },
     {
       "source": "Frontier shipyard data could not be read: {0}",
@@ -94949,8 +94957,8 @@
       "translation": "L'option --diagnostic-replay nécessite un chemin manifeste de session de relecture."
     },
     {
-      "source": "The --journal-directory startup option controls this instance. Saved folders apply when it is removed.",
-      "translation": "L'option de démarrage --journal-directory contrôle cette instance. Les dossiers enregistrés s'appliquent lorsqu'ils sont supprimés."
+      "source": "The --journal-directory startup option controls live journal data for this instance. Saved folders can still populate commander choices.",
+      "translation": "L'option de démarrage --journal-directory contrôle les données du journal en direct pour cette instance. Les dossiers enregistrés peuvent toujours remplir les choix du commandant."
     },
     {
       "source": "The /proc command line was empty.",
@@ -96639,6 +96647,10 @@
     {
       "source": "The session log could not be copied: {0}",
       "translation": "Le journal de session n'a pas pu être copié : {0}"
+    },
+    {
+      "source": "The settings commander ID is invalid.",
+      "translation": "L'ID du commandant des paramètres n'est pas valide."
     },
     {
       "source": "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
@@ -104195,8 +104207,8 @@
       "translation": "Uma varredura DSS é necessária antes que as linhas de gênero e espécie estejam disponíveis."
     },
     {
-      "source": "A Frontier connection is already waiting for browser authorization.",
-      "translation": "Uma conexão Frontier já está aguardando autorização do navegador."
+      "source": "A Frontier connection for this commander is already waiting for browser authorization.",
+      "translation": "Uma conexão Frontier para este comandante já está aguardando autorização do navegador."
     },
     {
       "source": "A Guardian beacon scan could not be recorded.",
@@ -109339,6 +109351,10 @@
       "translation": "Comandante regional primeiro"
     },
     {
+      "source": "Commander settings could not be initialized: {0}",
+      "translation": "As configurações do Commander não puderam ser inicializadas: {0}"
+    },
+    {
       "source": "Commander survey states and raw POIs are overlaid on the reference map.",
       "translation": "Os estados de pesquisa do comandante e os POIs brutos são sobrepostos no mapa de referência."
     },
@@ -113655,8 +113671,8 @@
       "translation": "Foco na próxima janela Elite Dangerous; sobreposições o seguirão."
     },
     {
-      "source": "Folders saved. Remove --journal-directory to use them when starting SrvSurvey.",
-      "translation": "Pastas salvas. Remova --journal-directory para usá-los ao iniciar SrvSurvey."
+      "source": "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory.",
+      "translation": "Pastas salvas. Atualize as listas de comandantes para encontrar perfis nelas. Os dados do Live Journal permanecem fixados em --journal-directory."
     },
     {
       "source": "Folders saved. Restart SrvSurvey to scan them.",
@@ -113905,10 +113921,6 @@
     {
       "source": "Frontier response exceeded the {0}-byte safety limit.",
       "translation": "A resposta de Frontier excedeu o limite de segurança de {0} bytes."
-    },
-    {
-      "source": "Frontier returned an invalid authorization state. No account was linked.",
-      "translation": "Frontier retornou um estado de autorização inválido. Nenhuma conta foi vinculada."
     },
     {
       "source": "Frontier shipyard data could not be read: {0}",
@@ -129471,8 +129483,8 @@
       "translation": "A opção --diagnostic-replay requer um caminho de manifesto da sessão de reprodução."
     },
     {
-      "source": "The --journal-directory startup option controls this instance. Saved folders apply when it is removed.",
-      "translation": "A opção de inicialização --journal-directory controla esta instância. As pastas salvas são aplicadas quando são removidas."
+      "source": "The --journal-directory startup option controls live journal data for this instance. Saved folders can still populate commander choices.",
+      "translation": "A opção de inicialização --journal-directory controla os dados do diário ativo para esta instância. As pastas salvas ainda podem preencher as opções do comandante."
     },
     {
       "source": "The /proc command line was empty.",
@@ -131161,6 +131173,10 @@
     {
       "source": "The session log could not be copied: {0}",
       "translation": "O log da sessão não pôde ser copiado: {0}"
+    },
+    {
+      "source": "The settings commander ID is invalid.",
+      "translation": "O ID do comandante das configurações é inválido."
     },
     {
       "source": "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
@@ -138717,8 +138733,8 @@
       "translation": "Прежде чем станут доступны строки по родам и видам, необходимо выполнить сканирование DSS."
     },
     {
-      "source": "A Frontier connection is already waiting for browser authorization.",
-      "translation": "Соединение Frontier уже ожидает авторизации браузера."
+      "source": "A Frontier connection for this commander is already waiting for browser authorization.",
+      "translation": "Соединение Frontier для этого командира уже ожидает авторизации браузера."
     },
     {
       "source": "A Guardian beacon scan could not be recorded.",
@@ -143861,6 +143877,10 @@
       "translation": "Командующий региональным первым"
     },
     {
+      "source": "Commander settings could not be initialized: {0}",
+      "translation": "Не удалось инициализировать настройки командира: {0}"
+    },
+    {
       "source": "Commander survey states and raw POIs are overlaid on the reference map.",
       "translation": "Состояния обзора командира и необработанные POI накладываются на справочную карту."
     },
@@ -148177,8 +148197,8 @@
       "translation": "Фокус на следующем окне Elite Dangerous; за ним последуют наложения."
     },
     {
-      "source": "Folders saved. Remove --journal-directory to use them when starting SrvSurvey.",
-      "translation": "Папки сохранены. Удалите --journal-directory, чтобы использовать их при запуске SrvSurvey."
+      "source": "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory.",
+      "translation": "Папки сохранены. Обновите списки командиров, чтобы найти в них профили. Данные живого журнала остаются прикрепленными к --journal-directory."
     },
     {
       "source": "Folders saved. Restart SrvSurvey to scan them.",
@@ -148427,10 +148447,6 @@
     {
       "source": "Frontier response exceeded the {0}-byte safety limit.",
       "translation": "Ответ Frontier превысил безопасный лимит в {0}-байт."
-    },
-    {
-      "source": "Frontier returned an invalid authorization state. No account was linked.",
-      "translation": "Frontier вернул недопустимое состояние авторизации. Ни один аккаунт не был привязан."
     },
     {
       "source": "Frontier shipyard data could not be read: {0}",
@@ -163993,8 +164009,8 @@
       "translation": "Для параметра --diagnostic-replay требуется путь к манифесту сеанса воспроизведения."
     },
     {
-      "source": "The --journal-directory startup option controls this instance. Saved folders apply when it is removed.",
-      "translation": "Параметр запуска --journal-directory управляет этим экземпляром. Сохраненные папки применяются при их удалении."
+      "source": "The --journal-directory startup option controls live journal data for this instance. Saved folders can still populate commander choices.",
+      "translation": "Параметр запуска --journal-directory управляет данными текущего журнала для этого экземпляра. Сохраненные папки по-прежнему могут содержать варианты выбора командира."
     },
     {
       "source": "The /proc command line was empty.",
@@ -165683,6 +165699,10 @@
     {
       "source": "The session log could not be copied: {0}",
       "translation": "Не удалось скопировать журнал сеанса: {0}"
+    },
+    {
+      "source": "The settings commander ID is invalid.",
+      "translation": "Идентификатор командира настроек недействителен."
     },
     {
       "source": "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
@@ -173239,8 +173259,8 @@
       "translation": "在获得属和种行之前，需要进行 DSS 扫描。"
     },
     {
-      "source": "A Frontier connection is already waiting for browser authorization.",
-      "translation": "Frontier 连接已在等待浏览器授权。"
+      "source": "A Frontier connection for this commander is already waiting for browser authorization.",
+      "translation": "该指挥官的 Frontier 连接已在等待浏览器授权。"
     },
     {
       "source": "A Guardian beacon scan could not be recorded.",
@@ -178383,6 +178403,10 @@
       "translation": "地区第一指挥官"
     },
     {
+      "source": "Commander settings could not be initialized: {0}",
+      "translation": "无法初始化命令设置：{0}"
+    },
+    {
       "source": "Commander survey states and raw POIs are overlaid on the reference map.",
       "translation": "指挥官调查状态和原始 POI 叠加在参考地图上。"
     },
@@ -182699,8 +182723,8 @@
       "translation": "聚焦下一个 Elite Dangerous 窗口；覆盖层将跟随它。"
     },
     {
-      "source": "Folders saved. Remove --journal-directory to use them when starting SrvSurvey.",
-      "translation": "文件夹已保存。删除 --journal-directory 以在启动时使用它们 SrvSurvey。"
+      "source": "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory.",
+      "translation": "文件夹已保存。刷新指挥官列表以查找其中的配置文件。实时日志数据仍然固定在 --journal-directory 中。"
     },
     {
       "source": "Folders saved. Restart SrvSurvey to scan them.",
@@ -182949,10 +182973,6 @@
     {
       "source": "Frontier response exceeded the {0}-byte safety limit.",
       "translation": "Frontier 响应超出了 {0} 字节安全限制。"
-    },
-    {
-      "source": "Frontier returned an invalid authorization state. No account was linked.",
-      "translation": "Frontier 返回无效的授权状态。没有链接任何帐户。"
     },
     {
       "source": "Frontier shipyard data could not be read: {0}",
@@ -198515,8 +198535,8 @@
       "translation": "--diagnostic-replay 选项需要重播会话清单路径。"
     },
     {
-      "source": "The --journal-directory startup option controls this instance. Saved folders apply when it is removed.",
-      "translation": "--journal-directory 启动选项控制此实例。保存的文件夹在删除时应用。"
+      "source": "The --journal-directory startup option controls live journal data for this instance. Saved folders can still populate commander choices.",
+      "translation": "--journal-directory 启动选项控制此实例的实时日志数据。保存的文件夹仍然可以填充指挥官选择。"
     },
     {
       "source": "The /proc command line was empty.",
@@ -200205,6 +200225,10 @@
     {
       "source": "The session log could not be copied: {0}",
       "translation": "无法复制会话日志：{0}"
+    },
+    {
+      "source": "The settings commander ID is invalid.",
+      "translation": "设置指挥官ID无效。"
     },
     {
       "source": "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
@@ -207761,8 +207785,8 @@
       "translation": "* A DSS SCAN IS REQUIRED BEFORE GENUS AND SPECIES ROWS ARE AVAILABLE. >>>!"
     },
     {
-      "source": "A Frontier connection is already waiting for browser authorization.",
-      "translation": "* A FRONTIER CONNECTION IS ALREADY WAITING FOR BROWSER AUTHORIZATION. >>>!"
+      "source": "A Frontier connection for this commander is already waiting for browser authorization.",
+      "translation": "* A FRONTIER CONNECTION FOR THIS COMMANDER IS ALREADY WAITING FOR BROWSER AUTHORIZATION. >>>!"
     },
     {
       "source": "A Guardian beacon scan could not be recorded.",
@@ -212905,6 +212929,10 @@
       "translation": "* COMMANDER REGIONAL FIRST >>>!"
     },
     {
+      "source": "Commander settings could not be initialized: {0}",
+      "translation": "* COMMANDER SETTINGS COULD NOT BE INITIALIZED: {0} >>>!"
+    },
+    {
       "source": "Commander survey states and raw POIs are overlaid on the reference map.",
       "translation": "* COMMANDER SURVEY STATES AND RAW POIS ARE OVERLAID ON THE REFERENCE MAP. >>>!"
     },
@@ -217221,8 +217249,8 @@
       "translation": "* FOCUSED THE NEXT ELITE DANGEROUS WINDOW; OVERLAYS WILL FOLLOW IT. >>>!"
     },
     {
-      "source": "Folders saved. Remove --journal-directory to use them when starting SrvSurvey.",
-      "translation": "* FOLDERS SAVED. REMOVE --JOURNAL-DIRECTORY TO USE THEM WHEN STARTING SRVSURVEY. >>>!"
+      "source": "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory.",
+      "translation": "* FOLDERS SAVED. REFRESH THE COMMANDER LISTS TO FIND PROFILES IN THEM. LIVE JOURNAL DATA REMAINS PINNED TO --JOURNAL-DIRECTORY. >>>!"
     },
     {
       "source": "Folders saved. Restart SrvSurvey to scan them.",
@@ -217471,10 +217499,6 @@
     {
       "source": "Frontier response exceeded the {0}-byte safety limit.",
       "translation": "* FRONTIER RESPONSE EXCEEDED THE {0}-BYTE SAFETY LIMIT. >>>!"
-    },
-    {
-      "source": "Frontier returned an invalid authorization state. No account was linked.",
-      "translation": "* FRONTIER RETURNED AN INVALID AUTHORIZATION STATE. NO ACCOUNT WAS LINKED. >>>!"
     },
     {
       "source": "Frontier shipyard data could not be read: {0}",
@@ -233037,8 +233061,8 @@
       "translation": "* THE --DIAGNOSTIC-REPLAY OPTION REQUIRES A REPLAY-SESSION MANIFEST PATH. >>>!"
     },
     {
-      "source": "The --journal-directory startup option controls this instance. Saved folders apply when it is removed.",
-      "translation": "* THE --JOURNAL-DIRECTORY STARTUP OPTION CONTROLS THIS INSTANCE. SAVED FOLDERS APPLY WHEN IT IS REMOVED. >>>!"
+      "source": "The --journal-directory startup option controls live journal data for this instance. Saved folders can still populate commander choices.",
+      "translation": "* THE --JOURNAL-DIRECTORY STARTUP OPTION CONTROLS LIVE JOURNAL DATA FOR THIS INSTANCE. SAVED FOLDERS CAN STILL POPULATE COMMANDER CHOICES. >>>!"
     },
     {
       "source": "The /proc command line was empty.",
@@ -234727,6 +234751,10 @@
     {
       "source": "The session log could not be copied: {0}",
       "translation": "* THE SESSION LOG COULD NOT BE COPIED: {0} >>>!"
+    },
+    {
+      "source": "The settings commander ID is invalid.",
+      "translation": "* THE SETTINGS COMMANDER ID IS INVALID. >>>!"
     },
     {
       "source": "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",

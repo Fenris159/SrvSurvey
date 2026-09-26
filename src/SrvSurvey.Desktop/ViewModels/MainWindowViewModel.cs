@@ -275,17 +275,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             IsDiagnosticReplay = foundation.IsDiagnosticReplay;
             DiagnosticReplayStatus = foundation.DiagnosticReplayStatus ?? string.Empty;
             AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
-            var sharedJournalSettingsStore = new JournalSettingsStore(AppDataPaths.UiSettingsPath);
+            var sharedJournalSettingsStore = new JournalSettingsStore(AppDataPaths.SharedUiSettingsPath);
+            IReadOnlyList<string> savedJournalDirectories = sharedJournalSettingsStore.Load().Directories;
             folderResolution = ResolveJournalFolder(
-                sharedJournalSettingsStore.Load().Directories,
+                savedJournalDirectories,
                 configuredJournalDirectory,
                 IsDiagnosticReplay
             );
+            Func<IReadOnlyList<string>> profileJournalDirectories = () =>
+                ResolveProfileJournalDirectories(
+                    sharedJournalSettingsStore,
+                    configuredJournalDirectory,
+                    IsDiagnosticReplay
+                );
             FrontierProfile =
                 frontierProfile
                 ?? new CommanderProfileViewModel(
                     FrontierAccountService.CreateCurrent(AppDataPaths.DataDirectory),
-                    communityGoalHistoryReader: CreateCommunityGoalHistoryReader(folderResolution)
+                    communityGoalHistoryReader: CreateCommunityGoalHistoryReader(folderResolution),
+                    profileCatalog: new CommanderProfileCatalog(AppDataPaths.DataDirectory, profileJournalDirectories)
                 );
             rollback.AddIfCreated(frontierProfile, FrontierProfile);
             LegacyReferenceCatalogLoadResult legacyReferences = LegacyReferenceCatalogLoader.Load(
@@ -308,7 +316,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 CreateReferenceUpdateLogger(resolvedApplicationLogService)
             );
             Localization = new LocalizationViewModel(
-                new LocalizationSettingsStore(AppDataPaths.UiSettingsPath, AppDataPaths.DataDirectory)
+                new LocalizationSettingsStore(AppDataPaths.UiSettingsPath, AppDataPaths.OverlaySettingsDirectory)
             );
             WaylandCapture = new WaylandCaptureSettingsViewModel(
                 AppDataPaths.DataDirectory,
@@ -394,7 +402,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 sharedGameWindowSwitcher
             );
             LegacyOverlayLayoutStore sharedOverlayLayoutStore =
-                overlayLayoutStore ?? new LegacyOverlayLayoutStore(AppDataPaths.DataDirectory);
+                overlayLayoutStore ?? new LegacyOverlayLayoutStore(AppDataPaths.OverlaySettingsDirectory);
             LegacyOverlayLayout activeOverlayLayout = overlayLayout ?? sharedOverlayLayoutStore.Load();
             OverlayLayout = new OverlayLayoutSettingsViewModel(sharedOverlayLayoutStore, activeOverlayLayout);
             OverlayScale = new OverlayScaleSettingsViewModel(
@@ -416,8 +424,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             OverlayTheme =
                 overlayThemeSettings
                 ?? new OverlayThemeSettingsViewModel(
-                    new LegacyOverlayThemeStore(Path.Combine(AppDataPaths.DataDirectory, "theme.json")),
-                    new OverlayThemeStateStore(Path.Combine(AppDataPaths.DataDirectory, "overlay-theme-states.json")),
+                    new LegacyOverlayThemeStore(Path.Combine(AppDataPaths.OverlaySettingsDirectory, "theme.json")),
+                    new OverlayThemeStateStore(
+                        Path.Combine(AppDataPaths.OverlaySettingsDirectory, "overlay-theme-states.json")
+                    ),
                     resolvedThemeService
                 );
             ScreenshotProcessing = new ScreenshotProcessingViewModel(
@@ -521,9 +531,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             );
             MiningWorkspace.UseJournalDirectories(IsDiagnosticReplay ? [] : folderResolution.AvailablePaths);
             MiningWorkspace.Search.UseDiagnosticLog(message => resolvedApplicationLogService?.Append(message));
-            FrontierProfile.PropertyChanged += OnFrontierProfileMiningLocationChanged;
-            rollback.Add(() => FrontierProfile.PropertyChanged -= OnFrontierProfileMiningLocationChanged);
-            MiningWorkspace.UseCommanderSystem(FrontierProfile.Snapshot?.LastSystem);
             rollback.Add(MiningWorkspace.Dispose);
             ExobiologyReferenceCatalog sharedExobiologyCatalog = legacyReferences.Exobiology;
             string defaultCodexImageCache = Path.Combine(AppDataPaths.CacheDirectory, "codex-images");
@@ -533,7 +540,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 defaultCodexImageCache
             );
             var systemNoteStore = new SystemNoteStore(AppDataPaths.DataDirectory);
-            var systemNotesSettingsStore = new SystemNotesSettingsStore(AppDataPaths.DataDirectory);
+            var systemNotesSettingsStore = new SystemNotesSettingsStore(AppDataPaths.OverlaySettingsDirectory);
             var journeyService = new JourneyService(
                 new JourneyStore(AppDataPaths.DataDirectory),
                 new JourneyJournalHistoryReader(
@@ -583,7 +590,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             );
             rollback.Add(BoxelSearch.CancelPendingOperations);
             construction.Checkpoint?.Invoke(MainWindowViewModelConstructionCheckpoint.ExplorationReady);
-            GroundTarget = new GroundTargetViewModel(new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
+            GroundTarget = new GroundTargetViewModel(
+                new GroundTargetSettingsStore(AppDataPaths.OverlaySettingsDirectory)
+            );
             SystemNotes = new SystemNotesViewModel(systemNoteStore, systemNotesSettingsStore, journeyService);
             Journey = new JourneyWorkspaceViewModel(
                 journeyService,
@@ -785,10 +794,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             TargetFrontierId = NormalizeOptionalId(targetFrontierId);
             var commanderProfileCatalog = new CommanderProfileCatalog(
                 AppDataPaths.DataDirectory,
-                folderResolution.AvailablePaths
+                profileJournalDirectories
             );
             CommanderPreference = new CommanderPreferenceViewModel(
-                commanderPreferenceSettingsStore ?? new CommanderPreferenceSettingsStore(AppDataPaths.UiSettingsPath),
+                commanderPreferenceSettingsStore
+                    ?? new CommanderPreferenceSettingsStore(AppDataPaths.SharedUiSettingsPath),
                 commanderProfileCatalog,
                 commanderPreferenceCommandLineOverride,
                 commanderPreferenceInitialStatus
@@ -2301,6 +2311,31 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         );
     }
 
+    private static IReadOnlyList<string> ResolveProfileJournalDirectories(
+        JournalSettingsStore settingsStore,
+        string? configuredJournalDirectory,
+        bool isDiagnosticReplay
+    )
+    {
+        if (isDiagnosticReplay)
+        {
+            return [];
+        }
+
+        IReadOnlyList<string> discovered = JournalFolderLocator
+            .ResolveCurrentWithSettings(settingsStore.Load().Directories, commandLineOverride: null)
+            .AvailablePaths;
+        if (string.IsNullOrWhiteSpace(configuredJournalDirectory) || !Directory.Exists(configuredJournalDirectory))
+        {
+            return discovered;
+        }
+
+        return new[] { configuredJournalDirectory }
+            .Concat(discovered)
+            .Distinct(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
+            .ToArray();
+    }
+
     private static string FormatCandidatePathsDisplay(JournalFolderResolution resolution) =>
         resolution.CandidatePaths.Count == 0
             ? "No default locations are available for this platform."
@@ -2927,6 +2962,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private async Task UpdateFeatureSystemContextsAsync(bool forceCodexBingoRefresh)
     {
         Search.UpdateCurrentSystem(journalState.SystemName, journalState.StarPosition, journalState.SystemAddress);
+        MiningWorkspace.UseCommanderSystem(journalState.SystemName);
         MineMap.UpdateCurrentSystem(journalState.SystemName);
         NearestSystems.UpdateContext(
             journalState.SystemName,
@@ -5401,7 +5437,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);
         MineMap.PropertyChanged -= OnMineMapPropertyChanged;
-        FrontierProfile.PropertyChanged -= OnFrontierProfileMiningLocationChanged;
         TryDispose(Mining.Dispose);
         TryDispose(MineMap.Dispose);
         TryDispose(SurfaceSurvey.Dispose);
@@ -5525,20 +5560,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         if (eventArgs.PropertyName == nameof(BiologyRewardSettingsViewModel.Thresholds))
         {
             SystemSurvey.UpdateBiologyRewardThresholds(BiologyRewards.Thresholds);
-        }
-    }
-
-    private void OnFrontierProfileMiningLocationChanged(object? sender, PropertyChangedEventArgs args)
-    {
-        if (
-            args.PropertyName
-            is nameof(CommanderProfileViewModel.Snapshot)
-                or nameof(CommanderProfileViewModel.CurrentLocation)
-                or null
-                or ""
-        )
-        {
-            MiningWorkspace.UseCommanderSystem(FrontierProfile.Snapshot?.LastSystem);
         }
     }
 

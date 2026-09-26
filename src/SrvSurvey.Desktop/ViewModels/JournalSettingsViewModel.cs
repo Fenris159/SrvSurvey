@@ -24,7 +24,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
         SavedFolders = new ObservableCollection<string>(settingsStore.Load().Directories);
         directoryPath = IsCommandLineOverride ? commandLineOverride!.Trim() : string.Empty;
         statusMessage = IsCommandLineOverride
-            ? "The --journal-directory startup option controls this instance. Saved folders apply when it is removed."
+            ? "The --journal-directory startup option controls live journal data for this instance. Saved folders can still populate commander choices."
             : GetPathStatus(directoryPath);
         addOrUpdateCommand = new RelayCommand(AddOrUpdateFolder, () => Directory.Exists(DirectoryPath));
         restartCommand = new AsyncCommand(RestartAsync, () => !IsCommandLineOverride && hasPendingRestart);
@@ -194,7 +194,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
         hasPendingRestart = true;
         restartCommand.RaiseCanExecuteChanged();
         StatusMessage = IsCommandLineOverride
-            ? "Folders saved. Remove --journal-directory to use them when starting SrvSurvey."
+            ? "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory."
             : "Folders saved. Restart SrvSurvey to scan them.";
         return true;
     }

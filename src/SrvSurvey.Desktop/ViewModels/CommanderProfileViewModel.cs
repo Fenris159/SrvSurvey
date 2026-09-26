@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Input;
 using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform.Frontier;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -23,6 +24,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private readonly IFrontierAccountService accountService;
     private readonly ICommunityGoalJournalHistoryReader? communityGoalHistoryReader;
+    private readonly CommanderProfileCatalog? profileCatalog;
     private readonly Func<DateTimeOffset> now;
     private readonly AsyncCommand connectCommand;
     private readonly AsyncCommand cancelConnectionCommand;
@@ -146,11 +148,13 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public CommanderProfileViewModel(
         IFrontierAccountService accountService,
         Func<DateTimeOffset>? now = null,
-        ICommunityGoalJournalHistoryReader? communityGoalHistoryReader = null
+        ICommunityGoalJournalHistoryReader? communityGoalHistoryReader = null,
+        CommanderProfileCatalog? profileCatalog = null
     )
     {
         this.accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
         this.communityGoalHistoryReader = communityGoalHistoryReader;
+        this.profileCatalog = profileCatalog;
         this.accountService.AuthorizationCallbackReceived += HandleAuthorizationCallbackReceived;
         this.now = now ?? (() => DateTimeOffset.Now);
         connectCommand = new AsyncCommand(ConnectAsync, () => !IsBusy && !IsLinked && activeFrontierId is not null);
@@ -214,6 +218,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     }
 
     public bool IsAutomaticCommanderSelection => manuallySelectedFrontierId is null;
+
+    public bool IsViewingJournalCommander =>
+        activeFrontierId is not null
+        && string.Equals(activeFrontierId, detectedFrontierId, StringComparison.OrdinalIgnoreCase);
 
     public string DetectedCommanderDescription
     {
@@ -1421,6 +1429,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         detectedCommanderName = normalizedName;
         OnPropertyChanged(nameof(DetectedCommanderDescription));
         OnPropertyChanged(nameof(CommanderSelectionDescription));
+        OnPropertyChanged(nameof(IsViewingJournalCommander));
         if (detectedIdentityChanged)
         {
             journalReputationCommanderName = normalizedName;
@@ -1506,6 +1515,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         accountService.SetActiveCommander(normalizedId, normalizedName);
         OnPropertyChanged(nameof(ActiveCommanderDescription));
         OnPropertyChanged(nameof(CommanderSelectionDescription));
+        OnPropertyChanged(nameof(IsViewingJournalCommander));
         ApplyLocalInventorySelection();
         commanderReputationRows = null;
         OnPropertyChanged(nameof(CommanderReputation));
@@ -1616,15 +1626,51 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         try
         {
-            IReadOnlyList<FrontierLinkedCommander> linkedCommanders = await accountService.GetLinkedCommandersAsync(
-                cancellationToken
-            );
-            FrontierCommanderSelectionOption[] allLinkedOptions = linkedCommanders
-                .Select(FrontierCommanderSelectionOption.Linked)
+            var available = new Dictionary<string, FrontierCommanderSelectionOption>(StringComparer.OrdinalIgnoreCase);
+            if (profileCatalog is not null)
+            {
+                try
+                {
+                    CommanderProfileCatalogResult catalog = await profileCatalog.LoadAsync(cancellationToken);
+                    foreach (CommanderProfileIdentity commander in catalog.Profiles)
+                    {
+                        available[commander.FrontierId] = FrontierCommanderSelectionOption.Available(
+                            commander.FrontierId,
+                            commander.CommanderName
+                        );
+                    }
+                }
+                catch (Exception exception) when (IsExpected(exception))
+                {
+                    StatusMessage = exception.Message;
+                }
+            }
+
+            IReadOnlyList<FrontierLinkedCommander> linkedCommanders;
+            try
+            {
+                linkedCommanders = await accountService.GetLinkedCommandersAsync(cancellationToken);
+            }
+            catch (Exception exception) when (IsExpected(exception))
+            {
+                StatusMessage = exception.Message;
+                linkedCommanders = [];
+            }
+            foreach (FrontierLinkedCommander commander in linkedCommanders)
+            {
+                available.TryAdd(
+                    commander.FrontierId,
+                    FrontierCommanderSelectionOption.Available(commander.FrontierId, commander.CommanderName)
+                );
+            }
+
+            FrontierCommanderSelectionOption[] allAvailableOptions = available
+                .Values.OrderBy(option => option.CommanderName, StringComparer.CurrentCultureIgnoreCase)
+                .ThenBy(option => option.FrontierId, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             FrontierCommanderSelectionOption? selected = manuallySelectedFrontierId is null
                 ? automatic
-                : allLinkedOptions.FirstOrDefault(option =>
+                : allAvailableOptions.FirstOrDefault(option =>
                     string.Equals(option.FrontierId, manuallySelectedFrontierId, StringComparison.OrdinalIgnoreCase)
                 );
             if (selected is null)
@@ -1639,14 +1685,14 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 manuallySelectedCommanderName = selected.CommanderName;
             }
 
-            FrontierCommanderSelectionOption[] linkedOptions = allLinkedOptions
+            FrontierCommanderSelectionOption[] otherOptions = allAvailableOptions
                 .Where(option =>
                     !string.Equals(option.FrontierId, detectedFrontierId, StringComparison.OrdinalIgnoreCase)
                     || !selected.IsAutomatic
                         && string.Equals(option.FrontierId, selected.FrontierId, StringComparison.OrdinalIgnoreCase)
                 )
                 .ToArray();
-            CommanderSelectionOptions = [automatic, .. linkedOptions];
+            CommanderSelectionOptions = [automatic, .. otherOptions];
             isUpdatingCommanderSelection = true;
             try
             {
@@ -3524,13 +3570,13 @@ public sealed record FrontierCommanderSelectionOption(
         );
     }
 
-    public static FrontierCommanderSelectionOption Linked(FrontierLinkedCommander commander) =>
+    public static FrontierCommanderSelectionOption Available(string frontierId, string commanderName) =>
         new(
-            commander.FrontierId,
-            commander.CommanderName,
-            string.Equals(commander.CommanderName, commander.FrontierId, StringComparison.OrdinalIgnoreCase)
-                ? commander.FrontierId
-                : $"{commander.CommanderName} ({commander.FrontierId})",
+            frontierId,
+            commanderName,
+            string.Equals(commanderName, frontierId, StringComparison.OrdinalIgnoreCase)
+                ? frontierId
+                : $"{commanderName} ({frontierId})",
             false
         );
 }

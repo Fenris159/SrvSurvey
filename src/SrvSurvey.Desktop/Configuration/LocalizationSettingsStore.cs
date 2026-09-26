@@ -65,6 +65,6 @@ public sealed class LocalizationSettingsStore
     public static string ResolveCurrent(AppDataPaths paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
-        return new LocalizationSettingsStore(paths.UiSettingsPath, paths.DataDirectory).Load();
+        return new LocalizationSettingsStore(paths.UiSettingsPath, paths.OverlaySettingsDirectory).Load();
     }
 }

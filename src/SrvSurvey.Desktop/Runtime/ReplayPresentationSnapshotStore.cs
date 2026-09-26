@@ -14,7 +14,7 @@ internal static class ReplayPresentationSnapshotStore
     {
         ArgumentNullException.ThrowIfNull(paths);
         PixelRect bounds = viewport is { Width: > 0, Height: > 0 } ? viewport.Value : DefaultViewport;
-        LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(paths.DataDirectory).Load();
+        LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(paths.OverlaySettingsDirectory).Load();
         if (layout.Error is not null)
         {
             throw new InvalidDataException(layout.Error);

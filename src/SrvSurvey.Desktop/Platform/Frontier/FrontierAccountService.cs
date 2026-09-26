@@ -355,7 +355,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         try
         {
             await openBrowser(authorizationUri, cancellationToken).ConfigureAwait(false);
-            await WaitForAuthorizationAsync(state, cancellationToken).ConfigureAwait(false);
+            await WaitForAuthorizationAsync(state, commander.FrontierId, cancellationToken).ConfigureAwait(false);
             return await RefreshAsync(commander, forceCarrierRefresh: false, cancellationToken).ConfigureAwait(false);
         }
         catch
@@ -373,27 +373,34 @@ public sealed class FrontierAccountService : IFrontierAccountService
             .AcquireLeaseAsync(cancellationToken)
             .ConfigureAwait(false);
         FrontierCredentialDocument? document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
-        if (
-            document?.PendingAuthorization is not { } pending
-            || commander is not null
-                && !string.Equals(pending.FrontierId, commander.FrontierId, StringComparison.OrdinalIgnoreCase)
-        )
+        if (document is null || commander is null)
+        {
+            return;
+        }
+
+        FrontierPendingAuthorization? pending = AllPending(document)
+            .Where(candidate =>
+                string.Equals(candidate.FrontierId, commander.FrontierId, StringComparison.OrdinalIgnoreCase)
+            )
+            .OrderByDescending(candidate => candidate.StartedAt)
+            .FirstOrDefault();
+        if (pending is null)
         {
             return;
         }
 
         await credentials
             .SaveAsync(
-                document with
-                {
-                    PendingAuthorization = null,
-                    AuthorizationResult = new FrontierAuthorizationResult(
+                CompleteAuthorization(
+                    document,
+                    pending,
+                    new FrontierAuthorizationResult(
                         pending.State,
                         false,
                         "Frontier authorization was cancelled.",
                         utcNow()
-                    ),
-                },
+                    )
+                ),
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -1011,18 +1018,19 @@ public sealed class FrontierAccountService : IFrontierAccountService
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(callback);
-        FrontierCredentialDocument document =
-            await credentials.LoadAsync(cancellationToken).ConfigureAwait(false)
-            ?? throw new InvalidOperationException("No Frontier authorization is waiting for this callback.");
-        FrontierPendingAuthorization pending =
-            document.PendingAuthorization
-            ?? throw new InvalidOperationException("No Frontier authorization is waiting for this callback.");
-        if (!FrontierOAuthCallback.FixedTimeEquals(callback.State, pending.State))
+        FrontierCredentialDocument document;
+        await using (
+            IAsyncDisposable lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false)
+        )
         {
-            throw new InvalidOperationException(
-                "Frontier returned an invalid authorization state. No account was linked."
-            );
+            document =
+                await credentials.LoadAsync(cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("No Frontier authorization is waiting for this callback.");
         }
+        FrontierPendingAuthorization pending =
+            AllPending(document)
+                .FirstOrDefault(candidate => FrontierOAuthCallback.FixedTimeEquals(callback.State, candidate.State))
+            ?? throw new InvalidOperationException("No Frontier authorization is waiting for this callback.");
 
         FrontierCommanderIdentity commander =
             FrontierCommanderIdentity.Create(pending.FrontierId, pending.CommanderName)
@@ -1515,7 +1523,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
             return migratedAliases;
         }
 
-        document = document with { Version = 2, Accounts = accounts };
+        document = document with { Version = 3, Accounts = accounts };
         await credentials.SaveAsync(document, cancellationToken).ConfigureAwait(false);
         return migratedAliases;
     }
@@ -1579,18 +1587,61 @@ public sealed class FrontierAccountService : IFrontierAccountService
             .ConfigureAwait(false);
         FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false) ?? new FrontierCredentialDocument();
-        if (document.PendingAuthorization is { } active && utcNow() - active.StartedAt < AuthorizationTimeout)
+        if (
+            AllPending(document)
+                .Any(active =>
+                    string.Equals(active.FrontierId, pending.FrontierId, StringComparison.OrdinalIgnoreCase)
+                    && utcNow() - active.StartedAt < AuthorizationTimeout
+                )
+        )
         {
-            throw new InvalidOperationException("A Frontier connection is already waiting for browser authorization.");
+            throw new InvalidOperationException(
+                "A Frontier connection for this commander is already waiting for browser authorization."
+            );
+        }
+
+        var pendingAuthorizations = new Dictionary<string, FrontierPendingAuthorization>(
+            document.PendingAuthorizations,
+            StringComparer.Ordinal
+        );
+        if (
+            document.PendingAuthorization is { } legacyPending
+            && utcNow() - legacyPending.StartedAt >= AuthorizationTimeout
+        )
+        {
+            document = document with { PendingAuthorization = null };
+        }
+        foreach (
+            string expiredState in pendingAuthorizations
+                .Where(entry => utcNow() - entry.Value.StartedAt >= AuthorizationTimeout)
+                .Select(entry => entry.Key)
+                .ToArray()
+        )
+        {
+            pendingAuthorizations.Remove(expiredState);
+        }
+        pendingAuthorizations[pending.State] = pending;
+        var results = new Dictionary<string, FrontierAuthorizationResult>(
+            document.AuthorizationResults,
+            StringComparer.Ordinal
+        );
+        foreach (
+            string expiredState in results
+                .Where(entry => utcNow() - entry.Value.CompletedAt >= AuthorizationTimeout)
+                .Select(entry => entry.Key)
+                .ToArray()
+        )
+        {
+            results.Remove(expiredState);
         }
 
         await credentials
             .SaveAsync(
                 document with
                 {
-                    Version = 2,
-                    PendingAuthorization = pending,
-                    AuthorizationResult = null,
+                    Version = 3,
+                    PendingAuthorizations = pendingAuthorizations,
+                    AuthorizationResults = results,
                 },
                 cancellationToken
             )
@@ -1609,22 +1660,20 @@ public sealed class FrontierAccountService : IFrontierAccountService
         FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false)
             ?? throw new InvalidOperationException("No Frontier authorization is waiting for this callback.");
-        if (
-            document.PendingAuthorization is not { } latest
-            || !FrontierOAuthCallback.FixedTimeEquals(latest.State, pending.State)
-            || !string.Equals(latest.FrontierId, pending.FrontierId, StringComparison.OrdinalIgnoreCase)
-        )
+        FrontierPendingAuthorization? latest = AllPending(document)
+            .FirstOrDefault(candidate => FrontierOAuthCallback.FixedTimeEquals(candidate.State, pending.State));
+        if (latest is null || !string.Equals(latest.FrontierId, pending.FrontierId, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
                 "The Frontier authorization was cancelled or replaced before the token exchange completed."
             );
         }
 
-        document = WithAccount(document, pending.FrontierId, credential) with
-        {
-            PendingAuthorization = null,
-            AuthorizationResult = new FrontierAuthorizationResult(pending.State, true, string.Empty, utcNow()),
-        };
+        document = CompleteAuthorization(
+            WithAccount(document, pending.FrontierId, credential),
+            pending,
+            new FrontierAuthorizationResult(pending.State, true, string.Empty, utcNow())
+        );
         await credentials.SaveAsync(document, cancellationToken).ConfigureAwait(false);
     }
 
@@ -1775,7 +1824,13 @@ public sealed class FrontierAccountService : IFrontierAccountService
         CancellationToken cancellationToken
     )
     {
-        if (document.Accounts.Count == 0 && !document.IsLinked && document.PendingAuthorization is null)
+        if (
+            document.Accounts.Count == 0
+            && !document.IsLinked
+            && !AllPending(document).Any()
+            && document.AuthorizationResult is null
+            && document.AuthorizationResults.Count == 0
+        )
         {
             await credentials.ClearAsync(cancellationToken).ConfigureAwait(false);
             return;
@@ -1792,7 +1847,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
     {
         Dictionary<string, FrontierAccountCredential> accounts = CopyAccounts(document);
         accounts[frontierId] = credential;
-        return document with { Version = 2, Accounts = accounts };
+        return document with { Version = 3, Accounts = accounts };
     }
 
     private static FrontierCredentialDocument WithLegacyCredential(
@@ -1827,20 +1882,99 @@ public sealed class FrontierAccountService : IFrontierAccountService
     private static Dictionary<string, FrontierAccountCredential> CopyAccounts(FrontierCredentialDocument document) =>
         new(document.Accounts, StringComparer.OrdinalIgnoreCase);
 
-    private async Task WaitForAuthorizationAsync(string state, CancellationToken cancellationToken)
+    private static IEnumerable<FrontierPendingAuthorization> AllPending(FrontierCredentialDocument document)
+    {
+        if (document.PendingAuthorization is { } legacy)
+        {
+            yield return legacy;
+        }
+
+        foreach (FrontierPendingAuthorization pending in document.PendingAuthorizations.Values)
+        {
+            yield return pending;
+        }
+    }
+
+    private static FrontierCredentialDocument CompleteAuthorization(
+        FrontierCredentialDocument document,
+        FrontierPendingAuthorization pending,
+        FrontierAuthorizationResult result
+    )
+    {
+        if (
+            document.PendingAuthorization is { } legacy
+            && FrontierOAuthCallback.FixedTimeEquals(legacy.State, pending.State)
+        )
+        {
+            return document with { PendingAuthorization = null, AuthorizationResult = result };
+        }
+
+        var pendingAuthorizations = new Dictionary<string, FrontierPendingAuthorization>(
+            document.PendingAuthorizations,
+            StringComparer.Ordinal
+        );
+        pendingAuthorizations.Remove(pending.State);
+        var results = new Dictionary<string, FrontierAuthorizationResult>(
+            document.AuthorizationResults,
+            StringComparer.Ordinal
+        )
+        {
+            [pending.State] = result,
+        };
+        return document with { PendingAuthorizations = pendingAuthorizations, AuthorizationResults = results };
+    }
+
+    private static FrontierCredentialDocument RemovePending(
+        FrontierCredentialDocument document,
+        FrontierPendingAuthorization pending
+    )
+    {
+        if (
+            document.PendingAuthorization is { } legacy
+            && FrontierOAuthCallback.FixedTimeEquals(legacy.State, pending.State)
+        )
+        {
+            return document with { PendingAuthorization = null };
+        }
+
+        var pendingAuthorizations = new Dictionary<string, FrontierPendingAuthorization>(
+            document.PendingAuthorizations,
+            StringComparer.Ordinal
+        );
+        pendingAuthorizations.Remove(pending.State);
+        return document with { PendingAuthorizations = pendingAuthorizations };
+    }
+
+    private async Task WaitForAuthorizationAsync(string state, string frontierId, CancellationToken cancellationToken)
     {
         DateTimeOffset deadline = utcNow() + AuthorizationTimeout;
         while (utcNow() < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            FrontierCredentialDocument? document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
-            if (
-                document?.AuthorizationResult is { } result
-                && FrontierOAuthCallback.FixedTimeEquals(result.State, state)
+            FrontierCredentialDocument? document;
+            await using (
+                IAsyncDisposable lease = await credentials.AcquireLeaseAsync(cancellationToken).ConfigureAwait(false)
             )
             {
+                document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
+            }
+            FrontierAuthorizationResult? result = document?.AuthorizationResults.GetValueOrDefault(state);
+            if (
+                result is null
+                && document?.AuthorizationResult is { } legacyResult
+                && FrontierOAuthCallback.FixedTimeEquals(legacyResult.State, state)
+            )
+            {
+                result = legacyResult;
+            }
+            if (result is not null)
+            {
                 AuthorizationCallbackReceived?.Invoke(this, EventArgs.Empty);
-                if (result.Succeeded && document.Accounts.Values.Any(account => account.IsLinked))
+                if (
+                    result.Succeeded
+                    && document?.Accounts.TryGetValue(frontierId, out FrontierAccountCredential? account) == true
+                    && account.IsLinked
+                )
                 {
                     return;
                 }
@@ -1850,7 +1984,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 );
             }
 
-            if (document?.PendingAuthorization is null)
+            if (
+                document is null
+                || !AllPending(document).Any(pending => FrontierOAuthCallback.FixedTimeEquals(pending.State, state))
+            )
             {
                 throw new InvalidOperationException("Frontier authorization was cancelled or replaced.");
             }
@@ -1867,17 +2004,16 @@ public sealed class FrontierAccountService : IFrontierAccountService
             .AcquireLeaseAsync(cancellationToken)
             .ConfigureAwait(false);
         FrontierCredentialDocument? document = await credentials.LoadAsync(cancellationToken).ConfigureAwait(false);
-        if (
-            document?.PendingAuthorization is not { } pending
-            || !FrontierOAuthCallback.FixedTimeEquals(pending.State, state)
-        )
+        FrontierPendingAuthorization? pending = document is null
+            ? null
+            : AllPending(document)
+                .FirstOrDefault(candidate => FrontierOAuthCallback.FixedTimeEquals(candidate.State, state));
+        if (pending is null)
         {
             return;
         }
 
-        await credentials
-            .SaveAsync(document with { PendingAuthorization = null }, cancellationToken)
-            .ConfigureAwait(false);
+        await credentials.SaveAsync(RemovePending(document!, pending), cancellationToken).ConfigureAwait(false);
     }
 
     private async Task SaveCallbackFailureAsync(string state, string error, CancellationToken cancellationToken)
@@ -1887,21 +2023,20 @@ public sealed class FrontierAccountService : IFrontierAccountService
             .ConfigureAwait(false);
         FrontierCredentialDocument document =
             await credentials.LoadAsync(cancellationToken).ConfigureAwait(false) ?? new FrontierCredentialDocument();
-        if (
-            document.PendingAuthorization is not { } pending
-            || !FrontierOAuthCallback.FixedTimeEquals(pending.State, state)
-        )
+        FrontierPendingAuthorization? pending = AllPending(document)
+            .FirstOrDefault(candidate => FrontierOAuthCallback.FixedTimeEquals(candidate.State, state));
+        if (pending is null)
         {
             return;
         }
 
         await credentials
             .SaveAsync(
-                document with
-                {
-                    PendingAuthorization = null,
-                    AuthorizationResult = new FrontierAuthorizationResult(state, false, error, utcNow()),
-                },
+                CompleteAuthorization(
+                    document,
+                    pending,
+                    new FrontierAuthorizationResult(state, false, error, utcNow())
+                ),
                 cancellationToken
             )
             .ConfigureAwait(false);

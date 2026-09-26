@@ -1256,7 +1256,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
   },
   {
-    "Text": "A Frontier connection is already waiting for browser authorization.",
+    "Text": "A Frontier connection for this commander is already waiting for browser authorization.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -11568,6 +11568,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Commander settings could not be initialized: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
     "Text": "Commander survey states and raw POIs are overlaid on the reference map.",
     "IsFormat": false,
     "SourceKinds": [
@@ -20228,7 +20236,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderInstancesViewModel.cs"
   },
   {
-    "Text": "Folders saved. Remove --journal-directory to use them when starting SrvSurvey.",
+    "Text": "Folders saved. Refresh the commander lists to find profiles in them. Live journal data remains pinned to --journal-directory.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -20726,14 +20734,6 @@
   {
     "Text": "Frontier response exceeded the {0}-byte safety limit.",
     "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
-  },
-  {
-    "Text": "Frontier returned an invalid authorization state. No account was linked.",
-    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -51955,7 +51955,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs"
   },
   {
-    "Text": "The --journal-directory startup option controls this instance. Saved folders apply when it is removed.",
+    "Text": "The --journal-directory startup option controls live journal data for this instance. Saved folders can still populate commander choices.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -55338,6 +55338,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiagnosticsLogViewModel.cs"
+  },
+  {
+    "Text": "The settings commander ID is invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
   },
   {
     "Text": "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
