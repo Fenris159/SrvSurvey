@@ -1813,6 +1813,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         };
         ColonizationViewModel viewModel = Create(client);
         using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        await main.FrontierProfile.SetCommanderContextAsync("F123", "Test Cmdr", refreshIfOpen: false);
         using var fleetWorkspace = new FleetCarrierWorkspaceViewModel(main.FrontierProfile, viewModel);
         viewModel.IsEnabled = true;
         viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
@@ -1886,6 +1887,9 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.False(cargo.HasPreservedSnapshot);
         Assert.Equal("85", fleetWorkspace.SquadronCargo.Single(c => c.Name == "steel").Quantity);
         Assert.Equal("7", fleetWorkspace.SquadronCargo.Single(c => c.Name == "water").Quantity);
+        await main.FrontierProfile.SelectCommanderAsync(FrontierCommanderSelectionOption.Available("F456", "Other"));
+        Assert.Empty(fleetWorkspace.SquadronCandidates);
+        Assert.Null(fleetWorkspace.SelectedSquadronCarrier);
         viewModel.IsEnabled = false;
         await viewModel.SetCommanderAsync("Another commander");
         Assert.Null(fleetWorkspace.SelectedSquadronCarrier);

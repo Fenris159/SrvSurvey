@@ -48,6 +48,8 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.Equal("Sol", vm.Search.Reference);
             vm.Search.UseCurrentLocation();
             Assert.Equal("Wille", vm.Search.Reference);
+            vm.UseCommanderSystem(null);
+            Assert.Equal(string.Empty, vm.Search.CurrentSystem);
         }
         finally
         {

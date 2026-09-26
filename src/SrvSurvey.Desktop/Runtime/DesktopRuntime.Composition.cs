@@ -98,8 +98,31 @@ internal sealed partial class DesktopRuntime
         applicationLogService = applicationLog;
         MigrateLegacyStateIfNeeded(diagnosticReplay, appDataPaths, applicationLog);
 
+        string? configuredJournalDirectory =
+            diagnosticReplay?.JournalDirectory ?? StartupOptions.GetJournalDirectory(startup.Arguments);
+        var commanderPreferenceStore = new CommanderPreferenceSettingsStore(appDataPaths.SharedUiSettingsPath);
+        CommanderPreferenceResolution commanderPreferenceResolution = ResolveCommanderPreference(
+            diagnosticReplay,
+            startup.Arguments,
+            commanderPreferenceStore,
+            appDataPaths.DataDirectory
+        );
+        if (commanderPreferenceResolution.StatusMessage is not null)
+        {
+            applicationLog.Append(commanderPreferenceResolution.StatusMessage);
+        }
+
+        string? targetFrontierId = commanderPreferenceResolution.TargetFrontierId;
+        appDataPaths = PrepareCommanderSettings(
+            appDataPaths,
+            targetFrontierId,
+            startup.AppDataPathsOverride is null && diagnosticReplay is null,
+            configuredJournalDirectory,
+            applicationLog
+        );
+
         LegacyOverlayTheme overlayTheme = LoadOverlayTheme(appDataPaths, applicationLog);
-        var overlayLayoutStore = new LegacyOverlayLayoutStore(appDataPaths.DataDirectory);
+        var overlayLayoutStore = new LegacyOverlayLayoutStore(appDataPaths.OverlaySettingsDirectory);
         LegacyOverlayLayout overlayLayout = LoadOverlayLayout(overlayLayoutStore, applicationLog);
 
         var themeService = new RavenThemeService(
@@ -154,21 +177,6 @@ internal sealed partial class DesktopRuntime
         );
         gameTextInputService = diagnosticReplay is null ? GameTextInputService.CreateCurrent() : null;
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.OverlayInfrastructureReady);
-        string? configuredJournalDirectory =
-            diagnosticReplay?.JournalDirectory ?? StartupOptions.GetJournalDirectory(startup.Arguments);
-        var commanderPreferenceStore = new CommanderPreferenceSettingsStore(appDataPaths.UiSettingsPath);
-        CommanderPreferenceResolution commanderPreferenceResolution = ResolveCommanderPreference(
-            diagnosticReplay,
-            startup.Arguments,
-            commanderPreferenceStore,
-            appDataPaths.DataDirectory
-        );
-        if (commanderPreferenceResolution.StatusMessage is not null)
-        {
-            applicationLog.Append(commanderPreferenceResolution.StatusMessage);
-        }
-
-        string? targetFrontierId = commanderPreferenceResolution.TargetFrontierId;
         IFirstFootfallInferenceService firstFootfallInferenceService = diagnosticReplay is null
             ? FirstFootfallInferenceService.CreateCurrent(
                 confirmWaylandScreenShare,
@@ -459,6 +467,37 @@ internal sealed partial class DesktopRuntime
         ApplicationStartupWindowPresenter.Present(desktop, mainWindow, startup.BringMainWindowToFront);
     }
 
+    private static AppDataPaths PrepareCommanderSettings(
+        AppDataPaths paths,
+        string? targetFrontierId,
+        bool discoverJournalCommander,
+        string? configuredJournalDirectory,
+        ApplicationLogService applicationLog
+    )
+    {
+        string? settingsFrontierId = CommanderSettingsProfile.NormalizeFrontierId(targetFrontierId);
+        if (settingsFrontierId is null && discoverJournalCommander)
+        {
+            settingsFrontierId = CommanderSettingsProfile.FindLatestJournalFrontierId(
+                paths.SharedUiSettingsPath,
+                configuredJournalDirectory
+            );
+        }
+
+        paths = paths with { SettingsFrontierId = settingsFrontierId };
+        try
+        {
+            CommanderSettingsProfile.Prepare(paths);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            applicationLog.Append("Commander settings could not be initialized: " + exception.Message);
+            paths = paths with { SettingsFrontierId = null };
+        }
+
+        return paths;
+    }
+
     private void HandleMainWindowOpened(object? sender, EventArgs eventArgs)
     {
         if (mainWindow is { } window)
@@ -716,7 +755,7 @@ internal sealed partial class DesktopRuntime
     private static LegacyOverlayTheme LoadOverlayTheme(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
     {
         LegacyOverlayTheme overlayTheme = new LegacyOverlayThemeStore(
-            Path.Combine(appDataPaths.DataDirectory, "theme.json")
+            Path.Combine(appDataPaths.OverlaySettingsDirectory, "theme.json")
         ).Load();
         if (overlayTheme.Error is not null)
         {

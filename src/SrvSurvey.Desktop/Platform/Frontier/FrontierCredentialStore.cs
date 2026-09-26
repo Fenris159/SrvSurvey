@@ -21,7 +21,7 @@ public interface IFrontierCredentialStore
 
 public sealed record FrontierCredentialDocument
 {
-    public int Version { get; init; } = 2;
+    public int Version { get; init; } = 3;
 
     public IReadOnlyDictionary<string, FrontierAccountCredential> Accounts { get; init; } =
         new Dictionary<string, FrontierAccountCredential>(StringComparer.OrdinalIgnoreCase);
@@ -58,6 +58,12 @@ public sealed record FrontierCredentialDocument
     public FrontierPendingAuthorization? PendingAuthorization { get; init; }
 
     public FrontierAuthorizationResult? AuthorizationResult { get; init; }
+
+    public IReadOnlyDictionary<string, FrontierPendingAuthorization> PendingAuthorizations { get; init; } =
+        new Dictionary<string, FrontierPendingAuthorization>(StringComparer.Ordinal);
+
+    public IReadOnlyDictionary<string, FrontierAuthorizationResult> AuthorizationResults { get; init; } =
+        new Dictionary<string, FrontierAuthorizationResult>(StringComparer.Ordinal);
 
     public bool IsLinked => !string.IsNullOrWhiteSpace(AccessToken) || !string.IsNullOrWhiteSpace(RefreshToken);
 

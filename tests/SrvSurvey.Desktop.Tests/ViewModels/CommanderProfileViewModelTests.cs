@@ -9,6 +9,43 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class CommanderProfileViewModelTests
 {
     [Fact]
+    public async Task CatalogWarningSurvivesCommanderActivation()
+    {
+        var account = new StubAccountService(new FrontierAccountState(false, null, null));
+        var catalog = new CommanderProfileCatalog(
+            Path.Combine(Path.GetTempPath(), $"SrvSurvey-catalog-{Guid.NewGuid():N}"),
+            () => throw new IOException("Journal catalog unavailable")
+        );
+        using var viewModel = new CommanderProfileViewModel(account, profileCatalog: catalog);
+
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: false);
+
+        Assert.Contains("Journal catalog unavailable", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task ClearsOldSnapshotBeforeChangingViewedCommander()
+    {
+        FrontierAccountSnapshot snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
+        var account = new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
+        Assert.Same(snapshot, viewModel.Snapshot);
+        FrontierAccountSnapshot? snapshotWhenIdentityChanged = snapshot;
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(CommanderProfileViewModel.IsViewingJournalCommander))
+            {
+                snapshotWhenIdentityChanged = viewModel.Snapshot;
+            }
+        };
+
+        await viewModel.SelectCommanderAsync(FrontierCommanderSelectionOption.Available("F456", "Other"));
+
+        Assert.Null(snapshotWhenIdentityChanged);
+    }
+
+    [Fact]
     public async Task OlderCommanderActivationCannotClearNewerProfileAfterDeferredCancellation()
     {
         FrontierAccountSnapshot latest = CreateSnapshot(DateTimeOffset.UtcNow) with { CommanderName = "Latest" };
@@ -893,6 +930,64 @@ public sealed class CommanderProfileViewModelTests
         Assert.Equal("F123", account.ActiveFrontierId);
         Assert.Equal("Fenris", viewModel.CommanderName);
         Assert.True(viewModel.HasCurrentShipCargo);
+    }
+
+    [Fact]
+    public async Task JournalOnlyCommanderCanBeSelectedForFrontierConnectionWithoutChangingJournalCommander()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-selector-{Guid.NewGuid():N}");
+        string journals = Path.Combine(root, "journals");
+        string otherJournals = Path.Combine(root, "other-journals");
+        Directory.CreateDirectory(journals);
+        Directory.CreateDirectory(otherJournals);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-09-12T120000.01.log"),
+                """
+                {"timestamp":"2026-09-12T12:00:00Z","event":"Fileheader","Odyssey":true}
+                {"timestamp":"2026-09-12T12:00:01Z","event":"Commander","Name":"Second","FID":"F456"}
+
+                """
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(otherJournals, "Journal.2026-09-12T120000.02.log"),
+                """
+                {"timestamp":"2026-09-12T12:00:00Z","event":"Commander","Name":"Third","FID":"F789"}
+
+                """
+            );
+            var account = new StubAccountService(new FrontierAccountState(false, null, null));
+            using var viewModel = new CommanderProfileViewModel(
+                account,
+                profileCatalog: new CommanderProfileCatalog(Path.Combine(root, "profiles"), [journals, otherJournals])
+            );
+            await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
+
+            Assert.Contains(viewModel.CommanderSelectionOptions, option => option.FrontierId == "F789");
+
+            FrontierCommanderSelectionOption second = Assert.Single(
+                viewModel.CommanderSelectionOptions,
+                option => option.FrontierId == "F456"
+            );
+            await viewModel.SelectCommanderAsync(second);
+
+            Assert.Equal("F456", account.ActiveFrontierId);
+            Assert.Equal("Fenris (F123)", viewModel.DetectedCommanderDescription);
+            Assert.False(viewModel.IsViewingJournalCommander);
+            Assert.True(viewModel.IsUnlinked);
+            Assert.True(viewModel.ConnectCommand.CanExecute(null));
+
+            await viewModel.SelectCommanderAsync(
+                viewModel.CommanderSelectionOptions.Single(option => option.IsAutomatic)
+            );
+            Assert.Equal("F123", account.ActiveFrontierId);
+            Assert.True(viewModel.IsViewingJournalCommander);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     [Fact]

@@ -282,13 +282,16 @@ public sealed class EddnOutboxTests
 
         await queue.processDue();
 
-        Assert.Empty(logs);
+        Assert.DoesNotContain(logs, line => line.StartsWith("EDDN uploaded ", StringComparison.Ordinal));
 
         now = now.AddMinutes(15);
         Assert.True(queue.enqueue(queued(now, "Third Port")));
         await queue.processDue();
 
-        Assert.Equal(["EDDN uploaded 2 journal messages in the previous 15-minute activity window."], logs);
+        Assert.Equal(
+            ["EDDN uploaded 2 journal messages in the previous 15-minute activity window."],
+            logs.Where(line => line.StartsWith("EDDN uploaded ", StringComparison.Ordinal))
+        );
     }
 
     [Fact]
@@ -662,24 +665,34 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         string path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        Directory.CreateDirectory(storeFolder(path));
+        await File.WriteAllTextAsync(Path.Combine(storeFolder(path), "corrupt.json"), "{not-json");
         var now = DateTimeOffset.Parse(
             "2026-07-28T12:00:00Z",
             global::System.Globalization.CultureInfo.InvariantCulture
         );
         bool callbackCouldInspectQueue = false;
+        bool constructorLogged = false;
         EddnOutbox? queue = null;
         queue = new EddnOutbox(
             path,
             EddnTransportTests.createTransport(_ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))),
             _ =>
             {
-                callbackCouldInspectQueue = canInspectQueueFromAnotherThread(queue!);
+                if (queue is not { } initializedQueue)
+                {
+                    constructorLogged = true;
+                    return;
+                }
+
+                callbackCouldInspectQueue = canInspectQueueFromAnotherThread(initializedQueue);
             },
             () => now,
             automaticProcessing: false
         );
         using (queue)
         {
+            Assert.True(constructorLogged);
             queue.setEnabled(true, discardPendingWhenDisabled: false);
             Assert.True(queue.enqueue(queued(now)));
 
@@ -708,7 +721,10 @@ public sealed class EddnOutboxTests
             EddnTransportTests.createTransport(_ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))),
             _ =>
             {
-                callbackCouldInspectQueue = canInspectQueueFromAnotherThread(queue!);
+                if (queue is { } initializedQueue)
+                {
+                    callbackCouldInspectQueue = canInspectQueueFromAnotherThread(initializedQueue);
+                }
             },
             () => now,
             automaticProcessing: false

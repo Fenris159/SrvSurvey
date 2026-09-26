@@ -1,8 +1,9 @@
-# SrvSurvey-XP 2.1.3.0-rc.57
+# SrvSurvey-XP 2.1.3.0-rc.58
 
-RC57 adds optional threshold filtering for persistent prospector results. It
-also includes the journal source, Mining, and overlay editor improvements from
-the published [RC56 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.56).
+RC58 improves multi-commander discovery, Frontier connections, and settings
+isolation. It also includes the journal source, Mining, and overlay editor
+improvements from RC57 and the published
+[RC56 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.56).
 
 ## Multiple commanders and journal folders
 
@@ -19,7 +20,23 @@ the published [RC56 release](https://github.com/Fenris159/SrvSurvey/releases/tag
   `~/.local/share/lutris/games` alongside its existing Heroic, Bottles, Wine,
   and Flatpak searches. Unusual launcher locations can still be added manually.
 - A `--journal-directory` startup option continues to select one folder for
-  that particular SrvSurvey instance.
+  that particular SrvSurvey instance. The instance still discovers commanders
+  in other saved and automatically found folders, including an Epic folder
+  added while the instance is running. Its live journal and companion-file data
+  remain tied to the selected instance.
+
+## Commander profiles and Frontier
+
+- The Frontier commander selector lists commanders found in journals. Selecting
+  an unlinked commander offers **Connect to Frontier**; switching this view
+  does not switch the active journal commander used elsewhere in SrvSurvey.
+- Frontier authorization and stored credentials are separated by commander.
+  Starting a connection for another commander no longer replaces an unfinished
+  connection, and Frontier profile data is checked against the selected
+  commander before it appears.
+- Application and overlay settings are saved separately for each commander.
+  Existing settings are copied into each commander's profile when it is first
+  created, so updating does not discard the user's previous choices.
 
 ## Linux Frontier connection
 
@@ -61,13 +78,13 @@ the published [RC56 release](https://github.com/Fenris159/SrvSurvey/releases/tag
 ## Update channel and packages
 
 - RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge for older
-  clients. RC57 uses the schema-2 `xp2-v` release channel.
-- Version: `2.1.3.0-rc.57`
-- Tag: `xp2-v2.1.3.0-rc.57`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.57-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.57-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.57-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.57-x86_64.AppImage.zsync`
+  clients. RC58 uses the schema-2 `xp2-v` release channel.
+- Version: `2.1.3.0-rc.58`
+- Tag: `xp2-v2.1.3.0-rc.58`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.58-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.58-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

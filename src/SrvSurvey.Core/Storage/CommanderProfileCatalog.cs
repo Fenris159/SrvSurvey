@@ -5,20 +5,30 @@ namespace SrvSurvey.Core.Storage;
 
 public sealed class CommanderProfileCatalog
 {
-    private readonly IReadOnlyList<string> journalDirectories;
+    private readonly Func<IReadOnlyList<string>> journalDirectories;
 
     public CommanderProfileCatalog(string profileDirectory, IReadOnlyList<string>? journalDirectories = null)
+        : this(profileDirectory, SnapshotDirectories(journalDirectories)) { }
+
+    public CommanderProfileCatalog(string profileDirectory, Func<IReadOnlyList<string>> journalDirectories)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(profileDirectory);
+        ArgumentNullException.ThrowIfNull(journalDirectories);
         ProfileDirectory = Path.GetFullPath(profileDirectory);
+        this.journalDirectories = journalDirectories;
+    }
+
+    private static Func<IReadOnlyList<string>> SnapshotDirectories(IReadOnlyList<string>? directories)
+    {
         StringComparer pathComparer = OperatingSystem.IsWindows()
             ? StringComparer.OrdinalIgnoreCase
             : StringComparer.Ordinal;
-        this.journalDirectories = (journalDirectories ?? [])
+        string[] snapshot = (directories ?? [])
             .Where(path => !string.IsNullOrWhiteSpace(path))
             .Select(Path.GetFullPath)
             .Distinct(pathComparer)
             .ToArray();
+        return () => snapshot;
     }
 
     public string ProfileDirectory { get; }
@@ -104,7 +114,16 @@ public sealed class CommanderProfileCatalog
         CancellationToken cancellationToken
     )
     {
-        foreach (string journalDirectory in journalDirectories.Where(Directory.Exists))
+        StringComparer pathComparer = OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+        foreach (
+            string journalDirectory in journalDirectories()
+                .Where(path => !string.IsNullOrWhiteSpace(path))
+                .Select(Path.GetFullPath)
+                .Distinct(pathComparer)
+                .Where(Directory.Exists)
+        )
         {
             foreach (string journalPath in EnumerateJournals(journalDirectory, warnings))
             {

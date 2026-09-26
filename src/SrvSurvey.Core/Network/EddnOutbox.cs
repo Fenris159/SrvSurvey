@@ -17,6 +17,7 @@ internal sealed class EddnOutbox : IDisposable
     private static readonly TimeSpan sendSpacing = TimeSpan.FromMilliseconds(400);
     private static readonly TimeSpan minimumRetryDelay = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan maximumRetryDelay = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan sharedConsentPollingInterval = TimeSpan.FromMilliseconds(250);
     private const int defaultMaximumPendingMessages = 4096;
     private const long defaultMaximumStoreBytes = 64L * 1024 * 1024;
 
@@ -44,6 +45,7 @@ internal sealed class EddnOutbox : IDisposable
     private readonly System.Threading.Timer timer;
     private readonly CancellationTokenSource shutdown = new();
     private readonly FileSystemWatcher? sharedConsentWatcher;
+    private readonly System.Threading.Timer? sharedConsentPollTimer;
     private CancellationTokenSource activityCancellation = new();
     private List<EddnQueuedMessage> pending;
     private readonly Dictionary<Guid, long> persistedBytes = [];
@@ -100,6 +102,15 @@ internal sealed class EddnOutbox : IDisposable
         }
 
         sharedConsentWatcher = createSharedConsentWatcher(ownershipLogs);
+        if (sharedConsentWatcher is null)
+        {
+            sharedConsentPollTimer = new System.Threading.Timer(
+                _ => refreshSharedConsent(),
+                null,
+                sharedConsentPollingInterval,
+                sharedConsentPollingInterval
+            );
+        }
 
         writeLogs(ownershipLogs);
     }
@@ -591,6 +602,7 @@ internal sealed class EddnOutbox : IDisposable
         shutdown.Cancel();
         timer.Dispose();
         sharedConsentWatcher?.Dispose();
+        sharedConsentPollTimer?.Dispose();
 
         lock (sharedConsentSync)
         {
@@ -1113,9 +1125,16 @@ internal sealed class EddnOutbox : IDisposable
 
     private void onSharedConsentChanged(object sender, FileSystemEventArgs eventArgs)
     {
+        refreshSharedConsent();
+    }
+
+    private void refreshSharedConsent()
+    {
         lock (sharedConsentSync)
         {
             bool shouldEnable;
+            bool currentlyEnabled;
+            bool hasPendingUploads;
             lock (sync)
             {
                 if (disposed)
@@ -1124,10 +1143,18 @@ internal sealed class EddnOutbox : IDisposable
                 }
 
                 shouldEnable = requestedEnabled == true;
+                currentlyEnabled = enabled;
+                hasPendingUploads = pending.Count > 0 || loadingTruncated;
             }
 
             bool sharedDisabled = isSharedConsentDisabled();
-            applyEnabledState(shouldEnable && !sharedDisabled, discardPendingWhenDisabled: sharedDisabled);
+            bool enable = shouldEnable && !sharedDisabled;
+            if (!enable && !currentlyEnabled && (!sharedDisabled || !hasPendingUploads))
+            {
+                return;
+            }
+
+            applyEnabledState(enable, discardPendingWhenDisabled: sharedDisabled);
         }
     }
 

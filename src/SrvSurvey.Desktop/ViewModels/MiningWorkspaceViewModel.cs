@@ -486,10 +486,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
 
     public void UseCommanderSystem(string? system)
     {
-        if (!string.IsNullOrWhiteSpace(system))
-        {
-            Search.UpdateCurrentLocation(system);
-        }
+        Search.UpdateCurrentLocation(system ?? string.Empty);
     }
 
     public int SelectedTab

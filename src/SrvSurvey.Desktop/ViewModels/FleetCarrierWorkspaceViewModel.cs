@@ -21,6 +21,7 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
     private string? personalCallsign;
     private string? squadronCallsign;
     private long? detectedMarketId;
+    private bool viewingJournalCommander;
 
     public FleetCarrierWorkspaceViewModel(CommanderProfileViewModel profile, ColonizationViewModel colonization)
     {
@@ -143,6 +144,7 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
         if (
             e.PropertyName
             is nameof(CommanderProfileViewModel.Snapshot)
+                or nameof(CommanderProfileViewModel.IsViewingJournalCommander)
                 or nameof(CommanderProfileViewModel.PersonalCarrier)
                 or nameof(CommanderProfileViewModel.SquadronCarrier)
                 or nameof(CommanderProfileViewModel.Carrier)
@@ -155,20 +157,26 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
 
     private async Task SeedCapiCargoAsync()
     {
-        await colonization.SeedLinkedCarrierCargoFromCapiAsync(profile.Snapshot).ConfigureAwait(true);
+        if (profile.IsViewingJournalCommander)
+        {
+            await colonization.SeedLinkedCarrierCargoFromCapiAsync(profile.Snapshot).ConfigureAwait(true);
+        }
     }
 
     private void Refresh(bool force = false)
     {
-        string? nextPersonalCallsign = profile.PersonalCarrier?.Callsign;
-        string? nextSquadronCallsign = profile.SquadronCarrier?.Callsign;
+        bool isViewingJournalCommander = profile.IsViewingJournalCommander;
+        string? nextPersonalCallsign = isViewingJournalCommander ? profile.PersonalCarrier?.Callsign : null;
+        string? nextSquadronCallsign = isViewingJournalCommander ? profile.SquadronCarrier?.Callsign : null;
+        long? nextDetectedMarketId = isViewingJournalCommander ? colonization.DetectedSquadronCarrierMarketId : null;
         if (
             !force
             && ReferenceEquals(observedCarriers, colonization.LinkedFleetCarriers)
             && commander == colonization.CommanderName
             && personalCallsign == nextPersonalCallsign
             && squadronCallsign == nextSquadronCallsign
-            && detectedMarketId == colonization.DetectedSquadronCarrierMarketId
+            && detectedMarketId == nextDetectedMarketId
+            && viewingJournalCommander == isViewingJournalCommander
         )
         {
             return;
@@ -177,8 +185,11 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
         observedCarriers = colonization.LinkedFleetCarriers;
         personalCallsign = nextPersonalCallsign;
         squadronCallsign = nextSquadronCallsign;
-        detectedMarketId = colonization.DetectedSquadronCarrierMarketId;
-        candidates = observedCarriers.Where(c => !IsOwnedCarrierCallsign(c.Name)).ToArray();
+        detectedMarketId = nextDetectedMarketId;
+        viewingJournalCommander = isViewingJournalCommander;
+        candidates = isViewingJournalCommander
+            ? observedCarriers.Where(c => !IsOwnedCarrierCallsign(c.Name)).ToArray()
+            : [];
         if (commander != colonization.CommanderName)
         {
             commander = colonization.CommanderName;
@@ -190,16 +201,15 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
             selectedMarketId = null;
         }
 
-        if (
-            selectedMarketId is null
-            && colonization.DetectedSquadronCarrierMarketId is { } id
-            && SquadronCandidates.Any(c => c.MarketId == id)
-        )
+        if (selectedMarketId is null && detectedMarketId is { } id && SquadronCandidates.Any(c => c.MarketId == id))
         {
             selectedMarketId = id;
         }
 
-        profile.UpdateLinkedFleetCarriers(commander, colonization.LinkedFleetCarriers);
+        profile.UpdateLinkedFleetCarriers(
+            profile.IsViewingJournalCommander ? commander : null,
+            profile.IsViewingJournalCommander ? colonization.LinkedFleetCarriers : []
+        );
         Changed(nameof(SquadronCandidates));
         RaiseSquadron();
     }

@@ -9,6 +9,99 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class FrontierAccountServiceTests
 {
     [Fact]
+    public async Task CallbacksForDifferentCommandersPreserveBothLinkedAccounts()
+    {
+        var store = new MemoryCredentialStore
+        {
+            Document = new FrontierCredentialDocument
+            {
+                PendingAuthorizations = new Dictionary<string, FrontierPendingAuthorization>
+                {
+                    ["state-a"] = new("state-a", "verifier-a", DateTimeOffset.UtcNow, "F123", "Fenris"),
+                    ["state-b"] = new("state-b", "verifier-b", DateTimeOffset.UtcNow, "F456", "Second"),
+                },
+            },
+        };
+        using FrontierAccountService service = CreateService(
+            store,
+            _ =>
+                Json(
+                    HttpStatusCode.OK,
+                    "{\"access_token\":\"access\",\"refresh_token\":\"refresh\",\"token_type\":\"Bearer\",\"expires_in\":14400}"
+                )
+        );
+
+        await service.HandleCallbackAsync(new FrontierOAuthCallback("code-b", "state-b", string.Empty, string.Empty));
+        Assert.True(store.Document.PendingAuthorizations.ContainsKey("state-a"));
+        await service.HandleCallbackAsync(new FrontierOAuthCallback("code-a", "state-a", string.Empty, string.Empty));
+
+        Assert.Empty(store.Document.PendingAuthorizations);
+        Assert.True(store.Document.Accounts["F123"].IsLinked);
+        Assert.True(store.Document.Accounts["F456"].IsLinked);
+        Assert.True(store.Document.AuthorizationResults["state-a"].Succeeded);
+        Assert.True(store.Document.AuthorizationResults["state-b"].Succeeded);
+    }
+
+    [Fact]
+    public async Task ConcurrentCommanderConnectionsKeepTheirAuthorizationStatesSeparate()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-concurrent-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var store = new MemoryCredentialStore { Document = new FrontierCredentialDocument() };
+            static HttpResponseMessage Response(HttpRequestMessage request) =>
+                request.RequestUri!.AbsolutePath switch
+                {
+                    "/token" => Json(
+                        HttpStatusCode.OK,
+                        "{\"access_token\":\"access\",\"refresh_token\":\"refresh\",\"token_type\":\"Bearer\",\"expires_in\":14400}"
+                    ),
+                    "/profile" => Json(
+                        HttpStatusCode.OK,
+                        "{\"commander\":{\"id\":456,\"name\":\"Second\",\"rank\":{}},\"ships\":[]}"
+                    ),
+                    _ => Json(HttpStatusCode.NoContent, string.Empty),
+                };
+            using FrontierAccountService first = CreateService(store, Response, Path.Combine(root, "first"));
+            using FrontierAccountService second = CreateService(store, Response, Path.Combine(root, "second"));
+            second.SetActiveCommander("F456", "Second");
+
+            Task<FrontierAccountSnapshot> firstConnection = first.ConnectAsync();
+            Task<FrontierAccountSnapshot> secondConnection = second.ConnectAsync();
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            while (store.Document.PendingAuthorizations.Count < 2)
+            {
+                await Task.Delay(10, timeout.Token);
+            }
+
+            FrontierPendingAuthorization secondPending = Assert.Single(
+                store.Document.PendingAuthorizations.Values,
+                pending => pending.FrontierId == "F456"
+            );
+            await first.CancelConnectionAsync();
+            Assert.Single(store.Document.PendingAuthorizations);
+            Assert.True(store.Document.PendingAuthorizations.ContainsKey(secondPending.State));
+
+            await second.HandleCallbackAsync(
+                new FrontierOAuthCallback("second-code", secondPending.State, string.Empty, string.Empty)
+            );
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                firstConnection.WaitAsync(TimeSpan.FromSeconds(5))
+            );
+            FrontierAccountSnapshot snapshot = await secondConnection.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.Equal("Second", snapshot.CommanderName);
+            Assert.True(store.Document.Accounts["F456"].IsLinked);
+            Assert.False(store.Document.Accounts.ContainsKey("F123"));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task CallbackUsesPkceAndStoresTokensWithoutClientSecret()
     {
         var store = new MemoryCredentialStore
@@ -22,6 +115,10 @@ public sealed class FrontierAccountServiceTests
                     "F123",
                     "Fenris"
                 ),
+                PendingAuthorizations = new Dictionary<string, FrontierPendingAuthorization>
+                {
+                    ["other-state"] = new("other-state", "other-verifier", DateTimeOffset.UtcNow, "F456", "Second"),
+                },
             },
         };
         string? tokenBody = null;
@@ -49,6 +146,7 @@ public sealed class FrontierAccountServiceTests
         Assert.Equal("refresh", account.RefreshToken);
         Assert.Null(store.Document.PendingAuthorization);
         Assert.True(store.Document.AuthorizationResult!.Succeeded);
+        Assert.True(store.Document.PendingAuthorizations.ContainsKey("other-state"));
     }
 
     [Fact]
