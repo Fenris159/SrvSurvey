@@ -1,7 +1,8 @@
-# SrvSurvey-XP 2.1.3.0-rc.58
+# SrvSurvey-XP 2.1.3.0-rc.58.5
 
-RC58 improves multi-commander discovery, Frontier connections, and settings
-isolation. It also includes the journal source, Mining, and overlay editor
+RC58.5 keeps the RC58 multi-commander, journal, and settings work and fixes
+Linux Frontier linking when a second commander is added beside an existing
+login. It also includes the journal source, Mining, and overlay editor
 improvements from RC57 and the published
 [RC56 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.56).
 
@@ -47,6 +48,17 @@ improvements from RC57 and the published
   Debian/Ubuntu and Arch derivatives. A Linux Homebrew installation in its
   standard prefix is recognized as well. Frontier tokens still require a
   secure keyring.
+- Linking another commander no longer fails with "Frontier authorization was
+  cancelled or replaced" when the keyring already holds a commander login.
+  SrvSurvey reads every matching secret and keeps the newest authorization, so
+  the existing login remains and the new commander can connect.
+- Connecting from the Frontier commander dropdown stores that login under the
+  selected Frontier ID. This window's journals stay on the commander it is
+  already reading. A companion instance launched for the selected commander
+  loads that same login and pairs it with that commander's journals.
+- All Frontier logins share one keyring secret. If that combined secret would
+  exceed `secret-tool`'s 8192-byte limit, Connect stops with an explicit
+  message and leaves the existing login in place.
 
 ## Mining in the cockpit
 
@@ -78,13 +90,13 @@ improvements from RC57 and the published
 ## Update channel and packages
 
 - RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge for older
-  clients. RC58 uses the schema-2 `xp2-v` release channel.
-- Version: `2.1.3.0-rc.58`
-- Tag: `xp2-v2.1.3.0-rc.58`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.58-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.58-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58-x86_64.AppImage.zsync`
+  clients. RC58.5 uses the schema-2 `xp2-v` release channel.
+- Version: `2.1.3.0-rc.58.5`
+- Tag: `xp2-v2.1.3.0-rc.58.5`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.5-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.5-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.5-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.5-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

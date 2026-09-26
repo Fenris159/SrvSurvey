@@ -20572,6 +20572,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
   },
   {
+    "Text": "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
+  },
+  {
     "Text": "Frontier authorization expired or was revoked. Connect your account again.",
     "IsFormat": false,
     "SourceKinds": [
@@ -64120,14 +64128,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "lookup",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
-  },
-  {
     "Text": "low",
     "IsFormat": false,
     "SourceKinds": [
@@ -65469,7 +65469,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
   },
   {
     "Text": "searchandrescue",

@@ -10261,6 +10261,10 @@
       "translation": "Frontier Autorisierungsrückruf fehlgeschlagen: {0}"
     },
     {
+      "source": "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.",
+      "translation": "Frontier-Autorisierung konnte nicht gespeichert werden, da secret-tool unter Linux höchstens 8192 Bytes akzeptiert. Entfernen Sie einen alten verknüpften Commander und stellen Sie erneut eine Verbindung her."
+    },
+    {
       "source": "Frontier authorization expired or was revoked. Connect your account again.",
       "translation": "Frontier Autorisierung abgelaufen oder wurde widerrufen. Verbinden Sie Ihr Konto erneut."
     },
@@ -31981,10 +31985,6 @@
       "translation": "Protokolle"
     },
     {
-      "source": "lookup",
-      "translation": "Nachschlagen"
-    },
-    {
       "source": "low",
       "translation": "niedrig"
     },
@@ -44785,6 +44785,10 @@
     {
       "source": "Frontier authorization callback failed: {0}",
       "translation": "Frontier devolución de llamada de autorización fallida: {0}"
+    },
+    {
+      "source": "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.",
+      "translation": "La autorización Frontier no se pudo almacenar porque secret-tool en Linux acepta como máximo 8192 bytes. Elimine un antiguo comandante vinculado y conéctese nuevamente."
     },
     {
       "source": "Frontier authorization expired or was revoked. Connect your account again.",
@@ -66507,10 +66511,6 @@
       "translation": "registros"
     },
     {
-      "source": "lookup",
-      "translation": "buscar"
-    },
-    {
       "source": "low",
       "translation": "bajo"
     },
@@ -79311,6 +79311,10 @@
     {
       "source": "Frontier authorization callback failed: {0}",
       "translation": "Frontier échec du rappel d'autorisation : {0}"
+    },
+    {
+      "source": "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.",
+      "translation": "L'autorisation Frontier n'a pas pu être stockée car secret-tool sous Linux accepte au maximum 8 192 octets. Supprimez un ancien commandant lié et reconnectez-vous."
     },
     {
       "source": "Frontier authorization expired or was revoked. Connect your account again.",
@@ -101033,10 +101037,6 @@
       "translation": "journaux"
     },
     {
-      "source": "lookup",
-      "translation": "recherche"
-    },
-    {
       "source": "low",
       "translation": "faible"
     },
@@ -113837,6 +113837,10 @@
     {
       "source": "Frontier authorization callback failed: {0}",
       "translation": "Frontier retorno de chamada de autorização falhou: {0}"
+    },
+    {
+      "source": "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.",
+      "translation": "A autorização Frontier não pôde ser armazenada porque secret-tool no Linux aceita no máximo 8.192 bytes. Remova um comandante vinculado antigo e conecte-se novamente."
     },
     {
       "source": "Frontier authorization expired or was revoked. Connect your account again.",
@@ -135559,10 +135563,6 @@
       "translation": "registros"
     },
     {
-      "source": "lookup",
-      "translation": "pesquisa"
-    },
-    {
       "source": "low",
       "translation": "baixo"
     },
@@ -148363,6 +148363,10 @@
     {
       "source": "Frontier authorization callback failed: {0}",
       "translation": "Frontier не удалось выполнить обратный вызов авторизации: {0}"
+    },
+    {
+      "source": "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.",
+      "translation": "Не удалось сохранить авторизацию Frontier, поскольку secret-tool в Linux принимает не более 8192 байт. Удалите старый связанный командир и подключитесь снова."
     },
     {
       "source": "Frontier authorization expired or was revoked. Connect your account again.",
@@ -170085,10 +170089,6 @@
       "translation": "журналы"
     },
     {
-      "source": "lookup",
-      "translation": "поиск"
-    },
-    {
       "source": "low",
       "translation": "низкий"
     },
@@ -182889,6 +182889,10 @@
     {
       "source": "Frontier authorization callback failed: {0}",
       "translation": "Frontier授权回调失败：{0}"
+    },
+    {
+      "source": "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.",
+      "translation": "Frontier 授权无法存储，因为 Linux 上的 secret-tool 最多接受 8192 字节。删除旧的链接指挥官并重新连接。"
     },
     {
       "source": "Frontier authorization expired or was revoked. Connect your account again.",
@@ -204611,10 +204615,6 @@
       "translation": "日志"
     },
     {
-      "source": "lookup",
-      "translation": "查找"
-    },
-    {
       "source": "low",
       "translation": "低"
     },
@@ -217415,6 +217415,10 @@
     {
       "source": "Frontier authorization callback failed: {0}",
       "translation": "* FRONTIER AUTHORIZATION CALLBACK FAILED: {0} >>>!"
+    },
+    {
+      "source": "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.",
+      "translation": "* FRONTIER AUTHORIZATION COULD NOT BE STORED BECAUSE SECRET-TOOL ON LINUX ACCEPTS AT MOST 8192 BYTES. REMOVE AN OLD LINKED COMMANDER AND CONNECT AGAIN. >>>!"
     },
     {
       "source": "Frontier authorization expired or was revoked. Connect your account again.",
@@ -239135,10 +239139,6 @@
     {
       "source": "logs",
       "translation": "* LOGS >>>!"
-    },
-    {
-      "source": "lookup",
-      "translation": "* LOOKUP >>>!"
     },
     {
       "source": "low",

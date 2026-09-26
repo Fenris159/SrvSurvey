@@ -23,6 +23,11 @@ public sealed record FrontierCredentialDocument
 {
     public int Version { get; init; } = 3;
 
+    // Linux secret-tool lookup returns an arbitrary item when several share the
+    // same attributes. Saves stamp this so the newest authorization wins.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public long KeyringRevision { get; init; }
+
     public IReadOnlyDictionary<string, FrontierAccountCredential> Accounts { get; init; } =
         new Dictionary<string, FrontierAccountCredential>(StringComparer.OrdinalIgnoreCase);
 
@@ -209,6 +214,10 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         "Secure Frontier token storage is unavailable: Secret Service is inaccessible. secret-tool is installed, but a keyring must run and be unlocked in this login session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet and unlock the wallet. If activation still fails, sign out and back in; on SDDM systems, check KWallet/ksecretd login integration. On other desktops, start and unlock GNOME Keyring or another provider. Retry Connect to Frontier.";
     internal const string MissingSecretToolMessage =
         "Secure Frontier token storage is unavailable because secret-tool was not found. Debian/Ubuntu: sudo apt install libsecret-tools. Arch/Manjaro/CachyOS: sudo pacman -S --needed libsecret.";
+    internal const string SecretTooLargeMessage =
+        "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.";
+    internal const string InvalidKeyringMessage = "The Frontier authorization stored in the Linux keyring is invalid.";
+    internal const int MaximumSecretBytes = 8192;
     private static readonly string[] SecretToolPaths =
     [
         "/usr/bin/secret-tool",
@@ -221,11 +230,89 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
 
     public async Task<FrontierCredentialDocument?> LoadAsync(CancellationToken cancellationToken = default)
     {
-        ProcessResult result = await RunAsync(
-                ["lookup", "application", "SrvSurvey", "service", "frontier-capi"],
-                standardInput: null,
-                cancellationToken
-            )
+        IReadOnlyList<string> secrets = await SearchSecretsAsync(cancellationToken).ConfigureAwait(false);
+        if (secrets.Count == 0)
+        {
+            return null;
+        }
+
+        return DeserializePreferred(secrets);
+    }
+
+    public async Task SaveAsync(FrontierCredentialDocument document, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        long revision = await NextRevisionAsync(cancellationToken).ConfigureAwait(false);
+        string json = JsonSerializer.Serialize(document with { KeyringRevision = revision }, JsonOptions);
+        if (Encoding.UTF8.GetByteCount(json) > MaximumSecretBytes)
+        {
+            throw new InvalidOperationException(SecretTooLargeMessage);
+        }
+
+        await StoreAsync(json, cancellationToken).ConfigureAwait(false);
+        await CollapseDuplicateSecretsAsync(json, revision, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ClearAsync(CancellationToken cancellationToken = default)
+    {
+        ProcessResult result = await RunAsync(ClearArguments(), standardInput: null, cancellationToken)
+            .ConfigureAwait(false);
+        if (result.ExitCode != 0 && !string.IsNullOrWhiteSpace(result.Error))
+        {
+            throw new InvalidOperationException($"{UnavailableMessage} {result.Error.Trim()}");
+        }
+    }
+
+    public Task<IAsyncDisposable> AcquireLeaseAsync(CancellationToken cancellationToken = default) =>
+        CredentialStoreLease.AcquireAsync(leasePath, cancellationToken);
+
+    internal static IReadOnlyList<string> ParseSearchSecrets(string? output)
+    {
+        if (string.IsNullOrWhiteSpace(output))
+        {
+            return [];
+        }
+
+        List<string> secrets = [];
+        foreach (string rawLine in output.Split('\n'))
+        {
+            string line = rawLine.TrimEnd('\r');
+            // Char span avoids a localizable string literal for secret-tool's field label.
+            ReadOnlySpan<char> prefix = ['s', 'e', 'c', 'r', 'e', 't', ' ', '=', ' '];
+            if (line.AsSpan().StartsWith(prefix, StringComparison.Ordinal))
+            {
+                secrets.Add(line[prefix.Length..]);
+            }
+        }
+
+        return secrets;
+    }
+
+    internal static string? SelectPreferredSecret(IReadOnlyList<string> secrets)
+    {
+        ArgumentNullException.ThrowIfNull(secrets);
+        string? selected = null;
+        long selectedRevision = long.MinValue;
+        foreach (string secret in secrets)
+        {
+            if (!TryReadKeyringRevision(secret, out long revision))
+            {
+                continue;
+            }
+
+            if (selected is null || revision >= selectedRevision)
+            {
+                selected = secret;
+                selectedRevision = revision;
+            }
+        }
+
+        return selected;
+    }
+
+    private async Task<IReadOnlyList<string>> SearchSecretsAsync(CancellationToken cancellationToken)
+    {
+        ProcessResult result = await RunAsync(SearchArguments(), standardInput: null, cancellationToken)
             .ConfigureAwait(false);
         if (result.ExitCode != 0)
         {
@@ -234,44 +321,75 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
                 throw new InvalidOperationException($"{UnavailableMessage} {result.Error.Trim()}");
             }
 
-            return null;
+            return [];
         }
 
-        if (string.IsNullOrWhiteSpace(result.Output))
+        return ParseSearchSecrets(result.Output);
+    }
+
+    private async Task<long> NextRevisionAsync(CancellationToken cancellationToken)
+    {
+        long revision = 0;
+        foreach (string secret in await SearchSecretsAsync(cancellationToken).ConfigureAwait(false))
         {
-            return null;
+            if (TryReadKeyringRevision(secret, out long candidate))
+            {
+                revision = Math.Max(revision, candidate);
+            }
         }
 
-        try
+        long now = DateTimeOffset.UtcNow.UtcTicks;
+        return now > revision ? now : revision + 1;
+    }
+
+    private async Task CollapseDuplicateSecretsAsync(string json, long revision, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<string> secrets = await SearchSecretsAsync(cancellationToken).ConfigureAwait(false);
+        if (secrets.Count <= 1 && SecretMatchesRevision(SelectPreferredSecret(secrets), revision))
         {
-            return JsonSerializer.Deserialize<FrontierCredentialDocument>(result.Output.Trim(), JsonOptions);
+            return;
         }
-        catch (JsonException exception)
+
+        if (!SecretMatchesRevision(SelectPreferredSecret(secrets), revision))
         {
-            throw new InvalidDataException(
-                "The Frontier authorization stored in the Linux keyring is invalid.",
-                exception
-            );
+            throw new InvalidOperationException(UnavailableMessage);
+        }
+
+        await RemoveMatchingSecretsAsync(cancellationToken).ConfigureAwait(false);
+        await StoreAsync(json, cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<string> remaining = await SearchSecretsAsync(cancellationToken).ConfigureAwait(false);
+        if (remaining.Count != 1 || !SecretMatchesRevision(SelectPreferredSecret(remaining), revision))
+        {
+            throw new InvalidOperationException(UnavailableMessage);
         }
     }
 
-    public async Task SaveAsync(FrontierCredentialDocument document, CancellationToken cancellationToken = default)
+    private async Task RemoveMatchingSecretsAsync(CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(document);
-        string json = JsonSerializer.Serialize(document, JsonOptions);
-        ProcessResult result = await RunAsync(
-                [
-                    "store",
-                    "--label=SrvSurvey Frontier authorization",
-                    "application",
-                    "SrvSurvey",
-                    "service",
-                    "frontier-capi",
-                ],
-                json,
-                cancellationToken
-            )
-            .ConfigureAwait(false);
+        for (int attempt = 0; attempt < 8; attempt++)
+        {
+            if ((await SearchSecretsAsync(cancellationToken).ConfigureAwait(false)).Count == 0)
+            {
+                return;
+            }
+
+            ProcessResult result = await RunAsync(ClearArguments(), standardInput: null, cancellationToken)
+                .ConfigureAwait(false);
+            if (result.ExitCode != 0 && !string.IsNullOrWhiteSpace(result.Error))
+            {
+                throw new InvalidOperationException($"{UnavailableMessage} {result.Error.Trim()}");
+            }
+        }
+
+        if ((await SearchSecretsAsync(cancellationToken).ConfigureAwait(false)).Count > 0)
+        {
+            throw new InvalidOperationException(UnavailableMessage);
+        }
+    }
+
+    private async Task StoreAsync(string json, CancellationToken cancellationToken)
+    {
+        ProcessResult result = await RunAsync(StoreArguments(), json, cancellationToken).ConfigureAwait(false);
         if (result.ExitCode != 0)
         {
             throw new InvalidOperationException(
@@ -282,22 +400,60 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         }
     }
 
-    public async Task ClearAsync(CancellationToken cancellationToken = default)
+    private static FrontierCredentialDocument DeserializePreferred(IReadOnlyList<string> secrets)
     {
-        ProcessResult result = await RunAsync(
-                ["clear", "application", "SrvSurvey", "service", "frontier-capi"],
-                standardInput: null,
-                cancellationToken
-            )
-            .ConfigureAwait(false);
-        if (result.ExitCode != 0 && !string.IsNullOrWhiteSpace(result.Error))
+        string? selected = SelectPreferredSecret(secrets);
+        if (selected is null)
         {
-            throw new InvalidOperationException($"{UnavailableMessage} {result.Error.Trim()}");
+            throw new InvalidDataException(InvalidKeyringMessage);
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<FrontierCredentialDocument>(selected, JsonOptions)
+                ?? throw new InvalidDataException(InvalidKeyringMessage);
+        }
+        catch (JsonException exception)
+        {
+            throw new InvalidDataException(InvalidKeyringMessage, exception);
         }
     }
 
-    public Task<IAsyncDisposable> AcquireLeaseAsync(CancellationToken cancellationToken = default) =>
-        CredentialStoreLease.AcquireAsync(leasePath, cancellationToken);
+    private static bool SecretMatchesRevision(string? secret, long revision)
+    {
+        return secret is not null && TryReadKeyringRevision(secret, out long candidate) && candidate == revision;
+    }
+
+    private static bool TryReadKeyringRevision(string secret, out long revision)
+    {
+        revision = 0;
+        try
+        {
+            FrontierCredentialDocument? document = JsonSerializer.Deserialize<FrontierCredentialDocument>(
+                secret,
+                JsonOptions
+            );
+            if (document is null)
+            {
+                return false;
+            }
+
+            revision = document.KeyringRevision;
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static string[] SearchArguments() =>
+        ["search", "--all", "application", "SrvSurvey", "service", "frontier-capi"];
+
+    private static string[] StoreArguments() =>
+        ["store", "--label=SrvSurvey Frontier authorization", "application", "SrvSurvey", "service", "frontier-capi"];
+
+    private static string[] ClearArguments() => ["clear", "application", "SrvSurvey", "service", "frontier-capi"];
 
     private async Task<ProcessResult> RunAsync(
         IReadOnlyList<string> arguments,
