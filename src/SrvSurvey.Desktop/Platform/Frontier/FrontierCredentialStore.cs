@@ -207,7 +207,8 @@ internal sealed class WindowsFrontierCredentialStore(string path) : IFrontierCre
 
 internal sealed class LinuxSecretServiceFrontierCredentialStore(
     string leasePath,
-    IReadOnlyList<string>? secretToolPaths = null
+    IReadOnlyList<string>? secretToolPaths = null,
+    Func<IReadOnlyList<string>, string?, CancellationToken, Task<SecretToolResult>>? runTool = null
 ) : IFrontierCredentialStore
 {
     internal const string UnavailableMessage =
@@ -255,7 +256,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
 
     public async Task ClearAsync(CancellationToken cancellationToken = default)
     {
-        ProcessResult result = await RunAsync(ClearArguments(), standardInput: null, cancellationToken)
+        SecretToolResult result = await RunAsync(ClearArguments(), standardInput: null, cancellationToken)
             .ConfigureAwait(false);
         if (result.ExitCode != 0 && !string.IsNullOrWhiteSpace(result.Error))
         {
@@ -312,7 +313,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
 
     private async Task<IReadOnlyList<string>> SearchSecretsAsync(CancellationToken cancellationToken)
     {
-        ProcessResult result = await RunAsync(SearchArguments(), standardInput: null, cancellationToken)
+        SecretToolResult result = await RunAsync(SearchArguments(), standardInput: null, cancellationToken)
             .ConfigureAwait(false);
         if (result.ExitCode != 0)
         {
@@ -353,7 +354,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
 
     private async Task StoreAsync(string json, CancellationToken cancellationToken)
     {
-        ProcessResult result = await RunAsync(StoreArguments(), json, cancellationToken).ConfigureAwait(false);
+        SecretToolResult result = await RunAsync(StoreArguments(), json, cancellationToken).ConfigureAwait(false);
         if (result.ExitCode != 0)
         {
             throw new InvalidOperationException(
@@ -366,11 +367,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
 
     private static FrontierCredentialDocument DeserializePreferred(IReadOnlyList<string> secrets)
     {
-        string? selected = SelectPreferredSecret(secrets);
-        if (selected is null)
-        {
-            throw new InvalidDataException(InvalidKeyringMessage);
-        }
+        string selected = SelectPreferredSecret(secrets) ?? throw new InvalidDataException(InvalidKeyringMessage);
 
         try
         {
@@ -419,12 +416,17 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
 
     private static string[] ClearArguments() => ["clear", "application", "SrvSurvey", "service", "frontier-capi"];
 
-    private async Task<ProcessResult> RunAsync(
+    private async Task<SecretToolResult> RunAsync(
         IReadOnlyList<string> arguments,
         string? standardInput,
         CancellationToken cancellationToken
     )
     {
+        if (runTool is not null)
+        {
+            return await runTool(arguments, standardInput, cancellationToken).ConfigureAwait(false);
+        }
+
         var startInfo = new ProcessStartInfo
         {
             FileName = ResolveSecretToolPath(),
@@ -462,7 +464,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
             }
 
             await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
-            return new ProcessResult(
+            return new SecretToolResult(
                 inputFailed && process.ExitCode == 0 ? -1 : process.ExitCode,
                 await outputTask.ConfigureAwait(false),
                 await errorTask.ConfigureAwait(false)
@@ -485,9 +487,9 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         return (paths ?? SecretToolPaths).FirstOrDefault(fileExists)
             ?? throw new InvalidOperationException(MissingSecretToolMessage);
     }
-
-    private sealed record ProcessResult(int ExitCode, string Output, string Error);
 }
+
+internal sealed record SecretToolResult(int ExitCode, string Output, string Error);
 
 internal sealed class UnsupportedFrontierCredentialStore : IFrontierCredentialStore
 {

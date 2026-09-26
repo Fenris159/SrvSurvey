@@ -391,6 +391,8 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         {
             IsPrepared = false;
             isSystemArchitect = false;
+            bodyNumberFollowsContext = true;
+            bodyNameFollowsContext = true;
             SetArchitectFromRaven(false);
             OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             pendingProject = null;
@@ -477,6 +479,8 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             ArchitectName = fromRaven ? architect!.Trim() : context.CommanderName ?? string.Empty;
             SetArchitectFromRaven(fromRaven);
             Notes = string.Empty;
+            bodyNumberFollowsContext = true;
+            bodyNameFollowsContext = true;
             ApplyAutomaticBody(null);
             selectedLocation = context.Dock.StationName.StartsWith(
                 ColonizationDockingSnapshot.PlanetaryConstructionSite,
@@ -928,7 +932,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             AssignBodyNumber(site.BodyNumber.ToString(CultureInfo.InvariantCulture));
             if (bodyNameFollowsContext)
             {
-                AssignBodyName(string.Empty);
+                AssignBodyName(site.BodyName?.Trim() ?? string.Empty);
             }
 
             return;

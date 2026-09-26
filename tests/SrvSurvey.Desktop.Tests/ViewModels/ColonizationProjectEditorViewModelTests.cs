@@ -259,6 +259,60 @@ public sealed class ColonizationProjectEditorViewModelTests
     }
 
     [Fact]
+    public async Task PlannedSiteSuppliesBodyNameWhenNoJournalBodyIsKnown()
+    {
+        string layout = catalog.FindByBuildType("no_truss")!.Layouts[1];
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "site-1",
+                    Name = "Hope",
+                    BodyNumber = 9,
+                    BodyName = "Peralta 4 a",
+                    BuildType = layout,
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+
+        await editor.PrepareAsync();
+
+        Assert.Equal("9", editor.BodyNumberText);
+        Assert.Equal("Peralta 4 a", editor.BodyName);
+        await editor.ReviewAsync();
+        Assert.True(editor.IsConfirmationPending);
+    }
+
+    [Fact]
+    public async Task NewProjectDoesNotKeepBodyNameEditedForAnotherCommander()
+    {
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext() with { CurrentBodyId = 12, CurrentBodyName = "Peralta 4 a" });
+        await editor.PrepareAsync();
+        editor.BodyName = "Manually edited body";
+
+        editor.UpdateContext(
+            ReadyContext() with
+            {
+                CommanderName = "Other Cmdr",
+                CurrentBodyId = 15,
+                CurrentBodyName = "Peralta 5 b",
+            }
+        );
+        await editor.PrepareAsync();
+
+        Assert.Equal("15", editor.BodyNumberText);
+        Assert.Equal("Peralta 5 b", editor.BodyName);
+    }
+
+    [Fact]
     public async Task UntouchedBodyNumberFollowsTheBodyTheCommanderIsOn()
     {
         string layout = catalog.FindByBuildType("no_truss")!.Layouts[1];

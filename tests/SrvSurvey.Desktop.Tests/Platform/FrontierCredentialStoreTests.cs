@@ -101,6 +101,96 @@ public sealed class FrontierCredentialStoreTests
     }
 
     [Fact]
+    public async Task PortableKeyringKeepsBothCommandersAndLoadsNewestRevision()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential> { ["F123"] = new() },
+            }
+        );
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential> { ["F123"] = new(), ["F456"] = new() },
+            }
+        );
+
+        FrontierCredentialDocument? loaded = await store.LoadAsync();
+
+        Assert.NotNull(loaded);
+        Assert.Equal(2, loaded.Accounts.Count);
+        Assert.True(loaded.Accounts.ContainsKey("F123"));
+        Assert.True(loaded.Accounts.ContainsKey("F456"));
+        Assert.Equal(2, tool.Secrets.Count);
+        Assert.True(tool.SearchUsedUnlock);
+    }
+
+    [Fact]
+    public async Task FailedKeyringRewritePreservesExistingCommander()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential> { ["F123"] = new() },
+            }
+        );
+        tool.RejectStores = true;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.SaveAsync(
+                new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential> { ["F123"] = new(), ["F456"] = new() },
+                }
+            )
+        );
+
+        FrontierCredentialDocument? loaded = await store.LoadAsync();
+        Assert.NotNull(loaded);
+        Assert.True(loaded.Accounts.ContainsKey("F123"));
+        Assert.False(loaded.Accounts.ContainsKey("F456"));
+    }
+
+    [Fact]
+    public async Task PortableKeyringRejectsOversizedSecretBeforeWriting()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+
+        InvalidOperationException error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.SaveAsync(
+                new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F123"] = new() { AccessToken = new string('a', 9000) },
+                    },
+                }
+            )
+        );
+
+        Assert.Equal(LinuxSecretServiceFrontierCredentialStore.SecretTooLargeMessage, error.Message);
+        Assert.Empty(tool.Secrets);
+    }
+
+    [Fact]
+    public async Task PortableKeyringClearRemovesAllStoredAuthorizations()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        await store.SaveAsync(new FrontierCredentialDocument());
+
+        await store.ClearAsync();
+
+        Assert.Null(await store.LoadAsync());
+    }
+
+    [Fact]
     public async Task EmptyKeyringSearchLoadsNoAuthorization()
     {
         if (!OperatingSystem.IsLinux())
@@ -288,5 +378,50 @@ public sealed class FrontierCredentialStoreTests
         await File.WriteAllTextAsync(tool, script);
         File.SetUnixFileMode(tool, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         return new LinuxSecretServiceFrontierCredentialStore(Path.Combine(root, "lock"), [tool]);
+    }
+
+    private sealed class FakeSecretTool
+    {
+        public List<string> Secrets { get; } = [];
+
+        public bool RejectStores { get; set; }
+
+        public bool SearchUsedUnlock { get; private set; }
+
+        public Task<SecretToolResult> RunAsync(
+            IReadOnlyList<string> arguments,
+            string? input,
+            CancellationToken cancellationToken
+        )
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            SecretToolResult result;
+            switch (arguments[0])
+            {
+                case "search":
+                    SearchUsedUnlock = arguments.Contains("--unlock");
+                    result = new SecretToolResult(
+                        0,
+                        string.Join("\n", Secrets.Select((secret, index) => $"[/{index + 1}]\nsecret = {secret}")),
+                        string.Empty
+                    );
+                    break;
+                case "store" when RejectStores:
+                    result = new SecretToolResult(1, string.Empty, "keyring is locked");
+                    break;
+                case "store":
+                    Secrets.Add(input ?? string.Empty);
+                    result = new SecretToolResult(0, string.Empty, string.Empty);
+                    break;
+                case "clear":
+                    Secrets.Clear();
+                    result = new SecretToolResult(0, string.Empty, string.Empty);
+                    break;
+                default:
+                    throw new InvalidOperationException("Unexpected secret-tool command.");
+            }
+
+            return Task.FromResult(result);
+        }
     }
 }
