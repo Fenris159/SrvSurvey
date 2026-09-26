@@ -53,6 +53,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private EliteStatus? latestStatus;
     private string? commanderName;
     private string? currentSystemName;
+    private int? currentBodyId;
+    private string? currentBodyName;
+    private string? currentBodyCommanderName;
     private long? currentSystemAddress;
     private IReadOnlyList<double> currentStarPosition = [];
     private string? primaryProjectId;
@@ -564,6 +567,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             detectedSquadronCarrierMarketId = null;
         }
         CommanderName = normalized;
+        if (!string.Equals(currentBodyCommanderName, normalized, StringComparison.OrdinalIgnoreCase))
+        {
+            currentBodyId = null;
+            currentBodyName = null;
+            currentBodyCommanderName = null;
+        }
         ClearCapiCargoSeedSession();
         ClearAllCargoBaselines();
         ClearProjects();
@@ -609,6 +618,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             }
             fleetCarrierIdentityTracker.Apply(journalEvent);
             ApplyShipIdentity(journalEvent);
+            RememberJournalBody(journalEvent, owner);
         }
 
         if (dockBefore is not null && constructionState.CurrentDock is null)
@@ -1739,6 +1749,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
+        if (
+            !string.Equals(currentSystemName, nextSystemName, StringComparison.OrdinalIgnoreCase)
+            || (currentSystemAddress is > 0 && nextSystemAddress is > 0 && currentSystemAddress != nextSystemAddress)
+        )
+        {
+            currentBodyId = null;
+            currentBodyName = null;
+            currentBodyCommanderName = null;
+        }
+
         currentSystemName = nextSystemName;
         currentSystemAddress = nextSystemAddress;
         currentStarPosition = position is GalacticCoordinate nextCoordinate
@@ -2613,6 +2633,45 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         UpdateProjectSummary();
     }
 
+    private void SetCurrentBody(int? bodyId, string? bodyName, string? commanderName)
+    {
+        if (
+            currentBodyId == bodyId
+            && string.Equals(currentBodyName, bodyName, StringComparison.Ordinal)
+            && string.Equals(currentBodyCommanderName, commanderName, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return;
+        }
+
+        currentBodyId = bodyId;
+        currentBodyName = bodyName;
+        currentBodyCommanderName = bodyId is null ? null : commanderName;
+        UpdateProjectEditorContext();
+    }
+
+    private void RememberJournalBody(JournalEventEnvelope journalEvent, string? commanderName)
+    {
+        if (ColonizationBodyJournal.ClearsCurrentBody(journalEvent.EventName))
+        {
+            SetCurrentBody(null, null, null);
+            return;
+        }
+
+        if (!ColonizationBodyJournal.ReportsCurrentBody(journalEvent.EventName))
+        {
+            return;
+        }
+
+        int? bodyId = ColonizationBodyJournal.ReadBodyId(journalEvent.Payload);
+        if (bodyId is not >= 0)
+        {
+            return;
+        }
+
+        SetCurrentBody(bodyId, ColonizationBodyJournal.ReadBodyName(journalEvent.Payload), commanderName);
+    }
+
     private void UpdateProjectEditorContext()
     {
         ColonizationConstructionSnapshot snapshot = constructionState.CreateSnapshot();
@@ -2624,7 +2683,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 currentStarPosition,
                 snapshot.CurrentDock,
                 snapshot.CurrentDepot,
-                storedRavenApiKey
+                storedRavenApiKey,
+                currentBodyId,
+                currentBodyName
             )
         );
     }

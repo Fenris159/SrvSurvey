@@ -198,6 +198,127 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ProjectEditorUsesTheLandedBodyInsteadOfTheMiningBodyId()
+    {
+        string layout = ColonizationBuildCatalog.LoadEmbedded().FindByBuildType("no_truss")!.Layouts[1];
+        var client = new StubRavenColonialClient
+        {
+            SystemSitesResponse =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "site-1",
+                    Name = "Hope",
+                    BodyNumber = 9,
+                    BuildType = layout,
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.UpdateSystemContext("Peralta", new GalacticCoordinate(1, 2, 3));
+        viewModel.ApplyJournalEvents([
+            Event(
+                "Docked",
+                """
+                "MarketID":10,"SystemAddress":20,"StarSystem":"Peralta","Body":"Peralta 4 a","BodyID":12,
+                "StationName":"Orbital Construction Site: Hope",
+                "StationServices":["colonisationcontribution"]
+                """
+            ),
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":0.25,
+                "ResourcesRequired":[
+                  {"Name":"$steel_name;","Name_Localised":"Steel","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000}
+                ]
+                """
+            ),
+        ]);
+
+        await viewModel.ProjectEditor.PrepareAsync();
+
+        Assert.Equal("12", viewModel.ProjectEditor.BodyNumberText);
+        Assert.Equal("Peralta 4 a", viewModel.ProjectEditor.BodyName);
+
+        viewModel.ApplyJournalEvents([Event("SupercruiseEntry", string.Empty)]);
+
+        Assert.Equal("9", viewModel.ProjectEditor.BodyNumberText);
+        Assert.Equal(string.Empty, viewModel.ProjectEditor.BodyName);
+    }
+
+    [Fact]
+    public async Task ProjectEditorDoesNotReuseBodyFromPreviousCommander()
+    {
+        var client = new StubRavenColonialClient();
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("First Cmdr");
+        viewModel.UpdateSystemContext("Peralta", new GalacticCoordinate(1, 2, 3));
+        viewModel.ApplyJournalEvents([
+            Event(
+                "Docked",
+                """
+                "MarketID":10,"SystemAddress":20,"StarSystem":"Peralta","Body":"Peralta 4 a","BodyID":12,
+                "StationName":"Orbital Construction Site: Hope","StationServices":["colonisationcontribution"]
+                """
+            ),
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":0.25,
+                "ResourcesRequired":[{"Name":"$steel_name;","Name_Localised":"Steel","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000}]
+                """
+            ),
+        ]);
+        await viewModel.ProjectEditor.PrepareAsync();
+        Assert.Equal("12", viewModel.ProjectEditor.BodyNumberText);
+
+        await viewModel.SetCommanderAsync("Second Cmdr");
+        await viewModel.ProjectEditor.PrepareAsync();
+
+        Assert.Equal("-1", viewModel.ProjectEditor.BodyNumberText);
+        Assert.Equal(string.Empty, viewModel.ProjectEditor.BodyName);
+    }
+
+    [Fact]
+    public async Task ProjectEditorDoesNotReuseBodyAfterSystemChangesWithoutJumpEvent()
+    {
+        var client = new StubRavenColonialClient();
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.UpdateSystemContext("Peralta", new GalacticCoordinate(1, 2, 3));
+        viewModel.ApplyJournalEvents([Event("Location", "\"Body\":\"Peralta 4 a\",\"BodyID\":12")]);
+
+        viewModel.UpdateSystemContext("Other System", new GalacticCoordinate(4, 5, 6));
+        viewModel.UpdateSystemContext("Peralta", new GalacticCoordinate(1, 2, 3));
+        viewModel.ApplyJournalEvents([
+            Event(
+                "Docked",
+                """
+                "MarketID":10,"SystemAddress":20,"StarSystem":"Peralta",
+                "StationName":"Orbital Construction Site: Hope","StationServices":["colonisationcontribution"]
+                """
+            ),
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":0.25,
+                "ResourcesRequired":[{"Name":"$steel_name;","Name_Localised":"Steel","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000}]
+                """
+            ),
+        ]);
+        await viewModel.ProjectEditor.PrepareAsync();
+
+        Assert.Equal("-1", viewModel.ProjectEditor.BodyNumberText);
+        Assert.Equal(string.Empty, viewModel.ProjectEditor.BodyName);
+    }
+
+    [Fact]
     public async Task FeedsConsentedCommanderAndAddressIntoSystemEditor()
     {
         ColonizationViewModel viewModel = Create(new StubRavenColonialClient());

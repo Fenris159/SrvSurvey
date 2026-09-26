@@ -1,3 +1,9 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Layout;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
@@ -41,6 +47,11 @@ public sealed class ColonizationWorkflowSimulationTests : IDisposable
 
         editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
         editor.SelectedLayout = "no_truss";
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         Assert.True(editor.IsConfirmationPending);
         Assert.True(editor.ConfirmCommand.CanExecute(null));
@@ -82,6 +93,11 @@ public sealed class ColonizationWorkflowSimulationTests : IDisposable
         Assert.Equal("Hope", editor.SelectedSystemSite?.Site?.Name);
         Assert.False(editor.IsBuildSelectionEnabled);
         Assert.Equal(layout, editor.SelectedLayout);
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -117,6 +133,11 @@ public sealed class ColonizationWorkflowSimulationTests : IDisposable
         Assert.True(editor.IsPlannedSiteSelected);
         Assert.True(editor.ReviewCommand.CanExecute(null));
 
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -144,6 +165,11 @@ public sealed class ColonizationWorkflowSimulationTests : IDisposable
         Assert.False(editor.ReviewCommand.CanExecute(null));
         Assert.False(editor.ConfirmCommand.CanExecute(null));
 
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -170,6 +196,11 @@ public sealed class ColonizationWorkflowSimulationTests : IDisposable
 
         editor.SelectedSystemSite = editor.SystemSites[1];
         Assert.True(editor.ReviewCommand.CanExecute(null));
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -211,6 +242,11 @@ public sealed class ColonizationWorkflowSimulationTests : IDisposable
         Assert.False(editor.IsBuildSelectionEnabled);
         Assert.True(editor.IsPlannedSiteSelected);
         Assert.True(editor.ReviewCommand.CanExecute(null));
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -257,6 +293,70 @@ public sealed class ColonizationWorkflowSimulationTests : IDisposable
         Assert.Equal("architect-build", link.BuildId);
         Assert.Equal("Test Cmdr", link.CommanderName);
         Assert.Contains("Linked Raven project", architect.StatusMessage);
+    }
+
+    [AvaloniaFact]
+    public async Task ConfirmingADockedProjectLeavesTheWindowAbleToAcceptAnotherClick()
+    {
+        var client = new WorkflowClient { Architect = "Test Cmdr" };
+        ColonizationViewModel viewModel = await ReadyAsync(client);
+        ColonizationProjectEditorViewModel editor = viewModel.ProjectEditor;
+        await editor.PrepareAsync();
+        editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
+        editor.SelectedLayout = "no_truss";
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
+        await editor.ReviewAsync();
+
+        int otherClicks = 0;
+        var confirm = new Button
+        {
+            Content = "Confirm publish",
+            Command = editor.ConfirmCommand,
+            Width = 160,
+            Height = 36,
+        };
+        var other = new Button
+        {
+            Content = "Still here",
+            Width = 160,
+            Height = 36,
+        };
+        other.Click += (_, _) => otherClicks++;
+        var window = new Window
+        {
+            Width = 400,
+            Height = 220,
+            Content = new StackPanel
+            {
+                Spacing = 12,
+                Margin = new Thickness(20),
+                Children = { confirm, other },
+            },
+        };
+        try
+        {
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+            Point confirmClick = confirm.TranslatePoint(new Point(20, 12), window)!.Value;
+            window.MouseDown(confirmClick, MouseButton.Left, RawInputModifiers.None);
+            window.MouseUp(confirmClick, MouseButton.Left, RawInputModifiers.None);
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            Point otherClick = other.TranslatePoint(new Point(20, 12), window)!.Value;
+            window.MouseDown(otherClick, MouseButton.Left, RawInputModifiers.None);
+            window.MouseUp(otherClick, MouseButton.Left, RawInputModifiers.None);
+
+            Assert.Equal(1, otherClicks);
+            Assert.True(editor.HasCreatedProject);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [Fact]

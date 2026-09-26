@@ -9,6 +9,75 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class FrontierAccountServiceTests
 {
     [Fact]
+    public async Task SecondCommanderCanConnectWhenKeyringLookupReturnsTheOlderSecret()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-stale-keyring-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            string tool = Path.Combine(root, "secret-tool");
+            await File.WriteAllTextAsync(tool, StaleKeyringSecretToolScript(Path.Combine(root, "secrets")));
+            File.SetUnixFileMode(tool, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            var now = DateTimeOffset.Parse(
+                "2026-09-26T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
+            var store = new LinuxSecretServiceFrontierCredentialStore(Path.Combine(root, "lock"), [tool]);
+            await store.SaveAsync(
+                new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F123"] = ScopedCredential("first-commander", now),
+                    },
+                }
+            );
+            using FrontierAccountService service = CreateService(
+                store,
+                request =>
+                    request.RequestUri!.AbsolutePath switch
+                    {
+                        "/token" => Json(
+                            HttpStatusCode.OK,
+                            "{\"access_token\":\"second-access\",\"refresh_token\":\"second-refresh\",\"token_type\":\"Bearer\",\"expires_in\":14400}"
+                        ),
+                        "/profile" => Json(
+                            HttpStatusCode.OK,
+                            "{\"commander\":{\"id\":456,\"name\":\"Second\",\"rank\":{}},\"ships\":[]}"
+                        ),
+                        _ => Json(HttpStatusCode.NoContent, string.Empty),
+                    },
+                root,
+                () => now = now.AddSeconds(1)
+            );
+            service.SetActiveCommander("F456", "Second");
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+            Task<FrontierAccountSnapshot> connect = service.ConnectAsync(timeout.Token);
+
+            FrontierPendingAuthorization pending = await WaitForCommanderPendingAsync(store, connect, "F456");
+            await service.HandleCallbackAsync(
+                new FrontierOAuthCallback(pending.State, pending.State, string.Empty, string.Empty)
+            );
+            FrontierAccountSnapshot snapshot = await connect.WaitAsync(TimeSpan.FromSeconds(8));
+
+            Assert.Equal("Second", snapshot.CommanderName);
+            FrontierCredentialDocument? saved = await store.LoadAsync();
+            Assert.NotNull(saved);
+            Assert.True(saved.Accounts["F123"].IsLinked);
+            Assert.True(saved.Accounts["F456"].IsLinked);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task CallbacksForDifferentCommandersPreserveBothLinkedAccounts()
     {
         var store = new MemoryCredentialStore
@@ -1300,8 +1369,110 @@ public sealed class FrontierAccountServiceTests
         }
     }
 
+    private static async Task<FrontierPendingAuthorization> WaitForCommanderPendingAsync(
+        LinuxSecretServiceFrontierCredentialStore store,
+        Task connect,
+        string frontierId
+    )
+    {
+        DateTime deadline = DateTime.UtcNow.AddSeconds(5);
+        while (DateTime.UtcNow < deadline)
+        {
+            if (connect.IsCompleted)
+            {
+                await connect;
+                throw new InvalidOperationException(
+                    "Frontier connect finished before its pending authorization was visible."
+                );
+            }
+
+            FrontierCredentialDocument? document = await store.LoadAsync();
+            FrontierPendingAuthorization? pending = document?.PendingAuthorizations.Values.FirstOrDefault(candidate =>
+                string.Equals(candidate.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
+            );
+            if (pending is not null)
+            {
+                return pending;
+            }
+
+            await Task.Delay(20);
+        }
+
+        if (connect.IsCompleted)
+        {
+            await connect;
+        }
+
+        throw new InvalidOperationException($"No pending Frontier authorization for {frontierId} became visible.");
+    }
+
+    private static string StaleKeyringSecretToolScript(string storagePath)
+    {
+        string root = storagePath
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("'", "\\'", StringComparison.Ordinal);
+        return """
+            #!/usr/bin/env python3
+            import json, sys, time, pathlib
+            root = pathlib.Path('__ROOT__')
+            root.mkdir(parents=True, exist_ok=True)
+            index = root / "items.json"
+            cmd = sys.argv[1]
+            args = sys.argv[2:]
+            attrs = {}
+            i = 0
+            while i < len(args):
+                arg = args[i]
+                if arg.startswith("--"):
+                    i += 1
+                    continue
+                if i + 1 >= len(args):
+                    break
+                attrs[arg] = args[i + 1]
+                i += 2
+
+            def load():
+                if not index.exists():
+                    return []
+                return json.loads(index.read_text() or "[]")
+
+            def save(items):
+                index.write_text(json.dumps(items))
+
+            def matches(item):
+                have = item["attrs"]
+                return all(have.get(key) == value for key, value in attrs.items())
+
+            items = load()
+            if cmd == "store":
+                items.append({"attrs": attrs, "secret": sys.stdin.read(), "modified": time.time()})
+                save(items)
+                sys.exit(0)
+            found = [item for item in items if matches(item)]
+            found.sort(key=lambda item: item["modified"])
+            if cmd == "lookup":
+                if not found:
+                    sys.exit(1)
+                sys.stdout.write(found[0]["secret"])
+                sys.exit(0)
+            if cmd == "search":
+                for number, item in enumerate(found, 1):
+                    modified = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(item["modified"]))
+                    sys.stdout.write(
+                        f"[/{number}]\nlabel = test\nsecret = {item['secret']}\ncreated = {modified}\nmodified = {modified}\nschema = org.freedesktop.Secret.Generic\n"
+                    )
+                sys.exit(0)
+            if cmd == "clear":
+                if not found:
+                    sys.exit(1)
+                save([item for item in items if not matches(item)])
+                sys.exit(0)
+            sys.exit(2)
+            """.Replace("__ROOT__", root, StringComparison.Ordinal);
+    }
+
     private static FrontierAccountService CreateService(
-        MemoryCredentialStore store,
+        IFrontierCredentialStore store,
         Func<HttpRequestMessage, HttpResponseMessage> response,
         string? root = null,
         Func<DateTimeOffset>? now = null,

@@ -28,11 +28,24 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
     private string projectName = string.Empty;
     private string architectName = string.Empty;
     private string notes = string.Empty;
+    private const string InvalidBodyNumberMessage = "Body ID must be -1 for unknown or a non-negative integer.";
+
     private string bodyNumberText = "-1";
+    private bool bodyNumberFollowsContext = true;
+    private bool assigningBodyNumber;
+    private bool bodyNameFollowsContext = true;
+    private bool assigningBodyName;
+    private bool projectNameMissing;
+    private bool architectMissing;
+    private bool architectFromRaven;
+    private bool bodyIdMissing;
+    private bool bodyIdFormatInvalid;
+    private bool bodyNameMissing;
     private string bodyName = string.Empty;
     private string statusMessage = "A live construction depot is required before a project can be created.";
     private bool isPrepared;
     private bool isBusy;
+    private bool interactionInFlight;
     private ColonizationProjectCreate? pendingProject;
     private string? pendingContextIdentity;
     private ColonizationProject? createdProject;
@@ -239,6 +252,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         {
             if (SetField(ref projectName, value ?? string.Empty))
             {
+                if (!string.IsNullOrWhiteSpace(projectName))
+                {
+                    SetRequiredFlag(ref projectNameMissing, false, nameof(IsProjectNameMissing));
+                }
+
                 ClearConfirmation();
             }
         }
@@ -251,6 +269,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         {
             if (SetField(ref architectName, value ?? string.Empty))
             {
+                if (!string.IsNullOrWhiteSpace(architectName))
+                {
+                    SetRequiredFlag(ref architectMissing, false, nameof(IsArchitectMissing));
+                }
+
                 ClearConfirmation();
             }
         }
@@ -275,10 +298,37 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         {
             if (SetField(ref bodyNumberText, value ?? string.Empty))
             {
+                if (!assigningBodyNumber)
+                {
+                    bodyNumberFollowsContext = false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(bodyNumberText))
+                {
+                    SetRequiredFlag(ref bodyIdMissing, false, nameof(IsBodyIdMissing));
+                }
+
+                SetRequiredFlag(ref bodyIdFormatInvalid, false, nameof(IsBodyIdFormatInvalid));
                 ClearConfirmation();
             }
         }
     }
+
+    public bool IsProjectNameMissing => projectNameMissing;
+
+    public bool IsArchitectMissing => architectMissing;
+
+    public bool IsArchitectReadOnly => architectFromRaven;
+
+    public bool ShowArchitectWarning => !architectFromRaven;
+
+    public bool IsBodyIdMissing => bodyIdMissing;
+
+    public bool IsBodyIdFormatInvalid => bodyIdFormatInvalid;
+
+    public bool IsBodyIdInvalid => bodyIdMissing || bodyIdFormatInvalid;
+
+    public bool IsBodyNameMissing => bodyNameMissing;
 
     public string BodyName
     {
@@ -287,6 +337,16 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         {
             if (SetField(ref bodyName, value ?? string.Empty))
             {
+                if (!assigningBodyName)
+                {
+                    bodyNameFollowsContext = false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(bodyName))
+                {
+                    SetRequiredFlag(ref bodyNameMissing, false, nameof(IsBodyNameMissing));
+                }
+
                 ClearConfirmation();
             }
         }
@@ -323,11 +383,17 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(updatedContext);
         string oldIdentity = GetContextIdentity(context);
+        int? previousBodyId = context.CurrentBodyId;
+        string? previousBodyName = context.CurrentBodyName;
+        bool identityChanged = oldIdentity != GetContextIdentity(updatedContext);
         context = updatedContext;
-        if (oldIdentity != GetContextIdentity(updatedContext))
+        if (identityChanged)
         {
             IsPrepared = false;
             isSystemArchitect = false;
+            bodyNumberFollowsContext = true;
+            bodyNameFollowsContext = true;
+            SetArchitectFromRaven(false);
             OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             pendingProject = null;
             pendingContextIdentity = null;
@@ -337,6 +403,17 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(HasCreatedProject));
             OnPropertyChanged(nameof(CreatedProjectSummary));
             OnPropertyChanged(nameof(CreatedProjectId));
+        }
+        else if (
+            IsPrepared
+            && (bodyNumberFollowsContext || bodyNameFollowsContext)
+            && (
+                previousBodyId != updatedContext.CurrentBodyId
+                || !string.Equals(previousBodyName, updatedContext.CurrentBodyName, StringComparison.Ordinal)
+            )
+        )
+        {
+            ApplyAutomaticBody(SelectedSystemSite?.Site);
         }
 
         StatusMessage = CanPrepare
@@ -348,12 +425,35 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
 
     public async Task PrepareAsync()
     {
-        if (!CanPrepare)
+        if (!CanPrepare || interactionInFlight)
         {
             StatusMessage = GetUnavailableReason(context);
             return;
         }
 
+        // Let the Prepare click finish before IsBusy disables that button.
+        // Disabling the clicked button in the same turn can strand pointer capture,
+        // so the window ignores later input until SrvSurvey is restarted.
+        interactionInFlight = true;
+        try
+        {
+            await Task.Yield();
+            if (!CanPrepare)
+            {
+                StatusMessage = GetUnavailableReason(context);
+                return;
+            }
+
+            await LoadPreparedContextAsync();
+        }
+        finally
+        {
+            interactionInFlight = false;
+        }
+    }
+
+    private async Task LoadPreparedContextAsync()
+    {
         IsBusy = true;
         StatusMessage = "Loading planned sites and architect from Raven Colonial...";
         try
@@ -375,10 +475,13 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsPlannedSiteSelected));
             OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             ProjectName = context.Dock!.DefaultProjectName;
-            ArchitectName = string.IsNullOrWhiteSpace(architect) ? context.CommanderName! : architect;
+            bool fromRaven = !string.IsNullOrWhiteSpace(architect);
+            ArchitectName = fromRaven ? architect!.Trim() : context.CommanderName ?? string.Empty;
+            SetArchitectFromRaven(fromRaven);
             Notes = string.Empty;
-            BodyNumberText = "-1";
-            BodyName = string.Empty;
+            bodyNumberFollowsContext = true;
+            bodyNameFollowsContext = true;
+            ApplyAutomaticBody(null);
             selectedLocation = context.Dock.StationName.StartsWith(
                 ColonizationDockingSnapshot.PlanetaryConstructionSite,
                 StringComparison.OrdinalIgnoreCase
@@ -455,34 +558,25 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
-        if (!int.TryParse(BodyNumberText, out int bodyNumber))
+        if (RejectIncompleteFields() is { } requiredMessage)
         {
-            StatusMessage = "Body number must be -1 for unknown or a non-negative integer.";
+            StatusMessage = requiredMessage;
             return Task.CompletedTask;
         }
 
-        ColonizationProjectCreateResult result = projectFactory.Create(
-            new ColonizationProjectDraft(
-                context.CommanderName ?? string.Empty,
-                context.SystemName ?? string.Empty,
-                context.StarPosition,
-                SelectedLayout ?? string.Empty,
-                ProjectName,
-                ArchitectName,
-                Notes,
-                bodyNumber,
-                BodyName,
-                SelectedSystemSite?.Site?.Id
-            ),
-            context.Dock,
-            context.Depot
-        );
+        if (TryCreateProjectDraft() is not { } draft)
+        {
+            return Task.CompletedTask;
+        }
+
+        ColonizationProjectCreateResult result = projectFactory.Create(draft, context.Dock, context.Depot);
         if (!result.IsValid)
         {
             StatusMessage = string.Join(" ", result.Errors);
             return Task.CompletedTask;
         }
 
+        ClearRequiredFieldFlags();
         pendingProject = result.Project;
         pendingContextIdentity = GetContextIdentity(context);
         StatusMessage = "Review the summary, then confirm to publish this project.";
@@ -515,22 +609,20 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        ColonizationProjectCreateResult refreshed = projectFactory.Create(
-            new ColonizationProjectDraft(
-                context.CommanderName ?? string.Empty,
-                context.SystemName ?? string.Empty,
-                context.StarPosition,
-                SelectedLayout ?? string.Empty,
-                ProjectName,
-                ArchitectName,
-                Notes,
-                int.TryParse(BodyNumberText, out int bodyNumber) ? bodyNumber : pendingProject.BodyNumber,
-                BodyName,
-                SelectedSystemSite?.Site?.Id
-            ),
-            context.Dock,
-            context.Depot
-        );
+        if (RejectIncompleteFields() is { } requiredMessage)
+        {
+            ClearConfirmation();
+            StatusMessage = requiredMessage;
+            return;
+        }
+
+        if (TryCreateProjectDraft() is not { } draft)
+        {
+            ClearConfirmation();
+            return;
+        }
+
+        ColonizationProjectCreateResult refreshed = projectFactory.Create(draft, context.Dock, context.Depot);
         if (!refreshed.IsValid || refreshed.Project is null)
         {
             ClearConfirmation();
@@ -544,14 +636,41 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         pendingProject = refreshed.Project;
         OnPropertyChanged(nameof(ConfirmationSummary));
 
+        if (interactionInFlight)
+        {
+            return;
+        }
+
+        // Same as Prepare: do not disable the Confirm button until its click has finished.
+        interactionInFlight = true;
+        try
+        {
+            await Task.Yield();
+            if (pendingProject is null || IsBusy)
+            {
+                return;
+            }
+
+            await PublishPreparedProjectAsync();
+        }
+        finally
+        {
+            interactionInFlight = false;
+        }
+    }
+
+    private async Task PublishPreparedProjectAsync()
+    {
+        if (pendingProject is not { } project)
+        {
+            return;
+        }
+
         IsBusy = true;
         StatusMessage = "Publishing the project to Raven Colonial...";
         try
         {
-            ColonizationProjectPublishResult result = await projectPublisher.CreateAsync(
-                pendingProject,
-                context.RavenApiKey
-            );
+            ColonizationProjectPublishResult result = await projectPublisher.CreateAsync(project, context.RavenApiKey);
             ColonizationProject? created = result.Project;
             if (created is null)
             {
@@ -564,6 +683,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             pendingContextIdentity = null;
             IsPrepared = false;
             isSystemArchitect = false;
+            SetArchitectFromRaven(false);
             OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             OnPropertyChanged(nameof(IsConfirmationPending));
             OnPropertyChanged(nameof(ConfirmationSummary));
@@ -648,7 +768,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         }
 
         OnPropertyChanged(nameof(SelectedLayout));
-        BodyNumberText = site.BodyNumber.ToString(CultureInfo.InvariantCulture);
+        ApplyAutomaticBody(site);
         if (context.Dock?.IsPrimaryPortShip == true)
         {
             ProjectName = site.Name;
@@ -660,8 +780,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
     private void RestoreManualSelection()
     {
         ProjectName = context.Dock?.DefaultProjectName ?? string.Empty;
-        BodyNumberText = "-1";
-        BodyName = string.Empty;
+        ApplyAutomaticBody(null);
         selectedLocation =
             context.Dock?.StationName.StartsWith(
                 ColonizationDockingSnapshot.PlanetaryConstructionSite,
@@ -703,6 +822,167 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsConfirmationPending));
         OnPropertyChanged(nameof(ConfirmationSummary));
         RaiseCommandStates();
+    }
+
+    private string? RejectIncompleteFields()
+    {
+        bool projectMissing = string.IsNullOrWhiteSpace(ProjectName);
+        bool architectNameMissing = string.IsNullOrWhiteSpace(ArchitectName);
+        bool idMissing = string.IsNullOrWhiteSpace(BodyNumberText);
+        bool idFormatInvalid =
+            !idMissing
+            && (
+                !int.TryParse(
+                    BodyNumberText.Trim(),
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out int bodyNumber
+                )
+                || bodyNumber < -1
+            );
+        bool nameMissing = string.IsNullOrWhiteSpace(BodyName);
+        SetRequiredFlag(ref projectNameMissing, projectMissing, nameof(IsProjectNameMissing));
+        SetRequiredFlag(ref architectMissing, architectNameMissing, nameof(IsArchitectMissing));
+        SetRequiredFlag(ref bodyIdMissing, idMissing, nameof(IsBodyIdMissing));
+        SetRequiredFlag(ref bodyIdFormatInvalid, idFormatInvalid, nameof(IsBodyIdFormatInvalid));
+        SetRequiredFlag(ref bodyNameMissing, nameMissing, nameof(IsBodyNameMissing));
+        if (projectMissing || architectNameMissing || idMissing || nameMissing)
+        {
+            return idFormatInvalid ? "This field is required. " + InvalidBodyNumberMessage : "This field is required.";
+        }
+
+        return idFormatInvalid ? InvalidBodyNumberMessage : null;
+    }
+
+    private void ClearRequiredFieldFlags()
+    {
+        SetRequiredFlag(ref projectNameMissing, false, nameof(IsProjectNameMissing));
+        SetRequiredFlag(ref architectMissing, false, nameof(IsArchitectMissing));
+        SetRequiredFlag(ref bodyIdMissing, false, nameof(IsBodyIdMissing));
+        SetRequiredFlag(ref bodyIdFormatInvalid, false, nameof(IsBodyIdFormatInvalid));
+        SetRequiredFlag(ref bodyNameMissing, false, nameof(IsBodyNameMissing));
+    }
+
+    private void SetArchitectFromRaven(bool fromRaven)
+    {
+        if (architectFromRaven == fromRaven)
+        {
+            return;
+        }
+
+        architectFromRaven = fromRaven;
+        OnPropertyChanged(nameof(IsArchitectReadOnly));
+        OnPropertyChanged(nameof(ShowArchitectWarning));
+    }
+
+    private void SetRequiredFlag(ref bool field, bool missing, string propertyName)
+    {
+        if (field != missing)
+        {
+            field = missing;
+            OnPropertyChanged(propertyName);
+        }
+
+        if (propertyName is nameof(IsBodyIdMissing) or nameof(IsBodyIdFormatInvalid))
+        {
+            OnPropertyChanged(nameof(IsBodyIdInvalid));
+        }
+    }
+
+    private ColonizationProjectDraft? TryCreateProjectDraft()
+    {
+        if (
+            !int.TryParse(BodyNumberText.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int bodyNumber)
+            || bodyNumber < -1
+        )
+        {
+            StatusMessage = InvalidBodyNumberMessage;
+            return null;
+        }
+
+        return new ColonizationProjectDraft(
+            context.CommanderName ?? string.Empty,
+            context.SystemName ?? string.Empty,
+            context.StarPosition,
+            SelectedLayout ?? string.Empty,
+            ProjectName,
+            ArchitectName,
+            Notes,
+            bodyNumber,
+            BodyName,
+            SelectedSystemSite?.Site?.Id
+        );
+    }
+
+    private void ApplyAutomaticBody(ColonizationSystemSite? site)
+    {
+        if (context.CurrentBodyId is >= 0)
+        {
+            if (bodyNumberFollowsContext)
+            {
+                AssignBodyNumber(context.CurrentBodyId.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (bodyNameFollowsContext)
+            {
+                AssignBodyName(context.CurrentBodyName ?? string.Empty);
+            }
+
+            return;
+        }
+
+        if (site?.BodyNumber is >= 0)
+        {
+            if (bodyNumberFollowsContext)
+            {
+                AssignBodyNumber(site.BodyNumber.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (bodyNameFollowsContext)
+            {
+                AssignBodyName(site.BodyName?.Trim() ?? string.Empty);
+            }
+
+            return;
+        }
+
+        if (bodyNumberFollowsContext)
+        {
+            AssignBodyNumber("-1");
+        }
+
+        if (bodyNameFollowsContext)
+        {
+            AssignBodyName(string.Empty);
+        }
+    }
+
+    private void AssignBodyNumber(string value)
+    {
+        assigningBodyNumber = true;
+        try
+        {
+            BodyNumberText = value;
+            bodyNumberFollowsContext = true;
+        }
+        finally
+        {
+            assigningBodyNumber = false;
+        }
+    }
+
+    private void AssignBodyName(string value)
+    {
+        assigningBodyName = true;
+        try
+        {
+            BodyName = value;
+            bodyNameFollowsContext = true;
+        }
+        finally
+        {
+            assigningBodyName = false;
+        }
     }
 
     private static string GetContextIdentity(ColonizationProjectEditorContext value)
@@ -845,7 +1125,9 @@ public sealed record ColonizationProjectEditorContext(
     IReadOnlyList<double> StarPosition,
     ColonizationDockingSnapshot? Dock,
     ColonizationConstructionDepotSnapshot? Depot,
-    string? RavenApiKey = null
+    string? RavenApiKey = null,
+    int? CurrentBodyId = null,
+    string? CurrentBodyName = null
 )
 {
     public static ColonizationProjectEditorContext Unavailable { get; } = new(false, null, null, [], null, null, null);

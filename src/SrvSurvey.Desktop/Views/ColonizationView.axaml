@@ -24,6 +24,10 @@
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="MinWidth" Value="0" />
     </Style>
+    <Style Selector="TextBox.invalid">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenDangerBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
     <Style Selector="TextBox.market-id">
       <Setter Property="HorizontalAlignment" Value="Left" />
       <Setter Property="MinWidth" Value="72" />
@@ -641,8 +645,12 @@
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="6">
                 <TextBlock Classes="muted" Text="PROJECT NAME" />
-                <TextBox Text="{Binding Colonization.ProjectEditor.ProjectName, Mode=TwoWay}"
+                <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsProjectNameMissing}"
+                         Text="{Binding Colonization.ProjectEditor.ProjectName, Mode=TwoWay}"
                          PlaceholderText="Project name" />
+                <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                           IsVisible="{Binding Colonization.ProjectEditor.IsProjectNameMissing}"
+                           Text="This field is required." />
               </StackPanel>
             </Grid>
 
@@ -679,19 +687,53 @@
             <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="18">
               <StackPanel Spacing="6">
                 <TextBlock Classes="muted" Text="ARCHITECT" />
-                <TextBox Text="{Binding Colonization.ProjectEditor.ArchitectName, Mode=TwoWay}"
+                <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsArchitectMissing}"
+                         IsReadOnly="{Binding Colonization.ProjectEditor.IsArchitectReadOnly}"
+                         Text="{Binding Colonization.ProjectEditor.ArchitectName, Mode=TwoWay}"
                          PlaceholderText="Commander or architect" />
+                <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                           IsVisible="{Binding Colonization.ProjectEditor.IsArchitectMissing}"
+                           Text="This field is required." />
+                <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                           IsVisible="{Binding Colonization.ProjectEditor.ShowArchitectWarning}"
+                           Text="*Warning: The architect named here can lock the system to that commander, please verify it is correct."
+                           TextWrapping="Wrap" />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="6">
-                <TextBlock Classes="muted" Text="BODY NUMBER" />
-                <TextBox Text="{Binding Colonization.ProjectEditor.BodyNumberText, Mode=TwoWay}"
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <TextBlock Classes="muted" VerticalAlignment="Center" Text="BODY ID" />
+                  <Button Classes="link"
+                          Width="18"
+                          Height="18"
+                          Padding="2"
+                          VerticalAlignment="Center"
+                          AutomationProperties.Name="Body ID help"
+                          ToolTip.Tip="Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.">
+                    <PathIcon Width="14"
+                              Height="14"
+                              Data="{StaticResource question_circle_regular}" />
+                  </Button>
+                </StackPanel>
+                <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsBodyIdInvalid}"
+                         Text="{Binding Colonization.ProjectEditor.BodyNumberText, Mode=TwoWay}"
                          PlaceholderText="-1"
+                         MinWidth="88"
                          HorizontalAlignment="Left" />
+                <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                           IsVisible="{Binding Colonization.ProjectEditor.IsBodyIdMissing}"
+                           Text="This field is required." />
+                <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                           IsVisible="{Binding Colonization.ProjectEditor.IsBodyIdFormatInvalid}"
+                           Text="Body ID must be -1 for unknown or a non-negative integer."
+                           TextWrapping="Wrap" />
               </StackPanel>
               <StackPanel Grid.Column="2" Spacing="6">
-                <TextBlock Classes="muted" Text="BODY NAME" />
-                <TextBox Text="{Binding Colonization.ProjectEditor.BodyName, Mode=TwoWay}"
-                         PlaceholderText="Optional" />
+                <TextBlock Classes="muted" Text="BODY NAME: i.e. Peralta 4 a" TextWrapping="Wrap" />
+                <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsBodyNameMissing}"
+                         Text="{Binding Colonization.ProjectEditor.BodyName, Mode=TwoWay}" />
+                <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                           IsVisible="{Binding Colonization.ProjectEditor.IsBodyNameMissing}"
+                           Text="This field is required." />
               </StackPanel>
             </Grid>
 

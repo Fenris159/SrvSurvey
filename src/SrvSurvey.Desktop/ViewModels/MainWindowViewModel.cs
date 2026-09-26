@@ -2505,12 +2505,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         CommanderCodexJournalTrackResult commanderCodexResult = await ApplyCommanderCodexUpdateAsync(update);
         bool codexDiscoveryChanged = commanderCodexResult.DiscoveryEventCount > 0;
 
-        Colonization.ApplyJournalEvents(update.JournalEvents, journalState.CommanderName);
         Colonization.UpdateSystemContext(
             journalState.SystemName,
             journalState.StarPosition,
             journalState.SystemAddress
         );
+        Colonization.ApplyJournalEvents(update.JournalEvents, journalState.CommanderName);
         await UpdateFeatureSystemContextsAsync(codexDiscoveryChanged);
 
         bool loadedExistingProfile = await EnsureCommanderProfileAsync();
