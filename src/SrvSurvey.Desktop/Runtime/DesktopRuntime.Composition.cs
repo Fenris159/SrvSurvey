@@ -113,24 +113,13 @@ internal sealed partial class DesktopRuntime
         }
 
         string? targetFrontierId = commanderPreferenceResolution.TargetFrontierId;
-        string? settingsFrontierId = CommanderSettingsProfile.NormalizeFrontierId(targetFrontierId);
-        if (settingsFrontierId is null && startup.AppDataPathsOverride is null && diagnosticReplay is null)
-        {
-            settingsFrontierId = CommanderSettingsProfile.FindLatestJournalFrontierId(
-                appDataPaths.SharedUiSettingsPath,
-                configuredJournalDirectory
-            );
-        }
-        appDataPaths = appDataPaths with { SettingsFrontierId = settingsFrontierId };
-        try
-        {
-            CommanderSettingsProfile.Prepare(appDataPaths);
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            applicationLog.Append("Commander settings could not be initialized: " + exception.Message);
-            appDataPaths = appDataPaths with { SettingsFrontierId = null };
-        }
+        appDataPaths = PrepareCommanderSettings(
+            appDataPaths,
+            targetFrontierId,
+            startup.AppDataPathsOverride is null && diagnosticReplay is null,
+            configuredJournalDirectory,
+            applicationLog
+        );
 
         LegacyOverlayTheme overlayTheme = LoadOverlayTheme(appDataPaths, applicationLog);
         var overlayLayoutStore = new LegacyOverlayLayoutStore(appDataPaths.OverlaySettingsDirectory);
@@ -476,6 +465,37 @@ internal sealed partial class DesktopRuntime
         }
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.ProducersReady);
         ApplicationStartupWindowPresenter.Present(desktop, mainWindow, startup.BringMainWindowToFront);
+    }
+
+    private static AppDataPaths PrepareCommanderSettings(
+        AppDataPaths paths,
+        string? targetFrontierId,
+        bool discoverJournalCommander,
+        string? configuredJournalDirectory,
+        ApplicationLogService applicationLog
+    )
+    {
+        string? settingsFrontierId = CommanderSettingsProfile.NormalizeFrontierId(targetFrontierId);
+        if (settingsFrontierId is null && discoverJournalCommander)
+        {
+            settingsFrontierId = CommanderSettingsProfile.FindLatestJournalFrontierId(
+                paths.SharedUiSettingsPath,
+                configuredJournalDirectory
+            );
+        }
+
+        paths = paths with { SettingsFrontierId = settingsFrontierId };
+        try
+        {
+            CommanderSettingsProfile.Prepare(paths);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            applicationLog.Append("Commander settings could not be initialized: " + exception.Message);
+            paths = paths with { SettingsFrontierId = null };
+        }
+
+        return paths;
     }
 
     private void HandleMainWindowOpened(object? sender, EventArgs eventArgs)
