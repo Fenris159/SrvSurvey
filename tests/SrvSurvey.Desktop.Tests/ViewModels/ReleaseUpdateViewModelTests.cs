@@ -90,6 +90,29 @@ public sealed class ReleaseUpdateViewModelTests
     }
 
     [Fact]
+    public async Task CheckingAgainReenablesConfirmationWhenInstallationBecomesWritable()
+    {
+        var workflow = new StubWorkflow(ReleaseInstallationCapabilityStatus.ReadOnlyAppImage);
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: true)),
+            new Version(2, 0, 95, 0)
+        );
+        viewModel.ConfigureInstallationWorkflow(workflow);
+
+        await viewModel.CheckAsync();
+        Assert.False(viewModel.CanInstallCurrentInstallation);
+
+        workflow.NextCapabilityStatus = ReleaseInstallationCapabilityStatus.Supported;
+        await viewModel.CheckAsync();
+
+        Assert.True(viewModel.IsUpdateAvailable);
+        Assert.True(viewModel.CanInstallCurrentInstallation);
+        Assert.False(viewModel.ShowInstallUnavailable);
+        viewModel.InstallConfirmed = true;
+        Assert.True(viewModel.InstallCommand.CanExecute(null));
+    }
+
+    [Fact]
     public async Task InstanceProgressProjectsConfirmationAndClosingText()
     {
         string? confirmationText = null;
@@ -641,7 +664,19 @@ public sealed class ReleaseUpdateViewModelTests
             this.exception = exception;
         }
 
-        public ReleaseInstallationCapability Capability { get; }
+        public ReleaseInstallationCapability Capability { get; private set; }
+
+        public ReleaseInstallationCapabilityStatus? NextCapabilityStatus { get; set; }
+
+        public ReleaseInstallationCapability RefreshCapability()
+        {
+            if (NextCapabilityStatus is { } status)
+            {
+                Capability = new ReleaseInstallationCapability(status);
+            }
+
+            return Capability;
+        }
 
         public List<ReleaseInstallationRequest> Requests { get; } = [];
 

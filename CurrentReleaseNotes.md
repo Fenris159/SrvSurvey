@@ -1,10 +1,8 @@
-# SrvSurvey-XP 2.1.3.0-rc.58.5
+# SrvSurvey-XP 2.1.3.0-rc.58.6
 
-RC58.5 keeps the RC58 multi-commander, journal, and settings work and fixes
-Linux Frontier linking when a second commander is added beside an existing
-login. Creating a colonization project now records the journal body and the
-Raven architect before anything is published. It also includes the journal
-source, Mining, and overlay editor improvements from RC57 and the published
+RC58.6 keeps the RC58.5 multi-commander and colonization improvements and
+fixes AppImage updates on Linux desktops with a limited `/tmp`. It also includes
+the journal source, Mining, and overlay editor improvements from RC57 and the published
 [RC56 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.56).
 
 ## Multiple commanders and journal folders
@@ -112,14 +110,20 @@ source, Mining, and overlay editor improvements from RC57 and the published
 
 ## Update channel and packages
 
+- On Linux, the in-app AppImage updater extracts its helper in the writable
+  update staging folder. A limited `/tmp` no longer prevents a verified update
+  from installing after download.
+- Checking for updates reassesses whether the current installation can be
+  replaced, so a temporary startup failure cannot leave the install
+  acknowledgement disabled until restart.
 - RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge for older
-  clients. RC58.5 uses the schema-2 `xp2-v` release channel.
-- Version: `2.1.3.0-rc.58.5`
-- Tag: `xp2-v2.1.3.0-rc.58.5`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.5-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.5-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.5-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.5-x86_64.AppImage.zsync`
+  clients. RC58.6 uses the schema-2 `xp2-v` release channel.
+- Version: `2.1.3.0-rc.58.6`
+- Tag: `xp2-v2.1.3.0-rc.58.6`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.6-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.6-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.6-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.6-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

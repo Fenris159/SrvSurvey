@@ -115,6 +115,8 @@ internal interface IReleaseInstallationWorkflow
 {
     ReleaseInstallationCapability Capability { get; }
 
+    ReleaseInstallationCapability RefreshCapability();
+
     Task<ReleaseInstallationWorkflowResult> ExecuteAsync(
         ReleaseInstallationRequest request,
         IProgress<ReleaseInstallationWorkflowProgress>? progress = null,
@@ -253,7 +255,13 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         startupArguments = context.StartupArguments.ToArray();
     }
 
-    public ReleaseInstallationCapability Capability { get; }
+    public ReleaseInstallationCapability Capability { get; private set; }
+
+    public ReleaseInstallationCapability RefreshCapability()
+    {
+        Capability = ReleaseInstallationCapability.Detect(installationDirectory, appImagePath);
+        return Capability;
+    }
 
     private static string? ResolveAppImagePath(string? path, bool canInstall)
     {
