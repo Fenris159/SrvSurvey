@@ -29,6 +29,7 @@ public sealed record MiningPreferences
     public bool OverlaysOnlyDuringSession { get; set; } = true;
     public int NotificationSeconds { get; set; } = 15;
     public int PersistentProspectSlots { get; set; } = 4;
+    public bool HideProspectsBelowThreshold { get; set; }
     public string HomeSystem { get; set; } = "";
     public Dictionary<string, double> Thresholds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public List<MiningFiregroup> Firegroups { get; set; } = [];

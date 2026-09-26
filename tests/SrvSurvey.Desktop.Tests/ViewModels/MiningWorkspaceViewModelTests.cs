@@ -234,6 +234,33 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.True(overlay.Prospects[0].Materials[0].IsHighlighted);
             Assert.False(overlay.Prospects[0].Materials[1].IsHighlighted);
             Assert.False(overlay.Prospects[1].Qualifies);
+
+            Assert.False(vm.HideProspectsBelowThreshold);
+            vm.HideProspectsBelowThreshold = true;
+            Assert.Contains("Platinum 35.0%", Assert.Single(overlay.Prospects).Summary);
+            Assert.True(new MiningStore(directory).Load("F1").Settings.HideProspectsBelowThreshold);
+
+            JournalEventEnvelope coreProspect = FiregroupsWorkspaceViewModelTests.Event(
+                """{"event":"ProspectedAsteroid","timestamp":"2026-09-06T12:00:07Z","MotherlodeMaterial":"Monazite","Materials":[{"Name":"Bertrandite","Proportion":5}],"Remaining":100}"""
+            );
+            vm.Apply(new(null, [coreProspect], ship, null, null, null, [], false), context, null, ship);
+            Assert.Equal(2, overlay.Prospects.Count);
+            Assert.Contains("Core: Monazite", overlay.Prospects[0].Summary);
+            Assert.True(overlay.HasQualifyingProspect);
+
+            vm.Settings.AnnounceCores = false;
+            vm.SaveSettingsCommand.Execute(null);
+            Assert.Contains("Platinum 35.0%", Assert.Single(overlay.Prospects).Summary);
+
+            vm.Settings.AnnounceCores = true;
+            vm.Settings.NotifyProspecting = false;
+            vm.SaveSettingsCommand.Execute(null);
+            Assert.Single(overlay.Prospects);
+            Assert.False(overlay.Prospects[0].Qualifies);
+
+            vm.HideProspectsBelowThreshold = false;
+            Assert.Equal(4, overlay.Prospects.Count);
+            Assert.False(new MiningStore(directory).Load("F1").Settings.HideProspectsBelowThreshold);
         }
         finally
         {

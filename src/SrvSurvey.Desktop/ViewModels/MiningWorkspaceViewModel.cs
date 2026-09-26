@@ -310,6 +310,21 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public WorkspaceSortIndicators MissionsSortIndicators => new(missionsSorter.Indicator);
     public WorkspaceSortIndicators RingsSortIndicators => new(ringsSorter.Indicator);
     public MiningPreferences Settings => state.Data.Settings;
+    public bool HideProspectsBelowThreshold
+    {
+        get => Settings.HideProspectsBelowThreshold;
+        set
+        {
+            if (Settings.HideProspectsBelowThreshold == value)
+            {
+                return;
+            }
+
+            Settings.HideProspectsBelowThreshold = value;
+            Changed(nameof(HideProspectsBelowThreshold));
+            SaveSettings();
+        }
+    }
     public double RefineryTons
     {
         get => refineryTons;
@@ -365,8 +380,21 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         (Current?.ActiveProspects ?? [])
             .TakeLast(Math.Clamp(Settings.PersistentProspectSlots, 1, 8))
             .Reverse()
+            .Where(prospect =>
+                !Settings.HideProspectsBelowThreshold
+                || Settings.Thresholds.Count == 0
+                || (!string.IsNullOrEmpty(prospect.Core) && Settings.NotifyProspecting && Settings.AnnounceCores)
+                || prospect.Materials.Any(MaterialMeetsThreshold)
+            )
             .Select(ToOverlayProspect)
             .ToArray();
+
+    private bool MaterialMeetsThreshold(MiningMaterial material) =>
+        Settings.Thresholds.Count == 0
+        || Settings.Thresholds.Any(threshold =>
+            threshold.Key.Equals(material.Name, StringComparison.OrdinalIgnoreCase)
+            && material.Percentage >= threshold.Value
+        );
 
     private MiningProspect[] ReadProspects() => Current?.Prospects.AsEnumerable().Reverse().ToArray() ?? [];
 
@@ -404,14 +432,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         MiningProspectMaterialViewModel[] materials = prospect
             .Materials.Select(material => new MiningProspectMaterialViewModel(
                 $"{material.Name} {material.Percentage:0.0}%",
-                notificationsEnabled
-                    && (
-                        Settings.Thresholds.Count == 0
-                        || Settings.Thresholds.Any(threshold =>
-                            threshold.Key.Equals(material.Name, StringComparison.OrdinalIgnoreCase)
-                            && material.Percentage >= threshold.Value
-                        )
-                    )
+                notificationsEnabled && MaterialMeetsThreshold(material)
             ))
             .ToArray();
         bool qualifies = notificationsEnabled && (materials.Any(material => material.IsHighlighted) || core);
@@ -1383,6 +1404,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
             Search.LoadOptions(Settings.SearchOptions);
             community.SetEnabled(Settings.ReceiveCommunityData);
             Changed(nameof(Settings));
+            Changed(nameof(HideProspectsBelowThreshold));
             Refresh();
             Status = "Mining backup restored. Previous data retained in the backup folder.";
             return true;
@@ -1426,6 +1448,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         Search.RestoreLastCompletedPowerplaySearch();
         community.SetEnabled(Settings.ReceiveCommunityData);
         Changed(nameof(Settings));
+        Changed(nameof(HideProspectsBelowThreshold));
     }
 
     private void RememberPledgedPower(string frontierId, string? commanderName)

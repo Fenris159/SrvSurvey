@@ -16691,7 +16691,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
-    "Text": "Each row is an independent target. When thresholds are listed, the Mining Notifications overlay, chime, and speech ignore non-core prospects unless at least one listed mineral reaches its minimum. Enabled core asteroids still qualify. An empty list allows every enabled prospect.",
+    "Text": "Each row sets a minimum for one mineral. By default, the overlay shows the latest prospector results even below these thresholds. With prospecting notifications enabled, matching mineral text is highlighted and qualifying finds can chime or speak. The hide option removes results without a threshold match, except core asteroids with announcements enabled. With no thresholds, all recent results remain visible.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -22995,6 +22995,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Hide results that don\u0027t meet Mineral Thresholds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Hide survey overlays while build projects are active",

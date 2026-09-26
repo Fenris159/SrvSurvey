@@ -231,6 +231,7 @@
         <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}" Minimum="3" Maximum="120" />
         <TextBlock Text="Persistent prospector results" />
         <NumericUpDown Value="{Binding MiningWorkspace.Settings.PersistentProspectSlots}" Minimum="1" Maximum="8" />
+        <CheckBox Content="Hide results that don't meet Mineral Thresholds" IsChecked="{Binding MiningWorkspace.HideProspectsBelowThreshold, Mode=TwoWay}" />
         <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveSettingsCommand}" HorizontalAlignment="Left" />
       </StackPanel>
     </Border>

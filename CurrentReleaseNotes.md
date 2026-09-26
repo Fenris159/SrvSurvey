@@ -1,8 +1,8 @@
-# SrvSurvey-XP 2.1.3.0-rc.56
+# SrvSurvey-XP 2.1.3.0-rc.57
 
-RC56 brings multiple Elite journal sources together for commanders who play
-through Steam and Epic, and improves the Mining and overlay editor experience.
-These changes follow the published [RC55 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.55).
+RC57 adds optional threshold filtering for persistent prospector results. It
+also includes the journal source, Mining, and overlay editor improvements from
+the published [RC56 release](https://github.com/Fenris159/SrvSurvey/releases/tag/xp2-v2.1.3.0-rc.56).
 
 ## Multiple commanders and journal folders
 
@@ -36,6 +36,10 @@ These changes follow the published [RC55 release](https://github.com/Fenris159/S
 - The Mining activity overlay keeps the latest four active prospector results
   visible even if none qualifies for an announcement. Materials are highlighted
   only when they meet the configured notification criteria.
+- Mining overlay settings now offer **Hide results that don't meet Mineral
+  Thresholds**. Turn it on to show only recent prospectors with a mineral at or
+  above a configured threshold, plus announced core asteroids. Leave it off to
+  keep all recent results visible.
 - Refined minerals and limpet changes update the live cargo projection as
   journal events arrive. The next `Cargo.json` snapshot reconciles the display
   with the game's full inventory.
@@ -57,13 +61,13 @@ These changes follow the published [RC55 release](https://github.com/Fenris159/S
 ## Update channel and packages
 
 - RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge for older
-  clients. RC56 uses the schema-2 `xp2-v` release channel.
-- Version: `2.1.3.0-rc.56`
-- Tag: `xp2-v2.1.3.0-rc.56`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.56-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.56-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.56-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.56-x86_64.AppImage.zsync`
+  clients. RC57 uses the schema-2 `xp2-v` release channel.
+- Version: `2.1.3.0-rc.57`
+- Tag: `xp2-v2.1.3.0-rc.57`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.57-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.57-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.57-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.57-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.
