@@ -165,16 +165,18 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
 
     private void Refresh(bool force = false)
     {
-        string? nextPersonalCallsign = profile.IsViewingJournalCommander ? profile.PersonalCarrier?.Callsign : null;
-        string? nextSquadronCallsign = profile.IsViewingJournalCommander ? profile.SquadronCarrier?.Callsign : null;
+        bool isViewingJournalCommander = profile.IsViewingJournalCommander;
+        string? nextPersonalCallsign = isViewingJournalCommander ? profile.PersonalCarrier?.Callsign : null;
+        string? nextSquadronCallsign = isViewingJournalCommander ? profile.SquadronCarrier?.Callsign : null;
+        long? nextDetectedMarketId = isViewingJournalCommander ? colonization.DetectedSquadronCarrierMarketId : null;
         if (
             !force
             && ReferenceEquals(observedCarriers, colonization.LinkedFleetCarriers)
             && commander == colonization.CommanderName
             && personalCallsign == nextPersonalCallsign
             && squadronCallsign == nextSquadronCallsign
-            && detectedMarketId == colonization.DetectedSquadronCarrierMarketId
-            && viewingJournalCommander == profile.IsViewingJournalCommander
+            && detectedMarketId == nextDetectedMarketId
+            && viewingJournalCommander == isViewingJournalCommander
         )
         {
             return;
@@ -183,9 +185,11 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
         observedCarriers = colonization.LinkedFleetCarriers;
         personalCallsign = nextPersonalCallsign;
         squadronCallsign = nextSquadronCallsign;
-        detectedMarketId = colonization.DetectedSquadronCarrierMarketId;
-        viewingJournalCommander = profile.IsViewingJournalCommander;
-        candidates = observedCarriers.Where(c => !IsOwnedCarrierCallsign(c.Name)).ToArray();
+        detectedMarketId = nextDetectedMarketId;
+        viewingJournalCommander = isViewingJournalCommander;
+        candidates = isViewingJournalCommander
+            ? observedCarriers.Where(c => !IsOwnedCarrierCallsign(c.Name)).ToArray()
+            : [];
         if (commander != colonization.CommanderName)
         {
             commander = colonization.CommanderName;
@@ -197,11 +201,7 @@ public sealed class FleetCarrierWorkspaceViewModel : WorkspaceObservable, IDispo
             selectedMarketId = null;
         }
 
-        if (
-            selectedMarketId is null
-            && colonization.DetectedSquadronCarrierMarketId is { } id
-            && SquadronCandidates.Any(c => c.MarketId == id)
-        )
+        if (selectedMarketId is null && detectedMarketId is { } id && SquadronCandidates.Any(c => c.MarketId == id))
         {
             selectedMarketId = id;
         }

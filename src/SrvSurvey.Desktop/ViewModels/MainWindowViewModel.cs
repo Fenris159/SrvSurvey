@@ -2079,6 +2079,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         ProfileImportResult result
     )
     {
+        CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
         string settingsStatus = "No adjacent cross-platform-ui.json file was selected.";
         if (selectedSource.UiSettingsPath is not null)
         {
@@ -2086,7 +2087,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 selectedSource.UiSettingsPath,
                 AppDataPaths.UiSettingsPath,
                 result.BackupDirectory,
-                AppDataPaths.DataDirectory,
+                AppDataPaths.OverlaySettingsDirectory,
                 CancellationToken.None
             );
             settingsStatus = settings.Imported
@@ -2115,6 +2116,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     {
         LegacyOverlayLayoutImportMigrationResult overlayLayoutMigration =
             LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(AppDataPaths);
+        CommanderSettingsProfile.PublishImportedOverlays(AppDataPaths, result);
         LegacyUiSettingsMigrationResult settingsMigration = new LegacyUiSettingsMigrator().MigrateIfNeeded(
             AppDataPaths
         );

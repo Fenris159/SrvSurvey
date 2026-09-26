@@ -1119,6 +1119,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(source, "settings.json"),
                 "{\"unknownFutureField\":42,\"darkTheme\":true," + "\"autoShowPlotJumpInfo\":false}"
             );
+            await File.WriteAllTextAsync(
+                Path.Combine(source, "plotters.json"),
+                "{\"PlotBodyInfo\":\"left:12, top:16\"}"
+            );
             Directory.CreateDirectory(Path.Combine(data, "logs"));
             await File.WriteAllTextAsync(Path.Combine(data, "logs", "startup.txt"), "startup log");
             var paths = new AppDataPaths(
@@ -1126,7 +1130,10 @@ public sealed class MainWindowViewModelTests
                 data,
                 Path.Combine(root, "cache"),
                 [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
-            );
+            )
+            {
+                SettingsFrontierId = "F123",
+            };
             var applicationLog = new ApplicationLogService(data);
             MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
@@ -1140,12 +1147,16 @@ public sealed class MainWindowViewModelTests
             Assert.True(File.Exists(Path.Combine(data, "logs", "startup.txt")));
             Assert.True(File.Exists(applicationLog.CurrentLogPath));
             Assert.Contains("Profile import:", await File.ReadAllTextAsync(applicationLog.CurrentLogPath));
-            Assert.Contains("Imported 1 legacy files", viewModel.ProfileStatusMessage);
+            Assert.Contains("Imported 2 legacy files", viewModel.ProfileStatusMessage);
             Assert.Contains("current-only files", viewModel.ProfileStatusMessage);
             Assert.Contains("Translated 2 legacy UI preferences", viewModel.ProfileStatusMessage);
             Assert.Contains("Restart SrvSurvey", viewModel.ProfileStatusMessage);
             Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
             Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+            Assert.Equal(
+                new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 12, LegacyVerticalAnchor.Top, 16, null),
+                new LegacyOverlayLayoutStore(paths.OverlaySettingsDirectory).Load().Placements["PlotBodyInfo"]
+            );
             Assert.True(viewModel.HasCompletedLegacyImport);
             Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
             Assert.True(Directory.Exists(viewModel.ProfileBackupDirectory));

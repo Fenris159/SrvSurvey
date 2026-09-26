@@ -1970,11 +1970,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
             if (result is not null)
             {
                 AuthorizationCallbackReceived?.Invoke(this, EventArgs.Empty);
-                if (
-                    result.Succeeded
-                    && document?.Accounts.TryGetValue(frontierId, out FrontierAccountCredential? account) == true
-                    && account.IsLinked
-                )
+                if (result.Succeeded && GetAccount(document, frontierId)?.IsLinked == true)
                 {
                     return;
                 }

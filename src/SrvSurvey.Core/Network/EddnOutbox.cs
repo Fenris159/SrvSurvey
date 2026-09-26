@@ -1133,6 +1133,8 @@ internal sealed class EddnOutbox : IDisposable
         lock (sharedConsentSync)
         {
             bool shouldEnable;
+            bool currentlyEnabled;
+            bool hasPendingUploads;
             lock (sync)
             {
                 if (disposed)
@@ -1141,10 +1143,18 @@ internal sealed class EddnOutbox : IDisposable
                 }
 
                 shouldEnable = requestedEnabled == true;
+                currentlyEnabled = enabled;
+                hasPendingUploads = pending.Count > 0 || loadingTruncated;
             }
 
             bool sharedDisabled = isSharedConsentDisabled();
-            applyEnabledState(shouldEnable && !sharedDisabled, discardPendingWhenDisabled: sharedDisabled);
+            bool enable = shouldEnable && !sharedDisabled;
+            if (!enable && !currentlyEnabled && (!sharedDisabled || !hasPendingUploads))
+            {
+                return;
+            }
+
+            applyEnabledState(enable, discardPendingWhenDisabled: sharedDisabled);
         }
     }
 

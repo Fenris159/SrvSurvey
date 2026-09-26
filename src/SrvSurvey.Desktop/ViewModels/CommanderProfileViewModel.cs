@@ -1452,13 +1452,17 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             await LoadJournalCommunityGoalHistoryAsync(normalizedId, normalizedName, cancellationToken);
         }
 
-        await TryRefreshCommanderSelectionOptionsAsync(cancellationToken);
+        string? catalogWarning = await TryRefreshCommanderSelectionOptionsAsync(cancellationToken);
         await ActivateFrontierCommanderAsync(
             manuallySelectedFrontierId ?? detectedFrontierId,
             manuallySelectedFrontierId is null ? detectedCommanderName : manuallySelectedCommanderName,
             refreshIfOpen,
             cancellationToken
         );
+        if (catalogWarning is not null && string.IsNullOrEmpty(StatusMessage))
+        {
+            StatusMessage = catalogWarning;
+        }
     }
 
     private async Task LoadJournalCommunityGoalHistoryAsync(
@@ -1510,6 +1514,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         string? normalizedName = string.IsNullOrWhiteSpace(commanderName) ? null : commanderName.Trim();
         bool identityChanged = !string.Equals(activeFrontierId, normalizedId, StringComparison.OrdinalIgnoreCase);
 
+        if (identityChanged)
+        {
+            Snapshot = null;
+        }
+
         activeFrontierId = normalizedId;
         activeCommanderName = normalizedName;
         accountService.SetActiveCommander(normalizedId, normalizedName);
@@ -1548,7 +1557,6 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         IsBusy = false;
         IsConnecting = false;
-        Snapshot = null;
         IsLinked = false;
         initialized = false;
         StatusMessage = string.Empty;
@@ -1600,8 +1608,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
-    private async Task TryRefreshCommanderSelectionOptionsAsync(CancellationToken cancellationToken = default)
+    private async Task<string?> TryRefreshCommanderSelectionOptionsAsync(CancellationToken cancellationToken = default)
     {
+        string? catalogWarning = null;
         var automatic = FrontierCommanderSelectionOption.Automatic(detectedFrontierId, detectedCommanderName);
         if (manuallySelectedFrontierId is null)
         {
@@ -1642,7 +1651,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 }
                 catch (Exception exception) when (IsExpected(exception))
                 {
-                    StatusMessage = exception.Message;
+                    catalogWarning = exception.Message;
+                    StatusMessage = catalogWarning;
                 }
             }
 
@@ -1710,6 +1720,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             StatusMessage = exception.Message;
         }
+        return catalogWarning;
     }
 
     public void LoadAutomatically()
