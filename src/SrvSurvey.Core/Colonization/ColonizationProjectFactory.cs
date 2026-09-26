@@ -43,7 +43,7 @@ public sealed class ColonizationProjectFactory
                 SystemName = dock.SystemName,
                 StarPosition = [.. draft.StarPosition],
                 BodyNumber = draft.BodyNumber,
-                BodyName = draft.BodyNumber is >= 0 ? NormalizeOptional(draft.BodyName) : null,
+                BodyName = NormalizeOptional(draft.BodyName),
                 Commanders = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase)
                 {
                     [draft.CommanderName.Trim()] = [],
@@ -143,6 +143,16 @@ public sealed class ColonizationProjectFactory
             errors.Add("Enter a project name.");
         }
 
+        if (string.IsNullOrWhiteSpace(draft.ArchitectName))
+        {
+            errors.Add("This field is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(draft.BodyName))
+        {
+            errors.Add("This field is required.");
+        }
+
         if (
             string.IsNullOrWhiteSpace(draft.BuildType)
             || (
@@ -175,7 +185,7 @@ public sealed class ColonizationProjectFactory
 
         if (draft.BodyNumber is < -1)
         {
-            errors.Add("The body number is not valid.");
+            errors.Add("The body id is not valid.");
         }
     }
 

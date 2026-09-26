@@ -41,6 +41,10 @@
       "translation": "(Eintrag)"
     },
     {
+      "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
+      "translation": "*Warnung: Der hier genannte Architekt kann das System an diesen Kommandanten binden. Bitte überprüfen Sie, ob er korrekt ist."
+    },
+    {
       "source": "+ pending",
       "translation": "+ ausstehend"
     },
@@ -2949,16 +2953,16 @@
       "translation": "KÖRPER / SYSTEM"
     },
     {
+      "source": "BODY ID",
+      "translation": "KÖRPER-ID"
+    },
+    {
       "source": "BODY INFORMATION",
       "translation": "Körperinformationen"
     },
     {
-      "source": "BODY NAME",
-      "translation": "KÖRPERNAME"
-    },
-    {
-      "source": "BODY NUMBER",
-      "translation": "KÖRPERNUMMER"
+      "source": "BODY NAME: i.e. Peralta 4 a",
+      "translation": "KÖRPERNAME: z. B. Peralta 4 a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -3553,6 +3557,18 @@
       "translation": "Körperdetails"
     },
     {
+      "source": "Body ID help",
+      "translation": "Hilfe zur Body-ID"
+    },
+    {
+      "source": "Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.",
+      "translation": "Bei der Body-ID handelt es sich um die Journal-BodyID, nicht um die Systemkarten-Body-Nummer wie 4 oder 4 a. Wenn Sie es manuell eingeben müssen, öffnen Sie Ihr aktuelles Journal und lesen Sie BodyID aus dem Docked-, Location- oder ApproachBody-Ereignis für den Körper, auf dem Sie aufbauen."
+    },
+    {
+      "source": "Body ID must be -1 for unknown or a non-negative integer.",
+      "translation": "Die Body-ID muss -1 für unbekannt oder eine nicht negative Ganzzahl sein."
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Körperschutz"
     },
@@ -3595,10 +3611,6 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "Der Textkörper ist für die Katalogdetails der ausgewählten Site erforderlich."
-    },
-    {
-      "source": "Body number must be -1 for unknown or a non-negative integer.",
-      "translation": "Die Körpernummer muss -1 für unbekannt oder eine nicht negative ganze Zahl sein."
     },
     {
       "source": "Body predictions",
@@ -17097,10 +17109,6 @@
       "translation": "Opposition"
     },
     {
-      "source": "Optional",
-      "translation": "Optional"
-    },
-    {
       "source": "Optional Internal",
       "translation": "Optional intern"
     },
@@ -27965,6 +27973,14 @@
       "translation": "Dieser Dialog wurde nicht für den Anwendungsstart konfiguriert."
     },
     {
+      "source": "This field is required.",
+      "translation": "Dieses Feld ist erforderlich."
+    },
+    {
+      "source": "This field is required. {0}",
+      "translation": "Dieses Feld ist erforderlich. {0}"
+    },
+    {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
       "translation": "Dieser Ordner ist auf der aktuellen Plattform nicht verfügbar. Wählen Sie den Journalordner, der von dieser Elite-Installation verwendet wird."
     },
@@ -34567,6 +34583,10 @@
       "translation": "(entrada)"
     },
     {
+      "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
+      "translation": "*Advertencia: El arquitecto nombrado aquí puede bloquear el sistema para ese comandante; verifique que sea correcto."
+    },
+    {
       "source": "+ pending",
       "translation": "+ pendiente"
     },
@@ -37475,16 +37495,16 @@
       "translation": "CUERPO / SISTEMA"
     },
     {
+      "source": "BODY ID",
+      "translation": "IDENTIFICACIÓN DEL CUERPO"
+    },
+    {
       "source": "BODY INFORMATION",
       "translation": "Información del cuerpo"
     },
     {
-      "source": "BODY NAME",
-      "translation": "NOMBRE DEL CUERPO"
-    },
-    {
-      "source": "BODY NUMBER",
-      "translation": "NÚMERO DE CUERPO"
+      "source": "BODY NAME: i.e. Peralta 4 a",
+      "translation": "NOMBRE DEL CUERPO: es decir Peralta 4a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -38079,6 +38099,18 @@
       "translation": "Detalles del cuerpo"
     },
     {
+      "source": "Body ID help",
+      "translation": "Ayuda con identificación corporal"
+    },
+    {
+      "source": "Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.",
+      "translation": "Body ID es el BodyID del diario, no el número de cuerpo del mapa del sistema, como 4 o 4 a. Si debe ingresarlo manualmente, abra su diario más reciente y lea BodyID desde el evento Docked, Location o ApproachBody para el cuerpo que está construyendo."
+    },
+    {
+      "source": "Body ID must be -1 for unknown or a non-negative integer.",
+      "translation": "El ID del cuerpo debe ser -1 para un número entero desconocido o no negativo."
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Protectorado del cuerpo"
     },
@@ -38121,10 +38153,6 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "Se requiere cuerpo para los detalles del catálogo del sitio seleccionado."
-    },
-    {
-      "source": "Body number must be -1 for unknown or a non-negative integer.",
-      "translation": "El número de cuerpo debe ser -1 para un número entero desconocido o no negativo."
     },
     {
       "source": "Body predictions",
@@ -51623,10 +51651,6 @@
       "translation": "Oposición"
     },
     {
-      "source": "Optional",
-      "translation": "Opcional"
-    },
-    {
       "source": "Optional Internal",
       "translation": "Interno opcional"
     },
@@ -62491,6 +62515,14 @@
       "translation": "Este cuadro de diálogo no se configuró para el inicio de la aplicación."
     },
     {
+      "source": "This field is required.",
+      "translation": "Este campo es obligatorio."
+    },
+    {
+      "source": "This field is required. {0}",
+      "translation": "Este campo es obligatorio. {0}"
+    },
+    {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
       "translation": "Esta carpeta no está disponible en la plataforma actual. Elija la carpeta de diario utilizada por esta instalación Elite."
     },
@@ -69093,6 +69125,10 @@
       "translation": "(entrée)"
     },
     {
+      "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
+      "translation": "*Avertissement : l'architecte nommé ici peut verrouiller le système sur ce commandant, veuillez vérifier qu'il est correct."
+    },
+    {
       "source": "+ pending",
       "translation": "+ en attente"
     },
@@ -72001,16 +72037,16 @@
       "translation": "CORPS / SYSTÈME"
     },
     {
+      "source": "BODY ID",
+      "translation": "ID DU CORPS"
+    },
+    {
       "source": "BODY INFORMATION",
       "translation": "Informations sur le corps"
     },
     {
-      "source": "BODY NAME",
-      "translation": "NOM DU CORPS"
-    },
-    {
-      "source": "BODY NUMBER",
-      "translation": "NUMÉRO DE CORPS"
+      "source": "BODY NAME: i.e. Peralta 4 a",
+      "translation": "NOM DU CORPS : c'est-à-dire Peralta 4 a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -72605,6 +72641,18 @@
       "translation": "Détails du corps"
     },
     {
+      "source": "Body ID help",
+      "translation": "Aide à l'identification du corps"
+    },
+    {
+      "source": "Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.",
+      "translation": "Body ID est le BodyID du journal, et non le numéro du corps de la carte système tel que 4 ou 4 a. Si vous devez le saisir manuellement, ouvrez votre dernier journal et lisez BodyID à partir de l'événement Docked, Location ou ApproachBody pour le corps sur lequel vous construisez."
+    },
+    {
+      "source": "Body ID must be -1 for unknown or a non-negative integer.",
+      "translation": "L'ID du corps doit être -1 pour un inconnu ou un entier non négatif."
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Protectorat du corps"
     },
@@ -72647,10 +72695,6 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "Le corps est requis pour les détails du catalogue du site sélectionné."
-    },
-    {
-      "source": "Body number must be -1 for unknown or a non-negative integer.",
-      "translation": "Le numéro de corps doit être -1 pour un inconnu ou un entier non négatif."
     },
     {
       "source": "Body predictions",
@@ -86149,10 +86193,6 @@
       "translation": "Opposition"
     },
     {
-      "source": "Optional",
-      "translation": "Facultatif"
-    },
-    {
       "source": "Optional Internal",
       "translation": "Interne en option"
     },
@@ -97017,6 +97057,14 @@
       "translation": "Cette boîte de dialogue n'a pas été configurée pour le démarrage de l'application."
     },
     {
+      "source": "This field is required.",
+      "translation": "Ce champ est obligatoire."
+    },
+    {
+      "source": "This field is required. {0}",
+      "translation": "Ce champ est obligatoire. {0}"
+    },
+    {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
       "translation": "Ce dossier n'est pas disponible sur la plateforme actuelle. Choisissez le dossier de journal utilisé par cette installation Elite."
     },
@@ -103619,6 +103667,10 @@
       "translation": "(entrada)"
     },
     {
+      "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
+      "translation": "*Aviso: O arquiteto mencionado aqui pode bloquear o sistema para esse comandante, verifique se está correto."
+    },
+    {
       "source": "+ pending",
       "translation": "+ pendente"
     },
@@ -106527,16 +106579,16 @@
       "translation": "CORPO / SISTEMA"
     },
     {
+      "source": "BODY ID",
+      "translation": "ID DO CORPO"
+    },
+    {
       "source": "BODY INFORMATION",
       "translation": "Informações corporais"
     },
     {
-      "source": "BODY NAME",
-      "translation": "NOME DO CORPO"
-    },
-    {
-      "source": "BODY NUMBER",
-      "translation": "NÚMERO DO CORPO"
+      "source": "BODY NAME: i.e. Peralta 4 a",
+      "translation": "NOME DO CORPO: ou seja, Peralta 4 a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -107131,6 +107183,18 @@
       "translation": "Detalhes do corpo"
     },
     {
+      "source": "Body ID help",
+      "translation": "Ajuda para ID do corpo"
+    },
+    {
+      "source": "Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.",
+      "translation": "Body ID é o BodyID do diário, não o número do corpo do mapa do sistema, como 4 ou 4 a. Se você precisar inseri-lo manualmente, abra seu diário mais recente e leia BodyID no evento Docked, Location ou ApproachBody do corpo no qual você está construindo."
+    },
+    {
+      "source": "Body ID must be -1 for unknown or a non-negative integer.",
+      "translation": "O ID do corpo deve ser -1 para um número inteiro desconhecido ou não negativo."
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Protetorado Corporal"
     },
@@ -107173,10 +107237,6 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "O corpo é obrigatório para os detalhes do catálogo do site selecionado."
-    },
-    {
-      "source": "Body number must be -1 for unknown or a non-negative integer.",
-      "translation": "O número do corpo deve ser -1 para um número inteiro desconhecido ou não negativo."
     },
     {
       "source": "Body predictions",
@@ -120675,10 +120735,6 @@
       "translation": "Oposição"
     },
     {
-      "source": "Optional",
-      "translation": "Opcional"
-    },
-    {
       "source": "Optional Internal",
       "translation": "Opcional Interno"
     },
@@ -131543,6 +131599,14 @@
       "translation": "Esta caixa de diálogo não foi configurada para inicialização do aplicativo."
     },
     {
+      "source": "This field is required.",
+      "translation": "Este campo é obrigatório."
+    },
+    {
+      "source": "This field is required. {0}",
+      "translation": "Este campo é obrigatório. {0}"
+    },
+    {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
       "translation": "Esta pasta não está disponível na plataforma atual. Escolha a pasta do diário usada por esta instalação Elite."
     },
@@ -138145,6 +138209,10 @@
       "translation": "(запись)"
     },
     {
+      "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
+      "translation": "*Предупреждение: указанный здесь архитектор может привязать систему к этому командиру, пожалуйста, убедитесь, что это правильно."
+    },
+    {
       "source": "+ pending",
       "translation": "+ в ожидании"
     },
@@ -141053,16 +141121,16 @@
       "translation": "КОРПУС / СИСТЕМА"
     },
     {
+      "source": "BODY ID",
+      "translation": "ИДЕНТИФИКАТОР ТЕЛА"
+    },
+    {
       "source": "BODY INFORMATION",
       "translation": "Информация о теле"
     },
     {
-      "source": "BODY NAME",
-      "translation": "ИМЯ ТЕЛА"
-    },
-    {
-      "source": "BODY NUMBER",
-      "translation": "НОМЕР ТЕЛА"
+      "source": "BODY NAME: i.e. Peralta 4 a",
+      "translation": "ИМЯ ТЕЛА: т.е. Перальта 4 а"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -141657,6 +141725,18 @@
       "translation": "Детали тела"
     },
     {
+      "source": "Body ID help",
+      "translation": "Справка по идентификатору тела"
+    },
+    {
+      "source": "Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.",
+      "translation": "Идентификатор тела — это идентификатор тела журнала, а не номер тела карты системы, например 4 или 4 a. Если вам необходимо ввести его вручную, откройте свой последний журнал и прочтите BodyID из событий Docked, Location или ApproachBody для тела, на основе которого вы строите."
+    },
+    {
+      "source": "Body ID must be -1 for unknown or a non-negative integer.",
+      "translation": "Идентификатор тела должен быть равен -1 для неизвестного или неотрицательного целого числа."
+    },
+    {
       "source": "Body Protectorate",
       "translation": "Протекторат тела"
     },
@@ -141699,10 +141779,6 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "Для информации о каталоге выбранного сайта необходимо указать тело."
-    },
-    {
-      "source": "Body number must be -1 for unknown or a non-negative integer.",
-      "translation": "Номер тела должен быть равен -1 для неизвестного или неотрицательного целого числа."
     },
     {
       "source": "Body predictions",
@@ -155201,10 +155277,6 @@
       "translation": "Оппозиция"
     },
     {
-      "source": "Optional",
-      "translation": "Необязательно"
-    },
-    {
       "source": "Optional Internal",
       "translation": "Дополнительный внутренний"
     },
@@ -166069,6 +166141,14 @@
       "translation": "Этот диалог не был настроен для запуска приложения."
     },
     {
+      "source": "This field is required.",
+      "translation": "Это поле обязательно к заполнению."
+    },
+    {
+      "source": "This field is required. {0}",
+      "translation": "Это поле обязательно к заполнению. {0}"
+    },
+    {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
       "translation": "Эта папка недоступна на текущей платформе. Выберите папку журнала, используемую этой установкой Elite."
     },
@@ -172671,6 +172751,10 @@
       "translation": "（条目）"
     },
     {
+      "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
+      "translation": "*警告：此处指定的架构师可以将系统锁定到该指挥官，请验证其是否正确。"
+    },
+    {
       "source": "+ pending",
       "translation": "+ 待定"
     },
@@ -175579,16 +175663,16 @@
       "translation": "本体/系统"
     },
     {
+      "source": "BODY ID",
+      "translation": "车身编号"
+    },
+    {
       "source": "BODY INFORMATION",
       "translation": "身体信息"
     },
     {
-      "source": "BODY NAME",
-      "translation": "身体名称"
-    },
-    {
-      "source": "BODY NUMBER",
-      "translation": "车身编号"
+      "source": "BODY NAME: i.e. Peralta 4 a",
+      "translation": "车身名称：即 Peralta 4 a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -176183,6 +176267,18 @@
       "translation": "车身细节"
     },
     {
+      "source": "Body ID help",
+      "translation": "身体ID帮助"
+    },
+    {
+      "source": "Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.",
+      "translation": "Body ID 是期刊的 BodyID，而不是系统图体编号，例如 4 或 4 a。如果您必须手动输入，请打开最新的日志并从您正在构建的正文的 Docked、Location 或 ApproachBody 事件中读取 BodyID。"
+    },
+    {
+      "source": "Body ID must be -1 for unknown or a non-negative integer.",
+      "translation": "对于未知或非负整数，主体 ID 必须为 -1。"
+    },
+    {
       "source": "Body Protectorate",
       "translation": "身体保护"
     },
@@ -176225,10 +176321,6 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "所选站点的目录详细信息需要正文。"
-    },
-    {
-      "source": "Body number must be -1 for unknown or a non-negative integer.",
-      "translation": "对于未知或非负整数，主体编号必须为 -1。"
     },
     {
       "source": "Body predictions",
@@ -189727,10 +189819,6 @@
       "translation": "反对派"
     },
     {
-      "source": "Optional",
-      "translation": "可选"
-    },
-    {
       "source": "Optional Internal",
       "translation": "可选内部"
     },
@@ -200595,6 +200683,14 @@
       "translation": "该对话框未配置为应用程序启动。"
     },
     {
+      "source": "This field is required.",
+      "translation": "此字段是必需的。"
+    },
+    {
+      "source": "This field is required. {0}",
+      "translation": "此字段是必需的。 {0}"
+    },
+    {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",
       "translation": "该文件夹在当前平台上不可用。选择此 Elite 安装使用的日志文件夹。"
     },
@@ -207197,6 +207293,10 @@
       "translation": "* (ENTRY) >>>!"
     },
     {
+      "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
+      "translation": "* *WARNING: THE ARCHITECT NAMED HERE CAN LOCK THE SYSTEM TO THAT COMMANDER, PLEASE VERIFY IT IS CORRECT. >>>!"
+    },
+    {
       "source": "+ pending",
       "translation": "* + PENDING >>>!"
     },
@@ -210105,16 +210205,16 @@
       "translation": "* BODY / SYSTEM >>>!"
     },
     {
+      "source": "BODY ID",
+      "translation": "* BODY ID >>>!"
+    },
+    {
       "source": "BODY INFORMATION",
       "translation": "* BODY INFORMATION >>>!"
     },
     {
-      "source": "BODY NAME",
-      "translation": "* BODY NAME >>>!"
-    },
-    {
-      "source": "BODY NUMBER",
-      "translation": "* BODY NUMBER >>>!"
+      "source": "BODY NAME: i.e. Peralta 4 a",
+      "translation": "* BODY NAME: I.E. PERALTA 4 A >>>!"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -210709,6 +210809,18 @@
       "translation": "* BODY DETAILS >>>!"
     },
     {
+      "source": "Body ID help",
+      "translation": "* BODY ID HELP >>>!"
+    },
+    {
+      "source": "Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.",
+      "translation": "* BODY ID IS THE JOURNAL BODYID, NOT THE SYSTEM MAP BODY NUMBER SUCH AS 4 OR 4 A. IF YOU MUST ENTER IT MANUALLY, OPEN YOUR LATEST JOURNAL AND READ BODYID FROM THE DOCKED, LOCATION, OR APPROACHBODY EVENT FOR THE BODY YOU ARE BUILDING ON. >>>!"
+    },
+    {
+      "source": "Body ID must be -1 for unknown or a non-negative integer.",
+      "translation": "* BODY ID MUST BE -1 FOR UNKNOWN OR A NON-NEGATIVE INTEGER. >>>!"
+    },
+    {
       "source": "Body Protectorate",
       "translation": "* BODY PROTECTORATE >>>!"
     },
@@ -210751,10 +210863,6 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "* BODY IS REQUIRED FOR THE SELECTED SITE'S CATALOG DETAILS. >>>!"
-    },
-    {
-      "source": "Body number must be -1 for unknown or a non-negative integer.",
-      "translation": "* BODY NUMBER MUST BE -1 FOR UNKNOWN OR A NON-NEGATIVE INTEGER. >>>!"
     },
     {
       "source": "Body predictions",
@@ -224253,10 +224361,6 @@
       "translation": "* OPPOSITION >>>!"
     },
     {
-      "source": "Optional",
-      "translation": "* OPTIONAL >>>!"
-    },
-    {
       "source": "Optional Internal",
       "translation": "* OPTIONAL INTERNAL >>>!"
     },
@@ -235119,6 +235223,14 @@
     {
       "source": "This dialog was not configured for application startup.",
       "translation": "* THIS DIALOG WAS NOT CONFIGURED FOR APPLICATION STARTUP. >>>!"
+    },
+    {
+      "source": "This field is required.",
+      "translation": "* THIS FIELD IS REQUIRED. >>>!"
+    },
+    {
+      "source": "This field is required. {0}",
+      "translation": "* THIS FIELD IS REQUIRED. {0} >>>!"
     },
     {
       "source": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",

@@ -24,6 +24,35 @@ public sealed class ColonizationProjectFactoryTests
         Assert.Contains("Test Cmdr", project.Commanders.Keys);
         Assert.Equal("site-1", project.SystemSiteId);
         Assert.Equal(2, project.ConstructionDepot?.ResourcesRequired.Count);
+        Assert.Equal(3, project.BodyNumber);
+        Assert.Equal("Test System 3", project.BodyName);
+    }
+
+    [Fact]
+    public void UnknownBodyIdPublishesTheRequiredBodyName()
+    {
+        ColonizationProjectCreateResult result = factory.Create(
+            Draft() with
+            {
+                BodyNumber = -1,
+                BodyName = "Peralta 4 a",
+            },
+            Dock(),
+            Depot()
+        );
+
+        Assert.True(result.IsValid);
+        Assert.Equal(-1, result.Project!.BodyNumber);
+        Assert.Equal("Peralta 4 a", result.Project.BodyName);
+    }
+
+    [Fact]
+    public void MissingBodyNameCannotPublish()
+    {
+        ColonizationProjectCreateResult result = factory.Create(Draft() with { BodyName = " " }, Dock(), Depot());
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Contains("required", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

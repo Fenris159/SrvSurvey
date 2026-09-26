@@ -80,6 +80,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "\u002B pending",
     "IsFormat": false,
     "SourceKinds": [
@@ -5899,6 +5907,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
+    "Text": "BODY ID",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "BODY INFORMATION",
     "IsFormat": false,
     "SourceKinds": [
@@ -5907,15 +5923,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/BodyInformationOverlayPresentation.axaml"
   },
   {
-    "Text": "BODY NAME",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
-    "Text": "BODY NUMBER",
+    "Text": "BODY NAME: i.e. Peralta 4 a",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -7112,6 +7120,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml"
   },
   {
+    "Text": "Body ID help",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Body ID must be -1 for unknown or a non-negative integer.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
     "Text": "Body Protectorate",
     "IsFormat": false,
     "SourceKinds": [
@@ -7198,14 +7230,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
-  },
-  {
-    "Text": "Body number must be -1 for unknown or a non-negative integer.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
     "Text": "Body predictions",
@@ -34294,14 +34318,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "Optional",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "Optional Internal",
     "IsFormat": false,
     "SourceKinds": [
@@ -56075,6 +56091,23 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
+  },
+  {
+    "Text": "This field is required.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "This field is required. {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
     "Text": "This folder is unavailable on the current platform. Choose the journal folder used by this Elite installation.",

@@ -60,10 +60,29 @@ public sealed class ColonizationProjectEditorViewModelTests
         Assert.Equal(0, client.CreateCount);
         Assert.Equal("Hope", Assert.Single(editor.SystemSites).Site!.Name);
         Assert.Equal("Project Architect", editor.ArchitectName);
+        Assert.True(editor.IsArchitectReadOnly);
+        Assert.False(editor.ShowArchitectWarning);
         Assert.Equal(layout, editor.SelectedLayout);
         Assert.Equal("7", editor.BodyNumberText);
         Assert.True(editor.IsPlannedSiteSelected);
         Assert.False(editor.IsBuildSelectionEnabled);
+    }
+
+    [Fact]
+    public async Task MissingRavenArchitectFallsBackToTheEditableCommanderName()
+    {
+        var client = new StubRavenColonialClient();
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+
+        Assert.Equal("Test Cmdr", editor.ArchitectName);
+        Assert.False(editor.IsArchitectReadOnly);
+        Assert.True(editor.ShowArchitectWarning);
+
+        editor.ArchitectName = "Another Architect";
+
+        Assert.Equal("Another Architect", editor.ArchitectName);
     }
 
     [Fact]
@@ -83,6 +102,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         await editor.PrepareAsync();
         editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
         editor.SelectedLayout = "no_truss";
+
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
 
         await editor.ReviewAsync();
 
@@ -132,6 +156,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         await editor.PrepareAsync();
         editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
         editor.SelectedLayout = "no_truss";
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
 
         await editor.ConfirmCreateAsync();
@@ -165,6 +194,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         await editor.PrepareAsync();
         editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
         editor.SelectedLayout = "no_truss";
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
 
         await editor.ConfirmCreateAsync();
@@ -183,12 +217,169 @@ public sealed class ColonizationProjectEditorViewModelTests
         await editor.PrepareAsync();
         editor.BodyNumberText = "invalid";
 
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
         Assert.False(editor.IsConfirmationPending);
         Assert.Equal(0, client.CreateCount);
-        Assert.Contains("Body number", editor.StatusMessage);
+        Assert.Contains("Body ID", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task CurrentBodyIsPublishedAheadOfThePlannedSiteBody()
+    {
+        string layout = catalog.FindByBuildType("no_truss")!.Layouts[1];
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "site-1",
+                    Name = "Hope",
+                    BodyNumber = 9,
+                    BuildType = layout,
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext() with { CurrentBodyId = 12, CurrentBodyName = "Peralta 4 a" });
+
+        await editor.PrepareAsync();
+
+        Assert.Equal("12", editor.BodyNumberText);
+        Assert.Equal("Peralta 4 a", editor.BodyName);
+    }
+
+    [Fact]
+    public async Task UntouchedBodyNumberFollowsTheBodyTheCommanderIsOn()
+    {
+        string layout = catalog.FindByBuildType("no_truss")!.Layouts[1];
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "site-1",
+                    Name = "Hope",
+                    BodyNumber = 9,
+                    BuildType = layout,
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+        Assert.Equal("9", editor.BodyNumberText);
+
+        editor.UpdateContext(ReadyContext() with { CurrentBodyId = 12, CurrentBodyName = "Peralta 4 a" });
+
+        Assert.Equal("12", editor.BodyNumberText);
+        Assert.Equal("Peralta 4 a", editor.BodyName);
+    }
+
+    [Fact]
+    public async Task EditedBodyNumberIsNotReplacedWhenTheCurrentBodyArrives()
+    {
+        string layout = catalog.FindByBuildType("no_truss")!.Layouts[1];
+        var client = new StubRavenColonialClient
+        {
+            Architect = "Project Architect",
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "site-1",
+                    Name = "Hope",
+                    BodyNumber = 9,
+                    BuildType = layout,
+                    Status = ColonizationSystemSiteStatus.Plan,
+                },
+            ],
+        };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+        editor.BodyNumberText = "3";
+
+        editor.UpdateContext(ReadyContext() with { CurrentBodyId = 12, CurrentBodyName = "Peralta 4 a" });
+
+        Assert.Equal("3", editor.BodyNumberText);
+    }
+
+    [Fact]
+    public async Task CurrentBodyPublishesBodyIdAndFullName()
+    {
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext() with { CurrentBodyId = 12, CurrentBodyName = "Peralta 4 a" });
+        await editor.PrepareAsync();
+        editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
+        editor.SelectedLayout = "no_truss";
+
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.Equal(1, client.CreateCount);
+        Assert.Equal(12, client.LastCreated!.BodyNumber);
+        Assert.Equal("Peralta 4 a", client.LastCreated.BodyName);
+    }
+
+    [Fact]
+    public async Task MissingBodyNameIsHighlightedAndNotPublished()
+    {
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+        editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
+        editor.SelectedLayout = "no_truss";
+        editor.BodyName = string.Empty;
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.True(editor.IsBodyNameMissing);
+        Assert.False(editor.IsConfirmationPending);
+        Assert.Equal(0, client.CreateCount);
+        Assert.Contains("required", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task BodyDesignationTextCannotReachPublishConfirmation()
+    {
+        var client = new StubRavenColonialClient { Architect = "Test Cmdr" };
+        ColonizationProjectEditorViewModel editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+        editor.BodyNumberText = "4a";
+
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
+        await editor.ReviewAsync();
+        await editor.ConfirmCreateAsync();
+
+        Assert.False(editor.IsConfirmationPending);
+        Assert.Equal(0, client.CreateCount);
+        Assert.Contains("Body ID", editor.StatusMessage);
     }
 
     [Fact]
@@ -319,6 +510,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         Assert.False(editor.IsBuildSelectionEnabled);
         Assert.Contains("No orbital planned Raven sites", editor.StatusMessage);
 
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -337,6 +533,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
         editor.SelectedLayout = "no_truss";
         editor.SelectedSystemSite = ColonizationSystemSiteOptionViewModel.None;
+
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
 
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
@@ -357,6 +558,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         await editor.PrepareAsync();
         editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
         editor.SelectedLayout = "no_truss";
+
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
 
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
@@ -428,6 +634,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         Assert.False(editor.IsPlannedSiteSelected);
         Assert.Contains("Choose one to link", editor.StatusMessage);
 
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -436,6 +647,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         Assert.Contains("Choose a planned Raven site", editor.StatusMessage);
 
         editor.SelectedSystemSite = editor.SystemSites[0];
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -467,6 +683,11 @@ public sealed class ColonizationProjectEditorViewModelTests
 
         Assert.True(editor.IsPlannedSiteSelected);
         Assert.Equal("Vesta", editor.SelectedLayout, StringComparer.OrdinalIgnoreCase);
+
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
 
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
@@ -501,6 +722,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         Assert.False(editor.IsPlannedSiteSelected);
         Assert.False(editor.IsBuildSelectionEnabled);
 
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -531,6 +757,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         editor.UpdateContext(ReadyContext() with { RavenApiKey = "secret-key" });
         await editor.PrepareAsync();
 
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         await editor.ConfirmCreateAsync();
 
@@ -546,6 +777,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         ColonizationProjectEditorViewModel editor = Create(client);
         editor.UpdateContext(ReadyContext());
         await editor.PrepareAsync();
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         Assert.True(editor.IsConfirmationPending);
 
@@ -565,6 +801,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         ColonizationProjectEditorContext ready = ReadyContext();
         editor.UpdateContext(ready);
         await editor.PrepareAsync();
+        if (string.IsNullOrWhiteSpace(editor.BodyName))
+        {
+            editor.BodyName = "Peralta 4 a";
+        }
+
         await editor.ReviewAsync();
         Assert.True(editor.IsPrepared);
         Assert.True(editor.IsConfirmationPending);

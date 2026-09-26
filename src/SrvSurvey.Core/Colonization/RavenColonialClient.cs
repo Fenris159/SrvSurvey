@@ -1119,6 +1119,9 @@ public sealed record ColonizationSystemSite
     [JsonPropertyName("bodyNum")]
     public int BodyNumber { get; init; }
 
+    [JsonPropertyName("bodyName")]
+    public string? BodyName { get; init; }
+
     [JsonPropertyName("buildType")]
     public string? BuildType { get; init; }
 

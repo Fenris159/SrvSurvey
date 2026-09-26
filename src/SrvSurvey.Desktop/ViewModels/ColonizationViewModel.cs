@@ -53,6 +53,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private EliteStatus? latestStatus;
     private string? commanderName;
     private string? currentSystemName;
+    private int? currentBodyId;
+    private string? currentBodyName;
     private long? currentSystemAddress;
     private IReadOnlyList<double> currentStarPosition = [];
     private string? primaryProjectId;
@@ -609,6 +611,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             }
             fleetCarrierIdentityTracker.Apply(journalEvent);
             ApplyShipIdentity(journalEvent);
+            RememberJournalBody(journalEvent);
         }
 
         if (dockBefore is not null && constructionState.CurrentDock is null)
@@ -2613,6 +2616,40 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         UpdateProjectSummary();
     }
 
+    private void SetCurrentBody(int? bodyId, string? bodyName)
+    {
+        if (currentBodyId == bodyId && string.Equals(currentBodyName, bodyName, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        currentBodyId = bodyId;
+        currentBodyName = bodyName;
+        UpdateProjectEditorContext();
+    }
+
+    private void RememberJournalBody(JournalEventEnvelope journalEvent)
+    {
+        if (ColonizationBodyJournal.ClearsCurrentBody(journalEvent.EventName))
+        {
+            SetCurrentBody(null, null);
+            return;
+        }
+
+        if (!ColonizationBodyJournal.ReportsCurrentBody(journalEvent.EventName))
+        {
+            return;
+        }
+
+        int? bodyId = ColonizationBodyJournal.ReadBodyId(journalEvent.Payload);
+        if (bodyId is not >= 0)
+        {
+            return;
+        }
+
+        SetCurrentBody(bodyId, ColonizationBodyJournal.ReadBodyName(journalEvent.Payload));
+    }
+
     private void UpdateProjectEditorContext()
     {
         ColonizationConstructionSnapshot snapshot = constructionState.CreateSnapshot();
@@ -2624,7 +2661,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 currentStarPosition,
                 snapshot.CurrentDock,
                 snapshot.CurrentDepot,
-                storedRavenApiKey
+                storedRavenApiKey,
+                currentBodyId,
+                currentBodyName
             )
         );
     }
