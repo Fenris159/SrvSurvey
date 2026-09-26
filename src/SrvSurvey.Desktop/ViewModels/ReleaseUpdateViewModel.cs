@@ -318,6 +318,16 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         ReleaseChannel channel = UseDevelopmentReleases ? ReleaseChannel.Development : ReleaseChannel.Stable;
         try
         {
+            if (installationWorkflow is not null)
+            {
+                installationWorkflow.RefreshCapability();
+                OnPropertyChanged(nameof(CanInstallCurrentInstallation));
+                OnPropertyChanged(nameof(ShowInstallUnavailable));
+                OnPropertyChanged(nameof(ShowGenericInstallUnavailable));
+                OnPropertyChanged(nameof(ShowAppImageManualInstall));
+                installCommand.RaiseCanExecuteChanged();
+            }
+
             ReleaseUpdateResult result = await service.CheckAsync(currentVersion, channel);
             if (channel != (UseDevelopmentReleases ? ReleaseChannel.Development : ReleaseChannel.Stable))
             {

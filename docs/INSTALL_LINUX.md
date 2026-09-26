@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.58.5**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.58.6**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -44,7 +44,7 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.58.5-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.58.6-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/SrvSurvey.AppImage"
 cd "$HOME/Applications/SrvSurvey"
 chmod +x SrvSurvey.AppImage
@@ -58,7 +58,7 @@ pass its explicit dispatcher option:
 ./SrvSurvey.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.58.5` with the downloaded version. Keeping the installed name
+Replace `2.1.3.0-rc.58.6` with the downloaded version. Keeping the installed name
 as `SrvSurvey.AppImage` gives launchers and the in-application updater a stable
 path. Keep it in this folder instead of moving internal files out of the
 AppImage.
@@ -78,6 +78,17 @@ information and a matching `.zsync` asset for compatibility with standard
 AppImage update tools. If the installed file or folder is read-only, the update
 card keeps the manual download instructions available.
 
+An older AppImage may stop after downloading an update when its `/tmp` user
+quota is full. On a systemd desktop, run this once and retry **Install**:
+
+```bash
+systemctl --user set-environment TMPDIR=/var/tmp
+```
+
+If launching from a terminal outside a systemd desktop service, start the old
+AppImage with `TMPDIR=/var/tmp ./SrvSurvey.AppImage` before retrying. RC58.6 and
+later extract the update helper in the writable update staging folder.
+
 If FUSE is unavailable, use AppImage's temporary extract-and-run fallback from
 the same folder:
 
@@ -95,7 +106,7 @@ point to the same location. Keep all files together and run
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey/portable"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.58.5-linux-x64.tar.gz" \
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.58.6-linux-x64.tar.gz" \
     -C "$HOME/Applications/SrvSurvey/portable"
 cd "$HOME/Applications/SrvSurvey/portable"
 chmod +x SrvSurvey.Desktop

@@ -393,6 +393,9 @@ public sealed class ReleaseInstallationWorkflowTests
             Assert.Equal(ReleaseInstallationCapabilityStatus.Supported, packaged.Capability.Status);
             Assert.Equal(ReleaseInstallationCapabilityStatus.Unpackaged, unpackaged.Capability.Status);
             Assert.Equal(ReleaseInstallationCapabilityStatus.ReadOnlyAppImage, appImage.Capability.Status);
+            Assert.Equal(ReleaseInstallationCapabilityStatus.Unpackaged, packaged.RefreshCapability().Status);
+            File.WriteAllText(manifestPath, "{}");
+            Assert.Equal(ReleaseInstallationCapabilityStatus.Supported, packaged.RefreshCapability().Status);
         }
         finally
         {
