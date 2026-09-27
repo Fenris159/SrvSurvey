@@ -27,7 +27,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         processIdAtom = GetAtom("_NET_WM_PID");
     }
 
-    public static IGameWindowTracker? TryCreate()
+    public static IGameWindowTracker? TryCreate(string? displayName = null)
     {
         if (!OperatingSystem.IsLinux())
         {
@@ -35,10 +35,16 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         }
 
         nint display = nint.Zero;
+        nint displayNamePointer = nint.Zero;
         try
         {
             X11OverlayPlatformService.EnsureErrorHandlerInstalled();
-            display = X11Native.XOpenDisplay(nint.Zero);
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                displayNamePointer = Marshal.StringToHGlobalAnsi(displayName);
+            }
+
+            display = X11Native.XOpenDisplay(displayNamePointer);
             if (display == nint.Zero)
             {
                 return null;
@@ -63,6 +69,10 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             }
 
             return null;
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(displayNamePointer);
         }
     }
 

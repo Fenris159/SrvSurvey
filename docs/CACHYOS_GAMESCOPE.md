@@ -8,7 +8,8 @@ This guide covers two related problems on **CachyOS with KDE Plasma**:
 Start with the normal KDE/XWayland setup. Add Gamescope only if the pointer
 still escapes. A nested Gamescope session isolates its applications from the
 normal KDE desktop, so launching Elite inside Gamescope while launching
-SrvSurvey normally is not a valid overlay setup.
+SrvSurvey normally requires either a same-session launch or the native Wayland
+bridge described in [overlay troubleshooting](Overlay_Troubleshooting.md#srvsurvey-on-the-desktop-with-native-wayland-gamescope).
 
 This workflow has been reported working on CachyOS. Gamescope behavior can
 still vary with the GPU, driver, Plasma, Proton, and Gamescope versions, so keep
@@ -29,8 +30,9 @@ For general requirements, see [Linux installation](INSTALL_LINUX.md) and
   normally. Add the KDE window rule if overlays do not stay above the game.
 - If the mouse still leaves the game, test Gamescope with
   `--force-grab-cursor`.
-- If both Gamescope and SrvSurvey overlays are required, launch both programs
-  into the same nested Gamescope display.
+- If both Gamescope and SrvSurvey overlays are required, use the same nested
+  display workflow below. The native Wayland bridge is a separate option for
+  keeping SrvSurvey on the desktop.
 
 ## 1. Check the desktop and packages
 
@@ -208,8 +210,10 @@ Overlay presentation: MultipleWindows
 
 Combined mode reduces the number of windows Gamescope must handle. It does not
 move a SrvSurvey process launched on the KDE desktop into Elite's nested
-display. Do not treat SrvSurvey outside Gamescope over Elite inside Gamescope as
-a supported arrangement.
+display. The same-session workflow below works within that display. A separate
+[native Wayland bridge](Overlay_Troubleshooting.md#srvsurvey-on-the-desktop-with-native-wayland-gamescope)
+allows SrvSurvey to stay on the desktop when its launch wrapper publishes the
+game-window marker.
 
 ## 5. Launch Elite and SrvSurvey in the same Gamescope session
 
