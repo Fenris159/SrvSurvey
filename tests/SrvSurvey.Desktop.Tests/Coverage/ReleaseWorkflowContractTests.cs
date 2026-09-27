@@ -143,7 +143,7 @@ public sealed partial class ReleaseWorkflowContractTests
 
         Assert.Contains("RELEASE_REPOSITORY: \"Fenris159/SrvSurvey\"", workflow, StringComparison.Ordinal);
         Assert.Contains(
-            "gh-releases-zsync|$release_owner|$release_name|latest-pre",
+            "gh-releases-zsync|$release_owner|$release_name|latest-all",
             workflow,
             StringComparison.Ordinal
         );
@@ -153,6 +153,18 @@ public sealed partial class ReleaseWorkflowContractTests
         Assert.Contains("--updateinformation \"$update_information\"", appImageScript, StringComparison.Ordinal);
         Assert.Contains("$output_path.zsync", appImageScript, StringComparison.Ordinal);
         Assert.Contains("runtimeIdentifier = 'linux-x64-appimage'", indexScript, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void StableReleaseIsMarkedLatestWhenPublished()
+    {
+        string workflow = File.ReadAllText(
+            Path.Combine(FindRepositoryRoot(), ".github", "workflows", "build-srvsurvey-xp.yml")
+        );
+
+        Assert.Contains("if [[ \"$IS_PRERELEASE\" == \"false\" ]]; then", workflow, StringComparison.Ordinal);
+        Assert.Contains("publish_latest=true", workflow, StringComparison.Ordinal);
+        Assert.Contains("--latest=\"$publish_latest\"", workflow, StringComparison.Ordinal);
     }
 
     [Theory]
