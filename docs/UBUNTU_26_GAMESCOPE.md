@@ -519,9 +519,9 @@ Gamescope gives Elite its own nested XWayland display. A SrvSurvey process
 started on the ordinary GNOME desktop is outside that boundary and cannot
 reliably enumerate or track the inner Elite window.
 
-For overlays, Elite and SrvSurvey must run as the same desktop user on the same
-nested display. SrvSurvey detects Gamescope and uses its combined transparent
-overlay host. Its log should contain:
+For the SDL/X11 Gamescope wrapper documented in this guide, launch SrvSurvey
+on the same nested display as Elite. SrvSurvey detects Gamescope and uses its
+combined transparent overlay host. Its log should contain:
 
 ```text
 Overlay presentation: CombinedWindow
@@ -533,6 +533,78 @@ launch pattern described in
 [the CachyOS Gamescope guide](CACHYOS_GAMESCOPE.md#5-launch-elite-and-srvsurvey-in-the-same-gamescope-session)
 when overlays are required, preserving this guide's patched Gamescope path and
 runtime mouse toggling.
+
+For **native Wayland Gamescope**, SrvSurvey can instead remain on the desktop
+display and draw normal interactive live overlays above the fullscreen game.
+The Gamescope launch wrapper must publish a small bridge marker that supplies
+the nested X11 display and host monitor rectangle. See
+[SrvSurvey on the desktop with native Wayland Gamescope](Overlay_Troubleshooting.md#srvsurvey-on-the-desktop-with-native-wayland-gamescope)
+for the marker format and helper script. This path was verified on 2026-09-27
+with a locally patched Gamescope 3.16.29 build; the SDL wrapper above does not
+publish the marker and is not configured for the native Wayland path.
+
+### Native Wayland launch template
+
+The repository includes [EliteGamescopeWayland.sh](../scripts/EliteGamescopeWayland.sh),
+a configurable version of the tested native Wayland launch wrapper. It starts
+Gamescope, switches between a windowed launcher and fullscreen Elite, pauses
+relative mouse mode during SrvSurvey interaction or the Steam overlay, and
+publishes and removes the bridge marker automatically. Keep SrvSurvey running
+normally on the desktop; the wrapper starts only Elite.
+
+This template needs Gamescope 3.16.29 with **both** repository patches: the
+runtime relative-mouse patch from section 3 and
+[the native Wayland host patch](patches/gamescope-3.16.29-native-wayland-host.patch).
+The second patch adds runtime fullscreen control, preferred-output selection,
+and a larger Wayland server message buffer. Apply it to the same source checkout
+used in section 3, then rebuild and install:
+
+```bash
+git -C "$gamescope_source" apply --unidiff-zero --check \
+  "$srvsurvey_root/docs/patches/gamescope-3.16.29-native-wayland-host.patch"
+git -C "$gamescope_source" apply --unidiff-zero \
+  "$srvsurvey_root/docs/patches/gamescope-3.16.29-native-wayland-host.patch"
+ninja -C "$gamescope_source/build"
+meson install -C "$gamescope_source/build" --skip-subprojects
+```
+
+Install the wrapper and marker helper together:
+
+```bash
+install -m 0755 "$srvsurvey_root/scripts/EliteGamescopeWayland.sh" \
+  "$HOME/.local/bin/EliteGamescopeWayland.sh"
+install -m 0755 "$srvsurvey_root/scripts/PublishGamescopeGameWindowBridge.sh" \
+  "$HOME/.local/bin/PublishGamescopeGameWindowBridge.sh"
+```
+
+In Steam's **Elite Dangerous → Properties → General → Launch Options**, use
+your own absolute home path and monitor name. For example:
+
+```text
+ELITE_GAMESCOPE_ROOT=/home/YOU/.local/opt/gamescope-3.16.29 ELITE_GAMESCOPE_OUTPUT=DP-2 /home/YOU/.local/bin/EliteGamescopeWayland.sh %command%
+```
+
+Set `ELITE_GAMESCOPE_OUTPUT` to the connected output name from
+`xrandr --query` that should contain the fullscreen game. The helper reads
+that output's **XWayland** geometry; this is often larger than the monitor's
+physical resolution on a scaled desktop. The wrapper exposes these optional
+settings, whose defaults match the tested machine and should be adjusted for
+other displays:
+
+| Variable | Default | Meaning |
+|---|---:|---|
+| `ELITE_GAMESCOPE_LAUNCHER_WIDTH` / `HEIGHT` | `2560` / `1440` | Windowed launcher size |
+| `ELITE_GAMESCOPE_GAME_WIDTH` / `HEIGHT` | `3840` / `2160` | Resolution exposed to Elite |
+| `ELITE_GAMESCOPE_REFRESH` | `120` | Gamescope refresh setting; use a supported mode |
+| `ELITE_GAMESCOPE_MOUSE_SENSITIVITY` | `2.25` | Pointer multiplier; calibrate for the display scale |
+| `ELITE_GAMESCOPE_GAME_TITLE` | `Elite - Dangerous (CLIENT)` | Title used to detect the actual game |
+| `ELITE_GAMESCOPE_RADV_DEBUG` | unset | Optional AMD driver workaround; set to `nodcc` only if needed |
+
+After launching Elite, verify that the bridge exists with
+`ls "$XDG_RUNTIME_DIR"/GamescopeGameWindowBridge.*`. It should disappear when
+Gamescope closes. SrvSurvey's live overlays should appear over the game while
+SrvSurvey stays on the desktop display. The bridge assumes the game fills the
+chosen monitor; it is not a placement solution for a small Gamescope window.
 
 If screen capture falls back to the Wayland portal, select the Elite window or
 the Gamescope surface when GNOME asks. See

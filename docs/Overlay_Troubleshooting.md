@@ -25,6 +25,46 @@ SRVSURVEY_OVERLAY_HOST=combined ./SrvSurvey.Desktop
 To diagnose a compositor regression, restore the previous behavior with
 `SRVSURVEY_OVERLAY_HOST=separate`. The override is read at startup.
 
+### SrvSurvey on the desktop with native Wayland Gamescope
+
+A native Wayland Gamescope session can keep Elite on a nested X11 display while
+SrvSurvey runs on the desktop XWayland display. In this arrangement SrvSurvey
+cannot discover Elite through the desktop X11 window tree. SrvSurvey can instead
+read a **Gamescope game-window bridge marker** from the user's
+`$XDG_RUNTIME_DIR`. Its Gamescope launch wrapper creates the marker after it
+finds the nested `DISPLAY`, and removes it when Gamescope exits. The user does
+not create the marker for each game session.
+
+The marker is named `GamescopeGameWindowBridge.<Gamescope PID>` and has three
+lines: the Gamescope process start time from `/proc/<PID>/stat`, the nested X11
+display (for example `:2`), and the desktop XWayland rectangle of the monitor
+hosting fullscreen Gamescope (`x y width height`). SrvSurvey verifies the live
+process before using the marker. It then tracks Elite on the nested display
+while placing its ordinary, separately interactive overlay windows on the
+desktop display. If there is no valid marker, SrvSurvey keeps using its normal
+desktop game-window tracker.
+
+The helper [PublishGamescopeGameWindowBridge.sh](../scripts/PublishGamescopeGameWindowBridge.sh)
+writes this marker atomically. A native Wayland Gamescope launch wrapper should
+call it **after** it knows the Gamescope PID and nested X11 `DISPLAY`, pass the
+desktop output name shown by `xrandr --query`, and remove the returned path when
+Gamescope stops. For example, inside that wrapper:
+
+```bash
+# scope_pid is the PID of the running Gamescope process; nested_display is the
+# DISPLAY from Gamescope's XWayland child, not the desktop DISPLAY.
+bridge_marker=$(PublishGamescopeGameWindowBridge.sh \
+    "$scope_pid" "$nested_display" "$game_output")
+# Add to the wrapper's existing exit cleanup:
+[[ -z ${bridge_marker:-} ]] || unlink "$bridge_marker"
+```
+
+The bridge applies when Gamescope fills the chosen monitor; its rectangle is
+the whole monitor. For a smaller or movable Gamescope window, the host rectangle
+must instead track that window. The tested native Wayland setup also toggles
+Gamescope's relative mouse mode when SrvSurvey enables mouse interaction; see
+[the Ubuntu Gamescope guide](UBUNTU_26_GAMESCOPE.md#9-srvsurvey-and-the-gamescope-boundary).
+
 ## KDE Plasma — overlays not appearing or not staying above Elite
 
 KDE Plasma can refuse to place normal application windows above an exclusive full-screen game. SrvSurvey now checks the X11 window manager's `_NET_SUPPORTED` capabilities. When KWin advertises `_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY`, SrvSurvey applies that type to runtime overlays, edit previews, and the overlay editor while retaining `_NET_WM_WINDOW_TYPE_NORMAL` as the standards-compatible fallback.
@@ -74,7 +114,7 @@ Plasma is more restrictive than GNOME about the stacking order of windows relati
 
 ## Still not working?
 
-1. Confirm both Elite Dangerous and SrvSurvey are running as the **same user** on the **same display** (`echo $DISPLAY`).
+1. Confirm Elite and SrvSurvey run as the same user. They normally need the same display; the native Wayland Gamescope bridge above supports separate desktop and nested displays.
 2. Verify the session is X11 or XWayland (`echo $XDG_SESSION_TYPE` and `echo $WAYLAND_DISPLAY`).
 3. Check that the window class reported by KDE’s “Detect Window Properties” matches `SrvSurvey.Desktop`.
 4. Temporarily disable any other compositor effects or “focus stealing prevention” rules that might interfere.
