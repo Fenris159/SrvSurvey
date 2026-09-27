@@ -11,7 +11,7 @@ public sealed class ReleaseUpdateSettingsStore
         documentStore = new UiSettingsDocumentStore(path);
     }
 
-    public bool LoadUseDevelopmentReleases()
+    public bool LoadUseDevelopmentReleases(bool defaultValue)
     {
         var settings = documentStore.Load()["ReleaseUpdates"] as JsonObject;
         if (settings?["UseDevelopmentReleases"] is JsonValue value && value.TryGetValue<bool>(out bool enabled))
@@ -19,7 +19,7 @@ public sealed class ReleaseUpdateSettingsStore
             return enabled;
         }
 
-        return true;
+        return defaultValue;
     }
 
     public void SaveUseDevelopmentReleases(bool enabled)

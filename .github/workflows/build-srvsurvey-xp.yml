@@ -327,7 +327,7 @@ jobs:
           release_owner="${RELEASE_REPOSITORY%%/*}"
           release_name="${RELEASE_REPOSITORY#*/}"
           if [[ "${{ needs.release-metadata.outputs.is_prerelease }}" == "true" ]]; then
-            update_information="gh-releases-zsync|$release_owner|$release_name|latest-pre|SrvSurvey-XP-*-x86_64.AppImage.zsync"
+            update_information="gh-releases-zsync|$release_owner|$release_name|latest-all|SrvSurvey-XP-*-x86_64.AppImage.zsync"
           else
             update_information="gh-releases-zsync|$release_owner|$release_name|latest|SrvSurvey-XP-*-x86_64.AppImage.zsync"
           fi
@@ -531,10 +531,14 @@ jobs:
           done
 
           echo "Updating release metadata and publishing..."
+          publish_latest=false
+          if [[ "$IS_PRERELEASE" == "false" ]]; then
+            publish_latest=true
+          fi
           gh release edit "$RELEASE_TAG" \
             --draft=false \
             --title "SrvSurvey-XP $RELEASE_VERSION" \
             --prerelease="$IS_PRERELEASE" \
-            --latest=false
+            --latest="$publish_latest"
 
           echo "Release successfully published!"

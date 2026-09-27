@@ -10,9 +10,10 @@ public sealed class ReleaseUpdateSettingsStoreTests : IDisposable
     );
 
     [Fact]
-    public void MissingSettingOptsIntoDevelopmentReleases()
+    public void MissingSettingUsesTheProvidedChannelDefault()
     {
-        Assert.True(CreateStore().LoadUseDevelopmentReleases());
+        Assert.True(CreateStore().LoadUseDevelopmentReleases(defaultValue: true));
+        Assert.False(CreateStore().LoadUseDevelopmentReleases(defaultValue: false));
     }
 
     [Fact]
@@ -25,12 +26,12 @@ public sealed class ReleaseUpdateSettingsStoreTests : IDisposable
 
         store.SaveUseDevelopmentReleases(false);
 
-        Assert.False(store.LoadUseDevelopmentReleases());
+        Assert.False(store.LoadUseDevelopmentReleases(defaultValue: true));
         Assert.Contains("\"Keep\": 42", File.ReadAllText(path));
 
         store.SaveUseDevelopmentReleases(true);
 
-        Assert.True(store.LoadUseDevelopmentReleases());
+        Assert.True(store.LoadUseDevelopmentReleases(defaultValue: false));
     }
 
     public void Dispose()

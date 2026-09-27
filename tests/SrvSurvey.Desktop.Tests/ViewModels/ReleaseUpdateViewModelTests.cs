@@ -488,9 +488,7 @@ public sealed class ReleaseUpdateViewModelTests
             )
         );
         var viewModel = new ReleaseUpdateViewModel(service, new Version(2, 1, 3, 9));
-        viewModel.UseDevelopmentReleases = false;
-
-        await WaitUntilAsync(() => viewModel.LatestVersion == "N/A");
+        await viewModel.CheckAsync();
 
         Assert.Equal("N/A", viewModel.LatestVersion);
         Assert.False(viewModel.IsUpdateAvailable);
@@ -510,7 +508,7 @@ public sealed class ReleaseUpdateViewModelTests
         var service = new RecordingService();
         try
         {
-            var viewModel = new ReleaseUpdateViewModel(service, new Version(2, 1, 3, 9), settings);
+            var viewModel = new ReleaseUpdateViewModel(service, ReleaseVersion.Parse("2.1.3.0-rc.9"), settings);
 
             Assert.True(viewModel.UseDevelopmentReleases);
             Assert.Contains("Fenris159/SrvSurvey", viewModel.ReleaseSourceDescription);
@@ -518,9 +516,35 @@ public sealed class ReleaseUpdateViewModelTests
             viewModel.UseDevelopmentReleases = false;
             await WaitUntilAsync(() => service.Channels.Contains(ReleaseChannel.Stable));
 
-            Assert.False(settings.LoadUseDevelopmentReleases());
+            Assert.False(settings.LoadUseDevelopmentReleases(defaultValue: true));
             Assert.Contains("Fenris159/SrvSurvey", viewModel.ReleaseSourceDescription);
             Assert.Contains(ReleaseChannel.Stable, service.Channels);
+        }
+        finally
+        {
+            if (Directory.Exists(temporaryDirectory))
+            {
+                Directory.Delete(temporaryDirectory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void StableReleaseDefaultsToStableWithoutChangingSavedChannelPreference()
+    {
+        string temporaryDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-stable-release-channel-tests-{Guid.NewGuid():N}"
+        );
+        try
+        {
+            var settings = new ReleaseUpdateSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
+            var stable = new ReleaseUpdateViewModel(new RecordingService(), ReleaseVersion.Parse("2.1.3.0"), settings);
+            Assert.False(stable.UseDevelopmentReleases);
+
+            settings.SaveUseDevelopmentReleases(true);
+            var optedIn = new ReleaseUpdateViewModel(new RecordingService(), ReleaseVersion.Parse("2.1.3.0"), settings);
+            Assert.True(optedIn.UseDevelopmentReleases);
         }
         finally
         {
@@ -544,7 +568,7 @@ public sealed class ReleaseUpdateViewModelTests
         await viewModel.CheckAsync();
 
         Assert.True(viewModel.ShouldShowUpdateNotification);
-        Assert.Contains("development channel", viewModel.UpdateNotificationText);
+        Assert.Contains("stable channel", viewModel.UpdateNotificationText);
         Assert.True(viewModel.OpenUpdateDiagnosticsCommand.CanExecute(null));
 
         viewModel.OpenUpdateDiagnosticsCommand.Execute(null);
