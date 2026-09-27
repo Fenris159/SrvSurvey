@@ -18,6 +18,8 @@ internal static class Program
 
     internal static string[] StartupArguments { get; private set; } = [];
 
+    internal static ApplicationUpdateStartupMode UpdateStartupMode { get; private set; }
+
     internal static ApplicationLogService? ApplicationLog { get; private set; }
 
     internal static DesktopStartupContext? StartupContext { get; private set; }
@@ -31,6 +33,7 @@ internal static class Program
         }
 
         ApplicationUpdateStartup updateStartup = ApplicationUpdateBootstrap.ParseStartupArguments(args);
+        UpdateStartupMode = updateStartup.Mode;
         if (TryRunUpdateHelper(updateStartup))
         {
             return;
