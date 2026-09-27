@@ -14,6 +14,11 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
 
     internal static GamescopeGameWindowBridge? TryRead(string? runtimeDirectory)
     {
+        return TryRead(runtimeDirectory, X11OverlayInteractionMarker.TryReadProcessStartTime);
+    }
+
+    internal static GamescopeGameWindowBridge? TryRead(string? runtimeDirectory, Func<int, ulong?> readProcessStartTime)
+    {
         if (string.IsNullOrWhiteSpace(runtimeDirectory) || !Directory.Exists(runtimeDirectory))
         {
             return null;
@@ -24,7 +29,7 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
             return Directory
                 .EnumerateFiles(runtimeDirectory, MarkerPrefix + "*")
                 .OrderByDescending(File.GetLastWriteTimeUtc)
-                .Select(TryReadMarker)
+                .Select(path => TryReadMarker(path, readProcessStartTime))
                 .FirstOrDefault(marker => marker is not null);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
@@ -33,7 +38,7 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
         }
     }
 
-    private static GamescopeGameWindowBridge? TryReadMarker(string path)
+    private static GamescopeGameWindowBridge? TryReadMarker(string path, Func<int, ulong?> readProcessStartTime)
     {
         try
         {
@@ -50,7 +55,7 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
             if (
                 lines.Length != 3
                 || !ulong.TryParse(lines[0], NumberStyles.None, CultureInfo.InvariantCulture, out ulong startTime)
-                || X11OverlayInteractionMarker.TryReadProcessStartTime(processId) != startTime
+                || readProcessStartTime(processId) != startTime
                 || lines[1].Length < 2
                 || lines[1][0] != ':'
             )

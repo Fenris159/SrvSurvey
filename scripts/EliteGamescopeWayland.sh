@@ -39,6 +39,7 @@ stop_scope() {
     if [[ -n "$scope_pid" ]] && kill -0 "$scope_pid" 2>/dev/null; then
         kill -TERM "$scope_pid" 2>/dev/null || true
     fi
+    return 0
 }
 
 publish_game_window_bridge() {

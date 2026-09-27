@@ -6,6 +6,8 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed class GamescopeGameWindowTrackerTests
 {
+    private const ulong ProcessStartTime = 123456;
+
     [Fact]
     public void ReadsLiveGamescopeMarkerAndDesktopBounds()
     {
@@ -14,7 +16,7 @@ public sealed class GamescopeGameWindowTrackerTests
         {
             WriteMarker(directory, Environment.ProcessId, ":7", "3840 0 5120 2880");
 
-            var bridge = GamescopeGameWindowBridge.TryRead(directory);
+            var bridge = GamescopeGameWindowBridge.TryRead(directory, _ => ProcessStartTime);
 
             Assert.NotNull(bridge);
             Assert.Equal(Environment.ProcessId, bridge.ProcessId);
@@ -39,7 +41,7 @@ public sealed class GamescopeGameWindowTrackerTests
         {
             WriteMarker(directory, Environment.ProcessId, display, bounds, startTime);
 
-            Assert.Null(GamescopeGameWindowBridge.TryRead(directory));
+            Assert.Null(GamescopeGameWindowBridge.TryRead(directory, _ => ProcessStartTime));
         }
         finally
         {
@@ -52,6 +54,22 @@ public sealed class GamescopeGameWindowTrackerTests
     {
         Assert.Null(GamescopeGameWindowBridge.TryRead(null));
         Assert.Null(GamescopeGameWindowBridge.TryRead(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))));
+    }
+
+    [Fact]
+    public void RejectsMarkerWhenProcessStartTimeCannotBeRead()
+    {
+        string directory = CreateTemporaryDirectory();
+        try
+        {
+            WriteMarker(directory, Environment.ProcessId, ":7", "3840 0 5120 2880");
+
+            Assert.Null(GamescopeGameWindowBridge.TryRead(directory, _ => null));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 
     [Fact]
@@ -123,14 +141,7 @@ public sealed class GamescopeGameWindowTrackerTests
         string startTime = "valid"
     )
     {
-        ulong? actualStartTime = X11OverlayInteractionMarker.TryReadProcessStartTime(processId);
-        if (actualStartTime is null)
-        {
-            Assert.Skip("Process start time is unavailable on this host.");
-            return;
-        }
-
-        string value = startTime == "valid" ? actualStartTime.Value.ToString(CultureInfo.InvariantCulture) : "0";
+        string value = startTime == "valid" ? ProcessStartTime.ToString(CultureInfo.InvariantCulture) : "0";
         File.WriteAllText(
             Path.Combine(directory, GamescopeGameWindowBridge.MarkerPrefix + processId),
             $"{value}\n{display}\n{bounds}\n"
