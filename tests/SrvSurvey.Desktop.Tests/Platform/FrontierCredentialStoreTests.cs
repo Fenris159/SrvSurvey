@@ -222,6 +222,27 @@ public sealed class FrontierCredentialStoreTests
     }
 
     [Fact]
+    public async Task EmptyKeyringSecretAllowsACommanderToReconnect()
+    {
+        var tool = new FakeSecretTool();
+        tool.Secrets.Add(string.Empty);
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+
+        Assert.Null(await store.LoadAsync());
+
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential> { ["F123"] = new() },
+            }
+        );
+
+        FrontierCredentialDocument? loaded = await store.LoadAsync();
+        Assert.NotNull(loaded);
+        Assert.True(loaded.Accounts.ContainsKey("F123"));
+    }
+
+    [Fact]
     public async Task UnreadableKeyringSearchIsRejected()
     {
         if (!OperatingSystem.IsLinux())

@@ -232,7 +232,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
     public async Task<FrontierCredentialDocument?> LoadAsync(CancellationToken cancellationToken = default)
     {
         IReadOnlyList<string> secrets = await SearchSecretsAsync(cancellationToken).ConfigureAwait(false);
-        if (secrets.Count == 0)
+        if (secrets.All(string.IsNullOrWhiteSpace))
         {
             return null;
         }
