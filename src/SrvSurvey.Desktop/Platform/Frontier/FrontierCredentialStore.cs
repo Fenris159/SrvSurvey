@@ -269,7 +269,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         var accounts = new Dictionary<string, FrontierAccountCredential>(StringComparer.OrdinalIgnoreCase);
         foreach (string frontierId in state.Accounts.Keys)
         {
-            StoredAccount? account = PreferredAccount(storedAccounts, frontierId);
+            StoredAccount? account = PreferredAccount(storedAccounts, frontierId, state.KeyringRevision);
             if (account is null)
             {
                 throw new InvalidDataException(InvalidKeyringMessage);
@@ -287,19 +287,29 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
     public async Task SaveAsync(FrontierCredentialDocument document, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(document);
+        FrontierCredentialDocument? previousState = ReadPreferredDocument(
+            await SearchSecretsAsync(StateService, cancellationToken).ConfigureAwait(false)
+        );
         List<StoredAccount> storedAccounts = ReadAccounts(
             await SearchSecretsAsync(AccountService, cancellationToken).ConfigureAwait(false)
         );
+        long latestAccountRevision = 0;
         foreach ((string frontierId, FrontierAccountCredential credential) in document.Accounts)
         {
             StoredAccount? previous = PreferredAccount(storedAccounts, frontierId);
             if (previous?.Credential == credential)
             {
+                latestAccountRevision = Math.Max(latestAccountRevision, previous.KeyringRevision);
                 continue;
             }
 
             string slot = OtherSlot(previous?.Slot);
-            var account = new StoredAccount(frontierId, credential, NextRevision(previous?.KeyringRevision ?? 0), slot);
+            var account = new StoredAccount(
+                frontierId,
+                credential,
+                NextRevision(Math.Max(previous?.KeyringRevision ?? 0, previousState?.KeyringRevision ?? 0)),
+                slot
+            );
             await StoreAndVerifyAsync(
                     JsonSerializer.Serialize(account, JsonOptions),
                     AccountService,
@@ -308,11 +318,9 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
                     cancellationToken
                 )
                 .ConfigureAwait(false);
+            latestAccountRevision = Math.Max(latestAccountRevision, account.KeyringRevision);
         }
 
-        IReadOnlyList<string> stateSecrets = await SearchSecretsAsync(StateService, cancellationToken)
-            .ConfigureAwait(false);
-        FrontierCredentialDocument? previousState = ReadPreferredDocument(stateSecrets);
         string stateSlot = OtherSlot(previousState?.KeyringSlot);
         var accountIndex = document.Accounts.Keys.ToDictionary(
             frontierId => frontierId,
@@ -323,7 +331,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
             document with
             {
                 Version = PartitionedStorageVersion,
-                KeyringRevision = NextRevision(previousState?.KeyringRevision ?? 0),
+                KeyringRevision = NextRevision(Math.Max(previousState?.KeyringRevision ?? 0, latestAccountRevision)),
                 KeyringSlot = stateSlot,
                 Accounts = accountIndex,
             },
@@ -518,9 +526,16 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         return accounts;
     }
 
-    private static StoredAccount? PreferredAccount(List<StoredAccount> accounts, string frontierId) =>
+    private static StoredAccount? PreferredAccount(
+        List<StoredAccount> accounts,
+        string frontierId,
+        long? maximumRevision = null
+    ) =>
         accounts
-            .Where(account => string.Equals(account.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
+            .Where(account =>
+                string.Equals(account.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
+                && (!maximumRevision.HasValue || account.KeyringRevision <= maximumRevision.Value)
+            )
             .OrderByDescending(account => account.KeyringRevision)
             .FirstOrDefault();
 

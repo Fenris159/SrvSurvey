@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using SrvSurvey.Desktop.Platform.Frontier;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
@@ -245,6 +246,68 @@ public sealed class FrontierCredentialStoreTests
         );
 
         Assert.Empty((await store.LoadAsync())!.PendingAuthorizations);
+    }
+
+    [Fact]
+    public async Task FailedStateWriteDoesNotExposeUncommittedAccountCredential()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        var original = new FrontierCredentialDocument
+        {
+            Accounts = new Dictionary<string, FrontierAccountCredential>
+            {
+                ["F123"] = new() { AccessToken = "original" },
+            },
+        };
+        await store.SaveAsync(original);
+        FrontierCredentialDocument updated = original with
+        {
+            Accounts = new Dictionary<string, FrontierAccountCredential>
+            {
+                ["F123"] = new() { AccessToken = "updated" },
+            },
+        };
+        tool.EmptyStoreService = "frontier_capi_state";
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.SaveAsync(updated));
+        Assert.Equal("original", (await store.LoadAsync())!.Accounts["F123"].AccessToken);
+
+        tool.EmptyStoreService = null;
+        await store.SaveAsync(updated);
+        Assert.Equal("updated", (await store.LoadAsync())!.Accounts["F123"].AccessToken);
+    }
+
+    [Fact]
+    public async Task FailedStateWriteDoesNotExposeAccountWhenStateRevisionIsAheadOfClock()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential>
+                {
+                    ["F123"] = new() { AccessToken = "original" },
+                },
+            }
+        );
+        tool.SetStateRevision(DateTimeOffset.UtcNow.AddDays(1).UtcTicks);
+        tool.EmptyStoreService = "frontier_capi_state";
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.SaveAsync(
+                new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F123"] = new() { AccessToken = "updated" },
+                    },
+                }
+            )
+        );
+
+        Assert.Equal("original", (await store.LoadAsync())!.Accounts["F123"].AccessToken);
     }
 
     [Fact]
@@ -554,6 +617,14 @@ public sealed class FrontierCredentialStoreTests
                     secret
                 )
             );
+
+        public void SetStateRevision(long revision)
+        {
+            int index = items.FindIndex(item => item.Attributes.GetValueOrDefault("service") == "frontier_capi_state");
+            JsonObject document = JsonNode.Parse(items[index].Secret)!.AsObject();
+            document["keyringRevision"] = revision;
+            items[index] = items[index] with { Secret = document.ToJsonString() };
+        }
 
         public Task<SecretToolResult> RunAsync(
             IReadOnlyList<string> arguments,
