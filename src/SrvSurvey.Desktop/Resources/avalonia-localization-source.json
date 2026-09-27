@@ -49146,14 +49146,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationInstanceRegistry.cs"
   },
   {
-    "Text": "SrvSurvey.XP.{0}.{1}.{2}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationInstanceRegistry.cs"
-  },
-  {
     "Text": "SrvSurvey/{0} (\u002Bhttps://github.com/nithomson/SrvSurvey)",
     "IsFormat": true,
     "SourceKinds": [

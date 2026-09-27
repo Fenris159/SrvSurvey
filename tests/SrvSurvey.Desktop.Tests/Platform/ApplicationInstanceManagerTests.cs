@@ -426,6 +426,32 @@ public sealed class ApplicationInstanceManagerTests
     }
 
     [Fact]
+    public async Task CooperativeRegistryPipeFitsLinuxAppImageTemporaryDirectory()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            Assert.Skip("Unix-domain socket path limits apply on Linux.");
+        }
+
+        string dataDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-pipe-length-{Guid.NewGuid():N}");
+        try
+        {
+            await using var registry = new ApplicationInstanceRegistry(dataDirectory, () => Task.CompletedTask);
+            string representativeTempDirectory = "/tmp/" + new string('t', 45);
+            string socketPath = Path.Combine(representativeTempDirectory, "CoreFxPipe_" + registry.Current.PipeName);
+
+            Assert.True(System.Text.Encoding.UTF8.GetByteCount(socketPath) < 108, socketPath);
+        }
+        finally
+        {
+            if (Directory.Exists(dataDirectory))
+            {
+                Directory.Delete(dataDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task CooperativeRegistryDisposalIsIdempotent()
     {
         string dataDirectory = Path.Combine(

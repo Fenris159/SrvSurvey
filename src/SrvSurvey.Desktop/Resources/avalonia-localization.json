@@ -24505,10 +24505,6 @@
       "translation": "SrvSurvey.XP"
     },
     {
-      "source": "SrvSurvey.XP.{0}.{1}.{2}",
-      "translation": "SrvSurvey.XP.{0}.{1}.{2}"
-    },
-    {
       "source": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)",
       "translation": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
     },
@@ -59057,10 +59053,6 @@
     {
       "source": "SrvSurvey.XP",
       "translation": "SrvSurvey.XP"
-    },
-    {
-      "source": "SrvSurvey.XP.{0}.{1}.{2}",
-      "translation": "SrvSurvey.XP.{0}.{1}.{2}"
     },
     {
       "source": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)",
@@ -93613,10 +93605,6 @@
       "translation": "SrvSurvey.XP"
     },
     {
-      "source": "SrvSurvey.XP.{0}.{1}.{2}",
-      "translation": "SrvSurvey.XP.{0}.{1}.{2}"
-    },
-    {
       "source": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)",
       "translation": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
     },
@@ -128165,10 +128153,6 @@
     {
       "source": "SrvSurvey.XP",
       "translation": "SrvSurvey.XP"
-    },
-    {
-      "source": "SrvSurvey.XP.{0}.{1}.{2}",
-      "translation": "SrvSurvey.XP.{0}.{1}.{2}"
     },
     {
       "source": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)",
@@ -162721,10 +162705,6 @@
       "translation": "SrvSurvey.XP"
     },
     {
-      "source": "SrvSurvey.XP.{0}.{1}.{2}",
-      "translation": "SrvSurvey.XP.{0}.{1}.{2}"
-    },
-    {
       "source": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)",
       "translation": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
     },
@@ -197275,10 +197255,6 @@
       "translation": "SrvSurvey.XP"
     },
     {
-      "source": "SrvSurvey.XP.{0}.{1}.{2}",
-      "translation": "SrvSurvey.XP.{0}.{1}.{2}"
-    },
-    {
       "source": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)",
       "translation": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)"
     },
@@ -231827,10 +231803,6 @@
     {
       "source": "SrvSurvey.XP",
       "translation": "* SRVSURVEY.XP >>>!"
-    },
-    {
-      "source": "SrvSurvey.XP.{0}.{1}.{2}",
-      "translation": "* SRVSURVEY.XP.{0}.{1}.{2} >>>!"
     },
     {
       "source": "SrvSurvey/{0} (+https://github.com/nithomson/SrvSurvey)",

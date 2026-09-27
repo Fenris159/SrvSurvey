@@ -53,7 +53,9 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
 
         string canonicalPath = ApplicationProcessPathResolver.Canonicalize(processPath);
         long startTicks = current.StartTime.ToUniversalTime().Ticks;
-        string pipeName = $"SrvSurvey.XP.{current.Id}.{startTicks}.{Guid.NewGuid():N}";
+        // AppImage updates use the installation directory as TMPDIR. Unix sockets include
+        // that directory in their 108-byte path limit, so keep the pipe name short.
+        string pipeName = Guid.NewGuid().ToString("N");
         Current = new ApplicationInstanceRecord(
             SchemaVersion,
             Product,
