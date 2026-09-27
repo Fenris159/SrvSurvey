@@ -27,7 +27,11 @@ public static class GameWindowTracker
 
         if (OverlayPlatformCapabilities.DetectCurrent().UsesX11Compatibility)
         {
-            return X11GameWindowTracker.TryCreate() ?? new UnavailableGameWindowTracker();
+            return new GamescopeGameWindowTracker(
+                X11GameWindowTracker.TryCreate() ?? new UnavailableGameWindowTracker(),
+                GamescopeGameWindowBridge.TryReadCurrent,
+                X11GameWindowTracker.TryCreate
+            );
         }
 
         return new UnavailableGameWindowTracker();

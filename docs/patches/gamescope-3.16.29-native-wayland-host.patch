@@ -1,0 +1,65 @@
+diff --git a/src/Backends/WaylandBackend.cpp b/src/Backends/WaylandBackend.cpp
+index d74268b..ccdba1e 100644
+--- a/src/Backends/WaylandBackend.cpp
++++ b/src/Backends/WaylandBackend.cpp
+@@ -127,0 +128,4 @@ namespace gamescope
++    // A command can arrive before the connector exists; apply its last value
++    // whenever the connector presents, including after a client window closes.
++    std::atomic<int> g_nWaylandFullscreenOverride{ -1 };
++
+@@ -719,0 +724 @@ namespace gamescope
++		wl_output *GetPreferredFullscreenOutput() const { return m_pPreferredFullscreenOutput.load(); }
+@@ -831,0 +837 @@ namespace gamescope
++		std::atomic<wl_output *> m_pPreferredFullscreenOutput{ nullptr };
+@@ -1039,0 +1046,4 @@ namespace gamescope
++        const int nOverride = g_nWaylandFullscreenOverride.load();
++        if ( nOverride >= 0 )
++            m_bDesiredFullscreenState = nOverride != 0;
++
+@@ -1046 +1056,7 @@ namespace gamescope
+-                libdecor_frame_set_fullscreen( m_Planes[0].GetFrame(), nullptr );
++            {
++				const char *preferredOutputName = getenv( "GAMESCOPE_WAYLAND_PREFERRED_OUTPUT" );
++				wl_output *preferredOutput = m_pBackend->GetPreferredFullscreenOutput();
++				if ( preferredOutputName && *preferredOutputName && !preferredOutput )
++					return;
++				libdecor_frame_set_fullscreen( m_Planes[0].GetFrame(), preferredOutput );
++            }
+@@ -1047,0 +1064 @@ namespace gamescope
++            {
+@@ -1049,0 +1067,8 @@ namespace gamescope
++                // Fullscreen configuration replaces the preferred launcher size.
++                // Restore it before committing the windowed frame on exit.
++                g_nOutputWidth = g_nPreferredOutputWidth;
++                g_nOutputHeight = g_nPreferredOutputHeight;
++                m_Planes[0].CommitLibDecor( nullptr );
++                force_repaint();
++            }
++
+@@ -2280,0 +2306,15 @@ namespace gamescope
++
++    ConVar<bool> cv_wayland_fullscreen( "wayland_fullscreen", false,
++        "Set the native Wayland window fullscreen state at runtime.",
++        []( ConVar<bool> &variable )
++        {
++            g_nWaylandFullscreenOverride = variable ? 1 : 0;
++
++            auto *backend = dynamic_cast<CWaylandBackend *>( GetBackend() );
++            if ( !backend || !backend->GetCurrentConnector() )
++                return;
++
++            static_cast<CWaylandConnector *>( backend->GetCurrentConnector() )->SetFullscreen( variable );
++            force_repaint();
++        } );
++
+@@ -2620,0 +2661,3 @@ namespace gamescope
++		const char *preferredOutputName = getenv( "GAMESCOPE_WAYLAND_PREFERRED_OUTPUT" );
++		if ( preferredOutputName && pName && !strcmp( preferredOutputName, pName ) )
++			m_pPreferredFullscreenOutput.store( pOutput );
+diff --git a/src/wlserver.cpp b/src/wlserver.cpp
+index 9655dfd..15a4ded 100644
+--- a/src/wlserver.cpp
++++ b/src/wlserver.cpp
+@@ -1788,0 +1789,2 @@ bool wlsession_init( void ) {
++	// Allow short-lived client event backlogs without disconnecting Xwayland.
++	wl_display_set_default_max_buffer_size( wlserver.display, 1024 * 1024 );
