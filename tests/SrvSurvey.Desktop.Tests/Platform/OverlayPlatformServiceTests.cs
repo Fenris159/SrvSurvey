@@ -146,6 +146,41 @@ public sealed class OverlayPlatformServiceTests
     }
 
     [Fact]
+    public void X11OverlayInteractionMarkerExistsOnlyWhileCursorSessionIsActive()
+    {
+        string runtimeDirectory = Path.Combine(Path.GetTempPath(), $"srvsurvey-interaction-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(runtimeDirectory);
+        try
+        {
+            string markerPath = Path.Combine(runtimeDirectory, "X11OverlayInteractionMarker.12345");
+            using var marker = X11OverlayInteractionMarker.Begin(runtimeDirectory, 12345);
+            Assert.True(File.Exists(markerPath));
+
+            var session = new X11CursorVisibilitySession(
+                interactionWindows: [(nuint)20],
+                cursor: 0,
+                previousActiveWindow: 0,
+                new X11CursorSessionOperations(
+                    getActiveWindow: () => 0,
+                    getFocusWindow: () => 0,
+                    activateWindow: _ => true,
+                    undefineCursor: _ => 0,
+                    freeCursor: _ => 0
+                ),
+                marker
+            );
+
+            session.Dispose();
+            session.Dispose();
+            Assert.False(File.Exists(markerPath));
+        }
+        finally
+        {
+            Directory.Delete(runtimeDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public void X11ErrorHandlerSupportsACompatibleDelegateType()
     {
         bool invoked = false;

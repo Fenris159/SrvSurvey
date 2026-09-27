@@ -229,6 +229,151 @@ public sealed class OverlayCatalogPresentationRenderingTests
     }
 
     [AvaloniaFact]
+    public void FssInformationTextStaysInsideACompactPanel()
+    {
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        try
+        {
+            preview.ConfigureSize(new OverlayPanelSize(252, 283));
+            preview.ConfigureTypography(OverlayTypographyScale.Default);
+            preview.Show();
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            string? output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+            if (!string.IsNullOrWhiteSpace(output) && frame is not null)
+            {
+                Directory.CreateDirectory(output);
+                using FileStream stream = File.Create(Path.Combine(output, "fss-compact.png"));
+                frame.Save(stream, PngBitmapEncoderOptions.Default);
+            }
+            FssInfoOverlayPresentation presentation = Assert.IsType<FssInfoOverlayPresentation>(
+                preview.RuntimePresentation
+            );
+            Rect bounds = presentation.Bounds;
+            TextBlock[] textBlocks = presentation
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Where(text => text.IsVisible && text.Bounds.Width > 0)
+                .ToArray();
+            Assert.NotEmpty(textBlocks);
+            foreach (TextBlock textBlock in textBlocks)
+            {
+                Point? origin = textBlock.TranslatePoint(default, presentation);
+                Assert.NotNull(origin);
+                Assert.True(
+                    origin.Value.X + textBlock.Bounds.Width <= bounds.Width + 1,
+                    $"{textBlock.Text} extends to {origin.Value.X + textBlock.Bounds.Width} beyond {bounds.Width}"
+                );
+            }
+
+            TextBlock landable = textBlocks.First(text => text.Text == "LANDABLE");
+            TextBlock scanValue = textBlocks.First(text => text.Text == "842,310 CR");
+            Point? landableOrigin = landable.TranslatePoint(default, presentation);
+            Point? valueOrigin = scanValue.TranslatePoint(default, presentation);
+            Assert.NotNull(landableOrigin);
+            Assert.NotNull(valueOrigin);
+            Assert.False(
+                new Rect(landableOrigin.Value, landable.Bounds.Size).Intersects(
+                    new Rect(valueOrigin.Value, scanValue.Bounds.Size)
+                ),
+                "The LANDABLE marker and scan value overlap in a compact FSS row."
+            );
+
+            TextBlock footerLabel = textBlocks.First(text => text.Text == "SCAN VALUE · DSS VALUE");
+            TextBlock footerValue = textBlocks.First(text => text.Text == "0% UNDISCOVERED");
+            Point? footerLabelOrigin = footerLabel.TranslatePoint(default, presentation);
+            Point? footerValueOrigin = footerValue.TranslatePoint(default, presentation);
+            Assert.NotNull(footerLabelOrigin);
+            Assert.NotNull(footerValueOrigin);
+            Assert.False(
+                new Rect(footerLabelOrigin.Value, footerLabel.Bounds.Size).Intersects(
+                    new Rect(footerValueOrigin.Value, footerValue.Bounds.Size)
+                ),
+                "The FSS footer labels overlap in a compact panel."
+            );
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void LiveFssInformationHonorsACompactPanelSizeOverride()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-fss-live-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, "plotters.json"), """{"PlotFSSInfo":"left:8, top:8"}""");
+        File.WriteAllText(
+            Path.Combine(directory, "overlay-size-overrides.json"),
+            """{"PlotFSSInfo":{"width":252,"height":283}}"""
+        );
+        var window = new FssInfoOverlayWindow(
+            (SystemSurveyOverlayViewModel)OverlayEditorPreviewCatalog.Create("PlotFSSInfo")
+        );
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        try
+        {
+            LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(directory).Load();
+            OverlayThemeResources.Apply(window, layout, "PlotFSSInfo", new OverlayWindowRegistry());
+            OverlayThemeResources.Apply(preview);
+            preview.ApplyRuntimePresentationTheme();
+            preview.ConfigureScale(layout.ScaleIndex, null, 1);
+            preview.ConfigureTypography(layout.GetTypographyScale("PlotFSSInfo"));
+            preview.ConfigureSize(layout.GetSizeOverride("PlotFSSInfo"));
+            window.Show();
+            preview.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            using WriteableBitmap? previewFrame = preview.CaptureRenderedFrame();
+            Assert.NotNull(previewFrame);
+
+            Border outerBorder = Assert.IsType<Border>(Assert.IsType<LayoutTransformControl>(window.Content).Child);
+            FssInfoOverlayPresentation presentation = Assert.Single(
+                window.GetVisualDescendants().OfType<FssInfoOverlayPresentation>()
+            );
+            Assert.InRange(outerBorder.Bounds.Width, 251, 253);
+            Assert.True(
+                presentation.Bounds.Width <= outerBorder.Bounds.Width + 1,
+                $"FSS content width {presentation.Bounds.Width} exceeds its live host width {outerBorder.Bounds.Width}"
+            );
+            FssInfoOverlayPresentation previewPresentation = Assert.IsType<FssInfoOverlayPresentation>(
+                preview.RuntimePresentation
+            );
+            Assert.InRange(Math.Abs(presentation.Bounds.Width - previewPresentation.Bounds.Width), 0, 1);
+            Assert.InRange(Math.Abs(presentation.Bounds.Height - previewPresentation.Bounds.Height), 0, 1);
+            TextBlock[] liveText = presentation
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Where(text => text.IsVisible && text.Bounds.Width > 0)
+                .ToArray();
+            TextBlock[] previewText = previewPresentation
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Where(text => text.IsVisible && text.Bounds.Width > 0)
+                .ToArray();
+            Assert.Equal(liveText.Select(text => text.Text), previewText.Select(text => text.Text));
+            for (int index = 0; index < liveText.Length; index++)
+            {
+                Assert.InRange(Math.Abs(liveText[index].FontSize - previewText[index].FontSize), 0, 0.1);
+                Point? liveOrigin = liveText[index].TranslatePoint(default, presentation);
+                Point? previewOrigin = previewText[index].TranslatePoint(default, previewPresentation);
+                Assert.NotNull(liveOrigin);
+                Assert.NotNull(previewOrigin);
+                Assert.InRange(Math.Abs(liveOrigin.Value.X - previewOrigin.Value.X), 0, 1);
+                Assert.InRange(Math.Abs(liveOrigin.Value.Y - previewOrigin.Value.Y), 0, 1);
+            }
+            ScrollViewer scroller = Assert.Single(presentation.GetVisualDescendants().OfType<ScrollViewer>());
+            Assert.True(double.IsPositiveInfinity(scroller.MaxHeight));
+        }
+        finally
+        {
+            preview.Close();
+            window.Close();
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [AvaloniaFact]
     public void EveryPanelRemeasuresVisibleTextAtMaximumTypographyScale()
     {
         var failures = new List<string>();

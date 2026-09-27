@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -43,6 +44,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private double globalOpacityPercent = 100d;
     private string? selectedOverlaySettingsPlotterName;
     private bool updatingSelectedOverlaySettings;
+    private bool liveWindowReconciliationPending;
     private bool useGlobalOverlayOpacity = true;
     private double selectedOverlayOpacityPercent = 100d;
     private bool useGlobalOverlayScale = true;
@@ -132,6 +134,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         this.editorHost.PreviewSizeChanged += OnPreviewSizeChanged;
         this.editorHost.Closed += OnEditorClosed;
         this.activeLayout.ScaleIndexChanged += OnOverlayScaleIndexChanged;
+        this.registry.Changed += OnRegistryChanged;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -542,6 +545,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             {
                 return false;
             }
+
+            // The position editor owns its own draggable previews. Keep the
+            // saved live positions, then restore passive windows before the
+            // previews are shown so both surfaces cannot compete for input.
+            EndLiveInteraction(saveChanges: true);
         }
         else if (!ReloadPersistedLayout("Overlay positions cannot be edited"))
         {
@@ -725,6 +733,49 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         StatusMessage =
             $"{liveWindows.Count:N0} live overlay(s) are clickable. Drag them into place, then use the shortcut again to save.";
         return true;
+    }
+
+    private void OnRegistryChanged(object? sender, EventArgs eventArgs)
+    {
+        if (!IsLiveInteractionEnabled || liveWindowReconciliationPending || disposed)
+        {
+            return;
+        }
+
+        liveWindowReconciliationPending = true;
+        // Registration fires before a coordinator finishes preparing a new
+        // window. Apply interactive input after its passive setup completes.
+        Dispatcher.UIThread.Post(ReconcileLiveWindows, DispatcherPriority.Background);
+    }
+
+    private void ReconcileLiveWindows()
+    {
+        liveWindowReconciliationPending = false;
+        if (!IsLiveInteractionEnabled || disposed || registry is null || platform is null)
+        {
+            return;
+        }
+
+        foreach (RegisteredOverlayWindow registered in registry.Snapshot())
+        {
+            Window window = registered.Window;
+            if (interactiveWindows.Contains(window))
+            {
+                continue;
+            }
+
+            OverlayInteractionResult result = platform.SetInteractive(window, interactive: true);
+            if (!result.IsPrepared || !result.IsInteractive)
+            {
+                continue;
+            }
+
+            interactiveWindows.Add(window);
+            if (registered.ParticipatesInPlacement)
+            {
+                AttachLiveWindow(registered);
+            }
+        }
     }
 
     private void EndLiveInteraction(bool saveChanges)
@@ -950,7 +1001,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             OnLiveWindowPointerPressed(registered.Window, eventArgs);
         EventHandler<PixelPointEventArgs> positionChanged = (_, eventArgs) =>
             OnLiveWindowPositionChanged(registered, eventArgs.Point);
-        EventHandler closed = (_, _) => DetachLiveWindow(registered.Window);
+        EventHandler closed = (_, _) =>
+        {
+            DetachLiveWindow(registered.Window);
+            interactiveWindows.Remove(registered.Window);
+        };
         var state = new LiveOverlayWindowState(
             registered.Window,
             registered.PlotterName,
@@ -959,7 +1014,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             closed
         );
         liveWindows.Add(registered.Window, state);
-        registered.Window.PointerPressed += pointerPressed;
+        registered.Window.AddHandler(InputElement.PointerPressedEvent, pointerPressed, RoutingStrategies.Bubble, true);
         registered.Window.PositionChanged += positionChanged;
         registered.Window.Closed += closed;
     }
@@ -971,7 +1026,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        window.PointerPressed -= state.PointerPressed;
+        window.RemoveHandler(InputElement.PointerPressedEvent, state.PointerPressed);
         window.PositionChanged -= state.PositionChanged;
         window.Closed -= state.Closed;
     }
@@ -1124,6 +1179,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         activeLayout?.ScaleIndexChanged -= OnOverlayScaleIndexChanged;
+        registry?.Changed -= OnRegistryChanged;
 
         editSession = null;
         IsEditing = false;

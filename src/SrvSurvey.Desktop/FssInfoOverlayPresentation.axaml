@@ -77,42 +77,41 @@
                     BorderBrush="{DynamicResource RavenBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="8">
-              <Grid RowDefinitions="Auto,Auto" RowSpacing="0">
-                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="4">
-                  <Grid>
+              <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="0">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                  <Grid MinWidth="0">
                     <TextBlock Classes="overlay-body type-body"
                                IsVisible="{Binding !IsHighlighted}"
                                FontWeight="SemiBold"
-                               Text="{Binding Name}" />
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis" />
                     <TextBlock Classes="overlay-body type-body"
                                IsVisible="{Binding IsHighlighted}"
                                Foreground="{DynamicResource RavenAccentBrush}"
                                FontWeight="SemiBold"
-                               Text="{Binding Name}" />
-                  </Grid>
-                  <StackPanel Grid.Column="1"
-                              Orientation="Horizontal"
-                              Spacing="4">
-                    <TextBlock Classes="muted overlay-detail type-detail"
-                               Text="{Binding BodyClass}"
+                               Text="{Binding Name}"
                                TextTrimming="CharacterEllipsis" />
-                    <TextBlock Classes="overlay-caption type-icon"
-                               Foreground="{DynamicResource RavenWarningBrush}"
-                               FontWeight="SemiBold"
-                               IsVisible="{Binding IsLandable}"
-                               Text="LANDABLE" />
-                  </StackPanel>
-                  <TextBlock Grid.Column="2"
+                  </Grid>
+                  <TextBlock Grid.Column="1"
                              Classes="monospace overlay-body type-value"
                              HorizontalAlignment="Right"
                              Text="{Binding ScanValue}" />
                 </Grid>
 
-                <Grid Grid.Row="1"
-                      RowDefinitions="Auto,Auto"
-                      ColumnDefinitions="*,Auto"
-                      ColumnSpacing="4">
-                  <WrapPanel Orientation="Horizontal">
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                  <TextBlock Classes="muted overlay-detail type-detail"
+                             MinWidth="0"
+                             Text="{Binding BodyClass}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="1"
+                             Classes="overlay-caption type-icon"
+                             Foreground="{DynamicResource RavenWarningBrush}"
+                             FontWeight="SemiBold"
+                             IsVisible="{Binding IsLandable}"
+                             Text="LANDABLE" />
+                </Grid>
+
+                <WrapPanel Grid.Row="2" Orientation="Horizontal">
                     <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                                Classes="overlay-caption type-icon"
                                FontWeight="SemiBold"
@@ -146,14 +145,16 @@
                                  Text="{Binding BiologicalSignalsText}"
                                  TextDecorations="Strikethrough" />
                     </Grid>
-                  </WrapPanel>
+                </WrapPanel>
 
-                  <StackPanel Grid.Row="1"
-                              Grid.Column="0"
-                              Grid.ColumnSpan="2"
-                              Orientation="Horizontal"
-                              HorizontalAlignment="Right"
-                              Spacing="4">
+                <StackPanel Grid.Row="3"
+                            Orientation="Vertical"
+                            HorizontalAlignment="Right"
+                            Spacing="0">
+                    <TextBlock Classes="monospace overlay-value type-value"
+                               Foreground="{DynamicResource RavenAccentBrush}"
+                               IsVisible="{Binding HasDssValue}"
+                               Text="{Binding DssValue, StringFormat=DSS {0}}" />
                     <LayoutTransformControl Classes="type-icon" IsVisible="{Binding IsSurfaceScanned}">
                       <Border Classes="badge" Padding="4,0">
                         <TextBlock Classes="overlay-caption"
@@ -162,12 +163,7 @@
                                    Text="SCANNED" />
                       </Border>
                     </LayoutTransformControl>
-                    <TextBlock Classes="monospace overlay-value type-value"
-                               Foreground="{DynamicResource RavenAccentBrush}"
-                               IsVisible="{Binding HasDssValue}"
-                               Text="{Binding DssValue, StringFormat=DSS {0}}" />
-                  </StackPanel>
-                </Grid>
+                </StackPanel>
               </Grid>
             </Border>
           </DataTemplate>
@@ -180,12 +176,15 @@
                 Background="{DynamicResource RavenBorderBrush}" />
       </Grid>
 
-      <Grid Grid.Row="5" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+      <Grid Grid.Row="5" RowDefinitions="Auto,Auto">
         <TextBlock Classes="muted overlay-caption type-caption"
-                   Text="SCAN VALUE &#x00B7; DSS VALUE" />
-        <TextBlock Grid.Column="1"
+                   Text="SCAN VALUE &#x00B7; DSS VALUE"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Row="1"
                    Classes="muted overlay-caption type-caption"
-                   Text="0% UNDISCOVERED" />
+                   HorizontalAlignment="Right"
+                   Text="0% UNDISCOVERED"
+                   TextTrimming="CharacterEllipsis" />
       </Grid>
     </Grid>
   </Border>

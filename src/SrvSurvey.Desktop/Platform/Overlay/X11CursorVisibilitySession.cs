@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal sealed class X11CursorVisibilitySession : IDisposable
@@ -6,13 +8,15 @@ internal sealed class X11CursorVisibilitySession : IDisposable
     private readonly nuint cursor;
     private readonly nuint previousActiveWindow;
     private readonly X11CursorSessionOperations operations;
+    private readonly IDisposable? interactionMarker;
     private int disposed;
 
     public X11CursorVisibilitySession(
         IEnumerable<nuint> interactionWindows,
         nuint cursor,
         nuint previousActiveWindow,
-        X11CursorSessionOperations operations
+        X11CursorSessionOperations operations,
+        IDisposable? interactionMarker = null
     )
     {
         ArgumentNullException.ThrowIfNull(interactionWindows);
@@ -20,6 +24,7 @@ internal sealed class X11CursorVisibilitySession : IDisposable
         this.cursor = cursor;
         this.previousActiveWindow = previousActiveWindow;
         this.operations = operations ?? throw new ArgumentNullException(nameof(operations));
+        this.interactionMarker = interactionMarker;
     }
 
     public void Dispose()
@@ -29,26 +34,90 @@ internal sealed class X11CursorVisibilitySession : IDisposable
             return;
         }
 
-        if (cursor != 0)
+        try
         {
-            foreach (nuint window in interactionWindows)
+            if (cursor != 0)
             {
-                _ = operations.UndefineCursor(window);
+                foreach (nuint window in interactionWindows)
+                {
+                    _ = operations.UndefineCursor(window);
+                }
+
+                _ = operations.FreeCursor(cursor);
             }
 
-            _ = operations.FreeCursor(cursor);
+            if (
+                previousActiveWindow != 0
+                && !interactionWindows.Contains(previousActiveWindow)
+                && (
+                    interactionWindows.Contains(operations.GetActiveWindow())
+                    || interactionWindows.Contains(operations.GetFocusWindow())
+                )
+            )
+            {
+                _ = operations.ActivateWindow(previousActiveWindow);
+            }
+        }
+        finally
+        {
+            interactionMarker?.Dispose();
+        }
+    }
+}
+
+internal sealed class X11OverlayInteractionMarker : IDisposable
+{
+    private const string FilePrefix = nameof(X11OverlayInteractionMarker) + ".";
+    private readonly string path;
+    private int disposed;
+
+    private X11OverlayInteractionMarker(string path)
+    {
+        this.path = path;
+    }
+
+    public static X11OverlayInteractionMarker? TryBeginCurrent()
+    {
+        string? runtimeDirectory = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
+        if (string.IsNullOrWhiteSpace(runtimeDirectory) || !Directory.Exists(runtimeDirectory))
+        {
+            return null;
         }
 
-        if (
-            previousActiveWindow != 0
-            && !interactionWindows.Contains(previousActiveWindow)
-            && (
-                interactionWindows.Contains(operations.GetActiveWindow())
-                || interactionWindows.Contains(operations.GetFocusWindow())
-            )
-        )
+        try
         {
-            _ = operations.ActivateWindow(previousActiveWindow);
+            return Begin(runtimeDirectory, Environment.ProcessId);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            Trace.TraceWarning(exception.ToString());
+            return null;
+        }
+    }
+
+    internal static X11OverlayInteractionMarker Begin(string runtimeDirectory, int processId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runtimeDirectory);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+        string path = Path.Combine(runtimeDirectory, FilePrefix + processId);
+        File.WriteAllText(path, string.Empty);
+        return new X11OverlayInteractionMarker(path);
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref disposed, 1) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            File.Delete(path);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            Trace.TraceWarning(exception.ToString());
         }
     }
 }
