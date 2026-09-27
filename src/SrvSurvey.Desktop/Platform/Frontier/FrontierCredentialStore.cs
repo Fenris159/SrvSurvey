@@ -28,6 +28,9 @@ public sealed record FrontierCredentialDocument
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public long KeyringRevision { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string KeyringSlot { get; init; } = string.Empty;
+
     public IReadOnlyDictionary<string, FrontierAccountCredential> Accounts { get; init; } =
         new Dictionary<string, FrontierAccountCredential>(StringComparer.OrdinalIgnoreCase);
 
@@ -211,6 +214,11 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
     Func<IReadOnlyList<string>, string?, CancellationToken, Task<SecretToolResult>>? runTool = null
 ) : IFrontierCredentialStore
 {
+    private const int PartitionedStorageVersion = 4;
+    private const string LegacyService = "frontier-capi";
+    private const string StateService = "frontier_capi_state";
+    private const string AccountService = "frontier_capi_account";
+    private static readonly string[] Slots = ["a", "b"];
     internal const string UnavailableMessage =
         "Secure Frontier token storage is unavailable: Secret Service is inaccessible. secret-tool is installed, but a keyring must run and be unlocked in this login session. On KDE Plasma, enable 'Use KWallet for the Secret Service interface' in System Settings > KDE Wallet and unlock the wallet. If activation still fails, sign out and back in; on SDDM systems, check KWallet/ksecretd login integration. On other desktops, start and unlock GNOME Keyring or another provider. Retry Connect to Frontier.";
     internal const string MissingSecretToolMessage =
@@ -218,6 +226,8 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
     internal const string SecretTooLargeMessage =
         "Frontier authorization could not be stored because secret-tool on Linux accepts at most 8192 bytes. Remove an old linked commander and connect again.";
     internal const string InvalidKeyringMessage = "The Frontier authorization stored in the Linux keyring is invalid.";
+    internal const string VerificationFailedMessage =
+        "Secret Service did not return the Frontier authorization after storing it. Check that the default keyring is unlocked and writable, then retry Connect to Frontier.";
     internal const int MaximumSecretBytes = 8192;
     private static readonly string[] SecretToolPaths =
     [
@@ -229,39 +239,122 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
     ];
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
+    private sealed record StoredAccount(
+        string FrontierId,
+        FrontierAccountCredential Credential,
+        long KeyringRevision,
+        string Slot
+    );
+
     public async Task<FrontierCredentialDocument?> LoadAsync(CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<string> secrets = await SearchSecretsAsync(cancellationToken).ConfigureAwait(false);
-        if (secrets.Count == 0)
+        FrontierCredentialDocument? state = ReadPreferredDocument(
+            await SearchSecretsAsync(StateService, cancellationToken).ConfigureAwait(false)
+        );
+        if (state is null)
         {
-            return null;
+            return ReadPreferredDocument(
+                await SearchSecretsAsync(LegacyService, cancellationToken).ConfigureAwait(false)
+            );
         }
 
-        return DeserializePreferred(secrets);
+        if (state.Version != PartitionedStorageVersion)
+        {
+            throw new InvalidDataException(InvalidKeyringMessage);
+        }
+
+        List<StoredAccount> storedAccounts = ReadAccounts(
+            await SearchSecretsAsync(AccountService, cancellationToken).ConfigureAwait(false)
+        );
+        var accounts = new Dictionary<string, FrontierAccountCredential>(StringComparer.OrdinalIgnoreCase);
+        foreach (string frontierId in state.Accounts.Keys)
+        {
+            StoredAccount? account = PreferredAccount(storedAccounts, frontierId, state.KeyringRevision);
+            if (account is null)
+            {
+                throw new InvalidDataException(InvalidKeyringMessage);
+            }
+
+            accounts[frontierId] = account.Credential;
+        }
+
+        return state with
+        {
+            Accounts = accounts,
+        };
     }
 
     public async Task SaveAsync(FrontierCredentialDocument document, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(document);
-        long revision = await NextRevisionAsync(cancellationToken).ConfigureAwait(false);
-        string json = JsonSerializer.Serialize(document with { KeyringRevision = revision }, JsonOptions);
-        if (Encoding.UTF8.GetByteCount(json) > MaximumSecretBytes)
+        FrontierCredentialDocument? previousState = ReadPreferredDocument(
+            await SearchSecretsAsync(StateService, cancellationToken).ConfigureAwait(false)
+        );
+        List<StoredAccount> storedAccounts = ReadAccounts(
+            await SearchSecretsAsync(AccountService, cancellationToken).ConfigureAwait(false)
+        );
+        long latestAccountRevision = 0;
+        foreach ((string frontierId, FrontierAccountCredential credential) in document.Accounts)
         {
-            throw new InvalidOperationException(SecretTooLargeMessage);
+            StoredAccount? previous = PreferredAccount(storedAccounts, frontierId);
+            if (previous?.Credential == credential)
+            {
+                latestAccountRevision = Math.Max(latestAccountRevision, previous.KeyringRevision);
+                continue;
+            }
+
+            string slot = OtherSlot(previous?.Slot);
+            var account = new StoredAccount(
+                frontierId,
+                credential,
+                NextRevision(Math.Max(previous?.KeyringRevision ?? 0, previousState?.KeyringRevision ?? 0)),
+                slot
+            );
+            await StoreAndVerifyAsync(
+                    JsonSerializer.Serialize(account, JsonOptions),
+                    AccountService,
+                    frontierId,
+                    slot,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            latestAccountRevision = Math.Max(latestAccountRevision, account.KeyringRevision);
         }
 
-        await StoreAsync(json, cancellationToken).ConfigureAwait(false);
-        await ConfirmStoredRevisionAsync(revision, cancellationToken).ConfigureAwait(false);
+        string stateSlot = OtherSlot(previousState?.KeyringSlot);
+        var accountIndex = document.Accounts.Keys.ToDictionary(
+            frontierId => frontierId,
+            _ => new FrontierAccountCredential(),
+            StringComparer.OrdinalIgnoreCase
+        );
+        string stateJson = JsonSerializer.Serialize(
+            document with
+            {
+                Version = PartitionedStorageVersion,
+                KeyringRevision = NextRevision(Math.Max(previousState?.KeyringRevision ?? 0, latestAccountRevision)),
+                KeyringSlot = stateSlot,
+                Accounts = accountIndex,
+            },
+            JsonOptions
+        );
+        await StoreAndVerifyAsync(stateJson, StateService, null, stateSlot, cancellationToken).ConfigureAwait(false);
+        await ClearAsync(LegacyService, cancellationToken).ConfigureAwait(false);
+        foreach (
+            string removedId in storedAccounts
+                .Select(account => account.FrontierId)
+                .Distinct()
+                .Except(document.Accounts.Keys)
+        )
+        {
+            await ClearAsync(AccountService, cancellationToken, removedId).ConfigureAwait(false);
+        }
     }
 
     public async Task ClearAsync(CancellationToken cancellationToken = default)
     {
-        SecretToolResult result = await RunAsync(ClearArguments(), standardInput: null, cancellationToken)
-            .ConfigureAwait(false);
-        if (result.ExitCode != 0 && !string.IsNullOrWhiteSpace(result.Error))
-        {
-            throw new InvalidOperationException($"{UnavailableMessage} {result.Error.Trim()}");
-        }
+        await ClearAsync(AccountService, cancellationToken).ConfigureAwait(false);
+        await ClearAsync(StateService, cancellationToken).ConfigureAwait(false);
+        await ClearAsync(LegacyService, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<IAsyncDisposable> AcquireLeaseAsync(CancellationToken cancellationToken = default) =>
@@ -311,9 +404,14 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         return selected;
     }
 
-    private async Task<IReadOnlyList<string>> SearchSecretsAsync(CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<string>> SearchSecretsAsync(
+        string service,
+        CancellationToken cancellationToken,
+        string? frontierId = null,
+        string? slot = null
+    )
     {
-        SecretToolResult result = await RunAsync(SearchArguments(), standardInput: null, cancellationToken)
+        SecretToolResult result = await RunAsync(SearchArguments(service, frontierId, slot), null, cancellationToken)
             .ConfigureAwait(false);
         if (result.ExitCode != 0)
         {
@@ -328,33 +426,32 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         return ParseSearchSecrets(result.Output);
     }
 
-    private async Task<long> NextRevisionAsync(CancellationToken cancellationToken)
+    private static long NextRevision(long previousRevision)
     {
-        long revision = 0;
-        foreach (string secret in await SearchSecretsAsync(cancellationToken).ConfigureAwait(false))
-        {
-            if (TryReadKeyringRevision(secret, out long candidate))
-            {
-                revision = Math.Max(revision, candidate);
-            }
-        }
-
         long now = DateTimeOffset.UtcNow.UtcTicks;
-        return now > revision ? now : revision + 1;
+        return now > previousRevision ? now : previousRevision + 1;
     }
 
-    private async Task ConfirmStoredRevisionAsync(long revision, CancellationToken cancellationToken)
+    private async Task StoreAndVerifyAsync(
+        string payload,
+        string service,
+        string? frontierId,
+        string slot,
+        CancellationToken cancellationToken
+    )
     {
-        IReadOnlyList<string> secrets = await SearchSecretsAsync(cancellationToken).ConfigureAwait(false);
-        if (!SecretMatchesRevision(SelectPreferredSecret(secrets), revision))
+        if (string.IsNullOrWhiteSpace(payload))
         {
-            throw new InvalidOperationException(UnavailableMessage);
+            throw new InvalidOperationException(VerificationFailedMessage);
         }
-    }
 
-    private async Task StoreAsync(string json, CancellationToken cancellationToken)
-    {
-        SecretToolResult result = await RunAsync(StoreArguments(), json, cancellationToken).ConfigureAwait(false);
+        if (Encoding.UTF8.GetByteCount(payload) > MaximumSecretBytes)
+        {
+            throw new InvalidOperationException(SecretTooLargeMessage);
+        }
+
+        SecretToolResult result = await RunAsync(StoreArguments(service, frontierId, slot), payload, cancellationToken)
+            .ConfigureAwait(false);
         if (result.ExitCode != 0)
         {
             throw new InvalidOperationException(
@@ -363,10 +460,32 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
                     : $"{UnavailableMessage} {result.Error.Trim()}"
             );
         }
+
+        IReadOnlyList<string> readback = await SearchSecretsAsync(service, cancellationToken, frontierId, slot)
+            .ConfigureAwait(false);
+        if (!readback.Any(secret => string.Equals(secret, payload, StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException(VerificationFailedMessage);
+        }
     }
 
-    private static FrontierCredentialDocument DeserializePreferred(IReadOnlyList<string> secrets)
+    private async Task ClearAsync(string service, CancellationToken cancellationToken, string? frontierId = null)
     {
+        SecretToolResult result = await RunAsync(ClearArguments(service, frontierId), null, cancellationToken)
+            .ConfigureAwait(false);
+        if (result.ExitCode != 0 && !string.IsNullOrWhiteSpace(result.Error))
+        {
+            throw new InvalidOperationException($"{UnavailableMessage} {result.Error.Trim()}");
+        }
+    }
+
+    private static FrontierCredentialDocument? ReadPreferredDocument(IReadOnlyList<string> secrets)
+    {
+        if (secrets.All(string.IsNullOrWhiteSpace))
+        {
+            return null;
+        }
+
         string selected = SelectPreferredSecret(secrets) ?? throw new InvalidDataException(InvalidKeyringMessage);
 
         try
@@ -380,10 +499,47 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         }
     }
 
-    private static bool SecretMatchesRevision(string? secret, long revision)
+    private static List<StoredAccount> ReadAccounts(IReadOnlyList<string> secrets)
     {
-        return secret is not null && TryReadKeyringRevision(secret, out long candidate) && candidate == revision;
+        List<StoredAccount> accounts = [];
+        foreach (string secret in secrets.Where(secret => !string.IsNullOrWhiteSpace(secret)))
+        {
+            try
+            {
+                StoredAccount? account = JsonSerializer.Deserialize<StoredAccount>(secret, JsonOptions);
+                if (
+                    account is not null
+                    && !string.IsNullOrWhiteSpace(account.FrontierId)
+                    && account.Credential is not null
+                    && Slots.Contains(account.Slot)
+                )
+                {
+                    accounts.Add(account);
+                }
+            }
+            catch (JsonException)
+            {
+                // Another valid slot can still preserve the commander credential.
+            }
+        }
+
+        return accounts;
     }
+
+    private static StoredAccount? PreferredAccount(
+        List<StoredAccount> accounts,
+        string frontierId,
+        long? maximumRevision = null
+    ) =>
+        accounts
+            .Where(account =>
+                string.Equals(account.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
+                && (!maximumRevision.HasValue || account.KeyringRevision <= maximumRevision.Value)
+            )
+            .OrderByDescending(account => account.KeyringRevision)
+            .FirstOrDefault();
+
+    private static string OtherSlot(string? current) => current == Slots[0] ? Slots[1] : Slots[0];
 
     private static bool TryReadKeyringRevision(string secret, out long revision)
     {
@@ -408,13 +564,37 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(
         }
     }
 
-    private static string[] SearchArguments() =>
-        ["search", "--all", "--unlock", "application", "SrvSurvey", "service", "frontier-capi"];
+    private static string[] SearchArguments(string service, string? frontierId, string? slot) =>
+        ["search", "--all", "--unlock", .. ItemAttributes(service, frontierId, slot)];
 
-    private static string[] StoreArguments() =>
-        ["store", "--label=SrvSurvey Frontier authorization", "application", "SrvSurvey", "service", "frontier-capi"];
+    private static string[] StoreArguments(string service, string? frontierId, string slot) =>
+        [
+            "store",
+            "--collection=default",
+            "--label=SrvSurvey Frontier authorization",
+            .. ItemAttributes(service, frontierId, slot),
+        ];
 
-    private static string[] ClearArguments() => ["clear", "application", "SrvSurvey", "service", "frontier-capi"];
+    private static string[] ClearArguments(string service, string? frontierId) =>
+        ["clear", .. ItemAttributes(service, frontierId, null)];
+
+    private static string[] ItemAttributes(string service, string? frontierId, string? slot)
+    {
+        List<string> attributes = ["application", "SrvSurvey", "service", service];
+        if (frontierId is not null)
+        {
+            attributes.Add("frontierId");
+            attributes.Add(frontierId);
+        }
+
+        if (slot is not null)
+        {
+            attributes.Add("keyring_slot");
+            attributes.Add(slot);
+        }
+
+        return [.. attributes];
+    }
 
     private async Task<SecretToolResult> RunAsync(
         IReadOnlyList<string> arguments,

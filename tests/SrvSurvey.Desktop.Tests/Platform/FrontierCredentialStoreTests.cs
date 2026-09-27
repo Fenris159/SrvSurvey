@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using SrvSurvey.Desktop.Platform.Frontier;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
@@ -124,7 +125,8 @@ public sealed class FrontierCredentialStoreTests
         Assert.Equal(2, loaded.Accounts.Count);
         Assert.True(loaded.Accounts.ContainsKey("F123"));
         Assert.True(loaded.Accounts.ContainsKey("F456"));
-        Assert.Equal(2, tool.Secrets.Count);
+        Assert.Equal(2, tool.AccountItemCount);
+        Assert.Equal(2, tool.StateItemCount);
         Assert.True(tool.SearchUsedUnlock);
     }
 
@@ -157,6 +159,189 @@ public sealed class FrontierCredentialStoreTests
     }
 
     [Fact]
+    public async Task EmptyKeyringWriteFailsVerification()
+    {
+        var tool = new FakeSecretTool { StoreEmpty = true };
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+
+        InvalidOperationException error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.SaveAsync(new FrontierCredentialDocument())
+        );
+
+        Assert.Equal(LinuxSecretServiceFrontierCredentialStore.VerificationFailedMessage, error.Message);
+        Assert.True(tool.StoreUsedDefaultCollection);
+    }
+
+    [Fact]
+    public async Task LegacyDocumentMigratesIntoSeparateCommanderItems()
+    {
+        var tool = new FakeSecretTool();
+        tool.SeedLegacySecret(
+            """{"version":3,"accounts":{"F123":{"accessToken":"steam"},"F456":{"accessToken":"epic"}}}"""
+        );
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+
+        FrontierCredentialDocument? legacy = await store.LoadAsync();
+        Assert.NotNull(legacy);
+        await store.SaveAsync(legacy);
+
+        Assert.Equal(2, tool.AccountItemCount);
+        Assert.Equal(1, tool.StateItemCount);
+        Assert.Equal(0, tool.LegacyItemCount);
+        FrontierCredentialDocument? migrated = await store.LoadAsync();
+        Assert.NotNull(migrated);
+        Assert.Equal("steam", migrated.Accounts["F123"].AccessToken);
+        Assert.Equal("epic", migrated.Accounts["F456"].AccessToken);
+    }
+
+    [Fact]
+    public async Task EmptyReplacementLeavesPreviousCommanderCredentialReadable()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential>
+                {
+                    ["F123"] = new() { AccessToken = "original" },
+                },
+            }
+        );
+        tool.EmptyStoreService = "frontier_capi_account";
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.SaveAsync(
+                new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F123"] = new() { AccessToken = "replacement" },
+                    },
+                }
+            )
+        );
+
+        Assert.Equal("original", (await store.LoadAsync())!.Accounts["F123"].AccessToken);
+    }
+
+    [Fact]
+    public async Task EmptyStateReplacementLeavesPreviousConnectionStateReadable()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        await store.SaveAsync(new FrontierCredentialDocument());
+        tool.EmptyStoreService = "frontier_capi_state";
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.SaveAsync(
+                new FrontierCredentialDocument
+                {
+                    PendingAuthorizations = new Dictionary<string, FrontierPendingAuthorization>
+                    {
+                        ["new"] = new("new", "verifier", DateTimeOffset.UtcNow, "F456", "Epic"),
+                    },
+                }
+            )
+        );
+
+        Assert.Empty((await store.LoadAsync())!.PendingAuthorizations);
+    }
+
+    [Fact]
+    public async Task FailedStateWriteDoesNotExposeUncommittedAccountCredential()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        var original = new FrontierCredentialDocument
+        {
+            Accounts = new Dictionary<string, FrontierAccountCredential>
+            {
+                ["F123"] = new() { AccessToken = "original" },
+            },
+        };
+        await store.SaveAsync(original);
+        FrontierCredentialDocument updated = original with
+        {
+            Accounts = new Dictionary<string, FrontierAccountCredential>
+            {
+                ["F123"] = new() { AccessToken = "updated" },
+            },
+        };
+        tool.EmptyStoreService = "frontier_capi_state";
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.SaveAsync(updated));
+        Assert.Equal("original", (await store.LoadAsync())!.Accounts["F123"].AccessToken);
+
+        tool.EmptyStoreService = null;
+        await store.SaveAsync(updated);
+        Assert.Equal("updated", (await store.LoadAsync())!.Accounts["F123"].AccessToken);
+    }
+
+    [Fact]
+    public async Task FailedStateWriteDoesNotExposeAccountWhenStateRevisionIsAheadOfClock()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential>
+                {
+                    ["F123"] = new() { AccessToken = "original" },
+                },
+            }
+        );
+        tool.SetStateRevision(DateTimeOffset.UtcNow.AddDays(1).UtcTicks);
+        tool.EmptyStoreService = "frontier_capi_state";
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.SaveAsync(
+                new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F123"] = new() { AccessToken = "updated" },
+                    },
+                }
+            )
+        );
+
+        Assert.Equal("original", (await store.LoadAsync())!.Accounts["F123"].AccessToken);
+    }
+
+    [Fact]
+    public async Task RemovingOneCommanderClearsOnlyThatCommandersItems()
+    {
+        var tool = new FakeSecretTool();
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+        var steam = new FrontierAccountCredential { AccessToken = "steam" };
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential>
+                {
+                    ["F123"] = steam,
+                    ["F456"] = new() { AccessToken = "epic" },
+                },
+            }
+        );
+
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential> { ["F123"] = steam },
+            }
+        );
+
+        Assert.Equal(1, tool.AccountItemCount);
+        FrontierCredentialDocument? remaining = await store.LoadAsync();
+        Assert.NotNull(remaining);
+        Assert.Equal("steam", remaining.Accounts["F123"].AccessToken);
+        Assert.False(remaining.Accounts.ContainsKey("F456"));
+    }
+
+    [Fact]
     public async Task PortableKeyringRejectsOversizedSecretBeforeWriting()
     {
         var tool = new FakeSecretTool();
@@ -175,7 +360,7 @@ public sealed class FrontierCredentialStoreTests
         );
 
         Assert.Equal(LinuxSecretServiceFrontierCredentialStore.SecretTooLargeMessage, error.Message);
-        Assert.Empty(tool.Secrets);
+        Assert.Equal(0, tool.ItemCount);
     }
 
     [Fact]
@@ -219,6 +404,27 @@ public sealed class FrontierCredentialStoreTests
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    [Fact]
+    public async Task EmptyKeyringSecretAllowsACommanderToReconnect()
+    {
+        var tool = new FakeSecretTool();
+        tool.SeedLegacySecret(string.Empty);
+        var store = new LinuxSecretServiceFrontierCredentialStore("unused.lock", runTool: tool.RunAsync);
+
+        Assert.Null(await store.LoadAsync());
+
+        await store.SaveAsync(
+            new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential> { ["F123"] = new() },
+            }
+        );
+
+        FrontierCredentialDocument? loaded = await store.LoadAsync();
+        Assert.NotNull(loaded);
+        Assert.True(loaded.Accounts.ContainsKey("F123"));
     }
 
     [Fact]
@@ -382,11 +588,43 @@ public sealed class FrontierCredentialStoreTests
 
     private sealed class FakeSecretTool
     {
-        public List<string> Secrets { get; } = [];
+        private sealed record Item(Dictionary<string, string> Attributes, string Secret);
+
+        private readonly List<Item> items = [];
+
+        public int ItemCount => items.Count;
+
+        public int AccountItemCount => CountService("frontier_capi_account");
+
+        public int StateItemCount => CountService("frontier_capi_state");
+
+        public int LegacyItemCount => CountService("frontier-capi");
 
         public bool RejectStores { get; set; }
 
+        public bool StoreEmpty { get; set; }
+
+        public string? EmptyStoreService { get; set; }
+
+        public bool StoreUsedDefaultCollection { get; private set; }
+
         public bool SearchUsedUnlock { get; private set; }
+
+        public void SeedLegacySecret(string secret) =>
+            items.Add(
+                new Item(
+                    new Dictionary<string, string> { ["application"] = "SrvSurvey", ["service"] = "frontier-capi" },
+                    secret
+                )
+            );
+
+        public void SetStateRevision(long revision)
+        {
+            int index = items.FindIndex(item => item.Attributes.GetValueOrDefault("service") == "frontier_capi_state");
+            JsonObject document = JsonNode.Parse(items[index].Secret)!.AsObject();
+            document["keyringRevision"] = revision;
+            items[index] = items[index] with { Secret = document.ToJsonString() };
+        }
 
         public Task<SecretToolResult> RunAsync(
             IReadOnlyList<string> arguments,
@@ -395,6 +633,7 @@ public sealed class FrontierCredentialStoreTests
         )
         {
             cancellationToken.ThrowIfCancellationRequested();
+            Dictionary<string, string> attributes = ParseAttributes(arguments);
             SecretToolResult result;
             switch (arguments[0])
             {
@@ -402,7 +641,12 @@ public sealed class FrontierCredentialStoreTests
                     SearchUsedUnlock = arguments.Contains("--unlock");
                     result = new SecretToolResult(
                         0,
-                        string.Join("\n", Secrets.Select((secret, index) => $"[/{index + 1}]\nsecret = {secret}")),
+                        string.Join(
+                            "\n",
+                            items
+                                .Where(item => Matches(item, attributes))
+                                .Select((item, index) => $"[/{index + 1}]\nsecret = {item.Secret}")
+                        ),
                         string.Empty
                     );
                     break;
@@ -410,18 +654,54 @@ public sealed class FrontierCredentialStoreTests
                     result = new SecretToolResult(1, string.Empty, "keyring is locked");
                     break;
                 case "store":
-                    Secrets.Add(input ?? string.Empty);
+                    StoreUsedDefaultCollection = arguments.Contains("--collection=default");
+                    items.RemoveAll(item => SameAttributes(item.Attributes, attributes));
+                    bool empty =
+                        StoreEmpty
+                        || attributes.TryGetValue("service", out string? service) && service == EmptyStoreService;
+                    items.Add(new Item(attributes, empty ? string.Empty : input ?? string.Empty));
                     result = new SecretToolResult(0, string.Empty, string.Empty);
                     break;
                 case "clear":
-                    Secrets.Clear();
-                    result = new SecretToolResult(0, string.Empty, string.Empty);
+                    int removed = items.RemoveAll(item => Matches(item, attributes));
+                    result = new SecretToolResult(removed > 0 ? 0 : 1, string.Empty, string.Empty);
                     break;
                 default:
                     throw new InvalidOperationException("Unexpected secret-tool command.");
             }
 
             return Task.FromResult(result);
+        }
+
+        private int CountService(string service) =>
+            items.Count(item => item.Attributes.TryGetValue("service", out string? value) && value == service);
+
+        private static bool Matches(Item item, Dictionary<string, string> attributes) =>
+            attributes.All(pair =>
+                item.Attributes.TryGetValue(pair.Key, out string? value)
+                && string.Equals(value, pair.Value, StringComparison.Ordinal)
+            );
+
+        private static bool SameAttributes(Dictionary<string, string> left, Dictionary<string, string> right) =>
+            left.Count == right.Count && left.All(pair => right.GetValueOrDefault(pair.Key) == pair.Value);
+
+        private static Dictionary<string, string> ParseAttributes(IReadOnlyList<string> arguments)
+        {
+            var attributes = new Dictionary<string, string>(StringComparer.Ordinal);
+            int index = 1;
+            while (index < arguments.Count)
+            {
+                if (arguments[index].StartsWith("--", StringComparison.Ordinal))
+                {
+                    index++;
+                    continue;
+                }
+
+                attributes.Add(arguments[index], arguments[index + 1]);
+                index += 2;
+            }
+
+            return attributes;
         }
     }
 }
