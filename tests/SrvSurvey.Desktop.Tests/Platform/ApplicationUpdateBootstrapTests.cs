@@ -60,6 +60,43 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     }
 
     [Theory]
+    [InlineData(ApplicationUpdateBootstrap.ConfirmArgument)]
+    [InlineData(ApplicationUpdateBootstrap.ResultArgument)]
+    public void InternalUpdateRestartBypassesStartupInstanceGate(string internalArgument)
+    {
+        ApplicationUpdateStartup startup = ApplicationUpdateBootstrap.ParseStartupArguments([
+            internalArgument,
+            Path.Combine(temporaryDirectory, "plan.json"),
+        ]);
+
+        Assert.True(
+            ApplicationUpdateBootstrap.ShouldBypassStartupInstanceGate(startup.Mode, startup.ApplicationArguments)
+        );
+    }
+
+    [Fact]
+    public void NormalStartupStillChecksForOtherInstances()
+    {
+        ApplicationUpdateStartup startup = ApplicationUpdateBootstrap.ParseStartupArguments([]);
+
+        Assert.False(
+            ApplicationUpdateBootstrap.ShouldBypassStartupInstanceGate(startup.Mode, startup.ApplicationArguments)
+        );
+    }
+
+    [Fact]
+    public void ExplicitMultiCommanderStartupStillBypassesInstanceGate()
+    {
+        ApplicationUpdateStartup startup = ApplicationUpdateBootstrap.ParseStartupArguments([
+            StartupOptions.MultiCommanderInstanceOption,
+        ]);
+
+        Assert.True(
+            ApplicationUpdateBootstrap.ShouldBypassStartupInstanceGate(startup.Mode, startup.ApplicationArguments)
+        );
+    }
+
+    [Theory]
     [InlineData("--apply-update")]
     [InlineData("--apply-update", "plan.json", "--frontier-id", "F123")]
     [InlineData("--apply-update", "one.json", "--confirm-update", "two.json")]

@@ -104,7 +104,12 @@ public sealed partial class App : Application
         IClassicDesktopStyleApplicationLifetime desktop
     )
     {
-        if (StartupOptions.AllowsConcurrentInstance(Program.StartupArguments))
+        if (
+            ApplicationUpdateBootstrap.ShouldBypassStartupInstanceGate(
+                Program.UpdateStartupMode,
+                Program.StartupArguments
+            )
+        )
         {
             return ApplicationStartupInstanceDecision.Continue;
         }

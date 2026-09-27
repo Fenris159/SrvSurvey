@@ -268,6 +268,15 @@ internal static class ApplicationUpdateBootstrap
         return new ApplicationUpdateStartup(ApplicationUpdateStartupMode.Normal, null, parsed.ApplicationArguments);
     }
 
+    internal static bool ShouldBypassStartupInstanceGate(
+        ApplicationUpdateStartupMode mode,
+        IReadOnlyList<string> applicationArguments
+    ) =>
+        // The update helper may restart one commander while another instance remains open.
+        // An instance prompt here would prevent the replacement from confirming health.
+        mode is ApplicationUpdateStartupMode.Confirm or ApplicationUpdateStartupMode.Result
+        || StartupOptions.AllowsConcurrentInstance(applicationArguments);
+
     private static ParsedStartupArguments ParseInternalPaths(IReadOnlyList<string> arguments)
     {
         string? applyPath = null;
