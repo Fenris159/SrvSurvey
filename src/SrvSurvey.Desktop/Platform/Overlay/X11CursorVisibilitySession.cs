@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -86,6 +87,7 @@ internal sealed class X11OverlayInteractionMarker : IDisposable
 
         try
         {
+            RemoveStaleMarkers(runtimeDirectory);
             return Begin(runtimeDirectory, Environment.ProcessId);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
@@ -99,9 +101,83 @@ internal sealed class X11OverlayInteractionMarker : IDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runtimeDirectory);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+        ulong startTime =
+            TryReadProcessStartTime(processId)
+            ?? throw new IOException($"Could not read the start time for process {processId}.");
         string path = Path.Combine(runtimeDirectory, FilePrefix + processId);
-        File.WriteAllText(path, string.Empty);
+        string temporaryPath = Path.Combine(runtimeDirectory, $".{FilePrefix}{processId}.{Guid.NewGuid():N}");
+        try
+        {
+            File.WriteAllText(temporaryPath, startTime.ToString(CultureInfo.InvariantCulture) + "\n");
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporaryPath);
+        }
+
         return new X11OverlayInteractionMarker(path);
+    }
+
+    internal static void RemoveStaleMarkers(string runtimeDirectory)
+    {
+        foreach (string markerPath in Directory.EnumerateFiles(runtimeDirectory, FilePrefix + "*"))
+        {
+            try
+            {
+                string processIdText = Path.GetFileName(markerPath)[FilePrefix.Length..];
+                bool validProcessId = int.TryParse(
+                    processIdText,
+                    NumberStyles.None,
+                    CultureInfo.InvariantCulture,
+                    out int processId
+                );
+                bool validStartTime = ulong.TryParse(
+                    File.ReadAllText(markerPath).Trim(),
+                    NumberStyles.None,
+                    CultureInfo.InvariantCulture,
+                    out ulong markerStartTime
+                );
+                if (!validProcessId || !validStartTime || TryReadProcessStartTime(processId) != markerStartTime)
+                {
+                    File.Delete(markerPath);
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                Trace.TraceWarning(exception.ToString());
+            }
+        }
+    }
+
+    internal static ulong? TryReadProcessStartTime(int processId)
+    {
+        try
+        {
+            string statPath = Path.Combine("/proc", processId.ToString(CultureInfo.InvariantCulture), "stat");
+            return ParseProcessStartTime(File.ReadAllText(statPath));
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    internal static ulong? ParseProcessStartTime(string stat)
+    {
+        int commandEnd = stat.LastIndexOf(") ", StringComparison.Ordinal);
+        if (commandEnd < 0)
+        {
+            return null;
+        }
+
+        // The remaining fields start at field 3 (state); starttime is field 22.
+        string[] fields = stat[(commandEnd + 2)..].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        return
+            fields.Length >= 20
+            && ulong.TryParse(fields[19], NumberStyles.None, CultureInfo.InvariantCulture, out ulong startTime)
+            ? startTime
+            : null;
     }
 
     public void Dispose()

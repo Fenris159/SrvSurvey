@@ -270,7 +270,8 @@ While SrvSurvey's live overlay interaction is active, the wrapper temporarily
 turns relative mouse mode off so clicking Elite does not trap the pointer away
 from the overlays. It turns relative mouse mode back on when interaction ends.
 The SrvSurvey marker lives under `XDG_RUNTIME_DIR` and is ignored if its process
-has exited, so a stale marker cannot leave the game unconfined after a crash.
+has exited or its PID has been reused, so a stale marker cannot leave the game
+unconfined after a crash.
 This needs RC58.7 or later of SrvSurvey and a newly installed copy of the
 wrapper. Restart Elite after replacing the wrapper so its running shell reads
 the new behavior. No extra Gamescope flag is needed; adding
