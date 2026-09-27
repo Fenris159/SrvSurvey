@@ -47,8 +47,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         this.service = service ?? throw new ArgumentNullException(nameof(service));
         this.currentVersion = currentVersion;
         this.settingsStore = settingsStore;
-        useDevelopmentReleases =
-            settingsStore?.LoadUseDevelopmentReleases(currentVersion.IsPrerelease) ?? currentVersion.IsPrerelease;
+        useDevelopmentReleases = settingsStore?.LoadUseDevelopmentReleases() ?? true;
         checkCommand = new AsyncCommand(CheckAsync, () => !IsChecking && !IsInstalling);
         openReleaseCommand = new AsyncCommand(
             OpenReleaseAsync,
