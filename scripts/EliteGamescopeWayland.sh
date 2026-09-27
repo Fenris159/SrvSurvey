@@ -116,7 +116,10 @@ overlay_is_open() {
         | grep -Eq '"Steam Overlay"|"gameoverlayui"|"Steam": .*( [0-9]{4}x[0-9]+)'
 }
 
-trap stop_scope EXIT INT TERM HUP
+trap stop_scope EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+trap 'exit 129' HUP
 
 GAMESCOPE_WAYLAND_PREFERRED_OUTPUT="$game_output" \
 RADV_DEBUG="$wayland_debug" "$gamescope_bin" \

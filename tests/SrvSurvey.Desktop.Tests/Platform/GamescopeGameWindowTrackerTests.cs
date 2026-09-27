@@ -123,8 +123,14 @@ public sealed class GamescopeGameWindowTrackerTests
         string startTime = "valid"
     )
     {
-        ulong actualStartTime = X11OverlayInteractionMarker.TryReadProcessStartTime(processId)!.Value;
-        string value = startTime == "valid" ? actualStartTime.ToString(CultureInfo.InvariantCulture) : "0";
+        ulong? actualStartTime = X11OverlayInteractionMarker.TryReadProcessStartTime(processId);
+        if (actualStartTime is null)
+        {
+            Assert.Skip("Process start time is unavailable on this host.");
+            return;
+        }
+
+        string value = startTime == "valid" ? actualStartTime.Value.ToString(CultureInfo.InvariantCulture) : "0";
         File.WriteAllText(
             Path.Combine(directory, GamescopeGameWindowBridge.MarkerPrefix + processId),
             $"{value}\n{display}\n{bounds}\n"
