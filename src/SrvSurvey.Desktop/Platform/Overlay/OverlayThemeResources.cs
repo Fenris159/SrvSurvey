@@ -504,7 +504,11 @@ public static class OverlayThemeResources
             return;
         }
 
-        ApplyPanelSize(content, layout.GetSizeOverride(plotterName));
+        // Live hosts wrap their shared presentation in a transparent Border.
+        // Size-aware presentations must receive the override themselves so
+        // their internal scroll constraints and width are updated together.
+        Control panel = content is Border { Child: Control child } && child is IOverlayPanelSizeAware ? child : content;
+        ApplyPanelSize(panel, layout.GetSizeOverride(plotterName));
     }
 
     internal static void ApplyPanelSize(Control content, OverlayPanelSize? size)

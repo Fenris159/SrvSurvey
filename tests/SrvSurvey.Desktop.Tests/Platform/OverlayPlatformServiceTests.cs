@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Runtime.InteropServices;
 using SrvSurvey.Desktop.Platform.Overlay;
 
@@ -143,6 +144,99 @@ public sealed class OverlayPlatformServiceTests
         session.Dispose();
 
         Assert.Empty(restored);
+    }
+
+    [Fact]
+    public void X11OverlayInteractionMarkerExistsOnlyWhileCursorSessionIsActive()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        string runtimeDirectory = Path.Combine(Path.GetTempPath(), $"srvsurvey-interaction-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(runtimeDirectory);
+        try
+        {
+            string markerPath = Path.Combine(runtimeDirectory, $"X11OverlayInteractionMarker.{Environment.ProcessId}");
+            using var marker = X11OverlayInteractionMarker.Begin(runtimeDirectory, Environment.ProcessId);
+            Assert.True(File.Exists(markerPath));
+            Assert.True(ulong.TryParse(File.ReadAllText(markerPath).Trim(), out ulong startTime));
+            Assert.True(startTime > 0);
+
+            var session = new X11CursorVisibilitySession(
+                interactionWindows: [(nuint)20],
+                cursor: 0,
+                previousActiveWindow: 0,
+                new X11CursorSessionOperations(
+                    getActiveWindow: () => 0,
+                    getFocusWindow: () => 0,
+                    activateWindow: _ => true,
+                    undefineCursor: _ => 0,
+                    freeCursor: _ => 0
+                ),
+                marker
+            );
+
+            session.Dispose();
+            session.Dispose();
+            Assert.False(File.Exists(markerPath));
+        }
+        finally
+        {
+            Directory.Delete(runtimeDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void X11OverlayInteractionMarkerParsesStartTimeAfterParenthesizedCommand()
+    {
+        string stat = "123 (Srv Survey (overlay)) S " + string.Join(' ', Enumerable.Repeat("0", 18)) + " 456789 0";
+
+        Assert.Equal((ulong)456789, X11OverlayInteractionMarker.ParseProcessStartTime(stat));
+        Assert.Null(X11OverlayInteractionMarker.ParseProcessStartTime("123 (incomplete) S 0"));
+    }
+
+    [Fact]
+    public void X11OverlayInteractionMarkerRemovesDeadAndReusedProcessMarkers()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        string runtimeDirectory = Path.Combine(Path.GetTempPath(), $"srvsurvey-interaction-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(runtimeDirectory);
+        try
+        {
+            ulong startTime = Assert.IsType<ulong>(
+                X11OverlayInteractionMarker.TryReadProcessStartTime(Environment.ProcessId)
+            );
+            string currentMarker = Path.Combine(
+                runtimeDirectory,
+                $"X11OverlayInteractionMarker.{Environment.ProcessId}"
+            );
+            string deadMarker = Path.Combine(runtimeDirectory, $"X11OverlayInteractionMarker.{int.MaxValue}");
+            File.WriteAllText(currentMarker, (startTime + 1).ToString(CultureInfo.InvariantCulture) + "\n");
+            File.WriteAllText(deadMarker, "1\n");
+
+            X11OverlayInteractionMarker.RemoveStaleMarkers(runtimeDirectory);
+
+            Assert.False(File.Exists(currentMarker));
+            Assert.False(File.Exists(deadMarker));
+
+            using (var marker = X11OverlayInteractionMarker.Begin(runtimeDirectory, Environment.ProcessId))
+            {
+                X11OverlayInteractionMarker.RemoveStaleMarkers(runtimeDirectory);
+                Assert.True(File.Exists(currentMarker));
+            }
+
+            Assert.False(File.Exists(currentMarker));
+        }
+        finally
+        {
+            Directory.Delete(runtimeDirectory, recursive: true);
+        }
     }
 
     [Fact]

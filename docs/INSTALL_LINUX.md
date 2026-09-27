@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.58.6**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.58.7**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -10,6 +10,9 @@ Ubuntu 26.04 users running Elite through Gamescope can follow the dedicated
 [Ubuntu 26.04, Elite Dangerous, and Gamescope guide](UBUNTU_26_GAMESCOPE.md).
 It covers multi-monitor placement, selective mouse confinement, 4K/120 Hz
 configuration, Windows file migration, and the values each user must tailor.
+Keeping live overlays clickable after clicking Elite requires that guide's
+patched Gamescope runtime control and updated wrapper; stock
+`--force-grab-cursor` cannot pause capture for overlay interaction.
 
 ## Download the package
 
@@ -44,7 +47,7 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.58.6-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.58.7-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/SrvSurvey.AppImage"
 cd "$HOME/Applications/SrvSurvey"
 chmod +x SrvSurvey.AppImage
@@ -58,7 +61,7 @@ pass its explicit dispatcher option:
 ./SrvSurvey.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.58.6` with the downloaded version. Keeping the installed name
+Replace `2.1.3.0-rc.58.7` with the downloaded version. Keeping the installed name
 as `SrvSurvey.AppImage` gives launchers and the in-application updater a stable
 path. Keep it in this folder instead of moving internal files out of the
 AppImage.
@@ -106,7 +109,7 @@ point to the same location. Keep all files together and run
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey/portable"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.58.6-linux-x64.tar.gz" \
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.58.7-linux-x64.tar.gz" \
     -C "$HOME/Applications/SrvSurvey/portable"
 cd "$HOME/Applications/SrvSurvey/portable"
 chmod +x SrvSurvey.Desktop

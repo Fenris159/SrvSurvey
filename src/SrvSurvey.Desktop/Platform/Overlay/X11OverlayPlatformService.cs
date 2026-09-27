@@ -337,7 +337,8 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                             ActivateLiveWindow(rootWindow, activeWindowAtom, target, interactionWindow),
                         undefineCursor: UndefineLiveCursor,
                         freeCursor: FreeLiveCursor
-                    )
+                    ),
+                    X11OverlayInteractionMarker.TryBeginCurrent()
                 );
             }
             catch (Exception exception)
@@ -357,13 +358,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(eventArgs);
-        if (stackingMode == X11OverlayStackingMode.KdeOnScreenDisplay)
-        {
-            ManagedOverlayWindowDragSession.Begin(window, eventArgs);
-            return;
-        }
-
-        window.BeginMoveDrag(eventArgs);
+        ManagedOverlayWindowDragSession.Begin(window, eventArgs);
     }
 
     public bool SuppressNativeWindow(Window window)

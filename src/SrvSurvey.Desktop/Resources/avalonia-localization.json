@@ -6753,6 +6753,10 @@
       "translation": "Overlay-Typografie-Überschreibungen „{0}“ konnten nicht gelesen werden: {1}"
     },
     {
+      "source": "Could not read the start time for process {0}.",
+      "translation": "Could not read the start time for process {0}."
+    },
+    {
       "source": "Could not refresh boxel statistics: {0}",
       "translation": "Boxel-Statistiken konnten nicht aktualisiert werden: {0}"
     },
@@ -31549,8 +31553,8 @@
       "translation": "Rahmenschaltantrieb"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -32851,6 +32855,10 @@
     {
       "source": "starsystem",
       "translation": "Sternensystem"
+    },
+    {
+      "source": "stat",
+      "translation": "stat"
     },
     {
       "source": "state",
@@ -41297,6 +41305,10 @@
     {
       "source": "Could not read overlay typography overrides '{0}': {1}",
       "translation": "No se pudieron leer las anulaciones de tipografía superpuesta '{0}': {1}"
+    },
+    {
+      "source": "Could not read the start time for process {0}.",
+      "translation": "Could not read the start time for process {0}."
     },
     {
       "source": "Could not refresh boxel statistics: {0}",
@@ -66095,8 +66107,8 @@
       "translation": "unidad de cambio de cuadro"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -67397,6 +67409,10 @@
     {
       "source": "starsystem",
       "translation": "sistema estelar"
+    },
+    {
+      "source": "stat",
+      "translation": "stat"
     },
     {
       "source": "state",
@@ -75843,6 +75859,10 @@
     {
       "source": "Could not read overlay typography overrides '{0}': {1}",
       "translation": "Impossible de lire les remplacements de typographie de superposition « {0} » : {1}"
+    },
+    {
+      "source": "Could not read the start time for process {0}.",
+      "translation": "Could not read the start time for process {0}."
     },
     {
       "source": "Could not refresh boxel statistics: {0}",
@@ -100641,8 +100661,8 @@
       "translation": "lecteur de changement de cadre"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -101943,6 +101963,10 @@
     {
       "source": "starsystem",
       "translation": "système stellaire"
+    },
+    {
+      "source": "stat",
+      "translation": "stat"
     },
     {
       "source": "state",
@@ -110389,6 +110413,10 @@
     {
       "source": "Could not read overlay typography overrides '{0}': {1}",
       "translation": "Não foi possível ler as substituições de tipografia de sobreposição '{0}': {1}"
+    },
+    {
+      "source": "Could not read the start time for process {0}.",
+      "translation": "Could not read the start time for process {0}."
     },
     {
       "source": "Could not refresh boxel statistics: {0}",
@@ -135187,8 +135215,8 @@
       "translation": "frameshiftdrive"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -136489,6 +136517,10 @@
     {
       "source": "starsystem",
       "translation": "sistema estelar"
+    },
+    {
+      "source": "stat",
+      "translation": "stat"
     },
     {
       "source": "state",
@@ -144935,6 +144967,10 @@
     {
       "source": "Could not read overlay typography overrides '{0}': {1}",
       "translation": "Не удалось прочитать переопределения наложенной типографики «{0}»: {1}."
+    },
+    {
+      "source": "Could not read the start time for process {0}.",
+      "translation": "Could not read the start time for process {0}."
     },
     {
       "source": "Could not refresh boxel statistics: {0}",
@@ -169733,8 +169769,8 @@
       "translation": "фреймшифтдрайв"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -171035,6 +171071,10 @@
     {
       "source": "starsystem",
       "translation": "звездная система"
+    },
+    {
+      "source": "stat",
+      "translation": "stat"
     },
     {
       "source": "state",
@@ -179481,6 +179521,10 @@
     {
       "source": "Could not read overlay typography overrides '{0}': {1}",
       "translation": "无法读取覆盖排版覆盖“{0}”：{1}"
+    },
+    {
+      "source": "Could not read the start time for process {0}.",
+      "translation": "Could not read the start time for process {0}."
     },
     {
       "source": "Could not refresh boxel statistics: {0}",
@@ -204279,8 +204323,8 @@
       "translation": "移码驱动"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -205581,6 +205625,10 @@
     {
       "source": "starsystem",
       "translation": "恒星系统"
+    },
+    {
+      "source": "stat",
+      "translation": "stat"
     },
     {
       "source": "state",
@@ -214027,6 +214075,10 @@
     {
       "source": "Could not read overlay typography overrides '{0}': {1}",
       "translation": "* COULD NOT READ OVERLAY TYPOGRAPHY OVERRIDES '{0}': {1} >>>!"
+    },
+    {
+      "source": "Could not read the start time for process {0}.",
+      "translation": "* COULD NOT READ THE START TIME FOR PROCESS {0}. >>>!"
     },
     {
       "source": "Could not refresh boxel statistics: {0}",
@@ -238825,8 +238877,8 @@
       "translation": "* FRAMESHIFTDRIVE >>>!"
     },
     {
-      "source": "frontier",
-      "translation": "* FRONTIER >>>!"
+      "source": "frontier,steam,epic",
+      "translation": "* FRONTIER,STEAM,EPIC >>>!"
     },
     {
       "source": "frontier-auth",
@@ -240127,6 +240179,10 @@
     {
       "source": "starsystem",
       "translation": "* STARSYSTEM >>>!"
+    },
+    {
+      "source": "stat",
+      "translation": "* STAT >>>!"
     },
     {
       "source": "state",

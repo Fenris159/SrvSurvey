@@ -13534,6 +13534,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
+    "Text": "Could not read the start time for process {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11CursorVisibilitySession.cs"
+  },
+  {
     "Text": "Could not refresh boxel statistics: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -63258,7 +63266,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "frontier",
+    "Text": "frontier,steam,epic",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -65864,6 +65872,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml.cs"
+  },
+  {
+    "Text": "stat",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11CursorVisibilitySession.cs"
   },
   {
     "Text": "state",

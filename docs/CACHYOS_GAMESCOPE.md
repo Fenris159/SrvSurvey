@@ -146,6 +146,13 @@ The options mean:
 - `--force-grab-cursor`: always use relative mouse mode so the pointer remains
   inside the Gamescope boundary.
 
+This stock Gamescope test does not pause mouse capture when SrvSurvey's live
+overlay interaction is enabled. For automatic release while editing, use a
+Gamescope build with the runtime `force_relative_mouse` control and a wrapper
+that follows SrvSurvey's interaction marker, as described in the
+[Ubuntu Gamescope guide](UBUNTU_26_GAMESCOPE.md). Adapt and test that setup for
+your Gamescope build; do not combine its wrapper with `--force-grab-cursor`.
+
 Verify that the installed Gamescope build supports the options:
 
 ```bash

@@ -171,6 +171,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
     {
         var platform = new FakeOverlayPlatform();
         var registry = new OverlayWindowRegistry();
+        var runtimeWindow = new Window();
+        registry.Register(runtimeWindow, "PlotJumpInfo");
+        runtimeWindow.Show();
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         LegacyOverlayLayout activeLayout = store.Load();
         var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
@@ -191,7 +194,10 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             host
         );
 
+        Assert.True(viewModel.ToggleLiveOverlayInteraction());
         Assert.True(viewModel.Begin());
+        Assert.False(viewModel.IsLiveInteractionEnabled);
+        Assert.False(runtimeWindow.IsVisible);
 
         OverlayPositionPreviewWindow preview = host.PreviewWindows[0];
         PixelPoint initialPosition = preview.Position;
@@ -201,8 +207,10 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         preview.MouseUp(new Point(42, 57), MouseButton.Left, RawInputModifiers.None);
 
         Assert.Equal(new PixelPoint(initialPosition.X + 30, initialPosition.Y + 45), preview.Position);
+        Assert.False(runtimeWindow.IsVisible);
 
         viewModel.Cancel();
+        runtimeWindow.Close();
     }
 
     [AvaloniaFact]

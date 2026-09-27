@@ -2042,7 +2042,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
     {
         var query = new Dictionary<string, string>
         {
-            ["audience"] = "frontier",
+            ["audience"] = "frontier,steam,epic",
             ["scope"] = "auth capi",
             ["response_type"] = "code",
             ["client_id"] = ClientId,

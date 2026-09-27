@@ -83,6 +83,40 @@ set_relative_mouse() {
         >/dev/null 2>&1
 }
 
+srv_survey_process_starttime() {
+    local pid="$1" stat_line
+    local -a fields=()
+    IFS= read -r stat_line 2>/dev/null < "/proc/${pid}/stat" || return 1
+    [[ "$stat_line" == *") "* ]] || return 1
+    read -r -a fields <<< "${stat_line##*) }"
+    [[ ${#fields[@]} -ge 20 && "${fields[19]}" =~ ^[0-9]+$ ]] || return 1
+    printf '%s\n' "${fields[19]}"
+}
+
+srv_survey_interaction_is_active() {
+    local marker pid marker_starttime process_starttime
+    local active=false
+    local runtime_dir="${XDG_RUNTIME_DIR:-}"
+    [[ -d "$runtime_dir" ]] || return 1
+
+    for marker in "$runtime_dir"/X11OverlayInteractionMarker.*; do
+        [[ -f "$marker" ]] || continue
+        pid="${marker##*.}"
+        if [[ "$pid" =~ ^[0-9]+$ ]] \
+            && IFS= read -r marker_starttime < "$marker" \
+            && [[ "$marker_starttime" =~ ^[0-9]+$ ]] \
+            && kill -0 "$pid" 2>/dev/null \
+            && process_starttime=$(srv_survey_process_starttime "$pid") \
+            && [[ "$marker_starttime" == "$process_starttime" ]]; then
+            active=true
+        else
+            rm -f -- "$marker" 2>/dev/null || true
+        fi
+    done
+
+    [[ "$active" == true ]]
+}
+
 game_surface_is_selected() {
     [[ -n "$scope_window" ]] || return 1
     xprop -id "$scope_window" _NET_WM_NAME 2>/dev/null \
@@ -133,7 +167,11 @@ while kill -0 "$scope_pid" 2>/dev/null; do
             fullscreen_game
             game_fullscreen=true
         fi
-        if [[ "$relative_mouse" == false ]] && set_relative_mouse true; then
+        if srv_survey_interaction_is_active; then
+            if [[ "$relative_mouse" == true ]] && set_relative_mouse false; then
+                relative_mouse=false
+            fi
+        elif [[ "$relative_mouse" == false ]] && set_relative_mouse true; then
             relative_mouse=true
         fi
     elif [[ "$game_fullscreen" == true ]]; then

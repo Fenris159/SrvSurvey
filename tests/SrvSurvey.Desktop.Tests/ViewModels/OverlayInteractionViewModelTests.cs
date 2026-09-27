@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -373,6 +375,144 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void LiveInteractionMakesOverlaysOpenedAfterTheShortcutInteractive()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            """{"PlotJumpInfo":"center:0, top:8","PlotFSSInfo":"left:8, top:8"}"""
+        );
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var first = new Window { Width = 300, Height = 100 };
+        var later = new Window { Width = 252, Height = 283 };
+        later.Opened += (_, _) => platform.SetInteractive(later, interactive: false);
+        registry.Register(first, "PlotJumpInfo");
+        first.Show();
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(
+                new GameWindowSnapshot(
+                    (nint)1,
+                    42,
+                    new PixelRect(100, 200, 1200, 800),
+                    IsVisible: true,
+                    IsForeground: true
+                )
+            ),
+            store,
+            store.Load(),
+            registry,
+            new FakeEditorHost()
+        );
+        try
+        {
+            Assert.True(viewModel.ToggleLiveOverlayInteraction());
+            registry.Register(later, "PlotFSSInfo");
+            later.Show();
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal([true, false, true], platform.InteractiveStates);
+        }
+        finally
+        {
+            later.Close();
+            first.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void LiveFssPanelCanStartADragFromItsContent()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), """{"PlotFSSInfo":"left:8, top:8"}""");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var window = new FssInfoOverlayWindow(
+            (SystemSurveyOverlayViewModel)OverlayEditorPreviewCatalog.Create("PlotFSSInfo")
+        );
+        registry.Register(window, "PlotFSSInfo");
+        window.Show();
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(
+                new GameWindowSnapshot(
+                    (nint)1,
+                    42,
+                    new PixelRect(100, 200, 1200, 800),
+                    IsVisible: true,
+                    IsForeground: true
+                )
+            ),
+            store,
+            store.Load(),
+            registry,
+            new FakeEditorHost()
+        );
+        try
+        {
+            Assert.True(viewModel.ToggleLiveOverlayInteraction());
+            window.MouseDown(new Point(20, 50), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            Assert.Equal(1, platform.MoveDragStarts);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void LivePanelDragStartsWhenContentHandlesPointerPress()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var content = new Border
+        {
+            Width = 200,
+            Height = 120,
+            Background = Avalonia.Media.Brushes.Black,
+        };
+        content.PointerPressed += (_, eventArgs) => eventArgs.Handled = true;
+        var window = new Window
+        {
+            Width = 200,
+            Height = 120,
+            Content = content,
+        };
+        registry.Register(window, "PlotFSSInfo");
+        window.Show();
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(
+                new GameWindowSnapshot(
+                    (nint)1,
+                    42,
+                    new PixelRect(100, 200, 1200, 800),
+                    IsVisible: true,
+                    IsForeground: true
+                )
+            ),
+            store,
+            store.Load(),
+            registry,
+            new FakeEditorHost()
+        );
+        try
+        {
+            Assert.True(viewModel.ToggleLiveOverlayInteraction());
+            window.MouseDown(new Point(30, 40), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            Assert.Equal(1, platform.MoveDragStarts);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void RelatedChildWindowCannotOverwriteItsOwnersLivePlacement()
     {
         Directory.CreateDirectory(temporaryDirectory);
@@ -462,12 +602,9 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             new PixelPoint(475, 325),
             store.Load().GetPosition("PlotJumpInfo", gameBounds, new PixelSize(600, 100))
         );
-        Assert.True(viewModel.IsLiveInteractionEnabled);
-
-        // The live session was rebased on the shared saved layout. With no
-        // further move, closing live interaction must not rewrite it again.
-        Assert.True(viewModel.ToggleLiveOverlayInteraction());
-        Assert.Contains("no positions moved", viewModel.StatusMessage);
+        Assert.False(viewModel.IsLiveInteractionEnabled);
+        Assert.False(host.RuntimeOverlaysVisibleDuringEditing);
+        Assert.Equal(0, platform.ActiveVisibleCursorSessions);
     }
 
     [AvaloniaFact]
@@ -915,6 +1052,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public List<bool> InteractiveStates { get; } = [];
 
+        public int MoveDragStarts { get; private set; }
+
         public int VisibleCursorSessionStarts { get; private set; }
 
         public int ActiveVisibleCursorSessions { get; private set; }
@@ -930,6 +1069,11 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         {
             InteractiveStates.Add(interactive);
             return new OverlayInteractionResult(true, interactive, "Prepared");
+        }
+
+        public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs)
+        {
+            MoveDragStarts++;
         }
 
         public IDisposable BeginVisibleCursorSession(Window window)

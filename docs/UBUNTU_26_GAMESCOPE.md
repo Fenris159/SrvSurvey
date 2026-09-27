@@ -19,7 +19,8 @@ The final behavior is:
 2. When Gamescope selects the actual Elite client, the outer window moves to
    fullscreen on the intended monitor.
 3. Relative mouse mode turns on only for Elite, so the pointer cannot cross to
-   another monitor.
+   another monitor during normal play. SrvSurvey pauses it while live overlay
+   mouse interaction is enabled.
 4. When the game closes or Gamescope returns to the launcher, relative mode
    turns off and the launcher becomes a normal window again.
 
@@ -34,7 +35,8 @@ both the patch and the matching wrapper are required.
 
 ## Tested configuration
 
-This procedure was verified on 2026-09-19 with:
+The game setup was verified on 2026-09-19, and SrvSurvey live overlay mouse
+interaction was verified on 2026-09-26, with:
 
 | Component | Tested value |
 |---|---|
@@ -264,6 +266,17 @@ restores the configured launcher position. Watching the selected surface title
 is safer than watching `EliteDangerous64.exe`: the process can exist before
 Gamescope has actually selected its game surface.
 
+While SrvSurvey's live overlay interaction is active, the wrapper temporarily
+turns relative mouse mode off so clicking Elite does not trap the pointer away
+from the overlays. It turns relative mouse mode back on when interaction ends.
+The SrvSurvey marker lives under `XDG_RUNTIME_DIR` and is ignored if its process
+has exited or its PID has been reused, so a stale marker cannot leave the game
+unconfined after a crash.
+This needs RC58.7 or later of SrvSurvey and a newly installed copy of the
+wrapper. Restart Elite after replacing the wrapper so its running shell reads
+the new behavior. No extra Gamescope flag is needed; adding
+`--force-grab-cursor` would keep capture active for the whole session.
+
 ### Set the monitor coordinates
 
 The wrapper defaults to position `0,0`. Override that for a multi-monitor
@@ -344,7 +357,9 @@ Expected behavior:
 2. Selecting **Play** eventually changes the Gamescope outer title to
    `Elite - Dangerous (CLIENT)`.
 3. The outer window becomes fullscreen on that same monitor.
-4. The mouse remains confined while Elite is selected.
+4. The mouse remains confined while Elite is selected, except while SrvSurvey
+   live overlay mouse interaction is enabled. During that mode, clicking Elite
+   still lets the pointer return to an overlay.
 5. Steam Overlay and normal mouse clicking continue to work.
 
 The transition is polled every 250 ms, so a short delay after the game appears
@@ -586,6 +601,23 @@ Check, in order:
 3. `gamescopectl help` lists `force_relative_mouse`;
 4. the outer title matches `ELITE_GAMESCOPE_GAME_TITLE`; and
 5. no old pointer helper or Wine mouse-warp override is active.
+
+### The pointer cannot return to SrvSurvey overlays during interaction
+
+Confirm that SrvSurvey is RC58.7 or later, reinstall the current
+`scripts/EliteGamescope.sh` as shown in section 4, and restart Elite. The Steam
+launch option must call that wrapper without `--force-grab-cursor`. Both
+processes must run as the same desktop user so they share `XDG_RUNTIME_DIR`.
+While live interaction is enabled, this read-only check should show a marker:
+
+```bash
+find "$XDG_RUNTIME_DIR" -maxdepth 1 -name 'X11OverlayInteractionMarker.*' -print
+```
+
+The marker disappears when interaction ends. If it is present but Elite still
+captures the pointer, confirm the patched `gamescopectl help` lists
+`force_relative_mouse` and that the running Elite session started after the
+wrapper was replaced.
 
 ### The pointer is too slow or too fast
 
