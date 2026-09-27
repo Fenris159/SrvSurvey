@@ -63258,7 +63258,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "frontier",
+    "Text": "frontier,steam,epic",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

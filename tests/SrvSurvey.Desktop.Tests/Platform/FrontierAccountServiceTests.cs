@@ -9,6 +9,28 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class FrontierAccountServiceTests
 {
     [Fact]
+    public async Task AuthorizationRequestAllowsFrontierSteamAndEpicAccounts()
+    {
+        Uri? authorizationUri = null;
+        using var cancellation = new CancellationTokenSource();
+        using FrontierAccountService service = CreateService(
+            new MemoryCredentialStore(),
+            _ => Json(HttpStatusCode.NoContent, string.Empty),
+            openBrowser: (uri, _) =>
+            {
+                authorizationUri = uri;
+                cancellation.Cancel();
+                return Task.CompletedTask;
+            }
+        );
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.ConnectAsync(cancellation.Token));
+
+        Assert.NotNull(authorizationUri);
+        Assert.Contains("audience=frontier%2Csteam%2Cepic", authorizationUri.Query);
+    }
+
+    [Fact]
     public async Task SecondCommanderCanConnectWhenKeyringLookupReturnsTheOlderSecret()
     {
         if (!OperatingSystem.IsLinux())
@@ -1476,7 +1498,8 @@ public sealed class FrontierAccountServiceTests
         Func<HttpRequestMessage, HttpResponseMessage> response,
         string? root = null,
         Func<DateTimeOffset>? now = null,
-        IInaraCommunityGoalClient? inaraCommunityGoals = null
+        IInaraCommunityGoalClient? inaraCommunityGoals = null,
+        Func<Uri, CancellationToken, Task>? openBrowser = null
     )
     {
         string cachePath = root is null
@@ -1493,7 +1516,7 @@ public sealed class FrontierAccountServiceTests
             new FrontierProfileCacheStore(cachePath),
             new FrontierAccountServiceOptions(
                 UtcNow: now,
-                OpenBrowser: (_, _) => Task.CompletedTask,
+                OpenBrowser: openBrowser ?? ((_, _) => Task.CompletedTask),
                 RegisterProtocol: _ => Task.CompletedTask,
                 InaraCommunityGoals: inaraCommunityGoals
             )

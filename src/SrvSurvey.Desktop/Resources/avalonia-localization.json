@@ -31549,8 +31549,8 @@
       "translation": "Rahmenschaltantrieb"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -66095,8 +66095,8 @@
       "translation": "unidad de cambio de cuadro"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -100641,8 +100641,8 @@
       "translation": "lecteur de changement de cadre"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -135187,8 +135187,8 @@
       "translation": "frameshiftdrive"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -169733,8 +169733,8 @@
       "translation": "фреймшифтдрайв"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -204279,8 +204279,8 @@
       "translation": "移码驱动"
     },
     {
-      "source": "frontier",
-      "translation": "frontier"
+      "source": "frontier,steam,epic",
+      "translation": "frontier,steam,epic"
     },
     {
       "source": "frontier-auth",
@@ -238825,8 +238825,8 @@
       "translation": "* FRAMESHIFTDRIVE >>>!"
     },
     {
-      "source": "frontier",
-      "translation": "* FRONTIER >>>!"
+      "source": "frontier,steam,epic",
+      "translation": "* FRONTIER,STEAM,EPIC >>>!"
     },
     {
       "source": "frontier-auth",

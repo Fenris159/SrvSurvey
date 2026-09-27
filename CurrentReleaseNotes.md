@@ -6,6 +6,12 @@ release candidates.
 
 ## What's changed since RC58.6
 
+### Frontier account linking
+
+- Frontier authorization now includes Steam and Epic accounts alongside
+  Frontier accounts when connecting a commander. This addresses a mismatch in
+  the account types offered during sign-in.
+
 ### FSS overlay and editor
 
 - FSS information now keeps body names, scan values, landable labels, signal
