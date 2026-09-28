@@ -7,6 +7,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SurfaceSurveyOverlayViewModel"
              mc:Ignorable="d"
+             Width="{Binding WindowWidth}"
+             Height="{Binding WindowHeight}"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"

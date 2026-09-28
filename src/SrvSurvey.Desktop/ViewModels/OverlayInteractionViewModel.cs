@@ -1033,7 +1033,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private void OnLiveWindowPointerPressed(Window window, PointerPressedEventArgs eventArgs)
     {
-        if (!IsLiveInteractionEnabled || !eventArgs.GetCurrentPoint(window).Properties.IsLeftButtonPressed)
+        if (!IsLiveInteractionEnabled || !ManagedOverlayWindowDragSession.CanBeginFrom(window, eventArgs))
         {
             return;
         }

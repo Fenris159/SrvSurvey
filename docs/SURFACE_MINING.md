@@ -117,6 +117,8 @@ within 0.5 km:
 
 ```text
 .mine ruby m/l here
+.mine mon m/h here
+.mine ltd l/h here
 .mine move haematite here
 .mine splat
 .mine delete here
@@ -124,8 +126,13 @@ within 0.5 km:
 ```
 
 The amount/density pair belongs to that individual deposit. Use `l`, `m`, or `h`
-for Low, Medium, or High; the full words remain accepted. Commodity names must
-match **Hotspot List** and may contain spaces. The command parser rejects unknown
+for Low, Medium, or High; the full words remain accepted. Use a full commodity
+name from **Hotspot List** or the three-character code shown on its material tag.
+Names and codes are case insensitive: `mon` is Monazite, `ltd` is Low Temperature
+Diamonds, and `he3` is Helium-3. Codes work for every surface material in
+bearing-and-distance, `here`, and `.mine move <commodity> here` commands. Full
+names may contain spaces, and existing aliases such as `low temp diamonds`
+remain accepted. The command parser rejects unknown
 commodities, bearings outside 0–359, non-positive border radii, negative deposit
 distances, invalid signal numbers, and unrecognized amount or density values.
 Bearing-and-distance placement also rejects a same-commodity marker within 100 m

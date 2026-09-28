@@ -490,7 +490,7 @@ public static class OverlayThemeResources
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         if (GetTypographyRoot(window) is { } content)
         {
-            OverlayTypographyResources.Apply(content, layout.GetTypographyScale(plotterName));
+            OverlayTypographyResources.ApplyWhenAttached(content, layout.GetTypographyScale(plotterName));
         }
     }
 
@@ -504,10 +504,20 @@ public static class OverlayThemeResources
             return;
         }
 
-        // Live hosts wrap their shared presentation in a transparent Border.
-        // Size-aware presentations must receive the override themselves so
-        // their internal scroll constraints and width are updated together.
-        Control panel = content is Border { Child: Control child } && child is IOverlayPanelSizeAware ? child : content;
+        // Match the editor: size the shared presentation, not its transparent host.
+        Control panel = content is Border { Child: UserControl child } ? child : content;
+        if (panel is UserControl)
+        {
+            // The presentation owns default constraints and any saved size. A second
+            // set of limits on the native window can center and crop that presentation.
+            window.SizeToContent = SizeToContent.WidthAndHeight;
+            window.Width = double.NaN;
+            window.Height = double.NaN;
+            window.MinWidth = 1;
+            window.MinHeight = 1;
+            window.MaxWidth = double.PositiveInfinity;
+            window.MaxHeight = double.PositiveInfinity;
+        }
         ApplyPanelSize(panel, layout.GetSizeOverride(plotterName));
     }
 
@@ -517,13 +527,22 @@ public static class OverlayThemeResources
         PanelSizeRegistrations.GetValue(content, control => new PanelSizeRegistration(control)).ApplySize(size);
     }
 
-    private static Control? GetTypographyRoot(Window window) =>
-        window.Content switch
+    private static Control? GetTypographyRoot(Window window)
+    {
+        // Combined overlays replace the source window's content with a placeholder.
+        // Its registered scaling container still owns the visible presentation.
+        if (ScaleRegistrations.TryGetValue(window, out ScaleRegistration? registration))
+        {
+            return registration.Container.Child;
+        }
+
+        return window.Content switch
         {
             LayoutTransformControl { Child: Control child } => child,
             Control content => content,
             _ => null,
         };
+    }
 
     public static void ApplyScale(Window window, LegacyOverlayLayout layout)
     {
@@ -624,7 +643,7 @@ public static class OverlayThemeResources
         }
 
         var registration = new ScaleRegistration(
-            new LayoutTransformControl(),
+            new LayoutTransformControl { UseLayoutRounding = false },
             window.Width,
             window.Height,
             window.MinWidth,
@@ -861,7 +880,7 @@ public static class OverlayThemeResources
         {
             if (!closed && typographyRoot is not null)
             {
-                OverlayTypographyResources.Apply(typographyRoot, layout.GetTypographyScale(plotterName));
+                OverlayTypographyResources.ApplyWhenAttached(typographyRoot, layout.GetTypographyScale(plotterName));
             }
         }
 
@@ -918,55 +937,56 @@ public static class OverlayThemeResources
 
     private sealed class PanelSizeRegistration(Control content)
     {
-        private readonly double originalWidth = content.Width;
-        private readonly double originalHeight = content.Height;
-        private readonly double originalMinWidth = content.MinWidth;
-        private readonly double originalMinHeight = content.MinHeight;
-        private readonly double originalMaxWidth = content.MaxWidth;
-        private readonly double originalMaxHeight = content.MaxHeight;
-        private readonly Avalonia.Layout.HorizontalAlignment originalHorizontalAlignment = content.HorizontalAlignment;
-        private readonly Avalonia.Layout.VerticalAlignment originalVerticalAlignment = content.VerticalAlignment;
-        private readonly Avalonia.Layout.HorizontalAlignment originalHorizontalContentAlignment =
-            (content as ContentControl)?.HorizontalContentAlignment ?? Avalonia.Layout.HorizontalAlignment.Stretch;
-        private readonly Avalonia.Layout.VerticalAlignment originalVerticalContentAlignment =
-            (content as ContentControl)?.VerticalContentAlignment ?? Avalonia.Layout.VerticalAlignment.Stretch;
+        private readonly List<IDisposable> overrides = [];
+        private OverlayPanelSize? appliedSize;
 
         public void ApplySize(OverlayPanelSize? size)
         {
-            if (size is null)
+            if (size == appliedSize)
             {
-                (content as IOverlayPanelSizeAware)?.SetPanelSizeOverrideActive(false);
-                content.Width = originalWidth;
-                content.Height = originalHeight;
-                content.MinWidth = originalMinWidth;
-                content.MinHeight = originalMinHeight;
-                content.MaxWidth = originalMaxWidth;
-                content.MaxHeight = originalMaxHeight;
-                content.HorizontalAlignment = originalHorizontalAlignment;
-                content.VerticalAlignment = originalVerticalAlignment;
-                if (content is ContentControl contentControl)
-                {
-                    contentControl.HorizontalContentAlignment = originalHorizontalContentAlignment;
-                    contentControl.VerticalContentAlignment = originalVerticalContentAlignment;
-                }
                 return;
             }
 
-            (content as IOverlayPanelSizeAware)?.SetPanelSizeOverrideActive(true);
-            content.MinWidth = 1;
-            content.MinHeight = 1;
-            content.MaxWidth = double.PositiveInfinity;
-            content.MaxHeight = double.PositiveInfinity;
-            content.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
-            content.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
-            if (content is ContentControl sizedContentControl)
+            foreach (IDisposable value in overrides)
             {
-                sizedContentControl.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
-                sizedContentControl.VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Stretch;
+                value.Dispose();
             }
-            content.Width = size.Width;
-            content.Height = size.Height;
+            overrides.Clear();
+            appliedSize = size;
+            (content as IOverlayPanelSizeAware)?.SetPanelSizeOverrideActive(size is not null);
+            if (size is not null)
+            {
+                // Keep XAML bindings intact underneath the saved size so removing
+                // it restores the current default, including dynamic radar/map sizes.
+                Override(Control.MinWidthProperty, 1d);
+                Override(Control.MinHeightProperty, 1d);
+                Override(Control.MaxWidthProperty, double.PositiveInfinity);
+                Override(Control.MaxHeightProperty, double.PositiveInfinity);
+                Override(Control.HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Stretch);
+                Override(Control.VerticalAlignmentProperty, Avalonia.Layout.VerticalAlignment.Stretch);
+                if (content is ContentControl)
+                {
+                    Override(
+                        ContentControl.HorizontalContentAlignmentProperty,
+                        Avalonia.Layout.HorizontalAlignment.Stretch
+                    );
+                    Override(
+                        ContentControl.VerticalContentAlignmentProperty,
+                        Avalonia.Layout.VerticalAlignment.Stretch
+                    );
+                }
+                Override(Control.WidthProperty, size.Width);
+                Override(Control.HeightProperty, size.Height);
+            }
             content.InvalidateMeasure();
+        }
+
+        private void Override<T>(StyledProperty<T> property, T value)
+        {
+            if (content.SetValue(property, value, Avalonia.Data.BindingPriority.Animation) is { } registration)
+            {
+                overrides.Add(registration);
+            }
         }
     }
 }

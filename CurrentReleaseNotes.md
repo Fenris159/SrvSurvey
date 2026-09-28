@@ -1,37 +1,45 @@
-# SrvSurvey-XP 2.1.3.0-rc.58.12
+# SrvSurvey-XP 2.1.3.0-rc.58.13
 
-RC58.12 combines the AppImage restart fixes from RC58.11 with corrections to
-release discovery for standard AppImage update tools. It includes RC58.10 and
-earlier release candidate changes.
+RC58.13 fixes overlay sizing and live interaction, improves the Planetary Mining
+results layout, and adds material shortcuts to surface mining commands. It
+includes RC58.12 and earlier release candidate changes.
 
-## Updater changes in RC58.11 and RC58.12
+## Overlay panels
 
-### AppImage updates
+- Fixed Next-jump information being clipped in the live overlay despite fitting
+  in the editor preview. Live panels now use the same saved dimensions as their
+  previews, without a second window size limit cutting off content or borders.
+- Audited all 37 overlay panels across their preview states, saved dimensions,
+  font sizes, and overlay scales. Saved sizes preserve the panels' dynamic size
+  settings when reset, including the surface survey radar.
+- Preserved font sizes when panels move between separate windows and the
+  combined overlay.
+- Buttons and scrollbar handles now work in live interaction mode. Dragging
+  panel backgrounds still repositions the overlay, while interactive maps retain
+  their own pan gestures.
 
-- Shortened the local instance-control socket name so an AppImage launched by
-  the updater can register and communicate with other running instances even
-  when its installation directory is used for temporary extraction.
-- The socket now stays within Linux's path length limit for normal AppImage
-  installation paths. This prevents a shutdown error after an update and keeps
-  cooperative instance handling available on the replacement build.
-- New RC AppImages can find both RC and stable releases through standard
-  AppImage delta update tools, allowing those tools to move from an RC to a
-  later stable release.
-- Future stable releases will be marked as GitHub's Latest release so stable
-  AppImage update tools can find them.
-- Development remains the default in-app update channel, with saved channel
-  choices preserved.
+## Mining
+
+- Planetary Mining Reinforce and Undermine results now size the State and Power
+  columns to their contents, keeping headers aligned and power names visible.
+- Surface mining commands accept the material tag codes as well as full names
+  for all 37 surface materials. For example, use `mon` for Monazite, `ltd` for
+  Low Temperature Diamonds, or `per` for Periclase Dunite. Codes are case insensitive
+  and work when creating or moving deposit markers.
+- Updated the surface mining instructions and guide with shorthand examples.
 
 ## Update channel and packages
 
-- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.12
+- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.13
   uses the schema-2 `xp2-v` release channel.
-- Version: `2.1.3.0-rc.58.12`
-- Tag: `xp2-v2.1.3.0-rc.58.12`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.12-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.12-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.12-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.12-x86_64.AppImage.zsync`
+- Development remains the default in-app update channel, with saved channel
+  choices preserved.
+- Version: `2.1.3.0-rc.58.13`
+- Tag: `xp2-v2.1.3.0-rc.58.13`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.13-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.13-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.13-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.13-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

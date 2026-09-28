@@ -418,7 +418,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         if (
             sender is not ContentControl presenter
             || host is null
-            || !eventArgs.GetCurrentPoint(presenter).Properties.IsLeftButtonPressed
+            || !ManagedOverlayWindowDragSession.CanBeginFrom(presenter, eventArgs)
         )
         {
             return;
