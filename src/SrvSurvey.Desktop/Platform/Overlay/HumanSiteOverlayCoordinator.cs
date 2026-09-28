@@ -9,6 +9,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class HumanSiteOverlayCoordinator : IDisposable
 {
+    private const string PlotterName = "PlotHumanSite";
+
     private readonly HumanSiteViewModel humanSite;
     private readonly HumanSiteOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
@@ -153,7 +155,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         }
 
         var overlay = new HumanSiteOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotHumanSite");
+        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
         overlay.Opened += (_, _) =>
         {
             SizeAndPositionWindow(overlay, gameWindow.ClientBounds);
@@ -180,7 +182,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
 
     private void SizeAndPositionWindow(Window overlay, PixelRect gameBounds)
     {
-        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, "PlotHumanSite");
+        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
         Screen? screen = overlay.Screens.ScreenFromBounds(gameBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
@@ -194,11 +196,11 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         PixelSize pixelSize = OverlayWindowMetrics.PrepareForPlacement(
             overlay,
             overlayLayout,
-            "PlotHumanSite",
+            PlotterName,
             screen.Scaling
         );
         PixelPoint position =
-            overlayLayout.GetPosition("PlotHumanSite", gameBounds, pixelSize)
+            overlayLayout.GetPosition(PlotterName, gameBounds, pixelSize)
             ?? OverlayWindowPlacement.MiddleLeft(gameBounds, pixelSize, margin: 8);
         if (overlay.Position != position)
         {
