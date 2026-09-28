@@ -58501,6 +58501,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Use a full commodity name or its three-character code in any deposit command. Codes are case insensitive and match the material tags. Examples: .mine mon m/h here and .mine ltd l/h here. Codes also work with bearing-and-distance placement and .mine move \u003Ccommodity\u003E here.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Use bio signal radius",
     "IsFormat": false,
     "SourceKinds": [

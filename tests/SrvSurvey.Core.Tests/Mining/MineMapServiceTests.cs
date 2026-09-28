@@ -631,6 +631,80 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
+    public async Task MineCommandsAcceptEverySurfaceCommodityCodeAndPersistCanonicalNames()
+    {
+        foreach (SurfaceMiningCommodity commodity in SurfaceMiningCommodityCatalog.All)
+        {
+            using var directory = new TemporaryDirectory();
+            MineMapCommandContext context = Context(new SurfaceCoordinate(1, 2));
+            using var service = new MineMapService(directory.Path);
+            Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", context)).Succeeded);
+            string code = MiningCommodityCode.Abbreviate(commodity.Name);
+
+            MineMapCommandResult relative = await service.ExecuteAsync(
+                $".mine 180 {code.ToLowerInvariant()} 1.00 m/h",
+                context
+            );
+            Assert.True(relative.Succeeded, relative.Message);
+            MineMapMarker first = Assert.Single(service.ActiveSurvey!.Markers);
+            Assert.Equal(commodity.Name, first.Material);
+            Assert.Equal(MineMapRating.Medium, first.MineralAmount);
+            Assert.Equal(MineMapRating.High, first.Density);
+
+            MineMapCommandResult duplicate = await service.ExecuteAsync(
+                $".mine 180 {commodity.Name} 1.05 h/l",
+                context
+            );
+            Assert.False(duplicate.Succeeded);
+            Assert.Contains("already", duplicate.Message, StringComparison.OrdinalIgnoreCase);
+
+            MineMapCommandResult here = await service.ExecuteAsync(
+                $".mine {code} h/l here",
+                context with
+                {
+                    PlayerLocation = service.ActiveSurvey.Center,
+                }
+            );
+            Assert.True(here.Succeeded, here.Message);
+            SurfaceCoordinate movedLocation = MineMapService.GetDestination(
+                first.Location,
+                90,
+                50,
+                context.PlanetRadiusMeters
+            );
+            MineMapCommandResult moved = await service.ExecuteAsync(
+                $".mine move {code.ToLowerInvariant()} here",
+                context with
+                {
+                    PlayerLocation = movedLocation,
+                }
+            );
+            Assert.True(moved.Succeeded, moved.Message);
+
+            using var reloaded = new MineMapService(directory.Path);
+            MineMapSurvey persisted = Assert.Single(reloaded.Surveys);
+            Assert.Equal(2, persisted.Markers.Count);
+            Assert.All(persisted.Markers, marker => Assert.Equal(commodity.Name, marker.Material));
+            Assert.Equal(movedLocation, persisted.Markers[0].Location);
+            Assert.Equal(MineMapRating.High, persisted.Markers[1].MineralAmount);
+            Assert.Equal(MineMapRating.Low, persisted.Markers[1].Density);
+        }
+    }
+
+    [Theory]
+    [InlineData("mon", "Monazite")]
+    [InlineData("MoN", "Monazite")]
+    [InlineData("ltd", "Low Temperature Diamonds")]
+    [InlineData("HE3", "Helium-3")]
+    [InlineData("per", "Periclase Dunite")]
+    [InlineData("qua", "Quartz Pyroxenite")]
+    public void SurfaceCommodityCodesResolveToTheirExpectedMaterial(string code, string expected)
+    {
+        Assert.True(SurfaceMiningCommodityCatalog.TryResolve(code, out SurfaceMiningCommodity? commodity));
+        Assert.Equal(expected, commodity.Name);
+    }
+
+    [Fact]
     public async Task BearingPlacementRejectsNearbyDuplicateMaterialWhileHereAllowsOverlap()
     {
         using var directory = new TemporaryDirectory();

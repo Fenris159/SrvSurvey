@@ -73,6 +73,10 @@ public sealed class LocalizationCatalogTests : IDisposable
         KeyValuePair<string, string[]>[] examples =
         [
             new(
+                "Use a full commodity name or its three-character code in any deposit command. Codes are case insensitive and match the material tags. Examples: .mine mon m/h here and .mine ltd l/h here. Codes also work with bearing-and-distance placement and .mine move <commodity> here.",
+                [".mine mon m/h here", ".mine ltd l/h here", ".mine move <commodity> here"]
+            ),
+            new(
                 "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
                 [".mine 342 jadeite 1.87 h/m"]
             ),

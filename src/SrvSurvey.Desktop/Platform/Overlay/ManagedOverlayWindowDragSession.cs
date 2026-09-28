@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -60,6 +63,35 @@ internal sealed class ManagedOverlayWindowDragSession
         window.PointerCaptureLost += session.OnPointerCaptureLost;
         window.Closed += session.OnWindowClosed;
         eventArgs.Pointer.Capture(window);
+    }
+
+    internal static bool CanBeginFrom(Control surface, PointerPressedEventArgs eventArgs)
+    {
+        if (!eventArgs.GetCurrentPoint(surface).Properties.IsLeftButtonPressed)
+        {
+            return false;
+        }
+
+        // Preserve dragging over handled passive scroll content; inputs and
+        // active map gestures receive their own pointer events.
+        if (
+            eventArgs.Source is Visual source
+            && source
+                .GetSelfAndVisualAncestors()
+                .Any(visual =>
+                    visual is Button or Thumb or ScrollBar or Slider or TextBox or SelectingItemsControl or ToggleSwitch
+                    || (eventArgs.Handled && visual is MineMapControl or GuardianSiteMapControl)
+                )
+        )
+        {
+            return false;
+        }
+
+        // Avalonia implicitly captures every mouse press to its hit-test source.
+        // A control capturing a different element has taken ownership of the gesture.
+        return eventArgs.Pointer.Captured is null
+            || ReferenceEquals(eventArgs.Pointer.Captured, eventArgs.Source)
+            || ReferenceEquals(eventArgs.Pointer.Captured, TopLevel.GetTopLevel(surface));
     }
 
     internal static PixelPoint CalculatePosition(

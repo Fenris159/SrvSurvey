@@ -255,7 +255,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         if (runtimePresentation is not null)
         {
-            OverlayTypographyResources.Apply(runtimePresentation, typographyScale);
+            OverlayTypographyResources.ApplyWhenAttached(runtimePresentation, typographyScale);
         }
     }
 

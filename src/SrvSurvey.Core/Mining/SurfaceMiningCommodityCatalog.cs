@@ -283,7 +283,10 @@ public static class SurfaceMiningCommodityCatalog
             normalized = canonical;
         }
 
-        commodity = All.FirstOrDefault(candidate => MiningCommodityName.Same(candidate.Name, normalized))!;
+        commodity = All.FirstOrDefault(candidate =>
+            MiningCommodityName.Same(candidate.Name, normalized)
+            || MiningCommodityCode.Abbreviate(candidate.Name).Equals(normalized, StringComparison.OrdinalIgnoreCase)
+        )!;
         return commodity is not null;
     }
 

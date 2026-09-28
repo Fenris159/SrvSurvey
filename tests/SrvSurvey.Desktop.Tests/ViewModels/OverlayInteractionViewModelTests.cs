@@ -1,9 +1,14 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -463,8 +468,10 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         }
     }
 
-    [AvaloniaFact]
-    public void LivePanelDragStartsWhenContentHandlesPointerPress()
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LivePanelDragRespectsPointerCaptureWhenContentHandlesPointerPress(bool ownsPointer)
     {
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         var platform = new FakeOverlayPlatform();
@@ -474,8 +481,16 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             Width = 200,
             Height = 120,
             Background = Avalonia.Media.Brushes.Black,
+            Child = new Border { Background = Avalonia.Media.Brushes.Black },
         };
-        content.PointerPressed += (_, eventArgs) => eventArgs.Handled = true;
+        content.PointerPressed += (_, eventArgs) =>
+        {
+            if (ownsPointer)
+            {
+                eventArgs.Pointer.Capture(content);
+            }
+            eventArgs.Handled = true;
+        };
         var window = new Window
         {
             Width = 200,
@@ -504,7 +519,217 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         {
             Assert.True(viewModel.ToggleLiveOverlayInteraction());
             window.MouseDown(new Point(30, 40), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            Assert.Equal(ownsPointer ? 0 : 1, platform.MoveDragStarts);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LiveControlsReceiveClicksWithoutStartingPanelDrag(bool scrollbar)
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var platform = new FakeOverlayPlatform { UseManagedMoveDrag = true };
+        var registry = new OverlayWindowRegistry();
+        var button = new Button { Content = "Activate", Height = 36 };
+        var scroll = new ScrollBar
+        {
+            Orientation = Avalonia.Layout.Orientation.Vertical,
+            Height = 160,
+            Width = 24,
+            Minimum = 0,
+            Maximum = 100,
+            ViewportSize = 20,
+            Value = 20,
+        };
+        var panel = new StackPanel
+        {
+            Background = Avalonia.Media.Brushes.Black,
+            Children = { scrollbar ? scroll : button },
+        };
+        var window = new Window
+        {
+            Width = 300,
+            Height = 220,
+            Content = panel,
+        };
+        registry.Register(window, "PlotFSSInfo");
+        int clicks = 0;
+        button.Click += (_, _) => clicks++;
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1200, 800), true, true)),
+            store,
+            store.Load(),
+            registry,
+            new FakeEditorHost()
+        );
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            window.Position = new PixelPoint(100, 200);
+            Assert.True(viewModel.ToggleLiveOverlayInteraction());
+            Control target = scrollbar ? Assert.Single(scroll.GetVisualDescendants().OfType<Thumb>()) : button;
+            Point start = Assert.IsType<Point>(
+                target.TranslatePoint(new Point(target.Bounds.Width / 2, target.Bounds.Height / 2), window)
+            );
+            window.MouseMove(start, RawInputModifiers.None);
+            window.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            Point end = scrollbar ? start + new Vector(0, 35) : start;
+            window.MouseMove(end, RawInputModifiers.LeftMouseButton);
+            window.MouseUp(end, MouseButton.Left, RawInputModifiers.None);
+
+            Assert.Equal(0, platform.MoveDragStarts);
+            Assert.Equal(new PixelPoint(100, 200), window.Position);
+            if (scrollbar)
+            {
+                Assert.True(scroll.Value > 20, $"Scrollbar stayed at {scroll.Value}.");
+            }
+            else
+            {
+                Assert.Equal(1, clicks);
+            }
+
+            var background = new Point(250, 200);
+            window.MouseDown(background, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseMove(background + new Vector(20, 30), RawInputModifiers.LeftMouseButton);
+            window.MouseUp(background + new Vector(20, 30), MouseButton.Left, RawInputModifiers.None);
             Assert.Equal(1, platform.MoveDragStarts);
+            Assert.Equal(new PixelPoint(120, 230), window.Position);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CombinedLiveControlsReceiveClicksAndBackgroundStillDrags(bool scrollbar)
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var tracker = new FakeGameWindowTracker(
+            new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1200, 800), true, true)
+        );
+        var button = new Button { Content = "Activate", Height = 36 };
+        var scroll = new ScrollBar
+        {
+            Orientation = Avalonia.Layout.Orientation.Vertical,
+            Height = 160,
+            Width = 24,
+            Minimum = 0,
+            Maximum = 100,
+            ViewportSize = 20,
+            Value = 20,
+        };
+        var panel = new StackPanel
+        {
+            Background = Avalonia.Media.Brushes.Black,
+            Children = { scrollbar ? scroll : button },
+        };
+        var window = new Window
+        {
+            Width = 300,
+            Height = 220,
+            Content = panel,
+        };
+        registry.Register(window, "PlotFSSInfo");
+        int clicks = 0;
+        button.Click += (_, _) => clicks++;
+        using var controller = new CombinedOverlayPresentationController(platform, tracker, registry);
+        try
+        {
+            window.Show();
+            using WriteableBitmap? sourceFrame = window.CaptureRenderedFrame();
+            window.Position = new PixelPoint(100, 200);
+            Assert.True(controller.PreparePassiveWindow(window).IsPrepared);
+            Assert.True(controller.SetInteractive(window, true).IsInteractive);
+            CombinedOverlayWindow host = Assert.IsType<CombinedOverlayWindow>(TopLevel.GetTopLevel(panel));
+            using WriteableBitmap? frame = host.CaptureRenderedFrame();
+            Control target = scrollbar ? Assert.Single(scroll.GetVisualDescendants().OfType<Thumb>()) : button;
+            Point start = Assert.IsType<Point>(
+                target.TranslatePoint(new Point(target.Bounds.Width / 2, target.Bounds.Height / 2), host)
+            );
+            host.MouseMove(start, RawInputModifiers.None);
+            host.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            Point end = scrollbar ? start + new Vector(0, 35) : start;
+            host.MouseMove(end, RawInputModifiers.LeftMouseButton);
+            host.MouseUp(end, MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(new PixelPoint(100, 200), window.Position);
+            if (scrollbar)
+            {
+                Assert.True(scroll.Value > 20, $"Scrollbar stayed at {scroll.Value}.");
+            }
+            else
+            {
+                Assert.Equal(1, clicks);
+            }
+
+            Point background = Assert.IsType<Point>(panel.TranslatePoint(new Point(250, 200), host));
+            host.MouseDown(background, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            host.MouseMove(background + new Vector(20, 30), RawInputModifiers.LeftMouseButton);
+            host.MouseUp(background + new Vector(20, 30), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(new PixelPoint(120, 230), window.Position);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LiveMineMapKeepsPanGesturesWhenViewportInteractionIsEnabled(bool canPan)
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var platform = new FakeOverlayPlatform { UseManagedMoveDrag = true };
+        var registry = new OverlayWindowRegistry();
+        var map = new MineMapControl
+        {
+            Survey = new MineMapSurvey
+            {
+                Center = new(0, 0),
+                PlanetRadiusMeters = 1_000_000,
+                LocationRadiusMeters = 1_000,
+            },
+            AllowViewportInteraction = canPan,
+            ViewportZoom = 2,
+        };
+        var window = new Window
+        {
+            Width = 300,
+            Height = 220,
+            Content = map,
+        };
+        registry.Register(window, "PlotMineMap");
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1200, 800), true, true)),
+            store,
+            store.Load(),
+            registry,
+            new FakeEditorHost()
+        );
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            window.Position = new PixelPoint(100, 200);
+            Assert.True(viewModel.ToggleLiveOverlayInteraction());
+            var start = new Point(150, 110);
+            window.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseMove(start + new Vector(20, 30), RawInputModifiers.LeftMouseButton);
+            window.MouseUp(start + new Vector(20, 30), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(canPan ? 0 : 1, platform.MoveDragStarts);
+            Assert.Equal(canPan ? new PixelPoint(100, 200) : new PixelPoint(120, 230), window.Position);
         }
         finally
         {
@@ -1045,7 +1270,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         }
     }
 
-    private sealed class FakeOverlayPlatform : IOverlayPlatformService
+    private sealed class FakeOverlayPlatform : IOverlayPlatformService, ICombinedOverlayNativeService
     {
         public OverlayPlatformCapabilities Capabilities { get; } =
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
@@ -1053,6 +1278,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         public List<bool> InteractiveStates { get; } = [];
 
         public int MoveDragStarts { get; private set; }
+
+        public bool UseManagedMoveDrag { get; init; }
 
         public int VisibleCursorSessionStarts { get; private set; }
 
@@ -1071,9 +1298,18 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             return new OverlayInteractionResult(true, interactive, "Prepared");
         }
 
+        public bool SuppressNativeWindow(Window window) => true;
+
+        public OverlayInteractionResult SetInteractiveRegions(Window window, IReadOnlyList<PixelRect> regions) =>
+            new(true, regions.Count > 0, "Prepared");
+
         public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs)
         {
             MoveDragStarts++;
+            if (UseManagedMoveDrag)
+            {
+                ManagedOverlayWindowDragSession.Begin(window, eventArgs);
+            }
         }
 
         public IDisposable BeginVisibleCursorSession(Window window)

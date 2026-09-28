@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -80,6 +81,12 @@ public sealed record OverlayTypographyScale(
 
 internal static class OverlayTypographyResources
 {
+    private static readonly AttachedProperty<OverlayTypographyScale> PendingScaleProperty =
+        AvaloniaProperty.RegisterAttached<Control, Control, OverlayTypographyScale>(
+            nameof(PendingScaleProperty),
+            defaultValue: OverlayTypographyScale.Default
+        );
+
     private static readonly AttachedProperty<OverlayTypographyScale> ScaleProperty = AvaloniaProperty.RegisterAttached<
         Control,
         Control,
@@ -96,6 +103,28 @@ internal static class OverlayTypographyResources
     {
         ScaleProperty.Changed.AddClassHandler<TextBlock>(static (text, _) => ApplyToText(text));
         ScaleProperty.Changed.AddClassHandler<LayoutTransformControl>(static (control, _) => ApplyToIcon(control));
+    }
+
+    public static void ApplyWhenAttached(Control root, OverlayTypographyScale? scale)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        root.SetValue(PendingScaleProperty, scale ?? OverlayTypographyScale.Default);
+        root.AttachedToVisualTree -= OnAttached;
+        // Resolve role styles before capturing their unscaled font sizes, and
+        // reapply them if the panel moves into the combined overlay window.
+        root.AttachedToVisualTree += OnAttached;
+        if (root.IsAttachedToVisualTree())
+        {
+            Apply(root, scale);
+        }
+    }
+
+    private static void OnAttached(object? sender, VisualTreeAttachmentEventArgs eventArgs)
+    {
+        if (sender is Control root)
+        {
+            Apply(root, root.GetValue(PendingScaleProperty));
+        }
     }
 
     public static void Apply(Control root, OverlayTypographyScale? scale)

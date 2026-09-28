@@ -351,43 +351,52 @@ public sealed class OverlayThemeResourcesTests
         Assert.Same(originalContent, surface.Child);
         window.Content = new Border();
 
-        Assert.True(
-            layout.SetPlacement(
-                definition.Name,
-                placement with
-                {
-                    Opacity = 0.75,
-                    ScaleIndex = 1,
-                    TypographyScale = new OverlayTypographyScale(0, 20, 0, 0, 0, 0),
-                }
-            )
-        );
-        Assert.Equal(0.75, window.Opacity);
-        Assert.Equal(definition.PreviewSize.Width, window.Width, 5);
-        Assert.Equal(21.6d, detailText.FontSize, 5);
+        var presentationHost = new Window { Content = scaleContainer };
+        presentationHost.Show();
+        try
+        {
+            Assert.True(
+                layout.SetPlacement(
+                    definition.Name,
+                    placement with
+                    {
+                        Opacity = 0.75,
+                        ScaleIndex = 1,
+                        TypographyScale = new OverlayTypographyScale(0, 20, 0, 0, 0, 0),
+                    }
+                )
+            );
+            Assert.Equal(0.75, window.Opacity);
+            Assert.Equal(definition.PreviewSize.Width, window.Width, 5);
+            Assert.Equal(21.6d, detailText.FontSize, 5);
 
-        OverlayThemeResources.SetBaseSize(window, layout, 250, 125);
-        OverlayThemeResources.SetBaseSize(window, layout, 250, 125);
-        Assert.Equal(250, window.Width, 5);
-        Assert.Equal(125, window.Height, 5);
-        Assert.Throws<ArgumentOutOfRangeException>(() => OverlayThemeResources.SetBaseSize(window, layout, 0, 100));
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            OverlayThemeResources.SetBaseSize(window, layout, 100, double.NaN)
-        );
+            OverlayThemeResources.SetBaseSize(window, layout, 250, 125);
+            OverlayThemeResources.SetBaseSize(window, layout, 250, 125);
+            Assert.Equal(250, window.Width, 5);
+            Assert.Equal(125, window.Height, 5);
+            Assert.Throws<ArgumentOutOfRangeException>(() => OverlayThemeResources.SetBaseSize(window, layout, 0, 100));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                OverlayThemeResources.SetBaseSize(window, layout, 100, double.NaN)
+            );
 
-        OverlayThemeResources.Apply(window, layout, definition.Name);
-        var otherLayout = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
-            defaultOpacity: null,
-            error: null
-        );
-        Assert.Throws<InvalidOperationException>(() =>
-            OverlayThemeResources.Apply(window, otherLayout, definition.Name)
-        );
+            OverlayThemeResources.Apply(window, layout, definition.Name);
+            var otherLayout = new LegacyOverlayLayout(
+                new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
+                defaultOpacity: null,
+                error: null
+            );
+            Assert.Throws<InvalidOperationException>(() =>
+                OverlayThemeResources.Apply(window, otherLayout, definition.Name)
+            );
 
-        window.Show();
-        window.Close();
-        Assert.True(layout.SetPlacement(definition.Name, placement with { Opacity = 0.5, ScaleIndex = 2 }));
+            window.Show();
+            window.Close();
+            Assert.True(layout.SetPlacement(definition.Name, placement with { Opacity = 0.5, ScaleIndex = 2 }));
+        }
+        finally
+        {
+            presentationHost.Close();
+        }
     }
 
     [AvaloniaFact]

@@ -29173,6 +29173,10 @@
       "translation": "Verwenden Sie die Auf- und Ab-Taste, um sich zu bewegen, die Eingabetaste, um die ausgewählte Einstellung zu öffnen, oder die Escape-Taste, um die Suche zu löschen."
     },
     {
+      "source": "Use a full commodity name or its three-character code in any deposit command. Codes are case insensitive and match the material tags. Examples: .mine mon m/h here and .mine ltd l/h here. Codes also work with bearing-and-distance placement and .mine move <commodity> here.",
+      "translation": "Verwenden Sie in Befehlen zum Markieren von Rohstoffvorkommen den vollständigen Rohstoffnamen oder den Code aus drei Zeichen. Bei Codes wird die Groß-/Kleinschreibung nicht beachtet; sie entsprechen den Materialkürzeln. Beispiele: .mine mon m/h here und .mine ltd l/h here. Die Codes funktionieren auch beim Platzieren per Peilung und Entfernung sowie mit .mine move <commodity> here."
+    },
+    {
       "source": "Use bio signal radius",
       "translation": "Nutzen Sie den Biosignalradius"
     },
@@ -63721,6 +63725,10 @@
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
       "translation": "Utilice Arriba y Abajo para moverse, Intro para abrir la configuración seleccionada o Escape para borrar la búsqueda."
+    },
+    {
+      "source": "Use a full commodity name or its three-character code in any deposit command. Codes are case insensitive and match the material tags. Examples: .mine mon m/h here and .mine ltd l/h here. Codes also work with bearing-and-distance placement and .mine move <commodity> here.",
+      "translation": "Utilice el nombre completo del material o su código de tres caracteres en los comandos para marcar yacimientos. Los códigos no distinguen entre mayúsculas y minúsculas y coinciden con las etiquetas de material. Ejemplos: .mine mon m/h here y .mine ltd l/h here. Los códigos también funcionan al colocar marcadores por rumbo y distancia y con .mine move <commodity> here."
     },
     {
       "source": "Use bio signal radius",
@@ -98273,6 +98281,10 @@
       "translation": "Utilisez Haut et Bas pour vous déplacer, Entrée pour ouvrir le paramètre sélectionné ou Échap pour effacer la recherche."
     },
     {
+      "source": "Use a full commodity name or its three-character code in any deposit command. Codes are case insensitive and match the material tags. Examples: .mine mon m/h here and .mine ltd l/h here. Codes also work with bearing-and-distance placement and .mine move <commodity> here.",
+      "translation": "Utilisez le nom complet du matériau ou son code à trois caractères dans les commandes de marquage des gisements. Les codes ne sont pas sensibles à la casse et correspondent aux étiquettes de matériaux. Exemples : .mine mon m/h here et .mine ltd l/h here. Les codes fonctionnent également pour placer un marqueur selon un cap et une distance, ainsi qu’avec .mine move <commodity> here."
+    },
+    {
       "source": "Use bio signal radius",
       "translation": "Utiliser le rayon du signal biologique"
     },
@@ -132821,6 +132833,10 @@
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
       "translation": "Use para cima e para baixo para mover, Enter para abrir a configuração selecionada ou Escape para limpar a pesquisa."
+    },
+    {
+      "source": "Use a full commodity name or its three-character code in any deposit command. Codes are case insensitive and match the material tags. Examples: .mine mon m/h here and .mine ltd l/h here. Codes also work with bearing-and-distance placement and .mine move <commodity> here.",
+      "translation": "Use o nome completo do material ou seu código de três caracteres nos comandos para marcar jazidas. Os códigos não diferenciam maiúsculas de minúsculas e correspondem às etiquetas do material. Exemplos: .mine mon m/h here e .mine ltd l/h here. Os códigos também funcionam ao posicionar marcadores por rumo e distância e com .mine move <commodity> here."
     },
     {
       "source": "Use bio signal radius",
@@ -167373,6 +167389,10 @@
       "translation": "Используйте Вверх и Вниз для перемещения, Enter, чтобы открыть выбранную настройку, или Escape, чтобы очистить поиск."
     },
     {
+      "source": "Use a full commodity name or its three-character code in any deposit command. Codes are case insensitive and match the material tags. Examples: .mine mon m/h here and .mine ltd l/h here. Codes also work with bearing-and-distance placement and .mine move <commodity> here.",
+      "translation": "В командах для отметки месторождений используйте полное название материала или его трёхсимвольный код. Коды нечувствительны к регистру и соответствуют обозначениям материалов. Примеры: .mine mon m/h here и .mine ltd l/h here. Коды также работают при размещении маркера по направлению и расстоянию и с командой .mine move <commodity> here."
+    },
+    {
       "source": "Use bio signal radius",
       "translation": "Использовать радиус биосигнала"
     },
@@ -201923,6 +201943,10 @@
       "translation": "使用向上和向下移动，使用 Enter 打开所选设置，或使用 Esc 清除搜索。"
     },
     {
+      "source": "Use a full commodity name or its three-character code in any deposit command. Codes are case insensitive and match the material tags. Examples: .mine mon m/h here and .mine ltd l/h here. Codes also work with bearing-and-distance placement and .mine move <commodity> here.",
+      "translation": "在标记矿床的命令中，可以使用完整的材料名称或其三字符代码。代码不区分大小写，与材料标签上的代码一致。示例：.mine mon m/h here 和 .mine ltd l/h here。按方位角和距离放置标记以及使用 .mine move <commodity> here 时，也可以使用这些代码。"
+    },
+    {
       "source": "Use bio signal radius",
       "translation": "使用生物信号半径"
     },
@@ -236471,6 +236495,10 @@
     {
       "source": "Use Up and Down to move, Enter to open the selected setting, or Escape to clear the search.",
       "translation": "* USE UP AND DOWN TO MOVE, ENTER TO OPEN THE SELECTED SETTING, OR ESCAPE TO CLEAR THE SEARCH. >>>!"
+    },
+    {
+      "source": "Use a full commodity name or its three-character code in any deposit command. Codes are case insensitive and match the material tags. Examples: .mine mon m/h here and .mine ltd l/h here. Codes also work with bearing-and-distance placement and .mine move <commodity> here.",
+      "translation": "* USE A FULL COMMODITY NAME OR ITS THREE-CHARACTER CODE IN ANY DEPOSIT COMMAND. CODES ARE CASE INSENSITIVE AND MATCH THE MATERIAL TAGS. EXAMPLES: .MINE MON M/H HERE AND .MINE LTD L/H HERE. CODES ALSO WORK WITH BEARING-AND-DISTANCE PLACEMENT AND .MINE MOVE <COMMODITY> HERE. >>>!"
     },
     {
       "source": "Use bio signal radius",
