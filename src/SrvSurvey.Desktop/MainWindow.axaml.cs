@@ -303,6 +303,9 @@ public sealed partial class MainWindow : Window
         viewModel.DesktopBehavior.SetAvailableMonitors(
             applicationMonitors.Select(monitor => new ApplicationMonitorOption(monitor.Id, monitor.DisplayName))
         );
+        viewModel.OverlayBehavior.SetAvailableMonitors(
+            applicationMonitors.Select(monitor => new ApplicationMonitorOption(monitor.Id, monitor.DisplayName))
+        );
     }
 
     private void ApplyApplicationWindowPreferences(ApplicationWindowPosition? lastPosition)

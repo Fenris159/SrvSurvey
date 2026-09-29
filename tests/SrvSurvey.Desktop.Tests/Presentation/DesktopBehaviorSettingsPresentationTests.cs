@@ -83,6 +83,64 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
         }
     }
 
+    [AvaloniaFact]
+    public void OverlayMonitorIsTheFirstGlobalBehaviorSettingAndPersistsIndependently()
+    {
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            Path.Combine(temporaryDirectory, "journals"),
+            builder =>
+                builder.WithAppDataPaths(
+                    new AppDataPaths(
+                        Path.Combine(temporaryDirectory, "config"),
+                        Path.Combine(temporaryDirectory, "data"),
+                        Path.Combine(temporaryDirectory, "cache"),
+                        []
+                    )
+                )
+        );
+        var monitorOption = new ApplicationMonitorOption("DP-1", "Ultrawide (Primary) - 5120 x 1440 - 100%");
+        viewModel.OverlayBehavior.SetAvailableMonitors([monitorOption]);
+        var settings = new OverlaySettingsView { DataContext = viewModel };
+        var window = new Window
+        {
+            Width = 1100,
+            Height = 800,
+            Content = settings,
+        };
+        try
+        {
+            window.Show();
+            ComboBox monitor = Assert.IsType<ComboBox>(settings.FindControl<ComboBox>("OverlayMonitorComboBox"));
+            Grid monitorSetting = Assert.IsType<Grid>(settings.FindControl<Grid>("OverlayMonitorSetting"));
+            Border card = Assert.IsType<Border>(settings.FindControl<Border>("GlobalOverlayBehaviorCard"));
+            StackPanel content = Assert.IsType<StackPanel>(card.Child);
+            Assert.Same(monitorSetting, content.Children[1]);
+            monitor.SelectedItem = monitorOption;
+            CheckBox monitorLock = Assert.IsType<CheckBox>(
+                settings.FindControl<CheckBox>("LockOverlaysToMonitorCheckBox")
+            );
+            monitorLock.IsChecked = true;
+            Assert.True(viewModel.OverlayBehavior.LockToMonitor);
+            Assert.True(new OverlayBehaviorSettingsStore(viewModel.AppDataPaths.UiSettingsPath).Load().LockToMonitor);
+
+            Assert.NotNull(window.CaptureRenderedFrame());
+            Assert.InRange(monitor.Bounds.Width, 200, card.Bounds.Width);
+            Assert.Equal("DP-1", viewModel.OverlayBehavior.PreferredMonitorId);
+            Assert.Null(viewModel.DesktopBehavior.PreferredMonitorId);
+            Assert.Same(viewModel.OverlayBehavior, viewModel.OverlayInteraction.OverlayBehavior);
+            Assert.Equal(
+                "DP-1",
+                new OverlayBehaviorSettingsStore(viewModel.AppDataPaths.UiSettingsPath).Load().PreferredMonitorId
+            );
+            monitor.SelectedIndex = 0;
+            Assert.Null(viewModel.OverlayBehavior.PreferredMonitorId);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

@@ -37,12 +37,72 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
 
         viewModel.KeepWhenGameLosesFocus = true;
         viewModel.HideMultiGameCommanderOverlay = true;
+        viewModel.LockToMonitor = true;
 
         OverlayBehaviorPreferences persisted = new OverlayBehaviorSettingsStore(
             Path.Combine(temporaryDirectory, "ui-settings.json")
         ).Load();
         Assert.True(persisted.KeepWhenGameLosesFocus);
         Assert.True(persisted.HideMultiGameCommanderOverlay);
+        Assert.True(persisted.LockToMonitor);
+    }
+
+    [Fact]
+    public void MonitorSelectionPersistsAndSurvivesDisconnectAndReconnect()
+    {
+        OverlayBehaviorViewModel viewModel = CreateViewModel();
+        var primary = new ApplicationMonitorOption("DP-1", "Ultrawide (Primary)");
+        var secondary = new ApplicationMonitorOption("DP-2", "Right display");
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+        viewModel.SetAvailableMonitors([primary, secondary, secondary, new(null, "Invalid")]);
+        Assert.Equal(3, viewModel.MonitorOptions.Count);
+        viewModel.SelectedMonitor = secondary;
+
+        Assert.Equal("DP-2", CreateViewModel().PreferredMonitorId);
+        Assert.Contains(nameof(viewModel.SelectedMonitor), notifications);
+        Assert.Contains(nameof(viewModel.PreferredMonitorId), notifications);
+        viewModel.SetAvailableMonitors([primary]);
+        Assert.Equal("DP-2", viewModel.SelectedMonitor.Id);
+        Assert.Contains("not connected", viewModel.SelectedMonitor.DisplayName);
+        Assert.Equal("DP-2", CreateViewModel().PreferredMonitorId);
+
+        var reconnected = new ApplicationMonitorOption("DP-2", "Right display - moved above primary");
+        viewModel.SetAvailableMonitors([primary, reconnected]);
+        Assert.Same(reconnected, viewModel.SelectedMonitor);
+        viewModel.SelectedMonitor = viewModel.MonitorOptions[0];
+        Assert.Null(CreateViewModel().PreferredMonitorId);
+    }
+
+    [Fact]
+    public void UnchangedOrNullSelectionDoesNotWriteSettings()
+    {
+        OverlayBehaviorViewModel viewModel = CreateViewModel();
+        viewModel.SelectedMonitor = new ApplicationMonitorOption(null, "Automatic");
+        viewModel.SelectedMonitor = null!;
+
+        Assert.False(File.Exists(Path.Combine(temporaryDirectory, "ui-settings.json")));
+        Assert.Null(viewModel.PreferredMonitorId);
+        Assert.Throws<ArgumentNullException>(() => viewModel.SetAvailableMonitors(null!));
+    }
+
+    [Fact]
+    public void MonitorSelectionRemainsActiveWhenSavingFails()
+    {
+        OverlayBehaviorViewModel viewModel = CreateViewModel();
+        var monitor = new ApplicationMonitorOption("DP-1", "Ultrawide");
+        viewModel.SetAvailableMonitors([monitor]);
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        Directory.CreateDirectory(path);
+
+        viewModel.SelectedMonitor = monitor;
+
+        Assert.Equal("DP-1", viewModel.PreferredMonitorId);
+        Assert.True(viewModel.HasSettingsStatus);
+        Assert.Contains("could not be saved", viewModel.SettingsStatus);
+        Directory.Delete(path);
+        viewModel.SelectedMonitor = viewModel.MonitorOptions[0];
+        Assert.False(viewModel.HasSettingsStatus);
     }
 
     [Fact]

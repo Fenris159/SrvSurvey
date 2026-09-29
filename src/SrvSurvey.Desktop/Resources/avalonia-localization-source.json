@@ -5299,6 +5299,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopBehaviorViewModel.cs"
   },
   {
+    "Text": "Automatic (primary monitor)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayBehaviorViewModel.cs"
+  },
+  {
     "Text": "Automatic Fleet Carrier cargo sync is off.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10308,6 +10316,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Choose where to edit overlays when Elite\u0027s window isn\u0027t detected. Automatic uses the primary monitor. Reopen the editor after changing this setting.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Choose where to export boxel statistics",
@@ -25780,6 +25796,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Keep overlays on the selected monitor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Keep overlays visible when Elite loses focus",
     "IsFormat": false,
     "SourceKinds": [
@@ -26799,6 +26823,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "Limits dragging of live overlays and editor previews to the Overlay monitor choice. Automatic uses Elite\u0027s display, or the primary display when Elite isn\u0027t detected.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Limpets",
     "IsFormat": false,
     "SourceKinds": [
@@ -27670,6 +27702,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "LockToMonitor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayBehaviorSettingsStore.cs"
   },
   {
     "Text": "Lockdown",
@@ -34391,6 +34431,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "OptionsFactory",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDragPolicy.cs"
+  },
+  {
     "Text": "Orange",
     "IsFormat": false,
     "SourceKinds": [
@@ -34792,6 +34840,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "Overlay drag: pointer sample; reported={0}; native={1}; nativeLeftButton={2}. Native samples can lead queued pointer events.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDragDiagnostics.cs"
+  },
+  {
+    "Text": "Overlay drag: start; window={0}; position={1}; pointer={2}; scale={3}; lock={4}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDragDiagnostics.cs"
+  },
+  {
+    "Text": "Overlay drag: stop; reason={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDragDiagnostics.cs"
+  },
+  {
     "Text": "Overlay edit mode is active on Windows.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34846,6 +34918,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Overlay monitor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Overlay mouse interaction disabled",
@@ -61011,6 +61091,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
   },
   {
+    "Text": "XID",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11Native.cs"
+  },
+  {
     "Text": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
     "IsFormat": false,
     "SourceKinds": [
@@ -62059,6 +62147,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "button-up without release event",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs"
+  },
+  {
     "Text": "by {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -62123,6 +62219,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
+    "Text": "capture lost",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs"
+  },
+  {
     "Text": "cargo",
     "IsFormat": false,
     "SourceKinds": [
@@ -62185,6 +62289,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
+  },
+  {
+    "Text": "closed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ManagedOverlayWindowDragSession.cs"
   },
   {
     "Text": "cmdr",
@@ -62579,6 +62691,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
   },
   {
+    "Text": "deactivated",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ManagedOverlayWindowDragSession.cs"
+  },
+  {
     "Text": "decal",
     "IsFormat": false,
     "SourceKinds": [
@@ -62681,6 +62801,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
+  },
+  {
+    "Text": "disposed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDragDiagnostics.cs"
   },
   {
     "Text": "do",
@@ -63947,6 +64075,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationInstanceRegistry.cs"
   },
   {
+    "Text": "interaction ended",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs"
+  },
+  {
     "Text": "items",
     "IsFormat": false,
     "SourceKinds": [
@@ -64795,6 +64931,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "off",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDragDiagnostics.cs"
+  },
+  {
     "Text": "on Discord",
     "IsFormat": false,
     "SourceKinds": [
@@ -65281,6 +65425,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "released",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs"
+  },
+  {
+    "Text": "released or capture lost",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ManagedOverlayWindowDragSession.cs"
   },
   {
     "Text": "relic",

@@ -212,6 +212,77 @@ public sealed class X11OverlayWindowManagerPolicyTests
         }
     }
 
+    [AvaloniaFact]
+    public void ManagedDragStopsIfMotionReportsLeftButtonUp()
+    {
+        var window = new Window { Width = 200, Height = 120 };
+        window.PointerPressed += (_, eventArgs) => ManagedOverlayWindowDragSession.Begin(window, eventArgs);
+        try
+        {
+            window.Show();
+            window.Position = new PixelPoint(100, 200);
+            window.MouseMove(new Point(20, 25), RawInputModifiers.None);
+            window.MouseDown(new Point(20, 25), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseMove(new Point(55, 70), RawInputModifiers.LeftMouseButton);
+            window.MouseMove(new Point(400, 300), RawInputModifiers.None);
+            window.MouseUp(new Point(400, 300), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(new PixelPoint(135, 245), window.Position);
+            window.MouseMove(new Point(500, 400), RawInputModifiers.None);
+            Assert.Equal(new PixelPoint(135, 245), window.Position);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ManagedDragRetainsMonitorBoundaryForTheGestureAndCancelFlushesItsLastValidMove()
+    {
+        var window = new Window { Width = 200, Height = 120 };
+        var boundary = new PixelRect(0, 1080, 5120, 1440);
+        int factoryCalls = 0;
+        var messages = new List<string>();
+        OverlayDragPolicy.SetOptionsFactory(
+            window,
+            () =>
+            {
+                factoryCalls++;
+                PixelRect captured = boundary;
+                return new OverlayDragOptions
+                {
+                    MonitorBounds = captured,
+                    ConstrainPosition = position =>
+                        OverlayDragPolicy.ClampPanel(position, new PixelSize(200, 120), default, captured),
+                    Log = messages.Add,
+                };
+            }
+        );
+        window.PointerPressed += (_, args) => ManagedOverlayWindowDragSession.Begin(window, args);
+        try
+        {
+            window.Show();
+            window.Position = new PixelPoint(4800, 2200);
+            window.MouseDown(new Point(20, 25), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            boundary = new PixelRect(-1920, -1080, 1920, 1080);
+            window.MouseMove(new Point(1000, 1000), RawInputModifiers.LeftMouseButton);
+            ManagedOverlayWindowDragSession.Cancel(window);
+            Assert.Equal(new PixelPoint(4920, 2400), window.Position);
+            Assert.Equal(1, factoryCalls);
+            Assert.Contains(
+                messages,
+                message => message.Contains("reason=interaction ended", StringComparison.Ordinal)
+            );
+            window.MouseUp(new Point(1000, 1000), MouseButton.Left, RawInputModifiers.None);
+            window.MouseMove(new Point(2000, 2000), RawInputModifiers.None);
+            Assert.Equal(new PixelPoint(4920, 2400), window.Position);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private sealed class CallbackDisposable : IDisposable
     {
         internal bool IsDisposed { get; private set; }

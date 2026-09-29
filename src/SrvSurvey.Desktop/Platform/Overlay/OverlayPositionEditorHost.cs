@@ -128,17 +128,21 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         PixelRect? preferred = preferredHostBounds is { Width: > 0, Height: > 0 }
             ? preferredHostBounds.Value
             : (PixelRect?)null;
-        Screen? screen = preferred is { } gameBounds
+        Screen? gameScreen = preferred is { } gameBounds
             ? toolbar.Screens.ScreenFromBounds(gameBounds) ?? toolbar.Screens.Primary
-            : toolbar.Screens.Primary;
-        if (screen is null)
+            : null;
+        MainWindowMonitor? fallbackMonitor = ResolveFallbackMonitor(
+            MainWindowPlacement.DescribeScreens(toolbar.Screens.All),
+            viewModel.OverlayBehavior?.PreferredMonitorId
+        );
+        if (gameScreen is null && fallbackMonitor is null)
         {
             Close(restoreRuntimeWindows: true);
             return false;
         }
 
-        hostBounds = preferred ?? screen.Bounds;
-        hostScaling = screen.Scaling;
+        hostBounds = preferred ?? fallbackMonitor!.Bounds;
+        hostScaling = gameScreen?.Scaling ?? fallbackMonitor!.Scaling;
         editSession = session;
         bool keepRuntimeOverlaysVisible = viewModel.IsLiveInteractionEnabled;
         toolbar.SizeChanged += OnEditorSizeChanged;
@@ -153,6 +157,19 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         ShowCategory(session, category);
         toolbar.Activate();
         return true;
+    }
+
+    internal static MainWindowMonitor? ResolveFallbackMonitor(
+        IReadOnlyList<MainWindowMonitor> monitors,
+        string? preferredMonitorId
+    )
+    {
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        return monitors.FirstOrDefault(monitor => string.Equals(monitor.Id, preferredMonitorId, comparison))
+            ?? monitors.FirstOrDefault(monitor => monitor.IsPrimary)
+            ?? (monitors.Count > 0 ? monitors[0] : null);
     }
 
     public void ShowCategory(OverlayPositionEditSession session, OverlayLayoutCategory category)
@@ -204,6 +221,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                 }
             }
             preview.ConfigureOpacity(session.DefaultOpacity, session.GetPlacement(definition.Name).Opacity);
+            OverlayDragPolicy.SetOptionsFactory(preview, () => CreatePreviewDragOptions(preview));
             preview.PointerPressed += OnPreviewPointerPressed;
             preview.SettingsRequested += OnPreviewSettingsRequested;
             preview.PanelSizeChanged += OnPreviewSizeChanged;
@@ -443,6 +461,18 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         );
     }
 
+    private OverlayDragOptions CreatePreviewDragOptions(OverlayPositionPreviewWindow preview)
+    {
+        OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        return OverlayDragPolicy.CreateOptions(
+            preview,
+            viewModel?.OverlayBehavior,
+            hostBounds,
+            metrics.PanelSize,
+            metrics.OriginOffset
+        );
+    }
+
     private void OnPreviewSettingsRequested(object? sender, OverlayPreviewSettingsRequestedEventArgs eventArgs)
     {
         viewModel?.OpenOverlaySettings(eventArgs.PlotterName);
@@ -502,6 +532,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.SettingsRequested -= OnPreviewSettingsRequested;
             preview.PanelSizeChanged -= OnPreviewSizeChanged;
             preview.Opened -= OnPreviewOpened;
+            OverlayDragPolicy.SetOptionsFactory(preview, null);
             preview.Close();
         }
 

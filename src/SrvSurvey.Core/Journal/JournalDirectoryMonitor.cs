@@ -279,7 +279,10 @@ public sealed class JournalDirectoryMonitor
             .ThenByDescending(file => file.Name, StringComparer.Ordinal)
             .ThenByDescending(file => file.FullName, StringComparer.Ordinal)
             .ToArray();
-        if (targetFrontierId is null)
+        // Bootstrap Automatic from the last identified commander when a newer
+        // menu-only journal exists. Subsequent polls follow the newest journal
+        // so a later login can switch commanders without a saved preference.
+        if (targetFrontierId is null && (hasCompletedFirstPoll || journals.Length < 2))
         {
             isAwaitingCommanderIdentity = false;
             return journals.FirstOrDefault();
@@ -296,15 +299,19 @@ public sealed class JournalDirectoryMonitor
                 newestFrontierId = frontierId;
             }
 
-            if (string.Equals(frontierId, targetFrontierId, StringComparison.OrdinalIgnoreCase))
+            if (
+                targetFrontierId is null
+                    ? !string.IsNullOrWhiteSpace(frontierId)
+                    : string.Equals(frontierId, targetFrontierId, StringComparison.OrdinalIgnoreCase)
+            )
             {
                 isAwaitingCommanderIdentity = index > 0 && newestFrontierId is null;
                 return journal;
             }
         }
 
-        isAwaitingCommanderIdentity = journals.Length > 0 && newestFrontierId is null;
-        return null;
+        isAwaitingCommanderIdentity = targetFrontierId is not null && journals.Length > 0 && newestFrontierId is null;
+        return targetFrontierId is null ? journals.FirstOrDefault() : null;
     }
 
     private async Task<string?> ReadFrontierIdAsync(FileInfo journal, CancellationToken cancellationToken)

@@ -67,6 +67,84 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial nuint XDefaultRootWindow(nint display);
 
+    [LibraryImport("libX11.so.6")]
+    private static partial int XQueryPointer(
+        nint display,
+        nuint window,
+        out nuint root,
+        out nuint child,
+        out int rootX,
+        out int rootY,
+        out int windowX,
+        out int windowY,
+        out uint mask
+    );
+
+    internal static IOverlayDragPointerProbe? TryCreatePointerProbe(string? handleDescriptor)
+    {
+        if (!OperatingSystem.IsLinux() || handleDescriptor != "XID")
+        {
+            return null;
+        }
+
+        try
+        {
+            nint pointerDisplay = XOpenDisplay(nint.Zero);
+            return pointerDisplay == nint.Zero ? null : new X11PointerProbe(pointerDisplay);
+        }
+        catch (Exception exception)
+            when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
+        {
+            return null;
+        }
+    }
+
+    private sealed class X11PointerProbe(nint pointerDisplay) : IOverlayDragPointerProbe
+    {
+        private nint currentDisplay = pointerDisplay;
+        private long lastQueryTimestamp;
+
+        public OverlayDragPointerSample? Read()
+        {
+            long now = System.Diagnostics.Stopwatch.GetTimestamp();
+            if (System.Diagnostics.Stopwatch.GetElapsedTime(lastQueryTimestamp, now) < TimeSpan.FromMilliseconds(16))
+            {
+                return null;
+            }
+
+            lastQueryTimestamp = now;
+            if (
+                currentDisplay == nint.Zero
+                || XQueryPointer(
+                    currentDisplay,
+                    XDefaultRootWindow(currentDisplay),
+                    out _,
+                    out _,
+                    out int x,
+                    out int y,
+                    out _,
+                    out _,
+                    out uint mask
+                ) == 0
+            )
+            {
+                return null;
+            }
+
+            return new OverlayDragPointerSample(new Avalonia.PixelPoint(x, y), (mask & (1U << 8)) != 0);
+        }
+
+        public void Dispose()
+        {
+            nint previousDisplay = currentDisplay;
+            currentDisplay = nint.Zero;
+            if (previousDisplay != nint.Zero)
+            {
+                _ = XCloseDisplay(previousDisplay);
+            }
+        }
+    }
+
     [LibraryImport("libX11.so.6", StringMarshalling = StringMarshalling.Utf8)]
     internal static partial nuint XInternAtom(nint display, string atomName, int onlyIfExists);
 

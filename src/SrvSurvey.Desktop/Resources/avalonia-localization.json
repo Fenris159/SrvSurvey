@@ -2649,6 +2649,10 @@
       "translation": "Automatisch (Standardeinstellung des Betriebssystems)"
     },
     {
+      "source": "Automatic (primary monitor)",
+      "translation": "Automatisch (primärer Monitor)"
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "Die automatische Frachtsynchronisierung des Flottenbetreibers ist deaktiviert."
     },
@@ -5143,6 +5147,10 @@
     {
       "source": "Choose where this journey should begin.",
       "translation": "Wählen Sie, wo diese Reise beginnen soll."
+    },
+    {
+      "source": "Choose where to edit overlays when Elite's window isn't detected. Automatic uses the primary monitor. Reopen the editor after changing this setting.",
+      "translation": "Wählen Sie aus, wo Overlays bearbeitet werden sollen, wenn das Elite-Fenster nicht erkannt wird. Bei „Automatisch“ wird der primäre Monitor verwendet. Öffnen Sie den Editor erneut, nachdem Sie diese Einstellung geändert haben."
     },
     {
       "source": "Choose where to export boxel statistics",
@@ -12853,6 +12861,10 @@
       "translation": "Bewahren Sie Bergbauringe, gespeicherte Tagebaukarten, Standorte, POIs und andere Ziele in einem Katalog auf. Weisen Sie eine oder mehrere Kategorien zu, um zu steuern, wo jedes Lesezeichen angezeigt wird."
     },
     {
+      "source": "Keep overlays on the selected monitor",
+      "translation": "Behalten Sie Overlays auf dem ausgewählten Monitor bei"
+    },
+    {
       "source": "Keep overlays visible when Elite loses focus",
       "translation": "Halten Sie die Überlagerungen sichtbar, wenn Elite den Fokus verliert"
     },
@@ -13361,6 +13373,10 @@
       "translation": "Kalk"
     },
     {
+      "source": "Limits dragging of live overlays and editor previews to the Overlay monitor choice. Automatic uses Elite's display, or the primary display when Elite isn't detected.",
+      "translation": "Beschränkt das Ziehen von Live-Overlays und Editor-Vorschauen auf die Overlay-Monitorauswahl. Automatisch verwendet die Elite-Anzeige oder die primäre Anzeige, wenn Elite nicht erkannt wird."
+    },
+    {
       "source": "Limpets",
       "translation": "Napfschnecken"
     },
@@ -13795,6 +13811,10 @@
     {
       "source": "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
       "translation": "Standorte werden für den aktuellen Kommandanten und Körper getrennt von den Biologie-Lesezeichen gespeichert. Die Platzierung berücksichtigt das Rhino-Cockpit und die Einsatz-Offsets und erfordert die Anwesenheit an Bord des Rhino."
+    },
+    {
+      "source": "LockToMonitor",
+      "translation": "LockToMonitor"
     },
     {
       "source": "Lockdown",
@@ -17145,6 +17165,10 @@
       "translation": "Optional {0} · Klasse {1}"
     },
     {
+      "source": "OptionsFactory",
+      "translation": "OptionsFactory"
+    },
+    {
       "source": "Orange",
       "translation": "Orange"
     },
@@ -17345,6 +17369,18 @@
       "translation": "Overlay-Farben sind unabhängig vom Anwendungsthema. Importierte theme.json Darstellungseinstellungen sind aktiv, bis Sie hier Änderungen übernehmen."
     },
     {
+      "source": "Overlay drag: pointer sample; reported={0}; native={1}; nativeLeftButton={2}. Native samples can lead queued pointer events.",
+      "translation": "Overlay-Ziehen: Zeigerbeispiel; berichtet={0}; native={1}; nativeLeftButton={2}. Native Samples können in der Warteschlange befindliche Zeigerereignisse auslösen."
+    },
+    {
+      "source": "Overlay drag: start; window={0}; position={1}; pointer={2}; scale={3}; lock={4}.",
+      "translation": "Overlay-Ziehen: Start; window={0}; position={1}; Zeiger={2}; Maßstab={3}; lock={4}."
+    },
+    {
+      "source": "Overlay drag: stop; reason={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}.",
+      "translation": "Overlay-Ziehen: Stopp; Grund={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}."
+    },
+    {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "Der Overlay-Bearbeitungsmodus ist unter Windows aktiv."
     },
@@ -17371,6 +17407,10 @@
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
       "translation": "Overlay fehlt: Überprüfen Sie die individuelle Sichtbarkeit und den Auslöser und testen Sie es dann unter Overlay-Positionen bearbeiten."
+    },
+    {
+      "source": "Overlay monitor",
+      "translation": "Overlay-Monitor"
     },
     {
       "source": "Overlay mouse interaction disabled",
@@ -30425,6 +30465,10 @@
       "translation": "Höchste X11-Transparenz, XShape-Click-through, Spielfenster-Tracking und globale Tastatureingabe sind verfügbar."
     },
     {
+      "source": "XID",
+      "translation": "XID"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland ist vorhanden, aber Click-through- oder Game-Window-Tracking konnte nicht initialisiert werden; Getrennte Overlays sind deaktiviert."
     },
@@ -30949,6 +30993,10 @@
       "translation": "Bulletin"
     },
     {
+      "source": "button-up without release event",
+      "translation": "Button-Up ohne Release-Ereignis"
+    },
+    {
       "source": "by {0}",
       "translation": "von {0}"
     },
@@ -30981,6 +31029,10 @@
       "translation": "Untertitel"
     },
     {
+      "source": "capture lost",
+      "translation": "Gefangennahme verloren"
+    },
+    {
       "source": "cargo",
       "translation": "Fracht"
     },
@@ -31011,6 +31063,10 @@
     {
       "source": "clear",
       "translation": "klar"
+    },
+    {
+      "source": "closed",
+      "translation": "geschlossen"
     },
     {
       "source": "cmdr",
@@ -31209,6 +31265,10 @@
       "translation": "de"
     },
     {
+      "source": "deactivated",
+      "translation": "deaktiviert"
+    },
+    {
       "source": "decal",
       "translation": "Aufkleber"
     },
@@ -31259,6 +31319,10 @@
     {
       "source": "disabled",
       "translation": "deaktiviert"
+    },
+    {
+      "source": "disposed",
+      "translation": "entsorgt"
     },
     {
       "source": "do",
@@ -31893,6 +31957,10 @@
       "translation": "Instanzen"
     },
     {
+      "source": "interaction ended",
+      "translation": "Interaktion beendet"
+    },
+    {
       "source": "items",
       "translation": "Artikel"
     },
@@ -32317,6 +32385,10 @@
       "translation": "Ziel"
     },
     {
+      "source": "off",
+      "translation": "aus"
+    },
+    {
       "source": "on Discord",
       "translation": "am Discord"
     },
@@ -32559,6 +32631,14 @@
     {
       "source": "relative bearing direction near far distance",
       "translation": "relative Peilrichtung in der Nähe und in der Ferne"
+    },
+    {
+      "source": "released",
+      "translation": "freigegeben"
+    },
+    {
+      "source": "released or capture lost",
+      "translation": "freigegeben oder Gefangennahme verloren"
     },
     {
       "source": "relic",
@@ -37203,6 +37283,10 @@
       "translation": "Automático (predeterminado del sistema operativo)"
     },
     {
+      "source": "Automatic (primary monitor)",
+      "translation": "Automático (monitor primario)"
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "La sincronización automática de carga de Fleet Carrier está desactivada."
     },
@@ -39697,6 +39781,10 @@
     {
       "source": "Choose where this journey should begin.",
       "translation": "Elija dónde debe comenzar este viaje."
+    },
+    {
+      "source": "Choose where to edit overlays when Elite's window isn't detected. Automatic uses the primary monitor. Reopen the editor after changing this setting.",
+      "translation": "Elija dónde editar las superposiciones cuando no se detecte la ventana de Elite. Automático utiliza el monitor principal. Vuelva a abrir el editor después de cambiar esta configuración."
     },
     {
       "source": "Choose where to export boxel statistics",
@@ -47407,6 +47495,10 @@
       "translation": "Mantenga anillos de minería, mapas de minería de superficie guardados, ubicaciones, puntos de interés y otros destinos en un catálogo. Asigne una o más categorías para controlar dónde aparece cada marcador."
     },
     {
+      "source": "Keep overlays on the selected monitor",
+      "translation": "Mantener superposiciones en el monitor seleccionado"
+    },
+    {
       "source": "Keep overlays visible when Elite loses focus",
       "translation": "Mantenga las superposiciones visibles cuando Elite pierda el foco"
     },
@@ -47915,6 +48007,10 @@
       "translation": "Cal"
     },
     {
+      "source": "Limits dragging of live overlays and editor previews to the Overlay monitor choice. Automatic uses Elite's display, or the primary display when Elite isn't detected.",
+      "translation": "Limita el arrastre de superposiciones en vivo y vistas previas del editor a la opción de monitor Superposición. Automático utiliza la pantalla de Elite o la pantalla principal cuando no se detecta Elite."
+    },
+    {
       "source": "Limpets",
       "translation": "lapas"
     },
@@ -48349,6 +48445,10 @@
     {
       "source": "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
       "translation": "Las ubicaciones se guardan para el comandante y el cuerpo actuales por separado de los marcadores de biología. La ubicación tiene en cuenta la cabina del Rhino y las compensaciones de despliegue y requiere estar a bordo del Rhino."
+    },
+    {
+      "source": "LockToMonitor",
+      "translation": "Bloquear para monitorear"
     },
     {
       "source": "Lockdown",
@@ -51699,6 +51799,10 @@
       "translation": "Opcional {0} · Clase {1}"
     },
     {
+      "source": "OptionsFactory",
+      "translation": "OpcionesFábrica"
+    },
+    {
       "source": "Orange",
       "translation": "Naranja"
     },
@@ -51899,6 +52003,18 @@
       "translation": "Los colores de superposición son independientes del tema de la aplicación. La configuración de apariencia importada theme.json está activa hasta que aplique los cambios aquí."
     },
     {
+      "source": "Overlay drag: pointer sample; reported={0}; native={1}; nativeLeftButton={2}. Native samples can lead queued pointer events.",
+      "translation": "Arrastre de superposición: muestra de puntero; informado={0}; nativo={1}; nativoLeftButton={2}. Las muestras nativas pueden generar eventos de puntero en cola."
+    },
+    {
+      "source": "Overlay drag: start; window={0}; position={1}; pointer={2}; scale={3}; lock={4}.",
+      "translation": "Arrastre de superposición: inicio; ventana={0}; posición={1}; puntero={2}; escala={3}; bloquear={4}."
+    },
+    {
+      "source": "Overlay drag: stop; reason={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}.",
+      "translation": "Arrastre superpuesto: detener; motivo={0}; posición={1}; muestras nativas={2}; maxPointerDifferencePx={3},{4}."
+    },
+    {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "El modo de edición de superposición está activo en Windows."
     },
@@ -51925,6 +52041,10 @@
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
       "translation": "Falta superposición: verifique su visibilidad individual y su activación, luego pruébelo en Editar posiciones de superposición."
+    },
+    {
+      "source": "Overlay monitor",
+      "translation": "Monitor de superposición"
     },
     {
       "source": "Overlay mouse interaction disabled",
@@ -64979,6 +65099,10 @@
       "translation": "Están disponibles la transparencia superior de X11, los clics de XShape, el seguimiento de la ventana del juego y la entrada de teclado global."
     },
     {
+      "source": "XID",
+      "translation": "xid"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland está presente, pero no se pudo inicializar el seguimiento de clics o ventanas de juego; las superposiciones separadas están deshabilitadas."
     },
@@ -65503,6 +65627,10 @@
       "translation": "boletín"
     },
     {
+      "source": "button-up without release event",
+      "translation": "abotonado sin evento de liberación"
+    },
+    {
       "source": "by {0}",
       "translation": "por {0}"
     },
@@ -65535,6 +65663,10 @@
       "translation": "subtítulo"
     },
     {
+      "source": "capture lost",
+      "translation": "captura perdida"
+    },
+    {
       "source": "cargo",
       "translation": "carga"
     },
@@ -65565,6 +65697,10 @@
     {
       "source": "clear",
       "translation": "claro"
+    },
+    {
+      "source": "closed",
+      "translation": "cerrado"
     },
     {
       "source": "cmdr",
@@ -65763,6 +65899,10 @@
       "translation": "de"
     },
     {
+      "source": "deactivated",
+      "translation": "desactivado"
+    },
+    {
       "source": "decal",
       "translation": "calcomanía"
     },
@@ -65813,6 +65953,10 @@
     {
       "source": "disabled",
       "translation": "desactivado"
+    },
+    {
+      "source": "disposed",
+      "translation": "dispuesto"
     },
     {
       "source": "do",
@@ -66447,6 +66591,10 @@
       "translation": "instancias"
     },
     {
+      "source": "interaction ended",
+      "translation": "la interacción terminó"
+    },
+    {
       "source": "items",
       "translation": "artículos"
     },
@@ -66871,6 +67019,10 @@
       "translation": "objetivo"
     },
     {
+      "source": "off",
+      "translation": "apagado"
+    },
+    {
       "source": "on Discord",
       "translation": "en Discord"
     },
@@ -67113,6 +67265,14 @@
     {
       "source": "relative bearing direction near far distance",
       "translation": "dirección de rumbo relativa cerca de lejos"
+    },
+    {
+      "source": "released",
+      "translation": "liberado"
+    },
+    {
+      "source": "released or capture lost",
+      "translation": "liberado o capturado perdido"
     },
     {
       "source": "relic",
@@ -71757,6 +71917,10 @@
       "translation": "Automatique (par défaut du système d'exploitation)"
     },
     {
+      "source": "Automatic (primary monitor)",
+      "translation": "Automatique (moniteur principal)"
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "La synchronisation automatique du fret Fleet Carrier est désactivée."
     },
@@ -74251,6 +74415,10 @@
     {
       "source": "Choose where this journey should begin.",
       "translation": "Choisissez où ce voyage doit commencer."
+    },
+    {
+      "source": "Choose where to edit overlays when Elite's window isn't detected. Automatic uses the primary monitor. Reopen the editor after changing this setting.",
+      "translation": "Choisissez où modifier les superpositions lorsque la fenêtre d'Elite n'est pas détectée. Automatique utilise le moniteur principal. Rouvrez l'éditeur après avoir modifié ce paramètre."
     },
     {
       "source": "Choose where to export boxel statistics",
@@ -81961,6 +82129,10 @@
       "translation": "Conservez les anneaux miniers, les cartes d'exploitation minière à ciel ouvert enregistrées, les emplacements, les POI et autres destinations dans un seul catalogue. Attribuez une ou plusieurs catégories pour contrôler où chaque signet apparaît."
     },
     {
+      "source": "Keep overlays on the selected monitor",
+      "translation": "Conserver les superpositions sur le moniteur sélectionné"
+    },
+    {
       "source": "Keep overlays visible when Elite loses focus",
       "translation": "Gardez les superpositions visibles lorsque Elite perd le focus"
     },
@@ -82469,6 +82641,10 @@
       "translation": "Citron vert"
     },
     {
+      "source": "Limits dragging of live overlays and editor previews to the Overlay monitor choice. Automatic uses Elite's display, or the primary display when Elite isn't detected.",
+      "translation": "Limite le déplacement des superpositions en direct et des aperçus de l'éditeur vers le choix du moniteur de superposition. Automatique utilise l'affichage d'Elite ou l'affichage principal lorsque Elite n'est pas détecté."
+    },
+    {
       "source": "Limpets",
       "translation": "Patelles"
     },
@@ -82903,6 +83079,10 @@
     {
       "source": "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
       "translation": "Les emplacements sont enregistrés pour le commandant et le corps actuels séparément des signets de biologie. Le placement tient compte du cockpit du Rhino et des compensations de déploiement et nécessite d'être à bord du Rhino."
+    },
+    {
+      "source": "LockToMonitor",
+      "translation": "VerrouillerVersMoniteur"
     },
     {
       "source": "Lockdown",
@@ -86253,6 +86433,10 @@
       "translation": "Facultatif {0} · Classe {1}"
     },
     {
+      "source": "OptionsFactory",
+      "translation": "OptionsUsine"
+    },
+    {
       "source": "Orange",
       "translation": "Orange"
     },
@@ -86453,6 +86637,18 @@
       "translation": "Les couleurs de superposition sont indépendantes du thème de l'application. Les paramètres d'apparence importés theme.json sont actifs jusqu'à ce que vous appliquiez les modifications ici."
     },
     {
+      "source": "Overlay drag: pointer sample; reported={0}; native={1}; nativeLeftButton={2}. Native samples can lead queued pointer events.",
+      "translation": "Glissement de superposition : échantillon de pointeur ; signalé={0} ; natif={1}; nativeLeftButton={2}. Les échantillons natifs peuvent diriger des événements de pointeur en file d'attente."
+    },
+    {
+      "source": "Overlay drag: start; window={0}; position={1}; pointer={2}; scale={3}; lock={4}.",
+      "translation": "Glissement de superposition : démarrer ; fenêtre={0}; position={1}; pointeur={2}; échelle={3} ; verrou = {4}."
+    },
+    {
+      "source": "Overlay drag: stop; reason={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}.",
+      "translation": "Glissement de superposition : arrêt ; raison={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}."
+    },
+    {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "Le mode d’édition par superposition est actif sous Windows."
     },
@@ -86479,6 +86675,10 @@
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
       "translation": "Superposition manquante : vérifiez sa visibilité individuelle et son déclenchement, puis testez-la dans Modifier les positions de superposition."
+    },
+    {
+      "source": "Overlay monitor",
+      "translation": "Moniteur de superposition"
     },
     {
       "source": "Overlay mouse interaction disabled",
@@ -99533,6 +99733,10 @@
       "translation": "La transparence maximale X11, le clic XShape, le suivi de la fenêtre de jeu et la saisie globale au clavier sont disponibles."
     },
     {
+      "source": "XID",
+      "translation": "XID"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland est présent, mais le suivi des clics ou de la fenêtre de jeu n'a pas pu être initialisé ; les superpositions détachées sont désactivées."
     },
@@ -100057,6 +100261,10 @@
       "translation": "bulletin"
     },
     {
+      "source": "button-up without release event",
+      "translation": "bouton-up sans événement de libération"
+    },
+    {
       "source": "by {0}",
       "translation": "par {0}"
     },
@@ -100089,6 +100297,10 @@
       "translation": "légende"
     },
     {
+      "source": "capture lost",
+      "translation": "capture perdue"
+    },
+    {
       "source": "cargo",
       "translation": "cargaison"
     },
@@ -100119,6 +100331,10 @@
     {
       "source": "clear",
       "translation": "clair"
+    },
+    {
+      "source": "closed",
+      "translation": "fermé"
     },
     {
       "source": "cmdr",
@@ -100317,6 +100533,10 @@
       "translation": "de"
     },
     {
+      "source": "deactivated",
+      "translation": "désactivé"
+    },
+    {
       "source": "decal",
       "translation": "décalcomanie"
     },
@@ -100367,6 +100587,10 @@
     {
       "source": "disabled",
       "translation": "désactivé"
+    },
+    {
+      "source": "disposed",
+      "translation": "disposé"
     },
     {
       "source": "do",
@@ -101001,6 +101225,10 @@
       "translation": "cas"
     },
     {
+      "source": "interaction ended",
+      "translation": "interaction terminée"
+    },
+    {
       "source": "items",
       "translation": "articles"
     },
@@ -101425,6 +101653,10 @@
       "translation": "objectif"
     },
     {
+      "source": "off",
+      "translation": "désactivé"
+    },
+    {
       "source": "on Discord",
       "translation": "activé Discord"
     },
@@ -101667,6 +101899,14 @@
     {
       "source": "relative bearing direction near far distance",
       "translation": "direction du relèvement relatif à une distance proche et lointaine"
+    },
+    {
+      "source": "released",
+      "translation": "libéré"
+    },
+    {
+      "source": "released or capture lost",
+      "translation": "libéré ou capture perdue"
     },
     {
       "source": "relic",
@@ -106311,6 +106551,10 @@
       "translation": "Automático (padrão do sistema operacional)"
     },
     {
+      "source": "Automatic (primary monitor)",
+      "translation": "Automático (monitor principal)"
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "A sincronização automática de carga do Fleet Carrier está desativada."
     },
@@ -108805,6 +109049,10 @@
     {
       "source": "Choose where this journey should begin.",
       "translation": "Escolha onde esta jornada deve começar."
+    },
+    {
+      "source": "Choose where to edit overlays when Elite's window isn't detected. Automatic uses the primary monitor. Reopen the editor after changing this setting.",
+      "translation": "Escolha onde editar as sobreposições quando a janela do Elite não for detectada. Automático usa o monitor principal. Reabra o editor após alterar esta configuração."
     },
     {
       "source": "Choose where to export boxel statistics",
@@ -116515,6 +116763,10 @@
       "translation": "Mantenha anéis de mineração, mapas de mineração de superfície salvos, locais, POIs e outros destinos em um único catálogo. Atribua uma ou mais categorias para controlar onde cada marcador aparece."
     },
     {
+      "source": "Keep overlays on the selected monitor",
+      "translation": "Mantenha as sobreposições no monitor selecionado"
+    },
+    {
       "source": "Keep overlays visible when Elite loses focus",
       "translation": "Mantenha as sobreposições visíveis quando o Elite perder o foco"
     },
@@ -117023,6 +117275,10 @@
       "translation": "Lima"
     },
     {
+      "source": "Limits dragging of live overlays and editor previews to the Overlay monitor choice. Automatic uses Elite's display, or the primary display when Elite isn't detected.",
+      "translation": "Limita o arrastamento de sobreposições ao vivo e visualizações do editor à opção de monitor Sobreposição. Automático usa a tela do Elite ou a tela principal quando o Elite não é detectado."
+    },
+    {
       "source": "Limpets",
       "translation": "Lapas"
     },
@@ -117457,6 +117713,10 @@
     {
       "source": "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
       "translation": "As localizações são salvas para o Comandante e corpo atuais separadamente dos marcadores de biologia. A colocação é responsável pelo cockpit do Rhino e pelas compensações de implantação e requer estar a bordo do Rhino."
+    },
+    {
+      "source": "LockToMonitor",
+      "translation": "Bloquear para monitorar"
     },
     {
       "source": "Lockdown",
@@ -120807,6 +121067,10 @@
       "translation": "Opcional {0} · Classe {1}"
     },
     {
+      "source": "OptionsFactory",
+      "translation": "OpçõesFábrica"
+    },
+    {
       "source": "Orange",
       "translation": "Laranja"
     },
@@ -121007,6 +121271,18 @@
       "translation": "As cores de sobreposição são independentes do tema do aplicativo. As configurações de aparência importadas theme.json ficam ativas até que você aplique as alterações aqui."
     },
     {
+      "source": "Overlay drag: pointer sample; reported={0}; native={1}; nativeLeftButton={2}. Native samples can lead queued pointer events.",
+      "translation": "Arrastar sobreposição: amostra de ponteiro; reportado={0}; nativo={1}; NativeLeftButton={2}. Amostras nativas podem levar a eventos de ponteiro enfileirados."
+    },
+    {
+      "source": "Overlay drag: start; window={0}; position={1}; pointer={2}; scale={3}; lock={4}.",
+      "translation": "Arrastar sobreposição: iniciar; janela={0}; posição={1}; ponteiro={2}; escala={3}; bloqueio={4}."
+    },
+    {
+      "source": "Overlay drag: stop; reason={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}.",
+      "translation": "Arrastar sobreposição: parar; motivo={0}; posição={1}; NativeSamples={2}; maxPointerDifferencePx={3},{4}."
+    },
+    {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "O modo de edição de sobreposição está ativo no Windows."
     },
@@ -121033,6 +121309,10 @@
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
       "translation": "Sobreposição ausente: verifique sua visibilidade e acionamento individuais e teste-os em Editar posições de sobreposição."
+    },
+    {
+      "source": "Overlay monitor",
+      "translation": "Monitor de sobreposição"
     },
     {
       "source": "Overlay mouse interaction disabled",
@@ -134087,6 +134367,10 @@
       "translation": "Transparência superior do X11, clique em XShape, rastreamento de janela de jogo e entrada de teclado global estão disponíveis."
     },
     {
+      "source": "XID",
+      "translation": "XID"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "O XWayland está presente, mas o rastreamento de cliques ou da janela do jogo não pôde ser inicializado; as sobreposições desanexadas estão desativadas."
     },
@@ -134611,6 +134895,10 @@
       "translation": "boletim"
     },
     {
+      "source": "button-up without release event",
+      "translation": "botão sem evento de lançamento"
+    },
+    {
       "source": "by {0}",
       "translation": "por {0}"
     },
@@ -134643,6 +134931,10 @@
       "translation": "rubrica"
     },
     {
+      "source": "capture lost",
+      "translation": "captura perdida"
+    },
+    {
       "source": "cargo",
       "translation": "carga"
     },
@@ -134673,6 +134965,10 @@
     {
       "source": "clear",
       "translation": "claro"
+    },
+    {
+      "source": "closed",
+      "translation": "fechado"
     },
     {
       "source": "cmdr",
@@ -134871,6 +135167,10 @@
       "translation": "de"
     },
     {
+      "source": "deactivated",
+      "translation": "desativado"
+    },
+    {
       "source": "decal",
       "translation": "decalque"
     },
@@ -134921,6 +135221,10 @@
     {
       "source": "disabled",
       "translation": "desabilitado"
+    },
+    {
+      "source": "disposed",
+      "translation": "descartado"
     },
     {
       "source": "do",
@@ -135555,6 +135859,10 @@
       "translation": "instâncias"
     },
     {
+      "source": "interaction ended",
+      "translation": "interação terminou"
+    },
+    {
       "source": "items",
       "translation": "itens"
     },
@@ -135979,6 +136287,10 @@
       "translation": "objetivo"
     },
     {
+      "source": "off",
+      "translation": "desligado"
+    },
+    {
       "source": "on Discord",
       "translation": "ligado Discord"
     },
@@ -136221,6 +136533,14 @@
     {
       "source": "relative bearing direction near far distance",
       "translation": "direção relativa do rolamento próximo à distância"
+    },
+    {
+      "source": "released",
+      "translation": "lançado"
+    },
+    {
+      "source": "released or capture lost",
+      "translation": "liberado ou captura perdida"
     },
     {
       "source": "relic",
@@ -140865,6 +141185,10 @@
       "translation": "Автоматически (по умолчанию в операционной системе)"
     },
     {
+      "source": "Automatic (primary monitor)",
+      "translation": "Автоматический (основной монитор)"
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "Автоматическая синхронизация груза Fleet Carrier отключена."
     },
@@ -143359,6 +143683,10 @@
     {
       "source": "Choose where this journey should begin.",
       "translation": "Выберите, где должно начаться это путешествие."
+    },
+    {
+      "source": "Choose where to edit overlays when Elite's window isn't detected. Automatic uses the primary monitor. Reopen the editor after changing this setting.",
+      "translation": "Выберите, где редактировать наложения, если окно Elite не обнаружено. Автоматически используется основной монитор. Снова откройте редактор после изменения этого параметра."
     },
     {
       "source": "Choose where to export boxel statistics",
@@ -151069,6 +151397,10 @@
       "translation": "Храните горные кольца, сохраненные карты наземных горных работ, местоположения, POI и другие пункты назначения в одном каталоге. Назначьте одну или несколько категорий, чтобы контролировать, где будет появляться каждая закладка."
     },
     {
+      "source": "Keep overlays on the selected monitor",
+      "translation": "Сохранять наложения на выбранном мониторе"
+    },
+    {
       "source": "Keep overlays visible when Elite loses focus",
       "translation": "Сохраняйте наложения видимыми, когда Elite теряет фокус"
     },
@@ -151577,6 +151909,10 @@
       "translation": "Лайм"
     },
     {
+      "source": "Limits dragging of live overlays and editor previews to the Overlay monitor choice. Automatic uses Elite's display, or the primary display when Elite isn't detected.",
+      "translation": "Ограничивает перетаскивание живых наложений и предварительных просмотров редактора выбором монитора «Наложение». В автоматическом режиме используется дисплей Elite или основной дисплей, если Elite не обнаружен."
+    },
+    {
       "source": "Limpets",
       "translation": "Блюдечки"
     },
@@ -152011,6 +152347,10 @@
     {
       "source": "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
       "translation": "Локации сохраняются для текущего Командира и тела отдельно от закладок биологии. Размещение учитывает кабину Rhino и смещения при развертывании, а также требует пребывания на борту Rhino."
+    },
+    {
+      "source": "LockToMonitor",
+      "translation": "Локтомонитор"
     },
     {
       "source": "Lockdown",
@@ -155361,6 +155701,10 @@
       "translation": "Необязательный {0} · Класс {1}"
     },
     {
+      "source": "OptionsFactory",
+      "translation": "ПараметрыЗавод"
+    },
+    {
       "source": "Orange",
       "translation": "Апельсин"
     },
@@ -155561,6 +155905,18 @@
       "translation": "Цвета наложения не зависят от темы приложения. Импортированные настройки внешнего вида theme.json активны, пока вы не примените изменения здесь."
     },
     {
+      "source": "Overlay drag: pointer sample; reported={0}; native={1}; nativeLeftButton={2}. Native samples can lead queued pointer events.",
+      "translation": "Перетаскивание наложения: образец указателя; сообщили = {0}; родной = {1}; nativeLeftButton={2}. Собственные образцы могут привести к событиям указателя в очереди."
+    },
+    {
+      "source": "Overlay drag: start; window={0}; position={1}; pointer={2}; scale={3}; lock={4}.",
+      "translation": "Перетаскивание наложения: старт; окно = {0}; позиция = {1}; указатель = {2}; масштаб = {3}; замок={4}."
+    },
+    {
+      "source": "Overlay drag: stop; reason={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}.",
+      "translation": "Наложение перетаскивания: стоп; причина = {0}; позиция = {1}; NativeSamples = {2}; maxPointerDifferencePx={3},{4}."
+    },
+    {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "Режим редактирования наложения активен в Windows."
     },
@@ -155587,6 +155943,10 @@
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
       "translation": "Наложение отсутствует: проверьте его индивидуальную видимость и триггер, затем проверьте его в разделе «Редактировать позиции наложения»."
+    },
+    {
+      "source": "Overlay monitor",
+      "translation": "Наложение монитора"
     },
     {
       "source": "Overlay mouse interaction disabled",
@@ -168641,6 +169001,10 @@
       "translation": "Доступны высочайшая прозрачность X11, кликабельность XShape, отслеживание игровых окон и глобальный ввод с клавиатуры."
     },
     {
+      "source": "XID",
+      "translation": "XID"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland присутствует, но отслеживание кликов или игровых окон не может быть инициализировано; отдельные наложения отключены."
     },
@@ -169165,6 +169529,10 @@
       "translation": "бюллетень"
     },
     {
+      "source": "button-up without release event",
+      "translation": "нажатие кнопки без события отпускания"
+    },
+    {
       "source": "by {0}",
       "translation": "автор {0}"
     },
@@ -169197,6 +169565,10 @@
       "translation": "подпись"
     },
     {
+      "source": "capture lost",
+      "translation": "захват потерян"
+    },
+    {
       "source": "cargo",
       "translation": "груз"
     },
@@ -169227,6 +169599,10 @@
     {
       "source": "clear",
       "translation": "ясно"
+    },
+    {
+      "source": "closed",
+      "translation": "закрыто"
     },
     {
       "source": "cmdr",
@@ -169425,6 +169801,10 @@
       "translation": "де"
     },
     {
+      "source": "deactivated",
+      "translation": "деактивирован"
+    },
+    {
       "source": "decal",
       "translation": "наклейка"
     },
@@ -169475,6 +169855,10 @@
     {
       "source": "disabled",
       "translation": "неполноценный"
+    },
+    {
+      "source": "disposed",
+      "translation": "распоряжаться"
     },
     {
       "source": "do",
@@ -170109,6 +170493,10 @@
       "translation": "случаи"
     },
     {
+      "source": "interaction ended",
+      "translation": "взаимодействие завершено"
+    },
+    {
       "source": "items",
       "translation": "предметы"
     },
@@ -170533,6 +170921,10 @@
       "translation": "цель"
     },
     {
+      "source": "off",
+      "translation": "выключенный"
+    },
+    {
       "source": "on Discord",
       "translation": "на Discord"
     },
@@ -170775,6 +171167,14 @@
     {
       "source": "relative bearing direction near far distance",
       "translation": "относительное направление пеленга на близком расстоянии"
+    },
+    {
+      "source": "released",
+      "translation": "выпущенный"
+    },
+    {
+      "source": "released or capture lost",
+      "translation": "освобожден или захвачен потерян"
     },
     {
       "source": "relic",
@@ -175419,6 +175819,10 @@
       "translation": "自动（操作系统默认）"
     },
     {
+      "source": "Automatic (primary monitor)",
+      "translation": "自动（主监视器）"
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "自动舰队承运商货物同步已关闭。"
     },
@@ -177913,6 +178317,10 @@
     {
       "source": "Choose where this journey should begin.",
       "translation": "选择这个旅程应该从哪里开始。"
+    },
+    {
+      "source": "Choose where to edit overlays when Elite's window isn't detected. Automatic uses the primary monitor. Reopen the editor after changing this setting.",
+      "translation": "选择未检测到 Elite 窗口时编辑叠加层的位置。自动使用主显示器。更改此设置后重新打开编辑器。"
     },
     {
       "source": "Choose where to export boxel statistics",
@@ -185623,6 +186031,10 @@
       "translation": "将采矿环、保存的露天采矿地图、位置、兴趣点和其他目的地保存在一个目录中。分配一个或多个类别来控制每个书签的显示位置。"
     },
     {
+      "source": "Keep overlays on the selected monitor",
+      "translation": "在选定的显示器上保留叠加层"
+    },
+    {
       "source": "Keep overlays visible when Elite loses focus",
       "translation": "当 Elite 失去焦点时保持叠加层可见"
     },
@@ -186131,6 +186543,10 @@
       "translation": "酸橙"
     },
     {
+      "source": "Limits dragging of live overlays and editor previews to the Overlay monitor choice. Automatic uses Elite's display, or the primary display when Elite isn't detected.",
+      "translation": "限制将实时叠加和编辑器预览拖动到叠加监视器选项。自动使用 Elite 的显示屏，或者在未检测到 Elite 时使用主显示屏。"
+    },
+    {
       "source": "Limpets",
       "translation": "帽贝"
     },
@@ -186565,6 +186981,10 @@
     {
       "source": "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
       "translation": "当前指挥官和身体的位置与生物书签分开保存。放置考虑了犀牛驾驶舱和部署偏移，并且需要在犀牛上。"
+    },
+    {
+      "source": "LockToMonitor",
+      "translation": "锁定监视器"
     },
     {
       "source": "Lockdown",
@@ -189915,6 +190335,10 @@
       "translation": "可选 {0} · 类 {1}"
     },
     {
+      "source": "OptionsFactory",
+      "translation": "选项工厂"
+    },
+    {
       "source": "Orange",
       "translation": "橙子"
     },
@@ -190115,6 +190539,18 @@
       "translation": "叠加颜色独立于应用程序主题。导入的 theme.json 外观设置将处于活动状态，直到您在此处应用更改。"
     },
     {
+      "source": "Overlay drag: pointer sample; reported={0}; native={1}; nativeLeftButton={2}. Native samples can lead queued pointer events.",
+      "translation": "叠加拖动：指针样例；报告={0}；本机={1}； nativeLeftButton={2}。本机样本可以导致排队的指针事件。"
+    },
+    {
+      "source": "Overlay drag: start; window={0}; position={1}; pointer={2}; scale={3}; lock={4}.",
+      "translation": "叠加拖动：开始；窗口={0}；位置={1}；指针={2}；比例尺={3}；锁={4}。"
+    },
+    {
+      "source": "Overlay drag: stop; reason={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}.",
+      "translation": "叠加拖动：停止；原因={0}；位置={1}； nativeSamples={2}； maxPointerDifferencePx={3},{4}。"
+    },
+    {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "覆盖编辑模式在 Windows 上处于活动状态。"
     },
@@ -190141,6 +190577,10 @@
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
       "translation": "覆盖缺失：验证其单独的可见性和触发，然后在编辑覆盖位置中测试它。"
+    },
+    {
+      "source": "Overlay monitor",
+      "translation": "叠加监视器"
     },
     {
       "source": "Overlay mouse interaction disabled",
@@ -203195,6 +203635,10 @@
       "translation": "提供 X11 最顶层透明度、XShape 点击、游戏窗口跟踪和全局键盘输入。"
     },
     {
+      "source": "XID",
+      "translation": "西德"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland 存在，但无法初始化点击或游戏窗口跟踪；分离的叠加层被禁用。"
     },
@@ -203719,6 +204163,10 @@
       "translation": "公告"
     },
     {
+      "source": "button-up without release event",
+      "translation": "没有释放事件的按钮弹起"
+    },
+    {
       "source": "by {0}",
       "translation": "通过 {0}"
     },
@@ -203751,6 +204199,10 @@
       "translation": "标题"
     },
     {
+      "source": "capture lost",
+      "translation": "捕获丢失"
+    },
+    {
       "source": "cargo",
       "translation": "货物"
     },
@@ -203781,6 +204233,10 @@
     {
       "source": "clear",
       "translation": "清晰"
+    },
+    {
+      "source": "closed",
+      "translation": "关闭"
     },
     {
       "source": "cmdr",
@@ -203979,6 +204435,10 @@
       "translation": "德"
     },
     {
+      "source": "deactivated",
+      "translation": "停用"
+    },
+    {
       "source": "decal",
       "translation": "贴花"
     },
@@ -204029,6 +204489,10 @@
     {
       "source": "disabled",
       "translation": "残疾人"
+    },
+    {
+      "source": "disposed",
+      "translation": "处置"
     },
     {
       "source": "do",
@@ -204663,6 +205127,10 @@
       "translation": "实例"
     },
     {
+      "source": "interaction ended",
+      "translation": "互动结束"
+    },
+    {
       "source": "items",
       "translation": "项目"
     },
@@ -205087,6 +205555,10 @@
       "translation": "目标"
     },
     {
+      "source": "off",
+      "translation": "离开"
+    },
+    {
       "source": "on Discord",
       "translation": "上Discord"
     },
@@ -205329,6 +205801,14 @@
     {
       "source": "relative bearing direction near far distance",
       "translation": "近远距离相对方位方向"
+    },
+    {
+      "source": "released",
+      "translation": "释放"
+    },
+    {
+      "source": "released or capture lost",
+      "translation": "释放或捕获丢失"
     },
     {
       "source": "relic",
@@ -209973,6 +210453,10 @@
       "translation": "* AUTOMATIC (OPERATING SYSTEM DEFAULT) >>>!"
     },
     {
+      "source": "Automatic (primary monitor)",
+      "translation": "* AUTOMATIC (PRIMARY MONITOR) >>>!"
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "* AUTOMATIC FLEET CARRIER CARGO SYNC IS OFF. >>>!"
     },
@@ -212467,6 +212951,10 @@
     {
       "source": "Choose where this journey should begin.",
       "translation": "* CHOOSE WHERE THIS JOURNEY SHOULD BEGIN. >>>!"
+    },
+    {
+      "source": "Choose where to edit overlays when Elite's window isn't detected. Automatic uses the primary monitor. Reopen the editor after changing this setting.",
+      "translation": "* CHOOSE WHERE TO EDIT OVERLAYS WHEN ELITE'S WINDOW ISN'T DETECTED. AUTOMATIC USES THE PRIMARY MONITOR. REOPEN THE EDITOR AFTER CHANGING THIS SETTING. >>>!"
     },
     {
       "source": "Choose where to export boxel statistics",
@@ -220177,6 +220665,10 @@
       "translation": "* KEEP MINING RINGS, SAVED SURFACE MINING MAPS, LOCATIONS, POIS AND OTHER DESTINATIONS IN ONE CATALOG. ASSIGN ONE OR MORE CATEGORIES TO CONTROL WHERE EACH BOOKMARK APPEARS. >>>!"
     },
     {
+      "source": "Keep overlays on the selected monitor",
+      "translation": "* KEEP OVERLAYS ON THE SELECTED MONITOR >>>!"
+    },
+    {
       "source": "Keep overlays visible when Elite loses focus",
       "translation": "* KEEP OVERLAYS VISIBLE WHEN ELITE LOSES FOCUS >>>!"
     },
@@ -220685,6 +221177,10 @@
       "translation": "* LIME >>>!"
     },
     {
+      "source": "Limits dragging of live overlays and editor previews to the Overlay monitor choice. Automatic uses Elite's display, or the primary display when Elite isn't detected.",
+      "translation": "* LIMITS DRAGGING OF LIVE OVERLAYS AND EDITOR PREVIEWS TO THE OVERLAY MONITOR CHOICE. AUTOMATIC USES ELITE'S DISPLAY, OR THE PRIMARY DISPLAY WHEN ELITE ISN'T DETECTED. >>>!"
+    },
+    {
       "source": "Limpets",
       "translation": "* LIMPETS >>>!"
     },
@@ -221119,6 +221615,10 @@
     {
       "source": "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
       "translation": "* LOCATIONS ARE SAVED FOR THE CURRENT COMMANDER AND BODY SEPARATELY FROM BIOLOGY BOOKMARKS. PLACEMENT ACCOUNTS FOR THE RHINO COCKPIT AND DEPLOYMENT OFFSETS AND REQUIRES BEING ABOARD THE RHINO. >>>!"
+    },
+    {
+      "source": "LockToMonitor",
+      "translation": "* LOCKTOMONITOR >>>!"
     },
     {
       "source": "Lockdown",
@@ -224469,6 +224969,10 @@
       "translation": "* OPTIONAL {0} · CLASS {1} >>>!"
     },
     {
+      "source": "OptionsFactory",
+      "translation": "* OPTIONSFACTORY >>>!"
+    },
+    {
       "source": "Orange",
       "translation": "* ORANGE >>>!"
     },
@@ -224669,6 +225173,18 @@
       "translation": "* OVERLAY COLOURS ARE INDEPENDENT FROM THE APPLICATION THEME. IMPORTED THEME.JSON APPEARANCE SETTINGS ARE ACTIVE UNTIL YOU APPLY CHANGES HERE. >>>!"
     },
     {
+      "source": "Overlay drag: pointer sample; reported={0}; native={1}; nativeLeftButton={2}. Native samples can lead queued pointer events.",
+      "translation": "* OVERLAY DRAG: POINTER SAMPLE; REPORTED={0}; NATIVE={1}; NATIVELEFTBUTTON={2}. NATIVE SAMPLES CAN LEAD QUEUED POINTER EVENTS. >>>!"
+    },
+    {
+      "source": "Overlay drag: start; window={0}; position={1}; pointer={2}; scale={3}; lock={4}.",
+      "translation": "* OVERLAY DRAG: START; WINDOW={0}; POSITION={1}; POINTER={2}; SCALE={3}; LOCK={4}. >>>!"
+    },
+    {
+      "source": "Overlay drag: stop; reason={0}; position={1}; nativeSamples={2}; maxPointerDifferencePx={3},{4}.",
+      "translation": "* OVERLAY DRAG: STOP; REASON={0}; POSITION={1}; NATIVESAMPLES={2}; MAXPOINTERDIFFERENCEPX={3},{4}. >>>!"
+    },
+    {
       "source": "Overlay edit mode is active on Windows.",
       "translation": "* OVERLAY EDIT MODE IS ACTIVE ON WINDOWS. >>>!"
     },
@@ -224695,6 +225211,10 @@
     {
       "source": "Overlay missing: verify its individual visibility and trigger, then test it in Edit overlay positions.",
       "translation": "* OVERLAY MISSING: VERIFY ITS INDIVIDUAL VISIBILITY AND TRIGGER, THEN TEST IT IN EDIT OVERLAY POSITIONS. >>>!"
+    },
+    {
+      "source": "Overlay monitor",
+      "translation": "* OVERLAY MONITOR >>>!"
     },
     {
       "source": "Overlay mouse interaction disabled",
@@ -237749,6 +238269,10 @@
       "translation": "* X11 TOPMOST TRANSPARENCY, XSHAPE CLICK-THROUGH, GAME-WINDOW TRACKING, AND GLOBAL KEYBOARD INPUT ARE AVAILABLE. >>>!"
     },
     {
+      "source": "XID",
+      "translation": "* XID >>>!"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "* XWAYLAND IS PRESENT, BUT CLICK-THROUGH OR GAME-WINDOW TRACKING COULD NOT BE INITIALIZED; DETACHED OVERLAYS ARE DISABLED. >>>!"
     },
@@ -238273,6 +238797,10 @@
       "translation": "* BULLETIN >>>!"
     },
     {
+      "source": "button-up without release event",
+      "translation": "* BUTTON-UP WITHOUT RELEASE EVENT >>>!"
+    },
+    {
       "source": "by {0}",
       "translation": "* BY {0} >>>!"
     },
@@ -238305,6 +238833,10 @@
       "translation": "* CAPTION >>>!"
     },
     {
+      "source": "capture lost",
+      "translation": "* CAPTURE LOST >>>!"
+    },
+    {
       "source": "cargo",
       "translation": "* CARGO >>>!"
     },
@@ -238335,6 +238867,10 @@
     {
       "source": "clear",
       "translation": "* CLEAR >>>!"
+    },
+    {
+      "source": "closed",
+      "translation": "* CLOSED >>>!"
     },
     {
       "source": "cmdr",
@@ -238533,6 +239069,10 @@
       "translation": "* DE >>>!"
     },
     {
+      "source": "deactivated",
+      "translation": "* DEACTIVATED >>>!"
+    },
+    {
       "source": "decal",
       "translation": "* DECAL >>>!"
     },
@@ -238583,6 +239123,10 @@
     {
       "source": "disabled",
       "translation": "* DISABLED >>>!"
+    },
+    {
+      "source": "disposed",
+      "translation": "* DISPOSED >>>!"
     },
     {
       "source": "do",
@@ -239217,6 +239761,10 @@
       "translation": "* INSTANCES >>>!"
     },
     {
+      "source": "interaction ended",
+      "translation": "* INTERACTION ENDED >>>!"
+    },
+    {
       "source": "items",
       "translation": "* ITEMS >>>!"
     },
@@ -239641,6 +240189,10 @@
       "translation": "* OBJECTIVE >>>!"
     },
     {
+      "source": "off",
+      "translation": "* OFF >>>!"
+    },
+    {
       "source": "on Discord",
       "translation": "* ON DISCORD >>>!"
     },
@@ -239883,6 +240435,14 @@
     {
       "source": "relative bearing direction near far distance",
       "translation": "* RELATIVE BEARING DIRECTION NEAR FAR DISTANCE >>>!"
+    },
+    {
+      "source": "released",
+      "translation": "* RELEASED >>>!"
+    },
+    {
+      "source": "released or capture lost",
+      "translation": "* RELEASED OR CAPTURE LOST >>>!"
     },
     {
       "source": "relic",

@@ -18,7 +18,9 @@ public sealed class OverlayBehaviorSettingsStore
             GetBoolean(settings, "KeepWhenGameLosesFocus", false),
             GetBoolean(settings, "HideInDominatorSuit", false),
             GetBoolean(settings, "HideInMaverickSuit", false),
-            GetBoolean(settings, "HideMultiGameCommanderOverlay", false)
+            GetBoolean(settings, "HideMultiGameCommanderOverlay", false),
+            GetPreferredMonitorId(settings),
+            GetBoolean(settings, "LockToMonitor", false)
         );
     }
 
@@ -39,6 +41,15 @@ public sealed class OverlayBehaviorSettingsStore
             settings["HideInDominatorSuit"] = preferences.HideInDominatorSuit;
             settings["HideInMaverickSuit"] = preferences.HideInMaverickSuit;
             settings["HideMultiGameCommanderOverlay"] = preferences.HideMultiGameCommanderOverlay;
+            settings["LockToMonitor"] = preferences.LockToMonitor;
+            if (string.IsNullOrWhiteSpace(preferences.PreferredMonitorId))
+            {
+                settings.Remove("PreferredMonitor");
+            }
+            else
+            {
+                settings["PreferredMonitor"] = preferences.PreferredMonitorId.Trim();
+            }
         });
     }
 
@@ -48,11 +59,23 @@ public sealed class OverlayBehaviorSettingsStore
             ? result
             : fallback;
     }
+
+    private static string? GetPreferredMonitorId(JsonObject? settings)
+    {
+        return
+            settings?["PreferredMonitor"] is JsonValue value
+            && value.TryGetValue<string>(out string? result)
+            && !string.IsNullOrWhiteSpace(result)
+            ? result.Trim()
+            : null;
+    }
 }
 
 public sealed record OverlayBehaviorPreferences(
     bool KeepWhenGameLosesFocus,
     bool HideInDominatorSuit,
     bool HideInMaverickSuit,
-    bool HideMultiGameCommanderOverlay = false
+    bool HideMultiGameCommanderOverlay = false,
+    string? PreferredMonitorId = null,
+    bool LockToMonitor = false
 );

@@ -140,6 +140,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     public event PropertyChangedEventHandler? PropertyChanged;
     public MiningDetectionViewModel? MiningDetection { get; set; }
 
+    public OverlayBehaviorViewModel? OverlayBehavior { get; set; }
+
     public OverlayPlatformCapabilities Capabilities { get; }
 
     public IReadOnlyList<OverlayLayoutCategoryDefinition> Categories { get; }
@@ -780,6 +782,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private void EndLiveInteraction(bool saveChanges)
     {
+        foreach (Window window in liveWindows.Keys.ToArray())
+        {
+            ManagedOverlayWindowDragSession.Cancel(window);
+        }
+
         OverlayPositionEditSession? session = liveEditSession;
         IReadOnlyDictionary<string, LegacyOverlayPlacement> changes =
             session?.Changes ?? new Dictionary<string, LegacyOverlayPlacement>();
@@ -1003,6 +1010,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             OnLiveWindowPositionChanged(registered, eventArgs.Point);
         EventHandler closed = (_, _) =>
         {
+            ManagedOverlayWindowDragSession.Cancel(registered.Window, applyPendingMove: false);
             DetachLiveWindow(registered.Window);
             interactiveWindows.Remove(registered.Window);
         };
@@ -1014,6 +1022,16 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             closed
         );
         liveWindows.Add(registered.Window, state);
+        OverlayDragPolicy.SetOptionsFactory(
+            registered.Window,
+            () =>
+                OverlayDragPolicy.CreateOptions(
+                    registered.Window,
+                    OverlayBehavior,
+                    liveHostBounds,
+                    OverlayWindowMetrics.GetPixelSize(registered)
+                )
+        );
         registered.Window.AddHandler(InputElement.PointerPressedEvent, pointerPressed, RoutingStrategies.Bubble, true);
         registered.Window.PositionChanged += positionChanged;
         registered.Window.Closed += closed;
@@ -1027,6 +1045,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         window.RemoveHandler(InputElement.PointerPressedEvent, state.PointerPressed);
+        ManagedOverlayWindowDragSession.Cancel(window);
+        OverlayDragPolicy.SetOptionsFactory(window, null);
         window.PositionChanged -= state.PositionChanged;
         window.Closed -= state.Closed;
     }
@@ -1038,7 +1058,14 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        platform?.BeginMoveDrag(window, eventArgs);
+        if (OperatingSystem.IsWindows() && OverlayBehavior?.LockToMonitor == true)
+        {
+            ManagedOverlayWindowDragSession.Begin(window, eventArgs);
+        }
+        else
+        {
+            platform?.BeginMoveDrag(window, eventArgs);
+        }
         eventArgs.Handled = true;
     }
 
