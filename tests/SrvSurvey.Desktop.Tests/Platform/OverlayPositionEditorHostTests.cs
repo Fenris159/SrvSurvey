@@ -9,6 +9,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -21,6 +22,112 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-overlay-editor-host-tests-{Guid.NewGuid():N}"
     );
+
+    [Theory]
+    [InlineData(0, 1080, 1)]
+    [InlineData(-5120, -240, 1.5)]
+    public void ConfiguredFallbackUsesCurrentMonitorOffsetsAndScaling(int x, int y, double scaling)
+    {
+        var primary = new MainWindowMonitor(
+            "HDMI-A-1",
+            "Primary",
+            new PixelRect(1650, 0, 1920, 1080),
+            new PixelRect(1650, 0, 1920, 1040),
+            1,
+            true
+        );
+        var ultrawide = new MainWindowMonitor(
+            "DP-1",
+            "Ultrawide",
+            new PixelRect(x, y, 5120, 1440),
+            new PixelRect(x, y, 5120, 1400),
+            scaling,
+            false
+        );
+
+        MainWindowMonitor? selected = AvaloniaOverlayPositionEditorHost.ResolveFallbackMonitor(
+            [primary, ultrawide],
+            "DP-1"
+        );
+
+        Assert.NotNull(selected);
+        Assert.Same(ultrawide, selected);
+        Assert.Equal(new PixelRect(x, y, 5120, 1440), selected.Bounds);
+        Assert.Equal(scaling, selected.Scaling);
+        // Monitor identity, rather than cached coordinates, follows display rearrangement.
+        MainWindowMonitor moved = ultrawide with
+        {
+            Bounds = new PixelRect(5120, 1212, 5120, 1440),
+        };
+        Assert.Same(moved, AvaloniaOverlayPositionEditorHost.ResolveFallbackMonitor([primary, moved], "DP-1"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("disconnected")]
+    public void AutomaticAndDisconnectedFallbacksPreferPrimaryMonitor(string? id)
+    {
+        var secondary = new MainWindowMonitor(
+            "DP-2",
+            "Right",
+            new PixelRect(5120, 1212, 1920, 1080),
+            default,
+            1,
+            false
+        );
+        var primary = new MainWindowMonitor("DP-1", "Primary", new PixelRect(0, 1080, 5120, 1440), default, 1, true);
+
+        Assert.Same(primary, AvaloniaOverlayPositionEditorHost.ResolveFallbackMonitor([secondary, primary], id));
+        Assert.Same(secondary, AvaloniaOverlayPositionEditorHost.ResolveFallbackMonitor([secondary], id));
+        Assert.Null(AvaloniaOverlayPositionEditorHost.ResolveFallbackMonitor([], id));
+    }
+
+    [AvaloniaFact]
+    public void EditorUsesConfiguredMonitorWhenGameIsUnavailableAndGameBoundsWhenDetected()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var behavior = new OverlayBehaviorViewModel(
+            new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"))
+        );
+        var probe = new Window();
+        IReadOnlyList<MainWindowMonitor> monitors = MainWindowPlacement.DescribeScreens(probe.Screens.All);
+        probe.Close();
+        MainWindowMonitor monitor = monitors[0];
+        var option = new ApplicationMonitorOption(monitor.Id, monitor.DisplayName);
+        behavior.SetAvailableMonitors([option]);
+        behavior.SelectedMonitor = option;
+        var tracker = new FakeGameWindowTracker(GameWindowSnapshot.Unavailable);
+        using var viewModel = new OverlayInteractionViewModel(platform, tracker, store, store.Load(), registry, host)
+        {
+            OverlayBehavior = behavior,
+        };
+
+        Assert.True(viewModel.Begin());
+        Assert.NotNull(host.EditorToolbar);
+        Assert.True(monitor.Bounds.Contains(host.EditorToolbar.Position));
+        viewModel.Cancel();
+
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var gameHost = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        using var gameViewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, gameBounds, true, true)),
+            store,
+            store.Load(),
+            registry,
+            gameHost
+        )
+        {
+            OverlayBehavior = behavior,
+        };
+        Assert.True(gameViewModel.Begin());
+        Assert.NotNull(gameHost.EditorToolbar);
+        Assert.True(gameBounds.Contains(gameHost.EditorToolbar.Position));
+        gameViewModel.Cancel();
+    }
 
     [AvaloniaFact]
     public void CategorySelectorExpandsAnEditorOwnedPanelAboveTheToolbar()
@@ -42,6 +149,51 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         {
             window.Close();
         }
+    }
+
+    [AvaloniaFact]
+    public void EditorMonitorLockClampsPanelBodyAndPreservesPositionAfterSavingAndReopening()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var hostBounds = new PixelRect(100, 200, 1200, 800);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var behavior = new OverlayBehaviorViewModel(
+            new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+        );
+        behavior.LockToMonitor = true;
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, hostBounds, true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            OverlayBehavior = behavior,
+        };
+        Assert.True(viewModel.Begin());
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotJumpInfo"
+        );
+        MainWindowMonitor monitor = MainWindowPlacement.DescribeScreens(preview.Screens.All)[0];
+        var option = new ApplicationMonitorOption(monitor.Id, monitor.DisplayName);
+        behavior.SetAvailableMonitors([option]);
+        behavior.SelectedMonitor = option;
+        preview.MouseDown(new Point(12, 12), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+        preview.MouseMove(new Point(6000, 6000), RawInputModifiers.LeftMouseButton);
+        preview.MouseUp(new Point(6000, 6000), MouseButton.Left, RawInputModifiers.None);
+        OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+        Assert.Equal(monitor.Bounds.Right - metrics.PanelSize.Width, origin.X);
+        Assert.Equal(monitor.Bounds.Bottom - metrics.PanelSize.Height, origin.Y);
+        viewModel.Save();
+        Assert.True(viewModel.Begin());
+        preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == "PlotJumpInfo");
+        Assert.Equal(origin, preview.GetPanelScreenOrigin(preview.RenderScaling));
+        viewModel.Cancel();
     }
 
     [AvaloniaFact]

@@ -28,7 +28,38 @@
                      TextWrapping="Wrap"
                      Text="Apply the original focus and Odyssey suit rules consistently to every passive overlay." />
         </StackPanel>
-        <CheckBox IsChecked="{Binding OverlayBehavior.KeepWhenGameLosesFocus, Mode=TwoWay}"
+        <Grid x:Name="OverlayMonitorSetting" ColumnDefinitions="*,280" ColumnSpacing="20">
+          <StackPanel Spacing="3">
+            <TextBlock FontWeight="SemiBold" Text="Overlay monitor" />
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="Choose where to edit overlays when Elite's window isn't detected. Automatic uses the primary monitor. Reopen the editor after changing this setting." />
+          </StackPanel>
+          <ComboBox x:Name="OverlayMonitorComboBox"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    ItemsSource="{Binding OverlayBehavior.MonitorOptions}"
+                    SelectedItem="{Binding OverlayBehavior.SelectedMonitor, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ApplicationMonitorOption">
+                <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </Grid>
+        <StackPanel Spacing="3">
+          <CheckBox x:Name="LockOverlaysToMonitorCheckBox"
+                    IsChecked="{Binding OverlayBehavior.LockToMonitor, Mode=TwoWay}"
+                    Content="Keep overlays on the selected monitor" />
+          <TextBlock Classes="muted"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="Limits dragging of live overlays and editor previews to the Overlay monitor choice. Automatic uses Elite's display, or the primary display when Elite isn't detected." />
+        </StackPanel>
+        <CheckBox x:Name="KeepOverlaysVisibleCheckBox"
+                  IsChecked="{Binding OverlayBehavior.KeepWhenGameLosesFocus, Mode=TwoWay}"
                   Content="Keep overlays visible when Elite loses focus" />
         <CheckBox IsChecked="{Binding OverlayBehavior.HideMultiGameCommanderOverlay, Mode=TwoWay}"
                   Content="Hide the multi-game Commander overlay" />

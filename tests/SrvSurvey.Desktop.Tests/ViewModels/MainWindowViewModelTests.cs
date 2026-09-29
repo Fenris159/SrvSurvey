@@ -359,6 +359,75 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task AutomaticStartupAfterMenuOnlyShutdownRestoresCommanderAndAllowsNextAccountLogin()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-automatic-journal-bootstrap-{Guid.NewGuid():N}");
+        try
+        {
+            string journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            string statusPath = Path.Combine(journals, StatusFileReader.FileName);
+            await File.WriteAllTextAsync(statusPath, "{\"event\":\"Status\",\"Flags\":0,\"Flags2\":0}");
+            string previous = Path.Combine(journals, "Journal.2026-08-10T100000.01.log");
+            await File.WriteAllTextAsync(
+                previous,
+                "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"Shutdown\"}\n"
+            );
+            File.SetLastWriteTimeUtc(previous, new DateTime(2026, 8, 10, 10, 0, 0, DateTimeKind.Utc));
+            string newest = Path.Combine(journals, "Journal.2026-08-10T110000.01.log");
+            await File.WriteAllTextAsync(newest, "{\"event\":\"Fileheader\"}\n{\"event\":\"Shutdown\"}\n");
+            File.SetLastWriteTimeUtc(newest, new DateTime(2026, 8, 10, 11, 0, 0, DateTimeKind.Utc));
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(paths)
+            );
+
+            await viewModel.RefreshAsync();
+
+            Assert.Null(viewModel.TargetFrontierId);
+            Assert.Equal("Drew", viewModel.CommanderName);
+            Assert.Equal("F123", viewModel.FrontierId);
+            Assert.True(viewModel.OverlayBehavior.ShouldSuppressForSession);
+            await viewModel.RefreshAsync();
+            Assert.Equal("Drew", viewModel.CommanderName);
+            Assert.Equal("Session closed", viewModel.SessionState);
+            Assert.True(viewModel.OverlayBehavior.ShouldSuppressForSession);
+
+            string login = Path.Combine(journals, "Journal.2026-08-10T120000.01.log");
+            await File.WriteAllTextAsync(
+                statusPath,
+                "{\"timestamp\":\"2026-08-10T12:00:00Z\",\"event\":\"Status\",\"Flags\":0,\"Flags2\":0}"
+            );
+            await File.WriteAllTextAsync(
+                login,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Other\",\"FID\":\"F999\"}\n"
+                    + "{\"event\":\"LoadGame\",\"Commander\":\"Other\",\"FID\":\"F999\"}\n"
+            );
+            await viewModel.RefreshAsync();
+            Assert.Equal("Other", viewModel.CommanderName);
+            Assert.Equal("F999", viewModel.FrontierId);
+            Assert.Equal("Session active", viewModel.SessionState);
+            Assert.False(viewModel.OverlayBehavior.ShouldSuppressForSession);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task NewPreLoginJournalSuppressesTargetCommanderOverlaysUntilLoadGame()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-menu-session-{Guid.NewGuid():N}");

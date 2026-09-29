@@ -9,6 +9,8 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
 {
     private readonly OverlayBehaviorSettingsStore settingsStore;
     private OverlayBehaviorPreferences preferences;
+    private static readonly ApplicationMonitorOption AutomaticMonitor = new(null, "Automatic (primary monitor)");
+    private IReadOnlyList<ApplicationMonitorOption> monitorOptions = [AutomaticMonitor];
     private OdysseySuitType currentSuit;
     private bool isOnFoot;
     private bool hasStatus;
@@ -25,6 +27,58 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public IReadOnlyList<ApplicationMonitorOption> MonitorOptions => monitorOptions;
+
+    public string? PreferredMonitorId => preferences.PreferredMonitorId;
+
+    public bool LockToMonitor
+    {
+        get => preferences.LockToMonitor;
+        set => Update(preferences with { LockToMonitor = value });
+    }
+
+    public ApplicationMonitorOption SelectedMonitor
+    {
+        get =>
+            monitorOptions.FirstOrDefault(option => MonitorIdsEqual(option.Id, PreferredMonitorId)) ?? AutomaticMonitor;
+        set
+        {
+            if (value is not null)
+            {
+                Update(preferences with { PreferredMonitorId = value.Id });
+            }
+        }
+    }
+
+    public void SetAvailableMonitors(IEnumerable<ApplicationMonitorOption> availableMonitors)
+    {
+        ArgumentNullException.ThrowIfNull(availableMonitors);
+        var options = new List<ApplicationMonitorOption> { AutomaticMonitor };
+        options.AddRange(
+            availableMonitors
+                .Where(option => !string.IsNullOrWhiteSpace(option.Id))
+                .DistinctBy(
+                    option => option.Id,
+                    OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+                )
+        );
+        if (PreferredMonitorId is { } id && !options.Any(option => MonitorIdsEqual(option.Id, id)))
+        {
+            options.Add(new ApplicationMonitorOption(id, $"{id} (not connected; using primary monitor)"));
+        }
+
+        monitorOptions = options;
+        OnPropertyChanged(nameof(MonitorOptions));
+        OnPropertyChanged(nameof(SelectedMonitor));
+    }
+
+    private static bool MonitorIdsEqual(string? left, string? right) =>
+        string.Equals(
+            left,
+            right,
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+        );
 
     public bool KeepWhenGameLosesFocus
     {
@@ -149,6 +203,9 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
         }
 
         OnPropertyChanged(nameof(KeepWhenGameLosesFocus));
+        OnPropertyChanged(nameof(SelectedMonitor));
+        OnPropertyChanged(nameof(PreferredMonitorId));
+        OnPropertyChanged(nameof(LockToMonitor));
         OnPropertyChanged(nameof(HideInDominatorSuit));
         OnPropertyChanged(nameof(HideInMaverickSuit));
         OnPropertyChanged(nameof(HideMultiGameCommanderOverlay));

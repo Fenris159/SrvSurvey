@@ -255,6 +255,131 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         Assert.Equal(["Fileheader", "Commander"], update.JournalEvents.Select(entry => entry.EventName));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AutomaticStartupRestoresLastCommanderThenFollowsNewestJournal(bool menuSessionClosed)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string previous = Path.Combine(temporaryDirectory, "Journal.2026-07-24T100000.01.log");
+        await File.WriteAllTextAsync(
+            previous,
+            "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\"}\n"
+                + "{\"event\":\"Shutdown\"}\n"
+        );
+        File.SetLastWriteTimeUtc(previous, new DateTime(2026, 7, 24, 10, 0, 0, DateTimeKind.Utc));
+        string newest = Path.Combine(temporaryDirectory, "Journal.2026-07-24T110000.01.log");
+        await File.WriteAllTextAsync(
+            newest,
+            "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                + (menuSessionClosed ? "{\"event\":\"Shutdown\"}\n" : string.Empty)
+        );
+        File.SetLastWriteTimeUtc(newest, new DateTime(2026, 7, 24, 11, 0, 0, DateTimeKind.Utc));
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory);
+        var state = new JournalSessionState();
+
+        JournalMonitorUpdate bootstrap = await monitor.PollAsync();
+        foreach (JournalEventEnvelope entry in bootstrap.JournalEvents)
+        {
+            state.Apply(entry);
+        }
+
+        Assert.Equal("Drew", state.CommanderName);
+        Assert.Equal("F123", state.FrontierId);
+        Assert.True(bootstrap.IsBootstrapRead);
+        Assert.True(bootstrap.IsAwaitingCommanderIdentity);
+        JournalMonitorUpdate current = await monitor.PollAsync();
+        foreach (JournalEventEnvelope entry in current.JournalEvents)
+        {
+            state.Apply(entry);
+        }
+
+        Assert.Equal(newest, current.JournalPath);
+        Assert.Equal("Drew", state.CommanderName);
+        Assert.Equal(menuSessionClosed, state.IsShutdown);
+        Assert.True(state.IsAtMainMenu || state.IsShutdown);
+        Assert.False(current.IsBootstrapRead);
+        Assert.Empty((await monitor.PollAsync()).JournalEvents);
+
+        string loginJournal = menuSessionClosed
+            ? Path.Combine(temporaryDirectory, "Journal.2026-07-24T120000.01.log")
+            : newest;
+        if (menuSessionClosed)
+        {
+            await File.WriteAllTextAsync(loginJournal, "{\"event\":\"Fileheader\",\"Odyssey\":true}\n");
+        }
+        await File.AppendAllTextAsync(
+            loginJournal,
+            "{\"event\":\"Commander\",\"Name\":\"Other\",\"FID\":\"F999\"}\n"
+                + "{\"event\":\"LoadGame\",\"Commander\":\"Other\",\"FID\":\"F999\"}\n"
+        );
+        JournalMonitorUpdate login = await monitor.PollAsync();
+        foreach (JournalEventEnvelope entry in login.JournalEvents)
+        {
+            state.Apply(entry);
+        }
+
+        Assert.Equal(loginJournal, login.JournalPath);
+        Assert.Equal("Other", state.CommanderName);
+        Assert.Equal("F999", state.FrontierId);
+        Assert.False(state.IsShutdown);
+        Assert.False(state.IsAtMainMenu);
+        Assert.False(login.IsAwaitingCommanderIdentity);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AutomaticStartupUsesNewestWhenItHasIdentityOrNoPreviousIdentityExists(bool newestHasIdentity)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string previous = Path.Combine(temporaryDirectory, "Journal.2026-07-24T100000.01.log");
+        await File.WriteAllTextAsync(previous, "{\"event\":\"Fileheader\"}\n{\"event\":\"Shutdown\"}\n");
+        File.SetLastWriteTimeUtc(previous, new DateTime(2026, 7, 24, 10, 0, 0, DateTimeKind.Utc));
+        string newest = Path.Combine(temporaryDirectory, "Journal.2026-07-24T110000.01.log");
+        await File.WriteAllTextAsync(
+            newest,
+            "{\"event\":\"Fileheader\"}\n"
+                + (newestHasIdentity ? "{\"event\":\"Commander\",\"Name\":\"Other\",\"FID\":\"F999\"}\n" : string.Empty)
+        );
+        File.SetLastWriteTimeUtc(newest, new DateTime(2026, 7, 24, 11, 0, 0, DateTimeKind.Utc));
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory);
+
+        JournalMonitorUpdate bootstrap = await monitor.PollAsync();
+
+        Assert.Equal(newest, bootstrap.JournalPath);
+        Assert.Equal(newestHasIdentity ? 2 : 1, bootstrap.JournalEvents.Count);
+        Assert.False(bootstrap.IsAwaitingCommanderIdentity);
+    }
+
+    [Fact]
+    public async Task AutomaticStartupRetriesUnidentifiedJournalsAfterFirstPoll()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string previous = Path.Combine(temporaryDirectory, "Journal.2026-07-24T100000.01.log");
+        await File.WriteAllTextAsync(previous, "{\"event\":\"Fileheader\"}\n");
+        DateTime previousWriteTime = new(2026, 7, 24, 10, 0, 0, DateTimeKind.Utc);
+        File.SetLastWriteTimeUtc(previous, previousWriteTime);
+        string newest = Path.Combine(temporaryDirectory, "Journal.2026-07-24T110000.01.log");
+        await File.WriteAllTextAsync(newest, "{\"event\":\"Fileheader\"}\n");
+        File.SetLastWriteTimeUtc(newest, new DateTime(2026, 7, 24, 11, 0, 0, DateTimeKind.Utc));
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory);
+
+        JournalMonitorUpdate initial = await monitor.PollAsync();
+        Assert.Equal(newest, initial.JournalPath);
+
+        await File.AppendAllTextAsync(previous, "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n");
+        File.SetLastWriteTimeUtc(previous, previousWriteTime);
+
+        JournalMonitorUpdate recovered = await monitor.PollAsync();
+        Assert.Equal(previous, recovered.JournalPath);
+        Assert.Contains(recovered.JournalEvents, entry => entry.EventName == "Commander");
+
+        JournalMonitorUpdate current = await monitor.PollAsync();
+        Assert.Equal(newest, current.JournalPath);
+    }
+
     [Fact]
     public async Task PollMovesToNewRequestedCommanderJournalAfterIdentityArrives()
     {

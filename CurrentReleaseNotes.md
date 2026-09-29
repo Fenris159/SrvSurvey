@@ -1,45 +1,43 @@
-# SrvSurvey-XP 2.1.3.0-rc.58.13
+# SrvSurvey-XP 2.1.3.0-rc.58.14
 
-RC58.13 fixes overlay sizing and live interaction, improves the Planetary Mining
-results layout, and adds material shortcuts to surface mining commands. It
-includes RC58.12 and earlier release candidate changes.
+RC58.14 adds overlay monitor selection and drag safeguards, and restores
+Automatic commander startup when the newest Elite journal has no identity. It
+includes RC58.13 and earlier release candidate changes.
 
 ## Overlay panels
 
-- Fixed Next-jump information being clipped in the live overlay despite fitting
-  in the editor preview. Live panels now use the same saved dimensions as their
-  previews, without a second window size limit cutting off content or borders.
-- Audited all 37 overlay panels across their preview states, saved dimensions,
-  font sizes, and overlay scales. Saved sizes preserve the panels' dynamic size
-  settings when reset, including the surface survey radar.
-- Preserved font sizes when panels move between separate windows and the
-  combined overlay.
-- Buttons and scrollbar handles now work in live interaction mode. Dragging
-  panel backgrounds still repositions the overlay, while interactive maps retain
-  their own pan gestures.
+- Added **Overlay monitor** as the first Global overlay behavior setting. Choose
+  a display for overlays, or leave it on Automatic to use the game display with
+  a primary-display fallback.
+- Added an optional **Keep overlays on the selected monitor** setting. When
+  enabled, live panels and editor previews stay within the selected display
+  while dragged. Combined overlays also stay within their game-sized host.
+- Dragging now stops when pointer movement reports the mouse button released,
+  even if a release event is missed. Ending live interaction applies the last
+  accepted move before saving positions.
+- Added bounded XWayland pointer-coordinate diagnostics to help investigate
+  intermittent drag behavior on multi-monitor desktops.
 
-## Mining
+## Journal and commander startup
 
-- Planetary Mining Reinforce and Undermine results now size the State and Power
-  columns to their contents, keeping headers aligned and power names visible.
-- Surface mining commands accept the material tag codes as well as full names
-  for all 37 surface materials. For example, use `mon` for Monazite, `ltd` for
-  Low Temperature Diamonds, or `per` for Periclase Dunite. Codes are case insensitive
-  and work when creating or moving deposit markers.
-- Updated the surface mining instructions and guide with shorthand examples.
+- In Automatic mode, startup recovers the last identified commander when the
+  newest journal contains only menu or shutdown events. It then follows the
+  newest journal so a later login can switch commanders automatically.
+- If the initial identity scan finds no commander, later polls retry it so an
+  identity that appears afterward can still be recovered.
 
 ## Update channel and packages
 
-- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.13
+- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.14
   uses the schema-2 `xp2-v` release channel.
 - Development remains the default in-app update channel, with saved channel
   choices preserved.
-- Version: `2.1.3.0-rc.58.13`
-- Tag: `xp2-v2.1.3.0-rc.58.13`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.13-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.13-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.13-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.13-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.58.14`
+- Tag: `xp2-v2.1.3.0-rc.58.14`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.14-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.14-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.14-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.14-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

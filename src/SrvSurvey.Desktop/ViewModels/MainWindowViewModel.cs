@@ -414,6 +414,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             );
             OverlayInteraction =
                 overlayInteraction ?? new OverlayInteractionViewModel(OverlayPlatformCapabilities.DetectCurrent());
+            OverlayInteraction.OverlayBehavior = OverlayBehavior;
             rollback.AddIfCreated(overlayInteraction, OverlayInteraction);
             OverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
                 binding.Definition.Action == GlobalInputAction.ToggleOverlayInteraction

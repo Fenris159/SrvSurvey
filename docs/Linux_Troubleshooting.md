@@ -69,6 +69,19 @@ export SRVSURVEY_JOURNAL_DIR="/path/to/your/journals"
 ./SrvSurvey.Desktop --journal-directory "/path/to/your/journals"
 ```
 
+## Commander missing after a menu-only game session
+
+Elite can create a journal containing only `Fileheader` and `Shutdown` when it
+opens and closes before a commander logs in. On startup, **Automatic** restores
+the last identified commander from an older journal when the newest journal has
+no identity. It then follows the newest journal normally, including a different
+commander logging in. Overlays remain suppressed at the main menu or after
+shutdown.
+
+On builds without this startup fallback, choosing a known commander in the
+startup preference works around the missing identity. This does not require
+moving or deleting any journal files.
+
 ## Still stuck?
 
 Open an issue at https://github.com/Fenris159/SrvSurvey/issues and include:

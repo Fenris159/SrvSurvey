@@ -431,11 +431,24 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         }
 
         StopDrag(releasePointer: true);
+        PixelPoint pointerPosition = host.PointToScreen(eventArgs.GetPosition(host));
+        Size logicalSize = GetLogicalSize(entry);
+        var panelSize = new PixelSize(
+            Math.Max(1, (int)Math.Ceiling(logicalSize.Width * host.RenderScaling)),
+            Math.Max(1, (int)Math.Ceiling(logicalSize.Height * host.RenderScaling))
+        );
+        OverlayDragOptions options = OverlayDragPolicy.RestrictToCombinedHost(
+            OverlayDragPolicy.GetOptions(entry.Window),
+            hostBounds,
+            panelSize
+        );
         drag = new DragState(
             entry,
             eventArgs.Pointer,
             entry.Window.Position,
-            host.PointToScreen(eventArgs.GetPosition(host))
+            pointerPosition,
+            options,
+            new OverlayDragDiagnostics(host, pointerPosition, options)
         );
         eventArgs.Pointer.Capture(presenter);
         eventArgs.Handled = true;
@@ -449,11 +462,20 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return;
         }
 
+        if (!eventArgs.GetCurrentPoint(host).Properties.IsLeftButtonPressed)
+        {
+            StopDrag(releasePointer: true, reason: "button-up without release event");
+            eventArgs.Handled = true;
+            return;
+        }
+
         PixelPoint pointerPosition = host.PointToScreen(eventArgs.GetPosition(host));
-        current.Entry.Window.Position = new PixelPoint(
+        current.Diagnostics.Observe(pointerPosition);
+        var position = new PixelPoint(
             current.InitialWindowPosition.X + pointerPosition.X - current.InitialPointerPosition.X,
             current.InitialWindowPosition.Y + pointerPosition.Y - current.InitialPointerPosition.Y
         );
+        current.Entry.Window.Position = current.Options.ConstrainPosition?.Invoke(position) ?? position;
         eventArgs.Handled = true;
     }
 
@@ -461,20 +483,21 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
     {
         if (drag is not null && ReferenceEquals(drag.Pointer, eventArgs.Pointer))
         {
-            StopDrag(releasePointer: true);
+            StopDrag(releasePointer: true, reason: "released");
             eventArgs.Handled = true;
         }
     }
 
     private void OnPresenterPointerCaptureLost(object? sender, PointerCaptureLostEventArgs eventArgs)
     {
-        StopDrag(releasePointer: false);
+        StopDrag(releasePointer: false, reason: "capture lost");
     }
 
-    private void StopDrag(bool releasePointer)
+    private void StopDrag(bool releasePointer, string reason = "interaction ended")
     {
         DragState? current = drag;
         drag = null;
+        current?.Diagnostics.Complete(reason, current.Entry.Window.Position);
         if (releasePointer)
         {
             current?.Pointer.Capture(null);
@@ -585,6 +608,8 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         Entry Entry,
         IPointer Pointer,
         PixelPoint InitialWindowPosition,
-        PixelPoint InitialPointerPosition
+        PixelPoint InitialPointerPosition,
+        OverlayDragOptions Options,
+        OverlayDragDiagnostics Diagnostics
     );
 }

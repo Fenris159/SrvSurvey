@@ -65,6 +65,34 @@ must instead track that window. The tested native Wayland setup also toggles
 Gamescope's relative mouse mode when SrvSurvey enables mouse interaction; see
 [the Ubuntu Gamescope guide](UBUNTU_26_GAMESCOPE.md#9-srvsurvey-and-the-gamescope-boundary).
 
+## Dragging panels across multiple monitors
+
+Under **Global overlay behavior**, choose **Overlay monitor**, then enable
+**Keep overlays on the selected monitor**. This confines the panel body to that
+display while dragging live overlays or editor previews, including displays
+with negative coordinates or different vertical offsets. The boundary is
+captured when each drag starts so a settings change cannot alter a drag midway.
+The lock is off by default.
+
+**Automatic** uses the display containing most of Elite's window, or the primary
+display when Elite is not detected. A manually selected display takes precedence
+for the drag boundary. Existing game-relative layout coordinates are retained
+when saving positions. In combined presentation, the panel must also remain
+inside the game-sized host; a selected display outside that host falls back to
+the host boundary.
+
+Dragging stops on release, capture loss, or a subsequent pointer event that says
+the left button is up. The last accepted move is applied before live positions
+are saved. This also protects against a missing release event.
+
+For X11/XWayland diagnosis, look for `Overlay drag:` in the application log under
+`~/.local/share/SrvSurvey/logs/` (or the configured XDG data directory). Each drag
+records its starting position, scale and lock boundary, a native/reported cursor
+sample when available, and its stop reason and largest measured coordinate
+difference. Native cursor samples can be ahead of queued input events, so a
+nonzero `maxPointerDifferencePx` alone does not establish a coordinate bug.
+Include the trace for a problematic drag when reporting continued drifting.
+
 ## KDE Plasma — overlays not appearing or not staying above Elite
 
 KDE Plasma can refuse to place normal application windows above an exclusive full-screen game. SrvSurvey now checks the X11 window manager's `_NET_SUPPORTED` capabilities. When KWin advertises `_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY`, SrvSurvey applies that type to runtime overlays, edit previews, and the overlay editor while retaining `_NET_WM_WINDOW_TYPE_NORMAL` as the standards-compatible fallback.

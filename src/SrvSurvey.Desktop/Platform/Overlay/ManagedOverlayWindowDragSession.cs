@@ -8,7 +8,7 @@ using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-internal sealed class ManagedOverlayWindowDragSession
+internal sealed class ManagedOverlayWindowDragSession : IDisposable
 {
     private static readonly Dictionary<Window, ManagedOverlayWindowDragSession> ActiveSessions = [];
 
@@ -17,6 +17,9 @@ internal sealed class ManagedOverlayWindowDragSession
     private readonly PixelPoint initialWindowPosition;
     private readonly PixelPoint initialPointerPosition;
     private readonly PendingWindowMove pendingMove;
+    private readonly OverlayDragOptions options;
+    private readonly OverlayDragDiagnostics diagnostics;
+    private PixelPoint latestPointerPosition;
     private bool stopped;
 
     private ManagedOverlayWindowDragSession(
@@ -29,9 +32,13 @@ internal sealed class ManagedOverlayWindowDragSession
         pointer = eventArgs.Pointer;
         initialWindowPosition = window.Position;
         initialPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
+        latestPointerPosition = initialPointerPosition;
+        options = OverlayDragPolicy.GetOptions(window);
+        diagnostics = new OverlayDragDiagnostics(window, initialPointerPosition, options);
         pendingMove = new PendingWindowMove(
             position =>
             {
+                diagnostics.Observe(latestPointerPosition);
                 if (window.Position != position)
                 {
                     window.Position = position;
@@ -53,7 +60,7 @@ internal sealed class ManagedOverlayWindowDragSession
 
         if (ActiveSessions.Remove(window, out ManagedOverlayWindowDragSession? current))
         {
-            current.Stop(releasePointer: true);
+            current.Dispose();
         }
 
         var session = new ManagedOverlayWindowDragSession(window, eventArgs, positionApplied);
@@ -62,6 +69,7 @@ internal sealed class ManagedOverlayWindowDragSession
         window.PointerReleased += session.OnPointerReleased;
         window.PointerCaptureLost += session.OnPointerCaptureLost;
         window.Closed += session.OnWindowClosed;
+        window.Deactivated += session.OnWindowDeactivated;
         eventArgs.Pointer.Capture(window);
     }
 
@@ -113,8 +121,17 @@ internal sealed class ManagedOverlayWindowDragSession
             return;
         }
 
+        if (!eventArgs.GetCurrentPoint(window).Properties.IsLeftButtonPressed)
+        {
+            Stop(releasePointer: true, reason: "button-up without release event");
+            eventArgs.Handled = true;
+            return;
+        }
+
         PixelPoint currentPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
-        pendingMove.Update(CalculatePosition(initialWindowPosition, initialPointerPosition, currentPointerPosition));
+        latestPointerPosition = currentPointerPosition;
+        PixelPoint position = CalculatePosition(initialWindowPosition, initialPointerPosition, currentPointerPosition);
+        pendingMove.Update(options.ConstrainPosition?.Invoke(position) ?? position);
         eventArgs.Handled = true;
     }
 
@@ -122,21 +139,38 @@ internal sealed class ManagedOverlayWindowDragSession
     {
         if (ReferenceEquals(eventArgs.Pointer, pointer))
         {
-            Stop(releasePointer: true);
+            Stop(releasePointer: true, reason: "released");
         }
     }
 
     private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs eventArgs)
     {
-        Stop(releasePointer: false);
+        Stop(releasePointer: false, reason: "capture lost");
     }
 
     private void OnWindowClosed(object? sender, EventArgs eventArgs)
     {
-        Stop(releasePointer: true, applyPendingMove: false);
+        Stop(releasePointer: true, applyPendingMove: false, reason: "closed");
     }
 
-    private void Stop(bool releasePointer, bool applyPendingMove = true)
+    private void OnWindowDeactivated(object? sender, EventArgs eventArgs) =>
+        Stop(releasePointer: true, reason: "deactivated");
+
+    internal static void Cancel(Window window, bool applyPendingMove = true)
+    {
+        if (ActiveSessions.TryGetValue(window, out ManagedOverlayWindowDragSession? session))
+        {
+            session.Stop(releasePointer: true, applyPendingMove: applyPendingMove, reason: "interaction ended");
+        }
+    }
+
+    public void Dispose()
+    {
+        Stop(releasePointer: true, reason: "disposed");
+        diagnostics.Dispose();
+    }
+
+    private void Stop(bool releasePointer, bool applyPendingMove = true, string reason = "released or capture lost")
     {
         if (stopped)
         {
@@ -145,11 +179,13 @@ internal sealed class ManagedOverlayWindowDragSession
 
         stopped = true;
         pendingMove.Complete(applyPendingMove);
+        diagnostics.Complete(reason, window.Position);
         ActiveSessions.Remove(window);
         window.PointerMoved -= OnPointerMoved;
         window.PointerReleased -= OnPointerReleased;
         window.PointerCaptureLost -= OnPointerCaptureLost;
         window.Closed -= OnWindowClosed;
+        window.Deactivated -= OnWindowDeactivated;
         if (releasePointer)
         {
             pointer.Capture(null);

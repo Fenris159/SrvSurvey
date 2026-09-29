@@ -9,6 +9,7 @@ using Avalonia.VisualTree;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Controls;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -730,6 +731,93 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             window.MouseUp(start + new Vector(20, 30), MouseButton.Left, RawInputModifiers.None);
             Assert.Equal(canPan ? 0 : 1, platform.MoveDragStarts);
             Assert.Equal(canPan ? new PixelPoint(100, 200) : new PixelPoint(120, 230), window.Position);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NativeAndCombinedLiveDraggingStopOnButtonUpAndSaveMonitorConstrainedPositions(bool combined)
+    {
+        var platform = new FakeOverlayPlatform { UseManagedMoveDrag = true };
+        var registry = new OverlayWindowRegistry();
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var tracker = new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, gameBounds, true, true));
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var content = new Border { Background = Avalonia.Media.Brushes.Black };
+        var window = new Window
+        {
+            Width = 300,
+            Height = 220,
+            Content = content,
+        };
+        registry.Register(window, "PlotJumpInfo");
+        using CombinedOverlayPresentationController? controller = combined
+            ? new CombinedOverlayPresentationController(platform, tracker, registry)
+            : null;
+        try
+        {
+            window.Show();
+            using WriteableBitmap? sourceFrame = window.CaptureRenderedFrame();
+            window.Position = new PixelPoint(400, 300);
+            var behavior = new OverlayBehaviorViewModel(
+                new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+            );
+            MainWindowMonitor monitor = MainWindowPlacement.DescribeScreens(window.Screens.All)[0];
+            var option = new ApplicationMonitorOption(monitor.Id, monitor.DisplayName);
+            behavior.SetAvailableMonitors([option]);
+            behavior.SelectedMonitor = option;
+            behavior.LockToMonitor = true;
+            if (controller is not null)
+            {
+                Assert.True(controller.PreparePassiveWindow(window).IsPrepared);
+            }
+            using var viewModel = new OverlayInteractionViewModel(
+                platform,
+                tracker,
+                store,
+                store.Load(),
+                registry,
+                new FakeEditorHost()
+            )
+            {
+                OverlayBehavior = behavior,
+            };
+            Assert.True(viewModel.ToggleLiveOverlayInteraction());
+            Window surface = window;
+            if (controller is not null)
+            {
+                Assert.True(controller.SetInteractive(window, true).IsInteractive);
+                surface = Assert.IsType<CombinedOverlayWindow>(TopLevel.GetTopLevel(content));
+                using WriteableBitmap? frame = surface.CaptureRenderedFrame();
+            }
+            Point start = combined
+                ? Assert.IsType<Point>(content.TranslatePoint(new Point(20, 25), surface))
+                : new Point(20, 25);
+            surface.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            surface.MouseMove(start + new Vector(35, 45), RawInputModifiers.LeftMouseButton);
+            surface.MouseMove(start + new Vector(400, 300), RawInputModifiers.None);
+            surface.MouseUp(start + new Vector(400, 300), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(new PixelPoint(435, 345), window.Position);
+            start = combined
+                ? Assert.IsType<Point>(content.TranslatePoint(new Point(20, 25), surface))
+                : new Point(20, 25);
+            surface.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            surface.MouseMove(start + new Vector(6000, 6000), RawInputModifiers.LeftMouseButton);
+            PixelRect boundary = combined ? monitor.Bounds.Intersect(gameBounds) : monitor.Bounds;
+            PixelSize panelSize = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
+            var expected = new PixelPoint(boundary.Right - panelSize.Width, boundary.Bottom - panelSize.Height);
+            Assert.True(viewModel.ToggleLiveOverlayInteraction());
+            Assert.Equal(expected, window.Position);
+            Assert.Equal(expected, store.Load().GetPosition("PlotJumpInfo", gameBounds, panelSize));
+            Assert.Null(OverlayDragPolicy.GetOptions(window).ConstrainPosition);
+            surface.MouseUp(start + new Vector(6000, 6000), MouseButton.Left, RawInputModifiers.None);
+            surface.MouseMove(start + new Vector(7000, 7000), RawInputModifiers.None);
+            Assert.Equal(expected, window.Position);
         }
         finally
         {
