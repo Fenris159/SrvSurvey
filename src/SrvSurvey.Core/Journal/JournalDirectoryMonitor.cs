@@ -303,11 +303,7 @@ public sealed class JournalDirectoryMonitor
                 newestFrontierId = frontierId;
             }
 
-            if (
-                targetFrontierId is null
-                    ? !string.IsNullOrWhiteSpace(frontierId)
-                    : string.Equals(frontierId, targetFrontierId, StringComparison.OrdinalIgnoreCase)
-            )
+            if (MatchesTargetFrontierId(frontierId))
             {
                 isAutomaticIdentityScanIncomplete = false;
                 isAwaitingCommanderIdentity = index > 0 && newestFrontierId is null;
@@ -319,6 +315,11 @@ public sealed class JournalDirectoryMonitor
         isAwaitingCommanderIdentity = targetFrontierId is not null && journals.Length > 0 && newestFrontierId is null;
         return targetFrontierId is null ? journals[0] : null;
     }
+
+    private bool MatchesTargetFrontierId(string? frontierId) =>
+        targetFrontierId is null
+            ? !string.IsNullOrWhiteSpace(frontierId)
+            : string.Equals(frontierId, targetFrontierId, StringComparison.OrdinalIgnoreCase);
 
     private async Task<string?> ReadFrontierIdAsync(FileInfo journal, CancellationToken cancellationToken)
     {
