@@ -164,7 +164,11 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
         }
     }
 
-    public void Dispose() => Stop(releasePointer: true, reason: "disposed");
+    public void Dispose()
+    {
+        Stop(releasePointer: true, reason: "disposed");
+        diagnostics.Dispose();
+    }
 
     private void Stop(bool releasePointer, bool applyPendingMove = true, string reason = "released or capture lost")
     {
