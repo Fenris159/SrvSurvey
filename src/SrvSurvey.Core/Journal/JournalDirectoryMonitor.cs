@@ -34,6 +34,7 @@ public sealed class JournalDirectoryMonitor
     private int consecutiveStatusReadFailures;
     private bool statusReadFailureReported;
     private bool hasCompletedFirstPoll;
+    private bool isAutomaticIdentityScanIncomplete;
     private bool isAwaitingCommanderIdentity;
     private bool lastReportedAwaitingCommanderIdentity;
     private string? activeJournalDirectory;
@@ -282,7 +283,10 @@ public sealed class JournalDirectoryMonitor
         // Bootstrap Automatic from the last identified commander when a newer
         // menu-only journal exists. Subsequent polls follow the newest journal
         // so a later login can switch commanders without a saved preference.
-        if (targetFrontierId is null && (hasCompletedFirstPoll || journals.Length < 2))
+        if (
+            targetFrontierId is null
+            && ((hasCompletedFirstPoll && !isAutomaticIdentityScanIncomplete) || journals.Length < 2)
+        )
         {
             isAwaitingCommanderIdentity = false;
             return journals.FirstOrDefault();
@@ -305,13 +309,15 @@ public sealed class JournalDirectoryMonitor
                     : string.Equals(frontierId, targetFrontierId, StringComparison.OrdinalIgnoreCase)
             )
             {
+                isAutomaticIdentityScanIncomplete = false;
                 isAwaitingCommanderIdentity = index > 0 && newestFrontierId is null;
                 return journal;
             }
         }
 
+        isAutomaticIdentityScanIncomplete = targetFrontierId is null && journals.Length > 0;
         isAwaitingCommanderIdentity = targetFrontierId is not null && journals.Length > 0 && newestFrontierId is null;
-        return targetFrontierId is null ? journals.FirstOrDefault() : null;
+        return targetFrontierId is null ? journals[0] : null;
     }
 
     private async Task<string?> ReadFrontierIdAsync(FileInfo journal, CancellationToken cancellationToken)

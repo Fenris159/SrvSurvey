@@ -62808,7 +62808,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDragDiagnostics.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ManagedOverlayWindowDragSession.cs"
   },
   {
     "Text": "do",

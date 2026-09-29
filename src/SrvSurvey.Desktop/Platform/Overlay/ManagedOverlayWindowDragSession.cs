@@ -8,7 +8,7 @@ using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-internal sealed class ManagedOverlayWindowDragSession
+internal sealed class ManagedOverlayWindowDragSession : IDisposable
 {
     private static readonly Dictionary<Window, ManagedOverlayWindowDragSession> ActiveSessions = [];
 
@@ -60,7 +60,7 @@ internal sealed class ManagedOverlayWindowDragSession
 
         if (ActiveSessions.Remove(window, out ManagedOverlayWindowDragSession? current))
         {
-            current.Stop(releasePointer: true);
+            current.Dispose();
         }
 
         var session = new ManagedOverlayWindowDragSession(window, eventArgs, positionApplied);
@@ -163,6 +163,8 @@ internal sealed class ManagedOverlayWindowDragSession
             session.Stop(releasePointer: true, applyPendingMove: applyPendingMove, reason: "interaction ended");
         }
     }
+
+    public void Dispose() => Stop(releasePointer: true, reason: "disposed");
 
     private void Stop(bool releasePointer, bool applyPendingMove = true, string reason = "released or capture lost")
     {
