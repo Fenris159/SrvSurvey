@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Journal;
@@ -10,7 +11,8 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
     private readonly OverlayBehaviorSettingsStore settingsStore;
     private OverlayBehaviorPreferences preferences;
     private static readonly ApplicationMonitorOption AutomaticMonitor = new(null, "Automatic (primary monitor)");
-    private IReadOnlyList<ApplicationMonitorOption> monitorOptions = [AutomaticMonitor];
+    private readonly ObservableCollection<ApplicationMonitorOption> monitorOptions = [AutomaticMonitor];
+    private bool isRefreshingMonitors;
     private OdysseySuitType currentSuit;
     private bool isOnFoot;
     private bool hasStatus;
@@ -44,7 +46,7 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
             monitorOptions.FirstOrDefault(option => MonitorIdsEqual(option.Id, PreferredMonitorId)) ?? AutomaticMonitor;
         set
         {
-            if (value is not null)
+            if (value is not null && !isRefreshingMonitors)
             {
                 Update(preferences with { PreferredMonitorId = value.Id });
             }
@@ -68,9 +70,71 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
             options.Add(new ApplicationMonitorOption(id, $"{id} (not connected; using primary monitor)"));
         }
 
-        monitorOptions = options;
-        OnPropertyChanged(nameof(MonitorOptions));
+        isRefreshingMonitors = true;
+        try
+        {
+            ReconcileMonitorOptions(options);
+        }
+        finally
+        {
+            isRefreshingMonitors = false;
+        }
+
         OnPropertyChanged(nameof(SelectedMonitor));
+    }
+
+    private void ReconcileMonitorOptions(List<ApplicationMonitorOption> options)
+    {
+        foreach (ApplicationMonitorOption option in options.Skip(1))
+        {
+            AddOrReplaceMonitorOption(option);
+        }
+
+        OnPropertyChanged(nameof(SelectedMonitor));
+
+        for (int index = monitorOptions.Count - 1; index > 0; index--)
+        {
+            if (!options.Contains(monitorOptions[index]))
+            {
+                monitorOptions.RemoveAt(index);
+            }
+        }
+
+        for (int index = 1; index < options.Count; index++)
+        {
+            int currentIndex = monitorOptions.IndexOf(options[index]);
+            if (currentIndex != index)
+            {
+                monitorOptions.Move(currentIndex, index);
+            }
+        }
+    }
+
+    private void AddOrReplaceMonitorOption(ApplicationMonitorOption option)
+    {
+        if (monitorOptions.Contains(option))
+        {
+            return;
+        }
+
+        int previousIndex = -1;
+        for (int index = 1; index < monitorOptions.Count; index++)
+        {
+            if (MonitorIdsEqual(monitorOptions[index].Id, option.Id))
+            {
+                previousIndex = index;
+                break;
+            }
+        }
+
+        if (previousIndex >= 0)
+        {
+            monitorOptions.Insert(previousIndex, option);
+        }
+        else
+        {
+            monitorOptions.Add(option);
+        }
     }
 
     private static bool MonitorIdsEqual(string? left, string? right) =>

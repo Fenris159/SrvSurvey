@@ -1,14 +1,17 @@
-# SrvSurvey-XP 2.1.3.0-rc.58.14
+# SrvSurvey-XP 2.1.3.0-rc.58.15
 
-RC58.14 adds overlay monitor selection and drag safeguards, and restores
-Automatic commander startup when the newest Elite journal has no identity. It
-includes RC58.13 and earlier release candidate changes.
+RC58.15 keeps the selected overlay monitor saved across sessions. It includes
+RC58.14's overlay drag safeguards and Automatic commander startup recovery,
+along with earlier release candidate changes.
 
 ## Overlay panels
 
 - Added **Overlay monitor** as the first Global overlay behavior setting. Choose
   a display for overlays, or leave it on Automatic to use the game display with
   a primary-display fallback.
+- Fixed **Overlay monitor** reverting to Automatic when the display list refreshes
+  after reopening SrvSurvey. The saved choice stays selected across sessions;
+  choosing Automatic explicitly still clears it.
 - Added an optional **Keep overlays on the selected monitor** setting. When
   enabled, live panels and editor previews stay within the selected display
   while dragged. Combined overlays also stay within their game-sized host.
@@ -28,16 +31,16 @@ includes RC58.13 and earlier release candidate changes.
 
 ## Update channel and packages
 
-- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.14
+- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.15
   uses the schema-2 `xp2-v` release channel.
 - Development remains the default in-app update channel, with saved channel
   choices preserved.
-- Version: `2.1.3.0-rc.58.14`
-- Tag: `xp2-v2.1.3.0-rc.58.14`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.14-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.14-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.14-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.14-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.58.15`
+- Tag: `xp2-v2.1.3.0-rc.58.15`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.15-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.15-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.15-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.15-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
@@ -138,6 +139,80 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
         finally
         {
             window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void OverlayMonitorSelectionSurvivesReopeningSettings()
+    {
+        var paths = new AppDataPaths(
+            Path.Combine(temporaryDirectory, "config"),
+            Path.Combine(temporaryDirectory, "data"),
+            Path.Combine(temporaryDirectory, "cache"),
+            []
+        )
+        {
+            SettingsFrontierId = "F123",
+        };
+        var monitorOption = new ApplicationMonitorOption("DP-2", "Right display");
+        using (
+            MainWindowViewModel first = MainWindowViewModelTestBuilder.Create(
+                Path.Combine(temporaryDirectory, "journals"),
+                builder => builder.WithAppDataPaths(paths)
+            )
+        )
+        {
+            first.OverlayBehavior.SetAvailableMonitors([monitorOption]);
+            var settings = new OverlaySettingsView { DataContext = first };
+            var window = new Window { Content = settings };
+            try
+            {
+                window.Show();
+                ComboBox monitor = Assert.IsType<ComboBox>(settings.FindControl<ComboBox>("OverlayMonitorComboBox"));
+                monitor.SelectedItem = monitorOption;
+                Assert.Equal("DP-2", new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().PreferredMonitorId);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        using MainWindowViewModel reopened = MainWindowViewModelTestBuilder.Create(
+            Path.Combine(temporaryDirectory, "journals"),
+            builder => builder.WithAppDataPaths(paths)
+        );
+        Assert.Equal("DP-2", reopened.OverlayBehavior.PreferredMonitorId);
+        var reopenedSettings = new OverlaySettingsView { DataContext = reopened };
+        Assert.Equal("DP-2", reopened.OverlayBehavior.PreferredMonitorId);
+        var reopenedWindow = new Window { Content = reopenedSettings };
+        try
+        {
+            reopenedWindow.Show();
+            Assert.Equal("DP-2", reopened.OverlayBehavior.PreferredMonitorId);
+            reopened.OverlayBehavior.SetAvailableMonitors([monitorOption]);
+            Dispatcher.UIThread.RunJobs();
+            ComboBox monitor = Assert.IsType<ComboBox>(
+                reopenedSettings.FindControl<ComboBox>("OverlayMonitorComboBox")
+            );
+            Assert.Equal("DP-2", reopened.OverlayBehavior.PreferredMonitorId);
+            Assert.NotNull(reopenedWindow.CaptureRenderedFrame());
+            Assert.Equal("DP-2", (monitor.SelectedItem as ApplicationMonitorOption)?.Id);
+            Assert.Equal("DP-2", new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().PreferredMonitorId);
+            reopened.OverlayBehavior.SetAvailableMonitors([
+                new ApplicationMonitorOption("DP-2", "Right display - new resolution"),
+            ]);
+            Assert.Equal(
+                "Right display - new resolution",
+                (monitor.SelectedItem as ApplicationMonitorOption)?.DisplayName
+            );
+            Assert.Equal("DP-2", new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().PreferredMonitorId);
+            monitor.SelectedIndex = 0;
+            Assert.Null(new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().PreferredMonitorId);
+        }
+        finally
+        {
+            reopenedWindow.Close();
         }
     }
 
