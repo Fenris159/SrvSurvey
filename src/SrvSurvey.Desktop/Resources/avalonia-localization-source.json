@@ -3686,6 +3686,7 @@
     "Text": "Always on top",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
@@ -20901,6 +20902,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Fullscreen",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxWindowOperationsMenu.cs"
+  },
+  {
     "Text": "Fully scanned \u00B7 {0} bodies",
     "IsFormat": true,
     "SourceKinds": [
@@ -29037,6 +29046,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Maximize",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxWindowOperationsMenu.cs"
+  },
+  {
     "Text": "Maximum age (days)",
     "IsFormat": false,
     "SourceKinds": [
@@ -29519,6 +29536,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/JumpInfoSettingsStore.cs"
+  },
+  {
+    "Text": "Minimize",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxWindowOperationsMenu.cs"
   },
   {
     "Text": "Minimize to system tray",
@@ -41803,6 +41828,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Restore",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxWindowOperationsMenu.cs"
   },
   {
     "Text": "Restore automatic map scaling.",
@@ -61096,7 +61129,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/X11Native.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxWindowOperationsMenu.cs"
   },
   {
     "Text": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",

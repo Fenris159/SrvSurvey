@@ -73,6 +73,12 @@ public sealed partial class MainWindow : Window
 
     private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
+        if (LinuxWindowOperationsMenu.TryShow(this, eventArgs))
+        {
+            eventArgs.Handled = true;
+            return;
+        }
+
         if (!IsActive)
         {
             Activate();

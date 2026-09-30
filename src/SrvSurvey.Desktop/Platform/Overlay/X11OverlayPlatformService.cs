@@ -682,7 +682,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
             && errorCode is X11Native.BadValue or X11Native.BadMatch or X11Native.BadDrawable;
     }
 
-    private static nuint[] ReadSupportedAtoms(nint display, nuint atomType)
+    internal static nuint[] ReadSupportedAtoms(nint display, nuint atomType)
     {
         if (atomType == 0)
         {
