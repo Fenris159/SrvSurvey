@@ -6,6 +6,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
@@ -30,6 +31,7 @@ public sealed partial class MainWindow : Window
     private double expandedMiningWidth;
     private bool miningWidthExpanded;
     private TrayIcon? trayIcon;
+    private Control? drawnTitleBar;
 
     public MainWindow()
         : this(new MainWindowViewModel(configuredJournalDirectory: null), ownsApplicationLifetime: true) { }
@@ -73,15 +75,17 @@ public sealed partial class MainWindow : Window
 
     private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
-        if (LinuxWindowOperationsMenu.TryShow(this, eventArgs))
-        {
-            eventArgs.Handled = true;
-            return;
-        }
-
         if (!IsActive)
         {
             Activate();
+        }
+    }
+
+    private void OnDrawnTitleBarPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
+    {
+        if (LinuxWindowOperationsMenu.TryShow(this, eventArgs))
+        {
+            eventArgs.Handled = true;
         }
     }
 
@@ -242,6 +246,10 @@ public sealed partial class MainWindow : Window
     private void OnOpened(object? sender, EventArgs eventArgs)
     {
         Opened -= OnOpened;
+        if (OperatingSystem.IsLinux())
+        {
+            Dispatcher.UIThread.Post(AttachDrawnTitleBarMenu, DispatcherPriority.Loaded);
+        }
         UpdateMiningWidthButton();
         MigrateLegacyOverlayScales();
         if (WindowState == WindowState.Normal)
@@ -257,6 +265,20 @@ public sealed partial class MainWindow : Window
         _ = monitorSession!.Start(
             RunMonitorAsync,
             exception => Program.ApplicationLog?.Append("Journal monitor stopped unexpectedly: " + exception)
+        );
+    }
+
+    private void AttachDrawnTitleBarMenu()
+    {
+        drawnTitleBar = this.GetVisualParent()
+            ?.GetVisualDescendants()
+            .OfType<Control>()
+            .FirstOrDefault(control => control.Name == "PART_TitleBar");
+        drawnTitleBar?.AddHandler(
+            PointerPressedEvent,
+            OnDrawnTitleBarPointerPressed,
+            RoutingStrategies.Bubble,
+            handledEventsToo: true
         );
     }
 
@@ -454,6 +476,8 @@ public sealed partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        drawnTitleBar?.RemoveHandler(PointerPressedEvent, OnDrawnTitleBarPointerPressed);
+        drawnTitleBar = null;
         viewModel.PropertyChanged -= OnMiningWidthContextChanged;
         viewModel.MineMap.PropertyChanged -= OnMiningWidthContextChanged;
         viewModel.MiningWorkspace.PropertyChanged -= OnMiningWidthContextChanged;
