@@ -472,23 +472,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             }
         }
 
-        if (portalSession is not null)
-        {
-            try
-            {
-                await portalSession.CloseAsync().ConfigureAwait(false);
-                portalSession = null;
-            }
-            catch (DBusException)
-            {
-                // The compositor may already have closed the portal session.
-                portalSession = null;
-            }
-            catch (Exception exception)
-            {
-                failures.Add(exception);
-            }
-        }
+        await ClosePortalSessionAsync(failures).ConfigureAwait(false);
 
         if (portalSession is null && connection is not null)
         {
@@ -506,6 +490,30 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         if (failures.Count > 0)
         {
             throw new AggregateException("The Wayland capture session could not be fully closed.", failures);
+        }
+    }
+
+    /// <summary>Closes the portal session while retaining a failed close for a later retry.</summary>
+    private async Task ClosePortalSessionAsync(List<Exception> failures)
+    {
+        if (portalSession is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await portalSession.CloseAsync().ConfigureAwait(false);
+            portalSession = null;
+        }
+        catch (DBusException)
+        {
+            // The compositor may already have closed the portal session.
+            portalSession = null;
+        }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
         }
     }
 
