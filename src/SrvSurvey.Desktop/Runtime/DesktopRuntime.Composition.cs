@@ -251,7 +251,6 @@ internal sealed partial class DesktopRuntime
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested += RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested += RestartAfterCommanderPreferenceChangeAsync;
-            viewModel.WaylandCapture.RestartRequested += RestartAfterWaylandCaptureSourceChangeAsync;
             viewModel.SetJournalCommandPlatformServices(
                 directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(directory),
                 () => RequestShutdownOnUiThreadAsync(DesktopShutdownReason.JournalCommand, CancellationToken.None),
@@ -868,7 +867,6 @@ internal sealed partial class DesktopRuntime
             viewModel.ProfileImportCompleted -= RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested -= RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested -= RestartAfterCommanderPreferenceChangeAsync;
-            viewModel.WaylandCapture.RestartRequested -= RestartAfterWaylandCaptureSourceChangeAsync;
             viewModel.OverlayBehavior.PropertyChanged -= HandleOverlayBehaviorChanged;
             viewModel.SystemSurvey.PropertyChanged -= HandleOverlayPriorityFactsChanged;
             viewModel.FrontierProfile.AuthorizationCallbackReceived -= HandleFrontierAuthorizationCallback;
@@ -1326,11 +1324,6 @@ internal sealed partial class DesktopRuntime
     private Task RestartAfterCommanderPreferenceChangeAsync()
     {
         return RestartApplicationAsync("Commander preference changed");
-    }
-
-    private Task RestartAfterWaylandCaptureSourceChangeAsync()
-    {
-        return RestartApplicationAsync("Wayland screen-capture source changed");
     }
 
     private async Task WriteClipboardAsync(string text)

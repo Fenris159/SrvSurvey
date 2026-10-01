@@ -4453,16 +4453,8 @@
       "translation": "Erfassen Sie ausgewählte Oberflächenstandorte"
     },
     {
-      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
-      "translation": "Capture-Quelle gelöscht, aber automatischer Neustart fehlgeschlagen: {0} Manuell schließen und erneut öffnen SrvSurvey."
-    },
-    {
-      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
-      "translation": "Aufnahmequelle gelöscht. Neustart SrvSurvey; Die Auswahl wird geöffnet, wenn die Erfassung auf die Wayland-Freigabe zurückfällt."
-    },
-    {
-      "source": "Capture source cleared; restarting SrvSurvey...",
-      "translation": "Aufnahmequelle gelöscht; Neustart SrvSurvey..."
+      "source": "Capture source selected. It will be used when game capture resumes.",
+      "translation": "Aufnahmequelle ausgewählt. Es wird verwendet, wenn die Spielaufnahme fortgesetzt wird."
     },
     {
       "source": "Captured and copied the {0} cockpit offset for this session.",
@@ -4841,10 +4833,6 @@
       "translation": "Wählen Sie Overlay-Positionen bearbeiten, um kategorisierte Vorschauen aus einem isolierten simulierten Spielstatus zu laden. Elite muss nicht laufen."
     },
     {
-      "source": "Choose Elite Dangerous or its desktop",
-      "translation": "Wählen Sie Elite Dangerous oder seinen Desktop"
-    },
-    {
       "source": "Choose Guardian map background",
       "translation": "Wählen Sie den Kartenhintergrund „Guardian“."
     },
@@ -5115,6 +5103,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Wählen Sie die richtige Vorlage, um eine unbekannte oder falsch identifizierte Site zu reparieren. Geben Sie beide Oberflächenkoordinaten ein oder lassen Sie beide leer, wenn der Ursprung noch nicht bekannt ist."
+    },
+    {
+      "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
+      "translation": "Wählen Sie den angezeigten Bildschirm oder Monitor Elite Dangerous und klicken Sie dann auf „Teilen“. Wenn der Picker in der Fensterliste geöffnet wird, wechseln Sie zu seiner Anzeige- oder Bildschirmregisterkarte."
     },
     {
       "source": "Choose the last visit to a system as the starting point. Existing journals are replayed from there.",
@@ -11957,6 +11949,10 @@
       "translation": "Wenn eine vorhandene erste Site keine stabile ID hat oder kein API-Schlüssel zu ihrem Schutz verfügbar ist, wird die Erstellung abgelehnt, bevor ein Projekt veröffentlicht wird."
     },
     {
+      "source": "If detection fails with the correct display selected, use Settings → Application → Choose capture source again and try the Elite Dangerous window.",
+      "translation": "Wenn die Erkennung bei ausgewählter korrekter Anzeige fehlschlägt, verwenden Sie erneut Einstellungen → Anwendung → Aufnahmequelle auswählen und versuchen Sie es mit dem Fenster Elite Dangerous."
+    },
+    {
       "source": "If fewer systems are recorded than the 'Recorded systems required for averages' setting, the table displays —.",
       "translation": "Wenn weniger Systeme aufgezeichnet werden als die Einstellung „Aufgezeichnete Systeme für Durchschnittswerte erforderlich“, wird in der Tabelle „-“ angezeigt."
     },
@@ -16665,6 +16661,10 @@
       "translation": "Zu Fuß"
     },
     {
+      "source": "On some Proton or Gamescope setups, display sharing avoids a larger game-window stream and can reduce lag. SrvSurvey crops the game areas it needs from the shared display.",
+      "translation": "Bei einigen Proton oder Gamescope-Setups vermeidet die Display-Freigabe einen größeren Spielfenster-Stream und kann Verzögerungen reduzieren. SrvSurvey schneidet die benötigten Spielbereiche aus der gemeinsamen Anzeige aus."
+    },
+    {
       "source": "On-foot relic",
       "translation": "Relikt zu Fuß"
     },
@@ -17127,6 +17127,10 @@
     {
       "source": "Opened {0}.",
       "translation": "Geöffnet {0}."
+    },
+    {
+      "source": "Opening the desktop's screen-share picker…",
+      "translation": "Bildschirmfreigabe-Auswahl des Desktops öffnen …"
     },
     {
       "source": "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
@@ -20689,10 +20693,6 @@
       "translation": "Die Anfrage ist fehlgeschlagen. Versuchen Sie es erneut."
     },
     {
-      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
-      "translation": "Nach dem Neustart wurde eine neue Auswahl der Wayland-Screenshot-Quelle angefordert."
-    },
-    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Fordern Sie FSS auf, alle Leichen vor der Fertigstellung zu melden"
     },
@@ -22809,10 +22809,6 @@
       "translation": "Wählen Sie die Active Commander-Karte aus, um das aktuelle Profil Frontier zu öffnen. Die Übersicht bleibt oben in der Seitenleiste."
     },
     {
-      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
-      "translation": "Wählen Sie das Fenster Elite Dangerous aus und klicken Sie auf „Teilen“. Wenn Elite Dangerous nicht aufgeführt ist, wählen Sie den Desktop oder Monitor aus, auf dem das Spiel ausgeführt wird."
-    },
-    {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
       "translation": "Wählen Sie das Ruinenlayout mit der aktiven Feuergruppe aus und verwenden Sie dann zweimal die konfigurierte Bestätigungssteuerung."
     },
@@ -22823,6 +22819,10 @@
     {
       "source": "Select your linked squadron carrier",
       "translation": "Wählen Sie Ihren verknüpften Geschwaderträger aus"
+    },
+    {
+      "source": "Selected a fresh Wayland screen-capture source without restarting.",
+      "translation": "Ohne Neustart eine neue Wayland-Screenshot-Quelle ausgewählt."
     },
     {
       "source": "Selected boxel",
@@ -23239,6 +23239,10 @@
     {
       "source": "Share supported live journal and companion-file data with the Elite Dangerous Data Network.",
       "translation": "Teilen Sie unterstützte Live-Journal- und Begleitdateidaten mit dem Datennetzwerk Elite Dangerous."
+    },
+    {
+      "source": "Share the display running Elite Dangerous",
+      "translation": "Teilen Sie die laufende Anzeige Elite Dangerous"
     },
     {
       "source": "Shared bookmarks",
@@ -24003,6 +24007,10 @@
     {
       "source": "Source",
       "translation": "Quelle"
+    },
+    {
+      "source": "Source chosen, but this desktop did not save the selection. The picker may open again when capture starts.",
+      "translation": "Quelle ausgewählt, aber dieser Desktop hat die Auswahl nicht gespeichert. Die Auswahl wird möglicherweise erneut geöffnet, wenn die Aufnahme beginnt."
     },
     {
       "source": "Source folder watch stopped: {0}",
@@ -26273,6 +26281,10 @@
       "translation": "Die VoxStellar-Einstellung wurde für diese Sitzung geändert, konnte aber nicht gespeichert werden: {0}"
     },
     {
+      "source": "The Wayland capture source could not be selected: {0}",
+      "translation": "Die Wayland-Erfassungsquelle konnte nicht ausgewählt werden: {0}"
+    },
+    {
       "source": "The Wayland desktop denied screen sharing.",
       "translation": "Der Wayland-Desktop verweigerte die Bildschirmfreigabe."
     },
@@ -27491,10 +27503,6 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "Die gespeicherte Frontier-ID {0} hat kein lesbares importiertes Profil. Die automatische Auswahl wird angezeigt, bis das Profil wiederhergestellt ist."
-    },
-    {
-      "source": "The saved Wayland capture source could not be cleared: {0}",
-      "translation": "Die gespeicherte Wayland-Erfassungsquelle konnte nicht gelöscht werden: {0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -30041,12 +30049,12 @@
       "translation": "Wayland-Erfassung ({0}): Die Einstellungen erforderten eine neue Quellenauswahl."
     },
     {
-      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
-      "translation": "Wayland-Erfassung ({0}): geschlossen, da die Erfassung in den Einstellungen deaktiviert wurde."
+      "source": "Wayland capture ({0}): closed because {1}.",
+      "translation": "Wayland-Erfassung ({0}): geschlossen, weil {1}."
     },
     {
-      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
-      "translation": "Wayland-Erfassung ({0}): konnte nicht geschlossen werden, nachdem die Erfassung in den Einstellungen deaktiviert wurde. {1}"
+      "source": "Wayland capture ({0}): failed to close after {1}. {2}",
+      "translation": "Wayland-Erfassung ({0}): Schließen nach {1} fehlgeschlagen. {2}"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
@@ -30091,6 +30099,18 @@
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
       "translation": "Wayland-Erfassung ({0}): Die Anforderung zur erneuten Quellenauswahl konnte nicht gelöscht werden. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): {1}",
+      "translation": "Wayland-Erfassung ({0}): {1}"
+    },
+    {
+      "source": "Wayland capture source selection failed: {0}",
+      "translation": "Auswahl der Wayland-Erfassungsquelle fehlgeschlagen: {0}"
+    },
+    {
+      "source": "Wayland capture source selection is in progress.",
+      "translation": "Die Auswahl der Aufnahmequelle für Wayland ist im Gange."
     },
     {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
@@ -30143,10 +30163,6 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Die Bildschirmfreigabe von Wayland wurde abgebrochen."
-    },
-    {
-      "source": "Wayland screen-capture source changed",
-      "translation": "Wayland-Screenshot-Quelle geändert"
     },
     {
       "source": "WaylandCapture",
@@ -31049,6 +31065,14 @@
       "translation": "Gefangennahme verloren"
     },
     {
+      "source": "capture source selection",
+      "translation": "Auswahl der Aufnahmequelle"
+    },
+    {
+      "source": "capture was disabled in Settings",
+      "translation": "Die Aufnahme wurde in den Einstellungen deaktiviert"
+    },
+    {
       "source": "cargo",
       "translation": "Fracht"
     },
@@ -31307,6 +31331,10 @@
     {
       "source": "desktop",
       "translation": "Desktop"
+    },
+    {
+      "source": "desktop did not retain this selection.",
+      "translation": "Der Desktop hat diese Auswahl nicht beibehalten."
     },
     {
       "source": "detail",
@@ -32749,6 +32777,10 @@
       "translation": "Beispiel 2 von 3"
     },
     {
+      "source": "saved selection renewed.",
+      "translation": "gespeicherte Auswahl erneuert."
+    },
+    {
       "source": "scanned",
       "translation": "gescannt"
     },
@@ -33131,6 +33163,10 @@
     {
       "source": "the selected origin",
       "translation": "der ausgewählte Ursprung"
+    },
+    {
+      "source": "the source was changed in Settings",
+      "translation": "Die Quelle wurde in den Einstellungen geändert"
     },
     {
       "source": "theme",
@@ -39103,16 +39139,8 @@
       "translation": "Capturar sitios de superficie seleccionados"
     },
     {
-      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
-      "translation": "Se borró la fuente de captura, pero falló el reinicio automático: {0} Cerrar y volver a abrir SrvSurvey manualmente."
-    },
-    {
-      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
-      "translation": "Se borró la fuente de captura. Reiniciar SrvSurvey; el selector se abre si la captura vuelve a compartirse con Wayland."
-    },
-    {
-      "source": "Capture source cleared; restarting SrvSurvey...",
-      "translation": "Fuente de captura borrada; reiniciando SrvSurvey..."
+      "source": "Capture source selected. It will be used when game capture resumes.",
+      "translation": "Fuente de captura seleccionada. Se utilizará cuando se reanude la captura del juego."
     },
     {
       "source": "Captured and copied the {0} cockpit offset for this session.",
@@ -39491,10 +39519,6 @@
       "translation": "Elija Editar posiciones de superposición para cargar vistas previas categorizadas desde un estado de juego simulado aislado. Elite no necesita estar corriendo."
     },
     {
-      "source": "Choose Elite Dangerous or its desktop",
-      "translation": "Elija Elite Dangerous o su escritorio"
-    },
-    {
       "source": "Choose Guardian map background",
       "translation": "Elija el fondo del mapa Guardian"
     },
@@ -39765,6 +39789,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Elija la plantilla correcta para reparar un sitio desconocido o mal identificado. Ingrese ambas coordenadas de superficie o déjelas en blanco si aún no se conoce el origen."
+    },
+    {
+      "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
+      "translation": "Elija la pantalla o monitor que se muestra Elite Dangerous, luego haga clic en Compartir. Si el selector se abre en la lista de ventanas, cambie a su pestaña de visualización o pantalla."
     },
     {
       "source": "Choose the last visit to a system as the starting point. Existing journals are replayed from there.",
@@ -46607,6 +46635,10 @@
       "translation": "Si un primer sitio existente no tiene una ID estable o no hay una clave API disponible para protegerlo, se rechaza la creación antes de publicar cualquier proyecto."
     },
     {
+      "source": "If detection fails with the correct display selected, use Settings → Application → Choose capture source again and try the Elite Dangerous window.",
+      "translation": "Si la detección falla con la pantalla correcta seleccionada, use Configuración → Aplicación → Elegir fuente de captura nuevamente y pruebe la ventana Elite Dangerous."
+    },
+    {
       "source": "If fewer systems are recorded than the 'Recorded systems required for averages' setting, the table displays —.",
       "translation": "Si se registran menos sistemas que los establecidos en la configuración 'Sistemas registrados necesarios para los promedios', la tabla muestra —."
     },
@@ -51315,6 +51347,10 @@
       "translation": "A pie"
     },
     {
+      "source": "On some Proton or Gamescope setups, display sharing avoids a larger game-window stream and can reduce lag. SrvSurvey crops the game areas it needs from the shared display.",
+      "translation": "En algunas configuraciones Proton o Gamescope, compartir pantalla evita una transmisión de ventana de juego más grande y puede reducir el retraso. SrvSurvey recorta las áreas de juego que necesita de la pantalla compartida."
+    },
+    {
       "source": "On-foot relic",
       "translation": "Reliquia a pie"
     },
@@ -51777,6 +51813,10 @@
     {
       "source": "Opened {0}.",
       "translation": "Abierto {0}."
+    },
+    {
+      "source": "Opening the desktop's screen-share picker…",
+      "translation": "Abriendo el selector de pantalla compartida del escritorio..."
     },
     {
       "source": "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
@@ -55339,10 +55379,6 @@
       "translation": "La solicitud falló. Intentar otra vez."
     },
     {
-      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
-      "translation": "Solicitó una nueva selección de fuente de captura de pantalla de Wayland después del reinicio."
-    },
-    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Requerir que FSS informe todos los cuerpos antes de su finalización"
     },
@@ -57459,10 +57495,6 @@
       "translation": "Seleccione la tarjeta Active Commander para abrir el perfil actual Frontier. La descripción general permanece en la parte superior de la barra lateral."
     },
     {
-      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
-      "translation": "Seleccione la ventana Elite Dangerous y haga clic en Compartir. Si Elite Dangerous no aparece en la lista, seleccione el escritorio o monitor donde se ejecuta el juego."
-    },
-    {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
       "translation": "Seleccione el diseño de las ruinas con el grupo de fuego activo, luego use el control de confirmación configurado dos veces."
     },
@@ -57473,6 +57505,10 @@
     {
       "source": "Select your linked squadron carrier",
       "translation": "Seleccione su portaaviones de escuadrón vinculado"
+    },
+    {
+      "source": "Selected a fresh Wayland screen-capture source without restarting.",
+      "translation": "Seleccionó una nueva fuente de captura de pantalla de Wayland sin reiniciar."
     },
     {
       "source": "Selected boxel",
@@ -57889,6 +57925,10 @@
     {
       "source": "Share supported live journal and companion-file data with the Elite Dangerous Data Network.",
       "translation": "Comparta datos de archivos complementarios y diarios en vivo compatibles con la red de datos Elite Dangerous."
+    },
+    {
+      "source": "Share the display running Elite Dangerous",
+      "translation": "Comparte la pantalla en ejecución Elite Dangerous"
     },
     {
       "source": "Shared bookmarks",
@@ -58653,6 +58693,10 @@
     {
       "source": "Source",
       "translation": "Fuente"
+    },
+    {
+      "source": "Source chosen, but this desktop did not save the selection. The picker may open again when capture starts.",
+      "translation": "Fuente elegida, pero este escritorio no guardó la selección. El selector puede abrirse nuevamente cuando comience la captura."
     },
     {
       "source": "Source folder watch stopped: {0}",
@@ -60923,6 +60967,10 @@
       "translation": "La preferencia VoxStellar cambió para esta sesión pero no se pudo guardar: {0}"
     },
     {
+      "source": "The Wayland capture source could not be selected: {0}",
+      "translation": "No se pudo seleccionar la fuente de captura de Wayland: {0}"
+    },
+    {
       "source": "The Wayland desktop denied screen sharing.",
       "translation": "El escritorio Wayland negó el uso compartido de pantalla."
     },
@@ -62141,10 +62189,6 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "El ID Frontier guardado {0} no tiene un perfil importado legible. La selección automática se muestra hasta que se restablece el perfil."
-    },
-    {
-      "source": "The saved Wayland capture source could not be cleared: {0}",
-      "translation": "No se pudo borrar la fuente de captura de Wayland guardada: {0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -64691,12 +64735,12 @@
       "translation": "Captura de Wayland ({0}): la configuración solicitó una nueva selección de fuente."
     },
     {
-      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
-      "translation": "Captura de Wayland ({0}): cerrada porque la captura estaba deshabilitada en Configuración."
+      "source": "Wayland capture ({0}): closed because {1}.",
+      "translation": "Captura de Wayland ({0}): cerrada porque {1}."
     },
     {
-      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
-      "translation": "Captura de Wayland ({0}): no se pudo cerrar después de que se deshabilitó la captura en Configuración. {1}"
+      "source": "Wayland capture ({0}): failed to close after {1}. {2}",
+      "translation": "Captura de Wayland ({0}): no se pudo cerrar después de {1}. {2}"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
@@ -64741,6 +64785,18 @@
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
       "translation": "Captura de Wayland ({0}): no se pudo borrar la solicitud de reselección de fuente. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): {1}",
+      "translation": "Captura de Wayland ({0}): {1}"
+    },
+    {
+      "source": "Wayland capture source selection failed: {0}",
+      "translation": "Error en la selección de la fuente de captura de Wayland: {0}"
+    },
+    {
+      "source": "Wayland capture source selection is in progress.",
+      "translation": "La selección de la fuente de captura de Wayland está en progreso."
     },
     {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
@@ -64793,10 +64849,6 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Se canceló el uso compartido de pantalla de Wayland."
-    },
-    {
-      "source": "Wayland screen-capture source changed",
-      "translation": "La fuente de captura de pantalla de Wayland cambió"
     },
     {
       "source": "WaylandCapture",
@@ -65699,6 +65751,14 @@
       "translation": "captura perdida"
     },
     {
+      "source": "capture source selection",
+      "translation": "selección de fuente de captura"
+    },
+    {
+      "source": "capture was disabled in Settings",
+      "translation": "la captura fue deshabilitada en Configuración"
+    },
+    {
       "source": "cargo",
       "translation": "carga"
     },
@@ -65957,6 +66017,10 @@
     {
       "source": "desktop",
       "translation": "de oficina"
+    },
+    {
+      "source": "desktop did not retain this selection.",
+      "translation": "El escritorio no retuvo esta selección."
     },
     {
       "source": "detail",
@@ -67399,6 +67463,10 @@
       "translation": "muestra 2 de 3"
     },
     {
+      "source": "saved selection renewed.",
+      "translation": "selección guardada renovada."
+    },
+    {
       "source": "scanned",
       "translation": "escaneado"
     },
@@ -67781,6 +67849,10 @@
     {
       "source": "the selected origin",
       "translation": "el origen seleccionado"
+    },
+    {
+      "source": "the source was changed in Settings",
+      "translation": "la fuente fue cambiada en Configuración"
     },
     {
       "source": "theme",
@@ -73753,16 +73825,8 @@
       "translation": "Capturez les sites de surface sélectionnés"
     },
     {
-      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
-      "translation": "Source de capture effacée, mais échec du redémarrage automatique : {0} Fermez et rouvrez SrvSurvey manuellement."
-    },
-    {
-      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
-      "translation": "Source de capture effacée. Redémarrer SrvSurvey; le sélecteur s'ouvre si la capture revient au partage Wayland."
-    },
-    {
-      "source": "Capture source cleared; restarting SrvSurvey...",
-      "translation": "Source de capture effacée ; redémarrage SrvSurvey..."
+      "source": "Capture source selected. It will be used when game capture resumes.",
+      "translation": "Source de capture sélectionnée. Il sera utilisé lorsque la capture du jeu reprendra."
     },
     {
       "source": "Captured and copied the {0} cockpit offset for this session.",
@@ -74141,10 +74205,6 @@
       "translation": "Choisissez Modifier les positions de superposition pour charger des aperçus catégorisés à partir d’un état de jeu simulé isolé. Elite n'a pas besoin de courir."
     },
     {
-      "source": "Choose Elite Dangerous or its desktop",
-      "translation": "Choisissez Elite Dangerous ou son bureau"
-    },
-    {
       "source": "Choose Guardian map background",
       "translation": "Choisir l'arrière-plan de la carte Guardian"
     },
@@ -74415,6 +74475,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Choisissez le bon modèle pour réparer un site inconnu ou mal identifié. Entrez les deux coordonnées de la surface ou laissez les deux vides lorsque l'origine n'est pas encore connue."
+    },
+    {
+      "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
+      "translation": "Choisissez l'affichage ou le moniteur affiché Elite Dangerous, puis cliquez sur Partager. Si le sélecteur s'ouvre sur la liste des fenêtres, passez à son affichage ou à son onglet d'écran."
     },
     {
       "source": "Choose the last visit to a system as the starting point. Existing journals are replayed from there.",
@@ -81257,6 +81321,10 @@
       "translation": "Si un premier site existant n'a pas d'identifiant stable, ou si aucune clé API n'est disponible pour le protéger, la création est refusée avant la publication d'un projet."
     },
     {
+      "source": "If detection fails with the correct display selected, use Settings → Application → Choose capture source again and try the Elite Dangerous window.",
+      "translation": "Si la détection échoue avec le bon affichage sélectionné, utilisez Paramètres → Application → Choisir à nouveau la source de capture et essayez la fenêtre Elite Dangerous."
+    },
+    {
       "source": "If fewer systems are recorded than the 'Recorded systems required for averages' setting, the table displays —.",
       "translation": "Si moins de systèmes sont enregistrés que le paramètre « Systèmes enregistrés requis pour les moyennes », le tableau affiche —."
     },
@@ -85965,6 +86033,10 @@
       "translation": "A pied"
     },
     {
+      "source": "On some Proton or Gamescope setups, display sharing avoids a larger game-window stream and can reduce lag. SrvSurvey crops the game areas it needs from the shared display.",
+      "translation": "Sur certaines configurations Proton ou Gamescope, le partage d'affichage évite un flux de fenêtre de jeu plus important et peut réduire le décalage. SrvSurvey recadre les zones de jeu dont il a besoin à partir de l'affichage partagé."
+    },
+    {
       "source": "On-foot relic",
       "translation": "Relique à pied"
     },
@@ -86427,6 +86499,10 @@
     {
       "source": "Opened {0}.",
       "translation": "Ouvert {0}."
+    },
+    {
+      "source": "Opening the desktop's screen-share picker…",
+      "translation": "Ouverture du sélecteur de partage d'écran du bureau…"
     },
     {
       "source": "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
@@ -89989,10 +90065,6 @@
       "translation": "La demande a échoué. Essayer à nouveau."
     },
     {
-      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
-      "translation": "Demandé une nouvelle sélection de source de capture d'écran Wayland après le redémarrage."
-    },
-    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Exiger que la FSS signale tous les corps avant la fin"
     },
@@ -92109,10 +92181,6 @@
       "translation": "Sélectionnez la carte Active Commander pour ouvrir le profil actuel Frontier. L'aperçu reste en haut de la barre latérale."
     },
     {
-      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
-      "translation": "Sélectionnez la fenêtre Elite Dangerous et cliquez sur Partager. Si Elite Dangerous n'est pas répertorié, sélectionnez le bureau ou le moniteur sur lequel le jeu est exécuté."
-    },
-    {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
       "translation": "Sélectionnez la disposition des ruines avec le groupe de tir actif, puis utilisez deux fois le contrôle de confirmation configuré."
     },
@@ -92123,6 +92191,10 @@
     {
       "source": "Select your linked squadron carrier",
       "translation": "Sélectionnez votre porte-avions d'escadron lié"
+    },
+    {
+      "source": "Selected a fresh Wayland screen-capture source without restarting.",
+      "translation": "Sélection d'une nouvelle source de capture d'écran Wayland sans redémarrer."
     },
     {
       "source": "Selected boxel",
@@ -92539,6 +92611,10 @@
     {
       "source": "Share supported live journal and companion-file data with the Elite Dangerous Data Network.",
       "translation": "Partagez les données de journaux en direct et de fichiers compagnon pris en charge avec le réseau de données Elite Dangerous."
+    },
+    {
+      "source": "Share the display running Elite Dangerous",
+      "translation": "Partager l'affichage en cours d'exécution Elite Dangerous"
     },
     {
       "source": "Shared bookmarks",
@@ -93303,6 +93379,10 @@
     {
       "source": "Source",
       "translation": "Source"
+    },
+    {
+      "source": "Source chosen, but this desktop did not save the selection. The picker may open again when capture starts.",
+      "translation": "Source choisie, mais ce bureau n'a pas enregistré la sélection. Le sélecteur peut s'ouvrir à nouveau lorsque la capture démarre."
     },
     {
       "source": "Source folder watch stopped: {0}",
@@ -95573,6 +95653,10 @@
       "translation": "La préférence VoxStellar a été modifiée pour cette session mais n'a pas pu être enregistrée : {0}"
     },
     {
+      "source": "The Wayland capture source could not be selected: {0}",
+      "translation": "La source de capture Wayland n'a pas pu être sélectionnée : {0}"
+    },
+    {
       "source": "The Wayland desktop denied screen sharing.",
       "translation": "Le bureau Wayland a refusé le partage d'écran."
     },
@@ -96791,10 +96875,6 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "L'ID Frontier {0} enregistré n'a pas de profil importé lisible. La sélection automatique est affichée jusqu'à ce que le profil soit restauré."
-    },
-    {
-      "source": "The saved Wayland capture source could not be cleared: {0}",
-      "translation": "La source de capture Wayland enregistrée n'a pas pu être effacée : {0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -99341,12 +99421,12 @@
       "translation": "Capture Wayland ({0}) : les paramètres ont demandé une nouvelle sélection de source."
     },
     {
-      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
-      "translation": "Capture Wayland ({0}) : fermée car la capture a été désactivée dans les paramètres."
+      "source": "Wayland capture ({0}): closed because {1}.",
+      "translation": "Capture Wayland ({0}) : fermée car {1}."
     },
     {
-      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
-      "translation": "Capture Wayland ({0}) : échec de fermeture après la désactivation de la capture dans Paramètres. {1}"
+      "source": "Wayland capture ({0}): failed to close after {1}. {2}",
+      "translation": "Capture Wayland ({0}) : échec de fermeture après {1}. {2}"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
@@ -99391,6 +99471,18 @@
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
       "translation": "Capture Wayland ({0}) : la demande de resélection de source n'a pas pu être effacée. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): {1}",
+      "translation": "Capture de Wayland ({0}) : {1}"
+    },
+    {
+      "source": "Wayland capture source selection failed: {0}",
+      "translation": "Échec de la sélection de la source de capture Wayland : {0}"
+    },
+    {
+      "source": "Wayland capture source selection is in progress.",
+      "translation": "La sélection des sources de capture Wayland est en cours."
     },
     {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
@@ -99443,10 +99535,6 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Le partage d'écran Wayland a été annulé."
-    },
-    {
-      "source": "Wayland screen-capture source changed",
-      "translation": "La source de capture d'écran de Wayland a été modifiée"
     },
     {
       "source": "WaylandCapture",
@@ -100349,6 +100437,14 @@
       "translation": "capture perdue"
     },
     {
+      "source": "capture source selection",
+      "translation": "sélection de la source de capture"
+    },
+    {
+      "source": "capture was disabled in Settings",
+      "translation": "la capture a été désactivée dans les paramètres"
+    },
+    {
       "source": "cargo",
       "translation": "cargaison"
     },
@@ -100607,6 +100703,10 @@
     {
       "source": "desktop",
       "translation": "ordinateur de bureau"
+    },
+    {
+      "source": "desktop did not retain this selection.",
+      "translation": "le bureau n'a pas conservé cette sélection."
     },
     {
       "source": "detail",
@@ -102049,6 +102149,10 @@
       "translation": "échantillon 2 sur 3"
     },
     {
+      "source": "saved selection renewed.",
+      "translation": "sélection enregistrée renouvelée."
+    },
+    {
       "source": "scanned",
       "translation": "scanné"
     },
@@ -102431,6 +102535,10 @@
     {
       "source": "the selected origin",
       "translation": "l'origine sélectionnée"
+    },
+    {
+      "source": "the source was changed in Settings",
+      "translation": "la source a été modifiée dans Paramètres"
     },
     {
       "source": "theme",
@@ -108403,16 +108511,8 @@
       "translation": "Capture locais de superfície selecionados"
     },
     {
-      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
-      "translation": "Fonte de captura limpa, mas falha na reinicialização automática: {0} Fechar e reabrir SrvSurvey manualmente."
-    },
-    {
-      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
-      "translation": "Fonte de captura apagada. Reiniciar SrvSurvey; o seletor é aberto se a captura voltar ao compartilhamento do Wayland."
-    },
-    {
-      "source": "Capture source cleared; restarting SrvSurvey...",
-      "translation": "Fonte de captura apagada; reiniciando SrvSurvey..."
+      "source": "Capture source selected. It will be used when game capture resumes.",
+      "translation": "Fonte de captura selecionada. Ele será usado quando a captura do jogo for retomada."
     },
     {
       "source": "Captured and copied the {0} cockpit offset for this session.",
@@ -108791,10 +108891,6 @@
       "translation": "Escolha Editar posições de sobreposição para carregar visualizações categorizadas de um estado de jogo simulado isolado. Elite não precisa estar correndo."
     },
     {
-      "source": "Choose Elite Dangerous or its desktop",
-      "translation": "Escolha Elite Dangerous ou seu desktop"
-    },
-    {
       "source": "Choose Guardian map background",
       "translation": "Escolha o plano de fundo do mapa do Guardião"
     },
@@ -109065,6 +109161,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Escolha o modelo correto para reparar um site desconhecido ou identificado incorretamente. Insira ambas as coordenadas da superfície ou deixe-as em branco quando a origem ainda não for conhecida."
+    },
+    {
+      "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
+      "translation": "Escolha o monitor ou exibição Elite Dangerous e clique em Compartilhar. Se o seletor abrir na lista de janelas, alterne para sua exibição ou guia de tela."
     },
     {
       "source": "Choose the last visit to a system as the starting point. Existing journals are replayed from there.",
@@ -115907,6 +116007,10 @@
       "translation": "Se um primeiro site existente não tiver um ID estável ou nenhuma chave de API estiver disponível para protegê-lo, a criação será recusada antes de qualquer projeto ser publicado."
     },
     {
+      "source": "If detection fails with the correct display selected, use Settings → Application → Choose capture source again and try the Elite Dangerous window.",
+      "translation": "Se a detecção falhar com a exibição correta selecionada, use Configurações → Aplicativo → Escolher fonte de captura novamente e tente a janela Elite Dangerous."
+    },
+    {
       "source": "If fewer systems are recorded than the 'Recorded systems required for averages' setting, the table displays —.",
       "translation": "Se forem registados menos sistemas do que a definição “Sistemas registados necessários para médias”, a tabela apresenta —."
     },
@@ -120615,6 +120719,10 @@
       "translation": "A pé"
     },
     {
+      "source": "On some Proton or Gamescope setups, display sharing avoids a larger game-window stream and can reduce lag. SrvSurvey crops the game areas it needs from the shared display.",
+      "translation": "Em algumas configurações Proton ou Gamescope, o compartilhamento de exibição evita um fluxo maior da janela do jogo e pode reduzir o atraso. SrvSurvey recorta as áreas de jogo necessárias na tela compartilhada."
+    },
+    {
       "source": "On-foot relic",
       "translation": "Relíquia a pé"
     },
@@ -121077,6 +121185,10 @@
     {
       "source": "Opened {0}.",
       "translation": "Aberto {0}."
+    },
+    {
+      "source": "Opening the desktop's screen-share picker…",
+      "translation": "Abrindo o seletor de compartilhamento de tela da área de trabalho…"
     },
     {
       "source": "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
@@ -124639,10 +124751,6 @@
       "translation": "Falha na solicitação. Tente novamente."
     },
     {
-      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
-      "translation": "Solicitada uma nova seleção de fonte de captura de tela do Wayland após a reinicialização."
-    },
-    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Exigir que o FSS relate todos os órgãos antes da conclusão"
     },
@@ -126759,10 +126867,6 @@
       "translation": "Selecione a placa Active Commander para abrir o perfil atual Frontier. A visão geral permanece no topo da barra lateral."
     },
     {
-      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
-      "translation": "Selecione a janela Elite Dangerous e clique em Compartilhar. Se Elite Dangerous não estiver listado, selecione a área de trabalho ou monitor onde o jogo está sendo executado."
-    },
-    {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
       "translation": "Selecione o layout das ruínas com o grupo de fogo ativo e use o controle de confirmação configurado duas vezes."
     },
@@ -126773,6 +126877,10 @@
     {
       "source": "Select your linked squadron carrier",
       "translation": "Selecione seu porta-aviões de esquadrão vinculado"
+    },
+    {
+      "source": "Selected a fresh Wayland screen-capture source without restarting.",
+      "translation": "Selecionou uma nova fonte de captura de tela do Wayland sem reiniciar."
     },
     {
       "source": "Selected boxel",
@@ -127189,6 +127297,10 @@
     {
       "source": "Share supported live journal and companion-file data with the Elite Dangerous Data Network.",
       "translation": "Compartilhe dados de diário ao vivo e arquivos complementares suportados com a rede de dados Elite Dangerous."
+    },
+    {
+      "source": "Share the display running Elite Dangerous",
+      "translation": "Compartilhe a exibição em execução Elite Dangerous"
     },
     {
       "source": "Shared bookmarks",
@@ -127953,6 +128065,10 @@
     {
       "source": "Source",
       "translation": "Fonte"
+    },
+    {
+      "source": "Source chosen, but this desktop did not save the selection. The picker may open again when capture starts.",
+      "translation": "Fonte escolhida, mas esta área de trabalho não salvou a seleção. O seletor poderá abrir novamente quando a captura for iniciada."
     },
     {
       "source": "Source folder watch stopped: {0}",
@@ -130223,6 +130339,10 @@
       "translation": "A preferência VoxStellar foi alterada para esta sessão, mas não pôde ser salva: {0}"
     },
     {
+      "source": "The Wayland capture source could not be selected: {0}",
+      "translation": "A fonte de captura do Wayland não pôde ser selecionada: {0}"
+    },
+    {
       "source": "The Wayland desktop denied screen sharing.",
       "translation": "O desktop Wayland negou o compartilhamento de tela."
     },
@@ -131441,10 +131561,6 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "O Frontier ID {0} salvo não possui perfil importado legível. A seleção automática é mostrada até que o perfil seja restaurado."
-    },
-    {
-      "source": "The saved Wayland capture source could not be cleared: {0}",
-      "translation": "A fonte de captura Wayland salva não pôde ser apagada: {0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -133991,12 +134107,12 @@
       "translation": "Captura Wayland ({0}): As configurações solicitaram uma nova seleção de fonte."
     },
     {
-      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
-      "translation": "Captura Wayland ({0}): fechada porque a captura foi desabilitada em Configurações."
+      "source": "Wayland capture ({0}): closed because {1}.",
+      "translation": "Captura de Wayland ({0}): fechada porque {1}."
     },
     {
-      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
-      "translation": "Captura de Wayland ({0}): falha ao fechar depois que a captura foi desativada em Configurações. {1}"
+      "source": "Wayland capture ({0}): failed to close after {1}. {2}",
+      "translation": "Captura de Wayland ({0}): falha ao fechar após {1}. {2}"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
@@ -134041,6 +134157,18 @@
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
       "translation": "Captura de Wayland ({0}): a solicitação de nova seleção da fonte não pôde ser apagada. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): {1}",
+      "translation": "Captura de Wayland ({0}): {1}"
+    },
+    {
+      "source": "Wayland capture source selection failed: {0}",
+      "translation": "Falha na seleção da fonte de captura de Wayland: {0}"
+    },
+    {
+      "source": "Wayland capture source selection is in progress.",
+      "translation": "A seleção da fonte de captura do Wayland está em andamento."
     },
     {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
@@ -134093,10 +134221,6 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "O compartilhamento de tela do Wayland foi cancelado."
-    },
-    {
-      "source": "Wayland screen-capture source changed",
-      "translation": "Fonte de captura de tela do Wayland alterada"
     },
     {
       "source": "WaylandCapture",
@@ -134999,6 +135123,14 @@
       "translation": "captura perdida"
     },
     {
+      "source": "capture source selection",
+      "translation": "seleção de fonte de captura"
+    },
+    {
+      "source": "capture was disabled in Settings",
+      "translation": "a captura foi desativada nas configurações"
+    },
+    {
       "source": "cargo",
       "translation": "carga"
     },
@@ -135257,6 +135389,10 @@
     {
       "source": "desktop",
       "translation": "área de trabalho"
+    },
+    {
+      "source": "desktop did not retain this selection.",
+      "translation": "desktop não manteve esta seleção."
     },
     {
       "source": "detail",
@@ -136699,6 +136835,10 @@
       "translation": "amostra 2 de 3"
     },
     {
+      "source": "saved selection renewed.",
+      "translation": "seleção salva renovada."
+    },
+    {
       "source": "scanned",
       "translation": "digitalizado"
     },
@@ -137081,6 +137221,10 @@
     {
       "source": "the selected origin",
       "translation": "a origem selecionada"
+    },
+    {
+      "source": "the source was changed in Settings",
+      "translation": "a fonte foi alterada em Configurações"
     },
     {
       "source": "theme",
@@ -143053,16 +143197,8 @@
       "translation": "Захват выбранных участков поверхности"
     },
     {
-      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
-      "translation": "Источник захвата очищен, но автоматический перезапуск не удался: {0} Закройте и снова откройте SrvSurvey вручную."
-    },
-    {
-      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
-      "translation": "Источник захвата очищен. Перезапустить SrvSurvey; окно выбора открывается, если захват возвращается к совместному использованию Wayland."
-    },
-    {
-      "source": "Capture source cleared; restarting SrvSurvey...",
-      "translation": "Источник захвата очищен; перезапуск SrvSurvey..."
+      "source": "Capture source selected. It will be used when game capture resumes.",
+      "translation": "Источник захвата выбран. Он будет использоваться, когда возобновится захват игры."
     },
     {
       "source": "Captured and copied the {0} cockpit offset for this session.",
@@ -143441,10 +143577,6 @@
       "translation": "Выберите «Редактировать позиции наложения», чтобы загрузить предварительный просмотр по категориям из изолированного смоделированного состояния игры. Элите не обязательно бежать."
     },
     {
-      "source": "Choose Elite Dangerous or its desktop",
-      "translation": "Выберите Elite Dangerous или его рабочий стол."
-    },
-    {
       "source": "Choose Guardian map background",
       "translation": "Выберите фон карты Guardian"
     },
@@ -143715,6 +143847,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "Выберите правильный шаблон для восстановления неизвестного или ошибочно идентифицированного сайта. Введите обе координаты поверхности или оставьте обе пустыми, если начало координат еще не известно."
+    },
+    {
+      "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
+      "translation": "Выберите дисплей или монитор Elite Dangerous, затем нажмите «Поделиться». Если средство выбора открывается в списке окон, переключитесь на его отображение или вкладку экрана."
     },
     {
       "source": "Choose the last visit to a system as the starting point. Existing journals are replayed from there.",
@@ -150557,6 +150693,10 @@
       "translation": "Если у существующего первого сайта нет стабильного идентификатора или нет ключа API для его защиты, в создании будет отказано до публикации любого проекта."
     },
     {
+      "source": "If detection fails with the correct display selected, use Settings → Application → Choose capture source again and try the Elite Dangerous window.",
+      "translation": "Если обнаружение не удалось при выборе правильного дисплея, используйте «Настройки» → «Приложение» → «Выбрать источник захвата» еще раз и попробуйте открыть окно Elite Dangerous."
+    },
+    {
       "source": "If fewer systems are recorded than the 'Recorded systems required for averages' setting, the table displays —.",
       "translation": "Если записано меньше систем, чем указано в настройке «Записанные системы, необходимые для усреднения», в таблице отображается —."
     },
@@ -155265,6 +155405,10 @@
       "translation": "Пешком"
     },
     {
+      "source": "On some Proton or Gamescope setups, display sharing avoids a larger game-window stream and can reduce lag. SrvSurvey crops the game areas it needs from the shared display.",
+      "translation": "В некоторых Proton или настройках Gamescope совместное использование дисплея позволяет избежать увеличения потока игрового окна и может уменьшить задержку. SrvSurvey вырезает нужные игровые области с общего дисплея."
+    },
+    {
       "source": "On-foot relic",
       "translation": "Пешеходная реликвия"
     },
@@ -155727,6 +155871,10 @@
     {
       "source": "Opened {0}.",
       "translation": "Открыт {0}."
+    },
+    {
+      "source": "Opening the desktop's screen-share picker…",
+      "translation": "Открытие средства выбора общего доступа к экрану на рабочем столе…"
     },
     {
       "source": "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
@@ -159289,10 +159437,6 @@
       "translation": "Запрос не выполнен. Попробуйте еще раз."
     },
     {
-      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
-      "translation": "После перезапуска запрошен новый выбор источника снимка экрана Wayland."
-    },
-    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Требовать от ФСС сообщать обо всех телах до завершения строительства."
     },
@@ -161409,10 +161553,6 @@
       "translation": "Выберите карту Active Commander, чтобы открыть текущий профиль Frontier. Обзор остается в верхней части боковой панели."
     },
     {
-      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
-      "translation": "Выберите окно Elite Dangerous и нажмите «Поделиться». Если Elite Dangerous нет в списке, выберите рабочий стол или монитор, на котором запущена игра."
-    },
-    {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
       "translation": "Выберите макет руин с активной группой огня, затем дважды используйте настроенный элемент управления подтверждением."
     },
@@ -161423,6 +161563,10 @@
     {
       "source": "Select your linked squadron carrier",
       "translation": "Выберите авианосец связанной эскадрильи"
+    },
+    {
+      "source": "Selected a fresh Wayland screen-capture source without restarting.",
+      "translation": "Выбрал новый источник снимков экрана Wayland без перезапуска."
     },
     {
       "source": "Selected boxel",
@@ -161839,6 +161983,10 @@
     {
       "source": "Share supported live journal and companion-file data with the Elite Dangerous Data Network.",
       "translation": "Делитесь поддерживаемыми данными живого журнала и сопутствующих файлов с помощью сети передачи данных Elite Dangerous."
+    },
+    {
+      "source": "Share the display running Elite Dangerous",
+      "translation": "Поделитесь запущенным дисплеем Elite Dangerous"
     },
     {
       "source": "Shared bookmarks",
@@ -162603,6 +162751,10 @@
     {
       "source": "Source",
       "translation": "Источник"
+    },
+    {
+      "source": "Source chosen, but this desktop did not save the selection. The picker may open again when capture starts.",
+      "translation": "Источник выбран, но этот рабочий стол не сохранил выбор. Сборщик может открыться снова, когда начнется захват."
     },
     {
       "source": "Source folder watch stopped: {0}",
@@ -164873,6 +165025,10 @@
       "translation": "Предпочтение VoxStellar изменилось для этого сеанса, но не удалось сохранить: {0}"
     },
     {
+      "source": "The Wayland capture source could not be selected: {0}",
+      "translation": "Не удалось выбрать источник захвата Wayland: {0}."
+    },
+    {
       "source": "The Wayland desktop denied screen sharing.",
       "translation": "Рабочий стол Wayland запретил совместное использование экрана."
     },
@@ -166091,10 +166247,6 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "Сохраненный идентификатор Frontier {0} не имеет читаемого импортированного профиля. Автоматический выбор отображается до тех пор, пока профиль не будет восстановлен."
-    },
-    {
-      "source": "The saved Wayland capture source could not be cleared: {0}",
-      "translation": "Не удалось очистить сохраненный источник захвата Wayland: {0}."
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -168641,12 +168793,12 @@
       "translation": "Захват Wayland ({0}): настройки запросили новый выбор источника."
     },
     {
-      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
-      "translation": "Захват Wayland ({0}): закрыт, поскольку захват отключен в настройках."
+      "source": "Wayland capture ({0}): closed because {1}.",
+      "translation": "Захват Wayland ({0}): закрыт, поскольку {1}."
     },
     {
-      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
-      "translation": "Захват Wayland ({0}): не удалось закрыть после отключения захвата в настройках. {1}"
+      "source": "Wayland capture ({0}): failed to close after {1}. {2}",
+      "translation": "Захват Wayland ({0}): не удалось закрыться после {1}. {2}"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
@@ -168691,6 +168843,18 @@
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
       "translation": "Захват Wayland ({0}): не удалось очистить запрос на повторный выбор источника. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): {1}",
+      "translation": "Захват Вэйланда ({0}): {1}"
+    },
+    {
+      "source": "Wayland capture source selection failed: {0}",
+      "translation": "Не удалось выбрать источник захвата Wayland: {0}"
+    },
+    {
+      "source": "Wayland capture source selection is in progress.",
+      "translation": "Выполняется выбор источника захвата Wayland."
     },
     {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
@@ -168743,10 +168907,6 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Демонстрация экрана Wayland отменена."
-    },
-    {
-      "source": "Wayland screen-capture source changed",
-      "translation": "Изменен источник снимка экрана Wayland"
     },
     {
       "source": "WaylandCapture",
@@ -169649,6 +169809,14 @@
       "translation": "захват потерян"
     },
     {
+      "source": "capture source selection",
+      "translation": "выбор источника захвата"
+    },
+    {
+      "source": "capture was disabled in Settings",
+      "translation": "захват был отключен в настройках"
+    },
+    {
       "source": "cargo",
       "translation": "груз"
     },
@@ -169907,6 +170075,10 @@
     {
       "source": "desktop",
       "translation": "рабочий стол"
+    },
+    {
+      "source": "desktop did not retain this selection.",
+      "translation": "рабочий стол не сохранил этот выбор."
     },
     {
       "source": "detail",
@@ -171349,6 +171521,10 @@
       "translation": "образец 2 из 3"
     },
     {
+      "source": "saved selection renewed.",
+      "translation": "сохраненный выбор обновлен."
+    },
+    {
       "source": "scanned",
       "translation": "отсканирован"
     },
@@ -171731,6 +171907,10 @@
     {
       "source": "the selected origin",
       "translation": "выбранное происхождение"
+    },
+    {
+      "source": "the source was changed in Settings",
+      "translation": "источник был изменен в настройках"
     },
     {
       "source": "theme",
@@ -177703,16 +177883,8 @@
       "translation": "捕获选定的表面站点"
     },
     {
-      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
-      "translation": "捕获源已清除，但自动重启失败：{0} 手动关闭并重新打开SrvSurvey。"
-    },
-    {
-      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
-      "translation": "捕获源已清除。重启SrvSurvey；如果捕获返回到 Wayland 共享，则选择器将打开。"
-    },
-    {
-      "source": "Capture source cleared; restarting SrvSurvey...",
-      "translation": "捕获源清除；正在重新启动SrvSurvey..."
+      "source": "Capture source selected. It will be used when game capture resumes.",
+      "translation": "已选择捕获源。它将在游戏捕获恢复时使用。"
     },
     {
       "source": "Captured and copied the {0} cockpit offset for this session.",
@@ -178091,10 +178263,6 @@
       "translation": "选择“编辑叠加位置”以从隔离的模拟游戏状态加载分类预览。精英不需要跑步。"
     },
     {
-      "source": "Choose Elite Dangerous or its desktop",
-      "translation": "选择Elite Dangerous或其桌面"
-    },
-    {
       "source": "Choose Guardian map background",
       "translation": "选择守护者地图背景"
     },
@@ -178365,6 +178533,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "选择正确的模板来修复未知或错误识别的站点。输入两个表面坐标，或者在原点未知时将两者留空。"
+    },
+    {
+      "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
+      "translation": "选择显示 Elite Dangerous 的显示器或监视器，然后单击共享。如果选取器在窗口列表中打开，请切换到其显示或屏幕选项卡。"
     },
     {
       "source": "Choose the last visit to a system as the starting point. Existing journals are replayed from there.",
@@ -185207,6 +185379,10 @@
       "translation": "如果现有的第一个站点没有稳定的 ID，或者没有可用于保护它的 API 密钥，则在发布任何项目之前都会拒绝创建。"
     },
     {
+      "source": "If detection fails with the correct display selected, use Settings → Application → Choose capture source again and try the Elite Dangerous window.",
+      "translation": "如果选择正确的显示后检测失败，请使用设置 → 应用程序 → 再次选择捕获源并尝试 Elite Dangerous 窗口。"
+    },
+    {
       "source": "If fewer systems are recorded than the 'Recorded systems required for averages' setting, the table displays —.",
       "translation": "如果记录的系统少于“平均值所需的记录系统”设置，则表将显示 —。"
     },
@@ -189915,6 +190091,10 @@
       "translation": "步行"
     },
     {
+      "source": "On some Proton or Gamescope setups, display sharing avoids a larger game-window stream and can reduce lag. SrvSurvey crops the game areas it needs from the shared display.",
+      "translation": "在某些 Proton 或 Gamescope 设置上，显示共享可避免较大的游戏窗口流并减少延迟。 SrvSurvey 从共享显示器中裁剪所需的游戏区域。"
+    },
+    {
       "source": "On-foot relic",
       "translation": "步行遗迹"
     },
@@ -190377,6 +190557,10 @@
     {
       "source": "Opened {0}.",
       "translation": "打开{0}。"
+    },
+    {
+      "source": "Opening the desktop's screen-share picker…",
+      "translation": "打开桌面的屏幕共享选择器..."
     },
     {
       "source": "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
@@ -193939,10 +194123,6 @@
       "translation": "请求失败。再试一次。"
     },
     {
-      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
-      "translation": "重新启动后请求重新选择 Wayland 屏幕捕获源。"
-    },
-    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "要求 FSS 在完成前报告所有机构"
     },
@@ -196059,10 +196239,6 @@
       "translation": "选择 Active Commander 卡以打开当前 Frontier 配置文件。概述仍然位于侧边栏的顶部。"
     },
     {
-      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
-      "translation": "选择 Elite Dangerous 窗口并单击共享。如果 Elite Dangerous 未列出，请选择运行游戏的桌面或显示器。"
-    },
-    {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
       "translation": "选择具有活动火力组的废墟布局，然后使用配置的确认控件两次。"
     },
@@ -196073,6 +196249,10 @@
     {
       "source": "Select your linked squadron carrier",
       "translation": "选择您链接的中队航母"
+    },
+    {
+      "source": "Selected a fresh Wayland screen-capture source without restarting.",
+      "translation": "选择新的 Wayland 屏幕捕获源而无需重新启动。"
     },
     {
       "source": "Selected boxel",
@@ -196489,6 +196669,10 @@
     {
       "source": "Share supported live journal and companion-file data with the Elite Dangerous Data Network.",
       "translation": "与 Elite Dangerous 数据网络共享支持的实时日志和伴随文件数据。"
+    },
+    {
+      "source": "Share the display running Elite Dangerous",
+      "translation": "共享显示运行情况Elite Dangerous"
     },
     {
       "source": "Shared bookmarks",
@@ -197253,6 +197437,10 @@
     {
       "source": "Source",
       "translation": "来源"
+    },
+    {
+      "source": "Source chosen, but this desktop did not save the selection. The picker may open again when capture starts.",
+      "translation": "已选择来源，但此桌面未保存选择。捕获开始时，选择器可能会再次打开。"
     },
     {
       "source": "Source folder watch stopped: {0}",
@@ -199523,6 +199711,10 @@
       "translation": "此会话的 VoxStellar 首选项已更改，但无法保存：{0}"
     },
     {
+      "source": "The Wayland capture source could not be selected: {0}",
+      "translation": "无法选择 Wayland 捕获源：{0}"
+    },
+    {
       "source": "The Wayland desktop denied screen sharing.",
       "translation": "Wayland 桌面拒绝屏幕共享。"
     },
@@ -200741,10 +200933,6 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "已保存的 Frontier ID {0} 没有可读的导入配置文件。将显示自动选择，直到配置文件恢复为止。"
-    },
-    {
-      "source": "The saved Wayland capture source could not be cleared: {0}",
-      "translation": "无法清除已保存的 Wayland 捕获源：{0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -203291,12 +203479,12 @@
       "translation": "Wayland 捕获 ({0})：设置请求新的源选择。"
     },
     {
-      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
-      "translation": "Wayland 捕获 ({0})：已关闭，因为在“设置”中禁用了捕获。"
+      "source": "Wayland capture ({0}): closed because {1}.",
+      "translation": "Wayland 捕获 ({0})：由于 {1} 而关闭。"
     },
     {
-      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
-      "translation": "Wayland 捕获 ({0})：在“设置”中禁用捕获后无法关闭。 {1}"
+      "source": "Wayland capture ({0}): failed to close after {1}. {2}",
+      "translation": "Wayland 捕获（{0}）：{1} 后无法关闭。 {2}"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
@@ -203341,6 +203529,18 @@
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
       "translation": "Wayland 捕获 ({0})：无法清除源重选请求。 {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): {1}",
+      "translation": "韦兰捕获（{0}）：{1}"
+    },
+    {
+      "source": "Wayland capture source selection failed: {0}",
+      "translation": "Wayland 捕获源选择失败：{0}"
+    },
+    {
+      "source": "Wayland capture source selection is in progress.",
+      "translation": "Wayland 捕获源选择正在进行中。"
     },
     {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
@@ -203393,10 +203593,6 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Wayland 屏幕共享已取消。"
-    },
-    {
-      "source": "Wayland screen-capture source changed",
-      "translation": "Wayland 屏幕捕获源已更改"
     },
     {
       "source": "WaylandCapture",
@@ -204299,6 +204495,14 @@
       "translation": "捕获丢失"
     },
     {
+      "source": "capture source selection",
+      "translation": "捕捉源选择"
+    },
+    {
+      "source": "capture was disabled in Settings",
+      "translation": "在“设置”中禁用了捕获"
+    },
+    {
       "source": "cargo",
       "translation": "货物"
     },
@@ -204557,6 +204761,10 @@
     {
       "source": "desktop",
       "translation": "桌面"
+    },
+    {
+      "source": "desktop did not retain this selection.",
+      "translation": "桌面没有保留此选择。"
     },
     {
       "source": "detail",
@@ -205999,6 +206207,10 @@
       "translation": "样本 2（共 3 个）"
     },
     {
+      "source": "saved selection renewed.",
+      "translation": "已保存的选择已更新。"
+    },
+    {
       "source": "scanned",
       "translation": "扫描的"
     },
@@ -206381,6 +206593,10 @@
     {
       "source": "the selected origin",
       "translation": "选定的原点"
+    },
+    {
+      "source": "the source was changed in Settings",
+      "translation": "来源已在“设置”中更改"
     },
     {
       "source": "theme",
@@ -212353,16 +212569,8 @@
       "translation": "* CAPTURE SELECTED SURFACE SITES >>>!"
     },
     {
-      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
-      "translation": "* CAPTURE SOURCE CLEARED, BUT AUTOMATIC RESTART FAILED: {0} CLOSE AND REOPEN SRVSURVEY MANUALLY. >>>!"
-    },
-    {
-      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
-      "translation": "* CAPTURE SOURCE CLEARED. RESTART SRVSURVEY; THE PICKER OPENS IF CAPTURE FALLS BACK TO WAYLAND SHARING. >>>!"
-    },
-    {
-      "source": "Capture source cleared; restarting SrvSurvey...",
-      "translation": "* CAPTURE SOURCE CLEARED; RESTARTING SRVSURVEY... >>>!"
+      "source": "Capture source selected. It will be used when game capture resumes.",
+      "translation": "* CAPTURE SOURCE SELECTED. IT WILL BE USED WHEN GAME CAPTURE RESUMES. >>>!"
     },
     {
       "source": "Captured and copied the {0} cockpit offset for this session.",
@@ -212741,10 +212949,6 @@
       "translation": "* CHOOSE EDIT OVERLAY POSITIONS TO LOAD CATEGORIZED PREVIEWS FROM AN ISOLATED SIMULATED GAME STATE. ELITE DOES NOT NEED TO BE RUNNING. >>>!"
     },
     {
-      "source": "Choose Elite Dangerous or its desktop",
-      "translation": "* CHOOSE ELITE DANGEROUS OR ITS DESKTOP >>>!"
-    },
-    {
       "source": "Choose Guardian map background",
       "translation": "* CHOOSE GUARDIAN MAP BACKGROUND >>>!"
     },
@@ -213015,6 +213219,10 @@
     {
       "source": "Choose the correct template to repair an unknown or misidentified site. Enter both surface coordinates, or leave both blank when the origin is not yet known.",
       "translation": "* CHOOSE THE CORRECT TEMPLATE TO REPAIR AN UNKNOWN OR MISIDENTIFIED SITE. ENTER BOTH SURFACE COORDINATES, OR LEAVE BOTH BLANK WHEN THE ORIGIN IS NOT YET KNOWN. >>>!"
+    },
+    {
+      "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
+      "translation": "* CHOOSE THE DISPLAY OR MONITOR SHOWING ELITE DANGEROUS, THEN CLICK SHARE. IF THE PICKER OPENS ON THE WINDOW LIST, SWITCH TO ITS DISPLAY OR SCREEN TAB. >>>!"
     },
     {
       "source": "Choose the last visit to a system as the starting point. Existing journals are replayed from there.",
@@ -219857,6 +220065,10 @@
       "translation": "* IF AN EXISTING FIRST SITE HAS NO STABLE ID, OR NO API KEY IS AVAILABLE TO PROTECT IT, CREATION IS REFUSED BEFORE ANY PROJECT IS POSTED. >>>!"
     },
     {
+      "source": "If detection fails with the correct display selected, use Settings → Application → Choose capture source again and try the Elite Dangerous window.",
+      "translation": "* IF DETECTION FAILS WITH THE CORRECT DISPLAY SELECTED, USE SETTINGS → APPLICATION → CHOOSE CAPTURE SOURCE AGAIN AND TRY THE ELITE DANGEROUS WINDOW. >>>!"
+    },
+    {
       "source": "If fewer systems are recorded than the 'Recorded systems required for averages' setting, the table displays —.",
       "translation": "* IF FEWER SYSTEMS ARE RECORDED THAN THE 'RECORDED SYSTEMS REQUIRED FOR AVERAGES' SETTING, THE TABLE DISPLAYS —. >>>!"
     },
@@ -224565,6 +224777,10 @@
       "translation": "* ON FOOT >>>!"
     },
     {
+      "source": "On some Proton or Gamescope setups, display sharing avoids a larger game-window stream and can reduce lag. SrvSurvey crops the game areas it needs from the shared display.",
+      "translation": "* ON SOME PROTON OR GAMESCOPE SETUPS, DISPLAY SHARING AVOIDS A LARGER GAME-WINDOW STREAM AND CAN REDUCE LAG. SRVSURVEY CROPS THE GAME AREAS IT NEEDS FROM THE SHARED DISPLAY. >>>!"
+    },
+    {
       "source": "On-foot relic",
       "translation": "* ON-FOOT RELIC >>>!"
     },
@@ -225027,6 +225243,10 @@
     {
       "source": "Opened {0}.",
       "translation": "* OPENED {0}. >>>!"
+    },
+    {
+      "source": "Opening the desktop's screen-share picker…",
+      "translation": "* OPENING THE DESKTOP'S SCREEN-SHARE PICKER… >>>!"
     },
     {
       "source": "Operate a Rhino on a planetary surface with journal and status tracking active. The overlay appears when the normal overlay display conditions are met.",
@@ -228589,10 +228809,6 @@
       "translation": "* REQUEST FAILED. TRY AGAIN. >>>!"
     },
     {
-      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
-      "translation": "* REQUESTED A FRESH WAYLAND SCREEN-CAPTURE SOURCE SELECTION AFTER RESTART. >>>!"
-    },
-    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "* REQUIRE FSS TO REPORT ALL BODIES BEFORE COMPLETION >>>!"
     },
@@ -230709,10 +230925,6 @@
       "translation": "* SELECT THE ACTIVE COMMANDER CARD TO OPEN THE CURRENT FRONTIER PROFILE. OVERVIEW REMAINS AT THE TOP OF THE SIDEBAR. >>>!"
     },
     {
-      "source": "Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running.",
-      "translation": "* SELECT THE ELITE DANGEROUS WINDOW AND CLICK SHARE. IF ELITE DANGEROUS IS NOT LISTED, SELECT THE DESKTOP OR MONITOR WHERE THE GAME IS RUNNING. >>>!"
-    },
-    {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
       "translation": "* SELECT THE RUINS LAYOUT WITH THE ACTIVE FIRE GROUP, THEN USE THE CONFIGURED CONFIRMATION CONTROL TWICE. >>>!"
     },
@@ -230723,6 +230935,10 @@
     {
       "source": "Select your linked squadron carrier",
       "translation": "* SELECT YOUR LINKED SQUADRON CARRIER >>>!"
+    },
+    {
+      "source": "Selected a fresh Wayland screen-capture source without restarting.",
+      "translation": "* SELECTED A FRESH WAYLAND SCREEN-CAPTURE SOURCE WITHOUT RESTARTING. >>>!"
     },
     {
       "source": "Selected boxel",
@@ -231139,6 +231355,10 @@
     {
       "source": "Share supported live journal and companion-file data with the Elite Dangerous Data Network.",
       "translation": "* SHARE SUPPORTED LIVE JOURNAL AND COMPANION-FILE DATA WITH THE ELITE DANGEROUS DATA NETWORK. >>>!"
+    },
+    {
+      "source": "Share the display running Elite Dangerous",
+      "translation": "* SHARE THE DISPLAY RUNNING ELITE DANGEROUS >>>!"
     },
     {
       "source": "Shared bookmarks",
@@ -231903,6 +232123,10 @@
     {
       "source": "Source",
       "translation": "* SOURCE >>>!"
+    },
+    {
+      "source": "Source chosen, but this desktop did not save the selection. The picker may open again when capture starts.",
+      "translation": "* SOURCE CHOSEN, BUT THIS DESKTOP DID NOT SAVE THE SELECTION. THE PICKER MAY OPEN AGAIN WHEN CAPTURE STARTS. >>>!"
     },
     {
       "source": "Source folder watch stopped: {0}",
@@ -234173,6 +234397,10 @@
       "translation": "* THE VOXSTELLAR PREFERENCE CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
     },
     {
+      "source": "The Wayland capture source could not be selected: {0}",
+      "translation": "* THE WAYLAND CAPTURE SOURCE COULD NOT BE SELECTED: {0} >>>!"
+    },
+    {
       "source": "The Wayland desktop denied screen sharing.",
       "translation": "* THE WAYLAND DESKTOP DENIED SCREEN SHARING. >>>!"
     },
@@ -235391,10 +235619,6 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "* THE SAVED FRONTIER ID {0} HAS NO READABLE IMPORTED PROFILE. AUTOMATIC SELECTION IS SHOWN UNTIL THE PROFILE IS RESTORED. >>>!"
-    },
-    {
-      "source": "The saved Wayland capture source could not be cleared: {0}",
-      "translation": "* THE SAVED WAYLAND CAPTURE SOURCE COULD NOT BE CLEARED: {0} >>>!"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -237941,12 +238165,12 @@
       "translation": "* WAYLAND CAPTURE ({0}): SETTINGS REQUESTED A FRESH SOURCE SELECTION. >>>!"
     },
     {
-      "source": "Wayland capture ({0}): closed because capture was disabled in Settings.",
-      "translation": "* WAYLAND CAPTURE ({0}): CLOSED BECAUSE CAPTURE WAS DISABLED IN SETTINGS. >>>!"
+      "source": "Wayland capture ({0}): closed because {1}.",
+      "translation": "* WAYLAND CAPTURE ({0}): CLOSED BECAUSE {1}. >>>!"
     },
     {
-      "source": "Wayland capture ({0}): failed to close after capture was disabled in Settings. {1}",
-      "translation": "* WAYLAND CAPTURE ({0}): FAILED TO CLOSE AFTER CAPTURE WAS DISABLED IN SETTINGS. {1} >>>!"
+      "source": "Wayland capture ({0}): failed to close after {1}. {2}",
+      "translation": "* WAYLAND CAPTURE ({0}): FAILED TO CLOSE AFTER {1}. {2} >>>!"
     },
     {
       "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
@@ -237991,6 +238215,18 @@
     {
       "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
       "translation": "* WAYLAND CAPTURE ({0}): THE SOURCE-RESELECTION REQUEST COULD NOT BE CLEARED. {1} >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): {1}",
+      "translation": "* WAYLAND CAPTURE ({0}): {1} >>>!"
+    },
+    {
+      "source": "Wayland capture source selection failed: {0}",
+      "translation": "* WAYLAND CAPTURE SOURCE SELECTION FAILED: {0} >>>!"
+    },
+    {
+      "source": "Wayland capture source selection is in progress.",
+      "translation": "* WAYLAND CAPTURE SOURCE SELECTION IS IN PROGRESS. >>>!"
     },
     {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
@@ -238043,10 +238279,6 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "* WAYLAND SCREEN SHARING WAS CANCELED. >>>!"
-    },
-    {
-      "source": "Wayland screen-capture source changed",
-      "translation": "* WAYLAND SCREEN-CAPTURE SOURCE CHANGED >>>!"
     },
     {
       "source": "WaylandCapture",
@@ -238949,6 +239181,14 @@
       "translation": "* CAPTURE LOST >>>!"
     },
     {
+      "source": "capture source selection",
+      "translation": "* CAPTURE SOURCE SELECTION >>>!"
+    },
+    {
+      "source": "capture was disabled in Settings",
+      "translation": "* CAPTURE WAS DISABLED IN SETTINGS >>>!"
+    },
+    {
       "source": "cargo",
       "translation": "* CARGO >>>!"
     },
@@ -239207,6 +239447,10 @@
     {
       "source": "desktop",
       "translation": "* DESKTOP >>>!"
+    },
+    {
+      "source": "desktop did not retain this selection.",
+      "translation": "* DESKTOP DID NOT RETAIN THIS SELECTION. >>>!"
     },
     {
       "source": "detail",
@@ -240649,6 +240893,10 @@
       "translation": "* SAMPLE 2 OF 3 >>>!"
     },
     {
+      "source": "saved selection renewed.",
+      "translation": "* SAVED SELECTION RENEWED. >>>!"
+    },
+    {
       "source": "scanned",
       "translation": "* SCANNED >>>!"
     },
@@ -241031,6 +241279,10 @@
     {
       "source": "the selected origin",
       "translation": "* THE SELECTED ORIGIN >>>!"
+    },
+    {
+      "source": "the source was changed in Settings",
+      "translation": "* THE SOURCE WAS CHANGED IN SETTINGS >>>!"
     },
     {
       "source": "theme",

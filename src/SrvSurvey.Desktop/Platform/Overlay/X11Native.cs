@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Avalonia;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -44,8 +45,91 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial int XCloseDisplay(nint display);
 
+    [LibraryImport("libXrandr.so.2")]
+    private static partial nint XRRGetMonitors(nint display, nuint window, int getActive, out int count);
+
+    [LibraryImport("libXrandr.so.2")]
+    private static partial void XRRFreeMonitors(nint monitors);
+
+    internal static IReadOnlyList<PixelRect> ReadMonitorBounds()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return [];
+        }
+
+        nint display = nint.Zero;
+        nint monitors = nint.Zero;
+        try
+        {
+            display = XOpenDisplay(nint.Zero);
+            if (display == nint.Zero)
+            {
+                return [];
+            }
+
+            monitors = XRRGetMonitors(display, XDefaultRootWindow(display), 1, out int count);
+            if (monitors == nint.Zero || count is < 1 or > 64)
+            {
+                return [];
+            }
+
+            int entrySize = Marshal.SizeOf<XrrMonitorInfo>();
+            List<PixelRect> bounds = new(count);
+            for (int index = 0; index < count; index++)
+            {
+                XrrMonitorInfo monitor = Marshal.PtrToStructure<XrrMonitorInfo>(monitors + index * entrySize);
+                if (monitor.Width > 0 && monitor.Height > 0)
+                {
+                    bounds.Add(new PixelRect(monitor.X, monitor.Y, monitor.Width, monitor.Height));
+                }
+            }
+
+            return bounds;
+        }
+        catch (Exception exception)
+            when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
+        {
+            return [];
+        }
+        finally
+        {
+            if (monitors != nint.Zero)
+            {
+                XRRFreeMonitors(monitors);
+            }
+
+            if (display != nint.Zero)
+            {
+                _ = XCloseDisplay(display);
+            }
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private readonly struct XrrMonitorInfo
+    {
+        public readonly nuint Name;
+        public readonly int Primary;
+        public readonly int Automatic;
+        public readonly int OutputCount;
+        public readonly int X;
+        public readonly int Y;
+        public readonly int Width;
+        public readonly int Height;
+        public readonly int WidthMillimeters;
+        public readonly int HeightMillimeters;
+        public readonly nint Outputs;
+    }
+
     [LibraryImport("libX11.so.6")]
     internal static partial nint XSetErrorHandler(nint handler);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial nint XSetIOErrorHandler(nint handler);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial void XSetIOErrorExitHandler(nint display, nint handler, nint userData);
 
     internal static int InvokeErrorHandler(nint handler, nint display, ref XErrorEvent errorEvent)
     {

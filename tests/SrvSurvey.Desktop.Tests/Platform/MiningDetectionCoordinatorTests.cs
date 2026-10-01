@@ -15,6 +15,56 @@ public sealed class MiningDetectionCoordinatorTests : IDisposable
 {
     private readonly string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-hud-coordinator-{Guid.NewGuid():N}");
 
+    [AvaloniaFact]
+    public async Task OutsideWaylandSourcePausesRigDetectionInsteadOfCrashing()
+    {
+        var store = new SurfaceMiningSettingsStore(Path.Combine(root, "ui.json"));
+        store.SaveDetection(new MiningDetectionSettings { Enabled = true });
+        var clock = new TestClock();
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root), store, clock);
+        var scan = new SystemScanState();
+        foreach (
+            string json in new[]
+            {
+                """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
+                """{"event":"Scan","StarSystem":"Test","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Radius":1000000,"PlanetClass":"Rocky body"}""",
+            }
+        )
+        {
+            Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? envelope, out _));
+            scan.Apply(envelope!);
+        }
+
+        var session = new SurfaceSurveySessionContext("F123", "Test", "Test", 42, null);
+        var status = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            PlanetRadius = 1_000_000,
+        };
+        await mining.ApplyUpdateAsync(session, scan.CreateSnapshot(), status, "mev_rhino");
+        clock.Advance(1);
+
+        var tracker = new Tracker { Snapshot = new((nint)1, 42, new(100, 200, 2000, 1000), true, true) };
+        var capture = new FakeCapture(() =>
+            PortalFrameCropper.ScaleAndClip(
+                new PixelRect(5000, 5000, 100, 100),
+                new PixelRect(0, 0, 1920, 1080),
+                1920,
+                1080
+            )
+        );
+        using var coordinator = new MiningDetectionCoordinator(mining, tracker, capture);
+
+        await coordinator.SynchronizeAsync();
+
+        Assert.Equal(1, capture.Count);
+        Assert.Equal(
+            "Rig detection paused: The requested game area is outside the shared Wayland source.",
+            mining.Detection.StatusText
+        );
+    }
+
     [AvaloniaTheory]
     [InlineData(true, false, 0, false, 1, 0)]
     [InlineData(false, false, 0, false, 0, 0)]

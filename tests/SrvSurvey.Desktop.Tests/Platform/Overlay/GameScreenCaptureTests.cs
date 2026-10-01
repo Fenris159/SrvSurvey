@@ -313,6 +313,110 @@ public sealed class GameScreenCaptureTests : IDisposable
     }
 
     [Fact]
+    public void RestoreTokenSurvivesAnInterruptedPortalStart()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-wayland-token-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(directory);
+            string path = WaylandCaptureSourceSelection.GetRestoreTokenPath(directory);
+            File.WriteAllText(path, "saved-source");
+
+            Assert.Equal("saved-source", WaylandCaptureSourceSelection.ReadRestoreToken(directory));
+            Assert.Equal("saved-source", File.ReadAllText(path));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void SuccessfulPortalStartRotatesOrClearsSavedToken()
+    {
+        string directory = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-wayland-rotation-" + Guid.NewGuid().ToString("N")
+        );
+        try
+        {
+            WaylandCaptureSourceSelection.StoreRestoreToken(directory, "first-token");
+            Assert.Equal("first-token", WaylandCaptureSourceSelection.ReadRestoreToken(directory));
+
+            WaylandCaptureSourceSelection.StoreRestoreToken(directory, "next-token");
+            Assert.Equal("next-token", WaylandCaptureSourceSelection.ReadRestoreToken(directory));
+
+            WaylandCaptureSourceSelection.StoreRestoreToken(directory, null);
+            Assert.Null(WaylandCaptureSourceSelection.ReadRestoreToken(directory));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ReselectingSourceClosesActivePortalCaptureWithoutRestarting()
+    {
+        string directory = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-wayland-live-reselect-" + Guid.NewGuid().ToString("N")
+        );
+        var captures = new List<StubCapture>();
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        GameScreenCapture.WaylandPortalEnabled = true;
+        try
+        {
+            using var capture = new GatedGameScreenCapture(() =>
+            {
+                var created = new StubCapture(_ => expected);
+                captures.Add(created);
+                return created;
+            });
+            var bounds = new PixelRect(0, 0, 1, 1);
+            Assert.Same(expected, capture.Capture(bounds));
+
+            WaylandCaptureSourceSelection.RequestReselection(directory);
+
+            Assert.True(Assert.Single(captures).IsDisposed);
+            Assert.Same(expected, capture.Capture(bounds));
+            Assert.Equal(2, captures.Count);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ManualSourceSelectionPausesCaptureUntilPickerCompletes()
+    {
+        GameScreenCapture.WaylandPortalEnabled = true;
+        using var capture = new GatedGameScreenCapture(() =>
+            new StubCapture(_ => new CapturedPixelBuffer(1, 1, [0, 0, 0, 255]))
+        );
+        var bounds = new PixelRect(0, 0, 1, 1);
+
+        using (WaylandCaptureSourceSelection.BeginManualSelection())
+        {
+            Assert.False(capture.IsAvailable);
+            Assert.Contains("selection is in progress", capture.UnavailableReason, StringComparison.Ordinal);
+            Assert.Throws<NotSupportedException>(() => capture.Capture(bounds));
+        }
+
+        Assert.True(capture.IsAvailable);
+    }
+
+    [Fact]
     public void CaptureFailureDiagnosticsIncludeExceptionChainAndThrowSite()
     {
         Exception failure;
@@ -411,6 +515,25 @@ public sealed class GameScreenCaptureTests : IDisposable
         Assert.Equal(1, capture.Height);
         Assert.Equal(new FssRgbPixel(0, 0, 10), capture.GetPixel(0, 0));
         Assert.Equal(new FssRgbPixel(0, 0, 11), capture.GetPixel(1, 0));
+    }
+
+    [Fact]
+    public void PortalMonitorCaptureMapsXWaylandScaledCoordinates()
+    {
+        byte[] pixels = Enumerable.Range(0, 8 * 4).SelectMany(index => new byte[] { (byte)index, 0, 0, 255 }).ToArray();
+        VideoFrame frame = new(pixels, stride: 32, width: 8, height: 4, PixelFormat.Bgrx, sequenceNumber: 1);
+
+        CapturedPixelBuffer capture = PortalFrameCropper.Crop(
+            frame,
+            new PortalStreamInfo(86, SourceType: 1, new PixelPoint(1920, 0), new PixelSize(2560, 1440)),
+            new PixelRect(4408, 1868, 1008, 552),
+            new PixelRect(3840, 0, 5120, 2880),
+            [new PixelRect(0, 0, 3840, 2160), new PixelRect(3840, 0, 5120, 2880)]
+        );
+
+        Assert.Equal(3, capture.Width);
+        Assert.Equal(2, capture.Height);
+        Assert.Equal(new FssRgbPixel(0, 0, 16), capture.GetPixel(0, 0));
     }
 
     [Fact]

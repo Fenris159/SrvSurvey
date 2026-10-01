@@ -11,6 +11,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
     private readonly string dataDirectory;
     private readonly WaylandCaptureSettingsStore settingsStore;
     private readonly Action<string>? log;
+    private readonly Func<Task> openSourcePicker;
     private readonly WorkspaceCommand chooseCaptureSourceAgainCommand;
     private string statusMessage;
     private bool isEnabled;
@@ -23,7 +24,8 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         string dataDirectory,
         bool isApplicable,
         Action<string>? log = null,
-        WaylandCaptureSettingsStore? settingsStore = null
+        WaylandCaptureSettingsStore? settingsStore = null,
+        Func<Task>? openSourcePicker = null
     )
     {
         this.dataDirectory = Path.GetFullPath(dataDirectory);
@@ -32,6 +34,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
             ?? new WaylandCaptureSettingsStore(Path.Combine(this.dataDirectory, "cross-platform-ui.json"));
         IsApplicable = isApplicable;
         this.log = log;
+        this.openSourcePicker = openSourcePicker ?? OpenSourcePickerAsync;
         WaylandCapturePreferences preferences = this.settingsStore.Load();
         isEnabled = preferences.Enabled;
         isFssTuningEnabled = preferences.FssTuningEnabled;
@@ -47,8 +50,6 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    public event Func<Task>? RestartRequested;
 
     public bool IsApplicable { get; }
 
@@ -144,48 +145,37 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
 
         isBusy = true;
         chooseCaptureSourceAgainCommand.Refresh();
+        using IDisposable manualSelection = WaylandCaptureSourceSelection.BeginManualSelection();
         try
         {
-            try
-            {
-                WaylandCaptureSourceSelection.RequestReselection(dataDirectory);
-                log?.Invoke("Requested a fresh Wayland screen-capture source selection after restart.");
-            }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-            {
-                StatusMessage = "The saved Wayland capture source could not be cleared: " + exception.Message;
-                return;
-            }
-
-            Func<Task>? restartHandlers = RestartRequested;
-            if (restartHandlers is null)
-            {
-                StatusMessage =
-                    "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.";
-                return;
-            }
-
-            StatusMessage = "Capture source cleared; restarting SrvSurvey...";
-            try
-            {
-                foreach (Func<Task> handler in restartHandlers.GetInvocationList().Cast<Func<Task>>())
-                {
-                    await handler();
-                }
-            }
-            catch (Exception exception)
-            {
-                StatusMessage =
-                    "Capture source cleared, but automatic restart failed: "
-                    + exception.Message
-                    + " Close and reopen SrvSurvey manually.";
-            }
+            WaylandCaptureSourceSelection.RequestReselection(dataDirectory);
+            StatusMessage = "Opening the desktop's screen-share picker…";
+            await openSourcePicker();
+            StatusMessage = WaylandCaptureSourceSelection.ReadRestoreToken(dataDirectory) is null
+                ? "Source chosen, but this desktop did not save the selection. The picker may open again when capture starts."
+                : "Capture source selected. It will be used when game capture resumes.";
+            log?.Invoke("Selected a fresh Wayland screen-capture source without restarting.");
+        }
+        catch (Exception exception)
+        {
+            StatusMessage = "The Wayland capture source could not be selected: " + exception.Message;
+            log?.Invoke("Wayland capture source selection failed: " + exception.Message);
         }
         finally
         {
             isBusy = false;
             chooseCaptureSourceAgainCommand.Refresh();
         }
+    }
+
+    private Task OpenSourcePickerAsync()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            throw new PlatformNotSupportedException();
+        }
+
+        return WaylandPortalGameScreenCapture.SelectSourceAsync(dataDirectory, log);
     }
 
     private string DescribeStatus()

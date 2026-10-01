@@ -210,6 +210,18 @@ internal static class WaylandCaptureSourceSelection
     public const string RestoreTokenFileName = "wayland-screen-capture.token";
     public const string ReselectionRequestFileName = "wayland-screen-capture.reselect";
 
+    public static event Action? ReselectionRequested;
+
+    private static int manualSelectionCount;
+
+    public static bool IsManualSelectionInProgress => Volatile.Read(ref manualSelectionCount) > 0;
+
+    public static IDisposable BeginManualSelection()
+    {
+        Interlocked.Increment(ref manualSelectionCount);
+        return new ManualSelectionLease();
+    }
+
     public static string GetRestoreTokenPath(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
@@ -220,6 +232,45 @@ internal static class WaylandCaptureSourceSelection
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         return Path.Combine(Path.GetFullPath(dataDirectory), ReselectionRequestFileName);
+    }
+
+    public static string? ReadRestoreToken(string dataDirectory)
+    {
+        string path = GetRestoreTokenPath(dataDirectory);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        string token = File.ReadAllText(path).Trim();
+        return string.IsNullOrWhiteSpace(token) ? null : token;
+    }
+
+    public static void StoreRestoreToken(string dataDirectory, string? token)
+    {
+        string path = GetRestoreTokenPath(dataDirectory);
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            File.Delete(path);
+            return;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        string temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            File.WriteAllText(temporaryPath, token);
+            if (OperatingSystem.IsLinux())
+            {
+                File.SetUnixFileMode(temporaryPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            }
+
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporaryPath);
+        }
     }
 
     public static void RequestReselection(string dataDirectory)
@@ -233,6 +284,7 @@ internal static class WaylandCaptureSourceSelection
         }
 
         File.WriteAllText(requestPath, string.Empty);
+        ReselectionRequested?.Invoke();
     }
 
     public static bool ConsumeReselectionRequest(string dataDirectory)
@@ -245,6 +297,19 @@ internal static class WaylandCaptureSourceSelection
 
         File.Delete(requestPath);
         return true;
+    }
+
+    private sealed class ManualSelectionLease : IDisposable
+    {
+        private int disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) == 0)
+            {
+                Interlocked.Decrement(ref manualSelectionCount);
+            }
+        }
     }
 }
 
@@ -291,14 +356,12 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
         this.feature = feature;
         GameScreenCapture.WaylandPortalEnabledChanged += OnWaylandPortalEnabledChanged;
         GameScreenCapture.WaylandPortalFeaturesChanged += OnWaylandPortalFeaturesChanged;
+        WaylandCaptureSourceSelection.ReselectionRequested += OnReselectionRequested;
     }
 
     public bool IsAvailable => IsAllowed && GetOrCreateEnabledCapture().IsAvailable;
 
-    public string? UnavailableReason =>
-        IsAllowed
-            ? GetOrCreateEnabledCapture().UnavailableReason
-            : GameScreenCapture.GetWaylandPortalDisabledReason(feature, capturePurpose);
+    public string? UnavailableReason => IsAllowed ? GetOrCreateEnabledCapture().UnavailableReason : GetBlockedReason();
 
     public CapturedPixelBuffer Capture(PixelRect bounds) => GetOrCreateEnabledCapture().Capture(bounds);
 
@@ -309,6 +372,7 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
     {
         GameScreenCapture.WaylandPortalEnabledChanged -= OnWaylandPortalEnabledChanged;
         GameScreenCapture.WaylandPortalFeaturesChanged -= OnWaylandPortalFeaturesChanged;
+        WaylandCaptureSourceSelection.ReselectionRequested -= OnReselectionRequested;
         IGameScreenCapture? capture;
         lock (gate)
         {
@@ -335,13 +399,19 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
         }
     }
 
-    private bool IsAllowed => GameScreenCapture.IsWaylandPortalAllowed(feature);
+    private bool IsAllowed =>
+        !WaylandCaptureSourceSelection.IsManualSelectionInProgress && GameScreenCapture.IsWaylandPortalAllowed(feature);
+
+    private string GetBlockedReason() =>
+        WaylandCaptureSourceSelection.IsManualSelectionInProgress
+            ? "Wayland capture source selection is in progress."
+            : GameScreenCapture.GetWaylandPortalDisabledReason(feature, capturePurpose);
 
     private void EnsureEnabled()
     {
         if (!IsAllowed)
         {
-            throw new NotSupportedException(GameScreenCapture.GetWaylandPortalDisabledReason(feature, capturePurpose));
+            throw new NotSupportedException(GetBlockedReason());
         }
     }
 
@@ -365,7 +435,9 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
         CloseActiveCapture();
     }
 
-    private void CloseActiveCapture()
+    private void OnReselectionRequested() => CloseActiveCapture("the source was changed in Settings");
+
+    private void CloseActiveCapture(string reason = "capture was disabled in Settings")
     {
         IGameScreenCapture? capture;
         lock (gate)
@@ -382,12 +454,12 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
         try
         {
             capture.Dispose();
-            log?.Invoke($"Wayland capture ({capturePurpose}): closed because capture was disabled in Settings.");
+            log?.Invoke($"Wayland capture ({capturePurpose}): closed because {reason}.");
         }
         catch (Exception exception)
         {
             log?.Invoke(
-                $"Wayland capture ({capturePurpose}): failed to close after capture was disabled in Settings. "
+                $"Wayland capture ({capturePurpose}): failed to close after {reason}. "
                     + CaptureFailureDiagnostics.Describe(exception)
             );
         }

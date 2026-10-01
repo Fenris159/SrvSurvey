@@ -9,7 +9,7 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class WaylandScreenSharePromptPresentationTests
 {
     [AvaloniaFact]
-    public void PromptExplainsWindowDesktopAndPrivacyChoices()
+    public void PromptRecommendsDisplayFirstAndExplainsWindowFallback()
     {
         var dialog = new WaylandScreenSharePromptDialog();
         try
@@ -25,8 +25,11 @@ public sealed class WaylandScreenSharePromptPresentationTests
                     .Select(block => block.Text)
                     .Where(value => !string.IsNullOrWhiteSpace(value))
             );
-            Assert.Contains("Elite Dangerous window", text, StringComparison.Ordinal);
-            Assert.Contains("desktop or monitor where the game is running", text, StringComparison.Ordinal);
+            Assert.Contains("Share the display running Elite Dangerous", text, StringComparison.Ordinal);
+            Assert.Contains("switch to its display or screen tab", text, StringComparison.Ordinal);
+            Assert.Contains("can reduce lag", text, StringComparison.Ordinal);
+            Assert.Contains("If detection fails", text, StringComparison.Ordinal);
+            Assert.Contains("try the Elite Dangerous window", text, StringComparison.Ordinal);
             Assert.Contains("Alt+Tab", text, StringComparison.Ordinal);
             Assert.Contains("does not transmit your screen", text, StringComparison.Ordinal);
 

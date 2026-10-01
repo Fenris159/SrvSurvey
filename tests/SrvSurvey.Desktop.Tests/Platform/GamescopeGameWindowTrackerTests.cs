@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using Avalonia;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -7,6 +8,46 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class GamescopeGameWindowTrackerTests
 {
     private const ulong ProcessStartTime = 123456;
+
+    [Fact]
+    public async Task NestedX11ServerShutdownLeavesTrackerRecoverable()
+    {
+        if (!OperatingSystem.IsLinux() || !File.Exists("/usr/bin/Xvfb"))
+        {
+            return;
+        }
+
+        using var server = Process.Start(
+            new ProcessStartInfo("/usr/bin/Xvfb")
+            {
+                ArgumentList = { "-displayfd", "1", "-screen", "0", "640x480x24", "-nolisten", "tcp" },
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            }
+        );
+        Assert.NotNull(server);
+        try
+        {
+            string? displayNumber = await server.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.True(int.TryParse(displayNumber, out int number));
+            using IGameWindowTracker tracker =
+                X11GameWindowTracker.TryCreate(":" + number.ToString(CultureInfo.InvariantCulture))
+                ?? throw new InvalidOperationException("The temporary X11 display did not start.");
+            _ = tracker.GetSnapshot();
+
+            server.Kill();
+            await server.WaitForExitAsync();
+
+            Assert.Same(GameWindowSnapshot.Unavailable, tracker.GetSnapshot());
+        }
+        finally
+        {
+            if (!server.HasExited)
+            {
+                server.Kill();
+            }
+        }
+    }
 
     [Fact]
     public void ReadsLiveGamescopeMarkerAndDesktopBounds()

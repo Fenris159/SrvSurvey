@@ -79,6 +79,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
         catch (Exception e)
             when (e
                     is InvalidOperationException
+                        or InvalidDataException
                         or ArgumentException
                         or System.ComponentModel.Win32Exception
                         or NotSupportedException

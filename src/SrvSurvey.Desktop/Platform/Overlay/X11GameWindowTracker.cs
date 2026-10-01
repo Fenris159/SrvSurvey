@@ -13,13 +13,15 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     private readonly nuint clientListAtom;
     private readonly nuint clientListStackingAtom;
     private readonly nuint processIdAtom;
+    private readonly bool recoverTransientDisplay;
     private nuint gameWindow;
     private nuint inspectedActiveWindow;
     private bool inspectedActiveWindowIsElite;
 
-    private X11GameWindowTracker(nint display)
+    private X11GameWindowTracker(nint display, bool recoverTransientDisplay)
     {
         this.display = display;
+        this.recoverTransientDisplay = recoverTransientDisplay;
         rootWindow = X11Native.XDefaultRootWindow(display);
         activeWindowAtom = GetAtom("_NET_ACTIVE_WINDOW");
         clientListAtom = GetAtom("_NET_CLIENT_LIST");
@@ -50,8 +52,14 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 return null;
             }
 
+            bool recoverTransientDisplay = !string.IsNullOrWhiteSpace(displayName);
+            if (recoverTransientDisplay)
+            {
+                X11TransientDisplayRecovery.Register(display);
+            }
+
             X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
-            return new X11GameWindowTracker(display);
+            return new X11GameWindowTracker(display, recoverTransientDisplay);
         }
         catch (Exception exception)
             when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
@@ -65,6 +73,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 finally
                 {
                     X11OverlayPlatformService.UnregisterErrorHandledDisplay(display);
+                    X11TransientDisplayRecovery.Unregister(display);
                 }
             }
 
@@ -80,7 +89,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     {
         lock (gate)
         {
-            if (display == nint.Zero)
+            if (display == nint.Zero || (recoverTransientDisplay && X11TransientDisplayRecovery.HasFailed(display)))
             {
                 return GameWindowSnapshot.Unavailable;
             }
@@ -108,19 +117,26 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 gameWindow = FindGameWindow(activeWindow);
             }
 
-            if (gameWindow == 0 || !TryGetBounds(gameWindow, out PixelRect clientBounds, out bool isVisible))
+            if (
+                (recoverTransientDisplay && X11TransientDisplayRecovery.HasFailed(display))
+                || gameWindow == 0
+                || !TryGetBounds(gameWindow, out PixelRect clientBounds, out bool isVisible)
+            )
             {
                 gameWindow = 0;
                 return GameWindowSnapshot.Unavailable;
             }
 
-            return new GameWindowSnapshot(
+            GameWindowSnapshot snapshot = new(
                 unchecked((nint)gameWindow),
                 ReadProcessId(gameWindow),
                 clientBounds,
                 isVisible,
                 activeWindow == gameWindow
             );
+            return recoverTransientDisplay && X11TransientDisplayRecovery.HasFailed(display)
+                ? GameWindowSnapshot.Unavailable
+                : snapshot;
         }
     }
 
@@ -139,6 +155,10 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 finally
                 {
                     X11OverlayPlatformService.UnregisterErrorHandledDisplay(currentDisplay);
+                    if (recoverTransientDisplay)
+                    {
+                        X11TransientDisplayRecovery.Unregister(currentDisplay);
+                    }
                 }
             }
         }
@@ -338,4 +358,84 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             _ = X11Native.XFree(value);
         }
     }
+}
+
+internal static class X11TransientDisplayRecovery
+{
+    // Gamescope's nested X server ends with the game. Xlib exits the process on I/O failure
+    // unless both its global error callback and the display's exit callback are handled.
+    private static readonly Lock Gate = new();
+    private static readonly HashSet<nint> RecoverableDisplays = [];
+    private static readonly HashSet<nint> FailedDisplays = [];
+    private static readonly XIoErrorHandler IoErrorHandler = HandleIoError;
+    private static readonly XIoErrorExitHandler IoErrorExitHandler = static (_, _) => { };
+    private static nint previousHandler;
+    private static bool installed;
+
+    public static void Register(nint display)
+    {
+        lock (Gate)
+        {
+            if (!installed)
+            {
+                nint handlerPointer = Marshal.GetFunctionPointerForDelegate(IoErrorHandler);
+                previousHandler = X11Native.XSetIOErrorHandler(handlerPointer);
+                installed = true;
+            }
+
+            RecoverableDisplays.Add(display);
+            X11Native.XSetIOErrorExitHandler(
+                display,
+                Marshal.GetFunctionPointerForDelegate(IoErrorExitHandler),
+                nint.Zero
+            );
+        }
+    }
+
+    public static bool HasFailed(nint display)
+    {
+        lock (Gate)
+        {
+            return FailedDisplays.Contains(display);
+        }
+    }
+
+    public static void Unregister(nint display)
+    {
+        lock (Gate)
+        {
+            RecoverableDisplays.Remove(display);
+            FailedDisplays.Remove(display);
+        }
+    }
+
+    private static int HandleIoError(nint display)
+    {
+        lock (Gate)
+        {
+            if (RecoverableDisplays.Contains(display))
+            {
+                FailedDisplays.Add(display);
+                return 0;
+            }
+        }
+
+        try
+        {
+            return previousHandler == nint.Zero
+                ? 0
+                : Marshal.GetDelegateForFunctionPointer<XIoErrorHandler>(previousHandler)(display);
+        }
+        catch (Exception)
+        {
+            // Managed exceptions must never unwind through an Xlib callback.
+            return 0;
+        }
+    }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int XIoErrorHandler(nint display);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void XIoErrorExitHandler(nint display, nint userData);
 }
