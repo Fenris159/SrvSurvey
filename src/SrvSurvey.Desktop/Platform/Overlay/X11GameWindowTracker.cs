@@ -89,7 +89,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     {
         lock (gate)
         {
-            if (display == nint.Zero || (recoverTransientDisplay && X11TransientDisplayRecovery.HasFailed(display)))
+            if (display == nint.Zero || HasFailedTransientDisplay())
             {
                 return GameWindowSnapshot.Unavailable;
             }
@@ -118,7 +118,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             }
 
             if (
-                (recoverTransientDisplay && X11TransientDisplayRecovery.HasFailed(display))
+                HasFailedTransientDisplay()
                 || gameWindow == 0
                 || !TryGetBounds(gameWindow, out PixelRect clientBounds, out bool isVisible)
             )
@@ -134,11 +134,12 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 isVisible,
                 activeWindow == gameWindow
             );
-            return recoverTransientDisplay && X11TransientDisplayRecovery.HasFailed(display)
-                ? GameWindowSnapshot.Unavailable
-                : snapshot;
+            return HasFailedTransientDisplay() ? GameWindowSnapshot.Unavailable : snapshot;
         }
     }
+
+    private bool HasFailedTransientDisplay() =>
+        recoverTransientDisplay && X11TransientDisplayRecovery.HasFailed(display);
 
     public void Dispose()
     {
