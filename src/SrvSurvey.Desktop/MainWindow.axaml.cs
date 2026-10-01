@@ -73,6 +73,7 @@ public sealed partial class MainWindow : Window
 
     public ApplicationInputContext InputContext { get; }
 
+    /// <summary>Activates the window when its content receives pointer input.</summary>
     private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
         if (!IsActive)
@@ -81,6 +82,7 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    /// <summary>Handles menu gestures on Avalonia's separate title-bar visual.</summary>
     private void OnDrawnTitleBarPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
         if (LinuxWindowOperationsMenu.TryShow(this, eventArgs))
@@ -243,6 +245,7 @@ public sealed partial class MainWindow : Window
         window.Show(this);
     }
 
+    /// <summary>Completes window startup and attaches Linux decoration input.</summary>
     private void OnOpened(object? sender, EventArgs eventArgs)
     {
         Opened -= OnOpened;
@@ -268,6 +271,7 @@ public sealed partial class MainWindow : Window
         );
     }
 
+    /// <summary>Finds the title bar in the top-level host and subscribes to its pointer presses.</summary>
     private void AttachDrawnTitleBarMenu()
     {
         drawnTitleBar = this.GetVisualParent()
@@ -474,6 +478,7 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    /// <summary>Detaches the title-bar handler and releases window dependents.</summary>
     protected override void OnClosed(EventArgs e)
     {
         drawnTitleBar?.RemoveHandler(PointerPressedEvent, OnDrawnTitleBarPointerPressed);

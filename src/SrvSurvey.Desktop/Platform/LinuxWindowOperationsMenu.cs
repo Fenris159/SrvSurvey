@@ -11,10 +11,15 @@ internal static class LinuxWindowOperationsMenu
     private const string TitleBarName = "PART_TitleBar";
     private const int ClientMessage = 33;
 
-    internal static bool TryShow(Window window, PointerPressedEventArgs eventArgs)
+    /// <summary>Shows window operations only for a Linux title-bar right-click.</summary>
+    internal static bool TryShow(Window window, PointerPressedEventArgs eventArgs) =>
+        TryShow(window, eventArgs, OperatingSystem.IsLinux());
+
+    /// <summary>Applies the title-bar input rule with an injectable platform result for testing.</summary>
+    internal static bool TryShow(Window window, PointerPressedEventArgs eventArgs, bool isLinux)
     {
         if (
-            !OperatingSystem.IsLinux()
+            !isLinux
             || !eventArgs.GetCurrentPoint(window).Properties.IsRightButtonPressed
             || !IsTitleBarSource(eventArgs.Source as Visual)
         )
@@ -30,10 +35,12 @@ internal static class LinuxWindowOperationsMenu
         return true;
     }
 
+    /// <summary>Checks whether the pointer originated in Avalonia's drawn title bar.</summary>
     internal static bool IsTitleBarSource(Visual? source) =>
         source is Control { Name: TitleBarName }
         || (source?.GetVisualAncestors().OfType<Control>().Any(control => control.Name == TitleBarName) ?? false);
 
+    /// <summary>Requests the compositor menu when the window has an X11 handle.</summary>
     private static bool TryShowNative(Window window, PixelPoint point)
     {
         if (window.TryGetPlatformHandle() is not { HandleDescriptor: "XID" } handle)
@@ -44,6 +51,7 @@ internal static class LinuxWindowOperationsMenu
         return TryShowNative(handle.Handle, point, X11WindowMenuClient.Instance);
     }
 
+    /// <summary>Sends a supported X11 menu request and releases the display connection.</summary>
     internal static bool TryShowNative(nint window, PixelPoint point, IX11WindowMenuClient client)
     {
         nint display = nint.Zero;
@@ -83,6 +91,7 @@ internal static class LinuxWindowOperationsMenu
         }
     }
 
+    /// <summary>Creates the X11 client message with the menu's screen coordinates.</summary>
     internal static X11Native.XClientMessageEvent CreateNativeMenuEvent(
         nint display,
         nuint window,
@@ -104,6 +113,7 @@ internal static class LinuxWindowOperationsMenu
             },
         };
 
+    /// <summary>Creates window operations for hosts without the native menu protocol.</summary>
     internal static ContextMenu CreateFallbackMenu(Window window)
     {
         var minimize = new MenuItem { Header = "Minimize", IsEnabled = window.CanMinimize };
@@ -149,14 +159,19 @@ internal static class LinuxWindowOperationsMenu
 
 internal interface IX11WindowMenuClient
 {
+    /// <summary>Opens a connection to the X server.</summary>
     nint OpenDisplay();
 
+    /// <summary>Finds the native window-menu atom.</summary>
     nuint GetMenuAtom(nint display);
 
+    /// <summary>Reads atoms advertised by the window manager.</summary>
     nuint[] GetSupportedAtoms(nint display);
 
+    /// <summary>Sends a client message to the window manager.</summary>
     bool Send(nint display, ref X11Native.XClientMessageEvent request);
 
+    /// <summary>Releases the X server connection.</summary>
     void CloseDisplay(nint display);
 }
 
@@ -166,15 +181,20 @@ internal sealed class X11WindowMenuClient : IX11WindowMenuClient
 
     public static X11WindowMenuClient Instance { get; } = new();
 
+    /// <summary>Restricts native menu requests to the shared client instance.</summary>
     private X11WindowMenuClient() { }
 
+    /// <summary>Opens the native X11 display.</summary>
     public nint OpenDisplay() => X11Native.XOpenDisplay(nint.Zero);
 
+    /// <summary>Looks up the native window-menu atom without creating it.</summary>
     public nuint GetMenuAtom(nint display) => X11Native.XInternAtom(display, "_GTK_SHOW_WINDOW_MENU", onlyIfExists: 1);
 
+    /// <summary>Reads the window manager's supported atom list.</summary>
     public nuint[] GetSupportedAtoms(nint display) =>
         X11OverlayPlatformService.ReadSupportedAtoms(display, atomType: 4);
 
+    /// <summary>Sends the menu request to the X11 root window.</summary>
     public bool Send(nint display, ref X11Native.XClientMessageEvent request)
     {
         nuint root = X11Native.XDefaultRootWindow(display);
@@ -183,5 +203,6 @@ internal sealed class X11WindowMenuClient : IX11WindowMenuClient
         return sent;
     }
 
+    /// <summary>Closes the native X11 display.</summary>
     public void CloseDisplay(nint display) => _ = X11Native.XCloseDisplay(display);
 }

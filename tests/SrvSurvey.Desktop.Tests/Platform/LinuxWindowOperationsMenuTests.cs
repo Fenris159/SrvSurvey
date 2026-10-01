@@ -10,6 +10,7 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class LinuxWindowOperationsMenuTests
 {
+    /// <summary>Accepts descendants of the drawn title bar while rejecting content.</summary>
     [AvaloniaFact]
     public void RightClickTargetMustBeInsideTheDrawnTitleBar()
     {
@@ -27,6 +28,7 @@ public sealed class LinuxWindowOperationsMenuTests
         Assert.False(LinuxWindowOperationsMenu.IsTitleBarSource(null));
     }
 
+    /// <summary>Preserves the target window and screen coordinates in the X11 request.</summary>
     [Fact]
     public void NativeMenuRequestCarriesClientWindowAndRootCoordinates()
     {
@@ -45,6 +47,7 @@ public sealed class LinuxWindowOperationsMenuTests
         Assert.Equal((nint)position.Y, request.Data.L2);
     }
 
+    /// <summary>Provides working window actions when the native menu is unavailable.</summary>
     [AvaloniaFact]
     public void FallbackMenuProvidesWindowActionsWhenNativeMenuIsUnavailable()
     {
@@ -80,6 +83,7 @@ public sealed class LinuxWindowOperationsMenuTests
         Assert.Equal(WindowState.Normal, window.WindowState);
     }
 
+    /// <summary>Requires an advertised atom and successful send before reporting success.</summary>
     [Theory]
     [InlineData(0, 8, true, true, false, false)]
     [InlineData(1, 0, true, true, false, true)]
@@ -116,6 +120,7 @@ public sealed class LinuxWindowOperationsMenuTests
         }
     }
 
+    /// <summary>Falls back safely when an X11 entry point cannot be loaded.</summary>
     [Fact]
     public void UnavailableX11LibraryFallsBackAndClosesOpenedDisplay()
     {
@@ -125,14 +130,10 @@ public sealed class LinuxWindowOperationsMenuTests
         Assert.True(client.WasClosed);
     }
 
+    /// <summary>Routes only a Linux title-bar right-click to window operations.</summary>
     [AvaloniaFact]
     public void OnlyRightClickOnTitleBarOpensTheWindowMenu()
     {
-        if (!OperatingSystem.IsLinux())
-        {
-            return;
-        }
-
         var titleBar = new StackPanel { Name = "PART_TitleBar" };
         var content = new Border();
         var root = new StackPanel { Children = { titleBar, content } };
@@ -141,9 +142,14 @@ public sealed class LinuxWindowOperationsMenuTests
         using var pointer = new Pointer(1, PointerType.Mouse, true);
         try
         {
-            Assert.False(LinuxWindowOperationsMenu.TryShow(window, Press(content, pointer, window, right: true)));
-            Assert.False(LinuxWindowOperationsMenu.TryShow(window, Press(titleBar, pointer, window, right: false)));
-            Assert.True(LinuxWindowOperationsMenu.TryShow(window, Press(titleBar, pointer, window, right: true)));
+            Assert.False(LinuxWindowOperationsMenu.TryShow(window, Press(content, pointer, window, right: true), true));
+            Assert.False(
+                LinuxWindowOperationsMenu.TryShow(window, Press(titleBar, pointer, window, right: false), true)
+            );
+            Assert.False(
+                LinuxWindowOperationsMenu.TryShow(window, Press(titleBar, pointer, window, right: true), false)
+            );
+            Assert.True(LinuxWindowOperationsMenu.TryShow(window, Press(titleBar, pointer, window, right: true), true));
         }
         finally
         {
@@ -151,6 +157,7 @@ public sealed class LinuxWindowOperationsMenuTests
         }
     }
 
+    /// <summary>Builds a synthetic pointer press against the requested control.</summary>
     private static PointerPressedEventArgs Press(Control target, Pointer pointer, Window window, bool right)
     {
         RawInputModifiers button = right ? RawInputModifiers.RightMouseButton : RawInputModifiers.LeftMouseButton;
@@ -185,12 +192,16 @@ public sealed class LinuxWindowOperationsMenuTests
 
         public SrvSurvey.Desktop.Platform.Overlay.X11Native.XClientMessageEvent Request { get; private set; }
 
+        /// <summary>Returns the configured test display handle.</summary>
         public nint OpenDisplay() => Display;
 
+        /// <summary>Returns the configured test menu atom.</summary>
         public nuint GetMenuAtom(nint display) => MenuAtom;
 
+        /// <summary>Advertises the configured atom only when enabled.</summary>
         public nuint[] GetSupportedAtoms(nint display) => SupportsAtom ? [MenuAtom] : [];
 
+        /// <summary>Records a menu request or simulates a missing X11 library.</summary>
         public bool Send(nint display, ref SrvSurvey.Desktop.Platform.Overlay.X11Native.XClientMessageEvent request)
         {
             if (ThrowFromSend)
@@ -203,6 +214,7 @@ public sealed class LinuxWindowOperationsMenuTests
             return SendSucceeds;
         }
 
+        /// <summary>Records that the test display was closed.</summary>
         public void CloseDisplay(nint display) => WasClosed = true;
     }
 }
