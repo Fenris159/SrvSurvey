@@ -20,6 +20,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
     private bool isSurfaceMiningRigEnabled;
     private bool isBusy;
 
+    /// <summary>Loads Wayland capture preferences and prepares the source-picker command.</summary>
     public WaylandCaptureSettingsViewModel(
         string dataDirectory,
         bool isApplicable,
@@ -128,6 +129,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
 
     public ICommand ChooseCaptureSourceAgainCommand { get; }
 
+    /// <summary>Opens the portal picker immediately and reports the saved selection result.</summary>
     public async Task ChooseCaptureSourceAgainAsync()
     {
         if (!IsApplicable)
@@ -168,6 +170,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Starts source selection through the Linux desktop portal.</summary>
     private Task OpenSourcePickerAsync()
     {
         if (!OperatingSystem.IsLinux())

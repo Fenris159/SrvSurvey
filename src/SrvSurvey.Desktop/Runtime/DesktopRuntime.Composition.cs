@@ -80,6 +80,7 @@ internal sealed partial class DesktopRuntime
     private readonly JournalMonitorSession journalMonitorSession = new();
     private bool manualOverlaySuppressed;
 
+    /// <summary>Composes desktop services, settings, and capture dependencies at startup.</summary>
     private void InitializeDesktopApplication(
         Application application,
         IClassicDesktopStyleApplicationLifetime desktop,
@@ -845,6 +846,7 @@ internal sealed partial class DesktopRuntime
         }
     }
 
+    /// <summary>Stops desktop services before the application process exits.</summary>
     private void QuiesceDesktopRuntime(DesktopShutdownReason reason)
     {
         DisposeResource(ref linuxTerminationRegistration);

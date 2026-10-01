@@ -52710,6 +52710,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VoxStellarSharingViewModel.cs"
   },
   {
+    "Text": "The Wayland capture session could not be fully closed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
     "Text": "The Wayland capture source could not be selected: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -54812,6 +54820,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ReleaseInstallationWorkflow.cs"
+  },
+  {
+    "Text": "The previous Wayland capture session could not be closed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "The previous Wayland capture session is still closing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
     "Text": "The previous consent could not be saved: {0}",

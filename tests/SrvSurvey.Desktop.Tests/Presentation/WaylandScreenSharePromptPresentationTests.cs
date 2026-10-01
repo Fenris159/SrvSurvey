@@ -8,6 +8,7 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class WaylandScreenSharePromptPresentationTests
 {
+    /// <summary>Verifies the permission prompt recommends a display before a game window.</summary>
     [AvaloniaFact]
     public void PromptRecommendsDisplayFirstAndExplainsWindowFallback()
     {

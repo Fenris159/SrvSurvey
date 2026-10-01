@@ -312,6 +312,7 @@ public sealed class GameScreenCaptureTests : IDisposable
         }
     }
 
+    /// <summary>Verifies the saved source survives a failed portal start.</summary>
     [Fact]
     public void RestoreTokenSurvivesAnInterruptedPortalStart()
     {
@@ -334,6 +335,7 @@ public sealed class GameScreenCaptureTests : IDisposable
         }
     }
 
+    /// <summary>Verifies successful portal starts rotate or clear the saved token.</summary>
     [Fact]
     public void SuccessfulPortalStartRotatesOrClearsSavedToken()
     {
@@ -361,6 +363,7 @@ public sealed class GameScreenCaptureTests : IDisposable
         }
     }
 
+    /// <summary>Verifies manual reselection closes the active capture and permits a new one.</summary>
     [Fact]
     public void ReselectingSourceClosesActivePortalCaptureWithoutRestarting()
     {
@@ -397,6 +400,125 @@ public sealed class GameScreenCaptureTests : IDisposable
         }
     }
 
+    /// <summary>Verifies failed cleanup is retried before a replacement capture is created.</summary>
+    [Fact]
+    public void ReselectionRetriesFailedCleanupBeforeCreatingAnotherCapture()
+    {
+        string directory = Directory.CreateTempSubdirectory("SrvSurvey-wayland-cleanup-").FullName;
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var first = new RetryableDisposeCapture(
+            expected,
+            attempt =>
+            {
+                if (attempt == 1)
+                {
+                    throw new IOException("Transient capture cleanup failure.");
+                }
+            }
+        );
+        int created = 0;
+        GameScreenCapture.WaylandPortalEnabled = true;
+        try
+        {
+            using var capture = new GatedGameScreenCapture(() =>
+            {
+                created++;
+                if (created == 1)
+                {
+                    return first;
+                }
+
+                Assert.True(first.IsDisposed);
+                return new StubCapture(_ => expected);
+            });
+            var bounds = new PixelRect(0, 0, 1, 1);
+            Assert.Same(expected, capture.Capture(bounds));
+
+            WaylandCaptureSourceSelection.RequestReselection(directory);
+
+            Assert.Equal(1, first.DisposeAttempts);
+            Assert.False(first.IsDisposed);
+            Assert.Same(expected, capture.Capture(bounds));
+            Assert.Equal(2, first.DisposeAttempts);
+            Assert.Equal(2, created);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    /// <summary>Verifies repeated cleanup failures block replacement until disposal succeeds.</summary>
+    [Fact]
+    public void ReselectionWaitsForCleanupBeforeCreatingReplacementCapture()
+    {
+        string directory = Directory.CreateTempSubdirectory("SrvSurvey-wayland-cleanup-").FullName;
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var first = new RetryableDisposeCapture(
+            expected,
+            attempt =>
+            {
+                if (attempt < 3)
+                {
+                    throw new IOException("Capture cleanup is still failing.");
+                }
+            }
+        );
+        int created = 0;
+        GameScreenCapture.WaylandPortalEnabled = true;
+        try
+        {
+            using var capture = new GatedGameScreenCapture(() =>
+            {
+                created++;
+                return created == 1 ? first : new StubCapture(_ => expected);
+            });
+            var bounds = new PixelRect(0, 0, 1, 1);
+            Assert.Same(expected, capture.Capture(bounds));
+
+            WaylandCaptureSourceSelection.RequestReselection(directory);
+
+            InvalidOperationException failure = Assert.Throws<InvalidOperationException>(() => capture.Capture(bounds));
+            Assert.Contains("could not be closed", failure.Message, StringComparison.Ordinal);
+            Assert.Equal(1, created);
+            Assert.Same(expected, capture.Capture(bounds));
+            Assert.Equal(2, created);
+            Assert.True(first.IsDisposed);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    /// <summary>Verifies an outer capture can retry disposal after an initial failure.</summary>
+    [Fact]
+    public void DisposingGatedCaptureCanRetryFailedCleanup()
+    {
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        var first = new RetryableDisposeCapture(
+            expected,
+            attempt =>
+            {
+                if (attempt == 1)
+                {
+                    throw new IOException("Transient capture cleanup failure.");
+                }
+            }
+        );
+        GameScreenCapture.WaylandPortalEnabled = true;
+        var capture = new GatedGameScreenCapture(() => first);
+        Assert.Same(expected, capture.Capture(new PixelRect(0, 0, 1, 1)));
+
+        Assert.Throws<IOException>(() => capture.Dispose());
+        Assert.False(first.IsDisposed);
+        capture.Dispose();
+
+        Assert.True(first.IsDisposed);
+        Assert.Equal(2, first.DisposeAttempts);
+    }
+
+    /// <summary>Verifies the picker lease pauses capture only while selection is active.</summary>
     [Fact]
     public void ManualSourceSelectionPausesCaptureUntilPickerCompletes()
     {
@@ -517,6 +639,7 @@ public sealed class GameScreenCaptureTests : IDisposable
         Assert.Equal(new FssRgbPixel(0, 0, 11), capture.GetPixel(1, 0));
     }
 
+    /// <summary>Verifies scaled XWayland coordinates map to the selected portal monitor.</summary>
     [Fact]
     public void PortalMonitorCaptureMapsXWaylandScaledCoordinates()
     {
@@ -705,6 +828,28 @@ public sealed class GameScreenCaptureTests : IDisposable
         public CapturedPixelBuffer Capture(PixelRect bounds) => capture(bounds);
 
         public void Dispose() => IsDisposed = true;
+    }
+
+    private sealed class RetryableDisposeCapture(CapturedPixelBuffer pixels, Action<int> onDispose) : IGameScreenCapture
+    {
+        public bool IsAvailable => !IsDisposed;
+
+        public bool IsDisposed { get; private set; }
+
+        public int DisposeAttempts { get; private set; }
+
+        public string? UnavailableReason => IsDisposed ? "The capture is disposed." : null;
+
+        /// <summary>Returns the test frame for cleanup and reselection scenarios.</summary>
+        public CapturedPixelBuffer Capture(PixelRect bounds) => pixels;
+
+        /// <summary>Simulates one or more disposal failures for capture lifecycle tests.</summary>
+        public void Dispose()
+        {
+            DisposeAttempts++;
+            onDispose(DisposeAttempts);
+            IsDisposed = true;
+        }
     }
 
     private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider

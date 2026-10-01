@@ -12,6 +12,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         "SrvSurvey-wayland-capture-settings-" + Guid.NewGuid().ToString("N")
     );
 
+    /// <summary>Verifies reselection clears a prior token without restarting the app.</summary>
     [Fact]
     public async Task ChooseAgainClearsSavedSourceWithoutRestart()
     {
@@ -30,6 +31,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.Contains(logs, message => message.Contains("fresh", StringComparison.Ordinal));
     }
 
+    /// <summary>Verifies reselection works before a source has ever been saved.</summary>
     [Fact]
     public async Task ChooseAgainWorksWhenNoSavedSourceExists()
     {
@@ -40,6 +42,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.True(File.Exists(WaylandCaptureSourceSelection.GetReselectionRequestPath(dataDirectory)));
     }
 
+    /// <summary>Verifies Settings opens the picker without waiting for game capture.</summary>
     [Fact]
     public async Task ChooseAgainOpensPickerWithoutWaitingForGameCapture()
     {
@@ -63,6 +66,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.Equal(1, pickerCalls);
     }
 
+    /// <summary>Verifies capture stays paused until manual source selection completes.</summary>
     [Fact]
     public async Task ChooseAgainKeepsCapturePausedUntilSelectionFinishes()
     {
@@ -82,6 +86,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.True(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
     }
 
+    /// <summary>Verifies picker failure is reported and releases the capture pause.</summary>
     [Fact]
     public async Task ChooseAgainReportsPickerFailureAndReleasesCapturePause()
     {
@@ -99,6 +104,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.False(WaylandCaptureSourceSelection.IsManualSelectionInProgress);
     }
 
+    /// <summary>Verifies picker failure remains visible when no logger was supplied.</summary>
     [Fact]
     public async Task ChooseAgainReportsPickerFailureWithoutLogger()
     {
@@ -113,6 +119,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.False(WaylandCaptureSourceSelection.IsManualSelectionInProgress);
     }
 
+    /// <summary>Verifies non-Wayland sessions cannot reset portal source state.</summary>
     [Fact]
     public async Task ChooseAgainIsDisabledOutsideWaylandSessions()
     {
@@ -127,6 +134,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.False(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
     }
 
+    /// <summary>Verifies a newly saved portal source is reported to the user.</summary>
     [Fact]
     public async Task ChooseAgainReportsWhenSelectionWasSaved()
     {
@@ -146,6 +154,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.True(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
     }
 
+    /// <summary>Verifies the Settings command starts the source-reselection workflow.</summary>
     [Fact]
     public void ChooseAgainCommandRunsTheReselectionWorkflow()
     {
@@ -217,6 +226,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.True(GameScreenCapture.IsWaylandPortalAllowed(WaylandCaptureFeatures.SurfaceMiningRig));
     }
 
+    /// <summary>Verifies disabled Wayland capture keeps the saved source intact.</summary>
     [Fact]
     public async Task ChooseAgainDoesNotClearSourceWhileDisabled()
     {
@@ -241,6 +251,7 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         }
     }
 
+    /// <summary>Builds an enabled view model with an injectable picker for tests.</summary>
     private static WaylandCaptureSettingsViewModel CreateEnabledViewModel(
         string dataDirectory,
         Action<string>? log = null,

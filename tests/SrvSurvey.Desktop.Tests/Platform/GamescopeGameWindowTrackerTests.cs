@@ -9,6 +9,7 @@ public sealed class GamescopeGameWindowTrackerTests
 {
     private const ulong ProcessStartTime = 123456;
 
+    /// <summary>Verifies that losing a nested X server leaves the game tracker usable.</summary>
     [Fact]
     public async Task NestedX11ServerShutdownLeavesTrackerRecoverable()
     {

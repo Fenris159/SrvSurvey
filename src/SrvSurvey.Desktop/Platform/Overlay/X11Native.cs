@@ -45,12 +45,15 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial int XCloseDisplay(nint display);
 
+    /// <summary>Reads active monitor geometry from the XRandR extension.</summary>
     [LibraryImport("libXrandr.so.2")]
     private static partial nint XRRGetMonitors(nint display, nuint window, int getActive, out int count);
 
+    /// <summary>Frees the monitor array returned by XRandR.</summary>
     [LibraryImport("libXrandr.so.2")]
     private static partial void XRRFreeMonitors(nint monitors);
 
+    /// <summary>Returns X11 monitor bounds for mapping scaled portal sources.</summary>
     internal static IReadOnlyList<PixelRect> ReadMonitorBounds()
     {
         if (!OperatingSystem.IsLinux())
@@ -125,9 +128,11 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial nint XSetErrorHandler(nint handler);
 
+    /// <summary>Installs an Xlib I/O error callback and returns the previous callback.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial nint XSetIOErrorHandler(nint handler);
 
+    /// <summary>Controls Xlib exit behavior after an I/O error on one display.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial void XSetIOErrorExitHandler(nint display, nint handler, nint userData);
 

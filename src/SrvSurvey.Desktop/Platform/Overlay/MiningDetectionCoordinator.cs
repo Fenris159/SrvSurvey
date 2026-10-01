@@ -43,6 +43,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
         await SynchronizeAsync();
     }
 
+    /// <summary>Synchronizes rig detection with the current game and capture state.</summary>
     internal async Task SynchronizeAsync()
     {
         if (busy || disposed)

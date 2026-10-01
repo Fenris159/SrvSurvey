@@ -53,6 +53,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             capturePurpose
         ) { }
 
+    /// <summary>Creates a portal capture for one data directory and capture purpose.</summary>
     internal WaylandPortalGameScreenCapture(
         string restoreTokenPath,
         Func<CancellationToken, Task<bool>>? confirmScreenShare = null,
@@ -72,6 +73,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
 
     public string? UnavailableReason => disposed ? "The Wayland screen capture session is closed." : null;
 
+    /// <summary>Opens the desktop source picker without starting a PipeWire video stream.</summary>
     internal static async Task SelectSourceAsync(string dataDirectory, Action<string>? log = null)
     {
         var capture = new WaylandPortalGameScreenCapture(
@@ -138,22 +140,22 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
+    /// <summary>Cancels pending frames and releases the portal session; later calls retry incomplete cleanup.</summary>
     public void Dispose()
     {
         Task? initializationToWait;
         lock (gate)
         {
-            if (disposed)
+            if (!disposed)
             {
-                return;
+                disposed = true;
+                shutdown.Cancel();
+                pendingRequest?.Completion.TrySetException(
+                    new ObjectDisposedException(nameof(WaylandPortalGameScreenCapture))
+                );
+                pendingRequest = null;
             }
 
-            disposed = true;
-            shutdown.Cancel();
-            pendingRequest?.Completion.TrySetException(
-                new ObjectDisposedException(nameof(WaylandPortalGameScreenCapture))
-            );
-            pendingRequest = null;
             initializationToWait = initialization;
         }
 
@@ -240,6 +242,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
+    /// <summary>Creates the portal session, chooses a source, and optionally attaches its video stream.</summary>
     private async Task InitializePortalSessionAsync(bool connectVideoStream = true)
     {
         var portalConnection = new Connection(Address.Session);
@@ -374,6 +377,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     private static string DescribePortalDescriptor(SafeHandle remote) =>
         remote.IsInvalid || remote.IsClosed ? "unusable" : "open";
 
+    /// <summary>Completes the pending crop request from a PipeWire frame.</summary>
     private void OnFrameReady(PipeWireVideoCapture sender, VideoFrame frame)
     {
         CaptureRequest? request;
@@ -424,25 +428,48 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
+    /// <summary>Releases session resources and disposes the shutdown token even after cleanup errors.</summary>
     private async Task DisposeAsyncResources()
     {
-        await ReleaseSessionResourcesAsync().ConfigureAwait(false);
-        shutdown.Dispose();
+        try
+        {
+            await ReleaseSessionResourcesAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            shutdown.Dispose();
+        }
     }
 
+    /// <summary>Attempts every capture and portal cleanup step before reporting failures.</summary>
     private async Task ReleaseSessionResourcesAsync()
     {
+        var failures = new List<Exception>();
+        pipeWireCapture?.FrameReady -= OnFrameReady;
         if (pipeWireCapture is not null)
         {
-            pipeWireCapture.FrameReady -= OnFrameReady;
-            await pipeWireCapture.DisposeAsync().ConfigureAwait(false);
-            pipeWireCapture = null;
+            try
+            {
+                await pipeWireCapture.DisposeAsync().ConfigureAwait(false);
+                pipeWireCapture = null;
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
 
         if (pipeWireContext is not null)
         {
-            await pipeWireContext.DisposeAsync().ConfigureAwait(false);
-            pipeWireContext = null;
+            try
+            {
+                await pipeWireContext.DisposeAsync().ConfigureAwait(false);
+                pipeWireContext = null;
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
 
         if (portalSession is not null)
@@ -450,17 +477,36 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             try
             {
                 await portalSession.CloseAsync().ConfigureAwait(false);
+                portalSession = null;
             }
             catch (DBusException)
             {
                 // The compositor may already have closed the portal session.
+                portalSession = null;
             }
-
-            portalSession = null;
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
 
-        connection?.Dispose();
-        connection = null;
+        if (portalSession is null && connection is not null)
+        {
+            try
+            {
+                connection.Dispose();
+                connection = null;
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
+        }
+
+        if (failures.Count > 0)
+        {
+            throw new AggregateException("The Wayland capture session could not be fully closed.", failures);
+        }
     }
 
     private static async Task<PortalResponse> InvokeRequestAsync(
@@ -510,6 +556,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         };
     }
 
+    /// <summary>Reads a reusable portal token, tolerating inaccessible saved state.</summary>
     private string? TryReadRestoreToken()
     {
         try
@@ -542,6 +589,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
+    /// <summary>Persists the token returned by the desktop portal for later sessions.</summary>
     private void SaveRestoreToken(IDictionary<string, object> results)
     {
         string? token = results.TryGetValue("restore_token", out object? value) ? value as string : null;
@@ -694,6 +742,7 @@ internal static class PortalFrameCropper
 {
     private const int BytesPerPixel = 4;
 
+    /// <summary>Crops a requested game region from the shared portal frame.</summary>
     public static CapturedPixelBuffer Crop(
         VideoFrame frame,
         PortalStreamInfo stream,
@@ -748,6 +797,7 @@ internal static class PortalFrameCropper
         return new PixelRect(left, top, right - left, bottom - top);
     }
 
+    /// <summary>Maps portal monitor metadata to the matching X11 coordinate space.</summary>
     private static PixelRect ResolveSourceRectangle(
         PortalStreamInfo stream,
         PixelRect gameBounds,
@@ -775,6 +825,7 @@ internal static class PortalFrameCropper
         return gameBounds;
     }
 
+    /// <summary>Checks whether a portal monitor and X11 monitor differ only by uniform scaling.</summary>
     private static bool MatchesScaledMonitor(PixelRect portalBounds, PixelRect x11Bounds)
     {
         if (portalBounds.Width <= 0 || portalBounds.Height <= 0 || x11Bounds.Width <= 0 || x11Bounds.Height <= 0)

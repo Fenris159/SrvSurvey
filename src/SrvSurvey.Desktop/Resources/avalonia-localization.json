@@ -26281,6 +26281,10 @@
       "translation": "Die VoxStellar-Einstellung wurde für diese Sitzung geändert, konnte aber nicht gespeichert werden: {0}"
     },
     {
+      "source": "The Wayland capture session could not be fully closed.",
+      "translation": "Die Wayland-Erfassungssitzung konnte nicht vollständig geschlossen werden."
+    },
+    {
       "source": "The Wayland capture source could not be selected: {0}",
       "translation": "Die Wayland-Erfassungsquelle konnte nicht ausgewählt werden: {0}"
     },
@@ -27331,6 +27335,14 @@
     {
       "source": "The prepared update candidate still exists after helper abort.",
       "translation": "Der vorbereitete Update-Kandidat ist nach dem Abbruch des Helfers weiterhin vorhanden."
+    },
+    {
+      "source": "The previous Wayland capture session could not be closed.",
+      "translation": "Die vorherige Wayland-Erfassungssitzung konnte nicht geschlossen werden."
+    },
+    {
+      "source": "The previous Wayland capture session is still closing.",
+      "translation": "Die vorherige Wayland-Erfassungssitzung ist noch nicht abgeschlossen."
     },
     {
       "source": "The previous consent could not be saved: {0}",
@@ -60967,6 +60979,10 @@
       "translation": "La preferencia VoxStellar cambió para esta sesión pero no se pudo guardar: {0}"
     },
     {
+      "source": "The Wayland capture session could not be fully closed.",
+      "translation": "La sesión de captura de Wayland no se pudo cerrar por completo."
+    },
+    {
       "source": "The Wayland capture source could not be selected: {0}",
       "translation": "No se pudo seleccionar la fuente de captura de Wayland: {0}"
     },
@@ -62017,6 +62033,14 @@
     {
       "source": "The prepared update candidate still exists after helper abort.",
       "translation": "El candidato de actualización preparado todavía existe después de la cancelación del asistente."
+    },
+    {
+      "source": "The previous Wayland capture session could not be closed.",
+      "translation": "No se pudo cerrar la sesión de captura de Wayland anterior."
+    },
+    {
+      "source": "The previous Wayland capture session is still closing.",
+      "translation": "La sesión anterior de captura de Wayland aún está por cerrar."
     },
     {
       "source": "The previous consent could not be saved: {0}",
@@ -95653,6 +95677,10 @@
       "translation": "La préférence VoxStellar a été modifiée pour cette session mais n'a pas pu être enregistrée : {0}"
     },
     {
+      "source": "The Wayland capture session could not be fully closed.",
+      "translation": "La session de capture de Wayland n'a pas pu être complètement clôturée."
+    },
+    {
       "source": "The Wayland capture source could not be selected: {0}",
       "translation": "La source de capture Wayland n'a pas pu être sélectionnée : {0}"
     },
@@ -96703,6 +96731,14 @@
     {
       "source": "The prepared update candidate still exists after helper abort.",
       "translation": "Le candidat à la mise à jour préparé existe toujours après l'abandon de l'assistant."
+    },
+    {
+      "source": "The previous Wayland capture session could not be closed.",
+      "translation": "La précédente session de capture de Wayland n'a pas pu être fermée."
+    },
+    {
+      "source": "The previous Wayland capture session is still closing.",
+      "translation": "La précédente session de capture de Wayland est toujours en cours de clôture."
     },
     {
       "source": "The previous consent could not be saved: {0}",
@@ -130339,6 +130375,10 @@
       "translation": "A preferência VoxStellar foi alterada para esta sessão, mas não pôde ser salva: {0}"
     },
     {
+      "source": "The Wayland capture session could not be fully closed.",
+      "translation": "A sessão de captura de Wayland não pôde ser totalmente encerrada."
+    },
+    {
       "source": "The Wayland capture source could not be selected: {0}",
       "translation": "A fonte de captura do Wayland não pôde ser selecionada: {0}"
     },
@@ -131389,6 +131429,14 @@
     {
       "source": "The prepared update candidate still exists after helper abort.",
       "translation": "O candidato à atualização preparado ainda existe após a interrupção do auxiliar."
+    },
+    {
+      "source": "The previous Wayland capture session could not be closed.",
+      "translation": "A sessão anterior de captura do Wayland não pôde ser encerrada."
+    },
+    {
+      "source": "The previous Wayland capture session is still closing.",
+      "translation": "A sessão anterior de captura do Wayland ainda está encerrando."
     },
     {
       "source": "The previous consent could not be saved: {0}",
@@ -165025,6 +165073,10 @@
       "translation": "Предпочтение VoxStellar изменилось для этого сеанса, но не удалось сохранить: {0}"
     },
     {
+      "source": "The Wayland capture session could not be fully closed.",
+      "translation": "Сеанс захвата Вэйланда не удалось полностью закрыть."
+    },
+    {
       "source": "The Wayland capture source could not be selected: {0}",
       "translation": "Не удалось выбрать источник захвата Wayland: {0}."
     },
@@ -166075,6 +166127,14 @@
     {
       "source": "The prepared update candidate still exists after helper abort.",
       "translation": "Подготовленный кандидат на обновление все еще существует после прерывания работы помощника."
+    },
+    {
+      "source": "The previous Wayland capture session could not be closed.",
+      "translation": "Предыдущий сеанс захвата Wayland не удалось закрыть."
+    },
+    {
+      "source": "The previous Wayland capture session is still closing.",
+      "translation": "Предыдущий сеанс захвата Wayland все еще закрывается."
     },
     {
       "source": "The previous consent could not be saved: {0}",
@@ -199711,6 +199771,10 @@
       "translation": "此会话的 VoxStellar 首选项已更改，但无法保存：{0}"
     },
     {
+      "source": "The Wayland capture session could not be fully closed.",
+      "translation": "Wayland 捕获会话无法完全关闭。"
+    },
+    {
       "source": "The Wayland capture source could not be selected: {0}",
       "translation": "无法选择 Wayland 捕获源：{0}"
     },
@@ -200761,6 +200825,14 @@
     {
       "source": "The prepared update candidate still exists after helper abort.",
       "translation": "帮助程序中止后，准备好的更新候选仍然​​存在。"
+    },
+    {
+      "source": "The previous Wayland capture session could not be closed.",
+      "translation": "之前的 Wayland 捕获会话无法关闭。"
+    },
+    {
+      "source": "The previous Wayland capture session is still closing.",
+      "translation": "之前的 Wayland 捕获会话仍在结束中。"
     },
     {
       "source": "The previous consent could not be saved: {0}",
@@ -234397,6 +234469,10 @@
       "translation": "* THE VOXSTELLAR PREFERENCE CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
     },
     {
+      "source": "The Wayland capture session could not be fully closed.",
+      "translation": "* THE WAYLAND CAPTURE SESSION COULD NOT BE FULLY CLOSED. >>>!"
+    },
+    {
       "source": "The Wayland capture source could not be selected: {0}",
       "translation": "* THE WAYLAND CAPTURE SOURCE COULD NOT BE SELECTED: {0} >>>!"
     },
@@ -235447,6 +235523,14 @@
     {
       "source": "The prepared update candidate still exists after helper abort.",
       "translation": "* THE PREPARED UPDATE CANDIDATE STILL EXISTS AFTER HELPER ABORT. >>>!"
+    },
+    {
+      "source": "The previous Wayland capture session could not be closed.",
+      "translation": "* THE PREVIOUS WAYLAND CAPTURE SESSION COULD NOT BE CLOSED. >>>!"
+    },
+    {
+      "source": "The previous Wayland capture session is still closing.",
+      "translation": "* THE PREVIOUS WAYLAND CAPTURE SESSION IS STILL CLOSING. >>>!"
     },
     {
       "source": "The previous consent could not be saved: {0}",

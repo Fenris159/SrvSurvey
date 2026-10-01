@@ -15,6 +15,7 @@ public sealed class MiningDetectionCoordinatorTests : IDisposable
 {
     private readonly string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-hud-coordinator-{Guid.NewGuid():N}");
 
+    /// <summary>Verifies an out-of-source crop pauses rig detection rather than crashing.</summary>
     [AvaloniaFact]
     public async Task OutsideWaylandSourcePausesRigDetectionInsteadOfCrashing()
     {

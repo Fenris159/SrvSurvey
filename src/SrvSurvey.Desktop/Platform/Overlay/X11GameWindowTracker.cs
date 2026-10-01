@@ -18,6 +18,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     private nuint inspectedActiveWindow;
     private bool inspectedActiveWindowIsElite;
 
+    /// <summary>Initializes X11 atoms and recovery behavior for one display connection.</summary>
     private X11GameWindowTracker(nint display, bool recoverTransientDisplay)
     {
         this.display = display;
@@ -29,6 +30,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         processIdAtom = GetAtom("_NET_WM_PID");
     }
 
+    /// <summary>Opens an X11 tracker, marking named transient displays for recovery.</summary>
     public static IGameWindowTracker? TryCreate(string? displayName = null)
     {
         if (!OperatingSystem.IsLinux())
@@ -85,6 +87,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         }
     }
 
+    /// <summary>Returns the current game window or unavailable when its X11 display fails.</summary>
     public GameWindowSnapshot GetSnapshot()
     {
         lock (gate)
@@ -138,9 +141,11 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         }
     }
 
+    /// <summary>Reports whether a recoverable nested X11 display has failed.</summary>
     private bool HasFailedTransientDisplay() =>
         recoverTransientDisplay && X11TransientDisplayRecovery.HasFailed(display);
 
+    /// <summary>Closes the X11 display and unregisters its error handling.</summary>
     public void Dispose()
     {
         lock (gate)
@@ -373,6 +378,7 @@ internal static class X11TransientDisplayRecovery
     private static nint previousHandler;
     private static bool installed;
 
+    /// <summary>Installs the process-wide I/O error handler and registers a transient display.</summary>
     public static void Register(nint display)
     {
         lock (Gate)
@@ -393,6 +399,7 @@ internal static class X11TransientDisplayRecovery
         }
     }
 
+    /// <summary>Reports whether an X11 I/O error invalidated the display.</summary>
     public static bool HasFailed(nint display)
     {
         lock (Gate)
@@ -401,6 +408,7 @@ internal static class X11TransientDisplayRecovery
         }
     }
 
+    /// <summary>Removes a display from transient I/O error tracking.</summary>
     public static void Unregister(nint display)
     {
         lock (Gate)
@@ -410,6 +418,7 @@ internal static class X11TransientDisplayRecovery
         }
     }
 
+    /// <summary>Records I/O failures on transient displays without letting Xlib exit the process.</summary>
     private static int HandleIoError(nint display)
     {
         lock (Gate)
