@@ -328,18 +328,22 @@ in section 2.
 
 If X11 cannot read the game pixels needed for FSS, first-footfall, or Surface
 Mining detection, SrvSurvey explains the choice before KDE opens its
-screen-sharing picker. Select the **Elite Dangerous** window when it is listed.
-Gamescope may expose only its desktop surface; in that case, select the desktop
-or monitor where Elite is running. Select one source and click **Share**.
+screen-sharing picker. Select the **display or monitor** showing Elite Dangerous
+and click **Share**. If the picker opens on its window list, switch to the
+display or screen tab. On some Proton or Gamescope setups, display capture
+avoids a larger game-window stream and can reduce lag. If detection fails with
+the correct display selected, choose **Choose capture source again** in
+**SrvSurvey Settings → Application → Wayland screen capture** and try the
+Elite Dangerous window.
 
 Use **Alt+Tab** if the SrvSurvey explanation or KDE picker appears behind the
 game. KDE may remember a successful selection, so the prompts normally return
 only when permission is unavailable or has expired.
 
 If the wrong source was selected, open **SrvSurvey Settings → Application →
-Wayland screen capture** and choose **Choose capture source again**. SrvSurvey
-restarts, and the KDE picker opens if FSS, first-footfall, or Surface Mining
-capture must fall back from X11 to Wayland screen sharing again.
+Wayland screen capture** and choose **Choose capture source again**. The current
+sharing session closes without restarting SrvSurvey, and the KDE picker opens
+immediately, even if Elite Dangerous is closed.
 
 ## 6. Confirm SrvSurvey's selected path
 

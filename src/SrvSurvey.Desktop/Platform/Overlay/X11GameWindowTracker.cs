@@ -13,13 +13,16 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     private readonly nuint clientListAtom;
     private readonly nuint clientListStackingAtom;
     private readonly nuint processIdAtom;
+    private readonly bool recoverTransientDisplay;
     private nuint gameWindow;
     private nuint inspectedActiveWindow;
     private bool inspectedActiveWindowIsElite;
 
-    private X11GameWindowTracker(nint display)
+    /// <summary>Initializes X11 atoms and recovery behavior for one display connection.</summary>
+    private X11GameWindowTracker(nint display, bool recoverTransientDisplay)
     {
         this.display = display;
+        this.recoverTransientDisplay = recoverTransientDisplay;
         rootWindow = X11Native.XDefaultRootWindow(display);
         activeWindowAtom = GetAtom("_NET_ACTIVE_WINDOW");
         clientListAtom = GetAtom("_NET_CLIENT_LIST");
@@ -27,6 +30,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         processIdAtom = GetAtom("_NET_WM_PID");
     }
 
+    /// <summary>Opens an X11 tracker, marking named transient displays for recovery.</summary>
     public static IGameWindowTracker? TryCreate(string? displayName = null)
     {
         if (!OperatingSystem.IsLinux())
@@ -50,8 +54,14 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 return null;
             }
 
+            bool recoverTransientDisplay = !string.IsNullOrWhiteSpace(displayName);
+            if (recoverTransientDisplay)
+            {
+                X11TransientDisplayRecovery.Register(display);
+            }
+
             X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
-            return new X11GameWindowTracker(display);
+            return new X11GameWindowTracker(display, recoverTransientDisplay);
         }
         catch (Exception exception)
             when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
@@ -65,6 +75,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 finally
                 {
                     X11OverlayPlatformService.UnregisterErrorHandledDisplay(display);
+                    X11TransientDisplayRecovery.Unregister(display);
                 }
             }
 
@@ -76,11 +87,12 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
         }
     }
 
+    /// <summary>Returns the current game window or unavailable when its X11 display fails.</summary>
     public GameWindowSnapshot GetSnapshot()
     {
         lock (gate)
         {
-            if (display == nint.Zero)
+            if (display == nint.Zero || HasFailedTransientDisplay())
             {
                 return GameWindowSnapshot.Unavailable;
             }
@@ -108,22 +120,32 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 gameWindow = FindGameWindow(activeWindow);
             }
 
-            if (gameWindow == 0 || !TryGetBounds(gameWindow, out PixelRect clientBounds, out bool isVisible))
+            if (
+                HasFailedTransientDisplay()
+                || gameWindow == 0
+                || !TryGetBounds(gameWindow, out PixelRect clientBounds, out bool isVisible)
+            )
             {
                 gameWindow = 0;
                 return GameWindowSnapshot.Unavailable;
             }
 
-            return new GameWindowSnapshot(
+            GameWindowSnapshot snapshot = new(
                 unchecked((nint)gameWindow),
                 ReadProcessId(gameWindow),
                 clientBounds,
                 isVisible,
                 activeWindow == gameWindow
             );
+            return HasFailedTransientDisplay() ? GameWindowSnapshot.Unavailable : snapshot;
         }
     }
 
+    /// <summary>Reports whether a recoverable nested X11 display has failed.</summary>
+    private bool HasFailedTransientDisplay() =>
+        recoverTransientDisplay && X11TransientDisplayRecovery.HasFailed(display);
+
+    /// <summary>Closes the X11 display and unregisters its error handling.</summary>
     public void Dispose()
     {
         lock (gate)
@@ -139,6 +161,10 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 finally
                 {
                     X11OverlayPlatformService.UnregisterErrorHandledDisplay(currentDisplay);
+                    if (recoverTransientDisplay)
+                    {
+                        X11TransientDisplayRecovery.Unregister(currentDisplay);
+                    }
                 }
             }
         }
@@ -338,4 +364,88 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             _ = X11Native.XFree(value);
         }
     }
+}
+
+internal static class X11TransientDisplayRecovery
+{
+    // Gamescope's nested X server ends with the game. Xlib exits the process on I/O failure
+    // unless both its global error callback and the display's exit callback are handled.
+    private static readonly Lock Gate = new();
+    private static readonly HashSet<nint> RecoverableDisplays = [];
+    private static readonly HashSet<nint> FailedDisplays = [];
+    private static readonly XIoErrorHandler IoErrorHandler = HandleIoError;
+    private static readonly XIoErrorExitHandler IoErrorExitHandler = static (_, _) => { };
+    private static nint previousHandler;
+    private static bool installed;
+
+    /// <summary>Installs the process-wide I/O error handler and registers a transient display.</summary>
+    public static void Register(nint display)
+    {
+        lock (Gate)
+        {
+            if (!installed)
+            {
+                nint handlerPointer = Marshal.GetFunctionPointerForDelegate(IoErrorHandler);
+                previousHandler = X11Native.XSetIOErrorHandler(handlerPointer);
+                installed = true;
+            }
+
+            RecoverableDisplays.Add(display);
+            X11Native.XSetIOErrorExitHandler(
+                display,
+                Marshal.GetFunctionPointerForDelegate(IoErrorExitHandler),
+                nint.Zero
+            );
+        }
+    }
+
+    /// <summary>Reports whether an X11 I/O error invalidated the display.</summary>
+    public static bool HasFailed(nint display)
+    {
+        lock (Gate)
+        {
+            return FailedDisplays.Contains(display);
+        }
+    }
+
+    /// <summary>Removes a display from transient I/O error tracking.</summary>
+    public static void Unregister(nint display)
+    {
+        lock (Gate)
+        {
+            RecoverableDisplays.Remove(display);
+            FailedDisplays.Remove(display);
+        }
+    }
+
+    /// <summary>Records I/O failures on transient displays without letting Xlib exit the process.</summary>
+    private static int HandleIoError(nint display)
+    {
+        lock (Gate)
+        {
+            if (RecoverableDisplays.Contains(display))
+            {
+                FailedDisplays.Add(display);
+                return 0;
+            }
+        }
+
+        try
+        {
+            return previousHandler == nint.Zero
+                ? 0
+                : Marshal.GetDelegateForFunctionPointer<XIoErrorHandler>(previousHandler)(display);
+        }
+        catch (Exception)
+        {
+            // Managed exceptions must never unwind through an Xlib callback.
+            return 0;
+        }
+    }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int XIoErrorHandler(nint display);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void XIoErrorExitHandler(nint display, nint userData);
 }

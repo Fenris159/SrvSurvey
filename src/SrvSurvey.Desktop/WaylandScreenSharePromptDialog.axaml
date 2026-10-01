@@ -14,7 +14,7 @@
         <TextBlock Classes="eyebrow" Text="WAYLAND SCREEN CAPTURE" />
         <TextBlock Classes="page-title"
                    FontSize="24"
-                   Text="Choose Elite Dangerous or its desktop"
+                   Text="Share the display running Elite Dangerous"
                    TextWrapping="Wrap" />
       </StackPanel>
 
@@ -23,7 +23,11 @@
           <TextBlock Text="Your desktop will open a screen-sharing picker."
                      FontWeight="SemiBold"
                      TextWrapping="Wrap" />
-          <TextBlock Text="Select the Elite Dangerous window and click Share. If Elite Dangerous is not listed, select the desktop or monitor where the game is running."
+          <TextBlock Text="Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab."
+                     TextWrapping="Wrap" />
+          <TextBlock Text="On some Proton or Gamescope setups, display sharing avoids a larger game-window stream and can reduce lag. SrvSurvey crops the game areas it needs from the shared display."
+                     TextWrapping="Wrap" />
+          <TextBlock Text="If detection fails with the correct display selected, use Settings → Application → Choose capture source again and try the Elite Dangerous window."
                      TextWrapping="Wrap" />
           <TextBlock Text="If the picker appears behind the game, use Alt+Tab to find it."
                      TextWrapping="Wrap" />

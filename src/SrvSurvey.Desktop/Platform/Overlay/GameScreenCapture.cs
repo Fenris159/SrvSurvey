@@ -210,6 +210,19 @@ internal static class WaylandCaptureSourceSelection
     public const string RestoreTokenFileName = "wayland-screen-capture.token";
     public const string ReselectionRequestFileName = "wayland-screen-capture.reselect";
 
+    public static event Action? ReselectionRequested;
+
+    private static int manualSelectionCount;
+
+    public static bool IsManualSelectionInProgress => Volatile.Read(ref manualSelectionCount) > 0;
+
+    /// <summary>Marks a manual source selection so feature captures pause until the returned lease ends.</summary>
+    public static IDisposable BeginManualSelection()
+    {
+        Interlocked.Increment(ref manualSelectionCount);
+        return new ManualSelectionLease();
+    }
+
     public static string GetRestoreTokenPath(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
@@ -222,6 +235,48 @@ internal static class WaylandCaptureSourceSelection
         return Path.Combine(Path.GetFullPath(dataDirectory), ReselectionRequestFileName);
     }
 
+    /// <summary>Reads the saved portal source token without consuming it.</summary>
+    public static string? ReadRestoreToken(string dataDirectory)
+    {
+        string path = GetRestoreTokenPath(dataDirectory);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        string token = File.ReadAllText(path).Trim();
+        return string.IsNullOrWhiteSpace(token) ? null : token;
+    }
+
+    /// <summary>Atomically replaces or removes the saved portal source token.</summary>
+    public static void StoreRestoreToken(string dataDirectory, string? token)
+    {
+        string path = GetRestoreTokenPath(dataDirectory);
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            File.Delete(path);
+            return;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        string temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            File.WriteAllText(temporaryPath, token);
+            if (OperatingSystem.IsLinux())
+            {
+                File.SetUnixFileMode(temporaryPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            }
+
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporaryPath);
+        }
+    }
+
+    /// <summary>Clears the prior source selection and asks active captures to close.</summary>
     public static void RequestReselection(string dataDirectory)
     {
         string restoreTokenPath = GetRestoreTokenPath(dataDirectory);
@@ -233,6 +288,7 @@ internal static class WaylandCaptureSourceSelection
         }
 
         File.WriteAllText(requestPath, string.Empty);
+        ReselectionRequested?.Invoke();
     }
 
     public static bool ConsumeReselectionRequest(string dataDirectory)
@@ -245,6 +301,20 @@ internal static class WaylandCaptureSourceSelection
 
         File.Delete(requestPath);
         return true;
+    }
+
+    private sealed class ManualSelectionLease : IDisposable
+    {
+        private int disposed;
+
+        /// <summary>Releases this manual-selection lease exactly once.</summary>
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) == 0)
+            {
+                Interlocked.Decrement(ref manualSelectionCount);
+            }
+        }
     }
 }
 
@@ -269,14 +339,17 @@ public sealed class UnavailableGameScreenCapture : IGameScreenCapture
 
 internal sealed class GatedGameScreenCapture : IGameScreenCapture
 {
-    private readonly Lock gate = new();
+    private readonly object gate = new();
     private readonly Func<IGameScreenCapture> captureFactory;
     private readonly Action<string>? log;
     private readonly string capturePurpose;
     private readonly WaylandCaptureFeatures feature;
     private IGameScreenCapture? inner;
+    private IGameScreenCapture? pendingCleanup;
+    private bool cleanupInProgress;
     private bool disposed;
 
+    /// <summary>Creates a capture wrapper that follows feature settings and source changes.</summary>
     public GatedGameScreenCapture(
         Func<IGameScreenCapture> captureFactory,
         Action<string>? log = null,
@@ -291,57 +364,82 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
         this.feature = feature;
         GameScreenCapture.WaylandPortalEnabledChanged += OnWaylandPortalEnabledChanged;
         GameScreenCapture.WaylandPortalFeaturesChanged += OnWaylandPortalFeaturesChanged;
+        WaylandCaptureSourceSelection.ReselectionRequested += OnReselectionRequested;
     }
 
     public bool IsAvailable => IsAllowed && GetOrCreateEnabledCapture().IsAvailable;
 
-    public string? UnavailableReason =>
-        IsAllowed
-            ? GetOrCreateEnabledCapture().UnavailableReason
-            : GameScreenCapture.GetWaylandPortalDisabledReason(feature, capturePurpose);
+    public string? UnavailableReason => IsAllowed ? GetOrCreateEnabledCapture().UnavailableReason : GetBlockedReason();
 
     public CapturedPixelBuffer Capture(PixelRect bounds) => GetOrCreateEnabledCapture().Capture(bounds);
 
     public CapturedPixelBuffer Capture(PixelRect bounds, PixelRect sourceBounds) =>
         GetOrCreateEnabledCapture().Capture(bounds, sourceBounds);
 
+    /// <summary>Unsubscribes settings events and releases the active or pending capture.</summary>
     public void Dispose()
     {
         GameScreenCapture.WaylandPortalEnabledChanged -= OnWaylandPortalEnabledChanged;
         GameScreenCapture.WaylandPortalFeaturesChanged -= OnWaylandPortalFeaturesChanged;
-        IGameScreenCapture? capture;
+        WaylandCaptureSourceSelection.ReselectionRequested -= OnReselectionRequested;
         lock (gate)
         {
-            if (disposed)
+            if (disposed && inner is null && pendingCleanup is null)
             {
                 return;
             }
 
             disposed = true;
-            capture = inner;
-            inner = null;
+            if (inner is not null)
+            {
+                pendingCleanup = inner;
+                inner = null;
+            }
         }
 
-        capture?.Dispose();
+        ReleasePendingCapture();
     }
 
+    /// <summary>Retries pending cleanup before returning or creating an enabled capture.</summary>
     private IGameScreenCapture GetOrCreateEnabledCapture()
     {
+        try
+        {
+            ReleasePendingCapture();
+        }
+        catch (Exception exception)
+        {
+            throw new InvalidOperationException("The previous Wayland capture session could not be closed.", exception);
+        }
+
         lock (gate)
         {
             ObjectDisposedException.ThrowIf(disposed, this);
             EnsureEnabled();
+            if (pendingCleanup is not null)
+            {
+                throw new InvalidOperationException("The previous Wayland capture session is still closing.");
+            }
+
             return inner ??= captureFactory();
         }
     }
 
-    private bool IsAllowed => GameScreenCapture.IsWaylandPortalAllowed(feature);
+    private bool IsAllowed =>
+        !WaylandCaptureSourceSelection.IsManualSelectionInProgress && GameScreenCapture.IsWaylandPortalAllowed(feature);
 
+    /// <summary>Explains why the current feature cannot capture a Wayland frame.</summary>
+    private string GetBlockedReason() =>
+        WaylandCaptureSourceSelection.IsManualSelectionInProgress
+            ? "Wayland capture source selection is in progress."
+            : GameScreenCapture.GetWaylandPortalDisabledReason(feature, capturePurpose);
+
+    /// <summary>Rejects capture requests while the feature or manual picker blocks them.</summary>
     private void EnsureEnabled()
     {
         if (!IsAllowed)
         {
-            throw new NotSupportedException(GameScreenCapture.GetWaylandPortalDisabledReason(feature, capturePurpose));
+            throw new NotSupportedException(GetBlockedReason());
         }
     }
 
@@ -365,31 +463,78 @@ internal sealed class GatedGameScreenCapture : IGameScreenCapture
         CloseActiveCapture();
     }
 
-    private void CloseActiveCapture()
+    /// <summary>Closes the current capture when the user requests another portal source.</summary>
+    private void OnReselectionRequested() => CloseActiveCapture("the source was changed in Settings");
+
+    /// <summary>Closes an active capture while retaining ownership if cleanup fails.</summary>
+    private void CloseActiveCapture(string reason = "capture was disabled in Settings")
+    {
+        lock (gate)
+        {
+            if (inner is not null)
+            {
+                pendingCleanup = inner;
+                inner = null;
+            }
+
+            if (pendingCleanup is null)
+            {
+                return;
+            }
+        }
+
+        try
+        {
+            ReleasePendingCapture();
+            log?.Invoke($"Wayland capture ({capturePurpose}): closed because {reason}.");
+        }
+        catch (Exception exception)
+        {
+            log?.Invoke(
+                $"Wayland capture ({capturePurpose}): failed to close after {reason}. "
+                    + CaptureFailureDiagnostics.Describe(exception)
+            );
+        }
+    }
+
+    /// <summary>Closes pending capture resources without holding the wrapper lock while disposal runs.</summary>
+    private void ReleasePendingCapture()
     {
         IGameScreenCapture? capture;
         lock (gate)
         {
-            capture = inner;
-            inner = null;
-        }
+            while (cleanupInProgress)
+            {
+                Monitor.Wait(gate);
+            }
 
-        if (capture is null)
-        {
-            return;
+            capture = pendingCleanup;
+            if (capture is null)
+            {
+                return;
+            }
+
+            cleanupInProgress = true;
         }
 
         try
         {
             capture.Dispose();
-            log?.Invoke($"Wayland capture ({capturePurpose}): closed because capture was disabled in Settings.");
+            lock (gate)
+            {
+                if (ReferenceEquals(pendingCleanup, capture))
+                {
+                    pendingCleanup = null;
+                }
+            }
         }
-        catch (Exception exception)
+        finally
         {
-            log?.Invoke(
-                $"Wayland capture ({capturePurpose}): failed to close after capture was disabled in Settings. "
-                    + CaptureFailureDiagnostics.Describe(exception)
-            );
+            lock (gate)
+            {
+                cleanupInProgress = false;
+                Monitor.PulseAll(gate);
+            }
         }
     }
 }

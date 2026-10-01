@@ -20,11 +20,11 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     private const string PortalService = "org.freedesktop.portal.Desktop";
     private const string PortalPath = "/org/freedesktop/portal/desktop";
     private static readonly TimeSpan FrameTimeout = TimeSpan.FromSeconds(5);
+    private static readonly SemaphoreSlim RestoreTokenGate = new(1, 1);
     private static int nextToken;
 
     private readonly Lock gate = new();
     private readonly string dataDirectory;
-    private readonly string restoreTokenPath;
     private readonly Func<CancellationToken, Task<bool>>? confirmScreenShare;
     private readonly Action<string>? log;
     private readonly string capturePurpose;
@@ -35,6 +35,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     private PipeWireContext? pipeWireContext;
     private PipeWireVideoCapture? pipeWireCapture;
     private PortalStreamInfo streamInfo;
+    private IReadOnlyList<PixelRect> x11MonitorBounds = [];
     private CaptureRequest? pendingRequest;
     private bool hasLoggedFirstFrame;
     private bool hasLoggedFirstCrop;
@@ -52,6 +53,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             capturePurpose
         ) { }
 
+    /// <summary>Creates a portal capture for one data directory and capture purpose.</summary>
     internal WaylandPortalGameScreenCapture(
         string restoreTokenPath,
         Func<CancellationToken, Task<bool>>? confirmScreenShare = null,
@@ -61,8 +63,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(restoreTokenPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(capturePurpose);
-        this.restoreTokenPath = Path.GetFullPath(restoreTokenPath);
-        dataDirectory = Path.GetDirectoryName(this.restoreTokenPath)!;
+        dataDirectory = Path.GetDirectoryName(Path.GetFullPath(restoreTokenPath))!;
         this.confirmScreenShare = confirmScreenShare;
         this.log = log;
         this.capturePurpose = capturePurpose;
@@ -71,6 +72,24 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     public bool IsAvailable => !disposed;
 
     public string? UnavailableReason => disposed ? "The Wayland screen capture session is closed." : null;
+
+    /// <summary>Opens the desktop source picker without starting a PipeWire video stream.</summary>
+    internal static async Task SelectSourceAsync(string dataDirectory, Action<string>? log = null)
+    {
+        var capture = new WaylandPortalGameScreenCapture(
+            WaylandCaptureSourceSelection.GetRestoreTokenPath(dataDirectory),
+            log: log,
+            capturePurpose: "capture source selection"
+        );
+        try
+        {
+            await capture.InitializePortalSessionAsync(connectVideoStream: false).ConfigureAwait(false);
+        }
+        finally
+        {
+            await capture.DisposeAsyncResources().ConfigureAwait(false);
+        }
+    }
 
     public CapturedPixelBuffer Capture(PixelRect bounds) => Capture(bounds, bounds);
 
@@ -121,22 +140,22 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
+    /// <summary>Cancels pending frames and releases the portal session; later calls retry incomplete cleanup.</summary>
     public void Dispose()
     {
         Task? initializationToWait;
         lock (gate)
         {
-            if (disposed)
+            if (!disposed)
             {
-                return;
+                disposed = true;
+                shutdown.Cancel();
+                pendingRequest?.Completion.TrySetException(
+                    new ObjectDisposedException(nameof(WaylandPortalGameScreenCapture))
+                );
+                pendingRequest = null;
             }
 
-            disposed = true;
-            shutdown.Cancel();
-            pendingRequest?.Completion.TrySetException(
-                new ObjectDisposedException(nameof(WaylandPortalGameScreenCapture))
-            );
-            pendingRequest = null;
             initializationToWait = initialization;
         }
 
@@ -223,7 +242,8 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
-    private async Task InitializePortalSessionAsync()
+    /// <summary>Creates the portal session, chooses a source, and optionally attaches its video stream.</summary>
+    private async Task InitializePortalSessionAsync(bool connectVideoStream = true)
     {
         var portalConnection = new Connection(Address.Session);
         connection = portalConnection;
@@ -237,70 +257,91 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
             throw new NotSupportedException("The Wayland desktop does not offer window or monitor sharing.");
         }
 
-        bool forceReselection = TryConsumeReselectionRequest();
-        string? restoreToken = portalVersion >= 4 && !forceReselection ? TryReadRestoreToken() : null;
-        if (forceReselection)
+        string sessionPath;
+        PortalResponse startResponse;
+        await RestoreTokenGate.WaitAsync(shutdown.Token).ConfigureAwait(false);
+        try
         {
-            log?.Invoke($"Wayland capture ({capturePurpose}): Settings requested a fresh source selection.");
-        }
-
-        log?.Invoke(
-            $"Wayland capture ({capturePurpose}): portal version {portalVersion}; "
-                + $"available sources {DescribeAvailableSources(sourceTypes)}; "
-                + $"saved selection {(restoreToken is null ? "not available" : "requested")}."
-        );
-        if (
-            GameScreenCapture.ShouldShowWaylandSelectionGuidance(portalVersion, restoreToken)
-            && confirmScreenShare is not null
-            && !await confirmScreenShare(shutdown.Token).ConfigureAwait(false)
-        )
-        {
-            throw new NotSupportedException("Wayland screen sharing was canceled before the desktop picker opened.");
-        }
-
-        var createOptions = new Dictionary<string, object> { ["session_handle_token"] = NextToken("session") };
-        PortalResponse createResponse = await InvokeRequestAsync(
-            portalConnection,
-            senderName,
-            token => screenCast.CreateSessionAsync(AddRequestToken(createOptions, token)),
-            shutdown.Token
-        );
-        string sessionPath = ReadRequiredString(createResponse.Results, "session_handle");
-        portalSession = portalConnection.CreateProxy<ISession>(PortalService, sessionPath);
-
-        var selectOptions = new Dictionary<string, object> { ["types"] = sourceTypes, ["multiple"] = false };
-        if (portalVersion >= 2)
-        {
-            selectOptions["cursor_mode"] = 1U;
-        }
-
-        if (portalVersion >= 4)
-        {
-            selectOptions["persist_mode"] = 2U;
-            if (restoreToken is not null)
+            bool forceReselection = TryConsumeReselectionRequest();
+            string? restoreToken = portalVersion >= 4 && !forceReselection ? TryReadRestoreToken() : null;
+            if (forceReselection)
             {
-                selectOptions["restore_token"] = restoreToken;
+                log?.Invoke($"Wayland capture ({capturePurpose}): Settings requested a fresh source selection.");
             }
+
+            log?.Invoke(
+                $"Wayland capture ({capturePurpose}): portal version {portalVersion}; "
+                    + $"available sources {DescribeAvailableSources(sourceTypes)}; "
+                    + $"saved selection {(restoreToken is null ? "not available" : "requested")}."
+            );
+            if (
+                GameScreenCapture.ShouldShowWaylandSelectionGuidance(portalVersion, restoreToken)
+                && confirmScreenShare is not null
+                && !await confirmScreenShare(shutdown.Token).ConfigureAwait(false)
+            )
+            {
+                throw new NotSupportedException(
+                    "Wayland screen sharing was canceled before the desktop picker opened."
+                );
+            }
+
+            var createOptions = new Dictionary<string, object> { ["session_handle_token"] = NextToken("session") };
+            PortalResponse createResponse = await InvokeRequestAsync(
+                portalConnection,
+                senderName,
+                token => screenCast.CreateSessionAsync(AddRequestToken(createOptions, token)),
+                shutdown.Token
+            );
+            sessionPath = ReadRequiredString(createResponse.Results, "session_handle");
+            portalSession = portalConnection.CreateProxy<ISession>(PortalService, sessionPath);
+
+            var selectOptions = new Dictionary<string, object> { ["types"] = sourceTypes, ["multiple"] = false };
+            if (portalVersion >= 2)
+            {
+                selectOptions["cursor_mode"] = 1U;
+            }
+
+            if (portalVersion >= 4)
+            {
+                selectOptions["persist_mode"] = 2U;
+                if (restoreToken is not null)
+                {
+                    selectOptions["restore_token"] = restoreToken;
+                }
+            }
+
+            _ = await InvokeRequestAsync(
+                portalConnection,
+                senderName,
+                token => screenCast.SelectSourcesAsync(sessionPath, AddRequestToken(selectOptions, token)),
+                shutdown.Token
+            );
+            startResponse = await InvokeRequestAsync(
+                portalConnection,
+                senderName,
+                token => screenCast.StartAsync(sessionPath, string.Empty, RequestOptions(token)),
+                shutdown.Token
+            );
+            SaveRestoreToken(startResponse.Results);
+        }
+        finally
+        {
+            RestoreTokenGate.Release();
         }
 
-        _ = await InvokeRequestAsync(
-            portalConnection,
-            senderName,
-            token => screenCast.SelectSourcesAsync(sessionPath, AddRequestToken(selectOptions, token)),
-            shutdown.Token
-        );
-        PortalResponse startResponse = await InvokeRequestAsync(
-            portalConnection,
-            senderName,
-            token => screenCast.StartAsync(sessionPath, string.Empty, RequestOptions(token)),
-            shutdown.Token
-        );
         streamInfo = PortalStreamInfo.Read(startResponse.Results);
+        if (streamInfo.SourceType == 1)
+        {
+            x11MonitorBounds = X11Native.ReadMonitorBounds();
+        }
         log?.Invoke(
             $"Wayland capture ({capturePurpose}): portal selected {streamInfo.DescribeSource()} "
                 + $"(PipeWire node {streamInfo.NodeId})."
         );
-        SaveRestoreToken(startResponse.Results);
+        if (!connectVideoStream)
+        {
+            return;
+        }
 
         log?.Invoke($"Wayland capture ({capturePurpose}): opening the portal PipeWire remote.");
         using CloseSafeHandle remote = await screenCast.OpenPipeWireRemoteAsync(
@@ -336,6 +377,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
     private static string DescribePortalDescriptor(SafeHandle remote) =>
         remote.IsInvalid || remote.IsClosed ? "unusable" : "open";
 
+    /// <summary>Completes the pending crop request from a PipeWire frame.</summary>
     private void OnFrameReady(PipeWireVideoCapture sender, VideoFrame frame)
     {
         CaptureRequest? request;
@@ -367,7 +409,8 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
                 frame,
                 streamInfo,
                 request.Bounds,
-                request.SourceBounds
+                request.SourceBounds,
+                x11MonitorBounds
             );
             if (!hasLoggedFirstCrop)
             {
@@ -385,43 +428,93 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
+    /// <summary>Releases session resources and disposes the shutdown token even after cleanup errors.</summary>
     private async Task DisposeAsyncResources()
     {
-        await ReleaseSessionResourcesAsync().ConfigureAwait(false);
-        shutdown.Dispose();
+        try
+        {
+            await ReleaseSessionResourcesAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            shutdown.Dispose();
+        }
     }
 
+    /// <summary>Attempts every capture and portal cleanup step before reporting failures.</summary>
     private async Task ReleaseSessionResourcesAsync()
     {
+        var failures = new List<Exception>();
+        pipeWireCapture?.FrameReady -= OnFrameReady;
         if (pipeWireCapture is not null)
         {
-            pipeWireCapture.FrameReady -= OnFrameReady;
-            await pipeWireCapture.DisposeAsync().ConfigureAwait(false);
-            pipeWireCapture = null;
+            try
+            {
+                await pipeWireCapture.DisposeAsync().ConfigureAwait(false);
+                pipeWireCapture = null;
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
 
         if (pipeWireContext is not null)
         {
-            await pipeWireContext.DisposeAsync().ConfigureAwait(false);
-            pipeWireContext = null;
+            try
+            {
+                await pipeWireContext.DisposeAsync().ConfigureAwait(false);
+                pipeWireContext = null;
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
 
-        if (portalSession is not null)
+        await ClosePortalSessionAsync(failures).ConfigureAwait(false);
+
+        if (portalSession is null && connection is not null)
         {
             try
             {
-                await portalSession.CloseAsync().ConfigureAwait(false);
+                connection.Dispose();
+                connection = null;
             }
-            catch (DBusException)
+            catch (Exception exception)
             {
-                // The compositor may already have closed the portal session.
+                failures.Add(exception);
             }
-
-            portalSession = null;
         }
 
-        connection?.Dispose();
-        connection = null;
+        if (failures.Count > 0)
+        {
+            throw new AggregateException("The Wayland capture session could not be fully closed.", failures);
+        }
+    }
+
+    /// <summary>Closes the portal session while retaining a failed close for a later retry.</summary>
+    private async Task ClosePortalSessionAsync(List<Exception> failures)
+    {
+        if (portalSession is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await portalSession.CloseAsync().ConfigureAwait(false);
+            portalSession = null;
+        }
+        catch (DBusException)
+        {
+            // The compositor may already have closed the portal session.
+            portalSession = null;
+        }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
     }
 
     private static async Task<PortalResponse> InvokeRequestAsync(
@@ -471,18 +564,12 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         };
     }
 
+    /// <summary>Reads a reusable portal token, tolerating inaccessible saved state.</summary>
     private string? TryReadRestoreToken()
     {
         try
         {
-            if (!File.Exists(restoreTokenPath))
-            {
-                return null;
-            }
-
-            string token = File.ReadAllText(restoreTokenPath).Trim();
-            File.Delete(restoreTokenPath);
-            return string.IsNullOrWhiteSpace(token) ? null : token;
+            return WaylandCaptureSourceSelection.ReadRestoreToken(dataDirectory);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -510,17 +597,17 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
         }
     }
 
+    /// <summary>Persists the token returned by the desktop portal for later sessions.</summary>
     private void SaveRestoreToken(IDictionary<string, object> results)
     {
-        if (!results.TryGetValue("restore_token", out object? value) || value is not string token)
-        {
-            return;
-        }
-
+        string? token = results.TryGetValue("restore_token", out object? value) ? value as string : null;
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(restoreTokenPath)!);
-            File.WriteAllText(restoreTokenPath, token);
+            WaylandCaptureSourceSelection.StoreRestoreToken(dataDirectory, token);
+            log?.Invoke(
+                $"Wayland capture ({capturePurpose}): "
+                    + (token is null ? "desktop did not retain this selection." : "saved selection renewed.")
+            );
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -663,11 +750,13 @@ internal static class PortalFrameCropper
 {
     private const int BytesPerPixel = 4;
 
+    /// <summary>Crops a requested game region from the shared portal frame.</summary>
     public static CapturedPixelBuffer Crop(
         VideoFrame frame,
         PortalStreamInfo stream,
         PixelRect bounds,
-        PixelRect sourceBounds
+        PixelRect sourceBounds,
+        IReadOnlyList<PixelRect>? x11MonitorBounds = null
     )
     {
         if (frame.Data.IsEmpty || frame.Width <= 0 || frame.Height <= 0 || frame.Stride <= 0)
@@ -680,7 +769,7 @@ internal static class PortalFrameCropper
             throw new InvalidDataException($"The Wayland portal returned unsupported {frame.Format} pixels.");
         }
 
-        PixelRect sourceRectangle = ResolveSourceRectangle(stream, sourceBounds);
+        PixelRect sourceRectangle = ResolveSourceRectangle(stream, sourceBounds, x11MonitorBounds);
         PixelRect crop = ScaleAndClip(bounds, sourceRectangle, frame.Width, frame.Height);
         byte[] target = new byte[checked(crop.Width * crop.Height * BytesPerPixel)];
         for (int y = 0; y < crop.Height; y++)
@@ -716,15 +805,47 @@ internal static class PortalFrameCropper
         return new PixelRect(left, top, right - left, bottom - top);
     }
 
-    private static PixelRect ResolveSourceRectangle(PortalStreamInfo stream, PixelRect gameBounds)
+    /// <summary>Maps portal monitor metadata to the matching X11 coordinate space.</summary>
+    private static PixelRect ResolveSourceRectangle(
+        PortalStreamInfo stream,
+        PixelRect gameBounds,
+        IReadOnlyList<PixelRect>? x11MonitorBounds
+    )
     {
         const uint MonitorSource = 1;
         if (stream.SourceType == MonitorSource && stream.Position is { } position && stream.Size is { } size)
         {
-            return new PixelRect(position, size);
+            var portalBounds = new PixelRect(position, size);
+            if (x11MonitorBounds is not null)
+            {
+                PixelRect x11Bounds = x11MonitorBounds.FirstOrDefault(current =>
+                    MatchesScaledMonitor(portalBounds, current)
+                );
+                if (x11Bounds.Width > 0)
+                {
+                    return x11Bounds;
+                }
+            }
+
+            return portalBounds;
         }
 
         return gameBounds;
+    }
+
+    /// <summary>Checks whether a portal monitor and X11 monitor differ only by uniform scaling.</summary>
+    private static bool MatchesScaledMonitor(PixelRect portalBounds, PixelRect x11Bounds)
+    {
+        if (portalBounds.Width <= 0 || portalBounds.Height <= 0 || x11Bounds.Width <= 0 || x11Bounds.Height <= 0)
+        {
+            return false;
+        }
+
+        double scaleX = (double)x11Bounds.Width / portalBounds.Width;
+        double scaleY = (double)x11Bounds.Height / portalBounds.Height;
+        return Math.Abs(scaleX - scaleY) < .01
+            && Math.Abs(x11Bounds.X - portalBounds.X * scaleX) <= 2
+            && Math.Abs(x11Bounds.Y - portalBounds.Y * scaleY) <= 2;
     }
 
     private static void ConvertRow(ReadOnlySpan<byte> source, Span<byte> target, PixelFormat format)

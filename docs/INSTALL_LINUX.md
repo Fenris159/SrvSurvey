@@ -155,7 +155,7 @@ printf 'session=%s\nDISPLAY=%s\nWAYLAND_DISPLAY=%s\n' \
   both `WAYLAND_DISPLAY` and `DISPLAY` are set. SrvSurvey runs through XWayland
   for its windows and overlays. If X11 cannot read the game pixels needed by
   FSS tuning, first-footfall inference, or rig detection, SrvSurvey asks the
-  desktop ScreenCast portal to share the Elite Dangerous window through
+  desktop ScreenCast portal to share the display running Elite Dangerous through
   PipeWire.
 - **Pure Wayland without XWayland:** `WAYLAND_DISPLAY` is set but `DISPLAY` is
   empty. This is not a supported full-functionality mode and the application
@@ -199,14 +199,16 @@ X11/XWayland desktop session.
 
 When FSS tuning, first-footfall inference, rig detection, or the rig calibration
 panel's **Test** option first needs pixels that XWayland cannot provide, the
-desktop opens its normal screen-sharing picker. Select only the **Elite
-Dangerous** window. If the game is not offered as a separate window, select the
-desktop or monitor where Elite is running. SrvSurvey explains these choices
-before opening the picker; use **Alt+Tab** if either prompt appears behind the
-game. SrvSurvey crops each requested game region from that shared source;
-existing rig calibration controls and saved positions continue to work as they
-do on Xorg. The desktop may remember the selection; it can ask again after a
-restart or when its permission token expires.
+desktop opens its normal screen-sharing picker. Select the **display or monitor**
+showing Elite Dangerous. If the picker opens on its window list, switch to the
+display or screen tab. On some Proton or Gamescope setups, sharing the display
+avoids a larger game-window stream and can reduce lag. If detection fails with
+the correct display selected, use **Settings → Application → Choose capture
+source again** and try the Elite Dangerous window. Use **Alt+Tab** if either
+prompt appears behind the game. SrvSurvey crops each requested game region from
+that shared source; existing rig calibration controls and saved positions
+continue to work as they do on Xorg. The desktop may remember the selection; it
+can ask again after a restart or when its permission token expires.
 
 Temporary X11 or portal capture failures are retried with an increasing delay
 and normal capture resumes after the next successful frame. Repeated expected
@@ -231,9 +233,9 @@ manager), `xdg-desktop-portal`, and the portal backend for the active desktop,
 such as `xdg-desktop-portal-gnome` or `xdg-desktop-portal-kde`. Full GNOME and
 KDE installations normally provide these. If the picker is canceled or the
 wrong source is shared, open **Settings → Application → Wayland screen
-capture** and choose **Choose capture source again**. SrvSurvey restarts, and
-the picker opens if the next capture attempt must fall back from X11 to Wayland
-screen sharing.
+capture** and choose **Choose capture source again**. The current sharing
+session closes without restarting SrvSurvey, and the picker opens immediately,
+even if Elite Dangerous is closed.
 
 ## Elite journal discovery
 

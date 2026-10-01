@@ -43,6 +43,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
         await SynchronizeAsync();
     }
 
+    /// <summary>Synchronizes rig detection with the current game and capture state.</summary>
     internal async Task SynchronizeAsync()
     {
         if (busy || disposed)
@@ -79,6 +80,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
         catch (Exception e)
             when (e
                     is InvalidOperationException
+                        or InvalidDataException
                         or ArgumentException
                         or System.ComponentModel.Win32Exception
                         or NotSupportedException
