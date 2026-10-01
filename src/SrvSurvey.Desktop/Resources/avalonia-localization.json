@@ -10425,6 +10425,10 @@
       "translation": "Vollständiges Abschlussaudit"
     },
     {
+      "source": "Fullscreen",
+      "translation": "Vollbild"
+    },
+    {
       "source": "Fully scanned · {0} bodies",
       "translation": "Vollständig gescannte · {0}-Leichen"
     },
@@ -14477,6 +14481,10 @@
       "translation": "MaxJumpRange"
     },
     {
+      "source": "Maximize",
+      "translation": "Maximieren"
+    },
+    {
       "source": "Maximum age (days)",
       "translation": "Höchstalter (Tage)"
     },
@@ -14715,6 +14723,10 @@
     {
       "source": "Minimal",
       "translation": "Minimal"
+    },
+    {
+      "source": "Minimize",
+      "translation": "Minimieren"
     },
     {
       "source": "Minimize to system tray",
@@ -20843,6 +20855,10 @@
     {
       "source": "Restock",
       "translation": "Auffüllen"
+    },
+    {
+      "source": "Restore",
+      "translation": "Wiederherstellen"
     },
     {
       "source": "Restore automatic map scaling.",
@@ -45059,6 +45075,10 @@
       "translation": "Auditoría de finalización de área completa"
     },
     {
+      "source": "Fullscreen",
+      "translation": "Pantalla completa"
+    },
+    {
       "source": "Fully scanned · {0} bodies",
       "translation": "Cuerpos completamente escaneados · {0}"
     },
@@ -49111,6 +49131,10 @@
       "translation": "Rango máximo de salto"
     },
     {
+      "source": "Maximize",
+      "translation": "Maximizar"
+    },
+    {
       "source": "Maximum age (days)",
       "translation": "Edad máxima (días)"
     },
@@ -49349,6 +49373,10 @@
     {
       "source": "Minimal",
       "translation": "mínimo"
+    },
+    {
+      "source": "Minimize",
+      "translation": "Minimizar"
     },
     {
       "source": "Minimize to system tray",
@@ -55477,6 +55505,10 @@
     {
       "source": "Restock",
       "translation": "Reabastecer"
+    },
+    {
+      "source": "Restore",
+      "translation": "Restaurar"
     },
     {
       "source": "Restore automatic map scaling.",
@@ -79693,6 +79725,10 @@
       "translation": "Audit d'achèvement de toute la zone"
     },
     {
+      "source": "Fullscreen",
+      "translation": "Plein écran"
+    },
+    {
       "source": "Fully scanned · {0} bodies",
       "translation": "Entièrement scanné · {0} corps"
     },
@@ -83745,6 +83781,10 @@
       "translation": "Plage de saut maximale"
     },
     {
+      "source": "Maximize",
+      "translation": "Maximiser"
+    },
+    {
       "source": "Maximum age (days)",
       "translation": "Âge maximum (jours)"
     },
@@ -83983,6 +84023,10 @@
     {
       "source": "Minimal",
       "translation": "Minime"
+    },
+    {
+      "source": "Minimize",
+      "translation": "Minimiser"
     },
     {
       "source": "Minimize to system tray",
@@ -90111,6 +90155,10 @@
     {
       "source": "Restock",
       "translation": "Réapprovisionner"
+    },
+    {
+      "source": "Restore",
+      "translation": "Restaurer"
     },
     {
       "source": "Restore automatic map scaling.",
@@ -114327,6 +114375,10 @@
       "translation": "Auditoria de conclusão de área completa"
     },
     {
+      "source": "Fullscreen",
+      "translation": "Tela cheia"
+    },
+    {
       "source": "Fully scanned · {0} bodies",
       "translation": "Totalmente digitalizado · {0} corpos"
     },
@@ -118379,6 +118431,10 @@
       "translation": "Alcance máximo de salto"
     },
     {
+      "source": "Maximize",
+      "translation": "Maximizar"
+    },
+    {
       "source": "Maximum age (days)",
       "translation": "Idade máxima (dias)"
     },
@@ -118617,6 +118673,10 @@
     {
       "source": "Minimal",
       "translation": "Mínimo"
+    },
+    {
+      "source": "Minimize",
+      "translation": "Minimizar"
     },
     {
       "source": "Minimize to system tray",
@@ -124745,6 +124805,10 @@
     {
       "source": "Restock",
       "translation": "Reabastecer"
+    },
+    {
+      "source": "Restore",
+      "translation": "Restaurar"
     },
     {
       "source": "Restore automatic map scaling.",
@@ -148961,6 +149025,10 @@
       "translation": "Полная проверка завершения строительства"
     },
     {
+      "source": "Fullscreen",
+      "translation": "Полноэкранный"
+    },
+    {
       "source": "Fully scanned · {0} bodies",
       "translation": "Полностью просканированы · тела {0}"
     },
@@ -153013,6 +153081,10 @@
       "translation": "MaxJumpRange"
     },
     {
+      "source": "Maximize",
+      "translation": "Максимизировать"
+    },
+    {
       "source": "Maximum age (days)",
       "translation": "Максимальный возраст (дни)"
     },
@@ -153251,6 +153323,10 @@
     {
       "source": "Minimal",
       "translation": "Минимальный"
+    },
+    {
+      "source": "Minimize",
+      "translation": "Свернуть"
     },
     {
       "source": "Minimize to system tray",
@@ -159379,6 +159455,10 @@
     {
       "source": "Restock",
       "translation": "Пополнение запасов"
+    },
+    {
+      "source": "Restore",
+      "translation": "Восстановить"
     },
     {
       "source": "Restore automatic map scaling.",
@@ -183595,6 +183675,10 @@
       "translation": "全区竣工审计"
     },
     {
+      "source": "Fullscreen",
+      "translation": "全屏"
+    },
+    {
       "source": "Fully scanned · {0} bodies",
       "translation": "完全扫描·{0}尸体"
     },
@@ -187647,6 +187731,10 @@
       "translation": "最大跳跃范围"
     },
     {
+      "source": "Maximize",
+      "translation": "最大化"
+    },
+    {
       "source": "Maximum age (days)",
       "translation": "最大年龄（天）"
     },
@@ -187885,6 +187973,10 @@
     {
       "source": "Minimal",
       "translation": "最小"
+    },
+    {
+      "source": "Minimize",
+      "translation": "最小化"
     },
     {
       "source": "Minimize to system tray",
@@ -194013,6 +194105,10 @@
     {
       "source": "Restock",
       "translation": "补货"
+    },
+    {
+      "source": "Restore",
+      "translation": "恢复"
     },
     {
       "source": "Restore automatic map scaling.",
@@ -218229,6 +218325,10 @@
       "translation": "* FULL-AREA COMPLETION AUDIT >>>!"
     },
     {
+      "source": "Fullscreen",
+      "translation": "* FULLSCREEN >>>!"
+    },
+    {
       "source": "Fully scanned · {0} bodies",
       "translation": "* FULLY SCANNED · {0} BODIES >>>!"
     },
@@ -222281,6 +222381,10 @@
       "translation": "* MAXJUMPRANGE >>>!"
     },
     {
+      "source": "Maximize",
+      "translation": "* MAXIMIZE >>>!"
+    },
+    {
       "source": "Maximum age (days)",
       "translation": "* MAXIMUM AGE (DAYS) >>>!"
     },
@@ -222519,6 +222623,10 @@
     {
       "source": "Minimal",
       "translation": "* MINIMAL >>>!"
+    },
+    {
+      "source": "Minimize",
+      "translation": "* MINIMIZE >>>!"
     },
     {
       "source": "Minimize to system tray",
@@ -228647,6 +228755,10 @@
     {
       "source": "Restock",
       "translation": "* RESTOCK >>>!"
+    },
+    {
+      "source": "Restore",
+      "translation": "* RESTORE >>>!"
     },
     {
       "source": "Restore automatic map scaling.",
