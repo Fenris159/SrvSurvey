@@ -53,6 +53,7 @@ public static class FrontierProtocolRegistration
         command.SetValue(null, $"\"{executable}\" \"%1\"");
     }
 
+    /// <summary>Registers the current Linux installation as the Frontier callback handler.</summary>
     private static async Task RegisterLinuxAsync(CancellationToken cancellationToken)
     {
         string? executable = Environment.GetEnvironmentVariable("APPIMAGE");
@@ -74,25 +75,8 @@ public static class FrontierProtocolRegistration
             "share",
             "applications"
         );
-        Directory.CreateDirectory(applicationsDirectory);
-        string desktopFile = Path.Combine(applicationsDirectory, "io.github.fenris159.SrvSurvey.frontier-auth.desktop");
-        string escapedExecutable = executable
-            .Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("\"", "\\\"", StringComparison.Ordinal);
-        string content = string.Join(
-            '\n',
-            "[Desktop Entry]",
-            "Type=Application",
-            "Name=SrvSurvey",
-            "Comment=Handle SrvSurvey Frontier authorization",
-            $"Exec=\"{escapedExecutable}\" %u",
-            "Icon=srvsurvey",
-            "Terminal=false",
-            "NoDisplay=true",
-            $"MimeType=x-scheme-handler/{FrontierOAuthCallback.Scheme};",
-            string.Empty
-        );
-        await File.WriteAllTextAsync(desktopFile, content, cancellationToken).ConfigureAwait(false);
+        string desktopFile = await WriteLinuxDesktopFileAsync(applicationsDirectory, executable, cancellationToken)
+            .ConfigureAwait(false);
 
         var startInfo = new ProcessStartInfo
         {
@@ -125,6 +109,81 @@ public static class FrontierProtocolRegistration
                 "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
                 exception
             );
+        }
+    }
+
+    /// <summary>Reuses the application launcher for callback links and removes the legacy duplicate entry.</summary>
+    internal static async Task<string> WriteLinuxDesktopFileAsync(
+        string applicationsDirectory,
+        string executable,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Directory.CreateDirectory(applicationsDirectory);
+        string desktopFile = Path.Combine(applicationsDirectory, "io.github.fenris159.SrvSurvey.desktop");
+        string escapedExecutable = executable
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("\"", "\\\"", StringComparison.Ordinal);
+        List<string> lines = File.Exists(desktopFile)
+            ? [.. await File.ReadAllLinesAsync(desktopFile, cancellationToken).ConfigureAwait(false)]
+            :
+            [
+                "[Desktop Entry]",
+                "Type=Application",
+                "Name=SrvSurvey",
+                "Comment=Handle SrvSurvey Frontier authorization",
+                "Icon=srvsurvey",
+                "Terminal=false",
+                "NoDisplay=true",
+            ];
+        UpdateDesktopEntry(lines, "Exec", _ => $"\"{escapedExecutable}\" %u");
+        UpdateDesktopEntry(lines, "TryExec", _ => executable.Replace("\\", "\\\\", StringComparison.Ordinal));
+        UpdateDesktopEntry(
+            lines,
+            "MimeType",
+            current =>
+                string.Join(
+                    ';',
+                    (current ?? string.Empty)
+                        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Append($"x-scheme-handler/{FrontierOAuthCallback.Scheme}")
+                        .Distinct(StringComparer.Ordinal)
+                ) + ";"
+        );
+        await File.WriteAllLinesAsync(desktopFile, lines, cancellationToken).ConfigureAwait(false);
+        File.Delete(Path.Combine(applicationsDirectory, "io.github.fenris159.SrvSurvey.frontier-auth.desktop"));
+        return desktopFile;
+    }
+
+    /// <summary>Updates one main desktop-entry key while preserving launcher metadata and action sections.</summary>
+    private static void UpdateDesktopEntry(List<string> lines, string key, Func<string?, string> valueFactory)
+    {
+        int start = lines.FindIndex(line => line.Trim().Equals("[Desktop Entry]", StringComparison.Ordinal));
+        if (start < 0)
+        {
+            throw new InvalidDataException("The SrvSurvey desktop launcher has no Desktop Entry section.");
+        }
+
+        int end = start + 1;
+        while (end < lines.Count && !lines[end].TrimStart().StartsWith('['))
+        {
+            end++;
+        }
+
+        string prefix = key + "=";
+        int index = lines.FindIndex(
+            start + 1,
+            end - start - 1,
+            line => line.StartsWith(prefix, StringComparison.Ordinal)
+        );
+        string value = prefix + valueFactory(index < 0 ? null : lines[index][prefix.Length..]);
+        if (index < 0)
+        {
+            lines.Insert(end, value);
+        }
+        else
+        {
+            lines[index] = value;
         }
     }
 
