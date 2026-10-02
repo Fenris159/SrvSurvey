@@ -8989,6 +8989,10 @@
       "translation": "Spediteure ausschließen"
     },
     {
+      "source": "Exec",
+      "translation": "Geschäftsführer"
+    },
+    {
       "source": "Executable releases and reference catalogs are checked and activated independently.",
       "translation": "Ausführbare Releases und Referenzkataloge werden selbstständig geprüft und freigeschaltet."
     },
@@ -14647,6 +14651,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Militärische Siedlung – Bedrohung 2"
+    },
+    {
+      "source": "MimeType",
+      "translation": "MimeType"
     },
     {
       "source": "Min. demand",
@@ -26241,6 +26249,10 @@
       "translation": "Die Systemadresse Spansh konnte nicht aufgelöst werden: {0}"
     },
     {
+      "source": "The SrvSurvey desktop launcher has no Desktop Entry section.",
+      "translation": "Der Desktop-Launcher SrvSurvey verfügt über keinen Desktop-Eintragsbereich."
+    },
+    {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "Der SrvSurvey Issue-Tracker konnte nicht geöffnet werden."
     },
@@ -28539,6 +28551,10 @@
     {
       "source": "Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route.",
       "translation": "Probieren Sie einen Arbeitsbereichsnamen, einen Overlay-Titel, ein Symbol, ein Journalereignis, eine Einstellung oder eine Aufgabe wie Scannen, Importieren oder Zeichnen einer Route aus."
+    },
+    {
+      "source": "TryExec",
+      "translation": "TryExec"
     },
     {
       "source": "Tubus",
@@ -34463,6 +34479,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "{0} • aktualisiert {1}"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
     },
     {
       "source": "{0}% complete",
@@ -43687,6 +43707,10 @@
       "translation": "Excluir transportistas"
     },
     {
+      "source": "Exec",
+      "translation": "ejecutivo"
+    },
+    {
       "source": "Executable releases and reference catalogs are checked and activated independently.",
       "translation": "Las versiones ejecutables y los catálogos de referencia se verifican y activan de forma independiente."
     },
@@ -49345,6 +49369,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Acuerdo militar - amenaza 2"
+    },
+    {
+      "source": "MimeType",
+      "translation": "Tipo Mime"
     },
     {
       "source": "Min. demand",
@@ -60939,6 +60967,10 @@
       "translation": "La dirección del sistema Spansh no se pudo resolver: {0}"
     },
     {
+      "source": "The SrvSurvey desktop launcher has no Desktop Entry section.",
+      "translation": "El iniciador de escritorio SrvSurvey no tiene una sección de Entrada de escritorio."
+    },
+    {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "No se pudo abrir el rastreador de problemas SrvSurvey."
     },
@@ -63237,6 +63269,10 @@
     {
       "source": "Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route.",
       "translation": "Pruebe con un nombre de espacio de trabajo, un título superpuesto, un icono, un evento de diario, una configuración o una tarea como escanear, importar o trazar una ruta."
+    },
+    {
+      "source": "TryExec",
+      "translation": "PruebaExec"
     },
     {
       "source": "Tubus",
@@ -69161,6 +69197,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "{0} • actualizado {1}"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
     },
     {
       "source": "{0}% complete",
@@ -78385,6 +78425,10 @@
       "translation": "Exclure les transporteurs"
     },
     {
+      "source": "Exec",
+      "translation": "Exécutif"
+    },
+    {
       "source": "Executable releases and reference catalogs are checked and activated independently.",
       "translation": "Les versions exécutables et les catalogues de référence sont vérifiés et activés indépendamment."
     },
@@ -84043,6 +84087,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Colonie militaire - menace 2"
+    },
+    {
+      "source": "MimeType",
+      "translation": "TypeMime"
     },
     {
       "source": "Min. demand",
@@ -95637,6 +95685,10 @@
       "translation": "L'adresse système Spansh n'a pas pu être résolue : {0}"
     },
     {
+      "source": "The SrvSurvey desktop launcher has no Desktop Entry section.",
+      "translation": "Le lanceur de bureau SrvSurvey n'a pas de section Entrée de bureau."
+    },
+    {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "L'outil de suivi des problèmes SrvSurvey n'a pas pu être ouvert."
     },
@@ -97935,6 +97987,10 @@
     {
       "source": "Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route.",
       "translation": "Essayez un nom d'espace de travail, un titre de superposition, une icône, un événement de journal, un paramètre ou une tâche telle que la numérisation, l'importation ou le tracé d'un itinéraire."
+    },
+    {
+      "source": "TryExec",
+      "translation": "EssayerExec"
     },
     {
       "source": "Tubus",
@@ -103859,6 +103915,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "{0} • mis à jour {1}"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
     },
     {
       "source": "{0}% complete",
@@ -113083,6 +113143,10 @@
       "translation": "Excluir operadoras"
     },
     {
+      "source": "Exec",
+      "translation": "Executivo"
+    },
+    {
       "source": "Executable releases and reference catalogs are checked and activated independently.",
       "translation": "Versões executáveis e catálogos de referência são verificados e ativados de forma independente."
     },
@@ -118741,6 +118805,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Assentamento militar - ameaça 2"
+    },
+    {
+      "source": "MimeType",
+      "translation": "MimeType"
     },
     {
       "source": "Min. demand",
@@ -130335,6 +130403,10 @@
       "translation": "O endereço do sistema Spansh não pôde ser resolvido: {0}"
     },
     {
+      "source": "The SrvSurvey desktop launcher has no Desktop Entry section.",
+      "translation": "O inicializador de desktop SrvSurvey não possui seção Desktop Entry."
+    },
+    {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "O rastreador de problemas SrvSurvey não pôde ser aberto."
     },
@@ -132633,6 +132705,10 @@
     {
       "source": "Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route.",
       "translation": "Experimente um nome de espaço de trabalho, título de sobreposição, ícone, evento de diário, configuração ou tarefa, como digitalizar, importar ou traçar uma rota."
+    },
+    {
+      "source": "TryExec",
+      "translation": "TryExec"
     },
     {
       "source": "Tubus",
@@ -138557,6 +138633,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "{0} • atualizado {1}"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
     },
     {
       "source": "{0}% complete",
@@ -147781,6 +147861,10 @@
       "translation": "Исключить операторов связи"
     },
     {
+      "source": "Exec",
+      "translation": "Исполнительный директор"
+    },
+    {
       "source": "Executable releases and reference catalogs are checked and activated independently.",
       "translation": "Исполняемые версии и справочные каталоги проверяются и активируются независимо."
     },
@@ -153439,6 +153523,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "Военное поселение - угроза 2"
+    },
+    {
+      "source": "MimeType",
+      "translation": "Миметип"
     },
     {
       "source": "Min. demand",
@@ -165033,6 +165121,10 @@
       "translation": "Не удалось разрешить системный адрес Spansh: {0}"
     },
     {
+      "source": "The SrvSurvey desktop launcher has no Desktop Entry section.",
+      "translation": "В программе запуска рабочего стола SrvSurvey нет раздела «Ввод рабочего стола»."
+    },
+    {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "Не удалось открыть систему отслеживания ошибок SrvSurvey."
     },
@@ -167331,6 +167423,10 @@
     {
       "source": "Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route.",
       "translation": "Попробуйте указать имя рабочей области, заголовок наложения, значок, событие журнала, настройку или задачу, например сканирование, импорт или построение маршрута."
+    },
+    {
+      "source": "TryExec",
+      "translation": "ПопробуйтеExec"
     },
     {
       "source": "Tubus",
@@ -173255,6 +173351,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "{0} • обновлено {1}"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
     },
     {
       "source": "{0}% complete",
@@ -182479,6 +182579,10 @@
       "translation": "排除运营商"
     },
     {
+      "source": "Exec",
+      "translation": "执行者"
+    },
+    {
       "source": "Executable releases and reference catalogs are checked and activated independently.",
       "translation": "可执行版本和参考目录是独立检查和激活的。"
     },
@@ -188137,6 +188241,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "军事定居点 - 威胁 2"
+    },
+    {
+      "source": "MimeType",
+      "translation": "Mime类型"
     },
     {
       "source": "Min. demand",
@@ -199731,6 +199839,10 @@
       "translation": "无法解析 Spansh 系统地址：{0}"
     },
     {
+      "source": "The SrvSurvey desktop launcher has no Desktop Entry section.",
+      "translation": "SrvSurvey 桌面启动器没有桌面输入部分。"
+    },
+    {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "无法打开 SrvSurvey 问题跟踪器。"
     },
@@ -202029,6 +202141,10 @@
     {
       "source": "Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route.",
       "translation": "尝试使用工作区名称、叠加标题、图标、日志事件、设置或任务（例如扫描、导入或绘制路线）。"
+    },
+    {
+      "source": "TryExec",
+      "translation": "尝试执行"
     },
     {
       "source": "Tubus",
@@ -207953,6 +208069,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "{0} • 更新{1}"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\"%u"
     },
     {
       "source": "{0}% complete",
@@ -217177,6 +217297,10 @@
       "translation": "* EXCLUDE CARRIERS >>>!"
     },
     {
+      "source": "Exec",
+      "translation": "* EXEC >>>!"
+    },
+    {
       "source": "Executable releases and reference catalogs are checked and activated independently.",
       "translation": "* EXECUTABLE RELEASES AND REFERENCE CATALOGS ARE CHECKED AND ACTIVATED INDEPENDENTLY. >>>!"
     },
@@ -222835,6 +222959,10 @@
     {
       "source": "Military settlement - threat 2",
       "translation": "* MILITARY SETTLEMENT - THREAT 2 >>>!"
+    },
+    {
+      "source": "MimeType",
+      "translation": "* MIMETYPE >>>!"
     },
     {
       "source": "Min. demand",
@@ -234429,6 +234557,10 @@
       "translation": "* THE SPANSH SYSTEM ADDRESS COULD NOT BE RESOLVED: {0} >>>!"
     },
     {
+      "source": "The SrvSurvey desktop launcher has no Desktop Entry section.",
+      "translation": "* THE SRVSURVEY DESKTOP LAUNCHER HAS NO DESKTOP ENTRY SECTION. >>>!"
+    },
+    {
       "source": "The SrvSurvey issue tracker could not be opened.",
       "translation": "* THE SRVSURVEY ISSUE TRACKER COULD NOT BE OPENED. >>>!"
     },
@@ -236727,6 +236859,10 @@
     {
       "source": "Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route.",
       "translation": "* TRY A WORKSPACE NAME, OVERLAY TITLE, ICON, JOURNAL EVENT, SETTING, OR TASK SUCH AS SCANNING, IMPORTING, OR PLOTTING A ROUTE. >>>!"
+    },
+    {
+      "source": "TryExec",
+      "translation": "* TRYEXEC >>>!"
     },
     {
       "source": "Tubus",
@@ -242651,6 +242787,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "* {0} • UPDATED {1} >>>!"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "* {0}\"{1}\" %U >>>!"
     },
     {
       "source": "{0}% complete",

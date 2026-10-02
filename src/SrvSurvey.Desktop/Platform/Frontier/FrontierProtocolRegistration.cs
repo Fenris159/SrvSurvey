@@ -15,6 +15,7 @@ public static class FrontierProtocolRegistration
         "/run/current-system/sw/bin/xdg-mime",
     ];
 
+    /// <summary>Registers this installation as the current user's Frontier authorization callback handler.</summary>
     public static async Task RegisterCurrentAsync(CancellationToken cancellationToken = default)
     {
         if (OperatingSystem.IsWindows())
@@ -34,6 +35,7 @@ public static class FrontierProtocolRegistration
         );
     }
 
+    /// <summary>Associates Frontier callback links with this executable in the current user's Windows registry.</summary>
     [SupportedOSPlatform("windows")]
     private static void RegisterWindows()
     {
@@ -53,6 +55,7 @@ public static class FrontierProtocolRegistration
         command.SetValue(null, $"\"{executable}\" \"%1\"");
     }
 
+    /// <summary>Registers the current Linux installation as the Frontier callback handler.</summary>
     private static async Task RegisterLinuxAsync(CancellationToken cancellationToken)
     {
         string? executable = Environment.GetEnvironmentVariable("APPIMAGE");
@@ -74,25 +77,8 @@ public static class FrontierProtocolRegistration
             "share",
             "applications"
         );
-        Directory.CreateDirectory(applicationsDirectory);
-        string desktopFile = Path.Combine(applicationsDirectory, "io.github.fenris159.SrvSurvey.frontier-auth.desktop");
-        string escapedExecutable = executable
-            .Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("\"", "\\\"", StringComparison.Ordinal);
-        string content = string.Join(
-            '\n',
-            "[Desktop Entry]",
-            "Type=Application",
-            "Name=SrvSurvey",
-            "Comment=Handle SrvSurvey Frontier authorization",
-            $"Exec=\"{escapedExecutable}\" %u",
-            "Icon=srvsurvey",
-            "Terminal=false",
-            "NoDisplay=true",
-            $"MimeType=x-scheme-handler/{FrontierOAuthCallback.Scheme};",
-            string.Empty
-        );
-        await File.WriteAllTextAsync(desktopFile, content, cancellationToken).ConfigureAwait(false);
+        string desktopFile = await WriteLinuxDesktopFileAsync(applicationsDirectory, executable, cancellationToken)
+            .ConfigureAwait(false);
 
         var startInfo = new ProcessStartInfo
         {
@@ -128,6 +114,93 @@ public static class FrontierProtocolRegistration
         }
     }
 
+    /// <summary>Reuses the application launcher for callback links and removes the legacy duplicate entry.</summary>
+    internal static async Task<string> WriteLinuxDesktopFileAsync(
+        string applicationsDirectory,
+        string executable,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Directory.CreateDirectory(applicationsDirectory);
+        string desktopFile = Path.Combine(applicationsDirectory, "io.github.fenris159.SrvSurvey.desktop");
+        // Desktop strings are unescaped before Exec arguments, so quoted path characters need both layers.
+        string escapedExecutable = executable
+            .Replace("\\", "\\\\\\\\", StringComparison.Ordinal)
+            .Replace("\"", "\\\\\"", StringComparison.Ordinal)
+            .Replace("$", "\\\\$", StringComparison.Ordinal)
+            .Replace("`", "\\\\`", StringComparison.Ordinal)
+            .Replace("%", "%%", StringComparison.Ordinal);
+        List<string> lines = File.Exists(desktopFile)
+            ? [.. await File.ReadAllLinesAsync(desktopFile, cancellationToken).ConfigureAwait(false)]
+            :
+            [
+                "[Desktop Entry]",
+                "Type=Application",
+                "Name=SrvSurvey",
+                "Comment=Handle SrvSurvey Frontier authorization",
+                "Icon=srvsurvey",
+                "Terminal=false",
+                "NoDisplay=true",
+            ];
+        // GIO validates argv[0] before expanding %% escapes; env keeps percent paths in an argument.
+        string commandPrefix = executable.Contains('%') ? "/usr/bin/env " : string.Empty;
+        UpdateDesktopEntry(lines, "Exec", _ => commandPrefix + $"\"{escapedExecutable}\" %u");
+        UpdateDesktopEntry(lines, "TryExec", _ => executable.Replace("\\", "\\\\", StringComparison.Ordinal));
+        UpdateDesktopEntry(
+            lines,
+            "MimeType",
+            current =>
+                string.Join(
+                    ';',
+                    (current ?? string.Empty)
+                        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Append($"x-scheme-handler/{FrontierOAuthCallback.Scheme}")
+                        .Distinct(StringComparer.Ordinal)
+                ) + ";"
+        );
+        await File.WriteAllLinesAsync(desktopFile, lines, cancellationToken).ConfigureAwait(false);
+        File.Delete(Path.Combine(applicationsDirectory, "io.github.fenris159.SrvSurvey.frontier-auth.desktop"));
+        return desktopFile;
+    }
+
+    /// <summary>Updates one main desktop-entry key while preserving launcher metadata and action sections.</summary>
+    private static void UpdateDesktopEntry(List<string> lines, string key, Func<string?, string> valueFactory)
+    {
+        int start = lines.FindIndex(line => line.Trim().Equals("[Desktop Entry]", StringComparison.Ordinal));
+        if (start < 0)
+        {
+            throw new InvalidDataException("The SrvSurvey desktop launcher has no Desktop Entry section.");
+        }
+
+        int end = start + 1;
+        while (end < lines.Count && !lines[end].TrimStart().StartsWith('['))
+        {
+            end++;
+        }
+
+        string prefix = key + "=";
+        int index = lines.FindIndex(
+            start + 1,
+            end - start - 1,
+            line =>
+            {
+                int delimiter = line.IndexOf('=');
+                return delimiter >= 0 && line[..delimiter].Trim().Equals(key, StringComparison.Ordinal);
+            }
+        );
+        string? currentValue = index < 0 ? null : lines[index][(lines[index].IndexOf('=') + 1)..].TrimStart();
+        string value = prefix + valueFactory(currentValue);
+        if (index < 0)
+        {
+            lines.Insert(end, value);
+        }
+        else
+        {
+            lines[index] = value;
+        }
+    }
+
+    /// <summary>Locates xdg-mime in supported Linux installation paths, retaining the standard path as fallback.</summary>
     private static string ResolveXdgMimePath()
     {
         return XdgMimePaths.FirstOrDefault(File.Exists) ?? XdgMimePaths[0];
