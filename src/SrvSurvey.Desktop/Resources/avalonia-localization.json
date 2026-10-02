@@ -34481,6 +34481,10 @@
       "translation": "{0} • aktualisiert {1}"
     },
     {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% abgeschlossen"
     },
@@ -69193,6 +69197,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "{0} • actualizado {1}"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
     },
     {
       "source": "{0}% complete",
@@ -103909,6 +103917,10 @@
       "translation": "{0} • mis à jour {1}"
     },
     {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% terminé"
     },
@@ -138621,6 +138633,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "{0} • atualizado {1}"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
     },
     {
       "source": "{0}% complete",
@@ -173337,6 +173353,10 @@
       "translation": "{0} • обновлено {1}"
     },
     {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\" %u"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% выполнено"
     },
@@ -208051,6 +208071,10 @@
       "translation": "{0} • 更新{1}"
     },
     {
+      "source": "{0}\"{1}\" %u",
+      "translation": "{0}\"{1}\"%u"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% 完成"
     },
@@ -242763,6 +242787,10 @@
     {
       "source": "{0} • updated {1}",
       "translation": "* {0} • UPDATED {1} >>>!"
+    },
+    {
+      "source": "{0}\"{1}\" %u",
+      "translation": "* {0}\"{1}\" %U >>>!"
     },
     {
       "source": "{0}% complete",

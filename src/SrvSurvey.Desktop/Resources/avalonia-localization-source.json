@@ -69125,6 +69125,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "{0}\u0022{1}\u0022 %u",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
     "Text": "{0}% complete",
     "IsFormat": true,
     "SourceKinds": [

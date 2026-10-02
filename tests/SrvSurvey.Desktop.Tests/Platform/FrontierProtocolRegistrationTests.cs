@@ -35,7 +35,11 @@ public sealed class FrontierProtocolRegistrationTests
             Assert.Contains("TryExec=/Applications/SrvSurvey.AppImage", updated, StringComparison.Ordinal);
             Assert.Contains("Icon=custom-icon", updated, StringComparison.Ordinal);
             Assert.Contains("Categories=Game;Utility;", updated, StringComparison.Ordinal);
-            Assert.Contains("[Desktop Action Debug]\nExec=/old/debug", updated, StringComparison.Ordinal);
+            Assert.Contains(
+                $"[Desktop Action Debug]{Environment.NewLine}Exec=/old/debug",
+                updated,
+                StringComparison.Ordinal
+            );
             Assert.DoesNotContain("NoDisplay=true", updated, StringComparison.Ordinal);
         }
         finally
@@ -97,6 +101,79 @@ public sealed class FrontierProtocolRegistrationTests
             string content = await File.ReadAllTextAsync(launcher);
 
             Assert.Contains(expectedMimeType, content, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    /// <summary>Verifies spaced declarations are replaced once and other MIME types and action keys survive.</summary>
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("\t")]
+    [InlineData(" \t ")]
+    public async Task RegistrationUpdatesDeclarationsWithWhitespace(string whitespace)
+    {
+        string directory = Directory.CreateTempSubdirectory("SrvSurvey-protocol-").FullName;
+        try
+        {
+            string launcher = Path.Combine(directory, "io.github.fenris159.SrvSurvey.desktop");
+            await File.WriteAllTextAsync(
+                launcher,
+                $"[Desktop Entry]\nName=SrvSurvey\n# Exec = keep this comment\nX-Example=Exec = keep this value\nNo delimiter\nExec{whitespace}={whitespace}/old/SrvSurvey %u\nTryExec{whitespace}={whitespace}/old/SrvSurvey\nMimeType{whitespace}={whitespace}application/json;\n\n[Desktop Action Debug]\nExec = /old/debug\n"
+            );
+
+            await FrontierProtocolRegistration.WriteLinuxDesktopFileAsync(
+                directory,
+                "/Applications/SrvSurvey.AppImage"
+            );
+
+            string[] lines = await File.ReadAllLinesAsync(launcher);
+            string[] mainEntry = lines.TakeWhile(line => line != "[Desktop Action Debug]").ToArray();
+            foreach (string key in new[] { "Exec", "TryExec", "MimeType" })
+            {
+                Assert.Single(mainEntry, line => line.Split('=', 2)[0].Trim() == key);
+            }
+            Assert.Contains("Exec=\"/Applications/SrvSurvey.AppImage\" %u", mainEntry);
+            Assert.Contains("TryExec=/Applications/SrvSurvey.AppImage", mainEntry);
+            Assert.Contains("MimeType=application/json;x-scheme-handler/srvsurvey;", mainEntry);
+            Assert.Contains("# Exec = keep this comment", mainEntry);
+            Assert.Contains("X-Example=Exec = keep this value", mainEntry);
+            Assert.Contains("No delimiter", mainEntry);
+            Assert.Contains("Exec = /old/debug", lines);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    /// <summary>Verifies executable characters use desktop-string and command quoting without changing the URL code.</summary>
+    [Theory]
+    [InlineData("/Applications/$Survey/SrvSurvey.AppImage", @"/Applications/\\$Survey/SrvSurvey.AppImage", "")]
+    [InlineData("/Applications/`Survey`/SrvSurvey.AppImage", @"/Applications/\\`Survey\\`/SrvSurvey.AppImage", "")]
+    [InlineData(
+        "/Applications/100%/%u-%F-SrvSurvey.AppImage",
+        "/Applications/100%%/%%u-%%F-SrvSurvey.AppImage",
+        "/usr/bin/env "
+    )]
+    [InlineData(@"/Applications/Back\Slash/SrvSurvey.AppImage", @"/Applications/Back\\\\Slash/SrvSurvey.AppImage", "")]
+    [InlineData("/Applications/\"Survey\"/SrvSurvey.AppImage", """/Applications/\\"Survey\\"/SrvSurvey.AppImage""", "")]
+    public async Task RegistrationEscapesExecutableAndKeepsUrlFieldCode(
+        string executable,
+        string encodedExecutable,
+        string commandPrefix
+    )
+    {
+        string directory = Directory.CreateTempSubdirectory("SrvSurvey-protocol-").FullName;
+        try
+        {
+            string launcher = await FrontierProtocolRegistration.WriteLinuxDesktopFileAsync(directory, executable);
+            string[] lines = await File.ReadAllLinesAsync(launcher);
+
+            Assert.Contains($"Exec={commandPrefix}\"{encodedExecutable}\" %u", lines);
+            Assert.Contains("TryExec=" + executable.Replace("\\", "\\\\", StringComparison.Ordinal), lines);
         }
         finally
         {

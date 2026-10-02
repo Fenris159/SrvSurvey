@@ -15,6 +15,7 @@ public static class FrontierProtocolRegistration
         "/run/current-system/sw/bin/xdg-mime",
     ];
 
+    /// <summary>Registers this installation as the current user's Frontier authorization callback handler.</summary>
     public static async Task RegisterCurrentAsync(CancellationToken cancellationToken = default)
     {
         if (OperatingSystem.IsWindows())
@@ -34,6 +35,7 @@ public static class FrontierProtocolRegistration
         );
     }
 
+    /// <summary>Associates Frontier callback links with this executable in the current user's Windows registry.</summary>
     [SupportedOSPlatform("windows")]
     private static void RegisterWindows()
     {
@@ -121,9 +123,13 @@ public static class FrontierProtocolRegistration
     {
         Directory.CreateDirectory(applicationsDirectory);
         string desktopFile = Path.Combine(applicationsDirectory, "io.github.fenris159.SrvSurvey.desktop");
+        // Desktop strings are unescaped before Exec arguments, so quoted path characters need both layers.
         string escapedExecutable = executable
-            .Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("\"", "\\\"", StringComparison.Ordinal);
+            .Replace("\\", "\\\\\\\\", StringComparison.Ordinal)
+            .Replace("\"", "\\\\\"", StringComparison.Ordinal)
+            .Replace("$", "\\\\$", StringComparison.Ordinal)
+            .Replace("`", "\\\\`", StringComparison.Ordinal)
+            .Replace("%", "%%", StringComparison.Ordinal);
         List<string> lines = File.Exists(desktopFile)
             ? [.. await File.ReadAllLinesAsync(desktopFile, cancellationToken).ConfigureAwait(false)]
             :
@@ -136,7 +142,9 @@ public static class FrontierProtocolRegistration
                 "Terminal=false",
                 "NoDisplay=true",
             ];
-        UpdateDesktopEntry(lines, "Exec", _ => $"\"{escapedExecutable}\" %u");
+        // GIO validates argv[0] before expanding %% escapes; env keeps percent paths in an argument.
+        string commandPrefix = executable.Contains('%') ? "/usr/bin/env " : string.Empty;
+        UpdateDesktopEntry(lines, "Exec", _ => commandPrefix + $"\"{escapedExecutable}\" %u");
         UpdateDesktopEntry(lines, "TryExec", _ => executable.Replace("\\", "\\\\", StringComparison.Ordinal));
         UpdateDesktopEntry(
             lines,
@@ -174,9 +182,14 @@ public static class FrontierProtocolRegistration
         int index = lines.FindIndex(
             start + 1,
             end - start - 1,
-            line => line.StartsWith(prefix, StringComparison.Ordinal)
+            line =>
+            {
+                int delimiter = line.IndexOf('=');
+                return delimiter >= 0 && line[..delimiter].Trim().Equals(key, StringComparison.Ordinal);
+            }
         );
-        string value = prefix + valueFactory(index < 0 ? null : lines[index][prefix.Length..]);
+        string? currentValue = index < 0 ? null : lines[index][(lines[index].IndexOf('=') + 1)..].TrimStart();
+        string value = prefix + valueFactory(currentValue);
         if (index < 0)
         {
             lines.Insert(end, value);
@@ -187,6 +200,7 @@ public static class FrontierProtocolRegistration
         }
     }
 
+    /// <summary>Locates xdg-mime in supported Linux installation paths, retaining the standard path as fallback.</summary>
     private static string ResolveXdgMimePath()
     {
         return XdgMimePaths.FirstOrDefault(File.Exists) ?? XdgMimePaths[0];
