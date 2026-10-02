@@ -107,6 +107,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private string? currentShipType;
     private string? currentShipName;
     private string statusMessage;
+    private (long SystemAddress, string Message)? buildSiteRepairWarning;
+    private int buildSiteRepairContextVersion;
     private string projectSummary = "No projects loaded.";
     private string constructionTitle = "No construction depot active";
     private string constructionStatus = "Dock at a construction site and open Construction Services.";
@@ -366,6 +368,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         ShipCargoPublishingStatus = GetShipCargoReadyStatus();
     }
 
+    /// <summary>
+    /// Enables Raven integration and invalidates pending repair warnings when it is disabled.
+    /// </summary>
     public bool IsEnabled
     {
         get => isEnabled;
@@ -391,6 +396,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 else
                 {
                     CancelDockingRefresh();
+                    buildSiteRepairContextVersion++;
+                    SetBuildSiteRepairWarning(null);
                     ClearProjects();
                     StatusMessage = "Raven Colonial access is off. No project data will be fetched or published.";
                 }
@@ -484,9 +491,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         private set => SetField(ref projectSummary, value);
     }
 
+    /// <summary>
+    /// Combines general Raven status with the current system's independent docking-repair warning.
+    /// </summary>
     public string StatusMessage
     {
-        get => statusMessage;
+        get => CombineMessages(statusMessage, buildSiteRepairWarning?.Message) ?? string.Empty;
         private set => SetField(ref statusMessage, value);
     }
 
@@ -553,6 +563,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         UpdateSystemEditorContext();
     }
 
+    /// <summary>
+    /// Switches commander data and discards repair warnings and pending results from the previous commander.
+    /// </summary>
     public async Task SetCommanderAsync(string? value)
     {
         string? normalized = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
@@ -562,6 +575,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         CancelDockingRefresh();
+        buildSiteRepairContextVersion++;
+        SetBuildSiteRepairWarning(null);
         if (!string.Equals(detectedSquadronCommander, normalized, StringComparison.OrdinalIgnoreCase))
         {
             detectedSquadronCarrierMarketId = null;
@@ -590,6 +605,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
+    /// <summary>
+    /// Applies journal context and expires repair warnings when docking moves to another known system.
+    /// </summary>
     public void ApplyJournalEvents(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         string? journalCommanderName = null
@@ -619,6 +637,18 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             fleetCarrierIdentityTracker.Apply(journalEvent);
             ApplyShipIdentity(journalEvent);
             RememberJournalBody(journalEvent, owner);
+        }
+
+        long? previousSystemAddress =
+            dockBefore?.SystemAddress ?? buildSiteRepairWarning?.SystemAddress ?? currentSystemAddress;
+        if (
+            previousSystemAddress is > 0
+            && constructionState.CurrentDock is { SystemAddress: > 0 } nextDock
+            && previousSystemAddress != nextDock.SystemAddress
+        )
+        {
+            buildSiteRepairContextVersion++;
+            SetBuildSiteRepairWarning(null);
         }
 
         if (dockBefore is not null && constructionState.CurrentDock is null)
@@ -1136,9 +1166,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         return CombineMessages(loadMessage, $"Updated Raven project faction for {updated.BuildName}.");
     }
 
+    /// <summary>
+    /// Repairs eligible docked sites and keeps failures scoped to the active system and commander context.
+    /// </summary>
     private async Task<string?> SynchronizeBuildSiteRepairAsync(JournalEventEnvelope journalEvent)
     {
-        if (storedRavenApiKey is null)
+        if (storedRavenApiKey is not { } apiKey)
         {
             return null;
         }
@@ -1176,30 +1209,21 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             }
         }
 
+        int contextVersion = buildSiteRepairContextVersion;
         try
         {
-            IReadOnlyList<ColonizationSystemSite> sites = await GetSystemSitesForRepairAsync(systemAddress.Value);
-            ColonizationBuildSiteRepairPlan? plan = ColonizationBuildSiteRepair.CreatePlan(
-                sites,
-                stationName,
-                marketId.Value
-            );
-            if (plan is null || string.IsNullOrWhiteSpace(plan.Site.Id))
-            {
-                return null;
-            }
-
-            await client.PatchSystemSiteAsync(
-                systemAddress.Value.ToString(CultureInfo.InvariantCulture),
-                plan.Site.Id,
-                plan.CreatePatch(),
-                storedRavenApiKey,
-                CancellationToken.None
-            );
-            RememberBuildSiteRepairVisit(visit);
-            return plan.Field == ColonizationBuildSiteRepairField.MarketId
-                ? $"Repaired Raven Market Info for {plan.NormalizedStationName}."
-                : $"Repaired the Raven site name for {plan.NormalizedStationName}.";
+            return await RepairBuildSiteAsync(systemAddress.Value, marketId.Value, stationName, apiKey, contextVersion);
+        }
+        catch (Exception exception)
+            when (exception
+                    is HttpRequestException
+                        or InvalidDataException
+                        or TaskCanceledException
+                        or ArgumentException
+            )
+        {
+            ReportBuildSiteRepairFailure(journalEvent, systemAddress.Value, contextVersion, exception);
+            return null;
         }
         finally
         {
@@ -1208,6 +1232,114 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 buildSiteRepairsInFlight.Remove(inFlight);
             }
         }
+    }
+
+    /// <summary>
+    /// Looks up and optionally patches a site, clearing its warning after a successful repair or no-op lookup.
+    /// </summary>
+    private async Task<string?> RepairBuildSiteAsync(
+        long systemAddress,
+        long marketId,
+        string stationName,
+        string apiKey,
+        int contextVersion
+    )
+    {
+        IReadOnlyList<ColonizationSystemSite> sites = await GetSystemSitesForRepairAsync(systemAddress);
+        ColonizationBuildSiteRepairPlan? plan = ColonizationBuildSiteRepair.CreatePlan(sites, stationName, marketId);
+        if (plan is null || string.IsNullOrWhiteSpace(plan.Site.Id))
+        {
+            ClearBuildSiteRepairWarning(systemAddress, contextVersion);
+            return null;
+        }
+
+        await client.PatchSystemSiteAsync(
+            systemAddress.ToString(CultureInfo.InvariantCulture),
+            plan.Site.Id,
+            plan.CreatePatch(),
+            apiKey,
+            CancellationToken.None
+        );
+        RememberBuildSiteRepairVisit(
+            new ColonizationBuildSiteRepairVisit(
+                marketId,
+                ColonizationBuildSiteRepair.NormalizeDockStationName(stationName).ToLowerInvariant()
+            )
+        );
+        ClearBuildSiteRepairWarning(systemAddress, contextVersion);
+        if (contextVersion != buildSiteRepairContextVersion)
+        {
+            return null;
+        }
+
+        return plan.Field == ColonizationBuildSiteRepairField.MarketId
+            ? $"Repaired Raven Market Info for {plan.NormalizedStationName}."
+            : $"Repaired the Raven site name for {plan.NormalizedStationName}.";
+    }
+
+    /// <summary>
+    /// Shows a repair failure only while the request's system and context are still active.
+    /// </summary>
+    private void ReportBuildSiteRepairFailure(
+        JournalEventEnvelope journalEvent,
+        long systemAddress,
+        int contextVersion,
+        Exception exception
+    )
+    {
+        string? systemName = GetJournalString(journalEvent.Payload, "StarSystem");
+        bool differentSystem;
+        if (currentSystemAddress is > 0)
+        {
+            differentSystem = currentSystemAddress != systemAddress;
+        }
+        else if (currentSystemName is not null && systemName is not null)
+        {
+            differentSystem = !string.Equals(currentSystemName, systemName, StringComparison.OrdinalIgnoreCase);
+        }
+        else
+        {
+            differentSystem =
+                constructionState.CurrentDock is { SystemAddress: > 0 } activeDock
+                && activeDock.SystemAddress != systemAddress;
+        }
+        if (contextVersion != buildSiteRepairContextVersion || differentSystem)
+        {
+            return;
+        }
+
+        string systemLabel = systemName ?? systemAddress.ToString(CultureInfo.InvariantCulture);
+        SetBuildSiteRepairWarning(
+            (
+                systemAddress,
+                $"Raven project sync skipped {journalEvent.EventName} in {systemLabel}: " + exception.Message
+            )
+        );
+    }
+
+    /// <summary>
+    /// Clears only the recovered system's warning, leaving unrelated Raven status untouched.
+    /// </summary>
+    private void ClearBuildSiteRepairWarning(long systemAddress, int contextVersion)
+    {
+        if (contextVersion == buildSiteRepairContextVersion && buildSiteRepairWarning?.SystemAddress == systemAddress)
+        {
+            SetBuildSiteRepairWarning(null);
+        }
+    }
+
+    /// <summary>
+    /// Updates the independent repair warning and notifies the existing status binding when it changes.
+    /// </summary>
+    private void SetBuildSiteRepairWarning((long SystemAddress, string Message)? warning)
+    {
+        if (buildSiteRepairWarning == warning)
+        {
+            return;
+        }
+
+        buildSiteRepairWarning = warning;
+        OnPropertyChanged(nameof(StatusMessage));
     }
 
     private async Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesForRepairAsync(long systemAddress)
@@ -1316,6 +1448,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         );
     }
 
+    /// <summary>
+    /// Synchronizes live depot events, handling completion independently of remaining-cargo updates.
+    /// </summary>
     private async Task<string?> SynchronizeDepotAsync(JournalEventEnvelope journalEvent)
     {
         var parser = new ColonizationConstructionState();
@@ -1334,6 +1469,27 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         if (project is null)
         {
             return "Raven did not identify a project for the current construction depot.";
+        }
+
+        if (depot.IsComplete)
+        {
+            if (project.IsComplete)
+            {
+                return null;
+            }
+
+            await client.MarkProjectCompleteAsync(project.BuildId, CancellationToken.None);
+            UpsertProject(
+                project with
+                {
+                    IsComplete = true,
+                    RemainingRequired = 0,
+                    Commodities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+                }
+            );
+            pendingContributionRemainingSync = false;
+            InvalidateProjectLocationCache();
+            return $"Marked Raven project {project.BuildName} complete.";
         }
 
         Dictionary<string, int> remaining = ToRemainingCommodities(depot);
@@ -1355,27 +1511,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        string? message = await PublishProjectRemainingAsync(project, depot, remaining, force);
-        if (depot.IsComplete)
-        {
-            ColonizationProject latest =
-                Projects.Select(row => row.Project).FirstOrDefault(candidate => candidate.BuildId == project.BuildId)
-                ?? project;
-            if (!latest.IsComplete)
-            {
-                await client.MarkProjectCompleteAsync(latest.BuildId, CancellationToken.None);
-                latest = latest with
-                {
-                    IsComplete = true,
-                    RemainingRequired = 0,
-                    Commodities = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
-                };
-                UpsertProject(latest);
-                return CombineMessages(message, $"Marked Raven project {latest.BuildName} complete.");
-            }
-        }
-
-        return message;
+        return await PublishProjectRemainingAsync(project, depot, remaining, force);
     }
 
     private async Task<string?> PublishProjectRemainingAsync(
@@ -1730,6 +1866,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         CommodityOverlay.UpdateMusicTrack(musicTrack);
     }
 
+    /// <summary>
+    /// Updates the active system and prevents warnings from earlier systems from lingering or arriving late.
+    /// </summary>
     public void UpdateSystemContext(string? systemName, GalacticCoordinate? position, long? systemAddress = null)
     {
         string? nextSystemName = string.IsNullOrWhiteSpace(systemName) ? null : systemName.Trim();
@@ -1754,6 +1893,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             || (currentSystemAddress is > 0 && nextSystemAddress is > 0 && currentSystemAddress != nextSystemAddress)
         )
         {
+            buildSiteRepairContextVersion++;
+            SetBuildSiteRepairWarning(null);
             currentBodyId = null;
             currentBodyName = null;
             currentBodyCommanderName = null;

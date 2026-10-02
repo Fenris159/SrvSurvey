@@ -111,7 +111,36 @@ The images stay compact on this page. Select any tile to open the full screensho
 - Includes a Firegroups workspace and reference overlay so mining equipment and
   active groups remain visible in the cockpit.
 
-#### Finding places to mine
+### Mining searches: Powerplay merits and surface profit
+
+**Powerplay merit mining — Mining > Powerplay.** Find mining and selling
+opportunities suited to your chosen Power and goal. **Planetary Mining** adds
+landable-body searches alongside traditional ring mining, with filters for
+minerals/metals, opposing Powers, system state, market age, demand and landing-pad
+size.
+
+**Surface mining for profit — Surface Mining > Search.** Find promising landable
+bodies and nearby stations buying their minerals/metals. Compare prices, demand,
+body details and mine-to-sell distances to plan valuable, short mining loops.
+Choose target commodities and limit the search radius, selling distance and
+landing-pad size.
+
+Select either compact preview to open the full screenshot.
+
+<table>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/images/readme/powerplay-mining-search.png"><img src="docs/images/readme/powerplay-mining-search.png" alt="Powerplay merit mining search with Planetary Mining selected, Power and goal filters, and landable-body results" width="100%"></a><br>
+      <sub>Powerplay merit mining with Planetary Mining alongside ring mining</sub>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="docs/images/readme/surface-mining-search.png"><img src="docs/images/readme/surface-mining-search.png" alt="Surface mining profit search linking selling stations, prices and demand to nearby mining systems and body details" width="100%"></a><br>
+      <sub>Surface mining profit search with nearby selling stations and mining systems</sub>
+    </td>
+  </tr>
+</table>
+
+#### More ways to find places to mine
 
 - **Hotspot List** shows supported commodities, compatible body types and a
   community price snapshot. Chosen commodities can stay visible in the compact

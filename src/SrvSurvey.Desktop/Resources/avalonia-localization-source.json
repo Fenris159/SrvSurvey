@@ -39189,6 +39189,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Raven project sync skipped {0} in {1}: {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Raven project sync skipped {0}: {1}",
     "IsFormat": true,
     "SourceKinds": [
