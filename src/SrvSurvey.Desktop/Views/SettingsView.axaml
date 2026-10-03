@@ -5,6 +5,7 @@
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:localization="using:SrvSurvey.Desktop.Localization"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:input="using:SrvSurvey.Desktop.Input"
              x:Class="SrvSurvey.Desktop.Views.SettingsView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
@@ -771,6 +772,37 @@
                       IsEnabled="{Binding InputSettings.IsKeyboardAvailable}"
                       Content="Enable key chords" />
           </Grid>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" RowDefinitions="Auto,Auto" RowSpacing="8">
+            <StackPanel Spacing="6">
+              <TextBlock FontWeight="SemiBold" Text="Keyboard input source" />
+              <ComboBox x:Name="KeyboardSourceComboBox"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding InputSettings.KeyboardSourceOptions}"
+                        SelectedItem="{Binding InputSettings.SelectedKeyboardSource, Mode=TwoWay}">
+                <ComboBox.Styles>
+                  <Style Selector="ComboBoxItem" x:DataType="input:KeyboardInputSourceOption">
+                    <Setter Property="IsEnabled" Value="{Binding IsAvailable}" />
+                  </Style>
+                </ComboBox.Styles>
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="input:KeyboardInputSourceOption">
+                    <TextBlock Text="{Binding Label}" ToolTip.Tip="{Binding Details}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <Button Grid.Column="1"
+                    VerticalAlignment="Bottom"
+                    Classes="secondary"
+                    Command="{Binding InputSettings.ResetKeyboardDetectionCommand}"
+                    Content="Reset input detection" />
+            <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="muted" TextWrapping="Wrap"
+                       Text="Reset returns to Automatic and clears the detected source. Shortcut bindings and desktop approvals are kept; no app restart is needed. Manual selection applies to all keyboard shortcuts and does not automatically fall back." />
+          </Grid>
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding InputSettings.KeyboardSourceDetails}" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap" Text="{Binding InputSettings.KeyboardSourceStatus}" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding InputSettings.KeyboardFocusStatus}" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding InputSettings.LastKeyboardInput}" />
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                      TextWrapping="Wrap"
                      Text="{Binding InputSettings.RuntimeStatus}" />

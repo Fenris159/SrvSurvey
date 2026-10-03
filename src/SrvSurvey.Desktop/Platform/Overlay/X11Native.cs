@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using Avalonia;
+using SrvSurvey.Desktop.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -523,4 +524,184 @@ internal static partial class X11Native
         /// <summary>Flushes requests on the supplied native connection.</summary>
         public void Flush(nint display) => _ = XFlush(display);
     }
+
+    /// <summary>Creates an independently owned native recorder for a transient game display.</summary>
+    internal static IX11KeyboardRecordApi CreateKeyboardRecordApi() => new KeyboardRecordApi();
+
+    /// <summary>Owns Xlib/XRecord resources and their platform-specific shutdown recovery.</summary>
+    private sealed class KeyboardRecordApi : IX11KeyboardRecordApi
+    {
+        private nint control;
+        private nint data;
+        private nuint context;
+
+        /// <summary>Detects disconnection of either transient Xlib connection.</summary>
+        public bool HasFailed =>
+            X11TransientDisplayRecovery.HasFailed(control) || X11TransientDisplayRecovery.HasFailed(data);
+
+        /// <summary>Enables a keyboard-only recording context using separate control and data connections.</summary>
+        public bool Open(string displayName, X11KeyboardRecordCallback callback)
+        {
+            X11OverlayPlatformService.EnsureErrorHandlerInstalled();
+            control = OpenKeyboardDisplay(displayName);
+            data = OpenKeyboardDisplay(displayName);
+            if (control == nint.Zero || data == nint.Zero || XRecordQueryVersion(control, out _, out _) == 0)
+            {
+                return false;
+            }
+            nint range = XRecordAllocRange();
+            if (range == nint.Zero)
+            {
+                return false;
+            }
+            try
+            {
+                // XRecordRange.device_events is the two-byte range at offset 18.
+                Marshal.WriteByte(range, 18, 2);
+                Marshal.WriteByte(range, 19, 3);
+                nuint clients = 3; // XRecordAllClients.
+                context = XRecordCreateContext(control, 0, ref clients, 1, ref range, 1);
+            }
+            finally
+            {
+                _ = XFree(range);
+            }
+            _ = XSync(control, 0);
+            return context != 0 && XRecordEnableContextAsync(data, context, callback, nint.Zero) != 0;
+        }
+
+        /// <summary>Resolves a keysym against the actual layout of this game server.</summary>
+        public byte ResolveKeyCode(string name)
+        {
+            nuint symbol = XStringToKeysym(name);
+            return symbol == 0 ? (byte)0 : XKeysymToKeycode(control, symbol);
+        }
+
+        /// <summary>Flushes buffered server recording replies and drains them without blocking for keys.</summary>
+        public void ReadReplies()
+        {
+            _ = XSync(control, 0);
+            XRecordProcessReplies(data);
+        }
+
+        /// <summary>Releases one packet handed to the managed callback.</summary>
+        public void FreeData(nint pointer) => XRecordFreeData(pointer);
+
+        /// <summary>Disables the context and closes recoverable connections, including already disconnected servers.</summary>
+        public void Dispose()
+        {
+            if (context != 0 && !HasFailed)
+            {
+                _ = XRecordDisableContext(control, context);
+                _ = XRecordFreeContext(control, context);
+                _ = XSync(control, 0);
+                XRecordProcessReplies(data);
+            }
+            context = 0;
+            CloseKeyboardDisplay(ref data);
+            CloseKeyboardDisplay(ref control);
+        }
+
+        /// <summary>Registers one named connection for transient I/O-error recovery.</summary>
+        private static nint OpenKeyboardDisplay(string name)
+        {
+            nint text = Marshal.StringToCoTaskMemUTF8(name);
+            nint display = nint.Zero;
+            try
+            {
+                display = XOpenDisplay(text);
+                if (display != nint.Zero)
+                {
+                    X11TransientDisplayRecovery.Register(display);
+                    X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
+                }
+                return display;
+            }
+            catch
+            {
+                CloseKeyboardDisplay(ref display);
+                throw;
+            }
+            finally
+            {
+                Marshal.FreeCoTaskMem(text);
+            }
+        }
+
+        /// <summary>Closes a connection before unregistering its error handlers.</summary>
+        private static void CloseKeyboardDisplay(ref nint display)
+        {
+            nint current = display;
+            display = nint.Zero;
+            if (current == nint.Zero)
+            {
+                return;
+            }
+            try
+            {
+                _ = XCloseDisplay(current);
+            }
+            finally
+            {
+                X11TransientDisplayRecovery.Unregister(current);
+                X11OverlayPlatformService.UnregisterErrorHandledDisplay(current);
+            }
+        }
+    }
+
+    /// <summary>Queries whether the server supports recording.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial int XRecordQueryVersion(nint display, out int major, out int minor);
+
+    /// <summary>Allocates a zero-filled XRecord range.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial nint XRecordAllocRange();
+
+    /// <summary>Creates the keyboard recording context.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial nuint XRecordCreateContext(
+        nint display,
+        int flags,
+        ref nuint clients,
+        int clientCount,
+        ref nint ranges,
+        int rangeCount
+    );
+
+    /// <summary>Enables asynchronous recording on the data connection.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial int XRecordEnableContextAsync(
+        nint display,
+        nuint context,
+        X11KeyboardRecordCallback callback,
+        nint closure
+    );
+
+    /// <summary>Processes only immediately available recorded packets.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial void XRecordProcessReplies(nint display);
+
+    /// <summary>Releases a callback packet.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial void XRecordFreeData(nint data);
+
+    /// <summary>Stops the recording context.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial int XRecordDisableContext(nint display, nuint context);
+
+    /// <summary>Releases a disabled recording context.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial int XRecordFreeContext(nint display, nuint context);
+
+    /// <summary>Completes control requests before enabling the data stream.</summary>
+    [LibraryImport("libX11.so.6")]
+    private static partial int XSync(nint display, int discard);
+
+    /// <summary>Looks up a standard X11 keysym.</summary>
+    [LibraryImport("libX11.so.6", StringMarshalling = StringMarshalling.Utf8)]
+    private static partial nuint XStringToKeysym(string name);
+
+    /// <summary>Resolves a keysym on this server's keyboard layout.</summary>
+    [LibraryImport("libX11.so.6")]
+    private static partial byte XKeysymToKeycode(nint display, nuint keysym);
 }

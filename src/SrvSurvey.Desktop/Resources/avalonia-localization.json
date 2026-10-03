@@ -41,6 +41,10 @@
       "translation": "(Eintrag)"
     },
     {
+      "source": "(unavailable)",
+      "translation": "(nicht verfügbar)"
+    },
+    {
       "source": "**App Restart Required",
       "translation": "**App-Neustart erforderlich"
     },
@@ -2661,6 +2665,14 @@
       "translation": "Automatisch (primärer Monitor)"
     },
     {
+      "source": "Automatic (recommended)",
+      "translation": "Automatisch (empfohlen)"
+    },
+    {
+      "source": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
+      "translation": "Automatisch – Warten auf eine Verknüpfung mit Fokus auf Elite Dangerous."
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "Die automatische Frachtsynchronisierung des Flottenbetreibers ist deaktiviert."
     },
@@ -3063,6 +3075,10 @@
     {
       "source": "Back up, verify, and import",
       "translation": "Sichern, überprüfen und importieren"
+    },
+    {
+      "source": "BackSpace",
+      "translation": "Rücktaste"
     },
     {
       "source": "Background",
@@ -7557,6 +7573,10 @@
       "translation": "Das Desktop-Verhalten steuert, wohin die Hauptanwendung zurückkehrt, wie groß sie erscheint und ob der Fokus wieder an Elite Dangerous zurückgegeben wird."
     },
     {
+      "source": "Desktop keyboard",
+      "translation": "Desktop-Tastatur"
+    },
+    {
       "source": "Desktop overlay placement and VR calibration are stored independently.",
       "translation": "Die Platzierung des Desktop-Overlays und die VR-Kalibrierung werden unabhängig voneinander gespeichert."
     },
@@ -8525,8 +8545,28 @@
       "translation": "Elite Dangerous konnte nach {0} nicht fokussiert werden; Es war kein passendes Spielfenster verfügbar."
     },
     {
+      "source": "Elite Dangerous focus confirmed.",
+      "translation": "Elite Dangerous Fokus bestätigt."
+    },
+    {
+      "source": "Elite Dangerous focus is unconfirmed; automatic detection was not learned.",
+      "translation": "Elite Dangerous Fokus ist unbestätigt; automatische Erkennung wurde nicht gelernt."
+    },
+    {
+      "source": "Elite Dangerous is not focused.",
+      "translation": "Elite Dangerous ist nicht fokussiert."
+    },
+    {
+      "source": "Elite Dangerous is not running.",
+      "translation": "Elite Dangerous läuft nicht."
+    },
+    {
       "source": "Elite Dangerous is not running; file operations are available.",
       "translation": "Elite Dangerous läuft nicht; Dateioperationen sind verfügbar."
+    },
+    {
+      "source": "Elite Dangerous is running; desktop focus cannot be confirmed.",
+      "translation": "Elite Dangerous läuft; Der Desktop-Fokus kann nicht bestätigt werden."
     },
     {
       "source": "Elite Dangerous journal folder",
@@ -8551,6 +8591,10 @@
     {
       "source": "Elite visited-stars cache",
       "translation": "Elite-Cache für besuchte Stars"
+    },
+    {
+      "source": "EliteDangerous6",
+      "translation": "EliteDangerous6"
     },
     {
       "source": "EliteDangerous64",
@@ -10737,6 +10781,18 @@
       "translation": "Fokus auf die Benutzeroberfläche des Spiels"
     },
     {
+      "source": "Game display",
+      "translation": "Spielanzeige"
+    },
+    {
+      "source": "Game display {0}.",
+      "translation": "Spielanzeige {0}."
+    },
+    {
+      "source": "Game keyboard recording failed: {0}",
+      "translation": "Die Aufnahme der Spieltastatur ist fehlgeschlagen: {0}"
+    },
+    {
       "source": "Game overlays",
       "translation": "Spiel-Overlays"
     },
@@ -10805,6 +10861,14 @@
       "translation": "Gleitflug-Ansatz"
     },
     {
+      "source": "Global Shortcuts portal unavailable: {0}",
+      "translation": "Global Shortcuts-Portal nicht verfügbar: {0}"
+    },
+    {
+      "source": "Global Shortcuts portal version is unsupported.",
+      "translation": "Die Portalversion von Global Shortcuts wird nicht unterstützt."
+    },
+    {
       "source": "Global goal supplied by Inara",
       "translation": "Globales Ziel bereitgestellt von Inara"
     },
@@ -10835,6 +10899,10 @@
     {
       "source": "Global keyboard input stopped: {0}",
       "translation": "Globale Tastatureingabe gestoppt: {0}"
+    },
+    {
+      "source": "Global keyboard input: listening on Elite display {0}.",
+      "translation": "Globale Tastatureingabe: Hören auf dem Elite-Display {0}."
     },
     {
       "source": "Global overlay behavior",
@@ -12489,6 +12557,10 @@
       "translation": "Eingabebindungen"
     },
     {
+      "source": "Input detection reset. Use a shortcut with Elite Dangerous focused.",
+      "translation": "Eingangserkennung zurückgesetzt. Verwenden Sie eine Verknüpfung mit dem Fokus auf Elite Dangerous."
+    },
+    {
       "source": "Input settings changed for this session but could not be saved: {0}",
       "translation": "Eingabeeinstellungen wurden für diese Sitzung geändert, konnten aber nicht gespeichert werden: {0}"
     },
@@ -12961,6 +13033,10 @@
       "translation": "Tastaturhaken"
     },
     {
+      "source": "Keyboard input source",
+      "translation": "Tastatureingabequelle"
+    },
+    {
       "source": "Keyboard shortcuts",
       "translation": "Tastaturkürzel"
     },
@@ -12975,6 +13051,10 @@
     {
       "source": "KeyboardHookCard",
       "translation": "KeyboardHookCard"
+    },
+    {
+      "source": "KeyboardSource",
+      "translation": "KeyboardSource"
     },
     {
       "source": "Kills",
@@ -13235,6 +13315,14 @@
     {
       "source": "Last refresh: {0}",
       "translation": "Letzte Aktualisierung: {0}"
+    },
+    {
+      "source": "Last shortcut: {0} from {1}.",
+      "translation": "Letzte Verknüpfung: {0} von {1}."
+    },
+    {
+      "source": "Last shortcut: {0} from {1}; duplicate or unselected source ignored.",
+      "translation": "Letzte Verknüpfung: {0} von {1}; Doppelte oder nicht ausgewählte Quelle wird ignoriert."
     },
     {
       "source": "Last system available",
@@ -14231,6 +14319,10 @@
     {
       "source": "ManifestVersion",
       "translation": "ManifestVersion"
+    },
+    {
+      "source": "Manual - {0}{1}.",
+      "translation": "Handbuch - {0}{1}."
     },
     {
       "source": "Manual / Canonn import",
@@ -15409,6 +15501,10 @@
       "translation": "Native SteamVR/OpenVR-Verbindung"
     },
     {
+      "source": "Native Wayland overlays require compositor support. Keyboard shortcuts require a supported Global Shortcuts portal.",
+      "translation": "Native Wayland-Overlays erfordern Compositor-Unterstützung. Für Tastaturkürzel ist ein unterstütztes Global Shortcuts-Portal erforderlich."
+    },
+    {
       "source": "Natural Disaster",
       "translation": "Naturkatastrophe"
     },
@@ -15949,6 +16045,10 @@
       "translation": "Es ist keine kompatible Kartenvorlage verfügbar."
     },
     {
+      "source": "No configured shortcut received yet.",
+      "translation": "Noch keine konfigurierte Verknüpfung erhalten."
+    },
+    {
       "source": "No confirmed or predicted organisms are available for this body.",
       "translation": "Für diesen Körper liegen keine bestätigten oder vorhergesagten Organismen vor."
     },
@@ -16307,6 +16407,10 @@
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
       "translation": "Keine Verkaufsstation entspricht dem ausgewählten Material, der Nachfrage und dem Landeplatz innerhalb der Entfernung."
+    },
+    {
+      "source": "No separate game display is connected.",
+      "translation": "Es ist kein separates Spieldisplay angeschlossen."
     },
     {
       "source": "No session log file is available.",
@@ -17825,6 +17929,10 @@
       "translation": "LEISTUNG"
     },
     {
+      "source": "PPid:",
+      "translation": "PPid:"
+    },
+    {
       "source": "PRA",
       "translation": "PRA"
     },
@@ -18743,6 +18851,10 @@
     {
       "source": "PrimaryDim",
       "translation": "PrimaryDim"
+    },
+    {
+      "source": "Print",
+      "translation": "Drucken"
     },
     {
       "source": "Prior",
@@ -20793,6 +20905,10 @@
       "translation": "Erfordert FSSAllBodiesFound für neue lokale Besuche. Die aktivierten Abschlussregeln für frühere Besuche und ältere Spansh gelten weiterhin."
     },
     {
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
+      "translation": "Erfordert Unterstützung und Genehmigung des Desktop-Portals für alle konfigurierten Tastaturkürzel. Beim Start der App wird eine neue Genehmigung angefordert. Native Wayland zeigt möglicherweise nicht an, welches Fenster den Fokus hat."
+    },
+    {
       "source": "Requires proper technique; hard impacts common",
       "translation": "Erfordert die richtige Technik; Harte Stöße sind häufig"
     },
@@ -20859,6 +20975,14 @@
     {
       "source": "Reset every text and icon scale in this panel to 0%",
       "translation": "Setzen Sie alle Text- und Symbolskalen in diesem Bereich auf 0 % zurück."
+    },
+    {
+      "source": "Reset input detection",
+      "translation": "Eingangserkennung zurücksetzen"
+    },
+    {
+      "source": "Reset returns to Automatic and clears the detected source. Shortcut bindings and desktop approvals are kept; no app restart is needed. Manual selection applies to all keyboard shortcuts and does not automatically fall back.",
+      "translation": "Zurücksetzen kehrt zu „Automatisch“ zurück und löscht die erkannte Quelle. Verknüpfungsbindungen und Desktop-Genehmigungen bleiben erhalten; Es ist kein Neustart der App erforderlich. Die manuelle Auswahl gilt für alle Tastaturkürzel und wird nicht automatisch zurückgesetzt."
     },
     {
       "source": "Reset selected",
@@ -21047,6 +21171,10 @@
     {
       "source": "Retry selected deliveries",
       "translation": "Ausgewählte Lieferungen erneut versuchen"
+    },
+    {
+      "source": "Return",
+      "translation": "Zurückkehren"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -21767,6 +21895,10 @@
     {
       "source": "SKU",
       "translation": "Artikelnummer"
+    },
+    {
+      "source": "SNAP",
+      "translation": "SCHNAPP"
     },
     {
       "source": "SOURCE",
@@ -23485,6 +23617,10 @@
       "translation": "Verknüpfung erhalten: {0}; Es ist im aktuellen Spielkontext nicht verfügbar."
     },
     {
+      "source": "Shortcut registration could not be remembered: {0}",
+      "translation": "Verknüpfungsregistrierung konnte nicht gespeichert werden: {0}"
+    },
+    {
       "source": "ShortcutBindingsExpander",
       "translation": "ShortcutBindingsExpander"
     },
@@ -24375,6 +24511,10 @@
     {
       "source": "SrvSurvey ground-target overlay",
       "translation": "SrvSurvey Bodenziel-Overlay"
+    },
+    {
+      "source": "SrvSurvey has focus; automatic detection is not learned here.",
+      "translation": "SrvSurvey hat Fokus; Die automatische Erkennung wird hier nicht erlernt."
     },
     {
       "source": "SrvSurvey high-gravity warning overlay",
@@ -27825,6 +27965,14 @@
       "translation": "Der Einkaufsplan vergleicht den Projektbedarf mit der aktuellen Schiffsladung und der damit verbundenen Flottenfracht."
     },
     {
+      "source": "The shortcut portal returned an invalid session.",
+      "translation": "Das Verknüpfungsportal hat eine ungültige Sitzung zurückgegeben."
+    },
+    {
+      "source": "The shortcut portal returned an unexpected request handle.",
+      "translation": "Das Verknüpfungsportal hat ein unerwartetes Anforderungshandle zurückgegeben."
+    },
+    {
       "source": "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
       "translation": "Die Seitenleiste hält den aktiven Commander und die wichtigsten SrvSurvey Arbeitsabläufe immer griffbereit. Guides bleiben auch dann verfügbar, wenn Elite nicht ausgeführt wird."
     },
@@ -28845,6 +28993,10 @@
       "translation": "URL:SrvSurvey Frontier Autorisierung"
     },
     {
+      "source": "Uid:",
+      "translation": "Uid:"
+    },
+    {
       "source": "Unassigned",
       "translation": "Nicht zugewiesen"
     },
@@ -29581,8 +29733,16 @@
       "translation": "Verwendet aktuelle Spansh Stationsdaten für Pads, Volkswirtschaften, Fraktionen, relevante Dienste und verbotene Waren. Alt+I schaltet das Overlay manuell um."
     },
     {
+      "source": "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working.",
+      "translation": "Verwendet eine erkannte Quelle für alle Tastaturkürzel. Lernt neu, wenn sich das Spiel ändert oder wiederholte Eingaben beweisen, dass eine andere Quelle funktioniert."
+    },
+    {
       "source": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
       "translation": "Verwendet den Spansh-Systemzeitstempel anstelle des neuesten EDSM-Körperzeitstempels in Sprunginformationen und Galaxienkartenzusammenfassungen. Dies ist eine schreibgeschützte Suche, bei der keine Journaldaten veröffentlicht werden."
+    },
+    {
+      "source": "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener.",
+      "translation": "Verwendet den Desktop-Tastatur-Listener. Eine separate Spielanzeige oder ein natives Wayland-Spiel liefert diesem Listener möglicherweise keine Eingaben."
     },
     {
       "source": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -29969,6 +30129,10 @@
       "translation": "Warten auf Commander-Codex-Tagebucheinträge."
     },
     {
+      "source": "Waiting for Elite Dangerous.",
+      "translation": "Warten auf Elite Dangerous."
+    },
+    {
       "source": "Waiting for Elite's Rhino cockpit view.",
       "translation": "Warten auf die Rhino-Cockpitansicht von Elite."
     },
@@ -30245,8 +30409,16 @@
       "translation": "Wayland hat keinen Frame aus dem freigegebenen Fenster Elite Dangerous bereitgestellt."
     },
     {
-      "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
-      "translation": "Wayland-Overlay-Positionierung, Transparenz, Click-through und globale Eingabe erfordern Compositor-Unterstützung und sind nicht aktiviert."
+      "source": "Wayland keyboard input is waiting for Global Shortcuts portal support.",
+      "translation": "Die Wayland-Tastatureingabe wartet auf die Unterstützung des Global Shortcuts-Portals."
+    },
+    {
+      "source": "Wayland portal",
+      "translation": "Wayland-Portal"
+    },
+    {
+      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
+      "translation": "Wayland-Portalverknüpfungen aktiv: {0} oder {1}-Bindungen."
     },
     {
       "source": "Wayland screen capture",
@@ -30291,6 +30463,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Die Bildschirmfreigabe von Wayland wurde abgebrochen."
+    },
+    {
+      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
+      "translation": "Die Genehmigung der Wayland-Verknüpfung ist erforderlich. Neustart SrvSurvey, um Verknüpfungen beim Start zu genehmigen; Vorhandene Tastatur-Listener bleiben verfügbar."
+    },
+    {
+      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
+      "translation": "Die Erlaubnis zur Wayland-Verknüpfung wurde abgelehnt; Vorhandene Tastatur-Listener bleiben verfügbar."
     },
     {
       "source": "WaylandCapture",
@@ -30865,6 +31045,10 @@
       "translation": "Antimon"
     },
     {
+      "source": "apostrophe",
+      "translation": "Apostroph"
+    },
+    {
       "source": "app",
       "translation": "App"
     },
@@ -30955,6 +31139,10 @@
     {
       "source": "avares",
       "translation": "Avares"
+    },
+    {
+      "source": "backslash",
+      "translation": "Backslash"
     },
     {
       "source": "badge",
@@ -31145,6 +31333,14 @@
       "translation": "boxel"
     },
     {
+      "source": "bracketleft",
+      "translation": "Klammer links"
+    },
+    {
+      "source": "bracketright",
+      "translation": "Klammer rechts"
+    },
+    {
       "source": "break",
       "translation": "Pause"
     },
@@ -31241,6 +31437,10 @@
       "translation": "geschlossen"
     },
     {
+      "source": "cmdline",
+      "translation": "cmdline"
+    },
+    {
       "source": "cmdr",
       "translation": "cmdr"
     },
@@ -31319,6 +31519,14 @@
     {
       "source": "combined",
       "translation": "kombiniert"
+    },
+    {
+      "source": "comm",
+      "translation": "Komm"
+    },
+    {
+      "source": "comma",
+      "translation": "Komma"
     },
     {
       "source": "commander journal publication upload credential api key flight log",
@@ -31459,6 +31667,10 @@
     {
       "source": "descending",
       "translation": "absteigend"
+    },
+    {
+      "source": "description",
+      "translation": "Beschreibung"
     },
     {
       "source": "desktop",
@@ -31607,6 +31819,14 @@
     {
       "source": "entry ID",
       "translation": "Eintrags-ID"
+    },
+    {
+      "source": "environ",
+      "translation": "Umgebung"
+    },
+    {
+      "source": "equal",
+      "translation": "gleich"
     },
     {
       "source": "error",
@@ -31899,6 +32119,10 @@
     {
       "source": "goto",
       "translation": "gehe zu"
+    },
+    {
+      "source": "grave",
+      "translation": "Grab"
     },
     {
       "source": "green",
@@ -32681,6 +32905,10 @@
       "translation": "ausstehend"
     },
     {
+      "source": "period",
+      "translation": "Zeitraum"
+    },
+    {
       "source": "pilots-federation",
       "translation": "Pilotenverband"
     },
@@ -32949,12 +33177,20 @@
       "translation": "Sekunden"
     },
     {
+      "source": "self",
+      "translation": "selbst"
+    },
+    {
       "source": "sell systems, best viable price first. Best sell from",
       "translation": "Systeme verkaufen, bestmöglicher Preis zuerst. Best sell from"
     },
     {
       "source": "sell systems, daily commodity value order. Best sell from",
       "translation": "Verkaufssysteme, tägliche Warenwertbestellung. Bester Verkauf von"
+    },
+    {
+      "source": "semicolon",
+      "translation": "Semikolon"
     },
     {
       "source": "sensor",
@@ -33013,6 +33249,10 @@
       "translation": "Schiffsname"
     },
     {
+      "source": "shortcuts",
+      "translation": "Verknüpfungen"
+    },
+    {
       "source": "shutdown",
       "translation": "abschalten"
     },
@@ -33053,6 +33293,10 @@
       "translation": "Größe {0}x{1}"
     },
     {
+      "source": "slash",
+      "translation": "Schrägstrich"
+    },
+    {
       "source": "slot",
       "translation": "Steckplatz"
     },
@@ -33067,6 +33311,10 @@
     {
       "source": "source",
       "translation": "Quelle"
+    },
+    {
+      "source": "space",
+      "translation": "Raum"
     },
     {
       "source": "spansh.co.uk",
@@ -33131,6 +33379,10 @@
     {
       "source": "states",
       "translation": "Staaten"
+    },
+    {
+      "source": "status",
+      "translation": "Status"
     },
     {
       "source": "steam",
@@ -33915,6 +34167,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} Die nativen kombinierten Host-Vorgänge waren nicht verfügbar, daher bleiben separate Fenster aktiv."
+    },
+    {
+      "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
+      "translation": "{0} Verwendet das separate X11-Display des Spiels. Der Overlay-Monitor hilft bei der Auswahl eines Clients, wenn Desktop-Geometrie verfügbar ist."
     },
     {
       "source": "{0} Win32 error {1}.",
@@ -34881,6 +35137,10 @@
     {
       "source": "(entry)",
       "translation": "(entrada)"
+    },
+    {
+      "source": "(unavailable)",
+      "translation": "(indisponible)"
     },
     {
       "source": "**App Restart Required",
@@ -37503,6 +37763,14 @@
       "translation": "Automático (monitor primario)"
     },
     {
+      "source": "Automatic (recommended)",
+      "translation": "Automático (recomendado)"
+    },
+    {
+      "source": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
+      "translation": "Automático: esperando un acceso directo con Elite Dangerous enfocado."
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "La sincronización automática de carga de Fleet Carrier está desactivada."
     },
@@ -37905,6 +38173,10 @@
     {
       "source": "Back up, verify, and import",
       "translation": "Realizar copias de seguridad, verificar e importar"
+    },
+    {
+      "source": "BackSpace",
+      "translation": "Retroceso"
     },
     {
       "source": "Background",
@@ -42399,6 +42671,10 @@
       "translation": "El comportamiento del escritorio controla dónde regresa la aplicación principal, qué tan grande aparece y si el foco se devuelve a Elite Dangerous."
     },
     {
+      "source": "Desktop keyboard",
+      "translation": "teclado de escritorio"
+    },
+    {
       "source": "Desktop overlay placement and VR calibration are stored independently.",
       "translation": "La ubicación de la superposición del escritorio y la calibración de la realidad virtual se almacenan de forma independiente."
     },
@@ -43367,8 +43643,28 @@
       "translation": "Elite Dangerous no se pudo enfocar después de {0}; no había ninguna ventana de juego correspondiente disponible."
     },
     {
+      "source": "Elite Dangerous focus confirmed.",
+      "translation": "Elite Dangerous enfoque confirmado."
+    },
+    {
+      "source": "Elite Dangerous focus is unconfirmed; automatic detection was not learned.",
+      "translation": "Elite Dangerous el foco no está confirmado; La detección automática no fue aprendida."
+    },
+    {
+      "source": "Elite Dangerous is not focused.",
+      "translation": "Elite Dangerous no está enfocado."
+    },
+    {
+      "source": "Elite Dangerous is not running.",
+      "translation": "Elite Dangerous no se está ejecutando."
+    },
+    {
       "source": "Elite Dangerous is not running; file operations are available.",
       "translation": "Elite Dangerous no se está ejecutando; operaciones de archivos están disponibles."
+    },
+    {
+      "source": "Elite Dangerous is running; desktop focus cannot be confirmed.",
+      "translation": "Elite Dangerous se está ejecutando; No se puede confirmar el enfoque del escritorio."
     },
     {
       "source": "Elite Dangerous journal folder",
@@ -43393,6 +43689,10 @@
     {
       "source": "Elite visited-stars cache",
       "translation": "Caché de estrellas visitadas de élite"
+    },
+    {
+      "source": "EliteDangerous6",
+      "translation": "EliteDangerous6"
     },
     {
       "source": "EliteDangerous64",
@@ -45579,6 +45879,18 @@
       "translation": "Enfoque de la interfaz de usuario del juego"
     },
     {
+      "source": "Game display",
+      "translation": "visualización del juego"
+    },
+    {
+      "source": "Game display {0}.",
+      "translation": "Pantalla de juego {0}."
+    },
+    {
+      "source": "Game keyboard recording failed: {0}",
+      "translation": "Error en la grabación del teclado del juego: {0}"
+    },
+    {
       "source": "Game overlays",
       "translation": "superposiciones de juegos"
     },
@@ -45647,6 +45959,14 @@
       "translation": "Aproximación de planeo"
     },
     {
+      "source": "Global Shortcuts portal unavailable: {0}",
+      "translation": "Portal de accesos directos globales no disponible: {0}"
+    },
+    {
+      "source": "Global Shortcuts portal version is unsupported.",
+      "translation": "La versión del portal Global Shortcuts no es compatible."
+    },
+    {
       "source": "Global goal supplied by Inara",
       "translation": "Objetivo global proporcionado por Inara"
     },
@@ -45677,6 +45997,10 @@
     {
       "source": "Global keyboard input stopped: {0}",
       "translation": "Entrada de teclado global detenida: {0}"
+    },
+    {
+      "source": "Global keyboard input: listening on Elite display {0}.",
+      "translation": "Entrada de teclado global: escucha en la pantalla Elite {0}."
     },
     {
       "source": "Global overlay behavior",
@@ -47331,6 +47655,10 @@
       "translation": "Enlaces de entrada"
     },
     {
+      "source": "Input detection reset. Use a shortcut with Elite Dangerous focused.",
+      "translation": "Restablecimiento de detección de entrada. Utilice un acceso directo con Elite Dangerous enfocado."
+    },
+    {
       "source": "Input settings changed for this session but could not be saved: {0}",
       "translation": "La configuración de entrada cambió para esta sesión pero no se pudo guardar: {0}"
     },
@@ -47803,6 +48131,10 @@
       "translation": "Gancho para teclado"
     },
     {
+      "source": "Keyboard input source",
+      "translation": "Fuente de entrada del teclado"
+    },
+    {
       "source": "Keyboard shortcuts",
       "translation": "Atajos de teclado"
     },
@@ -47817,6 +48149,10 @@
     {
       "source": "KeyboardHookCard",
       "translation": "TecladoGanchoTarjeta"
+    },
+    {
+      "source": "KeyboardSource",
+      "translation": "Fuente del teclado"
     },
     {
       "source": "Kills",
@@ -48077,6 +48413,14 @@
     {
       "source": "Last refresh: {0}",
       "translation": "Última actualización: {0}"
+    },
+    {
+      "source": "Last shortcut: {0} from {1}.",
+      "translation": "Último atajo: {0} de {1}."
+    },
+    {
+      "source": "Last shortcut: {0} from {1}; duplicate or unselected source ignored.",
+      "translation": "Último atajo: {0} de {1}; Se ignora la fuente duplicada o no seleccionada."
     },
     {
       "source": "Last system available",
@@ -49073,6 +49417,10 @@
     {
       "source": "ManifestVersion",
       "translation": "Versión del manifiesto"
+    },
+    {
+      "source": "Manual - {0}{1}.",
+      "translation": "Manual - {0}{1}."
     },
     {
       "source": "Manual / Canonn import",
@@ -50251,6 +50599,10 @@
       "translation": "Conexión nativa SteamVR/OpenVR"
     },
     {
+      "source": "Native Wayland overlays require compositor support. Keyboard shortcuts require a supported Global Shortcuts portal.",
+      "translation": "Las superposiciones nativas de Wayland requieren compatibilidad con el compositor. Los atajos de teclado requieren un portal de atajos globales compatible."
+    },
+    {
       "source": "Natural Disaster",
       "translation": "desastre natural"
     },
@@ -50791,6 +51143,10 @@
       "translation": "No hay ninguna plantilla de mapa compatible disponible."
     },
     {
+      "source": "No configured shortcut received yet.",
+      "translation": "Aún no se ha recibido ningún acceso directo configurado."
+    },
+    {
       "source": "No confirmed or predicted organisms are available for this body.",
       "translation": "No hay organismos confirmados o previstos disponibles para este cuerpo."
     },
@@ -51149,6 +51505,10 @@
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
       "translation": "Ninguna estación de venta coincide con el material seleccionado, la demanda y la plataforma de aterrizaje dentro de la distancia."
+    },
+    {
+      "source": "No separate game display is connected.",
+      "translation": "No hay ninguna pantalla de juego separada conectada."
     },
     {
       "source": "No session log file is available.",
@@ -52667,6 +53027,10 @@
       "translation": "FUERZA"
     },
     {
+      "source": "PPid:",
+      "translation": "PPid:"
+    },
+    {
       "source": "PRA",
       "translation": "PRA"
     },
@@ -53585,6 +53949,10 @@
     {
       "source": "PrimaryDim",
       "translation": "Atenuación primaria"
+    },
+    {
+      "source": "Print",
+      "translation": "Imprimir"
     },
     {
       "source": "Prior",
@@ -55635,6 +56003,10 @@
       "translation": "Requiere FSSAllBodiesFound para nuevas visitas locales. Las reglas de finalización habilitadas para visitas anteriores y anteriores Spansh aún se aplican."
     },
     {
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
+      "translation": "Requiere soporte y aprobación del portal de escritorio para todos los métodos abreviados de teclado configurados. Se solicita una nueva aprobación al iniciar la aplicación. Es posible que Native Wayland no muestre qué ventana tiene el foco."
+    },
+    {
       "source": "Requires proper technique; hard impacts common",
       "translation": "Requiere una técnica adecuada; impactos duros comunes"
     },
@@ -55701,6 +56073,14 @@
     {
       "source": "Reset every text and icon scale in this panel to 0%",
       "translation": "Restablece cada escala de texto e ícono en este panel al 0%"
+    },
+    {
+      "source": "Reset input detection",
+      "translation": "Restablecer detección de entrada"
+    },
+    {
+      "source": "Reset returns to Automatic and clears the detected source. Shortcut bindings and desktop approvals are kept; no app restart is needed. Manual selection applies to all keyboard shortcuts and does not automatically fall back.",
+      "translation": "Restablecer vuelve a Automático y borra la fuente detectada. Se conservan los enlaces de acceso directo y las aprobaciones de escritorio; no es necesario reiniciar la aplicación. La selección manual se aplica a todos los atajos de teclado y no retrocede automáticamente."
     },
     {
       "source": "Reset selected",
@@ -55889,6 +56269,10 @@
     {
       "source": "Retry selected deliveries",
       "translation": "Reintentar entregas seleccionadas"
+    },
+    {
+      "source": "Return",
+      "translation": "Devolver"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -56609,6 +56993,10 @@
     {
       "source": "SKU",
       "translation": "SKU"
+    },
+    {
+      "source": "SNAP",
+      "translation": "QUEBRAR"
     },
     {
       "source": "SOURCE",
@@ -58327,6 +58715,10 @@
       "translation": "Acceso directo recibido: {0}; no está disponible en el contexto actual del juego."
     },
     {
+      "source": "Shortcut registration could not be remembered: {0}",
+      "translation": "No se pudo recordar el registro del acceso directo: {0}"
+    },
+    {
       "source": "ShortcutBindingsExpander",
       "translation": "Acceso directoEnlacesExpansor"
     },
@@ -59217,6 +59609,10 @@
     {
       "source": "SrvSurvey ground-target overlay",
       "translation": "SrvSurvey superposición de objetivo terrestre"
+    },
+    {
+      "source": "SrvSurvey has focus; automatic detection is not learned here.",
+      "translation": "SrvSurvey tiene foco; La detección automática no se aprende aquí."
     },
     {
       "source": "SrvSurvey high-gravity warning overlay",
@@ -62667,6 +63063,14 @@
       "translation": "El plan de compras compara las necesidades del proyecto con la carga actual de los buques y la carga vinculada de Fleet Carrier."
     },
     {
+      "source": "The shortcut portal returned an invalid session.",
+      "translation": "El portal de acceso directo devolvió una sesión no válida."
+    },
+    {
+      "source": "The shortcut portal returned an unexpected request handle.",
+      "translation": "El portal de acceso directo devolvió un identificador de solicitud inesperado."
+    },
+    {
       "source": "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
       "translation": "La barra lateral mantiene a mano el Commander activo y los principales flujos de trabajo SrvSurvey. Las guías permanecen disponibles incluso cuando Elite no se está ejecutando."
     },
@@ -63687,6 +64091,10 @@
       "translation": "URL:SrvSurvey Frontier autorización"
     },
     {
+      "source": "Uid:",
+      "translation": "identificador de pantalla:"
+    },
+    {
       "source": "Unassigned",
       "translation": "No asignado"
     },
@@ -64423,8 +64831,16 @@
       "translation": "Utiliza datos actuales de la estación Spansh para plataformas, economías, facciones, servicios relevantes y productos prohibidos. Alt+I alterna la superposición manualmente."
     },
     {
+      "source": "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working.",
+      "translation": "Utiliza una fuente detectada para todos los atajos de teclado. Vuelve a aprender cuando el juego cambia o la entrada repetida demuestra que otra fuente está funcionando."
+    },
+    {
       "source": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
       "translation": "Utiliza la marca de tiempo del sistema Spansh en lugar de la marca de tiempo más reciente del cuerpo EDSM en los resúmenes de Jump Info y Galaxy Map. Esta es una búsqueda de solo lectura y no publica datos de revistas."
+    },
+    {
+      "source": "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener.",
+      "translation": "Utiliza el oyente del teclado de escritorio. Es posible que una pantalla de juego separada o un juego nativo de Wayland no entregue información a este oyente."
     },
     {
       "source": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -64811,6 +65227,10 @@
       "translation": "Esperando las entradas del diario del Commander Codex."
     },
     {
+      "source": "Waiting for Elite Dangerous.",
+      "translation": "Esperando Elite Dangerous."
+    },
+    {
       "source": "Waiting for Elite's Rhino cockpit view.",
       "translation": "Esperando la vista de la cabina de Rhino de Elite."
     },
@@ -65087,8 +65507,16 @@
       "translation": "Wayland no proporcionó un marco de la ventana compartida Elite Dangerous."
     },
     {
-      "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
-      "translation": "El posicionamiento de superposición de Wayland, la transparencia, los clics y la entrada global requieren compatibilidad con el compositor y no están habilitados."
+      "source": "Wayland keyboard input is waiting for Global Shortcuts portal support.",
+      "translation": "La entrada del teclado Wayland está esperando el soporte del portal Global Shortcuts."
+    },
+    {
+      "source": "Wayland portal",
+      "translation": "portal wayland"
+    },
+    {
+      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
+      "translation": "Accesos directos al portal Wayland activos: {0} de enlaces {1}."
     },
     {
       "source": "Wayland screen capture",
@@ -65133,6 +65561,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Se canceló el uso compartido de pantalla de Wayland."
+    },
+    {
+      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
+      "translation": "Se necesita la aprobación del atajo de Wayland. Reinicie SrvSurvey para aprobar los accesos directos al inicio; Los oyentes de teclado existentes siguen estando disponibles."
+    },
+    {
+      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
+      "translation": "Se rechazó el permiso para el atajo de Wayland; Los oyentes de teclado existentes siguen estando disponibles."
     },
     {
       "source": "WaylandCapture",
@@ -65707,6 +66143,10 @@
       "translation": "antimonio"
     },
     {
+      "source": "apostrophe",
+      "translation": "apóstrofe"
+    },
+    {
       "source": "app",
       "translation": "aplicación"
     },
@@ -65797,6 +66237,10 @@
     {
       "source": "avares",
       "translation": "avares"
+    },
+    {
+      "source": "backslash",
+      "translation": "barra invertida"
     },
     {
       "source": "badge",
@@ -65987,6 +66431,14 @@
       "translation": "caja"
     },
     {
+      "source": "bracketleft",
+      "translation": "paréntesisizquierdo"
+    },
+    {
+      "source": "bracketright",
+      "translation": "soporte derecho"
+    },
+    {
       "source": "break",
       "translation": "romper"
     },
@@ -66083,6 +66535,10 @@
       "translation": "cerrado"
     },
     {
+      "source": "cmdline",
+      "translation": "línea cmd"
+    },
+    {
       "source": "cmdr",
       "translation": "cmdr"
     },
@@ -66161,6 +66617,14 @@
     {
       "source": "combined",
       "translation": "combinado"
+    },
+    {
+      "source": "comm",
+      "translation": "comunicación"
+    },
+    {
+      "source": "comma",
+      "translation": "coma"
     },
     {
       "source": "commander journal publication upload credential api key flight log",
@@ -66301,6 +66765,10 @@
     {
       "source": "descending",
       "translation": "descendiendo"
+    },
+    {
+      "source": "description",
+      "translation": "descripción"
     },
     {
       "source": "desktop",
@@ -66449,6 +66917,14 @@
     {
       "source": "entry ID",
       "translation": "ID de entrada"
+    },
+    {
+      "source": "environ",
+      "translation": "reinar"
+    },
+    {
+      "source": "equal",
+      "translation": "igual"
     },
     {
       "source": "error",
@@ -66741,6 +67217,10 @@
     {
       "source": "goto",
       "translation": "ir a"
+    },
+    {
+      "source": "grave",
+      "translation": "tumba"
     },
     {
       "source": "green",
@@ -67523,6 +68003,10 @@
       "translation": "pendiente"
     },
     {
+      "source": "period",
+      "translation": "período"
+    },
+    {
       "source": "pilots-federation",
       "translation": "federacion-de-pilotos"
     },
@@ -67791,12 +68275,20 @@
       "translation": "segundos"
     },
     {
+      "source": "self",
+      "translation": "ser"
+    },
+    {
       "source": "sell systems, best viable price first. Best sell from",
       "translation": "Vender sistemas, primero el mejor precio viable. Mejor venta desde"
     },
     {
       "source": "sell systems, daily commodity value order. Best sell from",
       "translation": "sistemas de venta, pedido diario de valor de productos básicos. Mejor venta desde"
+    },
+    {
+      "source": "semicolon",
+      "translation": "punto y coma"
     },
     {
       "source": "sensor",
@@ -67855,6 +68347,10 @@
       "translation": "nombre del barco"
     },
     {
+      "source": "shortcuts",
+      "translation": "atajos"
+    },
+    {
       "source": "shutdown",
       "translation": "cerrar"
     },
@@ -67895,6 +68391,10 @@
       "translation": "tamaño {0}x{1}"
     },
     {
+      "source": "slash",
+      "translation": "barra oblicua"
+    },
+    {
       "source": "slot",
       "translation": "ranura"
     },
@@ -67909,6 +68409,10 @@
     {
       "source": "source",
       "translation": "fuente"
+    },
+    {
+      "source": "space",
+      "translation": "espacio"
     },
     {
       "source": "spansh.co.uk",
@@ -67973,6 +68477,10 @@
     {
       "source": "states",
       "translation": "estados"
+    },
+    {
+      "source": "status",
+      "translation": "estado"
     },
     {
       "source": "steam",
@@ -68757,6 +69265,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} Las operaciones nativas de host combinado no estaban disponibles, por lo que las ventanas separadas permanecen activas."
+    },
+    {
+      "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
+      "translation": "{0} Utiliza la pantalla X11 independiente del juego. El monitor superpuesto ayuda a seleccionar un cliente cuando la geometría del escritorio está disponible."
     },
     {
       "source": "{0} Win32 error {1}.",
@@ -69723,6 +70235,10 @@
     {
       "source": "(entry)",
       "translation": "(entrée)"
+    },
+    {
+      "source": "(unavailable)",
+      "translation": "(indisponible)"
     },
     {
       "source": "**App Restart Required",
@@ -72345,6 +72861,14 @@
       "translation": "Automatique (moniteur principal)"
     },
     {
+      "source": "Automatic (recommended)",
+      "translation": "Automatique (recommandé)"
+    },
+    {
+      "source": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
+      "translation": "Automatique - en attente d'un raccourci avec Elite Dangerous focalisé."
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "La synchronisation automatique du fret Fleet Carrier est désactivée."
     },
@@ -72747,6 +73271,10 @@
     {
       "source": "Back up, verify, and import",
       "translation": "Sauvegarder, vérifier et importer"
+    },
+    {
+      "source": "BackSpace",
+      "translation": "RetourEspace"
     },
     {
       "source": "Background",
@@ -77241,6 +77769,10 @@
       "translation": "Le comportement du bureau contrôle l'endroit où l'application principale revient, sa taille et si le focus est restitué à Elite Dangerous."
     },
     {
+      "source": "Desktop keyboard",
+      "translation": "Clavier de bureau"
+    },
+    {
       "source": "Desktop overlay placement and VR calibration are stored independently.",
       "translation": "Le placement de la superposition du bureau et l'étalonnage VR sont stockés indépendamment."
     },
@@ -78209,8 +78741,28 @@
       "translation": "Elite Dangerous n'a pas pu être focalisé après {0} ; aucune fenêtre de jeu correspondante n'était disponible."
     },
     {
+      "source": "Elite Dangerous focus confirmed.",
+      "translation": "Elite Dangerous mise au point confirmée."
+    },
+    {
+      "source": "Elite Dangerous focus is unconfirmed; automatic detection was not learned.",
+      "translation": "Elite Dangerous la mise au point n'est pas confirmée ; la détection automatique n'a pas été apprise."
+    },
+    {
+      "source": "Elite Dangerous is not focused.",
+      "translation": "Elite Dangerous n’est pas mis au point."
+    },
+    {
+      "source": "Elite Dangerous is not running.",
+      "translation": "Elite Dangerous n'est pas en cours d'exécution."
+    },
+    {
       "source": "Elite Dangerous is not running; file operations are available.",
       "translation": "Elite Dangerous n'est pas en cours d'exécution ; les opérations sur les fichiers sont disponibles."
+    },
+    {
+      "source": "Elite Dangerous is running; desktop focus cannot be confirmed.",
+      "translation": "Elite Dangerous est en cours d'exécution ; Le focus sur le bureau ne peut pas être confirmé."
     },
     {
       "source": "Elite Dangerous journal folder",
@@ -78235,6 +78787,10 @@
     {
       "source": "Elite visited-stars cache",
       "translation": "Cache d'étoiles visitées d'élite"
+    },
+    {
+      "source": "EliteDangerous6",
+      "translation": "ÉliteDangereux6"
     },
     {
       "source": "EliteDangerous64",
@@ -80421,6 +80977,18 @@
       "translation": "Focus sur l'interface utilisateur du jeu"
     },
     {
+      "source": "Game display",
+      "translation": "Affichage du jeu"
+    },
+    {
+      "source": "Game display {0}.",
+      "translation": "Affichage du jeu {0}."
+    },
+    {
+      "source": "Game keyboard recording failed: {0}",
+      "translation": "Échec de l'enregistrement du clavier du jeu : {0}"
+    },
+    {
       "source": "Game overlays",
       "translation": "Superpositions de jeu"
     },
@@ -80489,6 +81057,14 @@
       "translation": "Approche planée"
     },
     {
+      "source": "Global Shortcuts portal unavailable: {0}",
+      "translation": "Portail des raccourcis globaux indisponible : {0}"
+    },
+    {
+      "source": "Global Shortcuts portal version is unsupported.",
+      "translation": "La version du portail Global Shortcuts n’est pas prise en charge."
+    },
+    {
       "source": "Global goal supplied by Inara",
       "translation": "Objectif global fourni par Inara"
     },
@@ -80519,6 +81095,10 @@
     {
       "source": "Global keyboard input stopped: {0}",
       "translation": "Saisie globale au clavier arrêtée : {0}"
+    },
+    {
+      "source": "Global keyboard input: listening on Elite display {0}.",
+      "translation": "Saisie globale au clavier : écoute sur l'écran Elite {0}."
     },
     {
       "source": "Global overlay behavior",
@@ -82173,6 +82753,10 @@
       "translation": "Liaisons d'entrée"
     },
     {
+      "source": "Input detection reset. Use a shortcut with Elite Dangerous focused.",
+      "translation": "Réinitialisation de la détection d’entrée. Utilisez un raccourci avec Elite Dangerous ciblé."
+    },
+    {
       "source": "Input settings changed for this session but could not be saved: {0}",
       "translation": "Les paramètres d'entrée ont été modifiés pour cette session mais n'ont pas pu être enregistrés : {0}"
     },
@@ -82645,6 +83229,10 @@
       "translation": "Crochet pour clavier"
     },
     {
+      "source": "Keyboard input source",
+      "translation": "Source d'entrée du clavier"
+    },
+    {
       "source": "Keyboard shortcuts",
       "translation": "Raccourcis clavier"
     },
@@ -82659,6 +83247,10 @@
     {
       "source": "KeyboardHookCard",
       "translation": "ClavierHookCard"
+    },
+    {
+      "source": "KeyboardSource",
+      "translation": "Source du clavier"
     },
     {
       "source": "Kills",
@@ -82919,6 +83511,14 @@
     {
       "source": "Last refresh: {0}",
       "translation": "Dernière actualisation : {0}"
+    },
+    {
+      "source": "Last shortcut: {0} from {1}.",
+      "translation": "Dernier raccourci : {0} depuis {1}."
+    },
+    {
+      "source": "Last shortcut: {0} from {1}; duplicate or unselected source ignored.",
+      "translation": "Dernier raccourci : {0} depuis {1} ; source en double ou non sélectionnée ignorée."
     },
     {
       "source": "Last system available",
@@ -83915,6 +84515,10 @@
     {
       "source": "ManifestVersion",
       "translation": "Version du manifeste"
+    },
+    {
+      "source": "Manual - {0}{1}.",
+      "translation": "Manuel - {0}{1}."
     },
     {
       "source": "Manual / Canonn import",
@@ -85093,6 +85697,10 @@
       "translation": "Connexion native SteamVR / OpenVR"
     },
     {
+      "source": "Native Wayland overlays require compositor support. Keyboard shortcuts require a supported Global Shortcuts portal.",
+      "translation": "Les superpositions natives Wayland nécessitent la prise en charge du compositeur. Les raccourcis clavier nécessitent un portail de raccourcis globaux pris en charge."
+    },
+    {
       "source": "Natural Disaster",
       "translation": "Catastrophe naturelle"
     },
@@ -85633,6 +86241,10 @@
       "translation": "Aucun modèle de carte compatible n'est disponible."
     },
     {
+      "source": "No configured shortcut received yet.",
+      "translation": "Aucun raccourci configuré n'a encore été reçu."
+    },
+    {
       "source": "No confirmed or predicted organisms are available for this body.",
       "translation": "Aucun organisme confirmé ou prévu n'est disponible pour cet organisme."
     },
@@ -85991,6 +86603,10 @@
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
       "translation": "Aucune station de vente ne correspond à l'article, à la demande et à l'aire d'atterrissage sélectionnés à distance."
+    },
+    {
+      "source": "No separate game display is connected.",
+      "translation": "Aucun écran de jeu séparé n'est connecté."
     },
     {
       "source": "No session log file is available.",
@@ -87509,6 +88125,10 @@
       "translation": "POUVOIR"
     },
     {
+      "source": "PPid:",
+      "translation": "PPid :"
+    },
+    {
       "source": "PRA",
       "translation": "PRA"
     },
@@ -88427,6 +89047,10 @@
     {
       "source": "PrimaryDim",
       "translation": "DimPrimaire"
+    },
+    {
+      "source": "Print",
+      "translation": "Imprimer"
     },
     {
       "source": "Prior",
@@ -90477,6 +91101,10 @@
       "translation": "Nécessite FSSAllBodiesFound pour les nouvelles visites locales. Les règles d'achèvement des visites antérieures activées et des anciennes-Spansh s'appliquent toujours."
     },
     {
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
+      "translation": "Nécessite la prise en charge et l’approbation du portail de bureau pour tous les raccourcis clavier configurés. Une nouvelle approbation est demandée au démarrage de l'application. Native Wayland peut ne pas révéler quelle fenêtre a le focus."
+    },
+    {
       "source": "Requires proper technique; hard impacts common",
       "translation": "Nécessite une technique appropriée ; impacts durs fréquents"
     },
@@ -90543,6 +91171,14 @@
     {
       "source": "Reset every text and icon scale in this panel to 0%",
       "translation": "Réinitialisez chaque échelle de texte et d'icône de ce panneau à 0 %"
+    },
+    {
+      "source": "Reset input detection",
+      "translation": "Réinitialiser la détection d'entrée"
+    },
+    {
+      "source": "Reset returns to Automatic and clears the detected source. Shortcut bindings and desktop approvals are kept; no app restart is needed. Manual selection applies to all keyboard shortcuts and does not automatically fall back.",
+      "translation": "La réinitialisation revient à Automatique et efface la source détectée. Les liaisons de raccourcis et les approbations du bureau sont conservées ; aucun redémarrage de l'application n'est nécessaire. La sélection manuelle s'applique à tous les raccourcis clavier et ne revient pas automatiquement."
     },
     {
       "source": "Reset selected",
@@ -90731,6 +91367,10 @@
     {
       "source": "Retry selected deliveries",
       "translation": "Réessayer les livraisons sélectionnées"
+    },
+    {
+      "source": "Return",
+      "translation": "Retour"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -91451,6 +92091,10 @@
     {
       "source": "SKU",
       "translation": "UGS"
+    },
+    {
+      "source": "SNAP",
+      "translation": "INSTANTANÉ"
     },
     {
       "source": "SOURCE",
@@ -93169,6 +93813,10 @@
       "translation": "Raccourci reçu : {0} ; il n'est pas disponible dans le contexte de jeu actuel."
     },
     {
+      "source": "Shortcut registration could not be remembered: {0}",
+      "translation": "L'enregistrement du raccourci n'a pas pu être mémorisé : {0}"
+    },
+    {
       "source": "ShortcutBindingsExpander",
       "translation": "RaccourciLiaisonsExpanseur"
     },
@@ -94059,6 +94707,10 @@
     {
       "source": "SrvSurvey ground-target overlay",
       "translation": "SrvSurvey superposition de cible au sol"
+    },
+    {
+      "source": "SrvSurvey has focus; automatic detection is not learned here.",
+      "translation": "SrvSurvey a le focus ; la détection automatique n'est pas apprise ici."
     },
     {
       "source": "SrvSurvey high-gravity warning overlay",
@@ -97509,6 +98161,14 @@
       "translation": "Le plan d'achat compare les besoins du projet avec la cargaison actuelle du navire et la cargaison liée du Fleet Carrier."
     },
     {
+      "source": "The shortcut portal returned an invalid session.",
+      "translation": "Le portail de raccourcis a renvoyé une session non valide."
+    },
+    {
+      "source": "The shortcut portal returned an unexpected request handle.",
+      "translation": "Le portail de raccourcis a renvoyé un handle de requête inattendu."
+    },
+    {
       "source": "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
       "translation": "La barre latérale permet de garder le Commander actif et les principaux flux de travail SrvSurvey à portée de main. Les guides restent disponibles même lorsque Elite n'est pas en cours d'exécution."
     },
@@ -98529,6 +99189,10 @@
       "translation": "URL :SrvSurvey Frontier autorisation"
     },
     {
+      "source": "Uid:",
+      "translation": "Uid :"
+    },
+    {
       "source": "Unassigned",
       "translation": "Non attribué"
     },
@@ -99265,8 +99929,16 @@
       "translation": "Utilise les données actuelles de la station Spansh pour les pads, les économies, les factions, les services pertinents et les produits interdits. Alt+I bascule la superposition manuellement."
     },
     {
+      "source": "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working.",
+      "translation": "Utilise une source détectée pour tous les raccourcis clavier. Réapprend lorsque le jeu change ou que des entrées répétées prouvent qu'une autre source fonctionne."
+    },
+    {
       "source": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
       "translation": "Utilise l'horodatage système Spansh au lieu de l'horodatage corporel le plus récent EDSM dans les résumés Jump Info et Galaxy Map. Il s'agit d'une recherche en lecture seule qui ne publie pas de données de journal."
+    },
+    {
+      "source": "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener.",
+      "translation": "Utilise l'écouteur de clavier du bureau. Un affichage de jeu séparé ou un jeu Wayland natif peut ne pas fournir d'entrée à cet auditeur."
     },
     {
       "source": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -99653,6 +100325,10 @@
       "translation": "En attente des entrées du journal du Commander Codex."
     },
     {
+      "source": "Waiting for Elite Dangerous.",
+      "translation": "En attente de Elite Dangerous."
+    },
+    {
       "source": "Waiting for Elite's Rhino cockpit view.",
       "translation": "En attendant la vue du cockpit du Rhino d'Elite."
     },
@@ -99929,8 +100605,16 @@
       "translation": "Wayland n'a pas fourni de cadre à partir de la fenêtre partagée Elite Dangerous."
     },
     {
-      "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
-      "translation": "Le positionnement de la superposition Wayland, la transparence, le clic et la saisie globale nécessitent la prise en charge du compositeur et ne sont pas activés."
+      "source": "Wayland keyboard input is waiting for Global Shortcuts portal support.",
+      "translation": "La saisie au clavier Wayland attend la prise en charge du portail Global Shortcuts."
+    },
+    {
+      "source": "Wayland portal",
+      "translation": "Portail Wayland"
+    },
+    {
+      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
+      "translation": "Raccourcis du portail Wayland actifs : liaisons {0} ou {1}."
     },
     {
       "source": "Wayland screen capture",
@@ -99975,6 +100659,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Le partage d'écran Wayland a été annulé."
+    },
+    {
+      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
+      "translation": "L’approbation du raccourci Wayland est nécessaire. Redémarrez SrvSurvey pour approuver les raccourcis au démarrage ; les écouteurs de clavier existants restent disponibles."
+    },
+    {
+      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
+      "translation": "L'autorisation de raccourci Wayland a été refusée ; les écouteurs de clavier existants restent disponibles."
     },
     {
       "source": "WaylandCapture",
@@ -100549,6 +101241,10 @@
       "translation": "antimoine"
     },
     {
+      "source": "apostrophe",
+      "translation": "apostrophe"
+    },
+    {
       "source": "app",
       "translation": "application"
     },
@@ -100639,6 +101335,10 @@
     {
       "source": "avares",
       "translation": "avares"
+    },
+    {
+      "source": "backslash",
+      "translation": "barre oblique inverse"
     },
     {
       "source": "badge",
@@ -100829,6 +101529,14 @@
       "translation": "boîte"
     },
     {
+      "source": "bracketleft",
+      "translation": "supportgauche"
+    },
+    {
+      "source": "bracketright",
+      "translation": "supportdroit"
+    },
+    {
       "source": "break",
       "translation": "pause"
     },
@@ -100925,6 +101633,10 @@
       "translation": "fermé"
     },
     {
+      "source": "cmdline",
+      "translation": "ligne de commande"
+    },
+    {
       "source": "cmdr",
       "translation": "cmdr"
     },
@@ -101003,6 +101715,14 @@
     {
       "source": "combined",
       "translation": "combiné"
+    },
+    {
+      "source": "comm",
+      "translation": "communication"
+    },
+    {
+      "source": "comma",
+      "translation": "virgule"
     },
     {
       "source": "commander journal publication upload credential api key flight log",
@@ -101143,6 +101863,10 @@
     {
       "source": "descending",
       "translation": "descendant"
+    },
+    {
+      "source": "description",
+      "translation": "description"
     },
     {
       "source": "desktop",
@@ -101291,6 +102015,14 @@
     {
       "source": "entry ID",
       "translation": "identifiant d'entrée"
+    },
+    {
+      "source": "environ",
+      "translation": "environ"
+    },
+    {
+      "source": "equal",
+      "translation": "égal"
     },
     {
       "source": "error",
@@ -101583,6 +102315,10 @@
     {
       "source": "goto",
       "translation": "aller à"
+    },
+    {
+      "source": "grave",
+      "translation": "tombe"
     },
     {
       "source": "green",
@@ -102365,6 +103101,10 @@
       "translation": "en attente"
     },
     {
+      "source": "period",
+      "translation": "période"
+    },
+    {
       "source": "pilots-federation",
       "translation": "fédération-de-pilotes"
     },
@@ -102633,12 +103373,20 @@
       "translation": "secondes"
     },
     {
+      "source": "self",
+      "translation": "soi"
+    },
+    {
       "source": "sell systems, best viable price first. Best sell from",
       "translation": "vendez des systèmes, au meilleur prix viable en premier. Meilleure vente de"
     },
     {
       "source": "sell systems, daily commodity value order. Best sell from",
       "translation": "systèmes de vente, ordre quotidien de la valeur des marchandises. Meilleure vente de"
+    },
+    {
+      "source": "semicolon",
+      "translation": "point-virgule"
     },
     {
       "source": "sensor",
@@ -102697,6 +103445,10 @@
       "translation": "nom du navire"
     },
     {
+      "source": "shortcuts",
+      "translation": "raccourcis"
+    },
+    {
       "source": "shutdown",
       "translation": "fermer"
     },
@@ -102737,6 +103489,10 @@
       "translation": "taille {0}x{1}"
     },
     {
+      "source": "slash",
+      "translation": "sabrer"
+    },
+    {
       "source": "slot",
       "translation": "fente"
     },
@@ -102751,6 +103507,10 @@
     {
       "source": "source",
       "translation": "source"
+    },
+    {
+      "source": "space",
+      "translation": "espace"
     },
     {
       "source": "spansh.co.uk",
@@ -102815,6 +103575,10 @@
     {
       "source": "states",
       "translation": "états"
+    },
+    {
+      "source": "status",
+      "translation": "statut"
     },
     {
       "source": "steam",
@@ -103599,6 +104363,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} Les opérations natives d'hôtes combinés n'étaient pas disponibles, donc des fenêtres distinctes restent actives."
+    },
+    {
+      "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
+      "translation": "{0} Utilise l'écran X11 séparé du jeu. Le moniteur de superposition permet de sélectionner un client lorsque la géométrie du bureau est disponible."
     },
     {
       "source": "{0} Win32 error {1}.",
@@ -104565,6 +105333,10 @@
     {
       "source": "(entry)",
       "translation": "(entrada)"
+    },
+    {
+      "source": "(unavailable)",
+      "translation": "(indisponível)"
     },
     {
       "source": "**App Restart Required",
@@ -107187,6 +107959,14 @@
       "translation": "Automático (monitor principal)"
     },
     {
+      "source": "Automatic (recommended)",
+      "translation": "Automático (recomendado)"
+    },
+    {
+      "source": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
+      "translation": "Automático - aguardando um atalho com Elite Dangerous em foco."
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "A sincronização automática de carga do Fleet Carrier está desativada."
     },
@@ -107589,6 +108369,10 @@
     {
       "source": "Back up, verify, and import",
       "translation": "Faça backup, verifique e importe"
+    },
+    {
+      "source": "BackSpace",
+      "translation": "BackSpace"
     },
     {
       "source": "Background",
@@ -112083,6 +112867,10 @@
       "translation": "O comportamento da área de trabalho controla para onde o aplicativo principal retorna, quão grande ele aparece e se o foco é devolvido para Elite Dangerous."
     },
     {
+      "source": "Desktop keyboard",
+      "translation": "Teclado de mesa"
+    },
+    {
       "source": "Desktop overlay placement and VR calibration are stored independently.",
       "translation": "O posicionamento da sobreposição da área de trabalho e a calibração VR são armazenados de forma independente."
     },
@@ -113051,8 +113839,28 @@
       "translation": "Elite Dangerous não pôde ser focado após {0}; nenhuma janela de jogo correspondente estava disponível."
     },
     {
+      "source": "Elite Dangerous focus confirmed.",
+      "translation": "Elite Dangerous foco confirmado."
+    },
+    {
+      "source": "Elite Dangerous focus is unconfirmed; automatic detection was not learned.",
+      "translation": "Elite Dangerous o foco não está confirmado; a detecção automática não foi aprendida."
+    },
+    {
+      "source": "Elite Dangerous is not focused.",
+      "translation": "Elite Dangerous não está focado."
+    },
+    {
+      "source": "Elite Dangerous is not running.",
+      "translation": "Elite Dangerous não está em execução."
+    },
+    {
       "source": "Elite Dangerous is not running; file operations are available.",
       "translation": "Elite Dangerous não está em execução; operações de arquivo estão disponíveis."
+    },
+    {
+      "source": "Elite Dangerous is running; desktop focus cannot be confirmed.",
+      "translation": "Elite Dangerous está em execução; o foco na área de trabalho não pode ser confirmado."
     },
     {
       "source": "Elite Dangerous journal folder",
@@ -113077,6 +113885,10 @@
     {
       "source": "Elite visited-stars cache",
       "translation": "Cache de estrelas visitadas de elite"
+    },
+    {
+      "source": "EliteDangerous6",
+      "translation": "EliteDangerous6"
     },
     {
       "source": "EliteDangerous64",
@@ -115263,6 +116075,18 @@
       "translation": "Foco na interface do jogo"
     },
     {
+      "source": "Game display",
+      "translation": "Exibição do jogo"
+    },
+    {
+      "source": "Game display {0}.",
+      "translation": "Exibição do jogo {0}."
+    },
+    {
+      "source": "Game keyboard recording failed: {0}",
+      "translation": "Falha na gravação do teclado do jogo: {0}"
+    },
+    {
       "source": "Game overlays",
       "translation": "Sobreposições de jogos"
     },
@@ -115331,6 +116155,14 @@
       "translation": "Abordagem de deslizamento"
     },
     {
+      "source": "Global Shortcuts portal unavailable: {0}",
+      "translation": "Portal de atalhos globais indisponível: {0}"
+    },
+    {
+      "source": "Global Shortcuts portal version is unsupported.",
+      "translation": "A versão do portal Global Shortcuts não é compatível."
+    },
+    {
       "source": "Global goal supplied by Inara",
       "translation": "Meta global fornecida por Inara"
     },
@@ -115361,6 +116193,10 @@
     {
       "source": "Global keyboard input stopped: {0}",
       "translation": "A entrada global do teclado foi interrompida: {0}"
+    },
+    {
+      "source": "Global keyboard input: listening on Elite display {0}.",
+      "translation": "Entrada de teclado global: ouvindo no monitor Elite {0}."
     },
     {
       "source": "Global overlay behavior",
@@ -117015,6 +117851,10 @@
       "translation": "Ligações de entrada"
     },
     {
+      "source": "Input detection reset. Use a shortcut with Elite Dangerous focused.",
+      "translation": "Reinicialização da detecção de entrada. Use um atalho com Elite Dangerous em foco."
+    },
+    {
       "source": "Input settings changed for this session but could not be saved: {0}",
       "translation": "As configurações de entrada foram alteradas para esta sessão, mas não puderam ser salvas: {0}"
     },
@@ -117487,6 +118327,10 @@
       "translation": "Gancho de teclado"
     },
     {
+      "source": "Keyboard input source",
+      "translation": "Fonte de entrada do teclado"
+    },
+    {
       "source": "Keyboard shortcuts",
       "translation": "Atalhos de teclado"
     },
@@ -117501,6 +118345,10 @@
     {
       "source": "KeyboardHookCard",
       "translation": "TecladoHookCard"
+    },
+    {
+      "source": "KeyboardSource",
+      "translation": "Fonte do teclado"
     },
     {
       "source": "Kills",
@@ -117761,6 +118609,14 @@
     {
       "source": "Last refresh: {0}",
       "translation": "Última atualização: {0}"
+    },
+    {
+      "source": "Last shortcut: {0} from {1}.",
+      "translation": "Último atalho: {0} de {1}."
+    },
+    {
+      "source": "Last shortcut: {0} from {1}; duplicate or unselected source ignored.",
+      "translation": "Último atalho: {0} de {1}; fonte duplicada ou não selecionada ignorada."
     },
     {
       "source": "Last system available",
@@ -118757,6 +119613,10 @@
     {
       "source": "ManifestVersion",
       "translation": "Versão do manifesto"
+    },
+    {
+      "source": "Manual - {0}{1}.",
+      "translation": "Manual - {0}{1}."
     },
     {
       "source": "Manual / Canonn import",
@@ -119935,6 +120795,10 @@
       "translation": "Conexão nativa SteamVR / OpenVR"
     },
     {
+      "source": "Native Wayland overlays require compositor support. Keyboard shortcuts require a supported Global Shortcuts portal.",
+      "translation": "As sobreposições nativas do Wayland requerem suporte de compositor. Os atalhos de teclado requerem um portal de atalhos globais compatível."
+    },
+    {
       "source": "Natural Disaster",
       "translation": "Desastre Natural"
     },
@@ -120475,6 +121339,10 @@
       "translation": "Nenhum modelo de mapa compatível está disponível."
     },
     {
+      "source": "No configured shortcut received yet.",
+      "translation": "Nenhum atalho configurado foi recebido ainda."
+    },
+    {
       "source": "No confirmed or predicted organisms are available for this body.",
       "translation": "Nenhum organismo confirmado ou previsto está disponível para este corpo."
     },
@@ -120833,6 +121701,10 @@
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
       "translation": "Nenhuma estação de venda corresponde ao material selecionado, à demanda e ao local de pouso à distância."
+    },
+    {
+      "source": "No separate game display is connected.",
+      "translation": "Nenhuma tela de jogo separada está conectada."
     },
     {
       "source": "No session log file is available.",
@@ -122351,6 +123223,10 @@
       "translation": "PODER"
     },
     {
+      "source": "PPid:",
+      "translation": "PPid:"
+    },
+    {
       "source": "PRA",
       "translation": "PRA"
     },
@@ -123269,6 +124145,10 @@
     {
       "source": "PrimaryDim",
       "translation": "PrimárioDim"
+    },
+    {
+      "source": "Print",
+      "translation": "Imprimir"
     },
     {
       "source": "Prior",
@@ -125319,6 +126199,10 @@
       "translation": "Requer FSSAllBodiesFound para novas visitas locais. Regras de conclusão de visita anterior e de Spansh ativadas ainda se aplicam."
     },
     {
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
+      "translation": "Requer suporte e aprovação do portal de desktop para todos os atalhos de teclado configurados. Nova aprovação é solicitada na inicialização do aplicativo. O Native Wayland pode não expor qual janela está em foco."
+    },
+    {
       "source": "Requires proper technique; hard impacts common",
       "translation": "Requer técnica adequada; impactos fortes comuns"
     },
@@ -125385,6 +126269,14 @@
     {
       "source": "Reset every text and icon scale in this panel to 0%",
       "translation": "Redefina cada escala de texto e ícone neste painel para 0%"
+    },
+    {
+      "source": "Reset input detection",
+      "translation": "Redefinir detecção de entrada"
+    },
+    {
+      "source": "Reset returns to Automatic and clears the detected source. Shortcut bindings and desktop approvals are kept; no app restart is needed. Manual selection applies to all keyboard shortcuts and does not automatically fall back.",
+      "translation": "A redefinição retorna para Automático e limpa a fonte detectada. As ligações de atalhos e as aprovações de desktop são mantidas; nenhuma reinicialização do aplicativo é necessária. A seleção manual se aplica a todos os atalhos de teclado e não retorna automaticamente."
     },
     {
       "source": "Reset selected",
@@ -125573,6 +126465,10 @@
     {
       "source": "Retry selected deliveries",
       "translation": "Tentar novamente as entregas selecionadas"
+    },
+    {
+      "source": "Return",
+      "translation": "Retornar"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -126293,6 +127189,10 @@
     {
       "source": "SKU",
       "translation": "SKU"
+    },
+    {
+      "source": "SNAP",
+      "translation": "FOTO"
     },
     {
       "source": "SOURCE",
@@ -128011,6 +128911,10 @@
       "translation": "Atalho recebido: {0}; não está disponível no contexto do jogo atual."
     },
     {
+      "source": "Shortcut registration could not be remembered: {0}",
+      "translation": "Não foi possível lembrar o registro do atalho: {0}"
+    },
+    {
       "source": "ShortcutBindingsExpander",
       "translation": "ShortcutBindingsExpander"
     },
@@ -128901,6 +129805,10 @@
     {
       "source": "SrvSurvey ground-target overlay",
       "translation": "SrvSurvey sobreposição de alvo terrestre"
+    },
+    {
+      "source": "SrvSurvey has focus; automatic detection is not learned here.",
+      "translation": "SrvSurvey tem foco; a detecção automática não é aprendida aqui."
     },
     {
       "source": "SrvSurvey high-gravity warning overlay",
@@ -132351,6 +133259,14 @@
       "translation": "O plano de compras compara as necessidades do projeto com a carga atual do navio e a carga vinculada do Fleet Carrier."
     },
     {
+      "source": "The shortcut portal returned an invalid session.",
+      "translation": "O portal de atalho retornou uma sessão inválida."
+    },
+    {
+      "source": "The shortcut portal returned an unexpected request handle.",
+      "translation": "O portal de atalho retornou um identificador de solicitação inesperado."
+    },
+    {
       "source": "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
       "translation": "A barra lateral mantém o Commander ativo e os principais fluxos de trabalho SrvSurvey à mão. Os guias permanecem disponíveis mesmo quando o Elite não está em execução."
     },
@@ -133371,6 +134287,10 @@
       "translation": "URL:SrvSurvey Frontier autorização"
     },
     {
+      "source": "Uid:",
+      "translation": "Uid:"
+    },
+    {
       "source": "Unassigned",
       "translation": "Não atribuído"
     },
@@ -134107,8 +135027,16 @@
       "translation": "Usa dados atuais da estação Spansh para plataformas, economias, facções, serviços relevantes e mercadorias proibidas. Alt+I alterna a sobreposição manualmente."
     },
     {
+      "source": "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working.",
+      "translation": "Usa uma fonte detectada para todos os atalhos de teclado. Reaprende quando o jogo muda ou entradas repetidas provam que outra fonte está funcionando."
+    },
+    {
       "source": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
       "translation": "Usa o carimbo de data/hora do sistema Spansh em vez do carimbo de data/hora do corpo EDSM mais recente nos resumos do Jump Info e do Galaxy Map. Esta é uma pesquisa somente leitura e não publica dados de periódicos."
+    },
+    {
+      "source": "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener.",
+      "translation": "Usa o ouvinte do teclado da área de trabalho. Uma exibição de jogo separada ou um jogo Wayland nativo pode não fornecer entrada para este ouvinte."
     },
     {
       "source": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -134495,6 +135423,10 @@
       "translation": "Aguardando entradas no diário do Commander Codex."
     },
     {
+      "source": "Waiting for Elite Dangerous.",
+      "translation": "Aguardando Elite Dangerous."
+    },
+    {
       "source": "Waiting for Elite's Rhino cockpit view.",
       "translation": "Esperando pela visão do cockpit do Elite Rhino."
     },
@@ -134771,8 +135703,16 @@
       "translation": "Wayland não forneceu um quadro da janela compartilhada Elite Dangerous."
     },
     {
-      "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
-      "translation": "Posicionamento de sobreposição de Wayland, transparência, clique e entrada global requerem suporte de compositor e não estão habilitados."
+      "source": "Wayland keyboard input is waiting for Global Shortcuts portal support.",
+      "translation": "A entrada do teclado Wayland está aguardando suporte do portal Global Shortcuts."
+    },
+    {
+      "source": "Wayland portal",
+      "translation": "Portal Wayland"
+    },
+    {
+      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
+      "translation": "Atalhos do portal Wayland ativos: {0} de ligações {1}."
     },
     {
       "source": "Wayland screen capture",
@@ -134817,6 +135757,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "O compartilhamento de tela do Wayland foi cancelado."
+    },
+    {
+      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
+      "translation": "É necessária a aprovação do atalho Wayland. Reinicie SrvSurvey para aprovar atalhos na inicialização; os ouvintes de teclado existentes permanecem disponíveis."
+    },
+    {
+      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
+      "translation": "A permissão de atalho do Wayland foi recusada; os ouvintes de teclado existentes permanecem disponíveis."
     },
     {
       "source": "WaylandCapture",
@@ -135391,6 +136339,10 @@
       "translation": "antimônio"
     },
     {
+      "source": "apostrophe",
+      "translation": "apóstrofo"
+    },
+    {
       "source": "app",
       "translation": "aplicativo"
     },
@@ -135481,6 +136433,10 @@
     {
       "source": "avares",
       "translation": "avares"
+    },
+    {
+      "source": "backslash",
+      "translation": "barra invertida"
     },
     {
       "source": "badge",
@@ -135671,6 +136627,14 @@
       "translation": "boxel"
     },
     {
+      "source": "bracketleft",
+      "translation": "colchete esquerdo"
+    },
+    {
+      "source": "bracketright",
+      "translation": "colchete direito"
+    },
+    {
       "source": "break",
       "translation": "quebrar"
     },
@@ -135767,6 +136731,10 @@
       "translation": "fechado"
     },
     {
+      "source": "cmdline",
+      "translation": "cmdline"
+    },
+    {
       "source": "cmdr",
       "translation": "cmdr"
     },
@@ -135845,6 +136813,14 @@
     {
       "source": "combined",
       "translation": "combinado"
+    },
+    {
+      "source": "comm",
+      "translation": "comunicação"
+    },
+    {
+      "source": "comma",
+      "translation": "vírgula"
     },
     {
       "source": "commander journal publication upload credential api key flight log",
@@ -135985,6 +136961,10 @@
     {
       "source": "descending",
       "translation": "descendo"
+    },
+    {
+      "source": "description",
+      "translation": "descrição"
     },
     {
       "source": "desktop",
@@ -136133,6 +137113,14 @@
     {
       "source": "entry ID",
       "translation": "ID de entrada"
+    },
+    {
+      "source": "environ",
+      "translation": "meio ambiente"
+    },
+    {
+      "source": "equal",
+      "translation": "igual"
     },
     {
       "source": "error",
@@ -136425,6 +137413,10 @@
     {
       "source": "goto",
       "translation": "ir para"
+    },
+    {
+      "source": "grave",
+      "translation": "cova"
     },
     {
       "source": "green",
@@ -137207,6 +138199,10 @@
       "translation": "pendente"
     },
     {
+      "source": "period",
+      "translation": "período"
+    },
+    {
       "source": "pilots-federation",
       "translation": "federação de pilotos"
     },
@@ -137475,12 +138471,20 @@
       "translation": "segundos"
     },
     {
+      "source": "self",
+      "translation": "auto"
+    },
+    {
       "source": "sell systems, best viable price first. Best sell from",
       "translation": "vender sistemas, melhor preço viável primeiro. Melhor venda de"
     },
     {
       "source": "sell systems, daily commodity value order. Best sell from",
       "translation": "sistemas de venda, ordem diária de valor de mercadoria. Melhor venda de"
+    },
+    {
+      "source": "semicolon",
+      "translation": "ponto e vírgula"
     },
     {
       "source": "sensor",
@@ -137539,6 +138543,10 @@
       "translation": "nome do navio"
     },
     {
+      "source": "shortcuts",
+      "translation": "atalhos"
+    },
+    {
       "source": "shutdown",
       "translation": "desligar"
     },
@@ -137579,6 +138587,10 @@
       "translation": "tamanho {0}x{1}"
     },
     {
+      "source": "slash",
+      "translation": "barra"
+    },
+    {
       "source": "slot",
       "translation": "slot"
     },
@@ -137593,6 +138605,10 @@
     {
       "source": "source",
       "translation": "fonte"
+    },
+    {
+      "source": "space",
+      "translation": "espaço"
     },
     {
       "source": "spansh.co.uk",
@@ -137657,6 +138673,10 @@
     {
       "source": "states",
       "translation": "estados"
+    },
+    {
+      "source": "status",
+      "translation": "status"
     },
     {
       "source": "steam",
@@ -138441,6 +139461,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} As operações nativas de host combinado não estavam disponíveis, portanto janelas separadas permanecem ativas."
+    },
+    {
+      "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
+      "translation": "{0} Usa a tela X11 separada do jogo. O monitor de sobreposição ajuda a selecionar um cliente quando a geometria da área de trabalho está disponível."
     },
     {
       "source": "{0} Win32 error {1}.",
@@ -139407,6 +140431,10 @@
     {
       "source": "(entry)",
       "translation": "(запись)"
+    },
+    {
+      "source": "(unavailable)",
+      "translation": "(недоступно)"
     },
     {
       "source": "**App Restart Required",
@@ -142029,6 +143057,14 @@
       "translation": "Автоматический (основной монитор)"
     },
     {
+      "source": "Automatic (recommended)",
+      "translation": "Автоматический (рекомендуется)"
+    },
+    {
+      "source": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
+      "translation": "Автоматически — ожидание ярлыка с фокусом Elite Dangerous."
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "Автоматическая синхронизация груза Fleet Carrier отключена."
     },
@@ -142431,6 +143467,10 @@
     {
       "source": "Back up, verify, and import",
       "translation": "Резервное копирование, проверка и импорт"
+    },
+    {
+      "source": "BackSpace",
+      "translation": "BackSpace"
     },
     {
       "source": "Background",
@@ -146925,6 +147965,10 @@
       "translation": "Поведение рабочего стола определяет, куда возвращается основное приложение, насколько большим оно выглядит и возвращается ли фокус к Elite Dangerous."
     },
     {
+      "source": "Desktop keyboard",
+      "translation": "Настольная клавиатура"
+    },
+    {
       "source": "Desktop overlay placement and VR calibration are stored independently.",
       "translation": "Расположение наложения на рабочем столе и калибровка VR сохраняются независимо."
     },
@@ -147893,8 +148937,28 @@
       "translation": "Elite Dangerous не удалось сфокусироваться после {0}; соответствующего игрового окна не было."
     },
     {
+      "source": "Elite Dangerous focus confirmed.",
+      "translation": "Elite Dangerous фокус подтвержден."
+    },
+    {
+      "source": "Elite Dangerous focus is unconfirmed; automatic detection was not learned.",
+      "translation": "Elite Dangerous фокус не подтвержден; автоматическое обнаружение не было изучено."
+    },
+    {
+      "source": "Elite Dangerous is not focused.",
+      "translation": "Elite Dangerous не сфокусирован."
+    },
+    {
+      "source": "Elite Dangerous is not running.",
+      "translation": "Elite Dangerous не работает."
+    },
+    {
       "source": "Elite Dangerous is not running; file operations are available.",
       "translation": "Elite Dangerous не запущен; доступны файловые операции."
+    },
+    {
+      "source": "Elite Dangerous is running; desktop focus cannot be confirmed.",
+      "translation": "Elite Dangerous работает; Фокус рабочего стола не может быть подтвержден."
     },
     {
       "source": "Elite Dangerous journal folder",
@@ -147919,6 +148983,10 @@
     {
       "source": "Elite visited-stars cache",
       "translation": "Тайник элитных посещенных звезд"
+    },
+    {
+      "source": "EliteDangerous6",
+      "translation": "ЭлитОпасный6"
     },
     {
       "source": "EliteDangerous64",
@@ -150105,6 +151173,18 @@
       "translation": "Фокус игрового пользовательского интерфейса"
     },
     {
+      "source": "Game display",
+      "translation": "Дисплей игры"
+    },
+    {
+      "source": "Game display {0}.",
+      "translation": "Игровой дисплей {0}."
+    },
+    {
+      "source": "Game keyboard recording failed: {0}",
+      "translation": "Не удалось записать игровую клавиатуру: {0}"
+    },
+    {
       "source": "Game overlays",
       "translation": "Наложения игр"
     },
@@ -150173,6 +151253,14 @@
       "translation": "Скользящий подход"
     },
     {
+      "source": "Global Shortcuts portal unavailable: {0}",
+      "translation": "Портал глобальных ярлыков недоступен: {0}"
+    },
+    {
+      "source": "Global Shortcuts portal version is unsupported.",
+      "translation": "Версия портала Global Shortcuts не поддерживается."
+    },
+    {
       "source": "Global goal supplied by Inara",
       "translation": "Глобальная цель предоставлена Inara"
     },
@@ -150203,6 +151291,10 @@
     {
       "source": "Global keyboard input stopped: {0}",
       "translation": "Глобальный ввод с клавиатуры остановлен: {0}"
+    },
+    {
+      "source": "Global keyboard input: listening on Elite display {0}.",
+      "translation": "Глобальный ввод с клавиатуры: прослушивание на дисплее Elite {0}."
     },
     {
       "source": "Global overlay behavior",
@@ -151857,6 +152949,10 @@
       "translation": "Входные привязки"
     },
     {
+      "source": "Input detection reset. Use a shortcut with Elite Dangerous focused.",
+      "translation": "Сброс обнаружения входа. Используйте ярлык с фокусом Elite Dangerous."
+    },
+    {
       "source": "Input settings changed for this session but could not be saved: {0}",
       "translation": "Настройки ввода изменены для этого сеанса, но не удалось сохранить: {0}"
     },
@@ -152329,6 +153425,10 @@
       "translation": "Крючок для клавиатуры"
     },
     {
+      "source": "Keyboard input source",
+      "translation": "Источник ввода с клавиатуры"
+    },
+    {
       "source": "Keyboard shortcuts",
       "translation": "Сочетания клавиш"
     },
@@ -152343,6 +153443,10 @@
     {
       "source": "KeyboardHookCard",
       "translation": "КлавиатураКрюкКарта"
+    },
+    {
+      "source": "KeyboardSource",
+      "translation": "КлавиатураИсточник"
     },
     {
       "source": "Kills",
@@ -152603,6 +153707,14 @@
     {
       "source": "Last refresh: {0}",
       "translation": "Последнее обновление: {0}"
+    },
+    {
+      "source": "Last shortcut: {0} from {1}.",
+      "translation": "Последний ярлык: {0} из {1}."
+    },
+    {
+      "source": "Last shortcut: {0} from {1}; duplicate or unselected source ignored.",
+      "translation": "Последний ярлык: {0} из {1}; дубликат или невыбранный источник игнорируется."
     },
     {
       "source": "Last system available",
@@ -153599,6 +154711,10 @@
     {
       "source": "ManifestVersion",
       "translation": "МанифестВерсия"
+    },
+    {
+      "source": "Manual - {0}{1}.",
+      "translation": "Мануал - {0}{1}."
     },
     {
       "source": "Manual / Canonn import",
@@ -154777,6 +155893,10 @@
       "translation": "Встроенное соединение SteamVR/OpenVR"
     },
     {
+      "source": "Native Wayland overlays require compositor support. Keyboard shortcuts require a supported Global Shortcuts portal.",
+      "translation": "Для нативных наложений Wayland требуется поддержка композитора. Для сочетания клавиш требуется поддерживаемый портал глобальных ярлыков."
+    },
+    {
       "source": "Natural Disaster",
       "translation": "Стихийное бедствие"
     },
@@ -155317,6 +156437,10 @@
       "translation": "Совместимый шаблон карты недоступен."
     },
     {
+      "source": "No configured shortcut received yet.",
+      "translation": "Настроенный ярлык еще не получен."
+    },
+    {
       "source": "No confirmed or predicted organisms are available for this body.",
       "translation": "Для этого тела нет подтвержденных или прогнозируемых организмов."
     },
@@ -155675,6 +156799,10 @@
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
       "translation": "Ни одна станция продаж не соответствует выбранному материалу, спросу и посадочной площадке на расстоянии."
+    },
+    {
+      "source": "No separate game display is connected.",
+      "translation": "Отдельный игровой дисплей не подключен."
     },
     {
       "source": "No session log file is available.",
@@ -157193,6 +158321,10 @@
       "translation": "ВЛАСТЬ"
     },
     {
+      "source": "PPid:",
+      "translation": "Идентификатор PP:"
+    },
+    {
       "source": "PRA",
       "translation": "ПРА"
     },
@@ -158111,6 +159243,10 @@
     {
       "source": "PrimaryDim",
       "translation": "ПервичныйДим"
+    },
+    {
+      "source": "Print",
+      "translation": "Распечатать"
     },
     {
       "source": "Prior",
@@ -160161,6 +161297,10 @@
       "translation": "Требуется FSSAllBodiesFound для новых локальных посещений. Включенные правила раннего посещения и более старых правил завершения Spansh по-прежнему применяются."
     },
     {
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
+      "translation": "Требуется поддержка и одобрение портала настольных компьютеров для всех настроенных сочетаний клавиш. Новое утверждение запрашивается при запуске приложения. Native Wayland может не показывать, какое окно находится в фокусе."
+    },
+    {
       "source": "Requires proper technique; hard impacts common",
       "translation": "Требует правильной техники; сильные удары распространены"
     },
@@ -160227,6 +161367,14 @@
     {
       "source": "Reset every text and icon scale in this panel to 0%",
       "translation": "Сбросьте масштаб каждого текста и значков на этой панели до 0 %."
+    },
+    {
+      "source": "Reset input detection",
+      "translation": "Сбросить обнаружение входа"
+    },
+    {
+      "source": "Reset returns to Automatic and clears the detected source. Shortcut bindings and desktop approvals are kept; no app restart is needed. Manual selection applies to all keyboard shortcuts and does not automatically fall back.",
+      "translation": "Сброс возвращает в автоматический режим и удаляет обнаруженный источник. Привязки ярлыков и разрешения на рабочем столе сохраняются; перезапуск приложения не требуется. Ручной выбор применяется ко всем сочетаниям клавиш и не отменяется автоматически."
     },
     {
       "source": "Reset selected",
@@ -160415,6 +161563,10 @@
     {
       "source": "Retry selected deliveries",
       "translation": "Повторить выбранные доставки"
+    },
+    {
+      "source": "Return",
+      "translation": "Возвращаться"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -161135,6 +162287,10 @@
     {
       "source": "SKU",
       "translation": "Артикул"
+    },
+    {
+      "source": "SNAP",
+      "translation": "ЩЕЛЧОК"
     },
     {
       "source": "SOURCE",
@@ -162853,6 +164009,10 @@
       "translation": "Получен ярлык: {0}; он недоступен в текущем игровом контексте."
     },
     {
+      "source": "Shortcut registration could not be remembered: {0}",
+      "translation": "Не удалось запомнить регистрацию ярлыка: {0}."
+    },
+    {
       "source": "ShortcutBindingsExpander",
       "translation": "ЯрлыкBindingsExpander"
     },
@@ -163743,6 +164903,10 @@
     {
       "source": "SrvSurvey ground-target overlay",
       "translation": "SrvSurvey наложение наземной цели"
+    },
+    {
+      "source": "SrvSurvey has focus; automatic detection is not learned here.",
+      "translation": "SrvSurvey имеет фокус; автоматическое обнаружение здесь не изучается."
     },
     {
       "source": "SrvSurvey high-gravity warning overlay",
@@ -167193,6 +168357,14 @@
       "translation": "В плане покупок сравниваются потребности проекта с текущим грузом корабля и грузом связанного с ним перевозчика флота."
     },
     {
+      "source": "The shortcut portal returned an invalid session.",
+      "translation": "Портал ярлыков возвратил недопустимый сеанс."
+    },
+    {
+      "source": "The shortcut portal returned an unexpected request handle.",
+      "translation": "Портал ярлыков вернул неожиданный дескриптор запроса."
+    },
+    {
       "source": "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
       "translation": "На боковой панели активный Commander и основные SrvSurvey рабочие процессы всегда под рукой. Руководства остаются доступными, даже если Elite не запущена."
     },
@@ -168213,6 +169385,10 @@
       "translation": "URL:SrvSurvey Frontier авторизация"
     },
     {
+      "source": "Uid:",
+      "translation": "Пользовательский идентификатор:"
+    },
+    {
       "source": "Unassigned",
       "translation": "Неназначенный"
     },
@@ -168949,8 +170125,16 @@
       "translation": "Использует текущие данные станции Spansh для площадок, экономики, фракций, соответствующих услуг и запрещенных товаров. Alt+I переключает наложение вручную."
     },
     {
+      "source": "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working.",
+      "translation": "Использует один обнаруженный источник для всех сочетаний клавиш. Обучается повторно, когда игра меняется или повторный ввод доказывает, что другой источник работает."
+    },
+    {
       "source": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
       "translation": "Использует системную временную метку Spansh вместо новейшей временной метки тела EDSM в сводках информации о переходе и карте галактики. Это поиск только для чтения, в нем не публикуются данные журнала."
+    },
+    {
+      "source": "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener.",
+      "translation": "Использует прослушиватель клавиатуры рабочего стола. Отдельный игровой дисплей или собственная игра Wayland могут не доставлять входные данные этому прослушивателю."
     },
     {
       "source": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -169337,6 +170521,10 @@
       "translation": "Ожидание записей журнала Кодекса командира."
     },
     {
+      "source": "Waiting for Elite Dangerous.",
+      "translation": "Ожидание Elite Dangerous."
+    },
+    {
       "source": "Waiting for Elite's Rhino cockpit view.",
       "translation": "Ждем вид из кабины Elite's Rhino."
     },
@@ -169613,8 +170801,16 @@
       "translation": "Wayland не предоставил кадр из общего окна Elite Dangerous."
     },
     {
-      "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
-      "translation": "Позиционирование наложения Wayland, прозрачность, переход по щелчку и глобальный ввод требуют поддержки композитора и не включены."
+      "source": "Wayland keyboard input is waiting for Global Shortcuts portal support.",
+      "translation": "Ввод с клавиатуры Wayland ожидает поддержки портала Global Shortcuts."
+    },
+    {
+      "source": "Wayland portal",
+      "translation": "Вейландский портал"
+    },
+    {
+      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
+      "translation": "Активны ярлыки портала Wayland: {0} из привязок {1}."
     },
     {
       "source": "Wayland screen capture",
@@ -169659,6 +170855,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Демонстрация экрана Wayland отменена."
+    },
+    {
+      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
+      "translation": "Требуется одобрение ярлыка Wayland. Перезагрузите SrvSurvey, чтобы утвердить ярлыки при запуске; существующие прослушиватели клавиатуры остаются доступными."
+    },
+    {
+      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
+      "translation": "Разрешение на ярлык Wayland было отклонено; существующие прослушиватели клавиатуры остаются доступными."
     },
     {
       "source": "WaylandCapture",
@@ -170233,6 +171437,10 @@
       "translation": "сурьма"
     },
     {
+      "source": "apostrophe",
+      "translation": "апостроф"
+    },
+    {
       "source": "app",
       "translation": "приложение"
     },
@@ -170323,6 +171531,10 @@
     {
       "source": "avares",
       "translation": "аварес"
+    },
+    {
+      "source": "backslash",
+      "translation": "обратная косая черта"
     },
     {
       "source": "badge",
@@ -170513,6 +171725,14 @@
       "translation": "боксель"
     },
     {
+      "source": "bracketleft",
+      "translation": "скобкалевая"
+    },
+    {
+      "source": "bracketright",
+      "translation": "скобка вправо"
+    },
+    {
       "source": "break",
       "translation": "сломать"
     },
@@ -170609,6 +171829,10 @@
       "translation": "закрыто"
     },
     {
+      "source": "cmdline",
+      "translation": "cmdline"
+    },
+    {
       "source": "cmdr",
       "translation": "командор"
     },
@@ -170687,6 +171911,14 @@
     {
       "source": "combined",
       "translation": "комбинированный"
+    },
+    {
+      "source": "comm",
+      "translation": "связь"
+    },
+    {
+      "source": "comma",
+      "translation": "запятая"
     },
     {
       "source": "commander journal publication upload credential api key flight log",
@@ -170827,6 +172059,10 @@
     {
       "source": "descending",
       "translation": "нисходящий"
+    },
+    {
+      "source": "description",
+      "translation": "описание"
     },
     {
       "source": "desktop",
@@ -170975,6 +172211,14 @@
     {
       "source": "entry ID",
       "translation": "идентификатор записи"
+    },
+    {
+      "source": "environ",
+      "translation": "окружать"
+    },
+    {
+      "source": "equal",
+      "translation": "равный"
     },
     {
       "source": "error",
@@ -171267,6 +172511,10 @@
     {
       "source": "goto",
       "translation": "перейти к"
+    },
+    {
+      "source": "grave",
+      "translation": "могила"
     },
     {
       "source": "green",
@@ -172049,6 +173297,10 @@
       "translation": "в ожидании"
     },
     {
+      "source": "period",
+      "translation": "период"
+    },
+    {
       "source": "pilots-federation",
       "translation": "федерация пилотов"
     },
@@ -172317,12 +173569,20 @@
       "translation": "секунды"
     },
     {
+      "source": "self",
+      "translation": "себя"
+    },
+    {
       "source": "sell systems, best viable price first. Best sell from",
       "translation": "продавать системы, сначала по лучшей приемлемой цене. Лучшие продажи от"
     },
     {
       "source": "sell systems, daily commodity value order. Best sell from",
       "translation": "системы продажи, ежедневный заказ стоимости товара. Лучшие продажи от"
+    },
+    {
+      "source": "semicolon",
+      "translation": "точка с запятой"
     },
     {
       "source": "sensor",
@@ -172381,6 +173641,10 @@
       "translation": "название корабля"
     },
     {
+      "source": "shortcuts",
+      "translation": "ярлыки"
+    },
+    {
       "source": "shutdown",
       "translation": "неисправность"
     },
@@ -172421,6 +173685,10 @@
       "translation": "размер {0}x{1}"
     },
     {
+      "source": "slash",
+      "translation": "косая черта"
+    },
+    {
       "source": "slot",
       "translation": "слот"
     },
@@ -172435,6 +173703,10 @@
     {
       "source": "source",
       "translation": "источник"
+    },
+    {
+      "source": "space",
+      "translation": "космос"
     },
     {
       "source": "spansh.co.uk",
@@ -172499,6 +173771,10 @@
     {
       "source": "states",
       "translation": "государства"
+    },
+    {
+      "source": "status",
+      "translation": "статус"
     },
     {
       "source": "steam",
@@ -173283,6 +174559,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} Собственные операции с объединенными хостами были недоступны, поэтому отдельные окна остаются активными."
+    },
+    {
+      "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
+      "translation": "{0} Использует отдельный игровой дисплей X11. Наложенный монитор помогает выбрать клиента, когда доступна геометрия рабочего стола."
     },
     {
       "source": "{0} Win32 error {1}.",
@@ -174249,6 +175529,10 @@
     {
       "source": "(entry)",
       "translation": "（条目）"
+    },
+    {
+      "source": "(unavailable)",
+      "translation": "（不可用）"
     },
     {
       "source": "**App Restart Required",
@@ -176871,6 +178155,14 @@
       "translation": "自动（主监视器）"
     },
     {
+      "source": "Automatic (recommended)",
+      "translation": "自动（推荐）"
+    },
+    {
+      "source": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
+      "translation": "自动 - 等待Elite Dangerous聚焦的快捷方式。"
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "自动舰队承运商货物同步已关闭。"
     },
@@ -177273,6 +178565,10 @@
     {
       "source": "Back up, verify, and import",
       "translation": "备份、验证和导入"
+    },
+    {
+      "source": "BackSpace",
+      "translation": "退格键"
     },
     {
       "source": "Background",
@@ -181767,6 +183063,10 @@
       "translation": "桌面行为控制主应用程序返回的位置、显示的大小以及焦点是否交回给 Elite Dangerous。"
     },
     {
+      "source": "Desktop keyboard",
+      "translation": "桌面键盘"
+    },
+    {
       "source": "Desktop overlay placement and VR calibration are stored independently.",
       "translation": "桌面叠加放置和 VR 校准是独立存储的。"
     },
@@ -182735,8 +184035,28 @@
       "translation": "Elite Dangerous 在 {0} 之后无法聚焦；没有可用的匹配游戏窗口。"
     },
     {
+      "source": "Elite Dangerous focus confirmed.",
+      "translation": "Elite Dangerous焦点已确认。"
+    },
+    {
+      "source": "Elite Dangerous focus is unconfirmed; automatic detection was not learned.",
+      "translation": "Elite Dangerous焦点未确认；没有学习自动检测。"
+    },
+    {
+      "source": "Elite Dangerous is not focused.",
+      "translation": "Elite Dangerous 没有聚焦。"
+    },
+    {
+      "source": "Elite Dangerous is not running.",
+      "translation": "Elite Dangerous 未运行。"
+    },
+    {
       "source": "Elite Dangerous is not running; file operations are available.",
       "translation": "Elite Dangerous 未运行；可以进行文件操作。"
+    },
+    {
+      "source": "Elite Dangerous is running; desktop focus cannot be confirmed.",
+      "translation": "Elite Dangerous正在运行；无法确认桌面焦点。"
     },
     {
       "source": "Elite Dangerous journal folder",
@@ -182761,6 +184081,10 @@
     {
       "source": "Elite visited-stars cache",
       "translation": "精英访问过的星星缓存"
+    },
+    {
+      "source": "EliteDangerous6",
+      "translation": "精英危险6"
     },
     {
       "source": "EliteDangerous64",
@@ -184947,6 +186271,18 @@
       "translation": "游戏UI焦点"
     },
     {
+      "source": "Game display",
+      "translation": "游戏展示"
+    },
+    {
+      "source": "Game display {0}.",
+      "translation": "游戏显示{0}。"
+    },
+    {
+      "source": "Game keyboard recording failed: {0}",
+      "translation": "游戏键盘录制失败：{0}"
+    },
+    {
       "source": "Game overlays",
       "translation": "游戏叠加层"
     },
@@ -185015,6 +186351,14 @@
       "translation": "滑翔进近"
     },
     {
+      "source": "Global Shortcuts portal unavailable: {0}",
+      "translation": "全局快捷方式门户不可用：{0}"
+    },
+    {
+      "source": "Global Shortcuts portal version is unsupported.",
+      "translation": "不支持全局快捷方式门户版本。"
+    },
+    {
       "source": "Global goal supplied by Inara",
       "translation": "全球目标由 Inara 提供"
     },
@@ -185045,6 +186389,10 @@
     {
       "source": "Global keyboard input stopped: {0}",
       "translation": "全局键盘输入已停止：{0}"
+    },
+    {
+      "source": "Global keyboard input: listening on Elite display {0}.",
+      "translation": "全局键盘输入：在 Elite 显示器 {0} 上收听。"
     },
     {
       "source": "Global overlay behavior",
@@ -186699,6 +188047,10 @@
       "translation": "输入绑定"
     },
     {
+      "source": "Input detection reset. Use a shortcut with Elite Dangerous focused.",
+      "translation": "输入检测复位。使用以 Elite Dangerous 为焦点的快捷方式。"
+    },
+    {
       "source": "Input settings changed for this session but could not be saved: {0}",
       "translation": "此会话的输入设置已更改但无法保存：{0}"
     },
@@ -187171,6 +188523,10 @@
       "translation": "键盘挂钩"
     },
     {
+      "source": "Keyboard input source",
+      "translation": "键盘输入源"
+    },
+    {
       "source": "Keyboard shortcuts",
       "translation": "键盘快捷键"
     },
@@ -187185,6 +188541,10 @@
     {
       "source": "KeyboardHookCard",
       "translation": "键盘挂钩卡"
+    },
+    {
+      "source": "KeyboardSource",
+      "translation": "键盘源"
     },
     {
       "source": "Kills",
@@ -187445,6 +188805,14 @@
     {
       "source": "Last refresh: {0}",
       "translation": "上次刷新：{0}"
+    },
+    {
+      "source": "Last shortcut: {0} from {1}.",
+      "translation": "最后一个快捷方式：来自 {1} 的 {0}。"
+    },
+    {
+      "source": "Last shortcut: {0} from {1}; duplicate or unselected source ignored.",
+      "translation": "最后一个快捷键：{0} from {1}；重复或未选择的源被忽略。"
     },
     {
       "source": "Last system available",
@@ -188441,6 +189809,10 @@
     {
       "source": "ManifestVersion",
       "translation": "清单版本"
+    },
+    {
+      "source": "Manual - {0}{1}.",
+      "translation": "手册 - {0}{1}。"
     },
     {
       "source": "Manual / Canonn import",
@@ -189619,6 +190991,10 @@
       "translation": "原生 SteamVR / OpenVR 连接"
     },
     {
+      "source": "Native Wayland overlays require compositor support. Keyboard shortcuts require a supported Global Shortcuts portal.",
+      "translation": "Native Wayland 叠加需要合成器支持。键盘快捷键需要受支持的全局快捷键门户。"
+    },
+    {
       "source": "Natural Disaster",
       "translation": "自然灾害"
     },
@@ -190159,6 +191535,10 @@
       "translation": "没有可用的兼容地图模板。"
     },
     {
+      "source": "No configured shortcut received yet.",
+      "translation": "尚未收到配置的快捷方式。"
+    },
+    {
       "source": "No confirmed or predicted organisms are available for this body.",
       "translation": "该机构没有已证实或预测的生物体。"
     },
@@ -190517,6 +191897,10 @@
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
       "translation": "距离内没有与所选材料、需求和着陆点相匹配的销售站。"
+    },
+    {
+      "source": "No separate game display is connected.",
+      "translation": "没有连接单独的游戏显示器。"
     },
     {
       "source": "No session log file is available.",
@@ -192035,6 +193419,10 @@
       "translation": "力量"
     },
     {
+      "source": "PPid:",
+      "translation": "PPid："
+    },
+    {
       "source": "PRA",
       "translation": "普拉亚"
     },
@@ -192953,6 +194341,10 @@
     {
       "source": "PrimaryDim",
       "translation": "主要尺寸"
+    },
+    {
+      "source": "Print",
+      "translation": "打印"
     },
     {
       "source": "Prior",
@@ -195003,6 +196395,10 @@
       "translation": "需要 FSSAllBodiesFound 才能进行新的本地访问。启用的早期访问和较早的Spansh完成规则仍然适用。"
     },
     {
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
+      "translation": "需要桌面门户支持并批准所有配置的键盘快捷键。应用程序启动时需要新的批准。 Native Wayland 可能不会公开哪个窗口具有焦点。"
+    },
+    {
       "source": "Requires proper technique; hard impacts common",
       "translation": "需要适当的技术；严重影响常见"
     },
@@ -195069,6 +196465,14 @@
     {
       "source": "Reset every text and icon scale in this panel to 0%",
       "translation": "将此面板中的所有文本和图标比例重置为 0%"
+    },
+    {
+      "source": "Reset input detection",
+      "translation": "复位输入检测"
+    },
+    {
+      "source": "Reset returns to Automatic and clears the detected source. Shortcut bindings and desktop approvals are kept; no app restart is needed. Manual selection applies to all keyboard shortcuts and does not automatically fall back.",
+      "translation": "重置返回到自动并清除检测到的源。保留快捷方式绑定和桌面批准；无需重新启动应用程序。手动选择适用于所有键盘快捷键，并且不会自动回退。"
     },
     {
       "source": "Reset selected",
@@ -195257,6 +196661,10 @@
     {
       "source": "Retry selected deliveries",
       "translation": "重试选定的交付"
+    },
+    {
+      "source": "Return",
+      "translation": "返回"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -195977,6 +197385,10 @@
     {
       "source": "SKU",
       "translation": "存货单位"
+    },
+    {
+      "source": "SNAP",
+      "translation": "折断"
     },
     {
       "source": "SOURCE",
@@ -197695,6 +199107,10 @@
       "translation": "收到快捷方式：{0}；它在当前游戏上下文中不可用。"
     },
     {
+      "source": "Shortcut registration could not be remembered: {0}",
+      "translation": "无法记住快捷方式注册：{0}"
+    },
+    {
       "source": "ShortcutBindingsExpander",
       "translation": "快捷方式绑定扩展器"
     },
@@ -198585,6 +200001,10 @@
     {
       "source": "SrvSurvey ground-target overlay",
       "translation": "SrvSurvey 地面目标叠加"
+    },
+    {
+      "source": "SrvSurvey has focus; automatic detection is not learned here.",
+      "translation": "SrvSurvey有重点；自动检测这里就不学习了。"
     },
     {
       "source": "SrvSurvey high-gravity warning overlay",
@@ -202035,6 +203455,14 @@
       "translation": "采购计划将项目需求与当前船舶货物和相关舰队承运商货物进行比较。"
     },
     {
+      "source": "The shortcut portal returned an invalid session.",
+      "translation": "快捷方式门户返回无效会话。"
+    },
+    {
+      "source": "The shortcut portal returned an unexpected request handle.",
+      "translation": "快捷方式门户返回了意外的请求句柄。"
+    },
+    {
       "source": "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
       "translation": "侧边栏使活动 Commander 和主要 SrvSurvey 工作流程触手可及。即使 Elite 未运行，指南也仍然可用。"
     },
@@ -203055,6 +204483,10 @@
       "translation": "网址：SrvSurvey Frontier 授权"
     },
     {
+      "source": "Uid:",
+      "translation": "用户 ID："
+    },
+    {
       "source": "Unassigned",
       "translation": "未分配"
     },
@@ -203791,8 +205223,16 @@
       "translation": "使用当前的 Spansh 站点数据来获取 pad、经济体、派系、相关服务和违禁商品。 Alt+I 手动切换覆盖。"
     },
     {
+      "source": "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working.",
+      "translation": "对所有键盘快捷键使用一个检测到的源。当游戏发生变化或重复输入证明另一个来源正在工作时重新学习。"
+    },
+    {
       "source": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
       "translation": "使用 Spansh 系统时间戳而不是跳转信息和银河地图摘要中最新的 EDSM 正文时间戳。这是只读查找，不会发布期刊数据。"
+    },
+    {
+      "source": "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener.",
+      "translation": "使用桌面键盘监听器。单独的游戏显示器或本机 Wayland 游戏可能不会向此侦听器传递输入。"
     },
     {
       "source": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -204179,6 +205619,10 @@
       "translation": "等待指挥官法典日志条目。"
     },
     {
+      "source": "Waiting for Elite Dangerous.",
+      "translation": "等待Elite Dangerous。"
+    },
+    {
       "source": "Waiting for Elite's Rhino cockpit view.",
       "translation": "等待 Elite 的 Rhino 驾驶舱视图。"
     },
@@ -204455,8 +205899,16 @@
       "translation": "Wayland 没有提供共享 Elite Dangerous 窗口的框架。"
     },
     {
-      "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
-      "translation": "Wayland 叠加定位、透明度、点击率和全局输入需要合成器支持，并且未启用。"
+      "source": "Wayland keyboard input is waiting for Global Shortcuts portal support.",
+      "translation": "Wayland 键盘输入正在等待全局快捷方式门户支持。"
+    },
+    {
+      "source": "Wayland portal",
+      "translation": "韦兰门户网站"
+    },
+    {
+      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
+      "translation": "Wayland 门户快捷方式处于活动状态：{1} 绑定的 {0}。"
     },
     {
       "source": "Wayland screen capture",
@@ -204501,6 +205953,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Wayland 屏幕共享已取消。"
+    },
+    {
+      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
+      "translation": "需要 Wayland 快捷方式批准。重新启动SrvSurvey以批准启动时的快捷方式；现有的键盘侦听器仍然可用。"
+    },
+    {
+      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
+      "translation": "Wayland 快捷方式权限被拒绝；现有的键盘侦听器仍然可用。"
     },
     {
       "source": "WaylandCapture",
@@ -205075,6 +206535,10 @@
       "translation": "锑"
     },
     {
+      "source": "apostrophe",
+      "translation": "撇号"
+    },
+    {
       "source": "app",
       "translation": "应用程序"
     },
@@ -205165,6 +206629,10 @@
     {
       "source": "avares",
       "translation": "阿瓦雷斯"
+    },
+    {
+      "source": "backslash",
+      "translation": "反斜杠"
     },
     {
       "source": "badge",
@@ -205355,6 +206823,14 @@
       "translation": "博克塞尔"
     },
     {
+      "source": "bracketleft",
+      "translation": "左括号"
+    },
+    {
+      "source": "bracketright",
+      "translation": "右括号"
+    },
+    {
       "source": "break",
       "translation": "打破"
     },
@@ -205451,6 +206927,10 @@
       "translation": "关闭"
     },
     {
+      "source": "cmdline",
+      "translation": "命令行"
+    },
+    {
       "source": "cmdr",
       "translation": "指令寄存器"
     },
@@ -205529,6 +207009,14 @@
     {
       "source": "combined",
       "translation": "合并的"
+    },
+    {
+      "source": "comm",
+      "translation": "通讯"
+    },
+    {
+      "source": "comma",
+      "translation": "逗号"
     },
     {
       "source": "commander journal publication upload credential api key flight log",
@@ -205669,6 +207157,10 @@
     {
       "source": "descending",
       "translation": "下降"
+    },
+    {
+      "source": "description",
+      "translation": "描述"
     },
     {
       "source": "desktop",
@@ -205817,6 +207309,14 @@
     {
       "source": "entry ID",
       "translation": "条目ID"
+    },
+    {
+      "source": "environ",
+      "translation": "环境"
+    },
+    {
+      "source": "equal",
+      "translation": "平等的"
     },
     {
       "source": "error",
@@ -206109,6 +207609,10 @@
     {
       "source": "goto",
       "translation": "转到"
+    },
+    {
+      "source": "grave",
+      "translation": "严重"
     },
     {
       "source": "green",
@@ -206891,6 +208395,10 @@
       "translation": "待办的"
     },
     {
+      "source": "period",
+      "translation": "时期"
+    },
+    {
       "source": "pilots-federation",
       "translation": "飞行员联合会"
     },
@@ -207159,12 +208667,20 @@
       "translation": "秒"
     },
     {
+      "source": "self",
+      "translation": "自己"
+    },
+    {
       "source": "sell systems, best viable price first. Best sell from",
       "translation": "销售系统，最可行的价格优先。最畅销自"
     },
     {
       "source": "sell systems, daily commodity value order. Best sell from",
       "translation": "销售系统，每日商品价值订单。最畅销自"
+    },
+    {
+      "source": "semicolon",
+      "translation": "分号"
     },
     {
       "source": "sensor",
@@ -207223,6 +208739,10 @@
       "translation": "船名"
     },
     {
+      "source": "shortcuts",
+      "translation": "捷径"
+    },
+    {
       "source": "shutdown",
       "translation": "关闭"
     },
@@ -207263,6 +208783,10 @@
       "translation": "尺寸 {0}x{1}"
     },
     {
+      "source": "slash",
+      "translation": "削减"
+    },
+    {
       "source": "slot",
       "translation": "插槽"
     },
@@ -207277,6 +208801,10 @@
     {
       "source": "source",
       "translation": "来源"
+    },
+    {
+      "source": "space",
+      "translation": "空间"
     },
     {
       "source": "spansh.co.uk",
@@ -207341,6 +208869,10 @@
     {
       "source": "states",
       "translation": "州"
+    },
+    {
+      "source": "status",
+      "translation": "地位"
     },
     {
       "source": "steam",
@@ -208125,6 +209657,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} 本机组合主机操作不可用，因此单独的窗口保持活动状态。"
+    },
+    {
+      "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
+      "translation": "{0} 使用游戏的独立 X11 显示屏。当桌面几何形状可用时，覆盖监视器可帮助选择客户端。"
     },
     {
       "source": "{0} Win32 error {1}.",
@@ -209091,6 +210627,10 @@
     {
       "source": "(entry)",
       "translation": "* (ENTRY) >>>!"
+    },
+    {
+      "source": "(unavailable)",
+      "translation": "* (UNAVAILABLE) >>>!"
     },
     {
       "source": "**App Restart Required",
@@ -211713,6 +213253,14 @@
       "translation": "* AUTOMATIC (PRIMARY MONITOR) >>>!"
     },
     {
+      "source": "Automatic (recommended)",
+      "translation": "* AUTOMATIC (RECOMMENDED) >>>!"
+    },
+    {
+      "source": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
+      "translation": "* AUTOMATIC - WAITING FOR A SHORTCUT WITH ELITE DANGEROUS FOCUSED. >>>!"
+    },
+    {
       "source": "Automatic Fleet Carrier cargo sync is off.",
       "translation": "* AUTOMATIC FLEET CARRIER CARGO SYNC IS OFF. >>>!"
     },
@@ -212115,6 +213663,10 @@
     {
       "source": "Back up, verify, and import",
       "translation": "* BACK UP, VERIFY, AND IMPORT >>>!"
+    },
+    {
+      "source": "BackSpace",
+      "translation": "* BACKSPACE >>>!"
     },
     {
       "source": "Background",
@@ -216609,6 +218161,10 @@
       "translation": "* DESKTOP BEHAVIOR CONTROLS WHERE THE MAIN APPLICATION RETURNS, HOW LARGE IT APPEARS, AND WHETHER FOCUS IS HANDED BACK TO ELITE DANGEROUS. >>>!"
     },
     {
+      "source": "Desktop keyboard",
+      "translation": "* DESKTOP KEYBOARD >>>!"
+    },
+    {
       "source": "Desktop overlay placement and VR calibration are stored independently.",
       "translation": "* DESKTOP OVERLAY PLACEMENT AND VR CALIBRATION ARE STORED INDEPENDENTLY. >>>!"
     },
@@ -217577,8 +219133,28 @@
       "translation": "* ELITE DANGEROUS COULD NOT BE FOCUSED AFTER {0}; NO MATCHING GAME WINDOW WAS AVAILABLE. >>>!"
     },
     {
+      "source": "Elite Dangerous focus confirmed.",
+      "translation": "* ELITE DANGEROUS FOCUS CONFIRMED. >>>!"
+    },
+    {
+      "source": "Elite Dangerous focus is unconfirmed; automatic detection was not learned.",
+      "translation": "* ELITE DANGEROUS FOCUS IS UNCONFIRMED; AUTOMATIC DETECTION WAS NOT LEARNED. >>>!"
+    },
+    {
+      "source": "Elite Dangerous is not focused.",
+      "translation": "* ELITE DANGEROUS IS NOT FOCUSED. >>>!"
+    },
+    {
+      "source": "Elite Dangerous is not running.",
+      "translation": "* ELITE DANGEROUS IS NOT RUNNING. >>>!"
+    },
+    {
       "source": "Elite Dangerous is not running; file operations are available.",
       "translation": "* ELITE DANGEROUS IS NOT RUNNING; FILE OPERATIONS ARE AVAILABLE. >>>!"
+    },
+    {
+      "source": "Elite Dangerous is running; desktop focus cannot be confirmed.",
+      "translation": "* ELITE DANGEROUS IS RUNNING; DESKTOP FOCUS CANNOT BE CONFIRMED. >>>!"
     },
     {
       "source": "Elite Dangerous journal folder",
@@ -217603,6 +219179,10 @@
     {
       "source": "Elite visited-stars cache",
       "translation": "* ELITE VISITED-STARS CACHE >>>!"
+    },
+    {
+      "source": "EliteDangerous6",
+      "translation": "* ELITEDANGEROUS6 >>>!"
     },
     {
       "source": "EliteDangerous64",
@@ -219789,6 +221369,18 @@
       "translation": "* GAME UI FOCUS >>>!"
     },
     {
+      "source": "Game display",
+      "translation": "* GAME DISPLAY >>>!"
+    },
+    {
+      "source": "Game display {0}.",
+      "translation": "* GAME DISPLAY {0}. >>>!"
+    },
+    {
+      "source": "Game keyboard recording failed: {0}",
+      "translation": "* GAME KEYBOARD RECORDING FAILED: {0} >>>!"
+    },
+    {
       "source": "Game overlays",
       "translation": "* GAME OVERLAYS >>>!"
     },
@@ -219857,6 +221449,14 @@
       "translation": "* GLIDE APPROACH >>>!"
     },
     {
+      "source": "Global Shortcuts portal unavailable: {0}",
+      "translation": "* GLOBAL SHORTCUTS PORTAL UNAVAILABLE: {0} >>>!"
+    },
+    {
+      "source": "Global Shortcuts portal version is unsupported.",
+      "translation": "* GLOBAL SHORTCUTS PORTAL VERSION IS UNSUPPORTED. >>>!"
+    },
+    {
       "source": "Global goal supplied by Inara",
       "translation": "* GLOBAL GOAL SUPPLIED BY INARA >>>!"
     },
@@ -219887,6 +221487,10 @@
     {
       "source": "Global keyboard input stopped: {0}",
       "translation": "* GLOBAL KEYBOARD INPUT STOPPED: {0} >>>!"
+    },
+    {
+      "source": "Global keyboard input: listening on Elite display {0}.",
+      "translation": "* GLOBAL KEYBOARD INPUT: LISTENING ON ELITE DISPLAY {0}. >>>!"
     },
     {
       "source": "Global overlay behavior",
@@ -221541,6 +223145,10 @@
       "translation": "* INPUT BINDINGS >>>!"
     },
     {
+      "source": "Input detection reset. Use a shortcut with Elite Dangerous focused.",
+      "translation": "* INPUT DETECTION RESET. USE A SHORTCUT WITH ELITE DANGEROUS FOCUSED. >>>!"
+    },
+    {
       "source": "Input settings changed for this session but could not be saved: {0}",
       "translation": "* INPUT SETTINGS CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
     },
@@ -222013,6 +223621,10 @@
       "translation": "* KEYBOARD HOOK >>>!"
     },
     {
+      "source": "Keyboard input source",
+      "translation": "* KEYBOARD INPUT SOURCE >>>!"
+    },
+    {
       "source": "Keyboard shortcuts",
       "translation": "* KEYBOARD SHORTCUTS >>>!"
     },
@@ -222027,6 +223639,10 @@
     {
       "source": "KeyboardHookCard",
       "translation": "* KEYBOARDHOOKCARD >>>!"
+    },
+    {
+      "source": "KeyboardSource",
+      "translation": "* KEYBOARDSOURCE >>>!"
     },
     {
       "source": "Kills",
@@ -222287,6 +223903,14 @@
     {
       "source": "Last refresh: {0}",
       "translation": "* LAST REFRESH: {0} >>>!"
+    },
+    {
+      "source": "Last shortcut: {0} from {1}.",
+      "translation": "* LAST SHORTCUT: {0} FROM {1}. >>>!"
+    },
+    {
+      "source": "Last shortcut: {0} from {1}; duplicate or unselected source ignored.",
+      "translation": "* LAST SHORTCUT: {0} FROM {1}; DUPLICATE OR UNSELECTED SOURCE IGNORED. >>>!"
     },
     {
       "source": "Last system available",
@@ -223283,6 +224907,10 @@
     {
       "source": "ManifestVersion",
       "translation": "* MANIFESTVERSION >>>!"
+    },
+    {
+      "source": "Manual - {0}{1}.",
+      "translation": "* MANUAL - {0}{1}. >>>!"
     },
     {
       "source": "Manual / Canonn import",
@@ -224461,6 +226089,10 @@
       "translation": "* NATIVE STEAMVR / OPENVR CONNECTION >>>!"
     },
     {
+      "source": "Native Wayland overlays require compositor support. Keyboard shortcuts require a supported Global Shortcuts portal.",
+      "translation": "* NATIVE WAYLAND OVERLAYS REQUIRE COMPOSITOR SUPPORT. KEYBOARD SHORTCUTS REQUIRE A SUPPORTED GLOBAL SHORTCUTS PORTAL. >>>!"
+    },
+    {
       "source": "Natural Disaster",
       "translation": "* NATURAL DISASTER >>>!"
     },
@@ -225001,6 +226633,10 @@
       "translation": "* NO COMPATIBLE MAP TEMPLATE IS AVAILABLE. >>>!"
     },
     {
+      "source": "No configured shortcut received yet.",
+      "translation": "* NO CONFIGURED SHORTCUT RECEIVED YET. >>>!"
+    },
+    {
       "source": "No confirmed or predicted organisms are available for this body.",
       "translation": "* NO CONFIRMED OR PREDICTED ORGANISMS ARE AVAILABLE FOR THIS BODY. >>>!"
     },
@@ -225359,6 +226995,10 @@
     {
       "source": "No sell station matches the selected material, demand, and landing pad within the distance.",
       "translation": "* NO SELL STATION MATCHES THE SELECTED MATERIAL, DEMAND, AND LANDING PAD WITHIN THE DISTANCE. >>>!"
+    },
+    {
+      "source": "No separate game display is connected.",
+      "translation": "* NO SEPARATE GAME DISPLAY IS CONNECTED. >>>!"
     },
     {
       "source": "No session log file is available.",
@@ -226877,6 +228517,10 @@
       "translation": "* POWER >>>!"
     },
     {
+      "source": "PPid:",
+      "translation": "* PPID: >>>!"
+    },
+    {
       "source": "PRA",
       "translation": "* PRA >>>!"
     },
@@ -227795,6 +229439,10 @@
     {
       "source": "PrimaryDim",
       "translation": "* PRIMARYDIM >>>!"
+    },
+    {
+      "source": "Print",
+      "translation": "* PRINT >>>!"
     },
     {
       "source": "Prior",
@@ -229845,6 +231493,10 @@
       "translation": "* REQUIRES FSSALLBODIESFOUND FOR NEW LOCAL VISITS. ENABLED EARLIER-VISIT AND OLDER-SPANSH COMPLETION RULES STILL APPLY. >>>!"
     },
     {
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
+      "translation": "* REQUIRES DESKTOP PORTAL SUPPORT AND APPROVAL FOR ALL CONFIGURED KEYBOARD SHORTCUTS. NEW APPROVAL IS REQUESTED AT APP STARTUP. NATIVE WAYLAND MAY NOT EXPOSE WHICH WINDOW HAS FOCUS. >>>!"
+    },
+    {
       "source": "Requires proper technique; hard impacts common",
       "translation": "* REQUIRES PROPER TECHNIQUE; HARD IMPACTS COMMON >>>!"
     },
@@ -229911,6 +231563,14 @@
     {
       "source": "Reset every text and icon scale in this panel to 0%",
       "translation": "* RESET EVERY TEXT AND ICON SCALE IN THIS PANEL TO 0% >>>!"
+    },
+    {
+      "source": "Reset input detection",
+      "translation": "* RESET INPUT DETECTION >>>!"
+    },
+    {
+      "source": "Reset returns to Automatic and clears the detected source. Shortcut bindings and desktop approvals are kept; no app restart is needed. Manual selection applies to all keyboard shortcuts and does not automatically fall back.",
+      "translation": "* RESET RETURNS TO AUTOMATIC AND CLEARS THE DETECTED SOURCE. SHORTCUT BINDINGS AND DESKTOP APPROVALS ARE KEPT; NO APP RESTART IS NEEDED. MANUAL SELECTION APPLIES TO ALL KEYBOARD SHORTCUTS AND DOES NOT AUTOMATICALLY FALL BACK. >>>!"
     },
     {
       "source": "Reset selected",
@@ -230099,6 +231759,10 @@
     {
       "source": "Retry selected deliveries",
       "translation": "* RETRY SELECTED DELIVERIES >>>!"
+    },
+    {
+      "source": "Return",
+      "translation": "* RETURN >>>!"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -230819,6 +232483,10 @@
     {
       "source": "SKU",
       "translation": "* SKU >>>!"
+    },
+    {
+      "source": "SNAP",
+      "translation": "* SNAP >>>!"
     },
     {
       "source": "SOURCE",
@@ -232537,6 +234205,10 @@
       "translation": "* SHORTCUT RECEIVED: {0}; IT IS NOT AVAILABLE IN THE CURRENT GAME CONTEXT. >>>!"
     },
     {
+      "source": "Shortcut registration could not be remembered: {0}",
+      "translation": "* SHORTCUT REGISTRATION COULD NOT BE REMEMBERED: {0} >>>!"
+    },
+    {
       "source": "ShortcutBindingsExpander",
       "translation": "* SHORTCUTBINDINGSEXPANDER >>>!"
     },
@@ -233427,6 +235099,10 @@
     {
       "source": "SrvSurvey ground-target overlay",
       "translation": "* SRVSURVEY GROUND-TARGET OVERLAY >>>!"
+    },
+    {
+      "source": "SrvSurvey has focus; automatic detection is not learned here.",
+      "translation": "* SRVSURVEY HAS FOCUS; AUTOMATIC DETECTION IS NOT LEARNED HERE. >>>!"
     },
     {
       "source": "SrvSurvey high-gravity warning overlay",
@@ -236877,6 +238553,14 @@
       "translation": "* THE SHOPPING PLAN COMPARES PROJECT NEED WITH CURRENT SHIP CARGO AND LINKED FLEET CARRIER CARGO. >>>!"
     },
     {
+      "source": "The shortcut portal returned an invalid session.",
+      "translation": "* THE SHORTCUT PORTAL RETURNED AN INVALID SESSION. >>>!"
+    },
+    {
+      "source": "The shortcut portal returned an unexpected request handle.",
+      "translation": "* THE SHORTCUT PORTAL RETURNED AN UNEXPECTED REQUEST HANDLE. >>>!"
+    },
+    {
       "source": "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
       "translation": "* THE SIDEBAR KEEPS THE ACTIVE COMMANDER AND THE MAJOR SRVSURVEY WORKFLOWS CLOSE AT HAND. GUIDES REMAINS AVAILABLE EVEN WHEN ELITE IS NOT RUNNING. >>>!"
     },
@@ -237897,6 +239581,10 @@
       "translation": "* URL:SRVSURVEY FRONTIER AUTHORIZATION >>>!"
     },
     {
+      "source": "Uid:",
+      "translation": "* UID: >>>!"
+    },
+    {
       "source": "Unassigned",
       "translation": "* UNASSIGNED >>>!"
     },
@@ -238633,8 +240321,16 @@
       "translation": "* USES CURRENT SPANSH STATION DATA FOR PADS, ECONOMIES, FACTION, RELEVANT SERVICES, AND PROHIBITED COMMODITIES. ALT+I TOGGLES THE OVERLAY MANUALLY. >>>!"
     },
     {
+      "source": "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working.",
+      "translation": "* USES ONE DETECTED SOURCE FOR ALL KEYBOARD SHORTCUTS. RELEARNS WHEN THE GAME CHANGES OR REPEATED INPUT PROVES ANOTHER SOURCE IS WORKING. >>>!"
+    },
+    {
       "source": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
       "translation": "* USES THE SPANSH SYSTEM TIMESTAMP INSTEAD OF THE NEWEST EDSM BODY TIMESTAMP IN JUMP INFO AND GALAXY MAP SUMMARIES. THIS IS A READ-ONLY LOOKUP AND DOES NOT PUBLISH JOURNAL DATA. >>>!"
+    },
+    {
+      "source": "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener.",
+      "translation": "* USES THE DESKTOP KEYBOARD LISTENER. A SEPARATE GAME DISPLAY OR NATIVE WAYLAND GAME MAY NOT DELIVER INPUT TO THIS LISTENER. >>>!"
     },
     {
       "source": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -239021,6 +240717,10 @@
       "translation": "* WAITING FOR COMMANDER CODEX JOURNAL ENTRIES. >>>!"
     },
     {
+      "source": "Waiting for Elite Dangerous.",
+      "translation": "* WAITING FOR ELITE DANGEROUS. >>>!"
+    },
+    {
       "source": "Waiting for Elite's Rhino cockpit view.",
       "translation": "* WAITING FOR ELITE'S RHINO COCKPIT VIEW. >>>!"
     },
@@ -239297,8 +240997,16 @@
       "translation": "* WAYLAND DID NOT PROVIDE A FRAME FROM THE SHARED ELITE DANGEROUS WINDOW. >>>!"
     },
     {
-      "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
-      "translation": "* WAYLAND OVERLAY POSITIONING, TRANSPARENCY, CLICK-THROUGH, AND GLOBAL INPUT REQUIRE COMPOSITOR SUPPORT AND ARE NOT ENABLED. >>>!"
+      "source": "Wayland keyboard input is waiting for Global Shortcuts portal support.",
+      "translation": "* WAYLAND KEYBOARD INPUT IS WAITING FOR GLOBAL SHORTCUTS PORTAL SUPPORT. >>>!"
+    },
+    {
+      "source": "Wayland portal",
+      "translation": "* WAYLAND PORTAL >>>!"
+    },
+    {
+      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
+      "translation": "* WAYLAND PORTAL SHORTCUTS ACTIVE: {0} OF {1} BINDINGS. >>>!"
     },
     {
       "source": "Wayland screen capture",
@@ -239343,6 +241051,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "* WAYLAND SCREEN SHARING WAS CANCELED. >>>!"
+    },
+    {
+      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
+      "translation": "* WAYLAND SHORTCUT APPROVAL IS NEEDED. RESTART SRVSURVEY TO APPROVE SHORTCUTS AT STARTUP; EXISTING KEYBOARD LISTENERS REMAIN AVAILABLE. >>>!"
+    },
+    {
+      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
+      "translation": "* WAYLAND SHORTCUT PERMISSION WAS DECLINED; EXISTING KEYBOARD LISTENERS REMAIN AVAILABLE. >>>!"
     },
     {
       "source": "WaylandCapture",
@@ -239917,6 +241633,10 @@
       "translation": "* ANTIMONY >>>!"
     },
     {
+      "source": "apostrophe",
+      "translation": "* APOSTROPHE >>>!"
+    },
+    {
       "source": "app",
       "translation": "* APP >>>!"
     },
@@ -240007,6 +241727,10 @@
     {
       "source": "avares",
       "translation": "* AVARES >>>!"
+    },
+    {
+      "source": "backslash",
+      "translation": "* BACKSLASH >>>!"
     },
     {
       "source": "badge",
@@ -240197,6 +241921,14 @@
       "translation": "* BOXEL >>>!"
     },
     {
+      "source": "bracketleft",
+      "translation": "* BRACKETLEFT >>>!"
+    },
+    {
+      "source": "bracketright",
+      "translation": "* BRACKETRIGHT >>>!"
+    },
+    {
       "source": "break",
       "translation": "* BREAK >>>!"
     },
@@ -240293,6 +242025,10 @@
       "translation": "* CLOSED >>>!"
     },
     {
+      "source": "cmdline",
+      "translation": "* CMDLINE >>>!"
+    },
+    {
       "source": "cmdr",
       "translation": "* CMDR >>>!"
     },
@@ -240371,6 +242107,14 @@
     {
       "source": "combined",
       "translation": "* COMBINED >>>!"
+    },
+    {
+      "source": "comm",
+      "translation": "* COMM >>>!"
+    },
+    {
+      "source": "comma",
+      "translation": "* COMMA >>>!"
     },
     {
       "source": "commander journal publication upload credential api key flight log",
@@ -240511,6 +242255,10 @@
     {
       "source": "descending",
       "translation": "* DESCENDING >>>!"
+    },
+    {
+      "source": "description",
+      "translation": "* DESCRIPTION >>>!"
     },
     {
       "source": "desktop",
@@ -240659,6 +242407,14 @@
     {
       "source": "entry ID",
       "translation": "* ENTRY ID >>>!"
+    },
+    {
+      "source": "environ",
+      "translation": "* ENVIRON >>>!"
+    },
+    {
+      "source": "equal",
+      "translation": "* EQUAL >>>!"
     },
     {
       "source": "error",
@@ -240951,6 +242707,10 @@
     {
       "source": "goto",
       "translation": "* GOTO >>>!"
+    },
+    {
+      "source": "grave",
+      "translation": "* GRAVE >>>!"
     },
     {
       "source": "green",
@@ -241733,6 +243493,10 @@
       "translation": "* PENDING >>>!"
     },
     {
+      "source": "period",
+      "translation": "* PERIOD >>>!"
+    },
+    {
       "source": "pilots-federation",
       "translation": "* PILOTS-FEDERATION >>>!"
     },
@@ -242001,12 +243765,20 @@
       "translation": "* SECONDS >>>!"
     },
     {
+      "source": "self",
+      "translation": "* SELF >>>!"
+    },
+    {
       "source": "sell systems, best viable price first. Best sell from",
       "translation": "* SELL SYSTEMS, BEST VIABLE PRICE FIRST. BEST SELL FROM >>>!"
     },
     {
       "source": "sell systems, daily commodity value order. Best sell from",
       "translation": "* SELL SYSTEMS, DAILY COMMODITY VALUE ORDER. BEST SELL FROM >>>!"
+    },
+    {
+      "source": "semicolon",
+      "translation": "* SEMICOLON >>>!"
     },
     {
       "source": "sensor",
@@ -242065,6 +243837,10 @@
       "translation": "* SHIPNAME >>>!"
     },
     {
+      "source": "shortcuts",
+      "translation": "* SHORTCUTS >>>!"
+    },
+    {
       "source": "shutdown",
       "translation": "* SHUTDOWN >>>!"
     },
@@ -242105,6 +243881,10 @@
       "translation": "* SIZED {0}X{1} >>>!"
     },
     {
+      "source": "slash",
+      "translation": "* SLASH >>>!"
+    },
+    {
       "source": "slot",
       "translation": "* SLOT >>>!"
     },
@@ -242119,6 +243899,10 @@
     {
       "source": "source",
       "translation": "* SOURCE >>>!"
+    },
+    {
+      "source": "space",
+      "translation": "* SPACE >>>!"
     },
     {
       "source": "spansh.co.uk",
@@ -242183,6 +243967,10 @@
     {
       "source": "states",
       "translation": "* STATES >>>!"
+    },
+    {
+      "source": "status",
+      "translation": "* STATUS >>>!"
     },
     {
       "source": "steam",
@@ -242967,6 +244755,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "* {0} THE NATIVE COMBINED-HOST OPERATIONS WERE UNAVAILABLE, SO SEPARATE WINDOWS REMAIN ACTIVE. >>>!"
+    },
+    {
+      "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
+      "translation": "* {0} USES THE GAME'S SEPARATE X11 DISPLAY. THE OVERLAY MONITOR HELPS SELECT A CLIENT WHEN DESKTOP GEOMETRY IS AVAILABLE. >>>!"
     },
     {
       "source": "{0} Win32 error {1}.",

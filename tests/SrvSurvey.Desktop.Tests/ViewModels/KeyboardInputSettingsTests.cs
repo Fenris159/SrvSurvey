@@ -1,0 +1,134 @@
+using System.Text.Json.Nodes;
+using SrvSurvey.Desktop.Input;
+using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.ViewModels;
+
+namespace SrvSurvey.Desktop.Tests.ViewModels;
+
+public sealed class KeyboardInputSettingsTests : IDisposable
+{
+    private readonly string root = Path.Combine(Path.GetTempPath(), "srv-keyboard-settings-" + Guid.NewGuid());
+
+    /// <summary>Persists one source per profile without changing shortcuts or another commander's preference.</summary>
+    [Theory]
+    [InlineData(KeyboardInputMode.Desktop)]
+    [InlineData(KeyboardInputMode.GameDisplay)]
+    [InlineData(KeyboardInputMode.WaylandPortal)]
+    public void SourceSelectionPersistsAndResetPreservesBindings(KeyboardInputMode mode)
+    {
+        var store = new GlobalInputSettingsStore(Path.Combine(root, "first.json"));
+        GlobalInputSettingsViewModel viewModel = Create(store);
+        viewModel.KeyboardEnabled = true;
+        viewModel.Bindings.Single(binding => binding.Definition.Action == GlobalInputAction.MapZoomIn).Chord = "CTRL O";
+        viewModel.UpdateKeyboardDiagnostics(
+            new(null, true, true, true, "Last shortcut received.", "Elite focus confirmed.", "Game display :2.")
+        );
+        viewModel.SelectedKeyboardSource = viewModel.KeyboardSourceOptions.Single(option => option.Mode == mode);
+        Assert.Equal(mode, store.Load().KeyboardSource);
+        Assert.Contains("Manual", viewModel.KeyboardSourceStatus);
+        Assert.Equal(mode, Create(store).SelectedKeyboardSource.Mode);
+        Assert.Equal(
+            KeyboardInputMode.Automatic,
+            new GlobalInputSettingsStore(Path.Combine(root, "second.json")).Load().KeyboardSource
+        );
+        int resets = 0;
+        viewModel.KeyboardDetectionResetRequested += (_, _) => resets++;
+        viewModel.ResetKeyboardDetectionCommand.Execute(null);
+        viewModel.ResetKeyboardDetectionCommand.Execute(null);
+        Assert.Equal(2, resets);
+        Assert.Equal(KeyboardInputMode.Automatic, store.Load().KeyboardSource);
+        Assert.Equal("CTRL O", store.Load().Bindings[GlobalInputAction.MapZoomIn]);
+        Assert.True(store.Load().KeyboardEnabled);
+    }
+
+    /// <summary>Rejects unavailable choices and distinguishes requested overrides, learned sources, focus, and received input.</summary>
+    [Fact]
+    public void DiagnosticsDoNotChangeSavedSourceOrBindings()
+    {
+        var store = new GlobalInputSettingsStore(Path.Combine(root, "ui.json"));
+        GlobalInputSettingsViewModel viewModel = Create(store);
+        Assert.Contains("waiting", viewModel.KeyboardSourceStatus);
+        viewModel.SelectedKeyboardSource = viewModel.KeyboardSourceOptions.Single(option =>
+            option.Mode == KeyboardInputMode.WaylandPortal
+        );
+        Assert.Equal(KeyboardInputMode.Automatic, viewModel.CurrentSettings.KeyboardSource);
+        viewModel.SelectedKeyboardSource = null!;
+        viewModel.UpdateKeyboardDiagnostics(
+            new(
+                KeyboardInputMode.GameDisplay,
+                true,
+                true,
+                false,
+                "Map received.",
+                "Focus unavailable.",
+                "Game display :2."
+            )
+        );
+        Assert.Contains("using Game display", viewModel.KeyboardSourceStatus);
+        IReadOnlyList<KeyboardInputSourceOption> choices = viewModel.KeyboardSourceOptions;
+        viewModel.UpdateKeyboardDiagnostics(
+            new(
+                KeyboardInputMode.GameDisplay,
+                true,
+                true,
+                false,
+                "Map received.",
+                "Focus unavailable.",
+                "Game display :2."
+            )
+        );
+        Assert.Same(choices, viewModel.KeyboardSourceOptions);
+        Assert.Equal("Focus unavailable.", viewModel.KeyboardFocusStatus);
+        Assert.Equal("Map received.", viewModel.LastKeyboardInput);
+        viewModel.SelectedKeyboardSource = viewModel.KeyboardSourceOptions.Single(option =>
+            option.Mode == KeyboardInputMode.GameDisplay
+        );
+        KeyboardInputSourceOption selectedSource = viewModel.SelectedKeyboardSource;
+        viewModel.SelectedKeyboardSource = selectedSource;
+        Assert.Contains(":2", viewModel.KeyboardSourceDetails);
+        viewModel.UpdateKeyboardDiagnostics(
+            new(null, true, false, false, "Map received.", "Elite is not running.", "No game display.")
+        );
+        Assert.Contains("unavailable", viewModel.KeyboardSourceStatus);
+        Assert.Equal(KeyboardInputMode.GameDisplay, store.Load().KeyboardSource);
+    }
+
+    /// <summary>Old and malformed profiles retain Automatic; defined preferences survive a normal save.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("99")]
+    [InlineData("Unknown")]
+    public void MissingOrInvalidSourceUsesAutomatic(string? value)
+    {
+        Directory.CreateDirectory(root);
+        string path = Path.Combine(root, "ui.json");
+        File.WriteAllText(
+            path,
+            new JsonObject { ["Input"] = new JsonObject { ["KeyboardSource"] = value } }.ToJsonString()
+        );
+        var store = new GlobalInputSettingsStore(path);
+        Assert.Equal(KeyboardInputMode.Automatic, store.Load().KeyboardSource);
+        store.Save(GlobalInputSettings.Default);
+        Assert.Equal(KeyboardInputMode.Automatic, store.Load().KeyboardSource);
+    }
+
+    /// <summary>Creates input settings without discovering physical controller devices.</summary>
+    private static GlobalInputSettingsViewModel Create(GlobalInputSettingsStore store) =>
+        new(store, OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxXWayland), new EmptyControllers());
+
+    /// <summary>Removes only this test's temporary profiles.</summary>
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    /// <summary>Provides a deterministic empty controller inventory.</summary>
+    private sealed class EmptyControllers : IControllerDeviceProvider
+    {
+        /// <summary>Reports no controllers without invoking SDL.</summary>
+        public ControllerDeviceDiscoveryResult Discover() => new([], null);
+    }
+}

@@ -44,6 +44,75 @@ while placing its ordinary, separately interactive overlay windows on the
 desktop display. If there is no valid marker, SrvSurvey keeps using its normal
 desktop game-window tracker.
 
+Keyboard shortcuts also follow this bridge. SrvSurvey listens for game keys on
+the nested display alongside its desktop keyboard listener, so shortcuts work
+while Elite is focused and while interacting with desktop overlays. The nested
+listener closes when the game display ends and reconnects when a new bridge is
+available. Existing shortcut bindings and the keyboard-enable setting apply to
+both listeners.
+
+### Automatic Linux keyboard input
+
+When keyboard shortcuts are enabled at launch, SrvSurvey detects the desktop's
+Global Shortcuts portal and requests any needed approval during startup. Automatic
+focus transfer to Elite waits for that request to finish; journal processing keeps
+running. Previously approved shortcuts are restored when supported by the desktop,
+including a selection that approved only some shortcuts. SrvSurvey remembers which
+bindings were requested, while the desktop continues to control the permissions.
+A declined request keeps existing listeners available and is not repeatedly presented.
+
+Reconnects and binding changes during a session never open a new approval dialog.
+If new approval is needed, the keyboard status asks you to restart SrvSurvey so it
+can request approval at startup. Existing raw listeners apply changed bindings
+immediately. Disabling keyboard input cancels pending approval and closes the session.
+
+SrvSurvey also discovers a running Elite process's local X11 display when its
+same-user process metadata is accessible. This allows keyboard shortcuts on a
+nested display without a Gamescope bridge. The X server must still permit the
+connection and provide its RECORD extension. The bridge remains useful for
+overlay placement; automatic keyboard discovery does not infer desktop window
+coordinates from a nested display. With multiple Elite clients, discovery prefers
+the focused client. As a fallback it follows the configured overlay monitor when
+desktop window geometry or a validated bridge maps that monitor to a game display.
+If several distinct game displays remain unmapped or equally suitable, it waits
+instead of guessing which one to listen to.
+
+One shared source is learned for all keyboard shortcuts only after an activation
+with confirmed Elite focus: the desktop portal takes priority over a nested
+display, which takes priority over the desktop keyboard hook. A portal that did
+not accept all configured keyboard shortcuts cannot become the shared source.
+Duplicate reports of the same press are combined into one action. The choice
+stays in use for the session and is released when that source disconnects or
+bindings or the game identity change. If a connected source stops delivering
+shortcuts, repeated, separated shortcut presses received by another source with
+confirmed game focus allow automatic recovery. Idle time alone does not switch
+sources. Using shortcuts in SrvSurvey or before Elite runs does not choose the
+game input source. Changes to portal registrations made in desktop settings update
+availability without asking for approval again during gameplay.
+
+Below **Enable key chords** in **Settings → Input**, **Keyboard input source**
+offers Automatic, Desktop keyboard, Game display, and Wayland portal. One saved
+choice applies to every keyboard shortcut in that commander profile. Unavailable
+sources cannot be newly selected; an existing manual choice remains selected if
+its provider disappears and does not silently fall back. The status explains the
+chosen source, focus, and the last configured shortcut received, including an
+ignored duplicate. It does not record arbitrary keystrokes.
+
+**Reset input detection** returns to Automatic and clears remembered input and
+held-key state. It preserves shortcut bindings and desktop approval, works without
+restarting SrvSurvey, and waits for a working shortcut with Elite focused before
+learning a source again.
+
+Native Wayland game input requires a desktop backend implementing Global
+Shortcuts. The portal reports approved shortcut actions rather than arbitrary
+keystrokes or the focused window. When Elite's foreground window can be tracked,
+SrvSurvey preserves its foreground checks. Otherwise portal shortcuts remain
+global while Elite is running, and stop affecting SrvSurvey when Elite exits.
+Those unconfirmed-focus activations do not lock in an input source.
+Application text entry continues to suppress shortcut actions. A restricted
+nested display with no accessible process metadata or X11 connection requires
+portal support. See the [Global Shortcuts portal specification](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.GlobalShortcuts.html).
+
 The helper [PublishGamescopeGameWindowBridge.sh](../scripts/PublishGamescopeGameWindowBridge.sh)
 writes this marker atomically. A native Wayland Gamescope launch wrapper should
 call it **after** it knows the Gamescope PID and nested X11 `DISPLAY`, pass the
