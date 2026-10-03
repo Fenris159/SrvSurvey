@@ -187,7 +187,11 @@ internal sealed class X11OverlayPlatformService
         {
             return handle != nint.Zero
                 && TryGetDisplay(out nint currentDisplay)
-                && X11OverlayWindowManagement.TryEnable(currentDisplay, unchecked((nuint)handle));
+                && X11OverlayWindowManagement.TryEnable(
+                    X11Native.OverlayWindowOperations,
+                    currentDisplay,
+                    unchecked((nuint)handle)
+                );
         }
     }
 
@@ -199,11 +203,17 @@ internal sealed class X11OverlayPlatformService
         {
             if (handle != nint.Zero && TryGetDisplay(out nint currentDisplay))
             {
-                X11OverlayWindowManagement.Raise(currentDisplay, unchecked((nuint)handle), activate);
+                X11OverlayWindowManagement.Raise(
+                    X11Native.OverlayWindowOperations,
+                    currentDisplay,
+                    unchecked((nuint)handle),
+                    activate
+                );
             }
         }
     }
 
+    /// <summary>Makes a panel click-through and reports whether passive native preparation succeeded.</summary>
     public OverlayPreparationResult PreparePassiveWindow(Window window)
     {
         OverlayInteractionResult result = SetInteractive(window, interactive: false);

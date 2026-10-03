@@ -47,6 +47,7 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
     /// <summary>Warns only when the saved bypass choice differs from this session's startup choice.</summary>
     public bool WindowManagementRestartRequired => BypassWindowManagement != startupBypassWindowManagement;
 
+    /// <summary>Constrains live and preview overlay placement to the selected overlay monitor.</summary>
     public bool LockToMonitor
     {
         get => preferences.LockToMonitor;

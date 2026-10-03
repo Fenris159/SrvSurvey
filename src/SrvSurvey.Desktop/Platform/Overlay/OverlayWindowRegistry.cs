@@ -36,6 +36,7 @@ public sealed class OverlayWindowRegistry
         WindowPreparing?.Invoke(window);
     }
 
+    /// <summary>Indicates whether galaxy-map visibility policy is active for registered live overlays.</summary>
     public bool IsGalaxyMapContextActive => galaxyMapContextActive;
 
     /// <summary>Registers a live panel before showing it; editor previews share native preparation but keep a separate lifecycle.</summary>

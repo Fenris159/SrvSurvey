@@ -291,12 +291,25 @@ public sealed class OverlayWindowManagementSessionTests
     /// <summary>Records native requests without depending on a desktop compositor.</summary>
     private sealed class FakeWindowManagement : IOverlayWindowManagement, IOverlayPlatformService
     {
+        /// <summary>Controls whether pre-map native configuration succeeds.</summary>
         internal bool CanPrepare { get; init; } = true;
+
+        /// <summary>Records windows submitted for native bypass configuration.</summary>
         internal List<Window> Prepared { get; } = [];
+
+        /// <summary>Records shown or moved windows submitted for raising.</summary>
         internal List<Window> Raised { get; } = [];
+
+        /// <summary>Records windows explicitly given keyboard focus.</summary>
         internal List<Window> Activated { get; } = [];
+
+        /// <summary>Detects attempts to change native management after a window becomes visible.</summary>
         internal bool PreparedWhileVisible { get; private set; }
+
+        /// <summary>Counts releases of the native backend owned by the presentation session.</summary>
         internal int DisposeCount { get; private set; }
+
+        /// <summary>Reports a desktop host that supports separate XWayland overlay windows.</summary>
         public OverlayPlatformCapabilities Capabilities =>
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxXWayland);
 

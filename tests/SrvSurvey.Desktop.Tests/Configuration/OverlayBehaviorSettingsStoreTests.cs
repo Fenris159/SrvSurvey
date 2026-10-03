@@ -61,6 +61,7 @@ public sealed class OverlayBehaviorSettingsStoreTests : IDisposable
         Assert.True(second.Load().LockToMonitor);
     }
 
+    /// <summary>Uses automatic monitor selection when the persisted monitor identity is malformed.</summary>
     [Theory]
     [InlineData("null")]
     [InlineData("42")]
