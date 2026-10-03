@@ -6,6 +6,109 @@ namespace SrvSurvey.Desktop.Tests.Input;
 
 public sealed class DbusGlobalShortcutSessionTests
 {
+    /// <summary>Uses application settings only on GNOME, never attempting a host launch during capability discovery.</summary>
+    [Theory]
+    [InlineData("ubuntu:GNOME", true)]
+    [InlineData("gnome", true)]
+    [InlineData("KDE", false)]
+    [InlineData("X-Cinnamon", false)]
+    [InlineData("", false)]
+    public async Task OpensLegacySettingsOnlyOnGnome(string desktop, bool expected)
+    {
+        int launches = 0;
+        bool opened = await DbusGlobalShortcutSession.OpenLegacySettingsAsync(
+            CancellationToken.None,
+            desktop,
+            _ =>
+            {
+                launches++;
+                return Task.CompletedTask;
+            }
+        );
+        Assert.Equal(expected, opened);
+        Assert.Equal(expected ? 1 : 0, launches);
+        using var canceled = new CancellationTokenSource();
+        await canceled.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            DbusGlobalShortcutSession.OpenLegacySettingsAsync(canceled.Token, desktop)
+        );
+        if (expected)
+        {
+            await Assert.ThrowsAsync<IOException>(() =>
+                DbusGlobalShortcutSession.OpenLegacySettingsAsync(
+                    CancellationToken.None,
+                    desktop,
+                    _ => throw new IOException("Settings unavailable")
+                )
+            );
+        }
+    }
+
+    /// <summary>Uses GNOME's application-panel action with SrvSurvey's canonical desktop ID and propagates launch failures.</summary>
+    [Fact]
+    public async Task GnomeSettingsActionTargetsThisApplication()
+    {
+        var settings = new FakeSettingsActions();
+        await DbusGlobalShortcutSession.ActivateGnomeSettingsAsync(settings, CancellationToken.None);
+        Assert.Equal(1, settings.Calls);
+        settings.Failure = true;
+        await Assert.ThrowsAsync<IOException>(() =>
+            DbusGlobalShortcutSession.ActivateGnomeSettingsAsync(settings, CancellationToken.None)
+        );
+    }
+
+    /// <summary>Opens configuration only on supported versions and preserves the restored session.</summary>
+    [Theory]
+    [InlineData(1u, false)]
+    [InlineData(2u, true)]
+    public async Task ConfiguresExistingSessionWhenSupported(uint version, bool expected)
+    {
+        var server = new FakePortal { Restored = true, Version = version };
+        await using DbusGlobalShortcutSession session = server.CreateClient();
+        Assert.False(await session.TryConfigureAsync(CancellationToken.None));
+        await session.BindAsync(Bindings(), false, CancellationToken.None, false);
+        Assert.Equal(expected, await session.TryConfigureAsync(CancellationToken.None));
+        Assert.Equal(expected ? 1 : 0, server.ConfigureCalls);
+        Assert.Equal(0, server.BindCalls);
+        Assert.Equal("Alt+O", session.TriggerDescriptions["toggleOverlayInteraction"]);
+        server.ChangeTrigger("Super+P");
+        Assert.Equal("Super+P", session.TriggerDescriptions["toggleOverlayInteraction"]);
+        server.ChangeBindings(server.SessionPath, "toggleOverlayInteraction");
+        Assert.Empty(session.TriggerDescriptions);
+        using var canceled = new CancellationTokenSource();
+        await canceled.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.TryConfigureAsync(canceled.Token));
+        await session.DisposeAsync();
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => session.TryConfigureAsync(CancellationToken.None));
+    }
+
+    /// <summary>Falls back only for missing configuration support; other failures remain visible to the owner.</summary>
+    [Theory]
+    [InlineData("org.freedesktop.DBus.Error.UnknownMethod", true)]
+    [InlineData("org.freedesktop.DBus.Error.UnknownInterface", true)]
+    [InlineData("org.freedesktop.portal.Error.Failed", false)]
+    public async Task ConfigurationFailureIsNotMistakenForUnsupportedPortal(string error, bool unsupported)
+    {
+        var server = new FakePortal
+        {
+            Restored = true,
+            Version = 2,
+            ConfigurationFailure = error,
+        };
+        await using DbusGlobalShortcutSession session = server.CreateClient();
+        await session.BindAsync(Bindings(), false, CancellationToken.None, false);
+        if (unsupported)
+        {
+            Assert.False(await session.TryConfigureAsync(CancellationToken.None));
+        }
+        else
+        {
+            await Assert.ThrowsAsync<DBusException>(() => session.TryConfigureAsync(CancellationToken.None));
+        }
+        Assert.Equal(1, server.ConfigureCalls);
+        Assert.Equal(0, server.BindCalls);
+    }
+
     /// <summary>Routes only this session's desktop edits and releases held state when grants change.</summary>
     [Fact]
     public async Task ObservesRegisteredShortcutChanges()
@@ -71,9 +174,9 @@ public sealed class DbusGlobalShortcutSessionTests
         Assert.Equal(0, noPermissions.BindCalls);
     }
 
-    /// <summary>Detects changed key triggers after restarting, deferring their approval until the startup-only request.</summary>
+    /// <summary>Detects changed key triggers after restarting, deferring their approval until the explicit settings request.</summary>
     [Fact]
-    public async Task ChangedBindingsNeedStartupApprovalEvenWhenActionIdsMatch()
+    public async Task ChangedBindingsNeedExplicitApprovalEvenWhenActionIdsMatch()
     {
         var registration = new PortalShortcutRegistrationStore();
         registration.Save(Bindings());
@@ -259,6 +362,26 @@ public sealed class DbusGlobalShortcutSessionTests
             }
         );
 
+    /// <summary>Checks the native GNOME action signature without opening the user's settings during tests.</summary>
+    private sealed class FakeSettingsActions : IDesktopSettingsActions
+    {
+        public ObjectPath ObjectPath => new("/org/gnome/Settings");
+        public int Calls { get; private set; }
+        public bool Failure { get; set; }
+
+        /// <summary>Asserts the panel and application arguments and supplies controllable launch errors.</summary>
+        public Task ActivateAsync(string action, object[] parameters, IDictionary<string, object> platformData)
+        {
+            Calls++;
+            Assert.Equal("launch-panel", action);
+            (string, object[]) panel = Assert.IsType<ValueTuple<string, object[]>>(Assert.Single(parameters));
+            Assert.Equal("applications", panel.Item1);
+            Assert.Equal("io.github.fenris159.SrvSurvey", Assert.Single(panel.Item2));
+            Assert.Empty(platformData);
+            return Failure ? Task.FromException(new IOException("Settings unavailable")) : Task.CompletedTask;
+        }
+    }
+
     /// <summary>Captures the connection identity request and emulates desktop compatibility failures.</summary>
     private sealed class FakeRegistry(string? error) : IHostPortalRegistry
     {
@@ -287,6 +410,9 @@ public sealed class DbusGlobalShortcutSessionTests
         public ObjectPath ObjectPath => new("/org/freedesktop/portal/desktop");
         public ObjectPath SessionPath { get; } = new("/session/test");
         public bool Restored { get; init; }
+        public uint Version { get; init; } = 1;
+        public string? ConfigurationFailure { get; init; }
+        public int ConfigureCalls { get; private set; }
         public bool CloseFails { get; init; }
         public string? Failure { get; init; }
         public string ExpectedTrigger { get; init; } = "ALT+o";
@@ -315,7 +441,8 @@ public sealed class DbusGlobalShortcutSessionTests
             );
 
         /// <summary>Supplies the interface version.</summary>
-        public Task<T> GetAsync<T>(string property) => Task.FromResult((T)(object)(Failure == "version" ? 0u : 1u));
+        public Task<T> GetAsync<T>(string property) =>
+            Task.FromResult((T)(object)(Failure == "version" ? 0u : Version));
 
         /// <summary>Returns a typed or deliberately malformed session handle.</summary>
         public Task<ObjectPath> CreateSessionAsync(IDictionary<string, object> options) =>
@@ -341,6 +468,22 @@ public sealed class DbusGlobalShortcutSessionTests
             return Respond(options, Results(true));
         }
 
+        /// <summary>Checks version-two configuration uses the current session and propagates protocol errors.</summary>
+        public Task ConfigureShortcutsAsync(
+            ObjectPath session,
+            string parentWindow,
+            IDictionary<string, object> options
+        )
+        {
+            ConfigureCalls++;
+            Assert.Equal(SessionPath, session);
+            Assert.Empty(parentWindow);
+            Assert.Empty(options);
+            return ConfigurationFailure is null
+                ? Task.CompletedTask
+                : Task.FromException(new DBusException(ConfigurationFailure, "configuration"));
+        }
+
         /// <summary>Constructs a portal response carrying an array of accepted shortcut tuples.</summary>
         private static Dictionary<string, object> Results(bool accepted) =>
             new Dictionary<string, object>
@@ -348,7 +491,10 @@ public sealed class DbusGlobalShortcutSessionTests
                 ["shortcuts"] = accepted
                     ? new (string, IDictionary<string, object>)[]
                     {
-                        ("toggleOverlayInteraction", new Dictionary<string, object>()),
+                        (
+                            "toggleOverlayInteraction",
+                            new Dictionary<string, object> { ["trigger_description"] = "Alt+O" }
+                        ),
                     }
                     : Array.Empty<(string, IDictionary<string, object>)>(),
             };
@@ -414,6 +560,15 @@ public sealed class DbusGlobalShortcutSessionTests
                 (
                     session,
                     ids.Select(id => (id, (IDictionary<string, object>)new Dictionary<string, object>())).ToArray()
+                )
+            );
+
+        /// <summary>Reports the desktop's readable key after it changes independently of the requested key.</summary>
+        public void ChangeTrigger(string trigger) =>
+            changed?.Invoke(
+                (
+                    SessionPath,
+                    [("toggleOverlayInteraction", new Dictionary<string, object> { ["trigger_description"] = trigger })]
                 )
             );
 

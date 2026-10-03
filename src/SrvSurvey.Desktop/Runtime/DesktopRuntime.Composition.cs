@@ -515,7 +515,7 @@ internal sealed partial class DesktopRuntime
         );
     }
 
-    /// <summary>Starts journal processing while deferring automatic game focus until startup shortcut approval completes.</summary>
+    /// <summary>Starts journal processing while deferring automatic game focus until silent shortcut restoration completes.</summary>
     private async Task RunJournalMonitorAsync(CancellationToken cancellationToken)
     {
         if (mainViewModel is not { } viewModel)
@@ -539,7 +539,7 @@ internal sealed partial class DesktopRuntime
         }
     }
 
-    /// <summary>Lets the startup permission dialog finish without pausing journal monitoring or forcing focus during shutdown.</summary>
+    /// <summary>Lets silent input discovery finish without pausing journal monitoring or forcing focus during shutdown.</summary>
     private async Task RequestStartupFocusAfterInputAsync(MainWindowViewModel viewModel, CancellationToken token)
     {
         try
@@ -552,7 +552,7 @@ internal sealed partial class DesktopRuntime
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
-            // Closing SrvSurvey must not transfer focus after its startup approval is canceled.
+            // Closing SrvSurvey must not transfer focus after its startup input discovery is canceled.
         }
     }
 
@@ -831,6 +831,7 @@ internal sealed partial class DesktopRuntime
 
         globalKeyboardHookService.ActionTriggered += (_, eventArgs) => HandleAction(eventArgs);
         inputSettings.KeyboardDetectionResetRequested += HandleKeyboardDetectionReset;
+        inputSettings.SetDesktopShortcutSettingsHandler(globalKeyboardHookService.OpenDesktopShortcutSettingsAsync);
         globalControllerInputService.ActionTriggered += (_, eventArgs) => HandleAction(eventArgs);
         inputSettings.SettingsChanged += (_, eventArgs) =>
         {
@@ -905,6 +906,7 @@ internal sealed partial class DesktopRuntime
         if (mainViewModel is { } viewModel)
         {
             viewModel.InputSettings.KeyboardDetectionResetRequested -= HandleKeyboardDetectionReset;
+            viewModel.InputSettings.SetDesktopShortcutSettingsHandler(null);
             viewModel.BoxelClipboard.SetWriter(null);
             viewModel.SetJournalCommandPlatformServices(null, null, null);
             viewModel.ProfileImportPreparing -= StopJournalMonitorForProfileImportAsync;

@@ -498,6 +498,7 @@ public sealed class GlobalKeyboardHookServiceTests
         Assert.Equal("Global keyboard input could not start: test failure", service.Status);
     }
 
+    /// <summary>Blocks the key callback specifically, allowing background focus diagnostics to run before the event.</summary>
     [Fact]
     public async Task DisposalWaitsForInFlightEventBeforeDisposingTracker()
     {
@@ -507,7 +508,11 @@ public sealed class GlobalKeyboardHookServiceTests
             EnabledSettings(),
             OverlayHostKind.LinuxX11,
             tracker,
-            isApplicationActive: () => false,
+            isApplicationActive: () =>
+            {
+                tracker.EnableBlocking();
+                return false;
+            },
             hookFactory: () => testHook
         );
         service.Start();
@@ -524,6 +529,7 @@ public sealed class GlobalKeyboardHookServiceTests
         Assert.True(tracker.IsDisposed);
     }
 
+    /// <summary>Prevents a replacement hook from starting until the original key callback and event loop finish.</summary>
     [Fact]
     public async Task RestartWaitsForPreviousEventLoopToStop()
     {
@@ -536,7 +542,11 @@ public sealed class GlobalKeyboardHookServiceTests
             EnabledSettings(),
             OverlayHostKind.LinuxX11,
             tracker,
-            isApplicationActive: () => false,
+            isApplicationActive: () =>
+            {
+                tracker.EnableBlocking();
+                return false;
+            },
             hookFactory: () =>
             {
                 if (Interlocked.Increment(ref factoryCalls) == 1)
@@ -582,6 +592,7 @@ public sealed class GlobalKeyboardHookServiceTests
     private sealed class BlockingGameWindowTracker : IGameWindowTracker
     {
         private readonly ManualResetEventSlim allowSnapshot = new();
+        private bool blockSnapshots;
         private readonly TaskCompletionSource snapshotEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private int disposed;
 
@@ -589,8 +600,16 @@ public sealed class GlobalKeyboardHookServiceTests
 
         public bool IsDisposed => Volatile.Read(ref disposed) != 0;
 
+        /// <summary>Arms blocking from the key callback while its service lock excludes background diagnostics.</summary>
+        public void EnableBlocking() => Volatile.Write(ref blockSnapshots, true);
+
+        /// <summary>Blocks an armed event snapshot, leaving earlier background focus refreshes nonblocking.</summary>
         public GameWindowSnapshot GetSnapshot()
         {
+            if (!Volatile.Read(ref blockSnapshots))
+            {
+                return GameWindowSnapshot.Unavailable;
+            }
             snapshotEntered.TrySetResult();
             if (!allowSnapshot.Wait(TimeSpan.FromSeconds(5)))
             {

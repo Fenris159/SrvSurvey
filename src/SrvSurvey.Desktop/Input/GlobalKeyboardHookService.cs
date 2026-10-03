@@ -82,7 +82,12 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
                 hookFactory is null
                 && OperatingSystem.IsLinux()
                 && host is OverlayHostKind.LinuxX11 or OverlayHostKind.LinuxXWayland or OverlayHostKind.LinuxWayland
-                    ? new GamescopeKeyboardInput(preferredMonitorBounds: additionalInput?.OverlayMonitorBounds)
+                    ? new GamescopeKeyboardInput(
+                        GamescopeGameWindowBridge.TryReadCurrent,
+                        readDisplay: () =>
+                            EliteKeyboardDisplayDiscovery.ReadCurrent(additionalInput?.OverlayMonitorBounds?.Invoke()),
+                        preferredMonitorBounds: additionalInput?.OverlayMonitorBounds
+                    )
                     : null
             );
         isGameRunning = additionalInput?.IsGameRunning ?? EliteKeyboardDisplayDiscovery.IsGameRunning;
@@ -112,7 +117,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
 
     public event EventHandler? StatusChanged;
 
-    /// <summary>Completes when initial portal approval or restoration has finished, before startup game focus.</summary>
+    /// <summary>Completes when silent portal discovery or restoration has finished, before startup game focus.</summary>
     public Task StartupReady => portalInput?.StartupReady ?? Task.CompletedTask;
 
     /// <summary>Reports provider health and selection without exposing arbitrary keyboard input.</summary>
@@ -132,10 +137,18 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
                     gameKeyboardInput?.Display is { } display
                         ? $"Game display {display}."
                         : "No separate game display is connected."
-                );
+                )
+                {
+                    CanOpenDesktopShortcutSettings = portalInput?.CanOpenSettings == true,
+                    DesktopShortcutSettingsStatus =
+                        portalInput?.SettingsStatus ?? "Desktop shortcut settings are unavailable.",
+                };
             }
         }
     }
+
+    /// <summary>Opens compositor shortcut configuration only when explicitly requested from input settings.</summary>
+    public Task OpenDesktopShortcutSettingsAsync() => portalInput?.OpenSettingsAsync() ?? Task.CompletedTask;
 
     /// <summary>Clears source and press-state detection while retaining bindings and desktop permissions.</summary>
     public void ResetDetection()
@@ -606,7 +619,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         }
     }
 
-    /// <summary>Releases selections when the portal disconnects and publishes compositor registration status.</summary>
+    /// <summary>Releases disconnected portal selections and reports settings changes independently of raw listener activation.</summary>
     private void OnPortalStatus(string message, bool available)
     {
         if (!available || portalInput?.CanHandleAllBindings == false)
@@ -616,6 +629,10 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         if (!disposed && Volatile.Read(ref settings).KeyboardEnabled && message.Length > 0)
         {
             SetStatus(message);
+        }
+        else
+        {
+            StatusChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 

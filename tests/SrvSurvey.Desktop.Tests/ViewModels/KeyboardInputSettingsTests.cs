@@ -112,6 +112,95 @@ public sealed class KeyboardInputSettingsTests : IDisposable
         Assert.Equal(KeyboardInputMode.Automatic, store.Load().KeyboardSource);
     }
 
+    /// <summary>Menu wiring and status updates never invoke permission; only an explicit enabled button can open it.</summary>
+    [Theory]
+    [InlineData(OverlayHostKind.LinuxXWayland, true)]
+    [InlineData(OverlayHostKind.LinuxWayland, true)]
+    [InlineData(OverlayHostKind.LinuxX11, true)]
+    [InlineData(OverlayHostKind.Windows, false)]
+    public async Task DesktopSettingsButtonRequiresExplicitInput(OverlayHostKind host, bool supported)
+    {
+        var store = new GlobalInputSettingsStore(Path.Combine(root, "menu.json"));
+        var viewModel = new GlobalInputSettingsViewModel(
+            store,
+            OverlayPlatformCapabilities.ForHost(host),
+            new EmptyControllers()
+        );
+        int opened = 0;
+        viewModel.SetDesktopShortcutSettingsHandler(() =>
+        {
+            opened++;
+            return Task.CompletedTask;
+        });
+        viewModel.UpdateKeyboardDiagnostics(
+            new(null, true, false, false, "", "", "")
+            {
+                CanOpenDesktopShortcutSettings = true,
+                DesktopShortcutSettingsStatus = "Approval needed.\nOverlay interaction: Super+O",
+            }
+        );
+        Assert.Equal(0, opened);
+        Assert.Equal(supported, viewModel.IsDesktopShortcutSettingsVisible);
+        Assert.False(viewModel.DesktopShortcutSettingsCommand.CanExecute(null));
+        await viewModel.OpenDesktopShortcutSettingsAsync();
+        viewModel.KeyboardEnabled = true;
+        Assert.Equal(supported, viewModel.DesktopShortcutSettingsCommand.CanExecute(null));
+        viewModel.DesktopShortcutSettingsCommand.Execute(null);
+        Assert.Equal(supported ? 1 : 0, opened);
+        Assert.Equal("Approval needed.", viewModel.DesktopShortcutSettingsStatus);
+        Assert.Equal("Overlay interaction: Super+O", viewModel.ApprovedDesktopShortcuts);
+        Assert.True(viewModel.HasApprovedDesktopShortcuts);
+        viewModel.SetDesktopShortcutSettingsHandler(null);
+        Assert.False(viewModel.CanOpenDesktopShortcutSettings);
+    }
+
+    /// <summary>Busy, canceled, and failing menu requests cannot spawn duplicate dialogs or unobserved exceptions.</summary>
+    [Theory]
+    [InlineData("success")]
+    [InlineData("cancel")]
+    [InlineData("error")]
+    public async Task DesktopSettingsButtonSerializesAndHandlesFailures(string outcome)
+    {
+        GlobalInputSettingsViewModel viewModel = Create(new GlobalInputSettingsStore(Path.Combine(root, "busy.json")));
+        var ready = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        viewModel.SetDesktopShortcutSettingsHandler(() => ready.Task);
+        viewModel.KeyboardEnabled = true;
+        viewModel.UpdateKeyboardDiagnostics(
+            new(null, true, false, true, "", "", "")
+            {
+                CanOpenDesktopShortcutSettings = true,
+                DesktopShortcutSettingsStatus = "Active.",
+            }
+        );
+        Task opening = viewModel.OpenDesktopShortcutSettingsAsync();
+        Assert.False(viewModel.CanOpenDesktopShortcutSettings);
+        await viewModel.OpenDesktopShortcutSettingsAsync();
+        if (outcome == "error")
+        {
+            ready.SetException(new IOException("portal failed"));
+        }
+        else if (outcome == "cancel")
+        {
+            ready.SetCanceled();
+        }
+        else
+        {
+            ready.SetResult();
+        }
+        await opening;
+        Assert.True(viewModel.CanOpenDesktopShortcutSettings);
+        Assert.Equal(
+            outcome == "error",
+            viewModel.DesktopShortcutSettingsStatus.Contains("could not open", StringComparison.Ordinal)
+        );
+        viewModel.UpdateKeyboardDiagnostics(
+            new(null, true, false, false, "", "", "") { DesktopShortcutSettingsStatus = "Unavailable." }
+        );
+        Assert.Equal("Unavailable.", viewModel.DesktopShortcutSettingsStatus);
+        Assert.False(viewModel.HasApprovedDesktopShortcuts);
+        Assert.False(viewModel.CanOpenDesktopShortcutSettings);
+    }
+
     /// <summary>Creates input settings without discovering physical controller devices.</summary>
     private static GlobalInputSettingsViewModel Create(GlobalInputSettingsStore store) =>
         new(store, OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxXWayland), new EmptyControllers());

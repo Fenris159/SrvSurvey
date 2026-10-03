@@ -4540,6 +4540,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Approved desktop shortcuts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Aquamarine",
     "IsFormat": false,
     "SourceKinds": [
@@ -15221,6 +15229,110 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
+    "Text": "Desktop shortcut settings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Desktop shortcut settings are unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcut settings could not open: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: active",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: active ({0} of {1} bindings). {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: checking availability.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: inactive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: inactive. Approval was declined; click Desktop shortcut settings to try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: inactive. Click Desktop shortcut settings to approve bindings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: inactive. Reconnecting...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: opening settings...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
     "Text": "DesktopBehavior",
     "IsFormat": false,
     "SourceKinds": [
@@ -21278,6 +21390,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
+    "Text": "GNOME",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
+  },
+  {
     "Text": "GOAL #{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -21776,7 +21896,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Global Shortcuts portal unavailable on this desktop.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
     "Text": "Global Shortcuts portal unavailable: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Global Shortcuts portal unsupported: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -34447,6 +34583,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey\u0027s Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
     "IsFormat": false,
     "SourceKinds": [
@@ -41926,7 +42070,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
-    "Text": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
+    "Text": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -60994,14 +61138,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
-    "Text": "Wayland portal shortcuts active: {0} of {1} bindings.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
-  },
-  {
     "Text": "Wayland screen capture",
     "IsFormat": false,
     "SourceKinds": [
@@ -61091,15 +61227,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
-    "Text": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
-  },
-  {
-    "Text": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
+    "Text": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -62313,7 +62441,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
   },
   {
     "Text": "arg{0}",
@@ -65002,6 +65130,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "launch-panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
   },
   {
     "Text": "left",
@@ -69899,6 +70035,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0}: approved by desktop (key not reported)",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
   },
   {
     "Text": "{0}: {1} of {2}{3}",

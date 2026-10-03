@@ -28,6 +28,10 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         "No separate game display is connected."
     );
     private IReadOnlyList<KeyboardInputSourceOption> keyboardSourceOptions = [];
+    private readonly WorkspaceCommand desktopShortcutSettingsCommand;
+    private Func<Task>? openDesktopShortcutSettings;
+    private bool openingDesktopShortcutSettings;
+    private string? desktopShortcutSettingsError;
 
     /// <summary>Loads profile-scoped bindings and source preferences and prepares keyboard recovery controls.</summary>
     public GlobalInputSettingsViewModel(
@@ -49,6 +53,10 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
             .ToArray();
         ResetBindingsCommand = new DelegateCommand(ResetBindings);
         ResetKeyboardDetectionCommand = new DelegateCommand(ResetKeyboardDetection);
+        desktopShortcutSettingsCommand = new WorkspaceCommand(
+            () => _ = OpenDesktopShortcutSettingsAsync(),
+            () => CanOpenDesktopShortcutSettings
+        );
         UpdateKeyboardDiagnostics(keyboardDiagnostics);
         MiningBindings = Bindings
             .Where(binding => binding.Definition.Action is >= GlobalInputAction.Track1 and <= GlobalInputAction.Track6)
@@ -71,6 +79,69 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     public IReadOnlyList<InputBindingViewModel> Bindings { get; }
 
     public IReadOnlyList<InputBindingViewModel> MiningBindings { get; }
+
+    public ICommand DesktopShortcutSettingsCommand => desktopShortcutSettingsCommand;
+    public bool IsDesktopShortcutSettingsVisible =>
+        Capabilities.Host is OverlayHostKind.LinuxX11 or OverlayHostKind.LinuxXWayland or OverlayHostKind.LinuxWayland;
+    public bool CanOpenDesktopShortcutSettings =>
+        IsDesktopShortcutSettingsVisible
+        && KeyboardEnabled
+        && openDesktopShortcutSettings is not null
+        && keyboardDiagnostics.CanOpenDesktopShortcutSettings
+        && !openingDesktopShortcutSettings;
+    public string DesktopShortcutSettingsStatus =>
+        desktopShortcutSettingsError ?? keyboardDiagnostics.DesktopShortcutSettingsStatus.Split('\n')[0];
+
+    /// <summary>Displays readable desktop grants separately from the compact portal status.</summary>
+    public string ApprovedDesktopShortcuts
+    {
+        get
+        {
+            string status = keyboardDiagnostics.DesktopShortcutSettingsStatus;
+            int separator = status.IndexOf('\n');
+            return separator >= 0 ? status[(separator + 1)..] : string.Empty;
+        }
+    }
+    public bool HasApprovedDesktopShortcuts => ApprovedDesktopShortcuts.Length > 0;
+
+    /// <summary>Connects the explicit desktop settings button without invoking registration or opening a dialog.</summary>
+    public void SetDesktopShortcutSettingsHandler(Func<Task>? handler)
+    {
+        openDesktopShortcutSettings = handler;
+        desktopShortcutSettingsCommand.Refresh();
+    }
+
+    /// <summary>Serializes button requests and reports failures without an unobserved UI task exception.</summary>
+    internal async Task OpenDesktopShortcutSettingsAsync()
+    {
+        if (!CanOpenDesktopShortcutSettings)
+        {
+            return;
+        }
+        openingDesktopShortcutSettings = true;
+        desktopShortcutSettingsError = null;
+        desktopShortcutSettingsCommand.Refresh();
+        OnPropertyChanged(nameof(DesktopShortcutSettingsStatus));
+        try
+        {
+            await openDesktopShortcutSettings!();
+        }
+        catch (OperationCanceledException)
+        {
+            // Disabling keyboard input or closing SrvSurvey cancels the desktop request.
+        }
+        catch (Exception)
+        {
+            desktopShortcutSettingsError =
+                "Desktop shortcut settings could not open. Try again when the desktop portal is available.";
+        }
+        finally
+        {
+            openingDesktopShortcutSettings = false;
+            desktopShortcutSettingsCommand.Refresh();
+            OnPropertyChanged(nameof(DesktopShortcutSettingsStatus));
+        }
+    }
 
     public ICommand ResetBindingsCommand { get; }
     public ICommand ResetKeyboardDetectionCommand { get; }
@@ -148,7 +219,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
                 KeyboardInputMode.WaylandPortal,
                 "Wayland portal",
                 diagnostics.PortalAvailable,
-                "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus."
+                "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus."
             ),
         ];
         OnPropertyChanged(nameof(KeyboardSourceOptions));
@@ -157,6 +228,11 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(KeyboardSourceStatus));
         OnPropertyChanged(nameof(KeyboardFocusStatus));
         OnPropertyChanged(nameof(LastKeyboardInput));
+        desktopShortcutSettingsError = null;
+        OnPropertyChanged(nameof(DesktopShortcutSettingsStatus));
+        OnPropertyChanged(nameof(ApprovedDesktopShortcuts));
+        OnPropertyChanged(nameof(HasApprovedDesktopShortcuts));
+        desktopShortcutSettingsCommand.Refresh();
     }
 
     /// <summary>Returns to Automatic and requests fresh session detection while preserving bindings and approvals.</summary>
@@ -229,6 +305,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Persists keyboard enablement and updates whether desktop configuration can be opened.</summary>
     public bool KeyboardEnabled
     {
         get => settings.KeyboardEnabled;
@@ -241,6 +318,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
 
             Apply(settings with { KeyboardEnabled = value });
             OnPropertyChanged();
+            desktopShortcutSettingsCommand.Refresh();
         }
     }
 

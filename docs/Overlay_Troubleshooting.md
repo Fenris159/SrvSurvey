@@ -53,18 +53,31 @@ both listeners.
 
 ### Automatic Linux keyboard input
 
-When keyboard shortcuts are enabled at launch, SrvSurvey detects the desktop's
-Global Shortcuts portal and requests any needed approval during startup. Automatic
-focus transfer to Elite waits for that request to finish; journal processing keeps
-running. Previously approved shortcuts are restored when supported by the desktop,
-including a selection that approved only some shortcuts. SrvSurvey remembers which
-bindings were requested, while the desktop continues to control the permissions.
-A declined request keeps existing listeners available and is not repeatedly presented.
+When keyboard shortcuts are enabled, SrvSurvey detects the desktop's Global
+Shortcuts portal and silently restores previously approved shortcuts where the
+desktop supports it, including a selection that approved only some shortcuts.
+Startup, reconnects, and binding changes never open the desktop menu automatically.
+Journal processing keeps running while shortcut discovery completes.
 
-Reconnects and binding changes during a session never open a new approval dialog.
-If new approval is needed, the keyboard status asks you to restart SrvSurvey so it
-can request approval at startup. Existing raw listeners apply changed bindings
-immediately. Disabling keyboard input cancels pending approval and closes the session.
+Use **Desktop shortcut settings** in **Settings → Input** to approve or configure
+shortcuts explicitly. Its status distinguishes active bindings, missing approval,
+and unsupported portals. The button works both for active sessions and when
+approval is needed; keyboard input must be enabled. No app restart is needed.
+Version-two portals open configuration for the current session. Older GNOME
+desktops open SrvSurvey's **Applications** settings; choose **Global Shortcuts**
+there. GNOME's existing approval dialog skips previously approved actions, so
+requesting those bindings again cannot reopen that dialog. Other older portals
+replace the session with a fresh binding request. Disabling keyboard input cancels pending
+approval and closes the session. A declined request is not retried automatically.
+
+SrvSurvey's key-code fields provide the requested shortcuts. The desktop can
+assign different keys for portal input, which are shown in the desktop shortcut
+status. Desktop edits take effect for portal actions but do not rewrite the
+application key-code fields: the portable API provides a readable key description,
+not a portable key-code assignment. Existing raw listeners apply changes to
+application key codes immediately; changed portal bindings await explicit approval
+through the button. Keep the requested and approved keys consistent if you switch
+between portal and raw keyboard input.
 
 SrvSurvey also discovers a running Elite process's local X11 display when its
 same-user process metadata is accessible. This allows keyboard shortcuts on a

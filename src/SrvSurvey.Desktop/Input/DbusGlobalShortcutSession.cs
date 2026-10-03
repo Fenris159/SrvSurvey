@@ -21,6 +21,7 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
     private readonly Lock gate = new();
     private ObjectPath? sessionPath;
     private bool disposed;
+    private IReadOnlyDictionary<string, string> triggerDescriptions = new Dictionary<string, string>();
     private Exception? sessionError;
 
     /// <summary>Owns the session bus connection and proxies its shortcut interface.</summary>
@@ -56,6 +57,8 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
         this.disposeConnection = disposeConnection;
         this.registrations = registrations ?? new PortalShortcutRegistrationStore();
     }
+
+    public IReadOnlyDictionary<string, string> TriggerDescriptions => Volatile.Read(ref triggerDescriptions);
 
     public event Action<string>? Activated;
     public event Action<IReadOnlySet<string>>? BindingsChanged;
@@ -137,6 +140,7 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
         bool needsBinding = registrations.HasRegistration
             ? !registrations.Matches(bindings)
             : !accepted.SetEquals(bindings.Select(binding => binding.Id));
+        IDictionary<string, object> displayResult = listed;
         if (forceBind || needsBinding)
         {
             if (!allowPermissionPrompt)
@@ -167,8 +171,10 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
                     token
                 )
                 .ConfigureAwait(false);
+            displayResult = bound;
             accepted = ReadIds(bound);
         }
+        UpdateTriggerDescriptions(displayResult);
         registrations.Save(bindings);
         return accepted;
     }
@@ -216,6 +222,95 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
 
     /// <summary>Probes the installed interface without opening a permission dialog.</summary>
     internal Task<uint> GetVersionAsync(CancellationToken token) => portal.GetAsync<uint>("version").WaitAsync(token);
+
+    /// <summary>Opens GNOME's per-application settings when its older portal silently restores existing shortcut grants.</summary>
+    internal static async Task<bool> OpenLegacySettingsAsync(
+        CancellationToken token,
+        string? desktop = null,
+        Func<CancellationToken, Task>? launch = null
+    )
+    {
+        token.ThrowIfCancellationRequested();
+        if (
+            !(desktop ?? Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") ?? string.Empty)
+                .Split(':')
+                .Contains("GNOME", StringComparer.OrdinalIgnoreCase)
+        )
+        {
+            return false;
+        }
+        await (launch ?? OpenGnomeSettingsAsync)(token).ConfigureAwait(false);
+        return true;
+    }
+
+    /// <summary>Activates GNOME Settings over D-Bus so packaged application libraries cannot interfere with its launch.</summary>
+    private static async Task OpenGnomeSettingsAsync(CancellationToken token)
+    {
+        using var connection = new Connection(Address.Session);
+        await connection.ConnectAsync().WaitAsync(token).ConfigureAwait(false);
+        await ActivateGnomeSettingsAsync(
+                connection.CreateProxy<IDesktopSettingsActions>("org.gnome.Settings", "/org/gnome/Settings"),
+                token
+            )
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>Selects SrvSurvey's Applications page, where GNOME exposes its approved application shortcuts.</summary>
+    internal static Task ActivateGnomeSettingsAsync(IDesktopSettingsActions settings, CancellationToken token) =>
+        settings
+            .ActivateAsync(
+                "launch-panel",
+                [("applications", (object[])["io.github.fenris159.SrvSurvey"])],
+                new Dictionary<string, object>()
+            )
+            .WaitAsync(token);
+
+    /// <summary>Uses the version-two settings UI without replacing active bindings, falling back on older backends.</summary>
+    public async Task<bool> TryConfigureAsync(CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref disposed), this);
+        if (sessionPath is not ObjectPath path || await GetVersionAsync(token).ConfigureAwait(false) < 2)
+        {
+            return false;
+        }
+        try
+        {
+            await portal
+                .ConfigureShortcutsAsync(path, string.Empty, new Dictionary<string, object>())
+                .WaitAsync(token)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch (DBusException exception)
+            when (exception.ErrorName
+                    is "org.freedesktop.DBus.Error.UnknownMethod"
+                        or "org.freedesktop.DBus.Error.UnknownInterface"
+            )
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Retains the compositor's readable key descriptions, which are not portable key-code assignments.</summary>
+    private void UpdateTriggerDescriptions(IDictionary<string, object> result)
+    {
+        var descriptions = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (
+            result.TryGetValue("shortcuts", out object? value)
+            && value is (string Id, IDictionary<string, object> Properties)[] entries
+        )
+        {
+            foreach ((string Id, IDictionary<string, object> Properties) entry in entries)
+            {
+                if (entry.Properties.TryGetValue("trigger_description", out object? trigger) && trigger is string text)
+                {
+                    descriptions[entry.Id] = text;
+                }
+            }
+        }
+        Volatile.Write(ref triggerDescriptions, descriptions);
+    }
 
     /// <summary>Reads accepted shortcut IDs without assuming the desktop accepted every requested chord.</summary>
     internal static IReadOnlySet<string> ReadIds(IDictionary<string, object> result) =>
@@ -312,6 +407,7 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
             if (!disposed && session == sessionPath)
             {
                 held.Clear();
+                UpdateTriggerDescriptions(new Dictionary<string, object> { ["shortcuts"] = shortcuts });
                 BindingsChanged?.Invoke(shortcuts.Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal));
             }
         }
@@ -369,6 +465,14 @@ internal sealed class DbusGlobalShortcutSession : IPortalShortcutSession
     }
 }
 
+/// <summary>Activates the host desktop's existing settings application without spawning a packaged-library child process.</summary>
+[DBusInterface("org.gtk.Actions")]
+internal interface IDesktopSettingsActions : IDBusObject
+{
+    /// <summary>Requests a settings panel with the desktop's supported action parameters.</summary>
+    Task ActivateAsync(string action, object[] parameters, IDictionary<string, object> platformData);
+}
+
 /// <summary>Associates this connection with the installed SrvSurvey desktop entry on host portals.</summary>
 [DBusInterface("org.freedesktop.host.portal.Registry")]
 internal interface IHostPortalRegistry : IDBusObject
@@ -397,6 +501,9 @@ internal interface IGlobalShortcutsPortal : IDBusObject
         string parentWindow,
         IDictionary<string, object> options
     );
+
+    /// <summary>Opens the desktop's settings UI for an existing session on portal version two.</summary>
+    Task ConfigureShortcutsAsync(ObjectPath session, string parentWindow, IDictionary<string, object> options);
 
     /// <summary>Watches compositor shortcut presses.</summary>
     Task<IDisposable> WatchActivatedAsync(

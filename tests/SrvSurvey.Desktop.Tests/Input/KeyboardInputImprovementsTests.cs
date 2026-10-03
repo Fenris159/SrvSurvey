@@ -164,6 +164,40 @@ public sealed class KeyboardInputImprovementsTests
         Assert.Contains("unconfirmed", service.Diagnostics.FocusStatus);
     }
 
+    /// <summary>Service discovery reports menu status but opens desktop settings only through the explicit handler.</summary>
+    [Fact]
+    public async Task ServiceExposesDesktopSettingsWithoutAutomaticOpening()
+    {
+        using var hook = new TestGlobalHook(TestThreadingMode.Simple);
+        var portal = new Portal();
+        await using var service = new GlobalKeyboardHookService(
+            GlobalInputSettings.Default with
+            {
+                KeyboardEnabled = true,
+            },
+            OverlayHostKind.LinuxXWayland,
+            new Tracker(),
+            () => true,
+            () => hook,
+            additionalInput: new(PortalInput: portal)
+        );
+        int statuses = 0;
+        service.StatusChanged += (_, _) => statuses++;
+        service.Start();
+        Assert.Equal(0, portal.SettingsCalls);
+        Assert.True(service.Diagnostics.CanOpenDesktopShortcutSettings);
+        Assert.Equal("Desktop menu active.", service.Diagnostics.DesktopShortcutSettingsStatus);
+        await service.OpenDesktopShortcutSettingsAsync();
+        Assert.Equal(1, portal.SettingsCalls);
+        int before = statuses;
+        string listenerStatus = service.Status;
+        portal.NotifyMenuStatus();
+        Assert.Equal(listenerStatus, service.Status);
+        Assert.True(statuses > before);
+        service.Update(GlobalInputSettings.Default with { KeyboardEnabled = false });
+        Assert.Equal(1, portal.SettingsCalls);
+    }
+
     /// <summary>Models nested focus without any actual keyboard input from that server.</summary>
     private sealed class IdleGameDisplay : IGameKeyboardInput
     {
@@ -207,6 +241,19 @@ public sealed class KeyboardInputImprovementsTests
         public event Action<string, bool>? StatusChanged;
         public bool IsRunning => true;
         public int Updates { get; private set; }
+        public bool CanOpenSettings => true;
+        public string SettingsStatus => "Desktop menu active.";
+        public int SettingsCalls { get; private set; }
+
+        /// <summary>Records an explicit settings request.</summary>
+        public Task OpenSettingsAsync()
+        {
+            SettingsCalls++;
+            return Task.CompletedTask;
+        }
+
+        /// <summary>Reports capability changes without overwriting ordinary listener status.</summary>
+        public void NotifyMenuStatus() => StatusChanged?.Invoke(string.Empty, true);
 
         /// <summary>Captures configuration updates and announces the connected source.</summary>
         public void Update(GlobalInputSettings settings)

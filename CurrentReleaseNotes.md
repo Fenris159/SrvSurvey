@@ -11,13 +11,17 @@ journal rereads from repeating chat commands that have already been processed.
   shortcuts there without requiring a Gamescope bridge. The game display must
   permit the connection and provide the X11 RECORD extension.
 - Native Wayland shortcuts use the desktop's Global Shortcuts portal when
-  available. Any needed approval is requested at SrvSurvey startup, before
-  transferring focus to Elite. Previously approved shortcuts are restored when
-  supported by the desktop.
-- Reconnecting or changing bindings during gameplay does not open a new
-  permission dialog. If a changed binding needs new approval, the input status
-  explains that restarting SrvSurvey will request it at startup. Existing
-  keyboard listeners apply changed bindings immediately.
+  available. Previously approved shortcuts are restored silently when supported
+  by the desktop; startup, reconnects, and binding changes never open its menu
+  automatically.
+- **Desktop shortcut settings** under **Settings > Input** opens the desktop
+  menu when you want to approve or configure bindings, without an app restart.
+  On older GNOME desktops it opens SrvSurvey's Applications settings, where
+  **Global Shortcuts** remains available after the initial approval.
+  Its separate status shows approval needs and the actual desktop shortcut keys.
+  Application key codes supply requested keys; desktop overrides apply to portal
+  input and do not rewrite the application's key-code fields. Existing keyboard
+  listeners apply changes to application bindings immediately.
 - Automatic detection learns one working source for all keyboard shortcuts
   after a shortcut is received with confirmed Elite focus. Using shortcuts in
   SrvSurvey or before the game starts does not select the game's input source.
@@ -53,8 +57,8 @@ journal rereads from repeating chat commands that have already been processed.
   and held-key state without restarting the application. Shortcut bindings and
   desktop approvals are retained; use a shortcut with Elite focused to learn
   the source again.
-- Startup shortcut approval does not pause journal processing, and disabling
-  keyboard input cancels pending approval and closes the shortcut session.
+- Disabling keyboard input cancels pending approval and closes the shortcut
+  session. Declining approval leaves existing keyboard listeners available.
 
 ## Journal chat-command fix
 

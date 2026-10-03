@@ -806,6 +806,20 @@
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                      TextWrapping="Wrap"
                      Text="{Binding InputSettings.RuntimeStatus}" />
+          <StackPanel Spacing="8" IsVisible="{Binding InputSettings.IsDesktopShortcutSettingsVisible}">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+              <Button Classes="secondary" VerticalAlignment="Top"
+                      Command="{Binding InputSettings.DesktopShortcutSettingsCommand}"
+                      Content="Desktop shortcut settings" />
+              <TextBlock Grid.Column="1" Classes="muted" TextWrapping="Wrap"
+                         Text="{Binding InputSettings.DesktopShortcutSettingsStatus}" />
+            </Grid>
+            <Expander Header="Approved desktop shortcuts" IsVisible="{Binding InputSettings.HasApprovedDesktopShortcuts}">
+              <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding InputSettings.ApprovedDesktopShortcuts}" />
+            </Expander>
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey's Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input." />
+          </StackPanel>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding InputSettings.HasPersistenceStatus}"
                      TextWrapping="Wrap"

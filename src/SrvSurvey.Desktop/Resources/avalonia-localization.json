@@ -2269,6 +2269,10 @@
       "translation": "AnnäherungSettlement"
     },
     {
+      "source": "Approved desktop shortcuts",
+      "translation": "Genehmigte Desktop-Verknüpfungen"
+    },
+    {
       "source": "Aquamarine",
       "translation": "Aquamarin"
     },
@@ -7593,6 +7597,58 @@
       "translation": "Das Herunterfahren der Desktop-Laufzeit ist fehlgeschlagen: {0}"
     },
     {
+      "source": "Desktop shortcut settings",
+      "translation": "Einstellungen für Desktop-Verknüpfungen"
+    },
+    {
+      "source": "Desktop shortcut settings are unavailable.",
+      "translation": "Desktop-Verknüpfungseinstellungen sind nicht verfügbar."
+    },
+    {
+      "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
+      "translation": "Die Desktop-Verknüpfungseinstellungen konnten nicht geöffnet werden. Versuchen Sie es erneut, wenn das Desktop-Portal verfügbar ist."
+    },
+    {
+      "source": "Desktop shortcut settings could not open: {0}",
+      "translation": "Desktop-Verknüpfungseinstellungen konnten nicht geöffnet werden: {0}"
+    },
+    {
+      "source": "Desktop shortcuts: active",
+      "translation": "Desktop-Verknüpfungen: aktiv"
+    },
+    {
+      "source": "Desktop shortcuts: active ({0} of {1} bindings). {2}",
+      "translation": "Desktop-Verknüpfungen: aktiv ({0} oder {1}-Bindungen). {2}"
+    },
+    {
+      "source": "Desktop shortcuts: checking availability.",
+      "translation": "Desktop-Verknüpfungen: Verfügbarkeit prüfen."
+    },
+    {
+      "source": "Desktop shortcuts: inactive.",
+      "translation": "Desktop-Verknüpfungen: inaktiv."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Approval was declined; click Desktop shortcut settings to try again.",
+      "translation": "Desktop-Verknüpfungen: inaktiv. Die Genehmigung wurde abgelehnt; Klicken Sie auf Desktop-Verknüpfungseinstellungen, um es erneut zu versuchen."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Click Desktop shortcut settings to approve bindings.",
+      "translation": "Desktop-Verknüpfungen: inaktiv. Klicken Sie auf Desktop-Verknüpfungseinstellungen, um Bindungen zu genehmigen."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Reconnecting...",
+      "translation": "Desktop-Verknüpfungen: inaktiv. Verbindung wird wieder hergestellt..."
+    },
+    {
+      "source": "Desktop shortcuts: off.",
+      "translation": "Desktop-Verknüpfungen: aus."
+    },
+    {
+      "source": "Desktop shortcuts: opening settings...",
+      "translation": "Desktop-Verknüpfungen: Einstellungen öffnen..."
+    },
+    {
       "source": "DesktopBehavior",
       "translation": "DesktopVerhalten"
     },
@@ -10613,6 +10669,10 @@
       "translation": "GLOBALER FORTSCHRITT"
     },
     {
+      "source": "GNOME",
+      "translation": "GNOME"
+    },
+    {
       "source": "GOAL #{0}",
       "translation": "ZIEL #{0}"
     },
@@ -10861,8 +10921,16 @@
       "translation": "Gleitflug-Ansatz"
     },
     {
+      "source": "Global Shortcuts portal unavailable on this desktop.",
+      "translation": "Das Global Shortcuts-Portal ist auf diesem Desktop nicht verfügbar."
+    },
+    {
       "source": "Global Shortcuts portal unavailable: {0}",
       "translation": "Global Shortcuts-Portal nicht verfügbar: {0}"
+    },
+    {
+      "source": "Global Shortcuts portal unsupported: {0}",
+      "translation": "Global Shortcuts-Portal nicht unterstützt: {0}"
     },
     {
       "source": "Global Shortcuts portal version is unsupported.",
@@ -17173,6 +17241,10 @@
       "translation": "Öffnen Sie die Overlay-Einstellungen der Kategorie und wählen Sie oben rechts Overlay-Ausnahmen aus."
     },
     {
+      "source": "Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey's Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input.",
+      "translation": "Öffnen Sie das Desktop-Menü, um globale Verknüpfungen zu genehmigen oder zu konfigurieren. Auf älteren GNOME-Desktops werden dadurch die Anwendungseinstellungen von SrvSurvey geöffnet. Wählen Sie dort „Globale Verknüpfungen“. SrvSurvey öffnet es nie automatisch. Anwendungsschlüsselcodes sind angeforderte Schlüssel; Der Desktop kann sie überschreiben. Erweitern Sie „Genehmigte Desktop-Verknüpfungen“, um die Tasten anzuzeigen, die für die Portaleingabe gelten."
+    },
+    {
       "source": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
       "translation": "Öffnen Sie die Informationsschaltfläche neben VoxStellar, bevor Sie sich anmelden. Dort werden die Journalereignisse, die von VoxStellar gespeicherten Explorationsdaten, die Benutzerinhaltslizenz, die Datenschutzrichtlinie, die Bedingungen und das vom MIT lizenzierte EDMC-Plugin-Protokoll aufgeführt, das von SrvSurvey angepasst wurde."
     },
@@ -20905,8 +20977,8 @@
       "translation": "Erfordert FSSAllBodiesFound für neue lokale Besuche. Die aktivierten Abschlussregeln für frühere Besuche und ältere Spansh gelten weiterhin."
     },
     {
-      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
-      "translation": "Erfordert Unterstützung und Genehmigung des Desktop-Portals für alle konfigurierten Tastaturkürzel. Beim Start der App wird eine neue Genehmigung angefordert. Native Wayland zeigt möglicherweise nicht an, welches Fenster den Fokus hat."
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
+      "translation": "Erfordert Unterstützung und Genehmigung des Desktop-Portals für alle konfigurierten Tastaturkürzel. Verwenden Sie Desktop-Verknüpfungseinstellungen, um Bindungen zu genehmigen oder zu ändern. Der Desktop kann angeforderte Schlüssel überschreiben; Die zugelassenen Schlüssel sind unten aufgeführt. Native Wayland zeigt möglicherweise nicht an, welches Fenster den Fokus hat."
     },
     {
       "source": "Requires proper technique; hard impacts common",
@@ -30417,10 +30489,6 @@
       "translation": "Wayland-Portal"
     },
     {
-      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
-      "translation": "Wayland-Portalverknüpfungen aktiv: {0} oder {1}-Bindungen."
-    },
-    {
       "source": "Wayland screen capture",
       "translation": "Wayland-Screenshot"
     },
@@ -30465,12 +30533,8 @@
       "translation": "Die Bildschirmfreigabe von Wayland wurde abgebrochen."
     },
     {
-      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
-      "translation": "Die Genehmigung der Wayland-Verknüpfung ist erforderlich. Neustart SrvSurvey, um Verknüpfungen beim Start zu genehmigen; Vorhandene Tastatur-Listener bleiben verfügbar."
-    },
-    {
-      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
-      "translation": "Die Erlaubnis zur Wayland-Verknüpfung wurde abgelehnt; Vorhandene Tastatur-Listener bleiben verfügbar."
+      "source": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",
+      "translation": "Die Genehmigung der Wayland-Verknüpfung ist erforderlich. Klicken Sie zum Genehmigen auf Desktop-Verknüpfungseinstellungen. Vorhandene Tastatur-Listener bleiben verfügbar."
     },
     {
       "source": "WaylandCapture",
@@ -32419,6 +32483,10 @@
     {
       "source": "last visit",
       "translation": "letzter Besuch"
+    },
+    {
+      "source": "launch-panel",
+      "translation": "Startpanel"
     },
     {
       "source": "left",
@@ -34867,6 +34935,10 @@
     {
       "source": "{0}% remaining",
       "translation": "{0}% verbleibend"
+    },
+    {
+      "source": "{0}: approved by desktop (key not reported)",
+      "translation": "{0}: vom Desktop genehmigt (Schlüssel nicht gemeldet)"
     },
     {
       "source": "{0}: {1} of {2}{3}",
@@ -37365,6 +37437,10 @@
     {
       "source": "ApproachSettlement",
       "translation": "EnfoqueAsentamiento"
+    },
+    {
+      "source": "Approved desktop shortcuts",
+      "translation": "Accesos directos de escritorio aprobados"
     },
     {
       "source": "Aquamarine",
@@ -42691,6 +42767,58 @@
       "translation": "Error al cerrar el tiempo de ejecución del escritorio: {0}"
     },
     {
+      "source": "Desktop shortcut settings",
+      "translation": "Configuración de accesos directos en el escritorio"
+    },
+    {
+      "source": "Desktop shortcut settings are unavailable.",
+      "translation": "La configuración de accesos directos del escritorio no está disponible."
+    },
+    {
+      "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
+      "translation": "No se pudo abrir la configuración de acceso directo del escritorio. Vuelva a intentarlo cuando el portal de escritorio esté disponible."
+    },
+    {
+      "source": "Desktop shortcut settings could not open: {0}",
+      "translation": "La configuración de acceso directo del escritorio no se pudo abrir: {0}"
+    },
+    {
+      "source": "Desktop shortcuts: active",
+      "translation": "Atajos de escritorio: activos"
+    },
+    {
+      "source": "Desktop shortcuts: active ({0} of {1} bindings). {2}",
+      "translation": "Accesos directos de escritorio: activos ({0} de enlaces {1}). {2}"
+    },
+    {
+      "source": "Desktop shortcuts: checking availability.",
+      "translation": "Atajos de escritorio: comprobar disponibilidad."
+    },
+    {
+      "source": "Desktop shortcuts: inactive.",
+      "translation": "Atajos de escritorio: inactivos."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Approval was declined; click Desktop shortcut settings to try again.",
+      "translation": "Atajos de escritorio: inactivos. Se rechazó la aprobación; Haga clic en Configuración de accesos directos del escritorio para volver a intentarlo."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Click Desktop shortcut settings to approve bindings.",
+      "translation": "Atajos de escritorio: inactivos. Haga clic en Configuración de accesos directos del escritorio para aprobar enlaces."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Reconnecting...",
+      "translation": "Atajos de escritorio: inactivos. Reconectando..."
+    },
+    {
+      "source": "Desktop shortcuts: off.",
+      "translation": "Atajos de escritorio: desactivados."
+    },
+    {
+      "source": "Desktop shortcuts: opening settings...",
+      "translation": "Atajos de escritorio: abrir configuración..."
+    },
+    {
       "source": "DesktopBehavior",
       "translation": "Comportamiento del escritorio"
     },
@@ -45711,6 +45839,10 @@
       "translation": "PROGRESO MUNDIAL"
     },
     {
+      "source": "GNOME",
+      "translation": "GNOMO"
+    },
+    {
       "source": "GOAL #{0}",
       "translation": "META #{0}"
     },
@@ -45959,8 +46091,16 @@
       "translation": "Aproximación de planeo"
     },
     {
+      "source": "Global Shortcuts portal unavailable on this desktop.",
+      "translation": "El portal de accesos directos globales no está disponible en este escritorio."
+    },
+    {
       "source": "Global Shortcuts portal unavailable: {0}",
       "translation": "Portal de accesos directos globales no disponible: {0}"
+    },
+    {
+      "source": "Global Shortcuts portal unsupported: {0}",
+      "translation": "Portal de accesos directos globales no compatible: {0}"
     },
     {
       "source": "Global Shortcuts portal version is unsupported.",
@@ -52271,6 +52411,10 @@
       "translation": "Abra la configuración de superposición de la categoría y seleccione Excepciones de superposición en la parte superior derecha."
     },
     {
+      "source": "Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey's Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input.",
+      "translation": "Abra el menú del escritorio para aprobar o configurar accesos directos globales. En escritorios GNOME más antiguos, esto abre la configuración de Aplicaciones de SrvSurvey; elija Atajos globales allí. SrvSurvey nunca lo abre automáticamente. Los códigos de clave de aplicación son claves solicitadas; el escritorio puede anularlos. Expanda Accesos directos de escritorio aprobados para ver las claves que se aplican a la entrada del portal."
+    },
+    {
       "source": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
       "translation": "Abra el botón de información al lado de VoxStellar antes de suscribirse. Enumera los eventos del diario, los datos de exploración que VoxStellar dice que almacena, su licencia de contenido de usuario, política de privacidad, términos y el protocolo del complemento EDMC con licencia del MIT adaptado por SrvSurvey."
     },
@@ -56003,8 +56147,8 @@
       "translation": "Requiere FSSAllBodiesFound para nuevas visitas locales. Las reglas de finalización habilitadas para visitas anteriores y anteriores Spansh aún se aplican."
     },
     {
-      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
-      "translation": "Requiere soporte y aprobación del portal de escritorio para todos los métodos abreviados de teclado configurados. Se solicita una nueva aprobación al iniciar la aplicación. Es posible que Native Wayland no muestre qué ventana tiene el foco."
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
+      "translation": "Requiere soporte y aprobación del portal de escritorio para todos los métodos abreviados de teclado configurados. Utilice la configuración de accesos directos del escritorio para aprobar o cambiar enlaces. El escritorio puede anular las claves solicitadas; sus claves aprobadas se muestran a continuación. Es posible que Native Wayland no muestre qué ventana tiene el foco."
     },
     {
       "source": "Requires proper technique; hard impacts common",
@@ -65515,10 +65659,6 @@
       "translation": "portal wayland"
     },
     {
-      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
-      "translation": "Accesos directos al portal Wayland activos: {0} de enlaces {1}."
-    },
-    {
       "source": "Wayland screen capture",
       "translation": "Captura de pantalla de Wayland"
     },
@@ -65563,12 +65703,8 @@
       "translation": "Se canceló el uso compartido de pantalla de Wayland."
     },
     {
-      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
-      "translation": "Se necesita la aprobación del atajo de Wayland. Reinicie SrvSurvey para aprobar los accesos directos al inicio; Los oyentes de teclado existentes siguen estando disponibles."
-    },
-    {
-      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
-      "translation": "Se rechazó el permiso para el atajo de Wayland; Los oyentes de teclado existentes siguen estando disponibles."
+      "source": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",
+      "translation": "Se necesita la aprobación del atajo de Wayland. Haga clic en Configuración de accesos directos del escritorio para aprobar; Los oyentes de teclado existentes siguen estando disponibles."
     },
     {
       "source": "WaylandCapture",
@@ -67517,6 +67653,10 @@
     {
       "source": "last visit",
       "translation": "última visita"
+    },
+    {
+      "source": "launch-panel",
+      "translation": "panel de lanzamiento"
     },
     {
       "source": "left",
@@ -69965,6 +70105,10 @@
     {
       "source": "{0}% remaining",
       "translation": "{0}% restante"
+    },
+    {
+      "source": "{0}: approved by desktop (key not reported)",
+      "translation": "{0}: aprobado por el escritorio (clave no informada)"
     },
     {
       "source": "{0}: {1} of {2}{3}",
@@ -72463,6 +72607,10 @@
     {
       "source": "ApproachSettlement",
       "translation": "ApprocheRèglement"
+    },
+    {
+      "source": "Approved desktop shortcuts",
+      "translation": "Raccourcis de bureau approuvés"
     },
     {
       "source": "Aquamarine",
@@ -77789,6 +77937,58 @@
       "translation": "Échec de l'arrêt de l'exécution du bureau : {0}"
     },
     {
+      "source": "Desktop shortcut settings",
+      "translation": "Paramètres de raccourci sur le bureau"
+    },
+    {
+      "source": "Desktop shortcut settings are unavailable.",
+      "translation": "Les paramètres de raccourci sur le bureau ne sont pas disponibles."
+    },
+    {
+      "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
+      "translation": "Les paramètres de raccourci sur le bureau n'ont pas pu s'ouvrir. Réessayez lorsque le portail de bureau sera disponible."
+    },
+    {
+      "source": "Desktop shortcut settings could not open: {0}",
+      "translation": "Les paramètres de raccourci sur le bureau n'ont pas pu s'ouvrir : {0}"
+    },
+    {
+      "source": "Desktop shortcuts: active",
+      "translation": "Raccourcis du bureau : actifs"
+    },
+    {
+      "source": "Desktop shortcuts: active ({0} of {1} bindings). {2}",
+      "translation": "Raccourcis du bureau : actifs (liaisons {0} ou {1}). {2}"
+    },
+    {
+      "source": "Desktop shortcuts: checking availability.",
+      "translation": "Raccourcis sur le bureau : vérification de la disponibilité."
+    },
+    {
+      "source": "Desktop shortcuts: inactive.",
+      "translation": "Raccourcis sur le bureau : inactifs."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Approval was declined; click Desktop shortcut settings to try again.",
+      "translation": "Raccourcis sur le bureau : inactifs. L'approbation a été refusée ; cliquez sur Paramètres de raccourci sur le bureau pour réessayer."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Click Desktop shortcut settings to approve bindings.",
+      "translation": "Raccourcis sur le bureau : inactifs. Cliquez sur Paramètres de raccourci sur le bureau pour approuver les liaisons."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Reconnecting...",
+      "translation": "Raccourcis sur le bureau : inactifs. Reconnexion..."
+    },
+    {
+      "source": "Desktop shortcuts: off.",
+      "translation": "Raccourcis sur le bureau : désactivés."
+    },
+    {
+      "source": "Desktop shortcuts: opening settings...",
+      "translation": "Raccourcis du bureau : ouverture des paramètres..."
+    },
+    {
       "source": "DesktopBehavior",
       "translation": "Comportement du bureau"
     },
@@ -80809,6 +81009,10 @@
       "translation": "PROGRÈS MONDIAL"
     },
     {
+      "source": "GNOME",
+      "translation": "GNOME"
+    },
+    {
       "source": "GOAL #{0}",
       "translation": "OBJECTIF #{0}"
     },
@@ -81057,8 +81261,16 @@
       "translation": "Approche planée"
     },
     {
+      "source": "Global Shortcuts portal unavailable on this desktop.",
+      "translation": "Le portail Global Shortcuts n'est pas disponible sur ce bureau."
+    },
+    {
       "source": "Global Shortcuts portal unavailable: {0}",
       "translation": "Portail des raccourcis globaux indisponible : {0}"
+    },
+    {
+      "source": "Global Shortcuts portal unsupported: {0}",
+      "translation": "Portail de raccourcis globaux non pris en charge : {0}"
     },
     {
       "source": "Global Shortcuts portal version is unsupported.",
@@ -87369,6 +87581,10 @@
       "translation": "Ouvrez les paramètres de superposition de la catégorie et sélectionnez Exceptions de superposition en haut à droite."
     },
     {
+      "source": "Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey's Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input.",
+      "translation": "Ouvrez le menu du bureau pour approuver ou configurer les raccourcis globaux. Sur les anciens bureaux GNOME, cela ouvre les paramètres d'applications de SrvSurvey ; choisissez-y les raccourcis globaux. SrvSurvey ne l'ouvre jamais automatiquement. Les codes clés d'application sont des clés demandées ; le bureau peut les remplacer. Développez Raccourcis de bureau approuvés pour voir les touches qui s'appliquent à la saisie du portail."
+    },
+    {
       "source": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
       "translation": "Ouvrez le bouton d'information à côté de VoxStellar avant de vous inscrire. Il répertorie les événements du journal, les données d'exploration que VoxStellar dit stocker, sa licence de contenu utilisateur, sa politique de confidentialité, ses conditions et le protocole de plug-in sous licence MIT EDMC adapté par SrvSurvey."
     },
@@ -91101,8 +91317,8 @@
       "translation": "Nécessite FSSAllBodiesFound pour les nouvelles visites locales. Les règles d'achèvement des visites antérieures activées et des anciennes-Spansh s'appliquent toujours."
     },
     {
-      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
-      "translation": "Nécessite la prise en charge et l’approbation du portail de bureau pour tous les raccourcis clavier configurés. Une nouvelle approbation est demandée au démarrage de l'application. Native Wayland peut ne pas révéler quelle fenêtre a le focus."
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
+      "translation": "Nécessite la prise en charge et l’approbation du portail de bureau pour tous les raccourcis clavier configurés. Utilisez les paramètres de raccourci du bureau pour approuver ou modifier les liaisons. Le bureau peut remplacer les clés demandées ; ses clés approuvées sont indiquées ci-dessous. Native Wayland peut ne pas révéler quelle fenêtre a le focus."
     },
     {
       "source": "Requires proper technique; hard impacts common",
@@ -100613,10 +100829,6 @@
       "translation": "Portail Wayland"
     },
     {
-      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
-      "translation": "Raccourcis du portail Wayland actifs : liaisons {0} ou {1}."
-    },
-    {
       "source": "Wayland screen capture",
       "translation": "Capture d'écran de Wayland"
     },
@@ -100661,12 +100873,8 @@
       "translation": "Le partage d'écran Wayland a été annulé."
     },
     {
-      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
-      "translation": "L’approbation du raccourci Wayland est nécessaire. Redémarrez SrvSurvey pour approuver les raccourcis au démarrage ; les écouteurs de clavier existants restent disponibles."
-    },
-    {
-      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
-      "translation": "L'autorisation de raccourci Wayland a été refusée ; les écouteurs de clavier existants restent disponibles."
+      "source": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",
+      "translation": "L’approbation du raccourci Wayland est nécessaire. Cliquez sur Paramètres de raccourci sur le bureau pour approuver ; les écouteurs de clavier existants restent disponibles."
     },
     {
       "source": "WaylandCapture",
@@ -102615,6 +102823,10 @@
     {
       "source": "last visit",
       "translation": "dernière visite"
+    },
+    {
+      "source": "launch-panel",
+      "translation": "panneau de lancement"
     },
     {
       "source": "left",
@@ -105063,6 +105275,10 @@
     {
       "source": "{0}% remaining",
       "translation": "{0}% restant"
+    },
+    {
+      "source": "{0}: approved by desktop (key not reported)",
+      "translation": "{0} : approuvé par le bureau (clé non signalée)"
     },
     {
       "source": "{0}: {1} of {2}{3}",
@@ -107561,6 +107777,10 @@
     {
       "source": "ApproachSettlement",
       "translation": "AbordagemLiquidação"
+    },
+    {
+      "source": "Approved desktop shortcuts",
+      "translation": "Atalhos aprovados na área de trabalho"
     },
     {
       "source": "Aquamarine",
@@ -112887,6 +113107,58 @@
       "translation": "Falha no encerramento do tempo de execução da área de trabalho: {0}"
     },
     {
+      "source": "Desktop shortcut settings",
+      "translation": "Configurações de atalho na área de trabalho"
+    },
+    {
+      "source": "Desktop shortcut settings are unavailable.",
+      "translation": "As configurações de atalho na área de trabalho não estão disponíveis."
+    },
+    {
+      "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
+      "translation": "As configurações de atalho da área de trabalho não puderam ser abertas. Tente novamente quando o portal da área de trabalho estiver disponível."
+    },
+    {
+      "source": "Desktop shortcut settings could not open: {0}",
+      "translation": "As configurações de atalho da área de trabalho não puderam ser abertas: {0}"
+    },
+    {
+      "source": "Desktop shortcuts: active",
+      "translation": "Atalhos na área de trabalho: ativos"
+    },
+    {
+      "source": "Desktop shortcuts: active ({0} of {1} bindings). {2}",
+      "translation": "Atalhos da área de trabalho: ativos ({0} de ligações {1}). {2}"
+    },
+    {
+      "source": "Desktop shortcuts: checking availability.",
+      "translation": "Atalhos na área de trabalho: verificando a disponibilidade."
+    },
+    {
+      "source": "Desktop shortcuts: inactive.",
+      "translation": "Atalhos na área de trabalho: inativos."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Approval was declined; click Desktop shortcut settings to try again.",
+      "translation": "Atalhos na área de trabalho: inativos. A aprovação foi recusada; clique em Configurações de atalho da área de trabalho para tentar novamente."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Click Desktop shortcut settings to approve bindings.",
+      "translation": "Atalhos na área de trabalho: inativos. Clique em Configurações de atalho da área de trabalho para aprovar vinculações."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Reconnecting...",
+      "translation": "Atalhos na área de trabalho: inativos. Reconectando..."
+    },
+    {
+      "source": "Desktop shortcuts: off.",
+      "translation": "Atalhos na área de trabalho: desativados."
+    },
+    {
+      "source": "Desktop shortcuts: opening settings...",
+      "translation": "Atalhos na área de trabalho: abrindo configurações..."
+    },
+    {
       "source": "DesktopBehavior",
       "translation": "Comportamento da área de trabalho"
     },
@@ -115907,6 +116179,10 @@
       "translation": "PROGRESSO GLOBAL"
     },
     {
+      "source": "GNOME",
+      "translation": "GNOMO"
+    },
+    {
       "source": "GOAL #{0}",
       "translation": "META #{0}"
     },
@@ -116155,8 +116431,16 @@
       "translation": "Abordagem de deslizamento"
     },
     {
+      "source": "Global Shortcuts portal unavailable on this desktop.",
+      "translation": "Portal de atalhos globais indisponível nesta área de trabalho."
+    },
+    {
       "source": "Global Shortcuts portal unavailable: {0}",
       "translation": "Portal de atalhos globais indisponível: {0}"
+    },
+    {
+      "source": "Global Shortcuts portal unsupported: {0}",
+      "translation": "Portal de atalhos globais não suportado: {0}"
     },
     {
       "source": "Global Shortcuts portal version is unsupported.",
@@ -122467,6 +122751,10 @@
       "translation": "Abra as configurações de sobreposição da categoria e selecione Exceções de sobreposição no canto superior direito."
     },
     {
+      "source": "Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey's Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input.",
+      "translation": "Abra o menu da área de trabalho para aprovar ou configurar atalhos globais. Em desktops GNOME mais antigos, isso abre as configurações de Aplicativos SrvSurvey; escolha Atalhos Globais lá. SrvSurvey nunca o abre automaticamente. Os códigos-chave do aplicativo são chaves solicitadas; a área de trabalho pode substituí-los. Expanda Atalhos da área de trabalho aprovados para ver as teclas que se aplicam à entrada do portal."
+    },
+    {
       "source": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
       "translation": "Abra o botão de informações ao lado de VoxStellar antes de aceitar. Ele lista os eventos do diário, os dados de exploração que VoxStellar diz armazenar, sua licença de conteúdo do usuário, política de privacidade, termos e o protocolo de plug-in EDMC licenciado pelo MIT adaptado por SrvSurvey."
     },
@@ -126199,8 +126487,8 @@
       "translation": "Requer FSSAllBodiesFound para novas visitas locais. Regras de conclusão de visita anterior e de Spansh ativadas ainda se aplicam."
     },
     {
-      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
-      "translation": "Requer suporte e aprovação do portal de desktop para todos os atalhos de teclado configurados. Nova aprovação é solicitada na inicialização do aplicativo. O Native Wayland pode não expor qual janela está em foco."
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
+      "translation": "Requer suporte e aprovação do portal de desktop para todos os atalhos de teclado configurados. Use as configurações de atalho da área de trabalho para aprovar ou alterar vinculações. A área de trabalho pode substituir as chaves solicitadas; suas chaves aprovadas são mostradas abaixo. O Native Wayland pode não expor qual janela está em foco."
     },
     {
       "source": "Requires proper technique; hard impacts common",
@@ -135711,10 +135999,6 @@
       "translation": "Portal Wayland"
     },
     {
-      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
-      "translation": "Atalhos do portal Wayland ativos: {0} de ligações {1}."
-    },
-    {
       "source": "Wayland screen capture",
       "translation": "Captura de tela do Wayland"
     },
@@ -135759,12 +136043,8 @@
       "translation": "O compartilhamento de tela do Wayland foi cancelado."
     },
     {
-      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
-      "translation": "É necessária a aprovação do atalho Wayland. Reinicie SrvSurvey para aprovar atalhos na inicialização; os ouvintes de teclado existentes permanecem disponíveis."
-    },
-    {
-      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
-      "translation": "A permissão de atalho do Wayland foi recusada; os ouvintes de teclado existentes permanecem disponíveis."
+      "source": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",
+      "translation": "É necessária a aprovação do atalho Wayland. Clique em Configurações de atalho da área de trabalho para aprovar; os ouvintes de teclado existentes permanecem disponíveis."
     },
     {
       "source": "WaylandCapture",
@@ -137713,6 +137993,10 @@
     {
       "source": "last visit",
       "translation": "última visita"
+    },
+    {
+      "source": "launch-panel",
+      "translation": "painel de lançamento"
     },
     {
       "source": "left",
@@ -140161,6 +140445,10 @@
     {
       "source": "{0}% remaining",
       "translation": "{0}% restante"
+    },
+    {
+      "source": "{0}: approved by desktop (key not reported)",
+      "translation": "{0}: aprovado pelo desktop (chave não informada)"
     },
     {
       "source": "{0}: {1} of {2}{3}",
@@ -142659,6 +142947,10 @@
     {
       "source": "ApproachSettlement",
       "translation": "ПодходПоселение"
+    },
+    {
+      "source": "Approved desktop shortcuts",
+      "translation": "Разрешенные ярлыки на рабочем столе"
     },
     {
       "source": "Aquamarine",
@@ -147985,6 +148277,58 @@
       "translation": "Не удалось завершить работу рабочего стола: {0}"
     },
     {
+      "source": "Desktop shortcut settings",
+      "translation": "Настройки ярлыка на рабочем столе"
+    },
+    {
+      "source": "Desktop shortcut settings are unavailable.",
+      "translation": "Настройки ярлыков на рабочем столе недоступны."
+    },
+    {
+      "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
+      "translation": "Не удалось открыть настройки ярлыка на рабочем столе. Повторите попытку, когда портал для настольных компьютеров станет доступен."
+    },
+    {
+      "source": "Desktop shortcut settings could not open: {0}",
+      "translation": "Не удалось открыть настройки ярлыка на рабочем столе: {0}"
+    },
+    {
+      "source": "Desktop shortcuts: active",
+      "translation": "Ярлыки на рабочем столе: активны"
+    },
+    {
+      "source": "Desktop shortcuts: active ({0} of {1} bindings). {2}",
+      "translation": "Ярлыки на рабочем столе: активны (привязки {0} из {1}). {2}"
+    },
+    {
+      "source": "Desktop shortcuts: checking availability.",
+      "translation": "Ярлыки на рабочем столе: проверка доступности."
+    },
+    {
+      "source": "Desktop shortcuts: inactive.",
+      "translation": "Ярлыки на рабочем столе: неактивны."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Approval was declined; click Desktop shortcut settings to try again.",
+      "translation": "Ярлыки на рабочем столе: неактивны. Одобрение было отклонено; нажмите «Настройки ярлыка на рабочем столе», чтобы повторить попытку."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Click Desktop shortcut settings to approve bindings.",
+      "translation": "Ярлыки на рабочем столе: неактивны. Нажмите «Настройки ярлыка на рабочем столе», чтобы утвердить привязки."
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Reconnecting...",
+      "translation": "Ярлыки на рабочем столе: неактивны. Повторное подключение..."
+    },
+    {
+      "source": "Desktop shortcuts: off.",
+      "translation": "Ярлыки на рабочем столе: выключено."
+    },
+    {
+      "source": "Desktop shortcuts: opening settings...",
+      "translation": "Ярлыки на рабочем столе: открытие настроек..."
+    },
+    {
       "source": "DesktopBehavior",
       "translation": "Рабочий столПоведение"
     },
@@ -151005,6 +151349,10 @@
       "translation": "ГЛОБАЛЬНЫЙ ПРОГРЕСС"
     },
     {
+      "source": "GNOME",
+      "translation": "ГНОМ"
+    },
+    {
       "source": "GOAL #{0}",
       "translation": "ЦЕЛЬ №{0}"
     },
@@ -151253,8 +151601,16 @@
       "translation": "Скользящий подход"
     },
     {
+      "source": "Global Shortcuts portal unavailable on this desktop.",
+      "translation": "Портал глобальных ярлыков недоступен на этом рабочем столе."
+    },
+    {
       "source": "Global Shortcuts portal unavailable: {0}",
       "translation": "Портал глобальных ярлыков недоступен: {0}"
+    },
+    {
+      "source": "Global Shortcuts portal unsupported: {0}",
+      "translation": "Портал глобальных ярлыков не поддерживается: {0}"
     },
     {
       "source": "Global Shortcuts portal version is unsupported.",
@@ -157565,6 +157921,10 @@
       "translation": "Откройте настройки наложения категории и выберите «Исключения наложения» в правом верхнем углу."
     },
     {
+      "source": "Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey's Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input.",
+      "translation": "Откройте меню рабочего стола, чтобы утвердить или настроить глобальные ярлыки. На старых компьютерах GNOME при этом открываются настройки приложений SrvSurvey; выберите там «Глобальные ярлыки». SrvSurvey никогда не открывает его автоматически. Коды ключей приложения — это запрошенные ключи; рабочий стол может их переопределить. Разверните Утвержденные ярлыки на рабочем столе, чтобы увидеть клавиши, которые применяются к входным данным портала."
+    },
+    {
       "source": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
       "translation": "Откройте информационную кнопку рядом с VoxStellar перед тем, как принять участие. В ней перечислены события журнала, данные исследования, которые VoxStellar хранит, ее лицензия на пользовательский контент, политика конфиденциальности, условия и лицензированный MIT протокол подключаемого модуля EDMC, адаптированный SrvSurvey."
     },
@@ -161297,8 +161657,8 @@
       "translation": "Требуется FSSAllBodiesFound для новых локальных посещений. Включенные правила раннего посещения и более старых правил завершения Spansh по-прежнему применяются."
     },
     {
-      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
-      "translation": "Требуется поддержка и одобрение портала настольных компьютеров для всех настроенных сочетаний клавиш. Новое утверждение запрашивается при запуске приложения. Native Wayland может не показывать, какое окно находится в фокусе."
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
+      "translation": "Требуется поддержка и одобрение портала настольных компьютеров для всех настроенных сочетаний клавиш. Используйте настройки ярлыков на рабочем столе, чтобы утвердить или изменить привязки. Рабочий стол может переопределить запрошенные клавиши; утвержденные ключи показаны ниже. Native Wayland может не показывать, какое окно находится в фокусе."
     },
     {
       "source": "Requires proper technique; hard impacts common",
@@ -170809,10 +171169,6 @@
       "translation": "Вейландский портал"
     },
     {
-      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
-      "translation": "Активны ярлыки портала Wayland: {0} из привязок {1}."
-    },
-    {
       "source": "Wayland screen capture",
       "translation": "Снимок экрана Вейланда"
     },
@@ -170857,12 +171213,8 @@
       "translation": "Демонстрация экрана Wayland отменена."
     },
     {
-      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
-      "translation": "Требуется одобрение ярлыка Wayland. Перезагрузите SrvSurvey, чтобы утвердить ярлыки при запуске; существующие прослушиватели клавиатуры остаются доступными."
-    },
-    {
-      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
-      "translation": "Разрешение на ярлык Wayland было отклонено; существующие прослушиватели клавиатуры остаются доступными."
+      "source": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",
+      "translation": "Требуется одобрение ярлыка Wayland. Нажмите «Настройки ярлыка на рабочем столе», чтобы одобрить; существующие прослушиватели клавиатуры остаются доступными."
     },
     {
       "source": "WaylandCapture",
@@ -172811,6 +173163,10 @@
     {
       "source": "last visit",
       "translation": "последний визит"
+    },
+    {
+      "source": "launch-panel",
+      "translation": "панель запуска"
     },
     {
       "source": "left",
@@ -175259,6 +175615,10 @@
     {
       "source": "{0}% remaining",
       "translation": "Осталось {0}%"
+    },
+    {
+      "source": "{0}: approved by desktop (key not reported)",
+      "translation": "{0}: одобрено настольным компьютером (ключ не указан)"
     },
     {
       "source": "{0}: {1} of {2}{3}",
@@ -177757,6 +178117,10 @@
     {
       "source": "ApproachSettlement",
       "translation": "进场结算"
+    },
+    {
+      "source": "Approved desktop shortcuts",
+      "translation": "批准的桌面快捷方式"
     },
     {
       "source": "Aquamarine",
@@ -183083,6 +183447,58 @@
       "translation": "桌面运行时关闭失败：{0}"
     },
     {
+      "source": "Desktop shortcut settings",
+      "translation": "桌面快捷方式设置"
+    },
+    {
+      "source": "Desktop shortcut settings are unavailable.",
+      "translation": "桌面快捷方式设置不可用。"
+    },
+    {
+      "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
+      "translation": "桌面快捷方式设置无法打开。当桌面门户可用时重试。"
+    },
+    {
+      "source": "Desktop shortcut settings could not open: {0}",
+      "translation": "桌面快捷方式设置无法打开：{0}"
+    },
+    {
+      "source": "Desktop shortcuts: active",
+      "translation": "桌面快捷方式：活动"
+    },
+    {
+      "source": "Desktop shortcuts: active ({0} of {1} bindings). {2}",
+      "translation": "桌面快捷方式：活动（{1} 绑定的 {0}）。 {2}"
+    },
+    {
+      "source": "Desktop shortcuts: checking availability.",
+      "translation": "桌面快捷方式：检查可用性。"
+    },
+    {
+      "source": "Desktop shortcuts: inactive.",
+      "translation": "桌面快捷方式：未激活。"
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Approval was declined; click Desktop shortcut settings to try again.",
+      "translation": "桌面快捷方式：未激活。批准被拒绝；单击桌面快捷方式设置重试。"
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Click Desktop shortcut settings to approve bindings.",
+      "translation": "桌面快捷方式：未激活。单击桌面快捷方式设置以批准绑定。"
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Reconnecting...",
+      "translation": "桌面快捷方式：未激活。正在重新连接..."
+    },
+    {
+      "source": "Desktop shortcuts: off.",
+      "translation": "桌面快捷方式：关闭。"
+    },
+    {
+      "source": "Desktop shortcuts: opening settings...",
+      "translation": "桌面快捷方式：打开设置..."
+    },
+    {
       "source": "DesktopBehavior",
       "translation": "桌面行为"
     },
@@ -186103,6 +186519,10 @@
       "translation": "全球进步"
     },
     {
+      "source": "GNOME",
+      "translation": "侏儒"
+    },
+    {
       "source": "GOAL #{0}",
       "translation": "目标#{0}"
     },
@@ -186351,8 +186771,16 @@
       "translation": "滑翔进近"
     },
     {
+      "source": "Global Shortcuts portal unavailable on this desktop.",
+      "translation": "全局快捷方式门户在此桌面上不可用。"
+    },
+    {
       "source": "Global Shortcuts portal unavailable: {0}",
       "translation": "全局快捷方式门户不可用：{0}"
+    },
+    {
+      "source": "Global Shortcuts portal unsupported: {0}",
+      "translation": "不支持全局快捷方式门户：{0}"
     },
     {
       "source": "Global Shortcuts portal version is unsupported.",
@@ -192663,6 +193091,10 @@
       "translation": "打开类别的叠加设置并选择右上角的叠加例外。"
     },
     {
+      "source": "Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey's Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input.",
+      "translation": "打开桌面菜单以批准或配置全局快捷方式。在较旧的 GNOME 桌面上，这将打开 SrvSurvey 的应用程序设置；在那里选择全局快捷方式。 SrvSurvey 永远不会自动打开它。应用程序密钥代码是请求的密钥；桌面可以覆盖它们。展开已批准的桌面快捷方式以查看适用于门户输入的按键。"
+    },
+    {
       "source": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
       "translation": "选择加入之前，请打开 VoxStellar 旁边的信息按钮。它列出了期刊事件、VoxStellar 表示其存储的探索数据、其用户内容许可证、隐私政策、条款以及由 SrvSurvey 改编的 MIT 许可的 EDMC 插件协议。"
     },
@@ -196395,8 +196827,8 @@
       "translation": "需要 FSSAllBodiesFound 才能进行新的本地访问。启用的早期访问和较早的Spansh完成规则仍然适用。"
     },
     {
-      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
-      "translation": "需要桌面门户支持并批准所有配置的键盘快捷键。应用程序启动时需要新的批准。 Native Wayland 可能不会公开哪个窗口具有焦点。"
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
+      "translation": "需要桌面门户支持并批准所有配置的键盘快捷键。使用桌面快捷方式设置来批准或更改绑定。桌面可能会覆盖请求的键；其批准的密钥如下所示。 Native Wayland 可能不会公开哪个窗口具有焦点。"
     },
     {
       "source": "Requires proper technique; hard impacts common",
@@ -205907,10 +206339,6 @@
       "translation": "韦兰门户网站"
     },
     {
-      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
-      "translation": "Wayland 门户快捷方式处于活动状态：{1} 绑定的 {0}。"
-    },
-    {
       "source": "Wayland screen capture",
       "translation": "韦兰屏幕截图"
     },
@@ -205955,12 +206383,8 @@
       "translation": "Wayland 屏幕共享已取消。"
     },
     {
-      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
-      "translation": "需要 Wayland 快捷方式批准。重新启动SrvSurvey以批准启动时的快捷方式；现有的键盘侦听器仍然可用。"
-    },
-    {
-      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
-      "translation": "Wayland 快捷方式权限被拒绝；现有的键盘侦听器仍然可用。"
+      "source": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",
+      "translation": "需要 Wayland 快捷方式批准。点击桌面快捷方式设置进行批准；现有的键盘侦听器仍然可用。"
     },
     {
       "source": "WaylandCapture",
@@ -207909,6 +208333,10 @@
     {
       "source": "last visit",
       "translation": "上次访问"
+    },
+    {
+      "source": "launch-panel",
+      "translation": "启动面板"
     },
     {
       "source": "left",
@@ -210357,6 +210785,10 @@
     {
       "source": "{0}% remaining",
       "translation": "{0} 剩余%"
+    },
+    {
+      "source": "{0}: approved by desktop (key not reported)",
+      "translation": "{0}：经桌面批准（密钥未报告）"
     },
     {
       "source": "{0}: {1} of {2}{3}",
@@ -212855,6 +213287,10 @@
     {
       "source": "ApproachSettlement",
       "translation": "* APPROACHSETTLEMENT >>>!"
+    },
+    {
+      "source": "Approved desktop shortcuts",
+      "translation": "* APPROVED DESKTOP SHORTCUTS >>>!"
     },
     {
       "source": "Aquamarine",
@@ -218181,6 +218617,58 @@
       "translation": "* DESKTOP RUNTIME SHUTDOWN FAILED: {0} >>>!"
     },
     {
+      "source": "Desktop shortcut settings",
+      "translation": "* DESKTOP SHORTCUT SETTINGS >>>!"
+    },
+    {
+      "source": "Desktop shortcut settings are unavailable.",
+      "translation": "* DESKTOP SHORTCUT SETTINGS ARE UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
+      "translation": "* DESKTOP SHORTCUT SETTINGS COULD NOT OPEN. TRY AGAIN WHEN THE DESKTOP PORTAL IS AVAILABLE. >>>!"
+    },
+    {
+      "source": "Desktop shortcut settings could not open: {0}",
+      "translation": "* DESKTOP SHORTCUT SETTINGS COULD NOT OPEN: {0} >>>!"
+    },
+    {
+      "source": "Desktop shortcuts: active",
+      "translation": "* DESKTOP SHORTCUTS: ACTIVE >>>!"
+    },
+    {
+      "source": "Desktop shortcuts: active ({0} of {1} bindings). {2}",
+      "translation": "* DESKTOP SHORTCUTS: ACTIVE ({0} OF {1} BINDINGS). {2} >>>!"
+    },
+    {
+      "source": "Desktop shortcuts: checking availability.",
+      "translation": "* DESKTOP SHORTCUTS: CHECKING AVAILABILITY. >>>!"
+    },
+    {
+      "source": "Desktop shortcuts: inactive.",
+      "translation": "* DESKTOP SHORTCUTS: INACTIVE. >>>!"
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Approval was declined; click Desktop shortcut settings to try again.",
+      "translation": "* DESKTOP SHORTCUTS: INACTIVE. APPROVAL WAS DECLINED; CLICK DESKTOP SHORTCUT SETTINGS TO TRY AGAIN. >>>!"
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Click Desktop shortcut settings to approve bindings.",
+      "translation": "* DESKTOP SHORTCUTS: INACTIVE. CLICK DESKTOP SHORTCUT SETTINGS TO APPROVE BINDINGS. >>>!"
+    },
+    {
+      "source": "Desktop shortcuts: inactive. Reconnecting...",
+      "translation": "* DESKTOP SHORTCUTS: INACTIVE. RECONNECTING... >>>!"
+    },
+    {
+      "source": "Desktop shortcuts: off.",
+      "translation": "* DESKTOP SHORTCUTS: OFF. >>>!"
+    },
+    {
+      "source": "Desktop shortcuts: opening settings...",
+      "translation": "* DESKTOP SHORTCUTS: OPENING SETTINGS... >>>!"
+    },
+    {
       "source": "DesktopBehavior",
       "translation": "* DESKTOPBEHAVIOR >>>!"
     },
@@ -221201,6 +221689,10 @@
       "translation": "* GLOBAL PROGRESS >>>!"
     },
     {
+      "source": "GNOME",
+      "translation": "* GNOME >>>!"
+    },
+    {
       "source": "GOAL #{0}",
       "translation": "* GOAL #{0} >>>!"
     },
@@ -221449,8 +221941,16 @@
       "translation": "* GLIDE APPROACH >>>!"
     },
     {
+      "source": "Global Shortcuts portal unavailable on this desktop.",
+      "translation": "* GLOBAL SHORTCUTS PORTAL UNAVAILABLE ON THIS DESKTOP. >>>!"
+    },
+    {
       "source": "Global Shortcuts portal unavailable: {0}",
       "translation": "* GLOBAL SHORTCUTS PORTAL UNAVAILABLE: {0} >>>!"
+    },
+    {
+      "source": "Global Shortcuts portal unsupported: {0}",
+      "translation": "* GLOBAL SHORTCUTS PORTAL UNSUPPORTED: {0} >>>!"
     },
     {
       "source": "Global Shortcuts portal version is unsupported.",
@@ -227761,6 +228261,10 @@
       "translation": "* OPEN THE CATEGORY’S OVERLAY SETTINGS AND SELECT OVERLAY EXCEPTIONS AT THE TOP RIGHT. >>>!"
     },
     {
+      "source": "Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey's Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input.",
+      "translation": "* OPEN THE DESKTOP MENU TO APPROVE OR CONFIGURE GLOBAL SHORTCUTS. ON OLDER GNOME DESKTOPS, THIS OPENS SRVSURVEY'S APPLICATIONS SETTINGS; CHOOSE GLOBAL SHORTCUTS THERE. SRVSURVEY NEVER OPENS IT AUTOMATICALLY. APPLICATION KEY CODES ARE REQUESTED KEYS; THE DESKTOP CAN OVERRIDE THEM. EXPAND APPROVED DESKTOP SHORTCUTS TO SEE THE KEYS THAT APPLY TO PORTAL INPUT. >>>!"
+    },
+    {
       "source": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
       "translation": "* OPEN THE INFORMATION BUTTON BESIDE VOXSTELLAR BEFORE OPTING IN. IT LISTS THE JOURNAL EVENTS, THE EXPLORATION DATA VOXSTELLAR SAYS IT STORES, ITS USER-CONTENT LICENSE, PRIVACY POLICY, TERMS, AND THE MIT-LICENSED EDMC PLUGIN PROTOCOL ADAPTED BY SRVSURVEY. >>>!"
     },
@@ -231493,8 +231997,8 @@
       "translation": "* REQUIRES FSSALLBODIESFOUND FOR NEW LOCAL VISITS. ENABLED EARLIER-VISIT AND OLDER-SPANSH COMPLETION RULES STILL APPLY. >>>!"
     },
     {
-      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. New approval is requested at app startup. Native Wayland may not expose which window has focus.",
-      "translation": "* REQUIRES DESKTOP PORTAL SUPPORT AND APPROVAL FOR ALL CONFIGURED KEYBOARD SHORTCUTS. NEW APPROVAL IS REQUESTED AT APP STARTUP. NATIVE WAYLAND MAY NOT EXPOSE WHICH WINDOW HAS FOCUS. >>>!"
+      "source": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
+      "translation": "* REQUIRES DESKTOP PORTAL SUPPORT AND APPROVAL FOR ALL CONFIGURED KEYBOARD SHORTCUTS. USE DESKTOP SHORTCUT SETTINGS TO APPROVE OR CHANGE BINDINGS. THE DESKTOP MAY OVERRIDE REQUESTED KEYS; ITS APPROVED KEYS ARE SHOWN BELOW. NATIVE WAYLAND MAY NOT EXPOSE WHICH WINDOW HAS FOCUS. >>>!"
     },
     {
       "source": "Requires proper technique; hard impacts common",
@@ -241005,10 +241509,6 @@
       "translation": "* WAYLAND PORTAL >>>!"
     },
     {
-      "source": "Wayland portal shortcuts active: {0} of {1} bindings.",
-      "translation": "* WAYLAND PORTAL SHORTCUTS ACTIVE: {0} OF {1} BINDINGS. >>>!"
-    },
-    {
       "source": "Wayland screen capture",
       "translation": "* WAYLAND SCREEN CAPTURE >>>!"
     },
@@ -241053,12 +241553,8 @@
       "translation": "* WAYLAND SCREEN SHARING WAS CANCELED. >>>!"
     },
     {
-      "source": "Wayland shortcut approval is needed. Restart SrvSurvey to approve shortcuts at startup; existing keyboard listeners remain available.",
-      "translation": "* WAYLAND SHORTCUT APPROVAL IS NEEDED. RESTART SRVSURVEY TO APPROVE SHORTCUTS AT STARTUP; EXISTING KEYBOARD LISTENERS REMAIN AVAILABLE. >>>!"
-    },
-    {
-      "source": "Wayland shortcut permission was declined; existing keyboard listeners remain available.",
-      "translation": "* WAYLAND SHORTCUT PERMISSION WAS DECLINED; EXISTING KEYBOARD LISTENERS REMAIN AVAILABLE. >>>!"
+      "source": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",
+      "translation": "* WAYLAND SHORTCUT APPROVAL IS NEEDED. CLICK DESKTOP SHORTCUT SETTINGS TO APPROVE; EXISTING KEYBOARD LISTENERS REMAIN AVAILABLE. >>>!"
     },
     {
       "source": "WaylandCapture",
@@ -243007,6 +243503,10 @@
     {
       "source": "last visit",
       "translation": "* LAST VISIT >>>!"
+    },
+    {
+      "source": "launch-panel",
+      "translation": "* LAUNCH-PANEL >>>!"
     },
     {
       "source": "left",
@@ -245455,6 +245955,10 @@
     {
       "source": "{0}% remaining",
       "translation": "* {0}% REMAINING >>>!"
+    },
+    {
+      "source": "{0}: approved by desktop (key not reported)",
+      "translation": "* {0}: APPROVED BY DESKTOP (KEY NOT REPORTED) >>>!"
     },
     {
       "source": "{0}: {1} of {2}{3}",

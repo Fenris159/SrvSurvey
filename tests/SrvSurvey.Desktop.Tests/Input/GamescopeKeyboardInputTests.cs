@@ -25,6 +25,37 @@ public sealed class GamescopeKeyboardInputTests
         Assert.Equal(1, recorder.Disposals);
     }
 
+    /// <summary>Prefers a verified bridge and uses process discovery only when the bridge is missing.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BridgeAndProcessDiscoveryWorkTogether(bool hasBridge)
+    {
+        var recorder = new FakeRecord();
+        int discoveries = 0;
+        string? openedDisplay = null;
+        using var input = new GamescopeKeyboardInput(
+            () => hasBridge ? new GamescopeGameWindowBridge(123, ":2", default) : null,
+            display =>
+            {
+                openedDisplay = display;
+                return recorder;
+            },
+            ":0",
+            () =>
+            {
+                discoveries++;
+                return new EliteKeyboardDisplay(456, ":3");
+            },
+            _ => new NestedTracker(),
+            () => new Avalonia.PixelRect(1920, 0, 2560, 1440)
+        );
+        input.ReadEvents(true);
+        Assert.Equal(hasBridge ? ":2" : ":3", openedDisplay);
+        Assert.Equal(hasBridge ? 0 : 1, discoveries);
+        Assert.Equal(hasBridge ? 123 : 456, input.ProcessId);
+    }
+
     /// <summary>Provides a foreground game on the discovered server.</summary>
     private sealed class NestedTracker : IGameWindowTracker
     {
