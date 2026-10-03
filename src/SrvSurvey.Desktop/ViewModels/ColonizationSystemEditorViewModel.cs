@@ -13,6 +13,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 {
     private const int MaximumBufferedJournalEvents = 2048;
+    private int contextVersion;
+    private IReadOnlyList<ColonizationSystemSite>? pendingEditedSites;
 
     private readonly IRavenColonialClient client;
     private readonly AsyncCommand loadCommand;
@@ -278,6 +280,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
     public bool CanConfirmPublish =>
         pendingPlan?.CanPublish == true && !IsBusy && CanEdit && !string.IsNullOrWhiteSpace(context.RavenApiKey);
 
+    /// <summary>Invalidates asynchronous work when the active system, dock, commander, or credentials change.</summary>
     public void UpdateContext(ColonizationSystemEditorContext updatedContext)
     {
         ArgumentNullException.ThrowIfNull(updatedContext);
@@ -286,6 +289,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             GetLoadedContextIdentity(updatedContext),
             StringComparison.Ordinal
         );
+        if (changed || context.RavenApiKey != updatedContext.RavenApiKey)
+        {
+            contextVersion++;
+        }
         context = updatedContext;
         if (changed)
         {
@@ -355,6 +362,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Loads the captured system workspace only while its initiating context remains active.</summary>
     public async Task LoadAsync()
     {
         if (!CanLoad)
@@ -363,12 +371,17 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
+        int version = contextVersion;
         IsBusy = true;
         ClearReview();
         StatusMessage = "Loading the current system from Raven Colonial...";
         try
         {
             ColonizationSystemRecord loaded = await client.GetSystemAsync(GetSystemIdentifier());
+            if (version != contextVersion)
+            {
+                return;
+            }
             if (!ColonizationSiteVisibility.CanLoadSystem(loaded.Architect, context.CommanderName))
             {
                 ResetLoadedSystem();
@@ -384,6 +397,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
+            if (version != contextVersion)
+            {
+                return;
+            }
             StatusMessage = "The Raven system could not be loaded: " + exception.Message;
         }
         finally
@@ -405,6 +422,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.";
     }
 
+    /// <summary>Imports bodies for the reviewed system and prevents a late response from restoring obsolete state.</summary>
     public async Task ConfirmBodyImportAsync()
     {
         if (!IsBodyImportConfirmationPending || system is null || IsBusy)
@@ -419,11 +437,16 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
+        int version = contextVersion;
         IsBusy = true;
         StatusMessage = "Importing the system body catalog into Raven Colonial...";
         try
         {
             ColonizationSystemRecord imported = await client.ImportSystemBodiesAsync(GetSystemIdentifier());
+            if (version != contextVersion)
+            {
+                return;
+            }
             ApplyLoadedSystem(imported);
             IsBodyImportConfirmationPending = false;
             StatusMessage = imported.Bodies is null
@@ -432,6 +455,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
+            if (version != contextVersion)
+            {
+                return;
+            }
             StatusMessage = "The body catalog was not imported: " + exception.Message;
         }
         finally
@@ -486,6 +513,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         MarkLocalChange($"Removed '{removed.Name}' locally.");
     }
 
+    /// <summary>Reconciles local edits against current Raven sites and retains the edited snapshot for confirmation.</summary>
     public async Task ReviewAsync()
     {
         if (!CanReview)
@@ -499,12 +527,17 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
+        int version = contextVersion;
         IsBusy = true;
         ClearReview();
         StatusMessage = "Refreshing Raven data and checking for concurrent changes...";
         try
         {
             ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
+            if (version != contextVersion)
+            {
+                return;
+            }
             if (!CanCommanderEdit(latest, context.CommanderName))
             {
                 StatusMessage = "Raven secured this system after it was loaded. No changes can be published.";
@@ -535,6 +568,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             }
 
             pendingPlan = plan;
+            pendingEditedSites = edited;
             pendingContextIdentity = GetContextIdentity(context);
             ReviewSummary =
                 $"Ready to publish {plan.Update.UpdatedSites.Count:N0} update(s) and {plan.Update.DeletedSiteIds.Count:N0} deletion(s). {plan.UnchangedCount:N0} site(s) remain unchanged.";
@@ -545,6 +579,10 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
+            if (version != contextVersion)
+            {
+                return;
+            }
             StatusMessage = "The Raven site review could not be completed: " + exception.Message;
         }
         finally
@@ -553,6 +591,7 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Fetches and reconciles again immediately before publishing so changes made since Review are preserved.</summary>
     public async Task ConfirmPublishAsync()
     {
         if (!CanConfirmPublish || pendingPlan is null)
@@ -570,22 +609,62 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        ColonizationSystemSiteReconciliationPlan plan = pendingPlan;
+        IReadOnlyList<ColonizationSystemSite> edited = pendingEditedSites ?? SnapshotVisibleSites();
+        int version = contextVersion;
         IsBusy = true;
         StatusMessage = "Publishing the confirmed site changes to Raven Colonial...";
         try
         {
+            ColonizationSystemRecord latest = await client.GetSystemAsync(GetSystemIdentifier());
+            if (version != contextVersion)
+            {
+                return;
+            }
+            if (!CanCommanderEdit(latest, context.CommanderName))
+            {
+                ClearReview();
+                CanEdit = false;
+                StatusMessage = "Raven secured this system after review. No changes were published.";
+                return;
+            }
+            ColonizationSystemSiteReconciliationPlan plan = ColonizationSystemSiteReconciler.CreatePlan(
+                baseline,
+                latest.Sites,
+                edited
+            );
+            if (plan.Conflicts.Count > 0)
+            {
+                ClearReview();
+                Conflicts = plan.Conflicts;
+                ReviewSummary = "Raven changed after review. Reload and review conflicting edits before publishing.";
+                StatusMessage = "Concurrent Raven changes were preserved; nothing was published.";
+                return;
+            }
+            if (!plan.HasChanges)
+            {
+                ApplyLoadedSystem(latest);
+                StatusMessage = "The local workspace already matches Raven Colonial.";
+                return;
+            }
             ColonizationSystemRecord updated = await client.UpdateSystemSitesAsync(
                 GetSystemIdentifier(),
                 plan.Update,
                 context.RavenApiKey!
             );
+            if (version != contextVersion)
+            {
+                return;
+            }
             ApplyLoadedSystem(updated);
             StatusMessage =
                 $"Raven Colonial accepted the update. Revision {updated.Revision:N0} now has {updated.Sites.Count:N0} sites.";
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
+            if (version != contextVersion)
+            {
+                return;
+            }
             StatusMessage = "The confirmed Raven update was not published: " + exception.Message;
         }
         finally
@@ -821,9 +900,11 @@ public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
         StatusMessage = "Publish cancelled; all edits remain local.";
     }
 
+    /// <summary>Clears both the retained publication plan and its originating edited snapshot.</summary>
     private void ClearReview()
     {
         pendingPlan = null;
+        pendingEditedSites = null;
         pendingContextIdentity = null;
         Conflicts = [];
         ReviewSummary = string.Empty;

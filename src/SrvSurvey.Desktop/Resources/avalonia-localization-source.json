@@ -1456,6 +1456,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
+    "Text": "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "A cooperative instance shutdown request failed: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -9118,6 +9126,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Cargo: 72 / 128 t \u00B7 Limpets: 34",
     "IsFormat": false,
     "SourceKinds": [
@@ -12061,6 +12077,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "Concurrent Raven changes were preserved; nothing was published.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
     "Text": "Condition",
     "IsFormat": false,
     "SourceKinds": [
@@ -12728,6 +12752,22 @@
   {
     "Text": "Construction complete.",
     "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Construction contributions remain pending: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Construction deliveries are retained in memory, but their recovery file could not be saved: {0}",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -13705,6 +13745,14 @@
   },
   {
     "Text": "Created {0} and restored the existing primary port to the first position.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
+    "Text": "Created {0}, but its local refresh or cleanup failed: {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -15733,6 +15781,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Dismiss selected deliveries",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Dismiss this release notification",
@@ -20054,6 +20110,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Fleet Carrier cargo update queued behind an unconfirmed adjustment.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Fleet Carrier cargo was not updated: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -20108,6 +20172,30 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
+  },
+  {
+    "Text": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Fleet Carrier updates remain pending: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "Fleet carrier itinerary",
@@ -35963,6 +36051,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "PendingCargoAdjustments",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.cs"
+  },
+  {
+    "Text": "PendingContributions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.cs"
+  },
+  {
     "Text": "Persistent prospector results",
     "IsFormat": false,
     "SourceKinds": [
@@ -38324,6 +38428,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Queued Fleet Carrier updates are retained for reconciliation: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39141,6 +39253,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Raven changed after review. Reload and review conflicting edits before publishing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
     "Text": "Raven did not identify a project for the current construction depot.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39158,6 +39278,14 @@
   },
   {
     "Text": "Raven has no body catalog for this system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -39189,6 +39317,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "Raven project sync skipped {0} in {1}: {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "Raven project sync skipped {0}: {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -39206,6 +39342,14 @@
   },
   {
     "Text": "Raven secured this system after it was loaded. No changes can be published.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
+    "Text": "Raven secured this system after review. No changes were published.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -42028,6 +42172,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Retried the selected construction deliveries.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Retry selected deliveries",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Return a completed or empty system to the active survey.",
@@ -54262,6 +54422,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
+    "Text": "The matched Raven site has no persisted ID; its market information could not be repaired.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "The measured point is too close to {0}; no raw point was added.",
     "IsFormat": true,
     "SourceKinds": [
@@ -56255,6 +56423,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "This construction delivery is already retained for reconciliation.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "This construction site is not in the active project list.",
     "IsFormat": false,
     "SourceKinds": [
@@ -57700,6 +57876,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
+    "Text": "Unconfirmed construction deliveries",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Undermine",
     "IsFormat": false,
     "SourceKinds": [
@@ -58301,7 +58485,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "Updated Raven project faction for {0}.",
+    "Text": "Updated Raven project metadata for {0}.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -58342,14 +58526,6 @@
   },
   {
     "Text": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "Updated {0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -66116,6 +66292,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "squadron cargo diff",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "squid",
     "IsFormat": false,
     "SourceKinds": [
@@ -66964,6 +67148,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "unconfirmed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
     "Text": "undiscovered Codex map",
     "IsFormat": false,
     "SourceKinds": [
@@ -67219,6 +67411,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "waiting to retry",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "water giant",
@@ -69171,6 +69371,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0}: {1} units for {2}: {3} (unconfirmed).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationPendingContributionRowViewModel.cs"
+  },
+  {
+    "Text": "{0}: {1} units for {2}: {3} ({4}).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "{0}: {1}, {2} g, {3} ls",

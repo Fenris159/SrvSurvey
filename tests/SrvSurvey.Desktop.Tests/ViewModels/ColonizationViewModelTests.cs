@@ -11,7 +11,7 @@ using SrvSurvey.Desktop.ViewModels;
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
-public sealed class ColonizationViewModelTests : IDisposable
+public sealed partial class ColonizationViewModelTests : IDisposable
 {
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
@@ -727,12 +727,22 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Contains("no saved API key", viewModel.StatusMessage);
     }
 
-    [Fact]
-    public async Task CompletedDepotMarksProjectCompleteOnce()
+    /// <summary>
+    /// Completion bypasses cargo updates, honors the live-event gate, and is published only once.
+    /// </summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(25)]
+    public async Task CompletedDepotMarksProjectCompleteOnce(int remaining)
     {
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", 25, 10, 20)], [], null, []),
+            Workspace = new ColonizationCommanderProjects(
+                [Project("build-1", "Port", remaining, 10, 20)],
+                [],
+                null,
+                []
+            ),
         };
         ColonizationViewModel viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -753,18 +763,136 @@ public sealed class ColonizationViewModelTests : IDisposable
                 "MarketID":10,"ConstructionProgress":1,
                 "ConstructionComplete":true,
                 "ResourcesRequired":[
-                  {"Name":"$steel_name;","RequiredAmount":100,"ProvidedAmount":100,"Payment":5000}
+                  {"Name":"$steel_name;","RequiredAmount":1000,"ProvidedAmount":1000,"Payment":5000}
                 ]
                 """
             ),
         };
         viewModel.ApplyJournalEvents(events);
 
+        await viewModel.SynchronizeLiveProjectsAsync(events, allowPublishing: false);
+        Assert.Equal(0, client.MarkCompleteCount);
+        Assert.False(Assert.Single(viewModel.Projects).Project.IsComplete);
+
         await viewModel.SynchronizeLiveProjectsAsync(events, allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([events[1]], allowPublishing: true);
+
+        Assert.Equal(1, client.MarkCompleteCount);
+        ColonizationProject completed = Assert.Single(viewModel.Projects).Project;
+        Assert.True(completed.IsComplete);
+        Assert.Equal(0, completed.RemainingRequired);
+        Assert.Empty(completed.Commodities);
+        Assert.Empty(client.ProjectUpdates);
+        Assert.Contains("complete", viewModel.StatusMessage);
+    }
+
+    /// <summary>
+    /// A completion-only event still completes the project after an earlier event cleared its cargo needs.
+    /// </summary>
+    [Fact]
+    public async Task CompletionAfterZeroRemainingDepotMarksProjectComplete()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", 25, 10, 20)], [], null, []),
+        };
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        JournalEventEnvelope[] first =
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":10,"SystemAddress":20,"StarSystem":"Test System",
+                "StationName":"Orbital Construction Site: Hope",
+                "StationServices":["colonisationcontribution"]
+                """
+            ),
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":1,"ConstructionComplete":false,
+                "ResourcesRequired":[
+                  {"Name":"$steel_name;","RequiredAmount":1000,"ProvidedAmount":1000,"Payment":5000}
+                ]
+                """
+            ),
+        ];
+        viewModel.ApplyJournalEvents(first);
+        await viewModel.SynchronizeLiveProjectsAsync(first, allowPublishing: true);
+
+        Assert.Single(client.ProjectUpdates);
+        Assert.Equal(0, client.MarkCompleteCount);
+        Assert.False(Assert.Single(viewModel.Projects).Project.IsComplete);
+        JournalEventEnvelope[] completed =
+        [
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":1,"ConstructionComplete":true,
+                "ResourcesRequired":[
+                  {"Name":"$steel_name;","RequiredAmount":1000,"ProvidedAmount":1000,"Payment":5000}
+                ]
+                """
+            ),
+        ];
+        viewModel.ApplyJournalEvents(completed);
+        await viewModel.SynchronizeLiveProjectsAsync(completed, allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync(completed, allowPublishing: true);
 
         Assert.Equal(1, client.MarkCompleteCount);
         Assert.True(Assert.Single(viewModel.Projects).Project.IsComplete);
-        Assert.Contains("complete", viewModel.StatusMessage);
+        Assert.Single(client.ProjectUpdates);
+    }
+
+    /// <summary>
+    /// A failed completion notification leaves the project incomplete so a later live event retries it.
+    /// </summary>
+    [Fact]
+    public async Task FailedCompletionNotificationRetriesOnLaterDepotEvent()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", 0, 10, 20)], [], null, []),
+        };
+        client.ProjectCompletionFailures.Enqueue(new HttpRequestException("completion unavailable"));
+        ColonizationViewModel viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        JournalEventEnvelope[] events =
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":10,"SystemAddress":20,"StarSystem":"Test System",
+                "StationName":"Orbital Construction Site: Hope",
+                "StationServices":["colonisationcontribution"]
+                """
+            ),
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":1,"ConstructionComplete":true,
+                "ResourcesRequired":[
+                  {"Name":"$steel_name;","RequiredAmount":1000,"ProvidedAmount":1000,"Payment":5000}
+                ]
+                """
+            ),
+        ];
+        viewModel.ApplyJournalEvents(events);
+        await viewModel.SynchronizeLiveProjectsAsync(events, allowPublishing: true);
+
+        Assert.Equal(1, client.MarkCompleteCount);
+        Assert.False(Assert.Single(viewModel.Projects).Project.IsComplete);
+        Assert.Contains("completion unavailable", viewModel.StatusMessage);
+
+        await viewModel.SynchronizeLiveProjectsAsync([events[1]], allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([events[1]], allowPublishing: true);
+
+        Assert.Equal(2, client.MarkCompleteCount);
+        Assert.True(Assert.Single(viewModel.Projects).Project.IsComplete);
+        Assert.Empty(client.ProjectUpdates);
     }
 
     [Fact]
@@ -921,6 +1049,273 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         Assert.Equal(4, client.SystemSiteLoadCount);
         Assert.Equal(4_310_999_999, Assert.Single(client.SystemSitePatches).Patch.MarketId);
+    }
+
+    /// <summary>
+    /// Successful no-op lookups and repairs clear earlier warnings, including after docking in another system.
+    /// </summary>
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 0)]
+    [InlineData(false, 1)]
+    [InlineData(false, 2)]
+    public async Task SiteRepairRecoveryClearsEarlierWarning(bool changeSystem, int siteState)
+    {
+        (ColonizationViewModel viewModel, StubRavenColonialClient client, JournalEventEnvelope docked) =
+            await CreateFailedSiteRepairAsync();
+        long systemAddress = changeSystem ? 21 : 20;
+        string systemName = changeSystem ? "Other System" : "Failing System";
+        viewModel.UpdateSystemContext(systemName, null, systemAddress);
+        if (siteState > 0)
+        {
+            client.SystemSitesResponse =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "site-1",
+                    Name = "Dampier Gateway",
+                    MarketId = siteState == 1 ? 4_310_999_999 : 3_963_024_386,
+                    Status = ColonizationSystemSiteStatus.Complete,
+                },
+            ];
+        }
+
+        JournalEventEnvelope nextDock = changeSystem
+            ? Event(
+                "Docked",
+                """
+                "MarketID":4310999999,"SystemAddress":21,"StarSystem":"Other System",
+                "StationName":"Dampier Gateway","StationType":"Outpost"
+                """
+            )
+            : docked;
+        viewModel.ApplyJournalEvents([nextDock]);
+        await viewModel.SynchronizeLiveProjectsAsync([nextDock], allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([nextDock], allowPublishing: true);
+
+        Assert.DoesNotContain("server unavailable", viewModel.StatusMessage);
+        Assert.Equal(siteState == 2 ? 1 : 0, client.SystemSitePatches.Count);
+        Assert.All(
+            client.SystemSiteRequests.Skip(3),
+            request =>
+                Assert.Equal(systemAddress.ToString(global::System.Globalization.CultureInfo.InvariantCulture), request)
+        );
+    }
+
+    /// <summary>
+    /// Clearing a recovered repair warning preserves unrelated status messages.
+    /// </summary>
+    [Fact]
+    public async Task SiteRepairRecoveryPreservesUnrelatedStatus()
+    {
+        (ColonizationViewModel viewModel, StubRavenColonialClient client, JournalEventEnvelope docked) =
+            await CreateFailedSiteRepairAsync();
+        viewModel.ReportLinkFailure("unrelated link failure");
+        Assert.Contains("server unavailable", viewModel.StatusMessage);
+
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
+        Assert.DoesNotContain("server unavailable", viewModel.StatusMessage);
+        Assert.Contains("unrelated link failure", viewModel.StatusMessage);
+        Assert.Empty(client.SystemSitePatches);
+    }
+
+    /// <summary>
+    /// Unrelated events and skipped docking contexts cannot turn an unresolved repair failure into success.
+    /// </summary>
+    [Fact]
+    public async Task UnrelatedEventsAndSkippedDocksPreserveCurrentSiteRepairWarning()
+    {
+        (ColonizationViewModel viewModel, StubRavenColonialClient client, JournalEventEnvelope docked) =
+            await CreateFailedSiteRepairAsync();
+        string warning = viewModel.StatusMessage;
+        await viewModel.SynchronizeLiveProjectsAsync([Event("Music", "\"MusicTrack\":\"DockingComputer\"")], true);
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: false);
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [
+                Event(
+                    "Docked",
+                    """
+                    "MarketID":1,"SystemAddress":20,"StarSystem":"Failing System",
+                    "StationName":"ABC-123","StationType":"FleetCarrier"
+                    """
+                ),
+            ],
+            allowPublishing: true
+        );
+
+        Assert.Equal(warning, viewModel.StatusMessage);
+        Assert.Equal(3, client.SystemSiteLoadCount);
+    }
+
+    /// <summary>
+    /// Leaving the affected system, changing commanders, or disabling Raven clears its scoped repair warning.
+    /// </summary>
+    [Theory]
+    [InlineData("system")]
+    [InlineData("commander")]
+    [InlineData("disabled")]
+    public async Task SiteRepairWarningClearsWhenContextChanges(string change)
+    {
+        ColonizationViewModel viewModel = (await CreateFailedSiteRepairAsync()).ViewModel;
+        switch (change)
+        {
+            case "system":
+                viewModel.UpdateSystemContext("Other System", null, 21);
+                break;
+            case "commander":
+                await viewModel.SetCommanderAsync("Other Cmdr");
+                break;
+            case "disabled":
+                viewModel.IsEnabled = false;
+                break;
+        }
+
+        Assert.DoesNotContain("server unavailable", viewModel.StatusMessage);
+    }
+
+    /// <summary>
+    /// A request that fails after its system, commander, or enabled state changes cannot restore an obsolete warning.
+    /// </summary>
+    [Theory]
+    [InlineData("system")]
+    [InlineData("commander")]
+    [InlineData("disabled")]
+    public async Task DelayedSiteRepairFailureCannotRestoreWarningInAnotherContext(string change)
+    {
+        (ColonizationViewModel viewModel, StubRavenColonialClient client, JournalEventEnvelope docked) =
+            await CreateFailedSiteRepairAsync();
+        var response = new TaskCompletionSource<IReadOnlyList<ColonizationSystemSite>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        client.SystemSiteResponseTask = response.Task;
+        Task pending = viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+        Assert.Equal(4, client.SystemSiteLoadCount);
+        switch (change)
+        {
+            case "system":
+                viewModel.UpdateSystemContext("Other System", null, 21);
+                break;
+            case "commander":
+                await viewModel.SetCommanderAsync("Other Cmdr");
+                break;
+            case "disabled":
+                viewModel.IsEnabled = false;
+                break;
+        }
+        response.SetException(new HttpRequestException("late failure from old context"));
+        await pending;
+
+        Assert.DoesNotContain("late failure", viewModel.StatusMessage);
+        Assert.DoesNotContain("server unavailable", viewModel.StatusMessage);
+    }
+
+    /// <summary>
+    /// An earlier dock in a journal batch cannot display its failure over the newer active system.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task EarlierSystemDockFailureDoesNotShowInCurrentSystem(bool hasSystemAddress)
+    {
+        (ColonizationViewModel viewModel, StubRavenColonialClient client, JournalEventEnvelope docked) =
+            await CreateFailedSiteRepairAsync();
+        viewModel.UpdateSystemContext("Other System", null, hasSystemAddress ? 21 : null);
+        for (int attempt = 0; attempt < 3; attempt++)
+        {
+            client.SystemSiteFailures.Enqueue(new HttpRequestException("earlier system failed"));
+        }
+
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
+        Assert.DoesNotContain("earlier system failed", viewModel.StatusMessage);
+        Assert.DoesNotContain("server unavailable", viewModel.StatusMessage);
+        Assert.Equal("20", client.SystemSiteRequests[^1]);
+    }
+
+    /// <summary>
+    /// A successful lookup cannot hide a failed patch; the warning clears after the patch itself recovers.
+    /// </summary>
+    [Fact]
+    public async Task FailedSitePatchPreservesWarningUntilRepairSucceeds()
+    {
+        (ColonizationViewModel viewModel, StubRavenColonialClient client, JournalEventEnvelope docked) =
+            await CreateFailedSiteRepairAsync();
+        client.SystemSitesResponse =
+        [
+            new ColonizationSystemSite
+            {
+                Id = "site-1",
+                Name = "Dampier Gateway",
+                MarketId = 3_963_024_386,
+                Status = ColonizationSystemSiteStatus.Complete,
+            },
+        ];
+        client.SystemSitePatchFailure = new HttpRequestException("site patch unavailable");
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
+        Assert.Contains("site patch unavailable", viewModel.StatusMessage);
+        Assert.Contains("Failing System", viewModel.StatusMessage);
+        Assert.DoesNotContain("server unavailable", viewModel.StatusMessage);
+
+        client.SystemSitePatchFailure = null;
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+
+        Assert.DoesNotContain("site patch unavailable", viewModel.StatusMessage);
+        Assert.Contains("Repaired Raven Market Info", viewModel.StatusMessage);
+        Assert.Equal(2, client.SystemSitePatches.Count);
+    }
+
+    /// <summary>
+    /// A new-system docking event clears the earlier warning before the main window updates system context.
+    /// </summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task JournalSystemChangeClearsSiteRepairWarningBeforeContextUpdate(
+        bool pendingFailure,
+        bool undockFirst
+    )
+    {
+        (ColonizationViewModel viewModel, StubRavenColonialClient client, JournalEventEnvelope docked) =
+            await CreateFailedSiteRepairAsync(provideSystemContext: false);
+        var response = new TaskCompletionSource<IReadOnlyList<ColonizationSystemSite>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        Task? pending = null;
+        if (pendingFailure)
+        {
+            client.SystemSiteResponseTask = response.Task;
+            pending = viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+        }
+        if (undockFirst)
+        {
+            viewModel.ApplyJournalEvents([Event("Undocked", "\"MarketID\":4310999999")]);
+            Assert.Contains("server unavailable", viewModel.StatusMessage);
+        }
+        JournalEventEnvelope nextDock = Event(
+            "Docked",
+            """
+            "MarketID":4310999999,"SystemAddress":21,"StarSystem":"Other System",
+            "StationName":"Dampier Gateway","StationType":"Outpost"
+            """
+        );
+        viewModel.ApplyJournalEvents([nextDock]);
+        Assert.DoesNotContain("server unavailable", viewModel.StatusMessage);
+        if (pending is not null)
+        {
+            response.SetException(new HttpRequestException("late failure from old system"));
+            await pending;
+        }
+        client.SystemSiteResponseTask = null;
+        await viewModel.SynchronizeLiveProjectsAsync([nextDock], allowPublishing: true);
+
+        Assert.DoesNotContain("late failure", viewModel.StatusMessage);
+        Assert.DoesNotContain("server unavailable", viewModel.StatusMessage);
+        Assert.Equal("21", client.SystemSiteRequests[^1]);
     }
 
     [Fact]
@@ -2498,6 +2893,41 @@ public sealed class ColonizationViewModelTests : IDisposable
         }
     }
 
+    /// <summary>
+    /// Replays a failed docking lookup with immediate retry delays and a known active system.
+    /// </summary>
+    private async Task<(
+        ColonizationViewModel ViewModel,
+        StubRavenColonialClient Client,
+        JournalEventEnvelope Docked
+    )> CreateFailedSiteRepairAsync(bool provideSystemContext = true)
+    {
+        var client = new StubRavenColonialClient();
+        for (int attempt = 0; attempt < 3; attempt++)
+        {
+            client.SystemSiteFailures.Enqueue(new HttpRequestException("server unavailable for system 20"));
+        }
+        ColonizationViewModel viewModel = Create(client, (_, _) => Task.CompletedTask);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", true, "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        if (provideSystemContext)
+        {
+            viewModel.UpdateSystemContext("Failing System", null, 20);
+        }
+        JournalEventEnvelope docked = Event(
+            "Docked",
+            """
+            "MarketID":4310999999,"SystemAddress":20,"StarSystem":"Failing System",
+            "StationName":"Dampier Gateway","StationType":"Outpost"
+            """
+        );
+        viewModel.ApplyJournalEvents([docked]);
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
+        Assert.Contains("server unavailable", viewModel.StatusMessage);
+        return (viewModel, client, docked);
+    }
+
     private ColonizationViewModel Create(
         StubRavenColonialClient client,
         Func<TimeSpan, CancellationToken, Task>? delayAsync = null
@@ -2633,6 +3063,30 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public Exception? Failure { get; set; }
 
+        /// <summary>Controls commander workspace responses and their completion order during profile changes.</summary>
+        public Func<string, Task<ColonizationCommanderProjects>>? LoadWorkspace { get; set; }
+
+        /// <summary>Controls absolute cargo replacement while journal transactions arrive concurrently.</summary>
+        public Func<
+            IReadOnlyDictionary<string, int>,
+            Task<IReadOnlyDictionary<string, int>>
+        >? ReplaceCargo { get; set; }
+
+        /// <summary>Injects ordered relative cargo failures to test retained writes and safe retries.</summary>
+        public Queue<Exception> AdjustmentFailures { get; } = new();
+
+        /// <summary>Holds a relative cargo response while a newer market snapshot reconciles the pending write.</summary>
+        public Task<IReadOnlyDictionary<string, int>>? AdjustmentResponseTask { get; set; }
+
+        /// <summary>Injects contribution failures to distinguish definite rejection from uncertain credit.</summary>
+        public Queue<Exception> ContributionFailures { get; } = new();
+
+        /// <summary>Delays delivery acknowledgement while profile ownership or checkbox selection changes.</summary>
+        public Task? ContributionResponseTask { get; set; }
+
+        /// <summary>Records cancellation forwarded from journal monitoring to the delivery request.</summary>
+        public CancellationToken LastContributionCancellation { get; private set; }
+
         public string? ValidatedCommanderName { get; set; } = "Test Cmdr";
 
         public TaskCompletionSource<string?>? ApiKeyValidation { get; set; }
@@ -2675,6 +3129,18 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public Queue<Exception> SystemSiteFailures { get; } = new();
 
+        /// <summary>Records the systems queried during dock repair to detect retries leaking across contexts.</summary>
+        public List<string> SystemSiteRequests { get; } = [];
+
+        /// <summary>Delays site retrieval to test repair warnings arriving after the commander leaves the system.</summary>
+        public Task<IReadOnlyList<ColonizationSystemSite>>? SystemSiteResponseTask { get; set; }
+
+        /// <summary>Injects a site repair failure without altering unrelated project or cargo responses.</summary>
+        public Exception? SystemSitePatchFailure { get; set; }
+
+        /// <summary>Injects completion failures so tests can verify completion is retried without duplicate deliveries.</summary>
+        public Queue<Exception> ProjectCompletionFailures { get; } = new();
+
         public IReadOnlyList<ColonizationSystemSite> SystemSitesResponse { get; set; } = [];
 
         public ColonizationCurrentShip? LastPublishedShip { get; private set; }
@@ -2689,12 +3155,17 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public IReadOnlyList<string> LastSavedHiddenIds { get; private set; } = [];
 
+        /// <summary>Returns a controllable commander workspace for refresh and profile-switch regressions.</summary>
         public Task<ColonizationCommanderProjects> GetCommanderProjectsAsync(
             string commanderName,
             CancellationToken cancellationToken = default
         )
         {
             LoadCount++;
+            if (LoadWorkspace is not null)
+            {
+                return LoadWorkspace(commanderName);
+            }
             return Failure is null
                 ? Task.FromResult(Workspace)
                 : Task.FromException<ColonizationCommanderProjects>(Failure);
@@ -2732,6 +3203,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.FromResult(SiteProjectResponse);
         }
 
+        /// <summary>Applies supplied metadata and commodity fields to the fake project without altering omitted fields.</summary>
         public Task<ColonizationProject> UpdateProjectAsync(
             ColonizationProjectUpdate update,
             CancellationToken cancellationToken = default
@@ -2768,6 +3240,8 @@ public sealed class ColonizationViewModelTests : IDisposable
                 : commodities.Values.Sum(value => Math.Max(0, value));
             ColonizationProject updated = source with
             {
+                BodyNumber = update.BodyNumber ?? source.BodyNumber,
+                BodyName = update.BodyName ?? source.BodyName,
                 FactionName = update.FactionName ?? source.FactionName,
                 MaximumRequired = update.MaximumRequired ?? source.MaximumRequired,
                 RemainingRequired = remaining,
@@ -2794,12 +3268,18 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.FromResult(updated);
         }
 
+        /// <summary>
+        /// Records completion attempts and supplies queued failures to exercise retry behavior.
+        /// </summary>
         public Task MarkProjectCompleteAsync(string buildId, CancellationToken cancellationToken = default)
         {
             MarkCompleteCount++;
-            return Task.CompletedTask;
+            return ProjectCompletionFailures.TryDequeue(out Exception? failure)
+                ? Task.FromException(failure)
+                : Task.CompletedTask;
         }
 
+        /// <summary>Records attempted delivery uploads and injects controlled failures for recovery tests.</summary>
         public Task ContributeToProjectAsync(
             string buildId,
             string commanderName,
@@ -2807,8 +3287,11 @@ public sealed class ColonizationViewModelTests : IDisposable
             CancellationToken cancellationToken = default
         )
         {
+            LastContributionCancellation = cancellationToken;
             Contributions.Add(new ContributionCall(buildId, commanderName, contributions));
-            return Task.CompletedTask;
+            return ContributionFailures.TryDequeue(out Exception? failure)
+                ? Task.FromException(failure)
+                : ContributionResponseTask ?? Task.CompletedTask;
         }
 
         public Task SetPrimaryProjectAsync(
@@ -2841,15 +3324,22 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Records lookup targets and supplies controlled failures or pending responses for recovery tests.
+        /// </summary>
         public Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
             string systemNameOrAddress,
             CancellationToken cancellationToken = default
         )
         {
             SystemSiteLoadCount++;
-            return SystemSiteFailures.TryDequeue(out Exception? failure)
-                ? Task.FromException<IReadOnlyList<ColonizationSystemSite>>(failure)
-                : Task.FromResult(SystemSitesResponse);
+            SystemSiteRequests.Add(systemNameOrAddress);
+            return SystemSiteResponseTask
+                ?? (
+                    SystemSiteFailures.TryDequeue(out Exception? failure)
+                        ? Task.FromException<IReadOnlyList<ColonizationSystemSite>>(failure)
+                        : Task.FromResult(SystemSitesResponse)
+                );
         }
 
         public Task<string?> GetSystemArchitectAsync(
@@ -2889,6 +3379,9 @@ public sealed class ColonizationViewModelTests : IDisposable
             );
         }
 
+        /// <summary>
+        /// Records site patch attempts and can fail them independently of successful site lookups.
+        /// </summary>
         public Task PatchSystemSiteAsync(
             string systemNameOrAddress,
             string siteId,
@@ -2898,7 +3391,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         )
         {
             SystemSitePatches.Add(new SystemSitePatchCall(systemNameOrAddress, siteId, patch, apiKey));
-            return Task.CompletedTask;
+            return SystemSitePatchFailure is { } failure ? Task.FromException(failure) : Task.CompletedTask;
         }
 
         public Task<ColonizationProject?> CreateProjectAsync(
@@ -2947,6 +3440,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             );
         }
 
+        /// <summary>Returns a controllable replacement result to reproduce concurrent carrier baseline writes.</summary>
         public Task<IReadOnlyDictionary<string, int>> ReplaceFleetCarrierCargoAsync(
             long marketId,
             IReadOnlyDictionary<string, int> cargo,
@@ -2956,6 +3450,10 @@ public sealed class ColonizationViewModelTests : IDisposable
         {
             ReplaceCargoCount++;
             LastReplacement = cargo;
+            if (ReplaceCargo is not null)
+            {
+                return ReplaceCargo(cargo);
+            }
             var updated = new Dictionary<string, int>(
                 FleetCarrierResponse?.Cargo ?? [],
                 StringComparer.OrdinalIgnoreCase
@@ -2968,6 +3466,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.FromResult<IReadOnlyDictionary<string, int>>(updated);
         }
 
+        /// <summary>Records relative cargo adjustments and injects transport or service failures for reconciliation tests.</summary>
         public Task<IReadOnlyDictionary<string, int>> AdjustFleetCarrierCargoAsync(
             long marketId,
             IReadOnlyDictionary<string, int> cargoChanges,
@@ -2981,6 +3480,14 @@ public sealed class ColonizationViewModelTests : IDisposable
                     new Dictionary<string, int>(cargoChanges, StringComparer.OrdinalIgnoreCase)
                 )
             );
+            if (AdjustmentFailures.TryDequeue(out Exception? failure))
+            {
+                return Task.FromException<IReadOnlyDictionary<string, int>>(failure);
+            }
+            if (AdjustmentResponseTask is { } response)
+            {
+                return response;
+            }
             var updated = new Dictionary<string, int>(
                 FleetCarrierResponse?.Cargo ?? [],
                 StringComparer.OrdinalIgnoreCase

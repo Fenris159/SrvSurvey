@@ -172,6 +172,7 @@ public static class ColonizationSystemSiteReconciler
         }
     }
 
+    /// <summary>Detects concurrent additions by ID first and then by name without reidentifying existing sites.</summary>
     private static void ApplyNewEditedSite(
         ColonizationSystemSite local,
         IReadOnlyList<ColonizationSystemSite> latest,
@@ -180,7 +181,7 @@ public static class ColonizationSystemSiteReconciler
         ref int unchanged
     )
     {
-        ColonizationSystemSite? concurrent = FindMatch(latest, local);
+        ColonizationSystemSite? concurrent = FindMatch(latest, local, allowNameFallback: true);
         if (concurrent is null)
         {
             updates.Add(Clone(local));
@@ -274,19 +275,21 @@ public static class ColonizationSystemSiteReconciler
         return local;
     }
 
+    /// <summary>Matches IDs first; name fallback is limited to unsaved rows and concurrent additions.</summary>
     private static ColonizationSystemSite? FindMatch(
         IReadOnlyList<ColonizationSystemSite> sites,
-        ColonizationSystemSite target
+        ColonizationSystemSite target,
+        bool allowNameFallback = false
     )
     {
         if (!string.IsNullOrWhiteSpace(target.Id))
         {
-            ColonizationSystemSite? byId = sites.FirstOrDefault(site =>
+            ColonizationSystemSite? matched = sites.FirstOrDefault(site =>
                 string.Equals(site.Id, target.Id, StringComparison.Ordinal)
             );
-            if (byId is not null)
+            if (matched is not null || !allowNameFallback)
             {
-                return byId;
+                return matched;
             }
         }
 

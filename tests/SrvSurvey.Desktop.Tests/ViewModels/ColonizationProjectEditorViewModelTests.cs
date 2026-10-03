@@ -3,7 +3,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class ColonizationProjectEditorViewModelTests
+public sealed partial class ColonizationProjectEditorViewModelTests
 {
     private readonly ColonizationBuildCatalog catalog = ColonizationBuildCatalog.LoadEmbedded();
 
@@ -953,6 +953,9 @@ public sealed class ColonizationProjectEditorViewModelTests
 
         public string? Architect { get; set; }
 
+        /// <summary>Holds a site lookup open while the test changes the editor's owning context.</summary>
+        public Task<IReadOnlyList<ColonizationSystemSite>>? PendingSites { get; set; }
+
         public int SiteReadCount { get; private set; }
 
         public int ArchitectReadCount { get; private set; }
@@ -1031,13 +1034,14 @@ public sealed class ColonizationProjectEditorViewModelTests
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
 
+        /// <summary>Returns the controlled site response, allowing tests to hold project preparation across context changes.</summary>
         public Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
             string systemNameOrAddress,
             CancellationToken cancellationToken = default
         )
         {
             SiteReadCount++;
-            return Task.FromResult(SiteResponses is { Count: > 0 } ? SiteResponses.Dequeue() : Sites);
+            return PendingSites ?? Task.FromResult(SiteResponses is { Count: > 0 } ? SiteResponses.Dequeue() : Sites);
         }
 
         public Task<string?> GetSystemArchitectAsync(

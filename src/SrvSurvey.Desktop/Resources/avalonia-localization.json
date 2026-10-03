@@ -729,6 +729,10 @@
       "translation": "Ein kompatibles Live-Baudepot ist fertig."
     },
     {
+      "source": "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
+      "translation": "Ein Konstruktionsbeitrag hat ein ungewisses Serverergebnis und wird beibehalten. Überprüfen Sie die Kreditwürdigkeit von Raven, bevor Sie es erneut einreichen."
+    },
+    {
       "source": "A cooperative instance shutdown request failed: {0}",
       "translation": "Eine kooperative Anforderung zum Herunterfahren einer Instanz ist fehlgeschlagen: {0}"
     },
@@ -4549,6 +4553,10 @@
       "translation": "Fracht nicht verfügbar"
     },
     {
+      "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "Cargo-Updates bleiben im Speicher erhalten, ihre Wiederherstellungsdatei konnte jedoch nicht gespeichert werden: {0}"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Ladung: 72 / 128 t · Napfschnecken: 34"
     },
@@ -6017,6 +6025,10 @@
       "translation": "Gleichzeitige Raven-Änderungen blieben erhalten; nichts ist zur Veröffentlichung bereit."
     },
     {
+      "source": "Concurrent Raven changes were preserved; nothing was published.",
+      "translation": "Gleichzeitige Raven-Änderungen blieben erhalten; es wurde nichts veröffentlicht."
+    },
+    {
       "source": "Condition",
       "translation": "Zustand"
     },
@@ -6351,6 +6363,14 @@
     {
       "source": "Construction complete.",
       "translation": "Bau abgeschlossen."
+    },
+    {
+      "source": "Construction contributions remain pending: {0}",
+      "translation": "Baubeiträge stehen noch aus: {0}"
+    },
+    {
+      "source": "Construction deliveries are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "Baulieferungen bleiben im Speicher erhalten, ihre Wiederherstellungsdatei konnte jedoch nicht gespeichert werden: {0}"
     },
     {
       "source": "Construction failed",
@@ -6839,6 +6859,10 @@
     {
       "source": "Created {0} and restored the existing primary port to the first position.",
       "translation": "{0} erstellt und den vorhandenen primären Port an der ersten Position wiederhergestellt."
+    },
+    {
+      "source": "Created {0}, but its local refresh or cleanup failed: {1}",
+      "translation": "{0} erstellt, aber die lokale Aktualisierung oder Bereinigung ist fehlgeschlagen: {1}"
     },
     {
       "source": "Created {0}. It was added to the active project list.",
@@ -7847,6 +7871,10 @@
     {
       "source": "Disembark",
       "translation": "Aussteigen"
+    },
+    {
+      "source": "Dismiss selected deliveries",
+      "translation": "Ausgewählte Lieferungen verwerfen"
     },
     {
       "source": "Dismiss this release notification",
@@ -10001,6 +10029,10 @@
       "translation": "Frachtsynchronisierung von Flottenbetreibern"
     },
     {
+      "source": "Fleet Carrier cargo update queued behind an unconfirmed adjustment.",
+      "translation": "Das Frachtupdate des Flottenbetreibers stand hinter einer unbestätigten Anpassung in der Warteschlange."
+    },
+    {
       "source": "Fleet Carrier cargo was not updated: {0}",
       "translation": "Flottenträgerfracht wurde nicht aktualisiert: {0}"
     },
@@ -10027,6 +10059,18 @@
     {
       "source": "Fleet Carrier update warning",
       "translation": "Warnung vor Aktualisierungen des Flottenbetreibers"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus, da sich die Raven-Fracht gleichzeitig geändert hat. Aktualisieren Sie den Markt, um ihn in Einklang zu bringen."
+    },
+    {
+      "source": "Fleet Carrier updates remain pending: {0}",
+      "translation": "Updates für Flottenbetreiber stehen noch aus: {0}"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+      "translation": "Aktualisierungen der Flottenbetreiber stehen noch aus; Aktualisieren Sie Ihren Markt, um einen unsicheren Schreibvorgang in Einklang zu bringen."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -17929,6 +17973,14 @@
       "translation": "Pfirsich"
     },
     {
+      "source": "PendingCargoAdjustments",
+      "translation": "Ausstehende Frachtanpassungen"
+    },
+    {
+      "source": "PendingContributions",
+      "translation": "AusstehendeBeiträge"
+    },
+    {
       "source": "Persistent prospector results",
       "translation": "Beständige Prospektionsergebnisse"
     },
@@ -19105,6 +19157,10 @@
       "translation": "Quests müssen aktiviert werden, bevor ein Ereignis wiederholt werden kann."
     },
     {
+      "source": "Queued Fleet Carrier updates are retained for reconciliation: {0}",
+      "translation": "In der Warteschlange befindliche Flottenbetreiberaktualisierungen werden zum Abgleich beibehalten: {0}"
+    },
+    {
       "source": "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
       "translation": "In der Warteschlange befindliche Ereignisse überschreiten niemals Commander- oder API-Schlüsselgrenzen. Live-/Beta-Berechtigung, abschließende Sitzungsberichte, Stapelverarbeitung, Wiederholungsversuche und Shutdown-Flushes folgen der gebundenen Commander-Sitzung."
     },
@@ -19513,6 +19569,10 @@
       "translation": "Das Raven Architect-Update wurde nicht gesendet, da dieser Commander keinen gespeicherten API-Schlüssel hat."
     },
     {
+      "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
+      "translation": "Raven hat sich nach der Überprüfung geändert. Laden Sie widersprüchliche Änderungen erneut und überprüfen Sie sie vor der Veröffentlichung."
+    },
+    {
       "source": "Raven did not identify a project for the current construction depot.",
       "translation": "Raven hat kein Projekt für das aktuelle Baudepot identifiziert."
     },
@@ -19523,6 +19583,10 @@
     {
       "source": "Raven has no body catalog for this system",
       "translation": "Raven verfügt über keinen Körperkatalog für dieses System"
+    },
+    {
+      "source": "Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey.",
+      "translation": "Raven hat diese Lieferungen möglicherweise aufgezeichnet, bevor die Verbindung fehlschlug. Überprüfen Sie deren Kreditwürdigkeit bei Raven und wählen Sie dann nur die Lieferungen aus, die Sie abwickeln möchten. Versuchen Sie es mit den nicht aufgezeichneten erneut oder weisen Sie diejenigen zurück, die bereits gutgeschrieben wurden, um ihre lokalen Wiederherstellungsaufzeichnungen zu löschen. Nicht ausgewählte Lieferungen bleiben ausstehend und überleben den Neustart SrvSurvey."
     },
     {
       "source": "Raven mutation rejected: verify the active Commander key, feature permission, dock/system identity, and explicit confirmation state.",
@@ -19537,6 +19601,10 @@
       "translation": "Raven-Projektsynchronisierung übersprungen Staffelfrachtunterschied: {0}"
     },
     {
+      "source": "Raven project sync skipped {0} in {1}: {2}",
+      "translation": "Die Raven-Projektsynchronisierung hat {0} in {1}: {2} übersprungen"
+    },
+    {
       "source": "Raven project sync skipped {0}: {1}",
       "translation": "Raven-Projektsynchronisierung übersprungen {0}: {1}"
     },
@@ -19547,6 +19615,10 @@
     {
       "source": "Raven secured this system after it was loaded. No changes can be published.",
       "translation": "Raven hat dieses System nach dem Laden gesichert. Es können keine Änderungen veröffentlicht werden."
+    },
+    {
+      "source": "Raven secured this system after review. No changes were published.",
+      "translation": "Raven hat sich dieses System nach Überprüfung gesichert. Es wurden keine Änderungen veröffentlicht."
     },
     {
       "source": "Raven system sites",
@@ -20955,6 +21027,14 @@
     {
       "source": "Retreat",
       "translation": "Rückzug"
+    },
+    {
+      "source": "Retried the selected construction deliveries.",
+      "translation": "Die ausgewählten Baulieferungen wurden erneut versucht."
+    },
+    {
+      "source": "Retry selected deliveries",
+      "translation": "Ausgewählte Lieferungen erneut versuchen"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -27057,6 +27137,10 @@
       "translation": "Der Massencodefilter listet nur Boxel mit erfassten Statistiken für genau diesen Massencode auf. Öffnen Sie eine Box, um die darin enthaltenen untergeordneten Elemente zu erkunden."
     },
     {
+      "source": "The matched Raven site has no persisted ID; its market information could not be repaired.",
+      "translation": "Die übereinstimmende Raven-Site hat keine persistente ID; Seine Marktinformationen konnten nicht repariert werden."
+    },
+    {
       "source": "The measured point is too close to {0}; no raw point was added.",
       "translation": "Der gemessene Punkt liegt zu nahe an {0}; Es wurde kein Rohpunkt hinzugefügt."
     },
@@ -28053,6 +28137,10 @@
       "translation": "Diese Boxel-Suche ist bereits in der Bibliothek gespeichert."
     },
     {
+      "source": "This construction delivery is already retained for reconciliation.",
+      "translation": "Diese Baulieferung wird bereits zum Abgleich zurückgehalten."
+    },
+    {
       "source": "This construction site is not in the active project list.",
       "translation": "Diese Baustelle ist nicht in der aktiven Projektliste."
     },
@@ -28773,6 +28861,10 @@
       "translation": "Nicht beanspruchte Scans"
     },
     {
+      "source": "Unconfirmed construction deliveries",
+      "translation": "Unbestätigte Baulieferungen"
+    },
+    {
       "source": "Undermine",
       "translation": "Untergraben"
     },
@@ -29073,8 +29165,8 @@
       "translation": "Aktualisierte Raven-Bauanforderungen für {0}."
     },
     {
-      "source": "Updated Raven project faction for {0}.",
-      "translation": "Aktualisierte Raven-Projektfraktion für {0}."
+      "source": "Updated Raven project metadata for {0}.",
+      "translation": "Aktualisierte Raven-Projektmetadaten für {0}."
     },
     {
       "source": "Updated Raven remaining cargo after contribution for {0}.",
@@ -29095,10 +29187,6 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "{0} verknüpfte(n) Flottenträger-Frachteintrag(e) von {1} aktualisiert."
-    },
-    {
-      "source": "Updated {0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.",
-      "translation": "Aktualisierte(n) {0}-verknüpfte(n) Frachteintrag(e) für Flottenträger des Geschwaders von der Schiffsfrachtdifferenz."
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -32977,6 +33065,10 @@
       "translation": "sphärisch"
     },
     {
+      "source": "squadron cargo diff",
+      "translation": "Geschwader Frachtdiff"
+    },
+    {
       "source": "squid",
       "translation": "Tintenfisch"
     },
@@ -33401,6 +33493,10 @@
       "translation": "unsicherer vorhergesagter Art-Subtyp"
     },
     {
+      "source": "unconfirmed",
+      "translation": "unbestätigt"
+    },
+    {
       "source": "undiscovered Codex map",
       "translation": "unentdeckte Codex-Karte"
     },
@@ -33527,6 +33623,10 @@
     {
       "source": "waiting for journal",
       "translation": "warte auf Tagebuch"
+    },
+    {
+      "source": "waiting to retry",
+      "translation": "Ich warte auf einen erneuten Versuch"
     },
     {
       "source": "water giant",
@@ -34505,6 +34605,14 @@
       "translation": "{0}: {1} t"
     },
     {
+      "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
+      "translation": "{0}: {1} Einheiten für {2}: {3} (unbestätigt)."
+    },
+    {
+      "source": "{0}: {1} units for {2}: {3} ({4}).",
+      "translation": "{0}: {1} Einheiten für {2}: {3} ({4})."
+    },
+    {
       "source": "{0}: {1}, {2} g, {3} ls",
       "translation": "{0}: {1}, {2} g, {3} ls"
     },
@@ -35445,6 +35553,10 @@
     {
       "source": "A compatible live construction depot is ready.",
       "translation": "Un depósito de construcción en vivo compatible está listo."
+    },
+    {
+      "source": "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
+      "translation": "Una contribución de construcción tiene un resultado de servidor incierto y se retiene. Verifique su crédito en Raven antes de volver a enviarlo."
     },
     {
       "source": "A cooperative instance shutdown request failed: {0}",
@@ -39267,6 +39379,10 @@
       "translation": "Carga no disponible"
     },
     {
+      "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "Las actualizaciones de carga se conservan en la memoria, pero su archivo de recuperación no se pudo guardar: {0}"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Carga: 72 / 128 t · Lapas: 34"
     },
@@ -40735,6 +40851,10 @@
       "translation": "Se conservaron los cambios concurrentes de Raven; nada está listo para publicar."
     },
     {
+      "source": "Concurrent Raven changes were preserved; nothing was published.",
+      "translation": "Se conservaron los cambios concurrentes de Raven; no se publicó nada."
+    },
+    {
       "source": "Condition",
       "translation": "Condición"
     },
@@ -41069,6 +41189,14 @@
     {
       "source": "Construction complete.",
       "translation": "Construcción completa."
+    },
+    {
+      "source": "Construction contributions remain pending: {0}",
+      "translation": "Quedan pendientes los aportes de construcción: {0}"
+    },
+    {
+      "source": "Construction deliveries are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "Las entregas de construcción se conservan en la memoria, pero no se pudo guardar su archivo de recuperación: {0}"
     },
     {
       "source": "Construction failed",
@@ -41557,6 +41685,10 @@
     {
       "source": "Created {0} and restored the existing primary port to the first position.",
       "translation": "Creó {0} y restauró el puerto principal existente a la primera posición."
+    },
+    {
+      "source": "Created {0}, but its local refresh or cleanup failed: {1}",
+      "translation": "Se creó {0}, pero falló su actualización o limpieza local: {1}"
     },
     {
       "source": "Created {0}. It was added to the active project list.",
@@ -42565,6 +42697,10 @@
     {
       "source": "Disembark",
       "translation": "Desembarcar"
+    },
+    {
+      "source": "Dismiss selected deliveries",
+      "translation": "Descartar entregas seleccionadas"
     },
     {
       "source": "Dismiss this release notification",
@@ -44719,6 +44855,10 @@
       "translation": "Sincronización de carga del transportista de flota"
     },
     {
+      "source": "Fleet Carrier cargo update queued behind an unconfirmed adjustment.",
+      "translation": "La actualización de carga de Fleet Carrier está en cola detrás de un ajuste no confirmado."
+    },
+    {
       "source": "Fleet Carrier cargo was not updated: {0}",
       "translation": "La carga de Fleet Carrier no fue actualizada: {0}"
     },
@@ -44745,6 +44885,18 @@
     {
       "source": "Fleet Carrier update warning",
       "translation": "Advertencia de actualización de Fleet Carrier"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes porque la carga de Raven cambió al mismo tiempo. Actualizar su mercado para conciliar."
+    },
+    {
+      "source": "Fleet Carrier updates remain pending: {0}",
+      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes: {0}"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+      "translation": "Las actualizaciones de Fleet Carrier siguen pendientes; actualizar su mercado para conciliar una escritura incierta."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -52647,6 +52799,14 @@
       "translation": "Durazno"
     },
     {
+      "source": "PendingCargoAdjustments",
+      "translation": "Ajustes De Carga Pendientes"
+    },
+    {
+      "source": "PendingContributions",
+      "translation": "Contribuciones pendientes"
+    },
+    {
       "source": "Persistent prospector results",
       "translation": "Resultados persistentes del buscador"
     },
@@ -53823,6 +53983,10 @@
       "translation": "Las misiones deben habilitarse antes de reproducir un evento."
     },
     {
+      "source": "Queued Fleet Carrier updates are retained for reconciliation: {0}",
+      "translation": "Las actualizaciones de Fleet Carrier en cola se conservan para la conciliación: {0}"
+    },
+    {
       "source": "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
       "translation": "Los eventos en cola nunca cruzan los límites de Commander o de clave API. La elegibilidad en vivo/beta, el informe de la sesión final, el procesamiento por lotes, los reintentos y los vaciados de apagado siguen a la sesión vinculada de Commander."
     },
@@ -54231,6 +54395,10 @@
       "translation": "La actualización del arquitecto Raven no se envió porque este comandante no tiene una clave API guardada."
     },
     {
+      "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
+      "translation": "Raven cambió después de la revisión. Vuelva a cargar y revise las ediciones conflictivas antes de publicarlas."
+    },
+    {
       "source": "Raven did not identify a project for the current construction depot.",
       "translation": "Raven no identificó un proyecto para el depósito de construcción actual."
     },
@@ -54241,6 +54409,10 @@
     {
       "source": "Raven has no body catalog for this system",
       "translation": "Raven no tiene catálogo de cuerpo para este sistema."
+    },
+    {
+      "source": "Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey.",
+      "translation": "Es posible que Raven haya grabado estas entregas antes de que fallara la conexión. Verifique su crédito en Raven, luego seleccione solo las entregas que desea resolver. Vuelva a intentarlo con los que no están registrados o descarte los que ya están acreditados para borrar sus registros de recuperación locales. Las entregas no seleccionadas permanecen pendientes y sobreviven al reinicio SrvSurvey."
     },
     {
       "source": "Raven mutation rejected: verify the active Commander key, feature permission, dock/system identity, and explicit confirmation state.",
@@ -54255,6 +54427,10 @@
       "translation": "La sincronización del proyecto Raven omitió la diferencia de carga del escuadrón: {0}"
     },
     {
+      "source": "Raven project sync skipped {0} in {1}: {2}",
+      "translation": "La sincronización del proyecto Raven se omitió {0} en {1}: {2}"
+    },
+    {
       "source": "Raven project sync skipped {0}: {1}",
       "translation": "Se omitió la sincronización del proyecto Raven {0}: {1}"
     },
@@ -54265,6 +54441,10 @@
     {
       "source": "Raven secured this system after it was loaded. No changes can be published.",
       "translation": "Raven aseguró este sistema después de cargarlo. No se pueden publicar cambios."
+    },
+    {
+      "source": "Raven secured this system after review. No changes were published.",
+      "translation": "Raven aseguró este sistema después de la revisión. No se publicaron cambios."
     },
     {
       "source": "Raven system sites",
@@ -55673,6 +55853,14 @@
     {
       "source": "Retreat",
       "translation": "Retiro"
+    },
+    {
+      "source": "Retried the selected construction deliveries.",
+      "translation": "Reintentó las entregas de construcción seleccionadas."
+    },
+    {
+      "source": "Retry selected deliveries",
+      "translation": "Reintentar entregas seleccionadas"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -61775,6 +61963,10 @@
       "translation": "El filtro de código de masa enumera solo los cuadros con estadísticas registradas en ese código de masa exacto. Abra una caja para explorar sus hijos grabados."
     },
     {
+      "source": "The matched Raven site has no persisted ID; its market information could not be repaired.",
+      "translation": "El sitio Raven coincidente no tiene una identificación persistente; su información de mercado no se pudo reparar."
+    },
+    {
       "source": "The measured point is too close to {0}; no raw point was added.",
       "translation": "El punto medido está demasiado cerca de {0}; no se agregó ningún punto en bruto."
     },
@@ -62771,6 +62963,10 @@
       "translation": "Esta búsqueda de cuadro ya está guardada en la biblioteca."
     },
     {
+      "source": "This construction delivery is already retained for reconciliation.",
+      "translation": "Esta entrega de construcción ya está retenida para conciliación."
+    },
+    {
       "source": "This construction site is not in the active project list.",
       "translation": "Este sitio de construcción no está en la lista de proyectos activos."
     },
@@ -63491,6 +63687,10 @@
       "translation": "Escaneos no reclamados"
     },
     {
+      "source": "Unconfirmed construction deliveries",
+      "translation": "Entregas de construcción no confirmadas"
+    },
+    {
       "source": "Undermine",
       "translation": "Socavar"
     },
@@ -63791,8 +63991,8 @@
       "translation": "Se actualizaron los requisitos de construcción de Raven para {0}."
     },
     {
-      "source": "Updated Raven project faction for {0}.",
-      "translation": "Facción del proyecto Raven actualizada para {0}."
+      "source": "Updated Raven project metadata for {0}.",
+      "translation": "Metadatos del proyecto Raven actualizados para {0}."
     },
     {
       "source": "Updated Raven remaining cargo after contribution for {0}.",
@@ -63813,10 +64013,6 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "Se actualizaron las {0} entradas de carga vinculadas de Fleet Carrier de {1}."
-    },
-    {
-      "source": "Updated {0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.",
-      "translation": "Entradas de carga del portaaviones de flota del escuadrón vinculado {0} actualizadas desde la diferencia de carga del barco."
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -67695,6 +67891,10 @@
       "translation": "esférico"
     },
     {
+      "source": "squadron cargo diff",
+      "translation": "diferencial de carga del escuadrón"
+    },
+    {
       "source": "squid",
       "translation": "calamar"
     },
@@ -68119,6 +68319,10 @@
       "translation": "subtipo de especie predicho incierto"
     },
     {
+      "source": "unconfirmed",
+      "translation": "inconfirmado"
+    },
+    {
       "source": "undiscovered Codex map",
       "translation": "Mapa del Codex no descubierto"
     },
@@ -68245,6 +68449,10 @@
     {
       "source": "waiting for journal",
       "translation": "esperando el diario"
+    },
+    {
+      "source": "waiting to retry",
+      "translation": "esperando para volver a intentarlo"
     },
     {
       "source": "water giant",
@@ -69223,6 +69431,14 @@
       "translation": "{0}: {1}"
     },
     {
+      "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
+      "translation": "{0}: Unidades {1} para {2}: {3} (sin confirmar)."
+    },
+    {
+      "source": "{0}: {1} units for {2}: {3} ({4}).",
+      "translation": "Unidades {0}: {1} para {2}: {3} ({4})."
+    },
+    {
       "source": "{0}: {1}, {2} g, {3} ls",
       "translation": "{0}: {1}, {2} g, {3} ls"
     },
@@ -70163,6 +70379,10 @@
     {
       "source": "A compatible live construction depot is ready.",
       "translation": "Un dépôt de construction en direct compatible est prêt."
+    },
+    {
+      "source": "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
+      "translation": "Une contribution à la construction a un résultat serveur incertain et est conservée. Vérifiez son crédit sur Raven avant de soumettre à nouveau."
     },
     {
       "source": "A cooperative instance shutdown request failed: {0}",
@@ -73985,6 +74205,10 @@
       "translation": "Cargaison indisponible"
     },
     {
+      "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "Les mises à jour de Cargo sont conservées en mémoire, mais leur fichier de récupération n'a pas pu être enregistré : {0}"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Cargaison : 72 / 128 t · Patelles : 34"
     },
@@ -75453,6 +75677,10 @@
       "translation": "Les modifications simultanées de Raven ont été conservées ; rien n'est prêt à être publié."
     },
     {
+      "source": "Concurrent Raven changes were preserved; nothing was published.",
+      "translation": "Les modifications simultanées de Raven ont été conservées ; rien n'a été publié."
+    },
+    {
       "source": "Condition",
       "translation": "État"
     },
@@ -75787,6 +76015,14 @@
     {
       "source": "Construction complete.",
       "translation": "Chantier terminé."
+    },
+    {
+      "source": "Construction contributions remain pending: {0}",
+      "translation": "Les contributions à la construction restent en attente : {0}"
+    },
+    {
+      "source": "Construction deliveries are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "Les livraisons de chantier sont conservées en mémoire, mais leur fichier de récupération n'a pas pu être sauvegardé : {0}"
     },
     {
       "source": "Construction failed",
@@ -76275,6 +76511,10 @@
     {
       "source": "Created {0} and restored the existing primary port to the first position.",
       "translation": "Création de {0} et restauration du port principal existant à la première position."
+    },
+    {
+      "source": "Created {0}, but its local refresh or cleanup failed: {1}",
+      "translation": "{0} a été créé, mais son actualisation ou son nettoyage local a échoué : {1}"
     },
     {
       "source": "Created {0}. It was added to the active project list.",
@@ -77283,6 +77523,10 @@
     {
       "source": "Disembark",
       "translation": "Débarquer"
+    },
+    {
+      "source": "Dismiss selected deliveries",
+      "translation": "Ignorer les livraisons sélectionnées"
     },
     {
       "source": "Dismiss this release notification",
@@ -79437,6 +79681,10 @@
       "translation": "Synchronisation du fret Fleet Carrier"
     },
     {
+      "source": "Fleet Carrier cargo update queued behind an unconfirmed adjustment.",
+      "translation": "La mise à jour du fret Fleet Carrier a été mise en file d'attente derrière un ajustement non confirmé."
+    },
+    {
       "source": "Fleet Carrier cargo was not updated: {0}",
       "translation": "Le fret du Fleet Carrier n'a pas été mis à jour : {0}"
     },
@@ -79463,6 +79711,18 @@
     {
       "source": "Fleet Carrier update warning",
       "translation": "Avertissement de mise à jour de Fleet Carrier"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+      "translation": "Les mises à jour de Fleet Carrier restent en attente car la cargaison Raven a changé simultanément. Rafraîchir son marché pour se réconcilier."
+    },
+    {
+      "source": "Fleet Carrier updates remain pending: {0}",
+      "translation": "Les mises à jour de Fleet Carrier restent en attente : {0}"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+      "translation": "Les mises à jour de Fleet Carrier restent en attente ; rafraîchir son marché pour concilier une écriture incertaine."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -87365,6 +87625,14 @@
       "translation": "Pêche"
     },
     {
+      "source": "PendingCargoAdjustments",
+      "translation": "Ajustements de fret en attente"
+    },
+    {
+      "source": "PendingContributions",
+      "translation": "Contributions en attente"
+    },
+    {
       "source": "Persistent prospector results",
       "translation": "Résultats de prospection persistants"
     },
@@ -88541,6 +88809,10 @@
       "translation": "Les quêtes doivent être activées avant de rejouer un événement."
     },
     {
+      "source": "Queued Fleet Carrier updates are retained for reconciliation: {0}",
+      "translation": "Les mises à jour de Fleet Carrier en file d'attente sont conservées à des fins de rapprochement : {0}"
+    },
+    {
       "source": "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
       "translation": "Les événements mis en file d’attente ne dépassent jamais les limites du Commander ou des clés API. L'éligibilité en direct/bêta, les rapports de session finale, le traitement par lots, les tentatives et les vidages d'arrêt suivent la session Commander liée."
     },
@@ -88949,6 +89221,10 @@
       "translation": "La mise à jour de l'architecte Raven n'a pas été envoyée car ce commandant n'a pas de clé API enregistrée."
     },
     {
+      "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
+      "translation": "Raven a changé après examen. Rechargez et examinez les modifications conflictuelles avant de les publier."
+    },
+    {
       "source": "Raven did not identify a project for the current construction depot.",
       "translation": "Raven n'a pas identifié de projet pour le dépôt de construction actuel."
     },
@@ -88959,6 +89235,10 @@
     {
       "source": "Raven has no body catalog for this system",
       "translation": "Raven n'a pas de catalogue de corps pour ce système"
+    },
+    {
+      "source": "Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey.",
+      "translation": "Raven a peut-être enregistré ces livraisons avant l'échec de la connexion. Vérifiez leur crédit sur Raven, puis sélectionnez uniquement les livraisons que vous souhaitez résoudre. Réessayez ceux qui ne sont pas enregistrés ou rejetez ceux déjà crédités pour effacer leurs enregistrements de récupération locaux. Les livraisons non sélectionnées restent en attente et survivent au redémarrage SrvSurvey."
     },
     {
       "source": "Raven mutation rejected: verify the active Commander key, feature permission, dock/system identity, and explicit confirmation state.",
@@ -88973,6 +89253,10 @@
       "translation": "La synchronisation du projet Raven a ignoré le différentiel de fret de l'escadron : {0}"
     },
     {
+      "source": "Raven project sync skipped {0} in {1}: {2}",
+      "translation": "La synchronisation du projet Raven a ignoré {0} dans {1} : {2}"
+    },
+    {
       "source": "Raven project sync skipped {0}: {1}",
       "translation": "Synchronisation du projet Raven ignorée {0} : {1}"
     },
@@ -88983,6 +89267,10 @@
     {
       "source": "Raven secured this system after it was loaded. No changes can be published.",
       "translation": "Raven a sécurisé ce système après son chargement. Aucune modification ne peut être publiée."
+    },
+    {
+      "source": "Raven secured this system after review. No changes were published.",
+      "translation": "Raven a sécurisé ce système après examen. Aucun changement n'a été publié."
     },
     {
       "source": "Raven system sites",
@@ -90391,6 +90679,14 @@
     {
       "source": "Retreat",
       "translation": "Retraite"
+    },
+    {
+      "source": "Retried the selected construction deliveries.",
+      "translation": "Nouvelle tentative des livraisons de construction sélectionnées."
+    },
+    {
+      "source": "Retry selected deliveries",
+      "translation": "Réessayer les livraisons sélectionnées"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -96493,6 +96789,10 @@
       "translation": "Le filtre de code de masse répertorie uniquement les boxels avec des statistiques enregistrées pour ce code de masse exact. Ouvrez une boîte pour explorer ses enfants enregistrés."
     },
     {
+      "source": "The matched Raven site has no persisted ID; its market information could not be repaired.",
+      "translation": "Le site Raven correspondant n'a pas d'identifiant persistant ; ses informations de marché n'ont pas pu être réparées."
+    },
+    {
       "source": "The measured point is too close to {0}; no raw point was added.",
       "translation": "Le point mesuré est trop proche de {0} ; aucun point brut n'a été ajouté."
     },
@@ -97489,6 +97789,10 @@
       "translation": "Cette recherche boxel est déjà enregistrée dans la bibliothèque."
     },
     {
+      "source": "This construction delivery is already retained for reconciliation.",
+      "translation": "Cette livraison de construction est déjà retenue pour rapprochement."
+    },
+    {
       "source": "This construction site is not in the active project list.",
       "translation": "Ce chantier n'est pas dans la liste des projets actifs."
     },
@@ -98209,6 +98513,10 @@
       "translation": "Analyses non réclamées"
     },
     {
+      "source": "Unconfirmed construction deliveries",
+      "translation": "Livraisons de construction non confirmées"
+    },
+    {
       "source": "Undermine",
       "translation": "Saper"
     },
@@ -98509,8 +98817,8 @@
       "translation": "Mise à jour des exigences de construction de Raven pour {0}."
     },
     {
-      "source": "Updated Raven project faction for {0}.",
-      "translation": "Faction du projet Raven mise à jour pour {0}."
+      "source": "Updated Raven project metadata for {0}.",
+      "translation": "Mise à jour des métadonnées du projet Raven pour {0}."
     },
     {
       "source": "Updated Raven remaining cargo after contribution for {0}.",
@@ -98531,10 +98839,6 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "Mise à jour des {0} entrées de fret liées aux transporteurs de flotte à partir de {1}."
-    },
-    {
-      "source": "Updated {0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.",
-      "translation": "Mise à jour des entrées de fret de transporteur de flotte liées à l'escadron {0} à partir du diff de fret du navire."
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -102413,6 +102717,10 @@
       "translation": "sphérique"
     },
     {
+      "source": "squadron cargo diff",
+      "translation": "différentiel de fret de l'escadron"
+    },
+    {
       "source": "squid",
       "translation": "calmar"
     },
@@ -102837,6 +103145,10 @@
       "translation": "sous-type d'espèce prédit incertain"
     },
     {
+      "source": "unconfirmed",
+      "translation": "non confirmé"
+    },
+    {
       "source": "undiscovered Codex map",
       "translation": "carte du Codex non découverte"
     },
@@ -102963,6 +103275,10 @@
     {
       "source": "waiting for journal",
       "translation": "en attente du journal"
+    },
+    {
+      "source": "waiting to retry",
+      "translation": "en attendant de réessayer"
     },
     {
       "source": "water giant",
@@ -103941,6 +104257,14 @@
       "translation": "{0} : {1} t"
     },
     {
+      "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
+      "translation": "{0} : unités {1} pour {2} : {3} (non confirmé)."
+    },
+    {
+      "source": "{0}: {1} units for {2}: {3} ({4}).",
+      "translation": "{0} : unités {1} pour {2} : {3} ({4})."
+    },
+    {
       "source": "{0}: {1}, {2} g, {3} ls",
       "translation": "{0} : {1}, {2} g, {3} ls"
     },
@@ -104881,6 +105205,10 @@
     {
       "source": "A compatible live construction depot is ready.",
       "translation": "Um depósito de construção ativo compatível está pronto."
+    },
+    {
+      "source": "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
+      "translation": "Uma contribuição de construção tem um resultado de servidor incerto e é retida. Verifique seu crédito no Raven antes de reenviar."
     },
     {
       "source": "A cooperative instance shutdown request failed: {0}",
@@ -108703,6 +109031,10 @@
       "translation": "Carga indisponível"
     },
     {
+      "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "As atualizações de carga são retidas na memória, mas não foi possível salvar seu arquivo de recuperação: {0}"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Carga: 72 / 128 t · Lapas: 34"
     },
@@ -110171,6 +110503,10 @@
       "translation": "As alterações simultâneas do Raven foram preservadas; nada está pronto para ser publicado."
     },
     {
+      "source": "Concurrent Raven changes were preserved; nothing was published.",
+      "translation": "As alterações simultâneas do Raven foram preservadas; nada foi publicado."
+    },
+    {
       "source": "Condition",
       "translation": "Condição"
     },
@@ -110505,6 +110841,14 @@
     {
       "source": "Construction complete.",
       "translation": "Construção concluída."
+    },
+    {
+      "source": "Construction contributions remain pending: {0}",
+      "translation": "As contribuições de construção permanecem pendentes: {0}"
+    },
+    {
+      "source": "Construction deliveries are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "As entregas de construção são retidas na memória, mas não foi possível salvar seu arquivo de recuperação: {0}"
     },
     {
       "source": "Construction failed",
@@ -110993,6 +111337,10 @@
     {
       "source": "Created {0} and restored the existing primary port to the first position.",
       "translation": "Criado {0} e restaurado a porta primária existente para a primeira posição."
+    },
+    {
+      "source": "Created {0}, but its local refresh or cleanup failed: {1}",
+      "translation": "{0} criado, mas falha na atualização ou limpeza local: {1}"
     },
     {
       "source": "Created {0}. It was added to the active project list.",
@@ -112001,6 +112349,10 @@
     {
       "source": "Disembark",
       "translation": "Desembarcar"
+    },
+    {
+      "source": "Dismiss selected deliveries",
+      "translation": "Dispensar entregas selecionadas"
     },
     {
       "source": "Dismiss this release notification",
@@ -114155,6 +114507,10 @@
       "translation": "Sincronização de carga do Fleet Carrier"
     },
     {
+      "source": "Fleet Carrier cargo update queued behind an unconfirmed adjustment.",
+      "translation": "Atualização de carga do Fleet Carrier na fila por trás de um ajuste não confirmado."
+    },
+    {
       "source": "Fleet Carrier cargo was not updated: {0}",
       "translation": "A carga do Fleet Carrier não foi atualizada: {0}"
     },
@@ -114181,6 +114537,18 @@
     {
       "source": "Fleet Carrier update warning",
       "translation": "Aviso de atualização da Fleet Carrier"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+      "translation": "As atualizações do Fleet Carrier permanecem pendentes porque a carga Raven mudou simultaneamente. Atualize seu mercado para reconciliar."
+    },
+    {
+      "source": "Fleet Carrier updates remain pending: {0}",
+      "translation": "As atualizações da Fleet Carrier permanecem pendentes: {0}"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+      "translation": "As atualizações da Fleet Carrier permanecem pendentes; atualizar seu mercado para conciliar uma escrita incerta."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -122083,6 +122451,14 @@
       "translation": "Pêssego"
     },
     {
+      "source": "PendingCargoAdjustments",
+      "translation": "Ajustes de carga pendentes"
+    },
+    {
+      "source": "PendingContributions",
+      "translation": "Contribuições Pendentes"
+    },
+    {
       "source": "Persistent prospector results",
       "translation": "Resultados persistentes do prospector"
     },
@@ -123259,6 +123635,10 @@
       "translation": "As missões devem ser habilitadas antes de reproduzir um evento."
     },
     {
+      "source": "Queued Fleet Carrier updates are retained for reconciliation: {0}",
+      "translation": "As atualizações do Fleet Carrier na fila são retidas para reconciliação: {0}"
+    },
+    {
       "source": "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
       "translation": "Os eventos enfileirados nunca ultrapassam os limites do Commander ou da chave de API. Elegibilidade ao vivo/beta, relatórios de sessão final, lotes, novas tentativas e liberações de desligamento seguem a sessão vinculada do Commander."
     },
@@ -123667,6 +124047,10 @@
       "translation": "A atualização do arquiteto Raven não foi enviada porque este comandante não possui uma chave de API salva."
     },
     {
+      "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
+      "translation": "Raven mudou após revisão. Recarregue e revise as edições conflitantes antes de publicar."
+    },
+    {
       "source": "Raven did not identify a project for the current construction depot.",
       "translation": "Raven não identificou um projeto para o atual depósito de construção."
     },
@@ -123677,6 +124061,10 @@
     {
       "source": "Raven has no body catalog for this system",
       "translation": "Raven não tem catálogo de corpos para este sistema"
+    },
+    {
+      "source": "Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey.",
+      "translation": "Raven pode ter registrado essas entregas antes da falha da conexão. Verifique o crédito deles no Raven e selecione apenas as entregas que deseja resolver. Tente novamente aqueles que não foram registrados ou descarte aqueles já creditados para limpar seus registros de recuperação locais. As entregas não selecionadas permanecem pendentes e sobrevivem à reinicialização SrvSurvey."
     },
     {
       "source": "Raven mutation rejected: verify the active Commander key, feature permission, dock/system identity, and explicit confirmation state.",
@@ -123691,6 +124079,10 @@
       "translation": "Sincronização do projeto Raven ignorada diferença de carga do esquadrão: {0}"
     },
     {
+      "source": "Raven project sync skipped {0} in {1}: {2}",
+      "translation": "Sincronização do projeto Raven ignorada {0} em {1}: {2}"
+    },
+    {
       "source": "Raven project sync skipped {0}: {1}",
       "translation": "Sincronização do projeto Raven ignorada {0}: {1}"
     },
@@ -123701,6 +124093,10 @@
     {
       "source": "Raven secured this system after it was loaded. No changes can be published.",
       "translation": "Raven protegeu este sistema depois que ele foi carregado. Nenhuma alteração pode ser publicada."
+    },
+    {
+      "source": "Raven secured this system after review. No changes were published.",
+      "translation": "Raven protegeu este sistema após revisão. Nenhuma alteração foi publicada."
     },
     {
       "source": "Raven system sites",
@@ -125109,6 +125505,14 @@
     {
       "source": "Retreat",
       "translation": "Retiro"
+    },
+    {
+      "source": "Retried the selected construction deliveries.",
+      "translation": "Tentei novamente as entregas de construção selecionadas."
+    },
+    {
+      "source": "Retry selected deliveries",
+      "translation": "Tentar novamente as entregas selecionadas"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -131211,6 +131615,10 @@
       "translation": "O filtro de código de massa lista apenas boxels com estatísticas registradas naquele código de massa exato. Abra um boxel para explorar seus filhos registrados."
     },
     {
+      "source": "The matched Raven site has no persisted ID; its market information could not be repaired.",
+      "translation": "O site Raven correspondente não possui ID persistente; suas informações de mercado não puderam ser reparadas."
+    },
+    {
       "source": "The measured point is too close to {0}; no raw point was added.",
       "translation": "O ponto medido está muito próximo de {0}; nenhum ponto bruto foi adicionado."
     },
@@ -132207,6 +132615,10 @@
       "translation": "Esta pesquisa boxel já está salva na biblioteca."
     },
     {
+      "source": "This construction delivery is already retained for reconciliation.",
+      "translation": "Esta entrega de construção já está retida para conciliação."
+    },
+    {
       "source": "This construction site is not in the active project list.",
       "translation": "Este canteiro de obras não está na lista de projetos ativos."
     },
@@ -132927,6 +133339,10 @@
       "translation": "Verificações não reivindicadas"
     },
     {
+      "source": "Unconfirmed construction deliveries",
+      "translation": "Entregas de construção não confirmadas"
+    },
+    {
       "source": "Undermine",
       "translation": "Minar"
     },
@@ -133227,8 +133643,8 @@
       "translation": "Requisitos de construção Raven atualizados para {0}."
     },
     {
-      "source": "Updated Raven project faction for {0}.",
-      "translation": "Facção do projeto Raven atualizada para {0}."
+      "source": "Updated Raven project metadata for {0}.",
+      "translation": "Metadados do projeto Raven atualizados para {0}."
     },
     {
       "source": "Updated Raven remaining cargo after contribution for {0}.",
@@ -133249,10 +133665,6 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "Atualizadas {0} entradas de carga vinculadas ao Fleet Carrier de {1}."
-    },
-    {
-      "source": "Updated {0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.",
-      "translation": "Atualizadas as entradas de carga do Fleet Carrier do esquadrão vinculado {0} do diferencial de carga do navio."
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -137131,6 +137543,10 @@
       "translation": "esférico"
     },
     {
+      "source": "squadron cargo diff",
+      "translation": "diferença de carga do esquadrão"
+    },
+    {
       "source": "squid",
       "translation": "lula"
     },
@@ -137555,6 +137971,10 @@
       "translation": "subtipo de espécie previsto incerto"
     },
     {
+      "source": "unconfirmed",
+      "translation": "não confirmado"
+    },
+    {
       "source": "undiscovered Codex map",
       "translation": "mapa Codex não descoberto"
     },
@@ -137681,6 +138101,10 @@
     {
       "source": "waiting for journal",
       "translation": "esperando pelo diário"
+    },
+    {
+      "source": "waiting to retry",
+      "translation": "esperando para tentar novamente"
     },
     {
       "source": "water giant",
@@ -138659,6 +139083,14 @@
       "translation": "{0}: {1} t"
     },
     {
+      "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
+      "translation": "{0}: unidades {1} para {2}: {3} (não confirmado)."
+    },
+    {
+      "source": "{0}: {1} units for {2}: {3} ({4}).",
+      "translation": "{0}: unidades {1} para {2}: {3} ({4})."
+    },
+    {
       "source": "{0}: {1}, {2} g, {3} ls",
       "translation": "{0}: {1}, {2} g, {3} ls"
     },
@@ -139599,6 +140031,10 @@
     {
       "source": "A compatible live construction depot is ready.",
       "translation": "Совместимая живая строительная база готова."
+    },
+    {
+      "source": "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
+      "translation": "Вклад в строительство имеет неопределенный результат на сервере и сохраняется. Перед повторной отправкой проверьте его кредитоспособность на Raven."
     },
     {
       "source": "A cooperative instance shutdown request failed: {0}",
@@ -143421,6 +143857,10 @@
       "translation": "Груз недоступен"
     },
     {
+      "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "Обновления Cargo сохраняются в памяти, но файл их восстановления сохранить не удалось: {0}"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "Груз: 72 / 128 т · Блюдечки: 34"
     },
@@ -144889,6 +145329,10 @@
       "translation": "Параллельные изменения Raven были сохранены; ничего не готово к публикации."
     },
     {
+      "source": "Concurrent Raven changes were preserved; nothing was published.",
+      "translation": "Параллельные изменения Raven были сохранены; ничего не было опубликовано."
+    },
+    {
       "source": "Condition",
       "translation": "Состояние"
     },
@@ -145223,6 +145667,14 @@
     {
       "source": "Construction complete.",
       "translation": "Строительство завершено."
+    },
+    {
+      "source": "Construction contributions remain pending: {0}",
+      "translation": "Взносы на строительство остаются невыплаченными: {0}"
+    },
+    {
+      "source": "Construction deliveries are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "Строительные поставки сохраняются в памяти, но их файл восстановления сохранить не удалось: {0}"
     },
     {
       "source": "Construction failed",
@@ -145711,6 +146163,10 @@
     {
       "source": "Created {0} and restored the existing primary port to the first position.",
       "translation": "Создан {0} и восстановил существующий основной порт на первую позицию."
+    },
+    {
+      "source": "Created {0}, but its local refresh or cleanup failed: {1}",
+      "translation": "Создан {0}, но его локальное обновление или очистка не удались: {1}"
     },
     {
       "source": "Created {0}. It was added to the active project list.",
@@ -146719,6 +147175,10 @@
     {
       "source": "Disembark",
       "translation": "Высадиться"
+    },
+    {
+      "source": "Dismiss selected deliveries",
+      "translation": "Отклонить выбранные поставки"
     },
     {
       "source": "Dismiss this release notification",
@@ -148873,6 +149333,10 @@
       "translation": "Синхронизация грузов Fleet Carrier"
     },
     {
+      "source": "Fleet Carrier cargo update queued behind an unconfirmed adjustment.",
+      "translation": "Обновление груза Fleet Carrier поставлено в очередь после неподтвержденной корректировки."
+    },
+    {
       "source": "Fleet Carrier cargo was not updated: {0}",
       "translation": "Груз Fleet Carrier не был обновлен: {0}"
     },
@@ -148899,6 +149363,18 @@
     {
       "source": "Fleet Carrier update warning",
       "translation": "Предупреждение об обновлении авиаперевозчика"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+      "translation": "Обновления Fleet Carrier остаются в ожидании, поскольку одновременно с этим изменился груз Raven. Обновите свой рынок, чтобы примириться."
+    },
+    {
+      "source": "Fleet Carrier updates remain pending: {0}",
+      "translation": "Обновления Fleet Carrier ожидаются: {0}"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+      "translation": "Обновления Fleet Carrier ожидаются; обновить свой рынок, чтобы исправить неопределенную запись."
     },
     {
       "source": "Fleet carrier itinerary",
@@ -156801,6 +157277,14 @@
       "translation": "Персик"
     },
     {
+      "source": "PendingCargoAdjustments",
+      "translation": "Ожидается корректировка груза"
+    },
+    {
+      "source": "PendingContributions",
+      "translation": "Ожидаемые взносы"
+    },
+    {
       "source": "Persistent prospector results",
       "translation": "Стойкие результаты поиска"
     },
@@ -157977,6 +158461,10 @@
       "translation": "Квесты должны быть включены перед повторным воспроизведением события."
     },
     {
+      "source": "Queued Fleet Carrier updates are retained for reconciliation: {0}",
+      "translation": "Обновления авианосцев в очереди сохраняются для сверки: {0}"
+    },
+    {
       "source": "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
       "translation": "События в очереди никогда не пересекают границы Commander или API-ключа. Право на участие в живом/бета-тестировании, окончательные отчеты о сеансе, пакетная обработка, повторные попытки и сбросы при завершении работы следуют за привязанным сеансом Commander."
     },
@@ -158385,6 +158873,10 @@
       "translation": "Обновление архитектора Raven не было отправлено, поскольку у этого командира нет сохраненного ключа API."
     },
     {
+      "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
+      "translation": "Ворон изменился после обзора. Перед публикацией перезагрузите и просмотрите конфликтующие изменения."
+    },
+    {
       "source": "Raven did not identify a project for the current construction depot.",
       "translation": "Рэйвен не назвала проект нынешнего строительного депо."
     },
@@ -158395,6 +158887,10 @@
     {
       "source": "Raven has no body catalog for this system",
       "translation": "У Raven нет каталога тел для этой системы."
+    },
+    {
+      "source": "Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey.",
+      "translation": "Рэйвен могла зафиксировать эти доставки до того, как соединение прервалось. Проверьте их кредит на Raven, а затем выберите только те поставки, которые хотите разрешить. Повторите попытки, которые не записаны, или отклоните те, которые уже зачислены, чтобы очистить их локальные записи восстановления. Невыбранные поставки остаются ожидающими и выдерживают перезапуск SrvSurvey."
     },
     {
       "source": "Raven mutation rejected: verify the active Commander key, feature permission, dock/system identity, and explicit confirmation state.",
@@ -158409,6 +158905,10 @@
       "translation": "Синхронизация проекта Raven пропустила разницу грузов эскадрильи: {0}"
     },
     {
+      "source": "Raven project sync skipped {0} in {1}: {2}",
+      "translation": "Синхронизация проекта Raven пропущена {0} в {1}: {2}"
+    },
+    {
       "source": "Raven project sync skipped {0}: {1}",
       "translation": "Синхронизация проекта Raven пропущена {0}: {1}"
     },
@@ -158419,6 +158919,10 @@
     {
       "source": "Raven secured this system after it was loaded. No changes can be published.",
       "translation": "Рэйвен обеспечила безопасность этой системы после ее загрузки. Никакие изменения не могут быть опубликованы."
+    },
+    {
+      "source": "Raven secured this system after review. No changes were published.",
+      "translation": "После проверки Raven обеспечила безопасность этой системы. Никаких изменений опубликовано не было."
     },
     {
       "source": "Raven system sites",
@@ -159827,6 +160331,14 @@
     {
       "source": "Retreat",
       "translation": "Отступление"
+    },
+    {
+      "source": "Retried the selected construction deliveries.",
+      "translation": "Повторная попытка выбранных строительных поставок."
+    },
+    {
+      "source": "Retry selected deliveries",
+      "translation": "Повторить выбранные доставки"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -165929,6 +166441,10 @@
       "translation": "Фильтр массового кода перечисляет только боксы с записанной статистикой именно по этому массовому коду. Откройте коробку, чтобы изучить записанные в ней дочерние элементы."
     },
     {
+      "source": "The matched Raven site has no persisted ID; its market information could not be repaired.",
+      "translation": "Соответствующий сайт Raven не имеет постоянного идентификатора; его рыночная информация не могла быть восстановлена."
+    },
+    {
       "source": "The measured point is too close to {0}; no raw point was added.",
       "translation": "Измеренная точка находится слишком близко к {0}; необработанная точка не была добавлена."
     },
@@ -166925,6 +167441,10 @@
       "translation": "Этот поиск по боксу уже сохранен в библиотеке."
     },
     {
+      "source": "This construction delivery is already retained for reconciliation.",
+      "translation": "Эта строительная поставка уже сохранена для сверки."
+    },
+    {
       "source": "This construction site is not in the active project list.",
       "translation": "Этой строительной площадки нет в списке активных проектов."
     },
@@ -167645,6 +168165,10 @@
       "translation": "Невостребованные сканы"
     },
     {
+      "source": "Unconfirmed construction deliveries",
+      "translation": "Неподтвержденные строительные поставки"
+    },
+    {
       "source": "Undermine",
       "translation": "Подрывать"
     },
@@ -167945,8 +168469,8 @@
       "translation": "Обновлены требования к конструкции Raven для {0}."
     },
     {
-      "source": "Updated Raven project faction for {0}.",
-      "translation": "Обновлена фракция проекта Raven для {0}."
+      "source": "Updated Raven project metadata for {0}.",
+      "translation": "Обновлены метаданные проекта Raven для {0}."
     },
     {
       "source": "Updated Raven remaining cargo after contribution for {0}.",
@@ -167967,10 +168491,6 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "Обновлены {0} связанные записи о грузе Fleet Carrier из {1}."
-    },
-    {
-      "source": "Updated {0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.",
-      "translation": "Обновлены записи о грузовых авианосцах связанной эскадрильи {0} из различий в грузовых кораблях."
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -171849,6 +172369,10 @@
       "translation": "сферический"
     },
     {
+      "source": "squadron cargo diff",
+      "translation": "эскадрилья грузовая разница"
+    },
+    {
       "source": "squid",
       "translation": "кальмар"
     },
@@ -172273,6 +172797,10 @@
       "translation": "неопределенный прогнозируемый подтип вида"
     },
     {
+      "source": "unconfirmed",
+      "translation": "неподтвержденный"
+    },
+    {
       "source": "undiscovered Codex map",
       "translation": "неоткрытая карта Кодекса"
     },
@@ -172399,6 +172927,10 @@
     {
       "source": "waiting for journal",
       "translation": "жду журнал"
+    },
+    {
+      "source": "waiting to retry",
+      "translation": "ожидаю повторной попытки"
     },
     {
       "source": "water giant",
@@ -173377,6 +173909,14 @@
       "translation": "{0}: {1} т"
     },
     {
+      "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
+      "translation": "{0}: Единицы {1} для {2}: {3} (не подтверждено)."
+    },
+    {
+      "source": "{0}: {1} units for {2}: {3} ({4}).",
+      "translation": "{0}: Единицы {1} для {2}: {3} ({4})."
+    },
+    {
       "source": "{0}: {1}, {2} g, {3} ls",
       "translation": "{0}: {1}, {2} г, {3} ls"
     },
@@ -174317,6 +174857,10 @@
     {
       "source": "A compatible live construction depot is ready.",
       "translation": "兼容的实时施工站已准备就绪。"
+    },
+    {
+      "source": "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
+      "translation": "建设贡献具有不确定的服务器结果并被保留。重新提交之前，请在 Raven 上验证其信用。"
     },
     {
       "source": "A cooperative instance shutdown request failed: {0}",
@@ -178139,6 +178683,10 @@
       "translation": "货物不可用"
     },
     {
+      "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "货物更新保留在内存中，但无法保存其恢复文件：{0}"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "货物：72 / 128 吨 · 帽贝：34"
     },
@@ -179607,6 +180155,10 @@
       "translation": "保留了并发 Raven 更改；没有任何内容可以发布。"
     },
     {
+      "source": "Concurrent Raven changes were preserved; nothing was published.",
+      "translation": "保留了并发 Raven 更改；没有发表任何内容。"
+    },
+    {
       "source": "Condition",
       "translation": "条件"
     },
@@ -179941,6 +180493,14 @@
     {
       "source": "Construction complete.",
       "translation": "施工完成。"
+    },
+    {
+      "source": "Construction contributions remain pending: {0}",
+      "translation": "建设贡献仍未确定：{0}"
+    },
+    {
+      "source": "Construction deliveries are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "施工交付保留在内存中，但无法保存其恢复文件：{0}"
     },
     {
       "source": "Construction failed",
@@ -180429,6 +180989,10 @@
     {
       "source": "Created {0} and restored the existing primary port to the first position.",
       "translation": "创建了 {0} 并将现有主端口恢复到第一个位置。"
+    },
+    {
+      "source": "Created {0}, but its local refresh or cleanup failed: {1}",
+      "translation": "创建了 {0}，但其本地刷新或清理失败：{1}"
     },
     {
       "source": "Created {0}. It was added to the active project list.",
@@ -181437,6 +182001,10 @@
     {
       "source": "Disembark",
       "translation": "下船"
+    },
+    {
+      "source": "Dismiss selected deliveries",
+      "translation": "拒绝选定的交付"
     },
     {
       "source": "Dismiss this release notification",
@@ -183591,6 +184159,10 @@
       "translation": "舰队承运商货物同步"
     },
     {
+      "source": "Fleet Carrier cargo update queued behind an unconfirmed adjustment.",
+      "translation": "舰队承运人货物更新排队等待未经确认的调整。"
+    },
+    {
       "source": "Fleet Carrier cargo was not updated: {0}",
       "translation": "舰队承运商货物未更新：{0}"
     },
@@ -183617,6 +184189,18 @@
     {
       "source": "Fleet Carrier update warning",
       "translation": "舰队承运人更新警告"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+      "translation": "由于 Raven 货物同时发生变化，舰队承运人更新仍悬而未决。刷新其市场调和。"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending: {0}",
+      "translation": "舰队承运人更新仍在等待中：{0}"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+      "translation": "舰队承运人更新仍悬而未决；刷新其市场以协调不确定的写入。"
     },
     {
       "source": "Fleet carrier itinerary",
@@ -191519,6 +192103,14 @@
       "translation": "桃"
     },
     {
+      "source": "PendingCargoAdjustments",
+      "translation": "待定货物调整"
+    },
+    {
+      "source": "PendingContributions",
+      "translation": "待定捐款"
+    },
+    {
       "source": "Persistent prospector results",
       "translation": "持续探矿结果"
     },
@@ -192695,6 +193287,10 @@
       "translation": "必须在重播事件之前启用任务。"
     },
     {
+      "source": "Queued Fleet Carrier updates are retained for reconciliation: {0}",
+      "translation": "保留排队的舰队承运人更新以进行协调：{0}"
+    },
+    {
       "source": "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
       "translation": "排队事件永远不会跨越 Commander 或 API 密钥边界。实时/测试版资格、最终会话报告、批处理、重试和关闭刷新遵循绑定的 Commander 会话。"
     },
@@ -193103,6 +193699,10 @@
       "translation": "Raven 架构师更新未发送，因为该指挥官没有保存的 API 密钥。"
     },
     {
+      "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
+      "translation": "乌鸦审核后改变了。在发布之前重新加载并检查冲突的编辑。"
+    },
+    {
       "source": "Raven did not identify a project for the current construction depot.",
       "translation": "雷文没有确定当前建筑站的项目。"
     },
@@ -193113,6 +193713,10 @@
     {
       "source": "Raven has no body catalog for this system",
       "translation": "Raven 没有该系统的身体目录"
+    },
+    {
+      "source": "Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey.",
+      "translation": "Raven 可能在连接失败之前记录了这些传送。检查他们在 Raven 上的信用，然后仅选择您想要解决的交付。重试未记录的内容，或忽略已记入的内容以清除其本地恢复记录。未选择的交付保持待定状态并在重新启动后继续存在 SrvSurvey。"
     },
     {
       "source": "Raven mutation rejected: verify the active Commander key, feature permission, dock/system identity, and explicit confirmation state.",
@@ -193127,6 +193731,10 @@
       "translation": "Raven 项目同步跳过中队货物差异：{0}"
     },
     {
+      "source": "Raven project sync skipped {0} in {1}: {2}",
+      "translation": "Raven 项目同步在 {1} 中跳过了 {0}：{2}"
+    },
+    {
       "source": "Raven project sync skipped {0}: {1}",
       "translation": "Raven 项目同步已跳过 {0}：{1}"
     },
@@ -193137,6 +193745,10 @@
     {
       "source": "Raven secured this system after it was loaded. No changes can be published.",
       "translation": "Raven 在加载该系统后对其进行了保护。无法发布任何更改。"
+    },
+    {
+      "source": "Raven secured this system after review. No changes were published.",
+      "translation": "Raven 经过审查后确保了该系统的安全。没有发布任何更改。"
     },
     {
       "source": "Raven system sites",
@@ -194545,6 +195157,14 @@
     {
       "source": "Retreat",
       "translation": "撤退"
+    },
+    {
+      "source": "Retried the selected construction deliveries.",
+      "translation": "重试选定的施工交付。"
+    },
+    {
+      "source": "Retry selected deliveries",
+      "translation": "重试选定的交付"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -200647,6 +201267,10 @@
       "translation": "质量代码过滤器仅列出具有该精确质量代码处记录的统计数据的框。打开盒子探索其记录的子项。"
     },
     {
+      "source": "The matched Raven site has no persisted ID; its market information could not be repaired.",
+      "translation": "匹配的 Raven 站点没有持久 ID；其市场信息无法修复。"
+    },
+    {
       "source": "The measured point is too close to {0}; no raw point was added.",
       "translation": "测量点距离{0}太近；没有添加原始点。"
     },
@@ -201643,6 +202267,10 @@
       "translation": "此框搜索已保存到库中。"
     },
     {
+      "source": "This construction delivery is already retained for reconciliation.",
+      "translation": "该施工交付已保留用于调节。"
+    },
+    {
       "source": "This construction site is not in the active project list.",
       "translation": "该建筑工地不在活动项目列表中。"
     },
@@ -202363,6 +202991,10 @@
       "translation": "无人认领的扫描"
     },
     {
+      "source": "Unconfirmed construction deliveries",
+      "translation": "未经确认的施工交付"
+    },
+    {
       "source": "Undermine",
       "translation": "破坏"
     },
@@ -202663,8 +203295,8 @@
       "translation": "更新了 {0} 的 Raven 建造要求。"
     },
     {
-      "source": "Updated Raven project faction for {0}.",
-      "translation": "更新了 {0} 的 Raven 项目派别。"
+      "source": "Updated Raven project metadata for {0}.",
+      "translation": "更新了 {0} 的 Raven 项目元数据。"
     },
     {
       "source": "Updated Raven remaining cargo after contribution for {0}.",
@@ -202685,10 +203317,6 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "更新了 {0} 来自 {1} 的链接舰队承运商货物条目。"
-    },
-    {
-      "source": "Updated {0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.",
-      "translation": "更新了船舶货物差异中的 {0} 链接中队舰队航母货物条目。"
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -206567,6 +207195,10 @@
       "translation": "球形"
     },
     {
+      "source": "squadron cargo diff",
+      "translation": "中队货物差异"
+    },
+    {
       "source": "squid",
       "translation": "鱿鱼"
     },
@@ -206991,6 +207623,10 @@
       "translation": "不确定的预测物种亚型"
     },
     {
+      "source": "unconfirmed",
+      "translation": "未证实"
+    },
+    {
       "source": "undiscovered Codex map",
       "translation": "未被发现的法典地图"
     },
@@ -207117,6 +207753,10 @@
     {
       "source": "waiting for journal",
       "translation": "等待日记"
+    },
+    {
+      "source": "waiting to retry",
+      "translation": "等待重试"
     },
     {
       "source": "water giant",
@@ -208095,6 +208735,14 @@
       "translation": "{0}: {1} t"
     },
     {
+      "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
+      "translation": "{0}：{1} {2} 的单位：{3}（未确认）。"
+    },
+    {
+      "source": "{0}: {1} units for {2}: {3} ({4}).",
+      "translation": "{0}：{1} {2} 的单位：{3} ({4})。"
+    },
+    {
       "source": "{0}: {1}, {2} g, {3} ls",
       "translation": "{0}：{1}、{2} g、{3} ls"
     },
@@ -209035,6 +209683,10 @@
     {
       "source": "A compatible live construction depot is ready.",
       "translation": "* A COMPATIBLE LIVE CONSTRUCTION DEPOT IS READY. >>>!"
+    },
+    {
+      "source": "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
+      "translation": "* A CONSTRUCTION CONTRIBUTION HAS AN UNCERTAIN SERVER OUTCOME AND IS RETAINED. VERIFY ITS CREDIT ON RAVEN BEFORE RESUBMITTING. >>>!"
     },
     {
       "source": "A cooperative instance shutdown request failed: {0}",
@@ -212857,6 +213509,10 @@
       "translation": "* CARGO UNAVAILABLE >>>!"
     },
     {
+      "source": "Cargo updates are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "* CARGO UPDATES ARE RETAINED IN MEMORY, BUT THEIR RECOVERY FILE COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
       "source": "Cargo: 72 / 128 t · Limpets: 34",
       "translation": "* CARGO: 72 / 128 T · LIMPETS: 34 >>>!"
     },
@@ -214325,6 +214981,10 @@
       "translation": "* CONCURRENT RAVEN CHANGES WERE PRESERVED; NOTHING IS READY TO PUBLISH. >>>!"
     },
     {
+      "source": "Concurrent Raven changes were preserved; nothing was published.",
+      "translation": "* CONCURRENT RAVEN CHANGES WERE PRESERVED; NOTHING WAS PUBLISHED. >>>!"
+    },
+    {
       "source": "Condition",
       "translation": "* CONDITION >>>!"
     },
@@ -214659,6 +215319,14 @@
     {
       "source": "Construction complete.",
       "translation": "* CONSTRUCTION COMPLETE. >>>!"
+    },
+    {
+      "source": "Construction contributions remain pending: {0}",
+      "translation": "* CONSTRUCTION CONTRIBUTIONS REMAIN PENDING: {0} >>>!"
+    },
+    {
+      "source": "Construction deliveries are retained in memory, but their recovery file could not be saved: {0}",
+      "translation": "* CONSTRUCTION DELIVERIES ARE RETAINED IN MEMORY, BUT THEIR RECOVERY FILE COULD NOT BE SAVED: {0} >>>!"
     },
     {
       "source": "Construction failed",
@@ -215147,6 +215815,10 @@
     {
       "source": "Created {0} and restored the existing primary port to the first position.",
       "translation": "* CREATED {0} AND RESTORED THE EXISTING PRIMARY PORT TO THE FIRST POSITION. >>>!"
+    },
+    {
+      "source": "Created {0}, but its local refresh or cleanup failed: {1}",
+      "translation": "* CREATED {0}, BUT ITS LOCAL REFRESH OR CLEANUP FAILED: {1} >>>!"
     },
     {
       "source": "Created {0}. It was added to the active project list.",
@@ -216155,6 +216827,10 @@
     {
       "source": "Disembark",
       "translation": "* DISEMBARK >>>!"
+    },
+    {
+      "source": "Dismiss selected deliveries",
+      "translation": "* DISMISS SELECTED DELIVERIES >>>!"
     },
     {
       "source": "Dismiss this release notification",
@@ -218309,6 +218985,10 @@
       "translation": "* FLEET CARRIER CARGO SYNC >>>!"
     },
     {
+      "source": "Fleet Carrier cargo update queued behind an unconfirmed adjustment.",
+      "translation": "* FLEET CARRIER CARGO UPDATE QUEUED BEHIND AN UNCONFIRMED ADJUSTMENT. >>>!"
+    },
+    {
       "source": "Fleet Carrier cargo was not updated: {0}",
       "translation": "* FLEET CARRIER CARGO WAS NOT UPDATED: {0} >>>!"
     },
@@ -218335,6 +219015,18 @@
     {
       "source": "Fleet Carrier update warning",
       "translation": "* FLEET CARRIER UPDATE WARNING >>>!"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending because Raven cargo changed concurrently. Refresh its market to reconcile.",
+      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING BECAUSE RAVEN CARGO CHANGED CONCURRENTLY. REFRESH ITS MARKET TO RECONCILE. >>>!"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending: {0}",
+      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING: {0} >>>!"
+    },
+    {
+      "source": "Fleet Carrier updates remain pending; refresh its market to reconcile an uncertain write.",
+      "translation": "* FLEET CARRIER UPDATES REMAIN PENDING; REFRESH ITS MARKET TO RECONCILE AN UNCERTAIN WRITE. >>>!"
     },
     {
       "source": "Fleet carrier itinerary",
@@ -226237,6 +226929,14 @@
       "translation": "* PEACH >>>!"
     },
     {
+      "source": "PendingCargoAdjustments",
+      "translation": "* PENDINGCARGOADJUSTMENTS >>>!"
+    },
+    {
+      "source": "PendingContributions",
+      "translation": "* PENDINGCONTRIBUTIONS >>>!"
+    },
+    {
       "source": "Persistent prospector results",
       "translation": "* PERSISTENT PROSPECTOR RESULTS >>>!"
     },
@@ -227413,6 +228113,10 @@
       "translation": "* QUESTS MUST BE ENABLED BEFORE REPLAYING AN EVENT. >>>!"
     },
     {
+      "source": "Queued Fleet Carrier updates are retained for reconciliation: {0}",
+      "translation": "* QUEUED FLEET CARRIER UPDATES ARE RETAINED FOR RECONCILIATION: {0} >>>!"
+    },
+    {
       "source": "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
       "translation": "* QUEUED EVENTS NEVER CROSS COMMANDER OR API-KEY BOUNDARIES. LIVE/BETA ELIGIBILITY, FINAL SESSION REPORTING, BATCHING, RETRIES, AND SHUTDOWN FLUSHES FOLLOW THE BOUND COMMANDER SESSION. >>>!"
     },
@@ -227821,6 +228525,10 @@
       "translation": "* RAVEN ARCHITECT UPDATE WAS NOT SENT BECAUSE THIS COMMANDER HAS NO SAVED API KEY. >>>!"
     },
     {
+      "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
+      "translation": "* RAVEN CHANGED AFTER REVIEW. RELOAD AND REVIEW CONFLICTING EDITS BEFORE PUBLISHING. >>>!"
+    },
+    {
       "source": "Raven did not identify a project for the current construction depot.",
       "translation": "* RAVEN DID NOT IDENTIFY A PROJECT FOR THE CURRENT CONSTRUCTION DEPOT. >>>!"
     },
@@ -227831,6 +228539,10 @@
     {
       "source": "Raven has no body catalog for this system",
       "translation": "* RAVEN HAS NO BODY CATALOG FOR THIS SYSTEM >>>!"
+    },
+    {
+      "source": "Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey.",
+      "translation": "* RAVEN MAY HAVE RECORDED THESE DELIVERIES BEFORE THE CONNECTION FAILED. CHECK THEIR CREDIT ON RAVEN, THEN SELECT ONLY THE DELIVERIES YOU WANT TO RESOLVE. RETRY THOSE NOT RECORDED, OR DISMISS THOSE ALREADY CREDITED TO CLEAR THEIR LOCAL RECOVERY RECORDS. UNSELECTED DELIVERIES REMAIN PENDING AND SURVIVE RESTARTING SRVSURVEY. >>>!"
     },
     {
       "source": "Raven mutation rejected: verify the active Commander key, feature permission, dock/system identity, and explicit confirmation state.",
@@ -227845,6 +228557,10 @@
       "translation": "* RAVEN PROJECT SYNC SKIPPED SQUADRON CARGO DIFF: {0} >>>!"
     },
     {
+      "source": "Raven project sync skipped {0} in {1}: {2}",
+      "translation": "* RAVEN PROJECT SYNC SKIPPED {0} IN {1}: {2} >>>!"
+    },
+    {
       "source": "Raven project sync skipped {0}: {1}",
       "translation": "* RAVEN PROJECT SYNC SKIPPED {0}: {1} >>>!"
     },
@@ -227855,6 +228571,10 @@
     {
       "source": "Raven secured this system after it was loaded. No changes can be published.",
       "translation": "* RAVEN SECURED THIS SYSTEM AFTER IT WAS LOADED. NO CHANGES CAN BE PUBLISHED. >>>!"
+    },
+    {
+      "source": "Raven secured this system after review. No changes were published.",
+      "translation": "* RAVEN SECURED THIS SYSTEM AFTER REVIEW. NO CHANGES WERE PUBLISHED. >>>!"
     },
     {
       "source": "Raven system sites",
@@ -229263,6 +229983,14 @@
     {
       "source": "Retreat",
       "translation": "* RETREAT >>>!"
+    },
+    {
+      "source": "Retried the selected construction deliveries.",
+      "translation": "* RETRIED THE SELECTED CONSTRUCTION DELIVERIES. >>>!"
+    },
+    {
+      "source": "Retry selected deliveries",
+      "translation": "* RETRY SELECTED DELIVERIES >>>!"
     },
     {
       "source": "Return a completed or empty system to the active survey.",
@@ -235365,6 +236093,10 @@
       "translation": "* THE MASS-CODE FILTER LISTS ONLY BOXELS WITH RECORDED STATISTICS AT THAT EXACT MASS CODE. OPEN A BOXEL TO EXPLORE ITS RECORDED CHILDREN. >>>!"
     },
     {
+      "source": "The matched Raven site has no persisted ID; its market information could not be repaired.",
+      "translation": "* THE MATCHED RAVEN SITE HAS NO PERSISTED ID; ITS MARKET INFORMATION COULD NOT BE REPAIRED. >>>!"
+    },
+    {
       "source": "The measured point is too close to {0}; no raw point was added.",
       "translation": "* THE MEASURED POINT IS TOO CLOSE TO {0}; NO RAW POINT WAS ADDED. >>>!"
     },
@@ -236361,6 +237093,10 @@
       "translation": "* THIS BOXEL SEARCH IS ALREADY SAVED TO THE LIBRARY. >>>!"
     },
     {
+      "source": "This construction delivery is already retained for reconciliation.",
+      "translation": "* THIS CONSTRUCTION DELIVERY IS ALREADY RETAINED FOR RECONCILIATION. >>>!"
+    },
+    {
       "source": "This construction site is not in the active project list.",
       "translation": "* THIS CONSTRUCTION SITE IS NOT IN THE ACTIVE PROJECT LIST. >>>!"
     },
@@ -237081,6 +237817,10 @@
       "translation": "* UNCLAIMED SCANS >>>!"
     },
     {
+      "source": "Unconfirmed construction deliveries",
+      "translation": "* UNCONFIRMED CONSTRUCTION DELIVERIES >>>!"
+    },
+    {
       "source": "Undermine",
       "translation": "* UNDERMINE >>>!"
     },
@@ -237381,8 +238121,8 @@
       "translation": "* UPDATED RAVEN CONSTRUCTION REQUIREMENTS FOR {0}. >>>!"
     },
     {
-      "source": "Updated Raven project faction for {0}.",
-      "translation": "* UPDATED RAVEN PROJECT FACTION FOR {0}. >>>!"
+      "source": "Updated Raven project metadata for {0}.",
+      "translation": "* UPDATED RAVEN PROJECT METADATA FOR {0}. >>>!"
     },
     {
       "source": "Updated Raven remaining cargo after contribution for {0}.",
@@ -237403,10 +238143,6 @@
     {
       "source": "Updated {0} linked Fleet Carrier cargo entry(s) from {1}.",
       "translation": "* UPDATED {0} LINKED FLEET CARRIER CARGO ENTRY(S) FROM {1}. >>>!"
-    },
-    {
-      "source": "Updated {0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.",
-      "translation": "* UPDATED {0} LINKED SQUADRON FLEET CARRIER CARGO ENTRY(S) FROM SHIP CARGO DIFF. >>>!"
     },
     {
       "source": "Updated {0}. A verified state backup was retained.",
@@ -241285,6 +242021,10 @@
       "translation": "* SPHERICAL >>>!"
     },
     {
+      "source": "squadron cargo diff",
+      "translation": "* SQUADRON CARGO DIFF >>>!"
+    },
+    {
       "source": "squid",
       "translation": "* SQUID >>>!"
     },
@@ -241709,6 +242449,10 @@
       "translation": "* UNCERTAIN PREDICTED SPECIES SUBTYPE >>>!"
     },
     {
+      "source": "unconfirmed",
+      "translation": "* UNCONFIRMED >>>!"
+    },
+    {
       "source": "undiscovered Codex map",
       "translation": "* UNDISCOVERED CODEX MAP >>>!"
     },
@@ -241835,6 +242579,10 @@
     {
       "source": "waiting for journal",
       "translation": "* WAITING FOR JOURNAL >>>!"
+    },
+    {
+      "source": "waiting to retry",
+      "translation": "* WAITING TO RETRY >>>!"
     },
     {
       "source": "water giant",
@@ -242811,6 +243559,14 @@
     {
       "source": "{0}: {1} t",
       "translation": "* {0}: {1} T >>>!"
+    },
+    {
+      "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
+      "translation": "* {0}: {1} UNITS FOR {2}: {3} (UNCONFIRMED). >>>!"
+    },
+    {
+      "source": "{0}: {1} units for {2}: {3} ({4}).",
+      "translation": "* {0}: {1} UNITS FOR {2}: {3} ({4}). >>>!"
     },
     {
       "source": "{0}: {1}, {2} g, {3} ls",

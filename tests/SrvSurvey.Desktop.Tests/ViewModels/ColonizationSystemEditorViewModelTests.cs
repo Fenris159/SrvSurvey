@@ -3,7 +3,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class ColonizationSystemEditorViewModelTests
+public sealed partial class ColonizationSystemEditorViewModelTests
 {
     [Fact]
     public async Task LoadRefusesWhenAnotherArchitectIsAssigned()
@@ -481,6 +481,15 @@ public sealed class ColonizationSystemEditorViewModelTests
     {
         public ColonizationSystemRecord Current { get; set; } = System();
 
+        /// <summary>Delays system loading so tests can invalidate the original editor context before completion.</summary>
+        public Task<ColonizationSystemRecord>? PendingRead { get; set; }
+
+        /// <summary>Delays body import so tests can check that late results cannot mutate a replacement workspace.</summary>
+        public Task<ColonizationSystemRecord>? PendingImport { get; set; }
+
+        /// <summary>Delays publication so tests can verify stale results do not overwrite the active system.</summary>
+        public Task<ColonizationSystemRecord>? PendingUpdate { get; set; }
+
         public int SystemReadCount { get; private set; }
 
         public int BodyImportCount { get; private set; }
@@ -491,25 +500,32 @@ public sealed class ColonizationSystemEditorViewModelTests
 
         public string? LastApiKey { get; private set; }
 
+        /// <summary>Returns a controlled system response so tests can reproduce late editor results.</summary>
         public Task<ColonizationSystemRecord> GetSystemAsync(
             string systemNameOrAddress,
             CancellationToken cancellationToken = default
         )
         {
             SystemReadCount++;
-            return Task.FromResult(Current);
+            return PendingRead ?? Task.FromResult(Current);
         }
 
+        /// <summary>Holds body import responses so tests can invalidate the initiating system context.</summary>
         public Task<ColonizationSystemRecord> ImportSystemBodiesAsync(
             string systemNameOrAddress,
             CancellationToken cancellationToken = default
         )
         {
             BodyImportCount++;
+            if (PendingImport is not null)
+            {
+                return PendingImport;
+            }
             Current = Current with { Bodies = System().Bodies, Revision = Current.Revision + 1 };
             return Task.FromResult(Current);
         }
 
+        /// <summary>Records site publications and optionally holds their completion across editor context changes.</summary>
         public Task<ColonizationSystemRecord> UpdateSystemSitesAsync(
             string systemNameOrAddress,
             ColonizationSystemSiteUpdate update,
@@ -520,6 +536,10 @@ public sealed class ColonizationSystemEditorViewModelTests
             UpdateCount++;
             LastUpdate = update;
             LastApiKey = apiKey;
+            if (PendingUpdate is not null)
+            {
+                return PendingUpdate;
+            }
             var deleted = update.DeletedSiteIds.ToHashSet(StringComparer.Ordinal);
             var sites = Current
                 .Sites.Where(site => !deleted.Contains(site.Id))

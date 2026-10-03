@@ -13,6 +13,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
     private readonly ColonizationProjectFactory projectFactory;
     private readonly ColonizationProjectPublisher projectPublisher;
     private readonly Func<ColonizationProject, Task> onCreated;
+    private int contextVersion;
     private readonly AsyncCommand prepareCommand;
     private readonly AsyncCommand reviewCommand;
     private readonly AsyncCommand confirmCommand;
@@ -379,6 +380,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         StatusMessage = "The created Raven project could not be opened: " + message;
     }
 
+    /// <summary>Invalidates asynchronous work when the active system, dock, commander, or credentials change.</summary>
     public void UpdateContext(ColonizationProjectEditorContext updatedContext)
     {
         ArgumentNullException.ThrowIfNull(updatedContext);
@@ -386,6 +388,10 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         int? previousBodyId = context.CurrentBodyId;
         string? previousBodyName = context.CurrentBodyName;
         bool identityChanged = oldIdentity != GetContextIdentity(updatedContext);
+        if (identityChanged || context.RavenApiKey != updatedContext.RavenApiKey)
+        {
+            contextVersion++;
+        }
         context = updatedContext;
         if (identityChanged)
         {
@@ -452,15 +458,24 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Prepares project choices from a captured context and discards obsolete asynchronous results.</summary>
     private async Task LoadPreparedContextAsync()
     {
+        int version = contextVersion;
+        ColonizationProjectEditorContext preparedContext = context;
         IsBusy = true;
         StatusMessage = "Loading planned sites and architect from Raven Colonial...";
         try
         {
-            Task<IReadOnlyList<ColonizationSystemSite>> sitesTask = client.GetSystemSitesAsync(context.SystemName!);
-            Task<string?> architectTask = client.GetSystemArchitectAsync(context.SystemName!);
+            Task<IReadOnlyList<ColonizationSystemSite>> sitesTask = client.GetSystemSitesAsync(
+                preparedContext.SystemName!
+            );
+            Task<string?> architectTask = client.GetSystemArchitectAsync(preparedContext.SystemName!);
             await Task.WhenAll(sitesTask, architectTask);
+            if (version != contextVersion)
+            {
+                return;
+            }
             string? architect = await architectTask;
             isSystemArchitect = ColonizationSiteVisibility.CommanderIsArchitect(architect, context.CommanderName);
             ColonizationSystemSiteOptionViewModel[] planned = (await sitesTask)
@@ -507,7 +522,10 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         catch (Exception exception)
             when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
         {
-            StatusMessage = "The new-project context could not be loaded: " + exception.Message;
+            if (version == contextVersion)
+            {
+                StatusMessage = "The new-project context could not be loaded: " + exception.Message;
+            }
         }
         finally
         {
@@ -659,6 +677,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Publishes the prepared project and reports remote creation separately from follow-up cleanup failures.</summary>
     private async Task PublishPreparedProjectAsync()
     {
         if (pendingProject is not { } project)
@@ -666,6 +685,8 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             return;
         }
 
+        int version = contextVersion;
+        ColonizationProject? publishedProject = null;
         IsBusy = true;
         StatusMessage = "Publishing the project to Raven Colonial...";
         try
@@ -678,6 +699,11 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
                 return;
             }
 
+            publishedProject = created;
+            if (version != contextVersion)
+            {
+                return;
+            }
             createdProject = created;
             pendingProject = null;
             pendingContextIdentity = null;
@@ -691,6 +717,10 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(CreatedProjectSummary));
             OnPropertyChanged(nameof(CreatedProjectId));
             await onCreated(created);
+            if (version != contextVersion)
+            {
+                return;
+            }
             StatusMessage =
                 result.Warning
                 ?? (
@@ -707,7 +737,13 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
                         or TaskCanceledException
             )
         {
-            StatusMessage = "The project was not created: " + exception.Message;
+            if (version == contextVersion)
+            {
+                StatusMessage = publishedProject is null
+                    ? "The project was not created: " + exception.Message
+                    : $"Created {publishedProject.BuildName}, but its local refresh or cleanup failed: "
+                        + exception.Message;
+            }
         }
         finally
         {

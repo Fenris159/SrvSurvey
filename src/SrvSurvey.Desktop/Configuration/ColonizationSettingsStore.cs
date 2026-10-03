@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Configuration;
@@ -204,6 +205,80 @@ public sealed class ColonizationSettingsStore
         });
     }
 
+    /// <summary>Loads valid retained deliveries individually so a malformed entry cannot discard other deliveries.</summary>
+    public IReadOnlyList<ColonizationPendingContribution> LoadPendingContributions()
+    {
+        return LoadPendingEntries<ColonizationPendingContribution>(
+            "PendingContributions",
+            entry =>
+                !string.IsNullOrWhiteSpace(entry.Owner)
+                && !string.IsNullOrWhiteSpace(entry.BuildId)
+                && !string.IsNullOrWhiteSpace(entry.Commander)
+                && !string.IsNullOrWhiteSpace(entry.EventId)
+                && entry.Cargo is not null
+        );
+    }
+
+    /// <summary>Atomically saves deliveries until Raven acknowledges them or the user reconciles their credit.</summary>
+    public void SavePendingContributions(IReadOnlyList<ColonizationPendingContribution> contributions)
+    {
+        documentStore.Update(root =>
+        {
+            JsonObject section = root[ColonizationSectionKey] as JsonObject ?? [];
+            root[ColonizationSectionKey] = section;
+            section["PendingContributions"] = JsonSerializer.SerializeToNode(contributions);
+        });
+    }
+
+    /// <summary>Loads valid cargo writes in their saved order, skipping only entries with invalid recovery data.</summary>
+    public IReadOnlyList<ColonizationPendingCargoAdjustment> LoadPendingCargoAdjustments()
+    {
+        return LoadPendingEntries<ColonizationPendingCargoAdjustment>(
+            "PendingCargoAdjustments",
+            entry => !string.IsNullOrWhiteSpace(entry.Owner) && entry.MarketId > 0 && entry.Delta is not null
+        );
+    }
+
+    /// <summary>Deserializes each recovery entry independently and validates fields required by its workflow.</summary>
+    private List<T> LoadPendingEntries<T>(string key, Func<T, bool> isValid)
+        where T : class
+    {
+        if (
+            documentStore.Load()[ColonizationSectionKey] is not JsonObject section
+            || section[key] is not JsonArray entries
+        )
+        {
+            return [];
+        }
+        var loaded = new List<T>();
+        foreach (JsonNode? node in entries)
+        {
+            try
+            {
+                if (node?.Deserialize<T>() is { } entry && isValid(entry))
+                {
+                    loaded.Add(entry);
+                }
+            }
+            catch (JsonException)
+            {
+                // Keep valid neighboring records when one entry has an incompatible shape.
+            }
+        }
+        return loaded;
+    }
+
+    /// <summary>Atomically retains relative carrier updates, their profile ownership, and the pre-write baseline.</summary>
+    public void SavePendingCargoAdjustments(IReadOnlyList<ColonizationPendingCargoAdjustment> adjustments)
+    {
+        documentStore.Update(root =>
+        {
+            JsonObject section = root[ColonizationSectionKey] as JsonObject ?? [];
+            root[ColonizationSectionKey] = section;
+            section["PendingCargoAdjustments"] = JsonSerializer.SerializeToNode(adjustments);
+        });
+    }
+
     private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
         return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
@@ -235,3 +310,24 @@ public sealed record ColonizationOverlayPreferences(
             UseCompactScrollingCommoditiesList: false
         );
 }
+
+/// <summary>A retained delivery belongs to its originating commander profile and records whether replay needs user verification.</summary>
+public sealed record ColonizationPendingContribution(
+    string Owner,
+    string BuildId,
+    string Commander,
+    Dictionary<string, int> Cargo,
+    string EventId,
+    bool OutcomeUnknown
+);
+
+/// <summary>An ordered carrier delta retains its baseline and journal event time; null time prevents retirement by a market timestamp.</summary>
+public sealed record ColonizationPendingCargoAdjustment(
+    string Owner,
+    long MarketId,
+    Dictionary<string, int> Delta,
+    DateTimeOffset? RecordedAt,
+    Dictionary<string, int>? Before,
+    bool Attempted = true,
+    bool OutcomeUnknown = true
+);
