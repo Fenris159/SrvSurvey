@@ -5,6 +5,9 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal static partial class X11Native
 {
+    /// <summary>Shares the stateless Xlib adapter used by overlay placement policy.</summary>
+    internal static readonly IX11OverlayWindowOperations OverlayWindowOperations = new OverlayWindowApi();
+
     internal const byte BadValue = 2;
     internal const byte BadWindow = 3;
     internal const byte BadMatch = 8;
@@ -320,12 +323,28 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial int XMapRaised(nint display, nuint window);
 
+    /// <summary>Changes selected native attributes, including override-redirect before a live panel is mapped.</summary>
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XChangeWindowAttributes(
+        nint display,
+        nuint window,
+        nuint valueMask,
+        ref XSetWindowAttributes attributes
+    );
+
+    /// <summary>Raises a window without mapping it or requesting keyboard focus.</summary>
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XRaiseWindow(nint display, nuint window);
+
+    /// <summary>Hides the native window without destroying its saved attributes.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial int XUnmapWindow(nint display, nuint window);
 
+    /// <summary>Gives the native window keyboard focus with the requested reversion policy.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial int XSetInputFocus(nint display, nuint focusWindow, int revertTo, nuint time);
 
+    /// <summary>Reads current keyboard focus and its reversion policy from the display server.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial int XGetInputFocus(nint display, out nuint focusWindow, out int revertTo);
 
@@ -432,6 +451,26 @@ internal static partial class X11Native
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    internal struct XSetWindowAttributes
+    {
+        public nuint BackgroundPixmap;
+        public nuint BackgroundPixel;
+        public nuint BorderPixmap;
+        public nuint BorderPixel;
+        public int BitGravity;
+        public int WindowGravity;
+        public int BackingStore;
+        public nuint BackingPlanes;
+        public nuint BackingPixel;
+        public int SaveUnder;
+        public nint EventMask;
+        public nint DoNotPropagateMask;
+        public int OverrideRedirect;
+        public nuint Colormap;
+        public nuint Cursor;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     internal struct XWindowAttributes
     {
         public int X;
@@ -457,5 +496,31 @@ internal static partial class X11Native
         public nint DoNotPropagateMask;
         public int OverrideRedirect;
         public nint Screen;
+    }
+
+    /// <summary>Forwards overlay window operations to Xlib without changing their arguments or ordering.</summary>
+    private sealed class OverlayWindowApi : IX11OverlayWindowOperations
+    {
+        /// <summary>Returns Xlib's attributes result, including its synchronization reply.</summary>
+        public int GetAttributes(nint display, nuint window, out XWindowAttributes attributes) =>
+            XGetWindowAttributes(display, window, out attributes);
+
+        /// <summary>Applies the selected attribute values through Xlib.</summary>
+        public void ChangeAttributes(
+            nint display,
+            nuint window,
+            nuint valueMask,
+            ref XSetWindowAttributes attributes
+        ) => _ = XChangeWindowAttributes(display, window, valueMask, ref attributes);
+
+        /// <summary>Raises a window through Xlib without mapping it.</summary>
+        public void RaiseWindow(nint display, nuint window) => _ = XRaiseWindow(display, window);
+
+        /// <summary>Forwards explicit keyboard activation to Xlib.</summary>
+        public void SetInputFocus(nint display, nuint window, int revertTo, nuint time) =>
+            _ = XSetInputFocus(display, window, revertTo, time);
+
+        /// <summary>Flushes requests on the supplied native connection.</summary>
+        public void Flush(nint display) => _ = XFlush(display);
     }
 }

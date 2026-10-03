@@ -103,6 +103,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     internal OverlayPositionEditorWindow? EditorToolbar => editor;
     internal MiningCalibrationWindow? MiningCalibration => miningCalibration;
 
+    /// <summary>Prepares the position editor with the session's overlay window policy before showing its controls.</summary>
     public bool Open(
         OverlayInteractionViewModel viewModel,
         OverlayPositionEditSession session,
@@ -123,6 +124,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         editor = toolbar;
         this.viewModel = viewModel;
         viewModel.PropertyChanged += OnEditorControlsHeightChanged;
+        registry.PrepareWindow(toolbar);
         toolbar.Show();
 
         PixelRect? preferred = preferredHostBounds is { Width: > 0, Height: > 0 }
@@ -172,6 +174,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             ?? (monitors.Count > 0 ? monitors[0] : null);
     }
 
+    /// <summary>Creates interactive previews under the same window-management policy as live panels.</summary>
     public void ShowCategory(OverlayPositionEditSession session, OverlayLayoutCategory category)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -227,6 +230,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.PanelSizeChanged += OnPreviewSizeChanged;
             preview.Opened += OnPreviewOpened;
             previews.Add(preview);
+            registry.PrepareWindow(preview);
             preview.Show();
             PositionPreview(preview, session);
             if (session.GetSizeOverride(definition.Name) is not null)

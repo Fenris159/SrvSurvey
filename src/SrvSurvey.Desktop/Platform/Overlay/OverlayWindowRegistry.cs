@@ -25,8 +25,21 @@ public sealed class OverlayWindowRegistry
 
     public event EventHandler? Changed;
 
+    /// <summary>Allows live panels and position-editor windows to share native attributes before their first map.</summary>
+    internal event Action<Window>? WindowPreparing;
+
+    /// <summary>Applies presentation policy without enrolling editor controls or previews in live visibility rules.</summary>
+    internal void PrepareWindow(Window window)
+    {
+        Dispatcher.UIThread.VerifyAccess();
+        ArgumentNullException.ThrowIfNull(window);
+        WindowPreparing?.Invoke(window);
+    }
+
+    /// <summary>Indicates whether galaxy-map visibility policy is active for registered live overlays.</summary>
     public bool IsGalaxyMapContextActive => galaxyMapContextActive;
 
+    /// <summary>Registers a live panel before showing it; editor previews share native preparation but keep a separate lifecycle.</summary>
     public void Register(Window window, string plotterName, bool participatesInPlacement = true)
     {
         Dispatcher.UIThread.VerifyAccess();
@@ -64,6 +77,7 @@ public sealed class OverlayWindowRegistry
         windows.Add(new WeakReference<Window>(window));
         window.Opened += opened;
         window.Closed += closed;
+        PrepareWindow(window);
         ReconcileAndNotify();
     }
 

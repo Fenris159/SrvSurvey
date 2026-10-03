@@ -7,7 +7,10 @@ using Avalonia.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-internal sealed class X11OverlayPlatformService : IOverlayPlatformService, ICombinedOverlayNativeService
+internal sealed class X11OverlayPlatformService
+    : IOverlayPlatformService,
+        ICombinedOverlayNativeService,
+        IOverlayWindowManagement
 {
     private const int ClientMessage = 33;
     private const int RevertToParent = 2;
@@ -176,6 +179,41 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
         );
     }
 
+    /// <summary>Opts an overlay or position-editor window into direct X11 management before its first map.</summary>
+    public bool TryBypassWindowManagement(Window window)
+    {
+        nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        lock (displaySync)
+        {
+            return handle != nint.Zero
+                && TryGetDisplay(out nint currentDisplay)
+                && X11OverlayWindowManagement.TryEnable(
+                    X11Native.OverlayWindowOperations,
+                    currentDisplay,
+                    unchecked((nuint)handle)
+                );
+        }
+    }
+
+    /// <summary>Raises an unmanaged overlay or editor window, honoring explicit activation on the owned X11 connection.</summary>
+    public void RaiseUnmanagedWindow(Window window, bool activate = false)
+    {
+        nint handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        lock (displaySync)
+        {
+            if (handle != nint.Zero && TryGetDisplay(out nint currentDisplay))
+            {
+                X11OverlayWindowManagement.Raise(
+                    X11Native.OverlayWindowOperations,
+                    currentDisplay,
+                    unchecked((nuint)handle),
+                    activate
+                );
+            }
+        }
+    }
+
+    /// <summary>Makes a panel click-through and reports whether passive native preparation succeeded.</summary>
     public OverlayPreparationResult PreparePassiveWindow(Window window)
     {
         OverlayInteractionResult result = SetInteractive(window, interactive: false);

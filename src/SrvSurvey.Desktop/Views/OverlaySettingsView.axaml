@@ -49,6 +49,20 @@
             </ComboBox.ItemTemplate>
           </ComboBox>
         </Grid>
+        <StackPanel x:Name="BypassWindowManagementSetting" Spacing="3">
+          <CheckBox x:Name="BypassWindowManagementCheckBox"
+                    Content="Bypass Window Management"
+                    IsChecked="{Binding OverlayBehavior.BypassWindowManagement, Mode=TwoWay}" />
+          <TextBlock x:Name="WindowManagementRestartWarning"
+                     Text="**App Restart Required"
+                     Foreground="{DynamicResource RavenDangerBrush}"
+                     FontWeight="SemiBold"
+                     IsVisible="{Binding OverlayBehavior.WindowManagementRestartRequired}" />
+          <TextBlock Classes="muted"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="On KDE or GNOME using X11/XWayland, SrvSurvey places and raises live panels and the position editor directly. This may keep overlays above fullscreen games without KDE window rules. Desktop placement, snapping, and window effects are bypassed; visibility and editor focus can vary by compositor. Applies to separate overlay windows, not native Wayland or the combined gamescope presenter. Restart SrvSurvey after changing this setting." />
+        </StackPanel>
         <StackPanel Spacing="3">
           <CheckBox x:Name="LockOverlaysToMonitorCheckBox"
                     IsChecked="{Binding OverlayBehavior.LockToMonitor, Mode=TwoWay}"

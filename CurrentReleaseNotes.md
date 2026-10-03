@@ -1,8 +1,29 @@
-# SrvSurvey-XP 2.1.3.0-rc.58.19
+# SrvSurvey-XP 2.1.3.0-rc.58.20
 
-This patch improves Raven Colonial colonization and Fleet Carrier cargo sync,
-adds recovery controls for unconfirmed construction deliveries, and keeps
-commander and site changes from applying outdated data.
+This update adds an optional way to bypass desktop window management for Linux
+overlays and their position editor. It also improves Raven Colonial colonization
+and Fleet Carrier cargo sync, adds recovery controls for unconfirmed construction
+deliveries, and keeps commander and site changes from applying outdated data.
+
+## Overlay window management
+
+- Added **Bypass Window Management** under **Theme > Overlay Settings**, directly
+  below **Overlay monitor**. The option is off by default and saved with each
+  commander profile.
+- On KDE or GNOME using X11/XWayland, enabling the option lets SrvSurvey place
+  and raise live overlay panels, the editor toolbar, and draggable previews
+  directly. This may keep overlays above fullscreen games without configuring
+  KDE window rules; results still depend on the desktop compositor.
+- Overlay dragging, saved positions, monitor selection, and the selected-monitor
+  lock continue to work together in both the editor and live overlays. Passive
+  panels preserve game focus while the editor can receive keyboard input.
+- Bypassing desktop management also bypasses desktop placement, snapping, and
+  window effects. Overlay visibility and editor focus may vary between desktops.
+  Native Wayland and the combined gamescope presenter retain their existing
+  window behavior.
+- Changing the option shows a red `**App Restart Required` warning. Restart
+  SrvSurvey to apply the choice to both live panels and the position editor;
+  turning the option off restores normal desktop management after restarting.
 
 ## Construction delivery recovery
 
@@ -71,16 +92,16 @@ commander and site changes from applying outdated data.
 
 ## Update channel and packages
 
-- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.19
+- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.20
   uses the schema-2 `xp2-v` release channel.
 - Development remains the default in-app update channel, with saved channel
   choices preserved.
-- Version: `2.1.3.0-rc.58.19`
-- Tag: `xp2-v2.1.3.0-rc.58.19`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.19-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.19-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.19-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.19-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.58.20`
+- Tag: `xp2-v2.1.3.0-rc.58.20`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.20-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.20-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.20-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.20-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

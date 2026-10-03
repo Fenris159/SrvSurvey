@@ -41,6 +41,10 @@
       "translation": "(Eintrag)"
     },
     {
+      "source": "**App Restart Required",
+      "translation": "**App-Neustart erforderlich"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Warnung: Der hier genannte Architekt kann das System an diesen Kommandanten binden. Bitte überprüfen Sie, ob er korrekt ist."
     },
@@ -3911,6 +3915,14 @@
     {
       "source": "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Surface Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
       "translation": "Standardmäßig werden bei der Rückkehr zu Ihrem eigenen Schiff zu Fuß oder beim Andocken des Rhino automatisch alle sechs Bohrinselstandorte geräumt, da das Spiel dann die eingesetzten Bohrinseln zerstört. Deaktivieren Sie „Rigs löschen“ automatisch, wenn Sie Ihr Schiff in den Überlagerungseinstellungen für den Oberflächenbergbau betreten, um Ihre gespeicherten Markierungen beizubehalten. Diese Präferenz bleibt zwischen den Sitzungen bestehen. Beim erneuten Betreten des Rhino zu Fuß bleiben die Standorte erhalten; Das Einsteigen in ein Taxi oder das Schiff eines anderen Kommandanten führt nicht zu einer Freigabe."
+    },
+    {
+      "source": "Bypass Window Management",
+      "translation": "Fensterverwaltung umgehen"
+    },
+    {
+      "source": "BypassWindowManagement",
+      "translation": "BypassWindowManagement"
     },
     {
       "source": "C 1",
@@ -30453,6 +30465,10 @@
       "translation": "Fenster"
     },
     {
+      "source": "Window management bypass is enabled for X11/XWayland live panels and the position editor.",
+      "translation": "Die Umgehung der Fensterverwaltung ist für X11/XWayland-Live-Panels und den Positionseditor aktiviert."
+    },
+    {
       "source": "Windows Mixed Reality",
       "translation": "Windows Mixed Reality"
     },
@@ -34867,6 +34883,10 @@
       "translation": "(entrada)"
     },
     {
+      "source": "**App Restart Required",
+      "translation": "**Se requiere reiniciar la aplicación"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Advertencia: El arquitecto nombrado aquí puede bloquear el sistema para ese comandante; verifique que sea correcto."
     },
@@ -38737,6 +38757,14 @@
     {
       "source": "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Surface Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
       "translation": "De forma predeterminada, regresar a tu propio barco a pie o atracar el Rhino borra automáticamente las seis ubicaciones de las plataformas porque el juego destruye las plataformas desplegadas en ese momento. Desactive Borrar plataformas automáticamente al abordar su barco en la configuración de superposición de Minería de superficie para conservar sus marcadores guardados; esta preferencia persiste entre sesiones. Volver a entrar al Rhino a pie mantiene las ubicaciones; subir a un taxi o al barco de otro comandante no los libera."
+    },
+    {
+      "source": "Bypass Window Management",
+      "translation": "Omitir gestión de ventanas"
+    },
+    {
+      "source": "BypassWindowManagement",
+      "translation": "BypassWindowManagement"
     },
     {
       "source": "C 1",
@@ -65279,6 +65307,10 @@
       "translation": "Ventana"
     },
     {
+      "source": "Window management bypass is enabled for X11/XWayland live panels and the position editor.",
+      "translation": "La omisión de administración de ventanas está habilitada para los paneles en vivo X11/XWayland y el editor de posición."
+    },
+    {
       "source": "Windows Mixed Reality",
       "translation": "Windows Mixed Reality"
     },
@@ -69693,6 +69725,10 @@
       "translation": "(entrée)"
     },
     {
+      "source": "**App Restart Required",
+      "translation": "** Redémarrage de l'application requis"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Avertissement : l'architecte nommé ici peut verrouiller le système sur ce commandant, veuillez vérifier qu'il est correct."
     },
@@ -73563,6 +73599,14 @@
     {
       "source": "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Surface Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
       "translation": "Par défaut, retourner à pied à votre propre navire ou amarrer le Rhino efface automatiquement les six emplacements des plates-formes, car le jeu détruit alors les plates-formes déployées. Désactivez automatiquement les plates-formes claires lorsque vous montez à bord de votre navire dans les paramètres de superposition Surface Mining pour conserver vos marqueurs enregistrés ; cette préférence persiste entre les sessions. Rentrer dans le Rhino à pied conserve les emplacements ; monter à bord d'un taxi ou d'un autre navire du commandant ne les autorise pas."
+    },
+    {
+      "source": "Bypass Window Management",
+      "translation": "Contourner la gestion des fenêtres"
+    },
+    {
+      "source": "BypassWindowManagement",
+      "translation": "Contourner la gestion des fenêtres"
     },
     {
       "source": "C 1",
@@ -100105,6 +100149,10 @@
       "translation": "Fenêtre"
     },
     {
+      "source": "Window management bypass is enabled for X11/XWayland live panels and the position editor.",
+      "translation": "Le contournement de la gestion des fenêtres est activé pour les panneaux live X11/XWayland et l'éditeur de position."
+    },
+    {
       "source": "Windows Mixed Reality",
       "translation": "Windows Mixed Reality"
     },
@@ -104519,6 +104567,10 @@
       "translation": "(entrada)"
     },
     {
+      "source": "**App Restart Required",
+      "translation": "**É necessário reiniciar o aplicativo"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Aviso: O arquiteto mencionado aqui pode bloquear o sistema para esse comandante, verifique se está correto."
     },
@@ -108389,6 +108441,14 @@
     {
       "source": "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Surface Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
       "translation": "Por padrão, retornar ao seu próprio navio a pé ou atracar o Rhino limpa automaticamente todos os seis locais de plataforma porque o jogo destrói as plataformas implantadas. Desative Limpar plataformas automaticamente ao embarcar em seu navio nas configurações de sobreposição de Mineração de Superfície para manter seus marcadores salvos; essa preferência persiste entre as sessões. Entrar novamente no Rhino a pé mantém as localizações; embarcar em um táxi ou no navio de outro Comandante não os libera."
+    },
+    {
+      "source": "Bypass Window Management",
+      "translation": "Ignorar gerenciamento de janelas"
+    },
+    {
+      "source": "BypassWindowManagement",
+      "translation": "Ignorar gerenciamento de janela"
     },
     {
       "source": "C 1",
@@ -134931,6 +134991,10 @@
       "translation": "Janela"
     },
     {
+      "source": "Window management bypass is enabled for X11/XWayland live panels and the position editor.",
+      "translation": "O bypass de gerenciamento de janela está habilitado para painéis ao vivo X11/XWayland e para o editor de posição."
+    },
+    {
       "source": "Windows Mixed Reality",
       "translation": "Windows Mixed Reality"
     },
@@ -139345,6 +139409,10 @@
       "translation": "(запись)"
     },
     {
+      "source": "**App Restart Required",
+      "translation": "**Требуется перезагрузка приложения."
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Предупреждение: указанный здесь архитектор может привязать систему к этому командиру, пожалуйста, убедитесь, что это правильно."
     },
@@ -143215,6 +143283,14 @@
     {
       "source": "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Surface Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
       "translation": "По умолчанию возвращение на свой корабль пешком или пришвартовка «Носорога» автоматически очищает все шесть мест с буровыми установками, поскольку тогда игра уничтожает развернутые буровые установки. Отключите автоматическую очистку буровых установок при посадке на корабль в настройках наложения Surface Mining, чтобы сохранить сохраненные маркеры; это предпочтение сохраняется между сеансами. Повторный вход в «Носорог» пешком сохраняет локации; посадка на такси или корабль другого командира не очищает их."
+    },
+    {
+      "source": "Bypass Window Management",
+      "translation": "Обход управления окнами"
+    },
+    {
+      "source": "BypassWindowManagement",
+      "translation": "ОбходWindowManagement"
     },
     {
       "source": "C 1",
@@ -169757,6 +169833,10 @@
       "translation": "Окно"
     },
     {
+      "source": "Window management bypass is enabled for X11/XWayland live panels and the position editor.",
+      "translation": "Обход управления окнами включен для живых панелей X11/XWayland и редактора позиций."
+    },
+    {
       "source": "Windows Mixed Reality",
       "translation": "Windows Mixed Reality"
     },
@@ -174171,6 +174251,10 @@
       "translation": "（条目）"
     },
     {
+      "source": "**App Restart Required",
+      "translation": "**需要重新启动应用程序"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*警告：此处指定的架构师可以将系统锁定到该指挥官，请验证其是否正确。"
     },
@@ -178041,6 +178125,14 @@
     {
       "source": "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Surface Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
       "translation": "默认情况下，步行返回自己的船或停靠犀牛会自动清除所有六个装备位置，因为游戏会销毁已部署的装备。在地表采矿覆盖设置中登船时自动关闭清除钻机，以保留保存的标记；这种偏好在会话之间持续存在。步行重新进入犀牛可以保留位置；登上出租车或其他指挥官的船并不能清除它们。"
+    },
+    {
+      "source": "Bypass Window Management",
+      "translation": "绕过窗口管理"
+    },
+    {
+      "source": "BypassWindowManagement",
+      "translation": "绕过窗口管理"
     },
     {
       "source": "C 1",
@@ -204583,6 +204675,10 @@
       "translation": "窗户"
     },
     {
+      "source": "Window management bypass is enabled for X11/XWayland live panels and the position editor.",
+      "translation": "为 X11/XWayland 实时面板和位置编辑器启用窗口管理旁路。"
+    },
+    {
       "source": "Windows Mixed Reality",
       "translation": "Windows Mixed Reality"
     },
@@ -208997,6 +209093,10 @@
       "translation": "* (ENTRY) >>>!"
     },
     {
+      "source": "**App Restart Required",
+      "translation": "* **APP RESTART REQUIRED >>>!"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "* *WARNING: THE ARCHITECT NAMED HERE CAN LOCK THE SYSTEM TO THAT COMMANDER, PLEASE VERIFY IT IS CORRECT. >>>!"
     },
@@ -212867,6 +212967,14 @@
     {
       "source": "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Surface Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
       "translation": "* BY DEFAULT, RETURNING TO YOUR OWN SHIP ON FOOT OR DOCKING THE RHINO AUTOMATICALLY CLEARS ALL SIX RIG LOCATIONS BECAUSE THE GAME DESTROYS DEPLOYED RIGS THEN. TURN OFF CLEAR RIGS AUTOMATICALLY WHEN BOARDING YOUR SHIP IN SURFACE MINING OVERLAY SETTINGS TO KEEP YOUR SAVED MARKERS; THIS PREFERENCE PERSISTS BETWEEN SESSIONS. RE-ENTERING THE RHINO ON FOOT KEEPS THE LOCATIONS; BOARDING A TAXI OR ANOTHER COMMANDER'S SHIP DOES NOT CLEAR THEM. >>>!"
+    },
+    {
+      "source": "Bypass Window Management",
+      "translation": "* BYPASS WINDOW MANAGEMENT >>>!"
+    },
+    {
+      "source": "BypassWindowManagement",
+      "translation": "* BYPASSWINDOWMANAGEMENT >>>!"
     },
     {
       "source": "C 1",
@@ -239407,6 +239515,10 @@
     {
       "source": "Window",
       "translation": "* WINDOW >>>!"
+    },
+    {
+      "source": "Window management bypass is enabled for X11/XWayland live panels and the position editor.",
+      "translation": "* WINDOW MANAGEMENT BYPASS IS ENABLED FOR X11/XWAYLAND LIVE PANELS AND THE POSITION EDITOR. >>>!"
     },
     {
       "source": "Windows Mixed Reality",
