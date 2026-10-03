@@ -5,7 +5,7 @@ using SrvSurvey.Core.Colonization;
 
 namespace SrvSurvey.Core.Tests.Colonization;
 
-public sealed class RavenColonialClientTests
+public sealed partial class RavenColonialClientTests
 {
     [Fact]
     public async Task ReadsDemolishedSitesWithoutRejectingTheSystem()

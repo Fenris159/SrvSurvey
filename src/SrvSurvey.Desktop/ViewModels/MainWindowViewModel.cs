@@ -1880,6 +1880,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public string ResetExobiologyButtonText => IsResetExobiologyPending ? "Confirm clear" : "Clear unclaimed";
 
+    /// <summary>Loads the active commander workspace and services refreshes requested while an obsolete load was busy.</summary>
     public async Task RefreshAsync()
     {
         if (IsBusy)
@@ -1913,7 +1914,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             }
 
             JournalMonitorUpdate update = await journalMonitor.PollAsync(CancellationToken.None);
-            await ApplyMonitorUpdateAsync(update, isManualRefresh: true);
+            await ApplyMonitorUpdateAsync(update, isManualRefresh: true, CancellationToken.None);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
@@ -1926,6 +1927,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         }
     }
 
+    /// <summary>Polls journals until shutdown and propagates cancellation through awaited Raven synchronization.</summary>
     public async Task MonitorAsync(TimeSpan? pollingInterval = null, CancellationToken cancellationToken = default)
     {
         if (journalMonitor is null)
@@ -1940,7 +1942,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 JournalMonitorUpdate update = await journalMonitor.PollAsync(cancellationToken);
-                await ApplyMonitorUpdateAsync(update, isManualRefresh: false);
+                await ApplyMonitorUpdateAsync(update, isManualRefresh: false, cancellationToken);
                 await Task.Delay(interval, cancellationToken);
             }
         }
@@ -2467,11 +2469,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             + ".";
     }
 
-    private async Task ApplyMonitorUpdateAsync(JournalMonitorUpdate update, bool isManualRefresh)
+    /// <summary>Projects monitor updates and services retained Raven work even when the journal poll is idle.</summary>
+    private async Task ApplyMonitorUpdateAsync(
+        JournalMonitorUpdate update,
+        bool isManualRefresh,
+        CancellationToken cancellationToken = default
+    )
     {
         if (!update.HasChanges && !isManualRefresh)
         {
             MiningWorkspace.Tick();
+            await Colonization.SynchronizeLiveProjectsAsync(
+                [],
+                allowPublishing: !IsDiagnosticReplay,
+                cancellationToken: cancellationToken
+            );
             await ApplyIdleHousekeepingAsync(update);
             return;
         }
@@ -2517,7 +2529,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         bool loadedExistingProfile = await EnsureCommanderProfileAsync();
         await ApplyQuestUpdateAsync(update, allowSharedCargo);
         await Colonization.SetCommanderAsync(journalState.CommanderName);
-        await SynchronizeColonizationAndJourneyAsync(update, allowSharedCargo, cargoChanged);
+        await SynchronizeColonizationAndJourneyAsync(update, allowSharedCargo, cargoChanged, cancellationToken);
         await ApplyRouteContextAndEventsAsync(update);
 
         ExplorationSnapshot explorationBefore = explorationState.CreateSnapshot();
@@ -2713,10 +2725,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         return commanderCodexResult;
     }
 
+    /// <summary>Synchronizes event-time Raven state before updating the commander journey.</summary>
     private async Task SynchronizeColonizationAndJourneyAsync(
         JournalMonitorUpdate update,
         bool allowSharedCargo,
-        bool cargoChanged
+        bool cargoChanged,
+        CancellationToken cancellationToken
     )
     {
         bool cargoActivity =
@@ -2734,7 +2748,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             allowPublishing: !update.IsBootstrapRead,
             cargoInventory: allowSharedCargo ? cargoInventoryState : null,
             preferShipCargoDiffForSquadron: isCurrentCargoInventoryAvailable,
-            cargoActivity: cargoActivity
+            cargoActivity: cargoActivity,
+            cancellationToken: cancellationToken
         );
         bool initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,

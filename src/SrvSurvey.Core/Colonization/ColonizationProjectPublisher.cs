@@ -73,6 +73,7 @@ public sealed class ColonizationProjectPublisher(IRavenColonialClient client)
         }
     }
 
+    /// <summary>Checks the primary site order after every bounded correction, including the final attempt.</summary>
     private async Task<ColonizationPrimarySiteOrderStatus> PreservePrimarySiteOrderAsync(
         string systemKey,
         string primarySiteId,
@@ -87,7 +88,7 @@ public sealed class ColonizationProjectPublisher(IRavenColonialClient client)
             .GetSystemSitesAsync(systemKey, cancellationToken)
             .ConfigureAwait(false);
 
-        for (int attempt = 0; attempt < MaximumOrderCorrectionAttempts; attempt++)
+        for (int attempt = 0; attempt <= MaximumOrderCorrectionAttempts; attempt++)
         {
             List<string> orderedSiteIds = GetOrderedSiteIds(latest);
             if (!orderedSiteIds.Contains(primarySiteId, StringComparer.Ordinal))
@@ -111,6 +112,11 @@ public sealed class ColonizationProjectPublisher(IRavenColonialClient client)
                 return correctionSent
                     ? ColonizationPrimarySiteOrderStatus.Restored
                     : ColonizationPrimarySiteOrderStatus.Preserved;
+            }
+
+            if (attempt == MaximumOrderCorrectionAttempts)
+            {
+                break;
             }
 
             var correctedOrder = new List<string>(orderedSiteIds.Count) { primarySiteId };

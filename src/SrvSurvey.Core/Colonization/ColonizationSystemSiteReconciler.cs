@@ -274,6 +274,7 @@ public static class ColonizationSystemSiteReconciler
         return local;
     }
 
+    /// <summary>Matches persisted sites only by their authoritative ID, reserving name fallback for unsaved rows.</summary>
     private static ColonizationSystemSite? FindMatch(
         IReadOnlyList<ColonizationSystemSite> sites,
         ColonizationSystemSite target
@@ -281,13 +282,7 @@ public static class ColonizationSystemSiteReconciler
     {
         if (!string.IsNullOrWhiteSpace(target.Id))
         {
-            ColonizationSystemSite? byId = sites.FirstOrDefault(site =>
-                string.Equals(site.Id, target.Id, StringComparison.Ordinal)
-            );
-            if (byId is not null)
-            {
-                return byId;
-            }
+            return sites.FirstOrDefault(site => string.Equals(site.Id, target.Id, StringComparison.Ordinal));
         }
 
         return string.IsNullOrWhiteSpace(target.Name)

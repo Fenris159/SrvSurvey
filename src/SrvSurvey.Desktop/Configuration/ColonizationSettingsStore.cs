@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Configuration;
@@ -204,6 +205,60 @@ public sealed class ColonizationSettingsStore
         });
     }
 
+    /// <summary>Loads retained construction deliveries without storing API keys.</summary>
+    public IReadOnlyList<ColonizationPendingContribution> LoadPendingContributions()
+    {
+        try
+        {
+            return documentStore
+                    .Load()[ColonizationSectionKey]
+                    ?["PendingContributions"]?.Deserialize<List<ColonizationPendingContribution>>()
+                ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    /// <summary>Atomically saves deliveries until Raven acknowledges them or the user reconciles their credit.</summary>
+    public void SavePendingContributions(IReadOnlyList<ColonizationPendingContribution> contributions)
+    {
+        documentStore.Update(root =>
+        {
+            JsonObject section = root[ColonizationSectionKey] as JsonObject ?? [];
+            root[ColonizationSectionKey] = section;
+            section["PendingContributions"] = JsonSerializer.SerializeToNode(contributions);
+        });
+    }
+
+    /// <summary>Loads ordered cargo writes awaiting acknowledgement or an authoritative market reconciliation.</summary>
+    public IReadOnlyList<ColonizationPendingCargoAdjustment> LoadPendingCargoAdjustments()
+    {
+        try
+        {
+            return documentStore
+                    .Load()[ColonizationSectionKey]
+                    ?["PendingCargoAdjustments"]?.Deserialize<List<ColonizationPendingCargoAdjustment>>()
+                ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    /// <summary>Atomically retains relative carrier updates, their profile ownership, and the pre-write baseline.</summary>
+    public void SavePendingCargoAdjustments(IReadOnlyList<ColonizationPendingCargoAdjustment> adjustments)
+    {
+        documentStore.Update(root =>
+        {
+            JsonObject section = root[ColonizationSectionKey] as JsonObject ?? [];
+            root[ColonizationSectionKey] = section;
+            section["PendingCargoAdjustments"] = JsonSerializer.SerializeToNode(adjustments);
+        });
+    }
+
     private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
         return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
@@ -235,3 +290,24 @@ public sealed record ColonizationOverlayPreferences(
             UseCompactScrollingCommoditiesList: false
         );
 }
+
+/// <summary>A retained delivery belongs to its originating commander profile and records whether replay needs user verification.</summary>
+public sealed record ColonizationPendingContribution(
+    string Owner,
+    string BuildId,
+    string Commander,
+    Dictionary<string, int> Cargo,
+    string EventId,
+    bool OutcomeUnknown
+);
+
+/// <summary>An ordered carrier delta retains its original baseline and whether the server outcome requires reconciliation.</summary>
+public sealed record ColonizationPendingCargoAdjustment(
+    string Owner,
+    long MarketId,
+    Dictionary<string, int> Delta,
+    DateTimeOffset RecordedAt,
+    Dictionary<string, int>? Before,
+    bool Attempted = true,
+    bool OutcomeUnknown = true
+);

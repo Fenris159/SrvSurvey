@@ -143,6 +143,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         this.serviceUri = EnsureTrailingSlash(serviceUri ?? DefaultServiceUri);
     }
 
+    /// <summary>Loads the commander workspace, accepting an absent primary selection while requiring project and carrier lists.</summary>
     public async Task<ColonizationCommanderProjects> GetCommanderProjectsAsync(
         string commanderName,
         CancellationToken cancellationToken = default
@@ -163,7 +164,8 @@ public sealed class RavenColonialClient : IRavenColonialClient
         Task<string?> primaryTask = GetAsync<string?>(
             $"api/cmdr/{commander}/primary",
             "load the primary colonisation project",
-            cancellationToken
+            cancellationToken,
+            allowNull: true
         );
         Task<ColonizationFleetCarrier[]?> fleetCarriersTask = GetAsync<ColonizationFleetCarrier[]>(
             $"api/cmdr/{commander}/fc/all",
@@ -179,14 +181,13 @@ public sealed class RavenColonialClient : IRavenColonialClient
         );
     }
 
+    /// <summary>Resolves the commander owning a Raven API key within the complete request deadline.</summary>
     public async Task<string?> GetCommanderByApiKeyAsync(string apiKey, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
         using var request = new HttpRequestMessage(HttpMethod.Get, CreateUri("api/cmdr/"));
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (
             response.StatusCode
             is HttpStatusCode.BadRequest
@@ -212,6 +213,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         return commanderName.Trim();
     }
 
+    /// <summary>Publishes the commander's hidden projects after validating the supplied identifiers.</summary>
     public async Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(
         string commanderName,
         IEnumerable<string> hiddenProjectIds,
@@ -231,26 +233,23 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(ids, options: JsonOptions),
         };
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await ReadRequiredAsync<string[]>(response, "save hidden colonisation projects", cancellationToken)
             .ConfigureAwait(false);
     }
 
+    /// <summary>Loads a project by its persistent identity or construction-site coordinates; a missing project returns null.</summary>
     public async Task<ColonizationProject?> GetProjectAsync(
         string buildId,
         CancellationToken cancellationToken = default
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
-        using HttpResponseMessage response = await httpClient
-            .GetAsync(
-                CreateUri($"api/project/{Uri.EscapeDataString(buildId.Trim())}"),
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken
-            )
-            .ConfigureAwait(false);
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            CreateUri($"api/project/{Uri.EscapeDataString(buildId.Trim())}")
+        );
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -260,6 +259,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             .ConfigureAwait(false);
     }
 
+    /// <summary>Loads a project by its persistent identity or construction-site coordinates; a missing project returns null.</summary>
     public async Task<ColonizationProject?> GetProjectAsync(
         long systemAddress,
         long marketId,
@@ -268,13 +268,8 @@ public sealed class RavenColonialClient : IRavenColonialClient
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemAddress);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
-        using HttpResponseMessage response = await httpClient
-            .GetAsync(
-                CreateUri($"api/system/{systemAddress}/{marketId}"),
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken
-            )
-            .ConfigureAwait(false);
+        using var request = new HttpRequestMessage(HttpMethod.Get, CreateUri($"api/system/{systemAddress}/{marketId}"));
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -288,6 +283,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             .ConfigureAwait(false);
     }
 
+    /// <summary>Patches only the supplied project fields and validates the returned project.</summary>
     public async Task<ColonizationProject> UpdateProjectAsync(
         ColonizationProjectUpdate update,
         CancellationToken cancellationToken = default
@@ -307,9 +303,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(update, options: JsonOptions),
         };
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await ReadRequiredAsync<ColonizationProject>(response, "patch a colonisation project", cancellationToken)
             .ConfigureAwait(false);
     }
@@ -442,6 +436,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             ?? [];
     }
 
+    /// <summary>Loads the system architect, accepting a null response when no architect is assigned.</summary>
     public Task<string?> GetSystemArchitectAsync(
         string systemNameOrAddress,
         CancellationToken cancellationToken = default
@@ -451,7 +446,8 @@ public sealed class RavenColonialClient : IRavenColonialClient
         return GetAsync<string?>(
             $"api/v2/system/{Uri.EscapeDataString(systemNameOrAddress.Trim())}/architect",
             "load the system architect",
-            cancellationToken
+            cancellationToken,
+            allowNull: true
         );
     }
 
@@ -468,6 +464,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         )!;
     }
 
+    /// <summary>Imports the selected system's bodies and returns its refreshed workspace.</summary>
     public async Task<ColonizationSystemRecord> ImportSystemBodiesAsync(
         string systemNameOrAddress,
         CancellationToken cancellationToken = default
@@ -478,9 +475,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             HttpMethod.Post,
             CreateUri($"api/v2/system/{Uri.EscapeDataString(systemNameOrAddress.Trim())}/import/bodies")
         );
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await ReadRequiredAsync<ColonizationSystemRecord>(
                 response,
                 "import colonisation system bodies",
@@ -489,6 +484,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             .ConfigureAwait(false);
     }
 
+    /// <summary>Publishes a reconciled site update and validates the returned site list.</summary>
     public async Task<ColonizationSystemRecord> UpdateSystemSitesAsync(
         string systemNameOrAddress,
         ColonizationSystemSiteUpdate update,
@@ -507,9 +503,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(update, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await ReadRequiredAsync<ColonizationSystemRecord>(
                 response,
                 "update colonisation system sites",
@@ -518,6 +512,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             .ConfigureAwait(false);
     }
 
+    /// <summary>Applies a targeted site repair while preserving fields omitted from the patch.</summary>
     public async Task PatchSystemSiteAsync(
         string systemNameOrAddress,
         string siteId,
@@ -554,9 +549,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(patch, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             string detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
@@ -565,6 +558,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         }
     }
 
+    /// <summary>Creates a Raven project and requires a valid project in the response.</summary>
     public async Task<ColonizationProject?> CreateProjectAsync(
         ColonizationProjectCreate project,
         CancellationToken cancellationToken = default
@@ -576,9 +570,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(project, options: JsonOptions),
         };
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.Conflict)
         {
             return null;
@@ -592,15 +584,15 @@ public sealed class RavenColonialClient : IRavenColonialClient
             .ConfigureAwait(false);
     }
 
+    /// <summary>Loads carrier cargo by MarketID, returning null when Raven has no matching carrier.</summary>
     public async Task<ColonizationFleetCarrier?> GetFleetCarrierAsync(
         long marketId,
         CancellationToken cancellationToken = default
     )
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
-        using HttpResponseMessage response = await httpClient
-            .GetAsync(CreateUri($"api/fc/{marketId}"), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using var request = new HttpRequestMessage(HttpMethod.Get, CreateUri($"api/fc/{marketId}"));
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -614,6 +606,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             .ConfigureAwait(false);
     }
 
+    /// <summary>Registers or links the specified carrier using the initiating profile's Raven key.</summary>
     public async Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(
         ColonizationFleetCarrierRegistration carrier,
         string apiKey,
@@ -629,9 +622,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(carrier, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         return await ReadRequiredAsync<ColonizationFleetCarrier>(
                 response,
                 "publish the Fleet Carrier",
@@ -681,6 +672,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         );
     }
 
+    /// <summary>Publishes the commander's current ship cargo using validated commodity counts.</summary>
     public async Task PublishCurrentShipAsync(
         ColonizationCurrentShip ship,
         string apiKey,
@@ -694,9 +686,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(ship, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             string detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
@@ -705,6 +695,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         }
     }
 
+    /// <summary>Sends a carrier cargo operation and validates its normalized response map.</summary>
     private async Task<IReadOnlyDictionary<string, int>> SendFleetCarrierCargoAsync(
         HttpMethod method,
         long marketId,
@@ -724,9 +715,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(normalizedCargo, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         Dictionary<string, int> result = await ReadRequiredAsync<Dictionary<string, int>>(
                 response,
                 operation,
@@ -751,14 +740,20 @@ public sealed class RavenColonialClient : IRavenColonialClient
         return validated;
     }
 
-    private async Task<T?> GetAsync<T>(string relativeUri, string operation, CancellationToken cancellationToken)
+    /// <summary>Reads a bounded GET response, permitting JSON null only for explicitly optional results.</summary>
+    private async Task<T?> GetAsync<T>(
+        string relativeUri,
+        string operation,
+        CancellationToken cancellationToken,
+        bool allowNull = false
+    )
     {
-        using HttpResponseMessage response = await httpClient
-            .GetAsync(CreateUri(relativeUri), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        return await ReadRequiredAsync<T>(response, operation, cancellationToken).ConfigureAwait(false);
+        using var request = new HttpRequestMessage(HttpMethod.Get, CreateUri(relativeUri));
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+        return await ReadRequiredAsync<T>(response, operation, cancellationToken, allowNull).ConfigureAwait(false);
     }
 
+    /// <summary>Requires an HTTP success acknowledgement without reading an unused success body.</summary>
     private async Task SendWithoutResponseAsync(
         HttpMethod method,
         string relativeUri,
@@ -768,8 +763,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
     )
     {
         using var request = new HttpRequestMessage(method, CreateUri(relativeUri)) { Content = content };
-        using HttpResponseMessage response = await httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+        using HttpResponseMessage response = await SendAsync(request, cancellationToken, readSuccessBody: false)
             .ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
@@ -779,10 +773,61 @@ public sealed class RavenColonialClient : IRavenColonialClient
         }
     }
 
+    /// <summary>Bounds and buffers response bodies within the HTTP deadline, and normalizes transport I/O failures.</summary>
+    private async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken,
+        bool readSuccessBody = true
+    )
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(
+            httpClient.Timeout == Timeout.InfiniteTimeSpan ? TimeSpan.FromSeconds(100) : httpClient.Timeout
+        );
+        HttpResponseMessage? response = null;
+        try
+        {
+            response = await httpClient
+                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token)
+                .ConfigureAwait(false);
+            if (response.IsSuccessStatusCode && !readSuccessBody)
+            {
+                return response;
+            }
+            byte[] body = response.IsSuccessStatusCode
+                ? await ReadBoundedBytesAsync(response.Content, MaximumJsonResponseBytes, deadline.Token)
+                    .ConfigureAwait(false)
+                : Encoding.UTF8.GetBytes(
+                    await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, deadline.Token)
+                        .ConfigureAwait(false)
+                );
+            response.Content.Dispose();
+            response.Content = new ByteArrayContent(body);
+            return response;
+        }
+        catch (IOException exception)
+        {
+            response?.Dispose();
+            throw new HttpRequestException("Raven Colonial response could not be read.", exception);
+        }
+        catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            response?.Dispose();
+            throw new TaskCanceledException("Raven Colonial response timed out.", exception);
+        }
+        catch
+        {
+            response?.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>Deserializes a bounded response and distinguishes optional absence from a malformed required object.</summary>
     private static async Task<T> ReadRequiredAsync<T>(
         HttpResponseMessage response,
         string operation,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        bool allowNull = false
     )
     {
         if (!response.IsSuccessStatusCode)
@@ -797,6 +842,10 @@ public sealed class RavenColonialClient : IRavenColonialClient
             byte[] bytes = await ReadBoundedBytesAsync(response.Content, MaximumJsonResponseBytes, cancellationToken)
                 .ConfigureAwait(false);
             T? result = JsonSerializer.Deserialize<T>(bytes, JsonOptions);
+            if (result is null && allowNull)
+            {
+                return default!;
+            }
             return result
                 ?? throw new InvalidDataException($"Raven Colonial returned no data while trying to {operation}.");
         }
@@ -1129,9 +1178,11 @@ public sealed record ColonizationSystemSite
     public string? BuildId { get; init; }
 
     [JsonPropertyName("marketId")]
+    [JsonConverter(typeof(ColonizationLegacyMarketIdConverter))]
     public long? MarketId { get; init; }
 
-    [JsonPropertyName("status")]
+    /// <summary>Exposes the effective status while recording whether Raven explicitly provided one.</summary>
+    [JsonIgnore]
     public ColonizationSystemSiteStatus Status
     {
         get => status;
@@ -1139,6 +1190,22 @@ public sealed record ColonizationSystemSite
         {
             status = value;
             hasExplicitStatus = true;
+        }
+    }
+
+    /// <summary>Maps optional legacy status values onto the effective status without treating absence as an explicit plan.</summary>
+    [JsonPropertyName("status")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(ColonizationLegacySiteStatusConverter))]
+    public ColonizationSystemSiteStatus? SerializedStatus
+    {
+        get => hasExplicitStatus ? status : null;
+        init
+        {
+            if (value is { } supplied)
+            {
+                Status = supplied;
+            }
         }
     }
 

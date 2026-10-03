@@ -11,7 +11,7 @@ using SrvSurvey.Desktop.ViewModels;
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
-public sealed class ColonizationViewModelTests : IDisposable
+public sealed partial class ColonizationViewModelTests : IDisposable
 {
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
@@ -3062,6 +3062,16 @@ public sealed class ColonizationViewModelTests : IDisposable
         public ColonizationCommanderProjects Workspace { get; set; } = new([], [], null, []);
 
         public Exception? Failure { get; set; }
+        public Func<string, Task<ColonizationCommanderProjects>>? LoadWorkspace { get; set; }
+        public Func<
+            IReadOnlyDictionary<string, int>,
+            Task<IReadOnlyDictionary<string, int>>
+        >? ReplaceCargo { get; set; }
+        public Queue<Exception> AdjustmentFailures { get; } = new();
+        public Queue<Exception> ContributionFailures { get; } = new();
+        public Task? ContributionResponseTask { get; set; }
+
+        public CancellationToken LastContributionCancellation { get; private set; }
 
         public string? ValidatedCommanderName { get; set; } = "Test Cmdr";
 
@@ -3127,12 +3137,17 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public IReadOnlyList<string> LastSavedHiddenIds { get; private set; } = [];
 
+        /// <summary>Returns a controllable commander workspace for refresh and profile-switch regressions.</summary>
         public Task<ColonizationCommanderProjects> GetCommanderProjectsAsync(
             string commanderName,
             CancellationToken cancellationToken = default
         )
         {
             LoadCount++;
+            if (LoadWorkspace is not null)
+            {
+                return LoadWorkspace(commanderName);
+            }
             return Failure is null
                 ? Task.FromResult(Workspace)
                 : Task.FromException<ColonizationCommanderProjects>(Failure);
@@ -3170,6 +3185,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.FromResult(SiteProjectResponse);
         }
 
+        /// <summary>Applies supplied metadata and commodity fields to the fake project without altering omitted fields.</summary>
         public Task<ColonizationProject> UpdateProjectAsync(
             ColonizationProjectUpdate update,
             CancellationToken cancellationToken = default
@@ -3206,6 +3222,8 @@ public sealed class ColonizationViewModelTests : IDisposable
                 : commodities.Values.Sum(value => Math.Max(0, value));
             ColonizationProject updated = source with
             {
+                BodyNumber = update.BodyNumber ?? source.BodyNumber,
+                BodyName = update.BodyName ?? source.BodyName,
                 FactionName = update.FactionName ?? source.FactionName,
                 MaximumRequired = update.MaximumRequired ?? source.MaximumRequired,
                 RemainingRequired = remaining,
@@ -3243,6 +3261,7 @@ public sealed class ColonizationViewModelTests : IDisposable
                 : Task.CompletedTask;
         }
 
+        /// <summary>Records attempted delivery uploads and injects controlled failures for recovery tests.</summary>
         public Task ContributeToProjectAsync(
             string buildId,
             string commanderName,
@@ -3250,8 +3269,11 @@ public sealed class ColonizationViewModelTests : IDisposable
             CancellationToken cancellationToken = default
         )
         {
+            LastContributionCancellation = cancellationToken;
             Contributions.Add(new ContributionCall(buildId, commanderName, contributions));
-            return Task.CompletedTask;
+            return ContributionFailures.TryDequeue(out Exception? failure)
+                ? Task.FromException(failure)
+                : ContributionResponseTask ?? Task.CompletedTask;
         }
 
         public Task SetPrimaryProjectAsync(
@@ -3400,6 +3422,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             );
         }
 
+        /// <summary>Returns a controllable replacement result to reproduce concurrent carrier baseline writes.</summary>
         public Task<IReadOnlyDictionary<string, int>> ReplaceFleetCarrierCargoAsync(
             long marketId,
             IReadOnlyDictionary<string, int> cargo,
@@ -3409,6 +3432,10 @@ public sealed class ColonizationViewModelTests : IDisposable
         {
             ReplaceCargoCount++;
             LastReplacement = cargo;
+            if (ReplaceCargo is not null)
+            {
+                return ReplaceCargo(cargo);
+            }
             var updated = new Dictionary<string, int>(
                 FleetCarrierResponse?.Cargo ?? [],
                 StringComparer.OrdinalIgnoreCase
@@ -3421,6 +3448,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.FromResult<IReadOnlyDictionary<string, int>>(updated);
         }
 
+        /// <summary>Records relative cargo adjustments and injects transport or service failures for reconciliation tests.</summary>
         public Task<IReadOnlyDictionary<string, int>> AdjustFleetCarrierCargoAsync(
             long marketId,
             IReadOnlyDictionary<string, int> cargoChanges,
@@ -3434,6 +3462,10 @@ public sealed class ColonizationViewModelTests : IDisposable
                     new Dictionary<string, int>(cargoChanges, StringComparer.OrdinalIgnoreCase)
                 )
             );
+            if (AdjustmentFailures.TryDequeue(out Exception? failure))
+            {
+                return Task.FromException<IReadOnlyDictionary<string, int>>(failure);
+            }
             var updated = new Dictionary<string, int>(
                 FleetCarrierResponse?.Cargo ?? [],
                 StringComparer.OrdinalIgnoreCase
