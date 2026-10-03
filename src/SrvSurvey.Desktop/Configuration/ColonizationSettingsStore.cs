@@ -205,20 +205,18 @@ public sealed class ColonizationSettingsStore
         });
     }
 
-    /// <summary>Loads retained construction deliveries without storing API keys.</summary>
+    /// <summary>Loads valid retained deliveries individually so a malformed entry cannot discard other deliveries.</summary>
     public IReadOnlyList<ColonizationPendingContribution> LoadPendingContributions()
     {
-        try
-        {
-            return documentStore
-                    .Load()[ColonizationSectionKey]
-                    ?["PendingContributions"]?.Deserialize<List<ColonizationPendingContribution>>()
-                ?? [];
-        }
-        catch (JsonException)
-        {
-            return [];
-        }
+        return LoadPendingEntries<ColonizationPendingContribution>(
+            "PendingContributions",
+            entry =>
+                !string.IsNullOrWhiteSpace(entry.Owner)
+                && !string.IsNullOrWhiteSpace(entry.BuildId)
+                && !string.IsNullOrWhiteSpace(entry.Commander)
+                && !string.IsNullOrWhiteSpace(entry.EventId)
+                && entry.Cargo is not null
+        );
     }
 
     /// <summary>Atomically saves deliveries until Raven acknowledges them or the user reconciles their credit.</summary>
@@ -232,20 +230,42 @@ public sealed class ColonizationSettingsStore
         });
     }
 
-    /// <summary>Loads ordered cargo writes awaiting acknowledgement or an authoritative market reconciliation.</summary>
+    /// <summary>Loads valid cargo writes in their saved order, skipping only entries with invalid recovery data.</summary>
     public IReadOnlyList<ColonizationPendingCargoAdjustment> LoadPendingCargoAdjustments()
     {
-        try
-        {
-            return documentStore
-                    .Load()[ColonizationSectionKey]
-                    ?["PendingCargoAdjustments"]?.Deserialize<List<ColonizationPendingCargoAdjustment>>()
-                ?? [];
-        }
-        catch (JsonException)
+        return LoadPendingEntries<ColonizationPendingCargoAdjustment>(
+            "PendingCargoAdjustments",
+            entry => !string.IsNullOrWhiteSpace(entry.Owner) && entry.MarketId > 0 && entry.Delta is not null
+        );
+    }
+
+    /// <summary>Deserializes each recovery entry independently and validates fields required by its workflow.</summary>
+    private List<T> LoadPendingEntries<T>(string key, Func<T, bool> isValid)
+        where T : class
+    {
+        if (
+            documentStore.Load()[ColonizationSectionKey] is not JsonObject section
+            || section[key] is not JsonArray entries
+        )
         {
             return [];
         }
+        var loaded = new List<T>();
+        foreach (JsonNode? node in entries)
+        {
+            try
+            {
+                if (node?.Deserialize<T>() is { } entry && isValid(entry))
+                {
+                    loaded.Add(entry);
+                }
+            }
+            catch (JsonException)
+            {
+                // Keep valid neighboring records when one entry has an incompatible shape.
+            }
+        }
+        return loaded;
     }
 
     /// <summary>Atomically retains relative carrier updates, their profile ownership, and the pre-write baseline.</summary>
@@ -301,12 +321,12 @@ public sealed record ColonizationPendingContribution(
     bool OutcomeUnknown
 );
 
-/// <summary>An ordered carrier delta retains its original baseline and whether the server outcome requires reconciliation.</summary>
+/// <summary>An ordered carrier delta retains its baseline and journal event time; null time prevents retirement by a market timestamp.</summary>
 public sealed record ColonizationPendingCargoAdjustment(
     string Owner,
     long MarketId,
     Dictionary<string, int> Delta,
-    DateTimeOffset RecordedAt,
+    DateTimeOffset? RecordedAt,
     Dictionary<string, int>? Before,
     bool Attempted = true,
     bool OutcomeUnknown = true

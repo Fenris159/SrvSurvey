@@ -486,6 +486,136 @@ public sealed partial class ColonizationViewModelTests
         Assert.Equal(cancellation.Token, client.LastContributionCancellation);
     }
 
+    /// <summary>Reconciles by journal event time regardless of whether the processing clock runs ahead or behind.</summary>
+    [Theory]
+    [InlineData(-86400, -1, false)]
+    [InlineData(86400, -1, false)]
+    [InlineData(-86400, 1, true)]
+    [InlineData(86400, 1, true)]
+    public async Task CargoReconciliationUsesJournalTime(int clockOffset, int eventOffset, bool retained)
+    {
+        MarketSnapshot market = LinkedCarrierMarket(95);
+        recoveryTime = market.Timestamp.AddSeconds(clockOffset);
+        StubRavenColonialClient client = CarrierClient();
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("reply lost"));
+        using ColonizationViewModel vm = await CreateRecoveryAsync(client);
+        vm.ApplyJournalEvents([CarrierDock()]);
+        JournalEventEnvelope buy = Event("MarketBuy", "\"MarketID\":42,\"Type\":\"steel\",\"Count\":5") with
+        {
+            Timestamp = market.Timestamp.AddSeconds(eventOffset),
+        };
+        await vm.SynchronizeLiveProjectsAsync([buy], true);
+        var store = new ColonizationSettingsStore(Path.Combine(directory, "recovery.json"));
+        Assert.Equal(buy.Timestamp, Assert.Single(store.LoadPendingCargoAdjustments()).RecordedAt);
+        await vm.UpdateMarketAsync(market);
+        Assert.Equal(retained ? 1 : 0, store.LoadPendingCargoAdjustments().Count);
+    }
+
+    /// <summary>Keeps undated journal adjustments instead of assuming the local processing clock is their event time.</summary>
+    [Fact]
+    public async Task UndatedCargoIsNotRetiredByMarketTime()
+    {
+        StubRavenColonialClient client = CarrierClient();
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("reply lost"));
+        using ColonizationViewModel vm = await CreateRecoveryAsync(client);
+        vm.ApplyJournalEvents([CarrierDock()]);
+        await vm.SynchronizeLiveProjectsAsync(
+            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"steel\",\"Count\":5") with { Timestamp = null }],
+            true
+        );
+        await vm.UpdateMarketAsync(LinkedCarrierMarket(95) with { Timestamp = recoveryTime.AddSeconds(1) });
+        DateTimeOffset? recordedAt = Assert
+            .Single(
+                new ColonizationSettingsStore(Path.Combine(directory, "recovery.json")).LoadPendingCargoAdjustments()
+            )
+            .RecordedAt;
+        Assert.Null(recordedAt);
+    }
+
+    /// <summary>Dates a queued baseline delta by the newest included event, retaining undated aggregates conservatively.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QueuedCargoPreservesLatestEventTime(bool missingTime)
+    {
+        StubRavenColonialClient client = CarrierClient();
+        using ColonizationViewModel vm = await CreateRecoveryAsync(client);
+        vm.ApplyJournalEvents([CarrierDock()]);
+        vm.FleetCarrierCargoSyncEnabled = false;
+        MarketSnapshot market = LinkedCarrierMarket(80);
+        await vm.UpdateMarketAsync(market);
+        vm.FleetCarrierCargoSyncEnabled = true;
+        var gate = new TaskCompletionSource<IReadOnlyDictionary<string, int>>();
+        client.ReplaceCargo = _ => gate.Task;
+        Task publish = vm.PublishCurrentFleetCarrierAsync();
+        JournalEventEnvelope first = Event("MarketBuy", "\"MarketID\":42,\"Type\":\"steel\",\"Count\":5") with
+        {
+            Timestamp = market.Timestamp.AddSeconds(10),
+        };
+        JournalEventEnvelope second = Event("MarketSell", "\"MarketID\":42,\"Type\":\"steel\",\"Count\":2") with
+        {
+            Timestamp = missingTime ? null : market.Timestamp.AddSeconds(20),
+        };
+        await vm.SynchronizeLiveProjectsAsync([first, second], true);
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("reply lost"));
+        gate.SetResult(new Dictionary<string, int> { ["steel"] = 80 });
+        await publish;
+        var store = new ColonizationSettingsStore(Path.Combine(directory, "recovery.json"));
+        Assert.Equal(second.Timestamp, Assert.Single(store.LoadPendingCargoAdjustments()).RecordedAt);
+        client.ReplaceCargo = null;
+        await vm.UpdateMarketAsync(market with { Timestamp = market.Timestamp.AddSeconds(15) });
+        Assert.Single(store.LoadPendingCargoAdjustments());
+    }
+
+    /// <summary>Does not retire aggregate squadron differences by an unrelated local clock when their event time is unknown.</summary>
+    [Fact]
+    public async Task UndatedSquadronDiffRemainsPendingAfterMarketRefresh()
+    {
+        StubRavenColonialClient client = CarrierClient();
+        client.AdjustmentFailures.Enqueue(new HttpRequestException("reply lost"));
+        using ColonizationViewModel vm = await CreateRecoveryAsync(client);
+        vm.ApplyJournalEvents([CarrierDock(squadron: true)]);
+        var cargo = new CargoInventoryState();
+        cargo.Apply(Event("Cargo", "\"Inventory\":[{\"Name\":\"steel\",\"Count\":10}]"));
+        cargo.GetDiff();
+        cargo.CaptureBeforeSnapshot();
+        cargo.Apply(
+            Event("CargoTransfer", "\"Transfers\":[{\"Type\":\"steel\",\"Count\":5,\"Direction\":\"tocarrier\"}]")
+        );
+        await vm.SynchronizeLiveProjectsAsync([], true, cargo, true);
+        await vm.UpdateMarketAsync(LinkedCarrierMarket(105) with { Timestamp = recoveryTime.AddSeconds(1) });
+        DateTimeOffset? recordedAt = Assert
+            .Single(
+                new ColonizationSettingsStore(Path.Combine(directory, "recovery.json")).LoadPendingCargoAdjustments()
+            )
+            .RecordedAt;
+        Assert.Null(recordedAt);
+    }
+
+    /// <summary>Preserves the transport error when a market baseline removes an in-flight pending adjustment before it fails.</summary>
+    [Fact]
+    public async Task LateCargoFailureDoesNotReplaceTransportError()
+    {
+        StubRavenColonialClient client = CarrierClient();
+        using ColonizationViewModel vm = await CreateRecoveryAsync(client);
+        vm.ApplyJournalEvents([CarrierDock()]);
+        var gate = new TaskCompletionSource<IReadOnlyDictionary<string, int>>();
+        client.AdjustmentResponseTask = gate.Task;
+        Task update = vm.SynchronizeLiveProjectsAsync(
+            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"steel\",\"Count\":5")],
+            true
+        );
+        Assert.Single(client.FleetCarrierAdjustments);
+        await vm.UpdateMarketAsync(LinkedCarrierMarket(95) with { Timestamp = recoveryTime.AddSeconds(1) });
+        Assert.Empty(
+            new ColonizationSettingsStore(Path.Combine(directory, "recovery.json")).LoadPendingCargoAdjustments()
+        );
+        gate.SetException(new HttpRequestException("original transport failure"));
+        await update;
+        Assert.Contains("original transport failure", vm.StatusMessage);
+        Assert.DoesNotContain("index", vm.StatusMessage, StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>Creates an enabled profile with a controllable retry clock.</summary>
     private async Task<ColonizationViewModel> CreateRecoveryAsync(StubRavenColonialClient client)
     {

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Desktop.Configuration;
 
@@ -152,6 +153,86 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
 
         Assert.Equal(4_300_000_002, visit.MarketId);
         Assert.Equal("valid port", visit.StationKey);
+    }
+
+    /// <summary>Retains both valid deliveries around a malformed entry, including after the next save.</summary>
+    [Theory]
+    [InlineData("null")]
+    [InlineData("42")]
+    [InlineData("{\"Cargo\":\"broken\"}")]
+    [InlineData("{\"Owner\":\"owner\",\"BuildId\":\"build\",\"Commander\":\"cmdr\",\"Cargo\":{},\"EventId\":null}")]
+    [InlineData("{\"Owner\":null,\"BuildId\":\"build\",\"Commander\":\"cmdr\",\"Cargo\":{},\"EventId\":\"event\"}")]
+    [InlineData("{\"Owner\":\"owner\",\"Cargo\":{},\"EventId\":\"event\"}")]
+    [InlineData(
+        "{\"Owner\":\"owner\",\"BuildId\":\"build\",\"Commander\":\"cmdr\",\"Cargo\":null,\"EventId\":\"event\"}"
+    )]
+    public void PendingDeliveriesSkipOnlyInvalidEntry(string invalid)
+    {
+        var first = new ColonizationPendingContribution(
+            "owner",
+            "build",
+            "cmdr",
+            new() { ["steel"] = 5 },
+            "first",
+            true
+        );
+        ColonizationPendingContribution second = first with { EventId = "second" };
+        string path = WritePendingEntries("PendingContributions", first, invalid, second);
+        var store = new ColonizationSettingsStore(path);
+
+        IReadOnlyList<ColonizationPendingContribution> loaded = store.LoadPendingContributions();
+        Assert.Equal(["first", "second"], loaded.Select(item => item.EventId));
+        store.SavePendingContributions(loaded);
+        Assert.Equal(["first", "second"], store.LoadPendingContributions().Select(item => item.EventId));
+    }
+
+    /// <summary>Preserves cargo write order when one persisted entry has an invalid shape or missing required data.</summary>
+    [Theory]
+    [InlineData("null")]
+    [InlineData("[]")]
+    [InlineData("{\"RecordedAt\":\"invalid time\"}")]
+    [InlineData("{\"Owner\":null,\"MarketId\":42,\"Delta\":{}}")]
+    [InlineData("{\"Owner\":\"owner\",\"MarketId\":42,\"Delta\":null}")]
+    [InlineData("{\"Owner\":\"owner\",\"Delta\":{}}")]
+    public void PendingCargoSkipsOnlyInvalidEntry(string invalid)
+    {
+        var first = new ColonizationPendingCargoAdjustment(
+            "owner",
+            42,
+            new() { ["steel"] = -5 },
+            DateTimeOffset.UtcNow,
+            null
+        );
+        ColonizationPendingCargoAdjustment second = first with { MarketId = 43 };
+        string path = WritePendingEntries("PendingCargoAdjustments", first, invalid, second);
+        var store = new ColonizationSettingsStore(path);
+
+        IReadOnlyList<ColonizationPendingCargoAdjustment> loaded = store.LoadPendingCargoAdjustments();
+        Assert.Equal([42L, 43L], loaded.Select(item => item.MarketId));
+        store.SavePendingCargoAdjustments(loaded);
+        Assert.Equal([42L, 43L], store.LoadPendingCargoAdjustments().Select(item => item.MarketId));
+    }
+
+    /// <summary>Writes valid recovery entries on either side of deliberately malformed persisted data.</summary>
+    private string WritePendingEntries<T>(string key, T first, string invalid, T second)
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "ui.json");
+        File.WriteAllText(
+            path,
+            new JsonObject
+            {
+                ["Colonization"] = new JsonObject
+                {
+                    [key] = new JsonArray(
+                        JsonSerializer.SerializeToNode(first),
+                        JsonNode.Parse(invalid),
+                        JsonSerializer.SerializeToNode(second)
+                    ),
+                },
+            }.ToJsonString()
+        );
+        return path;
     }
 
     public void Dispose()

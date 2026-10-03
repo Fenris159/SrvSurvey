@@ -3062,15 +3062,29 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         public ColonizationCommanderProjects Workspace { get; set; } = new([], [], null, []);
 
         public Exception? Failure { get; set; }
+
+        /// <summary>Controls commander workspace responses and their completion order during profile changes.</summary>
         public Func<string, Task<ColonizationCommanderProjects>>? LoadWorkspace { get; set; }
+
+        /// <summary>Controls absolute cargo replacement while journal transactions arrive concurrently.</summary>
         public Func<
             IReadOnlyDictionary<string, int>,
             Task<IReadOnlyDictionary<string, int>>
         >? ReplaceCargo { get; set; }
+
+        /// <summary>Injects ordered relative cargo failures to test retained writes and safe retries.</summary>
         public Queue<Exception> AdjustmentFailures { get; } = new();
+
+        /// <summary>Holds a relative cargo response while a newer market snapshot reconciles the pending write.</summary>
+        public Task<IReadOnlyDictionary<string, int>>? AdjustmentResponseTask { get; set; }
+
+        /// <summary>Injects contribution failures to distinguish definite rejection from uncertain credit.</summary>
         public Queue<Exception> ContributionFailures { get; } = new();
+
+        /// <summary>Delays delivery acknowledgement while profile ownership or checkbox selection changes.</summary>
         public Task? ContributionResponseTask { get; set; }
 
+        /// <summary>Records cancellation forwarded from journal monitoring to the delivery request.</summary>
         public CancellationToken LastContributionCancellation { get; private set; }
 
         public string? ValidatedCommanderName { get; set; } = "Test Cmdr";
@@ -3115,12 +3129,16 @@ public sealed partial class ColonizationViewModelTests : IDisposable
 
         public Queue<Exception> SystemSiteFailures { get; } = new();
 
+        /// <summary>Records the systems queried during dock repair to detect retries leaking across contexts.</summary>
         public List<string> SystemSiteRequests { get; } = [];
 
+        /// <summary>Delays site retrieval to test repair warnings arriving after the commander leaves the system.</summary>
         public Task<IReadOnlyList<ColonizationSystemSite>>? SystemSiteResponseTask { get; set; }
 
+        /// <summary>Injects a site repair failure without altering unrelated project or cargo responses.</summary>
         public Exception? SystemSitePatchFailure { get; set; }
 
+        /// <summary>Injects completion failures so tests can verify completion is retried without duplicate deliveries.</summary>
         public Queue<Exception> ProjectCompletionFailures { get; } = new();
 
         public IReadOnlyList<ColonizationSystemSite> SystemSitesResponse { get; set; } = [];
@@ -3465,6 +3483,10 @@ public sealed partial class ColonizationViewModelTests : IDisposable
             if (AdjustmentFailures.TryDequeue(out Exception? failure))
             {
                 return Task.FromException<IReadOnlyDictionary<string, int>>(failure);
+            }
+            if (AdjustmentResponseTask is { } response)
+            {
+                return response;
             }
             var updated = new Dictionary<string, int>(
                 FleetCarrierResponse?.Cargo ?? [],

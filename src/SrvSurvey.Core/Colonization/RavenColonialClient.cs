@@ -1177,6 +1177,7 @@ public sealed record ColonizationSystemSite
     [JsonPropertyName("buildId")]
     public string? BuildId { get; init; }
 
+    /// <summary>Identifies the dockable market, accepting legacy numeric and string representations.</summary>
     [JsonPropertyName("marketId")]
     [JsonConverter(typeof(ColonizationLegacyMarketIdConverter))]
     public long? MarketId { get; init; }

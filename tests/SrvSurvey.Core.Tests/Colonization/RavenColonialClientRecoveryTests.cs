@@ -33,7 +33,7 @@ public sealed partial class RavenColonialClientTests
         HttpRequestException error = await Assert.ThrowsAsync<HttpRequestException>(() =>
             client.GetSystemSitesAsync("42")
         );
-        Assert.IsAssignableFrom<IOException>(error.InnerException);
+        Assert.IsType<IOException>(error.InnerException, exactMatch: false);
     }
 
     /// <summary>Allows an unassigned system architect without weakening required-object validation.</summary>

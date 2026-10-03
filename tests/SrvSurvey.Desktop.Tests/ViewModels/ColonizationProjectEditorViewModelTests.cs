@@ -952,6 +952,8 @@ public sealed partial class ColonizationProjectEditorViewModelTests
         public Queue<IReadOnlyList<ColonizationSystemSite>>? SiteResponses { get; init; }
 
         public string? Architect { get; set; }
+
+        /// <summary>Holds a site lookup open while the test changes the editor's owning context.</summary>
         public Task<IReadOnlyList<ColonizationSystemSite>>? PendingSites { get; set; }
 
         public int SiteReadCount { get; private set; }

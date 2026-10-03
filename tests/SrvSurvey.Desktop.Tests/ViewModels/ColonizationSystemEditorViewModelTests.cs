@@ -481,8 +481,13 @@ public sealed partial class ColonizationSystemEditorViewModelTests
     {
         public ColonizationSystemRecord Current { get; set; } = System();
 
+        /// <summary>Delays system loading so tests can invalidate the original editor context before completion.</summary>
         public Task<ColonizationSystemRecord>? PendingRead { get; set; }
+
+        /// <summary>Delays body import so tests can check that late results cannot mutate a replacement workspace.</summary>
         public Task<ColonizationSystemRecord>? PendingImport { get; set; }
+
+        /// <summary>Delays publication so tests can verify stale results do not overwrite the active system.</summary>
         public Task<ColonizationSystemRecord>? PendingUpdate { get; set; }
 
         public int SystemReadCount { get; private set; }

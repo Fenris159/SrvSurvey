@@ -55,8 +55,9 @@ commander and site changes from applying outdated data.
 - Failed cargo updates are retained in order across restarts. SrvSurvey checks
   Raven's cargo state before retrying uncertain changes and can reconcile them
   against a fresh market snapshot.
-- Purchases, sales, and transfers use the carrier docked at when each event
-  occurred, including when undocking happens in the same journal update.
+- Purchases, sales, and transfers use the carrier where the commander was
+  docked when each event occurred, including when undocking happens in the
+  same journal update.
 - Cargo transactions arriving during carrier publication or a market refresh
   are applied after that update, preserving their effect on the final totals.
 

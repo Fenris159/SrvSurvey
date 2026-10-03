@@ -92,7 +92,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private readonly HashSet<long> cargoBaselineReady = [];
 
-    private readonly Dictionary<long, Dictionary<string, int>> pendingCargoDeltas = [];
+    private readonly Dictionary<long, (Dictionary<string, int> Delta, DateTimeOffset? RecordedAt)> pendingCargoDeltas =
+    [];
 
     /// <summary>
     /// When true, the next squadron cargo GetDiff is skipped because MarketBuy/Sell
@@ -1037,7 +1038,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         IReadOnlyDictionary<string, int> adjustments =
             ColonizationFleetCarrierCargoSynchronizer.CreateSquadronCargoDiffAdjustment(shipDiff);
 
-        if (TryQueuePendingCargoDelta(dock.MarketId, adjustments))
+        // This aggregate difference has no single originating event; do not date it using the local clock.
+        if (TryQueuePendingCargoDelta(dock.MarketId, adjustments, null))
         {
             return $"Queued {adjustments.Count:N0} squadron Fleet Carrier cargo update(s) until dock baseline finishes.";
         }
@@ -1048,6 +1050,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             "squadron cargo diff",
             true,
             cargo,
+            null,
             cancellationToken: cancellationToken
         );
     }
@@ -1082,7 +1085,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        if (TryQueuePendingCargoDelta(dock.MarketId, adjustments))
+        if (TryQueuePendingCargoDelta(dock.MarketId, adjustments, journalEvent.Timestamp))
         {
             SuppressSquadronCargoDiffAfterMarketAdjustment(
                 journalEvent.EventName,
@@ -1098,6 +1101,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             journalEvent.EventName,
             preferShipCargoDiffForSquadron,
             cargoInventory,
+            journalEvent.Timestamp,
             cancellationToken: cancellationToken
         );
     }
@@ -1109,6 +1113,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         string sourceEventName,
         bool preferShipCargoDiffForSquadron,
         CargoInventoryState? cargoInventory,
+        DateTimeOffset? recordedAt,
         CancellationToken cancellationToken = default
     )
     {
@@ -1122,7 +1127,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             GetWriteOwner(),
             marketId,
             new Dictionary<string, int>(adjustments, StringComparer.OrdinalIgnoreCase),
-            utcNow(),
+            recordedAt,
             fleetCarriers
                 .FirstOrDefault(carrier => carrier.MarketId == marketId)
                 ?.Cargo.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase)
@@ -1201,22 +1206,34 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         catch (Exception exception)
             when (exception is HttpRequestException or TaskCanceledException or InvalidDataException)
         {
-            failedCargoAdjustments[failedCargoAdjustments.IndexOf(pending)] = pending with
-            {
-                OutcomeUnknown = !IsDefiniteRejection(exception),
-            };
-            SavePendingCargoAdjustments();
-            nextWriteRetry = utcNow().AddSeconds(5);
-            if (GetJournalDockForMarket(marketId) is { } dock)
-            {
-                SuppressSquadronCargoDiffAfterMarketAdjustment(sourceEventName, dock, preferShipCargoDiffForSquadron);
-            }
+            RetainFailedCargoAdjustment(pending, exception, sourceEventName, preferShipCargoDiffForSquadron);
             throw;
         }
         finally
         {
             cargoWritesInFlight.Remove((pending.Owner, marketId));
             CommodityOverlay.ApplyPendingFleetCarrierCargo(null);
+        }
+    }
+
+    /// <summary>Records failure only while the adjustment remains pending, preserving the original transport exception.</summary>
+    private void RetainFailedCargoAdjustment(
+        ColonizationPendingCargoAdjustment pending,
+        Exception exception,
+        string sourceEventName,
+        bool preferShipCargoDiffForSquadron
+    )
+    {
+        int index = failedCargoAdjustments.IndexOf(pending);
+        if (index >= 0)
+        {
+            failedCargoAdjustments[index] = pending with { OutcomeUnknown = !IsDefiniteRejection(exception) };
+            SavePendingCargoAdjustments();
+        }
+        nextWriteRetry = utcNow().AddSeconds(5);
+        if (GetJournalDockForMarket(pending.MarketId) is { } dock)
+        {
+            SuppressSquadronCargoDiffAfterMarketAdjustment(sourceEventName, dock, preferShipCargoDiffForSquadron);
         }
     }
 
@@ -2797,20 +2814,34 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         return cargoBaselinePendingDepth.GetValueOrDefault(marketId) > 0;
     }
 
-    private bool TryQueuePendingCargoDelta(long marketId, IReadOnlyDictionary<string, int> delta)
+    /// <summary>Queues deltas with their latest journal time, keeping aggregate time unknown if any included event is undated.</summary>
+    private bool TryQueuePendingCargoDelta(
+        long marketId,
+        IReadOnlyDictionary<string, int> delta,
+        DateTimeOffset? recordedAt
+    )
     {
         if (!IsCargoBaselinePending(marketId) || delta.Count == 0)
         {
             return false;
         }
 
-        if (!pendingCargoDeltas.TryGetValue(marketId, out Dictionary<string, int>? pending))
+        if (
+            !pendingCargoDeltas.TryGetValue(
+                marketId,
+                out (Dictionary<string, int> Delta, DateTimeOffset? RecordedAt) pending
+            )
+        )
         {
-            pending = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            pendingCargoDeltas[marketId] = pending;
+            pending = (new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase), recordedAt);
         }
-
-        ColonizationFleetCarrierPendingCargo.MergeDelta(pending, delta);
+        DateTimeOffset? latest = null;
+        if (pending.RecordedAt is { } previous && recordedAt is { } current)
+        {
+            latest = previous > current ? previous : current;
+        }
+        pendingCargoDeltas[marketId] = (pending.Delta, latest);
+        ColonizationFleetCarrierPendingCargo.MergeDelta(pending.Delta, delta);
         return true;
     }
 
@@ -2833,8 +2864,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         cargoBaselinePendingDepth.Remove(marketId);
         cargoBaselineReady.Add(marketId);
         if (
-            !pendingCargoDeltas.Remove(marketId, out Dictionary<string, int>? pending)
-            || pending.Count == 0
+            !pendingCargoDeltas.Remove(
+                marketId,
+                out (Dictionary<string, int> Delta, DateTimeOffset? RecordedAt) pending
+            )
+            || pending.Delta.Count == 0
             || storedRavenApiKey is null
         )
         {
@@ -2845,10 +2879,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         {
             await ApplyFleetCarrierCargoAdjustmentAsync(
                 marketId,
-                pending,
+                pending.Delta,
                 "queued dock baseline",
                 true,
                 null,
+                pending.RecordedAt,
                 cancellationToken: cancellationToken
             );
         }
@@ -2860,7 +2895,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    /// <summary>Retires old uncertain deltas only for commodities covered by a newer authoritative market snapshot.</summary>
+    /// <summary>Retires covered deltas only when their known journal event time is no later than the authoritative market snapshot.</summary>
     private void ReconcilePendingCargo(MarketSnapshot market)
     {
         var covered = market
@@ -2872,7 +2907,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 .Where(item =>
                     item.Owner == GetWriteOwner()
                     && item.MarketId == market.MarketId
-                    && item.RecordedAt <= market.Timestamp
+                    && item.RecordedAt is { } recordedAt
+                    && recordedAt <= market.Timestamp
                 )
                 .ToArray()
         )
@@ -3183,7 +3219,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>Prevents recovery decisions from changing while a delivery upload or retry is active.</summary>
     public bool CanSelectUnconfirmedContributions => !retryingWrites && contributionsInFlight.Count == 0;
 
+    /// <summary>Retries checked deliveries after the commander verifies that Raven did not record them.</summary>
     public ICommand RetryUnconfirmedContributionsCommand { get; }
+
+    /// <summary>Removes checked deliveries from local recovery after their Raven credit is confirmed.</summary>
     public ICommand DismissConfirmedContributionsCommand { get; }
 
     /// <summary>Retries only checked deliveries verified absent on Raven, retaining every unselected delivery unchanged.</summary>
