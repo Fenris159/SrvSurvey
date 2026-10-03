@@ -235,6 +235,10 @@ internal sealed partial class DesktopRuntime
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.MainViewModelDependenciesReady);
         mainViewModel = MainWindowViewModelFactory.Create(mainViewModelStartup);
         MainWindowViewModel viewModel = mainViewModel;
+        overlayPresentation.ConfigureWindowManagement(
+            viewModel.OverlayBehavior.BypassWindowManagement,
+            message => applicationLog.Append(message)
+        );
         mainWindow = new MainWindow(viewModel);
         windowChromeThemeCoordinator = new WindowChromeThemeCoordinator(mainWindow, themeService);
         mainWindow.Opened += HandleMainWindowOpened;

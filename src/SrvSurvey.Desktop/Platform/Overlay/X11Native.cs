@@ -320,6 +320,19 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial int XMapRaised(nint display, nuint window);
 
+    /// <summary>Changes selected native attributes, including override-redirect before a live panel is mapped.</summary>
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XChangeWindowAttributes(
+        nint display,
+        nuint window,
+        nuint valueMask,
+        ref XSetWindowAttributes attributes
+    );
+
+    /// <summary>Raises a window without mapping it or requesting keyboard focus.</summary>
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XRaiseWindow(nint display, nuint window);
+
     [LibraryImport("libX11.so.6")]
     internal static partial int XUnmapWindow(nint display, nuint window);
 
@@ -429,6 +442,26 @@ internal static partial class X11Native
         public nint L2;
         public nint L3;
         public nint L4;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XSetWindowAttributes
+    {
+        public nuint BackgroundPixmap;
+        public nuint BackgroundPixel;
+        public nuint BorderPixmap;
+        public nuint BorderPixel;
+        public int BitGravity;
+        public int WindowGravity;
+        public int BackingStore;
+        public nuint BackingPlanes;
+        public nuint BackingPixel;
+        public int SaveUnder;
+        public nint EventMask;
+        public nint DoNotPropagateMask;
+        public int OverrideRedirect;
+        public nuint Colormap;
+        public nuint Cursor;
     }
 
     [StructLayout(LayoutKind.Sequential)]

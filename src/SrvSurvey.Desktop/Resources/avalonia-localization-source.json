@@ -80,6 +80,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "**App Restart Required",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
     "IsFormat": false,
     "SourceKinds": [
@@ -7833,6 +7841,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Bypass Window Management",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "BypassWindowManagement",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayBehaviorSettingsStore.cs"
   },
   {
     "Text": "C 1",
@@ -61066,6 +61090,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
+  },
+  {
+    "Text": "Window management bypass is enabled for X11/XWayland live panels and the position editor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationSession.cs"
   },
   {
     "Text": "Windows Mixed Reality",

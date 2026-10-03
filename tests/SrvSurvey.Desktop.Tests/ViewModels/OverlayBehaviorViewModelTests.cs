@@ -6,6 +6,23 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class OverlayBehaviorViewModelTests : IDisposable
 {
+    /// <summary>Checks that either toggle direction requires restart and undoing the change clears the warning.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RestartWarningTracksTheStartupChoice(bool startupChoice)
+    {
+        var store = new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
+        store.Save(store.Load() with { BypassWindowManagement = startupChoice });
+        var viewModel = new OverlayBehaviorViewModel(store);
+        Assert.False(viewModel.WindowManagementRestartRequired);
+        viewModel.BypassWindowManagement = !startupChoice;
+        Assert.True(viewModel.WindowManagementRestartRequired);
+        Assert.False(new OverlayBehaviorViewModel(store).WindowManagementRestartRequired);
+        viewModel.BypassWindowManagement = startupChoice;
+        Assert.False(viewModel.WindowManagementRestartRequired);
+    }
+
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-overlay-behavior-vm-tests-{Guid.NewGuid():N}"
@@ -30,14 +47,19 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
         Assert.True(viewModel.ShouldSuppressForSuit);
     }
 
+    /// <summary>Checks persistence and change notifications for passive overlay settings.</summary>
     [Fact]
     public void PassiveOverlayPreferencesPersist()
     {
         OverlayBehaviorViewModel viewModel = CreateViewModel();
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
 
         viewModel.KeepWhenGameLosesFocus = true;
         viewModel.HideMultiGameCommanderOverlay = true;
         viewModel.LockToMonitor = true;
+        Assert.False(viewModel.BypassWindowManagement);
+        viewModel.BypassWindowManagement = true;
 
         OverlayBehaviorPreferences persisted = new OverlayBehaviorSettingsStore(
             Path.Combine(temporaryDirectory, "ui-settings.json")
@@ -45,6 +67,9 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
         Assert.True(persisted.KeepWhenGameLosesFocus);
         Assert.True(persisted.HideMultiGameCommanderOverlay);
         Assert.True(persisted.LockToMonitor);
+        Assert.True(persisted.BypassWindowManagement);
+        Assert.True(CreateViewModel().BypassWindowManagement);
+        Assert.Contains(nameof(viewModel.BypassWindowManagement), notifications);
     }
 
     [Fact]
