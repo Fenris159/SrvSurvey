@@ -11,6 +11,9 @@ public sealed record GlobalInputSettings(
     IReadOnlyDictionary<GlobalInputAction, string> Bindings
 )
 {
+    /// <summary>Keeps Automatic as the default for existing profiles while allowing a per-instance override.</summary>
+    public KeyboardInputMode KeyboardSource { get; init; }
+
     public static GlobalInputSettings Default { get; } =
         new(
             KeyboardEnabled: false,
@@ -32,6 +35,7 @@ public sealed class GlobalInputSettingsStore
         documentStore = new UiSettingsDocumentStore(path);
     }
 
+    /// <summary>Loads known input preferences while preserving defaults for missing or invalid values.</summary>
     public GlobalInputSettings Load()
     {
         JsonObject root = documentStore.Load();
@@ -67,9 +71,16 @@ public sealed class GlobalInputSettingsStore
             GetBoolean(input, "ControllerEnabled"),
             GetString(input, "ControllerDeviceId"),
             bindings
-        );
+        )
+        {
+            KeyboardSource =
+                Enum.TryParse(GetString(input, "KeyboardSource"), out KeyboardInputMode mode) && Enum.IsDefined(mode)
+                    ? mode
+                    : KeyboardInputMode.Automatic,
+        };
     }
 
+    /// <summary>Updates this profile's input preferences without replacing other settings or future fields.</summary>
     public void Save(GlobalInputSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -102,6 +113,7 @@ public sealed class GlobalInputSettingsStore
 
             root["Version"] = 1;
             input["KeyboardEnabled"] = settings.KeyboardEnabled;
+            input["KeyboardSource"] = settings.KeyboardSource.ToString();
             input["ControllerEnabled"] = settings.ControllerEnabled;
             input["ControllerDeviceId"] = settings.ControllerDeviceId;
         });

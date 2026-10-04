@@ -5,6 +5,40 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal sealed class X11GameWindowTracker : IGameWindowTracker
 {
+    /// <summary>Samples desktop window ownership and geometry for matching verified game processes to monitors.</summary>
+    internal static IReadOnlyList<GameWindowSnapshot> ReadDesktopWindows()
+    {
+        using IGameWindowTracker? tracker = TryCreate();
+        return tracker is X11GameWindowTracker native ? native.ReadDesktopWindowSnapshots() : [];
+    }
+
+    /// <summary>Reads mapped desktop clients without treating nested-display coordinates as desktop coordinates.</summary>
+    private List<GameWindowSnapshot> ReadDesktopWindowSnapshots()
+    {
+        lock (gate)
+        {
+            nuint[] windows = ReadWindowList(clientListAtom);
+            if (windows.Length == 0)
+            {
+                windows = ReadRootChildren();
+            }
+            nuint active = ReadSingleWindow(activeWindowAtom);
+            var result = new List<GameWindowSnapshot>();
+            foreach (nuint window in windows)
+            {
+                if (
+                    ReadProcessId(window) is int pid
+                    && TryGetBounds(window, out PixelRect bounds, out bool visible)
+                    && visible
+                )
+                {
+                    result.Add(new GameWindowSnapshot(unchecked((nint)window), pid, bounds, visible, window == active));
+                }
+            }
+            return result;
+        }
+    }
+
     private const int PropertyReadLength = 16_384;
     private readonly Lock gate = new();
     private nint display;

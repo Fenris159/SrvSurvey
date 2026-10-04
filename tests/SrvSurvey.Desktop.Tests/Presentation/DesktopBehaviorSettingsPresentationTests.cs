@@ -84,6 +84,7 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
         }
     }
 
+    /// <summary>Checks the monitor-first layout, bypass choice placement, and independent persistence.</summary>
     [AvaloniaFact]
     public void OverlayMonitorIsTheFirstGlobalBehaviorSettingAndPersistsIndependently()
     {
@@ -116,6 +117,31 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
             Border card = Assert.IsType<Border>(settings.FindControl<Border>("GlobalOverlayBehaviorCard"));
             StackPanel content = Assert.IsType<StackPanel>(card.Child);
             Assert.Same(monitorSetting, content.Children[1]);
+            StackPanel bypassSetting = Assert.IsType<StackPanel>(
+                settings.FindControl<StackPanel>("BypassWindowManagementSetting")
+            );
+            Assert.Same(bypassSetting, content.Children[2]);
+            CheckBox bypass = Assert.IsType<CheckBox>(settings.FindControl<CheckBox>("BypassWindowManagementCheckBox"));
+            Assert.Equal("Bypass Window Management", bypass.Content);
+            Assert.False(bypass.IsChecked);
+            TextBlock warning = Assert.IsType<TextBlock>(
+                settings.FindControl<TextBlock>("WindowManagementRestartWarning")
+            );
+            Assert.False(warning.IsVisible);
+            bypass.IsChecked = true;
+            Assert.True(warning.IsVisible);
+            Assert.Equal("**App Restart Required", warning.Text);
+            Assert.True(viewModel.OverlayBehavior.BypassWindowManagement);
+            Assert.True(
+                new OverlayBehaviorSettingsStore(viewModel.AppDataPaths.UiSettingsPath).Load().BypassWindowManagement
+            );
+            string? help = Assert.IsType<TextBlock>(bypassSetting.Children[2]).Text;
+            Assert.Contains("X11/XWayland", help);
+            Assert.Contains("window rules", help);
+            Assert.Contains("position editor", help);
+            Assert.Contains("Restart", help);
+            bypass.IsChecked = false;
+            Assert.False(warning.IsVisible);
             monitor.SelectedItem = monitorOption;
             CheckBox monitorLock = Assert.IsType<CheckBox>(
                 settings.FindControl<CheckBox>("LockOverlaysToMonitorCheckBox")

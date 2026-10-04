@@ -235,6 +235,10 @@ internal sealed partial class DesktopRuntime
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.MainViewModelDependenciesReady);
         mainViewModel = MainWindowViewModelFactory.Create(mainViewModelStartup);
         MainWindowViewModel viewModel = mainViewModel;
+        overlayPresentation.ConfigureWindowManagement(
+            viewModel.OverlayBehavior.BypassWindowManagement,
+            message => applicationLog.Append(message)
+        );
         mainWindow = new MainWindow(viewModel);
         windowChromeThemeCoordinator = new WindowChromeThemeCoordinator(mainWindow, themeService);
         mainWindow.Opened += HandleMainWindowOpened;
@@ -511,6 +515,7 @@ internal sealed partial class DesktopRuntime
         );
     }
 
+    /// <summary>Starts journal processing while deferring automatic game focus until silent shortcut restoration completes.</summary>
     private async Task RunJournalMonitorAsync(CancellationToken cancellationToken)
     {
         if (mainViewModel is not { } viewModel)
@@ -528,9 +533,26 @@ internal sealed partial class DesktopRuntime
         {
             if (!viewModel.IsDiagnosticReplay)
             {
-                _ = viewModel.DesktopBehavior.RequestStartupFocus();
+                _ = RequestStartupFocusAfterInputAsync(viewModel, cancellationToken);
             }
             await viewModel.MonitorAsync(cancellationToken: cancellationToken);
+        }
+    }
+
+    /// <summary>Lets silent input discovery finish without pausing journal monitoring or forcing focus during shutdown.</summary>
+    private async Task RequestStartupFocusAfterInputAsync(MainWindowViewModel viewModel, CancellationToken token)
+    {
+        try
+        {
+            await (globalKeyboardHookService?.StartupReady ?? Task.CompletedTask).WaitAsync(token);
+            if (!token.IsCancellationRequested)
+            {
+                _ = viewModel.DesktopBehavior.RequestStartupFocus();
+            }
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // Closing SrvSurvey must not transfer focus after its startup input discovery is canceled.
         }
     }
 
@@ -779,6 +801,7 @@ internal sealed partial class DesktopRuntime
         return overlayLayout;
     }
 
+    /// <summary>Starts platform input sources while suppressing compositor shortcuts during application text entry.</summary>
     private void StartGlobalInputServices(
         GlobalInputSettingsViewModel inputSettings,
         OverlayPlatformCapabilities capabilities,
@@ -791,7 +814,11 @@ internal sealed partial class DesktopRuntime
             inputSettings.CurrentSettings,
             capabilities.Host,
             CreateRawGameWindowTracker(),
-            areShortcutsActive
+            areShortcutsActive,
+            additionalInput: new(
+                SuppressShortcuts: () => desktop.Windows.Any(window => window.IsActive) && !areShortcutsActive(),
+                OverlayMonitorBounds: () => mainWindow?.GetOverlayMonitorBounds()
+            )
         );
         globalControllerInputService = new GlobalControllerInputService(
             inputSettings.CurrentSettings,
@@ -803,6 +830,8 @@ internal sealed partial class DesktopRuntime
         globalControllerInputService.StatusChanged += (_, _) => PostControllerRuntimeStatus(inputSettings);
 
         globalKeyboardHookService.ActionTriggered += (_, eventArgs) => HandleAction(eventArgs);
+        inputSettings.KeyboardDetectionResetRequested += HandleKeyboardDetectionReset;
+        inputSettings.SetDesktopShortcutSettingsHandler(globalKeyboardHookService.OpenDesktopShortcutSettingsAsync);
         globalControllerInputService.ActionTriggered += (_, eventArgs) => HandleAction(eventArgs);
         inputSettings.SettingsChanged += (_, eventArgs) =>
         {
@@ -828,12 +857,25 @@ internal sealed partial class DesktopRuntime
             );
     }
 
+    /// <summary>Resets session input detection without changing bindings or desktop approval.</summary>
+    private void HandleKeyboardDetectionReset(object? sender, EventArgs args) =>
+        globalKeyboardHookService?.ResetDetection();
+
+    /// <summary>Publishes immutable input diagnostics on the UI dispatcher.</summary>
     private void PostKeyboardRuntimeStatus(GlobalInputSettingsViewModel inputSettings)
     {
         string? status = globalKeyboardHookService?.Status;
         if (status is not null)
         {
-            Dispatcher.UIThread.Post(() => inputSettings.UpdateRuntimeStatus(status));
+            KeyboardInputDiagnostics? diagnostics = globalKeyboardHookService?.Diagnostics;
+            Dispatcher.UIThread.Post(() =>
+            {
+                inputSettings.UpdateRuntimeStatus(status);
+                if (diagnostics is not null)
+                {
+                    inputSettings.UpdateKeyboardDiagnostics(diagnostics);
+                }
+            });
         }
     }
 
@@ -863,6 +905,8 @@ internal sealed partial class DesktopRuntime
 
         if (mainViewModel is { } viewModel)
         {
+            viewModel.InputSettings.KeyboardDetectionResetRequested -= HandleKeyboardDetectionReset;
+            viewModel.InputSettings.SetDesktopShortcutSettingsHandler(null);
             viewModel.BoxelClipboard.SetWriter(null);
             viewModel.SetJournalCommandPlatformServices(null, null, null);
             viewModel.ProfileImportPreparing -= StopJournalMonitorForProfileImportAsync;

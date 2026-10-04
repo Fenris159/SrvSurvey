@@ -32,7 +32,7 @@ public sealed record OverlayPlatformCapabilities(
                 ? "XWayland topmost transparency, XShape click-through, game-window tracking, and global keyboard input are available."
                 : "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
             OverlayHostKind.LinuxWayland =>
-                "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
+                "Native Wayland overlays require compositor support. Keyboard shortcuts require a supported Global Shortcuts portal.",
             _ => "Detached overlays are unavailable on this platform.",
         };
 

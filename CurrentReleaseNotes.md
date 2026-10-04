@@ -1,86 +1,85 @@
-# SrvSurvey-XP 2.1.3.0-rc.58.19
+# SrvSurvey-XP 2.1.3.0-rc.58.21
 
-This patch improves Raven Colonial colonization and Fleet Carrier cargo sync,
-adds recovery controls for unconfirmed construction deliveries, and keeps
-commander and site changes from applying outdated data.
+This update improves keyboard shortcuts when Elite Dangerous runs through
+Gamescope, on a separate X11 display, or with native Wayland input. It adds
+controls to inspect, select, and reset the keyboard input source, and prevents
+journal rereads from repeating chat commands that have already been processed.
 
-## Construction delivery recovery
+## Keyboard shortcuts on Linux
 
-- Construction deliveries are retained until Raven acknowledges them. Pending
-  deliveries stay with their originating commander and survive restarting
-  SrvSurvey.
-- An **Unconfirmed construction deliveries** panel appears near the top of
-  Colonization projects when a connection failure leaves Raven's response
-  uncertain. Each delivery has an initially unchecked selection box.
-- Check the delivery's credit on Raven, then select the records to resolve.
-  **Retry selected deliveries** sends only those verified as missing;
-  **Dismiss selected deliveries** clears local recovery records for those
-  already credited. Unselected deliveries remain pending.
-- Recovery buttons disable when nothing is selected or an upload is active.
-  Checkbox choices reset after restarting or switching commander profiles.
-  Another uncertain retry requires checking Raven and selecting the delivery
-  again before resending it.
-- Rejected deliveries can retry automatically, while deliveries with uncertain
-  credit wait for your verification to avoid duplicate credit.
+- SrvSurvey can discover Elite's separate local X11 display and listen for
+  shortcuts there without requiring a Gamescope bridge. The game display must
+  permit the connection and provide the X11 RECORD extension.
+- Native Wayland shortcuts use the desktop's Global Shortcuts portal when
+  available. Previously approved shortcuts are restored silently when supported
+  by the desktop; startup, reconnects, and binding changes never open its menu
+  automatically.
+- **Desktop shortcut settings** under **Settings > Input** opens the desktop
+  menu when you want to approve or configure bindings, without an app restart.
+  On older GNOME desktops it opens SrvSurvey's Applications settings, where
+  **Global Shortcuts** remains available after the initial approval.
+  Its separate status shows approval needs and the actual desktop shortcut keys.
+  Application key codes supply requested keys; desktop overrides apply to portal
+  input and do not rewrite the application's key-code fields. Existing keyboard
+  listeners apply changes to application bindings immediately.
+- Automatic detection learns one working source for all keyboard shortcuts
+  after a shortcut is received with confirmed Elite focus. Using shortcuts in
+  SrvSurvey or before the game starts does not select the game's input source.
+- Duplicate reports of the same press from different listeners produce one
+  action. Detection resets when the game changes, bindings change, or the
+  selected source disconnects. Repeated shortcut presses received by another
+  working listener can recover from a selected source that has stopped sending
+  input; idle time alone does not switch sources.
+- With multiple Elite clients, discovery prefers the focused client, then the
+  configured overlay monitor when desktop window geometry or a validated
+  Gamescope bridge maps it to a game display. Ambiguous displays remain
+  unselected rather than choosing an unrelated client.
+- The portal's current shortcut registrations are observed, so changes made in
+  desktop settings update availability during the session. A portal with only
+  some approved bindings does not replace the shared automatic input source.
+- Native Wayland desktops may not expose game-window focus. In that case,
+  approved portal actions remain global while Elite is running, and those
+  unconfirmed-focus actions do not select an automatic source.
 
-## Raven Colonial fixes
+## Input source and recovery controls
 
-- Construction completion is now reported to Raven even when an earlier depot
-  update already reduced the remaining cargo requirements to zero. Completed
-  projects no longer miss their completion update because no cargo changed.
-- If Raven cannot accept a completion update, SrvSurvey keeps the project
-  incomplete locally and can retry on a later live completion event.
-- Docking site-repair warnings clear after a successful lookup or repair, when
-  switching systems or commanders, or when disabling Raven access. A delayed
-  failure from an earlier context no longer brings an old warning back.
-- Current site-repair warnings name the affected system. Recovery preserves
-  unrelated Raven status messages.
-- Project and system editors discard delayed results after their commander,
-  system, or docking context changes. An old load, review, or import no longer
-  restores data from the previous context.
-- Site confirmation rechecks Raven's latest data and your editing permission.
-  Newly conflicting changes stop publication, and a replacement site with the
-  same name is kept separate from the original site.
-- Successful project creation remains visible if a follow-up step fails, with
-  the remaining problem reported separately. Primary-project restoration also
-  recognizes success on its final check.
-- Docking repairs can update missing body details even when the faction already
-  matches. Site records missing the identity needed for repair now report the
-  unresolved problem.
-- Improved compatibility with older Raven site records and empty optional
-  responses.
+- Added **Keyboard input source** under **Settings > Input**, below
+  **Enable key chords**: **Automatic (recommended)**, **Desktop keyboard**,
+  **Game display**, or **Wayland portal**.
+- The manual preference is saved with the commander profile and applies to
+  every keyboard shortcut in that instance. Unavailable choices are disabled;
+  an existing manual choice stays selected if its provider becomes unavailable
+  and does not silently switch to another source.
+- The input section shows the selected source, provider availability, focus
+  status, and last configured shortcut received, including ignored duplicates.
+  Arbitrary keystrokes are not recorded in this status.
+- **Reset input detection** returns to Automatic and clears detected-source
+  and held-key state without restarting the application. Shortcut bindings and
+  desktop approvals are retained; use a shortcut with Elite focused to learn
+  the source again.
+- Disabling keyboard input cancels pending approval and closes the shortcut
+  session. Declining approval leaves existing keyboard listeners available.
 
-## Fleet Carrier cargo sync
+## Journal chat-command fix
 
-- Failed cargo updates are retained in order across restarts. SrvSurvey checks
-  Raven's cargo state before retrying uncertain changes and can reconcile them
-  against a fresh market snapshot.
-- Purchases, sales, and transfers use the carrier where the commander was
-  docked when each event occurred, including when undocking happens in the
-  same journal update.
-- Cargo transactions arriving during carrier publication or a market refresh
-  are applied after that update, preserving their effect on the final totals.
-
-## Connection and commander handling
-
-- Slow or interrupted Raven responses are bounded and reported as recoverable
-  failures so they do not indefinitely hold up live journal processing.
-- Switching commanders during a refresh loads the replacement commander's
-  workspace once the earlier request finishes. API-key validation also keeps
-  the saved key with the profile that initiated it.
+- Rereading a journal during a running session no longer re-executes chat
+  commands that SrvSurvey has already processed. This prevents an old command
+  such as `.mine splat` from unexpectedly starting tracking again.
+- Newly sent repetitions of the same command still run normally. Tracking
+  distinguishes the original journal entry from a later identical message.
 
 ## Update channel and packages
 
-- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.19
+- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.21
   uses the schema-2 `xp2-v` release channel.
 - Development remains the default in-app update channel, with saved channel
   choices preserved.
-- Version: `2.1.3.0-rc.58.19`
-- Tag: `xp2-v2.1.3.0-rc.58.19`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.19-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.19-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.19-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.19-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.58.21`
+- Tag: `xp2-v2.1.3.0-rc.58.21`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.21-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.21-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.21-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.21-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

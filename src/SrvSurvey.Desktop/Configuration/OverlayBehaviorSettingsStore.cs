@@ -11,6 +11,7 @@ public sealed class OverlayBehaviorSettingsStore
         documentStore = new UiSettingsDocumentStore(path);
     }
 
+    /// <summary>Loads this commander's overlay preferences, leaving window management enabled by default.</summary>
     public OverlayBehaviorPreferences Load()
     {
         var settings = documentStore.Load()["OverlayBehavior"] as JsonObject;
@@ -20,10 +21,12 @@ public sealed class OverlayBehaviorSettingsStore
             GetBoolean(settings, "HideInMaverickSuit", false),
             GetBoolean(settings, "HideMultiGameCommanderOverlay", false),
             GetPreferredMonitorId(settings),
-            GetBoolean(settings, "LockToMonitor", false)
+            GetBoolean(settings, "LockToMonitor", false),
+            GetBoolean(settings, "BypassWindowManagement", false)
         );
     }
 
+    /// <summary>Persists overlay preferences while preserving other settings in the shared document.</summary>
     public void Save(OverlayBehaviorPreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
@@ -42,6 +45,7 @@ public sealed class OverlayBehaviorSettingsStore
             settings["HideInMaverickSuit"] = preferences.HideInMaverickSuit;
             settings["HideMultiGameCommanderOverlay"] = preferences.HideMultiGameCommanderOverlay;
             settings["LockToMonitor"] = preferences.LockToMonitor;
+            settings["BypassWindowManagement"] = preferences.BypassWindowManagement;
             if (string.IsNullOrWhiteSpace(preferences.PreferredMonitorId))
             {
                 settings.Remove("PreferredMonitor");
@@ -71,11 +75,13 @@ public sealed class OverlayBehaviorSettingsStore
     }
 }
 
+/// <summary>Per-commander overlay choices; window-management bypass is opt-in and applied at startup.</summary>
 public sealed record OverlayBehaviorPreferences(
     bool KeepWhenGameLosesFocus,
     bool HideInDominatorSuit,
     bool HideInMaverickSuit,
     bool HideMultiGameCommanderOverlay = false,
     string? PreferredMonitorId = null,
-    bool LockToMonitor = false
+    bool LockToMonitor = false,
+    bool BypassWindowManagement = false
 );

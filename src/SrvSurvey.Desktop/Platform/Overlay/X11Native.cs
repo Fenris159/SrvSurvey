@@ -1,10 +1,14 @@
 using System.Runtime.InteropServices;
 using Avalonia;
+using SrvSurvey.Desktop.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal static partial class X11Native
 {
+    /// <summary>Shares the stateless Xlib adapter used by overlay placement policy.</summary>
+    internal static readonly IX11OverlayWindowOperations OverlayWindowOperations = new OverlayWindowApi();
+
     internal const byte BadValue = 2;
     internal const byte BadWindow = 3;
     internal const byte BadMatch = 8;
@@ -320,12 +324,28 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial int XMapRaised(nint display, nuint window);
 
+    /// <summary>Changes selected native attributes, including override-redirect before a live panel is mapped.</summary>
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XChangeWindowAttributes(
+        nint display,
+        nuint window,
+        nuint valueMask,
+        ref XSetWindowAttributes attributes
+    );
+
+    /// <summary>Raises a window without mapping it or requesting keyboard focus.</summary>
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XRaiseWindow(nint display, nuint window);
+
+    /// <summary>Hides the native window without destroying its saved attributes.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial int XUnmapWindow(nint display, nuint window);
 
+    /// <summary>Gives the native window keyboard focus with the requested reversion policy.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial int XSetInputFocus(nint display, nuint focusWindow, int revertTo, nuint time);
 
+    /// <summary>Reads current keyboard focus and its reversion policy from the display server.</summary>
     [LibraryImport("libX11.so.6")]
     internal static partial int XGetInputFocus(nint display, out nuint focusWindow, out int revertTo);
 
@@ -432,6 +452,26 @@ internal static partial class X11Native
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    internal struct XSetWindowAttributes
+    {
+        public nuint BackgroundPixmap;
+        public nuint BackgroundPixel;
+        public nuint BorderPixmap;
+        public nuint BorderPixel;
+        public int BitGravity;
+        public int WindowGravity;
+        public int BackingStore;
+        public nuint BackingPlanes;
+        public nuint BackingPixel;
+        public int SaveUnder;
+        public nint EventMask;
+        public nint DoNotPropagateMask;
+        public int OverrideRedirect;
+        public nuint Colormap;
+        public nuint Cursor;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     internal struct XWindowAttributes
     {
         public int X;
@@ -458,4 +498,210 @@ internal static partial class X11Native
         public int OverrideRedirect;
         public nint Screen;
     }
+
+    /// <summary>Forwards overlay window operations to Xlib without changing their arguments or ordering.</summary>
+    private sealed class OverlayWindowApi : IX11OverlayWindowOperations
+    {
+        /// <summary>Returns Xlib's attributes result, including its synchronization reply.</summary>
+        public int GetAttributes(nint display, nuint window, out XWindowAttributes attributes) =>
+            XGetWindowAttributes(display, window, out attributes);
+
+        /// <summary>Applies the selected attribute values through Xlib.</summary>
+        public void ChangeAttributes(
+            nint display,
+            nuint window,
+            nuint valueMask,
+            ref XSetWindowAttributes attributes
+        ) => _ = XChangeWindowAttributes(display, window, valueMask, ref attributes);
+
+        /// <summary>Raises a window through Xlib without mapping it.</summary>
+        public void RaiseWindow(nint display, nuint window) => _ = XRaiseWindow(display, window);
+
+        /// <summary>Forwards explicit keyboard activation to Xlib.</summary>
+        public void SetInputFocus(nint display, nuint window, int revertTo, nuint time) =>
+            _ = XSetInputFocus(display, window, revertTo, time);
+
+        /// <summary>Flushes requests on the supplied native connection.</summary>
+        public void Flush(nint display) => _ = XFlush(display);
+    }
+
+    /// <summary>Creates an independently owned native recorder for a transient game display.</summary>
+    internal static IX11KeyboardRecordApi CreateKeyboardRecordApi() => new KeyboardRecordApi();
+
+    /// <summary>Owns Xlib/XRecord resources and their platform-specific shutdown recovery.</summary>
+    private sealed class KeyboardRecordApi : IX11KeyboardRecordApi
+    {
+        private nint control;
+        private nint data;
+        private nuint context;
+
+        /// <summary>Detects disconnection of either transient Xlib connection.</summary>
+        public bool HasFailed =>
+            X11TransientDisplayRecovery.HasFailed(control) || X11TransientDisplayRecovery.HasFailed(data);
+
+        /// <summary>Enables a keyboard-only recording context using separate control and data connections.</summary>
+        public bool Open(string displayName, X11KeyboardRecordCallback callback)
+        {
+            X11OverlayPlatformService.EnsureErrorHandlerInstalled();
+            control = OpenKeyboardDisplay(displayName);
+            data = OpenKeyboardDisplay(displayName);
+            if (control == nint.Zero || data == nint.Zero || XRecordQueryVersion(control, out _, out _) == 0)
+            {
+                return false;
+            }
+            nint range = XRecordAllocRange();
+            if (range == nint.Zero)
+            {
+                return false;
+            }
+            try
+            {
+                // XRecordRange.device_events is the two-byte range at offset 18.
+                Marshal.WriteByte(range, 18, 2);
+                Marshal.WriteByte(range, 19, 3);
+                nuint clients = 3; // XRecordAllClients.
+                context = XRecordCreateContext(control, 0, ref clients, 1, ref range, 1);
+            }
+            finally
+            {
+                _ = XFree(range);
+            }
+            _ = XSync(control, 0);
+            return context != 0 && XRecordEnableContextAsync(data, context, callback, nint.Zero) != 0;
+        }
+
+        /// <summary>Resolves a keysym against the actual layout of this game server.</summary>
+        public byte ResolveKeyCode(string name)
+        {
+            nuint symbol = XStringToKeysym(name);
+            return symbol == 0 ? (byte)0 : XKeysymToKeycode(control, symbol);
+        }
+
+        /// <summary>Flushes buffered server recording replies and drains them without blocking for keys.</summary>
+        public void ReadReplies()
+        {
+            _ = XSync(control, 0);
+            XRecordProcessReplies(data);
+        }
+
+        /// <summary>Releases one packet handed to the managed callback.</summary>
+        public void FreeData(nint pointer) => XRecordFreeData(pointer);
+
+        /// <summary>Disables the context and closes recoverable connections, including already disconnected servers.</summary>
+        public void Dispose()
+        {
+            if (context != 0 && !HasFailed)
+            {
+                _ = XRecordDisableContext(control, context);
+                _ = XRecordFreeContext(control, context);
+                _ = XSync(control, 0);
+                XRecordProcessReplies(data);
+            }
+            context = 0;
+            CloseKeyboardDisplay(ref data);
+            CloseKeyboardDisplay(ref control);
+        }
+
+        /// <summary>Registers one named connection for transient I/O-error recovery.</summary>
+        private static nint OpenKeyboardDisplay(string name)
+        {
+            nint text = Marshal.StringToCoTaskMemUTF8(name);
+            nint display = nint.Zero;
+            try
+            {
+                display = XOpenDisplay(text);
+                if (display != nint.Zero)
+                {
+                    X11TransientDisplayRecovery.Register(display);
+                    X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
+                }
+                return display;
+            }
+            catch
+            {
+                CloseKeyboardDisplay(ref display);
+                throw;
+            }
+            finally
+            {
+                Marshal.FreeCoTaskMem(text);
+            }
+        }
+
+        /// <summary>Closes a connection before unregistering its error handlers.</summary>
+        private static void CloseKeyboardDisplay(ref nint display)
+        {
+            nint current = display;
+            display = nint.Zero;
+            if (current == nint.Zero)
+            {
+                return;
+            }
+            try
+            {
+                _ = XCloseDisplay(current);
+            }
+            finally
+            {
+                X11TransientDisplayRecovery.Unregister(current);
+                X11OverlayPlatformService.UnregisterErrorHandledDisplay(current);
+            }
+        }
+    }
+
+    /// <summary>Queries whether the server supports recording.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial int XRecordQueryVersion(nint display, out int major, out int minor);
+
+    /// <summary>Allocates a zero-filled XRecord range.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial nint XRecordAllocRange();
+
+    /// <summary>Creates the keyboard recording context.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial nuint XRecordCreateContext(
+        nint display,
+        int flags,
+        ref nuint clients,
+        int clientCount,
+        ref nint ranges,
+        int rangeCount
+    );
+
+    /// <summary>Enables asynchronous recording on the data connection.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial int XRecordEnableContextAsync(
+        nint display,
+        nuint context,
+        X11KeyboardRecordCallback callback,
+        nint closure
+    );
+
+    /// <summary>Processes only immediately available recorded packets.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial void XRecordProcessReplies(nint display);
+
+    /// <summary>Releases a callback packet.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial void XRecordFreeData(nint data);
+
+    /// <summary>Stops the recording context.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial int XRecordDisableContext(nint display, nuint context);
+
+    /// <summary>Releases a disabled recording context.</summary>
+    [LibraryImport("libXtst.so.6")]
+    private static partial int XRecordFreeContext(nint display, nuint context);
+
+    /// <summary>Completes control requests before enabling the data stream.</summary>
+    [LibraryImport("libX11.so.6")]
+    private static partial int XSync(nint display, int discard);
+
+    /// <summary>Looks up a standard X11 keysym.</summary>
+    [LibraryImport("libX11.so.6", StringMarshalling = StringMarshalling.Utf8)]
+    private static partial nuint XStringToKeysym(string name);
+
+    /// <summary>Resolves a keysym on this server's keyboard layout.</summary>
+    [LibraryImport("libX11.so.6")]
+    private static partial byte XKeysymToKeycode(nint display, nuint keysym);
 }

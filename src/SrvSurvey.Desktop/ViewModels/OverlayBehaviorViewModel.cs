@@ -10,6 +10,7 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
 {
     private readonly OverlayBehaviorSettingsStore settingsStore;
     private OverlayBehaviorPreferences preferences;
+    private readonly bool startupBypassWindowManagement;
     private static readonly ApplicationMonitorOption AutomaticMonitor = new(null, "Automatic (primary monitor)");
     private readonly ObservableCollection<ApplicationMonitorOption> monitorOptions = [AutomaticMonitor];
     private bool isRefreshingMonitors;
@@ -22,10 +23,12 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
     private bool isAtCarrierManagement;
     private string settingsStatus = string.Empty;
 
+    /// <summary>Loads saved preferences and remembers the native-management choice used for this session.</summary>
     public OverlayBehaviorViewModel(OverlayBehaviorSettingsStore settingsStore)
     {
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         preferences = settingsStore.Load();
+        startupBypassWindowManagement = preferences.BypassWindowManagement;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -34,6 +37,17 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
 
     public string? PreferredMonitorId => preferences.PreferredMonitorId;
 
+    /// <summary>Opts live X11 panels and their position editor into unmanaged placement on the next start.</summary>
+    public bool BypassWindowManagement
+    {
+        get => preferences.BypassWindowManagement;
+        set => Update(preferences with { BypassWindowManagement = value });
+    }
+
+    /// <summary>Warns only when the saved bypass choice differs from this session's startup choice.</summary>
+    public bool WindowManagementRestartRequired => BypassWindowManagement != startupBypassWindowManagement;
+
+    /// <summary>Constrains live and preview overlay placement to the selected overlay monitor.</summary>
     public bool LockToMonitor
     {
         get => preferences.LockToMonitor;
@@ -246,6 +260,7 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldSuppressForSession));
     }
 
+    /// <summary>Saves a preference change and refreshes dependent controls, reporting persistence failures.</summary>
     private void Update(OverlayBehaviorPreferences next)
     {
         if (preferences == next)
@@ -270,6 +285,8 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(SelectedMonitor));
         OnPropertyChanged(nameof(PreferredMonitorId));
         OnPropertyChanged(nameof(LockToMonitor));
+        OnPropertyChanged(nameof(BypassWindowManagement));
+        OnPropertyChanged(nameof(WindowManagementRestartRequired));
         OnPropertyChanged(nameof(HideInDominatorSuit));
         OnPropertyChanged(nameof(HideInMaverickSuit));
         OnPropertyChanged(nameof(HideMultiGameCommanderOverlay));

@@ -79,15 +79,16 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
         Assert.Equal(0, changed);
     }
 
+    /// <summary>Allows native Wayland users to enable compositor shortcut discovery.</summary>
     [Fact]
-    public void UnsupportedHostCannotEnableKeyboardHook()
+    public void NativeWaylandCanEnablePortalShortcuts()
     {
         GlobalInputSettingsViewModel viewModel = Create(OverlayHostKind.LinuxWayland);
 
         viewModel.KeyboardEnabled = true;
 
-        Assert.False(viewModel.IsKeyboardAvailable);
-        Assert.False(viewModel.KeyboardEnabled);
+        Assert.True(viewModel.IsKeyboardAvailable);
+        Assert.True(viewModel.KeyboardEnabled);
     }
 
     [Fact]

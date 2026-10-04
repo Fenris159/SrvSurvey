@@ -9,6 +9,7 @@ public sealed class OverlayPresentationSession : IDisposable
     private readonly CombinedOverlayPresentationController? combinedController;
     private readonly OverlayPresentationSessionDependencies hostDependencies;
     private readonly HashSet<HostedOverlayWindow> hostedWindows = [];
+    private OverlayWindowManagementSession? windowManagementSession;
     private bool disposed;
 
     private OverlayPresentationSession(
@@ -161,6 +162,37 @@ public sealed class OverlayPresentationSession : IDisposable
         );
     }
 
+    /// <summary>Applies one startup bypass preference to separate X11 live panels and their position editor.</summary>
+    internal void ConfigureWindowManagement(bool bypassWindowManagement, Action<string>? log = null)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (
+            !bypassWindowManagement
+            || Decision.Mode != OverlayPresentationMode.MultipleWindows
+            || windowManagementSession is not null
+        )
+        {
+            return;
+        }
+
+        IOverlayPlatformService platform = hostDependencies.CreatePlatform();
+        if (platform is IOverlayWindowManagement native)
+        {
+            windowManagementSession = new OverlayWindowManagementSession(
+                hostDependencies.WindowRegistry ?? OverlayWindowRegistry.Shared,
+                native,
+                log
+            );
+            log?.Invoke("Window management bypass is enabled for X11/XWayland live panels and the position editor.");
+        }
+        else
+        {
+            platform.Dispose();
+            log?.Invoke("Window management bypass is unavailable on this display backend; using normal management.");
+        }
+    }
+
+    /// <summary>Disposes hosted panels and native presentation resources even if one dependent fails.</summary>
     public void Dispose()
     {
         if (disposed)
@@ -187,6 +219,14 @@ public sealed class OverlayPresentationSession : IDisposable
         finally
         {
             hostedWindows.Clear();
+            try
+            {
+                windowManagementSession?.Dispose();
+            }
+            catch (Exception exception)
+            {
+                disposalFailure ??= exception;
+            }
             try
             {
                 combinedController?.Dispose();
