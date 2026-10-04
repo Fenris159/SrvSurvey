@@ -340,6 +340,15 @@ public sealed partial class MainWindow : Window
         );
     }
 
+    /// <summary>Provides the overlay monitor's cached desktop bounds to input discovery without reading UI screens off-thread.</summary>
+    internal PixelRect? GetOverlayMonitorBounds() =>
+        SrvSurvey
+            .Desktop.Platform.Overlay.AvaloniaOverlayPositionEditorHost.ResolveFallbackMonitor(
+                Volatile.Read(ref applicationMonitors),
+                viewModel.OverlayBehavior.PreferredMonitorId
+            )
+            ?.Bounds;
+
     private void ApplyApplicationWindowPreferences(ApplicationWindowPosition? lastPosition)
     {
         string? automaticMonitorId = IsVisible ? Screens.ScreenFromWindow(this)?.DisplayName : null;

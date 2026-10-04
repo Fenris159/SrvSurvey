@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using SharpHook.Data;
 using SharpHook.Testing;
@@ -35,6 +36,105 @@ public sealed class GlobalKeyboardHookServiceTests
             { "CTRL SHIFT O", [KeyCode.VcRightControl, KeyCode.VcRightShift] },
             { "ALT CTRL SHIFT O", [KeyCode.VcRightAlt, KeyCode.VcRightControl, KeyCode.VcRightShift] },
         };
+
+    /// <summary>Checks nested keys use independent modifier state and honor disable/re-enable and context gating.</summary>
+    [Theory]
+    [InlineData(OverlayHostKind.LinuxXWayland)]
+    [InlineData(OverlayHostKind.LinuxWayland)]
+    public async Task NestedKeysRemainIndependentFromDesktopModifiers(OverlayHostKind host)
+    {
+        using var desktop = new TestGlobalHook(TestThreadingMode.Simple);
+        var game = new QueueGameInput();
+        bool foreground = true;
+        GlobalInputSettings settings = GlobalInputSettings.Default with
+        {
+            KeyboardEnabled = true,
+            Bindings = new Dictionary<GlobalInputAction, string> { [GlobalInputAction.ToggleOverlayInteraction] = "O" },
+        };
+        await using var service = new GlobalKeyboardHookService(
+            settings,
+            host,
+            new CallbackGameTracker(() => foreground),
+            () => false,
+            () => desktop,
+            additionalInput: new(GameKeyboardInput: game)
+        );
+        int actions = 0;
+        service.ActionTriggered += (_, _) => Interlocked.Increment(ref actions);
+        service.Start();
+        desktop.SimulateKeyPress(KeyCode.VcLeftAlt);
+        game.Queue.Enqueue(new(true, [KeyEvent(KeyCode.VcO, true, 100)]));
+        await WaitForCountAsync(() => Volatile.Read(ref actions), 1);
+        game.Queue.Enqueue(new(false, [KeyEvent(KeyCode.VcO, true, 110), KeyEvent(KeyCode.VcO, false, 120)]));
+        await Task.Delay(80);
+        Assert.Equal(1, Volatile.Read(ref actions));
+        game.Queue.Enqueue(new(false, [KeyEvent(KeyCode.VcO, true, 200), KeyEvent(KeyCode.VcO, false, 210)]));
+        await WaitForCountAsync(() => Volatile.Read(ref actions), 2);
+        foreground = false;
+        game.Queue.Enqueue(new(false, [KeyEvent(KeyCode.VcO, true, 300)]));
+        await Task.Delay(80);
+        Assert.Equal(2, Volatile.Read(ref actions));
+        service.Update(settings with { KeyboardEnabled = false });
+        await WaitForCountAsync(() => Volatile.Read(ref game.DisabledReads), 1);
+        foreground = true;
+        service.Update(settings);
+        game.Queue.Enqueue(new(true, [KeyEvent(KeyCode.VcO, true, 400)]));
+        await WaitForCountAsync(() => Volatile.Read(ref actions), 3);
+        await service.DisposeAsync();
+        Assert.True(game.Disposed);
+    }
+
+    /// <summary>Creates a native-like keyboard event for the secondary input source.</summary>
+    private static UioHookEvent KeyEvent(KeyCode key, bool pressed, ulong time) =>
+        new()
+        {
+            Type = pressed ? EventType.KeyPressed : EventType.KeyReleased,
+            Time = time,
+            Keyboard = new KeyboardEventData { KeyCode = key },
+        };
+
+    /// <summary>Waits for an asynchronous source's deterministic observable result.</summary>
+    private static async Task WaitForCountAsync(Func<int> count, int expected)
+    {
+        for (int attempt = 0; attempt < 100 && count() < expected; attempt++)
+        {
+            await Task.Delay(20);
+        }
+        Assert.True(count() >= expected);
+    }
+
+    /// <summary>Feeds a background input source without invoking native APIs.</summary>
+    private sealed class QueueGameInput : IGameKeyboardInput
+    {
+        public readonly ConcurrentQueue<GameKeyboardEventBatch> Queue = new();
+        public int DisabledReads;
+        public bool Disposed { get; private set; }
+
+        /// <summary>Returns one queued batch when enabled and clears it when disabled.</summary>
+        public GameKeyboardEventBatch ReadEvents(bool enabled)
+        {
+            if (!enabled)
+            {
+                Interlocked.Increment(ref DisabledReads);
+                Queue.Clear();
+                return new(true, []);
+            }
+            return Queue.TryDequeue(out GameKeyboardEventBatch? batch) ? batch : new(false, []);
+        }
+
+        /// <summary>Records listener disposal.</summary>
+        public void Dispose() => Disposed = true;
+    }
+
+    /// <summary>Supplies a changeable game foreground state.</summary>
+    private sealed class CallbackGameTracker(Func<bool> foreground) : IGameWindowTracker
+    {
+        /// <summary>Returns only the foreground flag needed by shortcut gating.</summary>
+        public GameWindowSnapshot GetSnapshot() => GameWindowSnapshot.Unavailable with { IsForeground = foreground() };
+
+        /// <summary>Releases the stateless tracker.</summary>
+        public void Dispose() { }
+    }
 
     [Fact]
     public async Task DispatchesConfiguredChordWhileApplicationIsActive()
@@ -340,6 +440,7 @@ public sealed class GlobalKeyboardHookServiceTests
         Assert.Equal(0, triggerCount);
     }
 
+    /// <summary>Checks native Wayland uses optional portal support rather than starting an X11 desktop hook.</summary>
     [Fact]
     public async Task DoesNotCreateHookOnUnsupportedHost()
     {
@@ -359,7 +460,7 @@ public sealed class GlobalKeyboardHookServiceTests
         service.Start();
 
         Assert.Equal(0, factoryCalls);
-        Assert.Equal("Global keyboard input is unavailable on this platform.", service.Status);
+        Assert.Equal("Wayland keyboard input is waiting for Global Shortcuts portal support.", service.Status);
     }
 
     [Fact]
@@ -397,6 +498,7 @@ public sealed class GlobalKeyboardHookServiceTests
         Assert.Equal("Global keyboard input could not start: test failure", service.Status);
     }
 
+    /// <summary>Blocks the key callback specifically, allowing background focus diagnostics to run before the event.</summary>
     [Fact]
     public async Task DisposalWaitsForInFlightEventBeforeDisposingTracker()
     {
@@ -406,7 +508,11 @@ public sealed class GlobalKeyboardHookServiceTests
             EnabledSettings(),
             OverlayHostKind.LinuxX11,
             tracker,
-            isApplicationActive: () => false,
+            isApplicationActive: () =>
+            {
+                tracker.EnableBlocking();
+                return false;
+            },
             hookFactory: () => testHook
         );
         service.Start();
@@ -423,6 +529,7 @@ public sealed class GlobalKeyboardHookServiceTests
         Assert.True(tracker.IsDisposed);
     }
 
+    /// <summary>Prevents a replacement hook from starting until the original key callback and event loop finish.</summary>
     [Fact]
     public async Task RestartWaitsForPreviousEventLoopToStop()
     {
@@ -435,7 +542,11 @@ public sealed class GlobalKeyboardHookServiceTests
             EnabledSettings(),
             OverlayHostKind.LinuxX11,
             tracker,
-            isApplicationActive: () => false,
+            isApplicationActive: () =>
+            {
+                tracker.EnableBlocking();
+                return false;
+            },
             hookFactory: () =>
             {
                 if (Interlocked.Increment(ref factoryCalls) == 1)
@@ -481,6 +592,7 @@ public sealed class GlobalKeyboardHookServiceTests
     private sealed class BlockingGameWindowTracker : IGameWindowTracker
     {
         private readonly ManualResetEventSlim allowSnapshot = new();
+        private bool blockSnapshots;
         private readonly TaskCompletionSource snapshotEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private int disposed;
 
@@ -488,8 +600,16 @@ public sealed class GlobalKeyboardHookServiceTests
 
         public bool IsDisposed => Volatile.Read(ref disposed) != 0;
 
+        /// <summary>Arms blocking from the key callback while its service lock excludes background diagnostics.</summary>
+        public void EnableBlocking() => Volatile.Write(ref blockSnapshots, true);
+
+        /// <summary>Blocks an armed event snapshot, leaving earlier background focus refreshes nonblocking.</summary>
         public GameWindowSnapshot GetSnapshot()
         {
+            if (!Volatile.Read(ref blockSnapshots))
+            {
+                return GameWindowSnapshot.Unavailable;
+            }
             snapshotEntered.TrySetResult();
             if (!allowSnapshot.Wait(TimeSpan.FromSeconds(5)))
             {

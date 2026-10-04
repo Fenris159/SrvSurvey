@@ -15,6 +15,7 @@ public sealed class JournalDirectoryMonitor
     private readonly string[] journalDirectories;
     private readonly string? targetFrontierId;
     private readonly Dictionary<string, JournalIdentityCacheEntry> journalIdentityCache;
+    private readonly Dictionary<string, HashSet<(long ByteOffset, string RawJson)>> observedTextEvents;
     private readonly Func<string, CompanionFileStampReadResult> companionFileStampReader;
     private readonly Dictionary<string, string> companionFileStampErrors;
     private readonly SemaphoreSlim pollLock = new(1, 1);
@@ -39,12 +40,15 @@ public sealed class JournalDirectoryMonitor
     private bool lastReportedAwaitingCommanderIdentity;
     private string? activeJournalDirectory;
 
+    /// <summary>Monitors a single journal directory for the selected commander.</summary>
     public JournalDirectoryMonitor(string journalDirectory, string? targetFrontierId = null)
         : this([journalDirectory], targetFrontierId, ReadCompanionFileStamp) { }
 
+    /// <summary>Monitors the available journal directories for the selected commander.</summary>
     public JournalDirectoryMonitor(IReadOnlyList<string> journalDirectories, string? targetFrontierId = null)
         : this(journalDirectories, targetFrontierId, ReadCompanionFileStamp) { }
 
+    /// <summary>Monitors a directory with an injectable companion-file metadata reader.</summary>
     internal JournalDirectoryMonitor(
         string journalDirectory,
         string? targetFrontierId,
@@ -52,6 +56,7 @@ public sealed class JournalDirectoryMonitor
     )
         : this([journalDirectory], targetFrontierId, companionFileStampReader) { }
 
+    /// <summary>Initializes commander selection and per-source chat-event tracking.</summary>
     internal JournalDirectoryMonitor(
         IReadOnlyList<string> journalDirectories,
         string? targetFrontierId,
@@ -78,6 +83,7 @@ public sealed class JournalDirectoryMonitor
         journalIdentityCache = new Dictionary<string, JournalIdentityCacheEntry>(
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
+        observedTextEvents = new Dictionary<string, HashSet<(long ByteOffset, string RawJson)>>(pathComparer);
         companionFileStampErrors = new Dictionary<string, string>(
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
@@ -390,6 +396,7 @@ public sealed class JournalDirectoryMonitor
         }
     }
 
+    /// <summary>Reads appended bytes and preserves line offsets so rereads cannot repeat chat commands.</summary>
     private async Task ReadJournalAppendAsync(
         List<JournalEventEnvelope> events,
         List<string> errors,
@@ -425,6 +432,7 @@ public sealed class JournalDirectoryMonitor
         }
 
         byte[] appended = appendedBytes.ToArray();
+        long combinedOffset = currentJournalOffset - appended.Length - pendingJournalBytes.Length;
         byte[] combined = new byte[pendingJournalBytes.Length + appended.Length];
         Buffer.BlockCopy(pendingJournalBytes, 0, combined, 0, pendingJournalBytes.Length);
         Buffer.BlockCopy(appended, 0, combined, pendingJournalBytes.Length, appended.Length);
@@ -443,24 +451,36 @@ public sealed class JournalDirectoryMonitor
                 lineLength--;
             }
 
-            ParseLine(combined.AsSpan(lineStart, lineLength), events, errors);
+            ParseLine(combined.AsSpan(lineStart, lineLength), combinedOffset + lineStart, events, errors);
             lineStart = index + 1;
         }
 
         pendingJournalBytes = combined[lineStart..];
     }
 
+    /// <summary>Finishes the previous source's pending line while retaining its original byte offset.</summary>
     private void FlushPendingLine(List<JournalEventEnvelope> events, List<string> errors)
     {
         if (pendingJournalBytes.Length > 0)
         {
-            ParseLine(pendingJournalBytes, events, errors);
+            ParseLine(pendingJournalBytes, currentJournalOffset - pendingJournalBytes.Length, events, errors);
             pendingJournalBytes = [];
         }
     }
 
-    private static void ParseLine(ReadOnlySpan<byte> lineBytes, List<JournalEventEnvelope> events, List<string> errors)
+    /// <summary>Parses a journal line and emits each source chat entry only once during this monitor's lifetime.</summary>
+    private void ParseLine(
+        ReadOnlySpan<byte> lineBytes,
+        long byteOffset,
+        List<JournalEventEnvelope> events,
+        List<string> errors
+    )
     {
+        if (!lineBytes.IsEmpty && lineBytes[^1] == (byte)'\r')
+        {
+            lineBytes = lineBytes[..^1];
+        }
+
         if (lineBytes.IsEmpty)
         {
             return;
@@ -482,12 +502,32 @@ public sealed class JournalDirectoryMonitor
             && journalEvent is not null
         )
         {
-            events.Add(journalEvent);
+            if (journalEvent.EventName != "SendText" || RememberTextEvent(byteOffset, journalEvent.RawJson))
+            {
+                events.Add(journalEvent);
+            }
         }
         else if (error is not null)
         {
             errors.Add($"A journal line could not be parsed: {error}");
         }
+    }
+
+    /// <summary>Tracks file, line offset, and content without conflating newly sent identical commands.</summary>
+    private bool RememberTextEvent(long byteOffset, string rawJson)
+    {
+        if (
+            !observedTextEvents.TryGetValue(
+                currentJournalPath!,
+                out HashSet<(long ByteOffset, string RawJson)>? entries
+            )
+        )
+        {
+            entries = [];
+            observedTextEvents.Add(currentJournalPath!, entries);
+        }
+
+        return entries.Add((byteOffset, rawJson));
     }
 
     private static bool PathsEqual(string first, string? second)

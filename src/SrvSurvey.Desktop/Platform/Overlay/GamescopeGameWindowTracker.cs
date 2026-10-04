@@ -7,6 +7,7 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
 {
     internal const string MarkerPrefix = nameof(GamescopeGameWindowBridge) + ".";
 
+    /// <summary>Returns the latest validated bridge for existing overlay placement.</summary>
     public static GamescopeGameWindowBridge? TryReadCurrent()
     {
         return TryRead(Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR"));
@@ -17,11 +18,22 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
         return TryRead(runtimeDirectory, X11OverlayInteractionMarker.TryReadProcessStartTime);
     }
 
+    /// <summary>Returns the newest validated bridge while retaining the existing single-bridge behavior.</summary>
     internal static GamescopeGameWindowBridge? TryRead(string? runtimeDirectory, Func<int, ulong?> readProcessStartTime)
+    {
+        IReadOnlyList<GamescopeGameWindowBridge> bridges = ReadAll(runtimeDirectory, readProcessStartTime);
+        return bridges.Count > 0 ? bridges[0] : null;
+    }
+
+    /// <summary>Returns all live bridges so keyboard discovery can use the configured overlay monitor.</summary>
+    internal static IReadOnlyList<GamescopeGameWindowBridge> ReadAll(
+        string? runtimeDirectory,
+        Func<int, ulong?> readProcessStartTime
+    )
     {
         if (string.IsNullOrWhiteSpace(runtimeDirectory) || !Directory.Exists(runtimeDirectory))
         {
-            return null;
+            return [];
         }
 
         try
@@ -30,11 +42,12 @@ internal sealed record GamescopeGameWindowBridge(int ProcessId, string Display, 
                 .EnumerateFiles(runtimeDirectory, MarkerPrefix + "*")
                 .OrderByDescending(File.GetLastWriteTimeUtc)
                 .Select(path => TryReadMarker(path, readProcessStartTime))
-                .FirstOrDefault(marker => marker is not null);
+                .OfType<GamescopeGameWindowBridge>()
+                .ToArray();
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            return null;
+            return [];
         }
     }
 

@@ -18,7 +18,22 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     private string lastActionStatus = string.Empty;
     private IReadOnlyList<ControllerDeviceOptionViewModel> controllerDevices = [];
     private ControllerDeviceOptionViewModel? selectedController;
+    private KeyboardInputDiagnostics keyboardDiagnostics = new(
+        null,
+        false,
+        false,
+        false,
+        "No configured shortcut received yet.",
+        "Waiting for Elite Dangerous.",
+        "No separate game display is connected."
+    );
+    private IReadOnlyList<KeyboardInputSourceOption> keyboardSourceOptions = [];
+    private readonly WorkspaceCommand desktopShortcutSettingsCommand;
+    private Func<Task>? openDesktopShortcutSettings;
+    private bool openingDesktopShortcutSettings;
+    private string? desktopShortcutSettingsError;
 
+    /// <summary>Loads profile-scoped bindings and source preferences and prepares keyboard recovery controls.</summary>
     public GlobalInputSettingsViewModel(
         GlobalInputSettingsStore store,
         OverlayPlatformCapabilities capabilities,
@@ -37,6 +52,12 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
             ))
             .ToArray();
         ResetBindingsCommand = new DelegateCommand(ResetBindings);
+        ResetKeyboardDetectionCommand = new DelegateCommand(ResetKeyboardDetection);
+        desktopShortcutSettingsCommand = new WorkspaceCommand(
+            () => _ = OpenDesktopShortcutSettingsAsync(),
+            () => CanOpenDesktopShortcutSettings
+        );
+        UpdateKeyboardDiagnostics(keyboardDiagnostics);
         MiningBindings = Bindings
             .Where(binding => binding.Definition.Action is >= GlobalInputAction.Track1 and <= GlobalInputAction.Track6)
             .ToArray();
@@ -51,6 +72,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public event EventHandler<GlobalInputSettingsChangedEventArgs>? SettingsChanged;
+    public event EventHandler? KeyboardDetectionResetRequested;
 
     public OverlayPlatformCapabilities Capabilities { get; }
 
@@ -58,11 +80,179 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
 
     public IReadOnlyList<InputBindingViewModel> MiningBindings { get; }
 
+    public ICommand DesktopShortcutSettingsCommand => desktopShortcutSettingsCommand;
+    public bool IsDesktopShortcutSettingsVisible =>
+        Capabilities.Host is OverlayHostKind.LinuxX11 or OverlayHostKind.LinuxXWayland or OverlayHostKind.LinuxWayland;
+    public bool CanOpenDesktopShortcutSettings =>
+        IsDesktopShortcutSettingsVisible
+        && KeyboardEnabled
+        && openDesktopShortcutSettings is not null
+        && keyboardDiagnostics.CanOpenDesktopShortcutSettings
+        && !openingDesktopShortcutSettings;
+    public string DesktopShortcutSettingsStatus =>
+        desktopShortcutSettingsError ?? keyboardDiagnostics.DesktopShortcutSettingsStatus.Split('\n')[0];
+
+    /// <summary>Displays readable desktop grants separately from the compact portal status.</summary>
+    public string ApprovedDesktopShortcuts
+    {
+        get
+        {
+            string status = keyboardDiagnostics.DesktopShortcutSettingsStatus;
+            int separator = status.IndexOf('\n');
+            return separator >= 0 ? status[(separator + 1)..] : string.Empty;
+        }
+    }
+    public bool HasApprovedDesktopShortcuts => ApprovedDesktopShortcuts.Length > 0;
+
+    /// <summary>Connects the explicit desktop settings button without invoking registration or opening a dialog.</summary>
+    public void SetDesktopShortcutSettingsHandler(Func<Task>? handler)
+    {
+        openDesktopShortcutSettings = handler;
+        desktopShortcutSettingsCommand.Refresh();
+    }
+
+    /// <summary>Serializes button requests and reports failures without an unobserved UI task exception.</summary>
+    internal async Task OpenDesktopShortcutSettingsAsync()
+    {
+        if (!CanOpenDesktopShortcutSettings)
+        {
+            return;
+        }
+        openingDesktopShortcutSettings = true;
+        desktopShortcutSettingsError = null;
+        desktopShortcutSettingsCommand.Refresh();
+        OnPropertyChanged(nameof(DesktopShortcutSettingsStatus));
+        try
+        {
+            await openDesktopShortcutSettings!();
+        }
+        catch (OperationCanceledException)
+        {
+            // Disabling keyboard input or closing SrvSurvey cancels the desktop request.
+        }
+        catch (Exception)
+        {
+            desktopShortcutSettingsError =
+                "Desktop shortcut settings could not open. Try again when the desktop portal is available.";
+        }
+        finally
+        {
+            openingDesktopShortcutSettings = false;
+            desktopShortcutSettingsCommand.Refresh();
+            OnPropertyChanged(nameof(DesktopShortcutSettingsStatus));
+        }
+    }
+
     public ICommand ResetBindingsCommand { get; }
+    public ICommand ResetKeyboardDetectionCommand { get; }
+    public IReadOnlyList<KeyboardInputSourceOption> KeyboardSourceOptions => keyboardSourceOptions;
+
+    /// <summary>Persists one manual input preference for every keyboard shortcut in this profile.</summary>
+    public KeyboardInputSourceOption SelectedKeyboardSource
+    {
+        get => keyboardSourceOptions.First(option => option.Mode == settings.KeyboardSource);
+        set
+        {
+            if (value is null || !value.IsAvailable)
+            {
+                OnPropertyChanged();
+                return;
+            }
+            if (value.Mode != settings.KeyboardSource)
+            {
+                Apply(settings with { KeyboardSource = value.Mode });
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(KeyboardSourceDetails));
+                OnPropertyChanged(nameof(KeyboardSourceStatus));
+            }
+        }
+    }
+
+    public string KeyboardSourceDetails => SelectedKeyboardSource.Details;
+    public string KeyboardFocusStatus => keyboardDiagnostics.FocusStatus;
+    public string LastKeyboardInput => keyboardDiagnostics.LastInput;
+    public string KeyboardSourceStatus
+    {
+        get
+        {
+            if (settings.KeyboardSource == KeyboardInputMode.Automatic)
+            {
+                return keyboardDiagnostics.SelectedSource is { } source
+                    ? $"Automatic - using {keyboardSourceOptions.First(option => option.Mode == source).Label}."
+                    : "Automatic - waiting for a shortcut with Elite Dangerous focused.";
+            }
+            string unavailable = SelectedKeyboardSource.IsAvailable ? string.Empty : " (unavailable)";
+            return $"Manual - {SelectedKeyboardSource.Label}{unavailable}.";
+        }
+    }
+
+    /// <summary>Updates source choices and diagnostics without changing saved bindings or granting permissions.</summary>
+    public void UpdateKeyboardDiagnostics(KeyboardInputDiagnostics diagnostics)
+    {
+        if (keyboardSourceOptions.Count > 0 && keyboardDiagnostics == diagnostics)
+        {
+            return;
+        }
+        keyboardDiagnostics = diagnostics;
+        keyboardSourceOptions =
+        [
+            new(
+                KeyboardInputMode.Automatic,
+                "Automatic (recommended)",
+                true,
+                "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working."
+            ),
+            new(
+                KeyboardInputMode.Desktop,
+                "Desktop keyboard",
+                diagnostics.DesktopAvailable,
+                "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener."
+            ),
+            new(
+                KeyboardInputMode.GameDisplay,
+                "Game display",
+                diagnostics.GameDisplayAvailable,
+                diagnostics.GameDisplayStatus
+                    + " Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available."
+            ),
+            new(
+                KeyboardInputMode.WaylandPortal,
+                "Wayland portal",
+                diagnostics.PortalAvailable,
+                "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus."
+            ),
+        ];
+        OnPropertyChanged(nameof(KeyboardSourceOptions));
+        OnPropertyChanged(nameof(SelectedKeyboardSource));
+        OnPropertyChanged(nameof(KeyboardSourceDetails));
+        OnPropertyChanged(nameof(KeyboardSourceStatus));
+        OnPropertyChanged(nameof(KeyboardFocusStatus));
+        OnPropertyChanged(nameof(LastKeyboardInput));
+        desktopShortcutSettingsError = null;
+        OnPropertyChanged(nameof(DesktopShortcutSettingsStatus));
+        OnPropertyChanged(nameof(ApprovedDesktopShortcuts));
+        OnPropertyChanged(nameof(HasApprovedDesktopShortcuts));
+        desktopShortcutSettingsCommand.Refresh();
+    }
+
+    /// <summary>Returns to Automatic and requests fresh session detection while preserving bindings and approvals.</summary>
+    private void ResetKeyboardDetection()
+    {
+        if (settings.KeyboardSource != KeyboardInputMode.Automatic)
+        {
+            Apply(settings with { KeyboardSource = KeyboardInputMode.Automatic });
+            OnPropertyChanged(nameof(SelectedKeyboardSource));
+            OnPropertyChanged(nameof(KeyboardSourceDetails));
+            OnPropertyChanged(nameof(KeyboardSourceStatus));
+        }
+        KeyboardDetectionResetRequested?.Invoke(this, EventArgs.Empty);
+    }
 
     public ICommand RefreshControllersCommand { get; }
 
-    public bool IsKeyboardAvailable => Capabilities.SupportsGlobalInput;
+    /// <summary>Allows Wayland keyboard enablement while runtime portal discovery reports actual availability.</summary>
+    public bool IsKeyboardAvailable =>
+        Capabilities.SupportsGlobalInput || Capabilities.Host == OverlayHostKind.LinuxWayland;
 
     public bool IsControllerAvailable =>
         Capabilities.Host
@@ -115,6 +305,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Persists keyboard enablement and updates whether desktop configuration can be opened.</summary>
     public bool KeyboardEnabled
     {
         get => settings.KeyboardEnabled;
@@ -127,6 +318,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
 
             Apply(settings with { KeyboardEnabled = value });
             OnPropertyChanged();
+            desktopShortcutSettingsCommand.Refresh();
         }
     }
 

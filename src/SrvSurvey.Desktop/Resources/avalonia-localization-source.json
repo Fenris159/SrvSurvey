@@ -80,6 +80,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "(unavailable)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+  },
+  {
     "Text": "**App Restart Required",
     "IsFormat": false,
     "SourceKinds": [
@@ -4532,6 +4540,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Approved desktop shortcuts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Aquamarine",
     "IsFormat": false,
     "SourceKinds": [
@@ -5322,6 +5338,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayBehaviorViewModel.cs"
+  },
+  {
+    "Text": "Automatic (recommended)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+  },
+  {
+    "Text": "Automatic - waiting for a shortcut with Elite Dangerous focused.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
   },
   {
     "Text": "Automatic Fleet Carrier cargo sync is off.",
@@ -6131,6 +6163,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "BackSpace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "Background",
@@ -14311,7 +14351,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GamescopeKeyboardInput.cs"
   },
   {
     "Text": "DISTANCE",
@@ -15149,6 +15189,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Desktop keyboard",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
     "Text": "Desktop overlay placement and VR calibration are stored independently.",
     "IsFormat": false,
     "SourceKinds": [
@@ -15179,6 +15227,110 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "Desktop shortcut settings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Desktop shortcut settings are unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcut settings could not open: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: active",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: active ({0} of {1} bindings). {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: checking availability.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: inactive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: inactive. Approval was declined; click Desktop shortcut settings to try again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: inactive. Click Desktop shortcut settings to approve bindings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: inactive. Reconnecting...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Desktop shortcuts: opening settings...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
   },
   {
     "Text": "DesktopBehavior",
@@ -17093,12 +17245,52 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopBehaviorViewModel.cs"
   },
   {
+    "Text": "Elite Dangerous focus confirmed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Elite Dangerous focus is unconfirmed; automatic detection was not learned.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Elite Dangerous is not focused.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Elite Dangerous is not running.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
     "Text": "Elite Dangerous is not running; file operations are available.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
+  },
+  {
+    "Text": "Elite Dangerous is running; desktop focus cannot be confirmed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
     "Text": "Elite Dangerous journal folder",
@@ -17150,12 +17342,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml.cs"
   },
   {
+    "Text": "EliteDangerous6",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
+  },
+  {
     "Text": "EliteDangerous64",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/EliteGameWindowIdentity.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
   },
   {
     "Text": "Embark",
@@ -21190,6 +21390,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
+    "Text": "GNOME",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
+  },
+  {
     "Text": "GOAL #{0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -21527,6 +21735,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Game display",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Game display {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Game keyboard recording failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+  },
+  {
     "Text": "Game overlays",
     "IsFormat": false,
     "SourceKinds": [
@@ -21664,6 +21896,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Global Shortcuts portal unavailable on this desktop.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Global Shortcuts portal unavailable: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Global Shortcuts portal unsupported: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
+  },
+  {
+    "Text": "Global Shortcuts portal version is unsupported.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
+  },
+  {
     "Text": "Global goal supplied by Inara",
     "IsFormat": false,
     "SourceKinds": [
@@ -21726,6 +21990,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Global keyboard input: listening on Elite display {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GamescopeKeyboardInput.cs"
   },
   {
     "Text": "Global overlay behavior",
@@ -25049,6 +25321,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Input detection reset. Use a shortcut with Elite Dangerous focused.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
     "Text": "Input settings changed for this session but could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -25997,6 +26277,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Keyboard input source",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Keyboard shortcuts",
     "IsFormat": false,
     "SourceKinds": [
@@ -26027,6 +26315,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "KeyboardSource",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputSettingsStore.cs"
   },
   {
     "Text": "Kills",
@@ -26550,6 +26846,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Last shortcut: {0} from {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Last shortcut: {0} from {1}; duplicate or unselected source ignored.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
     "Text": "Last system available",
@@ -28546,6 +28858,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "Manual - {0}{1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
   },
   {
     "Text": "Manual / Canonn import",
@@ -30913,6 +31233,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
+    "Text": "Native Wayland overlays require compositor support. Keyboard shortcuts require a supported Global Shortcuts portal.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+  },
+  {
     "Text": "Natural Disaster",
     "IsFormat": false,
     "SourceKinds": [
@@ -31302,7 +31630,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "Next Elite window",
@@ -31992,6 +32320,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "No configured shortcut received yet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
     "Text": "No confirmed or predicted organisms are available for this body.",
@@ -32713,6 +33049,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
+    "Text": "No separate game display is connected.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
     "Text": "No session log file is available.",
@@ -34239,6 +34583,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Open the desktop menu to approve or configure global shortcuts. On older GNOME desktops, this opens SrvSurvey\u0027s Applications settings; choose Global Shortcuts there. SrvSurvey never opens it automatically. Application key codes are requested keys; the desktop can override them. Expand Approved desktop shortcuts to see the keys that apply to portal input.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Open the information button beside VoxStellar before opting in. It lists the journal events, the exploration data VoxStellar says it stores, its user-content license, privacy policy, terms, and the MIT-licensed EDMC plugin protocol adapted by SrvSurvey.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35752,6 +36104,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "PPid:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
   },
   {
     "Text": "PRA",
@@ -37601,12 +37961,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
+    "Text": "Print",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+  },
+  {
     "Text": "Prior",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceSurveyViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "Prior colour \u0027{0}\u0027 referenced by \u0027{1}\u0027 was not found.",
@@ -41702,6 +42070,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+  },
+  {
     "Text": "Requires proper technique; hard impacts common",
     "IsFormat": false,
     "SourceKinds": [
@@ -41836,6 +42212,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
+    "Text": "Reset input detection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Reset returns to Automatic and clears the detected source. Shortcut bindings and desktop approvals are kept; no app restart is needed. Manual selection applies to all keyboard shortcuts and does not automatically fall back.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Reset selected",
@@ -42212,6 +42604,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Return",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "Return a completed or empty system to the active survey.",
@@ -43659,6 +44059,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierShipyardTabView.axaml"
+  },
+  {
+    "Text": "SNAP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
   },
   {
     "Text": "SOURCE",
@@ -47106,6 +47514,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
   },
   {
+    "Text": "Shortcut registration could not be remembered: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/PortalShortcutRegistrationStore.cs"
+  },
+  {
     "Text": "ShortcutBindingsExpander",
     "IsFormat": false,
     "SourceKinds": [
@@ -48889,6 +49305,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/GroundTargetOverlayWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey has focus; automatic detection is not learned here.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
     "Text": "SrvSurvey high-gravity warning overlay",
@@ -55798,6 +56222,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The shortcut portal returned an invalid session.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
+  },
+  {
+    "Text": "The shortcut portal returned an unexpected request handle.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
+  },
+  {
     "Text": "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
     "IsFormat": false,
     "SourceKinds": [
@@ -57844,6 +58284,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
+    "Text": "Uid:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
+  },
+  {
     "Text": "Unassigned",
     "IsFormat": false,
     "SourceKinds": [
@@ -59319,12 +59767,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
+  },
+  {
     "Text": "Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
   },
   {
     "Text": "Uses the original SrvSurvey translations where available. New port-only text falls back to English.",
@@ -60098,6 +60562,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Waiting for Elite Dangerous.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
     "Text": "Waiting for Elite\u0027s Rhino cockpit view.",
     "IsFormat": false,
     "SourceKinds": [
@@ -60650,12 +61122,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
-    "Text": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
+    "Text": "Wayland keyboard input is waiting for Global Shortcuts portal support.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
+  },
+  {
+    "Text": "Wayland portal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalKeyboardHookService.cs"
   },
   {
     "Text": "Wayland screen capture",
@@ -60745,6 +61225,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland shortcut approval is needed. Click Desktop shortcut settings to approve; existing keyboard listeners remain available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
   },
   {
     "Text": "WaylandCapture",
@@ -61892,6 +62380,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "apostrophe",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+  },
+  {
     "Text": "app",
     "IsFormat": false,
     "SourceKinds": [
@@ -61945,7 +62441,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
   },
   {
     "Text": "arg{0}",
@@ -62074,6 +62570,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BundledAssetImageConverter.cs"
+  },
+  {
+    "Text": "backslash",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "badge",
@@ -62452,6 +62956,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
+    "Text": "bracketleft",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+  },
+  {
+    "Text": "bracketright",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+  },
+  {
     "Text": "break",
     "IsFormat": false,
     "SourceKinds": [
@@ -62644,6 +63164,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/ManagedOverlayWindowDragSession.cs"
   },
   {
+    "Text": "cmdline",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
+  },
+  {
     "Text": "cmdr",
     "IsFormat": false,
     "SourceKinds": [
@@ -62802,6 +63330,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
+  },
+  {
+    "Text": "comm",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
+  },
+  {
+    "Text": "comma",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "commander journal publication upload credential api key flight log",
@@ -63082,6 +63626,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "description",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
   },
   {
     "Text": "desktop",
@@ -63378,6 +63930,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "environ",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
+  },
+  {
+    "Text": "equal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "error",
@@ -63881,7 +64449,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
   },
   {
     "Text": "gamma",
@@ -63962,6 +64530,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "grave",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "green",
@@ -64556,6 +65132,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "launch-panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
+  },
+  {
     "Text": "left",
     "IsFormat": false,
     "SourceKinds": [
@@ -64937,7 +65521,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "missile",
@@ -65524,6 +66108,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
   },
   {
+    "Text": "period",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+  },
+  {
     "Text": "pilots-federation",
     "IsFormat": false,
     "SourceKinds": [
@@ -66060,6 +66652,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "self",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
+  },
+  {
     "Text": "sell systems, best viable price first. Best sell from",
     "IsFormat": false,
     "SourceKinds": [
@@ -66074,6 +66674,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
+    "Text": "semicolon",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "sensor",
@@ -66188,6 +66796,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "shortcuts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
+  },
+  {
     "Text": "shutdown",
     "IsFormat": false,
     "SourceKinds": [
@@ -66268,6 +66884,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
+    "Text": "slash",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
+  },
+  {
     "Text": "slot",
     "IsFormat": false,
     "SourceKinds": [
@@ -66298,6 +66922,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
+  },
+  {
+    "Text": "space",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
     "Text": "spansh.co.uk",
@@ -66426,6 +67058,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemeStateStore.cs"
+  },
+  {
+    "Text": "status",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
   },
   {
     "Text": "steam",
@@ -67329,7 +67969,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Input/DbusGlobalShortcutSession.cs"
   },
   {
     "Text": "vesselvoice",
@@ -67995,6 +68635,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationSession.cs"
+  },
+  {
+    "Text": "{0} Uses the game\u0027s separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GlobalInputSettingsViewModel.cs"
   },
   {
     "Text": "{0} Win32 error {1}.",
@@ -69387,6 +70035,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0}: approved by desktop (key not reported)",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
   },
   {
     "Text": "{0}: {1} of {2}{3}",

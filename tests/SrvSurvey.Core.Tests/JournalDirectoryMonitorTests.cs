@@ -1,4 +1,8 @@
+using System.Text;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Mining;
+using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests;
 
@@ -8,6 +12,199 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-journal-monitor-tests-{Guid.NewGuid():N}"
     );
+
+    /// <summary>Checks returning to an already read journal cannot restart a completed deposit trace.</summary>
+    [Fact]
+    public async Task RereadingOldJournalDoesNotRestartCompletedSplatTrace()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string firstJournal = Path.Combine(temporaryDirectory, "Journal.2026-10-03T090000.01.log");
+        const string identity = "{\"event\":\"Commander\",\"Name\":\"Probe\",\"FID\":\"F123\"}\n";
+        await File.WriteAllTextAsync(firstJournal, identity);
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory, "F123");
+        await monitor.PollAsync();
+        using var service = new MineMapService(temporaryDirectory);
+        var context = new MineMapCommandContext(
+            "F123",
+            "Probe",
+            "Test",
+            1,
+            new GalacticCoordinate(1, 2, 3),
+            1,
+            "Test 1",
+            "Rocky body",
+            1,
+            740136,
+            new SurfaceCoordinate(10, 20)
+        );
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 1", context)).Succeeded);
+        SurfaceCoordinate deposit = service.ActiveSurvey!.Center;
+        Assert.True(
+            (
+                await service.ExecuteAsync(".mine ruby high/high here", context with { PlayerLocation = deposit })
+            ).Succeeded
+        );
+        context = context with
+        {
+            PlayerLocation = MineMapService.GetDestination(deposit, 0, 100, context.PlanetRadiusMeters),
+        };
+        await File.AppendAllTextAsync(
+            firstJournal,
+            "{\"timestamp\":\"2026-10-03T14:05:00Z\",\"event\":\"SendText\",\"Message\":\".mine splat\"}\n"
+        );
+        JournalMonitorUpdate live = await monitor.PollAsync();
+        Assert.Single(live.JournalEvents);
+        await service.ApplyJournalEventsAsync(live.JournalEvents, context, !live.IsBootstrapRead);
+        for (int bearing = 30; bearing <= 360; bearing += 30)
+        {
+            service.UpdateContext(
+                context with
+                {
+                    PlayerLocation = MineMapService.GetDestination(
+                        deposit,
+                        bearing % 360,
+                        100,
+                        context.PlanetRadiusMeters
+                    ),
+                }
+            );
+        }
+        MineMapMarker completed = Assert.Single(service.ActiveSurvey.Markers);
+        Assert.False(completed.IsSplatTraceActive);
+        Assert.True(completed.SplatBoundary.Count > 1);
+
+        string nextJournal = Path.Combine(temporaryDirectory, "Journal.2026-10-03T100000.01.log");
+        await File.WriteAllTextAsync(nextJournal, identity);
+        File.SetLastWriteTimeUtc(nextJournal, DateTime.UtcNow.AddMinutes(1));
+        await monitor.PollAsync();
+        File.SetLastWriteTimeUtc(firstJournal, DateTime.UtcNow.AddMinutes(2));
+        JournalMonitorUpdate reread = await monitor.PollAsync();
+        await service.ApplyJournalEventsAsync(reread.JournalEvents, context, !reread.IsBootstrapRead);
+
+        MineMapMarker after = Assert.Single(service.ActiveSurvey.Markers);
+        Assert.False(after.IsSplatTraceActive);
+        Assert.Equal(completed.SplatBoundary, after.SplatBoundary);
+        Assert.Equal(completed.SuggestedRigLocations, after.SuggestedRigLocations);
+    }
+
+    /// <summary>Checks rereads suppress old commands while identical newly appended commands remain distinct.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RereadSkipsOldTextEventsAndAllowsNewIdenticalText(bool truncate)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string journal = Path.Combine(temporaryDirectory, "Journal.2026-10-03T090000.01.log");
+        const string identity = "{\"event\":\"Commander\",\"Name\":\"Probe\",\"FID\":\"F123\"}\n";
+        const string command =
+            "{\"timestamp\":\"2026-10-03T14:05:00Z\",\"event\":\"SendText\",\"Message\":\".alignment\"}\n";
+        await File.WriteAllTextAsync(journal, identity + command + "{\"event\":\"Music\"}\n");
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory, "F123");
+        Assert.Single((await monitor.PollAsync()).JournalEvents, entry => entry.EventName == "SendText");
+
+        if (truncate)
+        {
+            await File.WriteAllTextAsync(journal, identity + command);
+        }
+        else
+        {
+            string next = Path.Combine(temporaryDirectory, "Journal.2026-10-03T100000.01.log");
+            await File.WriteAllTextAsync(next, identity);
+            File.SetLastWriteTimeUtc(next, DateTime.UtcNow.AddMinutes(1));
+            await monitor.PollAsync();
+            File.SetLastWriteTimeUtc(journal, DateTime.UtcNow.AddMinutes(2));
+        }
+        JournalMonitorUpdate reread = await monitor.PollAsync();
+        Assert.DoesNotContain(reread.JournalEvents, entry => entry.EventName == "SendText");
+        Assert.Contains(reread.JournalEvents, entry => entry.EventName == "Commander");
+
+        await File.AppendAllTextAsync(journal, command);
+        File.SetLastWriteTimeUtc(journal, DateTime.UtcNow.AddMinutes(3));
+        Assert.Single((await monitor.PollAsync()).JournalEvents, entry => entry.EventName == "SendText");
+        Assert.Empty((await monitor.PollAsync()).JournalEvents);
+    }
+
+    /// <summary>Checks partial UTF-8 writes and a pending CRLF line retain the same identity on reread.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PartialTextLineKeepsStableSourceIdentity(bool flushBeforeNewline)
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string journal = Path.Combine(temporaryDirectory, "Journal.2026-10-03T090000.01.log");
+        await File.WriteAllTextAsync(journal, "{\"event\":\"Commander\",\"Name\":\"Pröbe\",\"FID\":\"F123\"}\n");
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory, "F123");
+        await monitor.PollAsync();
+        byte[] command = Encoding.UTF8.GetBytes(
+            "{\"event\":\"SendText\",\"Message\":\".alignment\",\"Note\":\"é\"}\r\n"
+        );
+        int split = Array.IndexOf(command, (byte)0xc3) + 1;
+        await using (var writer = new FileStream(journal, FileMode.Append))
+        {
+            await writer.WriteAsync(command.AsMemory(0, split));
+        }
+        Assert.Empty((await monitor.PollAsync()).JournalEvents);
+        await using (var writer = new FileStream(journal, FileMode.Append))
+        {
+            await writer.WriteAsync(command.AsMemory(split, command.Length - split - (flushBeforeNewline ? 1 : 0)));
+        }
+
+        string next = Path.Combine(temporaryDirectory, "Journal.2026-10-03T100000.01.log");
+        if (flushBeforeNewline)
+        {
+            Assert.Empty((await monitor.PollAsync()).JournalEvents);
+            await File.WriteAllTextAsync(next, "{\"event\":\"Commander\",\"FID\":\"F123\"}\n");
+            File.SetLastWriteTimeUtc(next, DateTime.UtcNow.AddMinutes(1));
+        }
+        Assert.Single((await monitor.PollAsync()).JournalEvents, entry => entry.EventName == "SendText");
+        if (!flushBeforeNewline)
+        {
+            await File.WriteAllTextAsync(next, "{\"event\":\"Commander\",\"FID\":\"F123\"}\n");
+            File.SetLastWriteTimeUtc(next, DateTime.UtcNow.AddMinutes(1));
+            await monitor.PollAsync();
+        }
+        else
+        {
+            await File.AppendAllTextAsync(journal, "\n");
+        }
+        File.SetLastWriteTimeUtc(journal, DateTime.UtcNow.AddMinutes(2));
+        Assert.DoesNotContain((await monitor.PollAsync()).JournalEvents, entry => entry.EventName == "SendText");
+    }
+
+    /// <summary>Checks identical chat text in a new journal represents a separate command.</summary>
+    [Fact]
+    public async Task NewJournalDoesNotDiscardIdenticalTextEvent()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        const string contents = "{\"event\":\"SendText\",\"Message\":\".alignment\"}\n";
+        string first = Path.Combine(temporaryDirectory, "Journal.2026-10-03T090000.01.log");
+        await File.WriteAllTextAsync(first, contents);
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory);
+        Assert.Single((await monitor.PollAsync()).JournalEvents);
+        string next = Path.Combine(temporaryDirectory, "Journal.2026-10-03T100000.01.log");
+        await File.WriteAllTextAsync(next, contents);
+        File.SetLastWriteTimeUtc(next, DateTime.UtcNow.AddMinutes(1));
+
+        Assert.Single((await monitor.PollAsync()).JournalEvents);
+    }
+
+    /// <summary>Checks a replacement line at an old offset can still contain a genuinely different command.</summary>
+    [Fact]
+    public async Task ReplacingSourceLineAllowsChangedTextEvent()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string journal = Path.Combine(temporaryDirectory, "Journal.2026-10-03T090000.01.log");
+        await File.WriteAllTextAsync(
+            journal,
+            "{\"event\":\"SendText\",\"Message\":\".mine rigs 1\"}\n{\"event\":\"Music\"}\n"
+        );
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory);
+        await monitor.PollAsync();
+        await File.WriteAllTextAsync(journal, "{\"event\":\"SendText\",\"Message\":\".mine rigs 2\"}\n");
+
+        JournalEventEnvelope changed = Assert.Single((await monitor.PollAsync()).JournalEvents);
+        Assert.Equal(".mine rigs 2", changed.Payload.GetProperty("Message").GetString());
+    }
 
     [Fact]
     public async Task PollReadsAppendsPartialWritesStatusAndRotation()
