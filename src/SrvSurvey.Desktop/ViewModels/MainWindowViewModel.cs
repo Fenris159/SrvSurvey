@@ -3162,6 +3162,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         return exobiologyAfter;
     }
 
+    /// <summary>Restores surface state while restricting mining chat commands to live journal updates.</summary>
     private async Task ApplySurfaceTrackingAsync(
         JournalMonitorUpdate update,
         ExobiologySnapshot exobiologyAfter,
@@ -3190,7 +3191,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             update.JournalEvents,
             CreateMineMapCommandContext(),
             latestStatus,
-            allowCommands: !skipPersistedBootstrapEvents
+            allowCommands: !update.IsBootstrapRead
         );
         await Mining.ApplyUpdateAsync(
             surfaceSession,
@@ -3201,7 +3202,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             latestCargo,
             isSessionActive ? journalState.ParkedSrvType : null
         );
-        if (!skipPersistedBootstrapEvents && isSessionActive)
+        if (!update.IsBootstrapRead && isSessionActive)
         {
             await Mining.ClearRigsFromChatAsync(update.JournalEvents, journalState.FrontierId);
         }

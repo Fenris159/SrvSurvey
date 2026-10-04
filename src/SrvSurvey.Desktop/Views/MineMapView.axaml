@@ -198,6 +198,7 @@
                                        ViewportZoom="{Binding ViewportZoom, Mode=TwoWay}"
                                        VisibleMaterials="{Binding VisibleMaterials}"
                                        VisibleMarkerIds="{Binding VisibleMarkerIds}"
+                                       SelectedMarkerId="{Binding SelectedMarkerId, Mode=TwoWay}"
                                        PlanningCircleCenter="{Binding PlanningCircleCenter, Mode=TwoWay}"
                                        SurveyGuideTarget="{Binding SurveyGuideTarget}"
                                        MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
@@ -256,7 +257,7 @@
                   </StackPanel>
                 </Grid>
                 <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
-                           Text="Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it." />
+                           Text="Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it." />
                 <Button HorizontalAlignment="Left"
                         Content="Export as CSV" IsEnabled="{Binding HasActiveSurvey}"
                         Click="ExportSurveyCsv_Click"
@@ -291,6 +292,54 @@
                             SelectedItem="{Binding SelectedDensityFilter, Mode=TwoWay}" />
                 </StackPanel>
               </Grid>
+            </Border>
+            <Border x:Name="MineSelectedMarkerEditor" Classes="card raised"
+                    IsVisible="{Binding HasSelectedMarker}">
+              <StackPanel Spacing="10">
+                <TextBlock Classes="eyebrow" Text="SELECTED MARKER" />
+                <ContentControl Content="{Binding SelectedMarker}" IsEnabled="{Binding CanEditSelectedMarker}">
+                  <ContentControl.ContentTemplate>
+                    <DataTemplate x:DataType="vm:MineMapMarkerEditorViewModel">
+                      <StackPanel Spacing="8">
+                        <TextBlock Text="Mineral / metal" />
+                        <ComboBox HorizontalAlignment="Stretch"
+                                  ItemsSource="{x:Static vm:MineMapMarkerEditorViewModel.Materials}"
+                                  SelectedItem="{Binding Material, Mode=TwoWay}" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                          <StackPanel Spacing="4">
+                            <TextBlock Text="Mineral amount" />
+                            <ComboBox HorizontalAlignment="Stretch"
+                                      ItemsSource="{x:Static vm:MineMapMarkerEditorViewModel.Ratings}"
+                                      SelectedItem="{Binding MineralAmount, Mode=TwoWay}" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Density" />
+                            <ComboBox HorizontalAlignment="Stretch"
+                                      ItemsSource="{x:Static vm:MineMapMarkerEditorViewModel.Ratings}"
+                                      SelectedItem="{Binding Density, Mode=TwoWay}" />
+                          </StackPanel>
+                        </Grid>
+                        <TextBlock Text="Rig capacity" />
+                        <NumericUpDown Minimum="0" Maximum="2147483647" Increment="1" FormatString="0"
+                                       Value="{Binding RigCount, Mode=TwoWay}" />
+                        <TextBlock Classes="muted" FontSize="11" Text="0 means capacity is not recorded." />
+                        <TextBlock Text="Latitude" />
+                        <NumericUpDown Minimum="-90" Maximum="90" Increment="0.000001" FormatString="0.000000"
+                                       Value="{Binding Latitude, Mode=TwoWay}" />
+                        <TextBlock Text="Longitude" />
+                        <NumericUpDown Minimum="-180" Maximum="180" Increment="0.000001" FormatString="0.000000"
+                                       Value="{Binding Longitude, Mode=TwoWay}" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ContentControl.ContentTemplate>
+                </ContentControl>
+                <WrapPanel IsEnabled="{Binding CanEditSelectedMarker}">
+                  <Button Classes="secondary" Margin="0,0,8,8" Content="Save marker"
+                          Command="{Binding SaveSelectedMarkerCommand}" />
+                  <Button Classes="danger" Margin="0,0,0,8" Content="Remove marker"
+                          Command="{Binding RemoveSelectedMarkerCommand}" />
+                </WrapPanel>
+              </StackPanel>
             </Border>
           </StackPanel>
         </Grid>

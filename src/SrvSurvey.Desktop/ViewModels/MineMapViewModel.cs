@@ -49,6 +49,9 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private bool showMarkerLabelsInOverviewMap;
     private MineMapSurveyRowViewModel? selectedSurveyRow;
     private MineMapSurvey? editorSurvey;
+    private MineMapMarkerEditorViewModel? selectedMarker;
+    private Guid? selectedMarkerSurveyId;
+    private bool isSavingMarker;
     private SurfaceCoordinate? planningCircleCenter;
     private Guid? planningCircleSurveyId;
     private string statusText = string.Empty;
@@ -59,6 +62,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private string surveyGuideFeedback = string.Empty;
     private DateTimeOffset? surveyGuideFeedbackExpiresAt;
 
+    /// <summary>Loads surface surveys, map preferences, search tools, and marker editing commands.</summary>
     public MineMapViewModel(
         string dataDirectory,
         MineMapSettingsStore settingsStore,
@@ -136,6 +140,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 SelectSurvey(row);
             }
         });
+        SaveSelectedMarkerCommand = new WorkspaceCommand(() => _ = SaveSelectedMarkerAsync());
+        RemoveSelectedMarkerCommand = new WorkspaceCommand(() => _ = SaveSelectedMarkerAsync(remove: true));
         RefreshCatalog();
     }
 
@@ -435,6 +441,81 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public static IReadOnlyList<string> MarkerRatingFilterOptions => MarkerRatingFilters;
 
+    public ICommand SaveSelectedMarkerCommand { get; }
+
+    public ICommand RemoveSelectedMarkerCommand { get; }
+
+    public MineMapMarkerEditorViewModel? SelectedMarker => selectedMarker;
+
+    public bool HasSelectedMarker => selectedMarker is not null;
+
+    public bool CanEditSelectedMarker => HasSelectedMarker && !isSavingMarker;
+
+    public Guid? SelectedMarkerId
+    {
+        get => selectedMarker?.Id;
+        set
+        {
+            if (value == SelectedMarkerId && selectedMarkerSurveyId == ActiveSurvey?.Id)
+            {
+                return;
+            }
+            MineMapMarker? marker = ActiveSurvey?.Markers.FirstOrDefault(candidate => candidate.Id == value);
+            SetSelectedMarker(marker);
+        }
+    }
+
+    /// <summary>Creates or clears the editor draft and notifies the panel and map reticle together.</summary>
+    private void SetSelectedMarker(MineMapMarker? marker)
+    {
+        selectedMarker = marker is null ? null : new MineMapMarkerEditorViewModel(marker);
+        selectedMarkerSurveyId = marker is null ? null : ActiveSurvey?.Id;
+        Changed(nameof(SelectedMarker));
+        Changed(nameof(SelectedMarkerId));
+        Changed(nameof(HasSelectedMarker));
+        Changed(nameof(CanEditSelectedMarker));
+    }
+
+    /// <summary>Saves or removes the captured selection, reporting failure without losing its editable draft.</summary>
+    public async Task SaveSelectedMarkerAsync(bool remove = false)
+    {
+        if (selectedMarker is not { } marker || selectedMarkerSurveyId is not { } surveyId || isSavingMarker)
+        {
+            return;
+        }
+
+        isSavingMarker = true;
+        Changed(nameof(CanEditSelectedMarker));
+        try
+        {
+            MineMapCommandResult result = remove
+                ? await service.DeleteMarkerAsync(surveyId, marker.Id, CancellationToken.None)
+                : await service.UpdateMarkerAsync(surveyId, marker.CreateMarker(), CancellationToken.None);
+            StatusText = result.Message;
+            if (result.Succeeded && ReferenceEquals(selectedMarker, marker))
+            {
+                SetSelectedMarker(result.Survey?.Markers.FirstOrDefault(candidate => candidate.Id == marker.Id));
+            }
+        }
+        finally
+        {
+            isSavingMarker = false;
+            Changed(nameof(CanEditSelectedMarker));
+        }
+    }
+
+    /// <summary>Clears a selection that belongs to another map, was removed, or was hidden by a filter.</summary>
+    private void RefreshMarkerSelection()
+    {
+        if (
+            selectedMarker is { } marker
+            && (selectedMarkerSurveyId != ActiveSurvey?.Id || !VisibleMarkerIds.Contains(marker.Id))
+        )
+        {
+            SetSelectedMarker(null);
+        }
+    }
+
     public string SelectedMineralAmountFilter
     {
         get => selectedMineralAmountFilter;
@@ -443,6 +524,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             if (Set(ref selectedMineralAmountFilter, NormalizeMarkerRatingFilter(value)))
             {
                 Changed(nameof(VisibleMarkerIds));
+                RefreshMarkerSelection();
             }
         }
     }
@@ -455,6 +537,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             if (Set(ref selectedDensityFilter, NormalizeMarkerRatingFilter(value)))
             {
                 Changed(nameof(VisibleMarkerIds));
+                RefreshMarkerSelection();
             }
         }
     }
@@ -1070,6 +1153,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         }
     }
 
+    /// <summary>Rebuilds visibility filters from the current survey and retires invisible marker selections.</summary>
     private void RefreshMarkerFilters()
     {
         var previous = MarkerFilters.ToDictionary(
@@ -1091,12 +1175,15 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             ?? [];
         Changed(nameof(VisibleMaterials));
         Changed(nameof(VisibleMarkerIds));
+        RefreshMarkerSelection();
     }
 
+    /// <summary>Refreshes map visibility and clears any selection hidden by a material filter.</summary>
     private void RaiseMapState()
     {
         Changed(nameof(VisibleMaterials));
         Changed(nameof(VisibleMarkerIds));
+        RefreshMarkerSelection();
     }
 
     public IReadOnlySet<string> VisibleMaterials =>

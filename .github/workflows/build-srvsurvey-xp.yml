@@ -145,6 +145,13 @@ jobs:
       - name: Restore
         run: dotnet restore SrvSurvey.slnx
 
+      - name: Install Linux desktop registration test tool
+        if: matrix.rid == 'linux-x64'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes desktop-file-utils
+
       - name: Verify C# formatting
         run: dotnet csharpier check .
 
@@ -284,7 +291,6 @@ jobs:
           sudo apt-get install --yes \
             appstream \
             binutils \
-            desktop-file-utils \
             file \
             imagemagick \
             libfontconfig1 \

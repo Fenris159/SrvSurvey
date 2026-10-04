@@ -192,6 +192,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyPredictionsViewModel.cs"
   },
   {
+    "Text": "0 means capacity is not recorded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "0 of 0 boxels complete",
     "IsFormat": false,
     "SourceKinds": [
@@ -10629,6 +10637,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or \u2212 / \u002B controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Click a name to edit and select it for that ship. Expand a row to inspect its groups, or use its trash button and confirm Yes to delete it. The selected configuration switches automatically when you board its ship.",
@@ -26947,9 +26963,10 @@
     "Text": "Latitude",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Latitude / longitude",
@@ -28221,9 +28238,10 @@
     "Text": "Longitude",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Looking up...",
@@ -29915,6 +29933,14 @@
   },
   {
     "Text": "Mineral Amount:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Mineral amount",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -41582,6 +41608,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "Remove marker",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Remove module assignment",
     "IsFormat": false,
     "SourceKinds": [
@@ -42935,6 +42969,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningDetectionViewModel.cs"
   },
   {
+    "Text": "Rig capacity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Rig circles and distance cues",
     "IsFormat": false,
     "SourceKinds": [
@@ -43924,6 +43966,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "SELECTED MARKER",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "SELECTED NODE",
     "IsFormat": false,
     "SourceKinds": [
@@ -44741,6 +44791,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Save marker",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Save mining overlay settings",
@@ -49211,6 +49269,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
+    "Text": "SrvSurvey could not refresh its desktop callback registration. {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
     "Text": "SrvSurvey could not register its Frontier callback command.",
     "IsFormat": false,
     "SourceKinds": [
@@ -49513,6 +49579,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml.cs"
+  },
+  {
+    "Text": "SrvSurvey requires update-desktop-database (desktop-file-utils) to register Frontier authorization on Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
     "Text": "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
@@ -54012,6 +54086,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml.cs"
+  },
+  {
+    "Text": "The desktop MIME database update process did not start.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
     "Text": "The desktop clipboard is not available.",
@@ -59573,14 +59655,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "Use the mouse wheel or \u2212 / \u002B controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -67892,6 +67966,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
+    "Text": "update-desktop-database",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
     "Text": "updates",
     "IsFormat": false,
     "SourceKinds": [
@@ -68255,6 +68337,14 @@
   {
     "Text": "x-scheme-handler/{0}",
     "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
+    "Text": "xdg-mime",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],

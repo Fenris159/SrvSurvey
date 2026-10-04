@@ -8,6 +8,147 @@ namespace SrvSurvey.Core.Tests.Mining;
 
 public sealed class MineMapServiceTests
 {
+    /// <summary>Editing an identified deposit preserves newer trace data, bookmark metadata, and neighboring markers.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MarkerEditorSavesByIdAndPreservesLatestTraceAndBookmarkDetails(bool tracing)
+    {
+        using var directory = new TemporaryDirectory();
+        var catalog = new BookmarkCatalog(directory.Path);
+        var original = new MineMapMarker
+        {
+            Material = "Ruby",
+            Location = new SurfaceCoordinate(1, 2),
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+        };
+        MineMapMarker neighbor = original with { Id = Guid.NewGuid() };
+        MineMapSurvey survey = LegacySurvey(Guid.NewGuid(), 4) with { Markers = [original, neighbor] };
+        catalog.Save(
+            new GalacticBookmark
+            {
+                Id = survey.Id,
+                System = survey.SystemName,
+                Body = survey.BodyName,
+                CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
+                SurfaceMiningMap = survey,
+                Notes = "Keep my notes",
+                IsFavorite = true,
+            }
+        );
+        using var service = new MineMapService(directory.Path, catalog);
+        service.SelectSurvey(survey.Id);
+        MineMapMarker latest = original with
+        {
+            SplatBoundary =
+            [
+                new SurfaceCoordinate(1, 2),
+                new SurfaceCoordinate(1.001, 2.001),
+                new SurfaceCoordinate(1.002, 2),
+            ],
+            SuggestedRigLocations = tracing ? [] : [new SurfaceCoordinate(1.0005, 2.0005)],
+            IsSplatTraceActive = tracing,
+        };
+        catalog.Save(catalog.Items.Single() with { SurfaceMiningMap = survey with { Markers = [latest, neighbor] } });
+
+        MineMapCommandResult result = await service.UpdateMarkerAsync(
+            survey.Id,
+            original with
+            {
+                Material = "mon",
+                MineralAmount = MineMapRating.High,
+                Density = MineMapRating.Medium,
+                RigCount = 6,
+                Location = new SurfaceCoordinate(-3, 4),
+            }
+        );
+
+        Assert.True(result.Succeeded);
+        using var reloaded = new MineMapService(directory.Path);
+        MineMapSurvey saved = Assert.Single(reloaded.Surveys);
+        MineMapMarker edited = Assert.Single(saved.Markers, marker => marker.Id == original.Id);
+        Assert.Equal("Monazite", edited.Material);
+        Assert.Equal(MineMapRating.High, edited.MineralAmount);
+        Assert.Equal(MineMapRating.Medium, edited.Density);
+        Assert.Equal(6, edited.RigCount);
+        Assert.Equal(new SurfaceCoordinate(-3, 4), edited.Location);
+        Assert.Equal(original.CreatedAt, edited.CreatedAt);
+        Assert.Equal(latest.SplatBoundary, edited.SplatBoundary);
+        Assert.Equal(latest.SuggestedRigLocations, edited.SuggestedRigLocations);
+        Assert.Equal(tracing, edited.IsSplatTraceActive);
+        Assert.Equivalent(neighbor, Assert.Single(saved.Markers, marker => marker.Id == neighbor.Id));
+        Assert.Equivalent(saved, service.ActiveSurvey);
+        GalacticBookmark bookmark = Assert.Single(new BookmarkCatalog(directory.Path).Items);
+        Assert.True(bookmark.IsFavorite);
+        Assert.Equal("Keep my notes", bookmark.Notes);
+        Assert.Equal("Monazite, Ruby", bookmark.Minerals);
+
+        Assert.True((await service.DeleteMarkerAsync(survey.Id, edited.Id)).Succeeded);
+        Assert.Equivalent(neighbor, Assert.Single(service.ActiveSurvey!.Markers));
+        Assert.Equivalent(neighbor, Assert.Single(new MineMapService(directory.Path).Surveys.Single().Markers));
+    }
+
+    /// <summary>Invalid and stale edits leave the stored map unchanged.</summary>
+    [Theory]
+    [InlineData("unknown", MineMapRating.Low, MineMapRating.Low, null)]
+    [InlineData("Ruby", (MineMapRating)99, MineMapRating.Low, null)]
+    [InlineData("Ruby", MineMapRating.Low, (MineMapRating)99, null)]
+    [InlineData("Ruby", MineMapRating.Low, MineMapRating.Low, 0)]
+    public async Task MarkerEditorRejectsInvalidDetails(
+        string material,
+        MineMapRating amount,
+        MineMapRating density,
+        int? rigs
+    )
+    {
+        using var directory = new TemporaryDirectory();
+        using var service = new MineMapService(directory.Path);
+        MineMapCommandContext context = Context(new SurfaceCoordinate(0, 0));
+        await service.ExecuteAsync(".mining 90 6.44 4", context);
+        await service.ExecuteAsync(".mine ruby m/h here", context);
+        MineMapSurvey survey = service.Surveys.Single();
+        MineMapMarker marker = survey.Markers.Single();
+
+        MineMapCommandResult result = await service.UpdateMarkerAsync(
+            survey.Id,
+            marker with
+            {
+                Material = material,
+                MineralAmount = amount,
+                Density = density,
+                RigCount = rigs,
+            }
+        );
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(marker, service.Surveys.Single().Markers.Single());
+    }
+
+    /// <summary>Deleted maps or markers cannot be accidentally recreated by a stale editor.</summary>
+    [Fact]
+    public async Task MarkerEditorReportsMissingTargetsAndStorageFailures()
+    {
+        using var directory = new TemporaryDirectory();
+        using var service = new MineMapService(directory.Path);
+        var missing = new MineMapMarker { Material = "Ruby" };
+        Assert.False((await service.UpdateMarkerAsync(Guid.NewGuid(), missing)).Succeeded);
+        MineMapCommandContext context = Context(new SurfaceCoordinate(0, 0));
+        await service.ExecuteAsync(".mining 90 6.44 4", context);
+        await service.ExecuteAsync(".mine ruby m/h here", context);
+        MineMapSurvey survey = service.Surveys.Single();
+        Assert.False((await service.DeleteMarkerAsync(survey.Id, Guid.NewGuid())).Succeeded);
+
+        string bookmarkPath = Directory
+            .GetFiles(directory.Path, "bookmarks.json", SearchOption.AllDirectories)
+            .Single();
+        File.Delete(bookmarkPath);
+        Directory.CreateDirectory(bookmarkPath);
+        MineMapCommandResult failed = await service.DeleteMarkerAsync(survey.Id, survey.Markers.Single().Id);
+        Assert.False(failed.Succeeded);
+        Assert.Contains("could not be saved", failed.Message, StringComparison.Ordinal);
+        Assert.Single(service.Surveys.Single().Markers);
+    }
+
     [Fact]
     public void InterruptedLegacyMigrationImportsEveryMissingSurvey()
     {

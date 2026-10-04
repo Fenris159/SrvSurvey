@@ -97,6 +97,10 @@
       "translation": "0 CR"
     },
     {
+      "source": "0 means capacity is not recorded.",
+      "translation": "0 bedeutet, dass die Kapazität nicht aufgezeichnet wird."
+    },
+    {
       "source": "0 of 0 boxels complete",
       "translation": "0 von 0 Kartons vollständig"
     },
@@ -5303,6 +5307,10 @@
     {
       "source": "Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control.",
       "translation": "Löscht die Oberflächen-Lesezeichen des Kommandanten für die Leiche unter dem Schiff oder Anzug, passend zur alten Bio-Scanning-Einstellungssteuerung."
+    },
+    {
+      "source": "Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
+      "translation": "Klicken Sie auf eine Lagerstätte, um sie zu bearbeiten oder zu entfernen. Klicken Sie auf den leeren Kartenbereich, um die Auswahl aufzuheben. Verwenden Sie zum Zoomen das Mausrad oder die Tasten −/+. Ziehen Sie die Karte nach dem Vergrößern zum Schwenken. Klicken Sie mit der rechten Maustaste, um einen 4,5 km langen Planungskreis zu platzieren oder zu entfernen. Halten Sie die rechte Taste gedrückt und ziehen Sie, um sie zu verschieben."
     },
     {
       "source": "Click a name to edit and select it for that ship. Expand a row to inspect its groups, or use its trash button and confirm Yes to delete it. The selected configuration switches automatically when you board its ship.",
@@ -14917,6 +14925,10 @@
       "translation": "Mineralstoffmenge:"
     },
     {
+      "source": "Mineral amount",
+      "translation": "Mineralmenge"
+    },
+    {
       "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
       "translation": "Mineralmenge und -dichte beschreiben jede Lagerstätte und akzeptieren l, m oder h als Abkürzung für niedrig, mittel oder hoch. Lagerstättennamen müssen mit einem Rohstoff in Aktivitäten > Tagebau > Hotspot-Liste übereinstimmen; Abgelehnte Befehle erklären das Problem in den Statusbenachrichtigungen."
     },
@@ -20733,6 +20745,10 @@
       "translation": "Entfernen Sie den manuellen Scan"
     },
     {
+      "source": "Remove marker",
+      "translation": "Markierung entfernen"
+    },
+    {
       "source": "Remove module assignment",
       "translation": "Modulzuordnung entfernen"
     },
@@ -21409,6 +21425,10 @@
       "translation": "Rig Bars setzen Tracker sofort ein; Drei Sekunden leer löschen sie."
     },
     {
+      "source": "Rig capacity",
+      "translation": "Rig-Kapazität"
+    },
+    {
       "source": "Rig circles and distance cues",
       "translation": "Rig-Kreise und Distanzhinweise"
     },
@@ -21901,6 +21921,10 @@
       "translation": "AUSGEWÄHLTE KARTE"
     },
     {
+      "source": "SELECTED MARKER",
+      "translation": "AUSGEWÄHLTE MARKIERUNG"
+    },
+    {
       "source": "SELECTED NODE",
       "translation": "AUSGEWÄHLTER KNOTEN"
     },
@@ -22307,6 +22331,10 @@
     {
       "source": "Save map changes...",
       "translation": "Kartenänderungen speichern..."
+    },
+    {
+      "source": "Save marker",
+      "translation": "Markierung speichern"
     },
     {
       "source": "Save mining overlay settings",
@@ -24537,6 +24565,10 @@
       "translation": "SrvSurvey konnte seinen ausführbaren Pfad für die Frontier-Autorisierung nicht ermitteln."
     },
     {
+      "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
+      "translation": "SrvSurvey konnte seine Desktop-Rückrufregistrierung nicht aktualisieren. {0}"
+    },
+    {
       "source": "SrvSurvey could not register its Frontier callback command.",
       "translation": "SrvSurvey konnte seinen Rückrufbefehl Frontier nicht registrieren."
     },
@@ -24687,6 +24719,10 @@
     {
       "source": "SrvSurvey replay package",
       "translation": "SrvSurvey Wiedergabepaket"
+    },
+    {
+      "source": "SrvSurvey requires update-desktop-database (desktop-file-utils) to register Frontier authorization on Linux.",
+      "translation": "SrvSurvey benötigt update-desktop-database (desktop-file-utils), um die Frontier-Autorisierung unter Linux zu registrieren."
     },
     {
       "source": "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
@@ -26931,6 +26967,10 @@
     {
       "source": "The default browser declined the request.",
       "translation": "Der Standardbrowser hat die Anfrage abgelehnt."
+    },
+    {
+      "source": "The desktop MIME database update process did not start.",
+      "translation": "Der Aktualisierungsprozess der Desktop-MIME-Datenbank wurde nicht gestartet."
     },
     {
       "source": "The desktop clipboard is not available.",
@@ -29707,10 +29747,6 @@
     {
       "source": "Use the most recent visit to {0}.",
       "translation": "Verwenden Sie den letzten Besuch bei {0}."
-    },
-    {
-      "source": "Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
-      "translation": "Verwenden Sie zum Zoomen das Mausrad oder die Tasten −/+. Ziehen Sie die Karte nach dem Vergrößern zum Schwenken. Klicken Sie mit der rechten Maustaste, um einen 4,5 km langen Planungskreis zu platzieren oder zu entfernen. Halten Sie die rechte Taste gedrückt und ziehen Sie, um sie zu verschieben."
     },
     {
       "source": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -33865,6 +33901,10 @@
       "translation": "unbrauchbar"
     },
     {
+      "source": "update-desktop-database",
+      "translation": "update-desktop-database"
+    },
+    {
       "source": "updates",
       "translation": "Aktualisierungen"
     },
@@ -34047,6 +34087,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "x-scheme-handler/{0}"
+    },
+    {
+      "source": "xdg-mime",
+      "translation": "xdg-mime"
     },
     {
       "source": "yellow",
@@ -35265,6 +35309,10 @@
     {
       "source": "0 CR",
       "translation": "0 CR"
+    },
+    {
+      "source": "0 means capacity is not recorded.",
+      "translation": "0 significa que la capacidad no se registra."
     },
     {
       "source": "0 of 0 boxels complete",
@@ -40473,6 +40521,10 @@
     {
       "source": "Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control.",
       "translation": "Borra los marcadores de la superficie del comandante para el cuerpo debajo de la nave o el traje, coincidiendo con el control de configuración heredado de Bio Scanning."
+    },
+    {
+      "source": "Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
+      "translation": "Haga clic en un depósito para editarlo o eliminarlo; haga clic en el espacio vacío del mapa para anular la selección. Utilice la rueda del mouse o los controles − / + para hacer zoom. Arrastre el mapa para realizar una panorámica después de hacer zoom. Haga clic derecho para colocar o eliminar un círculo de planificación de 4,5 km; mantenga presionado el botón derecho y arrastre para moverlo."
     },
     {
       "source": "Click a name to edit and select it for that ship. Expand a row to inspect its groups, or use its trash button and confirm Yes to delete it. The selected configuration switches automatically when you board its ship.",
@@ -50087,6 +50139,10 @@
       "translation": "Cantidad de minerales:"
     },
     {
+      "source": "Mineral amount",
+      "translation": "Cantidad de minerales"
+    },
+    {
       "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
       "translation": "La cantidad y densidad del mineral describen cada depósito y aceptan l, m o h como abreviatura de bajo, medio o alto. Los nombres de los depósitos deben coincidir con un producto en Actividades > Minería a cielo abierto > Lista de puntos críticos; Los comandos rechazados explican el problema en Notificaciones de estado."
     },
@@ -55903,6 +55959,10 @@
       "translation": "Eliminar escaneo manual"
     },
     {
+      "source": "Remove marker",
+      "translation": "Quitar marcador"
+    },
+    {
       "source": "Remove module assignment",
       "translation": "Eliminar asignación de módulo"
     },
@@ -56579,6 +56639,10 @@
       "translation": "Las barras de perforación activan los rastreadores inmediatamente; tres segundos vacíos los borran."
     },
     {
+      "source": "Rig capacity",
+      "translation": "Capacidad de equipos de extracción"
+    },
+    {
       "source": "Rig circles and distance cues",
       "translation": "Círculos de aparejos y señales de distancia"
     },
@@ -57071,6 +57135,10 @@
       "translation": "MAPA SELECCIONADO"
     },
     {
+      "source": "SELECTED MARKER",
+      "translation": "MARCADOR SELECCIONADO"
+    },
+    {
       "source": "SELECTED NODE",
       "translation": "NODO SELECCIONADO"
     },
@@ -57477,6 +57545,10 @@
     {
       "source": "Save map changes...",
       "translation": "Guardar cambios en el mapa..."
+    },
+    {
+      "source": "Save marker",
+      "translation": "Guardar marcador"
     },
     {
       "source": "Save mining overlay settings",
@@ -59707,6 +59779,10 @@
       "translation": "SrvSurvey no pudo determinar su ruta ejecutable para la autorización Frontier."
     },
     {
+      "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
+      "translation": "SrvSurvey no pudo actualizar el registro de devolución de llamada de su escritorio. {0}"
+    },
+    {
       "source": "SrvSurvey could not register its Frontier callback command.",
       "translation": "SrvSurvey no pudo registrar su comando de devolución de llamada Frontier."
     },
@@ -59857,6 +59933,10 @@
     {
       "source": "SrvSurvey replay package",
       "translation": "SrvSurvey paquete de reproducción"
+    },
+    {
+      "source": "SrvSurvey requires update-desktop-database (desktop-file-utils) to register Frontier authorization on Linux.",
+      "translation": "SrvSurvey necesita update-desktop-database (desktop-file-utils) para registrar la autorización de Frontier en Linux."
     },
     {
       "source": "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
@@ -62101,6 +62181,10 @@
     {
       "source": "The default browser declined the request.",
       "translation": "El navegador predeterminado rechazó la solicitud."
+    },
+    {
+      "source": "The desktop MIME database update process did not start.",
+      "translation": "El proceso de actualización de la base de datos MIME del escritorio no se inició."
     },
     {
       "source": "The desktop clipboard is not available.",
@@ -64877,10 +64961,6 @@
     {
       "source": "Use the most recent visit to {0}.",
       "translation": "Utilice la visita más reciente a {0}."
-    },
-    {
-      "source": "Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
-      "translation": "Utilice la rueda del mouse o los controles − / + para hacer zoom. Arrastre el mapa para realizar una panorámica después de hacer zoom. Haga clic derecho para colocar o eliminar un círculo de planificación de 4,5 km; mantenga presionado el botón derecho y arrastre para moverlo."
     },
     {
       "source": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -69035,6 +69115,10 @@
       "translation": "inutilizable"
     },
     {
+      "source": "update-desktop-database",
+      "translation": "update-desktop-database"
+    },
+    {
       "source": "updates",
       "translation": "actualizaciones"
     },
@@ -69217,6 +69301,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "controlador-esquema-x/{0}"
+    },
+    {
+      "source": "xdg-mime",
+      "translation": "xdg-mime"
     },
     {
       "source": "yellow",
@@ -70435,6 +70523,10 @@
     {
       "source": "0 CR",
       "translation": "0 CR"
+    },
+    {
+      "source": "0 means capacity is not recorded.",
+      "translation": "0 signifie que la capacité n’est pas enregistrée."
     },
     {
       "source": "0 of 0 boxels complete",
@@ -75643,6 +75735,10 @@
     {
       "source": "Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control.",
       "translation": "Efface les signets de surface du commandant pour le corps sous le navire ou la combinaison, correspondant au contrôle des paramètres de bioscanning hérités."
+    },
+    {
+      "source": "Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
+      "translation": "Cliquez sur un gisement pour le modifier ou le supprimer ; cliquez sur un espace de carte vide pour désélectionner. Utilisez la molette de la souris ou les commandes − / + pour zoomer. Faites glisser la carte pour effectuer un panoramique après avoir zoomé. Cliquez avec le bouton droit pour placer ou supprimer un cercle de planification de 4,5 km ; maintenez le bouton droit enfoncé et faites glisser pour le déplacer."
     },
     {
       "source": "Click a name to edit and select it for that ship. Expand a row to inspect its groups, or use its trash button and confirm Yes to delete it. The selected configuration switches automatically when you board its ship.",
@@ -85257,6 +85353,10 @@
       "translation": "Quantité minérale :"
     },
     {
+      "source": "Mineral amount",
+      "translation": "Quantité de minéraux"
+    },
+    {
       "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
       "translation": "La quantité et la densité minérales décrivent chaque gisement et acceptent l, m ou h comme raccourci pour faible, moyen ou élevé. Les noms de gisements doivent correspondre à une matière première dans Activités > Surface Mining > Hotspot List ; les commandes rejetées expliquent le problème dans les notifications d'état."
     },
@@ -91073,6 +91173,10 @@
       "translation": "Supprimer l'analyse manuelle"
     },
     {
+      "source": "Remove marker",
+      "translation": "Supprimer le marqueur"
+    },
+    {
       "source": "Remove module assignment",
       "translation": "Supprimer l'affectation du module"
     },
@@ -91749,6 +91853,10 @@
       "translation": "Les barres de montage installent immédiatement les trackers ; trois secondes vides les effacent."
     },
     {
+      "source": "Rig capacity",
+      "translation": "Capacité de forage"
+    },
+    {
       "source": "Rig circles and distance cues",
       "translation": "Cercles de montage et repères de distance"
     },
@@ -92241,6 +92349,10 @@
       "translation": "CARTE SÉLECTIONNÉE"
     },
     {
+      "source": "SELECTED MARKER",
+      "translation": "MARQUEUR SÉLECTIONNÉ"
+    },
+    {
       "source": "SELECTED NODE",
       "translation": "NŒUD SÉLECTIONNÉ"
     },
@@ -92647,6 +92759,10 @@
     {
       "source": "Save map changes...",
       "translation": "Enregistrer les modifications de la carte..."
+    },
+    {
+      "source": "Save marker",
+      "translation": "Enregistrer le marqueur"
     },
     {
       "source": "Save mining overlay settings",
@@ -94877,6 +94993,10 @@
       "translation": "SrvSurvey n'a pas pu déterminer son chemin d'accès exécutable pour l'autorisation Frontier."
     },
     {
+      "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
+      "translation": "SrvSurvey n'a pas pu actualiser son enregistrement de rappel sur le bureau. {0}"
+    },
+    {
       "source": "SrvSurvey could not register its Frontier callback command.",
       "translation": "SrvSurvey n'a pas pu enregistrer sa commande de rappel Frontier."
     },
@@ -95027,6 +95147,10 @@
     {
       "source": "SrvSurvey replay package",
       "translation": "SrvSurvey package de relecture"
+    },
+    {
+      "source": "SrvSurvey requires update-desktop-database (desktop-file-utils) to register Frontier authorization on Linux.",
+      "translation": "SrvSurvey nécessite update-desktop-database (desktop-file-utils) pour enregistrer l'autorisation Frontier sous Linux."
     },
     {
       "source": "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
@@ -97271,6 +97395,10 @@
     {
       "source": "The default browser declined the request.",
       "translation": "Le navigateur par défaut a refusé la demande."
+    },
+    {
+      "source": "The desktop MIME database update process did not start.",
+      "translation": "Le processus de mise à jour de la base de données MIME du bureau n'a pas démarré."
     },
     {
       "source": "The desktop clipboard is not available.",
@@ -100047,10 +100175,6 @@
     {
       "source": "Use the most recent visit to {0}.",
       "translation": "Utilisez la visite la plus récente sur {0}."
-    },
-    {
-      "source": "Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
-      "translation": "Utilisez la molette de la souris ou les commandes − / + pour zoomer. Faites glisser la carte pour effectuer un panoramique après avoir zoomé. Cliquez avec le bouton droit pour placer ou supprimer un cercle de planification de 4,5 km ; maintenez le bouton droit enfoncé et faites glisser pour le déplacer."
     },
     {
       "source": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -104205,6 +104329,10 @@
       "translation": "inutilisable"
     },
     {
+      "source": "update-desktop-database",
+      "translation": "update-desktop-database"
+    },
+    {
       "source": "updates",
       "translation": "mises à jour"
     },
@@ -104387,6 +104515,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "x-scheme-handler/{0}"
+    },
+    {
+      "source": "xdg-mime",
+      "translation": "xdg-mime"
     },
     {
       "source": "yellow",
@@ -105605,6 +105737,10 @@
     {
       "source": "0 CR",
       "translation": "0 CR"
+    },
+    {
+      "source": "0 means capacity is not recorded.",
+      "translation": "0 significa que a capacidade não foi registrada."
     },
     {
       "source": "0 of 0 boxels complete",
@@ -110813,6 +110949,10 @@
     {
       "source": "Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control.",
       "translation": "Limpa os marcadores da superfície do comandante para o corpo sob a nave ou traje, correspondendo ao controle de configurações legado do Bio Scanning."
+    },
+    {
+      "source": "Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
+      "translation": "Clique em um depósito para editá-lo ou removê-lo; clique no espaço vazio do mapa para desmarcar. Use a roda do mouse ou os controles − / + para ampliar. Arraste o mapa para deslocar-se após aumentar o zoom. Clique com o botão direito para colocar ou remover um círculo de planejamento de 4,5 km; segure o botão direito e arraste para movê-lo."
     },
     {
       "source": "Click a name to edit and select it for that ship. Expand a row to inspect its groups, or use its trash button and confirm Yes to delete it. The selected configuration switches automatically when you board its ship.",
@@ -120427,6 +120567,10 @@
       "translation": "Quantidade Mineral:"
     },
     {
+      "source": "Mineral amount",
+      "translation": "Quantidade mineral"
+    },
+    {
       "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
       "translation": "A quantidade e densidade mineral descrevem cada depósito e aceitam l, m ou h como abreviatura para baixo, médio ou alto. Os nomes dos depósitos devem corresponder a uma mercadoria em Atividades > Mineração de Superfície > Lista de Pontos de Acesso; comandos rejeitados explicam o problema nas notificações de status."
     },
@@ -126243,6 +126387,10 @@
       "translation": "Remover verificação manual"
     },
     {
+      "source": "Remove marker",
+      "translation": "Remover marcador"
+    },
+    {
       "source": "Remove module assignment",
       "translation": "Remover atribuição de módulo"
     },
@@ -126919,6 +127067,10 @@
       "translation": "As barras da plataforma definem rastreadores imediatamente; três segundos vazios os limpa."
     },
     {
+      "source": "Rig capacity",
+      "translation": "Capacidade de sondas de mineração"
+    },
+    {
       "source": "Rig circles and distance cues",
       "translation": "Rig círculos e dicas de distância"
     },
@@ -127411,6 +127563,10 @@
       "translation": "MAPA SELECIONADO"
     },
     {
+      "source": "SELECTED MARKER",
+      "translation": "MARCADOR SELECIONADO"
+    },
+    {
       "source": "SELECTED NODE",
       "translation": "NÓ SELECIONADO"
     },
@@ -127817,6 +127973,10 @@
     {
       "source": "Save map changes...",
       "translation": "Salvar alterações no mapa..."
+    },
+    {
+      "source": "Save marker",
+      "translation": "Salvar marcador"
     },
     {
       "source": "Save mining overlay settings",
@@ -130047,6 +130207,10 @@
       "translation": "SrvSurvey não conseguiu determinar seu caminho executável para autorização de Frontier."
     },
     {
+      "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
+      "translation": "SrvSurvey não pôde atualizar o registro de retorno de chamada da área de trabalho. {0}"
+    },
+    {
       "source": "SrvSurvey could not register its Frontier callback command.",
       "translation": "SrvSurvey não pôde registrar seu comando de retorno de chamada Frontier."
     },
@@ -130197,6 +130361,10 @@
     {
       "source": "SrvSurvey replay package",
       "translation": "SrvSurvey pacote de repetição"
+    },
+    {
+      "source": "SrvSurvey requires update-desktop-database (desktop-file-utils) to register Frontier authorization on Linux.",
+      "translation": "SrvSurvey requer update-desktop-database (desktop-file-utils) para registrar a autorização Frontier no Linux."
     },
     {
       "source": "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
@@ -132441,6 +132609,10 @@
     {
       "source": "The default browser declined the request.",
       "translation": "O navegador padrão recusou a solicitação."
+    },
+    {
+      "source": "The desktop MIME database update process did not start.",
+      "translation": "O processo de atualização do banco de dados MIME da área de trabalho não foi iniciado."
     },
     {
       "source": "The desktop clipboard is not available.",
@@ -135217,10 +135389,6 @@
     {
       "source": "Use the most recent visit to {0}.",
       "translation": "Use a visita mais recente a {0}."
-    },
-    {
-      "source": "Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
-      "translation": "Use a roda do mouse ou os controles − / + para ampliar. Arraste o mapa para deslocar-se após aumentar o zoom. Clique com o botão direito para colocar ou remover um círculo de planejamento de 4,5 km; segure o botão direito e arraste para movê-lo."
     },
     {
       "source": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -139375,6 +139543,10 @@
       "translation": "inutilizável"
     },
     {
+      "source": "update-desktop-database",
+      "translation": "update-desktop-database"
+    },
+    {
       "source": "updates",
       "translation": "atualizações"
     },
@@ -139557,6 +139729,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "manipulador de esquema x/{0}"
+    },
+    {
+      "source": "xdg-mime",
+      "translation": "xdg-mime"
     },
     {
       "source": "yellow",
@@ -140775,6 +140951,10 @@
     {
       "source": "0 CR",
       "translation": "0 CR"
+    },
+    {
+      "source": "0 means capacity is not recorded.",
+      "translation": "0 означает, что емкость не записывается."
     },
     {
       "source": "0 of 0 boxels complete",
@@ -145983,6 +146163,10 @@
     {
       "source": "Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control.",
       "translation": "Очищает закладки на поверхности командира для тела под кораблем или костюмом, что соответствует устаревшему элементу управления настройками биосканирования."
+    },
+    {
+      "source": "Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
+      "translation": "Нажмите на месторождение, чтобы отредактировать или удалить его; щелкните пустое место на карте, чтобы отменить выбор. Используйте колесо мыши или элементы управления – / + для масштабирования. Перетащите карту для панорамирования после увеличения. Щелкните правой кнопкой мыши, чтобы разместить или удалить круг планирования длиной 4,5 км; удерживайте правую кнопку и перетащите ее, чтобы переместить."
     },
     {
       "source": "Click a name to edit and select it for that ship. Expand a row to inspect its groups, or use its trash button and confirm Yes to delete it. The selected configuration switches automatically when you board its ship.",
@@ -155597,6 +155781,10 @@
       "translation": "Минеральное количество:"
     },
     {
+      "source": "Mineral amount",
+      "translation": "Количество минерала"
+    },
+    {
       "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
       "translation": "Количество и плотность минералов описывают каждое месторождение и принимают l, m или h как сокращение для низких, средних или высоких значений. Названия месторождений должны соответствовать товару в разделе «Действия» > «Поверхностная добыча» > «Список горячих точек»; отклоненные команды объясняют проблему в уведомлениях о состоянии."
     },
@@ -161413,6 +161601,10 @@
       "translation": "Удалить сканирование вручную"
     },
     {
+      "source": "Remove marker",
+      "translation": "Удалить маркер"
+    },
+    {
       "source": "Remove module assignment",
       "translation": "Удалить назначение модуля"
     },
@@ -162089,6 +162281,10 @@
       "translation": "Бары для буровой установки немедленно устанавливают трекеры; три секунды пусто очищают их."
     },
     {
+      "source": "Rig capacity",
+      "translation": "Количество буровых установок"
+    },
+    {
       "source": "Rig circles and distance cues",
       "translation": "Установите круги и сигналы расстояния"
     },
@@ -162581,6 +162777,10 @@
       "translation": "ВЫБРАННАЯ КАРТА"
     },
     {
+      "source": "SELECTED MARKER",
+      "translation": "ВЫБРАННЫЙ МАРКЕР"
+    },
+    {
       "source": "SELECTED NODE",
       "translation": "ВЫБРАННЫЙ УЗЕЛ"
     },
@@ -162987,6 +163187,10 @@
     {
       "source": "Save map changes...",
       "translation": "Сохранить изменения карты..."
+    },
+    {
+      "source": "Save marker",
+      "translation": "Сохранить маркер"
     },
     {
       "source": "Save mining overlay settings",
@@ -165217,6 +165421,10 @@
       "translation": "SrvSurvey не удалось определить путь к исполняемому файлу для авторизации Frontier."
     },
     {
+      "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
+      "translation": "SrvSurvey не удалось обновить регистрацию обратного вызова рабочего стола. {0}"
+    },
+    {
       "source": "SrvSurvey could not register its Frontier callback command.",
       "translation": "SrvSurvey не удалось зарегистрировать команду обратного вызова Frontier."
     },
@@ -165367,6 +165575,10 @@
     {
       "source": "SrvSurvey replay package",
       "translation": "SrvSurvey пакет воспроизведения"
+    },
+    {
+      "source": "SrvSurvey requires update-desktop-database (desktop-file-utils) to register Frontier authorization on Linux.",
+      "translation": "SrvSurvey требуется update-desktop-database (desktop-file-utils) для регистрации авторизации Frontier в Linux."
     },
     {
       "source": "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
@@ -167611,6 +167823,10 @@
     {
       "source": "The default browser declined the request.",
       "translation": "Браузер по умолчанию отклонил запрос."
+    },
+    {
+      "source": "The desktop MIME database update process did not start.",
+      "translation": "Процесс обновления базы данных MIME рабочего стола не запустился."
     },
     {
       "source": "The desktop clipboard is not available.",
@@ -170387,10 +170603,6 @@
     {
       "source": "Use the most recent visit to {0}.",
       "translation": "Используйте самое последнее посещение {0}."
-    },
-    {
-      "source": "Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
-      "translation": "Используйте колесо мыши или элементы управления – / + для масштабирования. Перетащите карту для панорамирования после увеличения. Щелкните правой кнопкой мыши, чтобы разместить или удалить круг планирования длиной 4,5 км; удерживайте правую кнопку и перетащите ее, чтобы переместить."
     },
     {
       "source": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -174545,6 +174757,10 @@
       "translation": "непригодный для использования"
     },
     {
+      "source": "update-desktop-database",
+      "translation": "update-desktop-database"
+    },
+    {
       "source": "updates",
       "translation": "обновления"
     },
@@ -174727,6 +174943,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "x-схема-обработчик/{0}"
+    },
+    {
+      "source": "xdg-mime",
+      "translation": "xdg-mime"
     },
     {
       "source": "yellow",
@@ -175945,6 +176165,10 @@
     {
       "source": "0 CR",
       "translation": "0 CR"
+    },
+    {
+      "source": "0 means capacity is not recorded.",
+      "translation": "0表示不记录容量。"
     },
     {
       "source": "0 of 0 boxels complete",
@@ -181153,6 +181377,10 @@
     {
       "source": "Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control.",
       "translation": "清除舰船或套装下身体的指挥官表面书签，与传统的生物扫描设置控件相匹配。"
+    },
+    {
+      "source": "Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
+      "translation": "点击矿床可编辑或删除它；单击空白地图空间以取消选择。使用鼠标滚轮或 - / + 控件进行缩放。地图放大后拖动平移。右键放置或删除4.5公里规划圈；按住右键并拖动以移动它。"
     },
     {
       "source": "Click a name to edit and select it for that ship. Expand a row to inspect its groups, or use its trash button and confirm Yes to delete it. The selected configuration switches automatically when you board its ship.",
@@ -190767,6 +190995,10 @@
       "translation": "矿物质含量："
     },
     {
+      "source": "Mineral amount",
+      "translation": "矿物质含量"
+    },
+    {
       "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
       "translation": "矿物量和密度描述了每个矿床，并接受 l、m 或 h 作为低、中或高的简写。矿床名称必须与“活动”>“露天采矿”>“热点列表”中的商品匹配；被拒绝的命令解释了状态通知中的问题。"
     },
@@ -196583,6 +196815,10 @@
       "translation": "删除手动扫描"
     },
     {
+      "source": "Remove marker",
+      "translation": "删除标记"
+    },
+    {
       "source": "Remove module assignment",
       "translation": "删除模块分配"
     },
@@ -197259,6 +197495,10 @@
       "translation": "钻杆立即设置跟踪器；三秒空就可以清除它们。"
     },
     {
+      "source": "Rig capacity",
+      "translation": "可容纳的钻机数"
+    },
+    {
       "source": "Rig circles and distance cues",
       "translation": "装备圈和距离提示"
     },
@@ -197751,6 +197991,10 @@
       "translation": "选定的地图"
     },
     {
+      "source": "SELECTED MARKER",
+      "translation": "选定的标记"
+    },
+    {
       "source": "SELECTED NODE",
       "translation": "选定的节点"
     },
@@ -198157,6 +198401,10 @@
     {
       "source": "Save map changes...",
       "translation": "保存地图更改..."
+    },
+    {
+      "source": "Save marker",
+      "translation": "保存标记"
     },
     {
       "source": "Save mining overlay settings",
@@ -200387,6 +200635,10 @@
       "translation": "SrvSurvey 无法确定 Frontier 授权的可执行路径。"
     },
     {
+      "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
+      "translation": "SrvSurvey 无法刷新其桌面回调注册。 {0}"
+    },
+    {
       "source": "SrvSurvey could not register its Frontier callback command.",
       "translation": "SrvSurvey 无法注册其 Frontier 回调命令。"
     },
@@ -200537,6 +200789,10 @@
     {
       "source": "SrvSurvey replay package",
       "translation": "SrvSurvey 重播包"
+    },
+    {
+      "source": "SrvSurvey requires update-desktop-database (desktop-file-utils) to register Frontier authorization on Linux.",
+      "translation": "SrvSurvey 需要 update-desktop-database (desktop-file-utils) 在 Linux 上注册 Frontier 授权。"
     },
     {
       "source": "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
@@ -202781,6 +203037,10 @@
     {
       "source": "The default browser declined the request.",
       "translation": "默认浏览器拒绝了该请求。"
+    },
+    {
+      "source": "The desktop MIME database update process did not start.",
+      "translation": "桌面 MIME 数据库更新过程未启动。"
     },
     {
       "source": "The desktop clipboard is not available.",
@@ -205557,10 +205817,6 @@
     {
       "source": "Use the most recent visit to {0}.",
       "translation": "使用最近访问的 {0}。"
-    },
-    {
-      "source": "Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
-      "translation": "使用鼠标滚轮或 - / + 控件进行缩放。地图放大后拖动平移。右键放置或删除4.5公里规划圈；按住右键并拖动以移动它。"
     },
     {
       "source": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -209715,6 +209971,10 @@
       "translation": "无法使用的"
     },
     {
+      "source": "update-desktop-database",
+      "translation": "update-desktop-database"
+    },
+    {
       "source": "updates",
       "translation": "更新"
     },
@@ -209897,6 +210157,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "x-scheme-handler/{0}"
+    },
+    {
+      "source": "xdg-mime",
+      "translation": "xdg-mime"
     },
     {
       "source": "yellow",
@@ -211115,6 +211379,10 @@
     {
       "source": "0 CR",
       "translation": "* 0 CR >>>!"
+    },
+    {
+      "source": "0 means capacity is not recorded.",
+      "translation": "* 0 MEANS CAPACITY IS NOT RECORDED. >>>!"
     },
     {
       "source": "0 of 0 boxels complete",
@@ -216323,6 +216591,10 @@
     {
       "source": "Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control.",
       "translation": "* CLEARS COMMANDER SURFACE BOOKMARKS FOR THE BODY UNDER THE SHIP OR SUIT, MATCHING THE LEGACY BIO SCANNING SETTINGS CONTROL. >>>!"
+    },
+    {
+      "source": "Click a deposit to edit or remove it; click empty map space to deselect. Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
+      "translation": "* CLICK A DEPOSIT TO EDIT OR REMOVE IT; CLICK EMPTY MAP SPACE TO DESELECT. USE THE MOUSE WHEEL OR − / + CONTROLS TO ZOOM. DRAG THE MAP TO PAN AFTER ZOOMING IN. RIGHT-CLICK TO PLACE OR REMOVE A 4.5 KM PLANNING CIRCLE; HOLD THE RIGHT BUTTON AND DRAG TO MOVE IT. >>>!"
     },
     {
       "source": "Click a name to edit and select it for that ship. Expand a row to inspect its groups, or use its trash button and confirm Yes to delete it. The selected configuration switches automatically when you board its ship.",
@@ -225937,6 +226209,10 @@
       "translation": "* MINERAL AMOUNT: >>>!"
     },
     {
+      "source": "Mineral amount",
+      "translation": "* MINERAL AMOUNT >>>!"
+    },
+    {
       "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
       "translation": "* MINERAL AMOUNT AND DENSITY DESCRIBE EACH DEPOSIT AND ACCEPT L, M, OR H AS SHORTHAND FOR LOW, MEDIUM, OR HIGH. DEPOSIT NAMES MUST MATCH A COMMODITY IN ACTIVITIES > SURFACE MINING > HOTSPOT LIST; REJECTED COMMANDS EXPLAIN THE PROBLEM IN STATUS NOTIFICATIONS. >>>!"
     },
@@ -231753,6 +232029,10 @@
       "translation": "* REMOVE MANUAL SCAN >>>!"
     },
     {
+      "source": "Remove marker",
+      "translation": "* REMOVE MARKER >>>!"
+    },
+    {
       "source": "Remove module assignment",
       "translation": "* REMOVE MODULE ASSIGNMENT >>>!"
     },
@@ -232429,6 +232709,10 @@
       "translation": "* RIG BARS SET TRACKERS IMMEDIATELY; THREE SECONDS EMPTY CLEARS THEM. >>>!"
     },
     {
+      "source": "Rig capacity",
+      "translation": "* RIG CAPACITY >>>!"
+    },
+    {
       "source": "Rig circles and distance cues",
       "translation": "* RIG CIRCLES AND DISTANCE CUES >>>!"
     },
@@ -232921,6 +233205,10 @@
       "translation": "* SELECTED MAP >>>!"
     },
     {
+      "source": "SELECTED MARKER",
+      "translation": "* SELECTED MARKER >>>!"
+    },
+    {
       "source": "SELECTED NODE",
       "translation": "* SELECTED NODE >>>!"
     },
@@ -233327,6 +233615,10 @@
     {
       "source": "Save map changes...",
       "translation": "* SAVE MAP CHANGES... >>>!"
+    },
+    {
+      "source": "Save marker",
+      "translation": "* SAVE MARKER >>>!"
     },
     {
       "source": "Save mining overlay settings",
@@ -235557,6 +235849,10 @@
       "translation": "* SRVSURVEY COULD NOT DETERMINE ITS EXECUTABLE PATH FOR FRONTIER AUTHORIZATION. >>>!"
     },
     {
+      "source": "SrvSurvey could not refresh its desktop callback registration. {0}",
+      "translation": "* SRVSURVEY COULD NOT REFRESH ITS DESKTOP CALLBACK REGISTRATION. {0} >>>!"
+    },
+    {
       "source": "SrvSurvey could not register its Frontier callback command.",
       "translation": "* SRVSURVEY COULD NOT REGISTER ITS FRONTIER CALLBACK COMMAND. >>>!"
     },
@@ -235707,6 +236003,10 @@
     {
       "source": "SrvSurvey replay package",
       "translation": "* SRVSURVEY REPLAY PACKAGE >>>!"
+    },
+    {
+      "source": "SrvSurvey requires update-desktop-database (desktop-file-utils) to register Frontier authorization on Linux.",
+      "translation": "* SRVSURVEY REQUIRES UPDATE-DESKTOP-DATABASE (DESKTOP-FILE-UTILS) TO REGISTER FRONTIER AUTHORIZATION ON LINUX. >>>!"
     },
     {
       "source": "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
@@ -237951,6 +238251,10 @@
     {
       "source": "The default browser declined the request.",
       "translation": "* THE DEFAULT BROWSER DECLINED THE REQUEST. >>>!"
+    },
+    {
+      "source": "The desktop MIME database update process did not start.",
+      "translation": "* THE DESKTOP MIME DATABASE UPDATE PROCESS DID NOT START. >>>!"
     },
     {
       "source": "The desktop clipboard is not available.",
@@ -240727,10 +241031,6 @@
     {
       "source": "Use the most recent visit to {0}.",
       "translation": "* USE THE MOST RECENT VISIT TO {0}. >>>!"
-    },
-    {
-      "source": "Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
-      "translation": "* USE THE MOUSE WHEEL OR − / + CONTROLS TO ZOOM. DRAG THE MAP TO PAN AFTER ZOOMING IN. RIGHT-CLICK TO PLACE OR REMOVE A 4.5 KM PLANNING CIRCLE; HOLD THE RIGHT BUTTON AND DRAG TO MOVE IT. >>>!"
     },
     {
       "source": "Use the origin guidance to align an aerial screenshot. Type .map to return.",
@@ -244885,6 +245185,10 @@
       "translation": "* UNUSABLE >>>!"
     },
     {
+      "source": "update-desktop-database",
+      "translation": "* UPDATE-DESKTOP-DATABASE >>>!"
+    },
+    {
       "source": "updates",
       "translation": "* UPDATES >>>!"
     },
@@ -245067,6 +245371,10 @@
     {
       "source": "x-scheme-handler/{0}",
       "translation": "* X-SCHEME-HANDLER/{0} >>>!"
+    },
+    {
+      "source": "xdg-mime",
+      "translation": "* XDG-MIME >>>!"
     },
     {
       "source": "yellow",

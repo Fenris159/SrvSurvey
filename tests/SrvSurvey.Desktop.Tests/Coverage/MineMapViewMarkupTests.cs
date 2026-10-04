@@ -4,6 +4,28 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class MineMapViewMarkupTests
 {
+    /// <summary>The selected-marker panel follows visibility controls and shares two-way selection with the map.</summary>
+    [Fact]
+    public void SelectedMarkerEditorAppearsBelowMarkerVisibility()
+    {
+        var document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "MineMapView.axaml")
+        );
+        XNamespace names = "http://schemas.microsoft.com/winfx/2006/xaml";
+        XElement editor = document
+            .Descendants()
+            .Single(element => element.Attribute(names + "Name")?.Value == "MineSelectedMarkerEditor");
+        XElement visibility = document
+            .Descendants()
+            .Single(element => element.Attribute(names + "Name")?.Value == "MarkerVisibilityLayout");
+        Assert.Same(editor.Parent, visibility.Parent!.Parent);
+        Assert.Same(editor, visibility.Parent.ElementsAfterSelf().First());
+        Assert.Equal("{Binding HasSelectedMarker}", editor.Attribute("IsVisible")?.Value);
+        XElement map = document.Descendants().Single(element => element.Name.LocalName == "MineMapControl");
+        Assert.Equal("{Binding SelectedMarkerId, Mode=TwoWay}", map.Attribute("SelectedMarkerId")?.Value);
+        Assert.Contains(editor.Descendants(), element => element.Attribute("Text")?.Value == "SELECTED MARKER");
+    }
+
     [Fact]
     public void WorkspaceProvidesCatalogInstructionsAndGuardianStyleMapNavigation()
     {

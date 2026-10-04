@@ -11,6 +11,145 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class MineMapViewModelTests
 {
+    /// <summary>Marker edits are drafts until saved, survive live refreshes, and persist without an Elite session.</summary>
+    [Fact]
+    public async Task SelectedMarkerCanBeEditedSavedAndRemovedWithoutLiveGame()
+    {
+        using var directory = new TemporaryDirectory();
+        SeedSurvey(directory.Path);
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+        await viewModel.SaveSelectedMarkerAsync();
+        viewModel.SaveSelectedMarkerCommand.Execute(null);
+        viewModel.RemoveSelectedMarkerCommand.Execute(null);
+        viewModel.SelectSurvey(viewModel.FilteredSurveys.Single().Id);
+        MineMapMarker saved = viewModel.ActiveSurvey!.Markers.Single();
+        viewModel.SelectedMarkerId = saved.Id;
+        MineMapMarkerEditorViewModel editor = Assert.IsType<MineMapMarkerEditorViewModel>(viewModel.SelectedMarker);
+        Assert.True(viewModel.HasSelectedMarker);
+        Assert.True(viewModel.CanEditSelectedMarker);
+        Assert.Equal(saved.Material, editor.Material);
+        Assert.Equal(saved.MineralAmount, editor.MineralAmount);
+        Assert.Equal(saved.Density, editor.Density);
+        Assert.Equal(4, editor.RigCount);
+        Assert.Equal((decimal)saved.Location.Latitude, editor.Latitude);
+        Assert.Equal((decimal)saved.Location.Longitude, editor.Longitude);
+        editor.Material = "Monazite";
+        editor.MineralAmount = MineMapRating.Medium;
+        editor.Density = MineMapRating.High;
+        editor.RigCount = 6;
+        editor.Latitude = -12.345678m;
+        editor.Longitude = 123.456789m;
+        viewModel.SelectedMarkerId = saved.Id;
+        Assert.Same(editor, viewModel.SelectedMarker);
+        Assert.Equal(
+            "Ruby",
+            new BookmarkCatalog(directory.Path).Items.Single().SurfaceMiningMap!.Markers.Single().Material
+        );
+
+        await viewModel.SaveSelectedMarkerAsync();
+
+        MineMapMarker persisted = new BookmarkCatalog(directory.Path).Items.Single().SurfaceMiningMap!.Markers.Single();
+        Assert.Equal(saved.Id, persisted.Id);
+        Assert.Equal("Monazite", persisted.Material);
+        Assert.Equal(MineMapRating.Medium, persisted.MineralAmount);
+        Assert.Equal(MineMapRating.High, persisted.Density);
+        Assert.Equal(6, persisted.RigCount);
+        Assert.Equal(new SurfaceCoordinate(-12.345678, 123.456789), persisted.Location);
+        Assert.Equal(saved.Id, viewModel.SelectedMarkerId);
+        Assert.Contains("Saved", viewModel.StatusText, StringComparison.Ordinal);
+        Assert.Contains("Monazite", MineMapMarkerEditorViewModel.Materials);
+        Assert.Equal(Enum.GetValues<MineMapRating>(), MineMapMarkerEditorViewModel.Ratings);
+
+        await viewModel.SaveSelectedMarkerAsync(remove: true);
+        Assert.Empty(new BookmarkCatalog(directory.Path).Items.Single().SurfaceMiningMap!.Markers);
+        Assert.False(viewModel.HasSelectedMarker);
+        Assert.False(viewModel.CanEditSelectedMarker);
+        Assert.Null(viewModel.SelectedMarkerId);
+        Assert.Contains("Removed", viewModel.StatusText, StringComparison.Ordinal);
+    }
+
+    /// <summary>Invalid drafts report validation errors, and rig capacity can be cleared explicitly.</summary>
+    [Fact]
+    public async Task MarkerDraftValidationKeepsSelectionAndZeroClearsCapacity()
+    {
+        using var directory = new TemporaryDirectory();
+        SeedSurvey(directory.Path);
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+        viewModel.SelectSurvey(viewModel.FilteredSurveys.Single().Id);
+        viewModel.SelectedMarkerId = viewModel.ActiveSurvey!.Markers.Single().Id;
+        MineMapMarkerEditorViewModel editor = viewModel.SelectedMarker!;
+        editor.Material = "Unknown";
+        await viewModel.SaveSelectedMarkerAsync();
+        Assert.Same(editor, viewModel.SelectedMarker);
+        Assert.True(viewModel.CanEditSelectedMarker);
+        Assert.Contains("Choose", viewModel.StatusText, StringComparison.Ordinal);
+        editor.Material = "Ruby";
+        editor.RigCount = -1;
+        editor.Latitude = 100;
+        editor.Longitude = -200;
+        Assert.Equal(0, editor.RigCount);
+        Assert.Equal(90, editor.Latitude);
+        Assert.Equal(-180, editor.Longitude);
+        viewModel.SaveSelectedMarkerCommand.Execute(null);
+        Assert.Null(viewModel.ActiveSurvey.Markers.Single().RigCount);
+        Assert.Equal(new SurfaceCoordinate(90, -180), viewModel.ActiveSurvey.Markers.Single().Location);
+        viewModel.RemoveSelectedMarkerCommand.Execute(null);
+        Assert.Empty(viewModel.ActiveSurvey.Markers);
+    }
+
+    /// <summary>Filtering, deleting, changing maps, and click-away selection cannot leave an invisible editor target.</summary>
+    [Fact]
+    public void MarkerSelectionClearsWhenFilteredRemovedOrOnAnotherSurvey()
+    {
+        using var directory = new TemporaryDirectory();
+        SeedSurveyWithRatingVariants(directory.Path);
+        var catalog = new BookmarkCatalog(directory.Path);
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { },
+            bookmarkCatalog: catalog
+        );
+        viewModel.SelectedMarkerId = Guid.NewGuid();
+        Assert.Null(viewModel.SelectedMarker);
+        viewModel.SelectSurvey(viewModel.FilteredSurveys.Single().Id);
+        MineMapSurvey survey = viewModel.ActiveSurvey!;
+        MineMapMarker marker = survey.Markers[0];
+        viewModel.SelectedMarkerId = marker.Id;
+        viewModel.SelectedMarkerId = null;
+        Assert.Null(viewModel.SelectedMarker);
+        viewModel.SelectedMarkerId = marker.Id;
+        viewModel.SelectedMineralAmountFilter = "LOW";
+        Assert.Null(viewModel.SelectedMarker);
+        viewModel.SelectedMineralAmountFilter = "ALL";
+        viewModel.SelectedMarkerId = marker.Id;
+        viewModel.SelectedDensityFilter = "HIGH";
+        Assert.Null(viewModel.SelectedMarker);
+        viewModel.SelectedDensityFilter = "ALL";
+        viewModel.SelectedMarkerId = marker.Id;
+        viewModel.MarkerFilters.Single(filter => filter.Name == marker.Material).IsVisible = false;
+        Assert.Null(viewModel.SelectedMarker);
+        viewModel.MarkerFilters.Single(filter => filter.Name == marker.Material).IsVisible = true;
+        viewModel.SelectedMarkerId = marker.Id;
+        GalacticBookmark bookmark = catalog.Items.Single();
+        catalog.Save(bookmark with { SurfaceMiningMap = survey with { Markers = survey.Markers.Skip(1).ToArray() } });
+        Assert.Null(viewModel.SelectedMarker);
+        MineMapMarker remaining = viewModel.ActiveSurvey!.Markers[0];
+        viewModel.SelectedMarkerId = remaining.Id;
+        var otherId = Guid.NewGuid();
+        catalog.Save(bookmark with { Id = otherId, SurfaceMiningMap = survey with { Id = otherId } });
+        Assert.True(viewModel.SelectSurvey(otherId));
+        Assert.Null(viewModel.SelectedMarker);
+    }
+
     [Fact]
     public async Task ArdentPricesUpdateBothReferenceTablesAndKeepDiamondSeparate()
     {
