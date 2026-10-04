@@ -26,6 +26,60 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class MainWindowViewModelTests
 {
+    /// <summary>Checks startup history never starts a mining survey, even before a commander profile exists.</summary>
+    [Fact]
+    public async Task FirstCommanderBootstrapDoesNotExecuteOldMiningSurveyCommand()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-bootstrap-mining-command-{Guid.NewGuid():N}");
+        try
+        {
+            string journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            string journal = Path.Combine(journals, "Journal.2026-10-03T090000.01.log");
+            await File.WriteAllTextAsync(
+                journal,
+                """
+                {"timestamp":"2026-10-03T14:00:00Z","event":"Commander","Name":"Probe","FID":"F123"}
+                {"timestamp":"2026-10-03T14:00:01Z","event":"Location","StarSystem":"Test System","SystemAddress":42,"StarPos":[1,2,3],"Body":"Test System 1","BodyID":7,"BodyType":"Planet"}
+                {"timestamp":"2026-10-03T14:00:02Z","event":"Scan","SystemAddress":42,"BodyName":"Test System 1","BodyID":7,"PlanetClass":"Rocky body","Landable":true,"Radius":1000}
+                {"timestamp":"2026-10-03T14:00:03Z","event":"SendText","Message":".mining survey"}
+
+                """
+            );
+            await WriteSurfaceStatusAsync(Path.Combine(journals, StatusFileReader.FileName), 1, 2);
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(paths).WithTargetFrontierId("F123")
+            );
+
+            await viewModel.RefreshAsync();
+
+            Assert.False(viewModel.MineMap.ShouldShowSurveyGuideOverlay);
+            Assert.False(File.Exists(Path.Combine(paths.DataDirectory, "surface-mining-survey-progress.json")));
+            await File.AppendAllTextAsync(
+                journal,
+                "{\"timestamp\":\"2026-10-03T14:05:00Z\",\"event\":\"SendText\",\"Message\":\".mining survey\"}\n"
+            );
+            await viewModel.RefreshAsync();
+
+            Assert.True(viewModel.MineMap.ShouldShowSurveyGuideOverlay);
+            Assert.EndsWith("BORDER", viewModel.MineMap.SurveyGuideTitle, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     [Fact]
     public async Task SecondaryCommanderListsIncludeJournalOnlyProfiles()
     {

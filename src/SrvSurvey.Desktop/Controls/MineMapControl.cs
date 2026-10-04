@@ -44,6 +44,10 @@ public sealed class MineMapControl : Control
         MineMapControl,
         IReadOnlySet<Guid>?
     >(nameof(VisibleMarkerIds));
+    public static readonly StyledProperty<Guid?> SelectedMarkerIdProperty = AvaloniaProperty.Register<
+        MineMapControl,
+        Guid?
+    >(nameof(SelectedMarkerId));
     public static readonly StyledProperty<SurfaceCoordinate?> PlanningCircleCenterProperty = AvaloniaProperty.Register<
         MineMapControl,
         SurfaceCoordinate?
@@ -89,6 +93,7 @@ public sealed class MineMapControl : Control
         Color.Parse("#FFCA28"),
     ];
 
+    /// <summary>Invalidates the map when its survey, selection, or presentation changes.</summary>
     static MineMapControl()
     {
         AffectsRender<MineMapControl>(
@@ -100,6 +105,7 @@ public sealed class MineMapControl : Control
             ShowMarkerLabelsProperty,
             VisibleMaterialsProperty,
             VisibleMarkerIdsProperty,
+            SelectedMarkerIdProperty,
             PlanningCircleCenterProperty,
             SurveyGuideTargetProperty,
             MapBackgroundProperty,
@@ -161,6 +167,13 @@ public sealed class MineMapControl : Control
     {
         get => GetValue(VisibleMarkerIdsProperty);
         set => SetValue(VisibleMarkerIdsProperty, value);
+    }
+
+    /// <summary>The deposit highlighted by the selection reticle; null hides the reticle.</summary>
+    public Guid? SelectedMarkerId
+    {
+        get => GetValue(SelectedMarkerIdProperty);
+        set => SetValue(SelectedMarkerIdProperty, value);
     }
     public SurfaceCoordinate? PlanningCircleCenter
     {
@@ -314,6 +327,7 @@ public sealed class MineMapControl : Control
         }
     }
 
+    /// <summary>Draws visible deposits and the Guardian-style reticle around the selected marker.</summary>
     private void DrawMarkers(
         DrawingContext context,
         MineMapSurvey survey,
@@ -345,6 +359,16 @@ public sealed class MineMapControl : Control
 
             var brush = new SolidColorBrush(ColorFor(marker.Material));
             context.DrawEllipse(brush, new Pen(text, 0.75 * markerScale), point, 5 * markerScale, 5 * markerScale);
+            if (marker.Id == SelectedMarkerId)
+            {
+                context.DrawEllipse(
+                    null,
+                    new Pen(text, 4 * markerScale, dashStyle: new DashStyle([3.5, 2], 0.5)),
+                    point,
+                    14 * markerScale,
+                    14 * markerScale
+                );
+            }
             string markerLabel = BuildMarkerLabel(marker, ShowMarkerLabels);
             if (markerLabel.Length > 0)
             {
@@ -494,6 +518,7 @@ public sealed class MineMapControl : Control
         e.Handled = true;
     }
 
+    /// <summary>Selects deposits on left-click, clears selection on empty space, and preserves pan/planning gestures.</summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -504,16 +529,21 @@ public sealed class MineMapControl : Control
             return;
         }
 
-        if (
-            !CanInteractWithViewport
-            || NormalizeViewportZoom(ViewportZoom) <= 1
-            || !point.Properties.IsLeftButtonPressed
-        )
+        if (!CanInteractWithViewport || !point.Properties.IsLeftButtonPressed)
         {
             return;
         }
 
-        dragOrigin = e.GetPosition(this);
+        Point pointerPosition = e.GetPosition(this);
+        Guid? markerId = HitTestMarker(pointerPosition);
+        SetCurrentValue(SelectedMarkerIdProperty, markerId);
+        if (markerId is not null || NormalizeViewportZoom(ViewportZoom) <= 1)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        dragOrigin = pointerPosition;
         dragStartOffset = viewportOffset;
         capturedPointer = e.Pointer;
         e.Pointer.Capture(this);
@@ -521,6 +551,39 @@ public sealed class MineMapControl : Control
         e.Handled = true;
     }
 
+    /// <summary>Finds the nearest visible deposit within a zoom-scaled pointer hit area.</summary>
+    private Guid? HitTestMarker(Point pointerPosition)
+    {
+        if (Survey is not { } survey || Bounds.Width <= 0 || Bounds.Height <= 0)
+        {
+            return null;
+        }
+
+        Point center = GetViewportCenter();
+        double scale = GetMapScale(survey);
+        double radius = 10 * GetMarkerScale(ViewportZoom);
+        return survey
+            .Markers.Where(marker =>
+                (VisibleMaterials is null || VisibleMaterials.Contains(marker.Material))
+                && (VisibleMarkerIds is null || VisibleMarkerIds.Contains(marker.Id))
+            )
+            .Select(marker => new
+            {
+                marker.Id,
+                Offset = ToPoint(survey, marker.Location, center, scale) - pointerPosition,
+            })
+            .Select(candidate => new
+            {
+                candidate.Id,
+                Distance = Math.Sqrt(candidate.Offset.X * candidate.Offset.X + candidate.Offset.Y * candidate.Offset.Y),
+            })
+            .Where(candidate => candidate.Distance <= radius)
+            .OrderBy(candidate => candidate.Distance)
+            .Select(candidate => (Guid?)candidate.Id)
+            .FirstOrDefault();
+    }
+
+    /// <summary>Moves the planning circle or pans the map while its corresponding drag gesture is active.</summary>
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);

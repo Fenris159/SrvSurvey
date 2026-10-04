@@ -1,9 +1,32 @@
-# SrvSurvey-XP 2.1.3.0-rc.58.21
+# SrvSurvey-XP 2.1.3.0-rc.58.22
 
-This update improves keyboard shortcuts when Elite Dangerous runs through
-Gamescope, on a separate X11 display, or with native Wayland input. It adds
-controls to inspect, select, and reset the keyboard input source, and prevents
-journal rereads from repeating chat commands that have already been processed.
+This update adds marker editing to the Surface Mining Survey map, prevents old
+mining commands from replaying when journal paths are rediscovered, and fixes
+Frontier account linking on Linux when the desktop retains an outdated handler.
+Keyboard shortcuts support Gamescope, separate X11 displays, and native Wayland
+input, with controls to inspect, select, and reset the input source.
+
+## Surface Mining Survey map
+
+- Click a visible deposit marker to select it with the same segmented target
+  reticle used by the Guardian survey map. Click empty map space to deselect it.
+- A **SELECTED MARKER** panel appears below **Marker visibility** while a marker
+  is selected. Edit its mineral or metal, mineral amount, density, rig capacity,
+  latitude, and longitude, then choose **Save marker**.
+- **Remove marker** deletes the selected deposit and its associated boundary and
+  rig data. Editing or removing a marker does not require a running game.
+- Saved edits preserve the deposit's recorded boundary and ongoing trace.
+  Changing maps or hiding the selected marker clears its selection.
+
+## Frontier account linking on Linux
+
+- Fixed **No Apps Available** when returning from Frontier authorization after
+  an older SrvSurvey callback registration had been removed. Registration now
+  refreshes the desktop's application cache before opening the authorization
+  page, keeping one current SrvSurvey callback handler available.
+- If the desktop registration utility is unavailable, SrvSurvey reports that
+  `update-desktop-database` from `desktop-file-utils` is required before opening
+  the authorization page.
 
 ## Keyboard shortcuts on Linux
 
@@ -62,24 +85,31 @@ journal rereads from repeating chat commands that have already been processed.
 
 ## Journal chat-command fix
 
+- Steam journal paths that are aliases of the same physical folder now share
+  one journal source. Rediscovering an alias no longer rereads the same events
+  as new activity, which could restart a mining survey or repeat API reporting.
+- Older mining commands are ignored during initial journal loading, including
+  when a commander profile is being created for the first time.
 - Rereading a journal during a running session no longer re-executes chat
   commands that SrvSurvey has already processed. This prevents an old command
   such as `.mine splat` from unexpectedly starting tracking again.
 - Newly sent repetitions of the same command still run normally. Tracking
   distinguishes the original journal entry from a later identical message.
+- Multiple commander instances retain independent journal tracking and match
+  their own Frontier ID, including separate Steam and non-Steam installations.
 
 ## Update channel and packages
 
-- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.21
+- RC51 remains the permanent `xp-v2.1.3.0-rc.51` compatibility bridge. RC58.22
   uses the schema-2 `xp2-v` release channel.
 - Development remains the default in-app update channel, with saved channel
   choices preserved.
-- Version: `2.1.3.0-rc.58.21`
-- Tag: `xp2-v2.1.3.0-rc.58.21`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.21-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.21-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.21-x86_64.AppImage`
-- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.21-x86_64.AppImage.zsync`
+- Version: `2.1.3.0-rc.58.22`
+- Tag: `xp2-v2.1.3.0-rc.58.22`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.58.22-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.58.22-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.58.22-x86_64.AppImage`
+- AppImage delta index: `SrvSurvey-XP-2.1.3.0-rc.58.22-x86_64.AppImage.zsync`
 
 Packages remain self-contained. The numeric Windows `FileVersion` remains
 `2.1.3.0`.

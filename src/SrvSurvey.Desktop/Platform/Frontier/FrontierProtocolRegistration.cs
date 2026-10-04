@@ -7,12 +7,12 @@ namespace SrvSurvey.Desktop.Platform.Frontier;
 
 public static class FrontierProtocolRegistration
 {
-    private static readonly string[] XdgMimePaths =
+    private static readonly string[] LinuxDesktopToolDirectories =
     [
-        "/usr/bin/xdg-mime",
-        "/bin/xdg-mime",
-        "/usr/local/bin/xdg-mime",
-        "/run/current-system/sw/bin/xdg-mime",
+        "/usr/bin",
+        "/bin",
+        "/usr/local/bin",
+        "/run/current-system/sw/bin",
     ];
 
     /// <summary>Registers this installation as the current user's Frontier authorization callback handler.</summary>
@@ -82,7 +82,7 @@ public static class FrontierProtocolRegistration
 
         var startInfo = new ProcessStartInfo
         {
-            FileName = ResolveXdgMimePath(),
+            FileName = ResolveLinuxDesktopToolPath("xdg-mime"),
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardError = true,
@@ -114,7 +114,7 @@ public static class FrontierProtocolRegistration
         }
     }
 
-    /// <summary>Reuses the application launcher for callback links and removes the legacy duplicate entry.</summary>
+    /// <summary>Reuses the application launcher, removes the legacy duplicate, and refreshes Linux MIME discovery.</summary>
     internal static async Task<string> WriteLinuxDesktopFileAsync(
         string applicationsDirectory,
         string executable,
@@ -160,7 +160,54 @@ public static class FrontierProtocolRegistration
         );
         await File.WriteAllLinesAsync(desktopFile, lines, cancellationToken).ConfigureAwait(false);
         File.Delete(Path.Combine(applicationsDirectory, "io.github.fenris159.SrvSurvey.frontier-auth.desktop"));
+        await RefreshLinuxDesktopDatabaseAsync(applicationsDirectory, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
         return desktopFile;
+    }
+
+    /// <summary>Rebuilds desktop MIME associations so removed launchers cannot hide the current callback handler.</summary>
+    internal static async Task RefreshLinuxDesktopDatabaseAsync(
+        string applicationsDirectory,
+        string? updaterPath = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = updaterPath ?? ResolveLinuxDesktopToolPath("update-desktop-database"),
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardError = true,
+        };
+        startInfo.ArgumentList.Add("--");
+        startInfo.ArgumentList.Add(applicationsDirectory);
+        try
+        {
+            using Process process =
+                Process.Start(startInfo)
+                ?? throw new InvalidOperationException("The desktop MIME database update process did not start.");
+            Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            string error = await errorTask.ConfigureAwait(false);
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    "SrvSurvey could not refresh its desktop callback registration. " + error.Trim()
+                );
+            }
+        }
+        catch (Win32Exception exception)
+        {
+            throw new InvalidOperationException(
+                "SrvSurvey requires update-desktop-database (desktop-file-utils) to register Frontier authorization on Linux.",
+                exception
+            );
+        }
     }
 
     /// <summary>Updates one main desktop-entry key while preserving launcher metadata and action sections.</summary>
@@ -200,9 +247,12 @@ public static class FrontierProtocolRegistration
         }
     }
 
-    /// <summary>Locates xdg-mime in supported Linux installation paths, retaining the standard path as fallback.</summary>
-    private static string ResolveXdgMimePath()
+    /// <summary>Locates a desktop registration tool in supported Linux paths, retaining the standard path as fallback.</summary>
+    private static string ResolveLinuxDesktopToolPath(string name)
     {
-        return XdgMimePaths.FirstOrDefault(File.Exists) ?? XdgMimePaths[0];
+        return LinuxDesktopToolDirectories
+                .Select(directory => Path.Combine(directory, name))
+                .FirstOrDefault(File.Exists)
+            ?? Path.Combine(LinuxDesktopToolDirectories[0], name);
     }
 }

@@ -277,11 +277,16 @@ public sealed class JournalDirectoryMonitor
         }
     }
 
+    /// <summary>Selects the commander's newest physical journal without treating folder aliases as separate sources.</summary>
     private async Task<FileInfo?> FindLatestJournalAsync(CancellationToken cancellationToken)
     {
         FileInfo[] journals = journalDirectories
             .Where(Directory.Exists)
             .SelectMany(EnumerateJournalFiles)
+            .DistinctBy(
+                file => file.FullName,
+                OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+            )
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .ThenByDescending(file => file.Name, StringComparer.Ordinal)
             .ThenByDescending(file => file.FullName, StringComparer.Ordinal)
@@ -382,11 +387,12 @@ public sealed class JournalDirectoryMonitor
         return frontierId;
     }
 
+    /// <summary>Enumerates physical journal paths so Steam aliases share one cursor and command history.</summary>
     private static FileInfo[] EnumerateJournalFiles(string journalDirectory)
     {
         try
         {
-            return new DirectoryInfo(journalDirectory)
+            return new DirectoryInfo(ResolveJournalDirectory(journalDirectory))
                 .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
                 .ToArray();
         }
@@ -394,6 +400,27 @@ public sealed class JournalDirectoryMonitor
         {
             return [];
         }
+    }
+
+    /// <summary>Resolves directory links in every path component, including links above the journal folder.</summary>
+    private static string ResolveJournalDirectory(string journalDirectory)
+    {
+        string fullPath = Path.GetFullPath(journalDirectory);
+        string root = Path.GetPathRoot(fullPath)!;
+        string resolved = root;
+        foreach (
+            string component in fullPath[root.Length..]
+                .Split(
+                    [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+                    StringSplitOptions.RemoveEmptyEntries
+                )
+        )
+        {
+            var directory = new DirectoryInfo(Path.Combine(resolved, component));
+            resolved = directory.ResolveLinkTarget(returnFinalTarget: true)?.FullName ?? directory.FullName;
+        }
+
+        return resolved;
     }
 
     /// <summary>Reads appended bytes and preserves line offsets so rereads cannot repeat chat commands.</summary>

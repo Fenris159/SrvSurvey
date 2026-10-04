@@ -352,6 +352,90 @@ public sealed class MineMapService : IDisposable
         }
     }
 
+    /// <summary>Saves editable deposit details by ID while preserving its latest boundary trace and identity.</summary>
+    public Task<MineMapCommandResult> UpdateMarkerAsync(
+        Guid surveyId,
+        MineMapMarker marker,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(marker);
+        if (!SurfaceMiningCommodityCatalog.TryResolve(marker.Material, out SurfaceMiningCommodity? commodity))
+        {
+            return Task.FromResult(Failure("Choose a listed surface mining mineral or metal."));
+        }
+        if (!Enum.IsDefined(marker.MineralAmount) || !Enum.IsDefined(marker.Density) || marker.RigCount is <= 0)
+        {
+            return Task.FromResult(
+                Failure("Choose valid mineral amount and density ratings, and a positive rig count.")
+            );
+        }
+
+        return ChangeMarkerAsync(
+            surveyId,
+            marker.Id,
+            current =>
+                current with
+                {
+                    Material = commodity.Name,
+                    MineralAmount = marker.MineralAmount,
+                    Density = marker.Density,
+                    RigCount = marker.RigCount,
+                    Location = marker.Location,
+                },
+            cancellationToken
+        );
+    }
+
+    /// <summary>Removes the specified deposit and its boundary/rig data without requiring a live game position.</summary>
+    public Task<MineMapCommandResult> DeleteMarkerAsync(
+        Guid surveyId,
+        Guid markerId,
+        CancellationToken cancellationToken = default
+    ) => ChangeMarkerAsync(surveyId, markerId, _ => null, cancellationToken);
+
+    /// <summary>Serializes marker edits with chat commands and reports stale selections or save failures safely.</summary>
+    private async Task<MineMapCommandResult> ChangeMarkerAsync(
+        Guid surveyId,
+        Guid markerId,
+        Func<MineMapMarker, MineMapMarker?> change,
+        CancellationToken cancellationToken
+    )
+    {
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            MineMapSurvey? survey = surveys.FirstOrDefault(candidate => candidate.Id == surveyId);
+            MineMapMarker? current = survey?.Markers.FirstOrDefault(candidate => candidate.Id == markerId);
+            if (survey is null || current is null)
+            {
+                return Failure("The selected deposit no longer exists. Select a marker again.");
+            }
+
+            MineMapMarker? updated = change(current);
+            MineMapSurvey edited = survey with
+            {
+                Markers = survey
+                    .Markers.Select(marker => marker.Id == markerId ? updated : marker)
+                    .OfType<MineMapMarker>()
+                    .ToArray(),
+                UpdatedAt = DateTimeOffset.UtcNow,
+            };
+            SaveAndReplace(edited, cancellationToken);
+            return Success(updated is null ? "Removed the selected deposit." : "Saved the selected deposit.", edited);
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
+        {
+            return Failure("Surface Mining map data could not be saved: " + exception.Message);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    /// <summary>Handles survey-control commands or creates a persisted surface map from the current location.</summary>
     private MineMapCommandResult CreateSurvey(
         string command,
         MineMapCommandContext context,

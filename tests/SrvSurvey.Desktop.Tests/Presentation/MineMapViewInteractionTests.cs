@@ -21,6 +21,166 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MineMapViewInteractionTests
 {
+    /// <summary>Pointer selection follows rendered coordinates, ignores hidden deposits, and clears on empty map space.</summary>
+    [AvaloniaFact]
+    public void MineMapSelectsVisibleMarkersAtFitZoomAndAfterZoomAndPan()
+    {
+        MineMapSurvey survey = RenderedSurvey();
+        MineMapMarker marker = survey.Markers.Single();
+        var control = new MineMapControl
+        {
+            Survey = survey,
+            AllowViewportInteraction = true,
+            Width = 500,
+            Height = 500,
+        };
+        var window = new Window
+        {
+            Content = control,
+            Width = 500,
+            Height = 500,
+        };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            Point center = new Rect(control.Bounds.Size).Center;
+            double radiusPixels = Math.Min(control.Bounds.Width, control.Bounds.Height) / 2 - 28;
+            double offset = 1_000 * Math.Sin(Math.PI / 4) * radiusPixels / 7_000;
+            Point markerPoint = center + new Vector(offset, -offset);
+            window.MouseDown(markerPoint, MouseButton.Left);
+            window.MouseUp(markerPoint, MouseButton.Left);
+            Assert.Equal(marker.Id, control.SelectedMarkerId);
+            using WriteableBitmap? selectedFrame = window.CaptureRenderedFrame();
+            Assert.NotNull(selectedFrame);
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            Assert.Null(control.SelectedMarkerId);
+
+            control.VisibleMaterials = new HashSet<string>(["Monazite"]);
+            window.MouseDown(markerPoint, MouseButton.Left);
+            window.MouseUp(markerPoint, MouseButton.Left);
+            Assert.Null(control.SelectedMarkerId);
+            control.VisibleMaterials = new HashSet<string>(["Ruby"]);
+            control.VisibleMarkerIds = new HashSet<Guid>();
+            window.MouseDown(markerPoint, MouseButton.Left);
+            window.MouseUp(markerPoint, MouseButton.Left);
+            Assert.Null(control.SelectedMarkerId);
+            control.VisibleMarkerIds = new HashSet<Guid>([marker.Id]);
+            control.ViewportZoom = 2;
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseMove(center + new Vector(20, 30));
+            window.MouseUp(center + new Vector(20, 30), MouseButton.Left);
+            markerPoint = center + new Vector(offset * 2 + 20, -offset * 2 + 30);
+            window.MouseDown(markerPoint, MouseButton.Left);
+            window.MouseUp(markerPoint, MouseButton.Left);
+            Assert.Equal(marker.Id, control.SelectedMarkerId);
+            window.MouseMove(markerPoint + new Vector(40, 40));
+            Assert.Equal(marker.Id, control.SelectedMarkerId);
+            window.MouseDown(center, MouseButton.Right);
+            window.MouseUp(center, MouseButton.Right);
+            Assert.Equal(marker.Id, control.SelectedMarkerId);
+            Assert.NotNull(control.PlanningCircleCenter);
+            control.AllowViewportInteraction = false;
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            Assert.Equal(marker.Id, control.SelectedMarkerId);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>The real workspace binds selection to its editor and saves or removes the chosen deposit through its buttons.</summary>
+    [AvaloniaFact]
+    public void SurveyMapMarkerSelectionShowsEditablePanelAndButtonsPersistChanges()
+    {
+        using var directory = new TemporaryDirectory();
+        var paths = new AppDataPaths(
+            Path.Combine(directory.Path, "config"),
+            Path.Combine(directory.Path, "data"),
+            Path.Combine(directory.Path, "cache"),
+            []
+        );
+        SeedSurvey(paths.DataDirectory);
+        var catalog = new BookmarkCatalog(paths.DataDirectory);
+        GalacticBookmark bookmark = catalog.Items.Single();
+        MineMapSurvey survey = bookmark.SurfaceMiningMap!;
+        var marker = new MineMapMarker { Material = "Ruby", Location = survey.Center };
+        catalog.Save(bookmark with { SurfaceMiningMap = survey with { Markers = [marker] } });
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder => builder.WithAppDataPaths(paths)
+        );
+        main.MineMap.SelectSurvey(survey.Id);
+        var view = new MineMapView { DataContext = main };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1400,
+            Height = 1300,
+        };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            MineMapControl map = view.FindControl<MineMapControl>("MineSurveyMap")!;
+            Border panel = view.FindControl<Border>("MineSelectedMarkerEditor")!;
+            Assert.False(panel.IsVisible);
+            Point center = map.TranslatePoint(new Rect(map.Bounds.Size).Center, window)!.Value;
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(panel.IsVisible);
+            Assert.Equal(marker.Id, main.MineMap.SelectedMarkerId);
+            ComboBox material = panel
+                .GetVisualDescendants()
+                .OfType<ComboBox>()
+                .Single(box => box.Items.Contains("Monazite"));
+            material.SelectedItem = "Monazite";
+            Assert.Equal("Monazite", main.MineMap.SelectedMarker!.Material);
+            Button save = panel
+                .GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => Equals(button.Content, "Save marker"));
+            ClickButton(window, save);
+            Assert.Equal(
+                "Monazite",
+                new BookmarkCatalog(paths.DataDirectory).Items.Single().SurfaceMiningMap!.Markers.Single().Material
+            );
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            window.MouseDown(center + new Vector(60, 60), MouseButton.Left);
+            window.MouseUp(center + new Vector(60, 60), MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+            Assert.False(panel.IsVisible);
+            window.MouseDown(center, MouseButton.Left);
+            window.MouseUp(center, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+            Button remove = panel
+                .GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => Equals(button.Content, "Remove marker"));
+            ClickButton(window, remove);
+            Assert.Empty(new BookmarkCatalog(paths.DataDirectory).Items.Single().SurfaceMiningMap!.Markers);
+            Assert.False(panel.IsVisible);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>Clicks an arranged workspace button through the same pointer path used by the application.</summary>
+    private static void ClickButton(Window window, Button button)
+    {
+        Point point = button.TranslatePoint(new Rect(button.Bounds.Size).Center, window)!.Value;
+        window.MouseDown(point, MouseButton.Left);
+        window.MouseUp(point, MouseButton.Left);
+        Dispatcher.UIThread.RunJobs();
+    }
+
     [AvaloniaFact]
     public void MineMapControlPropertiesRoundTripAndRenderACompleteMap()
     {

@@ -4,6 +4,67 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed class FrontierProtocolRegistrationTests
 {
+    /// <summary>Verifies a failed cache refresh is reported before the user can open an unusable authorization link.</summary>
+    [Theory]
+    [InlineData("/bin/false", "could not refresh")]
+    [InlineData("/nonexistent/srvsurvey/update-desktop-database", "desktop-file-utils")]
+    public async Task RegistrationReportsDesktopDatabaseFailure(string updaterPath, string message)
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            FrontierProtocolRegistration.RefreshLinuxDesktopDatabaseAsync("/tmp", updaterPath)
+        );
+
+        Assert.Contains(message, exception.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>Verifies replacing the legacy callback entry also refreshes the desktop's MIME lookup cache.</summary>
+    [Fact]
+    public async Task RegistrationRefreshesStaleCallbackCache()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        string directory = Directory.CreateTempSubdirectory("SrvSurvey protocol cache ").FullName;
+        try
+        {
+            string cache = Path.Combine(directory, "mimeinfo.cache");
+            await File.WriteAllTextAsync(
+                cache,
+                "[MIME Cache]\nx-scheme-handler/srvsurvey=io.github.fenris159.SrvSurvey.frontier-auth.desktop;\n"
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(directory, "io.github.fenris159.SrvSurvey.frontier-auth.desktop"),
+                "[Desktop Entry]\nType=Application\nName=SrvSurvey\nExec=/bin/true %u\nMimeType=x-scheme-handler/srvsurvey;\n"
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(directory, "other.desktop"),
+                "[Desktop Entry]\nType=Application\nName=Other\nExec=/bin/true %u\nMimeType=application/json;\n"
+            );
+
+            await FrontierProtocolRegistration.WriteLinuxDesktopFileAsync(directory, "/bin/true");
+
+            string updated = await File.ReadAllTextAsync(cache);
+            Assert.Contains(
+                "x-scheme-handler/srvsurvey=io.github.fenris159.SrvSurvey.desktop;",
+                updated,
+                StringComparison.Ordinal
+            );
+            Assert.DoesNotContain("frontier-auth.desktop", updated, StringComparison.Ordinal);
+            Assert.Contains("application/json=other.desktop;", updated, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     /// <summary>Verifies an installed launcher and old OAuth entry are consolidated into one current handler.</summary>
     [Fact]
     public async Task RegistrationReusesLauncherAndRemovesDuplicateHandler()

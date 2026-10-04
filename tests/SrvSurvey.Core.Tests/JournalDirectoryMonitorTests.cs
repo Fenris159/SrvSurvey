@@ -13,6 +13,132 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         $"SrvSurvey-journal-monitor-tests-{Guid.NewGuid():N}"
     );
 
+    /// <summary>Checks separate commander monitors stay on their Steam or Epic source and never replay alias history.</summary>
+    [Fact]
+    public async Task CommanderInstancesKeepDistinctPhysicalSourcesWithoutReplayingApiEvents()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        string steam = Path.Combine(temporaryDirectory, "steam");
+        string epic = Path.Combine(temporaryDirectory, "epic");
+        string steamAlias = Path.Combine(temporaryDirectory, "z-steam-alias");
+        string epicAlias = Path.Combine(temporaryDirectory, "z-epic-alias");
+        Directory.CreateDirectory(steam);
+        Directory.CreateDirectory(epic);
+        string steamJournal = Path.Combine(steam, "Journal.2026-10-03T090000.01.log");
+        string epicJournal = Path.Combine(epic, "Journal.2026-10-03T100000.01.log");
+        await File.WriteAllTextAsync(steamJournal, "{\"event\":\"Commander\",\"Name\":\"Steam\",\"FID\":\"F123\"}\n");
+        await File.WriteAllTextAsync(epicJournal, "{\"event\":\"Commander\",\"Name\":\"Epic\",\"FID\":\"F456\"}\n");
+        string[] sources = [steam, epic, steamAlias, epicAlias];
+        var steamMonitor = new JournalDirectoryMonitor(sources, "F123");
+        var epicMonitor = new JournalDirectoryMonitor(sources, "F456");
+        Assert.Equal(steamJournal, (await steamMonitor.PollAsync()).JournalPath);
+        Assert.Equal(epicJournal, (await epicMonitor.PollAsync()).JournalPath);
+
+        const string steamCommand = "{\"event\":\"SendText\",\"Message\":\".mining survey\"}\n";
+        const string epicCommand = "{\"event\":\"SendText\",\"Message\":\".mine rigs 3\"}\n";
+        await File.AppendAllTextAsync(
+            steamJournal,
+            steamCommand + "{\"event\":\"MarketBuy\",\"MarketID\":1,\"Type\":\"gold\",\"Count\":2}\n"
+        );
+        await File.AppendAllTextAsync(
+            epicJournal,
+            epicCommand + "{\"event\":\"ColonisationContribution\",\"MarketID\":2,\"Contributions\":[]}\n"
+        );
+        JournalMonitorUpdate steamLive = await steamMonitor.PollAsync();
+        JournalMonitorUpdate epicLive = await epicMonitor.PollAsync();
+        Assert.Equal(["SendText", "MarketBuy"], steamLive.JournalEvents.Select(entry => entry.EventName));
+        Assert.Equal(["SendText", "ColonisationContribution"], epicLive.JournalEvents.Select(entry => entry.EventName));
+
+        Directory.CreateSymbolicLink(steamAlias, steam);
+        Directory.CreateSymbolicLink(epicAlias, epic);
+        Assert.Empty((await steamMonitor.PollAsync()).JournalEvents);
+        Assert.Empty((await epicMonitor.PollAsync()).JournalEvents);
+        Assert.Equal(steamJournal, steamMonitor.CurrentJournalPath);
+        Assert.Equal(epicJournal, epicMonitor.CurrentJournalPath);
+
+        await File.AppendAllTextAsync(steamJournal, steamCommand);
+        await File.AppendAllTextAsync(epicJournal, epicCommand);
+        JournalEventEnvelope nextSteam = Assert.Single((await steamMonitor.PollAsync()).JournalEvents);
+        JournalEventEnvelope nextEpic = Assert.Single((await epicMonitor.PollAsync()).JournalEvents);
+        Assert.Equal(".mining survey", nextSteam.Payload.GetProperty("Message").GetString());
+        Assert.Equal(".mine rigs 3", nextEpic.Payload.GetProperty("Message").GetString());
+        Assert.Empty((await steamMonitor.PollAsync()).JournalEvents);
+        Assert.Empty((await epicMonitor.PollAsync()).JournalEvents);
+    }
+
+    /// <summary>Checks a Steam folder alias cannot replay a command and restart a completed survey guide.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SteamFolderAliasDoesNotRestartCompletedSurveyGuide(bool linkJournalFolder)
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        string realRoot = Path.Combine(temporaryDirectory, "steam-real");
+        string aliasRoot = Path.Combine(temporaryDirectory, "z-steam-alias");
+        const string relativeDirectory = "prefix/Saved Games/Elite Dangerous";
+        string realDirectory = Path.Combine(realRoot, relativeDirectory);
+        string aliasDirectory = Path.Combine(aliasRoot, relativeDirectory);
+        Directory.CreateDirectory(realDirectory);
+        string journal = Path.Combine(realDirectory, "Journal.2026-10-03T090000.01.log");
+        await File.WriteAllTextAsync(journal, "{\"event\":\"Commander\",\"Name\":\"Probe\",\"FID\":\"F123\"}\n");
+        var monitor = new JournalDirectoryMonitor([realDirectory, aliasDirectory], "F123");
+        await monitor.PollAsync();
+        using var service = new MineMapService(temporaryDirectory);
+        var context = new MineMapCommandContext(
+            "F123",
+            "Probe",
+            "Test",
+            1,
+            new GalacticCoordinate(1, 2, 3),
+            1,
+            "Test 1",
+            "Rocky body",
+            1,
+            740136,
+            new SurfaceCoordinate(10, 20)
+        );
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 1", context)).Succeeded);
+        const string command =
+            "{\"timestamp\":\"2026-10-03T14:05:00Z\",\"event\":\"SendText\",\"Message\":\".mining survey\"}\n";
+        await File.AppendAllTextAsync(journal, command);
+        JournalMonitorUpdate live = await monitor.PollAsync();
+        Assert.Single(await service.ApplyJournalEventsAsync(live.JournalEvents, context, !live.IsBootstrapRead));
+        Assert.True((await service.ExecuteAsync(".mining survey complete", context)).Succeeded);
+        MineMapSurveyGuideState completed = Assert.IsType<MineMapSurveyGuideState>(service.SurveyGuide);
+        Assert.Equal(MineMapSurveyGuidePhase.Complete, completed.Phase);
+
+        if (linkJournalFolder)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(aliasDirectory)!);
+            Directory.CreateSymbolicLink(aliasDirectory, realDirectory);
+        }
+        else
+        {
+            Directory.CreateSymbolicLink(aliasRoot, realRoot);
+        }
+        JournalMonitorUpdate reread = await monitor.PollAsync();
+        await service.ApplyJournalEventsAsync(reread.JournalEvents, context, !reread.IsBootstrapRead);
+
+        Assert.Equal(completed, service.SurveyGuide);
+        Assert.DoesNotContain(reread.JournalEvents, entry => entry.EventName == "SendText");
+        Assert.Equal(journal, monitor.CurrentJournalPath);
+
+        await File.AppendAllTextAsync(journal, command);
+        JournalMonitorUpdate next = await monitor.PollAsync();
+        Assert.Single(next.JournalEvents, entry => entry.EventName == "SendText");
+        Assert.Single(await service.ApplyJournalEventsAsync(next.JournalEvents, context, !next.IsBootstrapRead));
+        Assert.Equal(MineMapSurveyGuidePhase.Waypoint, service.SurveyGuide.Phase);
+        Assert.Empty((await monitor.PollAsync()).JournalEvents);
+    }
+
     /// <summary>Checks returning to an already read journal cannot restart a completed deposit trace.</summary>
     [Fact]
     public async Task RereadingOldJournalDoesNotRestartCompletedSplatTrace()
