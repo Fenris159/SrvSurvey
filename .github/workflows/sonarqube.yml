@@ -1,23 +1,10 @@
-# SonarCloud analysis for both long-lived lines of development:
-#   - main (legacy WinForms / SrvSurvey.sln)
-#   - SrvSurvey-Avalonia (XP / SrvSurvey.slnx)
-#
-# PR events are limited to those two bases so feature-branch noise stays low,
-# while each codebase still builds with the right SDK and solution layout.
-#
-# Push triggers for a branch only fire when THIS file exists on that branch.
-# Keep this workflow in sync on both main and SrvSurvey-Avalonia.
+# Automatic analysis is limited to PRs targeting the default XP branch.
+# Manual runs retain support for branch and stacked-PR analysis.
 name: SonarQube analysis
 
 on:
-  push:
-    branches:
-      - main
-      # Requires the same workflow file on SrvSurvey-Avalonia (see companion PR / cherry-pick).
-      - SrvSurvey-Avalonia
   pull_request:
     branches:
-      - main
       - SrvSurvey-Avalonia
     types:
       - opened
@@ -35,6 +22,10 @@ on:
         description: "PR base branch for stacked PR analysis"
         required: false
         type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
