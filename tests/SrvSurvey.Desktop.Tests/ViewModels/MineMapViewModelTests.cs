@@ -11,6 +11,52 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class MineMapViewModelTests
 {
+    /// <summary>Unexpected persistence errors are displayed, retain the editor draft, and allow save/remove retries.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MarkerSaveAndRemovalExceptionsLeaveEditorReadyForRetry(bool remove)
+    {
+        using var directory = new TemporaryDirectory();
+        SeedSurvey(directory.Path);
+        var catalog = new BookmarkCatalog(directory.Path);
+        const string failure = "Unexpected marker persistence failure.";
+        EventHandler failDuringPersist = (_, _) => throw new NotSupportedException(failure);
+        catalog.Changed += failDuringPersist;
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { },
+            bookmarkCatalog: catalog
+        );
+        viewModel.SelectSurvey(viewModel.FilteredSurveys.Single().Id);
+        viewModel.SelectedMarkerId = viewModel.ActiveSurvey!.Markers.Single().Id;
+        MineMapMarkerEditorViewModel editor = viewModel.SelectedMarker!;
+        editor.Material = "Monazite";
+
+        await viewModel.SaveSelectedMarkerAsync(remove);
+
+        Assert.Same(editor, viewModel.SelectedMarker);
+        Assert.Equal("Monazite", editor.Material);
+        Assert.True(viewModel.CanEditSelectedMarker);
+        Assert.Contains(remove ? "removed" : "saved", viewModel.StatusText, StringComparison.Ordinal);
+        Assert.Contains(failure, viewModel.StatusText, StringComparison.Ordinal);
+        catalog.Changed -= failDuringPersist;
+
+        await viewModel.SaveSelectedMarkerAsync(remove);
+
+        Assert.Contains(remove ? "Removed" : "Saved", viewModel.StatusText, StringComparison.Ordinal);
+        if (remove)
+        {
+            Assert.False(viewModel.HasSelectedMarker);
+        }
+        else
+        {
+            Assert.True(viewModel.CanEditSelectedMarker);
+            Assert.Equal("Monazite", viewModel.ActiveSurvey.Markers.Single().Material);
+        }
+    }
+
     /// <summary>Marker edits are drafts until saved, survive live refreshes, and persist without an Elite session.</summary>
     [Fact]
     public async Task SelectedMarkerCanBeEditedSavedAndRemovedWithoutLiveGame()

@@ -56120,6 +56120,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml.cs"
   },
   {
+    "Text": "The selected marker could not be removed:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "The selected marker could not be saved:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "The selected profile UI settings are not valid JSON.",
     "IsFormat": false,
     "SourceKinds": [

@@ -168,6 +168,8 @@ public sealed class MineMapControl : Control
         get => GetValue(VisibleMarkerIdsProperty);
         set => SetValue(VisibleMarkerIdsProperty, value);
     }
+
+    /// <summary>The deposit highlighted by the selection reticle; null hides the reticle.</summary>
     public Guid? SelectedMarkerId
     {
         get => GetValue(SelectedMarkerIdProperty);
@@ -581,6 +583,7 @@ public sealed class MineMapControl : Control
             .FirstOrDefault();
     }
 
+    /// <summary>Moves the planning circle or pans the map while its corresponding drag gesture is active.</summary>
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);

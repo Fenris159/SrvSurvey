@@ -441,16 +441,22 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public static IReadOnlyList<string> MarkerRatingFilterOptions => MarkerRatingFilters;
 
+    /// <summary>Saves the selected deposit's editable draft.</summary>
     public ICommand SaveSelectedMarkerCommand { get; }
 
+    /// <summary>Removes the selected deposit and its recorded boundary and rig data.</summary>
     public ICommand RemoveSelectedMarkerCommand { get; }
 
+    /// <summary>The selected deposit's draft; changes are persisted only when saved.</summary>
     public MineMapMarkerEditorViewModel? SelectedMarker => selectedMarker;
 
+    /// <summary>Whether a deposit is selected and its editor panel should be shown.</summary>
     public bool HasSelectedMarker => selectedMarker is not null;
 
+    /// <summary>Whether the selected editor accepts changes while no save or removal is running.</summary>
     public bool CanEditSelectedMarker => HasSelectedMarker && !isSavingMarker;
 
+    /// <summary>Shares the deposit selection between the editor and map reticle; null clears the selection.</summary>
     public Guid? SelectedMarkerId
     {
         get => selectedMarker?.Id;
@@ -476,7 +482,9 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         Changed(nameof(CanEditSelectedMarker));
     }
 
-    /// <summary>Saves or removes the captured selection, reporting failure without losing its editable draft.</summary>
+    /// <summary>Saves or removes the captured selection and reports operation failures in the workspace status.</summary>
+    /// <param name="remove">True to remove the deposit; false to save its editable details.</param>
+    /// <remarks>Validation failures and unexpected exceptions are reported to the user. The editor is re-enabled when the operation finishes.</remarks>
     public async Task SaveSelectedMarkerAsync(bool remove = false)
     {
         if (selectedMarker is not { } marker || selectedMarkerSurveyId is not { } surveyId || isSavingMarker)
@@ -497,6 +505,12 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 SetSelectedMarker(result.Survey?.Markers.FirstOrDefault(candidate => candidate.Id == marker.Id));
             }
         }
+        catch (Exception exception)
+        {
+            StatusText =
+                (remove ? "The selected marker could not be removed: " : "The selected marker could not be saved: ")
+                + exception.Message;
+        }
         finally
         {
             isSavingMarker = false;
@@ -516,6 +530,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         }
     }
 
+    /// <summary>Filters visible deposits by mineral amount and clears selections excluded by the chosen rating.</summary>
     public string SelectedMineralAmountFilter
     {
         get => selectedMineralAmountFilter;
@@ -529,6 +544,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         }
     }
 
+    /// <summary>Filters visible deposits by density and clears selections excluded by the chosen rating.</summary>
     public string SelectedDensityFilter
     {
         get => selectedDensityFilter;

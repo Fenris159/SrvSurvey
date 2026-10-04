@@ -435,6 +435,7 @@ public sealed class MineMapService : IDisposable
         }
     }
 
+    /// <summary>Handles survey-control commands or creates a persisted surface map from the current location.</summary>
     private MineMapCommandResult CreateSurvey(
         string command,
         MineMapCommandContext context,

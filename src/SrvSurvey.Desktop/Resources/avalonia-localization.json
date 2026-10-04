@@ -27985,6 +27985,14 @@
       "translation": "Der ausgewählte Exportordner ist nicht als lokaler Dateisystempfad verfügbar."
     },
     {
+      "source": "The selected marker could not be removed:",
+      "translation": "Die ausgewählte Markierung konnte nicht entfernt werden:"
+    },
+    {
+      "source": "The selected marker could not be saved:",
+      "translation": "Der ausgewählte Marker konnte nicht gespeichert werden:"
+    },
+    {
       "source": "The selected profile UI settings are not valid JSON.",
       "translation": "Die ausgewählten Profil-UI-Einstellungen sind kein gültiges JSON."
     },
@@ -63197,6 +63205,14 @@
     {
       "source": "The selected export folder is not available as a local filesystem path.",
       "translation": "La carpeta de exportación seleccionada no está disponible como ruta del sistema de archivos local."
+    },
+    {
+      "source": "The selected marker could not be removed:",
+      "translation": "El marcador seleccionado no se pudo eliminar:"
+    },
+    {
+      "source": "The selected marker could not be saved:",
+      "translation": "El marcador seleccionado no se pudo guardar:"
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -98413,6 +98429,14 @@
       "translation": "Le dossier d'exportation sélectionné n'est pas disponible en tant que chemin de système de fichiers local."
     },
     {
+      "source": "The selected marker could not be removed:",
+      "translation": "Le marqueur sélectionné n'a pas pu être supprimé :"
+    },
+    {
+      "source": "The selected marker could not be saved:",
+      "translation": "Le marqueur sélectionné n'a pas pu être enregistré :"
+    },
+    {
       "source": "The selected profile UI settings are not valid JSON.",
       "translation": "Les paramètres d'interface utilisateur du profil sélectionnés ne sont pas des fichiers JSON valides."
     },
@@ -133625,6 +133649,14 @@
     {
       "source": "The selected export folder is not available as a local filesystem path.",
       "translation": "A pasta de exportação selecionada não está disponível como caminho do sistema de arquivos local."
+    },
+    {
+      "source": "The selected marker could not be removed:",
+      "translation": "O marcador selecionado não pôde ser removido:"
+    },
+    {
+      "source": "The selected marker could not be saved:",
+      "translation": "O marcador selecionado não pôde ser salvo:"
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -168841,6 +168873,14 @@
       "translation": "Выбранная папка экспорта недоступна в качестве пути к локальной файловой системе."
     },
     {
+      "source": "The selected marker could not be removed:",
+      "translation": "Выбранный маркер не удалось удалить:"
+    },
+    {
+      "source": "The selected marker could not be saved:",
+      "translation": "Выбранный маркер не удалось сохранить:"
+    },
+    {
       "source": "The selected profile UI settings are not valid JSON.",
       "translation": "Выбранные настройки пользовательского интерфейса профиля не являются допустимыми JSON."
     },
@@ -204055,6 +204095,14 @@
       "translation": "所选导出文件夹不可用作本地文件系统路径。"
     },
     {
+      "source": "The selected marker could not be removed:",
+      "translation": "无法删除所选标记："
+    },
+    {
+      "source": "The selected marker could not be saved:",
+      "translation": "无法保存所选标记："
+    },
+    {
       "source": "The selected profile UI settings are not valid JSON.",
       "translation": "所选配置文件 UI 设置不是有效的 JSON。"
     },
@@ -239267,6 +239315,14 @@
     {
       "source": "The selected export folder is not available as a local filesystem path.",
       "translation": "* THE SELECTED EXPORT FOLDER IS NOT AVAILABLE AS A LOCAL FILESYSTEM PATH. >>>!"
+    },
+    {
+      "source": "The selected marker could not be removed:",
+      "translation": "* THE SELECTED MARKER COULD NOT BE REMOVED: >>>!"
+    },
+    {
+      "source": "The selected marker could not be saved:",
+      "translation": "* THE SELECTED MARKER COULD NOT BE SAVED: >>>!"
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
