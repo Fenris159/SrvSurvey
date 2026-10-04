@@ -3,10 +3,14 @@ name: Build and publish SrvSurvey-XP release
 run-name: SrvSurvey-XP from ${{ inputs.source_ref || github.ref_name }} (${{ inputs.release_channel || 'validation' }})
 
 on:
-  push:
+  pull_request:
     branches:
       - SrvSurvey-Avalonia
-  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
   workflow_dispatch:
     inputs:
       source_ref:
@@ -22,6 +26,10 @@ on:
           - development
           - stable
         default: development
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
