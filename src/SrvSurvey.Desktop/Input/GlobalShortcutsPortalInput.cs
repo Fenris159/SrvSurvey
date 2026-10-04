@@ -272,12 +272,13 @@ internal sealed class GlobalShortcutsPortalInput : IGlobalShortcutInput
 
     /// <summary>Stops retries for desktops with no shortcut service or supported interface, retaining transient reconnects.</summary>
     private static bool IsUnsupportedPortal(Exception exception) =>
-        exception is NotSupportedException
-        || exception
-            is DBusException
-            {
-                ErrorName: "org.freedesktop.DBus.Error.ServiceUnknown" or "org.freedesktop.DBus.Error.UnknownInterface"
-            };
+        exception
+            is NotSupportedException
+                or DBusException
+                {
+                    ErrorName: "org.freedesktop.DBus.Error.ServiceUnknown"
+                        or "org.freedesktop.DBus.Error.UnknownInterface"
+                };
 
     /// <summary>Clears a closed session and reports reconnecting without overwriting approval or disabled status.</summary>
     private void ReleaseSession(CancellationToken token)

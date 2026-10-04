@@ -255,20 +255,10 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
     /// <summary>Starts a raw listener only on platforms that provide desktop keyboard hooks.</summary>
     private void Start(long version)
     {
-        GlobalInputSettings currentSettings = Volatile.Read(ref settings);
-        if (!currentSettings.KeyboardEnabled)
+        string? unavailableStatus = GetDesktopHookUnavailableStatus();
+        if (unavailableStatus is not null)
         {
-            SetStatus("Global keyboard input is disabled.");
-            return;
-        }
-
-        if (host is not OverlayHostKind.Windows && !OverlayPlatformCapabilities.IsX11Compatible(host))
-        {
-            SetStatus(
-                host == OverlayHostKind.LinuxWayland
-                    ? "Wayland keyboard input is waiting for Global Shortcuts portal support."
-                    : "Global keyboard input is unavailable on this platform."
-            );
+            SetStatus(unavailableStatus);
             return;
         }
 
@@ -331,6 +321,24 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         {
             _ = ObserveRunAsync(version, startedHook, startedTask);
         }
+    }
+
+    /// <summary>Returns the reason a desktop hook cannot start, leaving optional input sources available.</summary>
+    private string? GetDesktopHookUnavailableStatus()
+    {
+        if (!Volatile.Read(ref settings).KeyboardEnabled)
+        {
+            return "Global keyboard input is disabled.";
+        }
+
+        if (host is OverlayHostKind.Windows || OverlayPlatformCapabilities.IsX11Compatible(host))
+        {
+            return null;
+        }
+
+        return host == OverlayHostKind.LinuxWayland
+            ? "Wayland keyboard input is waiting for Global Shortcuts portal support."
+            : "Global keyboard input is unavailable on this platform.";
     }
 
     /// <summary>Stops both input sources before disposing their shared game tracker.</summary>
@@ -503,33 +511,14 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
             }
 
             long timestamp = timestampProvider();
-            if (keyStates.TryGetValue(keyCode, out KeyPressState previousPress))
-            {
-                if (
-                    usesX11Events
-                    && previousPress.LastReleaseEventTime is ulong releaseEventTime
-                    && eventArgs.RawEvent.Time >= releaseEventTime
-                    && eventArgs.RawEvent.Time - releaseEventTime <= X11AutoRepeatEventGapMilliseconds
-                )
-                {
-                    // X11 reports a held key's repeat as a release and press
-                    // with the same native event time.
-                    keyStates[keyCode] = new KeyPressState(timestamp, null);
-                    return;
-                }
-
-                if (
-                    previousPress.LastReleaseEventTime is null
-                    && timestamp >= previousPress.LastPressTimestamp
-                    && timestamp - previousPress.LastPressTimestamp < PressStateMaxAgeTicks
-                )
-                {
-                    keyStates[keyCode] = new KeyPressState(timestamp, null);
-                    return;
-                }
-            }
-
+            bool repeated =
+                keyStates.TryGetValue(keyCode, out KeyPressState previousPress)
+                && IsRepeatedPress(previousPress, timestamp, eventArgs.RawEvent.Time, usesX11Events);
             keyStates[keyCode] = new KeyPressState(timestamp, null);
+            if (repeated)
+            {
+                return;
+            }
 
             EventMask mask = eventArgs.RawEvent.Mask;
             if (usesX11Events)
@@ -538,23 +527,61 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
                 mask |= GetObservedModifierMask(keyStates, timestamp);
             }
 
-            string? chord = KeyboardChordFormatter.Format(keyCode, mask);
-            if (chord is not null && router.TryResolve(chord, out GlobalInputAction action))
-            {
-                KeyboardInputSource source = ReferenceEquals(sender, gameKeyboardInput)
-                    ? KeyboardInputSource.NestedDisplay
-                    : KeyboardInputSource.Desktop;
-                if (source == KeyboardInputSource.NestedDisplay && gameFocused)
-                {
-                    lastNestedGameInput = timestamp;
-                }
-                bool accepted = inputSelector.TryAccept(source, action, chord, timestamp, learn: gameFocused);
-                ReportKeyboardInput(source, action, accepted, gameFocused);
-                if (accepted)
-                {
-                    ActionTriggered?.Invoke(this, new GlobalInputActionTriggeredEventArgs(action, chord));
-                }
-            }
+            KeyboardInputSource source = ReferenceEquals(sender, gameKeyboardInput)
+                ? KeyboardInputSource.NestedDisplay
+                : KeyboardInputSource.Desktop;
+            DispatchKeyboardPress(keyCode, mask, source, timestamp, gameFocused);
+        }
+    }
+
+    /// <summary>Recognizes X11 release/press repeats and recently held keys without altering their display's state.</summary>
+    private static bool IsRepeatedPress(
+        KeyPressState previousPress,
+        long timestamp,
+        ulong eventTime,
+        bool usesX11Events
+    )
+    {
+        // X11 reports a held key's repeat as a release and press with the same native event time.
+        if (
+            usesX11Events
+            && previousPress.LastReleaseEventTime is ulong releaseEventTime
+            && eventTime >= releaseEventTime
+            && eventTime - releaseEventTime <= X11AutoRepeatEventGapMilliseconds
+        )
+        {
+            return true;
+        }
+
+        return previousPress.LastReleaseEventTime is null
+            && timestamp >= previousPress.LastPressTimestamp
+            && timestamp - previousPress.LastPressTimestamp < PressStateMaxAgeTicks;
+    }
+
+    /// <summary>Resolves and dispatches a configured chord under the callback lock, learning only confirmed game input.</summary>
+    private void DispatchKeyboardPress(
+        KeyCode keyCode,
+        EventMask mask,
+        KeyboardInputSource source,
+        long timestamp,
+        bool gameFocused
+    )
+    {
+        string? chord = KeyboardChordFormatter.Format(keyCode, mask);
+        if (chord is null || !router.TryResolve(chord, out GlobalInputAction action))
+        {
+            return;
+        }
+
+        if (source == KeyboardInputSource.NestedDisplay && gameFocused)
+        {
+            lastNestedGameInput = timestamp;
+        }
+        bool accepted = inputSelector.TryAccept(source, action, chord, timestamp, learn: gameFocused);
+        ReportKeyboardInput(source, action, accepted, gameFocused);
+        if (accepted)
+        {
+            ActionTriggered?.Invoke(this, new GlobalInputActionTriggeredEventArgs(action, chord));
         }
     }
 
