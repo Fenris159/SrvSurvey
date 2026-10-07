@@ -1885,10 +1885,6 @@
       "translation": "Ammoniakwelt"
     },
     {
-      "source": "Amount",
-      "translation": "Betrag"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Für ein AppImage-Update ist der APPIMAGE-Startpfad erforderlich."
     },
@@ -5533,22 +5529,6 @@
       "translation": "Sammlernapfschnecke"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "ColonisationBeaconBereitgestellt"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "KolonisierungBauDepot"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "Kolonisierungsbeitrag"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "KolonisationSchiff"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "KolonisierenDefizit"
     },
@@ -6459,10 +6439,6 @@
     {
       "source": "Continue to picker",
       "translation": "Weiter zur Kommissionierung"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Beiträge"
     },
     {
       "source": "Contributor count not supplied",
@@ -7509,6 +7485,10 @@
       "translation": "Lieferung und lokale Lagerung"
     },
     {
+      "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
+      "translation": "Die Liefergutschrift wird erfasst; verbleibende Bauanforderungen werden erneut versucht: {0}"
+    },
+    {
       "source": "Demand:",
       "translation": "Nachfrage:"
     },
@@ -8139,10 +8119,6 @@
     {
       "source": "Docking requested",
       "translation": "Andocken angefordert"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "DockingGranted"
     },
     {
       "source": "Dodec",
@@ -25197,14 +25173,6 @@
       "translation": "StationKey"
     },
     {
-      "source": "StationName",
-      "translation": "Stationsname"
-    },
-    {
-      "source": "StationType",
-      "translation": "Stationstyp"
-    },
-    {
       "source": "Stations",
       "translation": "Stationen"
     },
@@ -29249,6 +29217,10 @@
       "translation": "Unbekannte Koordinaten werden nicht als nahegelegen behandelt. Gebündelte Beobachtungen sind historisch; Mehrere Hotspots allein bewirken keine Überlappung. Lokale Suchen zeigen höchstens 500 Ringe."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Unbekannter Lieferschein."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Unbekannte Fraktion"
     },
@@ -33117,10 +33089,6 @@
       "translation": "Quests"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "Dock-Basislinie in der Warteschlange"
-    },
-    {
       "source": "radar",
       "translation": "Radar"
     },
@@ -33439,10 +33407,6 @@
     {
       "source": "spherical",
       "translation": "sphärisch"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "Geschwader Frachtdiff"
     },
     {
       "source": "squid",
@@ -37107,10 +37071,6 @@
       "translation": "mundo del amoníaco"
     },
     {
-      "source": "Amount",
-      "translation": "Cantidad"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Una actualización de AppImage requiere la ruta de inicio de APPIMAGE."
     },
@@ -40755,22 +40715,6 @@
       "translation": "lapa recolectora"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "ColonizaciónBeaconDesplegado"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "ColonizaciónConstrucciónDepot"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "ColonizaciónContribución"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "ColonizaciónBarco"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "ColonizarDéficit"
     },
@@ -41681,10 +41625,6 @@
     {
       "source": "Continue to picker",
       "translation": "Continuar al selector"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Contribuciones"
     },
     {
       "source": "Contributor count not supplied",
@@ -42731,6 +42671,10 @@
       "translation": "Entrega y almacenamiento local."
     },
     {
+      "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
+      "translation": "Se registra el crédito de entrega; Los requisitos de construcción restantes se volverán a intentar: {0}"
+    },
+    {
       "source": "Demand:",
       "translation": "Demanda:"
     },
@@ -43361,10 +43305,6 @@
     {
       "source": "Docking requested",
       "translation": "Atraque solicitado"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "AtraqueConcedido"
     },
     {
       "source": "Dodec",
@@ -60419,14 +60359,6 @@
       "translation": "Clave de estación"
     },
     {
-      "source": "StationName",
-      "translation": "Nombre de la estación"
-    },
-    {
-      "source": "StationType",
-      "translation": "Tipo de estación"
-    },
-    {
       "source": "Stations",
       "translation": "Estaciones"
     },
@@ -64471,6 +64403,10 @@
       "translation": "Las coordenadas desconocidas no se consideran cercanas. Las observaciones agrupadas son históricas; múltiples puntos de acceso por sí solos no establecen una superposición. Las búsquedas locales muestran como máximo 500 anillos."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Aviso de entrega desconocido."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Facción desconocida"
     },
@@ -68339,10 +68275,6 @@
       "translation": "misiones"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "línea base del muelle en cola"
-    },
-    {
       "source": "radar",
       "translation": "radares"
     },
@@ -68661,10 +68593,6 @@
     {
       "source": "spherical",
       "translation": "esférico"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "diferencial de carga del escuadrón"
     },
     {
       "source": "squid",
@@ -72329,10 +72257,6 @@
       "translation": "monde de l'ammoniac"
     },
     {
-      "source": "Amount",
-      "translation": "Montant"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Une mise à jour AppImage nécessite le chemin de lancement APPIMAGE."
     },
@@ -75977,22 +75901,6 @@
       "translation": "Patelle collectrice"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "ColonisationBeaconDéployé"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "ColonisationConstructionDépôt"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "ColonisationContribution"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "ColonisationNavire"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "ColoniserDéficit"
     },
@@ -76903,10 +76811,6 @@
     {
       "source": "Continue to picker",
       "translation": "Continuer à sélectionner"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Cotisations"
     },
     {
       "source": "Contributor count not supplied",
@@ -77953,6 +77857,10 @@
       "translation": "Livraison et stockage local"
     },
     {
+      "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
+      "translation": "Un crédit de livraison est enregistré ; Les exigences de construction restantes seront réessayées : {0}"
+    },
+    {
       "source": "Demand:",
       "translation": "Demande:"
     },
@@ -78583,10 +78491,6 @@
     {
       "source": "Docking requested",
       "translation": "Amarrage demandé"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "Amarrage Accordé"
     },
     {
       "source": "Dodec",
@@ -95641,14 +95545,6 @@
       "translation": "Clé de gare"
     },
     {
-      "source": "StationName",
-      "translation": "Nom de la station"
-    },
-    {
-      "source": "StationType",
-      "translation": "Type de station"
-    },
-    {
       "source": "Stations",
       "translation": "Gares"
     },
@@ -99693,6 +99589,10 @@
       "translation": "Les coordonnées inconnues ne sont pas considérées comme proches. Les observations groupées sont historiques ; plusieurs points chauds ne suffisent pas à établir un chevauchement. Les recherches locales affichent au maximum 500 sonneries."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Avis de livraison inconnu."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Faction inconnue"
     },
@@ -103561,10 +103461,6 @@
       "translation": "quêtes"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "ligne de base du quai en file d'attente"
-    },
-    {
       "source": "radar",
       "translation": "radar"
     },
@@ -103883,10 +103779,6 @@
     {
       "source": "spherical",
       "translation": "sphérique"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "différentiel de fret de l'escadron"
     },
     {
       "source": "squid",
@@ -107551,10 +107443,6 @@
       "translation": "mundo da amônia"
     },
     {
-      "source": "Amount",
-      "translation": "Quantidade"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Uma atualização do AppImage requer o caminho de inicialização do APPIMAGE."
     },
@@ -111199,22 +111087,6 @@
       "translation": "Lapa coletora"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "ColonizaçãoBeaconImplantado"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "ColonizaçãoConstruçãoDepósito"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "ColonizaçãoContribuição"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "ColonizaçãoNavio"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "Colonizar Déficit"
     },
@@ -112125,10 +111997,6 @@
     {
       "source": "Continue to picker",
       "translation": "Continuar para o selecionador"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Contribuições"
     },
     {
       "source": "Contributor count not supplied",
@@ -113175,6 +113043,10 @@
       "translation": "Entrega e armazenamento local"
     },
     {
+      "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
+      "translation": "O crédito de entrega é registrado; os requisitos de construção restantes tentarão novamente: {0}"
+    },
+    {
       "source": "Demand:",
       "translation": "Demanda:"
     },
@@ -113805,10 +113677,6 @@
     {
       "source": "Docking requested",
       "translation": "Encaixe solicitado"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "Ancoragem concedida"
     },
     {
       "source": "Dodec",
@@ -130863,14 +130731,6 @@
       "translation": "EstaçãoKey"
     },
     {
-      "source": "StationName",
-      "translation": "Nome da estação"
-    },
-    {
-      "source": "StationType",
-      "translation": "EstaçãoTipo"
-    },
-    {
       "source": "Stations",
       "translation": "Estações"
     },
@@ -134915,6 +134775,10 @@
       "translation": "Coordenadas desconhecidas não são tratadas como próximas. As observações agrupadas são históricas; vários pontos de acesso por si só não estabelecem uma sobreposição. As pesquisas locais mostram no máximo 500 toques."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Aviso de entrega desconhecido."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Facção desconhecida"
     },
@@ -138783,10 +138647,6 @@
       "translation": "missões"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "linha de base da doca na fila"
-    },
-    {
       "source": "radar",
       "translation": "radar"
     },
@@ -139105,10 +138965,6 @@
     {
       "source": "spherical",
       "translation": "esférico"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "diferença de carga do esquadrão"
     },
     {
       "source": "squid",
@@ -142773,10 +142629,6 @@
       "translation": "мир аммиака"
     },
     {
-      "source": "Amount",
-      "translation": "Сумма"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Для обновления AppImage требуется путь запуска APPIMAGE."
     },
@@ -146421,22 +146273,6 @@
       "translation": "Коллекционное блюдо"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "КолонизацияМаякРазвернут"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "КолонизацияСтроительствоДепо"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "КолонизацияВклад"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "КолонизацияКорабль"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "КолонизацияДефицит"
     },
@@ -147347,10 +147183,6 @@
     {
       "source": "Continue to picker",
       "translation": "Продолжить выбор"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Взносы"
     },
     {
       "source": "Contributor count not supplied",
@@ -148397,6 +148229,10 @@
       "translation": "Доставка и локальное хранение"
     },
     {
+      "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
+      "translation": "Кредит на доставку учитывается; оставшиеся требования к строительству будут повторены: {0}"
+    },
+    {
       "source": "Demand:",
       "translation": "Требовать:"
     },
@@ -149027,10 +148863,6 @@
     {
       "source": "Docking requested",
       "translation": "Запрошена стыковка"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "Стыковка предоставлена"
     },
     {
       "source": "Dodec",
@@ -166085,14 +165917,6 @@
       "translation": "Станционный ключ"
     },
     {
-      "source": "StationName",
-      "translation": "Имя станции"
-    },
-    {
-      "source": "StationType",
-      "translation": "Тип станции"
-    },
-    {
       "source": "Stations",
       "translation": "Станции"
     },
@@ -170137,6 +169961,10 @@
       "translation": "Неизвестные координаты не считаются близлежащими. Объединенные наблюдения являются историческими; Несколько горячих точек сами по себе не создают перекрытия. Локальный поиск показывает не более 500 колец."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Неизвестное уведомление о доставке."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Неизвестная фракция"
     },
@@ -174005,10 +173833,6 @@
       "translation": "квесты"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "базовая линия закрепления в очереди"
-    },
-    {
       "source": "radar",
       "translation": "радар"
     },
@@ -174327,10 +174151,6 @@
     {
       "source": "spherical",
       "translation": "сферический"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "эскадрилья грузовая разница"
     },
     {
       "source": "squid",
@@ -177995,10 +177815,6 @@
       "translation": "氨世界"
     },
     {
-      "source": "Amount",
-      "translation": "金额"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "AppImage 更新需要 APPIMAGE 启动路径。"
     },
@@ -181643,22 +181459,6 @@
       "translation": "收藏家帽贝"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "殖民信标部署"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "殖民建筑站"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "殖民贡献"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "殖民船"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "殖民赤字"
     },
@@ -182569,10 +182369,6 @@
     {
       "source": "Continue to picker",
       "translation": "继续选择器"
-    },
-    {
-      "source": "Contributions",
-      "translation": "贡献"
     },
     {
       "source": "Contributor count not supplied",
@@ -183619,6 +183415,10 @@
       "translation": "交付和本地存储"
     },
     {
+      "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
+      "translation": "记录交货信用；剩余施工要求将重试：{0}"
+    },
+    {
       "source": "Demand:",
       "translation": "要求："
     },
@@ -184249,10 +184049,6 @@
     {
       "source": "Docking requested",
       "translation": "要求对接"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "对接准许"
     },
     {
       "source": "Dodec",
@@ -201307,14 +201103,6 @@
       "translation": "站键"
     },
     {
-      "source": "StationName",
-      "translation": "站名"
-    },
-    {
-      "source": "StationType",
-      "translation": "车站类型"
-    },
-    {
       "source": "Stations",
       "translation": "车站"
     },
@@ -205359,6 +205147,10 @@
       "translation": "未知坐标不会被视为附近。捆绑观察是历史性的；多个热点本身并不能建立重叠。本地搜索最多显示 500 个响铃。"
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "未知的交货通知。"
+    },
+    {
       "source": "Unknown faction",
       "translation": "未知派系"
     },
@@ -209227,10 +209019,6 @@
       "translation": "任务"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "排队码头基线"
-    },
-    {
       "source": "radar",
       "translation": "雷达"
     },
@@ -209549,10 +209337,6 @@
     {
       "source": "spherical",
       "translation": "球形"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "中队货物差异"
     },
     {
       "source": "squid",
@@ -213217,10 +213001,6 @@
       "translation": "* AMMONIA WORLD >>>!"
     },
     {
-      "source": "Amount",
-      "translation": "* AMOUNT >>>!"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "* AN APPIMAGE UPDATE REQUIRES THE APPIMAGE LAUNCH PATH. >>>!"
     },
@@ -216865,22 +216645,6 @@
       "translation": "* COLLECTOR LIMPET >>>!"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "* COLONISATIONBEACONDEPLOYED >>>!"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "* COLONISATIONCONSTRUCTIONDEPOT >>>!"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "* COLONISATIONCONTRIBUTION >>>!"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "* COLONISATIONSHIP >>>!"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "* COLONISEDEFICIT >>>!"
     },
@@ -217791,10 +217555,6 @@
     {
       "source": "Continue to picker",
       "translation": "* CONTINUE TO PICKER >>>!"
-    },
-    {
-      "source": "Contributions",
-      "translation": "* CONTRIBUTIONS >>>!"
     },
     {
       "source": "Contributor count not supplied",
@@ -218841,6 +218601,10 @@
       "translation": "* DELIVERY AND LOCAL STORAGE >>>!"
     },
     {
+      "source": "Delivery credit is recorded; remaining construction requirements will retry: {0}",
+      "translation": "* DELIVERY CREDIT IS RECORDED; REMAINING CONSTRUCTION REQUIREMENTS WILL RETRY: {0} >>>!"
+    },
+    {
       "source": "Demand:",
       "translation": "* DEMAND: >>>!"
     },
@@ -219471,10 +219235,6 @@
     {
       "source": "Docking requested",
       "translation": "* DOCKING REQUESTED >>>!"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "* DOCKINGGRANTED >>>!"
     },
     {
       "source": "Dodec",
@@ -236529,14 +236289,6 @@
       "translation": "* STATIONKEY >>>!"
     },
     {
-      "source": "StationName",
-      "translation": "* STATIONNAME >>>!"
-    },
-    {
-      "source": "StationType",
-      "translation": "* STATIONTYPE >>>!"
-    },
-    {
       "source": "Stations",
       "translation": "* STATIONS >>>!"
     },
@@ -240581,6 +240333,10 @@
       "translation": "* UNKNOWN COORDINATES ARE NOT TREATED AS NEARBY. BUNDLED OBSERVATIONS ARE HISTORICAL; MULTIPLE HOTSPOTS ALONE DO NOT ESTABLISH AN OVERLAP. LOCAL SEARCHES SHOW AT MOST 500 RINGS. >>>!"
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "* UNKNOWN DELIVERY NOTICE. >>>!"
+    },
+    {
       "source": "Unknown faction",
       "translation": "* UNKNOWN FACTION >>>!"
     },
@@ -244449,10 +244205,6 @@
       "translation": "* QUESTS >>>!"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "* QUEUED DOCK BASELINE >>>!"
-    },
-    {
       "source": "radar",
       "translation": "* RADAR >>>!"
     },
@@ -244771,10 +244523,6 @@
     {
       "source": "spherical",
       "translation": "* SPHERICAL >>>!"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "* SQUADRON CARGO DIFF >>>!"
     },
     {
       "source": "squid",

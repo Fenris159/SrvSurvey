@@ -217,6 +217,10 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
                 && !string.IsNullOrWhiteSpace(entry.Commander)
                 && !string.IsNullOrWhiteSpace(entry.EventId)
                 && entry.Cargo is not null
+                && (
+                    entry.Requirements is null
+                    || (entry.Requirements.MarketId >= 0 && entry.Requirements.Commodities is not null)
+                )
         );
     }
 
@@ -227,7 +231,9 @@ public sealed class ColonizationSettingsStore : IColonizationDeliveryRecoverySto
         {
             JsonObject section = root[ColonizationSectionKey] as JsonObject ?? [];
             root[ColonizationSectionKey] = section;
-            section["PendingContributions"] = JsonSerializer.SerializeToNode(contributions);
+            section["PendingContributions"] = JsonSerializer.SerializeToNode(
+                contributions.Select(entry => entry.CreditAcknowledged ? entry with { OutcomeUnknown = true } : entry)
+            );
         });
     }
 

@@ -150,6 +150,8 @@ public sealed partial class ColonizationDeliveryRecovery
         }
         ClearCapiCargoSeedSession();
         ClearAllCargoBaselines();
+        InvalidateProjectLocationCache();
+        lastDepotPatchPayloadSignature = null;
         ClearWorkspace();
     }
 
@@ -277,10 +279,12 @@ public sealed partial class ColonizationDeliveryRecovery
         ColonizationDockingSnapshot? dockBefore = constructionState.CurrentDock;
         long before = constructionState.Version;
         journalDocks.Clear();
+        contributionDepots.Clear();
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             ApplyJournalEvent(journalEvent, owner);
         }
+        CaptureFollowingContributionDepots(journalEvents);
 
         ExpireBuildSiteRepairWarningAfterSystemChange(dockBefore);
         if (dockBefore is not null && constructionState.CurrentDock is null)
@@ -326,8 +330,13 @@ public sealed partial class ColonizationDeliveryRecovery
             && journalEvents
                 .Where(item => item.EventName is "MarketBuy" or "MarketSell" or "CargoTransfer")
                 .All(item => GetJournalDock(item)?.MarketId == constructionState.CurrentDock?.MarketId);
+        int version = profileVersion;
         var notices = new List<ColonizationDeliveryNotice>();
         notices.AddRange(await RetryPendingWritesAsync(cancellationToken: cancellationToken));
+        if (version != profileVersion)
+        {
+            return [];
+        }
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             notices.AddRange(
@@ -338,6 +347,10 @@ public sealed partial class ColonizationDeliveryRecovery
                     cancellationToken: cancellationToken
                 )
             );
+            if (version != profileVersion)
+            {
+                return [];
+            }
         }
 
         if (cargoInventory is { } squadronCargoInventory && preferSquadronCargoDiff)
@@ -366,6 +379,10 @@ public sealed partial class ColonizationDeliveryRecovery
     {
         constructionState.Apply(journalEvent);
         journalDocks[journalEvent] = constructionState.CurrentDock;
+        if (journalEvent.EventName == "ColonisationContribution" && constructionState.CurrentDepot is { } depot)
+        {
+            contributionDepots[journalEvent] = (depot, false);
+        }
         if (
             journalEvent.EventName is "Docked" or "Location"
             && constructionState.CurrentDock is { } carrierDock
@@ -434,14 +451,23 @@ public sealed partial class ColonizationDeliveryRecovery
         CancellationToken cancellationToken
     )
     {
+        int version = profileVersion;
         IReadOnlyList<ColonizationDeliveryNotice> project = await SynchronizeDockedProjectAsync(
             journalEvent,
             cancellationToken: cancellationToken
         );
+        if (version != profileVersion)
+        {
+            return [];
+        }
         ColonizationDeliveryNotice? repair = await SynchronizeBuildSiteRepairAsync(
             journalEvent,
             cancellationToken: cancellationToken
         );
+        if (version != profileVersion)
+        {
+            return [];
+        }
         ColonizationDeliveryNotice? baseline = await EnsureLinkedFleetCarrierDockBaselineAsync(
             GetJournalDock(journalEvent),
             cancellationToken: cancellationToken

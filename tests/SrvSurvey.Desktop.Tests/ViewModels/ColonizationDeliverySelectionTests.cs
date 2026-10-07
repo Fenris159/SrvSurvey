@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -9,8 +10,7 @@ public sealed partial class ColonizationViewModelTests
     [Fact]
     public async Task DeliveryRecoveryRequiresSelection()
     {
-        SeedUnconfirmedDeliveries();
-        var client = new StubRavenColonialClient();
+        StubRavenColonialClient client = SeedUnconfirmedDeliveries();
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         Assert.All(vm.UnconfirmedContributions, row => Assert.False(row.IsSelected));
         Assert.False(vm.RetryUnconfirmedContributionsCommand.CanExecute(null));
@@ -41,8 +41,7 @@ public sealed partial class ColonizationViewModelTests
     [Fact]
     public async Task RetriesOnlySelectedDeliveries()
     {
-        SeedUnconfirmedDeliveries();
-        var client = new StubRavenColonialClient();
+        StubRavenColonialClient client = SeedUnconfirmedDeliveries();
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         vm.UnconfirmedContributions[0].IsSelected = true;
         vm.UnconfirmedContributions[2].IsSelected = true;
@@ -63,8 +62,7 @@ public sealed partial class ColonizationViewModelTests
     [Fact]
     public async Task DismissesOnlySelectedDeliveries()
     {
-        SeedUnconfirmedDeliveries();
-        var client = new StubRavenColonialClient();
+        StubRavenColonialClient client = SeedUnconfirmedDeliveries();
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         vm.UnconfirmedContributions[1].IsSelected = true;
         vm.DismissConfirmedContributions();
@@ -86,8 +84,7 @@ public sealed partial class ColonizationViewModelTests
     [Fact]
     public async Task AmbiguousRetryRequiresNewSelection()
     {
-        SeedUnconfirmedDeliveries();
-        var client = new StubRavenColonialClient();
+        StubRavenColonialClient client = SeedUnconfirmedDeliveries();
         client.ContributionFailures.Enqueue(new HttpRequestException("lost response again"));
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         vm.UnconfirmedContributions[0].IsSelected = true;
@@ -108,9 +105,9 @@ public sealed partial class ColonizationViewModelTests
     [Fact]
     public async Task RecoveryCannotOverlapDeliveryUpload()
     {
-        SeedUnconfirmedDeliveries();
+        StubRavenColonialClient client = SeedUnconfirmedDeliveries();
         var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var client = new StubRavenColonialClient { ContributionResponseTask = gate.Task };
+        client.ContributionResponseTask = gate.Task;
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         vm.UnconfirmedContributions[0].IsSelected = true;
         Task retry = vm.RetryUnconfirmedContributionsAsync();
@@ -139,8 +136,7 @@ public sealed partial class ColonizationViewModelTests
     [Fact]
     public async Task DeliverySelectionIsScopedToActiveProfile()
     {
-        SeedUnconfirmedDeliveries();
-        var client = new StubRavenColonialClient();
+        StubRavenColonialClient client = SeedUnconfirmedDeliveries();
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         ColonizationPendingContributionRowViewModel oldRow = vm.UnconfirmedContributions[0];
         oldRow.IsSelected = true;
@@ -164,9 +160,9 @@ public sealed partial class ColonizationViewModelTests
     [Fact]
     public async Task ProfileSwitchStopsRemainingSelectedRetries()
     {
-        SeedUnconfirmedDeliveries();
+        StubRavenColonialClient client = SeedUnconfirmedDeliveries();
         var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var client = new StubRavenColonialClient { ContributionResponseTask = gate.Task };
+        client.ContributionResponseTask = gate.Task;
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         foreach (ColonizationPendingContributionRowViewModel row in vm.UnconfirmedContributions)
         {
@@ -189,8 +185,7 @@ public sealed partial class ColonizationViewModelTests
     [Fact]
     public async Task DisabledIntegrationBlocksSelectedRetry()
     {
-        SeedUnconfirmedDeliveries();
-        var client = new StubRavenColonialClient();
+        StubRavenColonialClient client = SeedUnconfirmedDeliveries();
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         vm.UnconfirmedContributions[0].IsSelected = true;
         vm.IsEnabled = false;
@@ -206,8 +201,7 @@ public sealed partial class ColonizationViewModelTests
     [Fact]
     public async Task IdleRecoveryPreservesDeliverySelection()
     {
-        SeedUnconfirmedDeliveries();
-        var client = new StubRavenColonialClient();
+        StubRavenColonialClient client = SeedUnconfirmedDeliveries();
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         vm.UnconfirmedContributions[1].IsSelected = true;
         await vm.SynchronizeLiveProjectsAsync([], true);
@@ -218,12 +212,27 @@ public sealed partial class ColonizationViewModelTests
     }
 
     /// <summary>Creates distinct journal identities, including identical cargo, in the normal persisted recovery store.</summary>
-    private void SeedUnconfirmedDeliveries()
+    private StubRavenColonialClient SeedUnconfirmedDeliveries()
     {
         new ColonizationSettingsStore(Path.Combine(directory, "recovery.json")).SavePendingContributions([
             new("Test Cmdr|F123|True", "build-a", "Test Cmdr", new() { ["steel"] = 5 }, "delivery-a", true),
             new("Test Cmdr|F123|True", "build-a", "Test Cmdr", new() { ["steel"] = 5 }, "delivery-b", true),
             new("Test Cmdr|F123|True", "build-c", "Test Cmdr", new() { ["titanium"] = 10 }, "delivery-c", true),
         ]);
+        return new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [
+                    Project("build-a", "Port A", 100),
+                    Project("build-c", "Port C", 100) with
+                    {
+                        Commodities = new() { ["titanium"] = 100 },
+                    },
+                ],
+                [],
+                null,
+                []
+            ),
+        };
     }
 }

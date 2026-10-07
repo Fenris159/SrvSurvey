@@ -104,6 +104,9 @@ public enum ColonizationDeliveryNoticeKind
     /// <summary>A retained delivery failed again.</summary>
     ContributionPendingFailed,
 
+    /// <summary>Delivery credit is acknowledged, but its absolute remaining requirements still need recovery.</summary>
+    ContributionRequirementsPendingFailed,
+
     /// <summary>Retained carrier writes could not be persisted.</summary>
     CarrierCargoRecoveryNotSaved,
 

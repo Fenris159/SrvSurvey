@@ -1,13 +1,26 @@
 namespace SrvSurvey.Core.Colonization;
 
-/// <summary>A retained delivery belongs to its originating commander profile and records whether replay needs user verification.</summary>
+/// <summary>
+/// A retained delivery belongs to its originating profile. Acknowledged entries replay only requirements;
+/// their legacy uncertain marker stays true so older clients cannot automatically send their credit again.
+/// </summary>
 public sealed record ColonizationPendingContribution(
     string Owner,
     string BuildId,
     string Commander,
     Dictionary<string, int> Cargo,
     string EventId,
-    bool OutcomeUnknown
+    bool OutcomeUnknown,
+    ColonizationPendingContributionRequirements? Requirements = null,
+    bool CreditAcknowledged = false
+);
+
+/// <summary>An absolute, journal-time requirement target survives credit acknowledgement without replaying delivery credit.</summary>
+public sealed record ColonizationPendingContributionRequirements(
+    long MarketId,
+    DateTimeOffset? RecordedAt,
+    Dictionary<string, int> Commodities,
+    ColonizationConstructionDepotSnapshot? Depot = null
 );
 
 /// <summary>An ordered carrier delta retains its baseline and journal event time; null time prevents retirement by a market timestamp.</summary>

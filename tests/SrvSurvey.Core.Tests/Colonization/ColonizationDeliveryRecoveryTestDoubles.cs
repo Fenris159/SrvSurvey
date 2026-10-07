@@ -264,11 +264,21 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         /// <summary>Makes the next saves fail as an unwritable recovery file would.</summary>
         public Exception? SaveFailure { get; set; }
 
+        /// <summary>Fails selected atomic delivery saves to model interruption between recovery phases.</summary>
+        public Func<int, Exception?>? ContributionSaveFailure { get; set; }
+
+        public int ContributionSaveCount { get; private set; }
+
         public IReadOnlyList<ColonizationPendingContribution> LoadPendingContributions() =>
             contributions.Select(Copy).ToArray();
 
         public void SavePendingContributions(IReadOnlyList<ColonizationPendingContribution> contributions)
         {
+            ContributionSaveCount++;
+            if (ContributionSaveFailure?.Invoke(ContributionSaveCount) is { } failure)
+            {
+                throw failure;
+            }
             ThrowIfSaveFails();
             this.contributions = contributions.Select(Copy).ToArray();
         }
@@ -302,6 +312,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
             item with
             {
                 Cargo = new Dictionary<string, int>(item.Cargo),
+                Requirements = CopyRequirements(item.Requirements),
             };
 
         private static ColonizationPendingCargoAdjustment Copy(ColonizationPendingCargoAdjustment item) =>
@@ -312,6 +323,26 @@ public sealed partial class ColonizationDeliveryRecoveryTests
                     ? null
                     : new Dictionary<string, int>(item.Before, StringComparer.OrdinalIgnoreCase),
             };
+
+        private static ColonizationPendingContributionRequirements? CopyRequirements(
+            ColonizationPendingContributionRequirements? requirements
+        )
+        {
+            if (requirements is null)
+            {
+                return null;
+            }
+            return requirements with
+            {
+                Commodities = new Dictionary<string, int>(requirements.Commodities),
+                Depot = requirements.Depot is null
+                    ? null
+                    : requirements.Depot with
+                    {
+                        Resources = requirements.Depot.Resources.ToArray(),
+                    },
+            };
+        }
     }
 
     /// <summary>Records every change the module reports to presentation.</summary>
@@ -376,6 +407,9 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         /// <summary>Injects contribution failures to distinguish definite rejection from uncertain credit.</summary>
         public Queue<Exception> ContributionFailures { get; } = new();
 
+        /// <summary>Holds delivery acknowledgement while callers attempt reconciliation or switch profiles.</summary>
+        public Task? ContributionGate { get; set; }
+
         /// <summary>Records cancellation forwarded from journal monitoring to the delivery request.</summary>
         public CancellationToken LastContributionCancellation { get; private set; }
 
@@ -428,6 +462,14 @@ public sealed partial class ColonizationDeliveryRecoveryTests
 
         public ColonizationProject? SiteProjectResponse { get; set; }
 
+        /// <summary>Injects rejected or lost absolute-requirement acknowledgements independently of credit.</summary>
+        public Queue<Exception> ProjectUpdateFailures { get; } = new();
+
+        public bool ApplyFailedProjectUpdate { get; set; }
+
+        /// <summary>Holds a project lookup so its result can arrive after the commander changes.</summary>
+        public Task<ColonizationProject?>? SiteProjectResponseTask { get; set; }
+
         public IReadOnlyDictionary<string, int>? LastReplacement { get; private set; }
 
         public TaskCompletionSource<bool>? GateGetFleetCarrier { get; set; }
@@ -451,7 +493,11 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         public Task<ColonizationProject?> GetProjectAsync(
             string buildId,
             CancellationToken cancellationToken = default
-        ) => Task.FromResult<ColonizationProject?>(null);
+        ) =>
+            Task.FromResult(
+                Workspace.Projects.FirstOrDefault(project => project.BuildId == buildId)
+                    ?? (SiteProjectResponse?.BuildId == buildId ? SiteProjectResponse : null)
+            );
 
         public Task<ColonizationProject?> GetProjectAsync(
             long systemAddress,
@@ -460,7 +506,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         )
         {
             SiteProjectLoadCount++;
-            return Task.FromResult(SiteProjectResponse);
+            return SiteProjectResponseTask ?? Task.FromResult(SiteProjectResponse);
         }
 
         /// <summary>Holds project updates until released so a profile change can supersede them.</summary>
@@ -475,6 +521,18 @@ public sealed partial class ColonizationDeliveryRecoveryTests
             if (UpdateProjectGate is { } gate)
             {
                 await gate;
+            }
+            if (ProjectUpdateFailures.TryDequeue(out Exception? failure))
+            {
+                if (ApplyFailedProjectUpdate)
+                {
+                    ApplyProjectUpdate(update);
+                }
+                else
+                {
+                    ProjectUpdates.Add(update);
+                }
+                throw failure;
             }
             return ApplyProjectUpdate(update);
         }
@@ -545,7 +603,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
                 : Task.CompletedTask;
         }
 
-        public Task ContributeToProjectAsync(
+        public async Task ContributeToProjectAsync(
             string buildId,
             string commanderName,
             IReadOnlyDictionary<string, int> contributions,
@@ -554,9 +612,14 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         {
             LastContributionCancellation = cancellationToken;
             Contributions.Add(new ContributionCall(buildId, commanderName, contributions));
-            return ContributionFailures.TryDequeue(out Exception? failure)
-                ? Task.FromException(failure)
-                : Task.CompletedTask;
+            if (ContributionGate is { } gate)
+            {
+                await gate;
+            }
+            if (ContributionFailures.TryDequeue(out Exception? failure))
+            {
+                throw failure;
+            }
         }
 
         public Task SetPrimaryProjectAsync(

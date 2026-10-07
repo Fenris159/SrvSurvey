@@ -7,15 +7,16 @@ public sealed partial class ColonizationDeliveryRecovery
     private readonly List<ColonizationPendingCargoAdjustment> failedCargoAdjustments = [];
     private readonly List<ColonizationPendingContribution> pendingContributions = [];
     private readonly HashSet<(string Owner, long MarketId)> cargoWritesInFlight = [];
-    private readonly HashSet<string> contributionsInFlight = [];
+    private readonly HashSet<(string Owner, string EventId)> contributionsInFlight = [];
     private DateTimeOffset nextWriteRetry;
     private bool retryingWrites;
+    private string? contributionSaveFailure;
 
-    /// <summary>Retained deliveries owned by the active commander profile, in retention order.</summary>
+    /// <summary>Deliveries still awaiting credit acknowledgement for the active profile, in retention order.</summary>
     public IReadOnlyList<ColonizationPendingContribution> GetPendingContributions()
     {
         string owner = RecoveryOwner;
-        return pendingContributions.Where(item => item.Owner == owner).ToArray();
+        return pendingContributions.Where(item => item.Owner == owner && !item.CreditAcknowledged).ToArray();
     }
 
     /// <summary>Whether reconciliation decisions are allowed; false while a delivery upload or retry is active.</summary>
@@ -53,7 +54,7 @@ public sealed partial class ColonizationDeliveryRecovery
                     .ToArray()
             )
             {
-                if (contributionsInFlight.Contains(pending.EventId))
+                if (contributionsInFlight.Contains((pending.Owner, pending.EventId)))
                 {
                     continue;
                 }
@@ -75,13 +76,17 @@ public sealed partial class ColonizationDeliveryRecovery
 
     /// <summary>
     /// Retries checked deliveries after the commander verifies Raven did not record them, leaving every other
-    /// delivery unchanged. Returns null when the profile changed or integration was disabled mid-retry.
+    /// delivery unchanged. Returns null when integration is disabled, reconciliation is busy, or the profile changes.
     /// </summary>
     public async Task<IReadOnlyList<ColonizationDeliveryNotice>?> RetryVerifiedContributionsAsync(
         IReadOnlyCollection<string> eventIds
     )
     {
         ArgumentNullException.ThrowIfNull(eventIds);
+        if (!isEnabled || commanderName is null || !CanReconcileContributions)
+        {
+            return null;
+        }
         ColonizationPendingContribution[] selected = GetUncertainContributions(eventIds);
         int version = profileVersion;
         retryingWrites = true;
@@ -110,13 +115,21 @@ public sealed partial class ColonizationDeliveryRecovery
         }
     }
 
-    /// <summary>Clears checked deliveries verified credited on Raven without sending any server request.</summary>
+    /// <summary>Acknowledges checked deliveries verified credited on Raven, retaining requirements-only recovery without sending a server request.</summary>
     public void DismissVerifiedContributions(IReadOnlyCollection<string> eventIds)
     {
         ArgumentNullException.ThrowIfNull(eventIds);
+        if (!CanReconcileContributions)
+        {
+            return;
+        }
         foreach (ColonizationPendingContribution pending in GetUncertainContributions(eventIds))
         {
-            pendingContributions.Remove(pending);
+            pendingContributions[pendingContributions.IndexOf(pending)] = pending with
+            {
+                CreditAcknowledged = true,
+                OutcomeUnknown = true,
+            };
         }
         SavePendingContributions();
     }
@@ -127,7 +140,12 @@ public sealed partial class ColonizationDeliveryRecovery
         var selectedIds = eventIds.ToHashSet();
         string owner = RecoveryOwner;
         return pendingContributions
-            .Where(item => item.Owner == owner && item.OutcomeUnknown && selectedIds.Contains(item.EventId))
+            .Where(item =>
+                item.Owner == owner
+                && !item.CreditAcknowledged
+                && item.OutcomeUnknown
+                && selectedIds.Contains(item.EventId)
+            )
             .ToArray();
     }
 
@@ -291,28 +309,48 @@ public sealed partial class ColonizationDeliveryRecovery
         bool verifiedNotRecorded = false
     )
     {
-        if (pending.OutcomeUnknown && !verifiedNotRecorded)
+        if (!pending.CreditAcknowledged && pending.OutcomeUnknown && !verifiedNotRecorded)
         {
             return new(ColonizationDeliveryNoticeKind.ContributionOutcomeUncertain);
         }
-        ColonizationPendingContribution sending = pending with { OutcomeUnknown = true };
-        pendingContributions[pendingContributions.IndexOf(pending)] = sending;
-        SavePendingContributions();
+        int version = profileVersion;
         try
         {
-            await client.ContributeToProjectAsync(pending.BuildId, pending.Commander, pending.Cargo, cancellationToken);
-            pendingContributions.Remove(sending);
-            SavePendingContributions();
-            return null;
-        }
-        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
-        {
-            pendingContributions[pendingContributions.IndexOf(sending)] = sending with
+            if (!pending.CreditAcknowledged)
             {
-                OutcomeUnknown = !IsDefiniteRejection(exception),
-            };
-            SavePendingContributions();
-            return new(ColonizationDeliveryNoticeKind.ContributionPendingFailed, Detail: exception.Message);
+                pending = await PrepareContributionRequirementsAsync(pending, cancellationToken);
+                if (version != profileVersion)
+                {
+                    return null;
+                }
+                ColonizationPendingContribution? acknowledged = await SendContributionCreditAsync(
+                    pending,
+                    cancellationToken
+                );
+                if (acknowledged is null)
+                {
+                    return new(
+                        ColonizationDeliveryNoticeKind.ContributionRecoveryNotSaved,
+                        Detail: contributionSaveFailure
+                    );
+                }
+                pending = acknowledged;
+            }
+            return version == profileVersion
+                ? await RecoverContributionRequirementsAsync(pending, cancellationToken)
+                : null;
+        }
+        catch (Exception exception)
+            when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
+        {
+            return new(
+                pendingContributions.Any(item =>
+                    item.Owner == pending.Owner && item.EventId == pending.EventId && item.CreditAcknowledged
+                )
+                    ? ColonizationDeliveryNoticeKind.ContributionRequirementsPendingFailed
+                    : ColonizationDeliveryNoticeKind.ContributionPendingFailed,
+                Detail: exception.Message
+            );
         }
     }
 
@@ -332,18 +370,23 @@ public sealed partial class ColonizationDeliveryRecovery
     }
 
     /// <summary>Persists delivery recovery state without credentials and notifies the recovery controls.</summary>
-    private void SavePendingContributions()
+    private bool SavePendingContributions()
     {
         try
         {
             store.SavePendingContributions(pendingContributions);
+            contributionSaveFailure = null;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
+            contributionSaveFailure = exception.Message;
             observer.StatusChanged(
                 new(ColonizationDeliveryNoticeKind.ContributionRecoveryNotSaved, Detail: exception.Message)
             );
+            observer.PendingContributionsChanged();
+            return false;
         }
         observer.PendingContributionsChanged();
+        return true;
     }
 }

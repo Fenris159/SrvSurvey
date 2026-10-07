@@ -71,6 +71,8 @@ public static class ColonizationDeliveryMessages
                 "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
             ColonizationDeliveryNoticeKind.ContributionPendingFailed => "Construction contributions remain pending: "
                 + notice.Detail,
+            ColonizationDeliveryNoticeKind.ContributionRequirementsPendingFailed =>
+                "Delivery credit is recorded; remaining construction requirements will retry: " + notice.Detail,
             ColonizationDeliveryNoticeKind.ContributionRecoveryNotSaved =>
                 "Construction deliveries are retained in memory, but their recovery file could not be saved: "
                     + notice.Detail,
