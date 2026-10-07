@@ -26693,10 +26693,6 @@
       "translation": "Die aktive Bootstrap-Quelle und die auf dieser Plattform überprüften Speicherorte."
     },
     {
-      "source": "The active overlay layout is unavailable.",
-      "translation": "Das aktive Overlay-Layout ist nicht verfügbar."
-    },
-    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "Die aktive Siedlung hat sich geändert, sodass ihr nicht exportierter Autorenentwurf verworfen wurde."
     },
@@ -27575,10 +27571,6 @@
     {
       "source": "The overlay layout save failed and its settings rollback also failed.",
       "translation": "Das Speichern des Overlay-Layouts ist fehlgeschlagen, und auch das Zurücksetzen der Einstellungen ist fehlgeschlagen."
-    },
-    {
-      "source": "The overlay layout store is unavailable.",
-      "translation": "Der Overlay-Layout-Store ist nicht verfügbar."
     },
     {
       "source": "The overlay layout was not changed: {0}",
@@ -61915,10 +61907,6 @@
       "translation": "La fuente de arranque activa y las ubicaciones marcadas en esta plataforma."
     },
     {
-      "source": "The active overlay layout is unavailable.",
-      "translation": "El diseño de superposición activo no está disponible."
-    },
-    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "El acuerdo activo cambió, por lo que se descartó el borrador de autoría no exportado."
     },
@@ -62797,10 +62785,6 @@
     {
       "source": "The overlay layout save failed and its settings rollback also failed.",
       "translation": "Error al guardar el diseño de superposición y también falló la reversión de la configuración."
-    },
-    {
-      "source": "The overlay layout store is unavailable.",
-      "translation": "La tienda de diseños superpuestos no está disponible."
     },
     {
       "source": "The overlay layout was not changed: {0}",
@@ -97137,10 +97121,6 @@
       "translation": "La source d'amorçage active et les emplacements vérifiés sur cette plateforme."
     },
     {
-      "source": "The active overlay layout is unavailable.",
-      "translation": "La disposition de superposition active n'est pas disponible."
-    },
-    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "Le règlement actif a changé, donc son brouillon de création non exporté a été rejeté."
     },
@@ -98019,10 +97999,6 @@
     {
       "source": "The overlay layout save failed and its settings rollback also failed.",
       "translation": "L'enregistrement de la mise en page de superposition a échoué et la restauration de ses paramètres a également échoué."
-    },
-    {
-      "source": "The overlay layout store is unavailable.",
-      "translation": "Le magasin de mise en page de superposition n'est pas disponible."
     },
     {
       "source": "The overlay layout was not changed: {0}",
@@ -132359,10 +132335,6 @@
       "translation": "A fonte de bootstrap ativa e os locais verificados nesta plataforma."
     },
     {
-      "source": "The active overlay layout is unavailable.",
-      "translation": "O layout de sobreposição ativo não está disponível."
-    },
-    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "A liquidação ativa foi alterada, portanto seu rascunho de autoria não exportado foi descartado."
     },
@@ -133241,10 +133213,6 @@
     {
       "source": "The overlay layout save failed and its settings rollback also failed.",
       "translation": "O salvamento do layout de sobreposição falhou e a reversão de suas configurações também falhou."
-    },
-    {
-      "source": "The overlay layout store is unavailable.",
-      "translation": "O armazenamento de layout de sobreposição não está disponível."
     },
     {
       "source": "The overlay layout was not changed: {0}",
@@ -167581,10 +167549,6 @@
       "translation": "Активный источник начальной загрузки и местоположения, проверенные на этой платформе."
     },
     {
-      "source": "The active overlay layout is unavailable.",
-      "translation": "Активный макет наложения недоступен."
-    },
-    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "Активное поселение изменилось, поэтому его неэкспортированный авторский проект был удален."
     },
@@ -168463,10 +168427,6 @@
     {
       "source": "The overlay layout save failed and its settings rollback also failed.",
       "translation": "Не удалось сохранить макет наложения, а также не удалось выполнить откат его настроек."
-    },
-    {
-      "source": "The overlay layout store is unavailable.",
-      "translation": "Магазин макетов наложений недоступен."
     },
     {
       "source": "The overlay layout was not changed: {0}",
@@ -202803,10 +202763,6 @@
       "translation": "在此平台上检查的活动引导源和位置。"
     },
     {
-      "source": "The active overlay layout is unavailable.",
-      "translation": "活动覆盖布局不可用。"
-    },
-    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "活动结算发生变化，因此其未导出的创作草稿被丢弃。"
     },
@@ -203685,10 +203641,6 @@
     {
       "source": "The overlay layout save failed and its settings rollback also failed.",
       "translation": "覆盖布局保存失败，其设置回滚也失败。"
-    },
-    {
-      "source": "The overlay layout store is unavailable.",
-      "translation": "覆盖布局存储不可用。"
     },
     {
       "source": "The overlay layout was not changed: {0}",
@@ -238025,10 +237977,6 @@
       "translation": "* THE ACTIVE BOOTSTRAP SOURCE AND THE LOCATIONS CHECKED ON THIS PLATFORM. >>>!"
     },
     {
-      "source": "The active overlay layout is unavailable.",
-      "translation": "* THE ACTIVE OVERLAY LAYOUT IS UNAVAILABLE. >>>!"
-    },
-    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "* THE ACTIVE SETTLEMENT CHANGED, SO ITS UNEXPORTED AUTHORING DRAFT WAS DISCARDED. >>>!"
     },
@@ -238907,10 +238855,6 @@
     {
       "source": "The overlay layout save failed and its settings rollback also failed.",
       "translation": "* THE OVERLAY LAYOUT SAVE FAILED AND ITS SETTINGS ROLLBACK ALSO FAILED. >>>!"
-    },
-    {
-      "source": "The overlay layout store is unavailable.",
-      "translation": "* THE OVERLAY LAYOUT STORE IS UNAVAILABLE. >>>!"
     },
     {
       "source": "The overlay layout was not changed: {0}",

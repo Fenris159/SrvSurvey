@@ -50,6 +50,45 @@ public sealed class OverlayPositionEditSessionTests
     }
 
     [Fact]
+    public void DraggedPlacementPreservesAnchorsAndResolvesToNewPosition()
+    {
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var overlaySize = new PixelSize(300, 120);
+        var desiredPosition = new PixelPoint(475, 525);
+        LegacyOverlayPlacement[] anchors =
+        [
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 0, LegacyVerticalAnchor.Top, 0, 0.7),
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Middle, 0, 0.7),
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Right, 0, LegacyVerticalAnchor.Bottom, 0, 0.7),
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Screen, 0, LegacyVerticalAnchor.Screen, 0, 0.7),
+        ];
+
+        foreach (LegacyOverlayPlacement original in anchors)
+        {
+            LegacyOverlayPlacement placement = OverlayPositionEditSession.CreatePlacement(
+                original,
+                desiredPosition,
+                overlaySize,
+                gameBounds
+            );
+            var layout = new LegacyOverlayLayout(
+                new Dictionary<string, LegacyOverlayPlacement> { ["overlay"] = placement },
+                null,
+                null
+            );
+
+            Assert.Equal(original.Horizontal, placement.Horizontal);
+            Assert.Equal(original.Vertical, placement.Vertical);
+            Assert.Equal(original.Opacity, placement.Opacity);
+            Assert.Equal(
+                new OverlayPositionReference(gameBounds.Width, gameBounds.Height),
+                placement.PositionReference
+            );
+            Assert.Equal(desiredPosition, layout.GetPosition("overlay", gameBounds, overlaySize));
+        }
+    }
+
+    [Fact]
     public void MovesRemainIsolatedFromTheActiveLayoutUntilCommittedElsewhere()
     {
         var active = new LegacyOverlayLayout(

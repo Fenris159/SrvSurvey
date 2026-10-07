@@ -71,7 +71,12 @@ public sealed record OverlayPreparationResult(bool IsPrepared, bool IsClickThrou
 
 internal sealed class PortableOverlayPlatformService(OverlayPlatformCapabilities capabilities) : IOverlayPlatformService
 {
-    public OverlayPlatformCapabilities Capabilities { get; } = capabilities;
+    // Panels never become interactive here, so a monitor-locked drag can never start.
+    public OverlayPlatformCapabilities Capabilities { get; } =
+        capabilities with
+        {
+            UsesManagedDragForMonitorLock = false,
+        };
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)
     {
