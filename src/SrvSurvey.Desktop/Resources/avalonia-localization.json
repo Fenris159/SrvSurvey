@@ -24917,6 +24917,10 @@
       "translation": "SrvSurveyWindowChromeTextBrush"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "SrvSurveyWindowOne-Overlay"
     },
@@ -60129,6 +60133,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "SrvEncuestaVentanaChromeTextBrush"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvEncuestaVentanaUno"
     },
     {
       "source": "SrvSurveyWindowOne overlay",
@@ -95345,6 +95353,10 @@
       "translation": "SrvSurveyWindowChromeTextBrush"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "Superposition SrvSurveyWindowOne"
     },
@@ -130557,6 +130569,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "SrvSurveyWindowChromeTextBrush"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
     },
     {
       "source": "SrvSurveyWindowOne overlay",
@@ -165773,6 +165789,10 @@
       "translation": "SrvSurveyОкноChromeТекстКисть"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "СрвОбзорОкноОдин"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "SrvSurveyWindowOne наложение"
     },
@@ -200987,6 +201007,10 @@
       "translation": "SrvSurveyWindowChromeTextBrush"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "SrvSurveyWindowOne 覆盖"
     },
@@ -236199,6 +236223,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "* SRVSURVEYWINDOWCHROMETEXTBRUSH >>>!"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "* SRVSURVEYWINDOWONE >>>!"
     },
     {
       "source": "SrvSurveyWindowOne overlay",

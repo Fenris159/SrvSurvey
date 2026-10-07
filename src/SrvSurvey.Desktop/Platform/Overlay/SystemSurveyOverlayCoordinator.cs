@@ -259,9 +259,18 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         foreach (HostedOverlayWindow hosted in hostedWindows)
         {
             hosted.VisibilityChanged -= OnHostedVisibilityChanged;
-            hosted.Dispose();
         }
 
+        bodyInfoWindow.Dispose();
+        fssWindow.Dispose();
+        lastFssBodyWindow.Dispose();
+        statusWindow.Dispose();
+        flightWarningWindow.Dispose();
+        biologyWindow.Dispose();
+        biologyStatusWindow.Dispose();
+        priorScansWindow.Dispose();
+        surfaceWindow.Dispose();
+        miniTrackWindow.Dispose();
         surfaceViewModel.Dispose();
         priorScansViewModel.Dispose();
         DisposeFssCapture();

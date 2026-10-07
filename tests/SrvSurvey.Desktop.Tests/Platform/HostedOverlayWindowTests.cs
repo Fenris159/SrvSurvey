@@ -799,6 +799,38 @@ public sealed class HostedOverlayWindowTests
         hosted.Dispose();
     }
 
+    /// <summary>One failed lease must not strand later leases, and the first failure stays observable.</summary>
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void HostedDisposalReleasesEveryLeaseAfterAnEarlierFailure(bool timerFails)
+    {
+        var failure = new InvalidOperationException("First disposal failure");
+        var platform = new RecordingOverlayPlatform
+        {
+            DisposeException = new InvalidOperationException("Later platform failure"),
+        };
+        var tracker = new RecordingGameWindowTracker(AvailableGameWindow)
+        {
+            DisposeException = timerFails ? null : failure,
+        };
+        var timer = new ManualHostedOverlayTimer { DisposeException = timerFails ? failure : null };
+        using OverlayPresentationSession session = CreateSession(platform, tracker, timer);
+        HostedOverlayWindow hosted = session.HostPassiveWindow(CreateDefinition());
+        hosted.Reconcile(wantsWindow: true);
+
+        Exception? observed = Record.Exception(hosted.Dispose);
+        hosted.Dispose();
+
+        Assert.Same(failure, observed);
+        Assert.Equal(OverlayHostHealth.Disposed, hosted.Health);
+        Assert.False(hosted.IsVisible);
+        Assert.False(timer.IsStarted);
+        Assert.Equal(1, timer.DisposeCalls);
+        Assert.Equal(1, tracker.DisposeCalls);
+        Assert.Equal(1, platform.DisposeCalls);
+    }
+
     [AvaloniaFact]
     public void PollingClosesAndRestoresWindowAsGameEligibilityChanges()
     {
@@ -1215,6 +1247,8 @@ public sealed class HostedOverlayWindowTests
 
         public int DisposeCalls { get; private set; }
 
+        public Exception? DisposeException { get; init; }
+
         public int SnapshotCalls { get; private set; }
 
         public GameWindowSnapshot Snapshot { get; set; }
@@ -1228,6 +1262,10 @@ public sealed class HostedOverlayWindowTests
         public void Dispose()
         {
             DisposeCalls++;
+            if (DisposeException is { } failure)
+            {
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+            }
         }
     }
 
@@ -1240,6 +1278,8 @@ public sealed class HostedOverlayWindowTests
         public int DisposeCalls { get; private set; }
 
         public Exception? StartException { get; init; }
+
+        public Exception? DisposeException { get; init; }
 
         public void Start()
         {
@@ -1265,6 +1305,10 @@ public sealed class HostedOverlayWindowTests
         {
             DisposeCalls++;
             Stop();
+            if (DisposeException is { } failure)
+            {
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+            }
         }
     }
 }

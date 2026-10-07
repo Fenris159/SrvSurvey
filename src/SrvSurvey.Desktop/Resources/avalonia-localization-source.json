@@ -49973,6 +49973,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
   },
   {
+    "Text": "SrvSurveyWindowOne",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/StreamOverlayCoordinator.cs"
+  },
+  {
     "Text": "SrvSurveyWindowOne overlay",
     "IsFormat": false,
     "SourceKinds": [
