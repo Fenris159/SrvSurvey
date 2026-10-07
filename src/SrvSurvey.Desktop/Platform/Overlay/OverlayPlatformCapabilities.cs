@@ -9,6 +9,9 @@ public sealed record OverlayPlatformCapabilities(
     bool SupportsGlobalInput
 )
 {
+    /// <summary>Whether monitor-locked drags replace the platform move-drag with the managed drag that applies the lock.</summary>
+    public bool UsesManagedDragForMonitorLock { get; init; }
+
     public bool SupportsPassiveOverlay => SupportsTopmost && SupportsTransparency;
 
     public bool UsesX11Compatibility => IsX11Compatible(Host);
@@ -68,7 +71,10 @@ public sealed record OverlayPlatformCapabilities(
                 SupportsClickThrough: true,
                 SupportsGameWindowTracking: true,
                 SupportsGlobalInput: true
-            ),
+            )
+            {
+                UsesManagedDragForMonitorLock = true,
+            },
             OverlayHostKind.LinuxX11 or OverlayHostKind.LinuxXWayland => new OverlayPlatformCapabilities(
                 host,
                 SupportsTopmost: true,

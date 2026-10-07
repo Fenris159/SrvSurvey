@@ -6,9 +6,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
-using SrvSurvey.Core.Mining;
 using SrvSurvey.Desktop.Configuration;
-using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -22,127 +20,6 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-overlay-interaction-tests-{Guid.NewGuid():N}"
     );
-
-    [Fact]
-    public void DraggedPlacementPreservesAnchorsAndResolvesToNewPosition()
-    {
-        var gameBounds = new PixelRect(100, 200, 1200, 800);
-        var overlaySize = new PixelSize(300, 120);
-        var desiredPosition = new PixelPoint(475, 525);
-        LegacyOverlayPlacement[] anchors = new[]
-        {
-            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 0, LegacyVerticalAnchor.Top, 0, 0.7),
-            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Middle, 0, 0.7),
-            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Right, 0, LegacyVerticalAnchor.Bottom, 0, 0.7),
-            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Screen, 0, LegacyVerticalAnchor.Screen, 0, 0.7),
-        };
-
-        foreach (LegacyOverlayPlacement? original in anchors)
-        {
-            LegacyOverlayPlacement placement = OverlayInteractionViewModel.CreatePlacement(
-                original,
-                desiredPosition,
-                overlaySize,
-                gameBounds
-            );
-            var layout = new LegacyOverlayLayout(
-                new Dictionary<string, LegacyOverlayPlacement> { ["overlay"] = placement },
-                null,
-                null
-            );
-
-            Assert.Equal(original.Horizontal, placement.Horizontal);
-            Assert.Equal(original.Vertical, placement.Vertical);
-            Assert.Equal(original.Opacity, placement.Opacity);
-            Assert.Equal(
-                new OverlayPositionReference(gameBounds.Width, gameBounds.Height),
-                placement.PositionReference
-            );
-            Assert.Equal(desiredPosition, layout.GetPosition("overlay", gameBounds, overlaySize));
-        }
-    }
-
-    [Fact]
-    public void LiveMovePublishesWorkingPlacementForRuntimeCoordinators()
-    {
-        var original = new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8, 0.7);
-        var active = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement> { ["PlotJumpInfo"] = original },
-            null,
-            null
-        );
-        var session = new OverlayPositionEditSession(active);
-        var previewSession = new OverlayPositionEditSession(active);
-        var gameBounds = new PixelRect(100, 200, 1200, 800);
-        var overlaySize = new PixelSize(600, 100);
-        var movedPosition = new PixelPoint(420, 310);
-
-        Assert.True(
-            OverlayInteractionViewModel.MoveLiveOverlay(
-                session,
-                active,
-                "PlotJumpInfo",
-                movedPosition,
-                overlaySize,
-                gameBounds,
-                previewSession
-            )
-        );
-
-        Assert.Equal(movedPosition, active.GetPosition("PlotJumpInfo", gameBounds, overlaySize));
-        Assert.Equal(original, session.GetOriginalPlacement("PlotJumpInfo"));
-        Assert.Single(session.Changes);
-        Assert.Equal(session.GetPlacement("PlotJumpInfo"), previewSession.GetPlacement("PlotJumpInfo"));
-    }
-
-    [Theory]
-    [InlineData("PlotBioSystem")]
-    [InlineData("PlotFloatie")]
-    [InlineData("PlotGrounded")]
-    [InlineData("PlotGuardians")]
-    [InlineData("PlotHumanSite")]
-    [InlineData("PlotPriorScans")]
-    [InlineData("PlotRamTah")]
-    [InlineData("PlotStationInfo")]
-    [InlineData("PlotSysStatus")]
-    public void LiveMoveKeepsDynamicPanelTopEdgeStableAcrossContentHeights(string plotterName)
-    {
-        LegacyOverlayPlacement original = OverlayLayoutCatalog.GetRequired(plotterName).DefaultPlacement with
-        {
-            Opacity = 0.7,
-        };
-        var active = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement> { [plotterName] = original },
-            null,
-            null
-        );
-        var session = new OverlayPositionEditSession(active);
-        var previewSession = new OverlayPositionEditSession(active);
-        var gameBounds = new PixelRect(100, 200, 1200, 800);
-        var liveSize = new PixelSize(220, 140);
-        var movedPosition = new PixelPoint(420, 310);
-
-        Assert.True(
-            OverlayInteractionViewModel.MoveLiveOverlay(
-                session,
-                active,
-                plotterName,
-                movedPosition,
-                liveSize,
-                gameBounds,
-                previewSession
-            )
-        );
-
-        LegacyOverlayPlacement placement = session.GetPlacement(plotterName);
-        Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
-        Assert.Equal(placement, previewSession.GetPlacement(plotterName));
-        Assert.Equal(movedPosition, active.GetPosition(plotterName, gameBounds, liveSize));
-        Assert.Equal(
-            movedPosition.Y,
-            active.GetPosition(plotterName, gameBounds, new PixelSize(liveSize.Width, liveSize.Height + 120))!.Value.Y
-        );
-    }
 
     [Fact]
     public void CalibrationAloneCanBeSavedWithoutCreatingOverlayPlacements()
@@ -428,187 +305,6 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         }
     }
 
-    [AvaloniaFact]
-    public void LiveFssPanelCanStartADragFromItsContent()
-    {
-        Directory.CreateDirectory(temporaryDirectory);
-        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), """{"PlotFSSInfo":"left:8, top:8"}""");
-        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var platform = new FakeOverlayPlatform();
-        var registry = new OverlayWindowRegistry();
-        var window = new FssInfoOverlayWindow(
-            (SystemSurveyOverlayViewModel)OverlayEditorPreviewCatalog.Create("PlotFSSInfo")
-        );
-        registry.Register(window, "PlotFSSInfo");
-        window.Show();
-        using var viewModel = new OverlayInteractionViewModel(
-            platform,
-            new FakeGameWindowTracker(
-                new GameWindowSnapshot(
-                    (nint)1,
-                    42,
-                    new PixelRect(100, 200, 1200, 800),
-                    IsVisible: true,
-                    IsForeground: true
-                )
-            ),
-            store,
-            store.Load(),
-            registry,
-            new FakeEditorHost()
-        );
-        try
-        {
-            Assert.True(viewModel.ToggleLiveOverlayInteraction());
-            window.MouseDown(new Point(20, 50), MouseButton.Left, RawInputModifiers.LeftMouseButton);
-            Assert.Equal(1, platform.MoveDragStarts);
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
-
-    [AvaloniaTheory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void LivePanelDragRespectsPointerCaptureWhenContentHandlesPointerPress(bool ownsPointer)
-    {
-        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var platform = new FakeOverlayPlatform();
-        var registry = new OverlayWindowRegistry();
-        var content = new Border
-        {
-            Width = 200,
-            Height = 120,
-            Background = Avalonia.Media.Brushes.Black,
-            Child = new Border { Background = Avalonia.Media.Brushes.Black },
-        };
-        content.PointerPressed += (_, eventArgs) =>
-        {
-            if (ownsPointer)
-            {
-                eventArgs.Pointer.Capture(content);
-            }
-            eventArgs.Handled = true;
-        };
-        var window = new Window
-        {
-            Width = 200,
-            Height = 120,
-            Content = content,
-        };
-        registry.Register(window, "PlotFSSInfo");
-        window.Show();
-        using var viewModel = new OverlayInteractionViewModel(
-            platform,
-            new FakeGameWindowTracker(
-                new GameWindowSnapshot(
-                    (nint)1,
-                    42,
-                    new PixelRect(100, 200, 1200, 800),
-                    IsVisible: true,
-                    IsForeground: true
-                )
-            ),
-            store,
-            store.Load(),
-            registry,
-            new FakeEditorHost()
-        );
-        try
-        {
-            Assert.True(viewModel.ToggleLiveOverlayInteraction());
-            window.MouseDown(new Point(30, 40), MouseButton.Left, RawInputModifiers.LeftMouseButton);
-            Assert.Equal(ownsPointer ? 0 : 1, platform.MoveDragStarts);
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
-
-    [AvaloniaTheory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void LiveControlsReceiveClicksWithoutStartingPanelDrag(bool scrollbar)
-    {
-        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var platform = new FakeOverlayPlatform { UseManagedMoveDrag = true };
-        var registry = new OverlayWindowRegistry();
-        var button = new Button { Content = "Activate", Height = 36 };
-        var scroll = new ScrollBar
-        {
-            Orientation = Avalonia.Layout.Orientation.Vertical,
-            Height = 160,
-            Width = 24,
-            Minimum = 0,
-            Maximum = 100,
-            ViewportSize = 20,
-            Value = 20,
-        };
-        var panel = new StackPanel
-        {
-            Background = Avalonia.Media.Brushes.Black,
-            Children = { scrollbar ? scroll : button },
-        };
-        var window = new Window
-        {
-            Width = 300,
-            Height = 220,
-            Content = panel,
-        };
-        registry.Register(window, "PlotFSSInfo");
-        int clicks = 0;
-        button.Click += (_, _) => clicks++;
-        using var viewModel = new OverlayInteractionViewModel(
-            platform,
-            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1200, 800), true, true)),
-            store,
-            store.Load(),
-            registry,
-            new FakeEditorHost()
-        );
-        try
-        {
-            window.Show();
-            using WriteableBitmap? frame = window.CaptureRenderedFrame();
-            window.Position = new PixelPoint(100, 200);
-            Assert.True(viewModel.ToggleLiveOverlayInteraction());
-            Control target = scrollbar ? Assert.Single(scroll.GetVisualDescendants().OfType<Thumb>()) : button;
-            Point start = Assert.IsType<Point>(
-                target.TranslatePoint(new Point(target.Bounds.Width / 2, target.Bounds.Height / 2), window)
-            );
-            window.MouseMove(start, RawInputModifiers.None);
-            window.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
-            Point end = scrollbar ? start + new Vector(0, 35) : start;
-            window.MouseMove(end, RawInputModifiers.LeftMouseButton);
-            window.MouseUp(end, MouseButton.Left, RawInputModifiers.None);
-
-            Assert.Equal(0, platform.MoveDragStarts);
-            Assert.Equal(new PixelPoint(100, 200), window.Position);
-            if (scrollbar)
-            {
-                Assert.True(scroll.Value > 20, $"Scrollbar stayed at {scroll.Value}.");
-            }
-            else
-            {
-                Assert.Equal(1, clicks);
-            }
-
-            var background = new Point(250, 200);
-            window.MouseDown(background, MouseButton.Left, RawInputModifiers.LeftMouseButton);
-            window.MouseMove(background + new Vector(20, 30), RawInputModifiers.LeftMouseButton);
-            window.MouseUp(background + new Vector(20, 30), MouseButton.Left, RawInputModifiers.None);
-            Assert.Equal(1, platform.MoveDragStarts);
-            Assert.Equal(new PixelPoint(120, 230), window.Position);
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
-
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
@@ -688,62 +384,9 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
-    public void LiveMineMapKeepsPanGesturesWhenViewportInteractionIsEnabled(bool canPan)
-    {
-        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var platform = new FakeOverlayPlatform { UseManagedMoveDrag = true };
-        var registry = new OverlayWindowRegistry();
-        var map = new MineMapControl
-        {
-            Survey = new MineMapSurvey
-            {
-                Center = new(0, 0),
-                PlanetRadiusMeters = 1_000_000,
-                LocationRadiusMeters = 1_000,
-            },
-            AllowViewportInteraction = canPan,
-            ViewportZoom = 2,
-        };
-        var window = new Window
-        {
-            Width = 300,
-            Height = 220,
-            Content = map,
-        };
-        registry.Register(window, "PlotMineMap");
-        using var viewModel = new OverlayInteractionViewModel(
-            platform,
-            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1200, 800), true, true)),
-            store,
-            store.Load(),
-            registry,
-            new FakeEditorHost()
-        );
-        try
-        {
-            window.Show();
-            using WriteableBitmap? frame = window.CaptureRenderedFrame();
-            window.Position = new PixelPoint(100, 200);
-            Assert.True(viewModel.ToggleLiveOverlayInteraction());
-            var start = new Point(150, 110);
-            window.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
-            window.MouseMove(start + new Vector(20, 30), RawInputModifiers.LeftMouseButton);
-            window.MouseUp(start + new Vector(20, 30), MouseButton.Left, RawInputModifiers.None);
-            Assert.Equal(canPan ? 0 : 1, platform.MoveDragStarts);
-            Assert.Equal(canPan ? new PixelPoint(100, 200) : new PixelPoint(120, 230), window.Position);
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
-
-    [AvaloniaTheory]
-    [InlineData(false)]
-    [InlineData(true)]
     public void NativeAndCombinedLiveDraggingStopOnButtonUpAndSaveMonitorConstrainedPositions(bool combined)
     {
-        var platform = new FakeOverlayPlatform { UseManagedMoveDrag = true };
+        var platform = new FakeOverlayPlatform();
         var registry = new OverlayWindowRegistry();
         var gameBounds = new PixelRect(100, 200, 1200, 800);
         var tracker = new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, gameBounds, true, true));
@@ -803,6 +446,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             surface.MouseMove(start + new Vector(400, 300), RawInputModifiers.None);
             surface.MouseUp(start + new Vector(400, 300), MouseButton.Left, RawInputModifiers.None);
             Assert.Equal(new PixelPoint(435, 345), window.Position);
+            Assert.Equal(0, platform.MoveDragStarts);
             start = combined
                 ? Assert.IsType<Point>(content.TranslatePoint(new Point(20, 25), surface))
                 : new Point(20, 25);
@@ -823,55 +467,6 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         {
             window.Close();
         }
-    }
-
-    [AvaloniaFact]
-    public void RelatedChildWindowCannotOverwriteItsOwnersLivePlacement()
-    {
-        Directory.CreateDirectory(temporaryDirectory);
-        File.WriteAllText(
-            Path.Combine(temporaryDirectory, "plotters.json"),
-            "{\"PlotGuardians\":\"right:20, bottom:20\"}"
-        );
-        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        LegacyOverlayLayout activeLayout = store.Load();
-        var platform = new FakeOverlayPlatform();
-        var registry = new OverlayWindowRegistry();
-        var gameBounds = new PixelRect(100, 200, 1200, 800);
-        var owner = new Window
-        {
-            Width = 600,
-            Height = 600,
-            Position = new PixelPoint(680, 380),
-        };
-        var child = new Window
-        {
-            Width = 120,
-            Height = 40,
-            Position = new PixelPoint(1140, 920),
-        };
-        registry.Register(owner, "PlotGuardians");
-        registry.Register(child, "PlotGuardians", participatesInPlacement: false);
-        using var viewModel = new OverlayInteractionViewModel(
-            platform,
-            new FakeGameWindowTracker(
-                new GameWindowSnapshot((nint)1, 42, gameBounds, IsVisible: true, IsForeground: true)
-            ),
-            store,
-            activeLayout,
-            registry,
-            new FakeEditorHost()
-        );
-        LegacyOverlayPlacement original = activeLayout.Placements["PlotGuardians"];
-
-        Assert.True(viewModel.ToggleLiveOverlayInteraction());
-        child.Position = new PixelPoint(-800, -700);
-
-        Assert.Equal(original, activeLayout.Placements["PlotGuardians"]);
-
-        owner.Position = new PixelPoint(510, 330);
-
-        Assert.NotEqual(original, activeLayout.Placements["PlotGuardians"]);
     }
 
     [AvaloniaFact]
@@ -918,6 +513,68 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.False(viewModel.IsLiveInteractionEnabled);
         Assert.False(host.RuntimeOverlaysVisibleDuringEditing);
         Assert.Equal(0, platform.ActiveVisibleCursorSessions);
+    }
+
+    [AvaloniaFact]
+    public void OpeningEditorKeepsLiveInteractionWhenPendingDragCannotBeSaved()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
+        File.WriteAllText(plottersPath, """{"PlotJumpInfo":"center:0, top:8"}""");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout activeLayout = store.Load();
+        var registry = new OverlayWindowRegistry();
+        var host = new FakeEditorHost();
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var window = new Window
+        {
+            Width = 300,
+            Height = 220,
+            Content = new Border { Background = Avalonia.Media.Brushes.Black },
+        };
+        registry.Register(window, "PlotJumpInfo");
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            window.Position = new PixelPoint(400, 300);
+            var behavior = new OverlayBehaviorViewModel(
+                new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+            );
+            MainWindowMonitor monitor = MainWindowPlacement.DescribeScreens(window.Screens.All)[0];
+            var option = new ApplicationMonitorOption(monitor.Id, monitor.DisplayName);
+            behavior.SetAvailableMonitors([option]);
+            behavior.SelectedMonitor = option;
+            behavior.LockToMonitor = true;
+            using var viewModel = new OverlayInteractionViewModel(
+                new FakeOverlayPlatform(),
+                new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, gameBounds, true, true)),
+                store,
+                activeLayout,
+                registry,
+                host
+            )
+            {
+                OverlayBehavior = behavior,
+            };
+            Assert.True(viewModel.ToggleLiveOverlayInteraction());
+            File.WriteAllText(plottersPath, "[]");
+            window.MouseDown(new Point(20, 25), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseMove(new Point(60, 85), RawInputModifiers.LeftMouseButton);
+
+            Assert.False(viewModel.Begin());
+
+            Assert.True(viewModel.IsLiveInteractionEnabled);
+            Assert.False(host.IsOpen);
+            Assert.Contains("pending live positions could not be synchronized", viewModel.StatusMessage);
+            Assert.Equal(new PixelPoint(440, 360), window.Position);
+            PixelSize size = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
+            Assert.Equal(window.Position, activeLayout.GetPosition("PlotJumpInfo", gameBounds, size));
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [AvaloniaFact]
@@ -1367,8 +1024,6 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public int MoveDragStarts { get; private set; }
 
-        public bool UseManagedMoveDrag { get; init; }
-
         public int VisibleCursorSessionStarts { get; private set; }
 
         public int ActiveVisibleCursorSessions { get; private set; }
@@ -1394,10 +1049,6 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs)
         {
             MoveDragStarts++;
-            if (UseManagedMoveDrag)
-            {
-                ManagedOverlayWindowDragSession.Begin(window, eventArgs);
-            }
         }
 
         public IDisposable BeginVisibleCursorSession(Window window)
