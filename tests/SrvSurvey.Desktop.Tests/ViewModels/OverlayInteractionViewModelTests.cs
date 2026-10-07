@@ -516,6 +516,68 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void OpeningEditorKeepsLiveInteractionWhenPendingDragCannotBeSaved()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
+        File.WriteAllText(plottersPath, """{"PlotJumpInfo":"center:0, top:8"}""");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout activeLayout = store.Load();
+        var registry = new OverlayWindowRegistry();
+        var host = new FakeEditorHost();
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var window = new Window
+        {
+            Width = 300,
+            Height = 220,
+            Content = new Border { Background = Avalonia.Media.Brushes.Black },
+        };
+        registry.Register(window, "PlotJumpInfo");
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            window.Position = new PixelPoint(400, 300);
+            var behavior = new OverlayBehaviorViewModel(
+                new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+            );
+            MainWindowMonitor monitor = MainWindowPlacement.DescribeScreens(window.Screens.All)[0];
+            var option = new ApplicationMonitorOption(monitor.Id, monitor.DisplayName);
+            behavior.SetAvailableMonitors([option]);
+            behavior.SelectedMonitor = option;
+            behavior.LockToMonitor = true;
+            using var viewModel = new OverlayInteractionViewModel(
+                new FakeOverlayPlatform(),
+                new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, gameBounds, true, true)),
+                store,
+                activeLayout,
+                registry,
+                host
+            )
+            {
+                OverlayBehavior = behavior,
+            };
+            Assert.True(viewModel.ToggleLiveOverlayInteraction());
+            File.WriteAllText(plottersPath, "[]");
+            window.MouseDown(new Point(20, 25), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseMove(new Point(60, 85), RawInputModifiers.LeftMouseButton);
+
+            Assert.False(viewModel.Begin());
+
+            Assert.True(viewModel.IsLiveInteractionEnabled);
+            Assert.False(host.IsOpen);
+            Assert.Contains("pending live positions could not be synchronized", viewModel.StatusMessage);
+            Assert.Equal(new PixelPoint(440, 360), window.Position);
+            PixelSize size = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
+            Assert.Equal(window.Position, activeLayout.GetPosition("PlotJumpInfo", gameBounds, size));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void LiveDragAndOpenEditorStaySynchronizedAndDisposeRestoresChanges()
     {
         Directory.CreateDirectory(temporaryDirectory);

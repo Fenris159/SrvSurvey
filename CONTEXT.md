@@ -32,6 +32,10 @@ _Avoid_: Simplified feature set, representative controls
 Cross-category controls for overlay appearance, interaction, and integration that apply beyond one gameplay activity.
 _Avoid_: Complete overlay catalog, category overlay settings
 
+**Overlay placement interaction**:
+The module that owns dragging overlay panels, the working placements those drags produce, and saving or restoring them.
+_Avoid_: OverlayInteractionViewModel drag, managed overlay window drag session
+
 **Overlay category shortcut**:
 A navigation control that opens a lean, category-filtered overlay configuration window without routing through a complete settings catalog.
 _Avoid_: Overlay gear, complete overlay settings

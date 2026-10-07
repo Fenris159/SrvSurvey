@@ -249,6 +249,84 @@ public sealed class OverlayPlacementInteractionTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void SaveCompletesPendingDragBeforePersistingAndStopsTheGesture()
+    {
+        LegacyOverlayLayoutStore store = CreateStore("""{"PlotJumpInfo":"center:0, top:8"}""");
+        LegacyOverlayLayout activeLayout = store.Load();
+        var registry = new OverlayWindowRegistry();
+        Window window = CreatePanel(registry, "PlotJumpInfo");
+        OverlayPlacementInteraction interaction = CreateInteraction(
+            new RecordingPlatform { UseManagedMoveDrag = true },
+            store,
+            activeLayout,
+            registry
+        );
+        try
+        {
+            ShowAt(window, new PixelPoint(400, 300));
+            Assert.True(interaction.Attach(registry.Snapshot().Single()));
+            window.MouseDown(new Point(20, 25), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseMove(new Point(60, 85), RawInputModifiers.LeftMouseButton);
+
+            LegacyOverlayLayoutSaveResult result = interaction.Save();
+            var expected = new PixelPoint(440, 360);
+            PixelSize size = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
+
+            Assert.Equal(1, result.UpdatedPlacementCount);
+            Assert.Equal(expected, window.Position);
+            Assert.Equal(expected, store.Load().GetPosition("PlotJumpInfo", GameBounds, size));
+            Assert.Empty(interaction.Changes);
+            window.MouseMove(new Point(90, 115), RawInputModifiers.LeftMouseButton);
+            window.MouseUp(new Point(90, 115), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(expected, window.Position);
+            Assert.Empty(interaction.Changes);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CancelCompletesPendingDragBeforeRestoringAndStopsTheGesture()
+    {
+        LegacyOverlayLayoutStore store = CreateStore("""{"PlotJumpInfo":"center:0, top:8"}""");
+        string savedText = File.ReadAllText(Path.Combine(temporaryDirectory, "plotters.json"));
+        LegacyOverlayLayout activeLayout = store.Load();
+        LegacyOverlayPlacement original = activeLayout.Placements["PlotJumpInfo"];
+        var registry = new OverlayWindowRegistry();
+        Window window = CreatePanel(registry, "PlotJumpInfo");
+        OverlayPlacementInteraction interaction = CreateInteraction(
+            new RecordingPlatform { UseManagedMoveDrag = true },
+            store,
+            activeLayout,
+            registry
+        );
+        try
+        {
+            ShowAt(window, new PixelPoint(400, 300));
+            Assert.True(interaction.Attach(registry.Snapshot().Single()));
+            window.MouseDown(new Point(20, 25), MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseMove(new Point(60, 85), RawInputModifiers.LeftMouseButton);
+
+            IReadOnlyDictionary<string, LegacyOverlayPlacement> restored = interaction.Cancel();
+
+            Assert.Equal(original, Assert.Single(restored).Value);
+            Assert.Equal(original, activeLayout.Placements["PlotJumpInfo"]);
+            Assert.Empty(interaction.Changes);
+            window.MouseMove(new Point(90, 115), RawInputModifiers.LeftMouseButton);
+            window.MouseUp(new Point(90, 115), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(original, activeLayout.Placements["PlotJumpInfo"]);
+            Assert.Empty(interaction.Changes);
+            Assert.Equal(savedText, File.ReadAllText(Path.Combine(temporaryDirectory, "plotters.json")));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void CancelRestoresOriginalPlacementsWithoutWritingTheStore()
     {
         LegacyOverlayLayoutStore store = CreateStore("""{"PlotJumpInfo":"center:0, top:8"}""");

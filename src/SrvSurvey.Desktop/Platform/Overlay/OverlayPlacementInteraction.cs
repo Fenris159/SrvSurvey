@@ -129,9 +129,10 @@ internal sealed class OverlayPlacementInteraction
         }
     }
 
-    /// <summary>Returns moved panels to their original placements in the active layout and reports what was restored.</summary>
+    /// <summary>Ends pending drags, returns moved panels to their original placements, and reports what was restored.</summary>
     internal IReadOnlyDictionary<string, LegacyOverlayPlacement> Cancel()
     {
+        CompleteDrags();
         var restored = session.Changes.Keys.ToDictionary(
             plotterName => plotterName,
             session.GetOriginalPlacement,
@@ -146,9 +147,10 @@ internal sealed class OverlayPlacementInteraction
         return restored;
     }
 
-    /// <summary>Persists the working placements, adopts the reloaded layout, and continues the edit from it.</summary>
+    /// <summary>Ends pending drags, persists the working placements, and continues the edit from the reloaded layout.</summary>
     internal LegacyOverlayLayoutSaveResult Save()
     {
+        CompleteDrags();
         LegacyOverlayLayoutSaveResult result = layoutStore.Save(session.Changes);
         LegacyOverlayLayout updated = layoutStore.Load();
         if (updated.Error is not null)
