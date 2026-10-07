@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
@@ -291,14 +292,32 @@ internal sealed class HostedOverlayWindow : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
-        CloseWindow();
-        timer.Dispose();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
+        Exception? disposalFailure = null;
+        Release(() => timer.Stop(), ref disposalFailure);
+        Release(() => timer.Tick -= OnTimerTick, ref disposalFailure);
+        Release(CloseWindow, ref disposalFailure);
+        Release(() => timer.Dispose(), ref disposalFailure);
+        Release(() => gameWindowTracker.Dispose(), ref disposalFailure);
+        Release(() => platform.Dispose(), ref disposalFailure);
         Health = OverlayHostHealth.Disposed;
         removeFromSession(this);
+        if (disposalFailure is not null)
+        {
+            ExceptionDispatchInfo.Capture(disposalFailure).Throw();
+        }
+    }
+
+    /// <summary>Preserves the first shutdown failure while releasing every lease owned by this module.</summary>
+    private static void Release(Action release, ref Exception? failure)
+    {
+        try
+        {
+            release();
+        }
+        catch (Exception exception)
+        {
+            failure ??= exception;
+        }
     }
 
     private static PassiveOverlayWindowDefinition Validate(PassiveOverlayWindowDefinition definition)

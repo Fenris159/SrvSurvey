@@ -41,7 +41,7 @@ The Core module that retains failed Raven deliveries, reconciles fleet-carrier c
 _Avoid_: Colonization view-model recovery, pending contribution store
 
 **Journal projection**:
-Applying one journal monitor tick to every workspace that consumes it, in a fixed order, without the main window owning that fan-out.
+Applying one journal monitor tick to every workspace that consumes it, in a fixed order, with idle polls and live journal updates treated separately.
 _Avoid_: Main-window journal refresh, monitor update pipeline
 
 **Hosted overlay window**:

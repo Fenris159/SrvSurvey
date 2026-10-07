@@ -376,6 +376,9 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         /// <summary>Injects contribution failures to distinguish definite rejection from uncertain credit.</summary>
         public Queue<Exception> ContributionFailures { get; } = new();
 
+        /// <summary>Holds delivery acknowledgement while callers attempt reconciliation or switch profiles.</summary>
+        public Task? ContributionGate { get; set; }
+
         /// <summary>Records cancellation forwarded from journal monitoring to the delivery request.</summary>
         public CancellationToken LastContributionCancellation { get; private set; }
 
@@ -428,6 +431,9 @@ public sealed partial class ColonizationDeliveryRecoveryTests
 
         public ColonizationProject? SiteProjectResponse { get; set; }
 
+        /// <summary>Holds a project lookup so its result can arrive after the commander changes.</summary>
+        public Task<ColonizationProject?>? SiteProjectResponseTask { get; set; }
+
         public IReadOnlyDictionary<string, int>? LastReplacement { get; private set; }
 
         public TaskCompletionSource<bool>? GateGetFleetCarrier { get; set; }
@@ -460,7 +466,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         )
         {
             SiteProjectLoadCount++;
-            return Task.FromResult(SiteProjectResponse);
+            return SiteProjectResponseTask ?? Task.FromResult(SiteProjectResponse);
         }
 
         /// <summary>Holds project updates until released so a profile change can supersede them.</summary>
@@ -545,7 +551,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
                 : Task.CompletedTask;
         }
 
-        public Task ContributeToProjectAsync(
+        public async Task ContributeToProjectAsync(
             string buildId,
             string commanderName,
             IReadOnlyDictionary<string, int> contributions,
@@ -554,9 +560,14 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         {
             LastContributionCancellation = cancellationToken;
             Contributions.Add(new ContributionCall(buildId, commanderName, contributions));
-            return ContributionFailures.TryDequeue(out Exception? failure)
-                ? Task.FromException(failure)
-                : Task.CompletedTask;
+            if (ContributionGate is { } gate)
+            {
+                await gate;
+            }
+            if (ContributionFailures.TryDequeue(out Exception? failure))
+            {
+                throw failure;
+            }
         }
 
         public Task SetPrimaryProjectAsync(

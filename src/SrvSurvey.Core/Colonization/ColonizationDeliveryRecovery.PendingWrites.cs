@@ -75,13 +75,17 @@ public sealed partial class ColonizationDeliveryRecovery
 
     /// <summary>
     /// Retries checked deliveries after the commander verifies Raven did not record them, leaving every other
-    /// delivery unchanged. Returns null when the profile changed or integration was disabled mid-retry.
+    /// delivery unchanged. Returns null when integration is disabled, reconciliation is busy, or the profile changes.
     /// </summary>
     public async Task<IReadOnlyList<ColonizationDeliveryNotice>?> RetryVerifiedContributionsAsync(
         IReadOnlyCollection<string> eventIds
     )
     {
         ArgumentNullException.ThrowIfNull(eventIds);
+        if (!isEnabled || commanderName is null || !CanReconcileContributions)
+        {
+            return null;
+        }
         ColonizationPendingContribution[] selected = GetUncertainContributions(eventIds);
         int version = profileVersion;
         retryingWrites = true;
@@ -114,6 +118,10 @@ public sealed partial class ColonizationDeliveryRecovery
     public void DismissVerifiedContributions(IReadOnlyCollection<string> eventIds)
     {
         ArgumentNullException.ThrowIfNull(eventIds);
+        if (!CanReconcileContributions)
+        {
+            return;
+        }
         foreach (ColonizationPendingContribution pending in GetUncertainContributions(eventIds))
         {
             pendingContributions.Remove(pending);

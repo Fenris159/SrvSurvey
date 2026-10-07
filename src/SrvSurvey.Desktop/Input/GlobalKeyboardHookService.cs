@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using Avalonia;
 using SrvSurvey.Desktop.Platform.Overlay;
 
@@ -225,6 +226,10 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable, IKeyboardActiv
     {
         lock (callbackLock)
         {
+            if (disposed)
+            {
+                return new KeyboardFocus(timestampProvider(), false, false, false);
+            }
             if (Interlocked.Exchange(ref resetRequested, 0) != 0)
             {
                 lastGameDisplayInput = null;
@@ -416,18 +421,44 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable, IKeyboardActiv
     {
         disposed = true;
         await refreshCancellation.CancelAsync().ConfigureAwait(false);
-        if (refreshTask is not null)
+        Exception? disposalFailure = null;
+        try
         {
-            await refreshTask.ConfigureAwait(false);
+            if (refreshTask is not null)
+            {
+                await refreshTask.ConfigureAwait(false);
+            }
+        }
+        catch (Exception exception)
+        {
+            disposalFailure = exception;
         }
         foreach (IKeyboardActivationSource source in sources)
         {
-            await source.DisposeAsync().ConfigureAwait(false);
+            try
+            {
+                await source.DisposeAsync().ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                disposalFailure ??= exception;
+            }
         }
         refreshCancellation.Dispose();
-        lock (callbackLock)
+        try
         {
-            gameWindowTracker.Dispose();
+            lock (callbackLock)
+            {
+                gameWindowTracker.Dispose();
+            }
+        }
+        catch (Exception exception)
+        {
+            disposalFailure ??= exception;
+        }
+        if (disposalFailure is not null)
+        {
+            ExceptionDispatchInfo.Capture(disposalFailure).Throw();
         }
     }
 

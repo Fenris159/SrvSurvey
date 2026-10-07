@@ -883,7 +883,13 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private bool PersistPendingLivePositionsForEditor()
     {
-        if (livePlacement is not { Changes.Count: > 0 } placement)
+        if (livePlacement is not { } placement)
+        {
+            return true;
+        }
+
+        placement.CompleteDrags();
+        if (placement.Changes.Count == 0)
         {
             return true;
         }

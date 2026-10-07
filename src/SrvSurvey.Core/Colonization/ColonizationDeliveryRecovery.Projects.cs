@@ -23,13 +23,14 @@ public sealed partial class ColonizationDeliveryRecovery
             return [];
         }
 
+        int version = profileVersion;
         ColonizationProjectLookup lookup = await FindOrLoadProjectAsync(
             dock.SystemAddress,
             dock.MarketId,
             cancellationToken: cancellationToken
         );
         ColonizationProject? project = lookup.Project;
-        if (project is null)
+        if (project is null || version != profileVersion)
         {
             return [];
         }
@@ -51,7 +52,15 @@ public sealed partial class ColonizationDeliveryRecovery
             return Notices(loadNotice);
         }
         ColonizationProject updated = await client.UpdateProjectAsync(update, cancellationToken);
+        if (version != profileVersion)
+        {
+            return [];
+        }
         updated = await ClearPhantomCommoditiesAsync(updated, cancellationToken: cancellationToken);
+        if (version != profileVersion)
+        {
+            return [];
+        }
         UpsertProject(updated);
         return Notices(loadNotice, new(ColonizationDeliveryNoticeKind.ProjectMetadataUpdated, updated.BuildName));
     }
@@ -113,6 +122,7 @@ public sealed partial class ColonizationDeliveryRecovery
             return [];
         }
 
+        int version = profileVersion;
         ColonizationDockingSnapshot? dock = GetJournalDock(journalEvent);
         ColonizationProject? project = (
             await FindOrLoadProjectAsync(
@@ -121,6 +131,10 @@ public sealed partial class ColonizationDeliveryRecovery
                 cancellationToken: cancellationToken
             )
         ).Project;
+        if (version != profileVersion)
+        {
+            return [];
+        }
         if (project is null)
         {
             return [new(ColonizationDeliveryNoticeKind.ContributionProjectUnknown)];
@@ -164,6 +178,10 @@ public sealed partial class ColonizationDeliveryRecovery
         }
         pendingContributions.Remove(pending);
         SavePendingContributions();
+        if (version != profileVersion)
+        {
+            return [];
+        }
         // Contribute only credits history. Remaining need rows stay stale until an absolute
         // depot/commodity update lands — force that publish here so Raven cannot track a
         // delivery without updating what is still required.
@@ -233,6 +251,7 @@ public sealed partial class ColonizationDeliveryRecovery
             return null;
         }
 
+        int version = profileVersion;
         ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
         ColonizationProject? project = (
             await FindOrLoadProjectAsync(
@@ -241,6 +260,10 @@ public sealed partial class ColonizationDeliveryRecovery
                 cancellationToken: cancellationToken
             )
         ).Project;
+        if (version != profileVersion)
+        {
+            return null;
+        }
         if (project is null)
         {
             return new(ColonizationDeliveryNoticeKind.DepotProjectUnknown);
@@ -290,7 +313,12 @@ public sealed partial class ColonizationDeliveryRecovery
             return null;
         }
 
+        int version = profileVersion;
         await client.MarkProjectCompleteAsync(project.BuildId, cancellationToken);
+        if (version != profileVersion)
+        {
+            return null;
+        }
         UpsertProject(
             project with
             {
@@ -339,7 +367,12 @@ public sealed partial class ColonizationDeliveryRecovery
             return null;
         }
 
+        int version = profileVersion;
         await ClearPhantomCommoditiesAsync(project, cancellationToken: cancellationToken);
+        if (version != profileVersion)
+        {
+            return null;
+        }
 
         ColonizationProject updated = await client.UpdateProjectAsync(
             new ColonizationProjectUpdate
@@ -351,7 +384,15 @@ public sealed partial class ColonizationDeliveryRecovery
             },
             cancellationToken
         );
+        if (version != profileVersion)
+        {
+            return null;
+        }
         updated = await ClearPhantomCommoditiesAsync(updated, cancellationToken: cancellationToken);
+        if (version != profileVersion)
+        {
+            return null;
+        }
         UpsertProject(updated);
         lastDepotPatchPayloadSignature = signature;
         InvalidateProjectLocationCache();
@@ -439,6 +480,7 @@ public sealed partial class ColonizationDeliveryRecovery
             return new ColonizationProjectLookup(project, LinkedCommander: false);
         }
 
+        int version = profileVersion;
         if (TryGetCachedProject(systemAddress.Value, marketId, out ColonizationProject? cached))
         {
             project = cached;
@@ -446,6 +488,10 @@ public sealed partial class ColonizationDeliveryRecovery
         else
         {
             project = await client.GetProjectAsync(systemAddress.Value, marketId, cancellationToken);
+            if (version != profileVersion)
+            {
+                return new ColonizationProjectLookup(null, LinkedCommander: false);
+            }
             if (project is not null)
             {
                 RememberProjectLocation(systemAddress.Value, marketId, project);
@@ -458,11 +504,19 @@ public sealed partial class ColonizationDeliveryRecovery
         }
 
         project = await ClearPhantomCommoditiesAsync(project, cancellationToken: cancellationToken);
+        if (version != profileVersion)
+        {
+            return new ColonizationProjectLookup(null, LinkedCommander: false);
+        }
 
         bool linkedCommander = false;
         if (ShouldAutoLinkDockedProject(project))
         {
             await client.LinkCommanderAsync(project.BuildId, commanderName!, cancellationToken);
+            if (version != profileVersion)
+            {
+                return new ColonizationProjectLookup(null, LinkedCommander: false);
+            }
             localUntrackedProject = null;
             linkedCommander = true;
             InvalidateProjectLocationCache();

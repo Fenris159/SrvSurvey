@@ -413,6 +413,45 @@ public sealed class GlobalKeyboardHookServiceTests
         Assert.Throws<ObjectDisposedException>(() => input.Service.Update(EnabledSettings()));
     }
 
+    /// <summary>A failed source shutdown cannot strand the remaining listeners or their shared tracker.</summary>
+    [Fact]
+    public async Task DisposesEverySourceAndTrackerWhenOneSourceFails()
+    {
+        var failure = new InvalidOperationException("Game display shutdown failed.");
+        FakeKeyboardSource[] sources =
+        [
+            new(KeyboardInputSource.NestedDisplay) { DisposeException = failure },
+            new(KeyboardInputSource.Portal),
+            new(KeyboardInputSource.Desktop),
+        ];
+        var tracker = new TestGameWindowTracker();
+        var service = new GlobalKeyboardHookService(EnabledSettings(), sources, tracker, () => false);
+
+        Exception? observed = await Record.ExceptionAsync(async () => await service.DisposeAsync());
+
+        Assert.Same(failure, observed);
+        Assert.All(sources, source => Assert.True(source.Disposed));
+        Assert.True(tracker.IsDisposed);
+        Assert.Same(failure, await Record.ExceptionAsync(async () => await service.DisposeAsync()));
+    }
+
+    /// <summary>Late adapter callbacks cannot sample an already-disposed shared tracker or dispatch shortcuts.</summary>
+    [Fact]
+    public async Task IgnoresLateActivationsAfterDisposal()
+    {
+        var input = new Harness(EnabledSettings()) { ApplicationActive = true, GameRunning = true };
+        input.Tracker.Focused = true;
+        await input.DisposeAsync();
+
+        foreach (FakeKeyboardSource source in input.Sources)
+        {
+            source.Report("ALT X", GlobalInputAction.ToggleAllVisibility);
+        }
+
+        Assert.True(input.Tracker.IsDisposed);
+        Assert.Empty(input.Actions);
+    }
+
     /// <summary>A different Elite process or game display releases learned selection and every source's held keys.</summary>
     [Fact]
     public async Task GameChangeRelearnsSourceAndRefreshesFocusDiagnostics()

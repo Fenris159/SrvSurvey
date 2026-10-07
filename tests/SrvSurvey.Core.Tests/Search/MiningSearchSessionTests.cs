@@ -83,6 +83,130 @@ public sealed class MiningSearchSessionTests
     }
 
     [Fact]
+    public async Task ProgressFromCanceledOrSupersededSearchCannotChangeThePresentation()
+    {
+        using MiningSearchSession<Snapshot> session = Create(new StubMiningSearchProvider());
+        var firstRelease = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondRelease = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationToken firstToken = default;
+        CancellationToken secondToken = default;
+        string presentation = "";
+        Task first = session.RunAsync(
+            async token =>
+            {
+                firstToken = token;
+                await firstRelease.Task;
+                session.Publish(() => presentation = "stale result", token);
+            },
+            _ => { }
+        );
+        Task second = session.RunAsync(
+            async token =>
+            {
+                secondToken = token;
+                secondStarted.SetResult();
+                await secondRelease.Task;
+            },
+            _ => { }
+        );
+
+        await secondStarted.Task;
+        session.Publish(() => presentation = "stale progress", firstToken);
+        session.Publish(() => presentation = "current progress", secondToken);
+        Assert.Equal("current progress", presentation);
+        session.Cancel();
+        session.Publish(() => presentation = "canceled progress", secondToken);
+        firstRelease.SetResult();
+        secondRelease.SetResult();
+        await Task.WhenAll(first, second);
+
+        Assert.Equal("current progress", presentation);
+        session.Publish(() => presentation = "completed progress", secondToken);
+        Assert.Equal("current progress", presentation);
+    }
+
+    [Fact]
+    public async Task CancellationIsCheckedBeforeWorkAndAfterWorkThatIgnoresIt()
+    {
+        using MiningSearchSession<Snapshot> session = Create(new StubMiningSearchProvider());
+        var outcomes = new List<MiningSearchOutcomeKind>();
+        using var canceled = new CancellationTokenSource();
+        await canceled.CancelAsync();
+        bool invoked = false;
+        await session.RunAsync(
+            _ =>
+            {
+                invoked = true;
+                return Task.CompletedTask;
+            },
+            outcome => outcomes.Add(outcome.Kind),
+            cancellationToken: canceled.Token
+        );
+        await session.RunAsync(
+            _ =>
+            {
+                session.Cancel();
+                return Task.CompletedTask;
+            },
+            outcome => outcomes.Add(outcome.Kind)
+        );
+
+        Assert.False(invoked);
+        Assert.Equal(
+            [
+                MiningSearchOutcomeKind.Started,
+                MiningSearchOutcomeKind.Canceled,
+                MiningSearchOutcomeKind.Started,
+                MiningSearchOutcomeKind.Canceled,
+            ],
+            outcomes
+        );
+    }
+
+    [Fact]
+    public async Task AbandonedReplacementDoesNotStartAfterWaitingForThePreviousCancellation()
+    {
+        using MiningSearchSession<Snapshot> session = Create(new StubMiningSearchProvider());
+        var cancellationEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var releaseCancellation = new ManualResetEventSlim();
+        bool replacementStarted = false;
+        Task first = session.RunAsync(
+            async token =>
+            {
+                using CancellationTokenRegistration registration = token.Register(() =>
+                {
+                    cancellationEntered.TrySetResult();
+                    releaseCancellation.Wait(TimeSpan.FromSeconds(10));
+                });
+                await Task.Delay(Timeout.Infinite, token);
+            },
+            _ => { }
+        );
+        Task replacement = session.RunAsync(
+            _ =>
+            {
+                replacementStarted = true;
+                return Task.CompletedTask;
+            },
+            _ => { }
+        );
+        try
+        {
+            await cancellationEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            session.Abandon();
+        }
+        finally
+        {
+            releaseCancellation.Set();
+        }
+
+        await Task.WhenAll(first, replacement);
+        Assert.False(replacementStarted);
+        Assert.False(session.IsBusy);
+    }
+
+    [Fact]
     public async Task CancellationAndTimeoutReportCanceled()
     {
         using MiningSearchSession<Snapshot> session = Create(new StubMiningSearchProvider());
@@ -227,6 +351,38 @@ public sealed class MiningSearchSessionTests
         Assert.Equal("planetary", session.Workspace);
         Assert.Equal("Sol rows", session.LoadLast()?.Status);
         Assert.Same(store, session.Store);
+    }
+
+    [Fact]
+    public async Task ASearchCannotCacheItsResultsUnderFiltersEditedWhileItWasRunning()
+    {
+        string reference = "Sol";
+        var store = new InMemoryMiningSearchResultStore();
+        using var session = new MiningSearchSession<Snapshot>(
+            new StubMiningSearchProvider(),
+            "surface",
+            () => new { Reference = reference }
+        );
+        session.UseStore(store, "surface");
+        string originalKey = session.FilterKey();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task search = session.RunAsync(
+            _ => release.Task,
+            outcome =>
+            {
+                if (outcome.Kind == MiningSearchOutcomeKind.Completed)
+                {
+                    session.Save(new Snapshot("Sol results"));
+                }
+            }
+        );
+        reference = "Lave";
+        release.SetResult();
+        await search;
+
+        Assert.Null(store.Load<Snapshot>("surface", originalKey));
+        Assert.Null(store.Load<Snapshot>("surface", session.FilterKey()));
+        Assert.Null(session.LoadLast());
     }
 
     [Fact]

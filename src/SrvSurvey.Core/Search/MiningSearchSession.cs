@@ -43,6 +43,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
     private readonly IMiningSearchProvider provider;
     private readonly Func<object> filters;
     private CancellationTokenSource? pending;
+    private string? pendingFilterKey;
     private bool busy;
 
     public MiningSearchSession(IMiningSearchProvider provider, string workspace, Func<object> filters)
@@ -75,7 +76,25 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
 
     public TSnapshot? LoadLast() => Store?.LoadLast<TSnapshot>(Workspace);
 
-    public void Save(TSnapshot snapshot) => Store?.Save(Workspace, FilterKey(), snapshot);
+    public void Save(TSnapshot snapshot)
+    {
+        string key = FilterKey();
+        if (pending is not null && (pending.IsCancellationRequested || key != pendingFilterKey))
+        {
+            return;
+        }
+
+        Store?.Save(Workspace, key, snapshot);
+    }
+
+    /// <summary>Applies presentation progress or results only while their search is still current.</summary>
+    public void Publish(Action apply, CancellationToken token)
+    {
+        if (pending is { IsCancellationRequested: false } current && current.Token == token)
+        {
+            apply();
+        }
+    }
 
     /// <summary>Shows the saved result for the current filters, or clears stale results when none was saved.</summary>
     public void RestoreSaved(Action<TSnapshot> restore, Action clear)
@@ -117,6 +136,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
     )
     {
         options ??= MiningSearchRunOptions.Default;
+        string key = FilterKey();
         CancellationTokenSource? previous = pending;
         using var current = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         if (options.Timeout is { } timeout)
@@ -125,6 +145,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
         }
 
         pending = current;
+        pendingFilterKey = key;
         SetBusy(true);
         report(MiningSearchOutcome.Started);
         provider.ResetDiagnostics();
@@ -136,7 +157,9 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
                 await previous.CancelAsync();
             }
 
+            token.ThrowIfCancellationRequested();
             await search(token);
+            token.ThrowIfCancellationRequested();
             if (pending == current)
             {
                 report(MiningSearchOutcome.Completed);
@@ -170,6 +193,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
             if (pending == current)
             {
                 pending = null;
+                pendingFilterKey = null;
                 SetBusy(false);
             }
         }
@@ -182,6 +206,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
     {
         pending?.Cancel();
         pending = null;
+        pendingFilterKey = null;
         SetBusy(false);
     }
 
@@ -190,6 +215,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
         pending?.Cancel();
         pending?.Dispose();
         pending = null;
+        pendingFilterKey = null;
     }
 
     private void SetBusy(bool value)
