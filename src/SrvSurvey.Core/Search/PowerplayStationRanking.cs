@@ -1,6 +1,7 @@
-namespace SrvSurvey.Desktop.ViewModels;
+namespace SrvSurvey.Core.Search;
 
-internal readonly record struct PowerplayStationRanking(double Median, double P90, int NearP90Count, int StationCount)
+/// <summary>Compares sell systems by the median, upper decile, and depth of their viable station prices.</summary>
+public readonly record struct PowerplayStationRanking(double Median, double P90, int NearP90Count, int StationCount)
 {
     public static PowerplayStationRanking FromScores(IReadOnlyList<long> stationScores)
     {

@@ -565,12 +565,15 @@ public sealed class SurfaceMiningSearchViewModelTests
         model.Reference = "Timbalderis";
         model.Materials.Add("Monazite");
         var batches = new List<int>();
-        model.EligibleSellSystemsAsync = (systems, _) =>
+        model.SellMarketRules = new SurfaceSellMarketRules
         {
-            batches.Add(systems.Count);
-            return Task.FromResult<IReadOnlySet<string>>(
-                systems.Where(system => system == "Sell 60").ToHashSet(StringComparer.OrdinalIgnoreCase)
-            );
+            EligibleSellSystemsAsync = (systems, _) =>
+            {
+                batches.Add(systems.Count);
+                return Task.FromResult<IReadOnlySet<string>>(
+                    systems.Where(system => system == "Sell 60").ToHashSet(StringComparer.OrdinalIgnoreCase)
+                );
+            },
         };
 
         await model.SearchAsync();
@@ -714,6 +717,72 @@ public sealed class SurfaceMiningSearchViewModelTests
         Assert.Equal("Search canceled.", model.Status);
         Assert.False(model.IsBusy);
         model.Dispose();
+    }
+
+    [Fact]
+    public async Task ResetDuringResultPresentationCannotRestoreTheSearchStatus()
+    {
+        using var handler = new SurfaceHandler();
+        using SurfaceMiningSearchViewModel model = Create(handler);
+        model.Reference = "Sol";
+        model.Materials.Add(Material);
+        bool reset = false;
+        model.PropertyChanged += (_, args) =>
+        {
+            if (!reset && args.PropertyName == nameof(model.Rows) && model.HasRows)
+            {
+                reset = true;
+                model.Reset();
+            }
+        };
+
+        await model.SearchAsync();
+
+        Assert.True(reset);
+        Assert.Empty(model.Rows);
+        Assert.Empty(model.AcquireClusters);
+        Assert.Equal("Choose a reference system and a surface material.", model.Status);
+        Assert.False(model.IsBusy);
+    }
+
+    [Fact]
+    public async Task FiltersEditedDuringSearchDoNotBecomeTheCacheIdentityOfTheOldResults()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            using var handler = new SurfaceHandler();
+            using SurfaceMiningSearchViewModel model = Create(handler);
+            var cache = new MiningSearchResultCache(directory);
+            model.ConfigureCache(cache);
+            model.Reference = "Sol";
+            model.Materials.Add(Material);
+            bool edited = false;
+            model.PropertyChanged += (_, args) =>
+            {
+                if (!edited && args.PropertyName == nameof(model.Rows) && model.HasRows)
+                {
+                    edited = true;
+                    model.Reference = "Lave";
+                }
+            };
+
+            await model.SearchAsync();
+
+            Assert.True(edited);
+            Assert.Null(cache.LoadLast<SurfaceMiningSearchSnapshot>("surface"));
+            model.Reference = "Sol";
+            Assert.Empty(model.Rows);
+            model.Reference = "Lave";
+            Assert.Empty(model.Rows);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
     }
 
     private static SurfaceMiningSearchViewModel Create(SurfaceHandler handler) =>
