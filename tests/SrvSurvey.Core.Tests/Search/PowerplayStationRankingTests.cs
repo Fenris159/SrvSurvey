@@ -1,6 +1,6 @@
-using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Core.Search;
 
-namespace SrvSurvey.Desktop.Tests.ViewModels;
+namespace SrvSurvey.Core.Tests.Search;
 
 public sealed class PowerplayStationRankingTests
 {
