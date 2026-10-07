@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -61,30 +62,10 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
         string bestStationSortIndicator = ""
     )
     {
-        int[] parents = Enumerable.Range(0, rows.Count).ToArray();
-        var firstByMiningSystem = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        for (int index = 0; index < rows.Count; index++)
-        {
-            foreach (string system in rows[index].Systems.Select(item => item.System))
-            {
-                if (firstByMiningSystem.TryGetValue(system, out int first))
-                {
-                    Join(parents, first, index);
-                }
-                else
-                {
-                    firstByMiningSystem.Add(system, index);
-                }
-            }
-        }
-
-        PowerplayAcquireClusterViewModel[] clusters = rows.Select(
-                (row, index) => (Row: row, Index: index, Root: Root(parents, index))
-            )
-            .GroupBy(item => item.Root)
-            .OrderBy(group => group.Min(item => item.Index))
+        PowerplayAcquireClusterViewModel[] clusters = PowerplayAcquireClusters
+            .Group(rows, row => row.Systems.Select(item => item.System))
             .Select(group => new PowerplayAcquireClusterViewModel(
-                group.OrderBy(item => item.Index).Select(item => item.Row).ToArray(),
+                group,
                 sellDistanceSortCommand,
                 bestStationSortCommand,
                 sellDistanceSortIndicator,
@@ -111,20 +92,6 @@ public sealed class PowerplayAcquireClusterViewModel : WorkspaceObservable
 
         return clusters;
     }
-
-    private static int Root(int[] parents, int index)
-    {
-        while (parents[index] != index)
-        {
-            parents[index] = parents[parents[index]];
-            index = parents[index];
-        }
-
-        return index;
-    }
-
-    private static void Join(int[] parents, int first, int second) =>
-        parents[Root(parents, second)] = Root(parents, first);
 
     private static PowerplayAcquireMiningNode[] BuildMiningSystems(IReadOnlyList<SurfaceSellRowViewModel> rows) =>
         rows.SelectMany((row, index) => row.Systems.Select(system => (Row: row, Index: index, System: system)))
