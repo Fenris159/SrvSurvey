@@ -1,46 +1,39 @@
 using System.ComponentModel;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Platform;
-using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 {
-    private const string PlotterName = "PlotBuildCommodities";
-
     private readonly ColonizationCommodityOverlayViewModel viewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
-    private readonly LegacyOverlayLayout overlayLayout;
-    private readonly OverlayDispatcherTimer timer;
-    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private ColonizationCommodityOverlayWindow? window;
+    private readonly HostedOverlayWindow hostedWindow;
     private bool manualShow;
     private bool isSuppressed;
     private bool disposed;
 
     public ColonizationCommodityOverlayCoordinator(
         ColonizationCommodityOverlayViewModel viewModel,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null
+        OverlayPresentationSession presentationSession
     )
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
+        ArgumentNullException.ThrowIfNull(presentationSession);
+        hostedWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotBuildCommodities",
+                _ => new ColonizationCommodityOverlayWindow(viewModel),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize),
+                viewModel.ApplyPreparation
+            )
+            {
+                Tick = SynchronizeIntent,
+            }
+        );
         this.viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        timer.Tick += OnTimerTick;
-        timer.Start();
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
-    public bool IsVisible => window is not null;
+    public bool IsVisible => hostedWindow.IsVisible;
 
     public bool IsSuppressed => isSuppressed;
 
@@ -62,7 +55,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
             isSuppressed = false;
         }
 
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     public void SetSuppressed(bool value)
@@ -73,7 +66,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     public void Dispose()
@@ -84,104 +77,26 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        CloseWindow();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
-    }
-
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
-    {
-        SynchronizeWindow();
+        hostedWindow.Dispose();
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(ColonizationCommodityOverlayViewModel.ShouldAutoShow))
         {
-            SynchronizeWindow();
+            SynchronizeIntent();
         }
     }
 
-    private void SynchronizeWindow()
+    private void SynchronizeIntent()
     {
         if (disposed)
         {
             return;
         }
 
-        gameWindow = gameWindowTracker.GetSnapshot();
         bool wantsWindow = manualShow && viewModel.CanShowManually || viewModel.ShouldAutoShow;
-        if (
-            isSuppressed
-            || !wantsWindow
-            || !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking
-            || !gameWindow.IsAvailable
-            || !gameWindow.IsVisible
-            || !gameWindow.IsForeground
-        )
-        {
-            CloseWindow();
-            return;
-        }
-
-        if (window is not null)
-        {
-            PositionWindow(window, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new ColonizationCommodityOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
-        overlay.Opened += (_, _) =>
-        {
-            PositionWindow(overlay, gameWindow.ClientBounds);
-            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
-            viewModel.ApplyPreparation(preparation);
-            if (!preparation.IsClickThrough)
-            {
-                isSuppressed = true;
-                CloseWindow();
-            }
-        };
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(window, overlay))
-            {
-                window = null;
-            }
-        };
-        window = overlay;
-        overlay.Show();
-    }
-
-    private void PositionWindow(Window window, PixelRect gameBounds)
-    {
-        OverlayThemeResources.ApplyOpacity(window, overlayLayout, PlotterName);
-        Screen? screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
-        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
-        PixelPoint position =
-            overlayLayout.GetPosition(PlotterName, gameBounds, size)
-            ?? OverlayWindowPlacement.TopRight(gameBounds, size);
-        if (window.Position != position)
-        {
-            window.Position = position;
-        }
-    }
-
-    private void CloseWindow()
-    {
-        ColonizationCommodityOverlayWindow? overlay = window;
-        window = null;
-        overlay?.Close();
+        hostedWindow.Reconcile(!isSuppressed && wantsWindow);
     }
 }
