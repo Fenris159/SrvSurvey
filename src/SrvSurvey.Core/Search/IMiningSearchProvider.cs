@@ -3,9 +3,11 @@ namespace SrvSurvey.Core.Search;
 /// <summary>The provider requests shared by ring, Powerplay, and surface mining searches.</summary>
 public interface IMiningSearchProvider
 {
-    void ResetDiagnostics();
-
-    void FlushDiagnostics();
+    /// <summary>
+    /// Owns this asynchronous search's diagnostics. Disposing the scope logs only its failures and
+    /// restores any enclosing search's diagnostics.
+    /// </summary>
+    IDisposable BeginDiagnostics();
 
     Task<IReadOnlyDictionary<string, MiningCommodityPriceSummary>> CommodityPriceReportAsync(
         CancellationToken cancellationToken = default

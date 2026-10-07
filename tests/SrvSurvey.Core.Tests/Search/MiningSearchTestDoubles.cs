@@ -39,9 +39,16 @@ internal sealed class StubMiningSearchProvider : IMiningSearchProvider
     public IReadOnlyDictionary<string, MiningCommodityPriceSummary> PriceReport { get; set; } =
         new Dictionary<string, MiningCommodityPriceSummary>(StringComparer.OrdinalIgnoreCase);
 
-    public void ResetDiagnostics() => DiagnosticResets++;
+    public IDisposable BeginDiagnostics()
+    {
+        DiagnosticResets++;
+        return new DiagnosticScope(this);
+    }
 
-    public void FlushDiagnostics() => DiagnosticFlushes++;
+    private sealed class DiagnosticScope(StubMiningSearchProvider owner) : IDisposable
+    {
+        public void Dispose() => owner.DiagnosticFlushes++;
+    }
 
     public Task<IReadOnlyDictionary<string, MiningCommodityPriceSummary>> CommodityPriceReportAsync(
         CancellationToken cancellationToken = default

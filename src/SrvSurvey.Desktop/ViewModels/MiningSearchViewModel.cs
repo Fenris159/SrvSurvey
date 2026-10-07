@@ -1698,6 +1698,7 @@ public sealed class MiningSearchViewModel(
     {
         PowerplayAcquireSearch acquire = Acquire();
         MiningSystemResult[] supporters = await acquire.SupportersAsync(requirePosition: true, token);
+        token.ThrowIfCancellationRequested();
         if (supporters.Length == 0)
         {
             Systems = [];
@@ -1738,6 +1739,7 @@ public sealed class MiningSearchViewModel(
             await PublishAcquisitionCandidatesAsync(pairs, int.MaxValue, token);
         }
 
+        token.ThrowIfCancellationRequested();
         if (!Status.Contains(RequestFailed, StringComparison.Ordinal))
         {
             Status =
@@ -1970,9 +1972,10 @@ public sealed class MiningSearchViewModel(
         }
         catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
-            Status = RequestFailed;
+            Session.Publish(() => Status = RequestFailed, token);
         }
 
+        token.ThrowIfCancellationRequested();
         AcquireRows = pairs
             .GroupBy(pair => pair.Target.System, StringComparer.OrdinalIgnoreCase)
             .Select(group =>
@@ -2232,7 +2235,9 @@ public sealed class MiningSearchViewModel(
                 result = await IncludeReferenceSystemIfEligibleAsync(result, query, token);
                 token.ThrowIfCancellationRequested();
                 Systems = result;
+                token.ThrowIfCancellationRequested();
                 await PublishMeritRowsAsync(token);
+                token.ThrowIfCancellationRequested();
                 Status = MeritRows.Count + " locations, best sell price first. " + source + ". " + Status;
             },
             cacheSearch: true
@@ -2336,8 +2341,14 @@ public sealed class MiningSearchViewModel(
             }
             (IReadOnlyList<MiningRing> foundRings, IReadOnlyList<MiningMarketResult> foundMarkets) =
                 await RingsForBestPricesAsync(hotspotMinerals, radiusMarkets, token);
-            Systems = await CompleteSystemRecordsAsync(SystemsWithRings(Systems, foundRings), token);
-            MeritRows = await PresentRowsAsync(
+            MiningSystemResult[] completedSystems = await CompleteSystemRecordsAsync(
+                SystemsWithRings(Systems, foundRings),
+                token
+            );
+            token.ThrowIfCancellationRequested();
+            Systems = completedSystems;
+            token.ThrowIfCancellationRequested();
+            MeritSystemRowViewModel[] presented = await PresentRowsAsync(
                 PowerplayMeritRank.Compose(
                     Systems,
                     foundRings,
@@ -2348,6 +2359,9 @@ public sealed class MiningSearchViewModel(
                 commodity,
                 token
             );
+            token.ThrowIfCancellationRequested();
+            MeritRows = presented;
+            token.ThrowIfCancellationRequested();
             Status =
                 priceSource
                 + " prices for "
@@ -2357,8 +2371,8 @@ public sealed class MiningSearchViewModel(
         }
         catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
-            MeritRows = [];
-            Status = RequestFailed;
+            Session.Publish(() => MeritRows = [], token);
+            Session.Publish(() => Status = RequestFailed, token);
         }
     }
 
@@ -2404,10 +2418,12 @@ public sealed class MiningSearchViewModel(
             Objective == AcquireObjective
                 ? "No qualifying landable body was found around a Fortified or Stronghold supporter for the sell systems checked."
                 : "No sell station has a matching surface mining body within the distance.";
-        PlanetarySearch.SellMarketRules = await new PowerplayPlanetarySellMarkets(
-            client,
-            PowerplayFilters()
-        ).RulesAsync(ResolveOriginAsync, token);
+        SurfaceSellMarketRules rules = await new PowerplayPlanetarySellMarkets(client, PowerplayFilters()).RulesAsync(
+            ResolveOriginAsync,
+            token
+        );
+        token.ThrowIfCancellationRequested();
+        PlanetarySearch.SellMarketRules = rules;
         PlanetarySearch.Materials.Selected.Clear();
         foreach (string material in SelectedPlanetaryMaterials())
         {
@@ -2415,6 +2431,7 @@ public sealed class MiningSearchViewModel(
         }
 
         await PlanetarySearch.SearchAsync(token);
+        token.ThrowIfCancellationRequested();
         Status = PlanetarySearch.Status;
     }
 

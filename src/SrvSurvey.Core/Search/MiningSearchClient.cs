@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Text.Json;
-using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Network;
 
@@ -190,7 +189,7 @@ public sealed class MiningSearchClient : IMiningSearchProvider, IDisposable
     private static readonly HttpClient SharedClient = new() { Timeout = TimeSpan.FromSeconds(35) };
     private readonly ArdentApi ardent;
     private readonly SpanshApi spansh;
-    private readonly ProviderFailureLog diagnostics = new();
+    private readonly MiningSearchDiagnostics diagnostics;
     private readonly SemaphoreSlim commodityReportGate = new(1, 1);
     private readonly TimeProvider timeProvider;
     private readonly MiningCommodityPriceReportStore? commodityReportStore;
@@ -213,6 +212,7 @@ public sealed class MiningSearchClient : IMiningSearchProvider, IDisposable
     )
     {
         HttpClient http = httpClient ?? SharedClient;
+        diagnostics = new MiningSearchDiagnostics(() => DiagnosticLog);
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.commodityReportStore = commodityReportStore;
         this.providerResponseCache = providerResponseCache;
@@ -262,7 +262,11 @@ public sealed class MiningSearchClient : IMiningSearchProvider, IDisposable
         commodityReportGate.Dispose();
     }
 
-    public bool PriceMarksUnavailable { get; private set; }
+    public bool PriceMarksUnavailable
+    {
+        get => diagnostics.PriceMarksUnavailable;
+        private set => diagnostics.PriceMarksUnavailable = value;
+    }
 
     public DateTimeOffset? CommodityReportFetchedAt { get; private set; }
 
@@ -276,32 +280,11 @@ public sealed class MiningSearchClient : IMiningSearchProvider, IDisposable
 
     public IReadOnlyDictionary<string, MiningCommodityPriceSummary>? CachedCommodityPriceReport => commodityReport;
 
-    public void ResetDiagnostics()
-    {
-        _ = diagnostics.Drain();
-        PriceMarksUnavailable = false;
-    }
+    public IDisposable BeginDiagnostics() => diagnostics.Begin();
 
-    public void FlushDiagnostics()
-    {
-        if (DiagnosticLog is not { } log)
-        {
-            _ = diagnostics.Drain();
-            return;
-        }
+    public void ResetDiagnostics() => diagnostics.Reset();
 
-        foreach (string line in diagnostics.Drain())
-        {
-            try
-            {
-                log(line);
-            }
-            catch (Exception)
-            {
-                // Diagnostics must never interrupt a search.
-            }
-        }
-    }
+    public void FlushDiagnostics() => diagnostics.Flush();
 
     public async Task<IReadOnlyList<MiningRing>> FindRingsAsync(
         MiningRingQuery query,

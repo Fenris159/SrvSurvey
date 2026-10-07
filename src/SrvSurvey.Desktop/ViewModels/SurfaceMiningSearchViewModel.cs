@@ -646,7 +646,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             if (Set(ref rows, value))
             {
                 acquireClusters = PowerplayAcquireClusterViewModel.Group(
-                    value,
+                    rows,
                     SellDistanceSortCommand,
                     BestStationSortCommand,
                     SellDistanceSortIndicator,
@@ -664,12 +664,20 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     public void UseDiagnosticLog(Action<string>? log) => client.DiagnosticLog = log;
 
-    public Task SearchAsync(CancellationToken cancellationToken = default) =>
-        session.RunAsync(
-            async token => Status = await FindSurfaceSalesAsync(token),
+    public Task SearchAsync(CancellationToken cancellationToken = default)
+    {
+        SurfaceSellSearchRequest request = SearchRequest();
+        bool defaultDistanceSort = DefaultSellDistanceSort;
+        return session.RunAsync(
+            async token =>
+            {
+                string result = await FindSurfaceSalesAsync(request, defaultDistanceSort, token);
+                session.Publish(() => Status = result, token);
+            },
             ReportSearch,
             cancellationToken: cancellationToken
         );
+    }
 
     private void ReportSearch(MiningSearchOutcome outcome)
     {
@@ -696,28 +704,34 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         }
     }
 
-    private async Task<string> FindSurfaceSalesAsync(CancellationToken token)
+    private async Task<string> FindSurfaceSalesAsync(
+        SurfaceSellSearchRequest request,
+        bool defaultDistanceSort,
+        CancellationToken token
+    )
     {
         var presented = new Dictionary<SurfaceSellMatch, SurfaceSellRowViewModel>(ReferenceEqualityComparer.Instance);
         SurfaceSellSearchResult result = await sellSearch.FindAsync(
-            SearchRequest(),
-            new SearchProgress(progress => ShowProgress(progress, presented)),
+            request,
+            new SearchProgress(progress =>
+                session.Publish(() => ShowProgress(progress, presented, defaultDistanceSort), token)
+            ),
             token
         );
         switch (result.Kind)
         {
             case SurfaceSellSearchResultKind.NoReference:
-                Rows = [];
+                session.Publish(() => Rows = [], token);
                 return IdleStatus;
             case SurfaceSellSearchResultKind.NoMaterial:
-                Rows = [];
+                session.Publish(() => Rows = [], token);
                 return "Choose a surface material.";
             case SurfaceSellSearchResultKind.NoSellStations:
                 return NoSellStationsMessage;
             case SurfaceSellSearchResultKind.NoMatchingBodies:
                 return NoMatchingBodiesMessage;
             default:
-                return ResultMessage(result);
+                return ResultMessage(result, request);
         }
     }
 
@@ -732,7 +746,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             MinimumDemand = MinimumDemand,
             MaximumDemand = MaximumDemand,
             MaximumAge = MaximumAge,
-            BodyControllingPowers = BodyControllingPowers,
+            BodyControllingPowers = BodyControllingPowers.ToArray(),
             BodySearchRadius = BodySearchRadius,
             GroupStationsBySystem = GroupStationsBySystem,
             MarketGalaxyWide = MarketGalaxyWide,
@@ -743,7 +757,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
 
     private void ShowProgress(
         SurfaceSellSearchProgress progress,
-        Dictionary<SurfaceSellMatch, SurfaceSellRowViewModel> presented
+        Dictionary<SurfaceSellMatch, SurfaceSellRowViewModel> presented,
+        bool defaultDistanceSort
     )
     {
         switch (progress.Stage)
@@ -751,9 +766,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
             case SurfaceSellSearchStage.Ranking:
                 Rows = [];
                 sellRowSort =
-                    DefaultSellDistanceSort || progress.ProximityFirst
-                        ? SellRowSort.DistanceAscending
-                        : SellRowSort.Value;
+                    defaultDistanceSort || progress.ProximityFirst ? SellRowSort.DistanceAscending : SellRowSort.Value;
                 Changed(nameof(SellDistanceSortIndicator));
                 Changed(nameof(BestStationSortIndicator));
                 break;
@@ -780,7 +793,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         }
     }
 
-    private string ResultMessage(SurfaceSellSearchResult result)
+    private string ResultMessage(SurfaceSellSearchResult result, SurfaceSellSearchRequest request)
     {
         int bodyCount = result.Matches.Sum(match => match.Bodies.Count);
         string rankingDescription = result.CatalogOrder
@@ -794,7 +807,7 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         return bodyCount
             + " landable bodies for "
             + (
-                MiningMaterialSelection.IsAny(Materials.Selected)
+                MiningMaterialSelection.IsAny(request.SelectedMaterials)
                     ? "Any surface material"
                     : string.Join(", ", result.Materials)
             )

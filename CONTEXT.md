@@ -24,6 +24,10 @@ _Avoid_: Gameplay dashboard, commander console
 The main-window landing surface for commander identity, application and journal health, location, and multi-commander controls.
 _Avoid_: Gameplay dashboard, recommendation feed
 
+**Mining search session**:
+The Core module that runs one mining search workspace's provider searches, ranking, result-cache restore, and isolated search diagnostics.
+_Avoid_: MiningSearchViewModel search loop, SurfaceMiningSearchViewModel acquire loop
+
 **Functional parity**:
 Every existing command, field, status panel, deep link, search provider, copy action, and detached-tool launcher remains available after a presentation change. A visual prototype is never an authoritative inventory of application behavior.
 _Avoid_: Simplified feature set, representative controls
