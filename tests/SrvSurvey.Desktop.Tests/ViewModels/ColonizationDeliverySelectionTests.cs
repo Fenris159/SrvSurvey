@@ -98,7 +98,7 @@ public sealed partial class ColonizationViewModelTests
         Assert.Contains("remain pending", vm.StatusMessage);
         await vm.RetryUnconfirmedContributionsAsync();
         recoveryTime = recoveryTime.AddSeconds(6);
-        await vm.RetryPendingWritesAsync();
+        await vm.SynchronizeLiveProjectsAsync([], true);
         Assert.Single(client.Contributions);
         using ColonizationViewModel restarted = await CreateRecoveryAsync(client);
         Assert.Equal(3, restarted.UnconfirmedContributions.Count);
@@ -122,7 +122,7 @@ public sealed partial class ColonizationViewModelTests
             Assert.False(vm.DismissConfirmedContributionsCommand.CanExecute(null));
             await vm.RetryUnconfirmedContributionsAsync();
             vm.DismissConfirmedContributions();
-            await vm.RetryPendingWritesAsync();
+            await vm.SynchronizeLiveProjectsAsync([], true);
             Assert.Equal(3, vm.UnconfirmedContributions.Count);
             Assert.Single(client.Contributions);
         }
@@ -181,7 +181,7 @@ public sealed partial class ColonizationViewModelTests
         await vm.SetCommanderAsync("Test Cmdr");
         Assert.Equal(2, vm.UnconfirmedContributions.Count);
         Assert.All(vm.UnconfirmedContributions, row => Assert.False(row.IsSelected));
-        await vm.RetryPendingWritesAsync();
+        await vm.SynchronizeLiveProjectsAsync([], true);
         Assert.Single(client.Contributions);
     }
 
@@ -210,7 +210,7 @@ public sealed partial class ColonizationViewModelTests
         var client = new StubRavenColonialClient();
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
         vm.UnconfirmedContributions[1].IsSelected = true;
-        await vm.RetryPendingWritesAsync();
+        await vm.SynchronizeLiveProjectsAsync([], true);
         Assert.True(vm.UnconfirmedContributions[1].IsSelected);
         Assert.False(vm.UnconfirmedContributions[0].IsSelected);
         Assert.False(vm.UnconfirmedContributions[2].IsSelected);

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Tests.Configuration;
