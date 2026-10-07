@@ -11961,7 +11961,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.JournalProjections.cs"
   },
   {
     "Text": "Compare / export all\u2026",
@@ -19496,7 +19496,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.JournalProjections.cs"
   },
   {
     "Text": "FSSBodySignals",
