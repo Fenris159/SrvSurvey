@@ -1885,10 +1885,6 @@
       "translation": "Ammoniakwelt"
     },
     {
-      "source": "Amount",
-      "translation": "Betrag"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Für ein AppImage-Update ist der APPIMAGE-Startpfad erforderlich."
     },
@@ -5533,22 +5529,6 @@
       "translation": "Sammlernapfschnecke"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "ColonisationBeaconBereitgestellt"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "KolonisierungBauDepot"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "Kolonisierungsbeitrag"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "KolonisationSchiff"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "KolonisierenDefizit"
     },
@@ -6459,10 +6439,6 @@
     {
       "source": "Continue to picker",
       "translation": "Weiter zur Kommissionierung"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Beiträge"
     },
     {
       "source": "Contributor count not supplied",
@@ -7609,10 +7585,6 @@
       "translation": "Einstellungen für Desktop-Verknüpfungen"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "Desktop-Verknüpfungseinstellungen sind nicht verfügbar."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "Die Desktop-Verknüpfungseinstellungen konnten nicht geöffnet werden. Versuchen Sie es erneut, wenn das Desktop-Portal verfügbar ist."
     },
@@ -8139,10 +8111,6 @@
     {
       "source": "Docking requested",
       "translation": "Andocken angefordert"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "DockingGranted"
     },
     {
       "source": "Dodec",
@@ -24917,6 +24885,10 @@
       "translation": "SrvSurveyWindowChromeTextBrush"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "SrvSurveyWindowOne-Overlay"
     },
@@ -25187,14 +25159,6 @@
     {
       "source": "StationKey",
       "translation": "StationKey"
-    },
-    {
-      "source": "StationName",
-      "translation": "Stationsname"
-    },
-    {
-      "source": "StationType",
-      "translation": "Stationstyp"
     },
     {
       "source": "Stations",
@@ -29233,6 +29197,10 @@
       "translation": "Unbekannte Koordinaten werden nicht als nahegelegen behandelt. Gebündelte Beobachtungen sind historisch; Mehrere Hotspots allein bewirken keine Überlappung. Lokale Suchen zeigen höchstens 500 Ringe."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Unbekannter Lieferschein."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Unbekannte Fraktion"
     },
@@ -33101,10 +33069,6 @@
       "translation": "Quests"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "Dock-Basislinie in der Warteschlange"
-    },
-    {
       "source": "radar",
       "translation": "Radar"
     },
@@ -33423,10 +33387,6 @@
     {
       "source": "spherical",
       "translation": "sphärisch"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "Geschwader Frachtdiff"
     },
     {
       "source": "squid",
@@ -37091,10 +37051,6 @@
       "translation": "mundo del amoníaco"
     },
     {
-      "source": "Amount",
-      "translation": "Cantidad"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Una actualización de AppImage requiere la ruta de inicio de APPIMAGE."
     },
@@ -40739,22 +40695,6 @@
       "translation": "lapa recolectora"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "ColonizaciónBeaconDesplegado"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "ColonizaciónConstrucciónDepot"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "ColonizaciónContribución"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "ColonizaciónBarco"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "ColonizarDéficit"
     },
@@ -41665,10 +41605,6 @@
     {
       "source": "Continue to picker",
       "translation": "Continuar al selector"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Contribuciones"
     },
     {
       "source": "Contributor count not supplied",
@@ -42815,10 +42751,6 @@
       "translation": "Configuración de accesos directos en el escritorio"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "La configuración de accesos directos del escritorio no está disponible."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "No se pudo abrir la configuración de acceso directo del escritorio. Vuelva a intentarlo cuando el portal de escritorio esté disponible."
     },
@@ -43345,10 +43277,6 @@
     {
       "source": "Docking requested",
       "translation": "Atraque solicitado"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "AtraqueConcedido"
     },
     {
       "source": "Dodec",
@@ -60123,6 +60051,10 @@
       "translation": "SrvEncuestaVentanaChromeTextBrush"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvEncuestaVentanaUno"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "SrvSurveyWindowOne superpuesto"
     },
@@ -60393,14 +60325,6 @@
     {
       "source": "StationKey",
       "translation": "Clave de estación"
-    },
-    {
-      "source": "StationName",
-      "translation": "Nombre de la estación"
-    },
-    {
-      "source": "StationType",
-      "translation": "Tipo de estación"
     },
     {
       "source": "Stations",
@@ -64439,6 +64363,10 @@
       "translation": "Las coordenadas desconocidas no se consideran cercanas. Las observaciones agrupadas son históricas; múltiples puntos de acceso por sí solos no establecen una superposición. Las búsquedas locales muestran como máximo 500 anillos."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Aviso de entrega desconocido."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Facción desconocida"
     },
@@ -68307,10 +68235,6 @@
       "translation": "misiones"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "línea base del muelle en cola"
-    },
-    {
       "source": "radar",
       "translation": "radares"
     },
@@ -68629,10 +68553,6 @@
     {
       "source": "spherical",
       "translation": "esférico"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "diferencial de carga del escuadrón"
     },
     {
       "source": "squid",
@@ -72297,10 +72217,6 @@
       "translation": "monde de l'ammoniac"
     },
     {
-      "source": "Amount",
-      "translation": "Montant"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Une mise à jour AppImage nécessite le chemin de lancement APPIMAGE."
     },
@@ -75945,22 +75861,6 @@
       "translation": "Patelle collectrice"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "ColonisationBeaconDéployé"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "ColonisationConstructionDépôt"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "ColonisationContribution"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "ColonisationNavire"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "ColoniserDéficit"
     },
@@ -76871,10 +76771,6 @@
     {
       "source": "Continue to picker",
       "translation": "Continuer à sélectionner"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Cotisations"
     },
     {
       "source": "Contributor count not supplied",
@@ -78021,10 +77917,6 @@
       "translation": "Paramètres de raccourci sur le bureau"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "Les paramètres de raccourci sur le bureau ne sont pas disponibles."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "Les paramètres de raccourci sur le bureau n'ont pas pu s'ouvrir. Réessayez lorsque le portail de bureau sera disponible."
     },
@@ -78551,10 +78443,6 @@
     {
       "source": "Docking requested",
       "translation": "Amarrage demandé"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "Amarrage Accordé"
     },
     {
       "source": "Dodec",
@@ -95329,6 +95217,10 @@
       "translation": "SrvSurveyWindowChromeTextBrush"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "Superposition SrvSurveyWindowOne"
     },
@@ -95599,14 +95491,6 @@
     {
       "source": "StationKey",
       "translation": "Clé de gare"
-    },
-    {
-      "source": "StationName",
-      "translation": "Nom de la station"
-    },
-    {
-      "source": "StationType",
-      "translation": "Type de station"
     },
     {
       "source": "Stations",
@@ -99645,6 +99529,10 @@
       "translation": "Les coordonnées inconnues ne sont pas considérées comme proches. Les observations groupées sont historiques ; plusieurs points chauds ne suffisent pas à établir un chevauchement. Les recherches locales affichent au maximum 500 sonneries."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Avis de livraison inconnu."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Faction inconnue"
     },
@@ -103513,10 +103401,6 @@
       "translation": "quêtes"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "ligne de base du quai en file d'attente"
-    },
-    {
       "source": "radar",
       "translation": "radar"
     },
@@ -103835,10 +103719,6 @@
     {
       "source": "spherical",
       "translation": "sphérique"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "différentiel de fret de l'escadron"
     },
     {
       "source": "squid",
@@ -107503,10 +107383,6 @@
       "translation": "mundo da amônia"
     },
     {
-      "source": "Amount",
-      "translation": "Quantidade"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Uma atualização do AppImage requer o caminho de inicialização do APPIMAGE."
     },
@@ -111151,22 +111027,6 @@
       "translation": "Lapa coletora"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "ColonizaçãoBeaconImplantado"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "ColonizaçãoConstruçãoDepósito"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "ColonizaçãoContribuição"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "ColonizaçãoNavio"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "Colonizar Déficit"
     },
@@ -112077,10 +111937,6 @@
     {
       "source": "Continue to picker",
       "translation": "Continuar para o selecionador"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Contribuições"
     },
     {
       "source": "Contributor count not supplied",
@@ -113227,10 +113083,6 @@
       "translation": "Configurações de atalho na área de trabalho"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "As configurações de atalho na área de trabalho não estão disponíveis."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "As configurações de atalho da área de trabalho não puderam ser abertas. Tente novamente quando o portal da área de trabalho estiver disponível."
     },
@@ -113757,10 +113609,6 @@
     {
       "source": "Docking requested",
       "translation": "Encaixe solicitado"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "Ancoragem concedida"
     },
     {
       "source": "Dodec",
@@ -130535,6 +130383,10 @@
       "translation": "SrvSurveyWindowChromeTextBrush"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "Sobreposição SrvSurveyWindowOne"
     },
@@ -130805,14 +130657,6 @@
     {
       "source": "StationKey",
       "translation": "EstaçãoKey"
-    },
-    {
-      "source": "StationName",
-      "translation": "Nome da estação"
-    },
-    {
-      "source": "StationType",
-      "translation": "EstaçãoTipo"
     },
     {
       "source": "Stations",
@@ -134851,6 +134695,10 @@
       "translation": "Coordenadas desconhecidas não são tratadas como próximas. As observações agrupadas são históricas; vários pontos de acesso por si só não estabelecem uma sobreposição. As pesquisas locais mostram no máximo 500 toques."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Aviso de entrega desconhecido."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Facção desconhecida"
     },
@@ -138719,10 +138567,6 @@
       "translation": "missões"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "linha de base da doca na fila"
-    },
-    {
       "source": "radar",
       "translation": "radar"
     },
@@ -139041,10 +138885,6 @@
     {
       "source": "spherical",
       "translation": "esférico"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "diferença de carga do esquadrão"
     },
     {
       "source": "squid",
@@ -142709,10 +142549,6 @@
       "translation": "мир аммиака"
     },
     {
-      "source": "Amount",
-      "translation": "Сумма"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "Для обновления AppImage требуется путь запуска APPIMAGE."
     },
@@ -146357,22 +146193,6 @@
       "translation": "Коллекционное блюдо"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "КолонизацияМаякРазвернут"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "КолонизацияСтроительствоДепо"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "КолонизацияВклад"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "КолонизацияКорабль"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "КолонизацияДефицит"
     },
@@ -147283,10 +147103,6 @@
     {
       "source": "Continue to picker",
       "translation": "Продолжить выбор"
-    },
-    {
-      "source": "Contributions",
-      "translation": "Взносы"
     },
     {
       "source": "Contributor count not supplied",
@@ -148433,10 +148249,6 @@
       "translation": "Настройки ярлыка на рабочем столе"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "Настройки ярлыков на рабочем столе недоступны."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "Не удалось открыть настройки ярлыка на рабочем столе. Повторите попытку, когда портал для настольных компьютеров станет доступен."
     },
@@ -148963,10 +148775,6 @@
     {
       "source": "Docking requested",
       "translation": "Запрошена стыковка"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "Стыковка предоставлена"
     },
     {
       "source": "Dodec",
@@ -165741,6 +165549,10 @@
       "translation": "SrvSurveyОкноChromeТекстКисть"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "СрвОбзорОкноОдин"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "SrvSurveyWindowOne наложение"
     },
@@ -166011,14 +165823,6 @@
     {
       "source": "StationKey",
       "translation": "Станционный ключ"
-    },
-    {
-      "source": "StationName",
-      "translation": "Имя станции"
-    },
-    {
-      "source": "StationType",
-      "translation": "Тип станции"
     },
     {
       "source": "Stations",
@@ -170057,6 +169861,10 @@
       "translation": "Неизвестные координаты не считаются близлежащими. Объединенные наблюдения являются историческими; Несколько горячих точек сами по себе не создают перекрытия. Локальный поиск показывает не более 500 колец."
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "Неизвестное уведомление о доставке."
+    },
+    {
       "source": "Unknown faction",
       "translation": "Неизвестная фракция"
     },
@@ -173925,10 +173733,6 @@
       "translation": "квесты"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "базовая линия закрепления в очереди"
-    },
-    {
       "source": "radar",
       "translation": "радар"
     },
@@ -174247,10 +174051,6 @@
     {
       "source": "spherical",
       "translation": "сферический"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "эскадрилья грузовая разница"
     },
     {
       "source": "squid",
@@ -177915,10 +177715,6 @@
       "translation": "氨世界"
     },
     {
-      "source": "Amount",
-      "translation": "金额"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "AppImage 更新需要 APPIMAGE 启动路径。"
     },
@@ -181563,22 +181359,6 @@
       "translation": "收藏家帽贝"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "殖民信标部署"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "殖民建筑站"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "殖民贡献"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "殖民船"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "殖民赤字"
     },
@@ -182489,10 +182269,6 @@
     {
       "source": "Continue to picker",
       "translation": "继续选择器"
-    },
-    {
-      "source": "Contributions",
-      "translation": "贡献"
     },
     {
       "source": "Contributor count not supplied",
@@ -183639,10 +183415,6 @@
       "translation": "桌面快捷方式设置"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "桌面快捷方式设置不可用。"
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "桌面快捷方式设置无法打开。当桌面门户可用时重试。"
     },
@@ -184169,10 +183941,6 @@
     {
       "source": "Docking requested",
       "translation": "要求对接"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "对接准许"
     },
     {
       "source": "Dodec",
@@ -200947,6 +200715,10 @@
       "translation": "SrvSurveyWindowChromeTextBrush"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "SrvSurveyWindowOne 覆盖"
     },
@@ -201217,14 +200989,6 @@
     {
       "source": "StationKey",
       "translation": "站键"
-    },
-    {
-      "source": "StationName",
-      "translation": "站名"
-    },
-    {
-      "source": "StationType",
-      "translation": "车站类型"
     },
     {
       "source": "Stations",
@@ -205263,6 +205027,10 @@
       "translation": "未知坐标不会被视为附近。捆绑观察是历史性的；多个热点本身并不能建立重叠。本地搜索最多显示 500 个响铃。"
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "未知的交货通知。"
+    },
+    {
       "source": "Unknown faction",
       "translation": "未知派系"
     },
@@ -209131,10 +208899,6 @@
       "translation": "任务"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "排队码头基线"
-    },
-    {
       "source": "radar",
       "translation": "雷达"
     },
@@ -209453,10 +209217,6 @@
     {
       "source": "spherical",
       "translation": "球形"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "中队货物差异"
     },
     {
       "source": "squid",
@@ -213121,10 +212881,6 @@
       "translation": "* AMMONIA WORLD >>>!"
     },
     {
-      "source": "Amount",
-      "translation": "* AMOUNT >>>!"
-    },
-    {
       "source": "An AppImage update requires the APPIMAGE launch path.",
       "translation": "* AN APPIMAGE UPDATE REQUIRES THE APPIMAGE LAUNCH PATH. >>>!"
     },
@@ -216769,22 +216525,6 @@
       "translation": "* COLLECTOR LIMPET >>>!"
     },
     {
-      "source": "ColonisationBeaconDeployed",
-      "translation": "* COLONISATIONBEACONDEPLOYED >>>!"
-    },
-    {
-      "source": "ColonisationConstructionDepot",
-      "translation": "* COLONISATIONCONSTRUCTIONDEPOT >>>!"
-    },
-    {
-      "source": "ColonisationContribution",
-      "translation": "* COLONISATIONCONTRIBUTION >>>!"
-    },
-    {
-      "source": "ColonisationShip",
-      "translation": "* COLONISATIONSHIP >>>!"
-    },
-    {
       "source": "ColoniseDeficit",
       "translation": "* COLONISEDEFICIT >>>!"
     },
@@ -217695,10 +217435,6 @@
     {
       "source": "Continue to picker",
       "translation": "* CONTINUE TO PICKER >>>!"
-    },
-    {
-      "source": "Contributions",
-      "translation": "* CONTRIBUTIONS >>>!"
     },
     {
       "source": "Contributor count not supplied",
@@ -218845,10 +218581,6 @@
       "translation": "* DESKTOP SHORTCUT SETTINGS >>>!"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "* DESKTOP SHORTCUT SETTINGS ARE UNAVAILABLE. >>>!"
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "* DESKTOP SHORTCUT SETTINGS COULD NOT OPEN. TRY AGAIN WHEN THE DESKTOP PORTAL IS AVAILABLE. >>>!"
     },
@@ -219375,10 +219107,6 @@
     {
       "source": "Docking requested",
       "translation": "* DOCKING REQUESTED >>>!"
-    },
-    {
-      "source": "DockingGranted",
-      "translation": "* DOCKINGGRANTED >>>!"
     },
     {
       "source": "Dodec",
@@ -236153,6 +235881,10 @@
       "translation": "* SRVSURVEYWINDOWCHROMETEXTBRUSH >>>!"
     },
     {
+      "source": "SrvSurveyWindowOne",
+      "translation": "* SRVSURVEYWINDOWONE >>>!"
+    },
+    {
       "source": "SrvSurveyWindowOne overlay",
       "translation": "* SRVSURVEYWINDOWONE OVERLAY >>>!"
     },
@@ -236423,14 +236155,6 @@
     {
       "source": "StationKey",
       "translation": "* STATIONKEY >>>!"
-    },
-    {
-      "source": "StationName",
-      "translation": "* STATIONNAME >>>!"
-    },
-    {
-      "source": "StationType",
-      "translation": "* STATIONTYPE >>>!"
     },
     {
       "source": "Stations",
@@ -240469,6 +240193,10 @@
       "translation": "* UNKNOWN COORDINATES ARE NOT TREATED AS NEARBY. BUNDLED OBSERVATIONS ARE HISTORICAL; MULTIPLE HOTSPOTS ALONE DO NOT ESTABLISH AN OVERLAP. LOCAL SEARCHES SHOW AT MOST 500 RINGS. >>>!"
     },
     {
+      "source": "Unknown delivery notice.",
+      "translation": "* UNKNOWN DELIVERY NOTICE. >>>!"
+    },
+    {
       "source": "Unknown faction",
       "translation": "* UNKNOWN FACTION >>>!"
     },
@@ -244337,10 +244065,6 @@
       "translation": "* QUESTS >>>!"
     },
     {
-      "source": "queued dock baseline",
-      "translation": "* QUEUED DOCK BASELINE >>>!"
-    },
-    {
       "source": "radar",
       "translation": "* RADAR >>>!"
     },
@@ -244659,10 +244383,6 @@
     {
       "source": "spherical",
       "translation": "* SPHERICAL >>>!"
-    },
-    {
-      "source": "squadron cargo diff",
-      "translation": "* SQUADRON CARGO DIFF >>>!"
     },
     {
       "source": "squid",

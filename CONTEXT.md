@@ -35,3 +35,27 @@ _Avoid_: Complete overlay catalog, category overlay settings
 **Overlay category shortcut**:
 A navigation control that opens a lean, category-filtered overlay configuration window without routing through a complete settings catalog.
 _Avoid_: Overlay gear, complete overlay settings
+
+**Colonization delivery recovery**:
+The Core module that retains failed Raven deliveries, reconciles fleet-carrier cargo from journal time, and retries writes in order for the originating commander profile.
+_Avoid_: Colonization view-model recovery, pending contribution store
+
+**Journal projection**:
+Applying one journal monitor tick to every workspace that consumes it, in a fixed order, without the main window owning that fan-out.
+_Avoid_: Main-window journal refresh, monitor update pipeline
+
+**Hosted overlay window**:
+The shared overlay-panel lifecycle that shows, hides, prepares, and places a passive overlay panel from a "should show" intent.
+_Avoid_: Overlay coordinator window loop, SynchronizeWindow
+
+**Keyboard activation**:
+A configured shortcut candidate from the desktop hook, the game display, or the Wayland portal, after focus evidence has been sampled.
+_Avoid_: Global keyboard hook event, raw key press
+
+**Mining search session**:
+The Core module that runs one mining search workspace's provider searches, ranking, and result-cache restore.
+_Avoid_: MiningSearchViewModel search loop, SurfaceMiningSearchViewModel acquire loop
+
+**Overlay placement interaction**:
+The module that owns dragging overlay panels, the working placements those drags produce, and saving or restoring them.
+_Avoid_: OverlayInteractionViewModel drag, managed overlay window drag session
