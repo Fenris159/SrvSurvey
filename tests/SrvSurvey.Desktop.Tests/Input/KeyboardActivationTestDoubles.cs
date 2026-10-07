@@ -18,6 +18,7 @@ internal sealed class FakeKeyboardSource(KeyboardInputSource kind) : IKeyboardAc
     public int Resets { get; private set; }
     public int SettingsRequests { get; private set; }
     public bool Disposed { get; private set; }
+    public Exception? DisposeException { get; init; }
 
     private IKeyboardActivationSink Sink => sink ?? throw new InvalidOperationException("The source is not attached.");
 
@@ -38,7 +39,7 @@ internal sealed class FakeKeyboardSource(KeyboardInputSource kind) : IKeyboardAc
     public ValueTask DisposeAsync()
     {
         Disposed = true;
-        return ValueTask.CompletedTask;
+        return DisposeException is { } failure ? ValueTask.FromException(failure) : ValueTask.CompletedTask;
     }
 
     /// <summary>Reports a raw chord, or an already-resolved action, with this kind's own focus evidence.</summary>
@@ -125,6 +126,7 @@ internal sealed class TestGameWindowTracker : IGameWindowTracker
 
     public GameWindowSnapshot GetSnapshot()
     {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
         if (blocking && !allowSnapshot.IsSet)
         {
             snapshotEntered.TrySetResult();
