@@ -39,7 +39,7 @@ internal sealed record PortalShortcutBinding(
             {
                 continue;
             }
-            string keysym = X11KeyboardRecord.GetKeysymName(key.Value);
+            string keysym = KeysymNames.Get(key.Value);
             bindings.Add(
                 new PortalShortcutBinding(
                     definition.LegacyName,

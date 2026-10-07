@@ -18,15 +18,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     private string lastActionStatus = string.Empty;
     private IReadOnlyList<ControllerDeviceOptionViewModel> controllerDevices = [];
     private ControllerDeviceOptionViewModel? selectedController;
-    private KeyboardInputDiagnostics keyboardDiagnostics = new(
-        null,
-        false,
-        false,
-        false,
-        "No configured shortcut received yet.",
-        "Waiting for Elite Dangerous.",
-        "No separate game display is connected."
-    );
+    private KeyboardInputDiagnostics keyboardDiagnostics;
     private IReadOnlyList<KeyboardInputSourceOption> keyboardSourceOptions = [];
     private readonly WorkspaceCommand desktopShortcutSettingsCommand;
     private Func<Task>? openDesktopShortcutSettings;
@@ -43,6 +35,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.controllerDeviceProvider = controllerDeviceProvider ?? new SdlControllerDeviceProvider();
         Capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
+        keyboardDiagnostics = KeyboardInputHost.InitialDiagnostics(capabilities.Host);
         settings = store.Load();
         Bindings = GlobalInputActionCatalog
             .All.Select(definition => new InputBindingViewModel(
@@ -81,28 +74,19 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     public IReadOnlyList<InputBindingViewModel> MiningBindings { get; }
 
     public ICommand DesktopShortcutSettingsCommand => desktopShortcutSettingsCommand;
-    public bool IsDesktopShortcutSettingsVisible =>
-        Capabilities.Host is OverlayHostKind.LinuxX11 or OverlayHostKind.LinuxXWayland or OverlayHostKind.LinuxWayland;
+    public bool IsDesktopShortcutSettingsVisible => keyboardDiagnostics.DesktopShortcutSettings is not null;
     public bool CanOpenDesktopShortcutSettings =>
-        IsDesktopShortcutSettingsVisible
-        && KeyboardEnabled
+        KeyboardEnabled
         && openDesktopShortcutSettings is not null
-        && keyboardDiagnostics.CanOpenDesktopShortcutSettings
+        && keyboardDiagnostics.DesktopShortcutSettings?.CanOpen == true
         && !openingDesktopShortcutSettings;
     public string DesktopShortcutSettingsStatus =>
-        desktopShortcutSettingsError ?? keyboardDiagnostics.DesktopShortcutSettingsStatus.Split('\n')[0];
+        desktopShortcutSettingsError ?? keyboardDiagnostics.DesktopShortcutSettings?.Status ?? string.Empty;
 
-    /// <summary>Displays readable desktop grants separately from the compact portal status.</summary>
-    public string ApprovedDesktopShortcuts
-    {
-        get
-        {
-            string status = keyboardDiagnostics.DesktopShortcutSettingsStatus;
-            int separator = status.IndexOf('\n');
-            return separator >= 0 ? status[(separator + 1)..] : string.Empty;
-        }
-    }
-    public bool HasApprovedDesktopShortcuts => ApprovedDesktopShortcuts.Length > 0;
+    /// <summary>Displays readable desktop grants separately from the compact desktop shortcut status.</summary>
+    public string ApprovedDesktopShortcuts =>
+        string.Join('\n', keyboardDiagnostics.DesktopShortcutSettings?.ApprovedShortcuts ?? []);
+    public bool HasApprovedDesktopShortcuts => keyboardDiagnostics.DesktopShortcutSettings?.ApprovedShortcuts.Count > 0;
 
     /// <summary>Connects the explicit desktop settings button without invoking registration or opening a dialog.</summary>
     public void SetDesktopShortcutSettingsHandler(Func<Task>? handler)
@@ -194,34 +178,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
             return;
         }
         keyboardDiagnostics = diagnostics;
-        keyboardSourceOptions =
-        [
-            new(
-                KeyboardInputMode.Automatic,
-                "Automatic (recommended)",
-                true,
-                "Uses one detected source for all keyboard shortcuts. Relearns when the game changes or repeated input proves another source is working."
-            ),
-            new(
-                KeyboardInputMode.Desktop,
-                "Desktop keyboard",
-                diagnostics.DesktopAvailable,
-                "Uses the desktop keyboard listener. A separate game display or native Wayland game may not deliver input to this listener."
-            ),
-            new(
-                KeyboardInputMode.GameDisplay,
-                "Game display",
-                diagnostics.GameDisplayAvailable,
-                diagnostics.GameDisplayStatus
-                    + " Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available."
-            ),
-            new(
-                KeyboardInputMode.WaylandPortal,
-                "Wayland portal",
-                diagnostics.PortalAvailable,
-                "Requires desktop portal support and approval for all configured keyboard shortcuts. Use Desktop shortcut settings to approve or change bindings. The desktop may override requested keys; its approved keys are shown below. Native Wayland may not expose which window has focus."
-            ),
-        ];
+        keyboardSourceOptions = diagnostics.SourceOptions;
         OnPropertyChanged(nameof(KeyboardSourceOptions));
         OnPropertyChanged(nameof(SelectedKeyboardSource));
         OnPropertyChanged(nameof(KeyboardSourceDetails));
@@ -250,9 +207,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
 
     public ICommand RefreshControllersCommand { get; }
 
-    /// <summary>Allows Wayland keyboard enablement while runtime portal discovery reports actual availability.</summary>
-    public bool IsKeyboardAvailable =>
-        Capabilities.SupportsGlobalInput || Capabilities.Host == OverlayHostKind.LinuxWayland;
+    public bool IsKeyboardAvailable => KeyboardInputHost.CanEnableKeyboard(Capabilities);
 
     public bool IsControllerAvailable =>
         Capabilities.Host

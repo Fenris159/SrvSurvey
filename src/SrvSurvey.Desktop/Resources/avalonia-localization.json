@@ -7609,10 +7609,6 @@
       "translation": "Einstellungen für Desktop-Verknüpfungen"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "Desktop-Verknüpfungseinstellungen sind nicht verfügbar."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "Die Desktop-Verknüpfungseinstellungen konnten nicht geöffnet werden. Versuchen Sie es erneut, wenn das Desktop-Portal verfügbar ist."
     },
@@ -42825,10 +42821,6 @@
     {
       "source": "Desktop shortcut settings",
       "translation": "Configuración de accesos directos en el escritorio"
-    },
-    {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "La configuración de accesos directos del escritorio no está disponible."
     },
     {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
@@ -78045,10 +78037,6 @@
       "translation": "Paramètres de raccourci sur le bureau"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "Les paramètres de raccourci sur le bureau ne sont pas disponibles."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "Les paramètres de raccourci sur le bureau n'ont pas pu s'ouvrir. Réessayez lorsque le portail de bureau sera disponible."
     },
@@ -113261,10 +113249,6 @@
     {
       "source": "Desktop shortcut settings",
       "translation": "Configurações de atalho na área de trabalho"
-    },
-    {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "As configurações de atalho na área de trabalho não estão disponíveis."
     },
     {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
@@ -148481,10 +148465,6 @@
       "translation": "Настройки ярлыка на рабочем столе"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "Настройки ярлыков на рабочем столе недоступны."
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "Не удалось открыть настройки ярлыка на рабочем столе. Повторите попытку, когда портал для настольных компьютеров станет доступен."
     },
@@ -183699,10 +183679,6 @@
       "translation": "桌面快捷方式设置"
     },
     {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "桌面快捷方式设置不可用。"
-    },
-    {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",
       "translation": "桌面快捷方式设置无法打开。当桌面门户可用时重试。"
     },
@@ -218915,10 +218891,6 @@
     {
       "source": "Desktop shortcut settings",
       "translation": "* DESKTOP SHORTCUT SETTINGS >>>!"
-    },
-    {
-      "source": "Desktop shortcut settings are unavailable.",
-      "translation": "* DESKTOP SHORTCUT SETTINGS ARE UNAVAILABLE. >>>!"
     },
     {
       "source": "Desktop shortcut settings could not open. Try again when the desktop portal is available.",

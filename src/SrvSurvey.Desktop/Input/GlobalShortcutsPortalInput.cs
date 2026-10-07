@@ -4,8 +4,14 @@ using Tmds.DBus;
 namespace SrvSurvey.Desktop.Input;
 
 /// <summary>Owns an optional compositor shortcut session without blocking startup or the UI.</summary>
-internal sealed class GlobalShortcutsPortalInput : IGlobalShortcutInput
+internal sealed class GlobalShortcutsPortalInput : IKeyboardActivationSource
 {
+    internal static readonly DesktopShortcutSettingsState InitialSettings = new(
+        false,
+        "Desktop shortcuts: checking availability.",
+        []
+    );
+
     private readonly Lock gate = new();
     private readonly Func<CancellationToken, Task<IPortalShortcutSession>> openSession;
     private readonly TimeSpan retryDelay;
@@ -22,9 +28,10 @@ internal sealed class GlobalShortcutsPortalInput : IGlobalShortcutInput
     private volatile bool handlesAllBindings;
     private volatile bool settingsAvailable;
     private volatile bool openingSettings;
-    private string settingsStatus = "Desktop shortcuts: checking availability.";
+    private string settingsStatus = InitialSettings.Status;
     private IPortalShortcutSession? activeSession;
     private Task settingsTask = Task.CompletedTask;
+    private IKeyboardActivationSink? sink;
 
     /// <summary>Creates a lazily opened portal session and a bounded reconnect interval.</summary>
     public GlobalShortcutsPortalInput(
@@ -39,18 +46,39 @@ internal sealed class GlobalShortcutsPortalInput : IGlobalShortcutInput
             openLegacySettings ?? (token => DbusGlobalShortcutSession.OpenLegacySettingsAsync(token));
     }
 
-    public event EventHandler<GlobalInputActionTriggeredEventArgs>? ActionTriggered;
-    public event Action<string, bool>? StatusChanged;
-    public bool IsRunning => running;
-    public bool CanHandleAllBindings => handlesAllBindings;
+    public KeyboardInputSource Kind => KeyboardInputSource.Portal;
+
+    /// <summary>Separates the compact settings status line from the readable desktop grants listed beneath it.</summary>
+    public KeyboardSourceState State
+    {
+        get
+        {
+            string[] lines = SettingsStatus.Split('\n');
+            return new KeyboardSourceState(running)
+            {
+                CanServeAllBindings = handlesAllBindings,
+                DesktopShortcutSettings = new DesktopShortcutSettingsState(CanOpenSettings, lines[0], lines[1..]),
+            };
+        }
+    }
+
     public Task StartupReady => startupReady.Task;
-    public bool CanOpenSettings =>
+    private bool CanOpenSettings =>
         settingsAvailable
         && Volatile.Read(ref enabled)
         && Volatile.Read(ref bindings).Count > 0
         && !Volatile.Read(ref disposed)
         && !openingSettings;
-    public string SettingsStatus => Volatile.Read(ref settingsStatus);
+    private string SettingsStatus => Volatile.Read(ref settingsStatus);
+
+    public void Attach(IKeyboardActivationSink sink) => this.sink = sink;
+
+    public void Start(GlobalInputSettings settings) => Update(settings);
+
+    public void ResetDetection()
+    {
+        // Compositor shortcuts arrive as already-resolved actions, so no key state is held here.
+    }
 
     /// <summary>Rebinds only for keyboard configuration changes and cancels any pending permission request.</summary>
     public void Update(GlobalInputSettings settings)
@@ -86,7 +114,7 @@ internal sealed class GlobalShortcutsPortalInput : IGlobalShortcutInput
     }
 
     /// <summary>Opens desktop configuration only on explicit request, using the current session where supported.</summary>
-    public Task OpenSettingsAsync()
+    public Task OpenDesktopShortcutSettingsAsync()
     {
         lock (gate)
         {
@@ -161,7 +189,7 @@ internal sealed class GlobalShortcutsPortalInput : IGlobalShortcutInput
             {
                 SetSettingsStatus(running ? previousStatus : "Desktop shortcuts: inactive.", settingsAvailable);
             }
-            StatusChanged?.Invoke(string.Empty, running);
+            PublishStatus(string.Empty);
         }
     }
 
@@ -170,7 +198,17 @@ internal sealed class GlobalShortcutsPortalInput : IGlobalShortcutInput
     {
         settingsAvailable = available;
         Volatile.Write(ref settingsStatus, message);
-        StatusChanged?.Invoke(reportStatus ? message.Split('\n')[0] : string.Empty, running);
+        PublishStatus(reportStatus ? message.Split('\n')[0] : string.Empty);
+    }
+
+    /// <summary>Releases a selection this session can no longer fully serve before reporting the change.</summary>
+    private void PublishStatus(string message)
+    {
+        if (!handlesAllBindings)
+        {
+            sink?.ReleaseSelection(KeyboardInputSource.Portal);
+        }
+        sink?.ReportStatus(message);
     }
 
     /// <summary>Serializes session replacement so old signals cannot activate new bindings.</summary>
@@ -296,7 +334,7 @@ internal sealed class GlobalShortcutsPortalInput : IGlobalShortcutInput
                 SetSessionSettingsStatus("Desktop shortcuts: inactive. Reconnecting...", settingsAvailable, token);
             }
         }
-        StatusChanged?.Invoke(string.Empty, false);
+        PublishStatus(string.Empty);
     }
 
     /// <summary>Observes actions and desktop registration changes until an already-bound session closes.</summary>
@@ -384,9 +422,16 @@ internal sealed class GlobalShortcutsPortalInput : IGlobalShortcutInput
     )
     {
         PortalShortcutBinding? binding = requested.FirstOrDefault(candidate => candidate.Id == id);
-        if (!token.IsCancellationRequested && binding is not null && accepted.Contains(id))
+        if (!token.IsCancellationRequested && binding is not null && accepted.Contains(id) && sink is { } target)
         {
-            ActionTriggered?.Invoke(this, new GlobalInputActionTriggeredEventArgs(binding.Action, binding.Chord));
+            target.Activate(
+                new KeyboardActivation(
+                    KeyboardInputSource.Portal,
+                    binding.Chord,
+                    binding.Action,
+                    target.SampleFocus(KeyboardFocusEvidence.Untracked)
+                )
+            );
         }
     }
 
@@ -439,21 +484,3 @@ public sealed class PortalShortcutPermissionException : Exception;
 
 /// <summary>Defers new desktop approval until an explicit settings request.</summary>
 public sealed class PortalShortcutPermissionDeferredException : Exception;
-
-/// <summary>Provides compositor-approved shortcut actions independently of raw keyboard hooks.</summary>
-public interface IGlobalShortcutInput : IAsyncDisposable
-{
-    event EventHandler<GlobalInputActionTriggeredEventArgs>? ActionTriggered;
-    event Action<string, bool>? StatusChanged;
-    bool IsRunning { get; }
-    bool CanHandleAllBindings => IsRunning;
-    Task StartupReady => Task.CompletedTask;
-    bool CanOpenSettings => false;
-    string SettingsStatus => "Desktop shortcut settings are unavailable.";
-
-    /// <summary>Requests desktop shortcut configuration only in response to the settings button.</summary>
-    Task OpenSettingsAsync() => Task.CompletedTask;
-
-    /// <summary>Applies keyboard enablement and shortcut bindings without restarting the application.</summary>
-    void Update(GlobalInputSettings settings);
-}
