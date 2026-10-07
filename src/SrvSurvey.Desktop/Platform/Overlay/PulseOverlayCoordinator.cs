@@ -1,45 +1,35 @@
 using System.ComponentModel;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Platform;
-using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class PulseOverlayCoordinator : IDisposable
 {
-    private const string PlotterName = "PlotPulse";
-
     private readonly PulseOverlayViewModel viewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
-    private readonly LegacyOverlayLayout overlayLayout;
-    private readonly OverlayDispatcherTimer timer;
-    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private PulseOverlayWindow? window;
+    private readonly HostedOverlayWindow hostedWindow;
     private bool isSuppressed;
     private bool disposed;
 
-    public PulseOverlayCoordinator(
-        PulseOverlayViewModel viewModel,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null
-    )
+    public PulseOverlayCoordinator(PulseOverlayViewModel viewModel, OverlayPresentationSession presentationSession)
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
+        ArgumentNullException.ThrowIfNull(presentationSession);
+        hostedWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotPulse",
+                _ => new PulseOverlayWindow(viewModel),
+                (gameBounds, windowSize) => OverlayWindowPlacement.BottomLeft(gameBounds, windowSize, margin: 8)
+            )
+            {
+                PollInterval = TimeSpan.FromMilliseconds(500),
+                Tick = OnTick,
+            }
+        );
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-        timer.Tick += OnTimerTick;
-        timer.Start();
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
-    public bool IsVisible => window is not null;
+    public bool IsVisible => hostedWindow.IsVisible;
 
     public void SetSuppressed(bool value)
     {
@@ -49,7 +39,7 @@ public sealed class PulseOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     public void Dispose()
@@ -60,18 +50,14 @@ public sealed class PulseOverlayCoordinator : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        CloseWindow();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
+        hostedWindow.Dispose();
     }
 
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
+    private void OnTick()
     {
         viewModel.Refresh();
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -85,85 +71,17 @@ public sealed class PulseOverlayCoordinator : IDisposable
                 or nameof(PulseOverlayViewModel.IsScoReady)
         )
         {
-            SynchronizeWindow();
+            SynchronizeIntent();
         }
     }
 
-    private void SynchronizeWindow()
+    private void SynchronizeIntent()
     {
         if (disposed)
         {
             return;
         }
 
-        gameWindow = gameWindowTracker.GetSnapshot();
-        if (
-            isSuppressed
-            || !viewModel.ShouldShow
-            || !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking
-            || !gameWindow.IsAvailable
-            || !gameWindow.IsVisible
-            || !gameWindow.IsForeground
-        )
-        {
-            CloseWindow();
-            return;
-        }
-
-        if (window is not null)
-        {
-            PositionWindow(window);
-            return;
-        }
-
-        var overlay = new PulseOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
-        overlay.Opened += (_, _) =>
-        {
-            PositionWindow(overlay);
-            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
-            if (!preparation.IsClickThrough)
-            {
-                isSuppressed = true;
-                CloseWindow();
-            }
-        };
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(window, overlay))
-            {
-                window = null;
-            }
-        };
-        window = overlay;
-        overlay.Show();
-    }
-
-    private void PositionWindow(Window overlay)
-    {
-        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
-        Screen? screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
-        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
-        PixelPoint position =
-            overlayLayout.GetPosition(PlotterName, gameWindow.ClientBounds, size)
-            ?? OverlayWindowPlacement.BottomLeft(gameWindow.ClientBounds, size, margin: 8);
-        if (overlay.Position != position)
-        {
-            overlay.Position = position;
-        }
-    }
-
-    private void CloseWindow()
-    {
-        PulseOverlayWindow? overlay = window;
-        window = null;
-        overlay?.Close();
+        hostedWindow.Reconcile(!isSuppressed && viewModel.ShouldShow);
     }
 }

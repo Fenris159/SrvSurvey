@@ -11,13 +11,13 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class SystemSurveyOverlayCoordinator : IDisposable
 {
+    private const int DefaultMargin = 20;
+
     private readonly SystemSurveyViewModel survey;
     private readonly SurfaceSurveyViewModel surfaceSurvey;
     private readonly SystemSurveyOverlayViewModel viewModel;
     private readonly SurfaceSurveyOverlayViewModel surfaceViewModel;
     private readonly PriorScansOverlayViewModel priorScansViewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
     private readonly IGameScreenCapture gameScreenCapture;
     private readonly LegacyOverlayLayout overlayLayout;
     private readonly OverlayWindowRegistry windowRegistry;
@@ -33,18 +33,17 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly SemaphoreSlim fssCaptureLock = new(1, 1);
     private readonly CancellationTokenSource disposalCancellation = new();
     private readonly string? fssDiagnosticDirectory;
-    private readonly OverlayDispatcherTimer timer;
-    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private BiologySurveyOverlayWindow? biologyWindow;
-    private BiologyStatusOverlayWindow? biologyStatusWindow;
-    private BodyInformationOverlayWindow? bodyInfoWindow;
-    private FlightWarningOverlayWindow? flightWarningWindow;
-    private FssInfoOverlayWindow? fssWindow;
-    private LastFssBodyOverlayWindow? lastFssBodyWindow;
-    private MiniTrackOverlayWindow? miniTrackWindow;
-    private PriorScansOverlayWindow? priorScansWindow;
-    private SurfaceSurveyOverlayWindow? surfaceWindow;
-    private SystemStatusOverlayWindow? statusWindow;
+    private readonly HostedOverlayWindow bodyInfoWindow;
+    private readonly HostedOverlayWindow fssWindow;
+    private readonly HostedOverlayWindow lastFssBodyWindow;
+    private readonly HostedOverlayWindow statusWindow;
+    private readonly HostedOverlayWindow flightWarningWindow;
+    private readonly HostedOverlayWindow biologyWindow;
+    private readonly HostedOverlayWindow biologyStatusWindow;
+    private readonly HostedOverlayWindow priorScansWindow;
+    private readonly HostedOverlayWindow surfaceWindow;
+    private readonly HostedOverlayWindow miniTrackWindow;
+    private readonly HostedOverlayWindow[] hostedWindows;
     private bool isSuppressed;
     private string? canonnLoadedKey;
     private string? canonnFailedKey;
@@ -55,16 +54,14 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     public SystemSurveyOverlayCoordinator(
         SystemSurveyViewModel survey,
         SurfaceSurveyViewModel surfaceSurvey,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
+        OverlayPresentationSession presentationSession,
         SystemSurveyOverlayCoordinatorOptions? options = null
     )
     {
         options ??= new SystemSurveyOverlayCoordinatorOptions();
         this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
         this.surfaceSurvey = surfaceSurvey ?? throw new ArgumentNullException(nameof(surfaceSurvey));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        ArgumentNullException.ThrowIfNull(presentationSession);
         this.gameScreenCapture =
             options.GameScreenCapture
             ?? GameScreenCapture.CreateCurrent(
@@ -75,69 +72,148 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         this.fssDiagnosticDirectory = string.IsNullOrWhiteSpace(options.FssDiagnosticDirectory)
             ? null
             : options.FssDiagnosticDirectory;
-        this.overlayLayout = options.OverlayLayout ?? LegacyOverlayLayout.Empty;
-        this.windowRegistry = options.WindowRegistry ?? OverlayWindowRegistry.Shared;
+        this.overlayLayout = presentationSession.OverlayLayout;
+        this.windowRegistry = presentationSession.WindowRegistry;
         this.commanderNameProvider = options.CommanderNameProvider ?? (() => null);
         this.canonnSystemPoiClient = new CachingCanonnSystemPoiClient(
             options.CanonnSystemPoiClient ?? new CanonnSystemPoiClient()
         );
-        viewModel = new SystemSurveyOverlayViewModel(survey, platform.Capabilities);
-        surfaceViewModel = new SurfaceSurveyOverlayViewModel(surfaceSurvey, platform.Capabilities);
+        bodyInfoWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition(
+                "PlotBodyInfo",
+                CreateBodyInfoWindow,
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopLeft(gameBounds, windowSize, DefaultMargin)
+            ) with
+            {
+                Tick = OnTick,
+            }
+        );
+        fssWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition(
+                "PlotFSSInfo",
+                CreateFssWindow,
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopLeft(gameBounds, windowSize, DefaultMargin)
+            )
+        );
+        lastFssBodyWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition(
+                "PlotFSS",
+                CreateLastFssBodyWindow,
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopCenter(gameBounds, windowSize, DefaultMargin)
+            )
+        );
+        statusWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition(
+                "PlotSysStatus",
+                CreateStatusWindow,
+                (gameBounds, windowSize) => OverlayWindowPlacement.BottomLeft(gameBounds, windowSize, DefaultMargin)
+            )
+        );
+        flightWarningWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition(
+                "PlotFlightWarning",
+                CreateFlightWarningWindow,
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopCenter(gameBounds, windowSize, DefaultMargin)
+            )
+        );
+        biologyWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition("PlotBioSystem", CreateBiologyWindow, PlaceBiologyWindow)
+        );
+        biologyStatusWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition(
+                "PlotBioStatus",
+                CreateBiologyStatusWindow,
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopCenter(gameBounds, windowSize, DefaultMargin)
+            )
+        );
+        priorScansWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition(
+                "PlotPriorScans",
+                CreatePriorScansWindow,
+                (gameBounds, windowSize) => OverlayWindowPlacement.BottomRight(gameBounds, windowSize, DefaultMargin)
+            )
+        );
+        surfaceWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition(
+                "PlotGrounded",
+                CreateSurfaceWindow,
+                (gameBounds, windowSize) => OverlayWindowPlacement.BottomCenter(gameBounds, windowSize, DefaultMargin)
+            ) with
+            {
+                ConfigureWindow = ApplySurfaceWindowSize,
+                Placement = PlaceSurfaceWindow,
+            }
+        );
+        miniTrackWindow = presentationSession.HostPassiveWindow(
+            CreateDefinition(
+                "PlotMiniTrack",
+                CreateMiniTrackWindow,
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize, 8)
+            )
+        );
+        hostedWindows =
+        [
+            bodyInfoWindow,
+            fssWindow,
+            lastFssBodyWindow,
+            statusWindow,
+            flightWarningWindow,
+            biologyWindow,
+            biologyStatusWindow,
+            priorScansWindow,
+            surfaceWindow,
+            miniTrackWindow,
+        ];
+        OverlayPlatformCapabilities capabilities = bodyInfoWindow.Capabilities;
+        viewModel = new SystemSurveyOverlayViewModel(survey, capabilities);
+        surfaceViewModel = new SurfaceSurveyOverlayViewModel(surfaceSurvey, capabilities);
         priorScansViewModel = new PriorScansOverlayViewModel(
             survey,
             this.canonnSystemPoiClient,
             options.ExobiologyCatalog ?? ExobiologyReferenceCatalog.LoadEmbedded(),
             this.commanderNameProvider,
-            platform.Capabilities,
+            capabilities,
             () => surfaceSurvey.CurrentSurface
         );
+        foreach (HostedOverlayWindow hosted in hostedWindows)
+        {
+            hosted.VisibilityChanged += OnHostedVisibilityChanged;
+        }
+
         survey.PropertyChanged += OnSurveyPropertyChanged;
         surfaceSurvey.PropertyChanged += OnSurfaceSurveyPropertyChanged;
         priorScansViewModel.PropertyChanged += OnPriorScansPropertyChanged;
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        timer.Tick += OnTimerTick;
-        timer.Start();
         ApplyFssCaptureCapabilityStatus();
-        SynchronizeWindows();
+        SynchronizeIntent();
     }
 
     public event EventHandler? VisibilityChanged;
 
-    public bool IsVisible =>
-        biologyWindow is not null
-        || biologyStatusWindow is not null
-        || bodyInfoWindow is not null
-        || flightWarningWindow is not null
-        || fssWindow is not null
-        || lastFssBodyWindow is not null
-        || miniTrackWindow is not null
-        || priorScansWindow is not null
-        || surfaceWindow is not null
-        || statusWindow is not null;
+    public bool IsVisible => hostedWindows.Any(hosted => hosted.IsVisible);
 
-    public bool IsFssVisible => fssWindow is not null;
+    public bool IsFssVisible => fssWindow.IsVisible;
 
-    public bool IsLastFssBodyVisible => lastFssBodyWindow is not null;
+    public bool IsLastFssBodyVisible => lastFssBodyWindow.IsVisible;
 
-    public bool IsBodyInfoVisible => bodyInfoWindow is not null;
+    public bool IsBodyInfoVisible => bodyInfoWindow.IsVisible;
 
-    public bool IsFlightWarningVisible => flightWarningWindow is not null;
+    public bool IsFlightWarningVisible => flightWarningWindow.IsVisible;
 
-    public bool IsBiologyVisible => biologyWindow is not null;
+    public bool IsBiologyVisible => biologyWindow.IsVisible;
 
-    public bool IsBiologyStatusVisible => biologyStatusWindow is not null;
+    public bool IsBiologyStatusVisible => biologyStatusWindow.IsVisible;
 
-    public bool IsPriorScansVisible => priorScansWindow is not null;
+    public bool IsPriorScansVisible => priorScansWindow.IsVisible;
 
-    public bool IsMiniTrackVisible => miniTrackWindow is not null;
+    public bool IsMiniTrackVisible => miniTrackWindow.IsVisible;
 
-    public bool IsSurfaceVisible => surfaceWindow is not null;
+    public bool IsSurfaceVisible => surfaceWindow.IsVisible;
 
     public bool IsSuppressed => isSuppressed;
 
     public bool AdjustSurfaceZoom(bool zoomIn)
     {
-        if (disposed || surfaceWindow is null)
+        if (disposed || !surfaceWindow.IsVisible)
         {
             return false;
         }
@@ -148,7 +224,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     public bool ResetSurfaceZoom()
     {
-        if (disposed || surfaceWindow is null)
+        if (disposed || !surfaceWindow.IsVisible)
         {
             return false;
         }
@@ -165,7 +241,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindows();
+        SynchronizeIntent();
     }
 
     public void Dispose()
@@ -177,26 +253,18 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
         disposed = true;
         disposalCancellation.Cancel();
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
         survey.PropertyChanged -= OnSurveyPropertyChanged;
         surfaceSurvey.PropertyChanged -= OnSurfaceSurveyPropertyChanged;
         priorScansViewModel.PropertyChanged -= OnPriorScansPropertyChanged;
-        CloseBiologyWindow();
-        CloseBiologyStatusWindow();
-        CloseBodyInfoWindow();
-        CloseFlightWarningWindow();
-        CloseFssWindow();
-        CloseLastFssBodyWindow();
-        CloseMiniTrackWindow();
-        ClosePriorScansWindow();
-        CloseSurfaceWindow();
-        CloseStatusWindow();
+        foreach (HostedOverlayWindow hosted in hostedWindows)
+        {
+            hosted.VisibilityChanged -= OnHostedVisibilityChanged;
+            hosted.Dispose();
+        }
+
         surfaceViewModel.Dispose();
         priorScansViewModel.Dispose();
-        gameWindowTracker.Dispose();
         DisposeFssCapture();
-        platform.Dispose();
     }
 
     private void DisposeFssCapture()
@@ -234,12 +302,12 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
     }
 
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
+    private void OnTick()
     {
         survey.RefreshTransientState();
         _ = RefreshBiologyCanonnAsync();
         _ = priorScansViewModel.RefreshAsync();
-        SynchronizeWindows();
+        SynchronizeIntent();
         _ = RefreshFssTuningAsync();
     }
 
@@ -296,9 +364,10 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private bool CanCaptureFssTuning(FssTuningCaptureRequest? request)
     {
+        GameWindowSnapshot gameWindow = lastFssBodyWindow.GameWindow;
         return !disposed
             && request is not null
-            && lastFssBodyWindow is not null
+            && lastFssBodyWindow.IsVisible
             && gameWindow.IsAvailable
             && gameWindow.IsVisible
             && gameWindow.IsForeground;
@@ -306,13 +375,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private async Task CaptureAndApplyFssTuningAsync(FssTuningCaptureRequest request)
     {
+        PixelRect gameBounds = lastFssBodyWindow.GameWindow.ClientBounds;
         (CapturedPixelBuffer Pixels, FssTuningAnalysis Analysis) captureResult = await Task.Run(
                 () =>
                 {
-                    CapturedPixelBuffer pixels = FssTuningScreenCapture.Capture(
-                        gameScreenCapture,
-                        gameWindow.ClientBounds
-                    );
+                    CapturedPixelBuffer pixels = FssTuningScreenCapture.Capture(gameScreenCapture, gameBounds);
                     FssTuningAnalysis analysis = FssTuningDetector.Analyze(pixels, request.Settings, request.State);
                     return (Pixels: pixels, Analysis: analysis);
                 },
@@ -456,7 +523,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     {
         if (eventArgs.PropertyName == nameof(PriorScansOverlayViewModel.ShouldShow))
         {
-            SynchronizeWindows();
+            SynchronizeIntent();
         }
 
         // Only SurfaceMarkers is final for PlotGrounded rings; Species/RadarTargets
@@ -476,7 +543,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
                 or nameof(SurfaceSurveyViewModel.RadarSize)
         )
         {
-            SynchronizeWindows();
+            SynchronizeIntent();
         }
     }
 
@@ -502,408 +569,84 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
                 or nameof(SystemSurveyViewModel.IsBodyInfoForced)
         )
         {
-            SynchronizeWindows();
+            SynchronizeIntent();
         }
     }
 
-    private void SynchronizeWindows()
+    private void SynchronizeIntent()
     {
         if (disposed)
         {
             return;
         }
 
-        gameWindow = gameWindowTracker.GetSnapshot();
-        bool platformReady =
-            !isSuppressed
-            && platform.Capabilities.SupportsPassiveOverlay
-            && platform.Capabilities.SupportsClickThrough
-            && platform.Capabilities.SupportsGameWindowTracking
-            && gameWindow.IsAvailable
-            && gameWindow.IsVisible
-            && gameWindow.IsForeground;
-        bool showFss = platformReady && survey.ShouldShowFssInfo && windowRegistry.ShouldHost("PlotFSSInfo");
-        bool showLastFssBody = platformReady && survey.ShouldShowLastFssBody;
-        bool showBodyInfo = platformReady && survey.ShouldShowBodyInfo && windowRegistry.ShouldHost("PlotBodyInfo");
-        bool showStatus = platformReady && survey.ShouldShowSystemStatus;
-        bool showFlightWarning = platformReady && survey.ShouldShowFlightWarning;
-        bool showBiology = platformReady && survey.ShouldShowBioSystem && windowRegistry.ShouldHost("PlotBioSystem");
-        bool showBiologyStatus =
-            platformReady && survey.ShouldShowBioStatus && windowRegistry.ShouldHost("PlotBioStatus");
-        bool showPriorScans =
-            platformReady && priorScansViewModel.ShouldShow && windowRegistry.ShouldHost("PlotPriorScans");
-        bool showSurface = platformReady && surfaceSurvey.ShouldShow && windowRegistry.ShouldHost("PlotGrounded");
-        bool showMiniTrack = platformReady && surfaceSurvey.ShouldShowMiniTrack;
-
-        SynchronizeBodyInfoWindow(showBodyInfo);
-        SynchronizeFssWindow(showFss);
-        SynchronizeLastFssBodyWindow(showLastFssBody);
-        SynchronizeStatusWindow(showStatus);
-        SynchronizeFlightWarningWindow(showFlightWarning);
-        SynchronizeBiologyWindow(showBiology);
-        SynchronizeBiologyStatusWindow(showBiologyStatus);
-        SynchronizePriorScansWindow(showPriorScans);
-        SynchronizeSurfaceWindow(showSurface);
-        SynchronizeMiniTrackWindow(showMiniTrack);
+        bool ready = !isSuppressed;
+        bodyInfoWindow.Reconcile(ready && survey.ShouldShowBodyInfo && windowRegistry.ShouldHost("PlotBodyInfo"));
+        fssWindow.Reconcile(ready && survey.ShouldShowFssInfo && windowRegistry.ShouldHost("PlotFSSInfo"));
+        lastFssBodyWindow.Reconcile(ready && survey.ShouldShowLastFssBody);
+        statusWindow.Reconcile(ready && survey.ShouldShowSystemStatus);
+        flightWarningWindow.Reconcile(ready && survey.ShouldShowFlightWarning);
+        biologyWindow.Reconcile(ready && survey.ShouldShowBioSystem && windowRegistry.ShouldHost("PlotBioSystem"));
+        biologyStatusWindow.Reconcile(
+            ready && survey.ShouldShowBioStatus && windowRegistry.ShouldHost("PlotBioStatus")
+        );
+        priorScansWindow.Reconcile(
+            ready && priorScansViewModel.ShouldShow && windowRegistry.ShouldHost("PlotPriorScans")
+        );
+        surfaceWindow.Reconcile(ready && surfaceSurvey.ShouldShow && windowRegistry.ShouldHost("PlotGrounded"));
+        miniTrackWindow.Reconcile(ready && surfaceSurvey.ShouldShowMiniTrack);
     }
 
-    private void SynchronizeMiniTrackWindow(bool show)
+    private PassiveOverlayWindowDefinition CreateDefinition(
+        string plotterName,
+        Func<Window> createWindow,
+        Func<PixelRect, PixelSize, PixelPoint> fallbackPlacement
+    )
     {
-        if (!show)
-        {
-            CloseMiniTrackWindow();
-            return;
-        }
-
-        if (miniTrackWindow is not null)
-        {
-            PositionMiniTrack(miniTrackWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new MiniTrackOverlayWindow(surfaceViewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotMiniTrack", windowRegistry);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionMiniTrack, CloseMiniTrackWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(miniTrackWindow, overlay))
-            {
-                miniTrackWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        miniTrackWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+        return new PassiveOverlayWindowDefinition(
+            plotterName,
+            _ => createWindow(),
+            fallbackPlacement,
+            ApplyPreparation
+        );
     }
 
-    private void SynchronizeFlightWarningWindow(bool show)
+    private BodyInformationOverlayWindow CreateBodyInfoWindow() => new(viewModel);
+
+    private FssInfoOverlayWindow CreateFssWindow() => new(viewModel);
+
+    private LastFssBodyOverlayWindow CreateLastFssBodyWindow() => new(viewModel);
+
+    private SystemStatusOverlayWindow CreateStatusWindow() => new(viewModel);
+
+    private FlightWarningOverlayWindow CreateFlightWarningWindow() => new(viewModel);
+
+    private BiologySurveyOverlayWindow CreateBiologyWindow() => new(viewModel);
+
+    private BiologyStatusOverlayWindow CreateBiologyStatusWindow() => new(viewModel);
+
+    private PriorScansOverlayWindow CreatePriorScansWindow() => new(priorScansViewModel);
+
+    private SurfaceSurveyOverlayWindow CreateSurfaceWindow() => new(surfaceViewModel);
+
+    private MiniTrackOverlayWindow CreateMiniTrackWindow() => new(surfaceViewModel);
+
+    private void ApplyPreparation(OverlayPreparationResult preparation)
     {
-        if (!show)
-        {
-            CloseFlightWarningWindow();
-            return;
-        }
-
-        if (flightWarningWindow is not null)
-        {
-            PositionTopCenter(flightWarningWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new FlightWarningOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFlightWarning", windowRegistry);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionTopCenter, CloseFlightWarningWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(flightWarningWindow, overlay))
-            {
-                flightWarningWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        flightWarningWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SynchronizeSurfaceWindow(bool show)
-    {
-        if (!show)
-        {
-            CloseSurfaceWindow();
-            return;
-        }
-
-        if (surfaceWindow is not null)
-        {
-            PositionSurfaceWindow(surfaceWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new SurfaceSurveyOverlayWindow(surfaceViewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotGrounded", windowRegistry);
-        ApplySurfaceWindowSize(overlay);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionSurfaceWindow, CloseSurfaceWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(surfaceWindow, overlay))
-            {
-                surfaceWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        surfaceWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SynchronizePriorScansWindow(bool show)
-    {
-        if (!show)
-        {
-            ClosePriorScansWindow();
-            return;
-        }
-
-        if (priorScansWindow is not null)
-        {
-            PositionBottomRight(priorScansWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new PriorScansOverlayWindow(priorScansViewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotPriorScans", windowRegistry);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionBottomRight, ClosePriorScansWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(priorScansWindow, overlay))
-            {
-                priorScansWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        priorScansWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SynchronizeBiologyStatusWindow(bool show)
-    {
-        if (!show)
-        {
-            CloseBiologyStatusWindow();
-            return;
-        }
-
-        if (biologyStatusWindow is not null)
-        {
-            PositionTopCenter(biologyStatusWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new BiologyStatusOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotBioStatus", windowRegistry);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionTopCenter, CloseBiologyStatusWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(biologyStatusWindow, overlay))
-            {
-                biologyStatusWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        biologyStatusWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SynchronizeBiologyWindow(bool show)
-    {
-        if (!show)
-        {
-            CloseBiologyWindow();
-            return;
-        }
-
-        if (biologyWindow is not null)
-        {
-            PositionBiologyWindow(biologyWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new BiologySurveyOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotBioSystem", windowRegistry);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionBiologyWindow, CloseBiologyWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(biologyWindow, overlay))
-            {
-                biologyWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        biologyWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SynchronizeBodyInfoWindow(bool show)
-    {
-        if (!show)
-        {
-            CloseBodyInfoWindow();
-            return;
-        }
-
-        if (bodyInfoWindow is not null)
-        {
-            PositionTopLeft(bodyInfoWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new BodyInformationOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotBodyInfo", windowRegistry);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionTopLeft, CloseBodyInfoWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(bodyInfoWindow, overlay))
-            {
-                bodyInfoWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        bodyInfoWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SynchronizeLastFssBodyWindow(bool show)
-    {
-        if (!show)
-        {
-            CloseLastFssBodyWindow();
-            return;
-        }
-
-        if (lastFssBodyWindow is not null)
-        {
-            PositionTopCenter(lastFssBodyWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new LastFssBodyOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFSS", windowRegistry);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionTopCenter, CloseLastFssBodyWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(lastFssBodyWindow, overlay))
-            {
-                lastFssBodyWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        lastFssBodyWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SynchronizeFssWindow(bool show)
-    {
-        if (!show)
-        {
-            CloseFssWindow();
-            return;
-        }
-
-        if (fssWindow is not null)
-        {
-            PositionTopLeft(fssWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new FssInfoOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFSSInfo", windowRegistry);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionTopLeft, CloseFssWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(fssWindow, overlay))
-            {
-                fssWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        fssWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void SynchronizeStatusWindow(bool show)
-    {
-        if (!show)
-        {
-            CloseStatusWindow();
-            return;
-        }
-
-        if (statusWindow is not null)
-        {
-            PositionBottomLeft(statusWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new SystemStatusOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotSysStatus", windowRegistry);
-        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionBottomLeft, CloseStatusWindow);
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(statusWindow, overlay))
-            {
-                statusWindow = null;
-                VisibilityChanged?.Invoke(this, EventArgs.Empty);
-            }
-        };
-        statusWindow = overlay;
-        overlay.Show();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void PrepareWindow(Window window, Action<Window, PixelRect> position, Action close)
-    {
-        position(window, gameWindow.ClientBounds);
-        OverlayPreparationResult preparation = platform.PreparePassiveWindow(window);
         viewModel.ApplyPreparation(preparation);
         priorScansViewModel.ApplyPreparation(preparation);
         surfaceViewModel.ApplyPreparation(preparation);
-        if (!preparation.IsClickThrough)
-        {
-            isSuppressed = true;
-            close();
-        }
     }
 
-    private void PositionTopLeft(Window window, PixelRect gameBounds)
+    private void OnHostedVisibilityChanged(object? sender, EventArgs eventArgs)
     {
-        string plotterName = window switch
-        {
-            BodyInformationOverlayWindow => "PlotBodyInfo",
-            FssInfoOverlayWindow => "PlotFSSInfo",
-            _ => throw new InvalidOperationException($"No legacy top-left layout maps to {window.GetType().Name}."),
-        };
-        PositionWindow(window, gameBounds, plotterName, OverlayWindowPlacement.TopLeft);
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void PositionTopCenter(Window window, PixelRect gameBounds)
+    private PixelPoint PlaceSurfaceWindow(HostedOverlayPlacement placement)
     {
-        string plotterName = window switch
-        {
-            FlightWarningOverlayWindow => "PlotFlightWarning",
-            BiologyStatusOverlayWindow => "PlotBioStatus",
-            LastFssBodyOverlayWindow => "PlotFSS",
-            _ => throw new InvalidOperationException($"No legacy top-center layout maps to {window.GetType().Name}."),
-        };
-        PositionWindow(window, gameBounds, plotterName, OverlayWindowPlacement.TopCenter);
-    }
-
-    private void PositionMiniTrack(Window window, PixelRect gameBounds)
-    {
-        PositionWindow(window, gameBounds, "PlotMiniTrack", OverlayWindowPlacement.TopRight, margin: 8);
-    }
-
-    private void PositionBottomLeft(Window window, PixelRect gameBounds)
-    {
-        PositionWindow(window, gameBounds, "PlotSysStatus", OverlayWindowPlacement.BottomLeft);
-    }
-
-    private void PositionBottomRight(Window window, PixelRect gameBounds)
-    {
-        PositionWindow(window, gameBounds, "PlotPriorScans", OverlayWindowPlacement.BottomRight);
-    }
-
-    private void PositionSurfaceWindow(Window window, PixelRect gameBounds)
-    {
-        ApplySurfaceWindowSize(window);
-        PositionWindow(window, gameBounds, "PlotGrounded", OverlayWindowPlacement.BottomCenter);
+        placement.SetBaseSize(surfaceViewModel.WindowWidth, surfaceViewModel.WindowHeight);
+        return placement.GetPosition(placement.PrepareSize());
     }
 
     private void ApplySurfaceWindowSize(Window window)
@@ -923,178 +666,16 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         OverlayThemeResources.SetBaseSize(window, layout, viewModel.WindowWidth, viewModel.WindowHeight);
     }
 
-    private void PositionBiologyWindow(Window window, PixelRect gameBounds)
+    private PixelPoint PlaceBiologyWindow(PixelRect bounds, PixelSize size)
     {
-        PositionWindow(
-            window,
-            gameBounds,
-            "PlotBioSystem",
-            (bounds, size, margin) =>
-            {
-                int statusOffset =
-                    statusWindow is null || statusWindow.Bounds.Height <= 0
-                        ? 0
-                        : Math.Max(0, bounds.Bottom - statusWindow.Position.Y) + 12;
-                return new PixelPoint(
-                    bounds.X + margin,
-                    Math.Max(bounds.Y + margin, bounds.Bottom - size.Height - margin - statusOffset)
-                );
-            }
+        int statusOffset =
+            statusWindow.CurrentWindow is not { } status || status.Bounds.Height <= 0
+                ? 0
+                : Math.Max(0, bounds.Bottom - status.Position.Y) + 12;
+        return new PixelPoint(
+            bounds.X + DefaultMargin,
+            Math.Max(bounds.Y + DefaultMargin, bounds.Bottom - size.Height - DefaultMargin - statusOffset)
         );
-    }
-
-    private void PositionWindow(
-        Window window,
-        PixelRect gameBounds,
-        string plotterName,
-        Func<PixelRect, PixelSize, int, PixelPoint> calculate,
-        int margin = 20
-    )
-    {
-        OverlayThemeResources.ApplyOpacity(window, overlayLayout, plotterName);
-        Screen? screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
-        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, plotterName, screen.Scaling);
-        PixelPoint position =
-            overlayLayout.GetPosition(plotterName, gameBounds, size) ?? calculate(gameBounds, size, margin);
-        if (window.Position != position)
-        {
-            window.Position = position;
-        }
-    }
-
-    private void CloseFssWindow()
-    {
-        FssInfoOverlayWindow? overlay = fssWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        fssWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CloseFlightWarningWindow()
-    {
-        FlightWarningOverlayWindow? overlay = flightWarningWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        flightWarningWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CloseMiniTrackWindow()
-    {
-        MiniTrackOverlayWindow? overlay = miniTrackWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        miniTrackWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CloseBiologyWindow()
-    {
-        BiologySurveyOverlayWindow? overlay = biologyWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        biologyWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CloseBiologyStatusWindow()
-    {
-        BiologyStatusOverlayWindow? overlay = biologyStatusWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        biologyStatusWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CloseBodyInfoWindow()
-    {
-        BodyInformationOverlayWindow? overlay = bodyInfoWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        bodyInfoWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CloseLastFssBodyWindow()
-    {
-        LastFssBodyOverlayWindow? overlay = lastFssBodyWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        lastFssBodyWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CloseStatusWindow()
-    {
-        SystemStatusOverlayWindow? overlay = statusWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        statusWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void ClosePriorScansWindow()
-    {
-        PriorScansOverlayWindow? overlay = priorScansWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        priorScansWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CloseSurfaceWindow()
-    {
-        SurfaceSurveyOverlayWindow? overlay = surfaceWindow;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        surfaceWindow = null;
-        overlay.Close();
-        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 }
 
@@ -1105,10 +686,6 @@ public sealed class SystemSurveyOverlayCoordinatorOptions
     public ICanonnSystemPoiClient? CanonnSystemPoiClient { get; init; }
 
     public ExobiologyReferenceCatalog? ExobiologyCatalog { get; init; }
-
-    public LegacyOverlayLayout? OverlayLayout { get; init; }
-
-    internal OverlayWindowRegistry? WindowRegistry { get; init; }
 
     public IGameScreenCapture? GameScreenCapture { get; init; }
 

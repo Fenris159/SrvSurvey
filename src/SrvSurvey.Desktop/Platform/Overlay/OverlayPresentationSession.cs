@@ -25,6 +25,10 @@ public sealed class OverlayPresentationSession : IDisposable
 
     public OverlayPresentationDecision Decision { get; }
 
+    internal LegacyOverlayLayout OverlayLayout => hostDependencies.OverlayLayout;
+
+    internal OverlayWindowRegistry WindowRegistry => hostDependencies.WindowRegistry ?? OverlayWindowRegistry.Shared;
+
     public static OverlayPresentationSession CreateCurrent(
         IGameWindowTracker? gameWindowTracker = null,
         OverlayWindowRegistry? registry = null
@@ -126,9 +130,7 @@ public sealed class OverlayPresentationSession : IDisposable
     public IOverlayPlatformService CreatePlatformService()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        return combinedController is null
-            ? OverlayPlatformService.CreateCurrent()
-            : new CombinedOverlayPlatformService(combinedController);
+        return hostDependencies.CreatePlatform();
     }
 
     internal IGameWindowTracker CreateGameWindowTracker()
