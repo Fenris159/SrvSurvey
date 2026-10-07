@@ -8,39 +8,34 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class RouteBioOverlayCoordinator : IDisposable
 {
-    private const string PlotterName = "PlotRouteBio";
-
     private readonly RouteWorkspaceViewModel route;
     private readonly RouteBioOverlayViewModel viewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
-    private readonly LegacyOverlayLayout overlayLayout;
-    private readonly OverlayDispatcherTimer timer;
-    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private RouteBioOverlayWindow? window;
+    private readonly HostedOverlayWindow hostedWindow;
     private bool isSuppressed;
     private bool disposed;
 
-    public RouteBioOverlayCoordinator(
-        RouteWorkspaceViewModel route,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null
-    )
+    public RouteBioOverlayCoordinator(RouteWorkspaceViewModel route, OverlayPresentationSession presentationSession)
     {
         this.route = route ?? throw new ArgumentNullException(nameof(route));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
-        viewModel = new RouteBioOverlayViewModel(route, platform.Capabilities);
+        ArgumentNullException.ThrowIfNull(presentationSession);
+        hostedWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotRouteBio",
+                _ => CreateWindow(),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize, margin: 8),
+                ApplyPreparation
+            )
+            {
+                Tick = SynchronizeIntent,
+                Placement = PlaceWithinVisibleBounds,
+            }
+        );
+        viewModel = new RouteBioOverlayViewModel(route, hostedWindow.Capabilities);
         route.PropertyChanged += OnRoutePropertyChanged;
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        timer.Tick += OnTimerTick;
-        timer.Start();
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
-    public bool IsVisible => window is not null;
+    public bool IsVisible => hostedWindow.IsVisible;
 
     public void SetSuppressed(bool value)
     {
@@ -50,7 +45,7 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindow();
+        SynchronizeIntent();
     }
 
     public void Dispose()
@@ -61,18 +56,9 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         }
 
         disposed = true;
-        timer.Stop();
-        timer.Tick -= OnTimerTick;
         route.PropertyChanged -= OnRoutePropertyChanged;
+        hostedWindow.Dispose();
         viewModel.Dispose();
-        CloseWindow();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
-    }
-
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
-    {
-        SynchronizeWindow();
     }
 
     private void OnRoutePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -83,103 +69,44 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
                 or nameof(RouteWorkspaceViewModel.CurrentBioTargets)
         )
         {
-            SynchronizeWindow();
+            SynchronizeIntent();
         }
     }
 
-    private void SynchronizeWindow()
+    private void SynchronizeIntent()
     {
         if (disposed)
         {
             return;
         }
 
-        gameWindow = gameWindowTracker.GetSnapshot();
-        if (
-            isSuppressed
-            || !route.ShouldShowRouteBioOverlay
-            || !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking
-            || !gameWindow.IsAvailable
-            || !gameWindow.IsVisible
-            || !gameWindow.IsForeground
-        )
-        {
-            CloseWindow();
-            return;
-        }
-
-        if (window is not null)
-        {
-            PositionWindow(window, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new RouteBioOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
-        overlay.Opened += (_, _) =>
-        {
-            PositionWindow(overlay, gameWindow.ClientBounds);
-            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
-            viewModel.ApplyPreparation(preparation);
-            if (!preparation.IsClickThrough)
-            {
-                isSuppressed = true;
-                CloseWindow();
-            }
-        };
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(window, overlay))
-            {
-                window = null;
-            }
-        };
-        window = overlay;
-        overlay.Show();
+        hostedWindow.Reconcile(!isSuppressed && route.ShouldShowRouteBioOverlay);
     }
 
-    private void PositionWindow(Window target, PixelRect gameBounds)
-    {
-        OverlayThemeResources.ApplyOpacity(target, overlayLayout, PlotterName);
-        Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
+    private RouteBioOverlayWindow CreateWindow() => new(viewModel);
 
+    private void ApplyPreparation(OverlayPreparationResult preparation)
+    {
+        viewModel.ApplyPreparation(preparation);
+    }
+
+    private static PixelPoint PlaceWithinVisibleBounds(HostedOverlayPlacement placement)
+    {
+        Window target = placement.Window;
+        Screen screen = placement.Screen;
         PixelRect workingArea = OverlayWindowPlacement.GetReliableBottomWorkingArea(
             new OverlayScreenGeometry(screen.Bounds, screen.WorkingArea),
             target
                 .Screens.All.Select(current => new OverlayScreenGeometry(current.Bounds, current.WorkingArea))
                 .ToArray()
         );
-        PixelRect visibleBounds = OverlayWindowPlacement.GetUsableBounds(gameBounds, workingArea);
+        PixelRect visibleBounds = OverlayWindowPlacement.GetUsableBounds(placement.GameBounds, workingArea);
         target.MaxHeight = Math.Max(target.MinHeight, Math.Min(680, (visibleBounds.Height - 16) / screen.Scaling));
-        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(target, overlayLayout, PlotterName, screen.Scaling);
-        PixelPoint position =
-            overlayLayout.GetPosition(PlotterName, gameBounds, size)
-            ?? OverlayWindowPlacement.TopRight(gameBounds, size, margin: 8);
-        position = new PixelPoint(
+        PixelSize size = placement.PrepareSize();
+        PixelPoint position = placement.GetPosition(size);
+        return new PixelPoint(
             position.X,
             Math.Clamp(position.Y, visibleBounds.Y, Math.Max(visibleBounds.Y, visibleBounds.Bottom - size.Height - 8))
         );
-        if (target.Position != position)
-        {
-            target.Position = position;
-        }
-    }
-
-    private void CloseWindow()
-    {
-        RouteBioOverlayWindow? overlay = window;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        window = null;
-        overlay.Close();
     }
 }

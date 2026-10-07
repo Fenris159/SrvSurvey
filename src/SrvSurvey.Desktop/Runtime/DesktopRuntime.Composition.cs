@@ -311,39 +311,23 @@ internal sealed partial class DesktopRuntime
             viewModel.Search,
             viewModel.BoxelSearch,
             viewModel.Route,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
+            overlayPresentation,
             new SphericalSearchOverlayCoordinatorOptions
             {
-                OverlayLayout = overlayLayout,
                 SystemNicknames = viewModel.SystemNicknames,
                 InputSettings = viewModel.InputSettings,
             }
         );
-        guardianOverlayCoordinator = new GuardianOverlayCoordinator(
-            viewModel.Guardian,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
-        );
+        guardianOverlayCoordinator = new GuardianOverlayCoordinator(viewModel.Guardian, overlayPresentation);
         jumpInfoOverlayCoordinator = new JumpInfoOverlayCoordinator(
             viewModel.JumpInfo,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout,
+            overlayPresentation,
             viewModel.SystemNicknames
         );
-        routeBioOverlayCoordinator = new RouteBioOverlayCoordinator(
-            viewModel.Route,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
-        );
+        routeBioOverlayCoordinator = new RouteBioOverlayCoordinator(viewModel.Route, overlayPresentation);
         fleetCarrierRouteOverlayCoordinator = new FleetCarrierRouteOverlayCoordinator(
             viewModel.FleetCarrierRoute,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
+            overlayPresentation
         );
         surfaceMiningOverlayCoordinator = new SurfaceMiningOverlayCoordinator(viewModel.Mining, overlayPresentation);
         mineMapOverlayCoordinator = new MineMapOverlayCoordinator(viewModel.MineMap, overlayPresentation);
@@ -367,29 +351,17 @@ internal sealed partial class DesktopRuntime
             viewModel.GroundTarget,
             overlayPresentation
         );
-        combatOverlayCoordinator = new CombatOverlayCoordinator(
-            viewModel.Combat,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
-        );
+        combatOverlayCoordinator = new CombatOverlayCoordinator(viewModel.Combat, overlayPresentation);
         stationInfoOverlayCoordinator = new StationInfoOverlayCoordinator(viewModel.StationInfo, overlayPresentation);
-        humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(
-            viewModel.HumanSite,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
-        );
+        humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(viewModel.HumanSite, overlayPresentation);
         systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
             viewModel.SystemSurvey,
             viewModel.SurfaceSurvey,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
+            overlayPresentation,
             new SystemSurveyOverlayCoordinatorOptions
             {
                 CommanderNameProvider = () => viewModel.CommanderName,
                 ExobiologyCatalog = viewModel.SystemSurvey.BiologyReferenceCatalog,
-                OverlayLayout = overlayLayout,
                 GameScreenCapture = GameScreenCapture.CreateCurrent(
                     enableWaylandPortalFallback: true,
                     confirmWaylandScreenShare: confirmWaylandScreenShare,
@@ -402,53 +374,31 @@ internal sealed partial class DesktopRuntime
         );
         questIndicatorOverlayCoordinator = new QuestIndicatorOverlayCoordinator(
             viewModel.QuestIndicator,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
+            overlayPresentation
         );
         notificationOverlayCoordinator = new NotificationOverlayCoordinator(
             viewModel.Notifications,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
+            overlayPresentation
         );
-        pulseOverlayCoordinator = new PulseOverlayCoordinator(
-            viewModel.PulseOverlay,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
-        );
-        streamOverlayCoordinator = new StreamOverlayCoordinator(
-            viewModel.StreamOverlay,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker()
-        );
+        pulseOverlayCoordinator = new PulseOverlayCoordinator(viewModel.PulseOverlay, overlayPresentation);
+        streamOverlayCoordinator = new StreamOverlayCoordinator(viewModel.StreamOverlay, overlayPresentation);
         vrOverlayCoordinator = new VrOverlayCoordinator(
             viewModel.VrOverlay,
             modeProvider: () => viewModel.CurrentVrOverlayMode
         );
-        galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(
-            viewModel.GalaxyMap,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
-        );
+        galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(viewModel.GalaxyMap, overlayPresentation);
         multiGameCommanderOverlayCoordinator = new MultiGameCommanderOverlayCoordinator(
             viewModel.CommanderInstances,
             viewModel.OverlayBehavior,
-            overlayPresentation.CreatePlatformService(),
-            CreateRawGameWindowTracker(),
-            () => desktop.Windows.Any(window => window.IsActive),
-            overlayLayout
+            overlayPresentation,
+            () => desktop.Windows.Any(window => window.IsActive)
         );
 
         viewModel.SystemSurvey.PropertyChanged += HandleOverlayPriorityFactsChanged;
         SynchronizeOverlayPriorityFacts();
         colonizationCommodityOverlayCoordinator = new ColonizationCommodityOverlayCoordinator(
             viewModel.Colonization.CommodityOverlay,
-            overlayPresentation.CreatePlatformService(),
-            CreateOverlayGameWindowTracker(),
-            overlayLayout
+            overlayPresentation
         );
         viewModel.OverlayBehavior.PropertyChanged += HandleOverlayBehaviorChanged;
         ApplyOverlaySuppression();
@@ -1295,19 +1245,6 @@ internal sealed partial class DesktopRuntime
             )
         );
         applicationLog.Append("Verified update replacement startup with the handoff helper.");
-    }
-
-    private OverlayGameWindowTracker CreateOverlayGameWindowTracker()
-    {
-        MainWindowViewModel viewModel =
-            mainViewModel ?? throw new InvalidOperationException("Main view model is not ready.");
-        return new OverlayGameWindowTracker(
-            CreateRawGameWindowTracker(),
-            () =>
-                viewModel.OverlayBehavior.KeepWhenGameLosesFocus
-                || viewModel.OverlayInteraction.IsEditing
-                || viewModel.OverlayInteraction.IsLiveInteractionEnabled
-        );
     }
 
     private IGameWindowTracker CreateRawGameWindowTracker()
