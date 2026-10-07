@@ -1,633 +1,531 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using SharpHook.Data;
-using SharpHook.Testing;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Input;
 
+/// <summary>Drives the keyboard activation policy with synthetic activations from fake desktop, game-display, and portal sources.</summary>
 public sealed class GlobalKeyboardHookServiceTests
 {
-    public static TheoryData<string, EventMask, KeyCode> ShortcutVariants =>
-        new()
-        {
-            { "O", EventMask.None, KeyCode.VcO },
-            { "SHIFT O", EventMask.LeftShift, KeyCode.VcO },
-            { "ALT O", EventMask.LeftAlt, KeyCode.VcO },
-            { "CTRL O", EventMask.LeftCtrl, KeyCode.VcO },
-            { "ALT SHIFT O", EventMask.LeftAlt | EventMask.LeftShift, KeyCode.VcO },
-            { "ALT CTRL O", EventMask.LeftAlt | EventMask.LeftCtrl, KeyCode.VcO },
-            { "CTRL SHIFT O", EventMask.LeftCtrl | EventMask.LeftShift, KeyCode.VcO },
-            { "ALT CTRL SHIFT O", EventMask.LeftAlt | EventMask.LeftCtrl | EventMask.LeftShift, KeyCode.VcO },
-            { "X", EventMask.None, KeyCode.VcX },
-            { "F2", EventMask.None, KeyCode.VcF2 },
-            { "D1", EventMask.None, KeyCode.Vc1 },
-        };
-
-    public static TheoryData<string, KeyCode[]> ObservedModifierVariants =>
-        new()
-        {
-            { "SHIFT O", [KeyCode.VcRightShift] },
-            { "ALT O", [KeyCode.VcRightAlt] },
-            { "CTRL O", [KeyCode.VcRightControl] },
-            { "ALT SHIFT O", [KeyCode.VcRightAlt, KeyCode.VcRightShift] },
-            { "ALT CTRL O", [KeyCode.VcRightAlt, KeyCode.VcRightControl] },
-            { "CTRL SHIFT O", [KeyCode.VcRightControl, KeyCode.VcRightShift] },
-            { "ALT CTRL SHIFT O", [KeyCode.VcRightAlt, KeyCode.VcRightControl, KeyCode.VcRightShift] },
-        };
-
-    /// <summary>Checks nested keys use independent modifier state and honor disable/re-enable and context gating.</summary>
-    [Theory]
-    [InlineData(OverlayHostKind.LinuxXWayland)]
-    [InlineData(OverlayHostKind.LinuxWayland)]
-    public async Task NestedKeysRemainIndependentFromDesktopModifiers(OverlayHostKind host)
-    {
-        using var desktop = new TestGlobalHook(TestThreadingMode.Simple);
-        var game = new QueueGameInput();
-        bool foreground = true;
-        GlobalInputSettings settings = GlobalInputSettings.Default with
-        {
-            KeyboardEnabled = true,
-            Bindings = new Dictionary<GlobalInputAction, string> { [GlobalInputAction.ToggleOverlayInteraction] = "O" },
-        };
-        await using var service = new GlobalKeyboardHookService(
-            settings,
-            host,
-            new CallbackGameTracker(() => foreground),
-            () => false,
-            () => desktop,
-            additionalInput: new(GameKeyboardInput: game)
-        );
-        int actions = 0;
-        service.ActionTriggered += (_, _) => Interlocked.Increment(ref actions);
-        service.Start();
-        desktop.SimulateKeyPress(KeyCode.VcLeftAlt);
-        game.Queue.Enqueue(new(true, [KeyEvent(KeyCode.VcO, true, 100)]));
-        await WaitForCountAsync(() => Volatile.Read(ref actions), 1);
-        game.Queue.Enqueue(new(false, [KeyEvent(KeyCode.VcO, true, 110), KeyEvent(KeyCode.VcO, false, 120)]));
-        await Task.Delay(80);
-        Assert.Equal(1, Volatile.Read(ref actions));
-        game.Queue.Enqueue(new(false, [KeyEvent(KeyCode.VcO, true, 200), KeyEvent(KeyCode.VcO, false, 210)]));
-        await WaitForCountAsync(() => Volatile.Read(ref actions), 2);
-        foreground = false;
-        game.Queue.Enqueue(new(false, [KeyEvent(KeyCode.VcO, true, 300)]));
-        await Task.Delay(80);
-        Assert.Equal(2, Volatile.Read(ref actions));
-        service.Update(settings with { KeyboardEnabled = false });
-        await WaitForCountAsync(() => Volatile.Read(ref game.DisabledReads), 1);
-        foreground = true;
-        service.Update(settings);
-        game.Queue.Enqueue(new(true, [KeyEvent(KeyCode.VcO, true, 400)]));
-        await WaitForCountAsync(() => Volatile.Read(ref actions), 3);
-        await service.DisposeAsync();
-        Assert.True(game.Disposed);
-    }
-
-    /// <summary>Creates a native-like keyboard event for the secondary input source.</summary>
-    private static UioHookEvent KeyEvent(KeyCode key, bool pressed, ulong time) =>
-        new()
-        {
-            Type = pressed ? EventType.KeyPressed : EventType.KeyReleased,
-            Time = time,
-            Keyboard = new KeyboardEventData { KeyCode = key },
-        };
-
-    /// <summary>Waits for an asynchronous source's deterministic observable result.</summary>
-    private static async Task WaitForCountAsync(Func<int> count, int expected)
-    {
-        for (int attempt = 0; attempt < 100 && count() < expected; attempt++)
-        {
-            await Task.Delay(20);
-        }
-        Assert.True(count() >= expected);
-    }
-
-    /// <summary>Feeds a background input source without invoking native APIs.</summary>
-    private sealed class QueueGameInput : IGameKeyboardInput
-    {
-        public readonly ConcurrentQueue<GameKeyboardEventBatch> Queue = new();
-        public int DisabledReads;
-        public bool Disposed { get; private set; }
-
-        /// <summary>Returns one queued batch when enabled and clears it when disabled.</summary>
-        public GameKeyboardEventBatch ReadEvents(bool enabled)
-        {
-            if (!enabled)
-            {
-                Interlocked.Increment(ref DisabledReads);
-                Queue.Clear();
-                return new(true, []);
-            }
-            return Queue.TryDequeue(out GameKeyboardEventBatch? batch) ? batch : new(false, []);
-        }
-
-        /// <summary>Records listener disposal.</summary>
-        public void Dispose() => Disposed = true;
-    }
-
-    /// <summary>Supplies a changeable game foreground state.</summary>
-    private sealed class CallbackGameTracker(Func<bool> foreground) : IGameWindowTracker
-    {
-        /// <summary>Returns only the foreground flag needed by shortcut gating.</summary>
-        public GameWindowSnapshot GetSnapshot() => GameWindowSnapshot.Unavailable with { IsForeground = foreground() };
-
-        /// <summary>Releases the stateless tracker.</summary>
-        public void Dispose() { }
-    }
+    private static readonly long Second = Stopwatch.Frequency;
 
     [Fact]
     public async Task DispatchesConfiguredChordWhileApplicationIsActive()
     {
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple) { EventMask = _ => EventMask.LeftAlt };
-        await using var service = new GlobalKeyboardHookService(
-            EnabledSettings(),
-            OverlayHostKind.Windows,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () => testHook
-        );
-        GlobalInputActionTriggeredEventArgs? triggered = null;
-        service.ActionTriggered += (_, eventArgs) => triggered = eventArgs;
+        await using var input = new Harness(EnabledSettings()) { ApplicationActive = true };
+        await input.StartAsync();
 
-        service.Start();
-        testHook.SimulateKeyPress(KeyCode.VcX);
+        input.Desktop.Report("ALT X");
+        input.Desktop.Report("ALT Q");
 
-        Assert.Equal("Global keyboard input is active.", service.Status);
-        Assert.NotNull(triggered);
+        GlobalInputActionTriggeredEventArgs triggered = Assert.Single(input.Actions);
         Assert.Equal(GlobalInputAction.ToggleAllVisibility, triggered.Action);
         Assert.Equal("ALT X", triggered.Chord);
+        Assert.Null(input.Service.Diagnostics.SelectedSource);
+        Assert.Contains("SrvSurvey has focus", input.Service.Diagnostics.FocusStatus);
     }
 
     [Fact]
-    public async Task DispatchesChordOnKeyPressEvenWhenModifiersAreReleasedBeforeLetter()
+    public async Task IgnoresChordOutsideApplicationAndGameContextAndWhileDisabled()
     {
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple)
-        {
-            EventMask = _ => EventMask.LeftAlt | EventMask.LeftShift,
-        };
-        await using var service = new GlobalKeyboardHookService(
-            GlobalInputSettings.Default with
-            {
-                KeyboardEnabled = true,
-            },
-            OverlayHostKind.Windows,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () => testHook
+        await using var input = new Harness(EnabledSettings());
+        await input.StartAsync();
+
+        input.Desktop.Report("ALT X");
+        input.Service.Update(EnabledSettings() with { KeyboardEnabled = false });
+        input.ApplicationActive = true;
+        input.Desktop.Report("ALT X");
+
+        Assert.Empty(input.Actions);
+        Assert.Equal(
+            "Input detection reset. Use a shortcut with Elite Dangerous focused.",
+            input.Service.Diagnostics.LastInput
         );
-        var triggered = new List<GlobalInputAction>();
-        service.ActionTriggered += (_, eventArgs) => triggered.Add(eventArgs.Action);
+        Assert.Equal("Global keyboard input is disabled.", input.Service.Status);
+    }
 
-        service.Start();
-        testHook.SimulateKeyPress(KeyCode.VcO);
-        testHook.SimulateKeyPress(KeyCode.VcO);
-        testHook.EventMask = _ => EventMask.None;
-        testHook.SimulateKeyRelease(KeyCode.VcO);
+    /// <summary>A game display that reports Elite active proves focus even when the desktop tracker cannot.</summary>
+    [Fact]
+    public async Task GameDisplayForegroundConfirmsFocusAndSelectsThatSource()
+    {
+        await using var input = new Harness(OverlaySettings("O"));
+        await input.StartAsync();
+        input.GameDisplay.State = new KeyboardSourceState(true) { IsGameForeground = true };
 
-        Assert.Equal([GlobalInputAction.ToggleOverlayInteraction], triggered);
+        input.GameDisplay.Report("O");
+        input.Desktop.Report("O");
 
-        testHook.EventMask = _ => EventMask.LeftAlt | EventMask.LeftShift;
-        testHook.SimulateKeyPress(KeyCode.VcO);
+        Assert.Single(input.Actions);
+        Assert.Equal(KeyboardInputMode.GameDisplay, input.Service.Diagnostics.SelectedSource);
+        Assert.Equal(
+            "Last shortcut: Toggle live overlay interaction from Game display.",
+            input.Service.Diagnostics.LastInput
+        );
+    }
+
+    /// <summary>Checks native Wayland routes compositor shortcuts while Elite runs and honors text entry and enablement.</summary>
+    [Fact]
+    public async Task NativeWaylandRoutesApprovedShortcutWhileEliteRunsAndStopsWhenItExits()
+    {
+        await using var input = new Harness(GlobalInputSettings.Default with { KeyboardEnabled = true })
+        {
+            GameRunning = true,
+        };
+        await input.StartAsync();
+
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+        Assert.Single(input.Actions);
+        input.Suppress = true;
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+        input.Suppress = false;
+        input.GameRunning = false;
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+        input.GameRunning = true;
+        input.Service.Update(GlobalInputSettings.Default);
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+
+        Assert.Single(input.Actions);
+    }
+
+    /// <summary>Application-only and unconfirmed native Wayland activations never preselect the source later used in-game.</summary>
+    [Theory]
+    [InlineData(true, false, 1)]
+    [InlineData(false, true, 1)]
+    [InlineData(false, false, 0)]
+    public async Task SelectsOnlyWhenEliteFocusIsConfirmed(bool applicationActive, bool gameRunning, int earlyCount)
+    {
+        await using var input = new Harness(OverlaySettings("O"))
+        {
+            ApplicationActive = applicationActive,
+            GameRunning = gameRunning,
+        };
+        await input.StartAsync();
+
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+        Assert.Equal(earlyCount, input.Actions.Count);
+        input.Clock += Second;
+        input.ApplicationActive = false;
+        input.Tracker.Focused = true;
+        input.Desktop.Report("O");
+
+        Assert.Equal(earlyCount + 1, input.Actions.Count);
+        Assert.Equal(KeyboardInputMode.Desktop, input.Service.Diagnostics.SelectedSource);
+    }
+
+    /// <summary>A nested server's active window alone cannot prove desktop focus for a portal shortcut.</summary>
+    [Fact]
+    public async Task NestedFocusWithoutGameKeyDoesNotSelectPortal()
+    {
+        await using var input = new Harness(OverlaySettings("O")) { GameRunning = true };
+        await input.StartAsync();
+        input.GameDisplay.State = new KeyboardSourceState(true) { IsGameForeground = true };
+
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+
+        Assert.Single(input.Actions);
+        Assert.Null(input.Service.Diagnostics.SelectedSource);
+        Assert.Contains("unconfirmed", input.Service.Diagnostics.FocusStatus);
+    }
+
+    /// <summary>A recent confirmed game-display key lets the compositor's duplicate of that key prove focus.</summary>
+    [Fact]
+    public async Task RecentGameDisplayKeyCorroboratesPortalFocus()
+    {
+        await using var input = new Harness(OverlaySettings("O"));
+        await input.StartAsync();
+        input.GameDisplay.State = new KeyboardSourceState(true) { IsGameForeground = true };
+
+        input.GameDisplay.Report("O");
+        input.Clock += Second / 10;
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+        Assert.Single(input.Actions);
+        Assert.Equal(KeyboardInputMode.WaylandPortal, input.Service.Diagnostics.SelectedSource);
+
+        input.Clock += Second;
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+        Assert.Single(input.Actions);
+    }
+
+    /// <summary>Checks desktop and portal events cause a single action and a lost portal restores the desktop path.</summary>
+    [Fact]
+    public async Task PortalAndDesktopDeduplicateAndRecover()
+    {
+        await using var input = new Harness(OverlaySettings("O"));
+        input.Tracker.Focused = true;
+        await input.StartAsync();
+
+        input.Desktop.Report("O");
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+        Assert.Single(input.Actions);
+        Assert.Equal(KeyboardInputMode.WaylandPortal, input.Service.Diagnostics.SelectedSource);
+
+        input.Portal.Disconnect();
+        input.Clock += Second / 10;
+        input.Desktop.Report("O");
+
+        Assert.Equal(2, input.Actions.Count);
+        Assert.False(input.Service.Diagnostics.PortalAvailable);
+    }
+
+    /// <summary>A partially approved portal cannot lock out the raw source needed for the remaining app shortcuts.</summary>
+    [Fact]
+    public async Task PartialPortalApprovalDoesNotChooseTheGlobalSource()
+    {
+        await using var input = new Harness(TwoBindingSettings());
+        input.Tracker.Focused = true;
+        input.Portal.State = new KeyboardSourceState(true) { CanServeAllBindings = false };
+        await input.StartAsync();
+
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+        input.Clock += Second;
+        input.Desktop.Report("P");
 
         Assert.Equal(
-            [GlobalInputAction.ToggleOverlayInteraction, GlobalInputAction.ToggleOverlayInteraction],
-            triggered
+            [GlobalInputAction.ToggleOverlayInteraction, GlobalInputAction.MapZoomIn],
+            input.Actions.Select(action => action.Action)
         );
+        Assert.False(input.Service.Diagnostics.PortalAvailable);
     }
 
+    /// <summary>An in-game activation chooses a shared provider for other shortcuts instead of learning one provider per action.</summary>
     [Fact]
-    public async Task DispatchesFirstChordAfterIdleWhenPriorKeyReleaseWasMissed()
+    public async Task SelectedSourceAppliesToEveryKeyboardShortcut()
     {
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple)
-        {
-            EventMask = _ => EventMask.LeftAlt | EventMask.LeftShift,
-        };
-        long timestamp = 0;
-        await using var service = new GlobalKeyboardHookService(
-            GlobalInputSettings.Default with
-            {
-                KeyboardEnabled = true,
-            },
-            OverlayHostKind.LinuxXWayland,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () => testHook,
-            timestampProvider: () => timestamp
+        await using var input = new Harness(TwoBindingSettings());
+        input.Tracker.Focused = true;
+        await input.StartAsync();
+
+        input.Portal.Report("O", GlobalInputAction.ToggleOverlayInteraction);
+        input.Desktop.Report("P");
+        Assert.Single(input.Actions);
+        input.Portal.Report("P", GlobalInputAction.MapZoomIn);
+
+        Assert.Equal(
+            [GlobalInputAction.ToggleOverlayInteraction, GlobalInputAction.MapZoomIn],
+            input.Actions.Select(action => action.Action)
         );
-        int triggered = 0;
-        service.ActionTriggered += (_, eventArgs) =>
-        {
-            if (eventArgs.Action == GlobalInputAction.ToggleOverlayInteraction)
-            {
-                triggered++;
-            }
-        };
-
-        service.Start();
-        testHook.SimulateKeyPress(KeyCode.VcO);
-        testHook.SimulateKeyPress(KeyCode.VcO);
-        Assert.Equal(1, triggered);
-
-        timestamp += Stopwatch.Frequency * 3;
-        testHook.SimulateKeyPress(KeyCode.VcO);
-
-        Assert.Equal(2, triggered);
     }
 
+    /// <summary>Checks one game-learned source governs every shortcut while application-only presses remain independent.</summary>
+    [Fact]
+    public async Task LearnsWorkingSourcesAndDoesNotReplayCrossSourcePresses()
+    {
+        await using var input = new Harness(TwoBindingSettings());
+        input.Tracker.Focused = true;
+        await input.StartAsync();
+
+        Assert.True(input.Accepts(input.Desktop, "O"));
+        Assert.False(input.Accepts(input.GameDisplay, "O", 1));
+        Assert.False(input.Accepts(input.Portal, "O", 1, GlobalInputAction.ToggleOverlayInteraction));
+        input.Clock += Second;
+        Assert.False(input.Accepts(input.Desktop, "O"));
+        Assert.True(input.Accepts(input.Portal, "O", 0, GlobalInputAction.ToggleOverlayInteraction));
+        Assert.True(input.Accepts(input.Portal, "O", 1, GlobalInputAction.ToggleOverlayInteraction));
+        Assert.False(input.Accepts(input.GameDisplay, "P"));
+        Assert.True(input.Accepts(input.Portal, "P", 0, GlobalInputAction.MapZoomIn));
+        input.ApplicationActive = true;
+        Assert.True(input.Accepts(input.Desktop, "O", Second));
+        input.ApplicationActive = false;
+        input.Portal.Disconnect();
+        Assert.True(input.Accepts(input.Desktop, "O", Second));
+        Assert.Equal(KeyboardInputMode.Desktop, input.Service.Diagnostics.SelectedSource);
+        input.Service.ResetDetection();
+        Assert.Null(input.Service.Diagnostics.SelectedSource);
+        Assert.Contains("reset", input.Service.Diagnostics.LastInput);
+    }
+
+    /// <summary>Recovers all shortcuts from a connected but silent preferred provider after repeated alternative presses.</summary>
+    [Fact]
+    public async Task SilentSelectedProviderAllowsRecoveryFromRepeatedAlternativePresses()
+    {
+        await using var input = new Harness(TwoBindingSettings());
+        input.Tracker.Focused = true;
+        await input.StartAsync();
+
+        Assert.True(input.Accepts(input.Portal, "P", 0, GlobalInputAction.MapZoomIn));
+        Assert.False(input.Accepts(input.Desktop, "P", Second));
+        Assert.True(input.Accepts(input.Desktop, "P", Second));
+        Assert.True(input.Accepts(input.Desktop, "O", Second));
+        Assert.Equal(KeyboardInputMode.Desktop, input.Service.Diagnostics.SelectedSource);
+    }
+
+    /// <summary>Duplicate, out-of-game, and partially granted reports cannot prove preferred input has failed.</summary>
+    [Fact]
+    public async Task RecoveryRequiresSeparatedInGameEvidenceAndStopsWhenPreferredWorks()
+    {
+        await using var input = new Harness(TwoBindingSettings()) { Clock = 10 * Second };
+        input.Tracker.Focused = true;
+        await input.StartAsync();
+
+        input.Accepts(input.Portal, "P", 0, GlobalInputAction.MapZoomIn);
+        Assert.False(input.Accepts(input.Desktop, "P", -1));
+        Assert.False(input.Accepts(input.Desktop, "P", 2));
+        Assert.False(input.Accepts(input.Desktop, "P", Second));
+        Assert.False(input.Accepts(input.Desktop, "P", 1));
+        input.ApplicationActive = true;
+        Assert.True(input.Accepts(input.Desktop, "P", 1));
+        input.ApplicationActive = false;
+        Assert.Equal(KeyboardInputMode.WaylandPortal, input.Service.Diagnostics.SelectedSource);
+        input.GameDisplay.State = new KeyboardSourceState(true) { CanServeAllBindings = false };
+        Assert.False(input.Accepts(input.GameDisplay, "P", -2));
+        Assert.True(input.Accepts(input.Portal, "P", Second, GlobalInputAction.MapZoomIn));
+        Assert.False(input.Accepts(input.Desktop, "P", Second));
+        Assert.Equal(KeyboardInputMode.WaylandPortal, input.Service.Diagnostics.SelectedSource);
+        input.Desktop.Disconnect();
+        Assert.Equal(KeyboardInputMode.WaylandPortal, input.Service.Diagnostics.SelectedSource);
+        input.Portal.Disconnect();
+        Assert.Null(input.Service.Diagnostics.SelectedSource);
+    }
+
+    /// <summary>Compares duplicate reports only for the same shortcut, independent of the global source selection.</summary>
     [Theory]
-    [MemberData(nameof(ShortcutVariants))]
-    public async Task X11AutoRepeatDoesNotRetriggerConfiguredChord(string chord, EventMask mask, KeyCode keyCode)
+    [InlineData("O", 0, false)]
+    [InlineData("o", 0, false)]
+    [InlineData("X", 0, true)]
+    [InlineData("O", 1, true)]
+    [InlineData("O", -1, true)]
+    public async Task ComparesOnlyMatchingRecentActivations(string chord, int seconds, bool expected)
     {
-        long eventTime = 1_000_000;
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple)
-        {
-            EventDateTime = _ => DateTimeOffset.UnixEpoch.AddMilliseconds(eventTime),
-            EventMask = _ => mask,
-        };
-        long timestamp = 0;
-        await using var service = new GlobalKeyboardHookService(
-            GlobalInputSettings.Default with
-            {
-                KeyboardEnabled = true,
-                Bindings = GlobalInputSettings.Default.Bindings.ToDictionary(
-                    entry => entry.Key,
-                    entry => entry.Key == GlobalInputAction.ToggleOverlayInteraction ? chord : string.Empty
-                ),
-            },
-            OverlayHostKind.LinuxXWayland,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () => testHook,
-            timestampProvider: () => timestamp
-        );
-        int triggered = 0;
-        service.ActionTriggered += (_, eventArgs) =>
-        {
-            if (eventArgs.Action == GlobalInputAction.ToggleOverlayInteraction)
-            {
-                triggered++;
-            }
-        };
+        await using var input = new Harness(TwoBindingSettings()) { Clock = 2 * Second, ApplicationActive = true };
+        await input.StartAsync();
 
-        service.Start();
-        testHook.SimulateKeyPress(keyCode);
-        timestamp += Stopwatch.Frequency / 2;
-        eventTime += 500;
-        testHook.SimulateKeyRelease(keyCode);
-        timestamp += Stopwatch.Frequency / 1000;
-        eventTime += 1;
-        testHook.SimulateKeyPress(keyCode);
-        Assert.Equal(1, triggered);
+        input.Accepts(input.Desktop, "O", 0, GlobalInputAction.MapZoomIn);
 
-        eventTime += 30;
-        testHook.SimulateKeyRelease(keyCode);
-        timestamp += Stopwatch.Frequency / 10;
-        eventTime += 100;
-        testHook.SimulateKeyPress(keyCode);
-        Assert.Equal(2, triggered);
+        Assert.Equal(expected, input.Accepts(input.Portal, chord, seconds * Second, GlobalInputAction.MapZoomIn));
     }
 
-    [Fact]
-    public async Task X11AutoRepeatDoesNotRetriggerAnyConfigurableKeyboardAction()
-    {
-        long eventTime = 1_000_000;
-        long timestamp = 0;
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple)
-        {
-            EventDateTime = _ => DateTimeOffset.UnixEpoch.AddMilliseconds(eventTime),
-        };
-        await using var service = new GlobalKeyboardHookService(
-            GlobalInputSettings.Default with
-            {
-                KeyboardEnabled = true,
-            },
-            OverlayHostKind.LinuxXWayland,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () => testHook,
-            timestampProvider: () => timestamp
-        );
-        var triggered = new List<GlobalInputAction>();
-        service.ActionTriggered += (_, eventArgs) => triggered.Add(eventArgs.Action);
-        service.Start();
-
-        foreach (GlobalInputActionDefinition definition in GlobalInputActionCatalog.All)
-        {
-            var bindings = GlobalInputActionCatalog.All.ToDictionary(item => item.Action, _ => string.Empty);
-            bindings[definition.Action] = "O";
-            service.Update(GlobalInputSettings.Default with { KeyboardEnabled = true, Bindings = bindings });
-
-            int before = triggered.Count;
-            testHook.SimulateKeyPress(KeyCode.VcO);
-            timestamp += Stopwatch.Frequency / 2;
-            eventTime += 500;
-            testHook.SimulateKeyRelease(KeyCode.VcO);
-            timestamp += Stopwatch.Frequency / 1000;
-            eventTime += 1;
-            testHook.SimulateKeyPress(KeyCode.VcO);
-            Assert.True(triggered.Count == before + 1, $"Repeat retriggered {definition.Action}.");
-            Assert.Equal(definition.Action, triggered[^1]);
-
-            eventTime += 30;
-            testHook.SimulateKeyRelease(KeyCode.VcO);
-            timestamp += Stopwatch.Frequency / 10;
-            eventTime += 100;
-            testHook.SimulateKeyPress(KeyCode.VcO);
-            Assert.True(triggered.Count == before + 2, $"Second tap missed {definition.Action}.");
-            Assert.Equal(definition.Action, triggered[^1]);
-            eventTime += 30;
-            testHook.SimulateKeyRelease(KeyCode.VcO);
-            timestamp += Stopwatch.Frequency / 10;
-            eventTime += 100;
-        }
-    }
-
+    /// <summary>Forces one source for every action and context, without silently falling back to another listener.</summary>
     [Theory]
-    [MemberData(nameof(ObservedModifierVariants))]
-    public async Task X11ChordUsesObservedModifiersWhenLetterEventOmitsItsModifierMask(
-        string chord,
-        KeyCode[] modifiers
-    )
+    [InlineData(KeyboardInputMode.Desktop, 0)]
+    [InlineData(KeyboardInputMode.GameDisplay, 1)]
+    [InlineData(KeyboardInputMode.WaylandPortal, 2)]
+    public async Task ManualModeControlsAllShortcuts(KeyboardInputMode mode, int sourceValue)
     {
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple);
-        long timestamp = 0;
-        await using var service = new GlobalKeyboardHookService(
-            GlobalInputSettings.Default with
+        await using var input = new Harness(TwoBindingSettings() with { KeyboardSource = mode });
+        await input.StartAsync();
+
+        foreach (FakeKeyboardSource source in input.Sources)
+        {
+            input.ApplicationActive = true;
+            Assert.Equal((int)source.Kind == sourceValue, input.Accepts(source, "P", Second));
+            input.ApplicationActive = false;
+            input.Tracker.Focused = true;
+            Assert.Equal((int)source.Kind == sourceValue, input.Accepts(source, "O", Second));
+            input.Tracker.Focused = false;
+        }
+        input.Service.ResetDetection();
+        Assert.Equal(mode, input.Service.Diagnostics.SelectedSource);
+        input.Service.Update(TwoBindingSettings());
+        Assert.Null(input.Service.Diagnostics.SelectedSource);
+        input.Service.Update(TwoBindingSettings() with { KeyboardSource = (KeyboardInputMode)99 });
+        Assert.Null(input.Service.Diagnostics.SelectedSource);
+    }
+
+    /// <summary>Reset releases held key state and learned selection without re-registering desktop permissions.</summary>
+    [Fact]
+    public async Task ServiceResetAndManualOverridePreserveBindingsAndApproval()
+    {
+        GlobalInputSettings settings = MapSettings("O") with { KeyboardSource = KeyboardInputMode.WaylandPortal };
+        await using var input = new Harness(settings) { GameRunning = true };
+        input.Tracker.Focused = true;
+        input.GameDisplay.State = new KeyboardSourceState(false);
+        await input.StartAsync();
+
+        input.Desktop.Report("O");
+        Assert.Empty(input.Actions);
+        Assert.Contains("ignored", input.Service.Diagnostics.LastInput);
+        input.Portal.Report("O", GlobalInputAction.MapZoomIn);
+        Assert.Single(input.Actions);
+        Assert.Equal(KeyboardInputMode.WaylandPortal, input.Service.Diagnostics.SelectedSource);
+        int updates = input.Portal.Updates;
+        input.Service.ResetDetection();
+        Assert.Equal(updates, input.Portal.Updates);
+        Assert.All(input.Sources, source => Assert.Equal(1, source.Resets));
+        Assert.Contains("reset", input.Service.Diagnostics.LastInput);
+        input.Service.Update(settings with { KeyboardSource = KeyboardInputMode.Desktop });
+        input.Clock += Second;
+        input.Desktop.Report("O");
+
+        Assert.Equal(2, input.Actions.Count);
+        KeyboardInputDiagnostics diagnostics = input.Service.Diagnostics;
+        Assert.Equal(KeyboardInputMode.Desktop, diagnostics.SelectedSource);
+        Assert.True(diagnostics.DesktopAvailable);
+        Assert.False(diagnostics.GameDisplayAvailable);
+        Assert.True(diagnostics.PortalAvailable);
+        Assert.Contains("focus confirmed", diagnostics.FocusStatus);
+    }
+
+    /// <summary>Source status and desktop settings surface structurally, and settings open only on explicit request.</summary>
+    [Fact]
+    public async Task ServiceExposesSourceStatusAndDesktopSettingsWithoutAutomaticOpening()
+    {
+        await using var input = new Harness(EnabledSettings());
+        var offered = new DesktopShortcutSettingsState(true, "Desktop menu active.", ["Overlay interaction: Super+O"]);
+        input.Portal.State = new KeyboardSourceState(true) { DesktopShortcutSettings = offered };
+        input.GameDisplay.State = new KeyboardSourceState(true) { GameDisplay = new GameDisplayConnection(":2", 123) };
+        int statuses = 0;
+        input.Service.StatusChanged += (_, _) => statuses++;
+        await input.StartAsync();
+
+        Assert.Equal(0, input.Portal.SettingsRequests);
+        Assert.Equal(offered, input.Service.Diagnostics.DesktopShortcutSettings);
+        Assert.Equal("Game display :2.", input.Service.Diagnostics.GameDisplayStatus);
+        await input.Service.OpenDesktopShortcutSettingsAsync();
+        Assert.Equal(1, input.Portal.SettingsRequests);
+        Assert.All(input.Sources, source => Assert.Equal(1, source.Starts));
+        Assert.True(input.Service.IsRunning);
+
+        int before = statuses;
+        input.Portal.ReportStatus(string.Empty);
+        Assert.Equal("Global keyboard input is ready to start.", input.Service.Status);
+        Assert.True(statuses > before);
+        input.Portal.ReportStatus("Portal active");
+        Assert.Equal("Portal active", input.Service.Status);
+        input.Service.Update(EnabledSettings() with { KeyboardEnabled = false });
+        input.Portal.ReportStatus("Portal reconnecting");
+        Assert.Equal("Global keyboard input is disabled.", input.Service.Status);
+        Assert.All(input.Sources, source => Assert.Equal(1, source.Updates));
+        Assert.Equal(1, input.Portal.SettingsRequests);
+    }
+
+    /// <summary>Startup focus waits for every source's silent discovery, and no settings source means no request.</summary>
+    [Fact]
+    public async Task StartupWaitsForEverySourceAndDisposesThemBeforeTheTracker()
+    {
+        var restored = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var input = new Harness(EnabledSettings() with { KeyboardEnabled = false });
+        input.Portal.StartupReady = restored.Task;
+        await input.StartAsync();
+
+        Task ready = input.Service.StartupReady;
+        Assert.False(ready.IsCompleted);
+        restored.SetResult();
+        await ready.WaitAsync(TimeSpan.FromSeconds(2));
+        await input.Service.OpenDesktopShortcutSettingsAsync();
+        Assert.Equal(0, input.Portal.SettingsRequests);
+        Assert.Equal("Global keyboard input is disabled.", input.Service.Status);
+
+        await input.DisposeAsync();
+        await input.Service.DisposeAsync();
+        Assert.All(input.Sources, source => Assert.True(source.Disposed));
+        Assert.True(input.Tracker.IsDisposed);
+        Assert.Throws<ObjectDisposedException>(input.Service.Start);
+        Assert.Throws<ObjectDisposedException>(() => input.Service.Update(EnabledSettings()));
+    }
+
+    /// <summary>A different Elite process or game display releases learned selection and every source's held keys.</summary>
+    [Fact]
+    public async Task GameChangeRelearnsSourceAndRefreshesFocusDiagnostics()
+    {
+        await using var input = new Harness(OverlaySettings("O"));
+        input.Tracker.Focused = true;
+        await input.StartAsync();
+        Assert.Equal("Elite Dangerous focus confirmed.", input.Service.Diagnostics.FocusStatus);
+        input.Desktop.Report("O");
+        Assert.Equal(KeyboardInputMode.Desktop, input.Service.Diagnostics.SelectedSource);
+
+        input.GameDisplay.State = new KeyboardSourceState(true) { GameDisplay = new GameDisplayConnection(":2", 7) };
+        await WaitForAsync(() => input.Desktop.Resets > 0);
+
+        Assert.Null(input.Service.Diagnostics.SelectedSource);
+        Assert.All(input.Sources, source => Assert.Equal(1, source.Resets));
+        input.Tracker.Snapshot = TestGameWindowTracker.Foreground with { IsForeground = false };
+        await WaitForAsync(() => input.Service.Diagnostics.FocusStatus == "Elite Dangerous is not focused.");
+        input.Tracker.Snapshot = GameWindowSnapshot.Unavailable;
+        await WaitForAsync(() => input.Service.Diagnostics.FocusStatus.Contains("cannot be confirmed"));
+        input.GameDisplay.State = new KeyboardSourceState(false);
+        await WaitForAsync(() => input.Service.Diagnostics.FocusStatus == "Elite Dangerous is not running.");
+    }
+
+    private static GlobalInputSettings EnabledSettings() =>
+        GlobalInputSettings.Default with
+        {
+            KeyboardEnabled = true,
+            Bindings = new Dictionary<GlobalInputAction, string> { [GlobalInputAction.ToggleAllVisibility] = "ALT X" },
+        };
+
+    private static GlobalInputSettings OverlaySettings(string chord) =>
+        GlobalInputSettings.Default with
+        {
+            KeyboardEnabled = true,
+            Bindings = new Dictionary<GlobalInputAction, string>
             {
-                KeyboardEnabled = true,
-                Bindings = GlobalInputSettings.Default.Bindings.ToDictionary(
-                    entry => entry.Key,
-                    entry => entry.Key == GlobalInputAction.ToggleOverlayInteraction ? chord : string.Empty
-                ),
+                [GlobalInputAction.ToggleOverlayInteraction] = chord,
             },
-            OverlayHostKind.LinuxXWayland,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () => testHook,
-            timestampProvider: () => timestamp
-        );
-        var triggered = new List<GlobalInputAction>();
-        service.ActionTriggered += (_, eventArgs) => triggered.Add(eventArgs.Action);
-        service.Start();
+        };
 
-        foreach (KeyCode modifier in modifiers)
+    private static GlobalInputSettings MapSettings(string chord) =>
+        GlobalInputSettings.Default with
         {
-            testHook.SimulateKeyPress(modifier);
-            timestamp += Stopwatch.Frequency;
-        }
+            KeyboardEnabled = true,
+            Bindings = new Dictionary<GlobalInputAction, string> { [GlobalInputAction.MapZoomIn] = chord },
+        };
 
-        testHook.EventMask = _ => EventMask.NumLock;
-        testHook.SimulateKeyPress(KeyCode.VcO);
-        Assert.Equal([GlobalInputAction.ToggleOverlayInteraction], triggered);
-
-        testHook.SimulateKeyRelease(KeyCode.VcO);
-        foreach (KeyCode modifier in modifiers)
+    private static GlobalInputSettings TwoBindingSettings() =>
+        GlobalInputSettings.Default with
         {
-            testHook.SimulateKeyRelease(modifier);
-        }
-
-        timestamp += Stopwatch.Frequency / 10;
-        testHook.SimulateKeyPress(KeyCode.VcO);
-        Assert.Equal([GlobalInputAction.ToggleOverlayInteraction], triggered);
-    }
-
-    [Fact]
-    public async Task X11MissedModifierReleaseExpiresBeforeLaterPlainKey()
-    {
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple);
-        long timestamp = 0;
-        await using var service = new GlobalKeyboardHookService(
-            GlobalInputSettings.Default with
+            KeyboardEnabled = true,
+            Bindings = new Dictionary<GlobalInputAction, string>
             {
-                KeyboardEnabled = true,
+                [GlobalInputAction.ToggleOverlayInteraction] = "O",
+                [GlobalInputAction.MapZoomIn] = "P",
             },
-            OverlayHostKind.LinuxXWayland,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () => testHook,
-            timestampProvider: () => timestamp
-        );
-        var triggered = new List<GlobalInputAction>();
-        service.ActionTriggered += (_, eventArgs) => triggered.Add(eventArgs.Action);
-        service.Start();
+        };
 
-        testHook.SimulateKeyPress(KeyCode.VcRightAlt);
-        testHook.SimulateKeyPress(KeyCode.VcRightShift);
-        timestamp += Stopwatch.Frequency * 11;
-        testHook.SimulateKeyPress(KeyCode.VcO);
-
-        Assert.Empty(triggered);
-    }
-
-    [Fact]
-    public async Task IgnoresChordOutsideApplicationAndGameContext()
+    /// <summary>Waits for the once-per-second focus refresh without hanging a broken test.</summary>
+    private static async Task WaitForAsync(Func<bool> condition)
     {
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple) { EventMask = _ => EventMask.LeftAlt };
-        await using var service = new GlobalKeyboardHookService(
-            EnabledSettings(),
-            OverlayHostKind.LinuxX11,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => false,
-            hookFactory: () => testHook
-        );
-        int triggerCount = 0;
-        service.ActionTriggered += (_, _) => triggerCount++;
-
-        service.Start();
-        testHook.SimulateKeyPress(KeyCode.VcX);
-
-        Assert.Equal(0, triggerCount);
-    }
-
-    /// <summary>Checks native Wayland uses optional portal support rather than starting an X11 desktop hook.</summary>
-    [Fact]
-    public async Task DoesNotCreateHookOnUnsupportedHost()
-    {
-        int factoryCalls = 0;
-        await using var service = new GlobalKeyboardHookService(
-            EnabledSettings(),
-            OverlayHostKind.LinuxWayland,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () =>
-            {
-                factoryCalls++;
-                return new TestGlobalHook();
-            }
-        );
-
-        service.Start();
-
-        Assert.Equal(0, factoryCalls);
-        Assert.Equal("Wayland keyboard input is waiting for Global Shortcuts portal support.", service.Status);
-    }
-
-    [Fact]
-    public async Task StartsHookThroughXWaylandCompatibility()
-    {
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple);
-        await using var service = new GlobalKeyboardHookService(
-            EnabledSettings(),
-            OverlayHostKind.LinuxXWayland,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () => testHook
-        );
-
-        service.Start();
-
-        Assert.True(service.IsRunning);
-        Assert.Equal("Global keyboard input is active.", service.Status);
-    }
-
-    [Fact]
-    public async Task ReportsHookStartupFailure()
-    {
-        await using var service = new GlobalKeyboardHookService(
-            EnabledSettings(),
-            OverlayHostKind.LinuxX11,
-            new StubGameWindowTracker(),
-            isApplicationActive: () => true,
-            hookFactory: () => throw new InvalidOperationException("test failure")
-        );
-
-        service.Start();
-
-        Assert.False(service.IsRunning);
-        Assert.Equal("Global keyboard input could not start: test failure", service.Status);
-    }
-
-    /// <summary>Blocks the key callback specifically, allowing background focus diagnostics to run before the event.</summary>
-    [Fact]
-    public async Task DisposalWaitsForInFlightEventBeforeDisposingTracker()
-    {
-        using var testHook = new TestGlobalHook(TestThreadingMode.EventLoop) { EventMask = _ => EventMask.LeftAlt };
-        var tracker = new BlockingGameWindowTracker();
-        await using var service = new GlobalKeyboardHookService(
-            EnabledSettings(),
-            OverlayHostKind.LinuxX11,
-            tracker,
-            isApplicationActive: () =>
-            {
-                tracker.EnableBlocking();
-                return false;
-            },
-            hookFactory: () => testHook
-        );
-        service.Start();
-
-        testHook.SimulateKeyPress(KeyCode.VcX);
-        await tracker.SnapshotEntered.WaitAsync(TimeSpan.FromSeconds(2));
-        Task disposal = service.DisposeAsync().AsTask();
-
-        Assert.False(disposal.IsCompleted);
-        Assert.False(tracker.IsDisposed);
-
-        tracker.AllowSnapshot();
-        await disposal.WaitAsync(TimeSpan.FromSeconds(2));
-        Assert.True(tracker.IsDisposed);
-    }
-
-    /// <summary>Prevents a replacement hook from starting until the original key callback and event loop finish.</summary>
-    [Fact]
-    public async Task RestartWaitsForPreviousEventLoopToStop()
-    {
-        using var firstHook = new TestGlobalHook(TestThreadingMode.EventLoop) { EventMask = _ => EventMask.LeftAlt };
-        using var secondHook = new TestGlobalHook(TestThreadingMode.Simple);
-        var tracker = new BlockingGameWindowTracker();
-        var secondHookCreated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        int factoryCalls = 0;
-        await using var service = new GlobalKeyboardHookService(
-            EnabledSettings(),
-            OverlayHostKind.LinuxX11,
-            tracker,
-            isApplicationActive: () =>
-            {
-                tracker.EnableBlocking();
-                return false;
-            },
-            hookFactory: () =>
-            {
-                if (Interlocked.Increment(ref factoryCalls) == 1)
-                {
-                    return firstHook;
-                }
-
-                secondHookCreated.TrySetResult();
-                return secondHook;
-            }
-        );
-
-        service.Start();
-        firstHook.SimulateKeyPress(KeyCode.VcX);
-        await tracker.SnapshotEntered.WaitAsync(TimeSpan.FromSeconds(2));
-        service.Update(EnabledSettings() with { KeyboardEnabled = false });
-        service.Update(EnabledSettings());
-
-        Assert.Equal(1, Volatile.Read(ref factoryCalls));
-
-        tracker.AllowSnapshot();
-        await secondHookCreated.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        Assert.Equal(2, Volatile.Read(ref factoryCalls));
-    }
-
-    private static GlobalInputSettings EnabledSettings()
-    {
-        var bindings = GlobalInputSettings.Default.Bindings.ToDictionary();
-        bindings[GlobalInputAction.ToggleAllVisibility] = "ALT X";
-        return GlobalInputSettings.Default with { KeyboardEnabled = true, Bindings = bindings };
-    }
-
-    private sealed class StubGameWindowTracker : IGameWindowTracker
-    {
-        public GameWindowSnapshot GetSnapshot()
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (!condition())
         {
-            return GameWindowSnapshot.Unavailable;
+            await Task.Delay(20, timeout.Token);
+        }
+    }
+
+    /// <summary>Owns one service with fake desktop, game-display, and portal sources plus controllable context.</summary>
+    private sealed class Harness : IAsyncDisposable
+    {
+        public Harness(GlobalInputSettings settings)
+        {
+            Service = new GlobalKeyboardHookService(
+                settings,
+                Sources,
+                Tracker,
+                () => ApplicationActive,
+                new AdditionalKeyboardInput(IsGameRunning: () => GameRunning, SuppressShortcuts: () => Suppress),
+                () => Clock
+            );
+            Service.ActionTriggered += (_, args) => Actions.Add(args);
         }
 
-        public void Dispose() { }
-    }
+        public FakeKeyboardSource GameDisplay { get; } = new(KeyboardInputSource.NestedDisplay);
+        public FakeKeyboardSource Portal { get; } = new(KeyboardInputSource.Portal);
+        public FakeKeyboardSource Desktop { get; } = new(KeyboardInputSource.Desktop);
+        public FakeKeyboardSource[] Sources => [GameDisplay, Portal, Desktop];
+        public TestGameWindowTracker Tracker { get; } = new();
+        public GlobalKeyboardHookService Service { get; }
+        public List<GlobalInputActionTriggeredEventArgs> Actions { get; } = [];
+        public long Clock { get; set; } = Second;
+        public bool ApplicationActive { get; set; }
+        public bool GameRunning { get; set; }
+        public bool Suppress { get; set; }
 
-    private sealed class BlockingGameWindowTracker : IGameWindowTracker
-    {
-        private readonly ManualResetEventSlim allowSnapshot = new();
-        private bool blockSnapshots;
-        private readonly TaskCompletionSource snapshotEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private int disposed;
-
-        public Task SnapshotEntered => snapshotEntered.Task;
-
-        public bool IsDisposed => Volatile.Read(ref disposed) != 0;
-
-        /// <summary>Arms blocking from the key callback while its service lock excludes background diagnostics.</summary>
-        public void EnableBlocking() => Volatile.Write(ref blockSnapshots, true);
-
-        /// <summary>Blocks an armed event snapshot, leaving earlier background focus refreshes nonblocking.</summary>
-        public GameWindowSnapshot GetSnapshot()
+        /// <summary>Starts the service and waits for its first focus refresh so later reports are not overwritten.</summary>
+        public async Task StartAsync()
         {
-            if (!Volatile.Read(ref blockSnapshots))
-            {
-                return GameWindowSnapshot.Unavailable;
-            }
-            snapshotEntered.TrySetResult();
-            if (!allowSnapshot.Wait(TimeSpan.FromSeconds(5)))
-            {
-                throw new TimeoutException("The test did not release the blocked tracker snapshot.");
-            }
-
-            return GameWindowSnapshot.Unavailable;
+            Service.Start();
+            await WaitForAsync(() => Service.Diagnostics.FocusStatus != "Waiting for Elite Dangerous.");
         }
 
-        public void AllowSnapshot()
+        /// <summary>Advances the clock, reports one activation, and returns whether it dispatched an action.</summary>
+        public bool Accepts(FakeKeyboardSource source, string chord, long elapsed = 0, GlobalInputAction? action = null)
         {
-            allowSnapshot.Set();
+            Clock += elapsed;
+            int before = Actions.Count;
+            source.Report(chord, action);
+            return Actions.Count > before;
         }
 
-        public void Dispose()
-        {
-            Interlocked.Exchange(ref disposed, 1);
-            allowSnapshot.Dispose();
-        }
+        public ValueTask DisposeAsync() => Service.DisposeAsync();
     }
 }
