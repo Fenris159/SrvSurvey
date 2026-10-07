@@ -6,40 +6,31 @@ using SrvSurvey.Desktop.Platform.Overlay;
 namespace SrvSurvey.Desktop.Input;
 
 /// <summary>A batch of buffered game keys and whether their display's press state must be reset.</summary>
-public sealed record GameKeyboardEventBatch(
+internal sealed record GameKeyboardEventBatch(
     bool Reset,
     IReadOnlyList<UioHookEvent> Events,
     bool IsGameForeground = false
 );
 
-/// <summary>Provides keyboard events from a game display separate from the desktop.</summary>
-public interface IGameKeyboardInput : IDisposable
-{
-    /// <summary>Drains pending events, closing the game connection when keyboard input is disabled.</summary>
-    GameKeyboardEventBatch ReadEvents(bool enabled);
-
-    /// <summary>Reports a connected secondary keyboard source.</summary>
-    bool IsRunning => false;
-    string? Display => null;
-    int? ProcessId => null;
-}
-
 /// <summary>Follows a verified Gamescope bridge or discovers Elite's nested display without changing the application's DISPLAY.</summary>
-internal sealed class GamescopeKeyboardInput : IGameKeyboardInput
+internal sealed class GamescopeKeyboardInput : IKeyboardActivationSource
 {
+    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(20);
     private readonly Func<GamescopeGameWindowBridge?> readBridge;
     private readonly Func<string, IX11KeyboardRecord?> createRecord;
     private readonly string? desktopDisplay;
     private readonly Func<EliteKeyboardDisplay?> readDisplay;
     private readonly Func<string, IGameWindowTracker?> createTracker;
+    private readonly KeyPressTracker keys = new(KeyboardInputSource.NestedDisplay, usesX11Events: true);
+    private readonly CancellationTokenSource pollCancellation = new();
     private IGameWindowTracker? nestedTracker;
     private GamescopeGameWindowBridge? bridge;
     private IX11KeyboardRecord? record;
     private long lastBridgeCheck;
-
-    public bool IsRunning => record is { HasFailed: false };
-    public string? Display => bridge?.Display;
-    public int? ProcessId => bridge?.ProcessId;
+    private IKeyboardActivationSink? sink;
+    private Task? pollTask;
+    private volatile bool enabled;
+    private volatile bool gameForeground;
 
     /// <summary>Creates bridge/process discovery, focus tracking, and native event sources.</summary>
     public GamescopeKeyboardInput(
@@ -64,13 +55,48 @@ internal sealed class GamescopeKeyboardInput : IGameKeyboardInput
         this.createTracker = createTracker ?? X11GameWindowTracker.TryCreate;
     }
 
-    /// <summary>Reopens changed game displays and drains their buffered press/release events.</summary>
-    public GameKeyboardEventBatch ReadEvents(bool enabled)
+    public KeyboardInputSource Kind => KeyboardInputSource.NestedDisplay;
+
+    public KeyboardSourceState State =>
+        new(record is { HasFailed: false })
+        {
+            IsGameForeground = gameForeground,
+            GameDisplay = bridge is { } current ? new GameDisplayConnection(current.Display, current.ProcessId) : null,
+        };
+
+    public void Attach(IKeyboardActivationSink sink) => this.sink = sink;
+
+    /// <summary>Starts draining buffered game-display events without blocking the desktop dispatcher.</summary>
+    public void Start(GlobalInputSettings settings)
     {
-        if (!enabled)
+        enabled = settings.KeyboardEnabled;
+        pollTask ??= PollAsync();
+    }
+
+    /// <summary>Closes the game connection on the next poll when keyboard input is disabled.</summary>
+    public void Update(GlobalInputSettings settings) => enabled = settings.KeyboardEnabled;
+
+    public void ResetDetection() => keys.Clear();
+
+    /// <summary>Stops polling before the native connections are closed.</summary>
+    public async ValueTask DisposeAsync()
+    {
+        await pollCancellation.CancelAsync().ConfigureAwait(false);
+        if (pollTask is not null)
+        {
+            await pollTask.ConfigureAwait(false);
+        }
+        CloseDisplay();
+        pollCancellation.Dispose();
+    }
+
+    /// <summary>Reopens changed game displays and drains their buffered press/release events.</summary>
+    internal GameKeyboardEventBatch ReadEvents(bool keyboardEnabled)
+    {
+        if (!keyboardEnabled)
         {
             bool reset = record is not null;
-            Dispose();
+            CloseDisplay();
             return new GameKeyboardEventBatch(reset, []);
         }
 
@@ -82,6 +108,52 @@ internal sealed class GamescopeKeyboardInput : IGameKeyboardInput
             return new GameKeyboardEventBatch(true, []);
         }
         return new GameKeyboardEventBatch(changed, events, nestedTracker?.GetSnapshot().IsForeground == true);
+    }
+
+    private async Task PollAsync()
+    {
+        using var timer = new PeriodicTimer(PollInterval);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(pollCancellation.Token).ConfigureAwait(false))
+            {
+                Deliver(ReadEvents(enabled));
+            }
+        }
+        catch (OperationCanceledException) when (pollCancellation.IsCancellationRequested)
+        {
+            // The nested listener stops before its native connections are disposed.
+        }
+    }
+
+    /// <summary>Reports one batch with this display's own repeat, modifier, and foreground state.</summary>
+    private void Deliver(GameKeyboardEventBatch batch)
+    {
+        if (sink is not { } target)
+        {
+            return;
+        }
+
+        if (batch.Reset)
+        {
+            keys.Clear();
+            target.ReleaseSelection(KeyboardInputSource.NestedDisplay);
+        }
+        gameForeground = batch.IsGameForeground;
+        KeyboardFocusEvidence evidence = batch.IsGameForeground
+            ? KeyboardFocusEvidence.GameDisplayForeground
+            : KeyboardFocusEvidence.DesktopWindow;
+        foreach (UioHookEvent input in batch.Events)
+        {
+            if (input.Type != EventType.KeyPressed)
+            {
+                keys.Release(input.Keyboard.KeyCode, input.Time);
+            }
+            else if (enabled)
+            {
+                keys.Press(target, input.Keyboard.KeyCode, input.Mask, input.Time, evidence);
+            }
+        }
     }
 
     /// <summary>Checks game metadata once per second and opens only a distinct local game display.</summary>
@@ -130,7 +202,7 @@ internal sealed class GamescopeKeyboardInput : IGameKeyboardInput
         display?.EndsWith(".0", StringComparison.Ordinal) == true ? display[..^2] : display;
 
     /// <summary>Closes transient connections while allowing a later enable or game restart.</summary>
-    public void Dispose()
+    private void CloseDisplay()
     {
         DisposeRecord();
         bridge = null;
