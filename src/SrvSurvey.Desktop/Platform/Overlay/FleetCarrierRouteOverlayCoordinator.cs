@@ -1,43 +1,37 @@
 using System.ComponentModel;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Platform;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
 {
-    private const string PlotterName = "PlotFleetCarrierRoute";
-
     private readonly RouteWorkspaceViewModel route;
     private readonly FleetCarrierRouteOverlayViewModel viewModel;
-    private readonly IOverlayPlatformService platform;
-    private readonly IGameWindowTracker gameWindowTracker;
-    private readonly LegacyOverlayLayout overlayLayout;
-    private readonly OverlayDispatcherTimer timer;
-    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private FleetCarrierRouteOverlayWindow? window;
+    private readonly HostedOverlayWindow hostedWindow;
     private bool isSuppressed;
-    private bool isPolling;
+    private bool wantsWindow;
     private bool disposed;
 
     public FleetCarrierRouteOverlayCoordinator(
         RouteWorkspaceViewModel route,
-        IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null
+        OverlayPresentationSession presentationSession
     )
     {
         this.route = route ?? throw new ArgumentNullException(nameof(route));
-        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
-        viewModel = new FleetCarrierRouteOverlayViewModel(route, platform.Capabilities);
+        ArgumentNullException.ThrowIfNull(presentationSession);
+        hostedWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotFleetCarrierRoute",
+                _ => CreateWindow(),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize, margin: 8)
+            )
+            {
+                Tick = OnTick,
+            }
+        );
+        viewModel = new FleetCarrierRouteOverlayViewModel(route, hostedWindow.Capabilities);
         route.PropertyChanged += OnRoutePropertyChanged;
-        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        timer.Tick += OnTimerTick;
-        SynchronizePolling();
+        SynchronizeIntent();
     }
 
     public void SetSuppressed(bool value)
@@ -48,7 +42,7 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizePolling();
+        SynchronizeIntent();
     }
 
     public void Dispose()
@@ -59,23 +53,21 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
         }
 
         disposed = true;
-        if (isPolling)
-        {
-            timer.Stop();
-            isPolling = false;
-        }
-        timer.Tick -= OnTimerTick;
         route.PropertyChanged -= OnRoutePropertyChanged;
+        hostedWindow.Dispose();
         viewModel.Dispose();
-        CloseWindow();
-        gameWindowTracker.Dispose();
-        platform.Dispose();
     }
 
-    private void OnTimerTick(object? sender, EventArgs eventArgs)
+    private FleetCarrierRouteOverlayWindow CreateWindow() => new(viewModel);
+
+    private void OnTick()
     {
-        viewModel.AdvanceTimedTransitions();
-        SynchronizePolling();
+        if (wantsWindow)
+        {
+            viewModel.AdvanceTimedTransitions();
+        }
+
+        SynchronizeIntent();
     }
 
     private void OnRoutePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -86,118 +78,18 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
                 or nameof(RouteWorkspaceViewModel.NextHop)
         )
         {
-            SynchronizePolling();
+            SynchronizeIntent();
         }
     }
 
-    private void SynchronizePolling()
-    {
-        bool shouldPoll =
-            !disposed
-            && !isSuppressed
-            && viewModel.ShouldShow
-            && platform.Capabilities.SupportsPassiveOverlay
-            && platform.Capabilities.SupportsClickThrough
-            && platform.Capabilities.SupportsGameWindowTracking;
-        if (shouldPoll != isPolling)
-        {
-            isPolling = shouldPoll;
-            if (shouldPoll)
-            {
-                timer.Start();
-            }
-            else
-            {
-                timer.Stop();
-            }
-        }
-
-        SynchronizeWindow();
-    }
-
-    private void SynchronizeWindow()
+    private void SynchronizeIntent()
     {
         if (disposed)
         {
             return;
         }
 
-        if (
-            isSuppressed
-            || !viewModel.ShouldShow
-            || !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking
-        )
-        {
-            CloseWindow();
-            return;
-        }
-
-        gameWindow = gameWindowTracker.GetSnapshot();
-        if (!gameWindow.IsAvailable || !gameWindow.IsVisible || !gameWindow.IsForeground)
-        {
-            CloseWindow();
-            return;
-        }
-
-        if (window is not null)
-        {
-            PositionWindow(window, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new FleetCarrierRouteOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
-        overlay.Opened += (_, _) =>
-        {
-            PositionWindow(overlay, gameWindow.ClientBounds);
-            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
-            if (!preparation.IsClickThrough)
-            {
-                isSuppressed = true;
-                SynchronizePolling();
-            }
-        };
-        overlay.Closed += (_, _) =>
-        {
-            if (ReferenceEquals(window, overlay))
-            {
-                window = null;
-            }
-        };
-        window = overlay;
-        overlay.Show();
-    }
-
-    private void PositionWindow(Window target, PixelRect gameBounds)
-    {
-        OverlayThemeResources.ApplyOpacity(target, overlayLayout, PlotterName);
-        Screen? screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
-        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(target, overlayLayout, PlotterName, screen.Scaling);
-        PixelPoint position =
-            overlayLayout.GetPosition(PlotterName, gameBounds, size)
-            ?? OverlayWindowPlacement.TopRight(gameBounds, size, margin: 8);
-        if (target.Position != position)
-        {
-            target.Position = position;
-        }
-    }
-
-    private void CloseWindow()
-    {
-        FleetCarrierRouteOverlayWindow? overlay = window;
-        if (overlay is null)
-        {
-            return;
-        }
-
-        window = null;
-        overlay.Close();
+        wantsWindow = !isSuppressed && viewModel.ShouldShow;
+        hostedWindow.Reconcile(wantsWindow);
     }
 }

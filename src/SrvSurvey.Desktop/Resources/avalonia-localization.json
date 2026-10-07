@@ -16245,14 +16245,6 @@
       "translation": "Es war keine Übersetzung der Legacy-Benutzeroberflächeneinstellungen erforderlich."
     },
     {
-      "source": "No legacy top-center layout maps to {0}.",
-      "translation": "Keine alten Layout-Zuordnungen für die obere Mitte auf {0}."
-    },
-    {
-      "source": "No legacy top-left layout maps to {0}.",
-      "translation": "Keine Zuordnung des Legacy-Layouts oben links zu {0}."
-    },
-    {
       "source": "No live Guardian site detected",
       "translation": "Keine Live-Guardian-Site erkannt"
     },
@@ -24923,6 +24915,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "SrvSurveyWindowChromeTextBrush"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
     },
     {
       "source": "SrvSurveyWindowOne overlay",
@@ -51467,14 +51463,6 @@
       "translation": "No se requirió ninguna traducción de preferencias de UI heredadas."
     },
     {
-      "source": "No legacy top-center layout maps to {0}.",
-      "translation": "No hay ningún diseño heredado en el centro superior asignado a {0}."
-    },
-    {
-      "source": "No legacy top-left layout maps to {0}.",
-      "translation": "No hay ningún diseño heredado en la parte superior izquierda asignado a {0}."
-    },
-    {
       "source": "No live Guardian site detected",
       "translation": "No se detectó ningún sitio de Guardian en vivo"
     },
@@ -60145,6 +60133,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "SrvEncuestaVentanaChromeTextBrush"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvEncuestaVentanaUno"
     },
     {
       "source": "SrvSurveyWindowOne overlay",
@@ -86689,14 +86681,6 @@
       "translation": "Aucune traduction des préférences d’interface utilisateur héritées n’était requise."
     },
     {
-      "source": "No legacy top-center layout maps to {0}.",
-      "translation": "Aucune disposition héritée en haut au centre ne correspond à {0}."
-    },
-    {
-      "source": "No legacy top-left layout maps to {0}.",
-      "translation": "Aucune disposition héritée en haut à gauche ne correspond à {0}."
-    },
-    {
       "source": "No live Guardian site detected",
       "translation": "Aucun site Guardian en direct détecté"
     },
@@ -95367,6 +95351,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "SrvSurveyWindowChromeTextBrush"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
     },
     {
       "source": "SrvSurveyWindowOne overlay",
@@ -121911,14 +121899,6 @@
       "translation": "Nenhuma tradução de preferências de UI herdada foi necessária."
     },
     {
-      "source": "No legacy top-center layout maps to {0}.",
-      "translation": "Nenhum layout central superior herdado é mapeado para {0}."
-    },
-    {
-      "source": "No legacy top-left layout maps to {0}.",
-      "translation": "Nenhum layout herdado no canto superior esquerdo é mapeado para {0}."
-    },
-    {
       "source": "No live Guardian site detected",
       "translation": "Nenhum site do Guardian ativo detectado"
     },
@@ -130589,6 +130569,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "SrvSurveyWindowChromeTextBrush"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
     },
     {
       "source": "SrvSurveyWindowOne overlay",
@@ -157133,14 +157117,6 @@
       "translation": "Перевод предпочтений устаревшего пользовательского интерфейса не требовался."
     },
     {
-      "source": "No legacy top-center layout maps to {0}.",
-      "translation": "Нет устаревших сопоставлений макета верхнего центра с {0}."
-    },
-    {
-      "source": "No legacy top-left layout maps to {0}.",
-      "translation": "Нет устаревших сопоставлений макета верхнего левого угла с {0}."
-    },
-    {
       "source": "No live Guardian site detected",
       "translation": "Действующий сайт Guardian не обнаружен"
     },
@@ -165811,6 +165787,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "SrvSurveyОкноChromeТекстКисть"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "СрвОбзорОкноОдин"
     },
     {
       "source": "SrvSurveyWindowOne overlay",
@@ -192355,14 +192335,6 @@
       "translation": "不需要旧版 UI 首选项翻译。"
     },
     {
-      "source": "No legacy top-center layout maps to {0}.",
-      "translation": "旧的顶部中心布局没有映射到 {0}。"
-    },
-    {
-      "source": "No legacy top-left layout maps to {0}.",
-      "translation": "旧的左上角布局没有映射到 {0}。"
-    },
-    {
       "source": "No live Guardian site detected",
       "translation": "未检测到实时监护人网站"
     },
@@ -201033,6 +201005,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "SrvSurveyWindowChromeTextBrush"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "SrvSurveyWindowOne"
     },
     {
       "source": "SrvSurveyWindowOne overlay",
@@ -227577,14 +227553,6 @@
       "translation": "* NO LEGACY UI PREFERENCE TRANSLATION WAS REQUIRED. >>>!"
     },
     {
-      "source": "No legacy top-center layout maps to {0}.",
-      "translation": "* NO LEGACY TOP-CENTER LAYOUT MAPS TO {0}. >>>!"
-    },
-    {
-      "source": "No legacy top-left layout maps to {0}.",
-      "translation": "* NO LEGACY TOP-LEFT LAYOUT MAPS TO {0}. >>>!"
-    },
-    {
       "source": "No live Guardian site detected",
       "translation": "* NO LIVE GUARDIAN SITE DETECTED >>>!"
     },
@@ -236255,6 +236223,10 @@
     {
       "source": "SrvSurveyWindowChromeTextBrush",
       "translation": "* SRVSURVEYWINDOWCHROMETEXTBRUSH >>>!"
+    },
+    {
+      "source": "SrvSurveyWindowOne",
+      "translation": "* SRVSURVEYWINDOWONE >>>!"
     },
     {
       "source": "SrvSurveyWindowOne overlay",
