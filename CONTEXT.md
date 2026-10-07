@@ -20,6 +20,10 @@ _Avoid_: Main-window panel, dashboard panel
 The desktop surface used briefly for configuration, search, and utility workflows outside the primary gameplay feedback loop.
 _Avoid_: Gameplay dashboard, commander console
 
+**Journal projection**:
+The module that applies each consumed journal tick to its workspaces in a fixed order, owning state handoffs, bootstrap/live policy, and cancellation-safe local persistence.
+_Avoid_: Main-window journal refresh, monitor update pipeline
+
 **Overview**:
 The main-window landing surface for commander identity, application and journal health, location, and multi-commander controls.
 _Avoid_: Gameplay dashboard, recommendation feed

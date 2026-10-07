@@ -37,7 +37,6 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDisposable, IAsyncDisposable
 {
-    private static readonly TimeSpan IdleHousekeepingInterval = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan DefaultSystemBodyDataRetryDelay = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MaximumSystemBodyDataRetryDelay = TimeSpan.FromMinutes(4);
     private const int MaximumSystemBodyDataRetryAttempts = 3;
@@ -64,7 +63,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private readonly JournalFolderResolution folderResolution;
     private readonly JournalDirectoryMonitor? journalMonitor;
-    private readonly JournalProjectionPipeline<JournalTick> journalProjections;
+    private readonly JournalProjectionState projectionState = new();
+    private readonly JournalProjection journalProjections;
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
@@ -72,9 +72,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         Justification = "DisposeAsync releases this store through the failure-isolating cleanup helper."
     )]
     private readonly CompanionTimelineStore companionTimelineStore;
-    private readonly JournalSessionState journalState = new();
-    private readonly ExplorationState explorationState = new();
-    private readonly ExobiologyState exobiologyState;
+    private JournalSessionState journalState => projectionState.Session;
+    private ExplorationState explorationState => projectionState.Exploration;
+    private ExobiologyState exobiologyState => projectionState.Exobiology;
     private readonly CommanderProfileStore commanderProfileStore;
     private readonly CommanderCodexStore commanderCodexStore;
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
@@ -83,7 +83,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private readonly ISystemBodyDataClient? systemBodyDataClient;
     private readonly IEliteGameProcessDetector eliteGameProcessDetector;
     private readonly TimeSpan systemBodyDataRetryDelay;
-    private readonly CargoInventoryState cargoInventoryState = new();
+    private CargoInventoryState cargoInventoryState => projectionState.CargoInventory;
     private readonly FirstFootfallInferenceSettingsStore firstFootfallInferenceSettingsStore;
     private readonly IFirstFootfallInferenceService firstFootfallInferenceService;
     // DisposeAsync releases these owned resources through failure-isolating
@@ -167,9 +167,21 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private string exobiologyStatusMessage = "Waiting for commander profile.";
     private string commanderCodexStatusMessage = "Waiting for Commander Codex journal entries.";
     private bool isResetExobiologyPending;
-    private string? activeProfileFrontierId;
-    private string? activeProfileCommanderName;
-    private bool activeProfileIsOdyssey = true;
+    private string? activeProfileFrontierId
+    {
+        get => projectionState.ProfileFrontierId;
+        set => projectionState.ProfileFrontierId = value;
+    }
+    private string? activeProfileCommanderName
+    {
+        get => projectionState.ProfileCommanderName;
+        set => projectionState.ProfileCommanderName = value;
+    }
+    private bool activeProfileIsOdyssey
+    {
+        get => projectionState.ProfileIsOdyssey;
+        set => projectionState.ProfileIsOdyssey = value;
+    }
     private NavigationItemViewModel? selectedNavigation;
     private string? expandedNavigationGroup;
     private DiagnosticsWorkspaceTab selectedDiagnosticsTab = DiagnosticsWorkspaceTab.Source;
@@ -182,7 +194,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private string profileStatusMessage;
     private string settingsLinkStatusMessage = string.Empty;
     private string questStatusMessage = "Quests are disabled.";
-    private string? activeProfileRavenApiKey;
     private string? surveyCodexFrontierId;
     private int? surveyCodexRegionId;
     private long? surveyCodexSystemAddress;
@@ -197,13 +208,22 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private int systemBodyDataRetryAttempts;
     private bool isSystemBodyDataLoadDeferred;
     private bool isSystemBodyDataGameSessionConfirmed;
-    private EliteStatus? latestStatus;
-    private CargoSnapshot? latestCargo;
-    private ShipLockerSnapshot? latestShipLocker;
-    private bool awaitFreshCargoSnapshot;
-    private DateTimeOffset? companionIdentityChangedAt;
-    private DateTimeOffset lastIdleHousekeepingAt;
-    private bool isAwaitingCommanderIdentity;
+    private EliteStatus? latestStatus => projectionState.LatestStatus;
+    private CargoSnapshot? latestCargo
+    {
+        get => projectionState.LatestCargo;
+        set => projectionState.LatestCargo = value;
+    }
+    private ShipLockerSnapshot? latestShipLocker
+    {
+        get => projectionState.LatestShipLocker;
+        set => projectionState.LatestShipLocker = value;
+    }
+    private bool awaitFreshCargoSnapshot
+    {
+        get => projectionState.AwaitFreshCargoSnapshot;
+        set => projectionState.AwaitFreshCargoSnapshot = value;
+    }
     private bool disposed;
     private readonly FallbackSystemNameSuggestionClient boxelNameSuggestions;
 
@@ -777,7 +797,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.Add(Guardian.Dispose);
             ScreenshotProcessing.PropertyChanged += OnScreenshotProcessingChanged;
             rollback.Add(() => ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged);
-            exobiologyState = new ExobiologyState(sharedExobiologyCatalog);
+            projectionState.Exobiology = new ExobiologyState(sharedExobiologyCatalog);
             LegacyProfiles = LegacyProfileLocator
                 .Discover(AppDataPaths.LegacyProfileCandidates)
                 .Select(discovery => new LegacyProfileOptionViewModel(discovery))
@@ -828,7 +848,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.Add(visitedStarsHttpClient);
             statusMessage = BuildJournalReadyStatus(folderResolution.IsFound, TargetFrontierId);
             journalMonitor = CreateJournalMonitor(folderResolution, TargetFrontierId);
-            journalProjections = CreateJournalProjectionPipeline();
+            journalProjections = CreateJournalProjection();
             RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
             ShowProfileCommand = new AsyncCommand(ShowProfileAsync, () => true);
             resetExplorationCommand = new AsyncCommand(
@@ -2478,280 +2498,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         CancellationToken cancellationToken = default
     ) => journalProjections.ApplyAsync(new JournalProjectionContext(update, isManualRefresh, cancellationToken));
 
-    private async Task ApplyCommanderChangeIfNeededAsync(
-        JournalMonitorUpdate update,
-        string? previousFrontierId,
-        string? previousCommanderName
-    )
-    {
-        bool commanderChanged =
-            !string.Equals(previousFrontierId, journalState.FrontierId, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(previousCommanderName, journalState.CommanderName, StringComparison.OrdinalIgnoreCase);
-        if (!commanderChanged)
-        {
-            return;
-        }
-
-        awaitFreshCargoSnapshot = true;
-        companionIdentityChangedAt =
-            update
-                .JournalEvents.Where(journalEvent => journalEvent.EventName is "Commander" or "LoadGame")
-                .Select(journalEvent => journalEvent.Timestamp)
-                .LastOrDefault(timestamp => timestamp is not null)
-            ?? journalState.LastEventTimestamp;
-        cargoInventoryState.Reset(null);
-        latestCargo = null;
-        latestShipLocker = null;
-        await FrontierProfile.SetCommanderContextAsync(
-            journalState.FrontierId,
-            journalState.CommanderName,
-            refreshIfOpen: false,
-            CancellationToken.None
-        );
-        FrontierProfile.LoadAutomatically();
-    }
-
-    private void ApplyShipLockerIfAllowed(JournalMonitorUpdate update, bool allowSharedCargo)
-    {
-        if (
-            allowSharedCargo
-            && update.ShipLocker is not null
-            && IsCurrentCommanderCompanionSnapshot(update.ShipLocker.Timestamp)
-        )
-        {
-            latestShipLocker = update.ShipLocker;
-        }
-    }
-
-    private async Task ApplyGreenGasGiantPublicationAsync(JournalMonitorUpdate update)
-    {
-        GreenGasGiantPublicationResult greenGasGiantResult = await greenGasGiantPublicationCoordinator.ApplyAsync(
-            update.JournalEvents,
-            NetworkPrivacy.UploadGreenGasGiantCandidates,
-            allowPublishing: !update.IsBootstrapRead,
-            CancellationToken.None
-        );
-        NetworkPrivacy.ReportPublicationResult(greenGasGiantResult);
-        if (!update.IsBootstrapRead)
-        {
-            Notifications.ReportGreenGasGiantUploads(greenGasGiantResult);
-        }
-
-        foreach (string warning in greenGasGiantResult.Warnings)
-        {
-            applicationLogService?.Append(warning);
-        }
-    }
-
-    private async Task<CommanderCodexJournalTrackResult> ApplyCommanderCodexUpdateAsync(JournalMonitorUpdate update)
-    {
-        CommanderCodexJournalTrackResult commanderCodexResult = await commanderCodexJournalTracker.ApplyAsync(
-            update.JournalEvents,
-            CancellationToken.None
-        );
-        if (commanderCodexResult.Warnings.Count > 0)
-        {
-            CommanderCodexStatusMessage = string.Join(Environment.NewLine, commanderCodexResult.Warnings);
-        }
-        else if (commanderCodexResult.DiscoveryEventCount > 0)
-        {
-            CommanderCodexStatusMessage = commanderCodexResult.HasChanges
-                ? $"Recorded {commanderCodexResult.ChangedEntryCount:N0} "
-                    + "Commander Codex ledger entries across "
-                    + $"{commanderCodexResult.ChangedFileCount:N0} files."
-                : "Commander Codex is current; no earlier firsts were found.";
-        }
-
-        return commanderCodexResult;
-    }
-
-    private async Task PersistExplorationIfChangedAsync(ExplorationSnapshot explorationBefore)
-    {
-        ExplorationSnapshot explorationAfter = explorationState.CreateSnapshot();
-        if (explorationAfter == explorationBefore)
-        {
-            return;
-        }
-
-        UpdateExplorationDisplay(explorationAfter);
-        await SaveExplorationAsync(explorationAfter);
-    }
-
-    private async Task RequestShutdownIfNeededAsync(bool requestShutdown)
-    {
-        if (requestShutdown && journalCommandShutdownRequester is { } requestShutdownAsync)
-        {
-            await requestShutdownAsync();
-        }
-    }
-
-    private bool ApplyCargoInventoryUpdate(JournalMonitorUpdate update, bool allowSharedCargo)
-    {
-        bool cargoChanged = false;
-        if (!allowSharedCargo)
-        {
-            cargoChanged = cargoInventoryState.Reset(null);
-            latestCargo = null;
-            latestShipLocker = null;
-            return cargoChanged;
-        }
-
-        if (awaitFreshCargoSnapshot)
-        {
-            if (update.Cargo is not null && IsCurrentCommanderCompanionSnapshot(update.Cargo.Timestamp))
-            {
-                cargoChanged = cargoInventoryState.Reset(update.Cargo);
-                awaitFreshCargoSnapshot = false;
-                latestCargo = cargoInventoryState.CreateSnapshot();
-            }
-
-            return cargoChanged;
-        }
-
-        foreach (JournalEventEnvelope journalEvent in update.JournalEvents)
-        {
-            // Squadron linked FCs freeze the true before-state before CargoTransfer mutates
-            // live inventory so the later GetDiff cannot collapse to a zero delta.
-            if (string.Equals(journalEvent.EventName, "CargoTransfer", StringComparison.Ordinal))
-            {
-                Colonization.PrepareSquadronCargoTransferSnapshot(cargoInventoryState);
-            }
-
-            cargoChanged |= cargoInventoryState.Apply(journalEvent, latestStatus?.InSrv == true);
-        }
-
-        if (update.Cargo is not null && IsCurrentCommanderCompanionSnapshot(update.Cargo.Timestamp))
-        {
-            cargoChanged |= cargoInventoryState.Reset(update.Cargo);
-        }
-
-        if (cargoChanged || latestCargo is null)
-        {
-            latestCargo = cargoInventoryState.CreateSnapshot();
-        }
-
-        return cargoChanged;
-    }
-
-    private void ApplyExplorationAndExobiologyJournalEvents(
-        IReadOnlyList<JournalEventEnvelope> journalEvents,
-        bool skipPersistedBootstrapEvents,
-        HashSet<string> scansLostToDeath
-    )
-    {
-        foreach (JournalEventEnvelope journalEvent in journalEvents)
-        {
-            if (!skipPersistedBootstrapEvents || journalEvent.EventName is "Fileheader" or "LoadGame")
-            {
-                explorationState.Apply(journalEvent);
-            }
-
-            if (!skipPersistedBootstrapEvents || IsExobiologyContextEvent(journalEvent.EventName))
-            {
-                if (journalEvent.EventName == "Died")
-                {
-                    scansLostToDeath.UnionWith(exobiologyState.CreateSnapshot().ScannedBioEntryIds);
-                }
-
-                exobiologyState.Apply(journalEvent);
-            }
-        }
-    }
-
-    private SurfaceSurveySessionContext? CreateSurfaceSurveySessionContext()
-    {
-        if (
-            string.IsNullOrWhiteSpace(activeProfileFrontierId)
-            || string.IsNullOrWhiteSpace(journalState.SystemName)
-            || journalState.SystemAddress is not > 0
-        )
-        {
-            return null;
-        }
-
-        SystemScanBodySnapshot? surfaceBody = SystemSurvey.Snapshot.CurrentBodyId is { } bodyId
-            ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(body => body.BodyId == bodyId)
-            : null;
-        surfaceBody ??= latestStatus?.BodyName is { Length: > 0 } statusBodyName
-            ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(body =>
-                string.Equals(body.Name, statusBodyName, StringComparison.OrdinalIgnoreCase)
-            )
-            : null;
-        return new SurfaceSurveySessionContext(
-            activeProfileFrontierId,
-            activeProfileCommanderName ?? journalState.CommanderName,
-            journalState.SystemName,
-            journalState.SystemAddress.Value,
-            journalState.StarPosition,
-            surfaceBody?.BodyId,
-            surfaceBody?.Name,
-            latestStatus?.PlanetRadius is > 0 ? (double)latestStatus.PlanetRadius : surfaceBody?.RadiusMeters ?? 0,
-            journalState.KnownNomadVehicleId
-        );
-    }
-
-    private MineMapCommandContext? CreateMineMapCommandContext()
-    {
-        string? currentFrontierId = activeProfileFrontierId ?? journalState.FrontierId;
-        if (
-            string.IsNullOrWhiteSpace(currentFrontierId)
-            || string.IsNullOrWhiteSpace(journalState.SystemName)
-            || journalState.SystemAddress is not > 0
-            || journalState.StarPosition is not { } systemPosition
-            || latestStatus is not { HasLatitudeLongitude: true } currentStatus
-            || currentStatus.PlanetRadius is not > 0
-        )
-        {
-            return null;
-        }
-
-        SystemScanBodySnapshot? body = SystemSurvey.Snapshot.CurrentBodyId is { } bodyId
-            ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(candidate => candidate.BodyId == bodyId)
-            : null;
-        body ??= currentStatus.BodyName is { Length: > 0 } statusBodyName
-            ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(candidate =>
-                string.Equals(candidate.Name, statusBodyName, StringComparison.OrdinalIgnoreCase)
-            )
-            : null;
-        if (body is null)
-        {
-            return null;
-        }
-
-        try
-        {
-            return new MineMapCommandContext(
-                currentFrontierId,
-                activeProfileCommanderName ?? journalState.CommanderName ?? string.Empty,
-                journalState.SystemName,
-                journalState.SystemAddress.Value,
-                systemPosition,
-                body.BodyId,
-                body.Name,
-                NormalizeMineMapBodyType(body.PlanetClass),
-                body.DistanceFromArrivalLs,
-                (double)currentStatus.PlanetRadius,
-                new SurfaceCoordinate(currentStatus.Latitude, currentStatus.Longitude)
-            );
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            return null;
-        }
-    }
-
-    private static string NormalizeMineMapBodyType(string? planetClass) =>
-        planetClass switch
-        {
-            "Rocky body" => "Rocky",
-            "Icy body" => "Ice",
-            "High metal content body" => "HMC",
-            "Rocky ice body" => "Rocky Ice",
-            "Metal rich body" => "Metal Rich",
-            { Length: > 0 } value => value,
-            _ => "Unknown",
-        };
-
     private void ApplyMonitorStatusMessages(JournalMonitorUpdate update, bool isManualRefresh)
     {
         if (update.JournalEvents.Count > 0)
@@ -2807,155 +2553,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
-    private async Task ApplyIdleHousekeepingAsync(JournalMonitorUpdate update)
-    {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
-        if (now - lastIdleHousekeepingAt < IdleHousekeepingInterval)
-        {
-            return;
-        }
-
-        lastIdleHousekeepingAt = now;
-        await ApplyExternalPublicationAsync(update, allowSharedCargo: !IsSharedCargoSuppressed);
-        StartSystemBodyDataRetryIfDue();
-    }
-
-    private async Task ApplyExternalPublicationAsync(JournalMonitorUpdate update, bool allowSharedCargo)
-    {
-        lastIdleHousekeepingAt = DateTimeOffset.UtcNow;
-        bool canShareCargo = allowSharedCargo;
-        try
-        {
-            CommanderInstances.RefreshGameWindowCount();
-            bool hasMultipleGameWindows = CommanderInstances.HasMultipleGameWindows;
-            canShareCargo &= !hasMultipleGameWindows;
-            eddnPublisher.SetSuspended(hasMultipleGameWindows);
-            EddnPublicationResult eddnResult = await eddnPublisher.ApplyAsync(
-                new EddnApplyRequest
-                {
-                    JournalEvents = update.JournalEvents,
-                    Status = latestStatus,
-                    Enabled = NetworkPrivacy.EddnUploadEnabled,
-                    AllowPublishing = !update.IsBootstrapRead && !hasMultipleGameWindows,
-                    JournalDirectory = folderResolution.SelectedPath,
-                    JournalPath = update.JournalPath,
-                    AllowSharedData = !hasMultipleGameWindows,
-                    CommanderName = journalState.CommanderName,
-                    FrontierId = journalState.FrontierId,
-                    GameVersion = journalState.GameVersion,
-                    GameBuild = journalState.GameBuild,
-                },
-                cancellationToken: CancellationToken.None
-            );
-            NetworkPrivacy.ReportPublicationResult(eddnResult);
-            foreach (string warning in eddnResult.Warnings)
-            {
-                applicationLogService?.Append(warning);
-            }
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            applicationLogService?.Append("EDDN processing was isolated from journal tracking: " + exception.Message);
-        }
-
-        try
-        {
-            VoxStellarPublicationResult voxStellarResult = await voxStellarPublisher.ApplyAsync(
-                new VoxStellarApplyRequest
-                {
-                    JournalEvents = update.JournalEvents,
-                    CommanderName = activeProfileCommanderName ?? journalState.CommanderName,
-                    Enabled = VoxStellar.JournalUploadEnabled,
-                    AllowPublishing = !update.IsBootstrapRead && !CommanderInstances.HasMultipleGameWindows,
-                },
-                CancellationToken.None
-            );
-            VoxStellar.ReportPublicationResult(voxStellarResult);
-            foreach (string warning in voxStellarResult.Warnings)
-            {
-                applicationLogService?.Append(warning);
-            }
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            applicationLogService?.Append(
-                "VoxStellar processing was isolated from journal tracking: " + exception.Message
-            );
-        }
-
-        try
-        {
-            InaraPublicationResult inaraResult = await inaraPublisher.ApplyAsync(
-                new InaraPublicationUpdate(
-                    update.JournalEvents,
-                    latestStatus,
-                    latestCargo,
-                    update.JournalPath,
-                    AllowPublishing: !update.IsBootstrapRead,
-                    AllowSharedData: canShareCargo,
-                    journalState.SystemName,
-                    journalState.StationName,
-                    journalState.BodyName,
-                    journalState.ShipType,
-                    journalState.ShipId,
-                    journalState.ShipName,
-                    journalState.ShipIdent,
-                    new InaraPublicationOptions(
-                        Inara.StoredApiKey,
-                        activeProfileCommanderName ?? journalState.CommanderName,
-                        activeProfileFrontierId ?? journalState.FrontierId,
-                        journalState.GameVersion,
-                        journalState.IsLegacy == false
-                    )
-                ),
-                CancellationToken.None
-            );
-            Inara.ReportPublicationResult(inaraResult);
-            foreach (string warning in inaraResult.Warnings)
-            {
-                applicationLogService?.Append(warning);
-            }
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            Inara.ReportPublicationFailure(exception);
-            applicationLogService?.Append("Inara processing was isolated from journal tracking: " + exception.Message);
-        }
-
-        try
-        {
-            EdsmPublicationResult edsmResult = await edsmPublisher.ApplyAsync(
-                new EdsmPublicationUpdate(
-                    update.JournalEvents,
-                    update.JournalPath,
-                    AllowPublishing: !IsDiagnosticReplay
-                        && !update.IsBootstrapRead
-                        && !CommanderInstances.HasMultipleGameWindows,
-                    new EdsmPublicationOptions(
-                        Edsm.StoredApiKey,
-                        Edsm.UploadCommanderName,
-                        activeProfileCommanderName ?? journalState.CommanderName,
-                        activeProfileFrontierId ?? journalState.FrontierId,
-                        journalState.GameVersion,
-                        journalState.GameBuild,
-                        journalState.IsLegacy == false
-                    )
-                ),
-                CancellationToken.None
-            );
-            Edsm.ReportPublicationResult(edsmResult);
-            foreach (string warning in edsmResult.Warnings)
-            {
-                applicationLogService?.Append(warning);
-            }
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            Edsm.ReportPublicationFailure(exception);
-            applicationLogService?.Append("EDSM processing was isolated from journal tracking: " + exception.Message);
-        }
-    }
-
     private async Task RefreshSystemSurveyCommanderCodexAsync(bool forceRefresh)
     {
         string? resolvedFrontierId = activeProfileFrontierId ?? journalState.FrontierId;
@@ -3003,76 +2600,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         if (warnings.Length > 0)
         {
             CommanderCodexStatusMessage = string.Join(Environment.NewLine, warnings);
-        }
-    }
-
-    private async Task ApplyQuestUpdateAsync(JournalMonitorUpdate update, bool allowCargoFile)
-    {
-        if (
-            string.IsNullOrWhiteSpace(journalState.FrontierId)
-            || string.IsNullOrWhiteSpace(journalState.CommanderName)
-            || folderResolution.SelectedPath is null
-        )
-        {
-            QuestStatusMessage = "Waiting for a commander journal session.";
-            return;
-        }
-
-        try
-        {
-            bool enabled = questSettingsStore.LoadEnabled();
-            IReadOnlyList<QuestRuntimeSnapshot> previousQuestSnapshot = questRuntimeCoordinator.Snapshot;
-            QuestRuntimeUpdateResult result = await questRuntimeCoordinator.ApplyUpdateAsync(
-                new QuestRuntimeConfiguration(
-                    enabled,
-                    journalState.FrontierId,
-                    journalState.CommanderName,
-                    activeProfileRavenApiKey,
-                    latestStatus
-                ),
-                folderResolution.SelectedPath,
-                update.JournalEvents,
-                update.IsBootstrapRead,
-                allowCargoFile: allowCargoFile,
-                cancellationToken: CancellationToken.None
-            );
-            QuestWorkspace.ApplyRuntimeResult(result, enabled);
-            if (ReferenceEquals(previousQuestSnapshot, result.Quests))
-            {
-                // Status can move quest overlay markers without changing the
-                // quest rows. Snapshot changes are handled by the coordinator
-                // event and must not be projected a second time here.
-                UpdateQuestOverlayPresentation(result.Quests, enabled);
-            }
-            if (!enabled)
-            {
-                QuestStatusMessage = "Quests are disabled.";
-            }
-            else if (result.Warnings.Count > 0)
-            {
-                QuestStatusMessage = string.Join(Environment.NewLine, result.Warnings);
-            }
-            else
-            {
-                QuestStatusMessage =
-                    result.Quests.Count == 0
-                        ? "No active quests."
-                        : $"{result.Quests.Count:N0} active quest(s); "
-                            + $"{QuestUnreadMessageCount:N0} unread message(s).";
-            }
-        }
-        catch (Exception exception)
-            when (exception
-                    is IOException
-                        or UnauthorizedAccessException
-                        or InvalidDataException
-                        or InvalidOperationException
-                        or ArgumentException
-                        or HttpRequestException
-            )
-        {
-            QuestStatusMessage = "Quest update failed without changing imported " + "source data: " + exception.Message;
-            applicationLogService?.Append(QuestStatusMessage);
         }
     }
 
@@ -3148,7 +2675,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         if (result.Data is null)
         {
             await boxelSurveyStats.SwitchCommanderAsync(journalState.FrontierId, CancellationToken.None);
-            activeProfileRavenApiKey = null;
+            projectionState.ProfileRavenApiKey = null;
             Inara.SetCommanderProfile(null, journalState.CommanderName, isOdyssey, inaraApiKey: null);
             FrontierProfile.SetInaraApiKey(null);
             Edsm.SetCommanderProfile(null, journalState.CommanderName, isOdyssey, savedApiKey: null);
@@ -3164,7 +2691,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             return false;
         }
 
-        activeProfileRavenApiKey = result.Data.RavenColonialApiKey;
+        projectionState.ProfileRavenApiKey = result.Data.RavenColonialApiKey;
         Inara.SetCommanderProfile(
             result.Data.FrontierId,
             activeProfileCommanderName,
@@ -3350,11 +2877,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         IsOrganicSample1Complete = snapshot.ScanOne is not null;
         IsOrganicSample2Complete = snapshot.ScanTwo is not null;
         OnPropertyChanged(nameof(HasActiveOrganicSample));
-    }
-
-    private static bool IsExobiologyContextEvent(string eventName)
-    {
-        return eventName is "Location" or "FSDJump" or "CarrierJump" or "ApproachBody" or "Scan" or "Disembark";
     }
 
     private async Task LoadCurrentSystemHistoryAsync()
@@ -4980,9 +4502,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         Colonization.SetSharedCargoSuppressed(value);
     }
 
-    private bool IsCurrentCommanderCompanionSnapshot(DateTimeOffset timestamp) =>
-        companionIdentityChangedAt is not { } changedAt || timestamp >= changedAt;
-
     private void OnQuestCoordinatorChanged(object? sender, EventArgs eventArgs)
     {
         UpdateQuestOverlayPresentation(questRuntimeCoordinator.Snapshot, questSettingsStore.LoadEnabled());
@@ -5023,14 +4542,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         {
             // Shutdown can dispose the mining model after a final map notification was queued.
         }
-    }
-
-    private static bool IsShowCodexCommand(JournalEventEnvelope journalEvent)
-    {
-        return journalEvent.EventName == "SendText"
-            && journalEvent.Payload.TryGetProperty("Message", out JsonElement message)
-            && message.ValueKind == System.Text.Json.JsonValueKind.String
-            && string.Equals(message.GetString()?.Trim(), ".show", StringComparison.OrdinalIgnoreCase);
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
