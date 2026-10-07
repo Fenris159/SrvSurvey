@@ -9235,7 +9235,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
   },
   {
     "Text": "CargoType",
@@ -29196,7 +29196,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
   },
   {
     "Text": "MarketID",
@@ -29220,7 +29220,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
   },
   {
     "Text": "Markets",
