@@ -97,34 +97,7 @@ internal sealed class DesktopKeyboardHookSource : IKeyboardActivationSource
             }
             else
             {
-                IGlobalHook? pendingHook = null;
-                try
-                {
-                    pendingHook = hookFactory();
-                    pendingHook.KeyPressed += OnKeyPressed;
-                    pendingHook.KeyReleased += OnKeyReleased;
-                    pendingHook.HookEnabled += OnHookEnabled;
-                    pendingHook.HookDisabled += OnHookDisabled;
-                    Volatile.Write(ref hook, pendingHook);
-
-                    statusBeforeStart = target.Status;
-                    pendingStatus = "Starting global keyboard input...";
-                    startedTask = pendingHook.RunAsync();
-                    runTask = startedTask;
-                    startedHook = pendingHook;
-                }
-                catch (Exception exception)
-                {
-                    Volatile.Write(ref hook, null);
-                    runTask = null;
-                    if (pendingHook is not null)
-                    {
-                        DisposeHook(pendingHook);
-                    }
-
-                    pendingStatus = $"Global keyboard input could not start: {exception.Message}";
-                    statusBeforeStart = null;
-                }
+                BeginHook(target, out startedHook, out startedTask, out pendingStatus, out statusBeforeStart);
             }
         }
 
@@ -140,6 +113,48 @@ internal sealed class DesktopKeyboardHookSource : IKeyboardActivationSource
         else if (startedHook is not null && startedTask is not null)
         {
             _ = ObserveRunAsync(version, startedHook, startedTask);
+        }
+    }
+
+    private void BeginHook(
+        IKeyboardActivationSink target,
+        out IGlobalHook? startedHook,
+        out Task? startedTask,
+        out string? pendingStatus,
+        out string? statusBeforeStart
+    )
+    {
+        startedHook = null;
+        startedTask = null;
+        pendingStatus = null;
+        statusBeforeStart = null;
+        IGlobalHook? pendingHook = null;
+        try
+        {
+            pendingHook = hookFactory();
+            pendingHook.KeyPressed += OnKeyPressed;
+            pendingHook.KeyReleased += OnKeyReleased;
+            pendingHook.HookEnabled += OnHookEnabled;
+            pendingHook.HookDisabled += OnHookDisabled;
+            Volatile.Write(ref hook, pendingHook);
+
+            statusBeforeStart = target.Status;
+            pendingStatus = "Starting global keyboard input...";
+            startedTask = pendingHook.RunAsync();
+            runTask = startedTask;
+            startedHook = pendingHook;
+        }
+        catch (Exception exception)
+        {
+            Volatile.Write(ref hook, null);
+            runTask = null;
+            if (pendingHook is not null)
+            {
+                DisposeHook(pendingHook);
+            }
+
+            pendingStatus = $"Global keyboard input could not start: {exception.Message}";
+            statusBeforeStart = null;
         }
     }
 
