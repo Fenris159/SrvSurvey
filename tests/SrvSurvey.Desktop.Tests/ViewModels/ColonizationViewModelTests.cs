@@ -3190,7 +3190,10 @@ public sealed partial class ColonizationViewModelTests : IDisposable
 
         public Task<ColonizationProject?> GetProjectAsync(string buildId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<ColonizationProject?>(null);
+            return Task.FromResult(
+                Workspace.Projects.FirstOrDefault(project => project.BuildId == buildId)
+                    ?? (SiteProjectResponse?.BuildId == buildId ? SiteProjectResponse : null)
+            );
         }
 
         public Task<ColonizationProject?> GetProjectAsync(

@@ -12,6 +12,10 @@ _Avoid_: SrvSurvey Cross-Platform, SrvSurvey-XP Cross-Platform
 The short product-role subtitle displayed beneath SrvSurvey-XP in the main-window brand lockup.
 _Avoid_: Overlay Companion, Cross-Platform
 
+**Colonization delivery recovery**:
+The Core module that reconciles journal deliveries with Raven cargo, retained delivery credit, absolute remaining requirements, and tracked build projects.
+_Avoid_: Colonization view-model recovery, pending contribution store
+
 **Overlay panel**:
 An in-game surface that presents live gameplay context and is the primary feedback surface while playing.
 _Avoid_: Main-window panel, dashboard panel
