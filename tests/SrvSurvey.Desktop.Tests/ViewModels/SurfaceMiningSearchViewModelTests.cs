@@ -565,12 +565,15 @@ public sealed class SurfaceMiningSearchViewModelTests
         model.Reference = "Timbalderis";
         model.Materials.Add("Monazite");
         var batches = new List<int>();
-        model.EligibleSellSystemsAsync = (systems, _) =>
+        model.SellMarketRules = new SurfaceSellMarketRules
         {
-            batches.Add(systems.Count);
-            return Task.FromResult<IReadOnlySet<string>>(
-                systems.Where(system => system == "Sell 60").ToHashSet(StringComparer.OrdinalIgnoreCase)
-            );
+            EligibleSellSystemsAsync = (systems, _) =>
+            {
+                batches.Add(systems.Count);
+                return Task.FromResult<IReadOnlySet<string>>(
+                    systems.Where(system => system == "Sell 60").ToHashSet(StringComparer.OrdinalIgnoreCase)
+                );
+            },
         };
 
         await model.SearchAsync();
