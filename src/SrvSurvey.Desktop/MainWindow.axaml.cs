@@ -388,10 +388,14 @@ public sealed partial class MainWindow : Window
             lastPosition,
             lastGeometry
         );
+        bool keepMinimized = WindowState == WindowState.Minimized;
         applyingWindowPreferences = true;
         try
         {
-            WindowState = WindowState.Normal;
+            if (!keepMinimized)
+            {
+                WindowState = WindowState.Normal;
+            }
             lastNormalSize = new Size(placement.Width, placement.Height);
             appliedApplicationScalePercent = viewModel.DesktopBehavior.ApplicationWindowScalePercent;
             MinWidth = placement.MinimumWidth;
@@ -410,7 +414,15 @@ public sealed partial class MainWindow : Window
                 Position = position;
                 lastNormalPosition = position;
             }
-            WindowState = placement.Maximized ? WindowState.Maximized : WindowState.Normal;
+            WindowState restoredState = placement.Maximized ? WindowState.Maximized : WindowState.Normal;
+            if (keepMinimized)
+            {
+                lastNonMinimizedState = restoredState;
+            }
+            else
+            {
+                WindowState = restoredState;
+            }
         }
         finally
         {
