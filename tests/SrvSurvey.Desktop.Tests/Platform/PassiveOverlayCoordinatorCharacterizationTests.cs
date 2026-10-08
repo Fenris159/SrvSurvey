@@ -140,6 +140,58 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void PulseRecoversFromPreparationFailureAfterHideAndShow()
+    {
+        using var overlays = new HostedOverlayTestHarness
+        {
+            Prepare = _ => new OverlayPreparationResult(false, false, "Transient preparation failure"),
+        };
+        using var coordinator = new PulseOverlayCoordinator(CreatePulse(), overlays.Session);
+        Assert.False(coordinator.IsVisible);
+        Assert.Single(overlays.PreparedWindows);
+
+        overlays.Prepare = _ => new OverlayPreparationResult(true, true, "Prepared");
+        overlays.Tick();
+        Assert.False(coordinator.IsVisible);
+        Assert.Single(overlays.PreparedWindows);
+
+        coordinator.SetSuppressed(true);
+        coordinator.SetSuppressed(false);
+
+        Assert.True(coordinator.IsVisible);
+        Assert.Equal(2, overlays.PreparedWindows.Count);
+    }
+
+    [AvaloniaFact]
+    public void StreamRetriesPreparationOnItsNextPoll()
+    {
+        using var overlays = new HostedOverlayTestHarness
+        {
+            Prepare = _ => new OverlayPreparationResult(false, false, "Transient preparation failure"),
+        };
+        var stream = new StreamOverlayViewModel(
+            new StreamOverlaySettingsStore(Path.Combine(temporaryDirectory, "stream", "settings.json"))
+        )
+        {
+            Enabled = true,
+        };
+        using var coordinator = new StreamOverlayCoordinator(stream, overlays.Session);
+        Assert.Single(overlays.PreparedWindows);
+        Assert.False(overlays.PreparedWindows[0].IsVisible);
+
+        overlays.Tick();
+        Assert.Equal(2, overlays.PreparedWindows.Count);
+        Assert.All(overlays.PreparedWindows, window => Assert.False(window.IsVisible));
+
+        overlays.Prepare = _ => new OverlayPreparationResult(true, true, "Prepared");
+        overlays.Tick();
+
+        Assert.Equal(3, overlays.PreparedWindows.Count);
+        Assert.True(overlays.PreparedWindows[2].IsVisible);
+        Assert.Contains("Compositing", stream.StatusMessage);
+    }
+
+    [AvaloniaFact]
     public void HumanSiteMapCommandsRequireTheVisiblePanel()
     {
         var humanSite = new HumanSiteViewModel();

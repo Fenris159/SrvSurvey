@@ -31,6 +31,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 ObservePreparation = ObservePreparation,
                 RequiresLayoutCatalog = false,
                 ApplyLayoutTheme = false,
+                RetryPassivePreparationOnPoll = true,
             }
         );
         viewModel.PropertyChanged += OnViewModelPropertyChanged;

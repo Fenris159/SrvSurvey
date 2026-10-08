@@ -40,6 +40,9 @@ internal sealed record PassiveOverlayWindowDefinition(
 
     /// <summary>When false, skip theme, opacity, and registry registration so compositor hosts can remain unlisted.</summary>
     public bool ApplyLayoutTheme { get; init; } = true;
+
+    /// <summary>Allows stream composition to retry click-through preparation on its next poll.</summary>
+    public bool RetryPassivePreparationOnPoll { get; init; }
 }
 
 internal sealed class HostedOverlayPlacement
@@ -174,6 +177,7 @@ internal sealed class HostedOverlayWindow : IDisposable
     private bool isReconciling;
     private bool reconcileAgain;
     private int reconciliationCount;
+    private int failureResetRequested;
     private bool isPresenting;
     private bool isVisible;
 
@@ -264,6 +268,10 @@ internal sealed class HostedOverlayWindow : IDisposable
         }
 
         this.wantsWindow = wantsWindow;
+        if (!wantsWindow)
+        {
+            Interlocked.Exchange(ref failureResetRequested, 1);
+        }
         if (Dispatcher.UIThread.CheckAccess())
         {
             ReconcileOnUiThread();
@@ -356,6 +364,11 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
+        if (definition.RetryPassivePreparationOnPoll && Health == OverlayHostHealth.PassivePreparationFailed)
+        {
+            Health = OverlayHostHealth.Healthy;
+        }
+
         int reconciliationsBeforeTick = reconciliationCount;
         definition.Tick?.Invoke();
         if (reconciliationCount == reconciliationsBeforeTick)
@@ -423,6 +436,14 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     private void ReconcileCore()
     {
+        if (
+            Interlocked.Exchange(ref failureResetRequested, 0) != 0
+            && Health is OverlayHostHealth.PassivePreparationFailed or OverlayHostHealth.Faulted
+        )
+        {
+            Health = OverlayHostHealth.Healthy;
+        }
+
         if (
             disposed
             || Health

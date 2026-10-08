@@ -693,6 +693,58 @@ public sealed class HostedOverlayWindowTests
         Assert.Equal(3, visibilityChanges);
     }
 
+    /// <summary>A hide/show request permits another opening after a transient failure, even when dispatched together.</summary>
+    [AvaloniaTheory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task HideAndShowRetriesFailedOpening(bool factoryFails, bool backgroundRequest)
+    {
+        bool fail = true;
+        using var overlays = new HostedOverlayTestHarness
+        {
+            Prepare = _ => new OverlayPreparationResult(!fail, !fail, fail ? "Failed" : "Prepared"),
+        };
+        using HostedOverlayWindow hosted = overlays.Session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotTrackTarget",
+                _ => fail && factoryFails ? throw new InvalidOperationException("Transient failure") : new Window(),
+                (_, _) => new PixelPoint(25, 30)
+            )
+        );
+
+        hosted.Reconcile(true);
+        Assert.False(hosted.IsVisible);
+        Assert.Equal(
+            factoryFails ? OverlayHostHealth.Faulted : OverlayHostHealth.PassivePreparationFailed,
+            hosted.Health
+        );
+
+        fail = false;
+        overlays.Tick();
+        Assert.False(hosted.IsVisible);
+
+        if (backgroundRequest)
+        {
+            await Task.Run(() =>
+            {
+                hosted.Reconcile(false);
+                hosted.Reconcile(true);
+            });
+            Dispatcher.UIThread.RunJobs();
+        }
+        else
+        {
+            hosted.Reconcile(false);
+            hosted.Reconcile(true);
+        }
+
+        Assert.True(hosted.IsVisible);
+        Assert.Equal(OverlayHostHealth.Healthy, hosted.Health);
+        Assert.Equal(factoryFails ? 1 : 2, overlays.PreparedWindows.Count);
+    }
+
     [AvaloniaFact]
     public void SessionDisposalReleasesHostedResourcesExactlyOnce()
     {
