@@ -21,9 +21,11 @@ public sealed partial class ColonizationDeliveryRecovery
 
     private readonly HashSet<long> cargoBaselineReady = [];
 
-    private readonly Dictionary<long, (Dictionary<string, int> Delta, DateTimeOffset? RecordedAt)> pendingCargoDeltas =
-    [];
+    private readonly Dictionary<long, List<PendingCarrierCargoDelta>> pendingCargoDeltas = [];
 
+    private sealed record PendingCarrierCargoDelta(Dictionary<string, int> Delta, DateTimeOffset? RecordedAt);
+
+    private bool fleetCarrierSyncBusy;
     private int capiCargoSeedGeneration;
     private (long MarketId, DateTimeOffset Timestamp)? lastSyncedMarket;
 
@@ -96,9 +98,10 @@ public sealed partial class ColonizationDeliveryRecovery
             return;
         }
 
+        int version = profileVersion;
         BeginCargoBaselinePending(dock.MarketId);
         bool published = false;
-        observer.FleetCarrierSyncBusyChanged(true);
+        SetFleetCarrierSyncBusy(true);
         observer.FleetCarrierStatusChanged(new(ColonizationDeliveryNoticeKind.CarrierPublishing, dock.StationName));
         try
         {
@@ -112,13 +115,18 @@ public sealed partial class ColonizationDeliveryRecovery
                 publishApiKey,
                 CancellationToken.None
             );
+            if (version != profileVersion)
+            {
+                return;
+            }
+
             published = true;
             registered = registered with
             {
                 Cargo = registered.Cargo ?? new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
             };
             ReplaceLocalFleetCarrier(registered);
-            await ReplacePublishedCarrierCargoAsync(dock, registered, publishApiKey);
+            await ReplacePublishedCarrierCargoAsync(dock, registered, publishApiKey, version);
         }
         catch (Exception exception)
             when (exception
@@ -128,20 +136,29 @@ public sealed partial class ColonizationDeliveryRecovery
                         or ArgumentException
             )
         {
-            observer.FleetCarrierStatusChanged(
-                new(
-                    published
-                        ? ColonizationDeliveryNoticeKind.CarrierLinkedCargoNotUpdated
-                        : ColonizationDeliveryNoticeKind.CarrierNotPublished,
-                    Detail: exception.Message
-                )
-            );
+            if (version == profileVersion)
+            {
+                observer.FleetCarrierStatusChanged(
+                    new(
+                        published
+                            ? ColonizationDeliveryNoticeKind.CarrierLinkedCargoNotUpdated
+                            : ColonizationDeliveryNoticeKind.CarrierNotPublished,
+                        Detail: exception.Message
+                    )
+                );
+            }
         }
         finally
         {
-            observer.PendingFleetCarrierCargoChanged(null);
-            await CompleteCargoBaselineAsync(dock.MarketId, CancellationToken.None);
-            observer.FleetCarrierSyncBusyChanged(false);
+            if (version == profileVersion)
+            {
+                observer.PendingFleetCarrierCargoChanged(null);
+                await CompleteCargoBaselineAsync(dock.MarketId, CancellationToken.None);
+                if (version == profileVersion)
+                {
+                    SetFleetCarrierSyncBusy(false);
+                }
+            }
         }
     }
 
@@ -188,6 +205,7 @@ public sealed partial class ColonizationDeliveryRecovery
             return;
         }
 
+        int version = profileVersion;
         (long MarketId, DateTimeOffset Timestamp) identity = (market.MarketId, market.Timestamp);
         if (!force && lastSyncedMarket == identity)
         {
@@ -195,13 +213,13 @@ public sealed partial class ColonizationDeliveryRecovery
         }
 
         ColonizationFleetCarrier localCarrier = fleetCarriers.First(candidate => candidate.MarketId == market.MarketId);
-        observer.FleetCarrierSyncBusyChanged(true);
+        SetFleetCarrierSyncBusy(true);
         observer.FleetCarrierStatusChanged(
             new(ColonizationDeliveryNoticeKind.CarrierCargoChecking, GetCarrierName(localCarrier))
         );
         try
         {
-            await ApplyFleetCarrierMarketCargoSyncAsync(market, syncApiKey, identity);
+            await ApplyFleetCarrierMarketCargoSyncAsync(market, syncApiKey, identity, version);
         }
         catch (Exception exception)
             when (exception
@@ -211,14 +229,20 @@ public sealed partial class ColonizationDeliveryRecovery
                         or ArgumentException
             )
         {
-            observer.FleetCarrierStatusChanged(
-                new(ColonizationDeliveryNoticeKind.CarrierCargoNotUpdated, Detail: exception.Message)
-            );
+            if (version == profileVersion)
+            {
+                observer.FleetCarrierStatusChanged(
+                    new(ColonizationDeliveryNoticeKind.CarrierCargoNotUpdated, Detail: exception.Message)
+                );
+            }
         }
         finally
         {
-            observer.PendingFleetCarrierCargoChanged(null);
-            observer.FleetCarrierSyncBusyChanged(false);
+            if (version == profileVersion)
+            {
+                observer.PendingFleetCarrierCargoChanged(null);
+                SetFleetCarrierSyncBusy(false);
+            }
         }
     }
 
@@ -408,24 +432,58 @@ public sealed partial class ColonizationDeliveryRecovery
         CancellationToken cancellationToken = default
     )
     {
-        if (apiKey is not { } adjustApiKey || adjustments.Count == 0)
+        if (apiKey is null || adjustments.Count == 0)
         {
             return null;
         }
-
-        int version = profileVersion;
         var pending = new ColonizationPendingCargoAdjustment(
             RecoveryOwner,
             marketId,
             new Dictionary<string, int>(adjustments, StringComparer.OrdinalIgnoreCase),
             recordedAt,
-            fleetCarriers.FirstOrDefault(carrier => carrier.MarketId == marketId) is { } carrier
-                ? CopyCargo(carrier.Cargo)
-                : null
+            null
         );
-        bool blocked = failedCargoAdjustments.Exists(item => item.Owner == pending.Owner && item.MarketId == marketId);
-        pending = pending with { Attempted = !blocked };
         failedCargoAdjustments.Add(pending);
+        return await ApplyPendingFleetCarrierCargoAdjustmentAsync(
+            pending,
+            sourceEventName,
+            preferShipCargoDiffForSquadron,
+            cargoInventory,
+            cancellationToken
+        );
+    }
+
+    private async Task<ColonizationDeliveryNotice?> ApplyPendingFleetCarrierCargoAdjustmentAsync(
+        ColonizationPendingCargoAdjustment pending,
+        string sourceEventName,
+        bool preferShipCargoDiffForSquadron,
+        CargoInventoryState? cargoInventory,
+        CancellationToken cancellationToken
+    )
+    {
+        if (apiKey is not { } adjustApiKey || pending.Delta.Count == 0)
+        {
+            return null;
+        }
+        int version = profileVersion;
+        long marketId = pending.MarketId;
+        IReadOnlyDictionary<string, int> adjustments = pending.Delta;
+        int pendingIndex = failedCargoAdjustments.IndexOf(pending);
+        if (pendingIndex < 0)
+        {
+            return null;
+        }
+        bool blocked = failedCargoAdjustments
+            .Take(pendingIndex)
+            .Any(item => item.Owner == pending.Owner && item.MarketId == marketId);
+        pending = pending with
+        {
+            Attempted = !blocked,
+            Before = fleetCarriers.FirstOrDefault(carrier => carrier.MarketId == marketId) is { } carrier
+                ? CopyCargo(carrier.Cargo)
+                : null,
+        };
+        failedCargoAdjustments[pendingIndex] = pending;
         SavePendingCargoAdjustments();
         if (blocked)
         {
@@ -467,13 +525,16 @@ public sealed partial class ColonizationDeliveryRecovery
         catch (Exception exception)
             when (exception is HttpRequestException or TaskCanceledException or InvalidDataException)
         {
-            RetainFailedCargoAdjustment(pending, exception, sourceEventName, preferShipCargoDiffForSquadron);
+            RetainFailedCargoAdjustment(pending, exception, sourceEventName, preferShipCargoDiffForSquadron, version);
             throw;
         }
         finally
         {
             cargoWritesInFlight.Remove((pending.Owner, marketId));
-            observer.PendingFleetCarrierCargoChanged(null);
+            if (version == profileVersion)
+            {
+                observer.PendingFleetCarrierCargoChanged(null);
+            }
         }
     }
 
@@ -518,7 +579,8 @@ public sealed partial class ColonizationDeliveryRecovery
         ColonizationPendingCargoAdjustment pending,
         Exception exception,
         string sourceEventName,
-        bool preferShipCargoDiffForSquadron
+        bool preferShipCargoDiffForSquadron,
+        int version
     )
     {
         int index = failedCargoAdjustments.IndexOf(pending);
@@ -528,6 +590,10 @@ public sealed partial class ColonizationDeliveryRecovery
             SavePendingCargoAdjustments();
         }
         nextWriteRetry = utcNow().Add(WriteRetryDelay);
+        if (version != profileVersion)
+        {
+            return;
+        }
         if (GetJournalDockForMarket(pending.MarketId) is { } dock)
         {
             SuppressSquadronCargoDiffAfterMarketAdjustment(sourceEventName, dock, preferShipCargoDiffForSquadron);
@@ -563,7 +629,8 @@ public sealed partial class ColonizationDeliveryRecovery
     private async Task ReplacePublishedCarrierCargoAsync(
         ColonizationDockingSnapshot dock,
         ColonizationFleetCarrier registered,
-        string publishApiKey
+        string publishApiKey,
+        int version
     )
     {
         MarketSnapshot? market = GetFreshFleetCarrierMarket(dock);
@@ -594,6 +661,11 @@ public sealed partial class ColonizationDeliveryRecovery
             publishApiKey,
             CancellationToken.None
         );
+        if (version != profileVersion)
+        {
+            return;
+        }
+
         ReplaceLocalFleetCarrier(registered with { Cargo = CopyCargo(updatedCargo) });
         ReconcilePendingCargo(market);
         lastSyncedMarket = (market.MarketId, market.Timestamp);
@@ -623,6 +695,9 @@ public sealed partial class ColonizationDeliveryRecovery
         capiCargoSeededMarketIds.Clear();
         capiCargoSeedGeneration++;
     }
+
+    private bool IsCurrentCapiCargoSeed(int generation, int version) =>
+        generation == capiCargoSeedGeneration && version == profileVersion;
 
     /// <summary>Installs a reliable Frontier carrier manifest through the same baseline queue as market synchronization.</summary>
     private async Task TrySeedCarrierFromCapiAsync(
@@ -666,6 +741,7 @@ public sealed partial class ColonizationDeliveryRecovery
             return;
         }
 
+        int version = profileVersion;
         BeginCargoBaselinePending(linkedMarketId);
         try
         {
@@ -676,7 +752,7 @@ public sealed partial class ColonizationDeliveryRecovery
                 seedApiKey,
                 CancellationToken.None
             );
-            if (generation != capiCargoSeedGeneration)
+            if (!IsCurrentCapiCargoSeed(generation, version))
             {
                 return;
             }
@@ -700,14 +776,20 @@ public sealed partial class ColonizationDeliveryRecovery
                         or ArgumentException
             )
         {
-            observer.FleetCarrierStatusChanged(
-                new(ColonizationDeliveryNoticeKind.CapiCargoSeedNotApplied, Detail: exception.Message)
-            );
+            if (IsCurrentCapiCargoSeed(generation, version))
+            {
+                observer.FleetCarrierStatusChanged(
+                    new(ColonizationDeliveryNoticeKind.CapiCargoSeedNotApplied, Detail: exception.Message)
+                );
+            }
         }
         finally
         {
-            observer.PendingFleetCarrierCargoChanged(null);
-            await CompleteCargoBaselineAsync(linkedMarketId, CancellationToken.None);
+            if (IsCurrentCapiCargoSeed(generation, version))
+            {
+                observer.PendingFleetCarrierCargoChanged(null);
+                await CompleteCargoBaselineAsync(linkedMarketId, CancellationToken.None);
+            }
         }
     }
 
@@ -715,7 +797,8 @@ public sealed partial class ColonizationDeliveryRecovery
     private async Task ApplyFleetCarrierMarketCargoSyncAsync(
         MarketSnapshot market,
         string syncApiKey,
-        (long MarketId, DateTimeOffset Timestamp) identity
+        (long MarketId, DateTimeOffset Timestamp) identity,
+        int version
     )
     {
         BeginCargoBaselinePending(market.MarketId);
@@ -725,6 +808,11 @@ public sealed partial class ColonizationDeliveryRecovery
                 market.MarketId,
                 CancellationToken.None
             );
+            if (version != profileVersion)
+            {
+                return;
+            }
+
             if (serverCarrier is null)
             {
                 observer.FleetCarrierStatusChanged(new(ColonizationDeliveryNoticeKind.CarrierNotOnRaven));
@@ -763,6 +851,11 @@ public sealed partial class ColonizationDeliveryRecovery
                 syncApiKey,
                 CancellationToken.None
             );
+            if (version != profileVersion)
+            {
+                return;
+            }
+
             if (IsLinkedFleetCarrier(market.MarketId))
             {
                 ReplaceLocalFleetCarrier(serverCarrier with { Cargo = CopyCargo(updatedCargo) });
@@ -780,8 +873,11 @@ public sealed partial class ColonizationDeliveryRecovery
         }
         finally
         {
-            observer.PendingFleetCarrierCargoChanged(null);
-            await CompleteCargoBaselineAsync(market.MarketId, CancellationToken.None);
+            if (version == profileVersion)
+            {
+                observer.PendingFleetCarrierCargoChanged(null);
+                await CompleteCargoBaselineAsync(market.MarketId, CancellationToken.None);
+            }
         }
     }
 
@@ -810,6 +906,7 @@ public sealed partial class ColonizationDeliveryRecovery
             return null;
         }
 
+        int version = profileVersion;
         BeginCargoBaselinePending(dock.MarketId);
         bool stored = false;
         try
@@ -818,6 +915,11 @@ public sealed partial class ColonizationDeliveryRecovery
                 dock.MarketId,
                 cancellationToken
             );
+            if (version != profileVersion)
+            {
+                return null;
+            }
+
             if (serverCarrier is null)
             {
                 return null;
@@ -842,14 +944,19 @@ public sealed partial class ColonizationDeliveryRecovery
                         or ArgumentException
             )
         {
-            return new(ColonizationDeliveryNoticeKind.CarrierBaselineNotLoaded, Detail: exception.Message);
+            return version == profileVersion
+                ? new(ColonizationDeliveryNoticeKind.CarrierBaselineNotLoaded, Detail: exception.Message)
+                : null;
         }
         finally
         {
-            await CompleteCargoBaselineAsync(dock.MarketId, cancellationToken: cancellationToken);
-            if (!stored)
+            if (version == profileVersion)
             {
-                cargoBaselineReady.Remove(dock.MarketId);
+                await CompleteCargoBaselineAsync(dock.MarketId, cancellationToken: cancellationToken);
+                if (version == profileVersion && !stored)
+                {
+                    cargoBaselineReady.Remove(dock.MarketId);
+                }
             }
         }
     }
@@ -865,7 +972,7 @@ public sealed partial class ColonizationDeliveryRecovery
         return cargoBaselinePendingDepth.GetValueOrDefault(marketId) > 0;
     }
 
-    /// <summary>Queues deltas with their latest journal time, keeping aggregate time unknown if any included event is undated.</summary>
+    /// <summary>Preserves each queued transaction’s journal time so market coverage can retire only included commodities.</summary>
     private bool TryQueuePendingCargoDelta(
         long marketId,
         IReadOnlyDictionary<string, int> delta,
@@ -876,23 +983,12 @@ public sealed partial class ColonizationDeliveryRecovery
         {
             return false;
         }
-
-        if (
-            !pendingCargoDeltas.TryGetValue(
-                marketId,
-                out (Dictionary<string, int> Delta, DateTimeOffset? RecordedAt) pending
-            )
-        )
+        if (!pendingCargoDeltas.TryGetValue(marketId, out List<PendingCarrierCargoDelta>? pending))
         {
-            pending = (new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase), recordedAt);
+            pending = [];
+            pendingCargoDeltas[marketId] = pending;
         }
-        DateTimeOffset? latest = null;
-        if (pending.RecordedAt is { } previous && recordedAt is { } current)
-        {
-            latest = previous > current ? previous : current;
-        }
-        pendingCargoDeltas[marketId] = (pending.Delta, latest);
-        ColonizationFleetCarrierPendingCargo.MergeDelta(pending.Delta, delta);
+        pending.Add(new(new Dictionary<string, int>(delta, StringComparer.OrdinalIgnoreCase), recordedAt));
         return true;
     }
 
@@ -904,56 +1000,90 @@ public sealed partial class ColonizationDeliveryRecovery
         {
             return;
         }
-
         int remaining = current - 1;
         if (remaining > 0)
         {
             cargoBaselinePendingDepth[marketId] = remaining;
             return;
         }
-
         cargoBaselinePendingDepth.Remove(marketId);
         cargoBaselineReady.Add(marketId);
-        if (
-            !pendingCargoDeltas.Remove(
-                marketId,
-                out (Dictionary<string, int> Delta, DateTimeOffset? RecordedAt) pending
-            )
-            || pending.Delta.Count == 0
-            || apiKey is null
-        )
+        if (!pendingCargoDeltas.Remove(marketId, out List<PendingCarrierCargoDelta>? pending) || apiKey is null)
         {
             return;
         }
+        int version = profileVersion;
+        string owner = RecoveryOwner;
+        ColonizationPendingCargoAdjustment[] retained = pending
+            .Select(item => new ColonizationPendingCargoAdjustment(
+                owner,
+                marketId,
+                item.Delta,
+                item.RecordedAt,
+                null,
+                Attempted: false,
+                OutcomeUnknown: false
+            ))
+            .ToArray();
+        failedCargoAdjustments.AddRange(retained);
+        SavePendingCargoAdjustments();
+        foreach (ColonizationPendingCargoAdjustment item in retained)
+        {
+            if (version != profileVersion)
+            {
+                return;
+            }
+            await ReplayQueuedCargoDeltaAsync(item, version, cancellationToken);
+        }
+    }
 
+    private async Task ReplayQueuedCargoDeltaAsync(
+        ColonizationPendingCargoAdjustment pending,
+        int version,
+        CancellationToken cancellationToken
+    )
+    {
         try
         {
-            await ApplyFleetCarrierCargoAdjustmentAsync(
-                marketId,
-                pending.Delta,
+            await ApplyPendingFleetCarrierCargoAdjustmentAsync(
+                pending,
                 "queued dock baseline",
                 true,
                 null,
-                pending.RecordedAt,
-                cancellationToken: cancellationToken
+                cancellationToken
             );
         }
         catch (Exception exception)
             when (exception is HttpRequestException or TaskCanceledException or InvalidDataException)
         {
-            observer.FleetCarrierStatusChanged(
-                new(ColonizationDeliveryNoticeKind.QueuedCarrierCargoRetained, Detail: exception.Message)
-            );
+            if (version == profileVersion)
+            {
+                observer.FleetCarrierStatusChanged(
+                    new(ColonizationDeliveryNoticeKind.QueuedCarrierCargoRetained, Detail: exception.Message)
+                );
+            }
         }
     }
 
-    /// <summary>Retires covered deltas only when their known journal event time is no later than the authoritative market snapshot.</summary>
+    /// <summary>Retires covered deltas only when their known event time is no later than the authoritative market snapshot.</summary>
     private void ReconcilePendingCargo(MarketSnapshot market)
     {
         var covered = market
             .Items.Where(item => item.Producer || !item.Consumer)
             .Select(item => item.Commodity)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (pendingCargoDeltas.TryGetValue(market.MarketId, out List<PendingCarrierCargoDelta>? queued))
+        {
+            foreach (
+                PendingCarrierCargoDelta pending in queued.Where(item =>
+                    item.RecordedAt is { } recordedAt && recordedAt <= market.Timestamp
+                )
+            )
+            {
+                RemoveCoveredCargo(pending.Delta, covered);
+            }
+            queued.RemoveAll(item => item.Delta.Count == 0);
+        }
         string owner = RecoveryOwner;
         foreach (
             ColonizationPendingCargoAdjustment pending in failedCargoAdjustments
@@ -966,16 +1096,21 @@ public sealed partial class ColonizationDeliveryRecovery
                 .ToArray()
         )
         {
-            foreach (string commodity in pending.Delta.Keys.Where(covered.Contains).ToArray())
-            {
-                pending.Delta.Remove(commodity);
-            }
+            RemoveCoveredCargo(pending.Delta, covered);
             if (pending.Delta.Count == 0)
             {
                 failedCargoAdjustments.Remove(pending);
             }
         }
         SavePendingCargoAdjustments();
+    }
+
+    private static void RemoveCoveredCargo(Dictionary<string, int> delta, HashSet<string> covered)
+    {
+        foreach (string commodity in delta.Keys.Where(covered.Contains).ToArray())
+        {
+            delta.Remove(commodity);
+        }
     }
 
     /// <summary>Invalidates dock readiness without discarding transactions owned by an in-flight baseline.</summary>
@@ -986,9 +1121,23 @@ public sealed partial class ColonizationDeliveryRecovery
 
     private void ClearAllCargoBaselines()
     {
+        if (cargoBaselinePendingDepth.Count > 0 || fleetCarrierSyncBusy || cargoWritesInFlight.Count > 0)
+        {
+            observer.PendingFleetCarrierCargoChanged(null);
+        }
+        if (fleetCarrierSyncBusy)
+        {
+            SetFleetCarrierSyncBusy(false);
+        }
         cargoBaselinePendingDepth.Clear();
         cargoBaselineReady.Clear();
         pendingCargoDeltas.Clear();
+    }
+
+    private void SetFleetCarrierSyncBusy(bool value)
+    {
+        fleetCarrierSyncBusy = value;
+        observer.FleetCarrierSyncBusyChanged(value);
     }
 
     private void ReplaceLocalFleetCarrier(ColonizationFleetCarrier updatedCarrier)

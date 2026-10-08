@@ -138,7 +138,12 @@ public sealed partial class ColonizationViewModelTests
         Task publish = vm.PublishCurrentFleetCarrierAsync();
         await entered.Task;
         await vm.SynchronizeLiveProjectsAsync(
-            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"steel\",\"Count\":5")],
+            [
+                Event("MarketBuy", "\"MarketID\":42,\"Type\":\"steel\",\"Count\":5") with
+                {
+                    Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1),
+                },
+            ],
             true
         );
         Assert.Empty(client.FleetCarrierAdjustments);
@@ -532,11 +537,11 @@ public sealed partial class ColonizationViewModelTests
         Assert.Null(recordedAt);
     }
 
-    /// <summary>Dates a queued baseline delta by the newest included event, retaining undated aggregates conservatively.</summary>
+    /// <summary>Preserves each queued transaction’s time for recovery and retires only the events covered by a later baseline.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueuedCargoPreservesLatestEventTime(bool missingTime)
+    public async Task QueuedCargoPreservesEachEventTime(bool missingTime)
     {
         StubRavenColonialClient client = CarrierClient();
         using ColonizationViewModel vm = await CreateRecoveryAsync(client);
@@ -561,10 +566,22 @@ public sealed partial class ColonizationViewModelTests
         gate.SetResult(new Dictionary<string, int> { ["steel"] = 80 });
         await publish;
         var store = new ColonizationSettingsStore(Path.Combine(directory, "recovery.json"));
-        Assert.Equal(second.Timestamp, Assert.Single(store.LoadPendingCargoAdjustments()).RecordedAt);
+        Assert.Collection(
+            store.LoadPendingCargoAdjustments(),
+            pending =>
+            {
+                Assert.Equal(first.Timestamp, pending.RecordedAt);
+                Assert.Equal(-5, pending.Delta["steel"]);
+            },
+            pending =>
+            {
+                Assert.Equal(second.Timestamp, pending.RecordedAt);
+                Assert.Equal(2, pending.Delta["steel"]);
+            }
+        );
         client.ReplaceCargo = null;
         await vm.UpdateMarketAsync(market with { Timestamp = market.Timestamp.AddSeconds(15) });
-        Assert.Single(store.LoadPendingCargoAdjustments());
+        Assert.Equal(second.Timestamp, Assert.Single(store.LoadPendingCargoAdjustments()).RecordedAt);
     }
 
     /// <summary>Does not retire aggregate squadron differences by an unrelated local clock when their event time is unknown.</summary>

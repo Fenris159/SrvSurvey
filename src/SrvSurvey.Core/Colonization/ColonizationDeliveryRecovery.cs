@@ -158,13 +158,17 @@ public sealed partial class ColonizationDeliveryRecovery
     /// <summary>Updates credentials and invalidates requests owned by a superseded Frontier profile.</summary>
     public void SetProfile(string? profileFrontierId, bool profileIsOdyssey, string? profileApiKey)
     {
-        if (frontierId != profileFrontierId?.Trim() || isOdyssey != profileIsOdyssey || apiKey != profileApiKey?.Trim())
+        string? nextFrontierId = string.IsNullOrWhiteSpace(profileFrontierId) ? null : profileFrontierId.Trim();
+        string? nextApiKey = string.IsNullOrWhiteSpace(profileApiKey) ? null : profileApiKey.Trim();
+        if (frontierId != nextFrontierId || isOdyssey != profileIsOdyssey || apiKey != nextApiKey)
         {
             profileVersion++;
+            ClearCapiCargoSeedSession();
+            ClearAllCargoBaselines();
         }
-        frontierId = string.IsNullOrWhiteSpace(profileFrontierId) ? null : profileFrontierId.Trim();
+        frontierId = nextFrontierId;
         isOdyssey = profileIsOdyssey;
-        apiKey = string.IsNullOrWhiteSpace(profileApiKey) ? null : profileApiKey.Trim();
+        apiKey = nextApiKey;
         lastSyncedMarket = null;
     }
 

@@ -158,7 +158,7 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Task marketSync = UpdateMarketAsync(recovery, LinkedCarrierMarket(80));
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         IReadOnlyList<ColonizationDeliveryNotice> notices = await recovery.SynchronizeLiveEventsAsync(
-            [SteelBuy],
+            [SteelBuy with { Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1) }],
             allowPublishing: true
         );
         Assert.Empty(client.FleetCarrierAdjustments);
@@ -189,7 +189,10 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         recovery.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
         Task marketSync = UpdateMarketAsync(recovery, LinkedCarrierMarket(75));
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
-        await recovery.SynchronizeLiveEventsAsync([SteelBuy], allowPublishing: true);
+        await recovery.SynchronizeLiveEventsAsync(
+            [SteelBuy with { Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1) }],
+            allowPublishing: true
+        );
         client.AdjustmentFailures.Enqueue(new HttpRequestException("replay unavailable"));
 
         gate.SetResult(true);
@@ -284,7 +287,10 @@ public sealed partial class ColonizationDeliveryRecoveryTests
 
         Task marketSync = UpdateMarketAsync(recovery, LinkedCarrierMarket(80));
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
-        await recovery.SynchronizeLiveEventsAsync([SteelBuy], allowPublishing: true);
+        await recovery.SynchronizeLiveEventsAsync(
+            [SteelBuy with { Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1) }],
+            allowPublishing: true
+        );
         Assert.Empty(client.FleetCarrierAdjustments);
 
         await recovery.SeedLinkedCarrierCargoFromCapiAsync(LinkedCarrierCapiSnapshot(isDocked: false, steel: 90));
@@ -371,7 +377,12 @@ public sealed partial class ColonizationDeliveryRecoveryTests
 
         Task marketSync = UpdateMarketAsync(recovery, LinkedCarrierMarket(80, "SQD-001"));
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
-        await recovery.SynchronizeLiveEventsAsync([SteelBuy], true, cargo, cargoActivity: true);
+        await recovery.SynchronizeLiveEventsAsync(
+            [SteelBuy with { Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1) }],
+            true,
+            cargo,
+            cargoActivity: true
+        );
         Assert.Empty(client.FleetCarrierAdjustments);
 
         gate.SetResult(true);

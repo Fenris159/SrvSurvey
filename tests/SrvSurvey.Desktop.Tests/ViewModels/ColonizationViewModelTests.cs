@@ -2010,7 +2010,12 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         Task marketSync = viewModel.UpdateMarketAsync(market);
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         await viewModel.SynchronizeLiveProjectsAsync(
-            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")],
+            [
+                Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5") with
+                {
+                    Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1),
+                },
+            ],
             allowPublishing: true
         );
         Assert.Empty(client.FleetCarrierAdjustments);
@@ -2139,7 +2144,12 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         Task marketSync = viewModel.UpdateMarketAsync(LinkedCarrierMarket(stock: 80));
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         await viewModel.SynchronizeLiveProjectsAsync(
-            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")],
+            [
+                Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5") with
+                {
+                    Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1),
+                },
+            ],
             allowPublishing: true
         );
         Assert.Empty(client.FleetCarrierAdjustments);
@@ -2263,12 +2273,22 @@ public sealed partial class ColonizationViewModelTests : IDisposable
                 []
             )
         );
-        cargo.Apply(Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"));
+        cargo.Apply(
+            Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5") with
+            {
+                Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1),
+            }
+        );
 
         Task marketSync = viewModel.UpdateMarketAsync(LinkedCarrierMarket(stock: 80, stationName: "SQD-001"));
         Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));
         await viewModel.SynchronizeLiveProjectsAsync(
-            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")],
+            [
+                Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5") with
+                {
+                    Timestamp = LinkedCarrierMarket(80).Timestamp.AddSeconds(1),
+                },
+            ],
             allowPublishing: true,
             cargoInventory: cargo,
             cargoActivity: true
