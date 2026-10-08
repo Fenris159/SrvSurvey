@@ -190,6 +190,19 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             generation = consentGeneration;
         }
 
+        return Task.FromResult(
+            QueueEvents(uploads.Writer, generation, commanderName, matchingEvents, cancellationToken)
+        );
+    }
+
+    private VoxStellarPublicationResult QueueEvents(
+        ChannelWriter<QueuedUpload> writer,
+        long generation,
+        string commanderName,
+        JournalEventEnvelope[] matchingEvents,
+        CancellationToken cancellationToken
+    )
+    {
         var queued = new List<string>(matchingEvents.Length);
         var warnings = new List<string>();
         int dropped = 0;
@@ -203,7 +216,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
                 {
                     break;
                 }
-                if (uploads.Writer.TryWrite(new QueuedUpload(generation, body)))
+                if (writer.TryWrite(new QueuedUpload(generation, body)))
                 {
                     queued.Add(journalEvent.EventName);
                 }
@@ -218,7 +231,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             warnings.Add($"VoxStellar could not queue {dropped} event(s) because its in-memory upload queue is full.");
         }
 
-        return Task.FromResult(new VoxStellarPublicationResult(queued, warnings));
+        return new VoxStellarPublicationResult(queued, warnings);
     }
 
     private async Task RunWorkerAsync()
