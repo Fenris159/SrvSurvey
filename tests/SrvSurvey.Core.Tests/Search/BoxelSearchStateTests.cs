@@ -639,6 +639,79 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void EarlierVisitRuleStillAppliesWhenFullFssIsRequired()
+    {
+        var startedOn = DateTimeOffset.Parse(
+            "2026-07-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var state = new BoxelSearchState();
+        Assert.True(
+            state.TryActivate(
+                new BoxelSearchActivationRequest
+                {
+                    TopBoxel = BoxelAddress.Parse("Col 359 Sector NR-T c4-0"),
+                    LowMassCode = 'c',
+                    StartedOn = startedOn,
+                    SkipAlreadyVisited = true,
+                    CompletionMode = BoxelCompletionMode.FssAllBodies,
+                },
+                out _
+            )
+        );
+
+        state.MergeLocalSystems([
+            Observation("Col 359 Sector NR-T c4-0", visited: startedOn.AddDays(-1)),
+            Observation("Col 359 Sector NR-T c4-1", visited: startedOn.AddDays(1)),
+            Observation("Col 359 Sector NR-T c4-2"),
+        ]);
+
+        Assert.True(state.Systems.Single(system => system.Boxel.N2 == 0).IsComplete);
+        Assert.False(state.Systems.Single(system => system.Boxel.N2 == 1).IsComplete);
+        Assert.False(state.Systems.Single(system => system.Boxel.N2 == 2).IsComplete);
+    }
+
+    [Fact]
+    public void UpdatingRulesDoesNotReuseFullFssFromAnEarlierVisitForANewVisit()
+    {
+        var startedOn = DateTimeOffset.Parse(
+            "2026-07-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var state = new BoxelSearchState();
+        Assert.True(
+            state.TryActivate(
+                new BoxelSearchActivationRequest
+                {
+                    TopBoxel = BoxelAddress.Parse("Col 359 Sector NR-T c4-0"),
+                    LowMassCode = 'c',
+                    StartedOn = startedOn,
+                    CompletionMode = BoxelCompletionMode.FssAllBodies,
+                },
+                out _
+            )
+        );
+        state.MergeLocalSystems([
+            Observation("Col 359 Sector NR-T c4-0", visited: startedOn.AddDays(-1)) with
+            {
+                FssAllBodies = true,
+            },
+        ]);
+        Assert.True(
+            state.Apply(
+                Parse(
+                    """{"timestamp":"2026-07-02T00:00:00Z","event":"FSDJump","StarSystem":"Col 359 Sector NR-T c4-0","SystemAddress":83517084434}"""
+                )
+            )
+        );
+        Assert.False(Assert.Single(state.Systems).IsComplete);
+
+        state.SetCompletionRules(new SetBoxelCompletionRules(startedOn, false, true, BoxelCompletionMode.FssAllBodies));
+
+        Assert.False(Assert.Single(state.Systems).IsComplete);
+    }
+
+    [Fact]
     public void SkipRulesMatchLegacyDatesAndKnownBodyRequirement()
     {
         var state = new BoxelSearchState();

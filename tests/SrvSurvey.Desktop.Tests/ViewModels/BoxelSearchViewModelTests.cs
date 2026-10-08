@@ -1,3 +1,4 @@
+using System.Net;
 using Avalonia.Headless.XUnit;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
@@ -27,6 +28,126 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
 
         Assert.False(viewModel.AutoCopy);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ChangingCompletionRulesUpdatesAnActiveSearchWithoutRestarting(bool localVisit)
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        string name = "Col 359 Sector NR-T c4-0";
+        if (localVisit)
+        {
+            string systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
+            Directory.CreateDirectory(systemDirectory);
+            await File.WriteAllTextAsync(
+                Path.Combine(systemDirectory, "Col 359 Sector NR-T c4-0_83517084434.json"),
+                """{"name":"Col 359 Sector NR-T c4-0","address":83517084434,"starPos":[-205,112.15625,309.53125],"lastVisited":"2026-06-01T00:00:00Z"}"""
+            );
+        }
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            profileStore,
+            new StubResolver(localVisit ? [] : [Observation(name, 83517084434)])
+        );
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = name;
+        viewModel.LowMassCode = "c";
+        viewModel.StartedOn = DateTimeOffset.Parse(
+            "2026-07-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        await viewModel.ActivateAsync();
+        viewModel.LastSystemAvailable = "30";
+        await viewModel.ApplyLastSystemAvailableAsync();
+        Assert.False(viewModel.Systems[0].IsComplete);
+
+        if (localVisit)
+        {
+            viewModel.SkipAlreadyVisited = true;
+        }
+        else
+        {
+            viewModel.SkipKnownToSpansh = true;
+        }
+        await viewModel.RefreshCurrentAsync();
+
+        Assert.True(viewModel.Systems[0].IsComplete);
+        Assert.Equal("Col 359 Sector NR-T c4-1", viewModel.NextSystem);
+        Assert.Equal("30", viewModel.LastSystemAvailable);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
+        Assert.Equal(localVisit, saved.Data?.BoxelSearch.SkipAlreadyVisited);
+        Assert.Equal(!localVisit, saved.Data?.BoxelSearch.SkipKnownToSpansh);
+    }
+
+    [Fact]
+    public async Task Col359SearchUsesRealSpanshSuffixesAndMarksOlderBodiesComplete()
+    {
+        using var client = new HttpClient(new Col359SpanshHandler());
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new SpanshBoxelClient(client, new Uri("https://example.test/api/"))
+        );
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Col 359 Sector NR-T c4-0";
+        viewModel.LowMassCode = "c";
+        viewModel.StartedOn = DateTimeOffset.Parse(
+            "2026-10-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        viewModel.SkipKnownToSpansh = true;
+        viewModel.CompleteOnFssAllBodies = true;
+
+        await viewModel.ActivateAsync();
+
+        Assert.Equal("18", viewModel.LastSystemAvailable);
+        Assert.True(viewModel.Systems[0].IsComplete);
+        Assert.False(viewModel.Systems[1].IsComplete);
+        Assert.Equal("Col 359 Sector NR-T c4-1", viewModel.NextSystem);
+        viewModel.LastSystemAvailable = "30";
+        await viewModel.ApplyLastSystemAvailableAsync();
+        viewModel.SelectedSystemPageIndex = 1;
+        Assert.True(viewModel.Systems.Single(row => row.Name.EndsWith("c4-18", StringComparison.Ordinal)).IsComplete);
+        Assert.Equal("30", viewModel.LastSystemAvailable);
+        Assert.Equal("2 of 31 systems complete", viewModel.SystemProgress);
+    }
+
+    [Fact]
+    public async Task ChangingStartDateAndBothRulesUsesTheLatestOptionsAndRetainsTheManualRange()
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        BoxelSearchViewModel viewModel = CreateViewModel(
+            profileStore,
+            new StubResolver([Observation("Col 359 Sector NR-T c4-0", 83517084434)])
+        );
+        await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Col 359 Sector NR-T c4-0";
+        viewModel.LowMassCode = "c";
+        viewModel.StartedOn = DateTimeOffset.Parse(
+            "2026-05-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        await viewModel.ActivateAsync();
+        viewModel.LastSystemAvailable = "30";
+        await viewModel.ApplyLastSystemAvailableAsync();
+        Assert.False(viewModel.Systems[0].IsComplete);
+
+        viewModel.SkipAlreadyVisited = true;
+        viewModel.SkipKnownToSpansh = true;
+        viewModel.StartedOn = DateTimeOffset.Parse(
+            "2026-07-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        viewModel.CompleteOnFssAllBodies = true;
+        await viewModel.RefreshCurrentAsync();
+
+        Assert.True(viewModel.Systems[0].IsComplete);
+        Assert.Equal("30", viewModel.LastSystemAvailable);
+        CommanderProfileLoadResult saved = await profileStore.LoadAsync("F123", true);
+        Assert.True(saved.Data?.BoxelSearch.SkipAlreadyVisited);
+        Assert.True(saved.Data?.BoxelSearch.SkipKnownToSpansh);
+        Assert.Equal(viewModel.StartedOn, saved.Data?.BoxelSearch.StartedOn);
+        Assert.Equal(BoxelCompletionMode.FssAllBodies, saved.Data?.BoxelSearch.CompletionMode);
     }
 
     [Fact]
@@ -1487,6 +1608,31 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         )
         {
             return Task.FromResult(suggestions);
+        }
+    }
+
+    private sealed class Col359SpanshHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            return Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """
+                        {"count":3,"results":[
+                            {"id64":83517084434,"name":"Col 359 Sector NR-T c4-0","x":-205,"y":112.15625,"z":309.53125,"updated_at":"2026-09-30T19:52:54Z","bodies":[{}]},
+                            {"id64":358394991378,"name":"Col 359 Sector NR-T c4-1","x":-186.3125,"y":97.375,"z":299.6875,"updated_at":"2026-10-04T18:59:57Z","bodies":[{}]},
+                            {"id64":5031319409426,"name":"Col 359 Sector NR-T c4-18","x":-220.40625,"y":103.25,"z":308.03125,"updated_at":"2026-09-21T22:40:22Z","bodies":[{}]}
+                        ]}
+                        """
+                    ),
+                    RequestMessage = request,
+                }
+            );
         }
     }
 

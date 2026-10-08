@@ -13,6 +13,40 @@ public sealed class BoxelSearchSessionTests : IDisposable
     );
 
     [Fact]
+    public async Task CompletionRuleChangesPreserveLinkedProgressAndDoNotRepeatRemoteRequests()
+    {
+        var profiles = new RecordingProfileStore();
+        var resolver = new StaticResolver([Observation("Col 359 Sector NR-T c4-0", 83517084434)]);
+        await using BoxelSearchSession session = CreateSession(profiles, systemResolver: resolver);
+        await session.SwitchProfileAsync(Profile(BoxelSearchSnapshot.Empty));
+        var rules = new SetBoxelCompletionRules(
+            Activation("Col 359 Sector NR-T c4-0").StartedOn,
+            false,
+            true,
+            BoxelCompletionMode.FssAllBodies
+        );
+        Assert.Equal(BoxelSearchOutcomeKind.Rejected, (await session.ExecuteAsync(rules)).Kind);
+        await session.ExecuteAsync(new ActivateBoxelSearch(Activation("Col 359 Sector NR-T c4-0")));
+        await session.ExecuteAsync(new SetExpectedSystemCount(31));
+        BoxelSearchOutcome saved = await session.ExecuteAsync(new SaveBoxelSearchToLibrary("Col 359 progress", null));
+        string fileName = Assert.IsType<SavedBoxelSearchDocument>(saved.SavedSearch).FileName;
+
+        Assert.Equal(BoxelSearchOutcomeKind.Success, (await session.ExecuteAsync(rules)).Kind);
+        Assert.Equal(BoxelSearchOutcomeKind.NoChange, (await session.ExecuteAsync(rules)).Kind);
+
+        Assert.True(Assert.Single(session.Current.Search.Systems).IsComplete);
+        Assert.Equal(31, session.Current.Search.CurrentCount);
+        Assert.Equal(fileName, session.Current.Search.Persistence.SavedSearchFileName);
+        SavedBoxelSearchDocument linked = await new SavedBoxelSearchStore(temporaryDirectory).LoadAsync(
+            "F123",
+            fileName
+        );
+        Assert.True(linked.Search.SkipKnownToSpansh);
+        Assert.Equal(31, linked.Search.CurrentCount);
+        Assert.Equal(1, resolver.RequestCount);
+    }
+
+    [Fact]
     public async Task SessionOwnsActivationPersistenceAndStableSnapshotSections()
     {
         var profileStore = new RecordingProfileStore();
@@ -618,12 +652,15 @@ public sealed class BoxelSearchSessionTests : IDisposable
 
     private sealed class StaticResolver(IReadOnlyList<BoxelSystemObservation> systems) : IBoxelSystemResolver
     {
+        public int RequestCount { get; private set; }
+
         public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
             BoxelAddress boxel,
             CancellationToken cancellationToken = default
         )
         {
             cancellationToken.ThrowIfCancellationRequested();
+            RequestCount++;
             return Task.FromResult(systems);
         }
     }

@@ -8,6 +8,32 @@ namespace SrvSurvey.Core.Tests.Search;
 public sealed class SpanshBoxelClientTests
 {
     [Fact]
+    public async Task SearchPreservesTheNamedSectorFromRealCol359Results()
+    {
+        var handler = new QueueHandler(
+            """
+            {
+              "count": 2,
+              "results": [
+                {"id64": 83517084434, "name": "Col 359 Sector NR-T c4-0", "x": -205, "y": 112.15625, "z": 309.53125, "updated_at": "2026-09-30T19:52:54Z", "bodies": [{}]},
+                {"id64": 5031319409426, "name": "Col 359 Sector NR-T c4-18", "x": -220.40625, "y": 103.25, "z": 308.03125, "updated_at": "2026-09-21T22:40:22Z", "bodies": [{}]}
+              ]
+            }
+            """
+        );
+        var client = new SpanshBoxelClient(new HttpClient(handler), new Uri("https://example.test/api/"));
+
+        IReadOnlyList<BoxelSystemObservation> systems = await client.SearchAsync(
+            BoxelAddress.Parse("Col 359 Sector NR-T c4-0")
+        );
+
+        Assert.Equal(2, systems.Count);
+        Assert.Equal("Col 359 Sector NR-T c4-18", systems[^1].Boxel.Name);
+        Assert.Equal(5031319409426, systems[^1].Boxel.SystemAddress);
+        Assert.True(systems[^1].HasKnownBodies);
+    }
+
+    [Fact]
     public async Task SearchPagesAndMapsTheSystemsSearchContract()
     {
         string firstPageSystems = string.Join(

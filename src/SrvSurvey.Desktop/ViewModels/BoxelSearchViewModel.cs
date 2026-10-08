@@ -234,25 +234,66 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public DateTimeOffset StartedOn
     {
         get => startedOn;
-        set => SetField(ref startedOn, value);
+        set
+        {
+            if (SetField(ref startedOn, value))
+            {
+                UpdateCompletionRules();
+            }
+        }
     }
 
     public bool SkipAlreadyVisited
     {
         get => skipAlreadyVisited;
-        set => SetField(ref skipAlreadyVisited, value);
+        set
+        {
+            if (SetField(ref skipAlreadyVisited, value))
+            {
+                UpdateCompletionRules();
+            }
+        }
     }
 
     public bool SkipKnownToSpansh
     {
         get => skipKnownToSpansh;
-        set => SetField(ref skipKnownToSpansh, value);
+        set
+        {
+            if (SetField(ref skipKnownToSpansh, value))
+            {
+                UpdateCompletionRules();
+            }
+        }
     }
 
     public bool CompleteOnFssAllBodies
     {
         get => completeOnFssAllBodies;
-        set => SetField(ref completeOnFssAllBodies, value);
+        set
+        {
+            if (SetField(ref completeOnFssAllBodies, value))
+            {
+                UpdateCompletionRules();
+            }
+        }
+    }
+
+    private void UpdateCompletionRules()
+    {
+        if (suppressOptionPersistence || searchState.TopBoxel is null)
+        {
+            return;
+        }
+
+        RunSessionAction(
+            new SetBoxelCompletionRules(
+                StartedOn,
+                SkipAlreadyVisited,
+                SkipKnownToSpansh,
+                CompleteOnFssAllBodies ? BoxelCompletionMode.FssAllBodies : BoxelCompletionMode.EnterSystem
+            )
+        );
     }
 
     public bool AutoCopy
@@ -1228,24 +1269,28 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         pendingOptionUpdate = RunSessionActionAsync(pendingOptionUpdate, action);
     }
 
-    private Task<BoxelSearchOutcome> SwitchSessionProfileAsync(BoxelSearchProfile profile)
+    private async Task<BoxelSearchOutcome> SwitchSessionProfileAsync(BoxelSearchProfile profile)
     {
-        return session.SwitchProfileAsync(profile, CancellationToken.None);
+        await pendingOptionUpdate;
+        return await session.SwitchProfileAsync(profile, CancellationToken.None);
     }
 
-    private Task<BoxelSearchOutcome> ClearSessionProfileAsync()
+    private async Task<BoxelSearchOutcome> ClearSessionProfileAsync()
     {
-        return session.ClearProfileAsync(cancellationToken: CancellationToken.None);
+        await pendingOptionUpdate;
+        return await session.ClearProfileAsync(cancellationToken: CancellationToken.None);
     }
 
-    private Task<BoxelSearchOutcome> ApplySessionUpdateAsync(BoxelSearchUpdate update)
+    private async Task<BoxelSearchOutcome> ApplySessionUpdateAsync(BoxelSearchUpdate update)
     {
-        return session.ApplyAsync(update, CancellationToken.None);
+        await pendingOptionUpdate;
+        return await session.ApplyAsync(update, CancellationToken.None);
     }
 
-    private Task<BoxelSearchOutcome> ExecuteSessionActionAsync(IBoxelSearchAction action)
+    private async Task<BoxelSearchOutcome> ExecuteSessionActionAsync(IBoxelSearchAction action)
     {
-        return session.ExecuteAsync(action, CancellationToken.None);
+        await pendingOptionUpdate;
+        return await session.ExecuteAsync(action, CancellationToken.None);
     }
 
     private Task<BoxelSearchLibrarySnapshot> GetSessionLibraryAsync()
@@ -1258,7 +1303,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         try
         {
             await precedingUpdate;
-            ApplyOutcome(await ExecuteSessionActionAsync(action));
+            ApplyOutcome(await session.ExecuteAsync(action, CancellationToken.None));
         }
         catch (ObjectDisposedException)
         {

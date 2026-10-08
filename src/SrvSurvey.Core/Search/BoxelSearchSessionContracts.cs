@@ -167,6 +167,13 @@ public sealed record SetBoxelAutoCopy(bool Enabled) : IBoxelSearchAction;
 
 public sealed record SetBoxelSortDirection(bool Descending) : IBoxelSearchAction;
 
+public sealed record SetBoxelCompletionRules(
+    DateTimeOffset StartedOn,
+    bool SkipAlreadyVisited,
+    bool SkipKnownToSpansh,
+    BoxelCompletionMode CompletionMode
+) : IBoxelSearchAction;
+
 public sealed record RefreshCurrentBoxel : IBoxelSearchAction;
 
 public sealed record NavigateToBoxel(BoxelAddress Boxel) : IBoxelSearchAction;
@@ -249,6 +256,7 @@ public enum BoxelSearchMessageCode
     ClipboardFailed,
     AutoCopyChanged,
     SortDirectionChanged,
+    CompletionRulesChanged,
     SynchronizationDegraded,
     SynchronizationRestored,
     Superseded,
