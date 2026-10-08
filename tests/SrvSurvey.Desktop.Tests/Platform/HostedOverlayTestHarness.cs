@@ -22,6 +22,7 @@ internal sealed class HostedOverlayTestHarness : IDisposable
                 createTracker ?? CreateTracker,
                 CreateTimer,
                 overlayLayout ?? LegacyOverlayLayout.Empty,
+                Diagnostics.Add,
                 WindowRegistry: registry
             )
         );
@@ -45,6 +46,8 @@ internal sealed class HostedOverlayTestHarness : IDisposable
 
     public Func<Window, bool, OverlayInteractionResult> SetInteractive { get; set; } =
         (_, interactive) => new OverlayInteractionResult(IsPrepared: true, IsInteractive: interactive, "Prepared");
+
+    public List<OverlayHostDiagnostic> Diagnostics { get; } = [];
 
     public List<Window> PreparedWindows { get; } = [];
 

@@ -10,17 +10,20 @@ public sealed class OverlayPresentationSession : IDisposable
     private readonly OverlayPresentationSessionDependencies hostDependencies;
     private readonly HashSet<HostedOverlayWindow> hostedWindows = [];
     private OverlayWindowManagementSession? windowManagementSession;
+    private readonly IOverlayPlatformService? ownedPlatform;
     private bool disposed;
 
     private OverlayPresentationSession(
         OverlayPresentationDecision decision,
         CombinedOverlayPresentationController? combinedController,
-        OverlayPresentationSessionDependencies hostDependencies
+        OverlayPresentationSessionDependencies hostDependencies,
+        IOverlayPlatformService? ownedPlatform = null
     )
     {
         Decision = decision;
         this.combinedController = combinedController;
         this.hostDependencies = hostDependencies;
+        this.ownedPlatform = ownedPlatform;
     }
 
     public OverlayPresentationDecision Decision { get; }
@@ -61,9 +64,8 @@ public sealed class OverlayPresentationSession : IDisposable
         if (decision.Mode != OverlayPresentationMode.CombinedWindow)
         {
             gameWindowTracker?.Dispose();
-            return new OverlayPresentationSession(
+            return CreateWithSharedPlatform(
                 decision,
-                null,
                 CreateHostDependencies(
                     OverlayPlatformService.CreateCurrent,
                     registry,
@@ -78,17 +80,15 @@ public sealed class OverlayPresentationSession : IDisposable
         IOverlayPlatformService nativePlatform = OverlayPlatformService.CreateCurrent();
         if (nativePlatform is not ICombinedOverlayNativeService)
         {
-            nativePlatform.Dispose();
             gameWindowTracker?.Dispose();
-            return new OverlayPresentationSession(
+            return CreateWithSharedPlatform(
                 new OverlayPresentationDecision(
                     OverlayPresentationMode.MultipleWindows,
                     decision.Reason
                         + " The native combined-host operations were unavailable, so separate windows remain active."
                 ),
-                null,
                 CreateHostDependencies(
-                    OverlayPlatformService.CreateCurrent,
+                    () => nativePlatform,
                     registry,
                     overlayLayout,
                     keepWhenGameLosesFocus,
@@ -125,6 +125,26 @@ public sealed class OverlayPresentationSession : IDisposable
         ArgumentNullException.ThrowIfNull(decision);
         ArgumentNullException.ThrowIfNull(dependencies);
         return new OverlayPresentationSession(decision, null, dependencies);
+    }
+
+    /// <summary>Creates the separate-window session with one shared native connection.</summary>
+    internal static OverlayPresentationSession CreateWithSharedPlatform(
+        OverlayPresentationDecision decision,
+        OverlayPresentationSessionDependencies dependencies
+    )
+    {
+        ArgumentNullException.ThrowIfNull(decision);
+        ArgumentNullException.ThrowIfNull(dependencies);
+        IOverlayPlatformService shared = dependencies.CreatePlatform();
+        return new OverlayPresentationSession(
+            decision,
+            null,
+            dependencies with
+            {
+                CreatePlatform = () => new BorrowedOverlayPlatformService(shared),
+            },
+            shared
+        );
     }
 
     public IOverlayPlatformService CreatePlatformService()
@@ -177,19 +197,22 @@ public sealed class OverlayPresentationSession : IDisposable
             return;
         }
 
-        IOverlayPlatformService platform = hostDependencies.CreatePlatform();
+        IOverlayPlatformService platform = ownedPlatform ?? hostDependencies.CreatePlatform();
         if (platform is IOverlayWindowManagement native)
         {
             windowManagementSession = new OverlayWindowManagementSession(
                 hostDependencies.WindowRegistry ?? OverlayWindowRegistry.Shared,
-                native,
+                ownedPlatform is null ? native : new BorrowedWindowManagement(native),
                 log
             );
             log?.Invoke("Window management bypass is enabled for X11/XWayland live panels and the position editor.");
         }
         else
         {
-            platform.Dispose();
+            if (ownedPlatform is null)
+            {
+                platform.Dispose();
+            }
             log?.Invoke("Window management bypass is unavailable on this display backend; using normal management.");
         }
     }
@@ -237,6 +260,14 @@ public sealed class OverlayPresentationSession : IDisposable
             {
                 disposalFailure ??= exception;
             }
+            try
+            {
+                ownedPlatform?.Dispose();
+            }
+            catch (Exception exception)
+            {
+                disposalFailure ??= exception;
+            }
         }
 
         if (disposalFailure is not null)
@@ -267,6 +298,37 @@ public sealed class OverlayPresentationSession : IDisposable
     private void RemoveHostedWindow(HostedOverlayWindow hosted)
     {
         hostedWindows.Remove(hosted);
+    }
+
+    /// <summary>Forwards window operations while the containing session owns the native connection.</summary>
+    private sealed class BorrowedOverlayPlatformService(IOverlayPlatformService platform) : IOverlayPlatformService
+    {
+        public OverlayPlatformCapabilities Capabilities => platform.Capabilities;
+
+        public OverlayPreparationResult PreparePassiveWindow(Window window) => platform.PreparePassiveWindow(window);
+
+        public OverlayInteractionResult PrepareInteractiveWindow(Window window) =>
+            platform.PrepareInteractiveWindow(window);
+
+        public OverlayInteractionResult SetInteractive(Window window, bool interactive) =>
+            platform.SetInteractive(window, interactive);
+
+        public IDisposable? BeginVisibleCursorSession(Window window) => platform.BeginVisibleCursorSession(window);
+
+        public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs) =>
+            platform.BeginMoveDrag(window, eventArgs);
+
+        public void Dispose() { }
+    }
+
+    private sealed class BorrowedWindowManagement(IOverlayWindowManagement native) : IOverlayWindowManagement
+    {
+        public bool TryBypassWindowManagement(Window window) => native.TryBypassWindowManagement(window);
+
+        public void RaiseUnmanagedWindow(Window window, bool activate = false) =>
+            native.RaiseUnmanagedWindow(window, activate);
+
+        public void Dispose() { }
     }
 
     private sealed class CombinedOverlayPlatformService(CombinedOverlayPresentationController controller)

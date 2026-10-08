@@ -178,8 +178,12 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         using var coordinator = new StreamOverlayCoordinator(stream, overlays.Session);
         Assert.Single(overlays.PreparedWindows);
         Assert.False(overlays.PreparedWindows[0].IsVisible);
+        Assert.Equal("Transient preparation failure", stream.StatusMessage);
+        Assert.Single(overlays.Diagnostics);
 
         overlays.Tick();
+        Assert.Equal("Transient preparation failure", stream.StatusMessage);
+        Assert.Single(overlays.Diagnostics);
         Assert.Equal(2, overlays.PreparedWindows.Count);
         Assert.All(overlays.PreparedWindows, window => Assert.False(window.IsVisible));
 
@@ -189,6 +193,15 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         Assert.Equal(3, overlays.PreparedWindows.Count);
         Assert.True(overlays.PreparedWindows[2].IsVisible);
         Assert.Contains("Compositing", stream.StatusMessage);
+        overlays.Prepare = _ => new OverlayPreparationResult(false, false, "Failed again");
+        stream.Enabled = false;
+        stream.Enabled = true;
+        Assert.Equal(2, overlays.Diagnostics.Count);
+        overlays.Tick();
+        Assert.Equal(2, overlays.Diagnostics.Count);
+        stream.Enabled = false;
+        stream.Enabled = true;
+        Assert.Equal(3, overlays.Diagnostics.Count);
     }
 
     [AvaloniaFact]

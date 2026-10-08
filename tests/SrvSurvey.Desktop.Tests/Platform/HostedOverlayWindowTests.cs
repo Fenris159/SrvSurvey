@@ -1214,6 +1214,43 @@ public sealed class HostedOverlayWindowTests
         Assert.Same(OverlayWindowRegistry.Shared, sharedRegistrySession.WindowRegistry);
     }
 
+    [AvaloniaFact]
+    public void SharedPlatformStaysAliveUntilTheSessionClosesAllHosts()
+    {
+        var platform = new RecordingOverlayPlatform();
+        int created = 0;
+        var session = OverlayPresentationSession.CreateWithSharedPlatform(
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Shared native platform"),
+            new OverlayPresentationSessionDependencies(
+                () =>
+                {
+                    created++;
+                    return platform;
+                },
+                () => new RecordingGameWindowTracker(AvailableGameWindow),
+                _ => new ManualHostedOverlayTimer(),
+                LegacyOverlayLayout.Empty
+            )
+        );
+        HostedOverlayWindow first = session.HostPassiveWindow(CreateDefinition());
+        HostedOverlayWindow second = session.HostPassiveWindow(CreateDefinition());
+        first.Reconcile(true);
+        second.Reconcile(true);
+        Assert.Equal(1, created);
+        first.Dispose();
+        using (IOverlayPlatformService auxiliary = session.CreatePlatformService())
+        {
+            Assert.True(auxiliary.SetInteractive(new Window(), true).IsInteractive);
+        }
+        Assert.Equal(0, platform.DisposeCalls);
+        second.Reconcile(true);
+        Assert.True(second.IsVisible);
+        session.Dispose();
+        session.Dispose();
+        Assert.Equal(1, platform.DisposeCalls);
+        Assert.Equal(OverlayHostHealth.Disposed, second.Health);
+    }
+
     private static OverlayPresentationSession CreateSession(
         IOverlayPlatformService platform,
         IGameWindowTracker tracker,
