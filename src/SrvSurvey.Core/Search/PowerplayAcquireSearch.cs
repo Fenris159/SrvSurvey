@@ -373,9 +373,30 @@ public sealed class PowerplayPlanetarySellMarkets
     )
     {
         var candidates = new List<MiningSystemResult>();
-        var cachedCandidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        while (candidates.Count < filters.ResultLimit && await FillTargetQueueAsync(cursor, token))
+        bool exhausted = filters.ResultLimit <= 0;
+        while (candidates.Count == 0 && !exhausted)
         {
+            var cachedCandidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            exhausted = await FillMarketCandidatesAsync(cursor, candidates, cachedCandidates, token);
+
+            await RefreshCachedCandidatesAsync(candidates, cachedCandidates, token);
+        }
+        return candidates;
+    }
+
+    private async Task<bool> FillMarketCandidatesAsync(
+        AcquireMarketCursor cursor,
+        List<MiningSystemResult> candidates,
+        HashSet<string> cachedCandidates,
+        CancellationToken token
+    )
+    {
+        while (candidates.Count < filters.ResultLimit)
+        {
+            if (!await FillTargetQueueAsync(cursor, token))
+            {
+                return true;
+            }
             (MiningSystemResult target, MiningSystemResult supporter, bool fromCache) = cursor.Targets.Dequeue();
             if (!filters.MatchesSelectedStates(target))
             {
@@ -412,9 +433,7 @@ public sealed class PowerplayPlanetarySellMarkets
                 cachedCandidates.Add(target.System);
             }
         }
-
-        await RefreshCachedCandidatesAsync(candidates, cachedCandidates, token);
-        return candidates;
+        return false;
     }
 
     private async Task RefreshCachedCandidatesAsync(

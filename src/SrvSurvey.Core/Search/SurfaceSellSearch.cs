@@ -171,6 +171,7 @@ public sealed class SurfaceSellSearch(IMiningSearchProvider provider)
             return new SurfaceSellSearchResult(SurfaceSellSearchResultKind.NoReference);
         }
 
+        request = request with { Reference = request.Reference.Trim() };
         var search = new Search(request, progress, cancellationToken);
         bool catalogOrder = MiningMaterialSelection.IsAny(request.SelectedMaterials);
         IReadOnlyDictionary<string, MiningCommodityPriceSummary>? dailyPrices = catalogOrder

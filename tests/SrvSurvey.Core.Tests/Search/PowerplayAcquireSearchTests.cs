@@ -379,6 +379,40 @@ public sealed class PowerplayAcquireSearchTests
         Assert.Equal(["Taken", "Still Open"], unrefreshed.Select(quote => quote.System));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExhaustedCachedBatchContinuesToLaterTargets(bool allTaken)
+    {
+        var provider = new StubMiningSearchProvider
+        {
+            Supporters = (_, _, state) => state == "Fortified" ? [Supporter("Fort", 0, "Fortified", At(0))] : [],
+            CandidatePages = query =>
+                Page(query.Page == 0, Target(query.Page == 0 ? "Taken" : "Later", At(1))) with
+                {
+                    FromCache = true,
+                },
+            SystemsByName = (_, names) =>
+                names.Select(name => allTaken || name == "Taken" ? Owned(name) : Target(name, At(1))).ToArray(),
+            Imports = (system, _) => [StubMiningSearchProvider.Quote(system, "Port", "Monazite", 1)],
+        };
+        SurfaceSellMarketRules rules = await new PowerplayPlanetarySellMarkets(
+            provider,
+            Filters() with
+            {
+                ResultLimit = 1,
+            }
+        ).RulesAsync(NoOrigin, CancellationToken.None);
+        IReadOnlyList<MiningMarketResult> quotes = await rules.AdditionalMarketQuotesAsync!(
+            ["Monazite"],
+            CancellationToken.None
+        );
+        IEnumerable<string> expected = allTaken ? [] : ["Later"];
+        Assert.Equal(expected, quotes.Select(quote => quote.System));
+        Assert.Equal([0, 1], provider.CandidatePageQueries.Select(query => query.Page));
+        Assert.Empty(await rules.AdditionalMarketQuotesAsync(["Monazite"], CancellationToken.None));
+    }
+
     [Fact]
     public async Task ForcedAcquireReferenceIsOfferedFirstWhenItHasSupportersAndMarkets()
     {
