@@ -24,6 +24,10 @@ public sealed partial class MainWindow : Window
     private readonly JournalMonitorSession? monitorSession;
     private IReadOnlyList<MainWindowMonitor> applicationMonitors = [];
     private PixelPoint? lastNormalPosition;
+    private Size lastNormalSize;
+    private WindowState lastNonMinimizedState = WindowState.Normal;
+    private bool applyingWindowPreferences;
+    private int appliedApplicationScalePercent;
     private Task? closePreparationTask;
     private bool closeReady;
     private bool applicationWindowPositionSaved;
@@ -51,13 +55,17 @@ public sealed partial class MainWindow : Window
         Screens.Changed += OnScreensChanged;
         PositionChanged += OnPositionChanged;
         RefreshApplicationMonitors();
-        ApplyApplicationWindowPreferences(viewModel.DesktopBehavior.LastApplicationWindowPosition);
+        ApplyApplicationWindowPreferences(
+            viewModel.DesktopBehavior.LastApplicationWindowPosition,
+            viewModel.DesktopBehavior.LastApplicationWindowGeometry
+        );
         viewModel.PropertyChanged += OnMiningWidthContextChanged;
         viewModel.MineMap.PropertyChanged += OnMiningWidthContextChanged;
         viewModel.MiningWorkspace.PropertyChanged += OnMiningWidthContextChanged;
         SurfaceMiningWorkspacePage.SurfaceResultsWidthTarget.Scroller.SizeChanged += OnMiningResultsSizeChanged;
         MiningWorkspacePage.PowerplayResultsWidthTarget.Scroller.SizeChanged += OnMiningResultsSizeChanged;
         SizeChanged += OnMiningResultsSizeChanged;
+        SizeChanged += OnWindowSizeChanged;
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(NavigateToReleaseUpdates);
         Opened += OnOpened;
         if (ownsApplicationLifetime)
@@ -311,14 +319,23 @@ public sealed partial class MainWindow : Window
 
     private void OnScreensChanged(object? sender, EventArgs eventArgs)
     {
+        if (applicationMonitors.SequenceEqual(MainWindowPlacement.DescribeScreens(Screens.All)))
+        {
+            return;
+        }
+
         ApplicationWindowPosition? currentPosition = GetCurrentApplicationWindowPosition();
+        ApplicationWindowGeometry? currentGeometry = GetCurrentApplicationWindowGeometry(currentPosition);
         RefreshApplicationMonitors();
-        ApplyApplicationWindowPreferences(currentPosition);
+        ApplyApplicationWindowPreferences(currentPosition, currentGeometry);
     }
 
     private void OnApplicationWindowPreferencesChanged(object? sender, EventArgs eventArgs)
     {
-        ApplyApplicationWindowPreferences(lastPosition: null);
+        ApplyApplicationWindowPreferences(
+            lastPosition: null,
+            GetCurrentApplicationWindowGeometry(GetCurrentApplicationWindowPosition())
+        );
     }
 
     private void OnPositionChanged(object? sender, PixelPointEventArgs eventArgs)
@@ -326,6 +343,14 @@ public sealed partial class MainWindow : Window
         if (WindowState == WindowState.Normal)
         {
             lastNormalPosition = eventArgs.Point;
+        }
+    }
+
+    private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs eventArgs)
+    {
+        if (!applyingWindowPreferences && WindowState == WindowState.Normal)
+        {
+            lastNormalSize = eventArgs.NewSize;
         }
     }
 
@@ -349,7 +374,10 @@ public sealed partial class MainWindow : Window
             )
             ?.Bounds;
 
-    private void ApplyApplicationWindowPreferences(ApplicationWindowPosition? lastPosition)
+    private void ApplyApplicationWindowPreferences(
+        ApplicationWindowPosition? lastPosition,
+        ApplicationWindowGeometry? lastGeometry = null
+    )
     {
         string? automaticMonitorId = IsVisible ? Screens.ScreenFromWindow(this)?.DisplayName : null;
         MainWindowPlacementResult placement = MainWindowPlacement.Resolve(
@@ -357,23 +385,36 @@ public sealed partial class MainWindow : Window
             viewModel.DesktopBehavior.PreferredMonitorId,
             viewModel.DesktopBehavior.ApplicationWindowScalePercent,
             automaticMonitorId,
-            lastPosition
+            lastPosition,
+            lastGeometry
         );
-        Width = placement.Width;
-        defaultWindowWidth = placement.Width;
-        miningWidthExpanded = false;
-        Height = placement.Height;
-        MinWidth = placement.MinimumWidth;
-        MinHeight = placement.MinimumHeight;
-        ApplicationScaleContainer.LayoutTransform = new ScaleTransform(
-            placement.ApplicationScale,
-            placement.ApplicationScale
-        );
-        if (placement.Position is { } position)
+        applyingWindowPreferences = true;
+        try
         {
-            WindowStartupLocation = WindowStartupLocation.Manual;
-            Position = position;
-            lastNormalPosition = position;
+            WindowState = WindowState.Normal;
+            lastNormalSize = new Size(placement.Width, placement.Height);
+            appliedApplicationScalePercent = viewModel.DesktopBehavior.ApplicationWindowScalePercent;
+            MinWidth = placement.MinimumWidth;
+            MinHeight = placement.MinimumHeight;
+            Width = placement.Width;
+            defaultWindowWidth = placement.Width;
+            miningWidthExpanded = false;
+            Height = placement.Height;
+            ApplicationScaleContainer.LayoutTransform = new ScaleTransform(
+                placement.ApplicationScale,
+                placement.ApplicationScale
+            );
+            if (placement.Position is { } position)
+            {
+                WindowStartupLocation = WindowStartupLocation.Manual;
+                Position = position;
+                lastNormalPosition = position;
+            }
+            WindowState = placement.Maximized ? WindowState.Maximized : WindowState.Normal;
+        }
+        finally
+        {
+            applyingWindowPreferences = false;
         }
     }
 
@@ -391,7 +432,33 @@ public sealed partial class MainWindow : Window
             && point.Y >= candidate.Bounds.Y
             && point.Y < candidate.Bounds.Y + candidate.Bounds.Height
         );
+        if (monitor is null && Screens.ScreenFromWindow(this) is { } screen)
+        {
+            string screenId = MainWindowPlacement.DescribeScreens([screen])[0].Id;
+            monitor = applicationMonitors.FirstOrDefault(candidate => candidate.Id == screenId);
+        }
         return monitor is null ? null : new ApplicationWindowPosition(point.X, point.Y, monitor.Id);
+    }
+
+    private ApplicationWindowGeometry? GetCurrentApplicationWindowGeometry(ApplicationWindowPosition? position)
+    {
+        MainWindowMonitor? monitor = applicationMonitors.FirstOrDefault(candidate =>
+            candidate.Id == position?.MonitorId
+        );
+        if (monitor is null || lastNormalSize.Width <= 0 || lastNormalSize.Height <= 0)
+        {
+            return null;
+        }
+
+        return new ApplicationWindowGeometry(
+            lastNormalSize.Width,
+            lastNormalSize.Height,
+            lastNonMinimizedState == WindowState.Maximized,
+            appliedApplicationScalePercent,
+            monitor.Scaling,
+            monitor.Bounds.Width,
+            monitor.Bounds.Height
+        );
     }
 
     private async Task RunMonitorAsync(CancellationToken cancellationToken)
@@ -409,6 +476,11 @@ public sealed partial class MainWindow : Window
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == WindowStateProperty && WindowState is WindowState.Normal or WindowState.Maximized)
+        {
+            lastNonMinimizedState = WindowState;
+        }
+
         if (change.Property == WindowStateProperty && WindowState == WindowState.Minimized)
         {
             _ = viewModel.DesktopBehavior.RequestMinimizeFocus();
@@ -454,7 +526,15 @@ public sealed partial class MainWindow : Window
         if (!applicationWindowPositionSaved && GetCurrentApplicationWindowPosition() is { } position)
         {
             applicationWindowPositionSaved = true;
-            viewModel.DesktopBehavior.RememberApplicationWindowPosition(position);
+            ApplicationWindowGeometry? geometry = GetCurrentApplicationWindowGeometry(position);
+            if (geometry is not null)
+            {
+                viewModel.DesktopBehavior.RememberApplicationWindowGeometry(position, geometry);
+            }
+            else
+            {
+                viewModel.DesktopBehavior.RememberApplicationWindowPosition(position);
+            }
         }
     }
 
@@ -498,6 +578,7 @@ public sealed partial class MainWindow : Window
         SurfaceMiningWorkspacePage.SurfaceResultsWidthTarget.Scroller.SizeChanged -= OnMiningResultsSizeChanged;
         MiningWorkspacePage.PowerplayResultsWidthTarget.Scroller.SizeChanged -= OnMiningResultsSizeChanged;
         SizeChanged -= OnMiningResultsSizeChanged;
+        SizeChanged -= OnWindowSizeChanged;
         ReleaseRuntimeDependents();
         base.OnClosed(e);
     }
@@ -586,7 +667,7 @@ public sealed partial class MainWindow : Window
             Show();
         }
 
-        WindowState = WindowState.Normal;
+        WindowState = lastNonMinimizedState;
         Activate();
     }
 
